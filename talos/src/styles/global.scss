@@ -1,0 +1,11 @@
+@use './fonts';
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
+* {
+    transform-origin: center;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+body {
+    margin: 0;
+    font-family: "Noto Sans SC", sans-serif;
+}
