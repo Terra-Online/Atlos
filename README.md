@@ -1,2 +1,2 @@
 # Atlos
-Online interactive map for Arknights: Endfield
+Atlos(from Talos, =Atlas) is set to settle the project of online map in a 3d RTSRPG game Arknights: Endfield by Hypergryph Network Technology Ltd.
