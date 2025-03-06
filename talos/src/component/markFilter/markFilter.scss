@@ -1,0 +1,108 @@
+@use '../../styles/palette.scss' as *;
+
+.mark-filter-container {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  overflow: hidden;
+
+  .filter-header {
+    position: relative;
+    width: 100%;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    background-color: $grey-1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    &.expanded {
+      border-radius: 6px 6px 0 0;
+      background-color: $grey-1;
+    }
+    &:hover {
+      background-color: $grey-1;
+    }
+    .filter-icon {
+      width: 18px;
+      height: 18px;
+      margin: 0 .8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .icon {
+        width: 100%;
+        height: 100%;
+        fill: $white-0;
+        transition: fill 0.2s;
+      }
+      
+      .filter-header.expanded & .icon {
+        fill: $accent-3;
+      }
+    }
+    
+    .filter-title {
+      color: rgba($white-0, 0.9);
+      text-transform: uppercase;
+      font-family: 'Novecento Medium', sans-serif;
+      font-weight: 400;
+      font-size: .9rem;
+    }
+    .toggle-icon {
+      svg {
+        width: 20px;
+        height: 20px;
+        fill: $white-0;
+        transition: transform 0.3s;
+        
+        &.expanded {
+          transform: rotate(180deg);
+          fill: $accent-3;
+        }
+      }
+    }
+  }
+  
+  .filter-content {
+    transform: translateY(-10px);
+    background-color: $grey-1;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease-out;
+    
+    &.expanded {
+      max-height: 200px; // 根据内容需要调整
+      transition: max-height 0.25s ease-in;
+    }
+    
+    .content-inner {
+      padding: 15px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      
+      &.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .placeholder-content {
+      p {
+        color: $white-1;
+        margin: 8px 0;
+        font-family: 'Roboto Slab', serif;
+        font-size: 0.85rem;
+        
+        &:first-child {
+          margin-top: 0;
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}

@@ -1,20 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css');
 @font-face {
     font-family: 'Novecento Bold';
-    src: url('../asset/font/Novecento\ WideBold.ttf');
+    src: url('../asset/fonts/Novecento-WideBold.woff2') format('woff2'),
+         url('../asset/fonts/Novecento-WideBold.woff') format('woff'),
+         url('../asset/fonts/Novecento-WideBold.ttf') format('truetype');
+    font-display: swap;
 }
+
 @font-face {
     font-family: 'Novecento Book';
-    src: url('../asset/font/Novecento\ WideBook.ttf');
+    src: url('../asset/fonts/Novecento-WideBook.woff2') format('woff2'),
+         url('../asset/fonts/Novecento-WideBook.woff') format('woff'),
+         url('../asset/fonts/Novecento-WideBook.ttf') format('truetype');
+    font-display: swap;
 }
+
 @font-face {
     font-family: 'Novecento Light';
-    src: url('../asset/font/Novecento\ WideLight.ttf');
+    src: url('../asset/fonts/Novecento-WideLight.woff2') format('woff2'),
+         url('../asset/fonts/Novecento-WideLight.woff') format('woff'),
+         url('../asset/fonts/Novecento-WideLight.ttf') format('truetype');
+    font-display: swap;
 }
+
 @font-face {
     font-family: 'Novecento Medium';
-    src: url('../asset/font/Novecento\ WideMedium.ttf');
+    src: url('../asset/fonts/Novecento-WideMedium.woff2') format('woff2'),
+         url('../asset/fonts/Novecento-WideMedium.woff') format('woff'),
+         url('../asset/fonts/Novecento-WideMedium.ttf') format('truetype');
+    font-display: swap;
 }
+
 @font-face {
     font-family: 'Novecento Normal';
-    src: url('../asset/font/Novecento\ WideNormal.ttf');
+    src: url('../asset/fonts/Novecento-WideNormal.woff2') format('woff2'),
+         url('../asset/fonts/Novecento-WideNormal.woff') format('woff'),
+         url('../asset/fonts/Novecento-WideNormal.ttf') format('truetype');
+    font-display: swap;
 }
