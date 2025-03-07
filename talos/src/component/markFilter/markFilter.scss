@@ -1,104 +1,89 @@
 @use '../../styles/palette.scss' as *;
 
 .mark-filter-container {
-  width: 100%;
-  margin-bottom: 1rem;
-  border-radius: 6px;
-  overflow: hidden;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 3px;
+    box-shadow: 0 3px 4px rgba($black, .25);
 
-  .filter-header {
+.filter-header {
     position: relative;
     width: 100%;
-    height: 2.5rem;
+    height: 3rem;
     display: flex;
     align-items: center;
-    background-color: $grey-1;
-    border-radius: 6px;
+    background-color: $white-1;
+    border-radius: 3px 3px 0 0;
     cursor: pointer;
     transition: all 0.2s;
-    &.expanded {
-      border-radius: 6px 6px 0 0;
-      background-color: $grey-1;
+    > .filter-title {
+        color: $grey-1;
+        text-transform: uppercase;
+        font-family: 'Novecento Medium', sans-serif;
+        font-weight: 400;
+        font-size: 1rem;
+        text-shadow: 0 2px 3px rgba($black, .25);
     }
-    &:hover {
-      background-color: $grey-1;
-    }
-    .filter-icon {
+    > .filter-icon {
       width: 18px;
       height: 18px;
       margin: 0 .8rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      .icon {
+      filter: drop-shadow(0 2px 3px rgba($black, .25));
+      > .icon {
         width: 100%;
         height: 100%;
-        fill: $white-0;
+        fill: $grey-1;
         transition: fill 0.2s;
       }
-      
-      .filter-header.expanded & .icon {
-        fill: $accent-3;
-      }
     }
-    
-    .filter-title {
-      color: rgba($white-0, 0.9);
-      text-transform: uppercase;
-      font-family: 'Novecento Medium', sans-serif;
-      font-weight: 400;
-      font-size: .9rem;
-    }
+
     .toggle-icon {
       svg {
         width: 20px;
         height: 20px;
-        fill: $white-0;
+        fill: $grey-1;;
         transition: transform 0.3s;
-        
         &.expanded {
           transform: rotate(180deg);
-          fill: $accent-3;
+          fill: $accent-5;
         }
       }
     }
-  }
-  
-  .filter-content {
-    transform: translateY(-10px);
-    background-color: $grey-1;
+}
+
+.filter-content {
+    border-radius: 0 0 3px 3px;
+    background-color: $white-1;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.25s ease-out;
-    
+
     &.expanded {
-      max-height: 200px; // 根据内容需要调整
+      max-height: 200px; //Dynamic Pool
       transition: max-height 0.25s ease-in;
     }
-    
     .content-inner {
-      padding: 15px;
+      padding: 0 15px 15px 15px;
       opacity: 0;
       transform: translateY(-10px);
       transition: opacity 0.2s ease, transform 0.2s ease;
-      
       &.visible {
         opacity: 1;
         transform: translateY(0);
       }
     }
-    
     .placeholder-content {
       p {
-        color: $white-1;
+        color: #000;
         margin: 8px 0;
         font-family: 'Roboto Slab', serif;
         font-size: 0.85rem;
-        
         &:first-child {
           margin-top: 0;
         }
-        
         &:last-child {
           margin-bottom: 0;
         }

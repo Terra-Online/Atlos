@@ -4,6 +4,13 @@
     transform-origin: center;
     background-repeat: no-repeat;
     background-position: center;
+    box-sizing: border-box;
+}
+button {
+    border: none;
+    margin: 0;
+    padding-block: 0;
+    padding-inline: 0;
 }
 body {
     margin: 0;

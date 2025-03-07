@@ -8,19 +8,22 @@ import Search from '../search/search';
 import FavPOI from '../favPOI/favPOI';
 import MarkFilter from '../markFilter/markFilter';
 
-const SideBar = ({ map }) => {
+const SideBar = ({ map, onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
 
   const toggleSidebar = () => {
-    setIsOpen(!isOpen);
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (onToggle) {
+      onToggle(newState);
+    }
   };
 
-
   return (
-    <div className="sidebar-container">
-      <button 
+    <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <button
         className={`sidebar-toggle ${isOpen ? 'open' : ''}`}
         onClick={toggleSidebar}
       >
@@ -41,12 +44,14 @@ const SideBar = ({ map }) => {
         </div>
         <div className="sidebar-content">
           <Search />
-          <MarkFilter title='Collection'/>
-            <h2>Map Information</h2>
-            <p>Map Name: Valley 4</p>
-            <p>Map Size: 8000 x 10000</p>
-            <p>Map Scale: 1:1</p>
-            <p>Map Type: Topographic</p>
+          <div className='filters'>
+            <MarkFilter title='Collection'/>
+            <MarkFilter title='Resource'/>
+            <MarkFilter title='Enermy Spawner'/>
+            <MarkFilter title='Boss Fight'/>
+            <MarkFilter title='Missions'/>
+            <MarkFilter title='POI'/>
+          </div>
         </div>
       </div>
     </div>

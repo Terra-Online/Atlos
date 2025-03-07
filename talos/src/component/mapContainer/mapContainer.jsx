@@ -3,8 +3,13 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './mapContainer.scss';
 
-const MapContainer = () => {
+import Scale from '../scale/scale';
+import { Trigger, TriggerArea } from '../trigger/trigger';
+
+const MapContainer = ({ isSidebarOpen }) => {
   const [map, setMap] = useState(null);
+  const [t1, t_1] = useState(true);
+  const [t2, t_2] = useState(false);
 
   // For Valley4 Only !!! The switch of map should be done in the future and these should be provided when mounting as map_config.
   const MAP_DIMENSIONS = [8000, 10000]; // Adjust when change map
@@ -15,15 +20,23 @@ const MapContainer = () => {
     y: 250   // Minor to top
   };
 
+  /* debug
+  useEffect(() => {
+    console.log("MapContainer receive sideBar.jsx:", isSidebarOpen);
+  }, [isSidebarOpen]);
+  */
+
   useEffect(() => {
     if (!map) {
-      // Create new map instance
       const initialMap = L.map('map', {
         crs: L.CRS.Simple,
         minZoom: 0,
         maxZoom: MAX_ZOOM,
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
+        zoomSnap: 0.25,
+        zoomDelta: 0.25,
+        wheelPxPerZoomLevel: 10
       });
 
       // Set bounds
@@ -33,8 +46,8 @@ const MapContainer = () => {
 
       // unproject to find center
       const initialCenter = [
-        (MAP_DIMENSIONS[0] / 2) + INITIAL_OFFSET.x,  // x 坐标
-        (MAP_DIMENSIONS[1] / 2) + INITIAL_OFFSET.y   // y 坐标
+        (MAP_DIMENSIONS[0] / 2) + INITIAL_OFFSET.x,
+        (MAP_DIMENSIONS[1] / 2) + INITIAL_OFFSET.y
       ];
       const center = initialMap.unproject(initialCenter, MAX_ZOOM);
 
@@ -43,7 +56,6 @@ const MapContainer = () => {
 
       setMap(initialMap);
     } else {
-
       map.eachLayer(layer => map.removeLayer(layer));
 
       L.tileLayer(`/clips/Valley_4/{z}/{x}_{y}.webp`, {
@@ -57,8 +69,35 @@ const MapContainer = () => {
     }
   }, [map]);
 
+  // will import encapsulated controller
+  const trigger1 = (isActive) => {
+    t_1(isActive);
+    console.log('T1', isActive);
+  };
+
+  const trigger2 = (isActive) => {
+    t_2(isActive);
+    console.log('T2', isActive);
+  };
+
   return (
-    <div id="map"></div>
+    <div>
+      <div id="map"></div>
+      {map && <Scale map={map}/>}
+
+      <TriggerArea isSidebarOpen={isSidebarOpen}>
+        <Trigger
+          isActive={t1}
+          onToggle={trigger1}
+          label="Complex Select"
+        />
+        <Trigger
+          isActive={t2}
+          onToggle={trigger2}
+          label="Regional POI"
+        />
+      </TriggerArea>
+    </div>
   );
 };
 

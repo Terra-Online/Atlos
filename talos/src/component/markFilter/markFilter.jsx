@@ -30,8 +30,8 @@ const MarkFilter = ({ icon: CustomIcon, title = "Filter Options", children }) =>
           </svg>
         </div>
       </div>
-      
-      <div 
+
+      <div
         ref={contentRef}
         className={`filter-content ${isExpanded ? 'expanded' : ''}`}
       >

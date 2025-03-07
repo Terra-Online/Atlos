@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import './styles/global.scss';
 
-import Map from './component/mapContainer/mapContainer';
+import MapContainer from './component/mapContainer/mapContainer';
 import SideBar from './component/sideBar/sideBar';
 
 function App() {
-  const [mapInstance, setMapInstance] = useState(null);
+  //broadcasting sideBar status, no Zustand for temp
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
   return (
-    <div className="App">
-      <Map setMapInstance={setMapInstance}/>
-      <SideBar map={mapInstance} />
+    <div className="app">
+      <MapContainer isSidebarOpen={isSidebarOpen} />
+      <SideBar onToggle={handleSidebarToggle} />
     </div>
   );
 }
-
 export default App;
