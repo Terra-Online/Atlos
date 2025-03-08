@@ -11,6 +11,7 @@ import { RegSwitch, Reg } from '../regSwitch/regSwitch';
 import { ReactComponent as ToS } from '../../asset/logos/tos.svg';
 import { ReactComponent as hideUI } from '../../asset/logos/hideUI.svg';
 import { ReactComponent as Group } from '../../asset/logos/group.svg';
+import { ReactComponent as i18n } from '../../asset/logos/i18n.svg';
 import { ReactComponent as Guide } from '../../asset/logos/guide.svg';
 
 
@@ -107,6 +108,10 @@ const MapContainer = ({ isSidebarOpen }) => {
   };
 
   const h4 = () => {
+    console.log('Choose language');
+  };
+
+  const h5 = () => {
     console.log('Reach out for help');
   };
 
@@ -139,8 +144,13 @@ const MapContainer = ({ isSidebarOpen }) => {
             tooltip="Join related group"
           />
           <Headitem
-            icon={Guide}
+            icon={i18n}
             onClick={h4}
+            tooltip="Choose language"
+          />
+          <Headitem
+            icon={Guide}
+            onClick={h5}
             tooltip="Reach out for help"
           />
         </Headbar>
