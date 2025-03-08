@@ -3,7 +3,7 @@
 $desktop-headbar-height: 4rem;
 
 $sidebar-width: 300px;
-$toggle-btn-size: 50px;
+$toggle-btn-size: 4rem;
 $transition-speed: 0.3s;
 
 .sidebar-container {
@@ -60,11 +60,11 @@ $transition-speed: 0.3s;
 
   .sidebar-toggle {
     position: absolute;
-    top: 10px;
-    left: $sidebar-width + 10px;
+    top: 0;
+    left: calc($sidebar-width + .1rem);//optimized
     width: $toggle-btn-size;
     height: $toggle-btn-size;
-    background-color: $accent-3;
+    background-color: transparent;
     border: none;
     cursor: pointer;
     display: flex;
@@ -72,17 +72,17 @@ $transition-speed: 0.3s;
     justify-content: center;
     border-radius: 4px;
     z-index: 1001;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 0 2.5px rgba($black,.6));
     pointer-events: auto;
-    transition: background-color 0.2s ease;
     svg {
-      fill: $grey-1;
-      width: 24px;
-      height: 24px;
+      transition: all 0.2s ease;
+      fill: $accent-4;
+      width: 2rem;
+      height: 2rem;
     }
 
-    &:hover {
-      background-color: darken($accent-3, 5%);
+    &:hover svg {
+      fill: $accent-3;
     }
   }
 }

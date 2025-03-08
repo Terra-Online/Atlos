@@ -3,7 +3,7 @@
 $sidebar-width: 300px;
 $transition-speed: 0.3s; //import from global size.scss later
 
-.trigger-area {
+.trigger-container {
   position: absolute;
   z-index: 900;
   display: flex;

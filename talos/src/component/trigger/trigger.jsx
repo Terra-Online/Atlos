@@ -40,7 +40,7 @@ const Trigger = ({
   );
 };
 
-const TriggerArea = ({
+const TriggerBar = ({
   children,
   isSidebarOpen = false
 }) => {
@@ -56,10 +56,10 @@ const TriggerArea = ({
   */
 
   return (
-    <div className={`trigger-area ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`trigger-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       {children}
     </div>
   );
 };
 
-export { Trigger, TriggerArea };
+export { Trigger, TriggerBar };
