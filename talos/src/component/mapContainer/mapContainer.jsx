@@ -8,6 +8,8 @@ import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
 import { RegSwitch, Reg } from '../regSwitch/regSwitch';
 
+import { MAP_CONFIGS, DEFAULT_CONFIG } from './map_config';
+
 import { ReactComponent as ToS } from '../../asset/logos/tos.svg';
 import { ReactComponent as hideUI } from '../../asset/logos/hideUI.svg';
 import { ReactComponent as Group } from '../../asset/logos/group.svg';
@@ -24,16 +26,16 @@ const MapContainer = ({ isSidebarOpen }) => {
   const [map, setMap] = useState(null);
   const [t1, t_1] = useState(true);
   const [t2, t_2] = useState(false);
-  const [currentRegion, setCurrentRegion] = useState('Valley_4'); // 默认区域
+  const [currentRegion, setCurrentRegion] = useState('Valley_4');
 
-  // For Valley4 Only !!! The switch of map should be done in the future and these should be provided when mounting as map_config.
-  const MAP_DIMENSIONS = [8000, 10000]; // Adjust when change map
-  const MAX_ZOOM = 3;
-  const TILE_SIZE = 200;
-  const INITIAL_OFFSET = {
-    x: 750,  // Minor to left
-    y: 250   // Minor to top
-  };
+  const currentConfig = MAP_CONFIGS[currentRegion] || DEFAULT_CONFIG;
+  const {
+    dimensions: MAP_DIMENSIONS,
+    maxZoom: MAX_ZOOM,
+    tileSize: TILE_SIZE,
+    initialOffset: INITIAL_OFFSET,
+    initialZoom
+  } = currentConfig;
 
   /* debug
   useEffect(() => {
@@ -51,7 +53,7 @@ const MapContainer = ({ isSidebarOpen }) => {
         attributionControl: false,
         zoomSnap: 0.25,
         zoomDelta: 0.25,
-        wheelPxPerZoomLevel: 10
+        wheelPxPerZoomLevel: 10 // will cause sub-pixel issue
       });
 
       // Set bounds
@@ -67,7 +69,7 @@ const MapContainer = ({ isSidebarOpen }) => {
       const center = initialMap.unproject(initialCenter, MAX_ZOOM);
 
       // Set onmount view
-      initialMap.setView(center, 2);
+      initialMap.setView(center, initialZoom);
 
       setMap(initialMap);
     } else {
@@ -115,7 +117,6 @@ const MapContainer = ({ isSidebarOpen }) => {
     console.log('Reach out for help');
   };
 
-  // 处理区域切换
   const handleRegionChange = (region) => {
     console.log('Region changed:', region);
     setCurrentRegion(region);
@@ -167,7 +168,7 @@ const MapContainer = ({ isSidebarOpen }) => {
           value="Valley_4"
           tooltip="4號谷地"
         />
-        <Reg 
+        <Reg
           icon={Jinlong}
           value="Jinlong"
           tooltip="錦隴"
@@ -177,7 +178,7 @@ const MapContainer = ({ isSidebarOpen }) => {
           value="Dijiang"
           tooltip="帝江"
         />
-        <Reg 
+        <Reg
           icon={Æther}
           value="Æther"
           tooltip="超域"
