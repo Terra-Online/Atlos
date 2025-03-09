@@ -1,0 +1,163 @@
+{
+    "points": [{
+        "info": {
+            "id": "001",
+            "position": {"x": 124, "y": 816},
+            "region": {
+                "main": "Valley_4",
+                "sub": "pane_1"
+            },
+            "type": {
+                "main": "enemy",
+                "sub": "Cangzei"
+            },
+            "key": "Hill Smasher"
+        },
+        "status": {
+            "global": {
+                "collectable": false,
+                "defaultHidden": false
+            },
+            "user": {
+                "isCollected": false,
+                "priority": 0,
+                "localNote": "Lorem ipsum dolor sit amet,\nconsectetuer adipiscing elit."
+            }
+        },
+        "meta": {
+            "addedBy": "cirisus",
+            "addedAt": "2025-03-09T15:30:00Z",
+            "lastSeen": "2025-03-09T10:15:00Z"
+        }
+    }],
+    "types": [{
+        "enemy": {
+            "Aggeloi": {
+                "Triaggelos": {
+                    "icon": "Triaggelos icon.png",
+                    "hierarchy": "boss"
+                },
+                "Marble Aggelomoirai": {
+                    "icon": "Marble Aggelomoirai icon.png",
+                    "hierarchy": "boss"
+                },
+                "Effigy": {
+                    "icon": "Effigy icon.png",
+                    "hierarchy": "elite"
+                },
+                "Heavy Ram": {
+                    "icon": "Heavy Ram icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Heavy Ram α": {
+                    "icon": "Heavy Ram α icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Heavy Sting": {
+                    "icon": "Heavy Sting icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Heavy Sting α": {
+                    "icon": "Heavy Sting α icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Poison Ivy": {
+                    "icon": "Poison Ivy icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Ram": {
+                    "icon": "Ram icon.png",
+                    "hierarchy": "common"
+                },
+                "Ram α": {
+                    "icon": "Ram α icon.png",
+                    "hierarchy": "common"
+                },
+                "Sting": {
+                    "icon": "Sting icon.png",
+                    "hierarchy": "common"
+                },
+                "Sting α": {
+                    "icon": "Sting α icon.png",
+                    "hierarchy": "common"
+                }
+            },
+            "Landbreakers": {
+                "Rhodagn": {
+                    "icon": "Rhodagn icon.png",
+                    "hierarchy": "boss"
+                },
+                "Bonekrusher Ballista": {
+                    "icon": "Bonekrusher Ballista icon.png",
+                    "hierarchy": "elite"
+                },
+                "Bonekrusher Executioner": {
+                    "icon": "Bonekrusher Executioner icon.png",
+                    "hierarchy": "elite"
+                },
+                "Elite Executioner": {
+                    "icon": "Elite Executioner icon.png",
+                    "hierarchy": "elite"
+                },
+                "Bonekrusher Pyromancer": {
+                    "icon": "Bonekrusher Pyromancer icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Bonekrusher Arsonist": {
+                    "icon": "Bonekrusher Arsonist icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Blighted Tuskbeast": {
+                    "icon": "Blighted Tuskbeast icon.png",
+                    "hierarchy": "common"
+                },
+                "Bonekrusher Ripptusk": {
+                    "icon": "Bonekrusher Ripptusk icon.png",
+                    "hierarchy": "common"
+                },
+                "Elite Ripptusk": {
+                    "icon": "Elite Ripptusk icon.png",
+                    "hierarchy": "common"
+                },
+                "Blighted Klaw": {
+                    "icon": "Blighted Klaw icon.png",
+                    "hierarchy": "common"
+                },
+                "Bonekrusher Raider": {
+                    "icon": "Bonekrusher Raider icon.png",
+                    "hierarchy": "common"
+                },
+                "Elite Raider": {
+                    "icon": "Elite Raider icon.png",
+                    "hierarchy": "common"
+                },
+                "Bonekrusher Ambusher": {
+                    "icon": "Bonekrusher Ambusher icon.png",
+                    "hierarchy": "common"
+                },
+                "Elite Ambusher": {
+                    "icon": "Elite Ambusher icon.png",
+                    "hierarchy": "common"
+                },
+                "Bonekrusher Infiltrator": {
+                    "icon": "Bonekrusher Infiltrator icon.png",
+                    "hierarchy": "common"
+                }
+            },
+            "Cangzei": {
+                "Hill Smasher": {
+                    "icon": "Hill Smasher icon.png",
+                    "hierarchy": "elite"
+                },
+                "Cloud Stalker": {
+                    "icon": "Cloud Stalker icon.png",
+                    "hierarchy": "advanced"
+                },
+                "Road Plunderer": {
+                    "icon": "Road Plunderer icon.png",
+                    "hierarchy": "common"
+                }
+            }
+        }
+    }]
+}
