@@ -3,6 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './mapContainer.scss';
 
+import { getTileResourceUrl } from "../../utils/resource"
+
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
@@ -10,17 +12,17 @@ import { RegSwitch, Reg } from '../regSwitch/regSwitch';
 
 import { MAP_CONFIGS, DEFAULT_CONFIG } from './map_config';
 
-import { ReactComponent as ToS } from '../../asset/logos/tos.svg';
-import { ReactComponent as hideUI } from '../../asset/logos/hideUI.svg';
-import { ReactComponent as Group } from '../../asset/logos/group.svg';
-import { ReactComponent as i18n } from '../../asset/logos/i18n.svg';
-import { ReactComponent as Guide } from '../../asset/logos/guide.svg';
+import ToS from '../../asset/logos/tos.svg?react';
+import hideUI from '../../asset/logos/hideUI.svg?react';
+import Group from '../../asset/logos/group.svg?react';
+import i18n from '../../asset/logos/i18n.svg?react';
+import Guide from '../../asset/logos/guide.svg?react';
 
 
-import { ReactComponent as Valley4 } from '../../asset/logos/_Valley_4.svg';
-import { ReactComponent as Jinlong } from '../../asset/logos/_Jinlong.svg';
-import { ReactComponent as Dijiang } from '../../asset/logos/_Dijiang.svg';
-import { ReactComponent as Æther } from '../../asset/logos/Æther.svg';
+import Valley4 from '../../asset/logos/_Valley_4.svg?react';
+import Jinlong from '../../asset/logos/_Jinlong.svg?react';
+import Dijiang from '../../asset/logos/_Dijiang.svg?react';
+import Æther from '../../asset/logos/Æther.svg?react';
 
 const MapContainer = ({ isSidebarOpen }) => {
   const [map, setMap] = useState(null);
@@ -75,7 +77,7 @@ const MapContainer = ({ isSidebarOpen }) => {
     } else {
       map.eachLayer(layer => map.removeLayer(layer));
 
-      L.tileLayer(`/clips/${currentRegion}/{z}/{x}_{y}.webp`, {
+      L.tileLayer(getTileResourceUrl(`/clips/${currentRegion}/{z}/{x}_{y}.webp`), {
         tileSize: TILE_SIZE,
         noWrap: true,
         bounds: L.latLngBounds(
@@ -125,36 +127,36 @@ const MapContainer = ({ isSidebarOpen }) => {
   return (
     <div>
       <div id="map"></div>
-      {map && <Scale map={map}/>}
+      {map && <Scale map={map} />}
 
       {/* Headbar */}
-        <Headbar isSidebarOpen={isSidebarOpen}>
-          <Headitem
-            icon={ToS}
-            onClick={h1}
-            tooltip="Terms of Service"
-          />
-          <Headitem
-            icon={hideUI}
-            onClick={h2}
-            tooltip="Hide UI"
-          />
-          <Headitem
-            icon={Group}
-            onClick={h3}
-            tooltip="Join related group"
-          />
-          <Headitem
-            icon={i18n}
-            onClick={h4}
-            tooltip="Choose language"
-          />
-          <Headitem
-            icon={Guide}
-            onClick={h5}
-            tooltip="Reach out for help"
-          />
-        </Headbar>
+      <Headbar isSidebarOpen={isSidebarOpen}>
+        <Headitem
+          icon={ToS}
+          onClick={h1}
+          tooltip="Terms of Service"
+        />
+        <Headitem
+          icon={hideUI}
+          onClick={h2}
+          tooltip="Hide UI"
+        />
+        <Headitem
+          icon={Group}
+          onClick={h3}
+          tooltip="Join related group"
+        />
+        <Headitem
+          icon={i18n}
+          onClick={h4}
+          tooltip="Choose language"
+        />
+        <Headitem
+          icon={Guide}
+          onClick={h5}
+          tooltip="Reach out for help"
+        />
+      </Headbar>
 
       {/* RegSwitch */}
       <RegSwitch

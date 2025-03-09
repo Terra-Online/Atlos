@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import './trigger.scss';
 
-import { ReactComponent as OnIcon } from '../../asset/logos/on.svg';
-import { ReactComponent as OffIcon } from '../../asset/logos/off.svg';
+import OnIcon from '../../asset/logos/on.svg?react';
+import OffIcon from '../../asset/logos/off.svg?react';
 
 const Trigger = ({
   isActive = false,

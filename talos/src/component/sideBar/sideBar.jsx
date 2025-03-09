@@ -3,7 +3,7 @@ import './sideBar.scss';
 import L from 'leaflet';
 
 import Icon from '../../asset/images/observator_6.webp';
-import { ReactComponent as SidebarIcon } from '../../asset/logos/sideCollap.svg';
+import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
 
 import Search from '../search/search';
 import FavPOI from '../favPOI/favPOI';
@@ -28,22 +28,22 @@ const SideBar = ({ map, onToggle }) => {
         className={`sidebar-toggle ${isOpen ? 'open' : ''}`}
         onClick={toggleSidebar}
       >
-          <SidebarIcon />
+        <SidebarIcon />
       </button>
 
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="head_icon">
-          <img src={Icon} alt='supported by observator 6'/>
+          <img src={Icon} alt='supported by observator 6' />
         </div>
         <div className="sidebar-content">
           <Search />
           <div className='filters'>
-            <MarkFilter title='Collection'/>
-            <MarkFilter title='Resource'/>
-            <MarkFilter title='Enermy Spawner'/>
-            <MarkFilter title='Boss Fight'/>
-            <MarkFilter title='Missions'/>
-            <MarkFilter title='POI'/>
+            <MarkFilter title='Collection' />
+            <MarkFilter title='Resource' />
+            <MarkFilter title='Enermy Spawner' />
+            <MarkFilter title='Boss Fight' />
+            <MarkFilter title='Missions' />
+            <MarkFilter title='POI' />
           </div>
         </div>
       </div>
