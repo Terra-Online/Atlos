@@ -1,5 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use 'sass:color';
+@use 'sass:math';
 
 $sidebar-width: 300px;
 $transition-speed: 0.3s;
@@ -41,18 +43,17 @@ $indicator-height: .75rem;
     height: 0;
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
-    border-left: 8px solid darken($accent-4,10%);
+    border-left: 8px solid color.adjust($accent-4, $lightness: -10%);
     transition: transform 0.4s $presto-curve;
     z-index: 10;
     filter: drop-shadow(0 0 1px rgba($black, 0.8));
   }
   @for $i from 0 through 3 {
     &.selected-#{$i}:before {
-      transform: translateY(calc(#{$i} * (#{$item-height} + #{$item-gap}) + #{$item-height/2} - #{$indicator-height/2}));
+      transform: translateY(calc(#{$i} * (#{$item-height} + #{$item-gap}) + calc(#{$item-height} / 2) - calc(#{$indicator-height} / 2)));
     }
   }
 }
-
 .reg-item {
   display: flex;
   align-items: center;

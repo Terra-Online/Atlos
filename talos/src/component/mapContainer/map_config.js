@@ -21,7 +21,7 @@ export const MAP_CONFIGS = {
   },
   'Dijiang': {
     dimensions: [12000, 9000],
-    maxZoom: 4,
+    maxZoom: 3,
     tileSize: 500,
     initialOffset: {
       x: 400,

@@ -27,3 +27,4 @@ dist-ssr
 **/config/config.json
 
 talos/public/clips
+.history
