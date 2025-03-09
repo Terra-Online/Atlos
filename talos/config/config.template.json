@@ -1,0 +1,14 @@
+{
+    "web": {
+        "build": {
+            "cdn": "",
+            "oss": {
+                "bucket": "",
+                "region": "",
+                "prefix": "",
+                "accessKeyId": "",
+                "accessKeySecret": ""
+            }
+        }
+    }
+}
