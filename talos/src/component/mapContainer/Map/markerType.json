@@ -1,0 +1,13 @@
+{
+    "campfire": {
+        "key": "campfire",
+        "name": "想不起来叫啥了",
+        "category": "poi",
+        "icon": {
+            "iconUrl": "/images/marker/campfire.png",
+            "iconSize": [104, 104],
+            "iconAnchor": [52, 52],
+            "popupAnchor": [0, 0]
+        }
+    }
+}

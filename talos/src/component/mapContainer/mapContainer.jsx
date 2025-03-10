@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import L from 'leaflet';
+import L, { latLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './mapContainer.scss';
 
@@ -23,6 +23,7 @@ import Valley4 from '../../asset/logos/_Valley_4.svg?react';
 import Jinlong from '../../asset/logos/_Jinlong.svg?react';
 import Dijiang from '../../asset/logos/_Dijiang.svg?react';
 import Æther from '../../asset/logos/Æther.svg?react';
+import { addMarker, GLOBAL_MARKER_LAYER_GROUP } from './Map/marker';
 
 const MapContainer = ({ isSidebarOpen }) => {
   const [map, setMap] = useState(null);
@@ -85,6 +86,28 @@ const MapContainer = ({ isSidebarOpen }) => {
           map.unproject([MAP_DIMENSIONS[0], 0], MAX_ZOOM)
         )
       }).addTo(map);
+
+      GLOBAL_MARKER_LAYER_GROUP.addTo(map);
+
+      /**
+     * 
+     * @param {import('leaflet').LeafletMouseEvent} event 
+     */
+      function handler(event) {
+        const { latlng } = event
+        // const marker = L.marker(latlng, { bubblingMouseEvents: false }).addTo(map)
+        // marker.addEventListener("click", (e) => {
+        //   e.originalEvent.stopPropagation()
+        //   marker.remove()
+        // })
+        // console.log(map)
+        addMarker("campfire", latlng)
+      }
+
+      map.addEventListener("click", handler)
+      return () => {
+        map.removeEventListener("click", handler)
+      }
     }
   }, [map, currentRegion]);
 
