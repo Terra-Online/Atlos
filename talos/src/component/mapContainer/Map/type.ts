@@ -16,7 +16,6 @@ export interface IMapMarkerTypeData {
     name: string;
     category: EMapMarkerCategory;
     icon: {
-        iconUrl: string,
         iconSize: [number, number],
         iconAnchor: [number, number],
         popupAnchor: [number, number],

@@ -6,9 +6,9 @@ export const getTileResourceUrl = (path) => {
 
 /**
  * 
- * @param {string} path
+ * @param {string} key
  * @returns {string} 
  */
-export function getAssetsUrl(path) {
-    return `${prefix}/src/asset${path}`
+export function getMarkerIconUrl(key) {
+    return `${prefix}/assets/images/marker/${key}.png`
 }

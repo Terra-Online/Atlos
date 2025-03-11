@@ -4,7 +4,6 @@
         "name": "什么枢纽",
         "category": "poi",
         "icon": {
-            "iconUrl": "/images/marker/campfire.png",
             "iconSize": [
                 104,
                 104
@@ -24,7 +23,6 @@
         "name": "稀有矿物",
         "category": "resource",
         "icon": {
-            "iconUrl": "/images/marker/special_mine.png",
             "iconSize": [
                 84,
                 84

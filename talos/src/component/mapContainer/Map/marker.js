@@ -5,7 +5,7 @@ import L, { LatLng } from "leaflet"
  * @type {Record<string, import("./type").IMapMarkerTypeData>}
  */
 import MARKER_TYPE_DATA from "./markerType.json"
-import { getAssetsUrl } from "../../../utils/resource"
+import { getMarkerIconUrl } from "../../../utils/resource"
 import { MAP_CONFIGS } from "../map_config"
 
 /**
@@ -14,7 +14,7 @@ import { MAP_CONFIGS } from "../map_config"
  */
 const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DATA).reduce((acc, type) => {
     const { iconSize, iconAnchor, popupAnchor } = type.icon
-    const iconUrl = getAssetsUrl(type.icon.iconUrl)
+    const iconUrl = getMarkerIconUrl(type.key)
 
     acc[type.key] = L.icon({
         iconUrl,
