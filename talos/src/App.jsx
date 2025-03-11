@@ -3,6 +3,7 @@ import './styles/global.scss';
 
 import MapContainer from './component/mapContainer/mapContainer';
 import SideBar from './component/sideBar/sideBar';
+import SimpleSelect from './component/toolkit/SimpleSelect';
 
 function App() {
   //broadcasting sideBar status, no Zustand for temp
@@ -14,6 +15,7 @@ function App() {
     <div className="app">
       <MapContainer isSidebarOpen={isSidebarOpen} />
       <SideBar onToggle={handleSidebarToggle} />
+      <SimpleSelect />
     </div>
   );
 }

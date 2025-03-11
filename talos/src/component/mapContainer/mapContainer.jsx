@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import L, { latLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './mapContainer.scss';
@@ -23,7 +23,8 @@ import Valley4 from '../../asset/logos/_Valley_4.svg?react';
 import Jinlong from '../../asset/logos/_Jinlong.svg?react';
 import Dijiang from '../../asset/logos/_Dijiang.svg?react';
 import Æther from '../../asset/logos/Æther.svg?react';
-import { addMarker, GLOBAL_MARKER_LAYER_GROUP } from './Map/marker';
+import { addMarker, GLOBAL_MARKER_LAYER_GROUP_DICT } from './Map/marker';
+import useGlobalStore from '../../context';
 
 const MapContainer = ({ isSidebarOpen }) => {
   const [map, setMap] = useState(null);
@@ -87,7 +88,7 @@ const MapContainer = ({ isSidebarOpen }) => {
         )
       }).addTo(map);
 
-      GLOBAL_MARKER_LAYER_GROUP.addTo(map);
+      GLOBAL_MARKER_LAYER_GROUP_DICT[currentRegion].addTo(map);
 
       /**
      * 
@@ -95,13 +96,7 @@ const MapContainer = ({ isSidebarOpen }) => {
      */
       function handler(event) {
         const { latlng } = event
-        // const marker = L.marker(latlng, { bubblingMouseEvents: false }).addTo(map)
-        // marker.addEventListener("click", (e) => {
-        //   e.originalEvent.stopPropagation()
-        //   marker.remove()
-        // })
-        // console.log(map)
-        addMarker("campfire", latlng)
+        addMarker(currentRegion, useGlobalStore.getState().markerTypeKey, latlng)
       }
 
       map.addEventListener("click", handler)
@@ -146,6 +141,10 @@ const MapContainer = ({ isSidebarOpen }) => {
     console.log('Region changed:', region);
     setCurrentRegion(region);
   };
+
+  useEffect(() => {
+    useGlobalStore.setState({ currentRegion })
+  }, [currentRegion])
 
   return (
     <div>
