@@ -11,6 +11,7 @@ $item-gap: .6rem;
 $indicator-height: .75rem;
 
 .regswitch-container {
+  -webkit-user-select: none;
   user-select: none;
   position: absolute;
   z-index: 900;

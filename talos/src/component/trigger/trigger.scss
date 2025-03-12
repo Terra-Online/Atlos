@@ -108,6 +108,7 @@ $transition-speed: 0.3s; //import from global size.scss later
     }
   }
   .trigger-label {
+    user-select: none;
     font-family: 'Novecento Medium', sans-serif;
     font-size: .9rem;
     text-transform: uppercase;

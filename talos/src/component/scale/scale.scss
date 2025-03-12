@@ -1,6 +1,7 @@
 @use '../../styles/palette.scss' as *;
 
 .scale-container {
+  -webkit-user-select: none;
   user-select: none;
   display: flex;
   flex-direction: column;
@@ -57,6 +58,7 @@
     }
   }
   .scaler-wrapper {
+    --scale: 0;
     position: relative;
     height: 9rem;
     width: 1.5rem;
@@ -73,7 +75,6 @@
     overflow: hidden;
     cursor: pointer;
     > .scaler {
-      --scale: 0;
       height: 8.5rem;
       position: absolute;
       bottom: 0;
@@ -84,8 +85,42 @@
       border-radius: 2px;
       transform: scaleY(var(--scale));
       transform-origin: bottom;
-      transition: transform 0.4s ease;
-      box-shadow: 0px 0px 3px .5px rgba($black, 0.4);
-  }
+      transition: transform 0.4s ease, box-shadow 0.1s ease;
+      box-shadow: 0px 0px 3px 0.5px rgba($black, 0.4),
+      0 calc(1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px 0.5px rgba($black, 0.2),
+      0 calc(-1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px 0.5px rgba($black, 0.2) // make shadow grow with scale
+    }
   }
 }
+/*
+.zoom-label {
+  position: absolute;
+  right: 100%;
+  margin-right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 300ms ease, transform 300ms ease, background-color 200ms ease;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  &.active {
+    background-color: #2c7be5;
+    color: white;
+    font-weight: bold;
+  }
+}
+
+.scaler-wrapper {
+  position: relative;
+  // Add pointer cursor to show it's clickable
+  cursor: pointer;
+}*/

@@ -17,7 +17,7 @@ const Scale = ({ map }) => {
 
   const ZOOM_STEP = 0.5;// +/- step
 
-  const scaleRatio = useMemo(() => 
+  const scaleRatio = useMemo(() =>
     calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
   [zoomLevel, zoomBounds.min, zoomBounds.max]);
 
@@ -25,10 +25,9 @@ const Scale = ({ map }) => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-
     animationFrameRef.current = requestAnimationFrame(() => {
-      if (scalerRef.current) {
-        scalerRef.current.style.setProperty('--scale', newScale);
+      if (scalerWrapperRef.current) {
+        scalerWrapperRef.current.style.setProperty('--scale', newScale);
       }
       animationFrameRef.current = null;
     });

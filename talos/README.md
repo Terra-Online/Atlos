@@ -5,5 +5,5 @@ copy `config/config.template.json` to `config/config.json` and configure your se
 ### dev
 
 ```shell
-    npm dev
+    pnpm dev
 ```
