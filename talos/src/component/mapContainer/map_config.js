@@ -4,8 +4,8 @@ export const MAP_CONFIGS = {
     maxZoom: 3,
     tileSize: 200,
     initialOffset: {
-      x: 750,
-      y: 250
+      x: 750,// minor for left
+      y: 250// minor for up
     },
     initialZoom: 2
   },
@@ -14,20 +14,20 @@ export const MAP_CONFIGS = {
     maxZoom: 3,
     tileSize: 200,
     initialOffset: {
-      x: 500,
-      y: 300
+      x: -2400,
+      y: -1250
     },
     initialZoom: 2
   },
   'Dijiang': {
-    dimensions: [12000, 9000],
-    maxZoom: 3,
-    tileSize: 500,
+    dimensions: [4000, 5000],
+    maxZoom: 2,
+    tileSize: 200,
     initialOffset: {
-      x: 400,
-      y: 400
+      x: 0,
+      y: -500
     },
-    initialZoom: 1
+    initialZoom: 0
   },
 };
 
