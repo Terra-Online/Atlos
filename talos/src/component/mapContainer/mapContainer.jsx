@@ -142,23 +142,6 @@ const MapContainer = ({ isSidebarOpen }) => {
 
       setMap(initialMap);
       setIsMapInitialized(true);
-
-      GLOBAL_MARKER_LAYER_GROUP_DICT[currentRegion].addTo(initialMap);
-
-      /**
-     * 
-     * @param {import('leaflet').LeafletMouseEvent} event 
-     */
-      function handler(event) {
-        const { latlng } = event
-        addMarker(currentRegion, useGlobalStore.getState().markerTypeKey, latlng)
-      }
-
-      initialMap.addEventListener("click", handler)
-
-      return () => {
-        map.removeEventListener("click", handler)
-      }
     }
   }, []); // Only run once onmount
 
@@ -209,6 +192,22 @@ const MapContainer = ({ isSidebarOpen }) => {
       isChangingView.current = false;
       // Update the previous region reference
       previousRegion.current = currentRegion;
+
+      GLOBAL_MARKER_LAYER_GROUP_DICT[currentRegion].addTo(map);
+
+      /**
+     * 
+     * @param {import('leaflet').LeafletMouseEvent} event 
+     */
+      function handler(event) {
+        const { latlng } = event
+        addMarker(currentRegion, useGlobalStore.getState().markerTypeKey, latlng)
+      }
+
+      map.addEventListener("click", handler)
+      return () => {
+        map.removeEventListener("click", handler)
+      }
     }
   }, [currentRegion, map, isMapInitialized]);
 
