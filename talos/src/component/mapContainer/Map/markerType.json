@@ -1,8 +1,8 @@
 {
-    "campfire": {
-        "key": "campfire",
-        "name": "什么枢纽",
-        "category": "poi",
+    "HUB": {
+        "key": "HUB",
+        "name": "协议核心",
+        "category": "",
         "icon": {
             "iconSize": [
                 104,
@@ -18,10 +18,333 @@
             ]
         }
     },
+    "blackbox": {
+        "key": "blackbox",
+        "name": "科技点",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "boss": {
+        "key": "boss",
+        "name": "boss点",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "dungeon": {
+        "key": "dungeon",
+        "name": "副本",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "campfire": {
+        "key": "campfire",
+        "name": "传送点",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                104,
+                104
+            ],
+            "iconAnchor": [
+                52,
+                52
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "enemyspawner": {
+        "key": "enemyspawner",
+        "name": "强敌点位（能量裂缝）",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "fields": {
+        "key": "fields",
+        "name": "农田",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "fixablerobot": {
+        "key": "fixablerobot",
+        "name": "修复机器人",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "manualColletion_NPC": {
+        "key": "manualColletion_NPC",
+        "name": "manualColletion_NPC",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "mine": {
+        "key": "mine",
+        "name": "矿点",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "pazzle": {
+        "key": "pazzle",
+        "name": "电路拼图样式",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "settlement": {
+        "key": "settlement",
+        "name": "定居点（分基地）",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                104,
+                104
+            ],
+            "iconAnchor": [
+                52,
+                52
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "racing_NPC": {
+        "key": "racing_NPC",
+        "name": "racing_NPC",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "recycle": {
+        "key": "recycle",
+        "name": "回收机器人",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
     "special_mine": {
         "key": "special_mine",
         "name": "稀有矿物",
-        "category": "resource",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "ship_shop": {
+        "key": "ship_shop",
+        "name": "商店",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "special_plant": {
+        "key": "special_plant",
+        "name": "稀有植物",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "trainingroom": {
+        "key": "trainingroom",
+        "name": "trainingroom",
+        "category": "",
+        "icon": {
+            "iconSize": [
+                84,
+                84
+            ],
+            "iconAnchor": [
+                42,
+                42
+            ],
+            "popupAnchor": [
+                0,
+                0
+            ]
+        }
+    },
+    "terminal": {
+        "key": "terminal",
+        "name": "通电激活终端",
+        "category": "",
         "icon": {
             "iconSize": [
                 84,
