@@ -57,7 +57,21 @@ const saveViewState = (region, map) => {
   localStorage.setItem(VIEWFIELD_STORAGE_KEY, JSON.stringify(storedStates));
   //console.log(`Saved view state for ${region}:`, viewState);
 };
+/**
+ * @param {import('leaflet').LeafletMouseEvent} event
+ */
+const setupMapClickHandler = (mapInstance, region) => {
+  if (!mapInstance) return () => {};
 
+  function handler(event) {
+    const { latlng } = event
+    addMarker(region, useGlobalStore.getState().markerTypeKey, latlng)
+  }
+  mapInstance.addEventListener("click", handler)
+  return () => {
+    mapInstance.removeEventListener("click", handler)
+  }
+};// add click handler for marker layer
 const debouncedSaveViewState = debounce(saveViewState, 300);
 
 // Load last view state for a region
@@ -139,7 +153,8 @@ const MapContainer = ({ isSidebarOpen }) => {
           debouncedSaveViewState(currentRegion, initialMap);
         }
       });
-
+      GLOBAL_MARKER_LAYER_GROUP_DICT[currentRegion].addTo(initialMap);
+      setupMapClickHandler(initialMap, currentRegion);
       setMap(initialMap);
       setIsMapInitialized(true);
     }
@@ -194,20 +209,7 @@ const MapContainer = ({ isSidebarOpen }) => {
       previousRegion.current = currentRegion;
 
       GLOBAL_MARKER_LAYER_GROUP_DICT[currentRegion].addTo(map);
-
-      /**
-     * 
-     * @param {import('leaflet').LeafletMouseEvent} event 
-     */
-      function handler(event) {
-        const { latlng } = event
-        addMarker(currentRegion, useGlobalStore.getState().markerTypeKey, latlng)
-      }
-
-      map.addEventListener("click", handler)
-      return () => {
-        map.removeEventListener("click", handler)
-      }
+      return setupMapClickHandler(map, currentRegion);//replace click handler
     }
   }, [currentRegion, map, isMapInitialized]);
 
