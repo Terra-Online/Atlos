@@ -34,129 +34,288 @@
         "enemy": {
             "Aggeloi": {
                 "Triaggelos": {
-                    "icon": "Triaggelos icon.png",
-                    "hierarchy": "boss"
+                    "tier": "boss"
                 },
                 "Marble Aggelomoirai": {
-                    "icon": "Marble Aggelomoirai icon.png",
-                    "hierarchy": "boss"
+                    "tier": "boss"
                 },
                 "Effigy": {
-                    "icon": "Effigy icon.png",
-                    "hierarchy": "elite"
+                    "tier": "elite"
                 },
                 "Heavy Ram": {
-                    "icon": "Heavy Ram icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Heavy Ram α": {
-                    "icon": "Heavy Ram α icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Heavy Sting": {
-                    "icon": "Heavy Sting icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Heavy Sting α": {
-                    "icon": "Heavy Sting α icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Poison Ivy": {
-                    "icon": "Poison Ivy icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Ram": {
-                    "icon": "Ram icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Ram α": {
-                    "icon": "Ram α icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Sting": {
-                    "icon": "Sting icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Sting α": {
-                    "icon": "Sting α icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 }
             },
             "Landbreakers": {
                 "Rhodagn": {
-                    "icon": "Rhodagn icon.png",
-                    "hierarchy": "boss"
+                    "tier": "boss"
                 },
                 "Bonekrusher Ballista": {
-                    "icon": "Bonekrusher Ballista icon.png",
-                    "hierarchy": "elite"
+                    "tier": "elite"
                 },
                 "Bonekrusher Executioner": {
-                    "icon": "Bonekrusher Executioner icon.png",
-                    "hierarchy": "elite"
+                    "tier": "elite"
                 },
                 "Elite Executioner": {
-                    "icon": "Elite Executioner icon.png",
-                    "hierarchy": "elite"
+                    "tier": "elite"
                 },
                 "Bonekrusher Pyromancer": {
-                    "icon": "Bonekrusher Pyromancer icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Bonekrusher Arsonist": {
-                    "icon": "Bonekrusher Arsonist icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Blighted Tuskbeast": {
-                    "icon": "Blighted Tuskbeast icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Bonekrusher Ripptusk": {
-                    "icon": "Bonekrusher Ripptusk icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Elite Ripptusk": {
-                    "icon": "Elite Ripptusk icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Blighted Klaw": {
-                    "icon": "Blighted Klaw icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Bonekrusher Raider": {
-                    "icon": "Bonekrusher Raider icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Elite Raider": {
-                    "icon": "Elite Raider icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Bonekrusher Ambusher": {
-                    "icon": "Bonekrusher Ambusher icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Elite Ambusher": {
-                    "icon": "Elite Ambusher icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 },
                 "Bonekrusher Infiltrator": {
-                    "icon": "Bonekrusher Infiltrator icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 }
             },
             "Cangzei": {
                 "Hill Smasher": {
-                    "icon": "Hill Smasher icon.png",
-                    "hierarchy": "elite"
+                    "tier": "elite"
                 },
                 "Cloud Stalker": {
-                    "icon": "Cloud Stalker icon.png",
-                    "hierarchy": "advanced"
+                    "tier": "advanced"
                 },
                 "Road Plunderer": {
-                    "icon": "Road Plunderer icon.png",
-                    "hierarchy": "common"
+                    "tier": "common"
                 }
+            }
+        },
+        "resource": {
+            "natural": {
+                "Wood": {
+                    "tier": "1"
+                },
+                "Originium Ore": {
+                    "tier": "1"
+                },
+                "Amethyst Ore": {
+                    "tier": "1"
+                },
+                "Ferrium Ore": {
+                    "tier": "1"
+                },
+                "Cuprium Ore": {
+                    "tier": "1"
+                },
+                "Cyanite Ore": {
+                    "tier": "1"
+                },
+
+                "Clean Water": {
+                    "tier": "1"
+                },
+                "Sewage": {},
+
+                "Buckflower": {
+                    "tier": "1"
+                },
+                "Firebuckle": {
+                    "tier": "2"
+                },
+                "Citrome": {
+                    "tier": "1"
+                },
+                "Umbraline": {
+                    "tier": "2"
+                },
+                "Aketine": {
+                    "tier": "1"
+                },
+                "Sandleaf": {
+                    "tier": "1"
+                },
+                "Jincao": {
+                    "tier": "1"
+                },
+                "Fluffed Jincao": {
+                    "tier": "2"
+                },
+                "Yazhen": {
+                    "tier": "1"
+                },
+                "Thorny Yazhen": {
+                    "tier": "2"
+                },
+                "Reed Rye": {
+                    "tier": "2"
+                },
+                "Tartpepper": {
+                    "tier": "2"
+                },
+                "Redjade Ginseng": {
+                    "tier": "2"
+                },
+                "Amber Rice": {
+                    "tier": "2"
+                },
+                "Buckflower Seed": {},
+                "Citrome Seed": {},
+                "Sandleaf Seed": {},
+                "Aketine Seed": {},
+                "Jincao Seed": {},
+                "Yazhen Seed": {},
+                "Reed Rye Seed": {},
+                "Tartpepper Seed": {},
+                "Redjade Ginseng Seed": {},
+                "Amber Rice Seed": {}
+            },
+            "valuable": {
+                "Pink Bolete": {
+                    "tier": "4"
+                },
+                "Red Bolete": {
+                    "tier": "4"
+                },
+                "Ruby Bolete": {
+                    "tier": "4"
+                },
+                "Bloodcap": {
+                    "tier": "5"
+                },
+                "Pink Bolete Mycelia": {},
+                "Red Bolete Mycelia": {},
+                "Ruby Bolete Mycelia": {},
+                "Bloodcap Mycelia": {},
+
+                "Kalkodendra": {
+                    "tier": "4"
+                },
+                "Chrysodendra": {
+                    "tier": "4"
+                },
+                "Vitrodendra": {
+                    "tier": "4"
+                },
+                "Blighted Jadeleaf": {
+                    "tier": "5"
+                },
+                "Kalkodendra Tuber": {},
+                "Chrysodendra Tuber": {},
+                "Vitrodendra Tuber": {},
+                "Blighted Jadeleaf Tuber": {},
+
+                "Kalkonyx": {
+                    "tier": "4"
+                },
+                "Auronyx": {
+                    "tier": "4"
+                },
+                "Umbronyx": {
+                    "tier": "4"
+                },
+                "Igneosite": {
+                    "tier": "5"
+                },
+                "Kalkonyx Seed": {},
+                "Auronyx Seed": {},
+                "Umbronyx Seed": {},
+                "Igneosite Seed": {}
+            },
+            "gatherable": {
+                "Glowbug": {
+                    "tier": "2"
+                },
+                "Scorchbug": {
+                    "tier": "3"
+                },
+
+                "Aggagrit": {},
+                "Aggagrit Block": {},
+                "Aggagrit Cluster": {},
+                "Grass Chaff": {},
+                "Chitin Bit": {},
+                "Cartilage Bit": {},
+                "Fillet": {},
+                "Soaked Woodchip": {},
+                "Soaked Wood": {},
+                "Hollow Bonechip": {},
+                "Hollow Bone": {}
+            }
+        },
+        "poi": {
+            "collect": {
+                "aetherium": {},
+                "VR": {},
+                "robot": {},
+                "crate": {},
+
+                "longear": {},
+                "slug": {}
+            },
+            "trial": {
+                "rift" : {},
+                "unstable" : {},
+                "alluvium" : {},
+                "water": {}
+            },
+            "npc": {}
+        },
+        "facility": {
+            "basic": {
+                "TP": {},
+                "recycle": {},
+                "base": {}
+            },
+            "regional": {
+                "control_nexus": {},
+                "growth_chamber": {},
+                "manufacturing_cabin": {},
+                "exchange": {},
+
+                "tianshi_p": {},
+                "tianshi_s": {}
+            },
+            "others": {
+                "barrel": {}
             }
         }
     }]
