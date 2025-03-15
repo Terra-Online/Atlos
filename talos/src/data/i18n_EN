@@ -1,9 +1,6 @@
 {
     "key":[{
-        "TP": "傳送點",
-        "hub": "中心",
-        "recycle": "資源回收站",
-        "base": "基地",
+        "TP": "TP",
         "Hill Smasher": "摧山將",
         "Cloud Stalker": "劫雲客",
         "Road Plunderer": "莫留財"

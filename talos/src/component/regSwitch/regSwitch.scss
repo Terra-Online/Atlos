@@ -44,7 +44,7 @@ $indicator-height: .75rem;
     height: 0;
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
-    border-left: 8px solid color.adjust($accent-4, $lightness: -10%);
+    border-left: 8px solid color.adjust($primary-accent-4, $lightness: -10%);
     transition: transform 0.4s $presto-curve;
     z-index: 10;
     filter: drop-shadow(0 0 1px rgba($black, 0.8));
@@ -73,8 +73,8 @@ $indicator-height: .75rem;
     box-shadow: 0 0 2px rgba($black, 0.75);
   }
   &.selected {
-    background-color: $accent-4;
-    border-color: $accent-4;
+    background-color: $primary-accent-4;
+    border-color: $primary-accent-4;
     .reg-icon svg {
       fill: $grey-1;
     }
