@@ -5,6 +5,9 @@ import './mapContainer.scss';
 
 import { getTileResourceUrl } from "../../utils/resource"
 
+//For branch: feat/subarea-spilt
+import SubregionEditor from '../SubregionEditor/SubregionEditor';
+
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
