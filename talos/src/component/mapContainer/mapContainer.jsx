@@ -6,7 +6,7 @@ import './mapContainer.scss';
 import { getTileResourceUrl } from "../../utils/resource"
 
 //For branch: feat/subarea-spilt
-import SubregionEditor from '../SubregionEditor/SubregionEditor';
+import SubregionEditor from './SubareaEditor/SubregionEditor';
 
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
@@ -68,6 +68,9 @@ const loadViewState = (region) => {
 };
 
 const MapContainer = ({ isSidebarOpen }) => {
+  const [isSubregionEditorActive, setIsSubregionEditorActive] = useState(false);
+  const [subregions, setSubregions] = useState([]);//For branch: feat/subarea-spilt
+
   const [map, setMap] = useState(null);
   const [t1, t_1] = useState(true);
   const [t2, t_2] = useState(false);
@@ -232,7 +235,9 @@ const MapContainer = ({ isSidebarOpen }) => {
     }
   };
   const h2 = () => {
-    console.log('HideUI');
+    setIsSubregionEditorActive(!isSubregionEditorActive);
+    console.log('Subregion editor:', !isSubregionEditorActive ? 'activated' : 'deactivated');//Temp: for branch: feat/subarea-spilt
+    //console.log('HideUI');
   };
   const h3 = () => {
     console.log('Join related group');
@@ -242,6 +247,27 @@ const MapContainer = ({ isSidebarOpen }) => {
   };
   const h5 = () => {
     console.log('Reach out for help');
+  };
+  /** New for branch: feat/subarea-spilt
+   *  @param {string} region
+   *  @returns {}
+   */
+  const handleSubregionExport = (data) => {
+    // 保存子区域数据到localStorage或生成下载文件
+    const exportData = {
+      regionId: currentRegion,
+      subregions: data
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentRegion}_subregions.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('Exported subregion data:', exportData);
   };
 
   // Save view state when unmounting - use direct save (not debounced)
@@ -280,10 +306,11 @@ const MapContainer = ({ isSidebarOpen }) => {
           onClick={h1}
           tooltip="Terms of Service"
         />
-        <Headitem
+        <Headitem //For branch: feat/subarea-spilt
           icon={hideUI}
           onClick={h2}
-          tooltip="Hide UI"
+          tooltip={isSubregionEditorActive ? "Exit Subregion Editor" : "Subregion Editor"}
+          active={isSubregionEditorActive}
         />
         <Headitem
           icon={Group}
@@ -345,7 +372,17 @@ const MapContainer = ({ isSidebarOpen }) => {
           label="Regional POI"
         />
       </TriggerBar>
+      {isSubregionEditorActive && map && (
+        <SubregionEditor
+          map={map}
+          regionId={currentRegion}
+          config={MAP_CONFIGS[currentRegion] || DEFAULT_CONFIG}
+          onExport={handleSubregionExport}
+          onClose={() => setIsSubregionEditorActive(false)}
+        />
+      )}
     </div>
+
   );
 };
 
