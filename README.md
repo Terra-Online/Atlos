@@ -9,3 +9,7 @@ If you want to make a commit, go and see CONTRIBUTE.md and PRs are welcome.
 - Logo completion(Nightview/Sponse)
 - i18n (Functionally done)
 - Nightview
+- More see in Jira.
+
+# Join
+Come and chat with us in [Discord](https://discord.gg/2PMegCX4wJ).
