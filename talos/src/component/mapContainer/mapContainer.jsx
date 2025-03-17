@@ -8,9 +8,9 @@ import { getTileResourceUrl } from "../../utils/resource"
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
-import { RegSwitch, Reg } from '../regSwitch/regSwitch';
+import { RegSwitch, Reg, SubRegSwitch, SubReg, RegionContainer } from '../regSwitch/regSwitch';
 
-import { MAP_CONFIGS, DEFAULT_CONFIG } from './map_config';
+import { MAP_CONFIGS, DEFAULT_CONFIG, getRegionSubregions } from './map_config';
 
 import ToS from '../../asset/logos/tos.svg?react';
 import hideUI from '../../asset/logos/hideUI.svg?react';
@@ -27,7 +27,7 @@ import Æther from '../../asset/logos/Æther.svg?react';
 // will be bundled with other possible universal funcs
 function debounce(func, wait) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     const context = this;
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(context, args), wait);
@@ -37,6 +37,7 @@ function debounce(func, wait) {
 // Declare for localStorage keys
 const VIEWFIELD_STORAGE_KEY = 'map_view_states';
 const REGION_STORAGE_KEY = 'map_reg_states';
+const SUBREGION_STORAGE_KEY = 'map_subreg_states';
 
 const saveViewState = (region, map) => {
   if (!map) return;
@@ -73,6 +74,10 @@ const MapContainer = ({ isSidebarOpen }) => {
     const savedRegion = localStorage.getItem(REGION_STORAGE_KEY);
     return savedRegion || 'Valley_4';
   });
+  const [subregions, setSubregions] = useState([]);
+  const [currentSubregion, setCurrentSubregion] = useState(null);
+  const [activeHighlight, setActiveHighlight] = useState(null);
+
   const [isMapInitialized, setIsMapInitialized] = useState(false);
   const previousRegion = useRef(currentRegion);
   // Flag to prevent saving during programmatic view changes
@@ -83,6 +88,7 @@ const MapContainer = ({ isSidebarOpen }) => {
     localStorage.setItem(REGION_STORAGE_KEY, currentRegion);
   }, [currentRegion]);
 
+  // Only run once onmount
   useEffect(() => {
     if (!map) {
       // Get the map_config for the current region
@@ -141,9 +147,158 @@ const MapContainer = ({ isSidebarOpen }) => {
       setMap(initialMap);
       setIsMapInitialized(true);
     }
-  }, []); // Only run once onmount
+  }, []);
 
-  // Handle ndependent view states
+  // Load subregions for the current region
+  useEffect(() => {
+    if (currentRegion) {
+      const regions = getRegionSubregions(currentRegion);
+      setSubregions(regions);
+
+      // Load saved subregion from localStorage
+      const savedSubregionId = localStorage.getItem(SUBREGION_STORAGE_KEY);
+      if (savedSubregionId) {
+        const subregion = regions.find(r => r.id === savedSubregionId);
+        setCurrentSubregion(subregion || null);
+      } else {
+        setCurrentSubregion(null);
+      }
+    }
+  }, [currentRegion]);
+
+  const handleSubregionSelect = (subregion) => {
+    if (!map || !subregion) return;
+
+    console.log('Selected sunregion:', subregion);
+    setCurrentSubregion(subregion);
+
+    // Remove previous highlight if exists
+    if (activeHighlight) {
+      console.log('Removing previous highlight');
+      map.removeLayer(activeHighlight);
+    }
+
+    // Calculate center point of boundary rectangle
+    if (subregion.bounds && subregion.bounds.length >= 2) {
+      const [[x1, y1], [x2, y2]] = subregion.bounds;
+      const centerX = (x1 + x2) / 2;
+      const centerY = (y1 + y2) / 2;
+
+      console.log('Subregion bounds:', subregion.bounds);
+      console.log('Center point:', { centerX, centerY });
+
+      const config = MAP_CONFIGS[currentRegion] || DEFAULT_CONFIG;
+      const center = map.unproject([centerX, centerY], config.maxZoom);
+      console.log('Leaflet center point:', center);
+
+      // Set flag to prevent saving view state during programmatic changes
+      isChangingView.current = true;
+
+      // Create one-time event listener to execute highlighting after map view change completes
+      const moveEndHandler = () => {
+        console.log('Map view change completed, creating highlight');
+
+        // Create temporary highlight boundary
+        let highlight = null;
+
+        // Unified highlight color
+        const highlightColor = '#FDFF95';
+
+        // First attempt to use polygon data if available
+        if (subregion.polygon && subregion.polygon.length > 0) {
+          console.log('Using polygon data for highlight', subregion.polygon);
+          try {
+            const polygonPoints = subregion.polygon.map(polygon => {
+              return polygon.map(([x, y]) => {
+                const point = map.unproject([x, y], config.maxZoom);
+                return point;
+              });
+            });
+
+            console.log('Transformed polygon points:', polygonPoints);
+
+            highlight = L.polygon(polygonPoints, {
+              color: highlightColor,
+              fillColor: highlightColor,
+              fillOpacity: 0.3,
+              weight: 3,
+              opacity: 0.9,
+              className: 'subregion-highlight-flash'
+            });
+
+            console.log('Polygon highlight created successfully', highlight);
+            highlight.addTo(map);
+          } catch (error) {
+            console.error('Error creating polygon highlight:', error);
+          }
+        }
+        // If no polygon data or creation failed, use rectangle boundary
+        if (!highlight && subregion.bounds) {
+          console.log('Using rectangle bounds for highlight', subregion.bounds);
+          try {
+            const sw = map.unproject([x1, y2], config.maxZoom);
+            const ne = map.unproject([x2, y1], config.maxZoom);
+            console.log(`Rectangle bounds: SW[${sw.lat}, ${sw.lng}], NE[${ne.lat}, ${ne.lng}]`);
+
+            highlight = L.rectangle(L.latLngBounds(sw, ne), {
+              color: highlightColor,
+              fillColor: highlightColor,
+              fillOpacity: 0.3,
+              weight: 3,
+              opacity: 0.9,
+              className: 'subregion-highlight-flash'
+            });
+
+            console.log('Highlight created!', highlight);
+            highlight.addTo(map);
+          } catch (error) {
+            console.error('Failed to create highlight!', error);
+          }
+        }
+
+        if (highlight) {
+          // Ensure highlight layer is on top
+          console.log('Bringing highlight to front');
+          highlight.bringToFront();
+          setActiveHighlight(highlight);
+
+          // Remove highlight after 2 seconds
+          setTimeout(() => {
+            if (highlight && map.hasLayer(highlight)) {
+              console.log('Removing highlight after 2s');
+              map.removeLayer(highlight);
+              setActiveHighlight(null);
+            }
+          }, 2000);
+        } else {
+          console.error('Failed to create boundary highlight');
+        }
+
+        // Remove event listener to avoid repeated triggers
+        map.off('moveend', moveEndHandler);
+
+        // Reset view change flag
+        setTimeout(() => {
+          isChangingView.current = false;
+        }, 100);
+      };
+
+      // Add one-time event listener
+      map.once('moveend', moveEndHandler);
+
+      // Set view and zoom level
+      console.log('Setting view, Current:', map.getZoom(), 'Target:', 2);
+      map.setView(center, 2, {
+        animate: true,
+        duration: 0.75
+      });
+
+    } else {
+      console.error('No boundary data available for subregion', subregion);
+      isChangingView.current = false;
+    }
+  };
+  // Handle independent view states
   useEffect(() => {
     if (!map || !isMapInitialized) return;
     // Save the view state of the region we're leaving
@@ -172,8 +327,8 @@ const MapContainer = ({ isSidebarOpen }) => {
       if (savedState) {
         // Apply the saved view state
         map.setView([savedState.lat, savedState.lng], savedState.zoom, {
-          animate: false,  // Disable animation for immediate switch
-          reset: true      // Reset the view
+          animate: false,
+          reset: true
         });
       } else {
         // Default config for first-time visitor to a region
@@ -195,7 +350,6 @@ const MapContainer = ({ isSidebarOpen }) => {
 
   // Handle region change from UI
   const handleRegionChange = (region) => {
-    //console.log('Region changed:', region);
     setCurrentRegion(region);
   };
 
@@ -213,6 +367,7 @@ const MapContainer = ({ isSidebarOpen }) => {
     //temporarily for purging
     localStorage.removeItem(VIEWFIELD_STORAGE_KEY);
     localStorage.removeItem(REGION_STORAGE_KEY);
+    localStorage.removeItem(SUBREGION_STORAGE_KEY);
     console.log('Purged!');
     // fallback to default view
     if (map) {
@@ -226,6 +381,7 @@ const MapContainer = ({ isSidebarOpen }) => {
       map.setView(center, config.initialZoom, { animate: true });
       isChangingView.current = false;
       console.log(`Reset view for ${currentRegion} to default`);
+      setCurrentSubregion(null);
     }
   };
   const h2 = () => {
@@ -299,35 +455,38 @@ const MapContainer = ({ isSidebarOpen }) => {
         />
       </Headbar>
 
-      {/* RegSwitch */}
-      <RegSwitch
-        value={currentRegion}
-        onChange={handleRegionChange}
-        position="right"
-        isSidebarOpen={isSidebarOpen}
-      >
-        <Reg
-          icon={Valley4}
-          value="Valley_4"
-          tooltip="4號谷地"
-        />
-        <Reg
-          icon={Jinlong}
-          value="Jinlong"
-          tooltip="錦隴"
-        />
-        <Reg
-          icon={Dijiang}
-          value="Dijiang"
-          tooltip="帝江"
-        />
-        <Reg
-          icon={Æther}
-          value="Æther"
-          tooltip="超域"
-          disabled={true}
-        />
-      </RegSwitch>
+      {/* 主区域切换 */}
+      <RegionContainer isSidebarOpen={isSidebarOpen}>
+        <RegSwitch
+          value={currentRegion}
+          onChange={handleRegionChange}
+        >
+          <Reg icon={Valley4} value="Valley_4" tooltip="4號谷地" />
+          <Reg icon={Jinlong} value="Jinlong" tooltip="錦隴" />
+          <Reg icon={Dijiang} value="Dijiang" tooltip="帝江" />
+          <Reg icon={Æther} value="Æther" tooltip="超域" disabled={true} />
+        </RegSwitch>
+
+        {/* 子区域切换菜单 */}
+        {subregions.length > 0 && (
+          <SubRegSwitch
+            value={currentSubregion?.id}
+            onChange={(subregionId) => {
+              const subregion = subregions.find(s => s.id === subregionId);
+              handleSubregionSelect(subregion);
+            }}
+          >
+            {subregions.map(subregion => (
+              <SubReg
+                key={subregion.id}
+                value={subregion.id}
+                tooltip={subregion.name}
+                color={subregion.color}
+              />
+            ))}
+          </SubRegSwitch>
+        )}
+      </RegionContainer>
 
       {/* Triggerbar */}
       <TriggerBar isSidebarOpen={isSidebarOpen}>
