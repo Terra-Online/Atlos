@@ -7,18 +7,22 @@ const Reg = ({
   isSelected = false,
   tooltip = '',
   disabled = false,
-  onClick
+  onClick,
+  hasSubregions = false,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   return (
     <button
-      className={`reg-item ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`reg-item ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''} ${hasSubregions && isSelected ? 'has-subregions' : ''}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
+      onMouseEnter={isSelected && hasSubregions ? onMouseEnter : undefined}
+      onMouseLeave={isSelected && hasSubregions ? onMouseLeave : undefined}
     >
       <div className="reg-icon">
         {Icon && <Icon />}
       </div>
-      {tooltip && <div className="reg-tooltip">{tooltip}</div>}
     </button>
   );
 };
@@ -43,7 +47,6 @@ const SubReg = ({
           style={{ backgroundColor: color }}
         ></div>
       </div>
-      {tooltip && <div className="subreg-tooltip">{tooltip}</div>}
     </button>
   );
 };
@@ -51,18 +54,31 @@ const SubReg = ({
 const RegionContainer = ({ children, isSidebarOpen = false }) => {
   const [isHovering, setIsHovering] = useState(false);
   const timeoutRef = useRef(null);
-
-  const handleMouseEnter = () => {
+  const containerRef = useRef(null);
+  const handleMainRegionMouseEnter = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setIsHovering(true);
   };
-
-  const handleMouseLeave = () => {
+  const handleMainRegionMouseLeave = (e) => {
+    const toElement = e.relatedTarget;
+    const container = containerRef.current;
+    if (container && container.contains(toElement) && toElement.closest('.subregswitch-container')) {
+      return;
+    }
     timeoutRef.current = setTimeout(() => {
       setIsHovering(false);
-    }, 100);
+    }, 200);
+  };
+
+  const handleContainerMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsHovering(false);
+    }, 200);
   };
 
   useEffect(() => {
@@ -73,7 +89,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     };
   }, []);
 
-  // 过滤并处理子元素
+  // Filter and process child elements
   const mainRegion = React.Children.toArray(children).find(
     child => child.type === RegSwitch
   );
@@ -82,18 +98,47 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     child => child.type === SubRegSwitch
   );
 
+  // Check if subRegion has any child elements
+  const hasSubregions = subRegion && React.Children.count(subRegion.props.children) > 0;
+
+  // Clone mainRegion to pass additional props to its children
+  const mainRegionWithProps = mainRegion
+    ? React.cloneElement(mainRegion, {
+      hasSubregions,
+      onRegionMouseEnter: handleMainRegionMouseEnter,
+      onRegionMouseLeave: handleMainRegionMouseLeave
+    })
+    : null;
+
+  // Clone subRegion to pass mouse handlers
+  const subRegionWithProps = subRegion && hasSubregions
+    ? React.cloneElement(subRegion, {
+      visible: isHovering,
+      isSidebarOpen: isSidebarOpen,
+      onMouseEnter: () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      },
+      onMouseLeave: (e) => {
+        const toElement = e.relatedTarget;
+        if (!toElement || !toElement.closest('.regswitch-container')) {
+          timeoutRef.current = setTimeout(() => {
+            setIsHovering(false);
+          }, 200);
+        }
+      }
+    })
+    : null;
+
   return (
     <div
+      ref={containerRef}
       className={`region-selection-wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={handleContainerMouseLeave}
     >
-      {mainRegion}
-
-      {subRegion && React.cloneElement(subRegion, {
-        visible: isHovering,
-        isSidebarOpen: isSidebarOpen
-      })}
+      {mainRegionWithProps}
+      {subRegionWithProps}
     </div>
   );
 };
@@ -102,7 +147,10 @@ const RegSwitch = ({
   children,
   value,
   onChange,
-  isSidebarOpen = false
+  isSidebarOpen = false,
+  hasSubregions = false,
+  onRegionMouseEnter,
+  onRegionMouseLeave
 }) => {
   // check selectedIndex
   let selectedIndex = -1;
@@ -117,7 +165,10 @@ const RegSwitch = ({
     if (React.isValidElement(child)) {
       return React.cloneElement(child, {
         isSelected: child.props.value === value,
-        onClick: () => onChange(child.props.value)
+        onClick: () => onChange(child.props.value),
+        hasSubregions: hasSubregions && child.props.value === value,
+        onMouseEnter: onRegionMouseEnter,
+        onMouseLeave: onRegionMouseLeave
       });
     }
     return child;
@@ -137,7 +188,9 @@ const SubRegSwitch = ({
   value,
   onChange,
   isSidebarOpen = false,
-  visible = false
+  visible = false,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   // check selectedIndex
   let selectedIndex = -1;
@@ -159,7 +212,11 @@ const SubRegSwitch = ({
   });
 
   return (
-    <div className={`subregswitch-container ${isSidebarOpen ? 'sidebar-open' : ''} ${visible ? 'visible' : ''}`}>
+    <div
+      className={`subregswitch-container ${isSidebarOpen ? 'sidebar-open' : ''} ${visible ? 'visible' : ''}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <div className={`subregswitch ${selectedIndex >= 0 ? `selected-${selectedIndex}` : ''}`}>
         {childrenWithProps}
       </div>

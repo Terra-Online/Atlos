@@ -33,12 +33,10 @@ function debounce(func, wait) {
     timeout = setTimeout(() => func.apply(context, args), wait);
   };
 }
-
 // Declare for localStorage keys
 const VIEWFIELD_STORAGE_KEY = 'map_view_states';
 const REGION_STORAGE_KEY = 'map_reg_states';
 const SUBREGION_STORAGE_KEY = 'map_subreg_states';
-
 const saveViewState = (region, map) => {
   if (!map) return;
 
@@ -56,9 +54,7 @@ const saveViewState = (region, map) => {
   localStorage.setItem(VIEWFIELD_STORAGE_KEY, JSON.stringify(storedStates));
   //console.log(`Saved view state for ${region}:`, viewState);
 };
-
 const debouncedSaveViewState = debounce(saveViewState, 300);
-
 // Load last view state for a region
 const loadViewState = (region) => {
   const storedStates = JSON.parse(localStorage.getItem(VIEWFIELD_STORAGE_KEY) || '{}');
@@ -87,7 +83,6 @@ const MapContainer = ({ isSidebarOpen }) => {
   useEffect(() => {
     localStorage.setItem(REGION_STORAGE_KEY, currentRegion);
   }, [currentRegion]);
-
   // Only run once onmount
   useEffect(() => {
     if (!map) {
@@ -455,7 +450,7 @@ const MapContainer = ({ isSidebarOpen }) => {
         />
       </Headbar>
 
-      {/* 主区域切换 */}
+      {/* Main region Switch */}
       <RegionContainer isSidebarOpen={isSidebarOpen}>
         <RegSwitch
           value={currentRegion}
@@ -467,7 +462,7 @@ const MapContainer = ({ isSidebarOpen }) => {
           <Reg icon={Æther} value="Æther" tooltip="超域" disabled={true} />
         </RegSwitch>
 
-        {/* 子区域切换菜单 */}
+        {/* Subregion Switch */}
         {subregions.length > 0 && (
           <SubRegSwitch
             value={currentSubregion?.id}

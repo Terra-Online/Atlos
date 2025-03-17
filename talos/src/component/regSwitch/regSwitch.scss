@@ -10,12 +10,14 @@ $item-height: 2.5rem;
 $item-gap: .6rem;
 $indicator-height: .75rem;
 
-.regswitch-container {
+.region-selection-wrapper {
   -webkit-user-select: none;
   user-select: none;
   position: absolute;
   z-index: 900;
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   top: 45%;
   left: 1rem;
   transform: translateY(-50%);
@@ -24,6 +26,10 @@ $indicator-height: .75rem;
   &.sidebar-open {
     transform: translateY(-50%) translateX($sidebar-width);
   }
+}
+.regswitch-container {
+  position: relative;
+  z-index: 900;
 }
 
 .regswitch {
@@ -86,7 +92,6 @@ $indicator-height: .75rem;
       fill: $grey-1;
     }
   }
-
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -106,70 +111,27 @@ $indicator-height: .75rem;
       height: 1.5rem;
     }
   }
-
-  .reg-tooltip {
-    position: absolute;
-    left: 120%;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: $grey-1;
-    box-shadow: 0 0 3px rgba($white-0, .6);
-    color: $white-1;
-    padding: 4px 8px;
-    border-radius: 2px;
-    font-size: .8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, visibility 0.2s;
-
-    &:before {
-      content: '';
-      position: absolute;
-      left: -3px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-right: 4px solid $grey-1;
-    }
-  }
-
-  &:hover .reg-tooltip {
-    opacity: 1;
-    visibility: visible;
-  }
 }
 
+// 子区域菜单容器
 .subregswitch-container {
   -webkit-user-select: none;
   user-select: none;
   position: absolute;
   z-index: 890;
-  display: none;
-  left: calc(4rem + 5px);
-  top: 45%;
-  transform: translateY(-50%);
-  transition: transform .3s ease-in-out, opacity 0.3s ease;
+  display: flex;
+  left: 4.5rem;
+  top: 0;
+  transform: none;
   opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease-in-out, visibility 0s linear .2s;
 
   &.visible {
-    display: flex;
     opacity: 1;
-  }
-
-  &.sidebar-open {
-    transform: translateY(-50%) translateX($sidebar-width);
-  }
-
-  .regswitch-container:hover+& {
-    display: flex;
-    opacity: 1;
-  }
-
-  &:hover {
-    display: flex;
-    opacity: 1;
+    visibility: visible;
+    transition: opacity .2s ease-in-out, visibility 0s;
+    animation: none;
   }
 }
 
@@ -230,40 +192,6 @@ $indicator-height: .75rem;
       border-radius: 3px;
     }
   }
-
-  .subreg-tooltip {
-    position: absolute;
-    left: 120%;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: $grey-1;
-    box-shadow: 0 0 3px rgba($white-0, .6);
-    color: $white-1;
-    padding: 4px 8px;
-    border-radius: 2px;
-    font-size: .8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, visibility 0.2s;
-    z-index: 1000;
-
-    &:before {
-      content: '';
-      position: absolute;
-      left: -3px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-right: 4px solid $grey-1;
-    }
-  }
-
-  &:hover .subreg-tooltip {
-    opacity: 1;
-    visibility: visible;
-  }
 }
 
 .subregion-highlight-flash {
@@ -288,32 +216,11 @@ $indicator-height: .75rem;
   }
 }
 
-.region-selection-wrapper {
-  -webkit-user-select: none;
-  user-select: none;
-  position: absolute;
-  z-index: 900;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  top: 45%;
-  left: 1rem;
-  transform: translateY(-50%);
-  transition: transform .3s ease-in-out;
-
-  &.sidebar-open {
-    transform: translateY(-50%) translateX($sidebar-width);
-  }
-}
-
-@keyframes slideIn {
+@keyframes fadeIn {
   from {
-    transform: translateX(-20px);
     opacity: 0;
   }
-
   to {
-    transform: translateX(0);
     opacity: 1;
   }
 }
