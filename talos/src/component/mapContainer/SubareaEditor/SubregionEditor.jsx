@@ -6,15 +6,15 @@ import { generateRandomColor, getTilesInPolygon, createTileLayers, isPointInPoly
 import { formatSubregionsForExport } from './utils/export';
 
 const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
-    const [tileGrid, setTileGrid] = useState([]); // 网格状态
-    const [subregions, setSubregions] = useState([]); // 子区域列表
-    const [activeSubregion, setActiveSubregion] = useState(null); // 当前活动子区域
-    const [selectedTiles, setSelectedTiles] = useState([]); // 当前选中的瓦片
-    const [editingSubregion, setEditingSubregion] = useState(null); // 正在编辑的子区域
-    const [isSelecting, setIsSelecting] = useState(false); // 是否正在进行拖拽多选
-    const [tileOwnership, setTileOwnership] = useState({}); // 瓦片所属子区域映射
+    const [tileGrid, setTileGrid] = useState([]); //網格狀態
+    const [subregions, setSubregions] = useState([]); // 子區域隊列
+    const [activeSubregion, setActiveSubregion] = useState(null); // 當前活躍子區域
+    const [selectedTiles, setSelectedTiles] = useState([]); // 當前選中瓦片
+    const [editingSubregion, setEditingSubregion] = useState(null); // 編輯中子區域
+    const [isSelecting, setIsSelecting] = useState(false); // 拖拽選擇狀態
+    const [tileOwnership, setTileOwnership] = useState({}); // 瓦片歸屬狀態
 
-    // 引用保持瓦片图层
+    // 應用保持瓦片圖層
     const tileLayersRef = useRef({
         grid: null,
         tiles: {} // 用于存储每个瓦片的图层引用
@@ -22,12 +22,12 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
     const polygonLayersRef = useRef([]);
     const savedMapStateRef = useRef(null);
 
-    // 跟踪鼠标和键盘状态
+    // 跟蹤鍵鼠狀態
     const mouseDownRef = useRef(false);
     const cmdKeyPressedRef = useRef(false);
 
 
-    // 初始化编辑器
+    // 編輯器初始化
     useEffect(() => {
         if (!map) return;
         // 保存当前地图状态，以便退出编辑器时恢复
@@ -212,7 +212,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
             console.log(`[SubregionEditor] ${message}`, data || '');
         }
     };
-    // 混色函数
+    // 混色函式
     const blendColors = (colors) => {
         if (colors.length === 0) return '#ccc';
         if (colors.length === 1) return colors[0];
@@ -240,7 +240,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         return rgbToHex(avg.r, avg.g, avg.b);
     };
 
-    // 基于瓦片所属关系更新瓦片样式
+    // 根據瓦片歸屬，更新瓦片樣式
     const updateTileByReign = (tileId) => {
         const tileLayer = tileLayersRef.current.tiles[tileId];
         if (!tileLayer) return;
@@ -303,7 +303,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         }
     };
 
-    // 選擇瓦片样式函数
+    // 點選時瓦片外觀更新
     const updateTileStyle = (tileId, isSelected, color = '#3388ff') => {
         const tileLayer = tileLayersRef.current.tiles[tileId];
         if (!tileLayer) return;
@@ -321,7 +321,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
             updateTileByReign(tileId);
         }
     };
-    // 处理瓦片点击
+    // 瓦片點擊事件
     const handleTileClick = (tile) => {
         if (editingSubregion) {
             // 如果正在编辑子区域，则将瓦片添加到该子区域
@@ -343,7 +343,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         });
     };
 
-    // 完成选择，创建新子区域
+    // 完成選擇，创建新子區
     const finishSelection = () => {
         if (selectedTiles.length === 0) return;
 
@@ -444,13 +444,13 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
             }, 50); // 给予足够时间让状态更新完成
 
             return updatedSubregions;
-        });
+    });
 
-        // 清除选中状态
+        // 清楚選中
         setSelectedTiles([]);
     };
 
-    // 将瓦片添加到子区域（不再是转移）
+    // 將選中瓦片添加到子區域
     const transferTileToSubregion = (tileId, targetSubregionId) => {
         debug(`Transferring tile ${tileId} to subregion ${targetSubregionId}`);
         // 找到当前瓦片的坐标
@@ -540,7 +540,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         }));
     };
 
-    // 可视化子区域
+    // 外觀宣告
     const visualizeSubregion = (subregion) => {
         if (!map || !subregion.polygon || subregion.polygon.length === 0) return;
 
@@ -596,7 +596,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         });
     };
 
-    // 更新所有子区域的视觉表示
+    // 更新所有子區域視覺效果
     const updateSubregionVisuals = () => {
         debug("Updating subregion visuals");
 
@@ -623,17 +623,16 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         });
     };
 
-    // 重命名子区域
+    // 重命名子區域
     const renameSubregion = (subregionId, newName) => {
         setSubregions(prev => prev.map(sr =>
             sr.id === subregionId ? { ...sr, name: newName } : sr
         ));
 
-        // 更新视觉效果
         updateSubregionVisuals();
     };
 
-    // 删除子区域
+    //刪除子區域
     const deleteSubregion = (subregionId) => {
         const subregion = subregions.find(sr => sr.id === subregionId);
         if (!subregion) return;
@@ -660,7 +659,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
             setEditingSubregion(null);
         }
 
-        // 更新所有权关系 
+        // 更新歸屬关系
         setTileOwnership(newTileOwnership);
 
         // 删除子区域并在状态更新后进行视觉更新
@@ -770,7 +769,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         });
 
         // 记录导出的瓦片坐标信息
-        debug("导出子区域瓦片坐标", enhancedSubregions.map(sr => ({
+        debug("導出子區域瓦片數據", enhancedSubregions.map(sr => ({
             id: sr.id,
             name: sr.name,
             tileCoords: sr.tileCoords
@@ -802,13 +801,13 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
     return (
         <div className="subregion-editor">
             <div className="subregion-editor-header">
-                <h3 className="title">子区域编辑器</h3>
+                <h3 className="title">子區編輯器</h3>
                 <button className="close-btn" onClick={onClose}>&times;</button>
             </div>
 
             <div className="subregion-editor-content">
                 <div className="instructions">
-                    点击瓦片选择区域，<strong>按住Command(⌘)+左键拖动</strong>可多选，然后点击"创建子区域"按钮。已创建的子区域可以重命名和删除。瓦片可同时属于多个子区域，会显示混合颜色效果。
+                    點擊瓦片以選中為子區，<strong>按住Command(⌘)+滑鼠左鍵拖拽</strong>進行滑動選擇，選中瓦片後點擊"創建子區"以掛起。已創建子區可以刪除或重新命名。瓦片可以同時屬於多個子區，顏色上表示為多者混合。
                 </div>
 
                 <div className="subregion-actions">
@@ -817,7 +816,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
                         onClick={finishSelection}
                         disabled={selectedTiles.length === 0}
                     >
-                        创建子区域
+                        創建子區
                     </button>
 
                     <button
@@ -825,12 +824,12 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
                         onClick={handleCancelSelection}
                         disabled={selectedTiles.length === 0}
                     >
-                        取消选择
+                        取消選擇
                     </button>
                 </div>
 
                 <div className="subregion-list">
-                    <div className="subregion-list-title">已创建的子区域</div>
+                    <div className="subregion-list-title">已創建子區</div>
                     <div className="subregion-list-items">
                         {subregions.filter(sr => sr.id !== 'unsplit').map(subregion => (
                             <div
@@ -851,7 +850,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
 
                         {subregions.filter(sr => sr.id !== 'unsplit').length === 0 && (
                             <div className="subregion-item">
-                                <div className="subregion-name">尚未创建子区域</div>
+                                <div className="subregion-name">尚無子區</div>
                             </div>
                         )}
                     </div>
@@ -859,7 +858,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
 
                 {editingSubregion && (
                     <div className="form-group">
-                        <label htmlFor="subregion-name">重命名区域</label>
+                        <label htmlFor="subregion-name">重命名子區</label>
                         <input
                             type="text"
                             id="subregion-name"
@@ -875,13 +874,13 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
                             style={{ marginTop: '8px' }}
                             onClick={() => deleteSubregion(editingSubregion.id)}
                         >
-                            删除此区域
+                            刪除該子區
                         </button>
                     </div>
                 )}
 
                 <div className="unsplit-notification">
-                    未选择的瓦片将作为"未分配区域"保留
+                    未選擇的瓦片將保留為到"未分配區"，導出將不包含這些區域的數據。
                 </div>
             </div>
 
@@ -894,7 +893,7 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
                     onClick={handleExport}
                     disabled={subregions.filter(sr => sr.id !== 'unsplit').length === 0}
                 >
-                    导出子区域数据
+                   導出子區數據
                 </button>
             </div>
         </div>

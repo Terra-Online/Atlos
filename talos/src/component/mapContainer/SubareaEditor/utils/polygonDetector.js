@@ -1,8 +1,8 @@
 /**
- * 从瓦片组检测边界多边形
- * @param {Array} tiles - 瓦片数组
- * @param {number} tileSize - 瓦片大小
- * @returns {Array} 边界多边形数组
+ * 根據瓦片組探測多邊形
+ * @param {Array} tiles - 瓦片隊列
+ * @param {number} tileSize - 瓦片尺寸
+ * @returns {Array} 邊界多邊形
  */
 export const detectPolygon = (tiles, tileSize) => {
     if (!tiles || tiles.length === 0) return [];
@@ -67,13 +67,13 @@ export const detectPolygon = (tiles, tileSize) => {
 };
 
 /**
- * 从边集合构建闭合多边形
- * @param {Array} edges - 边界边集合
- * @returns {Array} 多边形坐标数组
+ * 根據多邊形邊界構建閉合圖
+ * @param {Array} edges - 邊界邊隊列
+ * @returns {Array} 多邊形拐點
  */
 const buildPolygons = (edges) => {
     if (edges.length === 0) return [];
-    // 创建边的哈希表，用于快速查找
+    // 創建邊界邊哈希表以快速查找
     const edgeMap = new Map();
     edges.forEach(edge => {
         const fromKey = `${edge.from[0]},${edge.from[1]}`;
@@ -86,7 +86,7 @@ const buildPolygons = (edges) => {
     const polygons = [];
     const usedEdges = new Set();
 
-    // 对每个未使用的边尝试构建多边形
+    // 對所有未使用的邊進行迭代
     while (usedEdges.size < edges.length) {
         // 找到一个未使用的边作为起点
         const startEdge = edges.find(edge => !usedEdges.has(edge.key));
@@ -161,18 +161,18 @@ const buildPolygons = (edges) => {
 };
 
 /**
- * 优化矩形拼接形成的多边形集合
- * @param {Array} polygons - 多边形数组
- * @returns {Array} 优化后的多边形数组
+ * 優化多邊形頂點
+ * @param {Array} polygons - 多邊形隊列
+ * @returns {Array} 優化結果
  */
 const optiVertexes = (polygons) => {
     return polygons.map(polygon => optiRects(polygon));
 };
 
 /**
- * 优化矩形拼接形成的单个多边形
- * @param {Array} polygon - 多边形点数组
- * @returns {Array} 优化后的多边形
+ * 優化矩形塊頂點
+ * @param {Array} polygon - 多邊形拐點隊列
+ * @returns {Array} 優化結果
  */
 const optiRects = (polygon) => {
     if (!polygon || polygon.length < 4) return polygon;
@@ -232,17 +232,17 @@ const optiRects = (polygon) => {
     return result;
 };
 
-// --------- 辅助函数 ---------
+// --------- 輔助函式 ---------
 
 /**
- * 计算多边形集合中的总点数
+ * 計算多邊形頂點總數目
  */
 const countPoints = (polygons) => {
     return polygons.reduce((sum, polygon) => sum + polygon.length, 0);
 };
 
 /**
- * 查找与指定点最接近的边
+ * 查找最近邊
  */
 const findClosestEdgeByPoint = (point, edges, usedEdges) => {
     let closest = null;
