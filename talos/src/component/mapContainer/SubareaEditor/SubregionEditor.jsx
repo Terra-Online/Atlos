@@ -343,95 +343,89 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
         });
     };
 
-    // 完成選擇，创建新子區
     const finishSelection = () => {
         if (selectedTiles.length === 0) return;
-
-        // 从选中的瓦片生成多边形 - 现在可能返回多个多边形
+    
+        // Generate polygons from selected tiles
         const polygons = detectPolygon(selectedTiles, config.tileSize);
-
-        // 生成随机颜色
+    
+        // Generate random color
         const color = generateRandomColor();
         debug("Generated color for new subregion", color);
-
-        // 提取瓦片ID和坐标信息
+    
+        // Extract tile IDs and coordinate information
         const tileInfo = selectedTiles.map(tile => ({
             id: tile.id,
-            coords: [tile.x, tile.y] // 存储坐标
+            coords: [tile.x, tile.y]
         }));
-
-        // 创建新子区域，存储所有检测到的多边形
+    
+        // Create new subregion with all detected polygons
         const newSubregion = {
             id: `subregion-${subregions.length}`,
             name: `子区域 ${subregions.length}`,
             color,
-            tiles: selectedTiles.map(tile => tile.id), // 保持向后兼容
-            tileCoords: tileInfo.map(t => t.coords), // 新增坐标数据
-            polygon: polygons // 存储所有检测到的多边形
+            tiles: selectedTiles.map(tile => tile.id),
+            tileCoords: tileInfo.map(t => t.coords),
+            polygon: polygons
         };
-
-        // 更新瓦片所属关系
+    
+        // Update tile ownership relationships
         const newTileOwnership = { ...tileOwnership };
         selectedTiles.forEach(tile => {
             if (!newTileOwnership[tile.id]) {
                 newTileOwnership[tile.id] = [];
             }
-
-            // 如果只有"未分配"，则先清除它
+    
+            // If only "unassigned", clear it first
             if (newTileOwnership[tile.id].length === 1 &&
                 newTileOwnership[tile.id][0] === 'unsplit') {
                 newTileOwnership[tile.id] = [];
             }
-
-            // 添加新子区域ID
+    
+            // Add new subregion ID
             if (!newTileOwnership[tile.id].includes(newSubregion.id)) {
                 newTileOwnership[tile.id].push(newSubregion.id);
             }
         });
-
-        // 存储选中的瓦片，用于后续处理
+    
+        // Store selected tiles for later processing
         const tilesToUpdate = [...selectedTiles];
-
-        // 更新状态，使用回调确保获取更新后的状态
+    
+        // Update state
         setTileOwnership(newTileOwnership);
         setSubregions(prev => {
             const updatedSubregions = [...prev, newSubregion];
-
-            // 延迟执行视觉更新，确保状态已更新
+    
             setTimeout(() => {
-                // 将子区域引用传递给visualizeSubregion
                 visualizeSubregion(newSubregion);
-
-                // 更新选中瓦片的样式
+    
+                // Update styles for selected tiles
                 tilesToUpdate.forEach(tile => {
                     debug(`Updating style for tile ${tile.id}`, newTileOwnership[tile.id]);
-                    // 直接使用瓦片引用和新的所有权数据
                     const tileLayer = tileLayersRef.current.tiles[tile.id];
                     if (!tileLayer) return;
-
+    
                     const subregionIds = newTileOwnership[tile.id] || ['unsplit'];
                     const realSubregions = subregionIds.filter(id => id !== 'unsplit');
-
+    
                     if (realSubregions.length === 1) {
-                        // 如果只属于一个子区域
                         tileLayer.setStyle({
-                            color: color, // 使用新创建子区域的颜色
+                            color: color,
                             weight: 2,
                             opacity: 0.8,
                             fillOpacity: 0.4,
                             fillColor: color
                         });
                     } else if (realSubregions.length > 1) {
-                        // 如果属于多个子区域，计算混合颜色
                         const colors = realSubregions.map(id => {
                             if (id === newSubregion.id) return color;
                             const sr = prev.find(s => s.id === id);
                             return sr ? sr.color : '#3388ff';
                         });
-
+    
                         const blendedColor = blendColors(colors);
                         debug(`Blended colors for tile ${tile.id}`, { colors, blendedColor });
-
+    
                         tileLayer.setStyle({
                             color: colors[0],
                             weight: 2,
@@ -441,13 +435,20 @@ const SubregionEditor = ({ map, regionId, config, onExport, onClose }) => {
                         });
                     }
                 });
-            }, 50); // 给予足够时间让状态更新完成
-
+            }, 50);
+    
             return updatedSubregions;
-    });
-
-        // 清楚選中
+        });
+    
+        // Reset selection state and ensure map dragging is enabled
         setSelectedTiles([]);
+        setIsSelecting(false);
+        mouseDownRef.current = false;
+        
+        // Ensure map dragging is enabled
+        if (map && map.dragging) {
+            map.dragging.enable();
+        }
     };
 
     // 將選中瓦片添加到子區域
