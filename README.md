@@ -3,6 +3,10 @@ Atlos(from Talos, =Atlas) is set to settle the project of online map in a 3d RTS
 
 If you want to make a commit, go and see CONTRIBUTE.md and PRs are welcome.
 
+## License
+This project is licensed under the **GNU Affero General Public License v3.0**.
+See [LICENSE](LICENSE) for the full text.
+
 # Todo
 - Base overlayer
 - ~~Mark system(onmark and onquery)~~ Sync json structure
