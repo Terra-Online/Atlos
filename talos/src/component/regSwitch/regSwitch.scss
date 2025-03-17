@@ -113,25 +113,30 @@ $indicator-height: .75rem;
   }
 }
 
-// 子区域菜单容器
 .subregswitch-container {
   -webkit-user-select: none;
   user-select: none;
   position: absolute;
   z-index: 890;
   display: flex;
-  left: 4.5rem;
-  top: 0;
-  transform: none;
+  left: 4rem;
   opacity: 0;
   visibility: hidden;
   transition: opacity .2s ease-in-out, visibility 0s linear .2s;
+  > .subregswitch{
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 
   &.visible {
     opacity: 1;
     visibility: visible;
     transition: opacity .2s ease-in-out, visibility 0s;
-    animation: none;
+  }
+  @for $i from 0 through 5 {
+    &.align-item-#{$i} {
+      top: calc(#{$i} * (#{$item-height} + #{$item-gap}) + calc(#{$item-height} / 2) + 5px); 
+    }
   }
 }
 
@@ -140,14 +145,20 @@ $indicator-height: .75rem;
   flex-direction: column;
   gap: $item-gap;
   background-color: rgba($white-2, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border-radius: 3px;
   padding: 5px;
   box-shadow: 0 0 5px rgba($black, 0.6);
   position: relative;
   max-height: 400px;
   overflow-y: auto;
+
+  max-height: 300px;
+  margin-top: -150px;
+
+  .region-selection-wrapper:hover & {
+    margin-top: max(-150px, -100vh + 20px);
+    margin-bottom: max(-150px, -100vh + 20px);
+  }
 }
 
 .subreg-item {
@@ -163,6 +174,21 @@ $indicator-height: .75rem;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-top: 0;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid color.adjust($primary-accent-4, $lightness: -10%);
+    transition: opacity 0.4s $presto-curve;
+    opacity: 0;
+    z-index: 10;
+    filter: drop-shadow(0 0 1px rgba($black, 0.8));
+  }
 
   &:hover {
     background-color: $grey-2;
@@ -170,8 +196,9 @@ $indicator-height: .75rem;
   }
 
   &.selected {
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+    &::after {
+          opacity: 1;
+        }
   }
 
   &.disabled {
@@ -194,33 +221,68 @@ $indicator-height: .75rem;
   }
 }
 
-.subregion-highlight-flash {
-  animation: highlightPulse 2s ease-in-out;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+path.subregion-highlight-stroke {
+  stroke: $primary-accent-4;
+  stroke-width: 4;
+  fill: none;
+  filter: drop-shadow(0 0 8px rgba($primary-accent-4,.6));
+
+  animation:
+    drawStroke 1s ease-out forwards,
+    holdStroke 1.5s 1s ease-out forwards,
+    retractStroke 0.4s 1.5s ease-in forwards;
 }
 
-@keyframes highlightPulse {
+path.subregion-highlight-fill {
+  fill: $primary-accent-1;
+  fill-opacity: 0;
+  stroke-width: 2;
+  stroke: $primary-accent-3;
+  animation: waitForStroke 1.5s ease-out forwards;
+}
+
+@keyframes drawStroke {
   0% {
-    opacity: 0.7;
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+    stroke: rgba($primary-accent-4, 0);
   }
-
-  50% {
-    opacity: 0.9;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
-  }
-
   100% {
-    opacity: 0.3;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+    stroke: rgba($primary-accent-4, 1);
   }
 }
 
-@keyframes fadeIn {
-  from {
+
+@keyframes holdStroke {
+  0%, 100% {
+    stroke-dasharray: 0;
+  }
+}
+
+@keyframes retractStroke {
+  0% {
+    stroke-dasharray: 0;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dasharray: 20, 10;
+    stroke-dashoffset: 90;
     opacity: 0;
   }
-  to {
-    opacity: 1;
+}
+
+@keyframes waitForStroke {
+  0% {
+    fill-opacity: 0;
+    -webkit-clip-path: polygon(0 0, 0 0, -25% 100%, -25% 100%);
+    clip-path: polygon(0 0, 0 0, -25% 100%, -25% 100%);
+  }
+  50% {
+    fill-opacity: 0.3;
+    -webkit-clip-path: polygon(0 0, 125% 0, 100% 100%, -25% 100%);
+    clip-path: polygon(0 0, 125% 0, 100% 100%, -25% 100%);
+  }
+  100% {
+    fill-opacity: 0;
+    -webkit-clip-path: polygon(125% 0, 125% 0, 100% 100%, 100% 100%);
+    clip-path: polygon(125% 0, 125% 0, 100% 100%, 100% 100%);
   }
 }

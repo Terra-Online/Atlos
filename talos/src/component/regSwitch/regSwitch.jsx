@@ -69,7 +69,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     }
     timeoutRef.current = setTimeout(() => {
       setIsHovering(false);
-    }, 200);
+    }, 300);
   };
 
   const handleContainerMouseLeave = () => {
@@ -78,7 +78,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     }
     timeoutRef.current = setTimeout(() => {
       setIsHovering(false);
-    }, 200);
+    }, 300);
   };
 
   useEffect(() => {
@@ -101,6 +101,15 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
   // Check if subRegion has any child elements
   const hasSubregions = subRegion && React.Children.count(subRegion.props.children) > 0;
 
+  let selectedIndex = -1;
+  if (mainRegion && mainRegion.props.children) {
+    React.Children.forEach(mainRegion.props.children, (child, index) => {
+      if (React.isValidElement(child) && child.props.value === mainRegion.props.value) {
+        selectedIndex = index;
+      }
+    });
+  }
+
   // Clone mainRegion to pass additional props to its children
   const mainRegionWithProps = mainRegion
     ? React.cloneElement(mainRegion, {
@@ -115,6 +124,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     ? React.cloneElement(subRegion, {
       visible: isHovering,
       isSidebarOpen: isSidebarOpen,
+      alignClass: `align-item-${selectedIndex}`,
       onMouseEnter: () => {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
@@ -125,7 +135,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
         if (!toElement || !toElement.closest('.regswitch-container')) {
           timeoutRef.current = setTimeout(() => {
             setIsHovering(false);
-          }, 200);
+          }, 300);
         }
       }
     })
@@ -189,6 +199,7 @@ const SubRegSwitch = ({
   onChange,
   isSidebarOpen = false,
   visible = false,
+  alignClass = '',
   onMouseEnter,
   onMouseLeave
 }) => {
@@ -213,7 +224,7 @@ const SubRegSwitch = ({
 
   return (
     <div
-      className={`subregswitch-container ${isSidebarOpen ? 'sidebar-open' : ''} ${visible ? 'visible' : ''}`}
+      className={`subregswitch-container ${isSidebarOpen ? 'sidebar-open' : ''} ${visible ? 'visible' : ''} ${alignClass}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

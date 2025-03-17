@@ -6,7 +6,7 @@
       {
         "id": "subregion-1",
         "name": "供能高地",
-        "color": "#91c922",
+        "color": "#FF8B38",
         "bounds": [
           [
             2400,
@@ -668,7 +668,7 @@
       {
         "id": "subregion-2",
         "name": "礦脈源區",
-        "color": "#c529e0",
+        "color": "#FF8B38",
         "bounds": [
           [
             4600,
@@ -1366,7 +1366,7 @@
       {
         "id": "subregion-3",
         "name": "源石研究園",
-        "color": "#22c9b8",
+        "color": "#FF8B38",
         "bounds": [
           [
             4800,
@@ -1996,7 +1996,7 @@
       {
         "id": "subregion-4",
         "name": "阿伯莉採石場",
-        "color": "#e0691a",
+        "color": "#FF8B38",
         "bounds": [
           [
             4600,
@@ -2290,7 +2290,7 @@
       {
         "id": "subregion-5",
         "name": "谷地通道",
-        "color": "#27ec58",
+        "color": "#FF8B38",
         "bounds": [
           [
             400,
@@ -2644,7 +2644,7 @@
       {
         "id": "subregion-6",
         "name": "樞紐區",
-        "color": "#de1b73",
+        "color": "#FF8B38",
         "bounds": [
           [
             1400,

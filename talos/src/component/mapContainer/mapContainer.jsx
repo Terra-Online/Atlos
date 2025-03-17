@@ -197,9 +197,6 @@ const MapContainer = ({ isSidebarOpen }) => {
         let highlight = null;
 
         // Unified highlight color
-        const highlightColor = '#FDFF95';
-
-        // First attempt to use polygon data if available
         if (subregion.polygon && subregion.polygon.length > 0) {
           console.log('Using polygon data for highlight', subregion.polygon);
           try {
@@ -209,52 +206,68 @@ const MapContainer = ({ isSidebarOpen }) => {
                 return point;
               });
             });
-
             console.log('Transformed polygon points:', polygonPoints);
 
-            highlight = L.polygon(polygonPoints, {
-              color: highlightColor,
-              fillColor: highlightColor,
+            const fillLayer = L.polygon(polygonPoints, {
+              color: 'transparent',
               fillOpacity: 0.3,
+              className: 'subregion-highlight-fill'
+            });
+            const strokeLayer = L.polygon(polygonPoints, {
               weight: 3,
               opacity: 0.9,
-              className: 'subregion-highlight-flash'
+              fill: false,
+              className: 'subregion-highlight-stroke'
             });
 
+            fillLayer.addTo(map);
+            strokeLayer.addTo(map);
+
+            highlight = L.layerGroup([fillLayer, strokeLayer]);
+
             console.log('Polygon highlight created successfully', highlight);
-            highlight.addTo(map);
           } catch (error) {
             console.error('Error creating polygon highlight:', error);
           }
         }
-        // If no polygon data or creation failed, use rectangle boundary
+
         if (!highlight && subregion.bounds) {
           console.log('Using rectangle bounds for highlight', subregion.bounds);
           try {
             const sw = map.unproject([x1, y2], config.maxZoom);
             const ne = map.unproject([x2, y1], config.maxZoom);
-            console.log(`Rectangle bounds: SW[${sw.lat}, ${sw.lng}], NE[${ne.lat}, ${ne.lng}]`);
 
-            highlight = L.rectangle(L.latLngBounds(sw, ne), {
-              color: highlightColor,
-              fillColor: highlightColor,
+            const fillLayer = L.rectangle(L.latLngBounds(sw, ne), {
+              color: 'transparent',
               fillOpacity: 0.3,
-              weight: 3,
-              opacity: 0.9,
-              className: 'subregion-highlight-flash'
+              className: 'subregion-highlight-fill'
             });
 
+            const strokeLayer = L.rectangle(L.latLngBounds(sw, ne), {
+              weight: 3,
+              opacity: 0.9,
+              fill: false,
+              className: 'subregion-highlight-stroke'
+            });
+
+            fillLayer.addTo(map);
+            strokeLayer.addTo(map);
+
+            highlight = L.layerGroup([fillLayer, strokeLayer]);
             console.log('Highlight created!', highlight);
-            highlight.addTo(map);
           } catch (error) {
             console.error('Failed to create highlight!', error);
           }
         }
 
         if (highlight) {
-          // Ensure highlight layer is on top
+          // Ensure each layer in the group is brought to front
           console.log('Bringing highlight to front');
-          highlight.bringToFront();
+          highlight.eachLayer(layer => {
+            if (layer.bringToFront) {
+              layer.bringToFront();
+            }
+          });
           setActiveHighlight(highlight);
 
           // Remove highlight after 2 seconds
@@ -264,7 +277,7 @@ const MapContainer = ({ isSidebarOpen }) => {
               map.removeLayer(highlight);
               setActiveHighlight(null);
             }
-          }, 2000);
+          }, 1500);
         } else {
           console.error('Failed to create boundary highlight');
         }
