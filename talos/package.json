@@ -20,7 +20,8 @@
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
     "react-window": "^1.8.10",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
