@@ -76,13 +76,13 @@ $transition-speed: 0.3s;
     pointer-events: auto;
     svg {
       transition: all 0.2s ease;
-      fill: $accent-4;
+      fill: $primary-accent-4;
       width: 2rem;
       height: 2rem;
     }
 
     &:hover svg {
-      fill: $accent-3;
+      fill: $primary-accent-3;
     }
   }
 }

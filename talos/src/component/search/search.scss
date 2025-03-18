@@ -21,13 +21,13 @@
         box-shadow: 0 2px 4px rgba($black, .25);
         > .search-icon {
             .icon {
-              fill: $accent-4;
+              fill: $primary-accent-4;
             }
           }
       }
 
       &:has(.search-input:not(:placeholder-shown)) {
-        box-shadow: 0 0 0 2px $accent-3, 0 2px 12px rgba($black, .25);
+        box-shadow: 0 0 0 2px $primary-accent-3, 0 2px 12px rgba($black, .25);
       }
 
       .search-input {

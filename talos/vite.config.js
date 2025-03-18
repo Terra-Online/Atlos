@@ -17,6 +17,10 @@ export default defineConfig({
         {
           src: 'src/asset/images/marker',
           dest: 'assets/images'
+        },
+        {
+          src: 'src/asset/images/item',
+          dest: 'assets/images'
         }
       ]
     })

@@ -93,7 +93,7 @@ $transition-speed: 0.3s; //import from global size.scss later
     &.active {
       &::after {
         transform: translateX(calc(calc(2.25rem - 6px) + 2px));
-        background-color: $accent-4;
+        background-color: $primary-accent-4;
         box-shadow: 0 1px 3px rgba($black, 0.4);
       }
       //off state
