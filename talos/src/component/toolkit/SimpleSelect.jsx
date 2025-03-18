@@ -4,11 +4,13 @@ import MARKER_TYPE_DATA from "../mapContainer/Map/markerType.json";
 import { clearMarker, collectMarkerData } from '../mapContainer/Map/marker';
 import { downloadObjectAsJson } from '../../utils/download';
 import './SimpleSelect.scss';
+import useRegion from '../mapContainer/store/region';
 
 const OPTIONS = Object.values(MARKER_TYPE_DATA).map((type) => ({ label: type.name, value: type.key }));
 
 const SimpleSelect = () => {
-    const { markerTypeKey: selectedOption, currentRegion } = useGlobalStore();
+    const {currentRegion, currentSubregion} = useRegion()
+    const { markerTypeKey: selectedOption } = useGlobalStore();
 
     const handleSelectChange = (event) => {
         const value = event.target.value;
@@ -16,16 +18,16 @@ const SimpleSelect = () => {
     };
 
     const handleClear = useCallback(() => {
-        clearMarker(currentRegion);
-    }, [currentRegion]);
+        clearMarker(currentRegion, currentSubregion);
+    }, [currentRegion, currentSubregion]);
 
     const handleClearAll = useCallback(() => {
         clearMarker("");
     }, []);
 
     const handleExport = useCallback(() => {
-        const markerInfo = collectMarkerData(currentRegion);
-        downloadObjectAsJson(markerInfo, `markers_${currentRegion}`);
+        const markerInfo = collectMarkerData(currentRegion, currentSubregion ?? currentRegion);
+        downloadObjectAsJson(markerInfo, `markers_${currentRegion}_${currentSubregion}`);
     }, [currentRegion]);
 
     const handleExportAll = useCallback(() => {
@@ -47,9 +49,9 @@ const SimpleSelect = () => {
                 ))}
             </select>
             <div className="button-group">
-                <button className="export" onClick={handleExport}>导出当前地图数据</button>
+                <button className="export" onClick={handleExport}>导出当前子区域数据</button>
                 <button className="export" onClick={handleExportAll}>导出所有数据</button>
-                <button className="clear" onClick={handleClear}>清除当前地图标点</button>
+                <button className="clear" onClick={handleClear}>清除当前子区域标点</button>
                 <button className="clear" onClick={handleClearAll}>清除所有标点</button>
             </div>
         </div>

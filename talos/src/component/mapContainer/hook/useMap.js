@@ -4,6 +4,8 @@ import useIni from '../store/initial';
 import useRegion from '../store/region';
 import useContinuity from '../store/continuity';
 import useVisual from '../store/visual';
+import { addMarker, GLOBAL_MARKER_LAYER_GROUP_DICT, switchMarkerLayer } from '../Map/marker';
+import useGlobalStore from '../../../context';
 
 // Assmeble all stores to useMap
 export function useMap(elementId) {
@@ -155,6 +157,27 @@ export function useMap(elementId) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [map, currentRegion]);
+
+  useEffect(() => {
+    if (!map) return
+    // console.log(currentRegion, currentSubregion)
+    const currentSubRegionId = currentSubregion?.id ?? currentRegion
+    switchMarkerLayer(map, currentRegion, currentSubRegionId)
+
+    /**
+   * 
+   * @param {import('leaflet').LeafletMouseEvent} event 
+   */
+    function handler(event) {
+      const { latlng } = event
+      addMarker(currentRegion, currentSubRegionId, useGlobalStore.getState().markerTypeKey, latlng)
+    }
+
+    map.addEventListener("click", handler)
+    return () => {
+      map.removeEventListener("click", handler)
+    }
+  }, [currentRegion, currentSubregion, map])
 
   return {
     map,

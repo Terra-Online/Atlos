@@ -16,18 +16,21 @@ const useRegion = create(
 
             initialize: () => {
                 const currentRegion = get().currentRegion;
+                const subregions = getRegionSubregions(currentRegion);
                 set({
-                    subregions: getRegionSubregions(currentRegion)
+                    subregions,
+                    currentSubregion: subregions[0] ?? null
                 });
             },
 
             setCurrentRegion: (region) => {
                 const currentRegion = get().currentRegion;
+                const subregions = getRegionSubregions(region);
                 set({
                     previousRegion: currentRegion,
                     currentRegion: region,
-                    subregions: getRegionSubregions(region),
-                    currentSubregion: null
+                    subregions,
+                    currentSubregion: subregions[0] ?? null
                 });
             },
 
