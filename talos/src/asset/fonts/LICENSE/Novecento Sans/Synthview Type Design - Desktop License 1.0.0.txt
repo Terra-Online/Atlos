@@ -1,0 +1,78 @@
+Synthview Desktop Font End User License Agreement Version 2.0 - October 25, 2012
+
+
+DEFINITIONS 
+• “End-User” refers to you either as individual or single entity.
+• “EULA” refers to this End-User License Agreement.
+• “This Software” refers to the set of font files, or to any part of it, and any documentation released under this End-User License Agreement.
+• “You” refers to the individual or single entity downloading and using this This Software. The terms “You” and ”End-User” both refer to You.
+• “Author” refers to Jan Tonellato – http://typography.synthview.com, who designed and programmed the font Software and owns its exclusive intellectual property.
+
+PREAMBLE
+This EULA (End-User License Agreement) is a legal agreement between End-User, either as individual or single entity, and the Author and allows a non-exclusive and unlimited-in-duration permission to use this Software.
+Nothing in this EULA shall be deemed to transfer to End-User any patent, copyright or other intellectual property right except as expressly set forth herein.
+By downloading this Software, you are agreeing to be bound by the terms of this EULA. This EULA, in conjunction with the receipt that accompanies each purchase from Fontspring.com (“Fontspring”), constitutes the complete agreement between you and the Author.
+
+1. SCOPE & RESTRICTIONS
+You can use this Software (for non-commercial and commercial work) to create graphics for display on any surface including computer screens, television screens, paper, t-shirts or any other surface where the image will be a fixed size. 
+You may import characters from the font as graphical objects (vectorize letters to outlines) into a drawing program and modify such graphical objects.
+
+Embedding is allowed in accordance with the rules described at following paragraphs.
+
+You may not use this Software to create alphabet or letterform products for resale where the product consists of individual letterforms, including rubber stamps, die-cut products, stencil products, or adhesive sticker alphabet products where the likeness of this Software can be reproduced and the end-user of said products can create their own typesetting.
+You may create typographic products using the licensed fonts if the product consists of commonly recognized words or phrases. For example: a rubber stamp that has the words “Thank You” or a sticker that says “Great!”
+
+2. NUMBER OF USERS
+The maximum number of simultaneous users is specified in the applicable receipt. All users must belong to the same company or household purchasing the font.
+
+3. EMBEDDING
+Embedding into Pdf files is permitted at the condition it doesn’t allow user-generated or user-edited texts, and character subsetting is applied. 
+
+You are allowed to use this Software without additional license with Flash or Silverlight technologies when bitmap images or static vectors only are generated.
+When doing so, you must provide the highest protection level for embedded fonts preventing this font to be downloaded.
+
+You are allowed to use server-side applications like sIFR but restricting its usage to a single domain.
+However, each domain owner must purchase his own license. 
+
+4. CONVERSION
+You are not allowed to convert this Software with any method or in any format (included but not limiting to Cufon, SVG, TTF, any Webfont format, Typeface.js) without a prior written permission from the Author.
+
+5. WEB EMBEDDING 
+As conversion is not allowed, you can’t convert and/or embed this Software to a web page. Download the proper webfonts instead.  
+
+6. EBOOK & SOFTWARE EMBEDDING 
+You may not under any circumstances embed this Software into any other software, including mobile apps, or ebooks. 
+
+Contact the Author at typography@synthview.com, describing the usage this Software is intended to, in order to obtain all the informations about embedding licenses.
+
+7. EDITING/ALTERING 
+You are not allowed to adapt, edit, decompile, reverse engineer, alter or modify this Software in any way nor to create any derivative work.
+
+8. DISTRIBUTION & THIRD PARTIES 
+You may temporarily provide the font to a printer or other service bureau that is working on your behalf only if they agree to use the font exclusively for your work, agree to the terms of this license, and retain no copies of the font on completion of the work.
+
+You may not provide the font or make it accessible to any other third parties, included any freelance, agency, organization, contractors. Each of them needs its own license.
+
+You are strictly forbidden to sell, resell, lease or charge for access to this Software.
+You are not allowed to publish and/or distribute this Software on any offline or online product/platform.
+
+9. COPYRIGHT & INTELLECTUAL PROPERTY 
+This Software, both as artwork and font file, was entirely made by Jan Tonellato - http://typography.synthview.com who owns all its authorship rights, including intellectual property.
+
+10. TERMINATION 
+This Agreement is effective until terminated. This Agreement will terminate automatically without notice from Fontspring or the Author if you fail to comply with any provision contained herein. Upon termination, you must destroy the written materials, this Software, and all copies of them, in part and in whole, including modified copies, if any.
+
+11. PRODUCT UPGRADES 
+Fontspring may, from time to time, update the Product. Product upgrade pricing may apply. 
+
+12. DISCLAIMER  & LIMITATed WARRANTY 
+Fontspring warrants this Software to be free from defects in materials and workmanship under normal use for a period of twenty one (21) days from the date of delivery as shown on your receipt. Fontspring's entire liability and your exclusive remedy as to a defective product shall be, at Fontspring's option, either return of purchase price or replacement of any such product that is returned to Fontspring with a copy of the invoice. Fontspring shall have no responsibility to replace this Software or refund the purchase price if failure results from accident, abuse or misapplication, or if any product is lost or damaged due to theft, ﬁre, or negligence. Any replacement product will be warranted for twenty one (21) days. This warranty gives you speciﬁc legal rights. You may have other rights, which vary from state to state. 
+EXCEPT AS EXPRESSLY PROVIDED ABOVE, THIS SOFTWARE, IS PROVIDED “AS IS”. NEITHER FONTSPRING NOR THE FOUNDRY MAKES ANY WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+The entire risk as to the quality and performance of this Software rests upon you. Neither FONTSPRING nor the Author warrants that the functions contained in this Software will meet your requirements or that the operation of the software will be uninterrupted or error free. 
+NEITHER FONTSPRING NOR THE AUTHOR SHALL BE LIABLE FOR ANY DIRECT, INDIRECT, CONSEQUENTIAL, OR INCIDENTAL DAMAGES (INCLUDING DAMAGES FROM LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, AND THE LIKE) ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE EVEN IF FONTSPRING OR THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+Because some states do not allow the exclusion or limitation of liability for consequential or incidental damages, the above limitation may not apply to you. 
+
+13. APPLICABLE LAW AND ASSIGNMENT OF JURISDICTION 
+You accept this EULA to be exclusively governed by French law. In the absence of an amicable settlement, any dispute that may arise due to the interpretation or execution of the present EULA shall be submitted to the competent jurisdiction of the Paris court of first instance of general jurisdiction (Tribunal de grande instance de Paris - 75).

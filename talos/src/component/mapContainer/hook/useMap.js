@@ -112,9 +112,9 @@ export function useMap(elementId) {
         createHighlight(map, subregion, config);
       });
 
-      setMapView(center, 2, {
+      setMapView(center, 1, {
         animate: true,
-        duration: 0.75
+        duration: 0.5
       });
     }
   };
