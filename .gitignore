@@ -27,5 +27,6 @@ dist-ssr
 **/config/config.json
 
 talos/public/clips
+talos/src/asset/fonts/UD_ShinGo
 .history
 .vscode

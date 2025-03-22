@@ -1,4 +1,5 @@
-@use './fonts';
+@use './fonts' as *;
+@use './palette' as *;
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
 * {
     transform-origin: center;
@@ -15,4 +16,8 @@ button {
 body {
     margin: 0;
     font-family: "Noto Sans SC", sans-serif;
+}
+
+::selection {
+    background-color: $primary-accent-4;
 }

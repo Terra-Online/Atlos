@@ -8,9 +8,9 @@
                 "sub": "pane_1"
             },
             "type": {
-                "main": "poi",
-                "sub": "basic",
-                "key": "TP"
+                "main": "resource",
+                "sub": "natural",
+                "key": "originium"
             },
             "status": {
                 "global": {
@@ -36,9 +36,9 @@
                 "sub": "pane_1"
             },
             "type": {
-                "main": "poi",
-                "sub": "basic",
-                "key": "hub"
+                "main": "resource",
+                "sub": "natural",
+                "key": "amethyst"
             },
             "status": {
                 "global": {
@@ -64,9 +64,65 @@
                 "sub": "pane_1"
             },
             "type": {
-                "main": "poi",
-                "sub": "basic",
-                "key": "base"
+                "main": "resource",
+                "sub": "natural",
+                "key": "ferrium"
+            },
+            "status": {
+                "global": {
+                    "defaultHidden": false
+                },
+                "user": {
+                    "isCollected": false,
+                    "priority": 0,
+                    "localNote": "Lorem ipsum dolor sit amet,\nconsectetuer adipiscing elit."
+                }
+            },
+            "meta": {
+                "addedBy": "cirisus",
+                "addedAt": "2025-03-09T15:30:00Z",
+                "lastSeen": "2025-03-09T10:15:00Z"
+            }
+        },
+        {
+            "id": "004",
+            "position": [-706.1950929411161,695.5884912233179],
+            "region": {
+                "main": "Valley_4",
+                "sub": "pane_1"
+            },
+            "type": {
+                "main": "resource",
+                "sub": "natural",
+                "key": "cuprium"
+            },
+            "status": {
+                "global": {
+                    "defaultHidden": false
+                },
+                "user": {
+                    "isCollected": false,
+                    "priority": 0,
+                    "localNote": "Lorem ipsum dolor sit amet,\nconsectetuer adipiscing elit."
+                }
+            },
+            "meta": {
+                "addedBy": "cirisus",
+                "addedAt": "2025-03-09T15:30:00Z",
+                "lastSeen": "2025-03-09T10:15:00Z"
+            }
+        },
+        {
+            "id": "005",
+            "position": [-726.1950929411161,645.5884912233179],
+            "region": {
+                "main": "Valley_4",
+                "sub": "pane_1"
+            },
+            "type": {
+                "main": "resource",
+                "sub": "natural",
+                "key": "cyanite"
             },
             "status": {
                 "global": {

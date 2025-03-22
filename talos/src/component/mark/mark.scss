@@ -8,7 +8,7 @@
   background-color: $white-1;
   color: $grey-1;
   border-radius: 0 2px 2px 0;
-  padding: .25rem .25rem .25rem .5rem;
+  padding: .25rem;
   margin-bottom: .75rem;
   cursor: pointer;
   box-shadow: 0 0 3px 1px rgba($black, 0);
@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: 0.5fr 1.5fr;
   grid-template-rows: repeat(2, 1fr);
-  gap: 0;
+  gap: 0 2px;
   grid-template-areas:
     "icon Name"
     "icon Num";
@@ -77,8 +77,10 @@
   .mark-name {
     grid-area: Name;
     font-weight: 500;
+    font-family: 'UD_ShinGo DemiBold', sans-serif;
     color: inherit;
     font-size: 0.875rem;
+    line-height: 1.2;
     margin: 0;
     align-self: end;
     z-index: 2;
@@ -88,9 +90,12 @@
   }
   .mark-stat {
     grid-area: Num;
-    font-size: 0.75rem;
+    font-size: .9rem;
+    font-family: 'Novecento Medium', sans-serif;
     color: inherit;
     align-self: start;
     z-index: 2;
+    line-height: 1;
+    margin: auto 0;
   }
 }

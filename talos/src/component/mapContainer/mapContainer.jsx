@@ -9,6 +9,7 @@ import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
 import { RegSwitch, Reg, SubRegSwitch, SubReg, RegionContainer } from '../regSwitch/regSwitch';
+import { Detail } from '../detail/detail';
 
 import ToS from '../../asset/logos/tos.svg?react';
 import hideUI from '../../asset/logos/hideUI.svg?react';
@@ -125,6 +126,8 @@ const MapContainer = ({ isSidebarOpen }) => {
           label="Regional POI"
         />
       </TriggerBar>
+
+      <Detail />
     </div>
   );
 };

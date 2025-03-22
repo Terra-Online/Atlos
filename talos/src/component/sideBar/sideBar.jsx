@@ -55,7 +55,7 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
   };
 
   const isFilterActive = (category, typeInfo) => {
-    return activeFilters[category]?.some(filter => 
+    return activeFilters[category]?.some(filter =>
       filter.main === typeInfo.main &&
       filter.sub === typeInfo.sub &&
       filter.key === typeInfo.key

@@ -13,5 +13,6 @@ export function getResourceUrl(type, key, ext = "png") {
 }
 
 export const getTileResourceUrl = (path) => getResourceUrl("tiles", path);
-export const getMarkerIconUrl = (key) => getResourceUrl("marker", key);
-export const getItemIconUrl = (key) => getResourceUrl("item", key);
+export const getMarkerIconUrl = (key, ext = "png") => getResourceUrl("marker", key, ext);
+export const getItemIconUrl = (key, ext = "png") => getResourceUrl("item", key, ext);
+export const getCtgrIconUrl = (key, ext = "svg") => getResourceUrl("category", key, ext);

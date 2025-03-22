@@ -2,43 +2,75 @@
 @import url('https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css');
 @font-face {
     font-family: 'Novecento Bold';
-    src: url('../asset/fonts/Novecento-WideBold.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideBold.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideBold.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideBold.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideBold.otf') format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento DemiBold';
-    src: url('../asset/fonts/Novecento-WideDemiBold.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideDemiBold.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideDemiBold.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideDemiBold.otf') format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Book';
-    src: url('../asset/fonts/Novecento-WideBook.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideBook.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideBook.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideBook.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideBook.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideBook.otf') format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Light';
-    src: url('../asset/fonts/Novecento-WideLight.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideLight.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideLight.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideLight.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideLight.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideLight.otf') format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Medium';
-    src: url('../asset/fonts/Novecento-WideMedium.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideMedium.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideMedium.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideMedium.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideMedium.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideMedium.otf') format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Normal';
-    src: url('../asset/fonts/Novecento-WideNormal.woff2') format('woff2'),
-         url('../asset/fonts/Novecento-WideNormal.woff') format('woff'),
-         url('../asset/fonts/Novecento-WideNormal.otf') format('opentype');
+    src: url('../asset/fonts/Novecento/Novecento-WideNormal.woff2') format('woff2'),
+         url('../asset/fonts/Novecento/Novecento-WideNormal.woff') format('woff'),
+         url('../asset/fonts/Novecento/Novecento-WideNormal.otf') format('opentype');
+    font-display: swap;
+}
+/* UD ShinGo -- Proper implementation */
+@font-face {
+    font-family: 'UD_ShinGo Bold';
+    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff2') format('woff2'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff') format('woff'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.ttf') format('truetype');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'UD_ShinGo DemiBold';
+    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2') format('woff2'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff') format('woff'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf') format('truetype');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'UD+ShinGo Medium';
+    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2') format('woff2'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff') format('woff'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.ttf') format('truetype');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'UD_ShinGo';
+    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2') format('woff2'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff') format('woff'),
+         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.ttf') format('truetype');
     font-display: swap;
 }

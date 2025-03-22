@@ -1,0 +1,19 @@
+{
+    "key":[{
+        "originium": "originium",
+        "amethyst": "amethyst",
+        "ferrium": "ferrium",
+        "cuprium": "cuprium",
+        "cyanite": "cyanite",
+        "TP": "teleport",
+        "hub": "hub",
+        "recycle": "recycle",
+        "base": "base",
+        "Hill Smasher": "HS",
+        "Cloud Stalker": "CS",
+        "Road Plunderer": "RP"
+    }],
+    "types":[{
+        "cangzei": "cangzei"
+    }]
+}

@@ -1,0 +1,228 @@
+@import '../../styles/palette.scss';
+
+.detail-container {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 20rem;
+  background: $light-1;
+  border-radius: 0px;
+  box-shadow: 0 4px 4px rgba($black, .25);
+  color: $white-2;
+  overflow: hidden;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  max-height: 45vh;
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .45rem .5rem;
+    background-color: $secondary-accent-1;
+    background-image: url('../../asset/images/detail.webp');
+    background-size: 47%;
+    background-position-x: 3%;
+    box-shadow: 0 2px 3px rgba($black, .25);
+    position: sticky;
+
+    .point-info {
+        display: flex;
+        align-items: center;
+        gap: .15rem;
+        flex: 1;
+        .category-icon {
+            display: block;
+            height: 1rem;
+            width: 1rem;
+            background-size: contain;
+            filter: drop-shadow(1px 2px 1px rgba($black, .25))
+        }
+        .point-name {
+          color: $white-0;
+          font-size: 1rem;
+          font-family: "Novecento Medium", "UD_ShinGo DemiBold", sans-serif;
+          margin: 0;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          flex: 1;
+          line-height: 1;
+          text-shadow: 1px 2px 1px rgba($black, .25);
+        }
+      }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      .next-button {
+        width: 6rem;
+        height: 1.5rem;
+        background: $white-3;
+        color: $grey-1;
+        border-radius: .75rem;
+        outline: 1.5px solid $white-3;
+        outline-offset: 2px;
+        font-size: .8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: "Novecento Medium", sans-serif;
+        &:hover {
+          background: lighten($secondary-accent-1, 10%);
+        }
+        &:disabled {
+          background: $dim;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // content
+  .detail-content {
+    padding: .6rem;
+    overflow-y: auto;
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+
+    .icon-stats-container {
+      display: flex;
+      margin-bottom: 16px;
+      .point-icon {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        margin-right: 16px;
+        
+        img {
+          max-width: 48px;
+          max-height: 48px;
+        }
+      }
+      
+      .point-stats {
+        flex: 1;
+        
+        .stat-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 4px;
+          font-size: 14px;
+          
+          .stat-label {
+            color: $dim;
+          }
+          
+          .stat-value {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+    
+    .point-image {
+      margin-top: 16px;
+      width: 100%;
+      height: 150px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      
+      .no-image {
+        color: $dim;
+        font-size: 14px;
+      }
+    }
+    
+    .position-info {
+      margin-top: 10px;
+      font-size: 13px;
+      color: $dim;
+      
+      .position-value {
+        font-family: monospace;
+        margin-left: 4px;
+      }
+    }
+  }
+  
+  // note
+  .detail-notes {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    
+    .notes-header {
+      margin-bottom: 10px;
+      
+      h3 {
+        font-size: 16px;
+        margin: 0;
+      }
+    }
+    
+    .note-content {
+      min-height: 60px;
+      font-size: 14px;
+      line-height: 1.5;
+      
+      .note-text {
+        margin: 0;
+        white-space: pre-line;
+      }
+      
+      .no-note {
+        color: $dim;
+        font-style: italic;
+      }
+    }
+    
+    .wiki-section {
+      margin-top: 20px;
+      
+      h3 {
+        font-size: 16px;
+        margin: 0 0 10px 0;
+      }
+      
+      p {
+        font-size: 14px;
+        color: $dim;
+        font-style: italic;
+      }
+    }
+  }
+
+  .detail-meta {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: $dim;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.detail-container {
+  animation: slide-in 0.3s ease-out;
+}

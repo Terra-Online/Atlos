@@ -103,19 +103,19 @@
                 "Wood": {
                     "tier": "1"
                 },
-                "Originium Ore": {
+                "originium": {
                     "tier": "1"
                 },
-                "Amethyst Ore": {
+                "amethyst": {
                     "tier": "1"
                 },
-                "Ferrium Ore": {
+                "ferrium": {
                     "tier": "1"
                 },
-                "Cuprium Ore": {
+                "cuprium": {
                     "tier": "1"
                 },
-                "Cyanite Ore": {
+                "cyanite": {
                     "tier": "1"
                 },
 
