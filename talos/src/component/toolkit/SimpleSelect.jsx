@@ -18,7 +18,7 @@ const SimpleSelect = () => {
     };
 
     const handleClear = useCallback(() => {
-        clearMarker(currentRegion, currentSubregion);
+        clearMarker(currentRegion, currentSubregion?.id ?? currentRegion);
     }, [currentRegion, currentSubregion]);
 
     const handleClearAll = useCallback(() => {
@@ -26,8 +26,9 @@ const SimpleSelect = () => {
     }, []);
 
     const handleExport = useCallback(() => {
-        const markerInfo = collectMarkerData(currentRegion, currentSubregion ?? currentRegion);
-        downloadObjectAsJson(markerInfo, `markers_${currentRegion}_${currentSubregion}`);
+        const subRegionId = currentSubregion?.id ?? currentRegion
+        const markerInfo = collectMarkerData(currentRegion, subRegionId);
+        downloadObjectAsJson(markerInfo, `markers_${currentRegion}_${subRegionId}`);
     }, [currentRegion]);
 
     const handleExportAll = useCallback(() => {

@@ -22,7 +22,6 @@ const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DATA).reduce((acc, type) => {
         iconAnchor,
         popupAnchor,
     })
-    console.log(iconUrl)
     return acc
 }
     , {})

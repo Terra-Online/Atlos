@@ -11,8 +11,9 @@ const useRegion = create(
             // Default state
             currentRegion: 'Valley_4',
             previousRegion: 'Valley_4',
-            subregions: [],
-            currentSubregion: null,
+            subregions:  getRegionSubregions('Valley_4'),
+            // this could not be null when region has subregions
+            currentSubregion: getRegionSubregions('Valley_4')[0],
 
             initialize: () => {
                 const currentRegion = get().currentRegion;
@@ -53,8 +54,12 @@ const useRegion = create(
             name: 'region-storage',
             partialize: (state) => ({
                 currentRegion: state.currentRegion,
-                currentSubregion: state.currentSubregion?.id
-            })
+                currentSubregion: state.currentSubregion
+            }),
+            // merge: (presist, current) => {
+            //     const {currentRegion, currentSubregion} = presist;
+            //     return current
+            // }
         }
     )
 );
