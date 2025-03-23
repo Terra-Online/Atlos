@@ -32,7 +32,8 @@ export interface IMapMarkerData {
     /**
      * map key string, declare which map this marker is in
      */
-    mapKey: string
+    regionId: string
+    subRegionId: string
     /**
      * map latlng used in leaflet
      */
