@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css');
+@import url('https://c.webfontfree.com/c.js?f=GothamMedium');
 @font-face {
     font-family: 'Novecento Bold';
     src: url('../asset/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),
@@ -60,7 +61,7 @@
 }
 
 @font-face {
-    font-family: 'UD+ShinGo Medium';
+    font-family: 'UD_ShinGo Medium';
     src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2') format('woff2'),
          url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff') format('woff'),
          url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.ttf') format('truetype');
@@ -72,5 +73,30 @@
     src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2') format('woff2'),
          url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff') format('woff'),
          url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.ttf') format('truetype');
+    font-display: swap;
+}
+/* Harmony OS Sans - Free for non-/commercial use */
+@font-face {
+    font-family: 'HMSans_SC';
+    src: url('../asset/fonts/Harmony/HMSans_SC.woff2') format('woff2'),
+         url('../asset/fonts/Harmony/HMSans_SC.woff') format('woff');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'HMSans_TC';
+    src: url('../asset/fonts/Harmony/HMSans_TC.woff2') format('woff2'),
+         url('../asset/fonts/Harmony/HMSans_TC.woff') format('woff');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'HMSans';
+    src: url('../asset/fonts/Harmony/HMSans.woff2') format('woff2'),
+         url('../asset/fonts/Harmony/HMSans.woff') format('woff');
+    font-weight: 100 900;
+    font-style: normal;
     font-display: swap;
 }

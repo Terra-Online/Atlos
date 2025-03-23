@@ -28,5 +28,6 @@ dist-ssr
 
 talos/public/clips
 talos/src/asset/fonts/UD_ShinGo
+talos/src/asset/fonts/Harmony
 .history
 .vscode

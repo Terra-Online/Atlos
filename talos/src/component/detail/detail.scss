@@ -1,4 +1,6 @@
-@import '../../styles/palette.scss';
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
 
 .detail-container {
   position: absolute;
@@ -8,7 +10,6 @@
   background: $light-1;
   border-radius: 0px;
   box-shadow: 0 4px 4px rgba($black, .25);
-  color: $white-2;
   overflow: hidden;
   z-index: 1000;
   display: flex;
@@ -64,12 +65,57 @@
         border-radius: .75rem;
         outline: 1.5px solid $white-3;
         outline-offset: 2px;
-        font-size: .8rem;
+        font-size: .75rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: filter 0.3s ease, outline 0.3s ease, box-shadow 0.3s ease;
+        will-change: filter, outline, box-shadow;
         font-family: "Novecento Medium", sans-serif;
+        text-align: end;
+        padding-right: 1.1rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        span {
+          position: relative;
+          z-index: 3;
+        }
+        &::before {
+          content: '';
+          position: absolute;
+          width: 40%;
+          height: 100%;
+          top: 0;
+          left: .25rem;
+          background-image: url('../../asset/images/arrow.svg');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          z-index: 1;
+          pointer-events: none
+        }
+        &::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          right: 0rem;
+          background-image: url('../../asset/images/next.svg'), url('../../asset/images/bg.webp');
+          background-size: 11%, cover;
+          background-repeat: no-repeat;
+          background-position-x: 95%, 60%;
+          background-position-y: 47%, 40%;
+          filter: drop-shadow(-1px 1px 1px rgba($black, .25));;
+          z-index: 0;
+          pointer-events: none;
+        }
         &:hover {
-          background: lighten($secondary-accent-1, 10%);
+          filter: invert(1);
+          box-shadow: 0 0 1px 1px rgba($black, .5);
+          outline-color: $grey-1;
         }
         &:disabled {
           background: $dim;
@@ -89,126 +135,203 @@
 
     .icon-stats-container {
       display: flex;
-      margin-bottom: 16px;
+      gap: .25rem;
+      margin-bottom: .35rem;
       .point-icon {
-        width: 64px;
-        height: 64px;
+        position: relative;
+        width: 3.75rem;
+        height: 3.75rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-        margin-right: 16px;
-        
+        &::after {
+          position: absolute;
+          content: '';
+          width: 100%;
+          height: 100%;
+          background-image: url('../../asset/images/posit.svg');
+          background-size: contain;
+          filter: drop-shadow(0 2px 2px rgba($black, .25));
+        }
+        &::before {
+          position: absolute;
+          content: '';
+          width: 90%;
+          height: 90%;
+          background-image: url('../../asset/images/check.svg');
+          background-size: contain;
+          background-repeat: no-repeat;
+          filter: drop-shadow(0 2px 2px rgba($black, .25));
+          opacity: 0.5;
+          z-index: -1;
+        }
         img {
-          max-width: 48px;
-          max-height: 48px;
+          max-width: 3.2rem;
+          max-height: 3.2rem;
+          opacity: 0.8;
         }
       }
-      
       .point-stats {
         flex: 1;
-        
+        font-family: "Novecento Medium", "UD_ShinGo DemiBold", sans-serif;
+        background-image: url('../../asset/images/brakt_L.svg'), url('../../asset/images/brakt_R.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: left center, right center;
+        height: 3.75rem;
+        padding: 0 1.15rem 0 1.1rem;
+        display: flex;
+        .stats-txt {
+          flex: 0.55;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          padding-right: 2px;
+        }
+        .stats-prog {
+          flex: 0.45;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          border: 2.5px solid $grey-1;
+          clip-path: polygon(0 7%, 100% 7%, 100% 93%, 0 93%);
+          border-top: none;
+          border-bottom: none;
+          padding: 0 2px;
+        }
         .stat-row {
           display: flex;
-          justify-content: space-between;
-          margin-bottom: 4px;
-          font-size: 14px;
-          
+          justify-content: flex-start;
+          font-size: .875rem;
+          text-shadow: 0 1px 1px rgba($black, .25);
+          &:first-of-type {
+            transform: translateY(3px);
+          }
+          &:nth-of-type(2) {
+            transform: translateY(1px);
+          }
+          &:last-of-type {
+            transform: translateY(-1px);
+          }
           .stat-label {
-            color: $dim;
+            color: $grey-1;
+            margin-right: 2.5px;
           }
-          
           .stat-value {
-            font-weight: 500;
+            color: $grey-1;
           }
+            .user-value {
+              color: $dim;
+              transition: color 0.3s ease;
+              &.check {
+                color: $primary-accent-6;
+              }
+            }
         }
+          .prog-bar {
+            height: .875rem;
+            width: min(calc(var(--prog) * 100%), 100%);
+            //clip-path: polygon(0 0, calc(var(--prog) * 100%) 0, calc(var(--prog) * 100%) 100%, 0 100%); 性能爆炸爛
+            transition: background-color 0.15s $standard-curve 0s, width 0.25s $standard-curve 0.10s;
+            will-change: width, background-color;
+            max-width: 100%;
+            background-color: $secondary-accent-1;
+            background-color: $grey-1;
+            &.check {
+              background-color: $primary-accent-6;
+              transition: width 0.25s $standard-curve 0s, background-color 0.15s $standard-curve 0.15s;
+            }
+          }
       }
     }
-    
     .point-image {
-      margin-top: 16px;
+      margin: .5rem 0 1.5rem;
       width: 100%;
-      height: 150px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
+      height: 10rem;
+      background: rgba($black, .25);
+      border: 2px solid $light-2;
+      box-shadow: 0 0 4px .5px rgba($black, .6), 0 0 4px 2px rgba($light-2, .6) inset;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      
+      position: relative;
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 0 15px 15px;
+        border-color: transparent transparent $light-2 transparent;
+        filter: drop-shadow(-1px -1px 2px rgba($light-2, .6));
+        z-index: 2;
+        pointer-events: none;
+      }
       img {
         max-width: 100%;
         max-height: 100%;
-        object-fit: contain;
+        object-fit: cover;
       }
-      
       .no-image {
         color: $dim;
-        font-size: 14px;
-      }
-    }
-    
-    .position-info {
-      margin-top: 10px;
-      font-size: 13px;
-      color: $dim;
-      
-      .position-value {
-        font-family: monospace;
-        margin-left: 4px;
+        font-family: "Novecento Medium", "UD_ShinGo DemiBold", sans-serif;
+        font-size: .875rem;
       }
     }
   }
-  
   // note
   .detail-notes {
-    padding: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    
-    .notes-header {
-      margin-bottom: 10px;
-      
-      h3 {
-        font-size: 16px;
-        margin: 0;
-      }
+    position: relative;
+    font-size: 0.875rem;
+    font-family: "HMSans","HMSans_TC","HMSans_SC" sans-serif;
+    font-weight: 400;
+    border-left: 4px solid $grey-1;
+    padding-top: 2px;
+    padding-left: .25rem;
+    &::before {
+      position: absolute;
+      content: 'NOTE';
+      font-family: "GothamMedium", sans-serif;
+      color: $light-1;
+      background-color: $grey-1;
+      padding: 3px 3px 2px 4px;
+      left: -4px;
+      top: -1rem;
     }
-    
-    .note-content {
-      min-height: 60px;
-      font-size: 14px;
-      line-height: 1.5;
-      
       .note-text {
         margin: 0;
         white-space: pre-line;
       }
-      
       .no-note {
         color: $dim;
         font-style: italic;
       }
     }
-    
-    .wiki-section {
-      margin-top: 20px;
-      
-      h3 {
-        font-size: 16px;
-        margin: 0 0 10px 0;
-      }
-      
-      p {
-        font-size: 14px;
-        color: $dim;
-        font-style: italic;
-      }
+  // wiki
+  .detail-wiki {
+    margin-top: .5rem;
+    position: relative;
+    font-size: 0.875rem;
+    font-family: "HMSans","HMSans_TC","HMSans_SC" sans-serif;
+    font-weight: 400;
+    &::before {
+      position: relative;
+      content: 'WIKI';
+      font-family: "GothamMedium", sans-serif;
+      color: $light-1;
+      background-color: $grey-1;
+      padding: 3px 3px 2px 3px;
+      margin-right: 3px;
+      left: 0;
+      top: 0;
     }
   }
 
   .detail-meta {
-    padding: 10px 16px;
+    padding:  .35rem .5rem;
     display: flex;
     justify-content: space-between;
     font-size: 11px;
