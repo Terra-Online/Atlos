@@ -249,6 +249,13 @@
       width: 100%;
       height: 10rem;
       background: rgba($black, .25);
+
+      background-image: url('../../asset/images/detest.png');
+
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
       border: 2px solid $light-2;
       box-shadow: 0 0 4px .5px rgba($black, .6), 0 0 4px 2px rgba($light-2, .6) inset;
       overflow: hidden;
@@ -279,6 +286,8 @@
         color: $dim;
         font-family: "Novecento Medium", "UD_ShinGo DemiBold", sans-serif;
         font-size: .875rem;
+
+        color: transparent;
       }
     }
   }
@@ -329,7 +338,7 @@
       top: 0;
     }
   }
-
+  /* no use
   .detail-meta {
     padding:  .35rem .5rem;
     display: flex;
@@ -338,7 +347,7 @@
     color: $dim;
     background: rgba(0, 0, 0, 0.2);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-  }
+  }*/
 }
 
 @keyframes slide-in {

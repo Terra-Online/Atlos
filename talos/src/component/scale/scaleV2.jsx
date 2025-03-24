@@ -11,14 +11,14 @@ const ZoomLabel = React.memo(({ zoomLevel, position, onClick, isActive, isVisibl
     bottom: `calc(${position * 100}% - 10px)`,
     opacity: isVisible ? 1 : 0,
     transform: isVisible ? 'translateX(0)' : 'translateX(10px)',
-    transition: isTransitioning 
-      ? 'opacity 300ms ease, transform 300ms ease, bottom 400ms ease-in-out' 
+    transition: isTransitioning
+      ? 'opacity 300ms ease, transform 300ms ease, bottom 400ms ease-in-out'
       : 'opacity 300ms ease, transform 300ms ease'
   };
 
   return (
-    <div 
-      className={`zoom-label ${isActive ? 'active' : ''}`} 
+    <div
+      className={`zoom-label ${isActive ? 'active' : ''}`}
       style={labelStyle}
       onClick={() => onClick(zoomLevel)}
     >
@@ -36,7 +36,7 @@ const Scale = ({ map }) => {
   // Track zoom labels and their animation states
   const [zoomLabels, setZoomLabels] = useState([]);
   const [isAnimating, setIsAnimating] = useState(false);
-  
+
   const scalerRef = useRef(null);
   const scalerWrapperRef = useRef(null);
   const animationFrameRef = useRef(null);
@@ -49,16 +49,16 @@ const Scale = ({ map }) => {
   const TRANSITION_STAGGER = 50; // ms between animation phases
 
   // Calculate current scale ratio
-  const scaleRatio = useMemo(() => 
+  const scaleRatio = useMemo(() =>
     calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
-  [zoomLevel, zoomBounds.min, zoomBounds.max]);
+    [zoomLevel, zoomBounds.min, zoomBounds.max]);
 
   // Generate labels for integer zoom levels
   const generateZoomLabels = useCallback(() => {
     const labels = [];
     const minZoom = Math.ceil(zoomBounds.min);
     const maxZoom = Math.floor(zoomBounds.max);
-    
+
     for (let i = minZoom; i <= maxZoom; i++) {
       // Calculate position (0-1) of this label on the scale
       const position = calculateScale(i, zoomBounds.min, zoomBounds.max);
@@ -69,24 +69,24 @@ const Scale = ({ map }) => {
         isTransitioning: false
       });
     }
-    
+
     return labels;
   }, [zoomBounds.min, zoomBounds.max]);
 
   // Update labels when zoom bounds change
   useEffect(() => {
     if (!map) return;
-    
+
     // Handle label transitions
     if (zoomLabels.length > 0) {
       // Start animation
       setIsAnimating(true);
-      
+
       // Get new labels configuration
       const newLabelsData = generateZoomLabels();
       const existingLevels = new Set(newLabelsData.map(l => l.level));
       const currentLevels = new Set(zoomLabels.map(l => l.level));
-      
+
       // Phase 1: Mark existing labels for transition and fade out those to be removed
       setZoomLabels(prevLabels => {
         return prevLabels.map(label => ({
@@ -95,7 +95,7 @@ const Scale = ({ map }) => {
           isVisible: existingLevels.has(label.level)
         }));
       });
-      
+
       // Phase 2: Update positions of remaining labels and add new labels (invisible)
       setTimeout(() => {
         setZoomLabels(prevLabels => {
@@ -111,7 +111,7 @@ const Scale = ({ map }) => {
                 isTransitioning: true
               };
             });
-          
+
           // Add new labels (initially invisible)
           const newLabels = newLabelsData
             .filter(label => !currentLevels.has(label.level))
@@ -120,20 +120,20 @@ const Scale = ({ map }) => {
               isVisible: false,
               isTransitioning: true
             }));
-          
+
           return [...remainingLabels, ...newLabels];
         });
-        
+
         // Phase 3: Fade in new labels
         setTimeout(() => {
-          setZoomLabels(prevLabels => 
+          setZoomLabels(prevLabels =>
             prevLabels.map(label => ({
               ...label,
               isVisible: true,
               isTransitioning: true
             }))
           );
-          
+
           // Phase 4: Complete transition
           setTimeout(() => {
             setZoomLabels(prevLabels =>
@@ -144,11 +144,11 @@ const Scale = ({ map }) => {
             );
             setIsAnimating(false);
           }, ANIMATION_DURATION);
-          
+
         }, TRANSITION_STAGGER);
-        
+
       }, ANIMATION_DURATION / 2);
-      
+
     } else {
       // Initial load, no animation needed
       setZoomLabels(generateZoomLabels());
@@ -179,7 +179,7 @@ const Scale = ({ map }) => {
     // Escape delay
     const newScale = calculateScale(validZoom, zoomBounds.min, zoomBounds.max);
     updateScalerUI(newScale);
-    map.setZoom(validZoom, {animate: true});
+    map.setZoom(validZoom, { animate: true });
   }, [map, zoomBounds, updateScalerUI]);
 
   // Handle zoom step buttons
@@ -208,27 +208,27 @@ const Scale = ({ map }) => {
   // Check for map configuration changes (especially for region changes)
   useEffect(() => {
     if (!map) return;
-    
+
     // Create an interval to check for changes in map maxZoom
     const checkMapConfigInterval = setInterval(() => {
       const currentMaxZoom = map.getMaxZoom();
       const currentMinZoom = map.getMinZoom();
-      
+
       // If maxZoom or minZoom changed (likely due to region change)
-      if (currentMaxZoom !== lastMaxZoomRef.current || 
-          currentMinZoom !== zoomBounds.min) {
-        
+      if (currentMaxZoom !== lastMaxZoomRef.current ||
+        currentMinZoom !== zoomBounds.min) {
+
         console.log(`Zoom bounds changed: ${zoomBounds.min}-${zoomBounds.max} -> ${currentMinZoom}-${currentMaxZoom}`);
-        
+
         // Update the zoom bounds
         setZoomBounds({
           min: currentMinZoom,
           max: currentMaxZoom
         });
-        
+
         // Update our reference
         lastMaxZoomRef.current = currentMaxZoom;
-        
+
         // Ensure current zoom level is within new bounds
         const currentZoom = map.getZoom();
         if (currentZoom > currentMaxZoom) {
@@ -238,7 +238,7 @@ const Scale = ({ map }) => {
         }
       }
     }, 300); // Check every 300ms
-    
+
     return () => {
       clearInterval(checkMapConfigInterval);
     };
@@ -276,13 +276,13 @@ const Scale = ({ map }) => {
       targetZoomRef.current = finalZoom;
       isZoomingRef.current = false;
     };
-    
+
     // Listen & Release
     map.on('zoomstart', handleZoomStart);
     map.on('zoomanim', handleZoomAnim);
     map.on('zoomend', handleZoomEnd);
     map.on('zoom', handleZoomEnd);
-    
+
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -321,7 +321,7 @@ const Scale = ({ map }) => {
           className="scaler"
           ref={scalerRef}
         />
-        
+
         {/* Zoom level labels */}
         {zoomLabels.map(label => (
           <ZoomLabel
