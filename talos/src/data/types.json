@@ -1,294 +1,285 @@
 {
-    "types": [{
-        "enemy": {
-            "Aggeloi": {
-                "Triaggelos": {
-                    "tier": "boss"
-                },
-                "Marble Aggelomoirai": {
-                    "tier": "boss"
-                },
-                "Effigy": {
-                    "tier": "elite"
-                },
-                "Heavy Ram": {
-                    "tier": "advanced"
-                },
-                "Heavy Ram α": {
-                    "tier": "advanced"
-                },
-                "Heavy Sting": {
-                    "tier": "advanced"
-                },
-                "Heavy Sting α": {
-                    "tier": "advanced"
-                },
-                "Poison Ivy": {
-                    "tier": "advanced"
-                },
-                "Ram": {
-                    "tier": "common"
-                },
-                "Ram α": {
-                    "tier": "common"
-                },
-                "Sting": {
-                    "tier": "common"
-                },
-                "Sting α": {
-                    "tier": "common"
-                }
+    "enemy": {
+        "Aggeloi": {
+            "Triaggelos": {
+                "tier": "boss"
             },
-            "Landbreakers": {
-                "Rhodagn": {
-                    "tier": "boss"
-                },
-                "Bonekrusher Ballista": {
-                    "tier": "elite"
-                },
-                "Bonekrusher Executioner": {
-                    "tier": "elite"
-                },
-                "Elite Executioner": {
-                    "tier": "elite"
-                },
-                "Bonekrusher Pyromancer": {
-                    "tier": "advanced"
-                },
-                "Bonekrusher Arsonist": {
-                    "tier": "advanced"
-                },
-                "Blighted Tuskbeast": {
-                    "tier": "common"
-                },
-                "Bonekrusher Ripptusk": {
-                    "tier": "common"
-                },
-                "Elite Ripptusk": {
-                    "tier": "common"
-                },
-                "Blighted Klaw": {
-                    "tier": "common"
-                },
-                "Bonekrusher Raider": {
-                    "tier": "common"
-                },
-                "Elite Raider": {
-                    "tier": "common"
-                },
-                "Bonekrusher Ambusher": {
-                    "tier": "common"
-                },
-                "Elite Ambusher": {
-                    "tier": "common"
-                },
-                "Bonekrusher Infiltrator": {
-                    "tier": "common"
-                }
+            "Marble Aggelomoirai": {
+                "tier": "boss"
             },
-            "Cangzei": {
-                "Hill Smasher": {
-                    "tier": "elite"
-                },
-                "Cloud Stalker": {
-                    "tier": "advanced"
-                },
-                "Road Plunderer": {
-                    "tier": "common"
-                }
+            "Effigy": {
+                "tier": "elite"
+            },
+            "Heavy Ram": {
+                "tier": "advanced"
+            },
+            "Heavy Ram α": {
+                "tier": "advanced"
+            },
+            "Heavy Sting": {
+                "tier": "advanced"
+            },
+            "Heavy Sting α": {
+                "tier": "advanced"
+            },
+            "Poison Ivy": {
+                "tier": "advanced"
+            },
+            "Ram": {
+                "tier": "common"
+            },
+            "Ram α": {
+                "tier": "common"
+            },
+            "Sting": {
+                "tier": "common"
+            },
+            "Sting α": {
+                "tier": "common"
             }
         },
-        "resource": {
-            "natural": {
-                "Wood": {
-                    "tier": "1"
-                },
-                "Originium Ore": {
-                    "tier": "1"
-                },
-                "Amethyst Ore": {
-                    "tier": "1"
-                },
-                "Ferrium Ore": {
-                    "tier": "1"
-                },
-                "Cuprium Ore": {
-                    "tier": "1"
-                },
-                "Cyanite Ore": {
-                    "tier": "1"
-                },
-
-                "Clean Water": {
-                    "tier": "1"
-                },
-                "Sewage": {},
-
-                "Buckflower": {
-                    "tier": "1"
-                },
-                "Firebuckle": {
-                    "tier": "2"
-                },
-                "Citrome": {
-                    "tier": "1"
-                },
-                "Umbraline": {
-                    "tier": "2"
-                },
-                "Aketine": {
-                    "tier": "1"
-                },
-                "Sandleaf": {
-                    "tier": "1"
-                },
-                "Jincao": {
-                    "tier": "1"
-                },
-                "Fluffed Jincao": {
-                    "tier": "2"
-                },
-                "Yazhen": {
-                    "tier": "1"
-                },
-                "Thorny Yazhen": {
-                    "tier": "2"
-                },
-                "Reed Rye": {
-                    "tier": "2"
-                },
-                "Tartpepper": {
-                    "tier": "2"
-                },
-                "Redjade Ginseng": {
-                    "tier": "2"
-                },
-                "Amber Rice": {
-                    "tier": "2"
-                },
-                "Buckflower Seed": {},
-                "Citrome Seed": {},
-                "Sandleaf Seed": {},
-                "Aketine Seed": {},
-                "Jincao Seed": {},
-                "Yazhen Seed": {},
-                "Reed Rye Seed": {},
-                "Tartpepper Seed": {},
-                "Redjade Ginseng Seed": {},
-                "Amber Rice Seed": {}
+        "Landbreakers": {
+            "Rhodagn": {
+                "tier": "boss"
             },
-            "valuable": {
-                "Pink Bolete": {
-                    "tier": "4"
-                },
-                "Red Bolete": {
-                    "tier": "4"
-                },
-                "Ruby Bolete": {
-                    "tier": "4"
-                },
-                "Bloodcap": {
-                    "tier": "5"
-                },
-                "Pink Bolete Mycelia": {},
-                "Red Bolete Mycelia": {},
-                "Ruby Bolete Mycelia": {},
-                "Bloodcap Mycelia": {},
-
-                "Kalkodendra": {
-                    "tier": "4"
-                },
-                "Chrysodendra": {
-                    "tier": "4"
-                },
-                "Vitrodendra": {
-                    "tier": "4"
-                },
-                "Blighted Jadeleaf": {
-                    "tier": "5"
-                },
-                "Kalkodendra Tuber": {},
-                "Chrysodendra Tuber": {},
-                "Vitrodendra Tuber": {},
-                "Blighted Jadeleaf Tuber": {},
-
-                "Kalkonyx": {
-                    "tier": "4"
-                },
-                "Auronyx": {
-                    "tier": "4"
-                },
-                "Umbronyx": {
-                    "tier": "4"
-                },
-                "Igneosite": {
-                    "tier": "5"
-                },
-                "Kalkonyx Seed": {},
-                "Auronyx Seed": {},
-                "Umbronyx Seed": {},
-                "Igneosite Seed": {}
+            "Bonekrusher Ballista": {
+                "tier": "elite"
             },
-            "gatherable": {
-                "Glowbug": {
-                    "tier": "2"
-                },
-                "Scorchbug": {
-                    "tier": "3"
-                },
-
-                "Aggagrit": {},
-                "Aggagrit Block": {},
-                "Aggagrit Cluster": {},
-                "Grass Chaff": {},
-                "Chitin Bit": {},
-                "Cartilage Bit": {},
-                "Fillet": {},
-                "Soaked Woodchip": {},
-                "Soaked Wood": {},
-                "Hollow Bonechip": {},
-                "Hollow Bone": {}
+            "Bonekrusher Executioner": {
+                "tier": "elite"
+            },
+            "Elite Executioner": {
+                "tier": "elite"
+            },
+            "Bonekrusher Pyromancer": {
+                "tier": "advanced"
+            },
+            "Bonekrusher Arsonist": {
+                "tier": "advanced"
+            },
+            "Blighted Tuskbeast": {
+                "tier": "common"
+            },
+            "Bonekrusher Ripptusk": {
+                "tier": "common"
+            },
+            "Elite Ripptusk": {
+                "tier": "common"
+            },
+            "Blighted Klaw": {
+                "tier": "common"
+            },
+            "Bonekrusher Raider": {
+                "tier": "common"
+            },
+            "Elite Raider": {
+                "tier": "common"
+            },
+            "Bonekrusher Ambusher": {
+                "tier": "common"
+            },
+            "Elite Ambusher": {
+                "tier": "common"
+            },
+            "Bonekrusher Infiltrator": {
+                "tier": "common"
             }
         },
-        "poi": {
-            "collect": {
-                "aetherium": {},
-                "VR": {},
-                "robot": {},
-                "crate": {},
-
-                "longear": {},
-                "slug": {}
+        "Cangzei": {
+            "Hill Smasher": {
+                "tier": "elite"
             },
-            "trial": {
-                "rift" : {},
-                "unstable" : {},
-                "alluvium" : {},
-                "water": {}
+            "Cloud Stalker": {
+                "tier": "advanced"
             },
-            "npc": {}
-        },
-        "facility": {
-            "basic": {
-                "TP": {
-                    "collectable": false
-                },
-                "recycle": {},
-                "base": {},
-                "hub": {}
-            },
-            "regional": {
-                "control_nexus": {},
-                "growth_chamber": {},
-                "manufacturing_cabin": {},
-                "exchange": {},
-
-                "tianshi_p": {},
-                "tianshi_s": {}
-            },
-            "others": {
-                "barrel": {}
+            "Road Plunderer": {
+                "tier": "common"
             }
         }
-    }]
+    },
+    "resource": {
+        "natural": {
+            "Wood": {
+                "tier": "1"
+            },
+            "Originium Ore": {
+                "tier": "1"
+            },
+            "Amethyst Ore": {
+                "tier": "1"
+            },
+            "Ferrium Ore": {
+                "tier": "1"
+            },
+            "Cuprium Ore": {
+                "tier": "1"
+            },
+            "Cyanite Ore": {
+                "tier": "1"
+            },
+            "Clean Water": {
+                "tier": "1"
+            },
+            "Sewage": {},
+            "Buckflower": {
+                "tier": "1"
+            },
+            "Firebuckle": {
+                "tier": "2"
+            },
+            "Citrome": {
+                "tier": "1"
+            },
+            "Umbraline": {
+                "tier": "2"
+            },
+            "Aketine": {
+                "tier": "1"
+            },
+            "Sandleaf": {
+                "tier": "1"
+            },
+            "Jincao": {
+                "tier": "1"
+            },
+            "Fluffed Jincao": {
+                "tier": "2"
+            },
+            "Yazhen": {
+                "tier": "1"
+            },
+            "Thorny Yazhen": {
+                "tier": "2"
+            },
+            "Reed Rye": {
+                "tier": "2"
+            },
+            "Tartpepper": {
+                "tier": "2"
+            },
+            "Redjade Ginseng": {
+                "tier": "2"
+            },
+            "Amber Rice": {
+                "tier": "2"
+            },
+            "Buckflower Seed": {},
+            "Citrome Seed": {},
+            "Sandleaf Seed": {},
+            "Aketine Seed": {},
+            "Jincao Seed": {},
+            "Yazhen Seed": {},
+            "Reed Rye Seed": {},
+            "Tartpepper Seed": {},
+            "Redjade Ginseng Seed": {},
+            "Amber Rice Seed": {}
+        },
+        "valuable": {
+            "Pink Bolete": {
+                "tier": "4"
+            },
+            "Red Bolete": {
+                "tier": "4"
+            },
+            "Ruby Bolete": {
+                "tier": "4"
+            },
+            "Bloodcap": {
+                "tier": "5"
+            },
+            "Pink Bolete Mycelia": {},
+            "Red Bolete Mycelia": {},
+            "Ruby Bolete Mycelia": {},
+            "Bloodcap Mycelia": {},
+            "Kalkodendra": {
+                "tier": "4"
+            },
+            "Chrysodendra": {
+                "tier": "4"
+            },
+            "Vitrodendra": {
+                "tier": "4"
+            },
+            "Blighted Jadeleaf": {
+                "tier": "5"
+            },
+            "Kalkodendra Tuber": {},
+            "Chrysodendra Tuber": {},
+            "Vitrodendra Tuber": {},
+            "Blighted Jadeleaf Tuber": {},
+            "Kalkonyx": {
+                "tier": "4"
+            },
+            "Auronyx": {
+                "tier": "4"
+            },
+            "Umbronyx": {
+                "tier": "4"
+            },
+            "Igneosite": {
+                "tier": "5"
+            },
+            "Kalkonyx Seed": {},
+            "Auronyx Seed": {},
+            "Umbronyx Seed": {},
+            "Igneosite Seed": {}
+        },
+        "gatherable": {
+            "Glowbug": {
+                "tier": "2"
+            },
+            "Scorchbug": {
+                "tier": "3"
+            },
+            "Aggagrit": {},
+            "Aggagrit Block": {},
+            "Aggagrit Cluster": {},
+            "Grass Chaff": {},
+            "Chitin Bit": {},
+            "Cartilage Bit": {},
+            "Fillet": {},
+            "Soaked Woodchip": {},
+            "Soaked Wood": {},
+            "Hollow Bonechip": {},
+            "Hollow Bone": {}
+        }
+    },
+    "poi": {
+        "collect": {
+            "aetherium": {},
+            "VR": {},
+            "robot": {},
+            "crate": {},
+            "longear": {},
+            "slug": {}
+        },
+        "trial": {
+            "rift": {},
+            "unstable": {},
+            "alluvium": {},
+            "water": {}
+        },
+        "npc": {}
+    },
+    "facility": {
+        "basic": {
+            "TP": {
+                "collectable": false
+            },
+            "recycle": {},
+            "base": {},
+            "hub": {}
+        },
+        "regional": {
+            "control_nexus": {},
+            "growth_chamber": {},
+            "manufacturing_cabin": {},
+            "exchange": {},
+            "tianshi_p": {},
+            "tianshi_s": {}
+        },
+        "others": {
+            "barrel": {}
+        }
+    }
 }
