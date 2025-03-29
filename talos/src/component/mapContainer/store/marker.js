@@ -2,6 +2,7 @@ import { Layer, LayerGroup, Map } from "leaflet";
 import { MAP_CONFIGS } from "../map_config"
 import { MARKER_TYPE_DICT, MARKER_TYPE_ICON_DICT, SUBREGION_MARKS_MAP } from "../../../data/marker";
 import LOGGER from "../../../utils/log";
+import { create } from "zustand";
 
 /**
  * @type {string[]}
@@ -51,14 +52,11 @@ export class MarkerLayer {
         }, {});
 
         this.layerSubregionDict = MAP_SUBREGION_KEY_ARRAY.reduce((acc, key) => {
-            LOGGER.info(key)
-
             acc[key] = new LayerGroup([], { pane: "markerPane" });
             // acc[key].addTo(this.layer);
             return acc;
         }, {})
         this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat())
-        this.filterMarker(Object.keys(MARKER_TYPE_DICT))
     }
 
     /**
@@ -97,4 +95,29 @@ export class MarkerLayer {
             }
         });
     }
+
+    getCurrentPoints(regionId) {
+        const subregions = MAP_CONFIGS[regionId].subregions?.map(s => s.id) ?? [regionId]
+        const points = Object.values(this.markerDataDict)
+        return points.filter(point => subregions.includes(point.subregionId))
+    }
 }
+
+const INIT_MARKER_FILTER = ["tp", "hub"]
+
+export const useMarkerStore = create((set) => ({
+    filter: INIT_MARKER_FILTER,
+    points: [],
+    switchFilter: (typeKey) => {
+        set(state => {
+            if (state.filter.includes(typeKey)) {
+                return { filter: state.filter.filter(key => key !== typeKey) }
+            }
+            return { filter: [...state.filter, typeKey] }
+        })
+    }
+}))
+
+export const usePoints = () => useMarkerStore(state => state.points) 
+export const useFilter = () => useMarkerStore(state => state.filter)
+export const useSwitchFilter = () => useMarkerStore(state => state.switchFilter)

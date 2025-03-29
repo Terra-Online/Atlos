@@ -25,7 +25,12 @@ export const SUBREGION_MARKS_MAP = {
 
 export const MARKER_TYPE_DICT = markerTypeDict
 
-
+export const MAEKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
+    acc[type.category.main] = acc[type.category.main] || {}
+    acc[type.category.main][type.category.sub] = acc[type.category.main][type.category.sub] || []
+    acc[type.category.main][type.category.sub].push(type)
+    return acc
+}, {})
 
 /**
 * @constant
@@ -33,8 +38,6 @@ export const MARKER_TYPE_DICT = markerTypeDict
 */
 export const MARKER_TYPE_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
     const iconUrl = ["tp", "hub"].includes(type.key) ? getMarkerIconUrl(type.key) : getMarkerIconUrl("default")
-    LOGGER.debug("load icon image", iconUrl)
-
     acc[type.key] = icon({
         iconUrl,
         iconSize: [50, 50],

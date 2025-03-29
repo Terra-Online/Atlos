@@ -27,6 +27,7 @@ dist-ssr
 **/config/config.json
 
 talos/public/clips
+talos/originData
 talos/src/asset/fonts/UD_ShinGo
 talos/src/asset/fonts/Harmony
 .history
