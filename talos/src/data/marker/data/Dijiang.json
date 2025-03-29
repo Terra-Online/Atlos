@@ -1,0 +1,20 @@
+[
+    {
+        "id": "29",
+        "position": [
+            -501,
+            306
+        ],
+        "subregionId": "Dijiang",
+        "type": "tp"
+    },
+    {
+        "id": "30",
+        "position": [
+            -500,
+            691
+        ],
+        "subregionId": "Dijiang",
+        "type": "tp"
+    }
+]

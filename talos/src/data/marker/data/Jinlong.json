@@ -1,0 +1,65 @@
+[
+    {
+        "id": "31",
+        "position": [
+            -553.75,
+            387.875
+        ],
+        "subregionId": "Jinlong",
+        "type": "tp"
+    },
+    {
+        "id": "32",
+        "position": [
+            -511.25,
+            682
+        ],
+        "subregionId": "Jinlong",
+        "type": "hub"
+    },
+    {
+        "id": "33",
+        "position": [
+            -484.8992011423595,
+            189.232582174808
+        ],
+        "subregionId": "Jinlong",
+        "type": "control_nexus"
+    },
+    {
+        "id": "34",
+        "position": [
+            -384.5,
+            379.75
+        ],
+        "subregionId": "Jinlong",
+        "type": "tp"
+    },
+    {
+        "id": "35",
+        "position": [
+            -469.25,
+            600.75
+        ],
+        "subregionId": "Jinlong",
+        "type": "tp"
+    },
+    {
+        "id": "36",
+        "position": [
+            -744.875,
+            727.375
+        ],
+        "subregionId": "Jinlong",
+        "type": "tp"
+    },
+    {
+        "id": "37",
+        "position": [
+            -822.75,
+            875.125
+        ],
+        "subregionId": "Jinlong",
+        "type": "tp"
+    }
+]

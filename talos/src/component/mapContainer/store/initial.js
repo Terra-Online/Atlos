@@ -4,7 +4,6 @@ import L, { Marker } from 'leaflet';
 import { getTileResourceUrl } from "../../../utils/resource";
 import { MAP_CONFIGS, DEFAULT_CONFIG } from '../map_config';
 import { MarkerLayer } from './marker';
-import MARKER_DATA from "../../../data/marker.json";
 
 const useIni = create((set, get) => ({
     map: null,
@@ -29,7 +28,6 @@ const useIni = create((set, get) => ({
         initialMap.setMaxBounds(new L.LatLngBounds(southWest, northEast));
 
         const markerLayer = new MarkerLayer(initialMap);
-        markerLayer.importMarker(MARKER_DATA)
 
         set({
             map: initialMap,

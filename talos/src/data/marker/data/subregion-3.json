@@ -1,0 +1,56 @@
+[
+    {
+        "id": "14",
+        "position": [
+            -613.5,
+            680
+        ],
+        "subregionId": "subregion-3",
+        "type": "tp"
+    },
+    {
+        "id": "15",
+        "position": [
+            -552,
+            805.75
+        ],
+        "subregionId": "subregion-3",
+        "type": "tp"
+    },
+    {
+        "id": "16",
+        "position": [
+            -639.125,
+            810.625
+        ],
+        "subregionId": "subregion-3",
+        "type": "tp"
+    },
+    {
+        "id": "17",
+        "position": [
+            -570.25,
+            904.375
+        ],
+        "subregionId": "subregion-3",
+        "type": "tp"
+    },
+    {
+        "id": "18",
+        "position": [
+            -638.625,
+            873.5
+        ],
+        "subregionId": "subregion-3",
+        "type": "control_nexus"
+    },
+    {
+        "id": "19",
+        "position": [
+            -504.875,
+            855.375
+        ],
+        "subregionId": "subregion-3",
+        "type": "tp"
+    }
+]

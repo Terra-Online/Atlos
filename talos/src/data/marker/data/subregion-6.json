@@ -1,0 +1,74 @@
+[
+    {
+        "id": "3",
+        "position": [
+            -551.75,
+            333.125
+        ],
+        "subregionId": "subregion-6",
+        "type": "hub"
+    },
+    {
+        "id": "4",
+        "position": [
+            -713.25,
+            286.75
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "5",
+        "position": [
+            -666.125,
+            342.375
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "6",
+        "position": [
+            -524,
+            392
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "7",
+        "position": [
+            -500.375,
+            434.25
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "8",
+        "position": [
+            -705.5,
+            447.625
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "9",
+        "position": [
+            -659.625,
+            464.625
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    },
+    {
+        "id": "10",
+        "position": [
+            -662.5,
+            519.625
+        ],
+        "subregionId": "subregion-6",
+        "type": "tp"
+    }
+]

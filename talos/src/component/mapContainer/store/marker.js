@@ -1,12 +1,15 @@
 import { Layer, LayerGroup, Map } from "leaflet";
-import TYPE_DICT from "../../../data/types.json"
 import { MAP_CONFIGS } from "../map_config"
+import { MARKER_TYPE_DICT, MARKER_TYPE_ICON_DICT, SUBREGION_MARKS_MAP } from "../../../data/marker";
+import LOGGER from "../../../utils/log";
 
-const MARKER_TYPE_KEY_ARRAY = Object.values(TYPE_DICT).map(v => Object.values(v).map(v1 => Object.keys(v1))).flat().flat();
 /**
  * @type {string[]}
  */
-const MAP_SUBREGION_KEY_ARRAY = Object.keys(MAP_CONFIGS).map(regionId => MAP_CONFIGS[regionId].subregions.map(subregion => subregion.key)).flat();
+const MAP_SUBREGION_KEY_ARRAY = Object.keys(MAP_CONFIGS).map(regionId => {
+    const subregions = MAP_CONFIGS[regionId].subregions
+    return subregions ? subregions.map(subregion => subregion.id) : [regionId]
+}).flat();
 
 export class MarkerLayer {
     /**
@@ -42,16 +45,20 @@ export class MarkerLayer {
      */
     constructor(map) {
         this.map = map
-        this.markerTypeMap = MARKER_TYPE_KEY_ARRAY.reduce((acc, key) => {
-            acc[key] = [];
+        this.markerTypeMap = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
+            acc[type.key] = [];
             return acc;
         }, {});
 
         this.layerSubregionDict = MAP_SUBREGION_KEY_ARRAY.reduce((acc, key) => {
+            LOGGER.info(key)
+
             acc[key] = new LayerGroup([], { pane: "markerPane" });
             // acc[key].addTo(this.layer);
             return acc;
         }, {})
+        this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat())
+        this.filterMarker(Object.keys(MARKER_TYPE_DICT))
     }
 
     /**
@@ -60,8 +67,8 @@ export class MarkerLayer {
      */
     importMarker(markers) {
         markers.forEach(marker => {
-            const typeKey = marker.type.key;
-            const layer = new L.Marker(marker.position, { icon: MARKER_ICON_DICT[typeKey], alt: typeKey }) // TODO fix icon
+            const typeKey = marker.type;
+            const layer = new L.Marker(marker.position, { icon: MARKER_TYPE_ICON_DICT[typeKey], alt: typeKey })
             this.markerDict[marker.id] = layer;
             this.markerDataDict[marker.id] = marker;
             this.markerTypeMap[typeKey].push(marker.id);
@@ -71,20 +78,22 @@ export class MarkerLayer {
 
     changeRegion(regionId) {
         Object.values(this.layerSubregionDict).forEach(layer => {
-            layer.remove();
+            layer.removeFrom(this.map);
         });
-        MAP_CONFIGS[regionId].subregions.forEach(subregion => {
-            this.layerSubregionDict[subregion.key].addTo(this.map)
+        const subregions = MAP_CONFIGS[regionId].subregions?.map(s => s.id) ?? [regionId]
+        subregions.forEach(subregion => {
+            this.layerSubregionDict[subregion].addTo(this.map)
         })
     }
 
     filterMarker(typeKeys) {
         const markerIds = typeKeys.flatMap(key => this.markerTypeMap[key]);
         Object.entries(this.markerDict).forEach(([id, layer]) => {
+            const parent = this.layerSubregionDict[this.markerDataDict[id].subregionId]
             if (markerIds.includes(id)) {
-                layer.addTo(this.layerSubregionDict[this.markerDataDict[id].region.sub]);
+                layer.addTo(parent);
             } else {
-                layer.remove();
+                layer.removeFrom(parent);
             }
         });
     }

@@ -1,0 +1,962 @@
+{
+    "triaggelos": {
+        "key": "triaggelos",
+        "name": "Triaggelos",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "marble_aggelomoirai": {
+        "key": "marble_aggelomoirai",
+        "name": "Marble Aggelomoirai",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "effigy": {
+        "key": "effigy",
+        "name": "Effigy",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "heavy_ram": {
+        "key": "heavy_ram",
+        "name": "Heavy Ram",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "heavy_ram_a": {
+        "key": "heavy_ram_a",
+        "name": "Heavy Ram α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "heavy_sting": {
+        "key": "heavy_sting",
+        "name": "Heavy Sting",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "heavy_sting_a": {
+        "key": "heavy_sting_a",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "poison_ivy": {
+        "key": "poison_ivy",
+        "name": "Poison Ivy",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "ram": {
+        "key": "ram",
+        "name": "Ram",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "ram_a": {
+        "key": "ram_a",
+        "name": "Ram α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "sting": {
+        "key": "sting",
+        "name": "Sting",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "sting_a": {
+        "key": "sting_a",
+        "name": "Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "rhodagn": {
+        "key": "rhodagn",
+        "name": "Rhodagn",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_ballista": {
+        "key": "bonekrusher_ballista",
+        "name": "Bonekrusher Ballista",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_executioner": {
+        "key": "bonekrusher_executioner",
+        "name": "Bonekrusher Executioner",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "elite_executioner": {
+        "key": "elite_executioner",
+        "name": "Elite Executioner",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_pyromancer": {
+        "key": "bonekrusher_pyromancer",
+        "name": "Bonekrusher Pyromancer",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_arsonist": {
+        "key": "bonekrusher_arsonist",
+        "name": "Bonekrusher Arsonist",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "blighted_tuskbeast": {
+        "key": "blighted_tuskbeast",
+        "name": "Blighted Tuskbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_ripptusk": {
+        "key": "bonekrusher_ripptusk",
+        "name": "Bonekrusher Ripptusk",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "elite_ripptusk": {
+        "key": "elite_ripptusk",
+        "name": "Elite Ripptusk",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "blighted_klaw": {
+        "key": "blighted_klaw",
+        "name": "Blighted Klaw",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_raider": {
+        "key": "bonekrusher_raider",
+        "name": "Bonekrusher Raider",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "elite_raider": {
+        "key": "elite_raider",
+        "name": "Elite Raider",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_ambusher": {
+        "key": "bonekrusher_ambusher",
+        "name": "Bonekrusher Ambusher",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "elite_ambusher": {
+        "key": "elite_ambusher",
+        "name": "Elite Ambusher",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "bonekrusher_infiltrator": {
+        "key": "bonekrusher_infiltrator",
+        "name": "Bonekrusher Infiltrator",
+        "category": {
+            "main": "enemy",
+            "sub": "Landbreakers"
+        }
+    },
+    "hill_smasher": {
+        "key": "hill_smasher",
+        "name": "Hill Smasher",
+        "category": {
+            "main": "enemy",
+            "sub": "Cangzei"
+        }
+    },
+    "cloud_stalker": {
+        "key": "cloud_stalker",
+        "name": "Cloud Stalker",
+        "category": {
+            "main": "enemy",
+            "sub": "Cangzei"
+        }
+    },
+    "road_plunderer": {
+        "key": "road_plunderer",
+        "name": "Road Plunderer",
+        "category": {
+            "main": "enemy",
+            "sub": "Cangzei"
+        }
+    },
+    "wood": {
+        "key": "wood",
+        "name": "Wood",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "originium_ore": {
+        "key": "originium_ore",
+        "name": "Originium Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "amethyst_ore": {
+        "key": "amethyst_ore",
+        "name": "Amethyst Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "ferrium_ore": {
+        "key": "ferrium_ore",
+        "name": "Ferrium Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "cuprium_ore": {
+        "key": "cuprium_ore",
+        "name": "Cuprium Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "cyanite_ore": {
+        "key": "cyanite_ore",
+        "name": "Cyanite Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "clean_water": {
+        "key": "clean_water",
+        "name": "Clean Water",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "sewage": {
+        "key": "sewage",
+        "name": "Sewage",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "buckflower": {
+        "key": "buckflower",
+        "name": "Buckflower",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "firebuckle": {
+        "key": "firebuckle",
+        "name": "Firebuckle",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "citrome": {
+        "key": "citrome",
+        "name": "Citrome",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "umbraline": {
+        "key": "umbraline",
+        "name": "Umbraline",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "aketine": {
+        "key": "aketine",
+        "name": "Aketine",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "sandleaf": {
+        "key": "sandleaf",
+        "name": "Sandleaf",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "jincao": {
+        "key": "jincao",
+        "name": "Jincao",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "fluffed_jincao": {
+        "key": "fluffed_jincao",
+        "name": "Fluffed Jincao",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "yazhen": {
+        "key": "yazhen",
+        "name": "Yazhen",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "thorny_yazhen": {
+        "key": "thorny_yazhen",
+        "name": "Thorny Yazhen",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "reed_rye": {
+        "key": "reed_rye",
+        "name": "Reed Rye",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "tartpepper": {
+        "key": "tartpepper",
+        "name": "Tartpepper",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "redjade_ginseng": {
+        "key": "redjade_ginseng",
+        "name": "Redjade Ginseng",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "amber_rice": {
+        "key": "amber_rice",
+        "name": "Amber Rice",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "buckflower_seed": {
+        "key": "buckflower_seed",
+        "name": "Buckflower Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "citrome_seed": {
+        "key": "citrome_seed",
+        "name": "Citrome Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "sandleaf_seed": {
+        "key": "sandleaf_seed",
+        "name": "Sandleaf Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "aketine_seed": {
+        "key": "aketine_seed",
+        "name": "Aketine Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "jincao_seed": {
+        "key": "jincao_seed",
+        "name": "Jincao Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "yazhen_seed": {
+        "key": "yazhen_seed",
+        "name": "Yazhen Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "reed_rye_seed": {
+        "key": "reed_rye_seed",
+        "name": "Reed Rye Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "tartpepper_seed": {
+        "key": "tartpepper_seed",
+        "name": "Tartpepper Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "redjade_ginseng_seed": {
+        "key": "redjade_ginseng_seed",
+        "name": "Redjade Ginseng Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "amber_rice_seed": {
+        "key": "amber_rice_seed",
+        "name": "Amber Rice Seed",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "pink_bolete": {
+        "key": "pink_bolete",
+        "name": "Pink Bolete",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "red_bolete": {
+        "key": "red_bolete",
+        "name": "Red Bolete",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "ruby_bolete": {
+        "key": "ruby_bolete",
+        "name": "Ruby Bolete",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "bloodcap": {
+        "key": "bloodcap",
+        "name": "Bloodcap",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "pink_bolete_mycelia": {
+        "key": "pink_bolete_mycelia",
+        "name": "Pink Bolete Mycelia",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "red_bolete_mycelia": {
+        "key": "red_bolete_mycelia",
+        "name": "Red Bolete Mycelia",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "ruby_bolete_mycelia": {
+        "key": "ruby_bolete_mycelia",
+        "name": "Ruby Bolete Mycelia",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "bloodcap_mycelia": {
+        "key": "bloodcap_mycelia",
+        "name": "Bloodcap Mycelia",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "kalkodendra": {
+        "key": "kalkodendra",
+        "name": "Kalkodendra",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "chrysodendra": {
+        "key": "chrysodendra",
+        "name": "Chrysodendra",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "vitrodendra": {
+        "key": "vitrodendra",
+        "name": "Vitrodendra",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "blighted_jadeleaf": {
+        "key": "blighted_jadeleaf",
+        "name": "Blighted Jadeleaf",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "kalkodendra_tuber": {
+        "key": "kalkodendra_tuber",
+        "name": "Kalkodendra Tuber",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "chrysodendra_tuber": {
+        "key": "chrysodendra_tuber",
+        "name": "Chrysodendra Tuber",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "vitrodendra_tuber": {
+        "key": "vitrodendra_tuber",
+        "name": "Vitrodendra Tuber",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "blighted_jadeleaf_tuber": {
+        "key": "blighted_jadeleaf_tuber",
+        "name": "Blighted Jadeleaf Tuber",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "kalkonyx": {
+        "key": "kalkonyx",
+        "name": "Kalkonyx",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "auronyx": {
+        "key": "auronyx",
+        "name": "Auronyx",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "umbronyx": {
+        "key": "umbronyx",
+        "name": "Umbronyx",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "igneosite": {
+        "key": "igneosite",
+        "name": "Igneosite",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "kalkonyx_seed": {
+        "key": "kalkonyx_seed",
+        "name": "Kalkonyx Seed",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "auronyx_seed": {
+        "key": "auronyx_seed",
+        "name": "Auronyx Seed",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "umbronyx_seed": {
+        "key": "umbronyx_seed",
+        "name": "Umbronyx Seed",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "igneosite_seed": {
+        "key": "igneosite_seed",
+        "name": "Igneosite Seed",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        }
+    },
+    "glowbug": {
+        "key": "glowbug",
+        "name": "Glowbug",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "scorchbug": {
+        "key": "scorchbug",
+        "name": "Scorchbug",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "aggagrit": {
+        "key": "aggagrit",
+        "name": "Aggagrit",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "aggagrit_block": {
+        "key": "aggagrit_block",
+        "name": "Aggagrit Block",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "aggagrit_cluster": {
+        "key": "aggagrit_cluster",
+        "name": "Aggagrit Cluster",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "grass_chaff": {
+        "key": "grass_chaff",
+        "name": "Grass Chaff",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "chitin_bit": {
+        "key": "chitin_bit",
+        "name": "Chitin Bit",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "cartilage_bit": {
+        "key": "cartilage_bit",
+        "name": "Cartilage Bit",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "fillet": {
+        "key": "fillet",
+        "name": "Fillet",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "soaked_woodchip": {
+        "key": "soaked_woodchip",
+        "name": "Soaked Woodchip",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "soaked_wood": {
+        "key": "soaked_wood",
+        "name": "Soaked Wood",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "hollow_bonechip": {
+        "key": "hollow_bonechip",
+        "name": "Hollow Bonechip",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "hollow_bone": {
+        "key": "hollow_bone",
+        "name": "Hollow Bone",
+        "category": {
+            "main": "resource",
+            "sub": "gatherable"
+        }
+    },
+    "aetherium": {
+        "key": "aetherium",
+        "name": "aetherium",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "vr": {
+        "key": "vr",
+        "name": "VR",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "robot": {
+        "key": "robot",
+        "name": "robot",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "crate": {
+        "key": "crate",
+        "name": "crate",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "longear": {
+        "key": "longear",
+        "name": "longear",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "slug": {
+        "key": "slug",
+        "name": "slug",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
+    "rift": {
+        "key": "rift",
+        "name": "rift",
+        "category": {
+            "main": "poi",
+            "sub": "trial"
+        }
+    },
+    "unstable": {
+        "key": "unstable",
+        "name": "unstable",
+        "category": {
+            "main": "poi",
+            "sub": "trial"
+        }
+    },
+    "alluvium": {
+        "key": "alluvium",
+        "name": "alluvium",
+        "category": {
+            "main": "poi",
+            "sub": "trial"
+        }
+    },
+    "water": {
+        "key": "water",
+        "name": "water",
+        "category": {
+            "main": "poi",
+            "sub": "trial"
+        }
+    },
+    "tp": {
+        "key": "tp",
+        "name": "TP",
+        "category": {
+            "main": "facility",
+            "sub": "basic"
+        }
+    },
+    "recycle": {
+        "key": "recycle",
+        "name": "recycle",
+        "category": {
+            "main": "facility",
+            "sub": "basic"
+        }
+    },
+    "base": {
+        "key": "base",
+        "name": "base",
+        "category": {
+            "main": "facility",
+            "sub": "basic"
+        }
+    },
+    "hub": {
+        "key": "hub",
+        "name": "hub",
+        "category": {
+            "main": "facility",
+            "sub": "basic"
+        }
+    },
+    "control_nexus": {
+        "key": "control_nexus",
+        "name": "control_nexus",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "growth_chamber": {
+        "key": "growth_chamber",
+        "name": "growth_chamber",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "manufacturing_cabin": {
+        "key": "manufacturing_cabin",
+        "name": "manufacturing_cabin",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "exchange": {
+        "key": "exchange",
+        "name": "exchange",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "tianshi_p": {
+        "key": "tianshi_p",
+        "name": "tianshi_p",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "tianshi_s": {
+        "key": "tianshi_s",
+        "name": "tianshi_s",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        }
+    },
+    "barrel": {
+        "key": "barrel",
+        "name": "barrel",
+        "category": {
+            "main": "facility",
+            "sub": "others"
+        }
+    }
+}

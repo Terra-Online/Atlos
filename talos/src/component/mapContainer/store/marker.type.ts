@@ -3,13 +3,15 @@ export interface IMarkerData {
     "position": [
         number, number
     ],
-    "region": {
+    "subregionId": string,
+    "type": string
+}
+
+export interface IMarkerType {
+    "key": string,
+    "name": string,
+    "category": {
         "main": string,
-        "sub": string,
-    },
-    "type": {
-        "main": string,
-        "sub": string,
-        "key": string,
+        "sub": string
     }
 }

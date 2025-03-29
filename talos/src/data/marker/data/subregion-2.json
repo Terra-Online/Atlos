@@ -1,0 +1,47 @@
+[
+    {
+        "id": "20",
+        "position": [
+            -434.25,
+            858.125
+        ],
+        "subregionId": "subregion-2",
+        "type": "tp"
+    },
+    {
+        "id": "21",
+        "position": [
+            -328.375,
+            756.375
+        ],
+        "subregionId": "subregion-2",
+        "type": "tp"
+    },
+    {
+        "id": "22",
+        "position": [
+            -274.875,
+            821.125
+        ],
+        "subregionId": "subregion-2",
+        "type": "tp"
+    },
+    {
+        "id": "23",
+        "position": [
+            -255.625,
+            658.375
+        ],
+        "subregionId": "subregion-2",
+        "type": "tp"
+    },
+    {
+        "id": "24",
+        "position": [
+            -168.125,
+            628.125
+        ],
+        "subregionId": "subregion-2",
+        "type": "tp"
+    }
+]
