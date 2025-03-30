@@ -63,17 +63,59 @@
     transform: translateY(-1px);
   }
   .mark-icon {
-    grid-area: icon;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    img {
-      max-width: 2.25rem;
-      max-height: 2.25rem;
-      object-fit: contain;
-    }
-  }
+          grid-area: icon;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2;
+          position: relative;
+
+          --icon-feather-width: 10%;
+          --icon-feather-start: 4%;
+
+          -webkit-mask-image: linear-gradient(
+              to right,
+              transparent 0%,
+              transparent var(--icon-feather-start),
+              black var(--icon-feather-width),
+              black calc(100% - var(--icon-feather-width)),
+              transparent calc(100% - var(--icon-feather-start)),
+              transparent 100%
+            ), linear-gradient(
+              to bottom,
+              transparent 0%,
+              transparent var(--icon-feather-start),
+              black var(--icon-feather-width),
+              black calc(100% - var(--icon-feather-width)),
+              transparent calc(100% - var(--icon-feather-start)),
+              transparent 100%
+            );
+            mask-image: linear-gradient(
+              to right,
+              transparent 0%,
+              transparent var(--icon-feather-start),
+              black var(--icon-feather-width),
+              black calc(100% - var(--icon-feather-width)),
+              transparent calc(100% - var(--icon-feather-start)),
+              transparent 100%
+            ), linear-gradient(
+              to bottom,
+              transparent 0%,
+              transparent var(--icon-feather-start),
+              black var(--icon-feather-width),
+              black calc(100% - var(--icon-feather-width)),
+              transparent calc(100% - var(--icon-feather-start)),
+              transparent 100%
+            );
+            -webkit-mask-composite: source-in;
+            mask-composite: intersect;
+
+          img {
+            max-width: 2.25rem;
+            max-height: 2.25rem;
+            object-fit: contain;
+          }
+        }
   .mark-name {
     grid-area: Name;
     font-weight: 500;
