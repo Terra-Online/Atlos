@@ -100,9 +100,9 @@
             "soaked_wood": "浸水木塊",
             "hollow_bonechip": "中空骨片",
             "hollow_bone": "中空骨塊",
-            "aetherium": "aetherium",
+            "aetherium": "醚質",
             "vr": "VR",
-            "robot": "robot",
+            "robot": "維修機器人",
             "crate": "crate",
             "longear": "longear",
             "slug": "slug",
@@ -110,13 +110,13 @@
             "unstable": "unstable",
             "alluvium": "alluvium",
             "water": "water",
-            "tp": "TP",
-            "recycle": "recycle",
+            "tp": "協議源石",
+            "recycle": "資源回收站",
             "base": "base",
             "hub": "hub",
-            "control_nexus": "control_nexus",
-            "growth_chamber": "growth_chamber",
-            "manufacturing_cabin": "manufacturing_cabin",
+            "control_nexus": "總控中樞",
+            "growth_chamber": "培養艙",
+            "manufacturing_cabin": "制造艙",
             "exchange": "exchange",
             "tianshi_p": "tianshi_p",
             "tianshi_s": "tianshi_s",
@@ -127,7 +127,7 @@
         {
             "aggeloi": "天使",
             "landbreakers": "裂地者",
-            "cangzei": "Cangzei",
+            "cangzei": "滄賊",
             "natural": "natural",
             "valuable": "valuable",
             "gatherable": "gatherable",
@@ -141,10 +141,10 @@
     ],
     "types": [
         {
-            "enemy": "enemy",
-            "resource": "resource",
+            "enemy": "敵人",
+            "resource": "資源",
             "poi": "poi",
-            "facility": "facility"
+            "facility": "設施"
         }
     ]
 }

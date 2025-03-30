@@ -1,5 +1,662 @@
 [
   {
+    "id": "mark_dg_pazzle_008",
+    "type": "mark_dg_pazzle",
+    "position": [
+      205.9442,
+      828.2001
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_pazzle_009",
+    "type": "mark_dg_pazzle",
+    "position": [
+      200.7841,
+      469.7346
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_sp_campfire_029",
+    "type": "TP",
+    "position": [
+      337.8006,
+      872.75
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_sp_campfire_030",
+    "type": "TP",
+    "position": [
+      259.3828,
+      726.6265
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_sp_campfire_031",
+    "type": "TP",
+    "position": [
+      70.7286,
+      388.7135
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_sp_campfire_032",
+    "type": "TP",
+    "position": [
+      -96.3244,
+      380.9781
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_sp_campfire_033",
+    "type": "TP",
+    "position": [
+      -11.8695,
+      601.423
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_047",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      117.0104,
+      320.2239
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_048",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      45.087,
+      479.1029
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_049",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      303.1852,
+      463.9443
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_050",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      378.4304,
+      487.897
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_051",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      219.7772,
+      536.7168
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_052",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      279.6244,
+      592.7868
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_053",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -165.9897,
+      242.3473
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_fixablerobot_054",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      4.7849,
+      391.1424
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_iron_ore_013",
+    "type": "item_iron_ore",
+    "position": [
+      5.1395,
+      338.2891
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_iron_ore_014",
+    "type": "item_iron_ore",
+    "position": [
+      59.1471,
+      626.8161
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_copper_ore_001",
+    "type": "item_copper_ore",
+    "position": [
+      88.7861,
+      806.7577
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_iron_ore_015",
+    "type": "item_iron_ore",
+    "position": [
+      -57.3274,
+      554.4892
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_originium_ore_014",
+    "type": "item_originium_ore",
+    "position": [
+      -332.9607,
+      354.2449
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_originium_ore_015",
+    "type": "item_originium_ore",
+    "position": [
+      227.4184,
+      556.576
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_026",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -255.4274,
+      360.5525
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_027",
+    "type": "mark_dg_blackbox",
+    "position": [
+      8.2575,
+      327.894
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_028",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -344.2119,
+      361.3643
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_029",
+    "type": "mark_dg_blackbox",
+    "position": [
+      102.6359,
+      801.351
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_030",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -83.7462,
+      718.975
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_031",
+    "type": "mark_dg_blackbox",
+    "position": [
+      36.6891,
+      286.7442
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_032",
+    "type": "mark_dg_blackbox",
+    "position": [
+      65.7645,
+      749.0582
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_033",
+    "type": "mark_dg_blackbox",
+    "position": [
+      171.0275,
+      759.4063
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_034",
+    "type": "mark_dg_blackbox",
+    "position": [
+      152.7854,
+      476.117
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_dg_blackbox_035",
+    "type": "mark_dg_blackbox",
+    "position": [
+      11.5607,
+      627.8018
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_recycler_017",
+    "type": "mark_p_recycler",
+    "position": [
+      -195.7183,
+      430.2028
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_recycler_018",
+    "type": "mark_p_recycler",
+    "position": [
+      -236.924,
+      391.6061
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_recycler_019",
+    "type": "mark_p_recycler",
+    "position": [
+      76.2339,
+      754.6381
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_recycler_020",
+    "type": "mark_p_recycler",
+    "position": [
+      26.4739,
+      437.272
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_crylplant_2_1_001",
+    "type": "item_plant_crylplant_2_1",
+    "position": [
+      155.1835,
+      775.1943
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_mushroom_2_1_001",
+    "type": "item_plant_mushroom_2_1",
+    "position": [
+      -200.841,
+      245.8278
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_mushroom_2_1_002",
+    "type": "item_plant_mushroom_2_1",
+    "position": [
+      350.8547,
+      455.8874
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_crylplant_2_1_002",
+    "type": "item_plant_crylplant_2_1",
+    "position": [
+      169.4786,
+      467.3832
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_spcstone_2_1_001",
+    "type": "item_plant_spcstone_2_1",
+    "position": [
+      -21.863,
+      449.0197
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "item_plant_spcstone_2_1_002",
+    "type": "item_plant_spcstone_2_1",
+    "position": [
+      -25.8287,
+      793.5858
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "mark_p_enemyspawner_005",
+    "type": "mark_p_enemyspawner",
+    "position": [
+      38.0437,
+      515.8484
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_001",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -241.2162,
+      420.1216
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_002",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -283.7376,
+      387.2578
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_003",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -203.7336,
+      370.7699
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_004",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -315.0898,
+      265.9407
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_005",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -833.9084,
+      518.3304
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_001",
+    "type": "int_collection_coin",
+    "position": [
+      -860.158,
+      522.4567
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_006",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -828.3035,
+      554.8147
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_007",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -746.3689,
+      589.1341
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_008",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -838.5611,
+      578.0983
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_009",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -797.4447,
+      522.604
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_010",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -728.8826,
+      556.8632
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_011",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -501.6539,
+      808.9819
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_012",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -505.8296,
+      793.9646
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_013",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -509.324,
+      440.8738
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_014",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -570.0595,
+      352.8264
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_015",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -544.4553,
+      477.9832
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_016",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -544.138,
+      477.6193
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_017",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -623.6848,
+      640.2307
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_018",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -649.9982,
+      531.5711
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_019",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -647.4136,
+      412.3302
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_020",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -666.5701,
+      317.4992
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_021",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -552.088,
+      285.2793
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_022",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -543.7275,
+      273.9514
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_023",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -767.3356,
+      451.8004
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_024",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -490.9886,
+      569.1751
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_025",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -474.5847,
+      388.8348
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_002",
+    "type": "int_collection_coin",
+    "position": [
+      -497.7069,
+      406.3584
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_003",
+    "type": "int_collection_coin",
+    "position": [
+      -524.5802,
+      488.1166
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_026",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -833.6418,
+      748.0878
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_027",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -767.8115,
+      774.6345
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_collection_coin_puzzle_028",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -651.3721,
+      709.7557
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
     "id": "eny_0050_hound_001",
     "type": "bonekrusher_ripptusk",
     "position": [
@@ -815,6 +1472,384 @@
     "position": [
       -618.3191,
       875.4882
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_001",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -204.7694,
+      354.8438
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_001",
+    "type": "int_trchest_common_high",
+    "position": [
+      -266.8037,
+      443.2177
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_002",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -290.6706,
+      329.0062
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_002",
+    "type": "int_trchest_common_high",
+    "position": [
+      -243.2187,
+      274.2603
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_001",
+    "type": "int_trchest_common",
+    "position": [
+      -358.0666,
+      333.6503
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_003",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -302.6572,
+      290.1612
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_002",
+    "type": "int_trchest_common",
+    "position": [
+      -389.1313,
+      404.7348
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_004",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -330.5326,
+      395.3581
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_003",
+    "type": "int_trchest_common_high",
+    "position": [
+      -274.765,
+      208.0951
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_005",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -391.2271,
+      569.344
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_006",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -217.8794,
+      435.4347
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_lock_001",
+    "type": "int_trchest_lock",
+    "position": [
+      -390.7433,
+      451.516
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_003",
+    "type": "int_trchest_common",
+    "position": [
+      -508.3686,
+      279.8164
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_004",
+    "type": "int_trchest_common",
+    "position": [
+      -747.1844,
+      560.7184
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_007",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -724.1051,
+      515.7411
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_008",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -840.7296,
+      611.1226
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_004",
+    "type": "int_trchest_common_high",
+    "position": [
+      -844.8763,
+      469.7626
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_005",
+    "type": "int_trchest_common_high",
+    "position": [
+      -910.0757,
+      628.5296
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_009",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -860.0644,
+      537.2425
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_lock_002",
+    "type": "int_trchest_lock",
+    "position": [
+      -736.7423,
+      597.7001
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_006",
+    "type": "int_trchest_common_high",
+    "position": [
+      -802.7375,
+      485.8585
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_010",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -512.1215,
+      821.4183
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_011",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -491.9404,
+      746.8281
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_005",
+    "type": "int_trchest_common",
+    "position": [
+      -398.9289,
+      727.7462
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_007",
+    "type": "int_trchest_common_high",
+    "position": [
+      -523.913,
+      490.6911
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_012",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -503.5481,
+      411.7237
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_013",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -633.3051,
+      378.6533
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_014",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -610.5841,
+      524.4609
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_006",
+    "type": "int_trchest_common",
+    "position": [
+      -522.1635,
+      440.076
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_008",
+    "type": "int_trchest_common_high",
+    "position": [
+      -496.3539,
+      542.3951
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_007",
+    "type": "int_trchest_common",
+    "position": [
+      -476.6758,
+      532.2551
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_015",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -694.0714,
+      456.2662
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_008",
+    "type": "int_trchest_common",
+    "position": [
+      -612.1573,
+      459.1952
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_009",
+    "type": "int_trchest_common",
+    "position": [
+      -544.9759,
+      564.6981
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_010",
+    "type": "int_trchest_common",
+    "position": [
+      -469.4041,
+      443.7393
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_016",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -719.057,
+      328.2112
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_017",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -788.5777,
+      752.0889
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_018",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -788.8875,
+      803.3684
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_normal_019",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -842.4288,
+      727.2768
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_011",
+    "type": "int_trchest_common",
+    "position": [
+      -664.5434,
+      842.4821
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_012",
+    "type": "int_trchest_common",
+    "position": [
+      -602.509,
+      696.3035
+    ],
+    "subregionId": "Jinlong"
+  },
+  {
+    "id": "int_trchest_common_high_009",
+    "type": "int_trchest_common_high",
+    "position": [
+      -604.2262,
+      850.8565
     ],
     "subregionId": "Jinlong"
   }

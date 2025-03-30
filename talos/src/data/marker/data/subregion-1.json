@@ -1,5 +1,482 @@
 [
   {
+    "id": "mark_dg_resource_007",
+    "type": "mark_dg_resource",
+    "position": [
+      -711.192,
+      414.9332
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_dg_resource_008",
+    "type": "mark_dg_resource",
+    "position": [
+      -669.6606,
+      426.4645
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_dg_resource_009",
+    "type": "mark_dg_resource",
+    "position": [
+      -750.0983,
+      418.3082
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_dg_pazzle_005",
+    "type": "mark_dg_pazzle",
+    "position": [
+      -799.9266,
+      406.4488
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_sp_campfire_014",
+    "type": "TP",
+    "position": [
+      -716.142,
+      391.9644
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_sp_campfire_015",
+    "type": "TP",
+    "position": [
+      -643.3309,
+      473.1333
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_sp_campfire_016",
+    "type": "TP",
+    "position": [
+      -805.5703,
+      538.0226
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_fixablerobot_016",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -725.9018,
+      448.8487
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_fixablerobot_017",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -727.1664,
+      421.2055
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_fixablerobot_018",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -703.7096,
+      471.1608
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_fixablerobot_019",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -680.1194,
+      510.8412
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_dg_bossrush_002",
+    "type": "mark_dg_bossrush",
+    "position": [
+      -601.598,
+      510.4647
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_originium_ore_007",
+    "type": "item_originium_ore",
+    "position": [
+      -766.2562,
+      532.4116
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_iron_ore_002",
+    "type": "item_iron_ore",
+    "position": [
+      -653.7231,
+      433.7536
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_originium_ore_008",
+    "type": "item_originium_ore",
+    "position": [
+      -653.9387,
+      452.902
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_iron_ore_003",
+    "type": "item_iron_ore",
+    "position": [
+      -665.3153,
+      500.9865
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_iron_ore_004",
+    "type": "item_iron_ore",
+    "position": [
+      -779.6109,
+      363.9237
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_originium_ore_009",
+    "type": "item_originium_ore",
+    "position": [
+      -730.678,
+      442.7583
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_recycler_008",
+    "type": "mark_p_recycler",
+    "position": [
+      -732.4076,
+      375.4409
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_recycler_009",
+    "type": "mark_p_recycler",
+    "position": [
+      -749.1608,
+      495.7928
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_recycler_010",
+    "type": "mark_p_recycler",
+    "position": [
+      -635.1333,
+      449.7464
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_plant_mushroom_1_3_001",
+    "type": "item_plant_mushroom_1_3",
+    "position": [
+      -647.7746,
+      513.874
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_plant_mushroom_1_2_001",
+    "type": "item_plant_mushroom_1_2",
+    "position": [
+      -773.0585,
+      420.3423
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_plant_crylplant_1_3_001",
+    "type": "item_plant_crylplant_1_3",
+    "position": [
+      -669.0794,
+      429.1129
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "item_plant_spcstone_1_3_001",
+    "type": "item_plant_spcstone_1_3",
+    "position": [
+      -716.8639,
+      464.4849
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "mark_p_enemyspawner_002",
+    "type": "mark_p_enemyspawner",
+    "position": [
+      -627.1149,
+      445.9549
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_004",
+    "type": "int_collection_coin",
+    "position": [
+      -129.8281,
+      551.771
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_005",
+    "type": "int_collection_coin",
+    "position": [
+      -215.333,
+      419.2035
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_029",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -264.231,
+      423.019
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_006",
+    "type": "int_collection_coin",
+    "position": [
+      -204.923,
+      544.6605
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_030",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -247.6346,
+      489.5959
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_031",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -198.5751,
+      510.3194
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_007",
+    "type": "int_collection_coin",
+    "position": [
+      -173.1871,
+      445.3466
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_008",
+    "type": "int_collection_coin",
+    "position": [
+      -231.8056,
+      350.3463
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_009",
+    "type": "int_collection_coin",
+    "position": [
+      -163.2466,
+      425.4123
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_010",
+    "type": "int_collection_coin",
+    "position": [
+      -210.2583,
+      360.28
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_011",
+    "type": "int_collection_coin",
+    "position": [
+      -278.4019,
+      415.3399
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_012",
+    "type": "int_collection_coin",
+    "position": [
+      -285.3864,
+      499.0582
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_013",
+    "type": "int_collection_coin",
+    "position": [
+      -221.358,
+      558.3594
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_014",
+    "type": "int_collection_coin",
+    "position": [
+      -152.7547,
+      452.2364
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_015",
+    "type": "int_collection_coin",
+    "position": [
+      -142.9109,
+      469.1724
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_016",
+    "type": "int_collection_coin",
+    "position": [
+      -196.2687,
+      529.1471
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_017",
+    "type": "int_collection_coin",
+    "position": [
+      -231.6462,
+      532.42
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_018",
+    "type": "int_collection_coin",
+    "position": [
+      -243.958,
+      400.0332
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_019",
+    "type": "int_collection_coin",
+    "position": [
+      -311.682,
+      407.1019
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_020",
+    "type": "int_collection_coin",
+    "position": [
+      -342.4308,
+      450.206
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_021",
+    "type": "int_collection_coin",
+    "position": [
+      -323.0119,
+      475.8626
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_022",
+    "type": "int_collection_coin",
+    "position": [
+      -232.0911,
+      544.7854
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_023",
+    "type": "int_collection_coin",
+    "position": [
+      -181.2829,
+      527.0642
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_024",
+    "type": "int_collection_coin",
+    "position": [
+      -215.2091,
+      539.6053
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_025",
+    "type": "int_collection_coin",
+    "position": [
+      -189.2231,
+      335.0074
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_026",
+    "type": "int_collection_coin",
+    "position": [
+      -270.9252,
+      553.8252
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_collection_coin_027",
+    "type": "int_collection_coin",
+    "position": [
+      -248.6045,
+      551.6257
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
     "id": "eny_0029_lbmob_004",
     "type": "bonekrusher_raider",
     "position": [
@@ -226,7 +703,7 @@
   },
   {
     "id": "eny_0052_palesent_001",
-    "type": "eny_0052_palesent",
+    "type": "marble_aggelomoirai",
     "position": [
       -381.1798,
       518.4873
@@ -604,7 +1081,7 @@
   },
   {
     "id": "eny_0061_palecore_001",
-    "type": "marble_appendage",
+    "type": "eny_0061_palecore",
     "position": [
       -381.1818,
       518.485
@@ -1031,6 +1508,249 @@
     "position": [
       -208.5267,
       327.9189
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_normal_020",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -130.939,
+      546.1648
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_013",
+    "type": "int_trchest_common",
+    "position": [
+      -145.2697,
+      482.679
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_normal_021",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -139.8078,
+      491.6537
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_014",
+    "type": "int_trchest_common",
+    "position": [
+      -272.7597,
+      469.7958
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_015",
+    "type": "int_trchest_common",
+    "position": [
+      -200.8686,
+      448.0678
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_normal_022",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -212.414,
+      543.4179
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_010",
+    "type": "int_trchest_common_high",
+    "position": [
+      -171.0004,
+      499.4898
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_016",
+    "type": "int_trchest_common",
+    "position": [
+      -177.5568,
+      493.8503
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_017",
+    "type": "int_trchest_common",
+    "position": [
+      -260.499,
+      468.2264
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_018",
+    "type": "int_trchest_common",
+    "position": [
+      -162.0951,
+      468.1247
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_normal_023",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -333.9926,
+      457.253
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_011",
+    "type": "int_trchest_common_high",
+    "position": [
+      -192.1842,
+      416.9741
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_019",
+    "type": "int_trchest_common",
+    "position": [
+      -143.0031,
+      492.6685
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_020",
+    "type": "int_trchest_common",
+    "position": [
+      -141.1472,
+      502.0935
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_012",
+    "type": "int_trchest_common_high",
+    "position": [
+      -168.9641,
+      441.3712
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_013",
+    "type": "int_trchest_common_high",
+    "position": [
+      -153.8141,
+      445.0505
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_lock_003",
+    "type": "int_trchest_lock",
+    "position": [
+      -144.2375,
+      443.1989
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_021",
+    "type": "int_trchest_common",
+    "position": [
+      -210.5606,
+      361.8757
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_022",
+    "type": "int_trchest_common",
+    "position": [
+      -174.1834,
+      375.1374
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_normal_024",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -255.712,
+      440.1029
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_023",
+    "type": "int_trchest_common",
+    "position": [
+      -165.4731,
+      414.854
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_024",
+    "type": "int_trchest_common",
+    "position": [
+      -157.0789,
+      399.568
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_lock_004",
+    "type": "int_trchest_lock",
+    "position": [
+      -267.655,
+      458.1052
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_lock_005",
+    "type": "int_trchest_lock",
+    "position": [
+      -228.3113,
+      389.6656
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_025",
+    "type": "int_trchest_common",
+    "position": [
+      -184.4141,
+      360.3096
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_014",
+    "type": "int_trchest_common_high",
+    "position": [
+      -209.9519,
+      381.6699
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_trchest_common_high_015",
+    "type": "int_trchest_common_high",
+    "position": [
+      -283.4965,
+      486.6978
     ],
     "subregionId": "subregion-1"
   }
