@@ -1,0 +1,29 @@
+[
+    {
+        "id": "11",
+        "position": [
+            -747.75,
+            630.625
+        ],
+        "subregionId": "subregion-4",
+        "type": "tp"
+    },
+    {
+        "id": "12",
+        "position": [
+            -771.375,
+            707.875
+        ],
+        "subregionId": "subregion-4",
+        "type": "tp"
+    },
+    {
+        "id": "13",
+        "position": [
+            -802.75,
+            684.125
+        ],
+        "subregionId": "subregion-4",
+        "type": "tp"
+    }
+]

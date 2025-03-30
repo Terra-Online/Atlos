@@ -4,12 +4,13 @@ import useIni from '../store/initial';
 import useRegion from '../store/region';
 import useContinuity from '../store/continuity';
 import useVisual from '../store/visual';
+import { useFilter, useMarkerStore } from '../store/marker';
 
 // Assmeble all stores to useMap
 export function useMap(elementId) {
   const {
     map, isInitialized, initMap, addTileLayer,
-    setMapView, isChangingView
+    setMapView, isChangingView, markerLayer
   } = useIni();
 
   const {
@@ -25,6 +26,8 @@ export function useMap(elementId) {
   const {
     createHighlight, removeHighlight
   } = useVisual();
+
+  const filter = useFilter();
 
   // initMap
   useEffect(() => {
@@ -155,6 +158,11 @@ export function useMap(elementId) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [map, currentRegion]);
+  // set filter
+  useEffect(() => {
+    markerLayer?.filterMarker(filter);
+    useMarkerStore.setState({ points: markerLayer?.getCurrentPoints(currentRegion) ?? [] })
+  }, [filter, markerLayer, currentRegion]);
 
   return {
     map,

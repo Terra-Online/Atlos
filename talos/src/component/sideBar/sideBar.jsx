@@ -12,6 +12,7 @@ import Mark from '../mark/mark';
 
 import pointsData from '../../data/main.json';
 import typesData from '../../data/types.json';
+import { MAEKER_TYPE_TREE } from '../../data/marker';
 
 const SideBar = ({ map, currentRegion, onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -111,69 +112,17 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
         <div className="sidebar-content">
           <Search />
           <div className='filters'>
-            <MarkFilter title='Resource'>
-              {typesByCategory.resource.map((typeInfo, index) => (
-                <Mark
-                  key={`resource-${typeInfo.sub}-${typeInfo.key}-${index}`}
-                  points={points}
-                  typeInfo={typeInfo}
-                  regionFilter={regionFilter}
-                  onFilterClick={(info) => handleMarkFilter('resource', info)}
-                  isFilterActive={isFilterActive('resource', typeInfo)}
-                />
-              ))}
-              {typesByCategory.resource.length === 0 && (
-                <div className="mark-empty">No points available. Contact your Endministrator for support.</div>
-              )}
-            </MarkFilter>
-
-            <MarkFilter title='Enemies'>
-              {typesByCategory.enemy.map((typeInfo, index) => (
-                <Mark
-                  key={`enemy-${typeInfo.sub}-${typeInfo.key}-${index}`}
-                  points={points}
-                  typeInfo={typeInfo}
-                  regionFilter={regionFilter}
-                  onFilterClick={(info) => handleMarkFilter('enemy', info)}
-                  isFilterActive={isFilterActive('enemy', typeInfo)}
-                />
-              ))}
-              {typesByCategory.enemy.length === 0 && (
-                <div className="mark-empty">No points available. Contact your Endministrator for support.</div>
-              )}
-            </MarkFilter>
-
-            <MarkFilter title='POI'>
-              {typesByCategory.poi.map((typeInfo, index) => (
-                <Mark
-                  key={`poi-${typeInfo.sub}-${typeInfo.key}-${index}`}
-                  points={points}
-                  typeInfo={typeInfo}
-                  regionFilter={regionFilter}
-                  onFilterClick={(info) => handleMarkFilter('poi', info)}
-                  isFilterActive={isFilterActive('poi', typeInfo)}
-                />
-              ))}
-              {typesByCategory.poi.length === 0 && (
-                <div className="mark-empty">No points available. Contact your Endministrator for support.</div>
-              )}
-            </MarkFilter>
-
-            <MarkFilter title='Facilities'>
-              {typesByCategory.facility.map((typeInfo, index) => (
-                <Mark
-                  key={`facility-${typeInfo.sub}-${typeInfo.key}-${index}`}
-                  points={points}
-                  typeInfo={typeInfo}
-                  regionFilter={regionFilter}
-                  onFilterClick={(info) => handleMarkFilter('facility', info)}
-                  isFilterActive={isFilterActive('facility', typeInfo)}
-                />
-              ))}
-              {typesByCategory.facility.length === 0 && (
-                <div className="mark-empty">No points available. Contact your Endministrator for support.</div>
-              )}
-            </MarkFilter>
+            {Object.entries(MAEKER_TYPE_TREE).map(([key, value]) => (
+              <MarkFilter title={key} key={key}>{
+                Object.values(value).flat().map((typeInfo, index) => (
+                  // console.log(typeInfo) &&
+                  <Mark
+                    key={typeInfo.key}
+                    typeInfo={typeInfo}
+                  />
+                ))
+              }</MarkFilter>
+            ))}
           </div>
         </div>
       </div>

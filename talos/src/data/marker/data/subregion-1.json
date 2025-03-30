@@ -1,0 +1,38 @@
+[
+    {
+        "id": "25",
+        "position": [
+            -154.75,
+            539
+        ],
+        "subregionId": "subregion-1",
+        "type": "tp"
+    },
+    {
+        "id": "26",
+        "position": [
+            -316.125,
+            473.625
+        ],
+        "subregionId": "subregion-1",
+        "type": "tp"
+    },
+    {
+        "id": "27",
+        "position": [
+            -243.375,
+            392.5
+        ],
+        "subregionId": "subregion-1",
+        "type": "tp"
+    },
+    {
+        "id": "28",
+        "position": [
+            -280.5,
+            366.5
+        ],
+        "subregionId": "subregion-1",
+        "type": "control_nexus"
+    }
+]

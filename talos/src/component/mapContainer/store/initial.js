@@ -1,11 +1,13 @@
 // Initialization store for map instance and basic configurations
 import { create } from 'zustand';
-import L from 'leaflet';
+import L, { Marker } from 'leaflet';
 import { getTileResourceUrl } from "../../../utils/resource";
 import { MAP_CONFIGS, DEFAULT_CONFIG } from '../map_config';
+import { MarkerLayer } from './marker';
 
 const useIni = create((set, get) => ({
     map: null,
+    markerLayer: null,
     isInitialized: false,
     isChangingView: false,
     // initialize map
@@ -25,8 +27,11 @@ const useIni = create((set, get) => ({
         const northEast = initialMap.unproject([config.dimensions[0], 0], config.maxZoom);
         initialMap.setMaxBounds(new L.LatLngBounds(southWest, northEast));
 
+        const markerLayer = new MarkerLayer(initialMap);
+
         set({
             map: initialMap,
+            markerLayer: markerLayer,
             isInitialized: true,
         });
 
@@ -34,10 +39,12 @@ const useIni = create((set, get) => ({
     },
     // transfer tile layer
     addTileLayer: (region, config) => {
-        const { map } = get();
+        const { map, markerLayer } = get();
         if (!map) return null;
 
         map.eachLayer(layer => map.removeLayer(layer));
+
+        markerLayer.changeRegion(region);
 
         const southWest = map.unproject([0, config.dimensions[1]], config.maxZoom);
         const northEast = map.unproject([config.dimensions[0], 0], config.maxZoom);
