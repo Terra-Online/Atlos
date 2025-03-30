@@ -69,8 +69,8 @@
     justify-content: center;
     z-index: 2;
     img {
-      max-width: 2.5rem;
-      max-height: 2.5rem;
+      max-width: 2.25rem;
+      max-height: 2.25rem;
       object-fit: contain;
     }
   }
@@ -79,7 +79,7 @@
     font-weight: 500;
     font-family: 'UD_ShinGo DemiBold', sans-serif;
     color: inherit;
-    font-size: 0.875rem;
+    font-size: .735rem;
     line-height: 1.2;
     margin: 0;
     align-self: end;
@@ -90,7 +90,7 @@
   }
   .mark-stat {
     grid-area: Num;
-    font-size: .9rem;
+    font-size: .8rem;
     font-family: 'Novecento Medium', sans-serif;
     color: inherit;
     align-self: start;
