@@ -1,29 +1,398 @@
 [
-    {
-        "id": "11",
-        "position": [
-            -747.75,
-            630.625
-        ],
-        "subregionId": "subregion-4",
-        "type": "tp"
-    },
-    {
-        "id": "12",
-        "position": [
-            -771.375,
-            707.875
-        ],
-        "subregionId": "subregion-4",
-        "type": "tp"
-    },
-    {
-        "id": "13",
-        "position": [
-            -802.75,
-            684.125
-        ],
-        "subregionId": "subregion-4",
-        "type": "tp"
-    }
+  {
+    "id": "eny_0021_agmelee_115",
+    "type": "ram",
+    "position": [
+      -741.3023,
+      659.6699
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_061",
+    "type": "sting",
+    "position": [
+      -743.0865,
+      661.1399
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_116",
+    "type": "ram",
+    "position": [
+      -745.4322,
+      677.9841
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_117",
+    "type": "ram",
+    "position": [
+      -746.3977,
+      675.8707
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0023_aghornb_011",
+    "type": "heavy_ram",
+    "position": [
+      -754.8452,
+      684.0043
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_118",
+    "type": "ram",
+    "position": [
+      -748.1488,
+      674.9837
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_062",
+    "type": "sting",
+    "position": [
+      -758.6444,
+      640.1515
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0064_agrange2_014",
+    "type": "sting_a",
+    "position": [
+      -759.7222,
+      638.3654
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_063",
+    "type": "sting",
+    "position": [
+      -759.0629,
+      638.0282
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_119",
+    "type": "ram",
+    "position": [
+      -781.2427,
+      709.2259
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_120",
+    "type": "ram",
+    "position": [
+      -780.8468,
+      712.5014
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_121",
+    "type": "ram",
+    "position": [
+      -778.8422,
+      715.2311
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0069_aghornb2_004",
+    "type": "heavy_ram_a",
+    "position": [
+      -779.9435,
+      713.6304
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_064",
+    "type": "sting",
+    "position": [
+      -777.5743,
+      714.0566
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0064_agrange2_015",
+    "type": "sting_a",
+    "position": [
+      -785.6047,
+      707.4701
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0064_agrange2_016",
+    "type": "sting_a",
+    "position": [
+      -783.4508,
+      706.6995
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_005",
+    "type": "ram_a",
+    "position": [
+      -782.599,
+      707.2125
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_006",
+    "type": "ram_a",
+    "position": [
+      -783.4492,
+      710.6637
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_122",
+    "type": "ram",
+    "position": [
+      -808.1344,
+      608.0774
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_065",
+    "type": "sting",
+    "position": [
+      -809.6438,
+      608.5134
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_066",
+    "type": "sting",
+    "position": [
+      -807.7594,
+      610.1305
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_067",
+    "type": "sting",
+    "position": [
+      -743.0797,
+      657.8495
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_068",
+    "type": "sting",
+    "position": [
+      -747.7134,
+      676.9309
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_123",
+    "type": "ram",
+    "position": [
+      -775.5987,
+      657.3646
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_007",
+    "type": "ram_a",
+    "position": [
+      -771.9632,
+      660.0804
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_069",
+    "type": "sting",
+    "position": [
+      -772.4221,
+      657.2494
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_070",
+    "type": "sting",
+    "position": [
+      -770.1605,
+      657.4837
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_071",
+    "type": "sting",
+    "position": [
+      -807.479,
+      635.9563
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_072",
+    "type": "sting",
+    "position": [
+      -809.3433,
+      635.8654
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0070_agscorp2_003",
+    "type": "heavy_sting_a",
+    "position": [
+      -875.4519,
+      676.1804
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_124",
+    "type": "ram",
+    "position": [
+      -873.9119,
+      679.2547
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_125",
+    "type": "ram",
+    "position": [
+      -871.1803,
+      676.4882
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0070_agscorp2_004",
+    "type": "heavy_sting_a",
+    "position": [
+      -767.3435,
+      721.9392
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0021_agmelee_126",
+    "type": "ram",
+    "position": [
+      -768.5912,
+      721.2002
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_008",
+    "type": "ram_a",
+    "position": [
+      -769.5517,
+      720.1867
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0027_agscorp_008",
+    "type": "heavy_sting",
+    "position": [
+      -808.4405,
+      635.7942
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0025_agrange_073",
+    "type": "sting",
+    "position": [
+      -767.6665,
+      722.882
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0064_agrange2_017",
+    "type": "sting_a",
+    "position": [
+      -767.2369,
+      720.6446
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0058_agdisk_005",
+    "type": "effigy",
+    "position": [
+      -780.4908,
+      702.8228
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_009",
+    "type": "ram_a",
+    "position": [
+      -784.8838,
+      707.5448
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0007_mimicw_012",
+    "type": "poison_ivy",
+    "position": [
+      -781.1822,
+      595.3333
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_010",
+    "type": "ram_a",
+    "position": [
+      -880.3188,
+      617.135
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0063_agmelee2_011",
+    "type": "ram_a",
+    "position": [
+      -875.8779,
+      614.755
+    ],
+    "subregionId": "subregion-4"
+  },
+  {
+    "id": "eny_0070_agscorp2_005",
+    "type": "heavy_sting_a",
+    "position": [
+      -878.1142,
+      615.5071
+    ],
+    "subregionId": "subregion-4"
+  }
 ]

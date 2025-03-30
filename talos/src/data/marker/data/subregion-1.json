@@ -1,38 +1,1037 @@
 [
-    {
-        "id": "25",
-        "position": [
-            -154.75,
-            539
-        ],
-        "subregionId": "subregion-1",
-        "type": "tp"
-    },
-    {
-        "id": "26",
-        "position": [
-            -316.125,
-            473.625
-        ],
-        "subregionId": "subregion-1",
-        "type": "tp"
-    },
-    {
-        "id": "27",
-        "position": [
-            -243.375,
-            392.5
-        ],
-        "subregionId": "subregion-1",
-        "type": "tp"
-    },
-    {
-        "id": "28",
-        "position": [
-            -280.5,
-            366.5
-        ],
-        "subregionId": "subregion-1",
-        "type": "control_nexus"
-    }
+  {
+    "id": "eny_0029_lbmob_004",
+    "type": "bonekrusher_raider",
+    "position": [
+      -176.7922,
+      481.088
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_005",
+    "type": "bonekrusher_raider",
+    "position": [
+      -176.7922,
+      483.6662
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_007",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -176.2306,
+      466.9143
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_006",
+    "type": "bonekrusher_raider",
+    "position": [
+      -176.4829,
+      469.6974
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_007",
+    "type": "bonekrusher_raider",
+    "position": [
+      -174.7773,
+      468.1327
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0048_hvybow_001",
+    "type": "bonekrusher_ballista",
+    "position": [
+      -329.0192,
+      488.6724
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_008",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -166.0391,
+      459.9755
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_011",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -238.7268,
+      483.199
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_012",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -238.6579,
+      485.4666
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_008",
+    "type": "bonekrusher_raider",
+    "position": [
+      -213.7918,
+      464.0367
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_009",
+    "type": "bonekrusher_raider",
+    "position": [
+      -215.7809,
+      464.5037
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_010",
+    "type": "bonekrusher_raider",
+    "position": [
+      -257.1055,
+      482.7949
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_005",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -180.1297,
+      480.623
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_009",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -179.6422,
+      482.3349
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_011",
+    "type": "bonekrusher_raider",
+    "position": [
+      -201.3689,
+      455.6489
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_010",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -203.3001,
+      457.0505
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0065_lbmob2_001",
+    "type": "elite_raider",
+    "position": [
+      -255.5461,
+      475.3468
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0046_lbshamman_001",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -253.0626,
+      475.868
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_013",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -259.494,
+      470.8646
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_012",
+    "type": "bonekrusher_raider",
+    "position": [
+      -254.6222,
+      477.3135
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_006",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -268.189,
+      475.6295
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_014",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -260.5581,
+      471.4318
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0067_hound2_001",
+    "type": "elite_ripptusk",
+    "position": [
+      -258.7393,
+      471.9661
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_013",
+    "type": "bonekrusher_raider",
+    "position": [
+      -263.4299,
+      467.3206
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_007",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -268.8275,
+      473.0219
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0052_palesent_001",
+    "type": "eny_0052_palesent",
+    "position": [
+      -381.1798,
+      518.4873
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_014",
+    "type": "bonekrusher_raider",
+    "position": [
+      -211.2689,
+      434.0114
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_015",
+    "type": "bonekrusher_raider",
+    "position": [
+      -210.5095,
+      437.0817
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_016",
+    "type": "bonekrusher_raider",
+    "position": [
+      -231.9828,
+      422.6755
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_017",
+    "type": "bonekrusher_raider",
+    "position": [
+      -231.2939,
+      420.4973
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0065_lbmob2_002",
+    "type": "elite_raider",
+    "position": [
+      -233.4419,
+      421.9664
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_018",
+    "type": "bonekrusher_raider",
+    "position": [
+      -252.9208,
+      438.5565
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_008",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -255.0065,
+      438.7381
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_019",
+    "type": "bonekrusher_raider",
+    "position": [
+      -255.6548,
+      436.6086
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_020",
+    "type": "bonekrusher_raider",
+    "position": [
+      -234.4908,
+      450.938
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_021",
+    "type": "bonekrusher_raider",
+    "position": [
+      -233.1605,
+      449.1011
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0046_lbshamman_002",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -233.3075,
+      450.8383
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_015",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -162.9735,
+      458.6677
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_016",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -162.9688,
+      461.4005
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_009",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -202.6714,
+      457.8185
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_022",
+    "type": "bonekrusher_raider",
+    "position": [
+      -200.9704,
+      457.9739
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_011",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -240.5262,
+      484.2556
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0047_firebat_001",
+    "type": "bonekrusher_arsonist",
+    "position": [
+      -270.1929,
+      475.1335
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_023",
+    "type": "bonekrusher_raider",
+    "position": [
+      -255.7674,
+      483.2349
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_017",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -264.9099,
+      467.034
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0066_lbhunt2_001",
+    "type": "elite_ambusher",
+    "position": [
+      -255.5002,
+      464.8458
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_018",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -253.336,
+      465.6753
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_019",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -253.3018,
+      462.1177
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0068_lbtough2_002",
+    "type": "elite_executioner",
+    "position": [
+      -271.9385,
+      461.8708
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_020",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -284.3097,
+      451.0598
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0067_hound2_002",
+    "type": "elite_ripptusk",
+    "position": [
+      -283.3066,
+      450.7645
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_012",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -283.1472,
+      453.202
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_013",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -274.72,
+      462.6376
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_014",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -271.0433,
+      458.7866
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0046_lbshamman_003",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -210.0642,
+      435.2723
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_001",
+    "type": "ram",
+    "position": [
+      -202.2946,
+      407.3556
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0063_agmelee2_001",
+    "type": "ram_a",
+    "position": [
+      -201.7147,
+      409.9764
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_002",
+    "type": "ram",
+    "position": [
+      -199.1001,
+      409.3691
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_001",
+    "type": "sting",
+    "position": [
+      -250.9766,
+      409.5985
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0069_aghornb2_001",
+    "type": "heavy_ram_a",
+    "position": [
+      -272.169,
+      399.9613
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_002",
+    "type": "sting",
+    "position": [
+      -252.7667,
+      410.5668
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_003",
+    "type": "sting",
+    "position": [
+      -249.1018,
+      411.0519
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_015",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -254.4537,
+      431.7158
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_016",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -249.4675,
+      436.5032
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0007_mimicw_001",
+    "type": "poison_ivy",
+    "position": [
+      -245.1085,
+      428.5197
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_003",
+    "type": "ram",
+    "position": [
+      -242.9149,
+      429.7954
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_004",
+    "type": "ram",
+    "position": [
+      -246.1829,
+      425.803
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0061_palecore_001",
+    "type": "marble_appendage",
+    "position": [
+      -381.1818,
+      518.485
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0069_aghornb2_002",
+    "type": "heavy_ram_a",
+    "position": [
+      -232.8604,
+      498.6571
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_021",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -259.8268,
+      472.7349
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0063_agmelee2_002",
+    "type": "ram_a",
+    "position": [
+      -209.9288,
+      506.642
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_005",
+    "type": "ram",
+    "position": [
+      -211.4095,
+      513.1553
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_004",
+    "type": "sting",
+    "position": [
+      -208.5914,
+      509.2983
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_005",
+    "type": "sting",
+    "position": [
+      -213.5657,
+      508.2615
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0025_agrange_006",
+    "type": "sting",
+    "position": [
+      -214.9673,
+      511.8428
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_024",
+    "type": "bonekrusher_raider",
+    "position": [
+      -324.5192,
+      487.6271
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_025",
+    "type": "bonekrusher_raider",
+    "position": [
+      -326.1879,
+      485.5084
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_006",
+    "type": "ram",
+    "position": [
+      -274.2693,
+      426.7616
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0007_mimicw_002",
+    "type": "poison_ivy",
+    "position": [
+      -275.1925,
+      430.327
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_007",
+    "type": "ram",
+    "position": [
+      -277.2803,
+      432.7618
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_008",
+    "type": "ram",
+    "position": [
+      -220.8157,
+      412.8145
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0007_mimicw_003",
+    "type": "poison_ivy",
+    "position": [
+      -217.3711,
+      414.5246
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0021_agmelee_009",
+    "type": "ram",
+    "position": [
+      -219.4294,
+      417.3525
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_026",
+    "type": "bonekrusher_raider",
+    "position": [
+      -155.817,
+      440.5715
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_027",
+    "type": "bonekrusher_raider",
+    "position": [
+      -156.9027,
+      441.6653
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0049_rogue_010",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -155.4031,
+      442.1817
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0066_lbhunt2_002",
+    "type": "elite_ambusher",
+    "position": [
+      -153.6078,
+      444.052
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_017",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -154.6156,
+      444.502
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0070_agscorp2_001",
+    "type": "heavy_sting_a",
+    "position": [
+      -267.9831,
+      400.041
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0058_agdisk_001",
+    "type": "effigy",
+    "position": [
+      -305.9614,
+      448.5815
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_010",
+    "type": "eny_0057_dog",
+    "position": [
+      -194.8165,
+      438.7198
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_011",
+    "type": "eny_0057_dog",
+    "position": [
+      -196.5246,
+      437.7286
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_012",
+    "type": "eny_0057_dog",
+    "position": [
+      -197.6489,
+      440.0152
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_013",
+    "type": "eny_0057_dog",
+    "position": [
+      -231.8097,
+      373.5607
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_014",
+    "type": "eny_0057_dog",
+    "position": [
+      -232.3483,
+      375.6791
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_015",
+    "type": "eny_0057_dog",
+    "position": [
+      -274.9862,
+      499.0178
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_016",
+    "type": "eny_0057_dog",
+    "position": [
+      -274.1659,
+      497.4943
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_017",
+    "type": "eny_0057_dog",
+    "position": [
+      -275.1503,
+      495.8115
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_018",
+    "type": "eny_0057_dog",
+    "position": [
+      -195.7022,
+      523.9449
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_019",
+    "type": "eny_0057_dog",
+    "position": [
+      -192.5969,
+      527.186
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_020",
+    "type": "eny_0057_dog",
+    "position": [
+      -189.8095,
+      525.8444
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_021",
+    "type": "eny_0057_dog",
+    "position": [
+      -243.1862,
+      492.5443
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0057_dog_022",
+    "type": "eny_0057_dog",
+    "position": [
+      -238.6393,
+      491.5834
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_018",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -255.57,
+      462.4271
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_028",
+    "type": "bonekrusher_raider",
+    "position": [
+      -174.5619,
+      440.2106
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_029",
+    "type": "bonekrusher_raider",
+    "position": [
+      -172.3864,
+      439.8047
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_019",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -174.6429,
+      442.1242
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_020",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -171.3768,
+      442.2947
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0046_lbshamman_004",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -173.5968,
+      439.9823
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0033_lbhunt_021",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -208.2595,
+      330.4642
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_030",
+    "type": "bonekrusher_raider",
+    "position": [
+      -206.7079,
+      328.2799
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_031",
+    "type": "bonekrusher_raider",
+    "position": [
+      -191.9517,
+      351.6893
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0029_lbmob_032",
+    "type": "bonekrusher_raider",
+    "position": [
+      -193.0626,
+      350.0534
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0047_firebat_002",
+    "type": "bonekrusher_arsonist",
+    "position": [
+      -197.3709,
+      344.584
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "eny_0050_hound_022",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -208.5267,
+      327.9189
+    ],
+    "subregionId": "subregion-1"
+  }
 ]

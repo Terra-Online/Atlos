@@ -958,5 +958,29 @@
             "main": "facility",
             "sub": "others"
         }
+    },
+    "marble_appendage": {
+        "key": "marble_appendage",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "eny_0057_dog": {
+        "key": "eny_0057_dog",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
+    },
+    "eny_0018_lbtough_001": {
+        "key": "eny_0018_lbtough_001",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "Aggeloi"
+        }
     }
 }

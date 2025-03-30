@@ -65,10 +65,16 @@ export class MarkerLayer {
      */
     importMarker(markers) {
         markers.forEach(marker => {
+
             const typeKey = marker.type;
+            if (!this.markerTypeMap[typeKey]) {
+                LOGGER.warn(`Missing type config for '${typeKey}'`)
+                return
+            }
             const layer = new L.Marker(marker.position, { icon: MARKER_TYPE_ICON_DICT[typeKey], alt: typeKey })
             this.markerDict[marker.id] = layer;
             this.markerDataDict[marker.id] = marker;
+
             this.markerTypeMap[typeKey].push(marker.id);
             // layer.addTo(this.layerSubregionDict[marker.region.sub]);
         });
@@ -103,7 +109,7 @@ export class MarkerLayer {
     }
 }
 
-const INIT_MARKER_FILTER = ["tp", "hub"]
+const INIT_MARKER_FILTER = ["growth_chamber", "hub"]
 
 export const useMarkerStore = create((set) => ({
     filter: INIT_MARKER_FILTER,
@@ -118,6 +124,6 @@ export const useMarkerStore = create((set) => ({
     }
 }))
 
-export const usePoints = () => useMarkerStore(state => state.points) 
+export const usePoints = () => useMarkerStore(state => state.points)
 export const useFilter = () => useMarkerStore(state => state.filter)
 export const useSwitchFilter = () => useMarkerStore(state => state.switchFilter)
