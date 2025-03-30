@@ -153,9 +153,9 @@ export function loadAndProcessData() {
                 type: typeDict[type]?.key || dict[type] || type
             }
 
-            if (item.type.key.startsWith("eny")) {
-                result.position = [-960 - result.position[0], result.position[1]]
-            }
+            // if (item.type.key.startsWith("eny")) {
+            //     result.position = [-960 - result.position[0], result.position[1]]
+            // }
             return result
         });
 
