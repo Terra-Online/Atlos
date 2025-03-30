@@ -38,7 +38,7 @@ export const MAEKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce((acc, typ
 * @type {Record<string, import("leaflet").Icon>}
 */
 export const MARKER_TYPE_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
-    const iconUrl = ["tp", "hub"].includes(type.key) ? getMarkerIconUrl(type.key) : getMarkerIconUrl("default")
+    const iconUrl = ["tp", "hub", "growth_chamber"].includes(type.key) ? getMarkerIconUrl(type.key) : getMarkerIconUrl("default")
     acc[type.key] = divIcon({
         iconUrl,
         // iconSize: [50, 50],
