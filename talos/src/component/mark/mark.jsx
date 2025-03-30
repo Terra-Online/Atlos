@@ -73,7 +73,7 @@ const Mark = ({
     <div
       className={`mark-item ${filter.includes(typeInfo.key) ? 'active' : ''}`}
       onClick={() => switchFilter(typeInfo.key)}
-      style={{ '--progress-percentage': `${collectedCount / totalCount * 100}%` }}
+      style={{ '--progress-percentage': `${totalCount > 0 ? Math.round(collectedCount / totalCount * 100) : 0}%` }}
     >
       <span className="mark-icon">
         {iconUrl && <img src={iconUrl} alt={displayName} />}
