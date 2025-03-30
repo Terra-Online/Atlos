@@ -125,9 +125,9 @@
     ],
     "category": [
         {
-            "aggeloi": "Aggeloi",
-            "landbreakers": "Landbreakers",
-            "cangzei": "Cangzei",
+            "Aggeloi": "Aggeloi",
+            "Landbreakers": "Landbreakers",
+            "Cangzei": "Cangzei",
             "natural": "natural",
             "valuable": "valuable",
             "gatherable": "gatherable",

@@ -26,22 +26,39 @@ def extract_keys_from_types(input_file, output_file):
     }
 
     # Dictionary for custom mappings
-    custom_mappings = {
-    }
+    custom_mappings = {}
+    
+    # 处理计数器
+    processed_types = 0
+    processed_categories = 0 
+    processed_items = 0
+    
     print("Processing main types...")
-    for type_obj in tqdm(data.get("types", []), desc="Processing type objects"):
-        for type_name, type_value in tqdm(type_obj.items(), desc="Processing main types"):
-            result["types"][0][type_name.lower()] = type_name.lower()
+    # 直接从 data 开始处理，跳过之前的 "types" 数组层级
+    for type_name, type_value in tqdm(data.items(), desc="Processing main types"):
+        # 使用原始键名
+        result["types"][0][type_name] = type_name
+        processed_types += 1
 
-            for category_name, category_value in tqdm(type_value.items(),
-                                                     desc=f"Processing {type_name} subcategories",
-                                                     leave=False):
-                result["category"][0][category_name.lower()] = category_name
+        for category_name, category_value in tqdm(type_value.items(),
+                                               desc=f"Processing {type_name} subcategories",
+                                               leave=False):
+            # 使用原始键名
+            result["category"][0][category_name] = category_name
+            processed_categories += 1
 
-                for item_name, item_value in tqdm(category_value.items(),
-                                                 desc=f"Processing {category_name} items",
-                                                 leave=False):
-                    result["key"][0][item_name] = custom_mappings.get(item_name, item_name)
+            for item_name, item_value in tqdm(category_value.items(),
+                                           desc=f"Processing {category_name} items",
+                                           leave=False):
+                # 使用原始键名
+                custom_value = custom_mappings.get(item_name, item_name)
+                result["key"][0][item_name] = custom_value
+                processed_items += 1
+
+    # 添加调试输出
+    print(f"Processed types: {processed_types}")
+    print(f"Processed categories: {processed_categories}")
+    print(f"Processed items: {processed_items}")
 
     print(f"Writing output to: {output_file}")
     with open(output_file, 'w', encoding='utf-8') as f:
