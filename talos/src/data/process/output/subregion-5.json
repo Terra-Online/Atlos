@@ -1,0 +1,1244 @@
+[
+  {
+    "id": "mark_dg_resource_001",
+    "type": "mark_dg_resource",
+    "position": [
+      -535.7384,
+      108.7309
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_resource_002",
+    "type": "mark_dg_resource",
+    "position": [
+      -565.5088,
+      202.1202
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_pazzle_001",
+    "type": "mark_dg_pazzle",
+    "position": [
+      -574.4057,
+      241.05
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_sp_campfire_001",
+    "type": "TP",
+    "position": [
+      -443.671,
+      205.7764
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_sp_campfire_002",
+    "type": "TP",
+    "position": [
+      -536.1181,
+      147.4779
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_sp_campfire_003",
+    "type": "TP",
+    "position": [
+      -538.0541,
+      126.0981
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_p_fixablerobot_001",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -570.9885,
+      149.8122
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_p_fixablerobot_002",
+    "type": "mark_p_fixablerobot",
+    "position": [
+      -499.7829,
+      212.1988
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_bossrush_001",
+    "type": "mark_dg_bossrush",
+    "position": [
+      -565.0072,
+      119.77
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "item_originium_ore_001",
+    "type": "item_originium_ore",
+    "position": [
+      -503.7462,
+      231.1874
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "item_quartz_sand_001",
+    "type": "item_quartz_sand",
+    "position": [
+      -495.4868,
+      200.5405
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_blackbox_001",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -523.5931,
+      102.4215
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_blackbox_002",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -562.3775,
+      183.5811
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_blackbox_003",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -508.3962,
+      229.6359
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_dg_blackbox_004",
+    "type": "mark_dg_blackbox",
+    "position": [
+      -512.3777,
+      243.7861
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_p_recycler_001",
+    "type": "mark_p_recycler",
+    "position": [
+      -504.9743,
+      211.1108
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "mark_p_recycler_002",
+    "type": "mark_p_recycler",
+    "position": [
+      -474.9414,
+      130.9966
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "item_plant_mushroom_1_1_001",
+    "type": "item_plant_mushroom_1_1",
+    "position": [
+      -486.2336,
+      129.7825
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "item_plant_spcstone_1_1_001",
+    "type": "item_plant_spcstone_1_1",
+    "position": [
+      -573.6453,
+      142.1909
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_094",
+    "type": "int_collection_coin",
+    "position": [
+      -478.9352,
+      198.4124
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_095",
+    "type": "int_collection_coin",
+    "position": [
+      -466.4829,
+      172.3637
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_096",
+    "type": "int_collection_coin",
+    "position": [
+      -452.4034,
+      198.5628
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_097",
+    "type": "int_collection_coin",
+    "position": [
+      -492.1305,
+      179.4467
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_098",
+    "type": "int_collection_coin",
+    "position": [
+      -489.8149,
+      156.506
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_099",
+    "type": "int_collection_coin",
+    "position": [
+      -440.446,
+      223.2327
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_100",
+    "type": "int_collection_coin",
+    "position": [
+      -476.9598,
+      211.776
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_puzzle_058",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -361.8271,
+      199.4577
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_101",
+    "type": "int_collection_coin",
+    "position": [
+      -462.6461,
+      124.3544
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_puzzle_059",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -497.3665,
+      113.6809
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_102",
+    "type": "int_collection_coin",
+    "position": [
+      -439.7794,
+      126.7656
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_103",
+    "type": "int_collection_coin",
+    "position": [
+      -427.0707,
+      143.2774
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_104",
+    "type": "int_collection_coin",
+    "position": [
+      -461.9429,
+      96.684
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_collection_coin_105",
+    "type": "int_collection_coin",
+    "position": [
+      -407.3334,
+      252.3984
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_093",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -451.2742,
+      113.3293
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_167",
+    "type": "bonekrusher_raider",
+    "position": [
+      -452.4695,
+      112.6403
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_094",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -452.0195,
+      111.145
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0060_lbmad_001",
+    "type": "blighted_klaw",
+    "position": [
+      -480.2127,
+      98.5455
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_095",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -377.3943,
+      211.8233
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_168",
+    "type": "bonekrusher_raider",
+    "position": [
+      -377.7787,
+      210.7546
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_169",
+    "type": "bonekrusher_raider",
+    "position": [
+      -367.9068,
+      207.2296
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_096",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -381.6084,
+      205.2561
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_170",
+    "type": "bonekrusher_raider",
+    "position": [
+      -463.532,
+      182.1092
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_097",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -466.2095,
+      180.035
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_098",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -437.8351,
+      141.8904
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0046_lbshamman_010",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -440.1835,
+      158.0468
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_099",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -435.7866,
+      137.3294
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_171",
+    "type": "bonekrusher_raider",
+    "position": [
+      -497.254,
+      172.5982
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_172",
+    "type": "bonekrusher_raider",
+    "position": [
+      -441.1913,
+      159.3935
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_173",
+    "type": "bonekrusher_raider",
+    "position": [
+      -440.9148,
+      162.2623
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_174",
+    "type": "bonekrusher_raider",
+    "position": [
+      -472.0305,
+      237.6046
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_100",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -472.3351,
+      241.1062
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_175",
+    "type": "bonekrusher_raider",
+    "position": [
+      -434.0944,
+      154.9685
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_101",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -433.9444,
+      156.5013
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_064",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -422.4366,
+      231.6281
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_102",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -416.5819,
+      232.1203
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_176",
+    "type": "bonekrusher_raider",
+    "position": [
+      -448.4945,
+      215.7046
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_177",
+    "type": "bonekrusher_raider",
+    "position": [
+      -448.7991,
+      212.5405
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0018_lbtough_005",
+    "type": "bonekrusher_executioner",
+    "position": [
+      -508.1862,
+      130.4068
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_178",
+    "type": "bonekrusher_raider",
+    "position": [
+      -507.379,
+      128.5638
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_103",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -506.6055,
+      131.9622
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_179",
+    "type": "bonekrusher_raider",
+    "position": [
+      -438.3694,
+      139.12
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_104",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -494.7227,
+      167.4326
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_180",
+    "type": "bonekrusher_raider",
+    "position": [
+      -418.6308,
+      228.6707
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_181",
+    "type": "bonekrusher_raider",
+    "position": [
+      -421.7756,
+      231.9515
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0046_lbshamman_011",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -493.2086,
+      170.3576
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0018_lbtough_006",
+    "type": "bonekrusher_executioner",
+    "position": [
+      -418.9116,
+      233.4374
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_182",
+    "type": "bonekrusher_raider",
+    "position": [
+      -463.1101,
+      194.0952
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_105",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -464.7939,
+      193.3527
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_183",
+    "type": "bonekrusher_raider",
+    "position": [
+      -464.6743,
+      194.3464
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_184",
+    "type": "bonekrusher_raider",
+    "position": [
+      -411.4209,
+      156.8669
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_106",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -451.307,
+      214.0499
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_185",
+    "type": "bonekrusher_raider",
+    "position": [
+      -379.738,
+      200.0999
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_107",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -383.5021,
+      200.1421
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_186",
+    "type": "bonekrusher_raider",
+    "position": [
+      -381.1537,
+      204.1921
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0051_rodin_001",
+    "type": "rhodagn",
+    "position": [
+      -394.2693,
+      119.9012
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0065_lbmob2_009",
+    "type": "elite_raider",
+    "position": [
+      -458.9382,
+      99.0652
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_108",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -460.1382,
+      99.0137
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_187",
+    "type": "bonekrusher_raider",
+    "position": [
+      -420.5569,
+      169.0123
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_188",
+    "type": "bonekrusher_raider",
+    "position": [
+      -418.9303,
+      168.4545
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_189",
+    "type": "bonekrusher_raider",
+    "position": [
+      -403.5928,
+      145.8279
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_190",
+    "type": "bonekrusher_raider",
+    "position": [
+      -404.4009,
+      146.7485
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0018_lbtough_007",
+    "type": "bonekrusher_executioner",
+    "position": [
+      -406.2928,
+      149.5826
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_191",
+    "type": "bonekrusher_raider",
+    "position": [
+      -405.4115,
+      151.406
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0007_mimicw_013",
+    "type": "poison_ivy",
+    "position": [
+      -390.4115,
+      141.4872
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_065",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -473.6851,
+      239.5687
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_066",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -462.1632,
+      180.8061
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_192",
+    "type": "bonekrusher_raider",
+    "position": [
+      -471.0789,
+      239.7281
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_193",
+    "type": "bonekrusher_raider",
+    "position": [
+      -461.9242,
+      181.8045
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_067",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -462.6414,
+      183.4076
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_068",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -495.2336,
+      172.5514
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_109",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -457.396,
+      159.0701
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_110",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -455.4067,
+      159.1582
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_194",
+    "type": "bonekrusher_raider",
+    "position": [
+      -454.2179,
+      148.4107
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_195",
+    "type": "bonekrusher_raider",
+    "position": [
+      -452.146,
+      148.5701
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0065_lbmob2_010",
+    "type": "elite_raider",
+    "position": [
+      -447.2804,
+      170.5732
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_069",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -447.8195,
+      212.4515
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_111",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -443.4085,
+      181.092
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_112",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -448.2273,
+      183.1405
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_196",
+    "type": "bonekrusher_raider",
+    "position": [
+      -446.4038,
+      185.0342
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_197",
+    "type": "bonekrusher_raider",
+    "position": [
+      -369.0786,
+      201.6186
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_113",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -370.2271,
+      205.453
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_198",
+    "type": "bonekrusher_raider",
+    "position": [
+      -379.7052,
+      206.9155
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_199",
+    "type": "bonekrusher_raider",
+    "position": [
+      -370.4615,
+      204.028
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_200",
+    "type": "bonekrusher_raider",
+    "position": [
+      -461.5243,
+      192.0191
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_114",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -462.8434,
+      191.5583
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_201",
+    "type": "bonekrusher_raider",
+    "position": [
+      -473.3008,
+      240.1453
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_070",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -473.3711,
+      237.4921
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_202",
+    "type": "bonekrusher_raider",
+    "position": [
+      -422.6288,
+      227.4749
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_203",
+    "type": "bonekrusher_raider",
+    "position": [
+      -420.7819,
+      225.9093
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_204",
+    "type": "bonekrusher_raider",
+    "position": [
+      -472.7289,
+      237.1875
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_115",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -473.882,
+      238.2703
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0018_lbtough_008",
+    "type": "bonekrusher_executioner",
+    "position": [
+      -419.4928,
+      230.8781
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_071",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -419.4741,
+      169.2373
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_205",
+    "type": "bonekrusher_raider",
+    "position": [
+      -417.0975,
+      250.3969
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0065_lbmob2_011",
+    "type": "elite_raider",
+    "position": [
+      -417.5756,
+      248.6062
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_072",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -417.4163,
+      249.4406
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_206",
+    "type": "bonekrusher_raider",
+    "position": [
+      -418.6866,
+      228.7406
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_073",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -417.4458,
+      229.3284
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0057_dog_065",
+    "type": "eny_0057_dog",
+    "position": [
+      -493.3868,
+      114.0325
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0057_dog_066",
+    "type": "eny_0057_dog",
+    "position": [
+      -488.9711,
+      112.209
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0057_dog_067",
+    "type": "eny_0057_dog",
+    "position": [
+      -495.7071,
+      112.2278
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0057_dog_068",
+    "type": "eny_0057_dog",
+    "position": [
+      -395.8818,
+      246.8062
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0057_dog_069",
+    "type": "eny_0057_dog",
+    "position": [
+      -398.5068,
+      245.9297
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0029_lbmob_207",
+    "type": "bonekrusher_raider",
+    "position": [
+      -496.8836,
+      172.1717
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0046_lbshamman_012",
+    "type": "bonekrusher_pyromancer",
+    "position": [
+      -493.2335,
+      169.4883
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0033_lbhunt_116",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -494.1868,
+      168.0981
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "eny_0050_hound_074",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -493.4571,
+      170.8873
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_normal_079",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -455.6312,
+      187.0934
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_normal_080",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -454.1743,
+      103.2939
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_081",
+    "type": "int_trchest_common",
+    "position": [
+      -490.7378,
+      152.6248
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_high_071",
+    "type": "int_trchest_common_high",
+    "position": [
+      -441.773,
+      167.8578
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_082",
+    "type": "int_trchest_common",
+    "position": [
+      -412.4822,
+      170.3923
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_high_072",
+    "type": "int_trchest_common_high",
+    "position": [
+      -480.6086,
+      96.5996
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_083",
+    "type": "int_trchest_common",
+    "position": [
+      -413.512,
+      176.9267
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_084",
+    "type": "int_trchest_common",
+    "position": [
+      -511.7262,
+      129.7328
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_high_073",
+    "type": "int_trchest_common_high",
+    "position": [
+      -422.7525,
+      240.2686
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_normal_081",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -456.1356,
+      198.741
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_trchest_common_normal_082",
+    "type": "int_trchest_common_normal",
+    "position": [
+      -445.4748,
+      162.5079
+    ],
+    "subregionId": "subregion-5"
+  }
+]

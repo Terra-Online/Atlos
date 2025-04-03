@@ -1,0 +1,4646 @@
+[
+    {
+        "id": "mark_dg_resource_001",
+        "pos": [
+            -535.7384,
+            108.7309
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_002",
+        "pos": [
+            -565.5088,
+            202.1202
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_003",
+        "pos": [
+            -358.363,
+            375.5248
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_004",
+        "pos": [
+            -430.5225,
+            295.9173
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_005",
+        "pos": [
+            -275.4878,
+            301.4621
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_006",
+        "pos": [
+            -290.8481,
+            215.8472
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_007",
+        "pos": [
+            -711.192,
+            414.9332
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_008",
+        "pos": [
+            -669.6606,
+            426.4645
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_009",
+        "pos": [
+            -750.0983,
+            418.3082
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_010",
+        "pos": [
+            -413.2215,
+            862.8162
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_011",
+        "pos": [
+            -723.0989,
+            646.9196
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_resource_012",
+        "pos": [
+            -549.2134,
+            767.6347
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_resource"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_001",
+        "pos": [
+            -574.4057,
+            241.05
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_002",
+        "pos": [
+            -182.744,
+            695.444
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_003",
+        "pos": [
+            -330.1177,
+            248.0599
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_004",
+        "pos": [
+            -286.1376,
+            377.7963
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_005",
+        "pos": [
+            -799.9266,
+            406.4488
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_006",
+        "pos": [
+            -345.2705,
+            720.2535
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_007",
+        "pos": [
+            -657.9284,
+            829.2949
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_008",
+        "pos": [
+            205.9442,
+            828.2001
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_pazzle_009",
+        "pos": [
+            200.7841,
+            469.7346
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_001",
+        "pos": [
+            -443.671,
+            205.7764
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_002",
+        "pos": [
+            -536.1181,
+            147.4779
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_003",
+        "pos": [
+            -538.0541,
+            126.0981
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_004",
+        "pos": [
+            -211.9205,
+            630.4931
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_005",
+        "pos": [
+            -188.4266,
+            707.4105
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_006",
+        "pos": [
+            -157.3203,
+            683.6729
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_007",
+        "pos": [
+            -297.6035,
+            518.9303
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_008",
+        "pos": [
+            -254.5112,
+            448.2192
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_009",
+        "pos": [
+            -293.0378,
+            341.2858
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_010",
+        "pos": [
+            -299.8181,
+            463.5074
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_011",
+        "pos": [
+            -246.6603,
+            287.4833
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_012",
+        "pos": [
+            -436.5001,
+            391.6925
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_013",
+        "pos": [
+            -459.3835,
+            433.7762
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_014",
+        "pos": [
+            -716.142,
+            391.9644
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_015",
+        "pos": [
+            -643.3309,
+            473.1333
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_016",
+        "pos": [
+            -805.5703,
+            538.0226
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_017",
+        "pos": [
+            -455.1198,
+            855.286
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_018",
+        "pos": [
+            -390.0787,
+            904.0
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_019",
+        "pos": [
+            -408.135,
+            804.9388
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_020",
+        "pos": [
+            -320.352,
+            810.8404
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_021",
+        "pos": [
+            -346.3602,
+            679.1512
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_022",
+        "pos": [
+            -685.5728,
+            820.3312
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_023",
+        "pos": [
+            -791.6285,
+            627.7386
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_024",
+        "pos": [
+            -631.4879,
+            756.5819
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_025",
+        "pos": [
+            -524.704,
+            857.4296
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_026",
+        "pos": [
+            -703.8326,
+            657.7603
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_027",
+        "pos": [
+            50.0,
+            0.0
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_028",
+        "pos": [
+            -49.0,
+            0.0
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_029",
+        "pos": [
+            337.8006,
+            872.75
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_030",
+        "pos": [
+            259.3828,
+            726.6265
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_031",
+        "pos": [
+            70.7286,
+            388.7135
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_032",
+        "pos": [
+            -96.3244,
+            380.9781
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_sp_campfire_033",
+        "pos": [
+            -11.8695,
+            601.423
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "TP"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_001",
+        "pos": [
+            -570.9885,
+            149.8122
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_002",
+        "pos": [
+            -499.7829,
+            212.1988
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_003",
+        "pos": [
+            -186.0581,
+            592.7028
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_004",
+        "pos": [
+            -102.7202,
+            701.3542
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_005",
+        "pos": [
+            -68.1873,
+            609.2446
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_006",
+        "pos": [
+            -352.2622,
+            244.9645
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_007",
+        "pos": [
+            -266.6753,
+            502.2334
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_008",
+        "pos": [
+            -249.0465,
+            412.9095
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_009",
+        "pos": [
+            -365.2536,
+            221.8725
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_010",
+        "pos": [
+            -381.8836,
+            263.1455
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_011",
+        "pos": [
+            -237.8002,
+            436.7301
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_012",
+        "pos": [
+            -321.6453,
+            384.6187
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_013",
+        "pos": [
+            -410.6418,
+            275.1272
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_014",
+        "pos": [
+            -199.8004,
+            442.0828
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_015",
+        "pos": [
+            -259.1996,
+            471.9938
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_016",
+        "pos": [
+            -725.9018,
+            448.8487
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_017",
+        "pos": [
+            -727.1664,
+            421.2055
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_018",
+        "pos": [
+            -703.7096,
+            471.1608
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_019",
+        "pos": [
+            -680.1194,
+            510.8412
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_020",
+        "pos": [
+            -379.9684,
+            849.2092
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_021",
+        "pos": [
+            -363.9036,
+            733.8058
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_022",
+        "pos": [
+            -373.7803,
+            861.0252
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_023",
+        "pos": [
+            -405.21,
+            717.1042
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_024",
+        "pos": [
+            -295.121,
+            791.1111
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_025",
+        "pos": [
+            -396.0881,
+            645.9525
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_026",
+        "pos": [
+            -422.7711,
+            765.7682
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_027",
+        "pos": [
+            -434.9897,
+            889.975
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_028",
+        "pos": [
+            -417.1404,
+            849.9574
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_029",
+        "pos": [
+            -555.801,
+            701.4948
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_030",
+        "pos": [
+            -549.0332,
+            814.5546
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_031",
+        "pos": [
+            -580.1104,
+            715.773
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_032",
+        "pos": [
+            -508.7009,
+            741.7793
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_033",
+        "pos": [
+            -551.5775,
+            779.3544
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_034",
+        "pos": [
+            -528.4244,
+            704.5391
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_035",
+        "pos": [
+            -556.6963,
+            731.073
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_036",
+        "pos": [
+            -679.4182,
+            820.4025
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_037",
+        "pos": [
+            -533.1204,
+            834.9094
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_038",
+        "pos": [
+            -577.7063,
+            799.196
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_039",
+        "pos": [
+            -595.9915,
+            820.1163
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_040",
+        "pos": [
+            -756.5671,
+            671.0073
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_041",
+        "pos": [
+            -750.6702,
+            654.8541
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_042",
+        "pos": [
+            -753.0936,
+            654.0197
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_043",
+        "pos": [
+            -752.3764,
+            659.7385
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_044",
+        "pos": [
+            -768.5329,
+            653.9127
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_045",
+        "pos": [
+            -756.5064,
+            661.74
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_046",
+        "pos": [
+            -722.1436,
+            634.8575
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_047",
+        "pos": [
+            117.0104,
+            320.2239
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_048",
+        "pos": [
+            45.087,
+            479.1029
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_049",
+        "pos": [
+            303.1852,
+            463.9443
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_050",
+        "pos": [
+            378.4304,
+            487.897
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_051",
+        "pos": [
+            219.7772,
+            536.7168
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_052",
+        "pos": [
+            279.6244,
+            592.7868
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_053",
+        "pos": [
+            -165.9897,
+            242.3473
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_fixablerobot_054",
+        "pos": [
+            4.7849,
+            391.1424
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_fixablerobot"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_bossrush_001",
+        "pos": [
+            -565.0072,
+            119.77
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_bossrush"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_bossrush_002",
+        "pos": [
+            -601.598,
+            510.4647
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_dg_bossrush"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_bossrush_003",
+        "pos": [
+            -756.0529,
+            731.1602
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_bossrush"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_001",
+        "pos": [
+            -503.7462,
+            231.1874
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_001",
+        "pos": [
+            -495.4868,
+            200.5405
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_002",
+        "pos": [
+            -172.2969,
+            601.1352
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_003",
+        "pos": [
+            -160.5828,
+            669.0479
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_002",
+        "pos": [
+            -94.2592,
+            690.5401
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_003",
+        "pos": [
+            -159.2844,
+            629.8462
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_004",
+        "pos": [
+            -414.1987,
+            296.1661
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_005",
+        "pos": [
+            -366.3552,
+            260.0297
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_004",
+        "pos": [
+            -377.2898,
+            348.7494
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_005",
+        "pos": [
+            -210.3078,
+            448.5001
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_001",
+        "pos": [
+            -423.6283,
+            379.1279
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_quartz_sand_006",
+        "pos": [
+            -219.7446,
+            431.838
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_quartz_sand"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_006",
+        "pos": [
+            -349.0161,
+            420.5441
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_007",
+        "pos": [
+            -766.2562,
+            532.4116
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_002",
+        "pos": [
+            -653.7231,
+            433.7536
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_008",
+        "pos": [
+            -653.9387,
+            452.902
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_003",
+        "pos": [
+            -665.3153,
+            500.9865
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_004",
+        "pos": [
+            -779.6109,
+            363.9237
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_009",
+        "pos": [
+            -730.678,
+            442.7583
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_005",
+        "pos": [
+            -402.9178,
+            681.4557
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_006",
+        "pos": [
+            -453.2195,
+            922.8954
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_007",
+        "pos": [
+            -341.2067,
+            825.6389
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_010",
+        "pos": [
+            -279.3034,
+            790.5622
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_011",
+        "pos": [
+            -340.5579,
+            870.0414
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_008",
+        "pos": [
+            -707.8404,
+            723.1043
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_009",
+        "pos": [
+            -659.5124,
+            659.839
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_010",
+        "pos": [
+            -742.8551,
+            812.1251
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_012",
+        "pos": [
+            -598.8076,
+            838.9122
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_013",
+        "pos": [
+            -549.1072,
+            690.151
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_011",
+        "pos": [
+            -571.5979,
+            765.0012
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_012",
+        "pos": [
+            -675.5145,
+            836.413
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_013",
+        "pos": [
+            5.1395,
+            338.2891
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_014",
+        "pos": [
+            59.1471,
+            626.8161
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_copper_ore_001",
+        "pos": [
+            88.7861,
+            806.7577
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_copper_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_iron_ore_015",
+        "pos": [
+            -57.3274,
+            554.4892
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_iron_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_014",
+        "pos": [
+            -332.9607,
+            354.2449
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_originium_ore_015",
+        "pos": [
+            227.4184,
+            556.576
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_originium_ore"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_001",
+        "pos": [
+            -523.5931,
+            102.4215
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_002",
+        "pos": [
+            -562.3775,
+            183.5811
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_003",
+        "pos": [
+            -508.3962,
+            229.6359
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_004",
+        "pos": [
+            -512.3777,
+            243.7861
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_005",
+        "pos": [
+            -193.5876,
+            619.9884
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_006",
+        "pos": [
+            -81.3029,
+            609.2493
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_007",
+        "pos": [
+            -162.3172,
+            663.4182
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_008",
+        "pos": [
+            -423.4377,
+            358.4143
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_009",
+        "pos": [
+            -236.9658,
+            449.902
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_010",
+        "pos": [
+            -403.5808,
+            315.4353
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_011",
+        "pos": [
+            -342.1131,
+            325.1656
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_012",
+        "pos": [
+            -369.8001,
+            333.2497
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_013",
+        "pos": [
+            -227.9849,
+            360.9059
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_014",
+        "pos": [
+            -287.9909,
+            298.9205
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_015",
+        "pos": [
+            -410.1232,
+            295.8939
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_016",
+        "pos": [
+            -358.1567,
+            265.0406
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_017",
+        "pos": [
+            -380.6334,
+            386.555
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_018",
+        "pos": [
+            -233.9049,
+            271.3547
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_019",
+        "pos": [
+            -396.8728,
+            677.7657
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_020",
+        "pos": [
+            -342.7255,
+            836.2936
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_021",
+        "pos": [
+            -336.3551,
+            863.3218
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_022",
+        "pos": [
+            -305.0163,
+            731.7096
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_023",
+        "pos": [
+            -637.1059,
+            693.2823
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_024",
+        "pos": [
+            -556.6236,
+            796.2346
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_025",
+        "pos": [
+            -737.203,
+            815.3685
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_026",
+        "pos": [
+            -255.4274,
+            360.5525
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_027",
+        "pos": [
+            8.2575,
+            327.894
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_028",
+        "pos": [
+            -344.2119,
+            361.3643
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_029",
+        "pos": [
+            102.6359,
+            801.351
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_030",
+        "pos": [
+            -83.7462,
+            718.975
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_031",
+        "pos": [
+            36.6891,
+            286.7442
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_032",
+        "pos": [
+            65.7645,
+            749.0582
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_033",
+        "pos": [
+            171.0275,
+            759.4063
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_034",
+        "pos": [
+            152.7854,
+            476.117
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_dg_blackbox_035",
+        "pos": [
+            11.5607,
+            627.8018
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_dg_blackbox"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_001",
+        "pos": [
+            -504.9743,
+            211.1108
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_002",
+        "pos": [
+            -474.9414,
+            130.9966
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_003",
+        "pos": [
+            -198.5095,
+            670.1963
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_004",
+        "pos": [
+            -112.8199,
+            689.9368
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_005",
+        "pos": [
+            -255.6737,
+            513.1741
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_006",
+        "pos": [
+            -224.638,
+            312.7499
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_007",
+        "pos": [
+            -305.419,
+            344.344
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_008",
+        "pos": [
+            -732.4076,
+            375.4409
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_009",
+        "pos": [
+            -749.1608,
+            495.7928
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_010",
+        "pos": [
+            -635.1333,
+            449.7464
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_011",
+        "pos": [
+            -390.4799,
+            643.2319
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_012",
+        "pos": [
+            -373.9663,
+            749.592
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_013",
+        "pos": [
+            -426.9225,
+            810.0576
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_014",
+        "pos": [
+            -563.6905,
+            758.9693
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_015",
+        "pos": [
+            -613.5881,
+            738.3766
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_016",
+        "pos": [
+            -680.47,
+            778.4403
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_017",
+        "pos": [
+            -195.7183,
+            430.2028
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_018",
+        "pos": [
+            -236.924,
+            391.6061
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_019",
+        "pos": [
+            76.2339,
+            754.6381
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_recycler_020",
+        "pos": [
+            26.4739,
+            437.272
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_recycler"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_1_001",
+        "pos": [
+            -486.2336,
+            129.7825
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_1_001",
+        "pos": [
+            -163.775,
+            584.2274
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_1_002",
+        "pos": [
+            -215.7923,
+            688.3182
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_1_002",
+        "pos": [
+            -195.7579,
+            600.6477
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_001",
+        "pos": [
+            -446.2257,
+            426.2489
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_1_003",
+        "pos": [
+            -275.9284,
+            306.6657
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_1_004",
+        "pos": [
+            -269.0893,
+            363.4831
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_1_003",
+        "pos": [
+            -369.4021,
+            288.3048
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_002",
+        "pos": [
+            -414.7397,
+            422.3957
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_1_004",
+        "pos": [
+            -236.5814,
+            443.3442
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_3_001",
+        "pos": [
+            -647.7746,
+            513.874
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_3"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_2_001",
+        "pos": [
+            -773.0585,
+            420.3423
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_3_001",
+        "pos": [
+            -669.0794,
+            429.1129
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_3"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_2_002",
+        "pos": [
+            -452.1132,
+            899.0547
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_2_003",
+        "pos": [
+            -298.7238,
+            736.1965
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_003",
+        "pos": [
+            -347.6005,
+            791.645
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_004",
+        "pos": [
+            -655.6543,
+            671.2088
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_2_004",
+        "pos": [
+            -583.3823,
+            732.634
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_1_2_005",
+        "pos": [
+            -515.3148,
+            702.477
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_mushroom_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_005",
+        "pos": [
+            -595.3073,
+            666.4041
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_1_2_006",
+        "pos": [
+            -538.4431,
+            822.2311
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_crylplant_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_2_1_001",
+        "pos": [
+            155.1835,
+            775.1943
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_2_1_001",
+        "pos": [
+            -200.841,
+            245.8278
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_mushroom_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_mushroom_2_1_002",
+        "pos": [
+            350.8547,
+            455.8874
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_mushroom_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_crylplant_2_1_002",
+        "pos": [
+            169.4786,
+            467.3832
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_crylplant_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_1_001",
+        "pos": [
+            -573.6453,
+            142.1909
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_2"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_1_002",
+        "pos": [
+            -167.0891,
+            657.451
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_1_003",
+        "pos": [
+            -220.222,
+            361.6128
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_1_004",
+        "pos": [
+            -227.3846,
+            262.6969
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_001",
+        "pos": [
+            -392.474,
+            393.1878
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_3_001",
+        "pos": [
+            -716.8639,
+            464.4849
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_3"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_002",
+        "pos": [
+            -267.2753,
+            785.2138
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_003",
+        "pos": [
+            -431.4694,
+            832.778
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_004",
+        "pos": [
+            -613.598,
+            856.2577
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_005",
+        "pos": [
+            -717.6326,
+            723.4277
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_1_2_006",
+        "pos": [
+            -642.909,
+            690.3292
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "item_plant_spcstone_1_2"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_2_1_001",
+        "pos": [
+            -21.863,
+            449.0197
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_spcstone_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "item_plant_spcstone_2_1_002",
+        "pos": [
+            -25.8287,
+            793.5858
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "item_plant_spcstone_2_1"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_pazzle_001",
+        "pos": [
+            -135.7305,
+            586.9995
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_3"
+        },
+        "type": {
+            "key": "mark_p_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_pazzle_002",
+        "pos": [
+            -416.1924,
+            777.0209
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_pazzle_003",
+        "pos": [
+            -547.1361,
+            729.0518
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_pazzle_004",
+        "pos": [
+            -741.6655,
+            614.8415
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_pazzle"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_npc_racingdungeon_001",
+        "pos": [
+            -296.3522,
+            514.1155
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_npc_racingdungeon"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_enemyspawner_001",
+        "pos": [
+            -274.0206,
+            348.4783
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_enemyspawner"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_enemyspawner_002",
+        "pos": [
+            -627.1149,
+            445.9549
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_7"
+        },
+        "type": {
+            "key": "mark_p_enemyspawner"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_enemyspawner_003",
+        "pos": [
+            -391.0912,
+            811.9982
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_5"
+        },
+        "type": {
+            "key": "mark_p_enemyspawner"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_enemyspawner_004",
+        "pos": [
+            -566.1697,
+            685.1588
+        ],
+        "region": {
+            "main": "VL",
+            "sub": "pane_6"
+        },
+        "type": {
+            "key": "mark_p_enemyspawner"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_p_enemyspawner_005",
+        "pos": [
+            38.0437,
+            515.8484
+        ],
+        "region": {
+            "main": "JL",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_p_enemyspawner"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_ss_room_growcabin_001",
+        "pos": [
+            -72.2129,
+            -11.662
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_ss_room_growcabin"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_ss_room_manufacturingstation_001",
+        "pos": [
+            -66.5859,
+            11.221
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_ss_room_manufacturingstation"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_ss_room_manufacturingstation_002",
+        "pos": [
+            -83.2319,
+            11.221
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_ss_room_manufacturingstation"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_ss_controlcenter_001",
+        "pos": [
+            93.94,
+            0.2
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_ss_controlcenter"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_npc_ss_trainingroom_001",
+        "pos": [
+            -51.047,
+            -13.674
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_npc_ss_trainingroom"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_npc_ss_shop_001",
+        "pos": [
+            9.358,
+            -23.96
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_npc_ss_shop"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    },
+    {
+        "id": "mark_npc_ss_manualCollect_001",
+        "pos": [
+            26.3444,
+            -7.6261
+        ],
+        "region": {
+            "main": "DJ",
+            "sub": "pane_1"
+        },
+        "type": {
+            "key": "mark_npc_ss_manualCollect"
+        },
+        "meta": {
+            "addedBy": "ciribot",
+            "addedAt": "2025-03-30T20:29:17Z"
+        }
+    }
+]

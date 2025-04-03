@@ -14,7 +14,7 @@ const mockPoint = {
   type: {
     main: "resource",
     sub: "natural",
-    key: "originium"
+    key: "originium_ore"
   },
   status: {
     user: {
