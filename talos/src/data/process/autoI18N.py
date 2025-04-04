@@ -212,7 +212,7 @@ def count_leaf_nodes(json_obj):
 
 def main():
     if len(sys.argv) != 5:
-        print("Usage: python3 autoI18N EN_Origin.json EN.json TC_trans.json i18n_TC_pre.json")
+        print("Usage: python3 autoI18N.py EN_Origin.json EN.json TC_trans.json i18n_TC_pre.json")
         return
 
     source_file = sys.argv[1]

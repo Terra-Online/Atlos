@@ -105,22 +105,26 @@
             "Originium Ore": {
                 "tier": "1"
             },
+            "Originium Spot": {},
             "Amethyst Ore": {
                 "tier": "1"
             },
+            "Amethyst Spot": {},
             "Ferrium Ore": {
                 "tier": "1"
             },
+            "Ferrium Spot": {},
             "Cuprium Ore": {
                 "tier": "1"
             },
+            "Cuprium Spot": {},
             "Cyanite Ore": {
                 "tier": "1"
             },
+            "Cyanite Spot": {},
             "Clean Water": {
                 "tier": "1"
             },
-            "Sewage": {},
             "Buckflower": {
                 "tier": "1"
             },
@@ -162,17 +166,7 @@
             },
             "Amber Rice": {
                 "tier": "2"
-            },
-            "Buckflower Seed": {},
-            "Citrome Seed": {},
-            "Sandleaf Seed": {},
-            "Aketine Seed": {},
-            "Jincao Seed": {},
-            "Yazhen Seed": {},
-            "Reed Rye Seed": {},
-            "Tartpepper Seed": {},
-            "Redjade Ginseng Seed": {},
-            "Amber Rice Seed": {}
+            }
         },
         "valuable": {
             "Pink Bolete": {
@@ -187,10 +181,6 @@
             "Bloodcap": {
                 "tier": "5"
             },
-            "Pink Bolete Mycelia": {},
-            "Red Bolete Mycelia": {},
-            "Ruby Bolete Mycelia": {},
-            "Bloodcap Mycelia": {},
             "Kalkodendra": {
                 "tier": "4"
             },
@@ -203,10 +193,6 @@
             "Blighted Jadeleaf": {
                 "tier": "5"
             },
-            "Kalkodendra Tuber": {},
-            "Chrysodendra Tuber": {},
-            "Vitrodendra Tuber": {},
-            "Blighted Jadeleaf Tuber": {},
             "Kalkonyx": {
                 "tier": "4"
             },
@@ -218,11 +204,7 @@
             },
             "Igneosite": {
                 "tier": "5"
-            },
-            "Kalkonyx Seed": {},
-            "Auronyx Seed": {},
-            "Umbronyx Seed": {},
-            "Igneosite Seed": {}
+            }
         },
         "gatherable": {
             "Glowbug": {
@@ -251,7 +233,8 @@
             "robot": {},
             "crate": {},
             "longear": {},
-            "slug": {}
+            "slug": {},
+            "blackbox": {}
         },
         "trial": {
             "rift": {},
@@ -266,14 +249,14 @@
             "TP": {
                 "collectable": false
             },
-            "recycle": {},
+            "recycler": {},
             "base": {},
             "hub": {}
         },
         "regional": {
-            "control_nexus": {},
-            "growth_chamber": {},
-            "manufacturing_cabin": {},
+            "Control Nexus": {},
+            "Growth Cabin": {},
+            "Manufacturing Cabin": {},
             "exchange": {},
             "tianshi_p": {},
             "tianshi_s": {}

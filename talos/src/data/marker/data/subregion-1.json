@@ -64,7 +64,7 @@
   },
   {
     "id": "mark_p_fixablerobot_016",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -725.9018,
       448.8487
@@ -73,7 +73,7 @@
   },
   {
     "id": "mark_p_fixablerobot_017",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -727.1664,
       421.2055
@@ -82,7 +82,7 @@
   },
   {
     "id": "mark_p_fixablerobot_018",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -703.7096,
       471.1608
@@ -91,7 +91,7 @@
   },
   {
     "id": "mark_p_fixablerobot_019",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -680.1194,
       510.8412
@@ -109,7 +109,7 @@
   },
   {
     "id": "item_originium_ore_007",
-    "type": "item_originium_ore",
+    "type": "originium_spot",
     "position": [
       -766.2562,
       532.4116
@@ -118,7 +118,7 @@
   },
   {
     "id": "item_iron_ore_002",
-    "type": "item_iron_ore",
+    "type": "ferrium_spot",
     "position": [
       -653.7231,
       433.7536
@@ -127,7 +127,7 @@
   },
   {
     "id": "item_originium_ore_008",
-    "type": "item_originium_ore",
+    "type": "originium_spot",
     "position": [
       -653.9387,
       452.902
@@ -136,7 +136,7 @@
   },
   {
     "id": "item_iron_ore_003",
-    "type": "item_iron_ore",
+    "type": "ferrium_spot",
     "position": [
       -665.3153,
       500.9865
@@ -145,7 +145,7 @@
   },
   {
     "id": "item_iron_ore_004",
-    "type": "item_iron_ore",
+    "type": "ferrium_spot",
     "position": [
       -779.6109,
       363.9237
@@ -154,7 +154,7 @@
   },
   {
     "id": "item_originium_ore_009",
-    "type": "item_originium_ore",
+    "type": "originium_spot",
     "position": [
       -730.678,
       442.7583
@@ -163,7 +163,7 @@
   },
   {
     "id": "mark_p_recycler_008",
-    "type": "mark_p_recycler",
+    "type": "recycler",
     "position": [
       -732.4076,
       375.4409
@@ -172,7 +172,7 @@
   },
   {
     "id": "mark_p_recycler_009",
-    "type": "mark_p_recycler",
+    "type": "recycler",
     "position": [
       -749.1608,
       495.7928
@@ -181,7 +181,7 @@
   },
   {
     "id": "mark_p_recycler_010",
-    "type": "mark_p_recycler",
+    "type": "recycler",
     "position": [
       -635.1333,
       449.7464
@@ -190,7 +190,7 @@
   },
   {
     "id": "item_plant_mushroom_1_3_001",
-    "type": "item_plant_mushroom_1_3",
+    "type": "ruby_bolete",
     "position": [
       -647.7746,
       513.874
@@ -199,7 +199,7 @@
   },
   {
     "id": "item_plant_mushroom_1_2_001",
-    "type": "item_plant_mushroom_1_2",
+    "type": "red_bolete",
     "position": [
       -773.0585,
       420.3423
@@ -208,7 +208,7 @@
   },
   {
     "id": "item_plant_crylplant_1_3_001",
-    "type": "item_plant_crylplant_1_3",
+    "type": "vitrodendra",
     "position": [
       -669.0794,
       429.1129
@@ -217,7 +217,7 @@
   },
   {
     "id": "item_plant_spcstone_1_3_001",
-    "type": "item_plant_spcstone_1_3",
+    "type": "umbronyx",
     "position": [
       -716.8639,
       464.4849
@@ -230,6 +230,1302 @@
     "position": [
       -627.1149,
       445.9549
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_064",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -290.3331,
+      448.327
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_061",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -193.6193,
+      386.5734
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_065",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -186.2563,
+      530.9786
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_066",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -194.4093,
+      532.0263
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_067",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -194.736,
+      531.251
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_068",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -195.9642,
+      531.6522
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_069",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -194.5959,
+      532.6136
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_070",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -195.6806,
+      532.863
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_071",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -192.5343,
+      532.0263
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_072",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -192.861,
+      531.251
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_073",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -194.0892,
+      531.6522
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_074",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -192.7209,
+      532.6136
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_075",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -193.8056,
+      532.863
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_076",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -303.1596,
+      452.8073
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_077",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -303.4863,
+      452.032
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_078",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -304.7144,
+      452.4333
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_079",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -303.3461,
+      453.3947
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_080",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -304.4308,
+      453.6441
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_081",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -306.9096,
+      453.2761
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_082",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -307.2363,
+      452.5008
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_083",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -308.4644,
+      452.902
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_084",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -307.0961,
+      453.8634
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_085",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -308.1808,
+      454.1128
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_086",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -227.6906,
+      439.2136
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_087",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -228.0174,
+      438.4383
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_088",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -229.2455,
+      438.8395
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_089",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -227.8772,
+      439.8009
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_090",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -228.9619,
+      440.0503
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_091",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -224.8781,
+      440.1511
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_092",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -225.2049,
+      439.3758
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_093",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.433,
+      439.777
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_094",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -225.0647,
+      440.7384
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_095",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.1494,
+      440.9878
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_096",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -224.8781,
+      446.2448
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_097",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -225.2049,
+      445.4695
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_098",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.433,
+      445.8708
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_099",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -225.0647,
+      446.8322
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_100",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.1494,
+      447.0816
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_101",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -230.5032,
+      441.5573
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_102",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -230.8299,
+      440.782
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_103",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -232.058,
+      441.1833
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_104",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -231.7744,
+      442.394
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_105",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -230.6897,
+      442.1447
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_106",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -229.0969,
+      444.3698
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_107",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -229.4236,
+      443.5945
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_108",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -230.6517,
+      443.9958
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_109",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -229.2835,
+      444.9572
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_110",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -230.3682,
+      445.2066
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_111",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.6111,
+      442.1883
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_112",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.2844,
+      442.9636
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_113",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -227.8392,
+      442.5895
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_114",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -226.471,
+      443.5509
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_115",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -227.5556,
+      443.8003
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_062",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -298.7378,
+      504.2912
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_063",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.6238,
+      503.499
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_064",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.5182,
+      504.0372
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_065",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.2253,
+      505.2194
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_066",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.1985,
+      505.1608
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_067",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -294.9878,
+      500.0725
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_068",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -295.8738,
+      499.2803
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_069",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -296.7682,
+      499.8184
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_070",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -295.4753,
+      501.0006
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_071",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -296.4485,
+      500.942
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_072",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -293.5816,
+      496.3225
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_073",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -294.4675,
+      495.5303
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_074",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -295.3619,
+      496.0684
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_075",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -294.0691,
+      497.2506
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_076",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -295.0422,
+      497.192
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_077",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -288.8941,
+      501.4787
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_078",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -289.78,
+      500.6865
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_079",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -290.6744,
+      501.2247
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_080",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -289.3816,
+      502.4068
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_081",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -290.3547,
+      502.3483
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_082",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -293.1128,
+      504.76
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_083",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -293.6003,
+      505.6881
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_084",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -293.9988,
+      503.9678
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_085",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -294.8932,
+      504.5059
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_086",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -294.5735,
+      505.6295
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_087",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.2066,
+      501.01
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_088",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.0925,
+      500.2178
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_089",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.9869,
+      500.7559
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_090",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.6672,
+      501.8795
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_091",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.6941,
+      501.9381
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_092",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -174.5188,
+      367.8846
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_093",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -175.4047,
+      367.0925
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_094",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -176.2991,
+      367.6306
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_095",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -175.0063,
+      368.8128
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_096",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -175.9794,
+      368.7542
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_097",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -175.9251,
+      364.1346
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_098",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -176.811,
+      363.3424
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_099",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -177.7054,
+      363.8806
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_100",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -176.4126,
+      365.0628
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_101",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -177.3857,
+      365.0042
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_102",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -179.2063,
+      360.3846
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_103",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -180.0922,
+      359.5924
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_104",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -180.9866,
+      360.1306
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_105",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -179.6938,
+      361.3128
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_106",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -180.6669,
+      361.2542
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_107",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -180.6126,
+      364.6034
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_108",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -181.4985,
+      363.8112
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_109",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -182.3929,
+      364.3493
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_110",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -181.1001,
+      365.5315
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_111",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -182.0732,
+      365.4729
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_112",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -178.2688,
+      371.1659
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_113",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -178.7563,
+      372.094
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_114",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -179.1547,
+      370.3737
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_115",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -180.0491,
+      370.9118
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_116",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -179.7294,
+      372.0354
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_117",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -182.9563,
+      358.9784
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_118",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -183.8423,
+      358.1862
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_119",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -184.7366,
+      358.7243
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_120",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -184.4169,
+      359.8479
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_121",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -183.4438,
+      359.9065
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_122",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.6754,
+      429.291
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_123",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.5613,
+      428.4989
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_124",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -301.4557,
+      429.037
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_125",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.1629,
+      430.2192
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_126",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -301.136,
+      430.1606
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_127",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -298.2691,
+      433.5098
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_128",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.155,
+      432.7176
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_129",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -300.0494,
+      433.2557
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_130",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -298.7566,
+      434.4379
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_131",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -299.7297,
+      434.3793
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_132",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -309.9879,
+      432.5723
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_133",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -310.8738,
+      431.7801
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_134",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -311.7682,
+      432.3182
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_135",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -310.4754,
+      433.5004
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_136",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -311.4485,
+      433.4418
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_137",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -303.8941,
+      433.0411
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_138",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -304.7801,
+      432.2489
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_139",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -305.6744,
+      432.787
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_140",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -304.3816,
+      433.9692
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_141",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -305.3547,
+      433.9106
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_142",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -304.8316,
+      437.2598
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_143",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -305.3191,
+      438.1879
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_144",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -305.7176,
+      436.4676
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_145",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -306.6119,
+      437.0057
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_146",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -306.2922,
+      438.1293
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_147",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -305.7691,
+      429.291
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_148",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -306.6551,
+      428.4989
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_149",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -307.5494,
+      429.037
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_150",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -307.2297,
+      430.1606
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_151",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -306.2566,
+      430.2192
+    ],
+    "subregionId": "subregion-1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_152",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -194.1443,
+      382.2635
     ],
     "subregionId": "subregion-1"
   },

@@ -255,9 +255,25 @@
             "sub": "natural"
         }
     },
+    "originium_spot": {
+        "key": "originium_spot",
+        "name": "Originium Spot",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
     "amethyst_ore": {
         "key": "amethyst_ore",
         "name": "Amethyst Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "amethyst_spot": {
+        "key": "amethyst_spot",
+        "name": "Amethyst Spot",
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -271,9 +287,25 @@
             "sub": "natural"
         }
     },
+    "ferrium_spot": {
+        "key": "ferrium_spot",
+        "name": "Ferrium Spot",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
     "cuprium_ore": {
         "key": "cuprium_ore",
         "name": "Cuprium Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        }
+    },
+    "cuprium_spot": {
+        "key": "cuprium_spot",
+        "name": "Cuprium Spot",
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -287,17 +319,17 @@
             "sub": "natural"
         }
     },
-    "clean_water": {
-        "key": "clean_water",
-        "name": "Clean Water",
+    "cyanite_spot": {
+        "key": "cyanite_spot",
+        "name": "Cyanite Spot",
         "category": {
             "main": "resource",
             "sub": "natural"
         }
     },
-    "sewage": {
-        "key": "sewage",
-        "name": "Sewage",
+    "clean_water": {
+        "key": "clean_water",
+        "name": "Clean Water",
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -415,86 +447,6 @@
             "sub": "natural"
         }
     },
-    "buckflower_seed": {
-        "key": "buckflower_seed",
-        "name": "Buckflower Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "citrome_seed": {
-        "key": "citrome_seed",
-        "name": "Citrome Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "sandleaf_seed": {
-        "key": "sandleaf_seed",
-        "name": "Sandleaf Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "aketine_seed": {
-        "key": "aketine_seed",
-        "name": "Aketine Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "jincao_seed": {
-        "key": "jincao_seed",
-        "name": "Jincao Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "yazhen_seed": {
-        "key": "yazhen_seed",
-        "name": "Yazhen Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "reed_rye_seed": {
-        "key": "reed_rye_seed",
-        "name": "Reed Rye Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "tartpepper_seed": {
-        "key": "tartpepper_seed",
-        "name": "Tartpepper Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "redjade_ginseng_seed": {
-        "key": "redjade_ginseng_seed",
-        "name": "Redjade Ginseng Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
-    "amber_rice_seed": {
-        "key": "amber_rice_seed",
-        "name": "Amber Rice Seed",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        }
-    },
     "pink_bolete": {
         "key": "pink_bolete",
         "name": "Pink Bolete",
@@ -522,38 +474,6 @@
     "bloodcap": {
         "key": "bloodcap",
         "name": "Bloodcap",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "pink_bolete_mycelia": {
-        "key": "pink_bolete_mycelia",
-        "name": "Pink Bolete Mycelia",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "red_bolete_mycelia": {
-        "key": "red_bolete_mycelia",
-        "name": "Red Bolete Mycelia",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "ruby_bolete_mycelia": {
-        "key": "ruby_bolete_mycelia",
-        "name": "Ruby Bolete Mycelia",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "bloodcap_mycelia": {
-        "key": "bloodcap_mycelia",
-        "name": "Bloodcap Mycelia",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -591,38 +511,6 @@
             "sub": "valuable"
         }
     },
-    "kalkodendra_tuber": {
-        "key": "kalkodendra_tuber",
-        "name": "Kalkodendra Tuber",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "chrysodendra_tuber": {
-        "key": "chrysodendra_tuber",
-        "name": "Chrysodendra Tuber",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "vitrodendra_tuber": {
-        "key": "vitrodendra_tuber",
-        "name": "Vitrodendra Tuber",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "blighted_jadeleaf_tuber": {
-        "key": "blighted_jadeleaf_tuber",
-        "name": "Blighted Jadeleaf Tuber",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
     "kalkonyx": {
         "key": "kalkonyx",
         "name": "Kalkonyx",
@@ -650,38 +538,6 @@
     "igneosite": {
         "key": "igneosite",
         "name": "Igneosite",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "kalkonyx_seed": {
-        "key": "kalkonyx_seed",
-        "name": "Kalkonyx Seed",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "auronyx_seed": {
-        "key": "auronyx_seed",
-        "name": "Auronyx Seed",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "umbronyx_seed": {
-        "key": "umbronyx_seed",
-        "name": "Umbronyx Seed",
-        "category": {
-            "main": "resource",
-            "sub": "valuable"
-        }
-    },
-    "igneosite_seed": {
-        "key": "igneosite_seed",
-        "name": "Igneosite Seed",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -839,6 +695,14 @@
             "sub": "collect"
         }
     },
+    "blackbox": {
+        "key": "blackbox",
+        "name": "blackbox",
+        "category": {
+            "main": "poi",
+            "sub": "collect"
+        }
+    },
     "rift": {
         "key": "rift",
         "name": "rift",
@@ -879,9 +743,9 @@
             "sub": "basic"
         }
     },
-    "recycle": {
-        "key": "recycle",
-        "name": "recycle",
+    "recycler": {
+        "key": "recycler",
+        "name": "recycler",
         "category": {
             "main": "facility",
             "sub": "basic"
@@ -905,15 +769,15 @@
     },
     "control_nexus": {
         "key": "control_nexus",
-        "name": "control_nexus",
+        "name": "Control Nexus",
         "category": {
             "main": "facility",
             "sub": "regional"
         }
     },
-    "growth_chamber": {
-        "key": "growth_chamber",
-        "name": "growth_chamber",
+    "growth_cabin": {
+        "key": "growth_cabin",
+        "name": "Growth Cabin",
         "category": {
             "main": "facility",
             "sub": "regional"
@@ -921,7 +785,7 @@
     },
     "manufacturing_cabin": {
         "key": "manufacturing_cabin",
-        "name": "manufacturing_cabin",
+        "name": "Manufacturing Cabin",
         "category": {
             "main": "facility",
             "sub": "regional"

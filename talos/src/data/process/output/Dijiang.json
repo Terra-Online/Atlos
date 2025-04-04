@@ -19,7 +19,7 @@
   },
   {
     "id": "mark_ss_room_growcabin_001",
-    "type": "mark_ss_room_growcabin",
+    "type": "growth_cabin",
     "position": [
       -72.2129,
       -11.662
@@ -28,7 +28,7 @@
   },
   {
     "id": "mark_ss_room_manufacturingstation_001",
-    "type": "mark_ss_room_manufacturingstation",
+    "type": "manufacturing_cabin",
     "position": [
       -66.5859,
       11.221
@@ -37,7 +37,7 @@
   },
   {
     "id": "mark_ss_room_manufacturingstation_002",
-    "type": "mark_ss_room_manufacturingstation",
+    "type": "manufacturing_cabin",
     "position": [
       -83.2319,
       11.221
@@ -46,7 +46,7 @@
   },
   {
     "id": "mark_ss_controlcenter_001",
-    "type": "mark_ss_controlcenter",
+    "type": "control_nexus",
     "position": [
       93.94,
       0.2
@@ -73,7 +73,7 @@
   },
   {
     "id": "mark_npc_ss_manualCollect_001",
-    "type": "mark_npc_ss_manualCollect",
+    "type": "mark_npc_ss_manualcollect",
     "position": [
       26.3444,
       -7.6261

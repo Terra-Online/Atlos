@@ -55,7 +55,7 @@
   },
   {
     "id": "mark_p_fixablerobot_001",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -570.9885,
       149.8122
@@ -64,7 +64,7 @@
   },
   {
     "id": "mark_p_fixablerobot_002",
-    "type": "mark_p_fixablerobot",
+    "type": "robot",
     "position": [
       -499.7829,
       212.1988
@@ -82,7 +82,7 @@
   },
   {
     "id": "item_originium_ore_001",
-    "type": "item_originium_ore",
+    "type": "originium_spot",
     "position": [
       -503.7462,
       231.1874
@@ -91,7 +91,7 @@
   },
   {
     "id": "item_quartz_sand_001",
-    "type": "item_quartz_sand",
+    "type": "amethyst_spot",
     "position": [
       -495.4868,
       200.5405
@@ -100,7 +100,7 @@
   },
   {
     "id": "mark_dg_blackbox_001",
-    "type": "mark_dg_blackbox",
+    "type": "blackbox",
     "position": [
       -523.5931,
       102.4215
@@ -109,7 +109,7 @@
   },
   {
     "id": "mark_dg_blackbox_002",
-    "type": "mark_dg_blackbox",
+    "type": "blackbox",
     "position": [
       -562.3775,
       183.5811
@@ -118,7 +118,7 @@
   },
   {
     "id": "mark_dg_blackbox_003",
-    "type": "mark_dg_blackbox",
+    "type": "blackbox",
     "position": [
       -508.3962,
       229.6359
@@ -127,7 +127,7 @@
   },
   {
     "id": "mark_dg_blackbox_004",
-    "type": "mark_dg_blackbox",
+    "type": "blackbox",
     "position": [
       -512.3777,
       243.7861
@@ -136,7 +136,7 @@
   },
   {
     "id": "mark_p_recycler_001",
-    "type": "mark_p_recycler",
+    "type": "recycler",
     "position": [
       -504.9743,
       211.1108
@@ -145,7 +145,7 @@
   },
   {
     "id": "mark_p_recycler_002",
-    "type": "mark_p_recycler",
+    "type": "recycler",
     "position": [
       -474.9414,
       130.9966
@@ -154,7 +154,7 @@
   },
   {
     "id": "item_plant_mushroom_1_1_001",
-    "type": "item_plant_mushroom_1_1",
+    "type": "pink_bolete",
     "position": [
       -486.2336,
       129.7825
@@ -163,10 +163,451 @@
   },
   {
     "id": "item_plant_spcstone_1_1_001",
-    "type": "item_plant_spcstone_1_1",
+    "type": "kalkonyx",
     "position": [
       -573.6453,
       142.1909
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_343",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -497.6786,
+      99.081
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_344",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -496.0399,
+      99.0512
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_345",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -494.6102,
+      98.0246
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_346",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -491.0711,
+      114.2575
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_347",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -494.1274,
+      111.5668
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_348",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -491.1367,
+      110.6387
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_144",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -466.2601,
+      199.6311
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_145",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -464.2445,
+      202.8467
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_349",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.1599,
+      228.7443
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_350",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.4867,
+      227.969
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_351",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.7148,
+      228.3702
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_352",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.3465,
+      229.3317
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_353",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.4312,
+      229.581
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_354",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -455.9724,
+      228.7443
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_355",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -456.2992,
+      227.969
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_356",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -457.5273,
+      228.3702
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_357",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -456.159,
+      229.3317
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_358",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -457.2437,
+      229.581
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_359",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -457.3787,
+      231.5568
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_360",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -457.7054,
+      230.7815
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_361",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -458.9335,
+      231.1828
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_362",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -457.5653,
+      232.1442
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_363",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -458.65,
+      232.3935
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_364",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -458.4217,
+      230.8363
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_365",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.1599,
+      231.5568
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_366",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.7148,
+      231.1828
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_367",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.4867,
+      230.7815
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_368",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -453.3465,
+      232.1442
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_369",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.4312,
+      232.3935
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_370",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -458.785,
+      229.2131
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_371",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -459.1117,
+      228.4378
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_372",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -460.3398,
+      228.839
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_373",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -458.9715,
+      229.8004
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_374",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -460.0562,
+      230.0498
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_375",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -455.8374,
+      234.7373
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_376",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.5662,
+      233.9006
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_377",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.8929,
+      233.1253
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_378",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -456.121,
+      233.5265
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_379",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -454.7528,
+      234.4879
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_146",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -464.6861,
+      201.5882
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_147",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -465.2101,
+      200.8264
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_148",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -466.5039,
+      201.3139
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_149",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -465.0132,
+      202.4249
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_150",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -466.1711,
+      202.3686
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_151",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -460.9361,
+      200.6506
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_152",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -461.4601,
+      199.8889
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_153",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -462.7539,
+      200.3764
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_154",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -461.2632,
+      201.4874
+    ],
+    "subregionId": "subregion-5"
+  },
+  {
+    "id": "int_doodad_ore_cluster_quartz_155",
+    "type": "int_doodad_ore_cluster_quartz",
+    "position": [
+      -462.4211,
+      201.4311
     ],
     "subregionId": "subregion-5"
   },
