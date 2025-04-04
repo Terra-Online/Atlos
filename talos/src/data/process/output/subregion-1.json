@@ -3,7 +3,7 @@
     "id": "mark_dg_resource_007",
     "type": "mark_dg_resource",
     "position": [
-      -711.192,
+      -248.6284,
       414.9332
     ],
     "subregionId": "subregion-1"
@@ -12,7 +12,7 @@
     "id": "mark_dg_resource_008",
     "type": "mark_dg_resource",
     "position": [
-      -669.6606,
+      -290.1597,
       426.4645
     ],
     "subregionId": "subregion-1"
@@ -21,7 +21,7 @@
     "id": "mark_dg_resource_009",
     "type": "mark_dg_resource",
     "position": [
-      -750.0983,
+      -209.722,
       418.3082
     ],
     "subregionId": "subregion-1"
@@ -30,7 +30,7 @@
     "id": "mark_dg_pazzle_005",
     "type": "mark_dg_pazzle",
     "position": [
-      -799.9266,
+      -159.8938,
       406.4488
     ],
     "subregionId": "subregion-1"
@@ -39,7 +39,7 @@
     "id": "mark_sp_campfire_014",
     "type": "TP",
     "position": [
-      -716.142,
+      -243.6783,
       391.9644
     ],
     "subregionId": "subregion-1"
@@ -48,7 +48,7 @@
     "id": "mark_sp_campfire_015",
     "type": "TP",
     "position": [
-      -643.3309,
+      -316.4895,
       473.1333
     ],
     "subregionId": "subregion-1"
@@ -57,7 +57,7 @@
     "id": "mark_sp_campfire_016",
     "type": "TP",
     "position": [
-      -805.5703,
+      -154.25,
       538.0226
     ],
     "subregionId": "subregion-1"
@@ -66,7 +66,7 @@
     "id": "mark_p_fixablerobot_016",
     "type": "robot",
     "position": [
-      -725.9018,
+      -233.9186,
       448.8487
     ],
     "subregionId": "subregion-1"
@@ -75,7 +75,7 @@
     "id": "mark_p_fixablerobot_017",
     "type": "robot",
     "position": [
-      -727.1664,
+      -232.6539,
       421.2055
     ],
     "subregionId": "subregion-1"
@@ -84,7 +84,7 @@
     "id": "mark_p_fixablerobot_018",
     "type": "robot",
     "position": [
-      -703.7096,
+      -256.1108,
       471.1608
     ],
     "subregionId": "subregion-1"
@@ -93,7 +93,7 @@
     "id": "mark_p_fixablerobot_019",
     "type": "robot",
     "position": [
-      -680.1194,
+      -279.701,
       510.8412
     ],
     "subregionId": "subregion-1"
@@ -102,7 +102,7 @@
     "id": "mark_dg_bossrush_002",
     "type": "mark_dg_bossrush",
     "position": [
-      -601.598,
+      -358.2224,
       510.4647
     ],
     "subregionId": "subregion-1"
@@ -111,7 +111,7 @@
     "id": "item_originium_ore_007",
     "type": "originium_spot",
     "position": [
-      -766.2562,
+      -193.5642,
       532.4116
     ],
     "subregionId": "subregion-1"
@@ -120,7 +120,7 @@
     "id": "item_iron_ore_002",
     "type": "ferrium_spot",
     "position": [
-      -653.7231,
+      -306.0972,
       433.7536
     ],
     "subregionId": "subregion-1"
@@ -129,7 +129,7 @@
     "id": "item_originium_ore_008",
     "type": "originium_spot",
     "position": [
-      -653.9387,
+      -305.8816,
       452.902
     ],
     "subregionId": "subregion-1"
@@ -138,7 +138,7 @@
     "id": "item_iron_ore_003",
     "type": "ferrium_spot",
     "position": [
-      -665.3153,
+      -294.505,
       500.9865
     ],
     "subregionId": "subregion-1"
@@ -147,7 +147,7 @@
     "id": "item_iron_ore_004",
     "type": "ferrium_spot",
     "position": [
-      -779.6109,
+      -180.2094,
       363.9237
     ],
     "subregionId": "subregion-1"
@@ -156,7 +156,7 @@
     "id": "item_originium_ore_009",
     "type": "originium_spot",
     "position": [
-      -730.678,
+      -229.1424,
       442.7583
     ],
     "subregionId": "subregion-1"
@@ -165,7 +165,7 @@
     "id": "mark_p_recycler_008",
     "type": "recycler",
     "position": [
-      -732.4076,
+      -227.4127,
       375.4409
     ],
     "subregionId": "subregion-1"
@@ -174,7 +174,7 @@
     "id": "mark_p_recycler_009",
     "type": "recycler",
     "position": [
-      -749.1608,
+      -210.6595,
       495.7928
     ],
     "subregionId": "subregion-1"
@@ -183,7 +183,7 @@
     "id": "mark_p_recycler_010",
     "type": "recycler",
     "position": [
-      -635.1333,
+      -324.687,
       449.7464
     ],
     "subregionId": "subregion-1"
@@ -192,7 +192,7 @@
     "id": "item_plant_mushroom_1_3_001",
     "type": "ruby_bolete",
     "position": [
-      -647.7746,
+      -312.0457,
       513.874
     ],
     "subregionId": "subregion-1"
@@ -201,7 +201,7 @@
     "id": "item_plant_mushroom_1_2_001",
     "type": "red_bolete",
     "position": [
-      -773.0585,
+      -186.7618,
       420.3423
     ],
     "subregionId": "subregion-1"
@@ -210,7 +210,7 @@
     "id": "item_plant_crylplant_1_3_001",
     "type": "vitrodendra",
     "position": [
-      -669.0794,
+      -290.741,
       429.1129
     ],
     "subregionId": "subregion-1"
@@ -219,7 +219,7 @@
     "id": "item_plant_spcstone_1_3_001",
     "type": "umbronyx",
     "position": [
-      -716.8639,
+      -242.9565,
       464.4849
     ],
     "subregionId": "subregion-1"
@@ -228,7 +228,7 @@
     "id": "mark_p_enemyspawner_002",
     "type": "mark_p_enemyspawner",
     "position": [
-      -627.1149,
+      -332.7055,
       445.9549
     ],
     "subregionId": "subregion-1"

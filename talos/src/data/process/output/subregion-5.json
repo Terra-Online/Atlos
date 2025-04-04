@@ -3,7 +3,7 @@
     "id": "mark_dg_resource_001",
     "type": "mark_dg_resource",
     "position": [
-      -535.7384,
+      -424.0819,
       108.7309
     ],
     "subregionId": "subregion-5"
@@ -12,7 +12,7 @@
     "id": "mark_dg_resource_002",
     "type": "mark_dg_resource",
     "position": [
-      -565.5088,
+      -394.3115,
       202.1202
     ],
     "subregionId": "subregion-5"
@@ -21,7 +21,7 @@
     "id": "mark_dg_pazzle_001",
     "type": "mark_dg_pazzle",
     "position": [
-      -574.4057,
+      -385.4146,
       241.05
     ],
     "subregionId": "subregion-5"
@@ -30,7 +30,7 @@
     "id": "mark_sp_campfire_001",
     "type": "TP",
     "position": [
-      -443.671,
+      -516.1493,
       205.7764
     ],
     "subregionId": "subregion-5"
@@ -39,7 +39,7 @@
     "id": "mark_sp_campfire_002",
     "type": "TP",
     "position": [
-      -536.1181,
+      -423.7022,
       147.4779
     ],
     "subregionId": "subregion-5"
@@ -48,7 +48,7 @@
     "id": "mark_sp_campfire_003",
     "type": "TP",
     "position": [
-      -538.0541,
+      -421.7663,
       126.0981
     ],
     "subregionId": "subregion-5"
@@ -57,7 +57,7 @@
     "id": "mark_p_fixablerobot_001",
     "type": "robot",
     "position": [
-      -570.9885,
+      -388.8318,
       149.8122
     ],
     "subregionId": "subregion-5"
@@ -66,7 +66,7 @@
     "id": "mark_p_fixablerobot_002",
     "type": "robot",
     "position": [
-      -499.7829,
+      -460.0375,
       212.1988
     ],
     "subregionId": "subregion-5"
@@ -75,7 +75,7 @@
     "id": "mark_dg_bossrush_001",
     "type": "mark_dg_bossrush",
     "position": [
-      -565.0072,
+      -394.8131,
       119.77
     ],
     "subregionId": "subregion-5"
@@ -84,7 +84,7 @@
     "id": "item_originium_ore_001",
     "type": "originium_spot",
     "position": [
-      -503.7462,
+      -456.0742,
       231.1874
     ],
     "subregionId": "subregion-5"
@@ -93,7 +93,7 @@
     "id": "item_quartz_sand_001",
     "type": "amethyst_spot",
     "position": [
-      -495.4868,
+      -464.3336,
       200.5405
     ],
     "subregionId": "subregion-5"
@@ -102,7 +102,7 @@
     "id": "mark_dg_blackbox_001",
     "type": "blackbox",
     "position": [
-      -523.5931,
+      -436.2272,
       102.4215
     ],
     "subregionId": "subregion-5"
@@ -111,7 +111,7 @@
     "id": "mark_dg_blackbox_002",
     "type": "blackbox",
     "position": [
-      -562.3775,
+      -397.4428,
       183.5811
     ],
     "subregionId": "subregion-5"
@@ -120,7 +120,7 @@
     "id": "mark_dg_blackbox_003",
     "type": "blackbox",
     "position": [
-      -508.3962,
+      -451.4242,
       229.6359
     ],
     "subregionId": "subregion-5"
@@ -129,7 +129,7 @@
     "id": "mark_dg_blackbox_004",
     "type": "blackbox",
     "position": [
-      -512.3777,
+      -447.4426,
       243.7861
     ],
     "subregionId": "subregion-5"
@@ -138,7 +138,7 @@
     "id": "mark_p_recycler_001",
     "type": "recycler",
     "position": [
-      -504.9743,
+      -454.846,
       211.1108
     ],
     "subregionId": "subregion-5"
@@ -147,7 +147,7 @@
     "id": "mark_p_recycler_002",
     "type": "recycler",
     "position": [
-      -474.9414,
+      -484.8789,
       130.9966
     ],
     "subregionId": "subregion-5"
@@ -156,7 +156,7 @@
     "id": "item_plant_mushroom_1_1_001",
     "type": "pink_bolete",
     "position": [
-      -486.2336,
+      -473.5867,
       129.7825
     ],
     "subregionId": "subregion-5"
@@ -165,7 +165,7 @@
     "id": "item_plant_spcstone_1_1_001",
     "type": "kalkonyx",
     "position": [
-      -573.6453,
+      -386.175,
       142.1909
     ],
     "subregionId": "subregion-5"

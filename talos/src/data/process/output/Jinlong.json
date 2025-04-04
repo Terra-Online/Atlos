@@ -3,7 +3,7 @@
     "id": "mark_dg_pazzle_008",
     "type": "mark_dg_pazzle",
     "position": [
-      205.9442,
+      -688.7686,
       828.2001
     ],
     "subregionId": "Jinlong"
@@ -12,7 +12,7 @@
     "id": "mark_dg_pazzle_009",
     "type": "mark_dg_pazzle",
     "position": [
-      200.7841,
+      -683.6085,
       469.7346
     ],
     "subregionId": "Jinlong"
@@ -21,7 +21,7 @@
     "id": "mark_sp_campfire_029",
     "type": "TP",
     "position": [
-      337.8006,
+      -820.625,
       872.75
     ],
     "subregionId": "Jinlong"
@@ -30,7 +30,7 @@
     "id": "mark_sp_campfire_030",
     "type": "TP",
     "position": [
-      259.3828,
+      -742.2072,
       726.6265
     ],
     "subregionId": "Jinlong"
@@ -39,7 +39,7 @@
     "id": "mark_sp_campfire_031",
     "type": "TP",
     "position": [
-      70.7286,
+      -553.553,
       388.7135
     ],
     "subregionId": "Jinlong"
@@ -48,7 +48,7 @@
     "id": "mark_sp_campfire_032",
     "type": "TP",
     "position": [
-      -96.3244,
+      -386.5,
       380.9781
     ],
     "subregionId": "Jinlong"
@@ -57,7 +57,7 @@
     "id": "mark_sp_campfire_033",
     "type": "TP",
     "position": [
-      -11.8695,
+      -470.9549,
       601.423
     ],
     "subregionId": "Jinlong"
@@ -66,7 +66,7 @@
     "id": "mark_p_fixablerobot_047",
     "type": "robot",
     "position": [
-      117.0104,
+      -599.8348,
       320.2239
     ],
     "subregionId": "Jinlong"
@@ -75,7 +75,7 @@
     "id": "mark_p_fixablerobot_048",
     "type": "robot",
     "position": [
-      45.087,
+      -527.9114,
       479.1029
     ],
     "subregionId": "Jinlong"
@@ -84,7 +84,7 @@
     "id": "mark_p_fixablerobot_049",
     "type": "robot",
     "position": [
-      303.1852,
+      -786.0096,
       463.9443
     ],
     "subregionId": "Jinlong"
@@ -93,7 +93,7 @@
     "id": "mark_p_fixablerobot_050",
     "type": "robot",
     "position": [
-      378.4304,
+      -861.2548,
       487.897
     ],
     "subregionId": "Jinlong"
@@ -102,7 +102,7 @@
     "id": "mark_p_fixablerobot_051",
     "type": "robot",
     "position": [
-      219.7772,
+      -702.6016,
       536.7168
     ],
     "subregionId": "Jinlong"
@@ -111,7 +111,7 @@
     "id": "mark_p_fixablerobot_052",
     "type": "robot",
     "position": [
-      279.6244,
+      -762.4488,
       592.7868
     ],
     "subregionId": "Jinlong"
@@ -120,7 +120,7 @@
     "id": "mark_p_fixablerobot_053",
     "type": "robot",
     "position": [
-      -165.9897,
+      -316.8347,
       242.3473
     ],
     "subregionId": "Jinlong"
@@ -129,7 +129,7 @@
     "id": "mark_p_fixablerobot_054",
     "type": "robot",
     "position": [
-      4.7849,
+      -487.6093,
       391.1424
     ],
     "subregionId": "Jinlong"
@@ -138,7 +138,7 @@
     "id": "item_iron_ore_013",
     "type": "ferrium_spot",
     "position": [
-      5.1395,
+      -487.9639,
       338.2891
     ],
     "subregionId": "Jinlong"
@@ -147,7 +147,7 @@
     "id": "item_iron_ore_014",
     "type": "ferrium_spot",
     "position": [
-      59.1471,
+      -541.9715,
       626.8161
     ],
     "subregionId": "Jinlong"
@@ -156,7 +156,7 @@
     "id": "item_copper_ore_001",
     "type": "cuprium_spot",
     "position": [
-      88.7861,
+      -571.6105,
       806.7577
     ],
     "subregionId": "Jinlong"
@@ -165,7 +165,7 @@
     "id": "item_iron_ore_015",
     "type": "ferrium_spot",
     "position": [
-      -57.3274,
+      -425.4971,
       554.4892
     ],
     "subregionId": "Jinlong"
@@ -174,7 +174,7 @@
     "id": "item_originium_ore_014",
     "type": "originium_spot",
     "position": [
-      -332.9607,
+      -149.8637,
       354.2449
     ],
     "subregionId": "Jinlong"
@@ -183,7 +183,7 @@
     "id": "item_originium_ore_015",
     "type": "originium_spot",
     "position": [
-      227.4184,
+      -710.2429,
       556.576
     ],
     "subregionId": "Jinlong"
@@ -192,7 +192,7 @@
     "id": "mark_dg_blackbox_026",
     "type": "blackbox",
     "position": [
-      -255.4274,
+      -227.397,
       360.5525
     ],
     "subregionId": "Jinlong"
@@ -201,7 +201,7 @@
     "id": "mark_dg_blackbox_027",
     "type": "blackbox",
     "position": [
-      8.2575,
+      -491.0819,
       327.894
     ],
     "subregionId": "Jinlong"
@@ -210,7 +210,7 @@
     "id": "mark_dg_blackbox_028",
     "type": "blackbox",
     "position": [
-      -344.2119,
+      -138.6125,
       361.3643
     ],
     "subregionId": "Jinlong"
@@ -219,7 +219,7 @@
     "id": "mark_dg_blackbox_029",
     "type": "blackbox",
     "position": [
-      102.6359,
+      -585.4604,
       801.351
     ],
     "subregionId": "Jinlong"
@@ -228,7 +228,7 @@
     "id": "mark_dg_blackbox_030",
     "type": "blackbox",
     "position": [
-      -83.7462,
+      -399.0782,
       718.975
     ],
     "subregionId": "Jinlong"
@@ -237,7 +237,7 @@
     "id": "mark_dg_blackbox_031",
     "type": "blackbox",
     "position": [
-      36.6891,
+      -519.5135,
       286.7442
     ],
     "subregionId": "Jinlong"
@@ -246,7 +246,7 @@
     "id": "mark_dg_blackbox_032",
     "type": "blackbox",
     "position": [
-      65.7645,
+      -548.5889,
       749.0582
     ],
     "subregionId": "Jinlong"
@@ -255,7 +255,7 @@
     "id": "mark_dg_blackbox_033",
     "type": "blackbox",
     "position": [
-      171.0275,
+      -653.852,
       759.4063
     ],
     "subregionId": "Jinlong"
@@ -264,7 +264,7 @@
     "id": "mark_dg_blackbox_034",
     "type": "blackbox",
     "position": [
-      152.7854,
+      -635.6098,
       476.117
     ],
     "subregionId": "Jinlong"
@@ -273,7 +273,7 @@
     "id": "mark_dg_blackbox_035",
     "type": "blackbox",
     "position": [
-      11.5607,
+      -494.3851,
       627.8018
     ],
     "subregionId": "Jinlong"
@@ -282,7 +282,7 @@
     "id": "mark_p_recycler_017",
     "type": "recycler",
     "position": [
-      -195.7183,
+      -287.1061,
       430.2028
     ],
     "subregionId": "Jinlong"
@@ -291,7 +291,7 @@
     "id": "mark_p_recycler_018",
     "type": "recycler",
     "position": [
-      -236.924,
+      -245.9004,
       391.6061
     ],
     "subregionId": "Jinlong"
@@ -300,7 +300,7 @@
     "id": "mark_p_recycler_019",
     "type": "recycler",
     "position": [
-      76.2339,
+      -559.0583,
       754.6381
     ],
     "subregionId": "Jinlong"
@@ -309,7 +309,7 @@
     "id": "mark_p_recycler_020",
     "type": "recycler",
     "position": [
-      26.4739,
+      -509.2983,
       437.272
     ],
     "subregionId": "Jinlong"
@@ -318,7 +318,7 @@
     "id": "item_plant_crylplant_2_1_001",
     "type": "blighted_jadeleaf",
     "position": [
-      155.1835,
+      -638.0079,
       775.1943
     ],
     "subregionId": "Jinlong"
@@ -327,7 +327,7 @@
     "id": "item_plant_mushroom_2_1_001",
     "type": "bloodcap",
     "position": [
-      -200.841,
+      -281.9834,
       245.8278
     ],
     "subregionId": "Jinlong"
@@ -336,7 +336,7 @@
     "id": "item_plant_mushroom_2_1_002",
     "type": "bloodcap",
     "position": [
-      350.8547,
+      -833.6791,
       455.8874
     ],
     "subregionId": "Jinlong"
@@ -345,7 +345,7 @@
     "id": "item_plant_crylplant_2_1_002",
     "type": "blighted_jadeleaf",
     "position": [
-      169.4786,
+      -652.303,
       467.3832
     ],
     "subregionId": "Jinlong"
@@ -354,7 +354,7 @@
     "id": "item_plant_spcstone_2_1_001",
     "type": "igneosite",
     "position": [
-      -21.863,
+      -460.9614,
       449.0197
     ],
     "subregionId": "Jinlong"
@@ -363,7 +363,7 @@
     "id": "item_plant_spcstone_2_1_002",
     "type": "igneosite",
     "position": [
-      -25.8287,
+      -456.9957,
       793.5858
     ],
     "subregionId": "Jinlong"
@@ -372,7 +372,7 @@
     "id": "mark_p_enemyspawner_005",
     "type": "mark_p_enemyspawner",
     "position": [
-      38.0437,
+      -520.8681,
       515.8484
     ],
     "subregionId": "Jinlong"
