@@ -212,25 +212,14 @@
             },
             "Scorchbug": {
                 "tier": "3"
-            },
-            "Aggagrit": {},
-            "Aggagrit Block": {},
-            "Aggagrit Cluster": {},
-            "Grass Chaff": {},
-            "Chitin Bit": {},
-            "Cartilage Bit": {},
-            "Fillet": {},
-            "Soaked Woodchip": {},
-            "Soaked Wood": {},
-            "Hollow Bonechip": {},
-            "Hollow Bone": {}
+            }
         }
     },
     "poi": {
         "collect": {
             "aetherium": {},
-            "VR": {},
-            "robot": {},
+            "VR Simulator": {},
+            "Fixable Robot": {},
             "crate": {},
             "longear": {},
             "slug": {},

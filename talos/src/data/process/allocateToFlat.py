@@ -74,7 +74,7 @@ def process_marker_data():
     os.makedirs(output_dir, exist_ok=True)
     
     # 加载所有外部映射
-    print("加载外部映射文件...")
+    print("加載外部映射詞典...")
     
     # 加载类型参照（处理可能的注释）
     type_dict = safe_load_json_with_comments(os.path.join(ref_dir, 'type.json'))
@@ -110,20 +110,20 @@ def process_marker_data():
                 print(f"已加载映射: {map_name}")
     
     # 读取所有输入文件
-    print("读取输入文件...")
+    print("讀取輸入檔案...")
     all_data = []
     for json_file in glob.glob(os.path.join(input_dir, '*.json')):
         try:
             file_data = load_json_file(json_file)
             if isinstance(file_data, list):
                 all_data.extend(file_data)
-                print(f"已加载: {json_file} ({len(file_data)} 个项目)")
+                print(f"已載入: {json_file} ({len(file_data)} 个點位)")
             else:
                 print(f"跳过非列表数据: {json_file}")
         except Exception as e:
             print(f"处理文件 {json_file} 时出错: {e}")
     
-    print(f"总共加载 {len(all_data)} 个项目")
+    print(f"最終載入 {len(all_data)} 个點位")
     
     # 处理数据
     processed_data = []
@@ -185,7 +185,7 @@ def process_marker_data():
             print(f"处理项目时出错: {e}")
             print(f"问题项目: {item}")
     
-    print(f"成功处理 {len(processed_data)} 个项目")
+    print(f"成功處理 {len(processed_data)} 个點位")
     
     # 按子区域分类
     categorized_data = {}
@@ -201,11 +201,11 @@ def process_marker_data():
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(items, f, indent=2, ensure_ascii=False)
-            print(f"成功写入: {output_file} ({len(items)} 个项目)")
+            print(f"成功写入: {output_file} ({len(items)} 个點位)")
         except Exception as e:
             print(f"写入文件 {output_file} 时出错: {e}")
     
-    print(f"处理完成，共生成 {len(categorized_data)} 个文件")
+    print(f"處理完畢，共輸出 {len(categorized_data)} 个檔案")
 
 if __name__ == "__main__":
     process_marker_data()

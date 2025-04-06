@@ -21,3 +21,13 @@ body {
 ::selection {
     background-color: $primary-accent-4;
 }
+
+::-webkit-scrollbar-thumb {
+    display: none;
+}
+::-webkit-scrollbar {
+    display: none;
+}
+::-webkit-scrollbar-track {
+    display: none;
+}
