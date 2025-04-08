@@ -1,0 +1,112 @@
+.custom-marker-icon {
+    background-color: transparent;
+
+    $icon-size: 50px;
+    $deco-size: 50px;
+    $border-weight: 3px;
+    $border-margin: 6px;
+    .custom-marker-icon-bg {
+        position: relative;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        width: $icon-size;
+        height: $icon-size;
+        border-radius: 50%;
+    }
+
+    .custom-marker-icon-border {
+        position: absolute;
+        top: calc($icon-size / 2);
+        left: calc($icon-size / 2);
+        transform: translate(-50%, -50%);
+        width: $deco-size;
+        height: $deco-size;
+        background-color: white;
+        border-radius: 50%;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: $deco-size - $border-margin;
+            height: $deco-size - $border-margin;
+            box-sizing: border-box;
+            border: $border-weight solid black;
+            border-radius: 50%;
+        }
+    }
+}
+
+.custom-tooltip {
+    position: absolute;
+    left: 0;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+
+    &::before {
+        display: none;
+    }
+
+    .tooltipInner {
+        position: absolute;
+        left: calc(50% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 30px;
+
+        .bg {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            height: 33px;
+            width: 33px;
+            transform: translate3d(-50%, -50%, 0);
+            background-color: rgba(#d9d9d9, 0.02);
+            box-shadow: 0 0 3px rgba(#000000, 0.5);
+            border-radius: 50%;
+
+            &::before {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate3d(-50%, -50%, 0);
+                width: 29px;
+                height: 29px;
+                background-color: rgba(#d9d9d9, 0.02);
+                box-shadow: 0 0 3px rgba(#000000, 0.5);
+                border-radius: 50%;
+            }
+
+            &::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate3d(-50%, -50%, 0);
+                width: 25px;
+                height: 25px;
+                background-color: #fcfcfc;
+                box-shadow: 0 0 1px rgba(#000000, 0.25);
+                border-radius: 50%;
+            }
+        }
+        
+        .image {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            
+        };
+    }
+}
