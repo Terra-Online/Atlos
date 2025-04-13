@@ -1,3 +1,5 @@
+
+
 .custom-marker-icon {
     background-color: transparent;
 
@@ -5,7 +7,15 @@
     $deco-size: 50px;
     $border-weight: 3px;
     $border-margin: 6px;
+
+    .marker-inner {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0);
+    }
     .custom-marker-icon-bg {
+        // display: none;
         position: relative;
         background-position: center;
         background-size: cover;
@@ -38,11 +48,22 @@
             border-radius: 50%;
         }
     }
+
+    .default-marker-icon {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background-color: #ccc;
+        border: 3px solid #000;
+    }
 }
 
 .custom-tooltip {
-    position: absolute;
-    left: 0;
     background-color: transparent;
     border: none;
     box-shadow: none;
@@ -51,9 +72,9 @@
         display: none;
     }
 
-    .tooltipInner {
+    .tooltip-inner {
         position: absolute;
-        left: calc(50% + 10px);
+        left: 10px;
         top: 50%;
         transform: translateY(-50%);
         width: 30px;

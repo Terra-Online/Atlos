@@ -5,11 +5,13 @@ export interface IMarkerData {
     ],
     "subregionId": string,
     "type": string
+    meta?: Record<string, any>
 }
 
 export interface IMarkerType {
     "key": string,
     "name": string,
+    "noFrame"?: boolean
     "category": {
         "main": string,
         "sub": string

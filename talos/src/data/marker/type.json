@@ -258,6 +258,7 @@
     "originium_spot": {
         "key": "originium_spot",
         "name": "Originium Spot",
+        "noFrame": true,
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -274,6 +275,7 @@
     "amethyst_spot": {
         "key": "amethyst_spot",
         "name": "Amethyst Spot",
+        "noFrame": true,
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -290,6 +292,7 @@
     "ferrium_spot": {
         "key": "ferrium_spot",
         "name": "Ferrium Spot",
+        "noFrame": true,
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -306,6 +309,7 @@
     "cuprium_spot": {
         "key": "cuprium_spot",
         "name": "Cuprium Spot",
+        "noFrame": true,
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -322,6 +326,7 @@
     "cyanite_spot": {
         "key": "cyanite_spot",
         "name": "Cyanite Spot",
+        "noFrame": true,
         "category": {
             "main": "resource",
             "sub": "natural"

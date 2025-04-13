@@ -5,6 +5,7 @@ import LOGGER from "../../../utils/log";
 import { create } from "zustand";
 import { getMarkerIconUrl } from "../../../utils/resource";
 import "./marker.scss"
+import { getMarkerLayer } from "./markerRenderer";
 
 /**
  * @type {string[]}
@@ -14,43 +15,6 @@ const MAP_SUBREGION_KEY_ARRAY = Object.keys(MAP_CONFIGS).map(regionId => {
     return subregions ? subregions.map(subregion => subregion.id) : [regionId]
 }).flat();
 
-// marker renderer
-/**
-* @constant
-* @type {Record<string, import("leaflet").Icon>}
-*/
-export const MARKER_TYPE_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
-    const iconUrl = ["originium_spot"].includes(type.key) ? getMarkerIconUrl(type.key) : getMarkerIconUrl("default")
-    if (type.key === "originium_spot") {
-        acc[type.key] = icon({
-            iconUrl,
-            iconSize: [84, 84],
-            iconAnchor: [42, 42],
-            popupAnchor: [0, 0],
-        })
-    }
-    else acc[type.key] = divIcon({
-        iconUrl,
-        // iconSize: [50, 50],
-        iconAnchor: [25, 25],
-        // popupAnchor: [0, 0],
-        className: "custom-marker-icon",
-        html: `</div><div class="custom-marker-icon-border"></div><div class="custom-marker-icon-bg" style="background-image: url(${iconUrl})">`
-    })
-    return acc
-}
-    , {})
-
-/**
- * 
- * @param {import("./marker.type").IMarkerData} marker 
- */
-function getMarker(marker) {
-    const typeKey = marker.type;
-    const layer = new L.Marker(marker.position, { icon: MARKER_TYPE_ICON_DICT[typeKey], alt: typeKey })
-    if(marker.type === "originium_spot")layer.bindTooltip(`<div class="tooltipInner"><div class="bg"></div><div class="image"  style="background-image:  url(${getMarkerIconUrl("default")})"></div></div>`, { permanent: true, className: "custom-tooltip", direction: "right" }).openTooltip()
-    return layer
-}
 
 // leaflet renderer
 export class MarkerLayer {
@@ -112,7 +76,7 @@ export class MarkerLayer {
                 LOGGER.warn(`Missing type config for '${typeKey}'`)
                 return
             }
-            const layer = getMarker(marker)
+            const layer = getMarkerLayer(marker)
             this.markerDict[marker.id] = layer;
             this.markerDataDict[marker.id] = marker;
 
