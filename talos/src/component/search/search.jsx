@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import SearchIcon from '../../asset/logos/search.svg?react';
 import './search.scss';
+import { useMarkerStore } from '../mapContainer/store/marker';
 
 const Search = () => {
-  const [searchText, setSearchText] = useState('');
-
-  const handleChange = (e) => {
-    setSearchText(e.target.value);
-  };
+  const {searchString, setSearchString} = useMarkerStore()
+  const changeHandler = useCallback((e) => {
+    setSearchString(e.target.value)
+  }, [])
 
   return (
     <div className="search-container">
@@ -20,8 +20,8 @@ const Search = () => {
             type="text"
             className="search-input"
             placeholder="Overall search..."
-            value={searchText}
-            onChange={handleChange}
+            value={searchString}
+            onChange={changeHandler}
           />
         </div>
       </form>

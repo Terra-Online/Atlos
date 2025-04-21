@@ -15,6 +15,9 @@ $transition-speed: 0.3s; //import from global size.scss later
   &.sidebar-open {
     transform: translateX($sidebar-width);
   }
+
+  // remove this to use trigger
+  display: none;
 }
 
 .trigger {

@@ -115,7 +115,7 @@ export class MarkerLayer {
 }
 
 // store
-const INIT_MARKER_FILTER = ["originium_spot"]
+const INIT_MARKER_FILTER = []
 
 export const useMarkerStore = create((set) => ({
     filter: INIT_MARKER_FILTER,
@@ -127,9 +127,17 @@ export const useMarkerStore = create((set) => ({
             }
             return { filter: [...state.filter, typeKey] }
         })
-    }
+    },
+
+    // search
+    searchString: "",
+    setSearchString: (searchString) => {
+        set({ searchString })
+    },
 }))
 
 export const usePoints = () => useMarkerStore(state => state.points)
 export const useFilter = () => useMarkerStore(state => state.filter)
 export const useSwitchFilter = () => useMarkerStore(state => state.switchFilter)
+
+export const useSearchString = () => useMarkerStore(state => state.searchString)

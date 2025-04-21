@@ -583,6 +583,7 @@
     "robot": {
         "key": "robot",
         "name": "robot",
+        "noFrame": true,
         "category": {
             "main": "poi",
             "sub": "collect"
@@ -615,6 +616,7 @@
     "blackbox": {
         "key": "blackbox",
         "name": "blackbox",
+        "noFrame": true,
         "category": {
             "main": "poi",
             "sub": "collect"
@@ -654,7 +656,8 @@
     },
     "tp": {
         "key": "tp",
-        "name": "TP",
+        "name": "TP", 
+        "noFrame": true,
         "category": {
             "main": "facility",
             "sub": "basic"
@@ -663,6 +666,7 @@
     "recycler": {
         "key": "recycler",
         "name": "recycler",
+        "noFrame": true,
         "category": {
             "main": "facility",
             "sub": "basic"
@@ -671,6 +675,7 @@
     "base": {
         "key": "base",
         "name": "base",
+        "noFrame": true,
         "category": {
             "main": "facility",
             "sub": "basic"
@@ -679,6 +684,7 @@
     "hub": {
         "key": "hub",
         "name": "hub",
+        "noFrame": true,
         "category": {
             "main": "facility",
             "sub": "basic"
@@ -687,6 +693,7 @@
     "control_nexus": {
         "key": "control_nexus",
         "name": "Control Nexus",
+        "noFrame": true,
         "category": {
             "main": "facility",
             "sub": "regional"

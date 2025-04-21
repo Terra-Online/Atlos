@@ -125,6 +125,9 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
             ))}
           </div>
         </div>
+        <div className="copyright">
+          <a href="https://beian.miit.gov.cn/">沪ICP备2025119702号-1</a>
+        </div>
       </div>
     </div>
   );

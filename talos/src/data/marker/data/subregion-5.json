@@ -28,7 +28,7 @@
   },
   {
     "id": "mark_sp_campfire_001",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -516.1493,
       205.7764
@@ -37,7 +37,7 @@
   },
   {
     "id": "mark_sp_campfire_002",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -423.7022,
       147.4779
@@ -46,7 +46,7 @@
   },
   {
     "id": "mark_sp_campfire_003",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -421.7663,
       126.0981

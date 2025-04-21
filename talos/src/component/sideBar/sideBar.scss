@@ -56,6 +56,22 @@ $transition-speed: 0.3s;
         gap: .3rem;
       }
     }
+    .copyright {
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      box-shadow: 0 0 4px black;
+      height: 24px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      a {
+        color: black;
+        text-decoration: none;
+      }
+    }
   }
 
   .sidebar-toggle {

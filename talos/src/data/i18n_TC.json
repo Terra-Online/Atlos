@@ -1,6 +1,8 @@
 {
     "key": [
         {
+            "blackbox": "科技點",
+            "recycler": "回收機器人",
             "triaggelos": "三位一體",
             "marble_aggelomoirai": "白堊界衛",
             "effigy": "肖像天使",
@@ -37,6 +39,11 @@
             "ferrium_ore": "藍鐵礦",
             "cuprium_ore": "赤銅礦",
             "cyanite_ore": "錆岩礦",
+            "originium_spot": "源礦脈",
+            "amethyst_spot": "紫晶礦脈",
+            "ferrium_spot": "藍鐵礦脈",
+            "cuprium_spot": "赤銅礦脈",
+            "cyanite_spot": "錆岩礦脈",
             "clean_water": "清水",
             "sewage": "污水",
             "buckflower": "蕎花",

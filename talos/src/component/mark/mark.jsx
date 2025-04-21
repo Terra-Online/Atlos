@@ -4,7 +4,7 @@ import { getItemIconUrl } from '../../utils/resource';
 
 // For deserialization
 import i18nData from '../../data/i18n_TC.json';
-import { useFilter, usePoints, useSwitchFilter } from '../mapContainer/store/marker';
+import { useFilter, usePoints, useSearchString, useSwitchFilter } from '../mapContainer/store/marker';
 
 const Mark = ({
   // points = [],
@@ -69,6 +69,11 @@ const Mark = ({
   const switchFilter = useSwitchFilter();
   const points = usePoints();
   const totalCount = useMemo(() => points.filter(point => point.type === typeInfo.key).length, [points, typeInfo]);
+  const searchString = useSearchString()
+  const showFilter = useMemo(() => 
+      totalCount && (searchString === "" || typeInfo.key.includes(searchString) || displayName.includes(searchString))
+    , [totalCount, searchString, displayName])
+  if (!showFilter) return null
   return (
     <div
       className={`mark-item ${filter.includes(typeInfo.key) ? 'active' : ''}`}

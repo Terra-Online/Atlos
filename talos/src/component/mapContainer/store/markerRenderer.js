@@ -18,24 +18,24 @@ const DEFAULT_ICON = divIcon({
 */
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
     // change this to remove default icon
-    if (!type.key.endsWith("spot")) {
-        acc[type.key] = DEFAULT_ICON
-        return acc
-    }
+    // if (!type.key.endsWith("spot")) {
+    //     acc[type.key] = DEFAULT_ICON
+    //     return acc
+    // }
     const iconUrl = getMarkerIconUrl(type.key)
     if (type.noFrame) {
         acc[type.key] = icon({
             iconUrl,
-            iconSize: [84, 84],
-            iconAnchor: [42, 42],
+            iconSize: [60, 60],
+            iconAnchor: [30, 30],
             popupAnchor: [0, 0],
             tooltipAnchor: [0, 0],
         })
     }
     else acc[type.key] = divIcon({
         // iconUrl,
-        iconSize: [50, 50],
-        iconAnchor: [25, 25],
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
         popupAnchor: [0, 0],
         tooltipAnchor: [0, 0],
         className: "custom-marker-icon",

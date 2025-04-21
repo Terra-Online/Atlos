@@ -14,6 +14,9 @@
   flex-direction: row;
   align-items: center;
   gap: .5rem;
+
+  // remove this to use headbar
+  display: none;
 }
 
 .headbar-item {

@@ -55,7 +55,7 @@
   },
   {
     "id": "mark_sp_campfire_007",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -662.2168,
       518.9303
@@ -64,7 +64,7 @@
   },
   {
     "id": "mark_sp_campfire_008",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -705.3091,
       448.2192
@@ -73,7 +73,7 @@
   },
   {
     "id": "mark_sp_campfire_009",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -666.7825,
       341.2858
@@ -82,7 +82,7 @@
   },
   {
     "id": "mark_sp_campfire_010",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -660.0022,
       463.5074
@@ -91,7 +91,7 @@
   },
   {
     "id": "mark_sp_campfire_011",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -713.16,
       287.4833
@@ -100,7 +100,7 @@
   },
   {
     "id": "mark_sp_campfire_012",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -523.3202,
       391.6925
@@ -109,7 +109,7 @@
   },
   {
     "id": "mark_sp_campfire_013",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -500.4368,
       433.7762
