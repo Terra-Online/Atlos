@@ -1,7 +1,7 @@
 [
   {
     "id": "mark_sp_campfire_027",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -50.0,
       0.0
@@ -10,7 +10,7 @@
   },
   {
     "id": "mark_sp_campfire_028",
-    "type": "TP",
+    "type": "tp",
     "position": [
       49.0,
       0.0

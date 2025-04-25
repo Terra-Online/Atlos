@@ -28,7 +28,7 @@
   },
   {
     "id": "mark_sp_campfire_001",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -516.1493,
       205.7764
@@ -37,7 +37,7 @@
   },
   {
     "id": "mark_sp_campfire_002",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -423.7022,
       147.4779
@@ -46,7 +46,7 @@
   },
   {
     "id": "mark_sp_campfire_003",
-    "type": "TP",
+    "type": "tp",
     "position": [
       -421.7663,
       126.0981
@@ -1585,7 +1585,7 @@
   },
   {
     "id": "int_trchest_common_normal_079",
-    "type": "int_trchest_common_normal",
+    "type": "treasure_chest",
     "position": [
       -455.6312,
       187.0934
@@ -1594,7 +1594,7 @@
   },
   {
     "id": "int_trchest_common_normal_080",
-    "type": "int_trchest_common_normal",
+    "type": "treasure_chest",
     "position": [
       -454.1743,
       103.2939
@@ -1603,7 +1603,7 @@
   },
   {
     "id": "int_trchest_common_081",
-    "type": "int_trchest_common",
+    "type": "treasure_chest",
     "position": [
       -490.7378,
       152.6248
@@ -1612,7 +1612,7 @@
   },
   {
     "id": "int_trchest_common_high_071",
-    "type": "int_trchest_common_high",
+    "type": "treasure_chest",
     "position": [
       -441.773,
       167.8578
@@ -1621,7 +1621,7 @@
   },
   {
     "id": "int_trchest_common_082",
-    "type": "int_trchest_common",
+    "type": "treasure_chest",
     "position": [
       -412.4822,
       170.3923
@@ -1630,7 +1630,7 @@
   },
   {
     "id": "int_trchest_common_high_072",
-    "type": "int_trchest_common_high",
+    "type": "treasure_chest",
     "position": [
       -480.6086,
       96.5996
@@ -1639,7 +1639,7 @@
   },
   {
     "id": "int_trchest_common_083",
-    "type": "int_trchest_common",
+    "type": "treasure_chest",
     "position": [
       -413.512,
       176.9267
@@ -1648,7 +1648,7 @@
   },
   {
     "id": "int_trchest_common_084",
-    "type": "int_trchest_common",
+    "type": "treasure_chest",
     "position": [
       -511.7262,
       129.7328
@@ -1657,7 +1657,7 @@
   },
   {
     "id": "int_trchest_common_high_073",
-    "type": "int_trchest_common_high",
+    "type": "treasure_chest",
     "position": [
       -422.7525,
       240.2686
@@ -1666,7 +1666,7 @@
   },
   {
     "id": "int_trchest_common_normal_081",
-    "type": "int_trchest_common_normal",
+    "type": "treasure_chest",
     "position": [
       -456.1356,
       198.741
@@ -1675,7 +1675,7 @@
   },
   {
     "id": "int_trchest_common_normal_082",
-    "type": "int_trchest_common_normal",
+    "type": "treasure_chest",
     "position": [
       -445.4748,
       162.5079

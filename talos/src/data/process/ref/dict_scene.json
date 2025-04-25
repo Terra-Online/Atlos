@@ -1,4 +1,10 @@
 {
+    "int_trchest_common": "Treasure Chest",
+    "int_trchest_common_high": "Treasure Chest",
+    "int_trchest_common_normal": "Treasure Chest",
+    "int_trchest_lock": "Treasure Chest",
+
+
     "eny_0007_mimicw": "Poison Ivy",
     "eny_0018_lbtough": "Bonekrusher Executioner",
 

@@ -220,10 +220,12 @@
             "aetherium": {},
             "VR Simulator": {},
             "Fixable Robot": {},
+            "Treasure Chest": {},
+            "blackbox": {},
+
             "crate": {},
             "longear": {},
-            "slug": {},
-            "blackbox": {}
+            "slug": {}
         },
         "trial": {
             "rift": {},
@@ -235,7 +237,7 @@
     },
     "facility": {
         "basic": {
-            "TP": {
+            "tp": {
                 "collectable": false
             },
             "recycler": {},
@@ -246,9 +248,7 @@
             "Control Nexus": {},
             "Growth Cabin": {},
             "Manufacturing Cabin": {},
-            "exchange": {},
-            "tianshi_p": {},
-            "tianshi_s": {}
+            "exchange": {}
         },
         "others": {
             "barrel": {}
