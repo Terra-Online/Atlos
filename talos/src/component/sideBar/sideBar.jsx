@@ -126,7 +126,7 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
           </div>
         </div>
         <div className="copyright">
-          <a href="https://beian.miit.gov.cn/">沪ICP备2025119702号-1</a>
+          <a href="https://beian.miit.gov.cn/">沪ICP备<b>2025119702</b>号-1</a>
         </div>
       </div>
     </div>
