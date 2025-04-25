@@ -2,6 +2,7 @@ import json
 import os
 import glob
 from typing import Dict, List, Any
+from datetime import datetime
 
 def format_key(s: str) -> str:
     """将字符串标准化为小写、下划线分隔的格式"""
@@ -71,7 +72,15 @@ def process_marker_data():
     ref_dir = 'ref'
     input_dir = 'input'
     output_dir = 'output'
+    log_dir = os.path.join(output_dir, 'log')  # 创建日志目录
+    
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)  # 确保日志目录存在
+    
+    # 使用字典和集合记录映射关系
+    successful_mappings_dict = {}  # 使用字典去重
+    failed_mappings_set = set()    # 使用集合去重
+    unchanged_mappings_set = set() # 使用集合记录映射成功但未改变的键
     
     # 加载所有外部映射
     print("加載外部映射詞典...")
@@ -155,17 +164,37 @@ def process_marker_data():
             
             # 确定类型
             item_type = type_key
+            mapping_found = False
+            mapping_source = ""
             
             # 先检查type字典
             if type_dict and type_key in type_dict:
                 # 直接使用类型键名
                 item_type = type_key
+                mapping_found = True
+                mapping_source = "type.json"
             else:
                 # 检查其他所有映射
-                for map_dict in all_mappings.values():
+                for map_name, map_dict in all_mappings.items():
                     if type_key in map_dict:
                         item_type = map_dict[type_key]
+                        mapping_found = True
+                        mapping_source = map_name
                         break
+            
+            # 记录唯一的映射结果
+            if mapping_found:
+                if item_type == type_key:  # 映射前后值相同
+                    unchanged_mappings_set.add(type_key)
+                else:
+                    # 只记录唯一且值有变化的键值对和来源
+                    successful_mappings_dict[type_key] = {
+                        "value": item_type,
+                        "source": mapping_source
+                    }
+            else:
+                # 只记录唯一的未映射键
+                failed_mappings_set.add(type_key)
             
             # 创建处理后的项目
             processed_item = dict(item)  # 创建副本而不是修改原始数据
@@ -204,6 +233,58 @@ def process_marker_data():
             print(f"成功写入: {output_file} ({len(items)} 个點位)")
         except Exception as e:
             print(f"写入文件 {output_file} 时出错: {e}")
+    
+    # 将字典和集合转换为列表
+    successful_mappings = [{"key": k, **v} for k, v in successful_mappings_dict.items()]
+    failed_mappings = [{"key": k} for k in failed_mappings_set]
+    unchanged_mappings = [{"key": k} for k in unchanged_mappings_set]
+    
+    # 创建简化的映射对象
+    successful_mappings_simple = {k: v["value"] for k, v in successful_mappings_dict.items()}
+    failed_mappings_keys = {k: k for k in failed_mappings_set}  # 使用键作为值
+    unchanged_mappings_keys = {k: k for k in unchanged_mappings_set}  # 未变化的键
+    
+    # 生成并输出日志文件
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = os.path.join(log_dir, f"mapping_log_{timestamp}.json")  # 保存到log目录
+    
+    log_data = {
+        "timestamp": datetime.now().isoformat(),
+        "total_processed": len(all_data),
+        "successful_mappings_count": len(successful_mappings),
+        "failed_mappings_count": len(failed_mappings),
+        "unchanged_mappings_count": len(unchanged_mappings),
+        "successful_mappings": successful_mappings,
+        "failed_mappings": failed_mappings,
+        "unchanged_mappings": unchanged_mappings,
+        "successful_mappings_simple": successful_mappings_simple,
+        "failed_mappings_keys": failed_mappings_keys,
+        "unchanged_mappings_keys": unchanged_mappings_keys
+    }
+    
+    try:
+        with open(log_file, 'w', encoding='utf-8') as f:
+            json.dump(log_data, f, indent=2, ensure_ascii=False)
+        print(f"成功寫入日誌: {log_file}")
+        print(f"  - 成功映射(有變化): {len(successful_mappings)} 个唯一類型")
+        print(f"  - 成功映射(未變化): {len(unchanged_mappings)} 个唯一類型")
+        print(f"  - 未找到映射: {len(failed_mappings)} 个唯一類型")
+    except Exception as e:
+        print(f"写入日志文件时出错: {e}")
+    
+    # 单独输出简化的映射文件，方便直接使用
+    simple_mapping_file = os.path.join(log_dir, f"simple_mappings_{timestamp}.json")  # 保存到log目录
+    try:
+        simple_mappings = {
+            "successful": successful_mappings_simple,
+            "failed": failed_mappings_keys,
+            "unchanged": unchanged_mappings_keys
+        }
+        with open(simple_mapping_file, 'w', encoding='utf-8') as f:
+            json.dump(simple_mappings, f, indent=2, ensure_ascii=False)
+        print(f"成功写入简化映射文件: {simple_mapping_file}")
+    except Exception as e:
+        print(f"写入简化映射文件时出错: {e}")
     
     print(f"處理完畢，共輸出 {len(categorized_data)} 个檔案")
 
