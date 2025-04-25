@@ -39,7 +39,7 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, typ
         popupAnchor: [0, 0],
         tooltipAnchor: [0, 0],
         className: "custom-marker-icon",
-        html: `<div class="marker-inner"><div class="custom-marker-icon-border"></div><div class="custom-marker-icon-bg" style="background-image: url(${iconUrl})"></div></div>`
+        html: `<div class="marker-inner"><div class="custom-marker-icon" style="background-image: url(${iconUrl})"></div></div>`
     })
     return acc
 }

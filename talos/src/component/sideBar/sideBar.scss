@@ -38,6 +38,9 @@ $transition-speed: 0.3s;
     display: flex;
     flex-direction: column;
 
+    -webkit-user-select: none;
+    user-select: none;
+
     .head_icon {
       z-index: 100;
       background-color: $white-1;
@@ -47,8 +50,7 @@ $transition-speed: 0.3s;
       > img {
         width: $desktop-headbar-height;
         height: $desktop-headbar-height;
-        border-radius: 50%;
-        margin-right: 10px;
+        padding: .25rem;
       }
     }
     .sidebar-content {

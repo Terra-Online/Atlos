@@ -1,10 +1,11 @@
-
+@use '../../../styles/palette.scss' as *;
+@use '../../../styles/curves.scss' as *;
 
 .custom-marker-icon {
     background-color: transparent;
 
-    $icon-size: 28px;
-    $deco-size: 32px;
+    $icon-size: 1.75rem;
+    $deco-size: 2rem;
     $border-weight: 2px;
     $border-margin: 4px;
 
@@ -14,8 +15,7 @@
         top: 50%;
         transform: translate3d(-50%, -50%, 0);
     }
-    .custom-marker-icon-bg {
-        // display: none;
+    .custom-marker-icon {
         position: relative;
         background-position: center;
         background-size: cover;
@@ -23,31 +23,27 @@
         width: $icon-size;
         height: $icon-size;
         border-radius: 50%;
-    }
 
-    .custom-marker-icon-border {
-        position: absolute;
-        top: calc($icon-size / 2);
-        left: calc($icon-size / 2);
-        transform: translate(-50%, -50%);
-        width: $deco-size;
-        height: $deco-size;
-        background-color: white;
-        border-radius: 50%;
-
-        &::before {
+        background-color: $white-1;
+        outline: $border-weight solid $white-1;
+        outline-offset: $border-weight;
+        box-shadow: 0 0 10px $black;
+        &::after {
             content: "";
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: $deco-size - $border-margin;
-            height: $deco-size - $border-margin;
-            box-sizing: border-box;
-            border: $border-weight solid black;
-            border-radius: 50%;
+            bottom: -9px;
+            left: calc(50% - 5px);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 7px solid $white-1;
+            transition: transform 0.2s $presto-curve;
+            z-index: 10;
+            filter: drop-shadow(0 0 2px rgba($black, 0.7));
         }
     }
+
 
     .default-marker-icon {
         position: absolute;

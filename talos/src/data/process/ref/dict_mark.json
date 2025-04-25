@@ -12,12 +12,13 @@
     "mark_p_pazzle": "mark_p_pazzle",
     "mark_dg_bossrush": "mark_dg_bossrush",
     "mark_ss_room_manufacturingstation": "Manufacturing Cabin",
+    "mark_ss_controlcenter": "Control Nexus",
+    "mark_ss_room_growcabin": "Growth Cabin",
+
     "mark_npc_racingdungeon": "mark_npc_racingdungeon",
     "mark_npc_ss_manualCollect": "mark_npc_ss_manualCollect",
     "mark_npc_ss_shop": "mark_npc_ss_shop",
     "mark_npc_ss_trainingroom": "mark_npc_ss_trainingroom",
-    "mark_ss_controlcenter": "Control Nexus",
-    "mark_ss_room_growcabin": "Growth Cabin",
 
     "item_iron_ore": "Ferrium Spot",
     "item_originium_ore": "Originium Spot",
