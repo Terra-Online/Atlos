@@ -478,7 +478,7 @@
   },
   {
     "id": "mark_npc_racingdungeon_001",
-    "type": "mark_npc_racingdungeon",
+    "type": "mission_npc",
     "position": [
       -663.4682,
       514.1155
@@ -487,7 +487,7 @@
   },
   {
     "id": "mark_p_enemyspawner_001",
-    "type": "mark_p_enemyspawner",
+    "type": "spawner",
     "position": [
       -685.7997,
       348.4783

@@ -100,7 +100,7 @@
   },
   {
     "id": "mark_dg_bossrush_002",
-    "type": "mark_dg_bossrush",
+    "type": "re_crisis",
     "position": [
       -358.2224,
       510.4647
@@ -226,7 +226,7 @@
   },
   {
     "id": "mark_p_enemyspawner_002",
-    "type": "mark_p_enemyspawner",
+    "type": "spawner",
     "position": [
       -332.7055,
       445.9549

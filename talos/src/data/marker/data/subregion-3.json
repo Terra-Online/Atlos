@@ -307,7 +307,7 @@
   },
   {
     "id": "mark_p_enemyspawner_003",
-    "type": "mark_p_enemyspawner",
+    "type": "spawner",
     "position": [
       -568.7291,
       811.9982

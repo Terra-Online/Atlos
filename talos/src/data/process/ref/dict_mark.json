@@ -1,42 +1,46 @@
 {
-    "mark_p_fixablerobot": "robot",
-    "mark_p_minepoint_team": "mark_p_minepoint_team",
-    "mark_dg_blackbox": "blackbox",
-    "mark_sp_campfire": "tp",
-    "mark_p_doodad_tundranest": "mark_p_doodad_tundranest",
-    "mark_p_recycler": "Recycler",
-    "mark_p_doodad_spcstone": "mark_p_doodad_spcstone",
+    "mark_p_minepoint_team": "Ore Plot",
+        "item_iron_ore": "Ferrium Spot",
+        "item_originium_ore": "Originium Spot",
+        "item_quartz_sand": "Amethyst Spot",
+        "item_copper_ore": "Cuprium Spot",
+
+    "mark_p_doodad_spcstone": "Rare mine",
+        "item_plant_spcstone_1_1": "Kalkonyx",
+        "item_plant_spcstone_1_2": "Auronyx",
+        "item_plant_spcstone_1_3": "Umbronyx",
+        "item_plant_spcstone_2_1": "Igneosite",
+
+    "mark_p_doodad_tundranest": "Rare Plant",
+        "item_plant_mushroom_1_1": "Pink Bolete",
+        "item_plant_mushroom_1_2": "Red Bolete",
+        "item_plant_mushroom_1_3": "Ruby Bolete",
+        "item_plant_mushroom_2_1": "Bloodcap",
+
+        "item_plant_crylplant_1_1": "Kalkodendra",
+        "item_plant_crylplant_1_2": "Chrysodendra",
+        "item_plant_crylplant_1_3": "Vitrodendra",
+        "item_plant_crylplant_2_1": "Blighted Jadeleaf",
+
     "mark_dg_resource": "mark_dg_resource",
     "mark_dg_pazzle": "mark_dg_pazzle",
-    "mark_p_enemyspawner": "mark_p_enemyspawner",
     "mark_p_pazzle": "mark_p_pazzle",
-    "mark_dg_bossrush": "mark_dg_bossrush",
+
+    "mark_dg_blackbox": "blackbox",
+    "mark_sp_campfire": "tp",
+    "mark_p_fixablerobot": "robot",
+
+    "mark_p_recycler": "Recycler",
+
+
+    "mark_p_enemyspawner": "Spawner",
+    "mark_dg_bossrush": "Re Crisis",
     "mark_ss_room_manufacturingstation": "Manufacturing Cabin",
     "mark_ss_controlcenter": "Control Nexus",
     "mark_ss_room_growcabin": "Growth Cabin",
+    "mark_npc_ss_shop": "Exchange",
+    "mark_npc_ss_trainingroom": "Training Room",
 
-    "mark_npc_racingdungeon": "mark_npc_racingdungeon",
-    "mark_npc_ss_manualCollect": "mark_npc_ss_manualCollect",
-    "mark_npc_ss_shop": "mark_npc_ss_shop",
-    "mark_npc_ss_trainingroom": "mark_npc_ss_trainingroom",
-
-    "item_iron_ore": "Ferrium Spot",
-    "item_originium_ore": "Originium Spot",
-    "item_quartz_sand": "Amethyst Spot",
-    "item_copper_ore": "Cuprium Spot",
-
-    "item_plant_mushroom_1_1": "Pink Bolete",
-    "item_plant_mushroom_1_2": "Red Bolete",
-    "item_plant_mushroom_1_3": "Ruby Bolete",
-    "item_plant_mushroom_2_1": "Bloodcap",
-
-    "item_plant_crylplant_1_1": "Kalkodendra",
-    "item_plant_crylplant_1_2": "Chrysodendra",
-    "item_plant_crylplant_1_3": "Vitrodendra",
-    "item_plant_crylplant_2_1": "Blighted Jadeleaf",
-
-    "item_plant_spcstone_1_1": "Kalkonyx",
-    "item_plant_spcstone_1_2": "Auronyx",
-    "item_plant_spcstone_1_3": "Umbronyx",
-    "item_plant_spcstone_2_1": "Igneosite"
+    "mark_npc_racingdungeon": "Mission NPC",
+    "mark_npc_ss_manualCollect": "mark_npc_ss_manualCollect"
 }

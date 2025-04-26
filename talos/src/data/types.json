@@ -228,10 +228,10 @@
             "slug": {}
         },
         "trial": {
-            "rift": {},
-            "unstable": {},
             "alluvium": {},
-            "water": {}
+            "mission_npc": {},
+            "re-crisis": {},
+            "spawner": {}
         },
         "npc": {}
     },
@@ -245,10 +245,11 @@
             "hub": {}
         },
         "regional": {
+            "Training Room": {},
             "Control Nexus": {},
             "Growth Cabin": {},
             "Manufacturing Cabin": {},
-            "exchange": {}
+            "Exchange": {}
         },
         "others": {
             "barrel": {}
