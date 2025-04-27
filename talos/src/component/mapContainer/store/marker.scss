@@ -28,6 +28,8 @@
         outline: $border-weight solid $white-1;
         outline-offset: $border-weight;
         box-shadow: 0 0 10px $black;
+
+        //transform: translateY(-50%);
         &::after {
             content: "";
             position: absolute;

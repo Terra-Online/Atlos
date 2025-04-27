@@ -3,8 +3,8 @@
     "id": "mark_sp_campfire_027",
     "type": "tp",
     "position": [
-      -50.0,
-      0.0
+      -500.0128,
+      303.6313
     ],
     "subregionId": "Dijiang"
   },
@@ -12,8 +12,8 @@
     "id": "mark_sp_campfire_028",
     "type": "tp",
     "position": [
-      49.0,
-      0.0
+      -500.0128,
+      687.5127
     ],
     "subregionId": "Dijiang"
   },
@@ -21,8 +21,8 @@
     "id": "mark_ss_room_growcabin_001",
     "type": "growth_cabin",
     "position": [
-      72.2129,
-      -11.662
+      -450.3729,
+      777.5228
     ],
     "subregionId": "Dijiang"
   },
@@ -30,8 +30,8 @@
     "id": "mark_ss_room_manufacturingstation_001",
     "type": "manufacturing_cabin",
     "position": [
-      66.5859,
-      11.221
+      -547.7757,
+      755.7036
     ],
     "subregionId": "Dijiang"
   },
@@ -39,8 +39,8 @@
     "id": "mark_ss_room_manufacturingstation_002",
     "type": "manufacturing_cabin",
     "position": [
-      83.2319,
-      11.221
+      -547.7757,
+      820.25
     ],
     "subregionId": "Dijiang"
   },
@@ -48,8 +48,8 @@
     "id": "mark_ss_controlcenter_001",
     "type": "control_nexus",
     "position": [
-      -93.94,
-      0.2
+      -500.8642,
+      133.25
     ],
     "subregionId": "Dijiang"
   },
@@ -57,8 +57,8 @@
     "id": "mark_npc_ss_trainingroom_001",
     "type": "training_room",
     "position": [
-      51.047,
-      -13.674
+      -441.8085,
+      695.4502
     ],
     "subregionId": "Dijiang"
   },
@@ -66,8 +66,8 @@
     "id": "mark_npc_ss_shop_001",
     "type": "exchange",
     "position": [
-      -9.358,
-      -23.96
+      -398.0257,
+      461.2243
     ],
     "subregionId": "Dijiang"
   },
@@ -75,8 +75,8 @@
     "id": "mark_npc_ss_manualCollect_001",
     "type": "mark_npc_ss_manualcollect",
     "position": [
-      -26.3444,
-      -7.6261
+      -467.5519,
+      395.358
     ],
     "subregionId": "Dijiang"
   }
