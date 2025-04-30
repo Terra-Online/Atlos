@@ -3,10 +3,42 @@ const prefix = (typeof window !== 'undefined' && window.__asset_HOST) ||
                (typeof process !== 'undefined' && process.env.ASSET_HOST) ||
                "";
 
-// Cache for previously checked resource paths
+// Initialize cache from localStorage if available
 const resourceCache = {
-  exists: new Set(),     // Resources confirmed to exist in shared directory
-  notExists: new Set()   // Resources confirmed not to exist in shared directory
+  exists: new Set(),
+  notExists: new Set()
+};
+
+// Load cache from localStorage if available
+try {
+  if (typeof localStorage !== 'undefined') {
+    const savedExists = localStorage.getItem('resourceCacheExists');
+    const savedNotExists = localStorage.getItem('resourceCacheNotExists');
+    
+    if (savedExists) {
+      JSON.parse(savedExists).forEach(item => resourceCache.exists.add(item));
+    }
+    
+    if (savedNotExists) {
+      JSON.parse(savedNotExists).forEach(item => resourceCache.notExists.add(item));
+    }
+  }
+} catch (e) {
+  console.warn('Failed to load resource cache from localStorage:', e);
+}
+
+// Helper function to save cache to localStorage
+const saveCache = () => {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('resourceCacheExists', 
+        JSON.stringify([...resourceCache.exists]));
+      localStorage.setItem('resourceCacheNotExists', 
+        JSON.stringify([...resourceCache.notExists]));
+    }
+  } catch (e) {
+    console.warn('Failed to save resource cache to localStorage:', e);
+  }
 };
 
 /**
@@ -18,34 +50,43 @@ const resourceCache = {
  */
 export function getResourceUrl(property, key, ext = "png") {
   if (property === "tiles") return `${prefix}${key}`;
+  
+  const resourceKey = `${key}.${ext}`;
+  const defaultUrl = `${prefix}/assets/images/${property}/${key}.${ext}`;
+  const sharedUrl = `${prefix}/assets/images/shared/${key}.${ext}`;
+  
   // Enable shared resource fallback only for marker and item
   if (property === "marker" || property === "item") {
     // Check if resource is known to exist in shared directory
-    if (resourceCache.exists.has(`${key}.${ext}`)) {
-      return `${prefix}/assets/images/shared/${key}.${ext}`;
-    }
-    // Check if resource is known not to exist in shared directory
-    if (!resourceCache.notExists.has(`${key}.${ext}`)) {
-      // Try loading the resource from shared directory
-      const img = new Image();
-      const sharedUrl = `${prefix}/assets/images/shared/${key}.${ext}`;
-      img.onload = () => {
-        // Resource exists, add to cache
-        resourceCache.exists.add(`${key}.${ext}`);
-      };
-      img.onerror = () => {
-        // Resource doesn't exist, add to cache
-        resourceCache.notExists.add(`${key}.${ext}`);
-      };
-      // Start loading the image to check existence
-      img.src = sharedUrl;
-      // On first attempt, assume resource exists in shared directory
+    if (resourceCache.exists.has(resourceKey)) {
       return sharedUrl;
     }
+    
+    // Check if resource is known not to exist in shared directory
+    if (resourceCache.notExists.has(resourceKey)) {
+      return defaultUrl;
+    }
+    
+    // We don't know yet - prefer the original URL for safety and check in background
+    const img = new Image();
+    
+    img.onload = () => {
+      resourceCache.exists.add(resourceKey);
+      saveCache();
+    };
+    
+    img.onerror = () => {
+      resourceCache.notExists.add(resourceKey);
+      saveCache();
+    };
+    
+    img.src = sharedUrl;
+    
+    // Return default URL to ensure something displays
+    return defaultUrl;
   }
 
-  // Default path
-  return `${prefix}/assets/images/${property}/${key}.${ext}`;
+  return defaultUrl;
 }
 
 export const getTileResourceUrl = (path) => getResourceUrl("tiles", path);
