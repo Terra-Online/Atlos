@@ -1,5 +1,5 @@
 // Access global objects or environment variables to avoid direct references to potentially undefined variables
-const prefix = (typeof window !== 'undefined' && window.__asset_HOST) ||ff
+const prefix = (typeof window !== 'undefined' && window.__asset_HOST) ||
                (typeof process !== 'undefined' && process.env.ASSET_HOST) ||
                "";
 
