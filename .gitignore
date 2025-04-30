@@ -30,8 +30,10 @@ talos/public/clips
 talos/originData
 talos/src/asset/fonts/UD_ShinGo
 talos/src/asset/fonts/Harmony
+talos/src/asset/images/item
+talos/src/asset/images/shared
+talos/src/asset/images/marker
+
 talos/src/data/process/output/log
 .history
 .vscode
-
-talos/src/asset/images/item
