@@ -73,7 +73,7 @@
   },
   {
     "id": "mark_npc_ss_manualCollect_001",
-    "type": "mark_npc_ss_manualcollect",
+    "type": "collect",
     "position": [
       -467.5519,
       395.358

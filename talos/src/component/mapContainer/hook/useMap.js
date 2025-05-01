@@ -125,6 +125,9 @@ export function useMap(elementId) {
   const resetAll = () => {
     clearAllViewStates();
 
+    if (typeof localStorage !== 'undefined') {
+      localStorage.clear();
+    }
     if (map) {
       const config = MAP_CONFIGS[currentRegion] || DEFAULT_CONFIG;
       const initialCenter = [

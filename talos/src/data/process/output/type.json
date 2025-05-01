@@ -670,7 +670,8 @@
         "category": {
             "main": "poi",
             "sub": "collect"
-        }
+        },
+        "noFrame": true
     },
     "blackbox": {
         "key": "blackbox",
@@ -814,6 +815,15 @@
     "exchange": {
         "key": "exchange",
         "name": "Exchange",
+        "category": {
+            "main": "facility",
+            "sub": "regional"
+        },
+        "noFrame": true
+    },
+    "collect": {
+        "key": "collect",
+        "name": "Collect",
         "category": {
             "main": "facility",
             "sub": "regional"

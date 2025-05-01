@@ -42,5 +42,8 @@
     "mark_npc_ss_trainingroom": "Training Room",
 
     "mark_npc_racingdungeon": "Mission NPC",
-    "mark_npc_ss_manualCollect": "mark_npc_ss_manualCollect"
+    "mark_npc_ss_manualCollect": "Collect",
+
+    "for_bat_only_1": "treasure_chest"
+
 }
