@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import './sideBar.scss';
 import L from 'leaflet';
 
-import Icon from '../../asset/images/observator_6.webp';
+import Icon from '../../asset/images/UI/observator_6.webp';
 import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
 
 import Search from '../search/search';

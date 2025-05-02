@@ -154,7 +154,7 @@
   },
   {
     "id": "item_plant_mushroom_1_1_001",
-    "type": "pink_bolete",
+    "type": "pink_bolete_spot",
     "position": [
       -473.5867,
       129.7825
@@ -163,7 +163,7 @@
   },
   {
     "id": "item_plant_spcstone_1_1_001",
-    "type": "kalkonyx",
+    "type": "kalkonyx_spot",
     "position": [
       -386.175,
       142.1909

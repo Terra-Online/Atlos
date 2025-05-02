@@ -145,7 +145,7 @@
   },
   {
     "id": "item_plant_crylplant_1_1_001",
-    "type": "kalkodendra",
+    "type": "kalkodendra_spot",
     "position": [
       -796.0453,
       584.2274
@@ -154,7 +154,7 @@
   },
   {
     "id": "item_plant_crylplant_1_1_002",
-    "type": "kalkodendra",
+    "type": "kalkodendra_spot",
     "position": [
       -744.028,
       688.3182
@@ -163,7 +163,7 @@
   },
   {
     "id": "item_plant_mushroom_1_1_002",
-    "type": "pink_bolete",
+    "type": "pink_bolete_spot",
     "position": [
       -764.0624,
       600.6477
@@ -172,7 +172,7 @@
   },
   {
     "id": "item_plant_spcstone_1_1_002",
-    "type": "kalkonyx",
+    "type": "kalkonyx_spot",
     "position": [
       -792.7312,
       657.451

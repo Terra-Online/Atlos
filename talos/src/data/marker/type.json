@@ -502,9 +502,9 @@
         },
         "tier": "2"
     },
-    "pink_bolete": {
-        "key": "pink_bolete",
-        "name": "Pink Bolete",
+    "pink_bolete_spot": {
+        "key": "pink_bolete_spot",
+        "name": "Pink Bolete Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -512,9 +512,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "red_bolete": {
-        "key": "red_bolete",
-        "name": "Red Bolete",
+    "red_bolete_spot": {
+        "key": "red_bolete_spot",
+        "name": "Red Bolete Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -522,9 +522,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "ruby_bolete": {
-        "key": "ruby_bolete",
-        "name": "Ruby Bolete",
+    "ruby_bolete_spot": {
+        "key": "ruby_bolete_spot",
+        "name": "Ruby Bolete Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -532,9 +532,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "bloodcap": {
-        "key": "bloodcap",
-        "name": "Bloodcap",
+    "bloodcap_spot": {
+        "key": "bloodcap_spot",
+        "name": "Bloodcap Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -542,9 +542,9 @@
         "tier": "5",
         "noFrame": true
     },
-    "kalkodendra": {
-        "key": "kalkodendra",
-        "name": "Kalkodendra",
+    "kalkodendra_spot": {
+        "key": "kalkodendra_spot",
+        "name": "Kalkodendra Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -552,9 +552,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "chrysodendra": {
-        "key": "chrysodendra",
-        "name": "Chrysodendra",
+    "chrysodendra_spot": {
+        "key": "chrysodendra_spot",
+        "name": "Chrysodendra Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -562,9 +562,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "vitrodendra": {
-        "key": "vitrodendra",
-        "name": "Vitrodendra",
+    "vitrodendra_spot": {
+        "key": "vitrodendra_spot",
+        "name": "Vitrodendra Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -572,9 +572,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "blighted_jadeleaf": {
-        "key": "blighted_jadeleaf",
-        "name": "Blighted Jadeleaf",
+    "blighted_jadeleaf_spot": {
+        "key": "blighted_jadeleaf_spot",
+        "name": "Blighted Jadeleaf Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -582,9 +582,9 @@
         "tier": "5",
         "noFrame": true
     },
-    "kalkonyx": {
-        "key": "kalkonyx",
-        "name": "Kalkonyx",
+    "kalkonyx_spot": {
+        "key": "kalkonyx_spot",
+        "name": "Kalkonyx Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -592,9 +592,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "auronyx": {
-        "key": "auronyx",
-        "name": "Auronyx",
+    "auronyx_spot": {
+        "key": "auronyx_spot",
+        "name": "Auronyx Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -602,9 +602,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "umbronyx": {
-        "key": "umbronyx",
-        "name": "Umbronyx",
+    "umbronyx_spot": {
+        "key": "umbronyx_spot",
+        "name": "Umbronyx Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"
@@ -612,9 +612,9 @@
         "tier": "4",
         "noFrame": true
     },
-    "igneosite": {
-        "key": "igneosite",
-        "name": "Igneosite",
+    "igneosite_spot": {
+        "key": "igneosite_spot",
+        "name": "Igneosite Spot",
         "category": {
             "main": "resource",
             "sub": "valuable"

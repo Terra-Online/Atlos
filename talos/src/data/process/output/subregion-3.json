@@ -253,7 +253,7 @@
   },
   {
     "id": "item_plant_mushroom_1_2_002",
-    "type": "red_bolete",
+    "type": "red_bolete_spot",
     "position": [
       -507.7071,
       899.0547
@@ -262,7 +262,7 @@
   },
   {
     "id": "item_plant_mushroom_1_2_003",
-    "type": "red_bolete",
+    "type": "red_bolete_spot",
     "position": [
       -661.0965,
       736.1965
@@ -271,7 +271,7 @@
   },
   {
     "id": "item_plant_crylplant_1_2_003",
-    "type": "chrysodendra",
+    "type": "chrysodendra_spot",
     "position": [
       -612.2199,
       791.645
@@ -280,7 +280,7 @@
   },
   {
     "id": "item_plant_spcstone_1_2_002",
-    "type": "auronyx",
+    "type": "auronyx_spot",
     "position": [
       -692.545,
       785.2138
@@ -289,7 +289,7 @@
   },
   {
     "id": "item_plant_spcstone_1_2_003",
-    "type": "auronyx",
+    "type": "auronyx_spot",
     "position": [
       -528.3509,
       832.778

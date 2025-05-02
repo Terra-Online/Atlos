@@ -190,7 +190,7 @@
   },
   {
     "id": "item_plant_mushroom_1_3_001",
-    "type": "ruby_bolete",
+    "type": "ruby_bolete_spot",
     "position": [
       -312.0457,
       513.874
@@ -199,7 +199,7 @@
   },
   {
     "id": "item_plant_mushroom_1_2_001",
-    "type": "red_bolete",
+    "type": "red_bolete_spot",
     "position": [
       -186.7618,
       420.3423
@@ -208,7 +208,7 @@
   },
   {
     "id": "item_plant_crylplant_1_3_001",
-    "type": "vitrodendra",
+    "type": "vitrodendra_spot",
     "position": [
       -290.741,
       429.1129
@@ -217,7 +217,7 @@
   },
   {
     "id": "item_plant_spcstone_1_3_001",
-    "type": "umbronyx",
+    "type": "umbronyx_spot",
     "position": [
       -242.9565,
       464.4849

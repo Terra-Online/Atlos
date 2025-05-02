@@ -316,7 +316,7 @@
   },
   {
     "id": "item_plant_crylplant_2_1_001",
-    "type": "blighted_jadeleaf",
+    "type": "blighted_jadeleaf_spot",
     "position": [
       -638.0079,
       775.1943
@@ -325,7 +325,7 @@
   },
   {
     "id": "item_plant_mushroom_2_1_001",
-    "type": "bloodcap",
+    "type": "bloodcap_spot",
     "position": [
       -281.9834,
       245.8278
@@ -334,7 +334,7 @@
   },
   {
     "id": "item_plant_mushroom_2_1_002",
-    "type": "bloodcap",
+    "type": "bloodcap_spot",
     "position": [
       -833.6791,
       455.8874
@@ -343,7 +343,7 @@
   },
   {
     "id": "item_plant_crylplant_2_1_002",
-    "type": "blighted_jadeleaf",
+    "type": "blighted_jadeleaf_spot",
     "position": [
       -652.303,
       467.3832
@@ -352,7 +352,7 @@
   },
   {
     "id": "item_plant_spcstone_2_1_001",
-    "type": "igneosite",
+    "type": "igneosite_spot",
     "position": [
       -460.9614,
       449.0197
@@ -361,7 +361,7 @@
   },
   {
     "id": "item_plant_spcstone_2_1_002",
-    "type": "igneosite",
+    "type": "igneosite_spot",
     "position": [
       -456.9957,
       793.5858

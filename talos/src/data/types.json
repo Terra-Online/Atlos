@@ -169,40 +169,40 @@
             }
         },
         "valuable": {
-            "Pink Bolete": {
+            "Pink Bolete Spot": {
                 "tier": "4"
             },
-            "Red Bolete": {
+            "Red Bolete Spot": {
                 "tier": "4"
             },
-            "Ruby Bolete": {
+            "Ruby Bolete Spot": {
                 "tier": "4"
             },
-            "Bloodcap": {
+            "Bloodcap Spot": {
                 "tier": "5"
             },
-            "Kalkodendra": {
+            "Kalkodendra Spot": {
                 "tier": "4"
             },
-            "Chrysodendra": {
+            "Chrysodendra Spot": {
                 "tier": "4"
             },
-            "Vitrodendra": {
+            "Vitrodendra Spot": {
                 "tier": "4"
             },
-            "Blighted Jadeleaf": {
+            "Blighted Jadeleaf Spot": {
                 "tier": "5"
             },
-            "Kalkonyx": {
+            "Kalkonyx Spot": {
                 "tier": "4"
             },
-            "Auronyx": {
+            "Auronyx Spot": {
                 "tier": "4"
             },
-            "Umbronyx": {
+            "Umbronyx Spot": {
                 "tier": "4"
             },
-            "Igneosite": {
+            "Igneosite Spot": {
                 "tier": "5"
             }
         },

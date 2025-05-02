@@ -23,7 +23,7 @@
     justify-content: space-between;
     padding: .45rem .5rem;
     background-color: $secondary-accent-1;
-    background-image: url('../../asset/images/detail.webp');
+    background-image: url('../../asset/images/UI/detail.webp');
     background-size: 47%;
     background-position-x: 3%;
     box-shadow: 0 2px 3px rgba($black, .25);
@@ -90,7 +90,7 @@
           height: 100%;
           top: 0;
           left: .25rem;
-          background-image: url('../../asset/images/arrow.svg');
+          background-image: url('../../asset/images/UI/arrow.svg');
           background-size: contain;
           background-repeat: no-repeat;
           background-position: center;
@@ -104,7 +104,7 @@
           height: 100%;
           top: 0;
           right: 0rem;
-          background-image: url('../../asset/images/next.svg'), url('../../asset/images/bg.webp');
+          background-image: url('../../asset/images/UI/next.svg'), url('../../asset/images/UI/bg.webp');
           background-size: 11%, cover;
           background-repeat: no-repeat;
           background-position-x: 95%, 60%;
@@ -150,7 +150,7 @@
           content: '';
           width: 100%;
           height: 100%;
-          background-image: url('../../asset/images/posit.svg');
+          background-image: url('../../asset/images/UI/posit.svg');
           background-size: contain;
           filter: drop-shadow(0 2px 2px rgba($black, .25));
         }
@@ -159,7 +159,7 @@
           content: '';
           width: 90%;
           height: 90%;
-          background-image: url('../../asset/images/check.svg');
+          background-image: url('../../asset/images/UI/check.svg');
           background-size: contain;
           background-repeat: no-repeat;
           filter: drop-shadow(0 2px 2px rgba($black, .25));
@@ -175,7 +175,7 @@
       .point-stats {
         flex: 1;
         font-family: "Novecento Medium", "UD_ShinGo DemiBold", sans-serif;
-        background-image: url('../../asset/images/brakt_L.svg'), url('../../asset/images/brakt_R.svg');
+        background-image: url('../../asset/images/UI/brakt_L.svg'), url('../../asset/images/UI/brakt_R.svg');
         background-size: contain;
         background-repeat: no-repeat;
         background-position: left center, right center;
@@ -251,7 +251,7 @@
       height: 10rem;
       background: rgba($black, .25);
 
-      background-image: url('../../asset/images/detest.png');
+      background-image: url('../../asset/images/UI/detest.png');
 
       background-size: cover;
       background-position: center;

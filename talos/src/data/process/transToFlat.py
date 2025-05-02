@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import json
 import re
@@ -9,8 +6,13 @@ import argparse
 """
 Convert multi-level type data structure to flat dictionary format
 Default input: ./ref/types.json and ./ref/dict_mark.json
-Default output: ./output/type.json
+Default output: ./output/type.json and ../marker/type.json
 """
+
+# Directory constants
+DEFAULT_REF_DIR = 'ref'
+DEFAULT_OUTPUT_DIR = 'output'
+MARKER_OUTPUT_DIR = '../marker'
 
 def format_key(string):
     """Format string to lowercase, underscore-separated format"""
@@ -137,27 +139,41 @@ def convert_to_key_dict(ref_dir):
                     result[formatted_key]['noFrame'] = True
     return result
 
+def write_type_json(key_dict, output_path):
+    """Write the type dictionary to the specified output path"""
+    # Ensure target directory exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    # Write to file
+    with open(output_path, 'w', encoding='utf-8') as file:
+        json.dump(key_dict, file, ensure_ascii=False, indent=4)
+    
+    print(f"Generated type.json at: {output_path}")
+
 def generate_type_json(ref_dir, output_dir):
     """Run conversion and write results to file"""
     try:
         # Run conversion
         key_dict = convert_to_key_dict(ref_dir)
         
-        # Ensure target directory exists
-        os.makedirs(output_dir, exist_ok=True)
+        # Get current script directory
+        script_dir = os.path.dirname(os.path.abspath(__file__))
         
-        # Write to file
-        target_path = os.path.join(output_dir, 'type.json')
-        with open(target_path, 'w', encoding='utf-8') as file:
-            json.dump(key_dict, file, ensure_ascii=False, indent=4)
+        # Write to default output directory
+        default_output_path = os.path.join(script_dir, output_dir, 'type.json')
+        write_type_json(key_dict, default_output_path)
+        
+        # Write to marker directory
+        marker_output_path = os.path.join(script_dir, MARKER_OUTPUT_DIR, 'type.json')
+        write_type_json(key_dict, marker_output_path)
         
     except Exception as e:
         print(f"Failed to generate type.json file: {e}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Convert multi-level type data to flat dictionary")
-    parser.add_argument('-r', '--ref', default='ref', help="Directory containing reference files")
-    parser.add_argument('-o', '--output', default='output', help="Output directory")
+    parser.add_argument('-r', '--ref', default=DEFAULT_REF_DIR, help=f"Directory containing reference files (default: {DEFAULT_REF_DIR})")
+    parser.add_argument('-o', '--output', default=DEFAULT_OUTPUT_DIR, help=f"Output directory (default: {DEFAULT_OUTPUT_DIR})")
     return parser.parse_args()
 
 if __name__ == "__main__":
