@@ -16,19 +16,19 @@ export default defineConfig({
       targets: [
         {
           src: 'src/asset/images/shared',
-          dest: 'assets/images'
+          dest: 'asset/images'
         },
         {
           src: 'src/asset/images/marker',
-          dest: 'assets/images'
+          dest: 'asset/images'
         },
         {
           src: 'src/asset/images/item',
-          dest: 'assets/images'
+          dest: 'asset/images'
         },
         {
           src: 'src/asset/images/category',
-          dest: 'assets/images'
+          dest: 'asset/images'
         }
       ]
     })

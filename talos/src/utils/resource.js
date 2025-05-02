@@ -52,8 +52,8 @@ export function getResourceUrl(property, key, ext = "png") {
   if (property === "tiles") return `${prefix}${key}`;
   
   const resourceKey = `${key}.${ext}`;
-  const defaultUrl = `${prefix}/assets/images/${property}/${key}.${ext}`;
-  const sharedUrl = `${prefix}/assets/images/shared/${key}.${ext}`;
+  const defaultUrl = `${prefix}/asset/images/${property}/${key}.${ext}`;
+  const sharedUrl = `${prefix}/asset/images/shared/${key}.${ext}`;
   
   // Enable shared resource fallback only for marker and item
   if (property === "marker" || property === "item") {
