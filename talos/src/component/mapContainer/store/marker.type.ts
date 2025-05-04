@@ -12,6 +12,7 @@ export interface IMarkerType {
     "key": string,
     "name": string,
     "noFrame"?: boolean
+    "subIcon"? : string
     "category": {
         "main": string,
         "sub": string

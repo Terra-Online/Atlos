@@ -2,7 +2,8 @@ import { Layer, LayerGroup, Map, divIcon, icon } from "leaflet";
 import { MARKER_TYPE_DICT } from "../../../data/marker"
 
 import "./marker.scss"
-import { getMarkerIconUrl } from "../../../utils/resource";
+import { getMarkerIconUrl, getMarkerSubIconUrl } from "../../../utils/resource";
+import LOGGER from "../../../utils/log";
 
 const DEFAULT_ICON = divIcon({
     iconSize: [50, 50],
@@ -60,9 +61,9 @@ const RENDERER_DICT = {
     },
     "sub_icon": (markerData) => {
         const layer = new L.Marker(markerData.position, { icon: MARKER_ICON_DICT[markerData.type], alt: markerData.type })
-        const sub = markerData.type.split("_")[0]
+        const sub = MARKER_TYPE_DICT[markerData.type].subIcon
         layer.bindTooltip(
-            `<div class="tooltip-inner"><div class="bg"></div><div class="image"  style="background-image:  url(${getMarkerIconUrl(`sub/${sub}`)})"></div></div>`,
+            `<div class="tooltip-inner"><div class="bg"></div><div class="image"  style="background-image:  url(${getMarkerSubIconUrl(sub)})"></div></div>`,
             { permanent: true, className: "custom-tooltip", direction: "right" }
         ).openTooltip()
 
@@ -77,8 +78,12 @@ const RENDERER_DICT = {
  * @param {import("./marker.type").IMarkerData} markerData 
  */
 export function getMarkerLayer(markerData) {
-    // edit here to change renderer
-    if (/^.*_spot$/.test(markerData.type)) {
+    const type = MARKER_TYPE_DICT[markerData.type]
+    if (!type) {
+        LOGGER.warn("marker type not found", markerData.type)
+        return RENDERER_DICT["__DEFAULT"](markerData)
+    }
+    if (type.subIcon) {
         return RENDERER_DICT["sub_icon"](markerData)
     } else {
         return RENDERER_DICT["__DEFAULT"](markerData)
