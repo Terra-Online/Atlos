@@ -4,6 +4,7 @@ import { MARKER_TYPE_DICT } from "../../../data/marker"
 import "./marker.scss"
 import { getMarkerIconUrl, getMarkerSubIconUrl } from "../../../utils/resource";
 import LOGGER from "../../../utils/log";
+import { useMarkerStore } from "./marker";
 
 const DEFAULT_ICON = divIcon({
     iconSize: [50, 50],
@@ -57,6 +58,11 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce((acc, typ
 const RENDERER_DICT = {
     "__DEFAULT": (markerData) => {
         const layer = new L.Marker(markerData.position, { icon: MARKER_ICON_DICT[markerData.type], alt: markerData.type })
+        layer.addEventListener("click", (e) => {
+            e.originalEvent.stopPropagation()
+            useMarkerStore.setState({currentActivePoint: markerData})
+            LOGGER.debug("marker clicked", markerData)
+        })
         return layer
     },
     "sub_icon": (markerData) => {
@@ -66,6 +72,12 @@ const RENDERER_DICT = {
             `<div class="tooltip-inner"><div class="bg"></div><div class="image"  style="background-image:  url(${getMarkerSubIconUrl(sub)})"></div></div>`,
             { permanent: true, className: "custom-tooltip", direction: "right" }
         ).openTooltip()
+        layer.addEventListener("click", (e) => {
+            e.originalEvent.stopPropagation()
+
+            useMarkerStore.setState({currentActivePoint: markerData})
+            LOGGER.debug("marker clicked", markerData)
+        })
 
         return layer
 

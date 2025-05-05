@@ -118,6 +118,10 @@ export class MarkerLayer {
 const INIT_MARKER_FILTER = []
 
 export const useMarkerStore = create((set) => ({
+    currentActivePoint: null,
+    setCurrentActivePoint: (point) => {
+        set({ currentActivePoint: point })
+    },
     filter: INIT_MARKER_FILTER,
     points: [],
     switchFilter: (typeKey) => {
