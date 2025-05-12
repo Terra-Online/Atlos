@@ -4,7 +4,7 @@ import { getItemIconUrl } from '../../utils/resource';
 
 // For deserialization
 import i18nData from '../../data/i18n_TC.json';
-import { useFilter, usePoints, useSearchString, useSwitchFilter } from '../mapContainer/store/marker';
+import { useFilter, usePoints, useRegionMarkerCount, useSearchString, useSwitchFilter } from '../mapContainer/store/marker';
 
 const Mark = ({
   // points = [],
@@ -67,25 +67,24 @@ const Mark = ({
 
   const filter = useFilter();
   const switchFilter = useSwitchFilter();
-  const points = usePoints();
-  const totalCount = useMemo(() => points.filter(point => point.type === typeInfo.key).length, [points, typeInfo]);
+  const cnt = useRegionMarkerCount(typeInfo?.key);
   const searchString = useSearchString()
-  const showFilter = useMemo(() => 
-      totalCount && (searchString === "" || typeInfo.key.includes(searchString) || displayName.includes(searchString))
-    , [totalCount, searchString, displayName])
+  const showFilter = useMemo(() =>
+    cnt.total && (searchString === "" || typeInfo.key.includes(searchString) || displayName.includes(searchString))
+    , [cnt, searchString, displayName])
   if (!showFilter) return null
   return (
     <div
       className={`mark-item ${filter.includes(typeInfo.key) ? 'active' : ''}`}
       onClick={() => switchFilter(typeInfo.key)}
-      style={{ '--progress-percentage': `${totalCount > 0 ? Math.round(collectedCount / totalCount * 100) : 0}%` }}
+      style={{ '--progress-percentage': `${cnt.total > 0 ? Math.round(cnt.collected / cnt.total * 100) : 0}%` }}
     >
       <span className="mark-icon">
         {iconUrl && <img src={iconUrl} alt={displayName} />}
       </span>
       <span className="mark-name">{displayName}</span>
       <span className="mark-stat">
-        {collectedCount}/{totalCount}
+        {cnt.collected}/{cnt.total}
       </span>
     </div>
   );

@@ -21,6 +21,11 @@ export const SUBREGION_MARKS_MAP = {
     'Jinlong': jinlong
 }
 
+export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce((acc, subregion) => {
+    acc.push(...subregion)
+    return acc
+}, [])
+
 export const MARKER_TYPE_DICT = markerTypeDict
 
 export const MAEKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {

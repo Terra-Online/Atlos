@@ -2,12 +2,13 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import './detail.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
 import i18nData from '../../data/i18n_EN.json';
-import { useMarkerStore } from '../mapContainer/store/marker';
-import { useAddPoint, useUserRecord } from '../mapContainer/store/userRecord';
-import { MARKER_TYPE_DICT } from '../../data/marker';
+import { useMarkerStore, useRegionMarkerCount, useWorlMarkerCount } from '../mapContainer/store/marker';
+import { useAddPoint, useDeletePoint, useUserRecord } from '../mapContainer/store/userRecord';
+import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
 import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
 import { motion, AnimatePresence } from "motion/react"
+import useRegion from '../mapContainer/store/region';
 
 
 const mockPoint = {
@@ -36,9 +37,13 @@ const mockPoint = {
 
 export const Detail = () => {
 
+  /**
+   * @type {import('../mapContainer/store/marker.type').IMarkerData}
+   */
   const currentPoint = useMarkerStore((state) => state.currentActivePoint);
   const pointsRecord = useUserRecord()
   const addPoint = useAddPoint()
+  const deletePoint = useDeletePoint()
 
   const isCollected = currentPoint ? pointsRecord.includes(currentPoint.id) : false;
 
@@ -46,7 +51,7 @@ export const Detail = () => {
   const iconKey = currentPoint ? currentPoint.type : "UKN";
   const iconUrl = getItemIconUrl(iconKey);
 
-  const ctgyIconUrl = getCtgrIconUrl(currentPoint ? currentPoint.type.sub : "UKN");
+  const ctgyIconUrl = getCtgrIconUrl(currentPoint ? currentPoint.type : "UKN");
 
   const pointName = useMemo(() => {
     if (!currentPoint) return "UKN";
@@ -76,16 +81,17 @@ export const Detail = () => {
 
   const handleNextPoint = () => addPoint(currentPoint.id);
 
-  const stats = {
-    global: { collected: 12, total: 42 },
-    region: { collected: 8, total: 15 },
-    type: { collected: 7, total: 7 }
-  };
-  const statItems = [
-    { label: "World", data: stats.global, index: 0 },
-    { label: "Main", data: stats.region, index: 1 },
-    { label: "Sub", data: stats.type, index: 2 }
-  ];// For i18n label
+
+
+  // marks
+  const worldCnt = useWorlMarkerCount(currentPoint?.type)
+  const regionCnt = useRegionMarkerCount(currentPoint?.type)
+
+  const statItems = useMemo(() => [
+    { label: "World", data: worldCnt, index: 0 },
+    { label: "Main", data: regionCnt, index: 1 },
+  ], [worldCnt, regionCnt]);
+
 
   return (
     <AnimatePresence mode="wait">
@@ -106,17 +112,24 @@ export const Detail = () => {
             )}
             <span className="point-name">{pointName}</span>
           </div>
-          <div className="header-actions">
+          {/* disabled in version1 */}
+          {/* <div className="header-actions">
             {!isCollected && <button className="next-button" onClick={handleNextPoint}>
               <span>Complete</span>
             </button>}
-          </div>
+          </div> */}
         </div>
         {/* Content */}
         <div className="detail-content">
           {/* Icon & Stats */}
           <div className="icon-stats-container">
-            <div className={classNames("point-icon", { "collected": isCollected })}>
+            <div className={classNames("point-icon", { "collected": isCollected })} onClick={() => {
+              if (isCollected) {
+                deletePoint(currentPoint.id)
+              } else {
+                addPoint(currentPoint.id)
+              }
+            }}>
               {iconUrl && <img src={iconUrl} alt={pointName} />}
             </div>
             <div className="point-stats">

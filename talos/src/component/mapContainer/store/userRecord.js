@@ -35,3 +35,4 @@ const useUserRecordStore = create(persist((set, get) => ({
 
 export const useUserRecord = () => useUserRecordStore((state) => state.activePoints)
 export const useAddPoint = () => useUserRecordStore((state) => state.addPoint)
+export const useDeletePoint = () => useUserRecordStore((state) => state.deletePoint)

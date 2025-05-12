@@ -1,11 +1,14 @@
 import { Layer, LayerGroup, Map, divIcon, icon } from "leaflet";
 import { MAP_CONFIGS } from "../map_config"
-import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP } from "../../../data/marker";
+import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from "../../../data/marker";
 import LOGGER from "../../../utils/log";
 import { create } from "zustand";
 import { getMarkerIconUrl } from "../../../utils/resource";
 import "./marker.scss"
 import { getMarkerLayer } from "./markerRenderer";
+import { useMemo } from "react";
+import { useUserRecord } from "./userRecord";
+import useRegion from "./region";
 
 /**
  * @type {string[]}
@@ -145,3 +148,52 @@ export const useFilter = () => useMarkerStore(state => state.filter)
 export const useSwitchFilter = () => useMarkerStore(state => state.switchFilter)
 
 export const useSearchString = () => useMarkerStore(state => state.searchString)
+
+export const useMarkerCount = () => {
+    const subRegions = useRegion(state => state.subregions)
+    const markCount = useMemo(() => {
+        const ret = { world: { total: 0, collected: 0 }, region: { total: 0, collected: 0 } }
+
+        if (!currentPoint) return ret
+        const { type } = currentPoint
+        const worldTotal = WORLD_MARKS.filter(m => m.type === type)
+        const regionTotal = subRegions
+            .map((sr) => SUBREGION_MARKS_MAP[sr.id])
+            .flat()
+            .filter(m => m.type === type)
+        ret.world.total = worldTotal.length
+        ret.region.total = regionTotal.length
+        ret.world.collected = worldTotal.filter(m => pointsRecord.includes(m.id)).length
+        ret.region.collected = regionTotal.filter(m => pointsRecord.includes(m.id)).length
+        return ret
+
+    }, [currentPoint, pointsRecord, subRegions])
+}
+
+export const useWorlMarkerCount = (type) => {
+    const pointsRecord = useUserRecord()
+    return useMemo(() => {
+        const ret = { total: 0, collected: 0 }
+        if (!type) return ret
+        const worldTotal = WORLD_MARKS.filter(m => m.type === type)
+        ret.total = worldTotal.length
+        ret.collected = worldTotal.filter(m => pointsRecord.includes(m.id)).length
+        return ret
+    }, [pointsRecord, type])
+}
+
+export const useRegionMarkerCount = (type) => {
+    const pointsRecord = useUserRecord()
+    const subRegions = useRegion(state => state.subregions)
+    return useMemo(() => {
+        const ret = { total: 0, collected: 0 }
+        if (!type) return ret
+        const regionTotal = subRegions
+            .map((sr) => SUBREGION_MARKS_MAP[sr.id])
+            .flat()
+            .filter(m => m.type === type)
+        ret.total = regionTotal.length
+        ret.collected = regionTotal.filter(m => pointsRecord.includes(m.id)).length
+        return ret
+    }, [pointsRecord, subRegions, type])
+}
