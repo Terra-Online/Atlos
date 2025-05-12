@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import './detail.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
 import i18nData from '../../data/i18n_EN.json';
-import { useMarkerStore, useRegionMarkerCount, useWorlMarkerCount } from '../mapContainer/store/marker';
+import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../mapContainer/store/marker';
 import { useAddPoint, useDeletePoint, useUserRecord } from '../mapContainer/store/userRecord';
 import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
 import classNames from 'classnames';
@@ -84,7 +84,7 @@ export const Detail = () => {
 
 
   // marks
-  const worldCnt = useWorlMarkerCount(currentPoint?.type)
+  const worldCnt = useWorldMarkerCount(currentPoint?.type)
   const regionCnt = useRegionMarkerCount(currentPoint?.type)
 
   const statItems = useMemo(() => [

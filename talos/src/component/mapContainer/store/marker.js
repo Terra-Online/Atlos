@@ -149,28 +149,7 @@ export const useSwitchFilter = () => useMarkerStore(state => state.switchFilter)
 
 export const useSearchString = () => useMarkerStore(state => state.searchString)
 
-export const useMarkerCount = () => {
-    const subRegions = useRegion(state => state.subregions)
-    const markCount = useMemo(() => {
-        const ret = { world: { total: 0, collected: 0 }, region: { total: 0, collected: 0 } }
-
-        if (!currentPoint) return ret
-        const { type } = currentPoint
-        const worldTotal = WORLD_MARKS.filter(m => m.type === type)
-        const regionTotal = subRegions
-            .map((sr) => SUBREGION_MARKS_MAP[sr.id])
-            .flat()
-            .filter(m => m.type === type)
-        ret.world.total = worldTotal.length
-        ret.region.total = regionTotal.length
-        ret.world.collected = worldTotal.filter(m => pointsRecord.includes(m.id)).length
-        ret.region.collected = regionTotal.filter(m => pointsRecord.includes(m.id)).length
-        return ret
-
-    }, [currentPoint, pointsRecord, subRegions])
-}
-
-export const useWorlMarkerCount = (type) => {
+export const useWorldMarkerCount = (type) => {
     const pointsRecord = useUserRecord()
     return useMemo(() => {
         const ret = { total: 0, collected: 0 }
@@ -184,16 +163,19 @@ export const useWorlMarkerCount = (type) => {
 
 export const useRegionMarkerCount = (type) => {
     const pointsRecord = useUserRecord()
+    const currentRegion = useRegion(state => state.currentRegion)
     const subRegions = useRegion(state => state.subregions)
     return useMemo(() => {
         const ret = { total: 0, collected: 0 }
         if (!type) return ret
-        const regionTotal = subRegions
-            .map((sr) => SUBREGION_MARKS_MAP[sr.id])
-            .flat()
-            .filter(m => m.type === type)
+        const regionTotal = (
+            SUBREGION_MARKS_MAP[currentRegion] ??
+            subRegions
+                .map((sr) => SUBREGION_MARKS_MAP[sr.id])
+                .flat()
+        ).filter(m => m.type === type)
         ret.total = regionTotal.length
         ret.collected = regionTotal.filter(m => pointsRecord.includes(m.id)).length
         return ret
-    }, [pointsRecord, subRegions, type])
+    }, [pointsRecord, subRegions, type, currentRegion])
 }
