@@ -72,7 +72,7 @@
 
     .tooltip-inner {
         position: absolute;
-        left: 10px;
+        left: 16px;
         top: 50%;
         transform: translateY(-50%);
         width: 30px;
@@ -118,10 +118,11 @@
         
         .image {
             position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 100%;
+            left: 50%;
+            top: 50%;
+            height: 40px;
+            width: 40px;
+            transform: translate3d(-50%, -50%, 0);
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;

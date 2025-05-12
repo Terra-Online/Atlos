@@ -93,3 +93,4 @@ export const getTileResourceUrl = (path) => getResourceUrl("tiles", path);
 export const getMarkerIconUrl = (key, ext = "png") => getResourceUrl("marker", key, ext);
 export const getItemIconUrl = (key, ext = "png") => getResourceUrl("item", key, ext);
 export const getCtgrIconUrl = (key, ext = "svg") => getResourceUrl("category", key, ext);
+export const getMarkerSubIconUrl = (key, ext = "png") => getResourceUrl("marker/sub", `${key}`, ext);

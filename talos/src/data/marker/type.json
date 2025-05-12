@@ -294,7 +294,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "noFrame": true
+        "subIcon": "ore_spot"
     },
     "amethyst_ore": {
         "key": "amethyst_ore",
@@ -312,7 +312,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "noFrame": true
+        "subIcon": "ore_spot"
     },
     "ferrium_ore": {
         "key": "ferrium_ore",
@@ -330,7 +330,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "noFrame": true
+        "subIcon": "ore_spot"
     },
     "cuprium_ore": {
         "key": "cuprium_ore",
@@ -348,7 +348,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "noFrame": true
+        "subIcon": "ore_spot"
     },
     "cyanite_ore": {
         "key": "cyanite_ore",
@@ -365,7 +365,8 @@
         "category": {
             "main": "resource",
             "sub": "natural"
-        }
+        },
+        "subIcon": "ore_spot"
     },
     "clean_water": {
         "key": "clean_water",
