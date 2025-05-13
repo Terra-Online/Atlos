@@ -510,8 +510,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "plant_spot",
+        "tier": "4"
     },
     "red_bolete_spot": {
         "key": "red_bolete_spot",
@@ -520,8 +520,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "plant_spot",
+        "tier": "4"
     },
     "ruby_bolete_spot": {
         "key": "ruby_bolete_spot",
@@ -530,8 +530,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "plant_spot",
+        "tier": "4"
     },
     "bloodcap_spot": {
         "key": "bloodcap_spot",
@@ -540,8 +540,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "5",
-        "noFrame": true
+        "subIcon": "plant_spot",
+        "tier": "5"
     },
     "kalkodendra_spot": {
         "key": "kalkodendra_spot",
@@ -550,8 +550,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "chrysodendra_spot": {
         "key": "chrysodendra_spot",
@@ -560,8 +560,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "vitrodendra_spot": {
         "key": "vitrodendra_spot",
@@ -570,8 +570,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "blighted_jadeleaf_spot": {
         "key": "blighted_jadeleaf_spot",
@@ -580,8 +580,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "5",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "5"
     },
     "kalkonyx_spot": {
         "key": "kalkonyx_spot",
@@ -590,8 +590,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "auronyx_spot": {
         "key": "auronyx_spot",
@@ -600,8 +600,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "umbronyx_spot": {
         "key": "umbronyx_spot",
@@ -610,8 +610,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "4",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "4"
     },
     "igneosite_spot": {
         "key": "igneosite_spot",
@@ -620,8 +620,8 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "tier": "5",
-        "noFrame": true
+        "subIcon": "mine_spot",
+        "tier": "5"
     },
     "glowbug": {
         "key": "glowbug",

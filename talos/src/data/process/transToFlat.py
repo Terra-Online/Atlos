@@ -132,10 +132,15 @@ def convert_to_key_dict(ref_dir):
                 if isinstance(properties, dict):
                     for prop_key, prop_value in properties.items():
                         result[formatted_key][prop_key] = prop_value
+                
                 # Check if the name matches any value in the mark dictionary
-                # Compare with the formatted original name
                 formatted_name = format_key(key_type)
-                if formatted_name in mark_values:
+                
+                # Add noFrame property only if:
+                # 1. The name is in mark_values AND
+                # 2. It does NOT have a subIcon property (subIcon items need frames)
+                has_sub_icon = isinstance(properties, dict) and 'subIcon' in properties
+                if formatted_name in mark_values and not has_sub_icon:
                     result[formatted_key]['noFrame'] = True
     return result
 
