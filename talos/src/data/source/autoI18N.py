@@ -258,6 +258,101 @@ def main():
             for key, value in obj.items():
                 # Normalize key name
                 normalized_key = normalize_key(key)
+                
+                # Check if key ends with "_spot" and create a modified lookup key
+                lookup_value = value
+                if isinstance(key, str) and key.lower().endswith('_spot'):
+                    # Extract the base key (without "_spot")
+                    base_key = key[:-5]  # Remove "_spot" suffix
+                    
+                    # Try to find this base key in the source object
+                    if base_key in obj:
+                        # Use the value of the base key for translation lookup
+                        lookup_value = obj[base_key]
+                        print(f"Using '{base_key}' value for '{key}' translation lookup")
+                
+                # Convert value for lookup
+                hashable_value = convert_to_hashable(lookup_value)
+                
+                # Look up key path in EN.json mapping
+                key_path = en_value_to_key.get(hashable_value)
+                
+                # Try Unicode escaping (single quotes)
+                if key_path is None and isinstance(lookup_value, str):
+                    if "'" in lookup_value:
+                        unicode_value = unicode_escape(lookup_value)
+                        key_path = en_value_to_key.get(unicode_value)
+                    if key_path is None:
+                        full_unicode_value = full_unicode_escape(lookup_value)
+                        key_path = en_unicode_to_key.get(full_unicode_value)
+
+                # Translate value using found key path
+                translated_value = value  # Default to original value
+                if key_path:
+                    found_translation = get_value_by_path(other_lang_json, key_path)
+                    if found_translation:
+                        translated_value = found_translation
+
+                # Store translated value in new object
+                translated_obj[normalized_key] = translated_value
+                progress_bar.update(1)
+
+            progress_bar.close()
+            result_json[top_key].append(translated_obj)
+
+    # Write result to output file
+    print("Saving result file...")
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(result_json, f, ensure_ascii=False, indent=4)
+
+    print(f"Translation complete. Results saved to {output_file}")
+    if len(sys.argv) != 5:
+        print("Usage: python3 autoI18N.py EN_Origin.json EN.json TC_trans.json i18n_TC_pre.json")
+        return
+
+    source_file = sys.argv[1]
+    en_file = sys.argv[2]
+    other_lang_file = sys.argv[3]
+    output_file = sys.argv[4]
+
+    try:
+        print("Reading source file...")
+        with open(source_file, 'r', encoding='utf-8') as f:
+            source_json = json.load(f)
+
+        print("Reading English reference file...")
+        with open(en_file, 'r', encoding='utf-8') as f:
+            en_json = json.load(f)
+
+        print("Reading target language file...")
+        with open(other_lang_file, 'r', encoding='utf-8') as f:
+            other_lang_json = json.load(f)
+
+    except Exception as e:
+        print(f"Error reading JSON files: {e}")
+        return
+
+    # Build value-to-key mapping from EN.json
+    print("Building value-to-key mapping...")
+    en_value_to_key, en_unicode_to_key = build_value_to_key_map(en_json)
+
+    # Create result structure with the same top-level keys
+    result_json = {}
+    for top_key in source_json:
+        result_json[top_key] = []
+
+        # Process each object in the array
+        for obj in source_json[top_key]:
+            # For each object, create a new translated object
+            translated_obj = {}
+
+            # Calculate total items to translate
+            total_keys = len(obj)
+            progress_bar = tqdm(total=total_keys, desc=f"Translating {top_key}")
+
+            for key, value in obj.items():
+                # Normalize key name
+                normalized_key = normalize_key(key)
                 # Convert value
                 hashable_value = convert_to_hashable(value)
                 # Look up key path in EN.json mapping
