@@ -7,33 +7,77 @@ import { useAddPoint, useDeletePoint, useUserRecord } from '../mapContainer/stor
 import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
 import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
-import { motion, AnimatePresence } from "motion/react"
+import { motion, AnimatePresence, usePresence } from "motion/react"
 import useRegion from '../mapContainer/store/region';
 
 
-const mockPoint = {
-  id: "001",
-  position: [-656.19, 645.58],
-  region: {
-    main: "Valley_4",
-    sub: "pane_1"
-  },
-  type: {
-    main: "resource",
-    sub: "natural",
-    key: "originium_ore"
-  },
-  status: {
-    user: {
-      isCollected: false,
-      localNote: "Complete E1M7 to enable the secret path to the point. Open on SAT/SUN only."
+// const mockPoint = {
+//   id: "001",
+//   position: [-656.19, 645.58],
+//   region: {
+//     main: "Valley_4",
+//     sub: "pane_1"
+//   },
+//   type: {
+//     main: "resource",
+//     sub: "natural",
+//     key: "originium_ore"
+//   },
+//   status: {
+//     user: {
+//       isCollected: false,
+//       localNote: "Complete E1M7 to enable the secret path to the point. Open on SAT/SUN only."
+//     }
+//   },
+//   meta: {
+//     addedBy: "cirisus",
+//     addedAt: "2025-03-09T15:30:00Z"
+//   }
+// };
+
+const TEXT_DURATION = 30
+const AnimatedText = (props) => {
+  const {
+    text,
+    initial = {},
+    animate = {},
+    exit = {},
+    transition = {},
+    ...rest
+  } = props
+  const [isPresent, safeToRemove] = usePresence()
+  // text should not be changed
+  const [textToRender, setTextToRender] = useState("")
+  useEffect(() => {
+    if (isPresent) {
+      let index = 0
+      const interval = setInterval(() => {
+        setTextToRender(text.slice(0, index))
+        index++
+        if (index > text.length) {
+          clearInterval(interval)
+        }
+      }, TEXT_DURATION)
+      return () => clearInterval(interval)
+    } else {
+      let index = text.length
+      const interval = setInterval(() => {
+        setTextToRender(text.slice(0, index))
+        index--
+        if (index < 0) {
+          clearInterval(interval)
+          safeToRemove()
+        }
+      }, TEXT_DURATION)
+      return () => clearInterval(interval)
     }
-  },
-  meta: {
-    addedBy: "cirisus",
-    addedAt: "2025-03-09T15:30:00Z"
-  }
-};
+  }, [isPresent])
+  return <motion.span
+    {...rest}
+    initial="initial"
+    animate={isPresent ? "animate" : "exit"}
+  >{textToRender?.split("").map((c, index) => <span key={index}>{c}</span>) ?? ""}</motion.span>
+}
 
 export const Detail = () => {
 
@@ -81,8 +125,6 @@ export const Detail = () => {
 
   const handleNextPoint = () => addPoint(currentPoint.id);
 
-
-
   // marks
   const worldCnt = useWorldMarkerCount(currentPoint?.type)
   const regionCnt = useRegionMarkerCount(currentPoint?.type)
@@ -100,7 +142,7 @@ export const Detail = () => {
         animate={{ x: "0%" }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        key={currentPoint?.id ?? "null"} className={"detail-container"} ref={ref}>
+        key={currentPoint ? "active" : "null"} className={"detail-container"} ref={ref}>
         {/* Head */}
         <div className="detail-header">
           <div className="point-info">
@@ -110,7 +152,9 @@ export const Detail = () => {
                 style={{ backgroundImage: `url(${ctgyIconUrl})` }}
               ></span>
             )}
-            <span className="point-name">{pointName}</span>
+            <AnimatePresence mode="wait">
+              <AnimatedText text={pointName} key={currentPoint?.id ?? "null"} className="point-name">{pointName}</AnimatedText>
+            </AnimatePresence>
           </div>
           {/* disabled in version1 */}
           {/* <div className="header-actions">
@@ -130,7 +174,15 @@ export const Detail = () => {
                 addPoint(currentPoint.id)
               }
             }}>
-              {iconUrl && <img src={iconUrl} alt={pointName} />}
+              <AnimatePresence mode="wait">
+                {iconUrl && <motion.img
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  key={currentPoint?.id ?? "null"} src={iconUrl} alt={pointName} />}
+              </AnimatePresence>
+
             </div>
             <div className="point-stats">
               <div className="stats-txt">
@@ -163,21 +215,21 @@ export const Detail = () => {
             </div>
           </div>
           {/* Circumstance */}
-          <div className="point-image">
+          {/* <div className="point-image">
             <div className="no-image">No info.</div>
-          </div>
+          </div> */}
           {/* Note */}
-          <div className="detail-notes">
+          {/* <div className="detail-notes">
             {noteContent ? (
               <p className="note-text">{noteContent}</p>
             ) : (
               <p className="no-note">No info.</p>
             )}
-          </div>
+          </div> */}
           {/* Wiki */}
-          <div className="detail-wiki">
+          {/* <div className="detail-wiki">
             No info.
-          </div>
+          </div> */}
         </div>
         {/* Meta
       <div className="detail-meta">
