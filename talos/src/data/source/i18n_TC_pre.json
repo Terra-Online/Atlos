@@ -71,11 +71,11 @@
             "igneosite_spot": "燎石",
             "glowbug": "螢殼蟲",
             "scorchbug": "灼殼蟲",
-            "aetherium": "aetherium",
+            "aetherium": "醚质",
             "vr_simulator": "空間模擬器",
-            "fixable_robot": "Fixable Robot",
-            "treasure_chest": "Treasure Chest",
-            "blackbox": "blackbox",
+            "fixable_robot": "修復機器人",
+            "treasure_chest": "寶箱",
+            "blackbox": "科技點",
             "crate": "crate",
             "longear": "longear",
             "slug": "slug",
@@ -83,15 +83,15 @@
             "mission_npc": "mission_npc",
             "re_crisis": "re-crisis",
             "spawner": "spawner",
-            "tp": "tp",
-            "recycler": "recycler",
+            "tp": "協議源石",
+            "recycler": "資源回收站",
             "base": "base",
             "hub": "hub",
-            "training_room": "Training Room",
+            "training_room": "訓練室",
             "control_nexus": "總控中樞",
-            "growth_cabin": "Growth Cabin",
+            "growth_cabin": "培養艙",
             "manufacturing_cabin": "製造艙",
-            "exchange": "Exchange",
+            "exchange": "兌換所",
             "collect": "Collect",
             "barrel": "barrel"
         }
@@ -100,7 +100,7 @@
         {
             "aggeloi": "天使",
             "landbreakers": "裂地者",
-            "cangzei": "Cangzei",
+            "cangzei": "滄賊",
             "natural": "natural",
             "valuable": "valuable",
             "gatherable": "gatherable",
@@ -114,10 +114,10 @@
     ],
     "types": [
         {
-            "enemy": "enemy",
-            "resource": "resource",
-            "poi": "poi",
-            "facility": "facility"
+            "enemy": "敵人",
+            "resource": "資源",
+            "poi": "興趣點",
+            "facility": "設施"
         }
     ]
 }
