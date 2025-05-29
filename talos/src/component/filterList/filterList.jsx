@@ -1,7 +1,7 @@
 import classNames from "classnames"
 import { getItemIconUrl } from "../../utils/resource"
 import { useFilter, useSwitchFilter } from "../mapContainer/store/marker"
-import "./index.scss"
+import "./filterList.scss"
 import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 

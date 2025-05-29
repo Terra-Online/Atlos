@@ -21,7 +21,7 @@ import Valley4 from '../../asset/logos/_Valley_4.svg?react';
 import Jinlong from '../../asset/logos/_Jinlong.svg?react';
 import Dijiang from '../../asset/logos/_Dijiang.svg?react';
 import Æther from '../../asset/logos/Æther.svg?react';
-import FilterList from '../filterList';
+import FilterList from '../filterList/filterList';
 
 const MapContainer = ({ isSidebarOpen }) => {
   // useMap

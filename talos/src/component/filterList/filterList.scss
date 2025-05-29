@@ -1,3 +1,6 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
 $sidebar-width: 300px;
 
 .main-filter-list {
@@ -10,8 +13,8 @@ $sidebar-width: 300px;
     border-radius: 8px;
     padding: 0 8px;
     box-sizing: border-box;
-    border: 2px solid rgba(255, 255, 255, 0.39);
-    background-color: rgba(#1f1f1f, 0.48);
+    border: 2px solid rgba($white-0, .4);
+    background-color: rgba($grey-1, .5);
     backdrop-filter: blur(40px);
     overflow: hidden;
     transition: transform .3s ease-in-out, opacity .3s ease-out, width .3s ease-out;
@@ -24,7 +27,7 @@ $sidebar-width: 300px;
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: rgba(255, 255, 255, 0.3);
+        background-color: rgba($white-0, .3);
         border-radius: 3px;
     }
 
@@ -59,15 +62,15 @@ $sidebar-width: 300px;
         }
 
         &.left-mask-opacity {
-            mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 10%);
+            mask-image: linear-gradient(to right, transparent 0%, $black 10%);
         }
 
         &.right-mask-opacity {
-            mask-image: linear-gradient(to left, transparent 0%, rgba(0, 0, 0, 1) 10%);
+            mask-image: linear-gradient(to left, transparent 0%, $black 10%);
         }
 
         &.left-mask-opacity.right-mask-opacity {
-            mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 10%, rgba(0, 0, 0, 1) 90%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, $black 10%, $black 90%, transparent 100%);
         }
     }
 }
