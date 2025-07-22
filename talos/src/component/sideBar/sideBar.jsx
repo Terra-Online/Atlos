@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import './sideBar.scss';
-import L from 'leaflet';
 
 import Icon from '../../asset/images/UI/observator_6.webp';
 import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
@@ -10,8 +9,6 @@ import FavPOI from '../favPOI/favPOI';
 import MarkFilter from '../markFilter/markFilter';
 import Mark from '../mark/mark';
 
-import pointsData from '../../data/main.json';
-import typesData from '../../data/types.json';
 import { MAEKER_TYPE_TREE } from '../../data/marker';
 
 const SideBar = ({ map, currentRegion, onToggle }) => {
@@ -22,7 +19,6 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
     poi: [],
     facility: []
   });
-  const [points, setPoints] = useState(pointsData.points || []);
 
   // Get region filter
   const regionFilter = useMemo(() => {
@@ -63,31 +59,6 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
     ) || false;
   };
 
-  // Types by category
-  const typesByCategory = useMemo(() => {
-    // initialize pre-result
-    const result = {
-      resource: [],
-      enemy: [],
-      poi: [],
-      facility: []
-    };
-    const processedTypes = new Set();
-
-    points.forEach(point => {
-      const { main, sub, key } = point.type;
-      if (!main || !result[main]) return;
-
-      const typeId = `${main}-${sub}-${key}`;
-      // add to result if not processed
-      if (!processedTypes.has(typeId)) {
-        processedTypes.add(typeId);
-        result[main].push({ main, sub, key });
-      }
-    });
-    return result;
-  }, [points]);
-
   const toggleSidebar = () => {
     const newState = !isOpen;
     setIsOpen(newState);
@@ -115,7 +86,6 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
             {Object.entries(MAEKER_TYPE_TREE).map(([key, value]) => (
               <MarkFilter title={key} key={key}>{
                 Object.values(value).flat().map((typeInfo, index) => (
-                  // console.log(typeInfo) &&
                   <Mark
                     key={typeInfo.key}
                     typeInfo={typeInfo}
