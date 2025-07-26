@@ -23,7 +23,7 @@ export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce((acc, subre
 
 export const MARKER_TYPE_DICT = markerTypeDict
 
-export const MAEKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
+export const MARKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce((acc, type) => {
     acc[type.category.main] = acc[type.category.main] || {}
     acc[type.category.main][type.category.sub] = acc[type.category.main][type.category.sub] || []
     acc[type.category.main][type.category.sub].push(type)

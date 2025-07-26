@@ -9,7 +9,7 @@ import FavPOI from '../favPOI/favPOI';
 import MarkFilter from '../markFilter/markFilter';
 import Mark from '../mark/mark';
 
-import { MAEKER_TYPE_TREE } from '../../data/marker';
+import { MARKER_TYPE_TREE } from '../../data/marker';
 
 const SideBar = ({ map, currentRegion, onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,7 +83,7 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
         <div className={styles['sidebar-content']}>
           <Search />
           <div className={styles.filters}>
-            {Object.entries(MAEKER_TYPE_TREE).map(([key, value]) => (
+            {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
               <MarkFilter title={key} key={key}>{
                 Object.values(value).flat().map((typeInfo, index) => (
                   <Mark
