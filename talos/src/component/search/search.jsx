@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import SearchIcon from '../../asset/logos/search.svg?react';
-import './search.scss';
+import styles from './search.module.scss';
 import { useMarkerStore } from '../mapContainer/store/marker';
 
 const Search = () => {
@@ -10,15 +10,15 @@ const Search = () => {
   }, [])
 
   return (
-    <div className="search-container">
-      <form className="search-form">
-        <div className="search-input-wrapper">
-          <div className="search-icon">
-            <SearchIcon className="icon" />
+    <div className={styles['search-container']}>
+      <form className={styles['search-form']}>
+        <div className={styles['search-input-wrapper']}>
+          <div className={styles['search-icon']}>
+            <SearchIcon className={styles.icon} />
           </div>
           <input
             type="text"
-            className="search-input"
+            className={styles['search-input']}
             placeholder="Overall search..."
             value={searchString}
             onChange={changeHandler}

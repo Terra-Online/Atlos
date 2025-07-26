@@ -1,0 +1,86 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+$sidebar-width: 300px;
+
+.mainFilterList {
+    position: absolute;
+    top: 22px;
+    left: 74px;
+    height: 75px;
+    max-width: 530px;
+    width: max-content;
+    border-radius: 8px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    border: 2px solid rgba($white-0, .4);
+    background-color: rgba($grey-1, .5);
+    backdrop-filter: blur(40px);
+    overflow: hidden;
+    transition: transform .3s ease-in-out, opacity .3s ease-out, width .3s ease-out;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba($white-0, .3);
+        border-radius: 3px;
+    }
+
+    &.sidebarOpen {
+        transform: translateX($sidebar-width);
+    }
+
+    &.hidden {
+        opacity: 0;
+    }
+}
+
+.mainFilterContentContainer {
+    width: calc(100% - 16px);
+    height: 100%;
+    box-sizing: border-box;
+    transition: width .2s ease-out;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-sizing: border-box;
+
+    &.leftMaskOpacity {
+        mask-image: linear-gradient(to right, transparent 0%, $black 10%);
+    }
+
+    &.rightMaskOpacity {
+        mask-image: linear-gradient(to left, transparent 0%, $black 10%);
+    }
+
+    &.leftMaskOpacity.rightMaskOpacity {
+        mask-image: linear-gradient(to right, transparent 0%, $black 10%, $black 90%, transparent 100%);
+    }
+}
+
+.innerContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+}
+
+.mainFilterContentItem {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+} 

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import './mark.scss';
+import styles from './mark.module.scss';
 import { getItemIconUrl } from '../../utils/resource';
 
 // For deserialization
@@ -75,15 +75,15 @@ const Mark = ({
   if (!showFilter) return null
   return (
     <div
-      className={`mark-item ${filter.includes(typeInfo.key) ? 'active' : ''}`}
+      className={`${styles['mark-item']} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
       onClick={() => switchFilter(typeInfo.key)}
       style={{ '--progress-percentage': `${cnt.total > 0 ? Math.round(cnt.collected / cnt.total * 100) : 0}%` }}
     >
-      <span className="mark-icon">
+      <span className={styles['mark-icon']}>
         {iconUrl && <img src={iconUrl} alt={displayName} />}
       </span>
-      <span className="mark-name">{displayName}</span>
-      <span className="mark-stat">
+      <span className={styles['mark-name']}>{displayName}</span>
+      <span className={styles['mark-stat']}>
         {cnt.collected}/{cnt.total}
       </span>
     </div>

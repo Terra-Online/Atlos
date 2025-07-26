@@ -1,7 +1,7 @@
 import classNames from "classnames"
 import { getItemIconUrl } from "../../utils/resource"
 import { useFilter, useSwitchFilter } from "../mapContainer/store/marker"
-import "./filterList.scss"
+import styles from "./filterList.module.scss"
 import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 
@@ -43,18 +43,24 @@ const FilterList = ({ isSidebarOpen }) => {
 
     const switchFilter = useSwitchFilter();
 
-    return <div className={classNames("main-filter-list", { "hidden": filterList.length === 0, "sidebar-open": isSidebarOpen })}>
+    return <div className={classNames(styles.mainFilterList, { 
+        [styles.hidden]: filterList.length === 0, 
+        [styles.sidebarOpen]: isSidebarOpen 
+    })}>
         <div
             ref={containerRef}
-            className={classNames("main-filter-content-container", showLeftMask && "left-mask-opacity", showRightMask && "right-mask-opacity")}
+            className={classNames(styles.mainFilterContentContainer, {
+                [styles.leftMaskOpacity]: showLeftMask,
+                [styles.rightMaskOpacity]: showRightMask
+            })}
             style={{ width: `${Math.min(filterList.length * 72 + 8, 510)}px` }}
         >
-            <div className="inner-container">
+            <div className={styles.innerContainer}>
                 <AnimatePresence>
                     {filterList.map((item) => (
                         <motion.img
                             key={item}
-                            className="main-filter-content-item"
+                            className={styles.mainFilterContentItem}
                             src={getItemIconUrl(item)}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

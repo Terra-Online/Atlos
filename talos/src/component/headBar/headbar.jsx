@@ -1,5 +1,5 @@
 import React from 'react';
-import './headbar.scss';
+import styles from './headbar.module.scss';
 
 const Headitem = ({
   icon: Icon,
@@ -17,12 +17,12 @@ const Headitem = ({
 
   return (
     <button
-      className={`headbar-item ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`${styles['headbar-item']} ${active ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
       onClick={handleClick}
       disabled={disabled}
       title={tooltip}
     >
-      <div className="headbar-icon">
+      <div className={styles['headbar-icon']}>
         {Icon && <Icon />}
       </div>
     </button>
@@ -32,8 +32,8 @@ const Headitem = ({
 // modified (changed UI but sidebar binding reserved)
 const Headbar = ({ children, isSidebarOpen = false }) => {
   return (
-    <div className="headbar-container">
-      <div className="headbar">
+    <div className={styles['headbar-container']}>
+      <div className={styles.headbar}>
         {children}
       </div>
     </div>

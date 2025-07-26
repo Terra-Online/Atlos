@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import './scale.scss';
+import styles from './scale.module.scss';
 
 const calculateScale = (current, min, max) => Math.max(0, Math.min(1, (current - min) / (max - min)));
 
@@ -108,10 +108,10 @@ const Scale = ({ map }) => {
   }, [scaleRatio, updateScalerUI]);
   if (!map) return null;
   return (
-    <div className="scale-container">
-      <div className="button-frame">
+    <div className={styles['scale-container']}>
+      <div className={styles['button-frame']}>
         <button
-          className={`zoom-button in ${zoomLevel >= zoomBounds.max ? 'disabled' : ''}`}
+          className={`${styles['zoom-button']} ${styles.in} ${zoomLevel >= zoomBounds.max ? styles.disabled : ''}`}
           onClick={() => handleZoomStep(1)}
           disabled={zoomLevel >= zoomBounds.max}
         >
@@ -120,19 +120,19 @@ const Scale = ({ map }) => {
       </div>
 
       <div
-        className="scaler-wrapper"
+        className={styles['scaler-wrapper']}
         ref={scalerWrapperRef}
         onClick={handleProgressClick}
       >
         <div
-          className="scaler"
+          className={styles.scaler}
           ref={scalerRef}
         />
       </div>
 
-      <div className="button-frame">
+      <div className={styles['button-frame']}>
         <button
-          className={`zoom-button out ${zoomLevel <= zoomBounds.min ? 'disabled' : ''}`}
+          className={`${styles['zoom-button']} ${styles.out} ${zoomLevel <= zoomBounds.min ? styles.disabled : ''}`}
           onClick={() => handleZoomStep(-1)}
           disabled={zoomLevel <= zoomBounds.min}
         >

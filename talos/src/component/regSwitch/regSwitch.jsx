@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './regSwitch.scss';
+import styles from './regSwitch.module.scss';
 
 const Reg = ({
   icon: Icon,
@@ -14,13 +14,13 @@ const Reg = ({
 }) => {
   return (
     <button
-      className={`reg-item ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''} ${hasSubregions && isSelected ? 'has-subregions' : ''}`}
+      className={`${styles['reg-item']} ${isSelected ? styles.selected : ''} ${disabled ? styles.disabled : ''} ${hasSubregions && isSelected ? styles['has-subregions'] : ''}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       onMouseEnter={isSelected && hasSubregions ? onMouseEnter : undefined}
       onMouseLeave={isSelected && hasSubregions ? onMouseLeave : undefined}
     >
-      <div className="reg-icon">
+      <div className={styles['reg-icon']}>
         {Icon && <Icon />}
       </div>
     </button>
@@ -37,13 +37,13 @@ const SubReg = ({
 }) => {
   return (
     <button
-      className={`subreg-item ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`${styles['subreg-item']} ${isSelected ? styles.selected : ''} ${disabled ? styles.disabled : ''}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >
-      <div className="subreg-icon">
+      <div className={styles['subreg-icon']}>
         <div
-          className="subreg-color-block"
+          className={styles['subreg-color-block']}
           style={{ backgroundColor: color }}
         ></div>
       </div>
@@ -144,7 +144,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
   return (
     <div
       ref={containerRef}
-      className={`region-selection-wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}
+      className={`${styles['region-selection-wrapper']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}
       onMouseLeave={handleContainerMouseLeave}
     >
       {mainRegionWithProps}
@@ -185,8 +185,8 @@ const RegSwitch = ({
   });
 
   return (
-    <div className={`regswitch-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-      <div className={`regswitch ${selectedIndex >= 0 ? `selected-${selectedIndex}` : ''}`}>
+    <div className={`${styles['regswitch-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}>
+      <div className={`${styles['regswitch']} ${selectedIndex >= 0 ? `${styles['selected']}-${selectedIndex}` : ''}`}>
         {childrenWithProps}
       </div>
     </div>
@@ -224,11 +224,11 @@ const SubRegSwitch = ({
 
   return (
     <div
-      className={`subregswitch-container ${isSidebarOpen ? 'sidebar-open' : ''} ${visible ? 'visible' : ''} ${alignClass}`}
+      className={`${styles['subregswitch-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''} ${visible ? styles.visible : ''} ${alignClass}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={`subregswitch ${selectedIndex >= 0 ? `selected-${selectedIndex}` : ''}`}>
+      <div className={`${styles['subregswitch']} ${selectedIndex >= 0 ? `${styles['selected']}-${selectedIndex}` : ''}`}>
         {childrenWithProps}
       </div>
     </div>

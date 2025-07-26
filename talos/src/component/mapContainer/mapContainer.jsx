@@ -1,6 +1,6 @@
 import React from 'react';
 import 'leaflet/dist/leaflet.css';
-import './mapContainer.scss';
+import styles from './mapContainer.module.scss';
 
 import { useMap } from './hook/useMap';
 import useUI from './store/ui';
@@ -52,7 +52,7 @@ const MapContainer = ({ isSidebarOpen }) => {
 
   return (
     <div>
-      <div id="map"></div>
+      <div className={styles.mainMapContainer} id="map"></div>
       {map && <Scale map={map} />}
 
       {/* Headbar */}

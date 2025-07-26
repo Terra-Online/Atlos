@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import './sideBar.scss';
+import styles from './sideBar.module.scss';
 
 import Icon from '../../asset/images/UI/observator_6.webp';
 import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
@@ -68,21 +68,21 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
   };
 
   return (
-    <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+    <div className={`${styles['sidebar-container']} ${isOpen ? styles.open : ''}`}>
       <button
-        className={`sidebar-toggle ${isOpen ? 'open' : ''}`}
+        className={`${styles['sidebar-toggle']} ${isOpen ? styles.open : ''}`}
         onClick={toggleSidebar}
       >
         <SidebarIcon />
       </button>
 
-      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="head_icon">
+      <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.head_icon}>
           <img src={Icon} alt='supported by observator 6' />
         </div>
-        <div className="sidebar-content">
+        <div className={styles['sidebar-content']}>
           <Search />
-          <div className='filters'>
+          <div className={styles.filters}>
             {Object.entries(MAEKER_TYPE_TREE).map(([key, value]) => (
               <MarkFilter title={key} key={key}>{
                 Object.values(value).flat().map((typeInfo, index) => (
@@ -95,7 +95,7 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
             ))}
           </div>
         </div>
-        <div className="copyright">
+        <div className={styles.copyright}>
           <a href="https://beian.miit.gov.cn/">沪ICP备<b>2025119702</b>号-1</a>
         </div>
       </div>

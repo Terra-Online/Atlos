@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
 import config from './config/config.json';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { resolve } from 'path'
 
 const isProd = process.env.NODE_ENV === "production";
 const assetsHost = isProd ? `${config.web.build.cdn}${config.web.build.oss.prefix}` : "";
@@ -36,5 +37,28 @@ export default defineConfig({
   base: assetsHost,
   define: {
     __ASSETS_HOST: JSON.stringify(assetsHost)
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@/components': resolve(__dirname, 'src/component'),
+      '@/utils': resolve(__dirname, 'src/utils'),
+      '@/data': resolve(__dirname, 'src/data'),
+      '@/assets': resolve(__dirname, 'src/asset'),
+      '@/styles': resolve(__dirname, 'src/styles')
+    }
+  },
+  esbuild: {
+    // 支持 .js 文件中的 JSX
+    loader: 'jsx',
+    include: /src\/.*\.jsx?$/,
+    exclude: [],
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+      },
+    },
   },
 })

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import './trigger.scss';
+import styles from './trigger.module.scss';
 
 import OnIcon from '../../asset/logos/on.svg?react';
 import OffIcon from '../../asset/logos/off.svg?react';
@@ -19,23 +19,23 @@ const Trigger = ({
   };
 
   return (
-    <div className={`trigger ${disabled ? 'disabled' : ''}`}>
+    <div className={`${styles.trigger} ${disabled ? styles.disabled : ''}`}>
       <button
-        className={`trigger-button ${isActive ? 'active' : ''}`}
+        className={`${styles['trigger-button']} ${isActive ? styles.active : ''}`}
         onClick={handleClick}
         disabled={disabled}
       >
-        <div className="trigger-icons">
-          <span className="trigger-icon off">
+        <div className={styles['trigger-icons']}>
+          <span className={`${styles['trigger-icon']} ${styles.off}`}>
             <OffIcon />
           </span>
-          <span className="trigger-icon on">
+          <span className={`${styles['trigger-icon']} ${styles.on}`}>
             <OnIcon />
           </span>
         </div>
 
       </button>
-      {label && <div className="trigger-label">{label}</div>}
+      {label && <div className={styles['trigger-label']}>{label}</div>}
     </div>
   );
 };
@@ -56,7 +56,7 @@ const TriggerBar = ({
   */
 
   return (
-    <div className={`trigger-container ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`${styles['trigger-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}>
       {children}
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import './detail.scss';
+import styles from './detail.module.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
 import i18nData from '../../data/i18n_EN.json';
 import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../mapContainer/store/marker';
@@ -142,18 +142,18 @@ export const Detail = () => {
         animate={{ x: "0%" }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        key={currentPoint ? "active" : "null"} className={"detail-container"} ref={ref}>
+        key={currentPoint ? "active" : "null"} className={styles.detailContainer} ref={ref}>
         {/* Head */}
-        <div className="detail-header">
-          <div className="point-info">
+        <div className={styles.detailHeader}>
+          <div className={styles.pointInfo}>
             {ctgyIconUrl && (
               <span
-                className="category-icon"
+                className={styles.categoryIcon}
                 style={{ backgroundImage: `url(${ctgyIconUrl})` }}
               ></span>
             )}
             <AnimatePresence mode="wait">
-              <AnimatedText text={pointName} key={currentPoint?.id ?? "null"} className="point-name">{pointName}</AnimatedText>
+              <AnimatedText text={pointName} key={currentPoint?.id ?? "null"} className={styles.pointName}>{pointName}</AnimatedText>
             </AnimatePresence>
           </div>
           {/* disabled in version1 */}
@@ -164,10 +164,10 @@ export const Detail = () => {
           </div> */}
         </div>
         {/* Content */}
-        <div className="detail-content">
+        <div className={styles.detailContent}>
           {/* Icon & Stats */}
-          <div className="icon-stats-container">
-            <div className={classNames("point-icon", { "collected": isCollected })} onClick={() => {
+          <div className={styles.iconStatsContainer}>
+            <div className={classNames(styles.pointIcon, { [styles.collected]: isCollected })} onClick={() => {
               if (isCollected) {
                 deletePoint(currentPoint.id)
               } else {
@@ -184,16 +184,16 @@ export const Detail = () => {
               </AnimatePresence>
 
             </div>
-            <div className="point-stats">
-              <div className="stats-txt">
+            <div className={styles.pointStats}>
+              <div className={styles.statsTxt}>
                 {statItems.map(item => (
                   <div
-                    className="stat-row"
+                    className={styles.statRow}
                     key={item.label}
                     style={{ transform: `translateY(${3 - item.index * 2}px)` }}
                   >
-                    <span className="stat-label">{item.label}: </span>
-                    <div className="stat-value">
+                    <span className={styles.statLabel}>{item.label}: </span>
+                    <div className={styles.statValue}>
                       <span className={`user-value ${item.data.collected === item.data.total ? 'check' : ''}`}>
                         {item.data.collected}
                       </span>
@@ -203,11 +203,11 @@ export const Detail = () => {
                   </div>
                 ))}
               </div>
-              <div className="stats-prog">
+              <div className={styles.statsProg}>
                 {statItems.map(item => (
                   <div
                     key={`prog-${item.label}`}
-                    className={`prog-bar ${item.data.collected === item.data.total ? 'check' : ''}`}
+                    className={classNames(styles.progBar, { [styles.check]: item.data.collected === item.data.total })}
                     style={{ "--prog": item.data.collected / item.data.total }}
                   ></div>
                 ))}
