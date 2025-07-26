@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
-import i18nData from '../../data/i18n_EN.json';
 import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../mapContainer/store/marker';
 import { useAddPoint, useDeletePoint, useUserRecord } from '../mapContainer/store/userRecord';
 import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
@@ -9,7 +8,7 @@ import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
 import { motion, AnimatePresence, usePresence } from "motion/react"
 import useRegion from '../mapContainer/store/region';
-
+import { useTranslate } from '@/locale';
 
 // const mockPoint = {
 //   id: "001",
@@ -97,22 +96,9 @@ export const Detail = () => {
 
   const ctgyIconUrl = getCtgrIconUrl(currentPoint ? currentPoint.type : "UKN");
 
-  const pointName = useMemo(() => {
-    if (!currentPoint) return "UKN";
-    const { type: typeKey } = currentPoint;
-    const type = MARKER_TYPE_DICT[typeKey]
-    if (!type) return "UKN";
-    const lookups = [
-      type.key && i18nData.key?.[0]?.[type.key],
-      type.sub && i18nData.types?.[0]?.[type.sub.toLowerCase()],
-      type.main && i18nData.types?.[0]?.[type.main.toLowerCase()],
-      type.key,
-      type.sub,
-      type.main,
-      "UKN"
-    ];
-    return lookups.find(item => !!item) || "UKN";
-  }, [currentPoint]);
+  const t = useTranslate();
+  const pointName = t(`markerType.key.${currentPoint?.type}`);
+
 
   const noteContent = currentPoint?.status?.user?.localNote;
 

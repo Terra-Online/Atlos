@@ -46,18 +46,20 @@ export default defineConfig({
       '@/data': resolve(__dirname, 'src/data'),
       '@/assets': resolve(__dirname, 'src/asset'),
       '@/styles': resolve(__dirname, 'src/styles')
-    }
+    },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   esbuild: {
-    // 支持 .js 文件中的 JSX
-    loader: 'jsx',
-    include: /src\/.*\.jsx?$/,
+    loader: 'tsx',
+    include: /src\/.*\.(jsx?|tsx?)$/,
     exclude: [],
   },
   optimizeDeps: {
     esbuildOptions: {
       loader: {
         '.js': 'jsx',
+        '.ts': 'tsx',
+        '.tsx': 'tsx',
       },
     },
   },

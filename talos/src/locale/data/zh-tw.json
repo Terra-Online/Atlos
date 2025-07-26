@@ -1,6 +1,6 @@
 {
-    "key": [
-        {
+    "markerType": {
+        "key": {
             "triaggelos": "三位一體",
             "marble_aggelomoirai": "白堊界衛",
             "effigy": "肖像天使",
@@ -94,10 +94,8 @@
             "exchange": "兌換所",
             "collect": "收集所",
             "barrel": "barrel"
-        }
-    ],
-    "category": [
-        {
+        },
+        "category": {
             "aggeloi": "天使",
             "landbreakers": "裂地者",
             "cangzei": "滄賊",
@@ -110,14 +108,12 @@
             "basic": "basic",
             "regional": "regional",
             "others": "others"
-        }
-    ],
-    "types": [
-        {
+        },
+        "types": {
             "enemy": "敵人",
             "resource": "資源",
             "poi": "興趣點",
             "facility": "設施"
         }
-    ]
+    }
 }

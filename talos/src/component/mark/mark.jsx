@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import styles from './mark.module.scss';
 import { getItemIconUrl } from '../../utils/resource';
-
+import { useTranslate } from '@/locale';
 // For deserialization
 import i18nData from '../../data/i18n_TC.json';
 import { useFilter, usePoints, useRegionMarkerCount, useSearchString, useSwitchFilter } from '../mapContainer/store/marker';
@@ -13,6 +13,7 @@ const Mark = ({
   // totalCount = 0,
   collectedCount = 0
 }) => {
+  const t = useTranslate();
   // assemble icon_key
   const iconKey = useMemo(() => {
     if (typeInfo?.key) {
@@ -26,19 +27,7 @@ const Mark = ({
     return getItemIconUrl(iconKey, 'png');
   }, [iconKey]);
   // get i18n_displayName
-  const displayName = useMemo(() => {
-    if (!typeInfo) return "Unknown";
-    const lookups = [
-      typeInfo.key && i18nData.key?.[0]?.[typeInfo.key],
-      typeInfo.category.sub && i18nData.types?.[0]?.[typeInfo.category.sub.toLowerCase()],
-      typeInfo.category.main && i18nData.types?.[0]?.[typeInfo.category.main.toLowerCase()],
-      typeInfo.key,
-      typeInfo.category.sub,
-      typeInfo.category.main,
-      "Unknown"
-    ];
-    return lookups.find(item => !!item) || "Unknown";
-  }, [typeInfo, i18nData]);
+  const displayName = t(`markerType.key.${typeInfo.key}`) ?? "";
   // stats
   // const stats = useMemo(() => {
   //   if (!points || !points.length) return { total: 0, collected: 0, percentage: 0 };

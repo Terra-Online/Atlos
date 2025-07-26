@@ -1,6 +1,6 @@
 {
-    "key": [
-        {
+    "markerType": {
+        "key": {
             "Triaggelos": "Triaggelos",
             "Marble Aggelomoirai": "Marble Aggelomoirai",
             "Effigy": "Effigy",
@@ -94,10 +94,8 @@
             "Exchange": "Exchange",
             "Collect": "Collect",
             "barrel": "barrel"
-        }
-    ],
-    "category": [
-        {
+        },
+        "category": {
             "Aggeloi": "Aggeloi",
             "Landbreakers": "Landbreakers",
             "Cangzei": "Cangzei",
@@ -110,14 +108,12 @@
             "basic": "basic",
             "regional": "regional",
             "others": "others"
-        }
-    ],
-    "types": [
-        {
+        },
+        "types": {
             "enemy": "enemy",
             "resource": "resource",
             "poi": "poi",
             "facility": "facility"
         }
-    ]
+    }
 }
