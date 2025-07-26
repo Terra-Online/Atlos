@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './headbar.module.scss';
+import LiquidGlass from 'liquid-glass-react-positioning';
 
 const Headitem = ({
   icon: Icon,
@@ -32,11 +33,28 @@ const Headitem = ({
 // modified (changed UI but sidebar binding reserved)
 const Headbar = ({ children, isSidebarOpen = false }) => {
   return (
-    <div className={styles['headbar-container']}>
-      <div className={styles.headbar}>
+    <LiquidGlass
+      displacementScale={60}
+      blurAmount={0}
+      saturation={120}
+      aberrationIntensity={2}
+      elasticity={0.1}
+      cornerRadius={50}
+      padding="8px 16px"
+      mode="standard"
+      overLight={false}
+      positioning="top-right"
+      className="headbar-container"
+      style={{
+        position: "fixed",
+        top: "1rem",
+        right: "1rem",
+      }}
+    >
+      <div className={styles['headbar']}>
         {children}
       </div>
-    </div>
+    </LiquidGlass>
   );
 };
 

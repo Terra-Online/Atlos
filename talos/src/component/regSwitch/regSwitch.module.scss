@@ -26,7 +26,14 @@ $indicator-height: .75rem;
   &.sidebar-open {
     transform: translateY(-50%) translateX($sidebar-width);
   }
+
+  // 修复 hover 效果
+  &:hover .subregswitch {
+    margin-top: max(-150px, -100vh + 20px);
+    margin-bottom: max(-150px, -100vh + 20px);
+  }
 }
+
 .regswitch-container {
   position: relative;
   z-index: 900;
@@ -43,26 +50,21 @@ $indicator-height: .75rem;
   padding: 5px;
   box-shadow: 0 0 5px rgba($black, 0.6);
   position: relative;
+}
 
-  &:after {
-    content: '';
-    position: absolute;
-    left: 1.5px;
-    width: 0;
-    height: 0;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 8px solid color.adjust($primary-accent-4, $lightness: -10%);
-    transition: transform 0.4s $presto-curve;
-    z-index: 10;
-    filter: drop-shadow(0 0 1px rgba($black, 0.8));
-  }
-
-  @for $i from 0 through 5 {
-    &.selected-#{$i}:after {
-      transform: translateY(calc(#{$i} * (#{$item-height} + #{$item-gap}) + calc(#{$item-height} / 2) - calc(#{$indicator-height} / 2)));
-    }
-  }
+// 独立的指示器类
+.indicator {
+  position: absolute;
+  left: 1.5px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid color.adjust($primary-accent-4, $lightness: -10%);
+  transition: transform 0.4s $presto-curve, opacity 0.3s ease;
+  z-index: 10;
+  filter: drop-shadow(0 0 1px rgba($black, 0.8));
+  opacity: 0;
 }
 
 .reg-item {
@@ -92,6 +94,7 @@ $indicator-height: .75rem;
       fill: $grey-1;
     }
   }
+  
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -122,8 +125,9 @@ $indicator-height: .75rem;
   left: 4rem;
   opacity: 0;
   visibility: hidden;
-  transition: opacity .2s ease-in-out, visibility 0s linear .2s;
-  > .subregswitch{
+  transition: opacity .2s ease-in-out, visibility 0s linear .2s, top 0.3s ease;
+  
+  > .subregswitch {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
@@ -132,11 +136,6 @@ $indicator-height: .75rem;
     opacity: 1;
     visibility: visible;
     transition: opacity .2s ease-in-out, visibility 0s;
-  }
-  @for $i from 0 through 5 {
-    &.align-item-#{$i} {
-      top: calc(#{$i} * (#{$item-height} + #{$item-gap}) + calc(#{$item-height} / 2) + 5px); 
-    }
   }
 }
 
@@ -149,16 +148,10 @@ $indicator-height: .75rem;
   padding: 5px;
   box-shadow: 0 0 5px rgba($black, 0.6);
   position: relative;
-  max-height: 400px;
-  overflow-y: auto;
-
   max-height: 300px;
+  overflow-y: auto;
   margin-top: -150px;
-
-  .region-selection-wrapper:hover & {
-    margin-top: max(-150px, -100vh + 20px);
-    margin-bottom: max(-150px, -100vh + 20px);
-  }
+  transition: margin 0.3s ease;
 }
 
 .subreg-item {
@@ -174,6 +167,7 @@ $indicator-height: .75rem;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  
   &::after {
     content: '';
     position: absolute;
@@ -197,8 +191,8 @@ $indicator-height: .75rem;
 
   &.selected {
     &::after {
-          opacity: 1;
-        }
+      opacity: 1;
+    }
   }
 
   &.disabled {
@@ -221,6 +215,7 @@ $indicator-height: .75rem;
   }
 }
 
+// SVG 动画样式
 path.subregion-highlight-stroke {
   stroke: $primary-accent-4;
   stroke-width: 4;
@@ -249,7 +244,6 @@ path.subregion-highlight-fill {
     stroke: rgba($primary-accent-4, 1);
   }
 }
-
 
 @keyframes holdStroke {
   0%, 100% {

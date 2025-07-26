@@ -32,6 +32,9 @@ importers:
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
+      liquid-glass-react-positioning:
+        specifier: ^1.0.4
+        version: 1.0.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       motion:
         specifier: ^12.9.4
         version: 12.9.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2257,6 +2260,12 @@ packages:
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
+
+  liquid-glass-react-positioning@1.0.4:
+    resolution: {integrity: sha512-NfyzaQMP7UR4U5nGOsnAg4tOLdvI9Y3YwYfT5t7vJ0G5gHiPN46ja0ok9bCUSIdX8jEUeg/8LPEXS5b8U8z5dQ==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
 
   loader-utils@2.0.4:
     resolution: {integrity: sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==}
@@ -5356,6 +5365,11 @@ snapshots:
       type-check: 0.4.0
 
   lines-and-columns@1.2.4: {}
+
+  liquid-glass-react-positioning@1.0.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   loader-utils@2.0.4:
     dependencies:

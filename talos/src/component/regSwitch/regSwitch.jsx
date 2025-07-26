@@ -55,12 +55,14 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
   const [isHovering, setIsHovering] = useState(false);
   const timeoutRef = useRef(null);
   const containerRef = useRef(null);
+  
   const handleMainRegionMouseEnter = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     setIsHovering(true);
   };
+  
   const handleMainRegionMouseLeave = (e) => {
     const toElement = e.relatedTarget;
     const container = containerRef.current;
@@ -115,7 +117,8 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
     ? React.cloneElement(mainRegion, {
       hasSubregions,
       onRegionMouseEnter: handleMainRegionMouseEnter,
-      onRegionMouseLeave: handleMainRegionMouseLeave
+      onRegionMouseLeave: handleMainRegionMouseLeave,
+      selectedIndex
     })
     : null;
 
@@ -125,6 +128,7 @@ const RegionContainer = ({ children, isSidebarOpen = false }) => {
       visible: isHovering,
       isSidebarOpen: isSidebarOpen,
       alignClass: `align-item-${selectedIndex}`,
+      selectedIndex,
       onMouseEnter: () => {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
@@ -160,15 +164,23 @@ const RegSwitch = ({
   isSidebarOpen = false,
   hasSubregions = false,
   onRegionMouseEnter,
-  onRegionMouseLeave
+  onRegionMouseLeave,
+  selectedIndex = -1
 }) => {
-  // check selectedIndex
-  let selectedIndex = -1;
-  React.Children.forEach(children, (child, index) => {
-    if (React.isValidElement(child) && child.props.value === value) {
-      selectedIndex = index;
-    }
-  });
+  const getIndicatorStyle = () => {
+    if (selectedIndex < 0) return { display: 'none' };
+    // Calculate the position of the indicator based on selectedIndex
+    const itemHeight = 2.5; // rem
+    const itemGap = 0.6; // rem
+    const indicatorHeight = 0.75; // rem
+
+    const translateY = selectedIndex * (itemHeight + itemGap) + (itemHeight / 2) - (indicatorHeight / 2);
+
+    return {
+      transform: `translateY(${translateY}rem)`,
+      opacity: 1
+    };
+  };
 
   // inject props
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -186,7 +198,12 @@ const RegSwitch = ({
 
   return (
     <div className={`${styles['regswitch-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}>
-      <div className={`${styles['regswitch']} ${selectedIndex >= 0 ? `${styles['selected']}-${selectedIndex}` : ''}`}>
+      <div className={styles['regswitch']}>
+        {/* 动态创建指示器元素 */}
+        <div 
+          className={styles['indicator']}
+          style={getIndicatorStyle()}
+        />
         {childrenWithProps}
       </div>
     </div>
@@ -200,16 +217,22 @@ const SubRegSwitch = ({
   isSidebarOpen = false,
   visible = false,
   alignClass = '',
+  selectedIndex = -1,
   onMouseEnter,
   onMouseLeave
 }) => {
-  // check selectedIndex
-  let selectedIndex = -1;
-  React.Children.forEach(children, (child, index) => {
-    if (React.isValidElement(child) && child.props.value === value) {
-      selectedIndex = index;
-    }
-  });
+  // Calculate the position of the container based on selectedIndex
+  const getContainerStyle = () => {
+    if (selectedIndex < 0) return {};
+
+    const itemHeight = 2.5; // rem
+    const itemGap = 0.6; // rem
+
+    const top = selectedIndex * (itemHeight + itemGap) + (itemHeight / 2) + 0.3125; // 0.3125 rem = 5px
+    return {
+      top: `${top}rem`
+    };
+  };
 
   // inject props
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -224,11 +247,12 @@ const SubRegSwitch = ({
 
   return (
     <div
-      className={`${styles['subregswitch-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''} ${visible ? styles.visible : ''} ${alignClass}`}
+      className={`${styles['subregswitch-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''} ${visible ? styles.visible : ''}`}
+      style={getContainerStyle()}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={`${styles['subregswitch']} ${selectedIndex >= 0 ? `${styles['selected']}-${selectedIndex}` : ''}`}>
+      <div className={styles['subregswitch']}>
         {childrenWithProps}
       </div>
     </div>

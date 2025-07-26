@@ -4,7 +4,7 @@
     "regionId": "unknown_region",
     "subregions": [
       {
-        "id": "subregion-1",
+        "id": "VL_7",
         "name": "供能高地",
         "color": "#FF8B38",
         "bounds": [
@@ -666,7 +666,7 @@
         ]
       },
       {
-        "id": "subregion-2",
+        "id": "VL_6",
         "name": "礦脈源區",
         "color": "#FF8B38",
         "bounds": [
@@ -1364,7 +1364,7 @@
         ]
       },
       {
-        "id": "subregion-3",
+        "id": "VL_5",
         "name": "源石研究園",
         "color": "#FF8B38",
         "bounds": [
@@ -1994,7 +1994,7 @@
         ]
       },
       {
-        "id": "subregion-4",
+        "id": "VL_3",
         "name": "阿伯莉採石場",
         "color": "#FF8B38",
         "bounds": [
@@ -2288,7 +2288,7 @@
         ]
       },
       {
-        "id": "subregion-5",
+        "id": "VL_2",
         "name": "谷地通道",
         "color": "#FF8B38",
         "bounds": [
@@ -2642,7 +2642,7 @@
         ]
       },
       {
-        "id": "subregion-6",
+        "id": "VL_1",
         "name": "樞紐區",
         "color": "#FF8B38",
         "bounds": [

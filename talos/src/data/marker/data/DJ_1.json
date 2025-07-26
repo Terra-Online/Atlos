@@ -6,7 +6,7 @@
       -500.0128,
       303.6313
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_sp_campfire_028",
@@ -15,7 +15,7 @@
       -500.0128,
       687.5127
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_ss_room_growcabin_001",
@@ -24,7 +24,7 @@
       -450.3729,
       777.5228
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_ss_room_manufacturingstation_001",
@@ -33,7 +33,7 @@
       -547.7757,
       755.7036
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_ss_room_manufacturingstation_002",
@@ -42,7 +42,7 @@
       -547.7757,
       820.25
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_ss_controlcenter_001",
@@ -51,7 +51,7 @@
       -500.8642,
       133.25
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_npc_ss_trainingroom_001",
@@ -60,7 +60,7 @@
       -441.8085,
       695.4502
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_npc_ss_shop_001",
@@ -69,7 +69,7 @@
       -398.0257,
       461.2243
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   },
   {
     "id": "mark_npc_ss_manualCollect_001",
@@ -78,6 +78,6 @@
       -467.5519,
       395.358
     ],
-    "subregionId": "Dijiang"
+    "subregionId": "DJ_1"
   }
 ]

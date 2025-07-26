@@ -1,25 +1,20 @@
 import { getMarkerIconUrl } from '../../utils/resource'
-
-import subregion1 from './data/subregion-1.json'
-import subregion2 from './data/subregion-2.json'
-import subregion3 from './data/subregion-3.json'
-import subregion4 from './data/subregion-4.json'
-import subregion5 from './data/subregion-5.json'
-import subregion6 from './data/subregion-6.json'
-import dijiang from './data/Dijiang.json'
-import jinlong from './data/Jinlong.json'
 import markerTypeDict from './type.json'
 
-export const SUBREGION_MARKS_MAP = {
-    'subregion-1': subregion1,
-    'subregion-2': subregion2,
-    'subregion-3': subregion3,
-    'subregion-4': subregion4,
-    'subregion-5': subregion5,
-    'subregion-6': subregion6,
-    'Dijiang': dijiang,
-    'Jinlong': jinlong
+const modules = import.meta.glob('./data/*.json', { eager: true });
+
+const SUBREGION_MARKS_MAP = {};
+
+for (const path in modules) {
+  // 提取文件名作为键 (例如: './data/VL_1.json' -> 'VL_1')
+  const key = path.replace('./data/', '').replace('.json', '');
+
+  if (key !== 'type') {
+    SUBREGION_MARKS_MAP[key] = modules[path].default || modules[path];
+  }
 }
+
+export { SUBREGION_MARKS_MAP };
 
 export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce((acc, subregion) => {
     acc.push(...subregion)
