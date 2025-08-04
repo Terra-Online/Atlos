@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
 import styles from './mapContainer.module.scss';
 
-import { useMap } from './hook/useMap';
-import useUI from './store/ui';
+
+import { useMap } from './useMap';
 
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
@@ -22,29 +22,29 @@ import Jinlong from '../../asset/logos/_Jinlong.svg?react';
 import Dijiang from '../../asset/logos/_Dijiang.svg?react';
 import Æther from '../../asset/logos/Æther.svg?react';
 import FilterList from '../filterList/filterList';
+import { REGION_DICT } from '@/data/map';
 
 const MapContainer = ({ isSidebarOpen }) => {
   // useMap
   const {
     map,
     currentRegion,
-    subregions,
     currentSubregion,
     setCurrentRegion,
     selectSubregion,
-    resetAll
   } = useMap('map');
+  const subregions = useMemo(() => REGION_DICT[currentRegion].subregions, [currentRegion]);
   // useExternalUI
-  const { triggers, setTrigger } = useUI();
+  const [triggers, setTrigger] = useState({ t1: false, t2: false });
 
   const handleRegionChange = (region) => setCurrentRegion(region);
   const handleSubregionChange = (subregionId) => selectSubregion(subregionId);
 
-  const handleTrigger1 = (isActive) => setTrigger('t1', isActive);
-  const handleTrigger2 = (isActive) => setTrigger('t2', isActive);
+  const handleTrigger1 = (isActive) => setTrigger({ ...triggers, t1: isActive });
+  const handleTrigger2 = (isActive) => setTrigger({ ...triggers, t2: isActive });
 
   // temprarily not store headBar
-  const handleReset = () => resetAll();
+  const handleReset = () => console.log('Reset');
   const handleHideUI = () => console.log('HideUI');
   const handleGroup = () => console.log('Join related group');
   const handleLanguage = () => console.log('Choose language');

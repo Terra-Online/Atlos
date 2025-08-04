@@ -1,8 +1,16 @@
 // states store for map view states(continuously use)
+import { IMapView } from '@/component/mapCore/type';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const useContinuity = create(
+interface IViewStateStore {
+  viewStates: Record<string, IMapView>;
+  saveViewState: (region: string, map: L.Map) => void;
+  getViewState: (region: string) => IMapView | undefined;
+  clearAllViewStates: () => void;
+}
+
+const useViewState = create<IViewStateStore>()(
   persist(
     (set, get) => ({
       // declare viewStates
@@ -23,7 +31,7 @@ const useContinuity = create(
       },
 
       getViewState: (region) => {
-        return get().viewStates[region] || null;
+        return get().viewStates[region] || undefined;
       },
 
       clearAllViewStates: () => {
@@ -36,4 +44,4 @@ const useContinuity = create(
   )
 );
 
-export default useContinuity;
+export default useViewState;

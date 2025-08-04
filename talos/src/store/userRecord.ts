@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const useUserRecordStore = create(persist((set, get) => ({
+interface IUserRecordStore {
+    activePoints: string[];
+    addPoint: (id: string) => void;
+    deletePoint: (id: string) => void;
+    clearPoints: () => void;
+}
+
+const useUserRecordStore = create<IUserRecordStore>()(persist((set, get) => ({
     activePoints: [],
     addPoint: (id) => {
         if (get().activePoints.includes(id)) {
@@ -28,7 +35,7 @@ const useUserRecordStore = create(persist((set, get) => ({
     },
 }), {
     name: 'points-storage',
-    ppartialize: (state) => ({
+    partialize: (state) => ({
         activePoints: state.activePoints
     })
 }))

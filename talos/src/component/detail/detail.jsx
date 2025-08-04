@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
-import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../mapContainer/store/marker';
-import { useAddPoint, useDeletePoint, useUserRecord } from '../mapContainer/store/userRecord';
+import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../../store/marker';
+import { useAddPoint, useDeletePoint, useUserRecord } from '../../store/userRecord';
 import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
 import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
@@ -107,7 +107,10 @@ export const Detail = () => {
   useClickAway(() => {
     setIsVisible(false)
   }, ref);
-  useEffect(() => { if (currentPoint) setIsVisible(true) }, [currentPoint])
+  useEffect(() => {
+    if (currentPoint) setIsVisible(true)
+    console.log(currentPoint)
+  }, [currentPoint])
 
   const handleNextPoint = () => addPoint(currentPoint.id);
 

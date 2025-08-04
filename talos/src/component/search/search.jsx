@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import SearchIcon from '../../asset/logos/search.svg?react';
 import styles from './search.module.scss';
-import { useMarkerStore } from '../mapContainer/store/marker';
+import { useMarkerStore } from '../../store/marker';
 
 const Search = () => {
   const {searchString, setSearchString} = useMarkerStore()

@@ -2,9 +2,7 @@ import React, { useMemo } from 'react';
 import styles from './mark.module.scss';
 import { getItemIconUrl } from '../../utils/resource';
 import { useTranslate } from '@/locale';
-// For deserialization
-import i18nData from '../../data/i18n_TC.json';
-import { useFilter, usePoints, useRegionMarkerCount, useSearchString, useSwitchFilter } from '../mapContainer/store/marker';
+import { useFilter, useRegionMarkerCount, useSearchString, useSwitchFilter } from '../../store/marker';
 
 const Mark = ({
   // points = [],

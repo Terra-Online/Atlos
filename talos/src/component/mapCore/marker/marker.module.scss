@@ -1,7 +1,7 @@
 @use '../../../styles/palette.scss' as *;
 @use '../../../styles/curves.scss' as *;
 
-.custom-marker-icon {
+.customMarkerIcon {
     background-color: transparent;
 
     $icon-size: 1.75rem;
@@ -9,13 +9,13 @@
     $border-weight: 2px;
     $border-margin: 4px;
 
-    .marker-inner {
+    .markerInner {
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate3d(-50%, -50%, 0);
     }
-    .custom-marker-icon {
+    .customMarkerIcon {
         position: relative;
         background-position: center;
         background-size: cover;
@@ -47,7 +47,7 @@
     }
 
 
-    .default-marker-icon {
+    .defaultMarkerIcon {
         position: absolute;
         left: 50%;
         top: 50%;
@@ -61,7 +61,7 @@
     }
 }
 
-.custom-tooltip {
+.customTooltip {
     background-color: transparent;
     border: none;
     box-shadow: none;
@@ -70,7 +70,7 @@
         display: none;
     }
 
-    .tooltip-inner {
+    .tooltipInner {
         position: absolute;
         left: .5rem;
         top: 50%;
