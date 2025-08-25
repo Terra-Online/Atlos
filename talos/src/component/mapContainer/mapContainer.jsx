@@ -8,7 +8,7 @@ import { useMap } from './useMap';
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
-import { RegSwitch, Reg, SubRegSwitch, SubReg, RegionContainer } from '../regSwitch/regSwitch';
+import { RegionContainer } from '../regSwitch/regSwitch';
 import { Detail } from '../detail/detail';
 
 import ToS from '../../asset/logos/tos.svg?react';
@@ -31,14 +31,14 @@ const MapContainer = ({ isSidebarOpen }) => {
     currentRegion,
     currentSubregion,
     setCurrentRegion,
-    selectSubregion,
+    setCurrentSubregion,
   } = useMap('map');
   const subregions = useMemo(() => REGION_DICT[currentRegion].subregions, [currentRegion]);
   // useExternalUI
   const [triggers, setTrigger] = useState({ t1: false, t2: false });
 
   const handleRegionChange = (region) => setCurrentRegion(region);
-  const handleSubregionChange = (subregionId) => selectSubregion(subregionId);
+  const handleSubregionChange = (subregionId) => setCurrentSubregion(subregionId);
 
   const handleTrigger1 = (isActive) => setTrigger({ ...triggers, t1: isActive });
   const handleTrigger2 = (isActive) => setTrigger({ ...triggers, t2: isActive });
@@ -85,34 +85,7 @@ const MapContainer = ({ isSidebarOpen }) => {
       </Headbar>
 
       {/* Region Switch */}
-      <RegionContainer isSidebarOpen={isSidebarOpen}>
-        <RegSwitch
-          value={currentRegion}
-          onChange={handleRegionChange}
-        >
-          <Reg icon={Valley4} value="Valley_4" tooltip="4號谷地" />
-          <Reg icon={Jinlong} value="Jinlong" tooltip="錦隴" />
-          <Reg icon={Dijiang} value="Dijiang" tooltip="帝江" />
-          <Reg icon={Æther} value="Æther" tooltip="超域" disabled={true} />
-        </RegSwitch>
-
-        {/* Subregion Switch */}
-        {subregions.length > 0 && (
-          <SubRegSwitch
-            value={currentSubregion?.id}
-            onChange={handleSubregionChange}
-          >
-            {subregions.map(subregion => (
-              <SubReg
-                key={subregion.id}
-                value={subregion.id}
-                tooltip={subregion.name}
-                color={subregion.color}
-              />
-            ))}
-          </SubRegSwitch>
-        )}
-      </RegionContainer>
+      <RegionContainer isSidebarOpen={isSidebarOpen} />
 
       {/* Triggerbar */}
       <TriggerBar isSidebarOpen={isSidebarOpen}>

@@ -67,6 +67,6 @@ export function useMap(ele: HTMLDivElement) {
         currentRegion,
         currentSubregion,
         setCurrentRegion,
-        selectSubregion,
+        setCurrentSubregion: selectSubregion,
     };
 }

@@ -55,6 +55,7 @@
   },
   "include": [
     "src/**/*",
+    "src/vite-env.d.ts",
     "vite.config.js",
     "eslint.config.js"
   ],
