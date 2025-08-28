@@ -51,18 +51,29 @@ export class MapCore {
         this.map.eachLayer(layer => this.map.removeLayer(layer));
 
         const config = REGION_DICT[regionId]
+        
+        // 验证配置存在
+        if (!config) {
+            throw new Error(`Region config not found for: ${regionId}`);
+        }
 
         const view = useViewState.getState().getViewState(regionId)
-        if (view) {
+        if (view && view.lat !== undefined && view.lng !== undefined && view.zoom !== undefined) {
             this.map.setView([view.lat, view.lng], view.zoom, {
                 animate: false
             })
         } else {
+            if (!config.dimensions || !config.initialOffset || config.maxZoom === undefined || config.initialZoom === undefined) {
+                throw new Error(`Invalid region config for: ${regionId}. Missing required properties. Config: ${JSON.stringify(config)}`);
+            }
             const center = this.map.unproject([
                 (config.dimensions[0] / 2) + config.initialOffset.x,
                 (config.dimensions[1] / 2) + config.initialOffset.y
             ], config.maxZoom);
-            this.map.setView([center[0], center[1]], config.initialZoom, {
+            if (!center || center.lat === undefined || center.lng === undefined) {
+                throw new Error(`Invalid center coordinates for region: ${regionId}. Center: ${JSON.stringify(center)}`);
+            }
+            this.map.setView([center.lat, center.lng], config.initialZoom, {
                 animate: false
             })
         }

@@ -48,7 +48,7 @@ export function useMap(ele: HTMLDivElement) {
                 createHighlight(mapRef.current?.map, subregion, config);
             });
 
-            mapRef.current?.setMapView({ lat: center[0], lng: center[1], zoom: 1 });
+            mapRef.current?.setMapView({ lat: center.lat, lng: center.lng, zoom: 1 });
         }
     };
 

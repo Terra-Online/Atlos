@@ -39,7 +39,7 @@ const RegionContainer: React.FC<{
       {Object.entries(REGION_DICT).map(([key, region]) => {
         const Icon = REGION_ICON_DICT[key]
         const subRegionIndex = currentSubregionKey ? region.subregions.indexOf(currentSubregionKey) : -1
-        return <button className={classNames(styles.regItem, currentRegionKey === key && styles.selected)} onClick={() => {
+        return <button key={key} className={classNames(styles.regItem, currentRegionKey === key && styles.selected)} onClick={() => {
           setCurrentRegion(key)
         }}>
           <div className={styles.icon}>
@@ -51,10 +51,10 @@ const RegionContainer: React.FC<{
             <div className={styles.subregionSwitch}>
               <div className={classNames(styles.indicator, subRegionIndex < 0 && styles.hidden)} style={getContainerStyle(subRegionIndex)}></div>
               {region.subregions.map((subregion) => (
-                <button key={subregion} className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)} onClick={(e) => {
+                <div key={subregion} className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)} onClick={() => {
                   setCurrentSubregion(subregion)
                 }}>
-                </button>
+                </div>
               ))}
             </div>
           </div>
