@@ -45,19 +45,21 @@ const RegionContainer: React.FC<{
           <div className={styles.icon}>
             <Icon />
           </div>
-          <div className={styles.subregionSwitchContainer} onClick={(e) => {
-            e.stopPropagation()
-          }}>
-            <div className={styles.subregionSwitch}>
-              <div className={classNames(styles.indicator, subRegionIndex < 0 && styles.hidden)} style={getContainerStyle(subRegionIndex)}></div>
-              {region.subregions.map((subregion) => (
-                <div key={subregion} className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)} onClick={() => {
-                  setCurrentSubregion(subregion)
-                }}>
-                </div>
-              ))}
+          {region.subregions.length > 1 && (
+            <div className={styles.subregionSwitchContainer} onClick={(e) => {
+              e.stopPropagation()
+            }}>
+              <div className={styles.subregionSwitch}>
+                <div className={classNames(styles.indicator, subRegionIndex < 0 && styles.hidden)} style={getContainerStyle(subRegionIndex)}></div>
+                {region.subregions.map((subregion) => (
+                  <div key={subregion} className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)} onClick={() => {
+                    setCurrentSubregion(subregion)
+                  }}>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </button>
       })}
     </div>

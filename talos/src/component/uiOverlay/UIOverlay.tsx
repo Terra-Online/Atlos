@@ -1,15 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import 'leaflet/dist/leaflet.css';
-import styles from './mapContainer.module.scss';
-
-
-import { useMap } from './useMap';
+import React, { useState } from 'react';
+import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import { Headbar, Headitem } from '../headBar/headbar';
 import { RegionContainer } from '../regSwitch/regSwitch';
 import { Detail } from '../detail/detail';
+import FilterList from '../filterList/filterList';
 
 import ToS from '../../asset/logos/tos.svg?react';
 import hideUI from '../../asset/logos/hideUI.svg?react';
@@ -17,33 +14,23 @@ import Group from '../../asset/logos/group.svg?react';
 import i18n from '../../asset/logos/i18n.svg?react';
 import Guide from '../../asset/logos/guide.svg?react';
 
-import Valley4 from '../../asset/logos/_Valley_4.svg?react';
-import Jinlong from '../../asset/logos/_Jinlong.svg?react';
-import Dijiang from '../../asset/logos/_Dijiang.svg?react';
-import Æther from '../../asset/logos/Æther.svg?react';
-import FilterList from '../filterList/filterList';
-import { REGION_DICT } from '@/data/map';
+interface UIOverlayProps {
+  map?: L.Map;
+  isSidebarOpen: boolean;
+}
 
-const MapContainer = ({ isSidebarOpen }) => {
-  // useMap
-  const {
-    map,
-    currentRegion,
-    currentSubregion,
-    setCurrentRegion,
-    setCurrentSubregion,
-  } = useMap('map');
-  const subregions = useMemo(() => REGION_DICT[currentRegion].subregions, [currentRegion]);
-  // useExternalUI
-  const [triggers, setTrigger] = useState({ t1: false, t2: false });
+interface TriggerState {
+  t1: boolean;
+  t2: boolean;
+}
 
-  const handleRegionChange = (region) => setCurrentRegion(region);
-  const handleSubregionChange = (subregionId) => setCurrentSubregion(subregionId);
+const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
+  const [triggers, setTrigger] = useState<TriggerState>({ t1: false, t2: false });
 
-  const handleTrigger1 = (isActive) => setTrigger({ ...triggers, t1: isActive });
-  const handleTrigger2 = (isActive) => setTrigger({ ...triggers, t2: isActive });
+  const handleTrigger1 = (isActive: boolean) => setTrigger({ ...triggers, t1: isActive });
+  const handleTrigger2 = (isActive: boolean) => setTrigger({ ...triggers, t2: isActive });
 
-  // temprarily not store headBar
+  // 临时处理函数，可以根据需要实现具体功能
   const handleReset = () => console.log('Reset');
   const handleHideUI = () => console.log('HideUI');
   const handleGroup = () => console.log('Join related group');
@@ -51,11 +38,11 @@ const MapContainer = ({ isSidebarOpen }) => {
   const handleHelp = () => console.log('Reach out for help');
 
   return (
-    <div>
-      <div className={styles.mainMapContainer} id="map"></div>
+    <div className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
+      {/* Scale Component - keeps its own positioning */}
       {map && <Scale map={map} />}
 
-      {/* Headbar */}
+      {/* Headbar - positioning overridden by CSS */}
       <Headbar isSidebarOpen={isSidebarOpen}>
         <Headitem
           icon={ToS}
@@ -84,10 +71,10 @@ const MapContainer = ({ isSidebarOpen }) => {
         />
       </Headbar>
 
-      {/* Region Switch */}
+      {/* Region Switch - keeps its own positioning */}
       <RegionContainer isSidebarOpen={isSidebarOpen} />
 
-      {/* Triggerbar */}
+      {/* Triggerbar - keeps its own positioning */}
       <TriggerBar isSidebarOpen={isSidebarOpen}>
         <Trigger
           isActive={triggers.t1}
@@ -101,10 +88,13 @@ const MapContainer = ({ isSidebarOpen }) => {
         />
       </TriggerBar>
 
+      {/* Detail Panel - keeps its own positioning */}
       <Detail />
+
+      {/* Filter List - keeps its own positioning */}
       <FilterList isSidebarOpen={isSidebarOpen} />
     </div>
   );
 };
 
-export default MapContainer;
+export default UIOverlay;

@@ -6,22 +6,34 @@ import { createHighlight } from "@/utils/visual";
 import { useMarkerStore } from "@/store/marker";
 
 // Assmeble all stores to useMap
-export function useMap(ele: HTMLDivElement) {
+export function useMap(ele: HTMLDivElement | null) {
 
     const { currentRegionKey: currentRegion, setCurrentRegion, setCurrentSubregion, currentSubregionKey: currentSubregion } = useRegion()
     const { filter } = useMarkerStore()
 
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
+    const [mapInitialized, setMapInitialized] = useState(false);
+    
     // initMap
     useEffect(() => {
+        if (!ele || mapRef.current) return;
+        
         mapRef.current = new MapCore(ele, {
             onSwitchCurrentMarker: (marker) => {
                 useMarkerStore.setState({ currentActivePoint: marker })
             }
         });
         setLMap(mapRef.current.map);
-    }, []);
+        setMapInitialized(true);
+    }, [ele]);
+
+    // 初始化和切换地图区域
+    useEffect(() => {
+        if (mapRef.current && mapInitialized) {
+            mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
+        }
+    }, [currentRegion, mapInitialized]);
 
     // alterMap
     useEffect(() => {

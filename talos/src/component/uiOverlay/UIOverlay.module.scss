@@ -1,0 +1,23 @@
+.uiOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  //z-index: 1000; for stacking context which make blur/liquidglass work
+  pointer-events: none;
+
+  // enable pointer events
+  & > * {
+    pointer-events: auto;
+  }
+
+  // Override Headbar positioning to keep it in top-right for temp
+  :global(.headbar-container) {
+    position: fixed !important;
+    top: 1rem !important;
+    right: 1rem !important;
+    left: auto !important;
+    transition: transform 0.3s ease-in-out !important;
+  }
+}
