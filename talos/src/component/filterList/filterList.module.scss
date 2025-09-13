@@ -3,17 +3,20 @@
 
 .mainFilterList {
     position: absolute;
-    top: 22px;
-    left: 74px;
-    height: 75px;
-    max-width: 530px;
-    width: max-content;
+    top: 1rem;
+    left: 1rem;
+    height: 56px;
+    /* width由JavaScript动态控制，支持平滑过渡 */
+    min-width: 0;
     border-radius: 8px;
-    padding: 0 8px;
     box-sizing: border-box;
-    border: 2px solid rgba($white-0, .4);
-    background-color: rgba($grey-1, .5);
-    backdrop-filter: blur(40px);
+    box-shadow: 0 0 5px rgba($black, 0.6);
+    background-color: rgba($white-2, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
     overflow: hidden;
     transition: transform .3s ease-in-out, opacity .3s ease-out, width .3s ease-out;
     position: relative;
@@ -35,24 +38,23 @@
 }
 
 .mainFilterContentContainer {
-    width: calc(100% - 16px);
+    width: 100%;
     height: 100%;
     box-sizing: border-box;
-    transition: width .2s ease-out;
     overflow-x: auto;
     overflow-y: hidden;
-    box-sizing: border-box;
+    padding: 0 8px;
 
     &.leftMaskOpacity {
         mask-image: linear-gradient(to right, transparent 0%, $black 10%);
     }
 
     &.rightMaskOpacity {
-        mask-image: linear-gradient(to left, transparent 0%, $black 10%);
+        mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,0.1) 5%, $black 20%);
     }
 
     &.leftMaskOpacity.rightMaskOpacity {
-        mask-image: linear-gradient(to right, transparent 0%, $black 10%, $black 90%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0%, $black 10%, $black 80%, rgba(0,0,0,0.1) 95%, transparent 100%);
     }
 }
 
@@ -64,8 +66,8 @@
 }
 
 .mainFilterContentItem {
-    width: 64px;
-    height: 64px;
+    width: 2.5rem;
+    height: 2.5rem;
     flex-shrink: 0;
     cursor: pointer;
     transition: transform 0.2s ease;
@@ -76,5 +78,10 @@
 
     &:active {
         transform: scale(0.95);
+    }
+    
+    // 第8个物品的半显示效果
+    &.halfVisible {
+        opacity: 0.7;
     }
 } 

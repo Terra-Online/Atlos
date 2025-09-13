@@ -92,7 +92,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
       <Detail />
 
       {/* Filter List */}
-      {/* <FilterList isSidebarOpen={false} /> */}
+      <FilterList isSidebarOpen={false} />
     </div>
   );
 };

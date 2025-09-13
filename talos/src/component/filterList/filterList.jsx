@@ -10,6 +10,21 @@ const FilterList = ({ isSidebarOpen }) => {
     const containerRef = useRef(null)
     const [showLeftMask, setShowLeftMask] = useState(false)
     const [showRightMask, setShowRightMask] = useState(false)
+    
+    // 计算显示相关参数
+    const maxDisplayItems = 8
+    const shouldShowEighthHalf = filterList.length >= maxDisplayItems
+    
+    // 简单的宽度计算，只用于动画过渡
+    const getContainerWidth = () => {
+        const itemCount = Math.min(filterList.length, maxDisplayItems)
+        if (itemCount === 0) return 0
+        if (itemCount <= 7) {
+            return itemCount * 48 + 16 // 每个item约48px（包含gap），加上padding
+        } else {
+            return 7 * 48 + 24 + 16 // 7个完整 + 半个 + padding
+        }
+    }
 
     const checkScroll = () => {
         const container = containerRef.current
@@ -43,24 +58,28 @@ const FilterList = ({ isSidebarOpen }) => {
 
     const switchFilter = useSwitchFilter();
 
-    return <div className={classNames(styles.mainFilterList, { 
-        [styles.hidden]: filterList.length === 0, 
-        [styles.sidebarOpen]: isSidebarOpen 
-    })}>
+    return <div 
+        className={classNames(styles.mainFilterList, { 
+            [styles.hidden]: filterList.length === 0, 
+            [styles.sidebarOpen]: isSidebarOpen 
+        })}
+        style={{ width: `${getContainerWidth()}px` }}
+    >
         <div
             ref={containerRef}
             className={classNames(styles.mainFilterContentContainer, {
                 [styles.leftMaskOpacity]: showLeftMask,
-                [styles.rightMaskOpacity]: showRightMask
+                [styles.rightMaskOpacity]: showRightMask || shouldShowEighthHalf, // 当有8个或更多物品时总是显示右侧mask
             })}
-            style={{ width: `${Math.min(filterList.length * 72 + 8, 510)}px` }}
         >
             <div className={styles.innerContainer}>
                 <AnimatePresence>
-                    {filterList.map((item) => (
+                    {filterList.map((item, index) => (
                         <motion.img
                             key={item}
-                            className={styles.mainFilterContentItem}
+                            className={classNames(styles.mainFilterContentItem, {
+                                [styles.halfVisible]: index === 7 && shouldShowEighthHalf // 第8个物品在有8个或更多时半显示
+                            })}
                             src={getItemIconUrl(item)}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
