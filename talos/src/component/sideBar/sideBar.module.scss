@@ -19,6 +19,10 @@ $transition-speed: 0.3s;
 
   &.open {
     transform: translateX(0);
+    > .sidebar-toggle {
+      right: 236px;
+      transition: .3s ease-in-out;
+    }
   }
 
   .sidebar {
@@ -119,6 +123,7 @@ $transition-speed: 0.3s;
     z-index: 1001;
     filter: drop-shadow(0 0 2.5px rgba($black,.6));
     pointer-events: auto;
+    transition: background-color 0.3s ease, right 0.3s ease-in-out;
     svg {
       transition: all 0.2s ease;
       fill: $primary-accent-4;

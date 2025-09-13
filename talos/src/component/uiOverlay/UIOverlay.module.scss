@@ -4,7 +4,7 @@
   left: 0; /* Default full screen */
   width: 100%; /* Default full screen */
   height: 100%;
-  z-index: 10;
+  /* Remove z-index to avoid creating stacking context that blocks backdrop-filter */
   pointer-events: none;
   transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
 
@@ -13,14 +13,14 @@
     left: 300px; /* Give space for the sidebar */
     width: calc(100% - 300px); /* Subtract sidebar width */
   }
-  
+
   /* Allow child components to receive pointer events */
   & > * {
     pointer-events: auto;
   }
-  
+
   /* Custom positioning for components that need it */
-  
+
   /* Override Headbar positioning to keep it in top-right */
   :global(.headbar-container) {
     position: fixed !important;
