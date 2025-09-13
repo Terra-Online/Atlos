@@ -16,7 +16,7 @@ import Guide from '../../asset/logos/guide.svg?react';
 
 interface UIOverlayProps {
   map?: L.Map;
-  isSidebarOpen: boolean;
+  isSidebarOpen: boolean; // 保留用于某些需要的组件
 }
 
 interface TriggerState {
@@ -39,10 +39,10 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
   return (
     <div className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
-      {/* Scale Component - keeps its own positioning */}
+      {/* Scale Component */}
       {map && <Scale map={map} />}
 
-      {/* Headbar - positioning overridden by CSS */}
+      {/* Headbar */}
       <Headbar isSidebarOpen={isSidebarOpen}>
         <Headitem
           icon={ToS}
@@ -71,11 +71,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
         />
       </Headbar>
 
-      {/* Region Switch - keeps its own positioning */}
-      <RegionContainer isSidebarOpen={isSidebarOpen} />
+      {/* Region Switch */}
+      <RegionContainer isSidebarOpen={false} />
 
-      {/* Triggerbar - keeps its own positioning */}
-      <TriggerBar isSidebarOpen={isSidebarOpen}>
+      {/* Triggerbar */}
+      <TriggerBar isSidebarOpen={false}>
         <Trigger
           isActive={triggers.t1}
           onToggle={handleTrigger1}
@@ -88,11 +88,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
         />
       </TriggerBar>
 
-      {/* Detail Panel - keeps its own positioning */}
+      {/* Detail Panel */}
       <Detail />
 
-      {/* Filter List - keeps its own positioning */}
-      <FilterList isSidebarOpen={isSidebarOpen} />
+      {/* Filter List */}
+      <FilterList isSidebarOpen={false} />
     </div>
   );
 };

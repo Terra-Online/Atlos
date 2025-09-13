@@ -1,8 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-$sidebar-width: 300px;
-
 .mainFilterList {
     position: absolute;
     top: 22px;
@@ -29,10 +27,6 @@ $sidebar-width: 300px;
     &::-webkit-scrollbar-thumb {
         background-color: rgba($white-0, .3);
         border-radius: 3px;
-    }
-
-    &.sidebarOpen {
-        transform: translateX($sidebar-width);
     }
 
     &.hidden {

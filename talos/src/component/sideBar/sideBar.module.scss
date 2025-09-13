@@ -2,7 +2,6 @@
 
 $desktop-headbar-height: 4rem;
 
-$sidebar-width: 300px;
 $toggle-btn-size: 4rem;
 $transition-speed: 0.3s;
 
@@ -11,12 +10,13 @@ $transition-speed: 0.3s;
   top: 0;
   left: 0;
   height: 100%;
+  width: 300px; /* 固定侧边栏宽度 */
   z-index: 1000;
   pointer-events: none;
   transition: transform $transition-speed ease-in-out;
-  &:not(.open) {
-    transform: translateX(-$sidebar-width);
-  }
+
+  transform: translateX(-300px);
+
   &.open {
     transform: translateX(0);
   }
@@ -25,7 +25,7 @@ $transition-speed: 0.3s;
     position: relative;
     overflow: none;
     height: 100%;
-    width: $sidebar-width;
+    width: 100%; /* 填满容器 */
     background-color: rgba($white-0, .5);
     color: $grey-1;
     -webkit-backdrop-filter: blur(35px) brightness(120%);
@@ -106,7 +106,7 @@ $transition-speed: 0.3s;
   .sidebar-toggle {
     position: absolute;
     top: 0;
-    left: calc($sidebar-width + .1rem);//optimized
+    right: -$toggle-btn-size; /* Position button outside sidebar area */
     width: $toggle-btn-size;
     height: $toggle-btn-size;
     background-color: transparent;

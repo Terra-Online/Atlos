@@ -1,18 +1,27 @@
 .uiOverlay {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 0; /* Default full screen */
+  width: 100%; /* Default full screen */
   height: 100%;
-  //z-index: 1000; for stacking context which make blur/liquidglass work
+  z-index: 10;
   pointer-events: none;
+  transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
 
-  // enable pointer events
+  /* Sidebar open state */
+  &.sidebarOpen {
+    left: 300px; /* Give space for the sidebar */
+    width: calc(100% - 300px); /* Subtract sidebar width */
+  }
+  
+  /* Allow child components to receive pointer events */
   & > * {
     pointer-events: auto;
   }
-
-  // Override Headbar positioning to keep it in top-right for temp
+  
+  /* Custom positioning for components that need it */
+  
+  /* Override Headbar positioning to keep it in top-right */
   :global(.headbar-container) {
     position: fixed !important;
     top: 1rem !important;

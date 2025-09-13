@@ -3,7 +3,6 @@
 @use 'sass:color';
 @use 'sass:math';
 
-$sidebar-width: 300px;
 $transition-speed: 0.3s;
 
 $item-height: 2.5rem;
@@ -51,13 +50,8 @@ $indicator-height: .75rem;
   z-index: 900;
   transform: translateY(-50%);
   transition: transform 0.3s ease-in-out;
-
-  &.sidebarOpen {
-    transform: translateY(-50%) translateX($sidebar-width);
-  }
 }
 
-// 独立的指示器类
 .indicator {
   position: absolute;
   left: 1.5px;
@@ -74,7 +68,7 @@ $indicator-height: .75rem;
   &.hidden {
     opacity: 0;
   }
-} 
+}
 
 .regItem {
   display: flex;

@@ -1,6 +1,5 @@
 @use '../../styles/palette.scss' as *;
 
-$sidebar-width: 300px;
 $transition-speed: 0.3s; //import from global size.scss later
 
 .trigger-container {
@@ -12,10 +11,6 @@ $transition-speed: 0.3s; //import from global size.scss later
   transition: transform $transition-speed ease-in-out;
   left: 1.1rem;
   bottom: 1rem;
-  &.sidebar-open {
-    transform: translateX($sidebar-width);
-  }
-
 }
 
 .trigger {

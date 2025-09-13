@@ -1,6 +1,22 @@
 @use './fonts' as *;
 @use './palette' as *;
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
+
+/* 应用主容器 - 分层设计 */
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  
+  /* 所有子元素都是绝对定位，形成分层结构 */
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
 * {
     transform-origin: center;
     background-repeat: no-repeat;

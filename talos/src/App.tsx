@@ -20,8 +20,14 @@ function App() {
 
   return (
     <div className="app">
+      {/* Map layer - always fill the entire window */}
       <Map onMapReady={handleMapReady} />
-      <UIOverlay map={mapInstance} isSidebarOpen={isSidebarOpen} />
+      {/* UI layer - floats over the map */}
+      <UIOverlay
+        map={mapInstance} 
+        isSidebarOpen={isSidebarOpen}
+      />
+      {/* Sidebar layer - floats over the map */}
       <SideBar
         map={mapInstance}
         currentRegion={null}
