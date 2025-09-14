@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo} from 'react';
 import styles from './sideBar.module.scss';
 
 import Icon from '../../asset/images/UI/observator_6.webp';
@@ -9,11 +9,11 @@ import FavPOI from '../favPOI/favPOI';
 import MarkFilter from '../markFilter/markFilter';
 import Mark from '../mark/mark';
 
-import { MARKER_TYPE_TREE } from '../../data/marker';
+import {MARKER_TYPE_TREE} from '../../data/marker';
 
 console.log(MARKER_TYPE_TREE)
 
-const SideBar = ({ map, currentRegion, onToggle }) => {
+const SideBar = ({map, currentRegion, onToggle}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
     resource: [],
@@ -43,8 +43,8 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
         ...prev,
         [category]: isActive
           ? prev[category].filter(filter =>
-              `${filter.main}-${filter.sub}-${filter.key}` !== typeKey
-            )
+            `${filter.main}-${filter.sub}-${filter.key}` !== typeKey
+          )
           : [...prev[category], typeInfo]
       };
     });
@@ -75,15 +75,15 @@ const SideBar = ({ map, currentRegion, onToggle }) => {
         className={`${styles['sidebar-toggle']} ${isOpen ? styles.open : ''}`}
         onClick={toggleSidebar}
       >
-        <SidebarIcon />
+        <SidebarIcon/>
       </button>
 
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.head_icon}>
-          <img src={Icon} alt='supported by observator 6' />
+          <img src={Icon} alt='supported by observator 6' draggable={"false"}/>
         </div>
         <div className={styles['sidebar-content']}>
-          <Search />
+          <Search/>
           <div className={styles.filters}>
             {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
               <MarkFilter title={key} key={key}>{

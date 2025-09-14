@@ -1,16 +1,16 @@
-import React, { useMemo } from 'react';
+import React, {useMemo} from 'react';
 import styles from './mark.module.scss';
-import { getItemIconUrl } from '../../utils/resource';
-import { useTranslate } from '@/locale';
-import { useFilter, useRegionMarkerCount, useSearchString, useSwitchFilter } from '../../store/marker';
+import {getItemIconUrl} from '../../utils/resource';
+import {useTranslate} from '@/locale';
+import {useFilter, useRegionMarkerCount, useSearchString, useSwitchFilter} from '../../store/marker';
 
 const Mark = ({
-  // points = [],
-  typeInfo, // { main: "poi", sub: "basic", key: "TP/recycle/base" }
-  // regionFilter,
-  // totalCount = 0,
-  collectedCount = 0
-}) => {
+                // points = [],
+                typeInfo, // { main: "poi", sub: "basic", key: "TP/recycle/base" }
+                // regionFilter,
+                // totalCount = 0,
+                collectedCount = 0
+              }) => {
   const t = useTranslate();
   // assemble icon_key
   const iconKey = useMemo(() => {
@@ -57,17 +57,17 @@ const Mark = ({
   const cnt = useRegionMarkerCount(typeInfo?.key);
   const searchString = useSearchString()
   const showFilter = useMemo(() =>
-    cnt.total && (searchString === "" || typeInfo.key.includes(searchString) || displayName.includes(searchString))
+      cnt.total && (searchString === "" || typeInfo.key.includes(searchString) || displayName.includes(searchString))
     , [cnt, searchString, displayName])
   if (!showFilter) return null
   return (
     <div
       className={`${styles['mark-item']} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
       onClick={() => switchFilter(typeInfo.key)}
-      style={{ '--progress-percentage': `${cnt.total > 0 ? Math.round(cnt.collected / cnt.total * 100) : 0}%` }}
+      style={{'--progress-percentage': `${cnt.total > 0 ? Math.round(cnt.collected / cnt.total * 100) : 0}%`}}
     >
       <span className={styles['mark-icon']}>
-        {iconUrl && <img src={iconUrl} alt={displayName} />}
+        {iconUrl && <img src={iconUrl} alt={displayName} draggable={"false"}/>}
       </span>
       <span className={styles['mark-name']}>{displayName}</span>
       <span className={styles['mark-stat']}>
