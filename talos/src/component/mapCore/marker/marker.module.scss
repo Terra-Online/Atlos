@@ -31,7 +31,7 @@
 
         //transform: translateY(-50%);
         &::after {
-            content: "";
+            content: '';
             position: absolute;
             bottom: -9px;
             left: calc(50% - 5px);
@@ -45,7 +45,6 @@
             filter: drop-shadow(0 0 2px rgba($black, 0.7));
         }
     }
-
 
     .defaultMarkerIcon {
         position: absolute;
@@ -72,7 +71,7 @@
 
     .tooltipInner {
         position: absolute;
-        left: .5rem;
+        left: 0.5rem;
         top: 50%;
         transform: translateY(-50%);
         width: 2.5rem;
@@ -126,7 +125,6 @@
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
-            
-        };
+        }
     }
 }

@@ -8,38 +8,45 @@ interface IUserRecordStore {
     clearPoints: () => void;
 }
 
-const useUserRecordStore = create<IUserRecordStore>()(persist((set, get) => ({
-    activePoints: [],
-    addPoint: (id) => {
-        if (get().activePoints.includes(id)) {
-            return
-        }
-        else {
-            set((state) => ({
-                activePoints: [...state.activePoints, id]
-            }));
-        }
-    },
-    deletePoint: (id) => {
-        if (!get().activePoints.includes(id)) {
-            return
-        }
-        else {
-            set((state) => ({
-                activePoints: state.activePoints.filter(point => point !== id)
-            }));
-        }
-    },
-    clearPoints: () => {
-        set({ activePoints: [] });
-    },
-}), {
-    name: 'points-storage',
-    partialize: (state) => ({
-        activePoints: state.activePoints
-    })
-}))
+const useUserRecordStore = create<IUserRecordStore>()(
+    persist(
+        (set, get) => ({
+            activePoints: [],
+            addPoint: (id) => {
+                if (get().activePoints.includes(id)) {
+                    return;
+                } else {
+                    set((state) => ({
+                        activePoints: [...state.activePoints, id],
+                    }));
+                }
+            },
+            deletePoint: (id) => {
+                if (!get().activePoints.includes(id)) {
+                    return;
+                } else {
+                    set((state) => ({
+                        activePoints: state.activePoints.filter(
+                            (point) => point !== id,
+                        ),
+                    }));
+                }
+            },
+            clearPoints: () => {
+                set({ activePoints: [] });
+            },
+        }),
+        {
+            name: 'points-storage',
+            partialize: (state) => ({
+                activePoints: state.activePoints,
+            }),
+        },
+    ),
+);
 
-export const useUserRecord = () => useUserRecordStore((state) => state.activePoints)
-export const useAddPoint = () => useUserRecordStore((state) => state.addPoint)
-export const useDeletePoint = () => useUserRecordStore((state) => state.deletePoint)
+export const useUserRecord = () =>
+    useUserRecordStore((state) => state.activePoints);
+export const useAddPoint = () => useUserRecordStore((state) => state.addPoint);
+export const useDeletePoint = () =>
+    useUserRecordStore((state) => state.deletePoint);

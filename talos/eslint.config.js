@@ -3,6 +3,7 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 const commonRules = {
   ...js.configs.recommended.rules,
@@ -10,7 +11,7 @@ const commonRules = {
 };
 
 export default [
-  {ignores: ['dist', '**/*.config.js', 'scripts']},
+  { ignores: ['dist', '**/*.config.js', 'scripts'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -18,7 +19,7 @@ export default [
       globals: globals.browser,
       parserOptions: {
         ecmaVersion: 'latest',
-        ecmaFeatures: {jsx: true},
+        ecmaFeatures: { jsx: true },
         sourceType: 'module',
       },
     },
@@ -28,8 +29,11 @@ export default [
     },
     rules: {
       ...commonRules,
-      'no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
-      'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
     },
   },
   ...tseslint.configs.recommendedTypeChecked,
@@ -48,17 +52,24 @@ export default [
     },
     rules: {
       ...commonRules,
-      '@typescript-eslint/no-unused-vars': ['error', {
-        varsIgnorePattern: '^[A-Z_]',
-        argsIgnorePattern: '^[A-Z_]',
-        "caughtErrorsIgnorePattern": "^_"
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^[A-Z_]',
+          argsIgnorePattern: '^[A-Z_]',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
-      'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
-      "no-unused-vars": "off",
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+      'no-unused-vars': 'off',
     },
   },
+  eslintConfigPrettier,
 ];

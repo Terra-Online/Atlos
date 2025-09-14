@@ -1,16 +1,15 @@
-import L, { DivOverlay } from "leaflet";
+import L, { DivOverlay } from 'leaflet';
 
 let activeHighlight: L.LayerGroup | null = null;
 
 export const removeHighlight = () => {
     if (activeHighlight) {
-        activeHighlight.eachLayer(layer => {
+        activeHighlight.eachLayer((layer) => {
             layer.remove();
         });
-        activeHighlight = null
+        activeHighlight = null;
     }
-}
-
+};
 
 export const createHighlight = (map, subregion, config) => {
     removeHighlight();
@@ -23,7 +22,7 @@ export const createHighlight = (map, subregion, config) => {
         highlight = createRectangleHighlight(map, subregion.bounds, config);
     }
     if (highlight) {
-        highlight.eachLayer(layer => {
+        highlight.eachLayer((layer) => {
             if ((layer as DivOverlay).bringToFront) {
                 (layer as DivOverlay).bringToFront();
             }
@@ -40,12 +39,11 @@ export const createHighlight = (map, subregion, config) => {
     }
 
     return highlight;
-}
-
+};
 
 export const createPolygonHighlight = (map, polygonData, config) => {
     try {
-        const polygonPoints = polygonData.map(polygon => {
+        const polygonPoints = polygonData.map((polygon) => {
             return polygon.map(([x, y]) => {
                 return map.unproject([x, y], config.maxZoom);
             });
@@ -54,14 +52,14 @@ export const createPolygonHighlight = (map, polygonData, config) => {
         const fillLayer = L.polygon(polygonPoints, {
             color: 'transparent',
             fillOpacity: 0.3,
-            className: 'subregion-highlight-fill'
+            className: 'subregion-highlight-fill',
         });
 
         const strokeLayer = L.polygon(polygonPoints, {
             weight: 3,
             opacity: 0.9,
             fill: false,
-            className: 'subregion-highlight-stroke'
+            className: 'subregion-highlight-stroke',
         });
 
         fillLayer.addTo(map);
@@ -72,7 +70,7 @@ export const createPolygonHighlight = (map, polygonData, config) => {
         console.error('Error creating polygon highlight:', error);
         return null;
     }
-}
+};
 
 export const createRectangleHighlight = (map, bounds, config) => {
     try {
@@ -83,14 +81,14 @@ export const createRectangleHighlight = (map, bounds, config) => {
         const fillLayer = L.rectangle(L.latLngBounds(sw, ne), {
             color: 'transparent',
             fillOpacity: 0.3,
-            className: 'subregion-highlight-fill'
+            className: 'subregion-highlight-fill',
         });
 
         const strokeLayer = L.rectangle(L.latLngBounds(sw, ne), {
             weight: 3,
             opacity: 0.9,
             fill: false,
-            className: 'subregion-highlight-stroke'
+            className: 'subregion-highlight-stroke',
         });
 
         fillLayer.addTo(map);
@@ -101,4 +99,4 @@ export const createRectangleHighlight = (map, bounds, config) => {
         //console.error('Failed to create rectangle highlight:', error);
         return null;
     }
-}
+};

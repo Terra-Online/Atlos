@@ -1,32 +1,34 @@
 .uiOverlay {
-  position: absolute;
-  top: 0;
-  left: 0; /* Default full screen */
-  width: 100%; /* Default full screen */
-  height: 100%;
-  /* Remove z-index to avoid creating stacking context that blocks backdrop-filter */
-  pointer-events: none;
-  transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0; /* Default full screen */
+    width: 100%; /* Default full screen */
+    height: 100%;
+    /* Remove z-index to avoid creating stacking context that blocks backdrop-filter */
+    pointer-events: none;
+    transition:
+        left 0.3s ease-in-out,
+        width 0.3s ease-in-out;
 
-  /* Sidebar open state */
-  &.sidebarOpen {
-    left: 300px; /* Give space for the sidebar */
-    width: calc(100% - 300px); /* Subtract sidebar width */
-  }
+    /* Sidebar open state */
+    &.sidebarOpen {
+        left: 300px; /* Give space for the sidebar */
+        width: calc(100% - 300px); /* Subtract sidebar width */
+    }
 
-  /* Allow child components to receive pointer events */
-  & > * {
-    pointer-events: auto;
-  }
+    /* Allow child components to receive pointer events */
+    & > * {
+        pointer-events: auto;
+    }
 
-  /* Custom positioning for components that need it */
+    /* Custom positioning for components that need it */
 
-  /* Override Headbar positioning to keep it in top-right */
-  :global(.headbar-container) {
-    position: fixed !important;
-    top: 1rem !important;
-    right: 1rem !important;
-    left: auto !important;
-    transition: transform 0.3s ease-in-out !important;
-  }
+    /* Override Headbar positioning to keep it in top-right */
+    :global(.headbar-container) {
+        position: fixed !important;
+        top: 1rem !important;
+        right: 1rem !important;
+        left: auto !important;
+        transition: transform 0.3s ease-in-out !important;
+    }
 }

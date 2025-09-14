@@ -2,46 +2,47 @@
 import { IMapView } from '@/component/mapCore/type';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import L from 'leaflet';
 
 interface IViewStateStore {
-  viewStates: Record<string, IMapView>;
-  saveViewState: (region: string, map: L.Map) => void;
-  getViewState: (region: string) => IMapView | undefined;
-  clearAllViewStates: () => void;
+    viewStates: Record<string, IMapView>;
+    saveViewState: (region: string, map: L.Map) => void;
+    getViewState: (region: string) => IMapView | undefined;
+    clearAllViewStates: () => void;
 }
 
 const useViewState = create<IViewStateStore>()(
-  persist(
-    (set, get) => ({
-      // declare viewStates
-      viewStates: {},
+    persist(
+        (set, get) => ({
+            // declare viewStates
+            viewStates: {},
 
-      saveViewState: (region, map) => {
-        if (!map) return;
+            saveViewState: (region, map) => {
+                if (!map) return;
 
-        const center = map.getCenter();
-        const zoom = map.getZoom();
+                const center = map.getCenter();
+                const zoom = map.getZoom();
 
-        set(state => ({
-          viewStates: {
-            ...state.viewStates,
-            [region]: { lat: center.lat, lng: center.lng, zoom }
-          }
-        }));
-      },
+                set((state) => ({
+                    viewStates: {
+                        ...state.viewStates,
+                        [region]: { lat: center.lat, lng: center.lng, zoom },
+                    },
+                }));
+            },
 
-      getViewState: (region) => {
-        return get().viewStates[region] || undefined;
-      },
+            getViewState: (region) => {
+                return get().viewStates[region] || undefined;
+            },
 
-      clearAllViewStates: () => {
-        set({ viewStates: {} });
-      }
-    }),
-    {
-      name: 'map-view-states'
-    }
-  )
+            clearAllViewStates: () => {
+                set({ viewStates: {} });
+            },
+        }),
+        {
+            name: 'map-view-states',
+        },
+    ),
 );
 
 export default useViewState;

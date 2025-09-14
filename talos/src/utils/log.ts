@@ -22,5 +22,5 @@ class Logger {
         console.error('[ERROR]', ...args);
     }
 }
-const LOGGER = new Logger()
+const LOGGER = new Logger();
 export default LOGGER;

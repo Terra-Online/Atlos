@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
-import {Trigger, TriggerBar} from '../trigger/trigger';
-import {HeadBar, Headitem} from '../headBar/headBar.tsx';
-import {RegionContainer} from '../regSwitch/regSwitch';
-import {Detail} from '../detail/detail';
+import { Trigger, TriggerBar } from '../trigger/trigger';
+import { HeadBar, HeadItem } from '../headBar/headBar.tsx';
+import { RegionContainer } from '../regSwitch/regSwitch';
+import { Detail } from '../detail/detail';
 import FilterList from '../filterList/filterList';
 
 import ToS from '../../asset/logos/tos.svg?react';
@@ -13,89 +13,96 @@ import hideUI from '../../asset/logos/hideUI.svg?react';
 import Group from '../../asset/logos/group.svg?react';
 import i18n from '../../asset/logos/i18n.svg?react';
 import Guide from '../../asset/logos/guide.svg?react';
-import L from "leaflet";
+import L from 'leaflet';
 
 interface UIOverlayProps {
-  map?: L.Map;
-  isSidebarOpen: boolean; // 保留用于某些需要的组件
+    map?: L.Map;
+    isSidebarOpen: boolean; // 保留用于某些需要的组件
 }
 
 interface TriggerState {
-  t1: boolean;
-  t2: boolean;
+    t1: boolean;
+    t2: boolean;
 }
 
-const UIOverlay: React.FC<UIOverlayProps> = ({map, isSidebarOpen}) => {
-  const [triggers, setTrigger] = useState<TriggerState>({t1: false, t2: false});
+const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
+    const [triggers, setTrigger] = useState<TriggerState>({
+        t1: false,
+        t2: false,
+    });
 
-  const handleTrigger1 = (isActive: boolean) => setTrigger({...triggers, t1: isActive});
-  const handleTrigger2 = (isActive: boolean) => setTrigger({...triggers, t2: isActive});
+    const handleTrigger1 = (isActive: boolean) =>
+        setTrigger({ ...triggers, t1: isActive });
+    const handleTrigger2 = (isActive: boolean) =>
+        setTrigger({ ...triggers, t2: isActive });
 
-  // 临时处理函数，可以根据需要实现具体功能
-  const handleReset = () => console.log('Reset');
-  const handleHideUI = () => console.log('HideUI');
-  const handleGroup = () => console.log('Join related group');
-  const handleLanguage = () => console.log('Choose language');
-  const handleHelp = () => console.log('Reach out for help');
+    // 临时处理函数，可以根据需要实现具体功能
+    const handleReset = () => console.log('Reset');
+    const handleHideUI = () => console.log('HideUI');
+    const handleGroup = () => console.log('Join related group');
+    const handleLanguage = () => console.log('Choose language');
+    const handleHelp = () => console.log('Reach out for help');
 
-  return (
-    <div className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
-      {/* Scale Component */}
-      {map && <Scale map={map}/>}
+    return (
+        <div
+            className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}
+        >
+            {/* Scale Component */}
+            {map && <Scale map={map} />}
 
-      {/* Headbar */}
-      <HeadBar isSidebarOpen={isSidebarOpen}>
-        <Headitem
-          icon={ToS}
-          onClick={handleReset}
-          tooltip="Terms of Service"
-        />
-        <Headitem
-          icon={hideUI}
-          onClick={handleHideUI}
-          tooltip="Hide UI"
-        />
-        <Headitem
-          icon={Group}
-          onClick={handleGroup}
-          tooltip="Join related group"
-        />
-        <Headitem
-          icon={i18n}
-          onClick={handleLanguage}
-          tooltip="Choose language"
-        />
-        <Headitem
-          icon={Guide}
-          onClick={handleHelp}
-          tooltip="Reach out for help"
-        />
-      </HeadBar>
+            {/* Headbar */}
+            <HeadBar isSidebarOpen={isSidebarOpen}>
+                <HeadItem
+                    icon={ToS}
+                    onClick={handleReset}
+                    tooltip='Terms of Service'
+                />
+                <HeadItem
+                    icon={hideUI}
+                    onClick={handleHideUI}
+                    tooltip='Hide UI'
+                />
+                <HeadItem
+                    icon={Group}
+                    onClick={handleGroup}
+                    tooltip='Join related group'
+                />
+                <HeadItem
+                    icon={i18n}
+                    onClick={handleLanguage}
+                    tooltip='Choose language'
+                />
+                <HeadItem
+                    icon={Guide}
+                    onClick={handleHelp}
+                    tooltip='Reach out for help'
+                />
+            </HeadBar>
 
-      {/* Region Switch */}
-      <RegionContainer isSidebarOpen={false}/>
+            {/* Region Switch */}
+            <RegionContainer isSidebarOpen={false} />
 
-      {/* TriggerBar */}
-      <TriggerBar isSidebarOpen={false}>
-        <Trigger
-          isActive={triggers.t1}
-          onToggle={handleTrigger1}
-          label="Complex Select"
-        />
-        <Trigger
-          isActive={triggers.t2}
-          onToggle={handleTrigger2}
-          label="Regional POI"
-        />
-      </TriggerBar>
+            {/* TriggerBar */}
+            <TriggerBar isSidebarOpen={false}>
+                <Trigger
+                    isActive={triggers.t1}
+                    onToggle={handleTrigger1}
+                    label='Complex Select'
+                />
+                <Trigger
+                    isActive={triggers.t2}
+                    onToggle={handleTrigger2}
+                    label='Regional POI'
+                />
+            </TriggerBar>
 
-      {/* Detail Panel */}
-      <Detail/>
+            {/* Detail Panel */}
+            <Detail />
 
-      {/* Filter List */}
-      <FilterList isSidebarOpen={false}/>
-    </div>
-  );
+            {/* Filter List */}
+            <FilterList isSidebarOpen={false} />
+        </div>
+    );
 };
 
 export default UIOverlay;

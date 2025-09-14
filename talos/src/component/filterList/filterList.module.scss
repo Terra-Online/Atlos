@@ -18,7 +18,10 @@
     -webkit-user-select: none;
     touch-action: none;
     overflow: hidden;
-    transition: transform .3s ease-in-out, opacity .3s ease-out, width .3s ease-out;
+    transition:
+        transform 0.3s ease-in-out,
+        opacity 0.3s ease-out,
+        width 0.3s ease-out;
     position: relative;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
@@ -28,7 +31,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: rgba($white-0, .3);
+        background-color: rgba($white-0, 0.3);
         border-radius: 3px;
     }
 
@@ -50,11 +53,23 @@
     }
 
     &.rightMaskOpacity {
-        mask-image: linear-gradient(to left, transparent 0%, rgba(0,0,0,0.1) 5%, $black 20%);
+        mask-image: linear-gradient(
+            to left,
+            transparent 0%,
+            rgba(0, 0, 0, 0.1) 5%,
+            $black 20%
+        );
     }
 
     &.leftMaskOpacity.rightMaskOpacity {
-        mask-image: linear-gradient(to right, transparent 0%, $black 10%, $black 80%, rgba(0,0,0,0.1) 95%, transparent 100%);
+        mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            $black 10%,
+            $black 80%,
+            rgba(0, 0, 0, 0.1) 95%,
+            transparent 100%
+        );
     }
 }
 
@@ -79,9 +94,9 @@
     &:active {
         transform: scale(0.95);
     }
-    
+
     // 第8个物品的半显示效果
     &.halfVisible {
         opacity: 0.7;
     }
-} 
+}
