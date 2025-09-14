@@ -1,15 +1,14 @@
-import React, { useEffect, useRef } from 'react';
 import styles from './trigger.module.scss';
 
 import OnIcon from '../../asset/logos/on.svg?react';
 import OffIcon from '../../asset/logos/off.svg?react';
 
 const Trigger = ({
-  isActive = false,
-  onToggle,
-  label = '',
-  disabled = false
-}) => {
+                   isActive = false,
+                   onToggle,
+                   label = '',
+                   disabled = false
+                 }) => {
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -27,10 +26,10 @@ const Trigger = ({
       >
         <div className={styles['trigger-icons']}>
           <span className={`${styles['trigger-icon']} ${styles.off}`}>
-            <OffIcon />
+            <OffIcon/>
           </span>
           <span className={`${styles['trigger-icon']} ${styles.on}`}>
-            <OnIcon />
+            <OnIcon/>
           </span>
         </div>
 
@@ -41,10 +40,10 @@ const Trigger = ({
 };
 
 const TriggerBar = ({
-  children,
-  isSidebarOpen = false
-}) => {
-  const prevSidebarStateRef = useRef(isSidebarOpen);
+                      children,
+                      isSidebarOpen = false
+                    }) => {
+  // const prevSidebarStateRef = useRef(isSidebarOpen);
 
   /* debug
   useEffect(() => {
@@ -62,4 +61,4 @@ const TriggerBar = ({
   );
 };
 
-export { Trigger, TriggerBar };
+export {Trigger, TriggerBar};

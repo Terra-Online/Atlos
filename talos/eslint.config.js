@@ -36,6 +36,7 @@ export default [
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
+      globals: globals.browser,
       parserOptions: {
         project: true,
         tsconfigRootDir: import.meta.dirname,
@@ -47,12 +48,17 @@ export default [
     },
     rules: {
       ...commonRules,
-      '@typescript-eslint/no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^[A-Z_]',
+        "caughtErrorsIgnorePattern": "^_"
+      }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
       'react-refresh/only-export-components': ['warn', {allowConstantExport: true}],
+      "no-unused-vars": "off",
     },
   },
 ];

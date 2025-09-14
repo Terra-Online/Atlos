@@ -1,14 +1,12 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import {useState, useMemo, useRef, useEffect} from 'react';
 import styles from './detail.module.scss';
-import { getItemIconUrl, getCtgrIconUrl } from '../../utils/resource';
-import { useMarkerStore, useRegionMarkerCount, useWorldMarkerCount } from '../../store/marker';
-import { useAddPoint, useDeletePoint, useUserRecord } from '../../store/userRecord';
-import { MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, WORLD_MARKS } from '../../data/marker';
+import {getItemIconUrl, getCtgrIconUrl} from '@/utils/resource.ts';
+import {useMarkerStore, useRegionMarkerCount, useWorldMarkerCount} from '@/store/marker.ts';
+import {useAddPoint, useDeletePoint, useUserRecord} from '@/store/userRecord.ts';
 import classNames from 'classnames';
-import { useClickAway } from 'ahooks';
-import { motion, AnimatePresence, usePresence } from "motion/react"
-import useRegion from '../mapContainer/store/region';
-import { useTranslate } from '@/locale';
+import {useClickAway} from 'ahooks';
+import {motion, AnimatePresence, usePresence} from "motion/react"
+import {useTranslate} from '@/locale';
 
 // const mockPoint = {
 //   id: "001",
@@ -100,7 +98,7 @@ export const Detail = () => {
   const pointName = t(`markerType.key.${currentPoint?.type}`);
 
 
-  const noteContent = currentPoint?.status?.user?.localNote;
+  // const noteContent = currentPoint?.status?.user?.localNote;
 
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
@@ -112,25 +110,25 @@ export const Detail = () => {
     console.log(currentPoint)
   }, [currentPoint])
 
-  const handleNextPoint = () => addPoint(currentPoint.id);
+  // const handleNextPoint = () => addPoint(currentPoint.id);
 
   // marks
   const worldCnt = useWorldMarkerCount(currentPoint?.type)
   const regionCnt = useRegionMarkerCount(currentPoint?.type)
 
   const statItems = useMemo(() => [
-    { label: "World", data: worldCnt, index: 0 },
-    { label: "Main", data: regionCnt, index: 1 },
+    {label: "World", data: worldCnt, index: 0},
+    {label: "Main", data: regionCnt, index: 1},
   ], [worldCnt, regionCnt]);
 
 
   return (
     <AnimatePresence mode="wait">
       {isVisible && currentPoint && <motion.div
-        initial={{ x: "150%" }}
-        animate={{ x: "0%" }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
+        initial={{x: "150%"}}
+        animate={{x: "0%"}}
+        exit={{opacity: 0}}
+        transition={{duration: 0.3}}
         key={currentPoint ? "active" : "null"} className={styles.detailContainer} ref={ref}>
         {/* Head */}
         <div className={styles.detailHeader}>
@@ -138,11 +136,12 @@ export const Detail = () => {
             {ctgyIconUrl && (
               <span
                 className={styles.categoryIcon}
-                style={{ backgroundImage: `url(${ctgyIconUrl})` }}
+                style={{backgroundImage: `url(${ctgyIconUrl})`}}
               ></span>
             )}
             <AnimatePresence mode="wait">
-              <AnimatedText text={pointName} key={currentPoint?.id ?? "null"} className={styles.pointName}>{pointName}</AnimatedText>
+              <AnimatedText text={pointName} key={currentPoint?.id ?? "null"}
+                            className={styles.pointName}>{pointName}</AnimatedText>
             </AnimatePresence>
           </div>
           {/* disabled in version1 */}
@@ -156,7 +155,7 @@ export const Detail = () => {
         <div className={styles.detailContent}>
           {/* Icon & Stats */}
           <div className={styles.iconStatsContainer}>
-            <div className={classNames(styles.pointIcon, { [styles.collected]: isCollected })} onClick={() => {
+            <div className={classNames(styles.pointIcon, {[styles.collected]: isCollected})} onClick={() => {
               if (isCollected) {
                 deletePoint(currentPoint.id)
               } else {
@@ -165,11 +164,11 @@ export const Detail = () => {
             }}>
               <AnimatePresence mode="wait">
                 {iconUrl && <motion.img
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  key={currentPoint?.id ?? "null"} src={iconUrl} alt={pointName} />}
+                  initial={{opacity: 0}}
+                  animate={{opacity: 1}}
+                  exit={{opacity: 0}}
+                  transition={{duration: 0.3}}
+                  key={currentPoint?.id ?? "null"} src={iconUrl} alt={pointName}/>}
               </AnimatePresence>
 
             </div>
@@ -179,7 +178,7 @@ export const Detail = () => {
                   <div
                     className={styles.statRow}
                     key={item.label}
-                    style={{ transform: `translateY(${3 - item.index * 2}px)` }}
+                    style={{transform: `translateY(${3 - item.index * 2}px)`}}
                   >
                     <span className={styles.statLabel}>{item.label}: </span>
                     <div className={styles.statValue}>
@@ -196,8 +195,8 @@ export const Detail = () => {
                 {statItems.map(item => (
                   <div
                     key={`prog-${item.label}`}
-                    className={classNames(styles.progBar, { [styles.check]: item.data.collected === item.data.total })}
-                    style={{ "--prog": item.data.collected / item.data.total }}
+                    className={classNames(styles.progBar, {[styles.check]: item.data.collected === item.data.total})}
+                    style={{"--prog": item.data.collected / item.data.total}}
                   ></div>
                 ))}
               </div>

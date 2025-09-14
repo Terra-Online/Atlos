@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
-import { Trigger, TriggerBar } from '../trigger/trigger';
-import { Headbar, Headitem } from '../headBar/headbar';
-import { RegionContainer } from '../regSwitch/regSwitch';
-import { Detail } from '../detail/detail';
+import {Trigger, TriggerBar} from '../trigger/trigger';
+import {HeadBar, Headitem} from '../headBar/headBar.tsx';
+import {RegionContainer} from '../regSwitch/regSwitch';
+import {Detail} from '../detail/detail';
 import FilterList from '../filterList/filterList';
 
 import ToS from '../../asset/logos/tos.svg?react';
@@ -13,6 +13,7 @@ import hideUI from '../../asset/logos/hideUI.svg?react';
 import Group from '../../asset/logos/group.svg?react';
 import i18n from '../../asset/logos/i18n.svg?react';
 import Guide from '../../asset/logos/guide.svg?react';
+import L from "leaflet";
 
 interface UIOverlayProps {
   map?: L.Map;
@@ -24,11 +25,11 @@ interface TriggerState {
   t2: boolean;
 }
 
-const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
-  const [triggers, setTrigger] = useState<TriggerState>({ t1: false, t2: false });
+const UIOverlay: React.FC<UIOverlayProps> = ({map, isSidebarOpen}) => {
+  const [triggers, setTrigger] = useState<TriggerState>({t1: false, t2: false});
 
-  const handleTrigger1 = (isActive: boolean) => setTrigger({ ...triggers, t1: isActive });
-  const handleTrigger2 = (isActive: boolean) => setTrigger({ ...triggers, t2: isActive });
+  const handleTrigger1 = (isActive: boolean) => setTrigger({...triggers, t1: isActive});
+  const handleTrigger2 = (isActive: boolean) => setTrigger({...triggers, t2: isActive});
 
   // 临时处理函数，可以根据需要实现具体功能
   const handleReset = () => console.log('Reset');
@@ -40,10 +41,10 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
   return (
     <div className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
       {/* Scale Component */}
-      {map && <Scale map={map} />}
+      {map && <Scale map={map}/>}
 
       {/* Headbar */}
-      <Headbar isSidebarOpen={isSidebarOpen}>
+      <HeadBar isSidebarOpen={isSidebarOpen}>
         <Headitem
           icon={ToS}
           onClick={handleReset}
@@ -69,12 +70,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
           onClick={handleHelp}
           tooltip="Reach out for help"
         />
-      </Headbar>
+      </HeadBar>
 
       {/* Region Switch */}
-      <RegionContainer isSidebarOpen={false} />
+      <RegionContainer isSidebarOpen={false}/>
 
-      {/* Triggerbar */}
+      {/* TriggerBar */}
       <TriggerBar isSidebarOpen={false}>
         <Trigger
           isActive={triggers.t1}
@@ -89,10 +90,10 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
       </TriggerBar>
 
       {/* Detail Panel */}
-      <Detail />
+      <Detail/>
 
       {/* Filter List */}
-      <FilterList isSidebarOpen={false} />
+      <FilterList isSidebarOpen={false}/>
     </div>
   );
 };

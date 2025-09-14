@@ -1,65 +1,36 @@
-import React, {useState, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import styles from './sideBar.module.scss';
 
 import Icon from '../../asset/images/UI/observator_6.webp';
 import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
 
 import Search from '../search/search';
-import FavPOI from '../favPOI/favPOI';
 import MarkFilter from '../markFilter/markFilter';
 import Mark from '../mark/mark';
 
-import {MARKER_TYPE_TREE} from '../../data/marker';
+import {MARKER_TYPE_TREE} from '@/data/marker';
 
 console.log('[MARKER]', MARKER_TYPE_TREE)
 
-const SideBar = ({map, currentRegion, onToggle}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeFilters, setActiveFilters] = useState({
-    resource: [],
-    enemy: [],
-    poi: [],
-    facility: []
-  });
+interface SideBarProps {
+  // TODO: fix this after region is nonNull
+  currentRegion: null;
+  onToggle: (isOpen: boolean) => void;
+}
 
-  // Get region filter
-  const regionFilter = useMemo(() => {
+const SideBar = ({currentRegion, onToggle}: SideBarProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  useMemo(() => {
     if (!currentRegion) return null;
     return {
+      // @ts-expect-error TODO: fix this after region is nonNull
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       main: currentRegion.main,
+      // @ts-expect-error TODO: fix this after region is nonNull
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       sub: currentRegion.sub
     };
   }, [currentRegion]);
-
-  // Mark select
-  const handleMarkFilter = (category, typeInfo) => {
-    setActiveFilters(prev => {
-      const typeKey = `${typeInfo.main}-${typeInfo.sub}-${typeInfo.key}`;
-
-      const isActive = prev[category].some(filter =>
-        `${filter.main}-${filter.sub}-${filter.key}` === typeKey
-      );
-      return {
-        ...prev,
-        [category]: isActive
-          ? prev[category].filter(filter =>
-            `${filter.main}-${filter.sub}-${filter.key}` !== typeKey
-          )
-          : [...prev[category], typeInfo]
-      };
-    });
-    if (map) {
-      // Update map markers
-    }
-  };
-
-  const isFilterActive = (category, typeInfo) => {
-    return activeFilters[category]?.some(filter =>
-      filter.main === typeInfo.main &&
-      filter.sub === typeInfo.sub &&
-      filter.key === typeInfo.key
-    ) || false;
-  };
 
   const toggleSidebar = () => {
     const newState = !isOpen;
@@ -87,7 +58,7 @@ const SideBar = ({map, currentRegion, onToggle}) => {
           <div className={styles.filters}>
             {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
               <MarkFilter title={key} key={key}>{
-                Object.values(value).flat().map((typeInfo, index) => (
+                Object.values(value).flat().map((typeInfo) => (
                   <Mark
                     key={typeInfo.key}
                     typeInfo={typeInfo}

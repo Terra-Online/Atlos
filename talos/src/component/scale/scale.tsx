@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import styles from './scale.module.scss';
 
 const calculateScale = (current, min, max) => Math.max(0, Math.min(1, (current - min) / (max - min)));
 
-const Scale = ({ map }) => {
+const Scale = ({map}) => {
   const [zoomLevel, setZoomLevel] = useState(map?.getZoom() || 0);
   const [zoomBounds, setZoomBounds] = useState({
     min: map?.getMinZoom() || 0,
     max: map?.getMaxZoom() || 3
   });
-  const scalerRef = useRef(null);
-  const scalerWrapperRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const isZoomingRef = useRef(false);
-  const targetZoomRef = useRef(null);
+  const scalerRef = useRef<HTMLDivElement>(null);
+  const scalerWrapperRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number>(null);
+  const isZoomingRef = useRef<boolean>(false);
+  const targetZoomRef = useRef<number>(null);
 
   const ZOOM_STEP = 0.5;// +/- step
 
   const scaleRatio = useMemo(() =>
-    calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
-  [zoomLevel, zoomBounds.min, zoomBounds.max]);
+      calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
+    [zoomLevel, zoomBounds.min, zoomBounds.max]);
 
   const updateScalerUI = useCallback((newScale) => {
     if (animationFrameRef.current) {

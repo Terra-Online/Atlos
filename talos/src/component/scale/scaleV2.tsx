@@ -1,11 +1,39 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import './scale.scss';
+import L from "leaflet";
+
+interface UIOverlayProps {
+  map?: L.Map;
+}
+
+interface Label {
+  level: number,
+  position: number,
+  isVisible: boolean,
+  isTransitioning: boolean
+}
+
+interface ZoomLabelProps {
+  zoomLevel: number;
+  position: number;
+  onClick: (_: number) => void;
+  isActive: boolean;
+  isVisible: boolean;
+  isTransitioning?: boolean;
+}
 
 // Helper function to calculate scale ratio
-const calculateScale = (current, min, max) => Math.max(0, Math.min(1, (current - min) / (max - min)));
+const calculateScale = (current: number, min: number, max: number) => Math.max(0, Math.min(1, (current - min) / (max - min)));
 
 // ZoomLabel component for individual zoom level shortcuts
-const ZoomLabel = React.memo(({ zoomLevel, position, onClick, isActive, isVisible, isTransitioning = false }) => {
+const ZoomLabel = React.memo(({
+                                zoomLevel,
+                                position,
+                                onClick,
+                                isActive,
+                                isVisible,
+                                isTransitioning = false
+                              }: ZoomLabelProps) => {
   // Determine label style based on position (0-1 represents top to bottom)
   const labelStyle = {
     bottom: `calc(${position * 100}% - 10px)`,
@@ -27,22 +55,24 @@ const ZoomLabel = React.memo(({ zoomLevel, position, onClick, isActive, isVisibl
   );
 });
 
-const Scale = ({ map }) => {
+const Scale = ({map}: UIOverlayProps) => {
   const [zoomLevel, setZoomLevel] = useState(map?.getZoom() || 0);
   const [zoomBounds, setZoomBounds] = useState({
     min: map?.getMinZoom() || 0,
     max: map?.getMaxZoom() || 3
   });
   // Track zoom labels and their animation states
-  const [zoomLabels, setZoomLabels] = useState([]);
+  const [zoomLabels, setZoomLabels] = useState<Array<Label>>([]);
+  // @ts-expect-error may be use later
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const scalerRef = useRef(null);
-  const scalerWrapperRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const isZoomingRef = useRef(false);
-  const targetZoomRef = useRef(null);
-  const lastMaxZoomRef = useRef(map?.getMaxZoom() || 3); // Track last maxZoom to detect changes
+  const scalerRef = useRef<HTMLDivElement>(null);
+  const scalerWrapperRef = useRef<HTMLDivElement>(null);
+  const animationFrameRef = useRef<number>(null);
+  const isZoomingRef = useRef<boolean>(false);
+  const targetZoomRef = useRef<number>(null);
+  const lastMaxZoomRef = useRef<number>(map?.getMaxZoom() || 3); // Track last maxZoom to detect changes
 
   const ZOOM_STEP = 0.5; // +/- step
   const ANIMATION_DURATION = 400; // ms
@@ -50,12 +80,13 @@ const Scale = ({ map }) => {
 
   // Calculate current scale ratio
   const scaleRatio = useMemo(() =>
-    calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
+      calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
     [zoomLevel, zoomBounds.min, zoomBounds.max]);
+
 
   // Generate labels for integer zoom levels
   const generateZoomLabels = useCallback(() => {
-    const labels = [];
+    const labels: Array<Label> = [];
     const minZoom = Math.ceil(zoomBounds.min);
     const maxZoom = Math.floor(zoomBounds.max);
 
@@ -104,7 +135,7 @@ const Scale = ({ map }) => {
             .filter(label => existingLevels.has(label.level))
             .map(label => {
               // Find new position for this label
-              const newPos = newLabelsData.find(l => l.level === label.level).position;
+              const newPos = newLabelsData.find(l => l.level === label.level)!.position;
               return {
                 ...label,
                 position: newPos,
@@ -156,21 +187,21 @@ const Scale = ({ map }) => {
   }, [map, zoomBounds.min, zoomBounds.max, generateZoomLabels]);
 
   // Update scaler UI
-  const updateScalerUI = useCallback((newScale) => {
+  const updateScalerUI = useCallback((newScale: number) => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
 
     animationFrameRef.current = requestAnimationFrame(() => {
       if (scalerRef.current) {
-        scalerRef.current.style.setProperty('--scale', newScale);
+        scalerRef.current.style.setProperty('--scale', newScale.toString());
       }
       animationFrameRef.current = null;
     });
   }, []);
 
   // Handle zoom changes
-  const handleZoomChange = useCallback((newZoom) => {
+  const handleZoomChange = useCallback((newZoom: number) => {
     if (!map) return;
     const validZoom = Math.max(zoomBounds.min, Math.min(zoomBounds.max, newZoom));
     if (targetZoomRef.current === validZoom) return;
@@ -179,7 +210,7 @@ const Scale = ({ map }) => {
     // Escape delay
     const newScale = calculateScale(validZoom, zoomBounds.min, zoomBounds.max);
     updateScalerUI(newScale);
-    map.setZoom(validZoom, { animate: true });
+    map.setZoom(validZoom, {animate: true});
   }, [map, zoomBounds, updateScalerUI]);
 
   // Handle zoom step buttons
@@ -189,7 +220,7 @@ const Scale = ({ map }) => {
   }, [zoomLevel, handleZoomChange]);
 
   // Handle click on the scaler wrapper
-  const handleProgressClick = useCallback((e) => {
+  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!scalerWrapperRef.current || !map) return;
     const rect = scalerWrapperRef.current.getBoundingClientRect();
     const clickY = e.clientY - rect.top;
@@ -201,7 +232,7 @@ const Scale = ({ map }) => {
   }, [map, zoomBounds, handleZoomChange]);
 
   // Handle label click
-  const handleLabelClick = useCallback((level) => {
+  const handleLabelClick = useCallback((level: number) => {
     handleZoomChange(level);
   }, [handleZoomChange]);
 
@@ -263,7 +294,7 @@ const Scale = ({ map }) => {
     const handleZoomStart = () => {
       isZoomingRef.current = true;
     };
-    const handleZoomAnim = (e) => {
+    const handleZoomAnim = (e: L.ZoomAnimEvent) => {
       if (isZoomingRef.current) {
         const currentZoom = e.zoom;
         const scale = calculateScale(currentZoom, map.getMinZoom(), map.getMaxZoom());

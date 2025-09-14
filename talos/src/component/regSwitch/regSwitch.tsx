@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, {useMemo} from 'react';
 import styles from './regSwitch.module.scss';
 import useRegion from '@/store/region';
-import { REGION_DICT } from '@/data/map';
+import {REGION_DICT} from '@/data/map';
 import classNames from 'classnames';
 
 import Valley4 from '../../asset/logos/_Valley_4.svg?react';
@@ -30,8 +30,8 @@ const getContainerStyle = (selectedIndex: number) => {
 
 const RegionContainer: React.FC<{
   isSidebarOpen: boolean;
-}> = ({ isSidebarOpen }) => {
-  const { currentRegionKey, currentSubregionKey, setCurrentRegion, setCurrentSubregion } = useRegion()
+}> = ({isSidebarOpen}) => {
+  const {currentRegionKey, currentSubregionKey, setCurrentRegion, setCurrentSubregion} = useRegion()
   const regionIndex = useMemo(() => Object.keys(REGION_DICT).indexOf(currentRegionKey), [currentRegionKey])
   return (
     <div className={classNames(styles.regswitch, isSidebarOpen && styles.sidebarOpen)}>
@@ -39,22 +39,26 @@ const RegionContainer: React.FC<{
       {Object.entries(REGION_DICT).map(([key, region]) => {
         const Icon = REGION_ICON_DICT[key]
         const subRegionIndex = currentSubregionKey ? region.subregions.indexOf(currentSubregionKey) : -1
-        return <button key={key} className={classNames(styles.regItem, currentRegionKey === key && styles.selected)} onClick={() => {
-          setCurrentRegion(key)
-        }}>
+        return <button key={key} className={classNames(styles.regItem, currentRegionKey === key && styles.selected)}
+                       onClick={() => {
+                         setCurrentRegion(key)
+                       }}>
           <div className={styles.icon}>
-            <Icon />
+            <Icon/>
           </div>
           {region.subregions.length > 1 && (
             <div className={styles.subregionSwitchContainer} onClick={(e) => {
               e.stopPropagation()
             }}>
               <div className={styles.subregionSwitch}>
-                <div className={classNames(styles.indicator, subRegionIndex < 0 && styles.hidden)} style={getContainerStyle(subRegionIndex)}></div>
+                <div className={classNames(styles.indicator, subRegionIndex < 0 && styles.hidden)}
+                     style={getContainerStyle(subRegionIndex)}></div>
                 {region.subregions.map((subregion) => (
-                  <div key={subregion} className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)} onClick={() => {
-                    setCurrentSubregion(subregion)
-                  }}>
+                  <div key={subregion}
+                       className={classNames(styles.subregItem, currentSubregionKey === subregion && styles.selected)}
+                       onClick={() => {
+                         setCurrentSubregion(subregion)
+                       }}>
                   </div>
                 ))}
               </div>
@@ -66,4 +70,4 @@ const RegionContainer: React.FC<{
   );
 };
 
-export { RegionContainer };
+export {RegionContainer};

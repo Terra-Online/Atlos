@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import './styles/global.scss';
 
 import Map from './component/map/Map';
 import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
+import L from "leaflet";
 
 function App() {
   //broadcasting sideBar status
@@ -21,15 +22,15 @@ function App() {
   return (
     <div className="app">
       {/* Map layer - always fill the entire window */}
-      <Map onMapReady={handleMapReady} />
+      <Map onMapReady={handleMapReady}/>
       {/* UI layer - floats over the map */}
       <UIOverlay
-        map={mapInstance} 
+        map={mapInstance}
         isSidebarOpen={isSidebarOpen}
       />
       {/* Sidebar layer - floats over the map */}
       <SideBar
-        map={mapInstance}
+        // map={mapInstance}
         currentRegion={null}
         onToggle={handleSidebarToggle}
       />

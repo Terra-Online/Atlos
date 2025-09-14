@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import {useMemo} from 'react';
 import styles from './mark.module.scss';
 import {getItemIconUrl} from '../../utils/resource';
 import {useTranslate} from '@/locale';
@@ -6,10 +6,7 @@ import {useFilter, useRegionMarkerCount, useSearchString, useSwitchFilter} from 
 
 const Mark = ({
                 // points = [],
-                typeInfo, // { main: "poi", sub: "basic", key: "TP/recycle/base" }
-                // regionFilter,
-                // totalCount = 0,
-                collectedCount = 0
+                typeInfo
               }) => {
   const t = useTranslate();
   // assemble icon_key

@@ -1,14 +1,19 @@
-import React from 'react';
 import styles from './headbar.module.scss';
 import LiquidGlass from 'liquid-glass-react-positioning';
+import React from "react";
+
+interface HeadBarProps {
+  children: React.ReactNode;
+  isSidebarOpen: boolean;
+}
 
 const Headitem = ({
-  icon: Icon,
-  onClick,
-  tooltip = '',
-  active = false,
-  disabled = false
-}) => {
+                    icon: Icon,
+                    onClick,
+                    tooltip = '',
+                    active = false,
+                    disabled = false
+                  }) => {
   const handleClick = (e) => {
     e.preventDefault();
     if (!disabled && onClick) {
@@ -24,14 +29,14 @@ const Headitem = ({
       title={tooltip}
     >
       <div className={styles['headbar-icon']}>
-        {Icon && <Icon />}
+        {Icon && <Icon/>}
       </div>
     </button>
   );
 };
 
 // modified (changed UI but sidebar binding reserved)
-const Headbar = ({ children, isSidebarOpen = false }) => {
+const HeadBar = ({children}: HeadBarProps) => {
   return (
     <LiquidGlass
       displacementScale={60}
@@ -58,4 +63,4 @@ const Headbar = ({ children, isSidebarOpen = false }) => {
   );
 };
 
-export { Headitem, Headbar };
+export {Headitem, HeadBar};
