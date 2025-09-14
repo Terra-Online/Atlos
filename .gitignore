@@ -37,3 +37,5 @@ talos/src/asset/images/marker
 talos/src/data/process/output/log
 .history
 .vscode
+talos/.stylelintcache
+/talos/.vite
