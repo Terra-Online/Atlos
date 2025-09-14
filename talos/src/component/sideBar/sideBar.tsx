@@ -11,7 +11,7 @@ import Mark from '../mark/mark';
 
 import {MARKER_TYPE_TREE} from '../../data/marker';
 
-console.log(MARKER_TYPE_TREE)
+console.log('[MARKER]', MARKER_TYPE_TREE)
 
 const SideBar = ({map, currentRegion, onToggle}) => {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 import svgr from "vite-plugin-svgr";
 import config from './config/config.json';
-import { viteStaticCopy } from 'vite-plugin-static-copy'
-import { resolve } from 'path'
+import {viteStaticCopy} from 'vite-plugin-static-copy'
+import {resolve} from 'path'
+import eslint from 'vite-plugin-eslint';
 
 const isProd = process.env.NODE_ENV === "production";
 const assetsHost = isProd ? `${config.web.build.cdn}${config.web.build.oss.prefix}` : "";
@@ -32,6 +33,12 @@ export default defineConfig({
           dest: 'asset/images'
         }
       ]
+    }),
+    eslint({
+      failOnWarning: false,
+      failOnError: false,
+      emitWarning: true,
+      emitError: true,
     })
   ],
   base: assetsHost,
