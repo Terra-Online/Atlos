@@ -13,15 +13,15 @@ const Search = () => {
     );
 
     return (
-        <div className={styles['search-container']}>
-            <form className={styles['search-form']}>
-                <div className={styles['search-input-wrapper']}>
-                    <div className={styles['search-icon']}>
+        <div className={styles.searchContainer}>
+            <form className={styles.searchForm}>
+                <div className={styles.searchInputWrapper}>
+                    <div className={styles.searchIcon}>
                         <SearchIcon className={styles.icon} />
                     </div>
                     <input
                         type='text'
-                        className={styles['search-input']}
+                        className={styles.searchInput}
                         placeholder='Overall search...'
                         value={searchString}
                         onChange={changeHandler}

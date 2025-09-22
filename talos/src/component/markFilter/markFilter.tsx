@@ -21,12 +21,12 @@ const MarkFilter = ({
     };
 
     return (
-        <div className={styles['mark-filter-container']}>
+        <div className={styles.markFilterContainer}>
             <div
-                className={`${styles['filter-header']} ${isExpanded ? styles.expanded : ''}`}
+                className={`${styles.filterHeader} ${isExpanded ? styles.expanded : ''}`}
                 onClick={toggleExpand}
             >
-                <div className={styles['filter-icon']}>
+                <div className={styles.filterIcon}>
                     {CustomIcon ? (
                         typeof CustomIcon === 'function' ? (
                             <CustomIcon className={styles.icon} />
@@ -37,8 +37,8 @@ const MarkFilter = ({
                         <DefaultFilterIcon className={styles.icon} />
                     )}
                 </div>
-                <div className={styles['filter-title']}>{title}</div>
-                <div className={styles['toggle-icon']}>
+                <div className={styles.filterTitle}>{title}</div>
+                <div className={styles.toggleIcon}>
                     <svg
                         viewBox='0 0 24 24'
                         className={isExpanded ? styles.expanded : ''}
@@ -50,13 +50,13 @@ const MarkFilter = ({
 
             <div
                 ref={contentRef}
-                className={`${styles['filter-content']} ${isExpanded ? styles.expanded : ''}`}
+                className={`${styles.filterContent} ${isExpanded ? styles.expanded : ''}`}
             >
                 <div
-                    className={`${styles['content-inner']} ${isExpanded ? styles.visible : ''}`}
+                    className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}
                 >
                     {children || (
-                        <div className={styles['placeholder-content']}>
+                        <div className={styles.placeholderContent}>
                             <p>我能夠吞下玻璃而不受損傷。</p>
                             <p>The quick brown fox jumps over the lazy dog.</p>
                         </div>

@@ -8,8 +8,10 @@ export default {
         'custom-property-empty-line-before': null,
         'declaration-empty-line-before': null,
         'rule-empty-line-before': null,
+        'scss/dollar-variable-empty-line-before': null,
         // 颜色
         'color-function-notation': null,
+        'color-function-alias-notation': null,
         'alpha-value-notation': null,
         // 变量名
         'selector-class-pattern': [
@@ -24,5 +26,7 @@ export default {
                 message: 'Expected keyframe name to be in camelCase',
             },
         ],
+        // 简写CSS
+        'declaration-block-no-redundant-longhand-properties': null,
     },
 };

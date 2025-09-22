@@ -4,7 +4,6 @@
 @use 'sass:math';
 
 $transition-speed: 0.3s;
-
 $item-height: 2.5rem;
 $item-gap: 0.6rem;
 $indicator-height: 0.75rem;
@@ -42,7 +41,6 @@ $indicator-height: 0.75rem;
     gap: $item-gap;
     background-color: rgba($white-2, 0.25);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border-radius: 3px;
     padding: 5px;
     box-shadow: 0 0 5px rgba($black, 0.6);
@@ -152,7 +150,6 @@ $indicator-height: 0.75rem;
         max-height: 300px;
         overflow-y: auto;
         backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
     }
 }
 
@@ -217,14 +214,14 @@ $indicator-height: 0.75rem;
         cursor: not-allowed;
     }
 
-    .subreg-icon {
+    .subregIcon {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
         height: 100%;
 
-        .subreg-color-block {
+        .subregColorBlock {
             width: 1.5rem;
             height: 1.5rem;
             border-radius: 3px;
@@ -286,19 +283,16 @@ path.subregion-highlight-fill {
 @keyframes waitForStroke {
     0% {
         fill-opacity: 0;
-        -webkit-clip-path: polygon(0 0, 0 0, -25% 100%, -25% 100%);
         clip-path: polygon(0 0, 0 0, -25% 100%, -25% 100%);
     }
 
     50% {
         fill-opacity: 0.3;
-        -webkit-clip-path: polygon(0 0, 125% 0, 100% 100%, -25% 100%);
         clip-path: polygon(0 0, 125% 0, 100% 100%, -25% 100%);
     }
 
     100% {
         fill-opacity: 0;
-        -webkit-clip-path: polygon(125% 0, 125% 0, 100% 100%, 100% 100%);
         clip-path: polygon(125% 0, 125% 0, 100% 100%, 100% 100%);
     }
 }

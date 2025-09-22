@@ -1,6 +1,6 @@
 @use '../../styles/palette.scss' as *;
 
-.mark-filter-container {
+.markFilterContainer {
     width: 100%;
     overflow: hidden;
     border-radius: 3px;
@@ -8,7 +8,7 @@
     margin-bottom: 0.25rem;
 }
 
-.filter-header {
+.filterHeader {
     z-index: 1;
     user-select: none;
     -webkit-user-select: none;
@@ -21,7 +21,7 @@
     border-radius: 3px 3px 0 0;
     cursor: pointer;
     transition: all 0.2s;
-    > .filter-title {
+    > .filterTitle {
         color: $grey-1;
         text-transform: uppercase;
         font-family: 'Novecento Medium', sans-serif;
@@ -30,7 +30,7 @@
         text-shadow: 0 2px 3px rgba($black, 0.25);
         flex-grow: 1;
     }
-    > .filter-icon {
+    > .filterIcon {
         width: 18px;
         height: 18px;
         margin: 0 0.8rem;
@@ -46,7 +46,7 @@
         }
     }
 
-    .toggle-icon {
+    .toggleIcon {
         margin-left: auto;
         margin-right: 1rem;
         svg {
@@ -63,7 +63,7 @@
     }
 }
 
-.filter-content {
+.filterContent {
     z-index: 2;
     position: relative;
     border-radius: 0 0 3px 3px;
@@ -78,8 +78,8 @@
     &:not(.expanded) {
         transition: grid-template-rows 0.4s cubic-bezier(0.7, 0, 0.45, 1) 0.08s;
     }
-    .content-inner {
-        .filter-content.expanded & {
+    .contentInner {
+        .filterContent.expanded & {
             opacity: 1;
             transform: translateY(0);
             filter: blur(0);
@@ -88,7 +88,7 @@
                 transform 0.4s ease 0.15s,
                 filter 0.3s ease 0.2s;
         }
-        .filter-content:not(.expanded) & {
+        .filterContent:not(.expanded) & {
             opacity: 0;
             transform: translateY(-5px);
             filter: blur(1rem);
@@ -98,7 +98,7 @@
                 filter 0.04s cubic-bezier(0, 0.3, 0.25, 1);
         }
     }
-    .content-inner {
+    .contentInner {
         min-height: 0;
         opacity: 0;
         padding: 0 0.75rem;
@@ -119,7 +119,7 @@
             filter: blur(0);
         }
     }
-    .placeholder-content {
+    .placeholderContent {
         p {
             color: #000;
             margin: 8px 0;
@@ -135,7 +135,7 @@
     }
 }
 
-.mark-empty {
+.markEmpty {
     grid-column: 1 / -1;
     text-align: left;
     padding: 0 0 1rem 0;
@@ -143,7 +143,7 @@
 
 @media (max-width: 576px) {
     //adjust later
-    .filter-content .content-inner {
+    .filterContent .contentInner {
         grid-template-columns: 1fr;
     }
 }

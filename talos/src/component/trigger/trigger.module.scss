@@ -2,7 +2,7 @@
 
 $transition-speed: 0.3s; //import from global size.scss later
 
-.trigger-container {
+.triggerContainer {
     position: absolute;
     z-index: 900;
     display: flex;
@@ -22,7 +22,7 @@ $transition-speed: 0.3s; //import from global size.scss later
         opacity: 0.5;
         pointer-events: none;
     }
-    .trigger-icons {
+    .triggerIcons {
         position: absolute;
         top: 0;
         left: 0;
@@ -35,7 +35,7 @@ $transition-speed: 0.3s; //import from global size.scss later
         z-index: 1;
         pointer-events: none;
 
-        .trigger-icon {
+        .triggerIcon {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -58,7 +58,7 @@ $transition-speed: 0.3s; //import from global size.scss later
             }
         }
     }
-    .trigger-button {
+    .triggerButton {
         position: relative;
         width: calc(4.5rem - 4px);
         height: 2.25rem;
@@ -97,7 +97,7 @@ $transition-speed: 0.3s; //import from global size.scss later
                 box-shadow: 0 1px 3px rgba($black, 0.4);
             }
             //off state
-            .trigger-icons {
+            .triggerIcons {
                 .on {
                     fill: $grey-1;
                 }
@@ -107,7 +107,7 @@ $transition-speed: 0.3s; //import from global size.scss later
             }
         }
     }
-    .trigger-label {
+    .triggerLabel {
         user-select: none;
         font-family: 'Novecento Medium', sans-serif;
         font-size: 1rem;
@@ -117,3 +117,5 @@ $transition-speed: 0.3s; //import from global size.scss later
         white-space: nowrap;
     }
 }
+
+/* removed unused .sidebarOpen placeholder to satisfy stylelint */

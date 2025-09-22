@@ -144,10 +144,10 @@ const Scale = ({ map }: { map: L.Map }) => {
     }, [scaleRatio, updateScalerUI]);
     if (!map) return null;
     return (
-        <div className={styles['scale-container']}>
-            <div className={styles['button-frame']}>
+        <div className={styles.scaleContainer}>
+            <div className={styles.buttonFrame}>
                 <button
-                    className={`${styles['zoom-button']} ${styles.in} ${zoomLevel >= zoomBounds.max ? styles.disabled : ''}`}
+                    className={`${styles.zoomButton} ${styles.in} ${zoomLevel >= zoomBounds.max ? styles.disabled : ''}`}
                     onClick={() => handleZoomStep(1)}
                     disabled={zoomLevel >= zoomBounds.max}
                 >
@@ -156,16 +156,16 @@ const Scale = ({ map }: { map: L.Map }) => {
             </div>
 
             <div
-                className={styles['scaler-wrapper']}
+                className={styles.scalerWrapper}
                 ref={scalerWrapperRef}
                 onClick={handleProgressClick}
             >
                 <div className={styles.scaler} ref={scalerRef} />
             </div>
 
-            <div className={styles['button-frame']}>
+            <div className={styles.buttonFrame}>
                 <button
-                    className={`${styles['zoom-button']} ${styles.out} ${zoomLevel <= zoomBounds.min ? styles.disabled : ''}`}
+                    className={`${styles.zoomButton} ${styles.out} ${zoomLevel <= zoomBounds.min ? styles.disabled : ''}`}
                     onClick={() => handleZoomStep(-1)}
                     disabled={zoomLevel <= zoomBounds.min}
                 >

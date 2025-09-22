@@ -42,24 +42,24 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
 
     return (
         <div
-            className={`${styles['sidebar-container']} ${isOpen ? styles.open : ''}`}
+            className={`${styles.sidebarContainer} ${isOpen ? styles.open : ''}`}
         >
             <button
-                className={`${styles['sidebar-toggle']} ${isOpen ? styles.open : ''}`}
+                className={`${styles.sidebarToggle} ${isOpen ? styles.open : ''}`}
                 onClick={toggleSidebar}
             >
                 <SidebarIcon />
             </button>
 
             <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
-                <div className={styles.head_icon}>
+                <div className={styles.headIcon}>
                     <img
                         src={Icon}
                         alt='supported by observator 6'
                         draggable={'false'}
                     />
                 </div>
-                <div className={styles['sidebar-content']}>
+                <div className={styles.sidebarContent}>
                     <Search />
                     <div className={styles.filters}>
                         {Object.entries(MARKER_TYPE_TREE).map(

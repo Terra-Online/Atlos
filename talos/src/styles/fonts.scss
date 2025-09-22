@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css');
-@import url('https://c.webfontfree.com/c.js?f=GothamMedium');
+@import 'https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap';
+@import 'https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css';
+@import 'https://c.webfontfree.com/c.js?f=GothamMedium';
 @font-face {
     font-family: 'Novecento Bold';
     src:
@@ -116,7 +116,7 @@
     font-display: swap;
 }
 @font-face {
-    font-family: 'HMSans';
+    font-family: HMSans;
     src:
         url('../asset/fonts/Harmony/HMSans.woff2') format('woff2'),
         url('../asset/fonts/Harmony/HMSans.woff') format('woff');

@@ -33,12 +33,12 @@ const HeadItem = ({
 
     return (
         <button
-            className={`${styles['headbar-item']} ${active ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
+            className={`${styles.headbarItem} ${active ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
             onClick={handleClick}
             disabled={disabled}
             title={tooltip}
         >
-            <div className={styles['headbar-icon']}>{Icon && <Icon />}</div>
+            <div className={styles.headbarIcon}>{Icon && <Icon />}</div>
         </button>
     );
 };
@@ -57,14 +57,13 @@ const HeadBar = ({ children }: HeadBarProps) => {
             mode='standard'
             overLight={false}
             positioning='top-right'
-            className='headbar-container'
             style={{
                 position: 'fixed',
                 top: '1rem',
                 right: '1rem',
             }}
         >
-            <div className={styles['headbar']}>{children}</div>
+            <div className={styles.headbar}>{children}</div>
         </LiquidGlass>
     );
 };

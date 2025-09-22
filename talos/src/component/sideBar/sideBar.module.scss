@@ -1,11 +1,10 @@
 @use '../../styles/palette.scss' as *;
 
 $desktop-headbar-height: 4rem;
-
 $toggle-btn-size: 4rem;
 $transition-speed: 0.3s;
 
-.sidebar-container {
+.sidebarContainer {
     position: absolute;
     top: 0;
     left: 0;
@@ -19,7 +18,7 @@ $transition-speed: 0.3s;
 
     &.open {
         transform: translateX(0);
-        > .sidebar-toggle {
+        > .sidebarToggle {
             right: 236px;
             transition: 0.3s ease-in-out;
         }
@@ -27,12 +26,11 @@ $transition-speed: 0.3s;
 
     .sidebar {
         position: relative;
-        overflow: none;
+        overflow: hidden;
         height: 100%;
         width: 100%; /* 填满容器 */
         background-color: rgba($white-0, 0.5);
         color: $grey-1;
-        -webkit-backdrop-filter: blur(35px) brightness(120%);
         backdrop-filter: blur(35px) brightness(120%);
 
         box-shadow: 4px 0 8px rgba($black, 0.25);
@@ -41,11 +39,9 @@ $transition-speed: 0.3s;
         transition: none;
         display: flex;
         flex-direction: column;
-
-        -webkit-user-select: none;
         user-select: none;
 
-        .head_icon {
+        .headIcon {
             z-index: 100;
             background-color: $white-1;
             box-shadow: 0 4px 4px rgba($black, 0.25);
@@ -57,7 +53,7 @@ $transition-speed: 0.3s;
                 padding: 0.25rem;
             }
         }
-        .sidebar-content {
+        .sidebarContent {
             height: 100%;
             padding: 15px;
             padding-bottom: 2rem;
@@ -80,7 +76,7 @@ $transition-speed: 0.3s;
             box-shadow: 0 -1px 3px rgba($black, 0.3);
             height: 1.5rem;
             font-size: 0.875rem;
-            font-family: 'HMSans', 'HMSans_SC', sans-serif;
+            font-family: HMSans, 'HMSans_SC', sans-serif;
             font-weight: 550;
             letter-spacing: -0.5px;
             display: flex;
@@ -98,7 +94,6 @@ $transition-speed: 0.3s;
             &::after {
                 content: '';
                 position: absolute;
-                -webkit-backdrop-filter: blur(0.5rem);
                 backdrop-filter: blur(0.5rem);
                 width: 100%;
                 height: inherit;
@@ -107,7 +102,7 @@ $transition-speed: 0.3s;
         }
     }
 
-    .sidebar-toggle {
+    .sidebarToggle {
         position: absolute;
         top: 0;
         right: -$toggle-btn-size; /* Position button outside sidebar area */

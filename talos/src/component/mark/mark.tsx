@@ -69,19 +69,19 @@ const Mark = ({
     if (!showFilter) return null;
     return (
         <div
-            className={`${styles['mark-item']} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
+            className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
             onClick={() => switchFilter(typeInfo.key)}
             style={{
                 '--progress-percentage': `${cnt.total > 0 ? Math.round((cnt.collected / cnt.total) * 100) : 0}%`,
             }}
         >
-            <span className={styles['mark-icon']}>
+            <span className={styles.markIcon}>
                 {iconUrl && (
                     <img src={iconUrl} alt={displayName} draggable={'false'} />
                 )}
             </span>
-            <span className={styles['mark-name']}>{displayName}</span>
-            <span className={styles['mark-stat']}>
+            <span className={styles.markName}>{displayName}</span>
+            <span className={styles.markStat}>
                 {cnt.collected}/{cnt.total}
             </span>
         </div>

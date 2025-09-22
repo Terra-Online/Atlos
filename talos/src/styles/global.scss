@@ -1,6 +1,6 @@
 @use './fonts' as *;
 @use './palette' as *;
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
+@import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
 
 /* 应用主容器 - 分层设计 */
 .app {

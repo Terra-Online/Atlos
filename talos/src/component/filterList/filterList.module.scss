@@ -2,28 +2,23 @@
 @use '../../styles/curves.scss' as *;
 
 .mainFilterList {
-    position: absolute;
+    position: relative;
     top: 1rem;
     left: 1rem;
     height: 56px;
-
-    /* width由JavaScript动态控制，支持平滑过渡 */
     min-width: 0;
     border-radius: 8px;
     box-sizing: border-box;
     box-shadow: 0 0 5px rgba($black, 0.6);
     background-color: rgba($white-2, 0.25);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     user-select: none;
-    -webkit-user-select: none;
     touch-action: none;
     overflow: hidden;
     transition:
         transform 0.3s ease-in-out,
         opacity 0.3s ease-out,
         width 0.3s ease-out;
-    position: relative;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
 

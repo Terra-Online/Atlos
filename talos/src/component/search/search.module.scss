@@ -1,13 +1,13 @@
 @use '../../styles/palette.scss' as *;
 
-.search-container {
+.searchContainer {
     width: 100%;
     margin-bottom: 1rem;
 
-    .search-form {
+    .searchForm {
         width: 100%;
 
-        .search-input-wrapper {
+        .searchInputWrapper {
             position: relative;
             width: 100%;
             height: 3rem;
@@ -19,20 +19,20 @@
             box-shadow: 0 2px 8px rgba($black, 0.15);
             &:focus-within {
                 box-shadow: 0 2px 4px rgba($black, 0.25);
-                > .search-icon {
+                > .searchIcon {
                     .icon {
                         fill: $primary-accent-4;
                     }
                 }
             }
 
-            &:has(.search-input:not(:placeholder-shown)) {
+            &:has(.searchInput:not(:placeholder-shown)) {
                 box-shadow:
                     0 0 0 2px $primary-accent-3,
                     0 2px 12px rgba($black, 0.25);
             }
 
-            .search-input {
+            .searchInput {
                 width: 100%;
                 height: 100%;
                 padding: 0 15px 0 45px;
@@ -59,7 +59,7 @@
                     filter: blur(6px);
                 }
             }
-            .search-icon {
+            .searchIcon {
                 position: absolute;
                 left: 0.8rem;
                 width: 1.2rem;

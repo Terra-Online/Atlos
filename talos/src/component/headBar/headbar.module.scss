@@ -7,7 +7,7 @@
     gap: 0.5rem;
 }
 
-.headbar-item {
+.headbarItem {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,7 +27,8 @@
         pointer-events: none;
     }
 
-    .headbar-icon {
+  // noinspection Stylelint
+  .headbarIcon {
         display: flex;
         align-items: center;
         justify-content: center;

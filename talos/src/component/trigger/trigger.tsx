@@ -30,25 +30,25 @@ const Trigger = ({
     return (
         <div className={`${styles.trigger} ${disabled ? styles.disabled : ''}`}>
             <button
-                className={`${styles['trigger-button']} ${isActive ? styles.active : ''}`}
+                className={`${styles.triggerButton} ${isActive ? styles.active : ''}`}
                 onClick={handleClick}
                 disabled={disabled}
             >
-                <div className={styles['trigger-icons']}>
-                    <span className={`${styles['trigger-icon']} ${styles.off}`}>
+                <div className={styles.triggerIcons}>
+                    <span className={`${styles.triggerIcon} ${styles.off}`}>
                         <OffIcon />
                     </span>
-                    <span className={`${styles['trigger-icon']} ${styles.on}`}>
+                    <span className={`${styles.triggerIcon} ${styles.on}`}>
                         <OnIcon />
                     </span>
                 </div>
             </button>
-            {label && <div className={styles['trigger-label']}>{label}</div>}
+            {label && <div className={styles.triggerLabel}>{label}</div>}
         </div>
     );
 };
 
-const TriggerBar = ({ children, isSidebarOpen = false }) => {
+const TriggerBar = ({ children }) => {
     // const prevSidebarStateRef = useRef(isSidebarOpen);
 
     /* debug
@@ -60,13 +60,7 @@ const TriggerBar = ({ children, isSidebarOpen = false }) => {
   }, [isSidebarOpen]);
   */
 
-    return (
-        <div
-            className={`${styles['trigger-container']} ${isSidebarOpen ? styles['sidebar-open'] : ''}`}
-        >
-            {children}
-        </div>
-    );
+    return <div className={styles.triggerContainer}>{children}</div>;
 };
 
 export { Trigger, TriggerBar };

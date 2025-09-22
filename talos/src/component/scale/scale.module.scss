@@ -1,7 +1,6 @@
 @use '../../styles/palette.scss' as *;
 
-.scale-container {
-    -webkit-user-select: none;
+.scaleContainer {
     user-select: none;
     display: flex;
     flex-direction: column;
@@ -12,7 +11,7 @@
     right: 1rem;
     top: 40%;
     transform: translateY(-50%);
-    .button-frame {
+    .buttonFrame {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -22,12 +21,11 @@
         height: 1.5rem;
         border: 1.5px solid $white-1;
         border-radius: 4px;
-        -webkit-backdrop-filter: blur(1px) brightness(100%);
         backdrop-filter: blur(1px) brightness(100%);
         background-color: #ececec61;
         box-shadow:
-            0px 0px 2px 1px rgba($black, 0.4),
-            inset 0px 0px 2px rgba($black, 0.2);
+            0 0 2px 1px rgba($black, 0.4),
+            inset 0 0 2px rgba($black, 0.2);
         &:has(.in) {
             margin-bottom: 6px;
         }
@@ -35,13 +33,13 @@
             margin-top: 6px;
         }
     }
-    .zoom-button {
+    .zoomButton {
         line-height: 0;
         height: calc(1rem + 1px);
         width: calc(1rem + 1px);
         border-radius: 1px;
         background-color: $grey-1;
-        box-shadow: 0px 0px 2px 1px rgba($black, 0.4);
+        box-shadow: 0 0 2px 1px rgba($black, 0.4);
         cursor: pointer;
         transition: all 0.2s ease;
         font-family: 'Novecento Medium', sans-serif;
@@ -59,7 +57,7 @@
             cursor: not-allowed;
         }
     }
-    .scaler-wrapper {
+    .scalerWrapper {
         --scale: 0;
         position: relative;
         height: 9rem;
@@ -71,10 +69,9 @@
         border: 2px solid;
         border-color: $grey-1;
         box-shadow:
-            0px 0px 2.5px 1px rgba($white-0, 0.6),
-            inset 0px 0px 2px rgba($white-0, 0.3);
+            0 0 2.5px 1px rgba($white-0, 0.6),
+            inset 0 0 2px rgba($white-0, 0.3);
         padding: 2px;
-        -webkit-backdrop-filter: blur(10px) brightness(100%);
         backdrop-filter: blur(10px) brightness(100%);
         overflow: hidden;
         cursor: pointer;
@@ -93,7 +90,7 @@
                 transform 0.4s ease,
                 box-shadow 0.1s ease;
             box-shadow:
-                0px 0px 3px 0.5px rgba($black, 0.4),
+                0 0 3px 0.5px rgba($black, 0.4),
                 0 calc(1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
                     0.5px rgba($black, 0.2),
                 0 calc(-1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
@@ -132,4 +129,4 @@
   position: relative;
   // Add pointer cursor to show it's clickable
   cursor: pointer;
-}*/
+} */
