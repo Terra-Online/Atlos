@@ -21,6 +21,7 @@
         width 0.3s ease-out;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
+    cursor: grab;
 
     &::-webkit-scrollbar {
         height: 6px;
@@ -72,7 +73,7 @@
 .innerContainer {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     height: 100%;
 }
 

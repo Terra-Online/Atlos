@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { useUserRecord } from './userRecord';
 import useRegion from './region';
 import { useMemo } from 'react';
@@ -16,30 +17,35 @@ interface IMarkerStore {
     setSearchString: (string) => void;
 }
 
-const INIT_MARKER_FILTER = [];
+export const useMarkerStore = create<IMarkerStore>()(
+    persist(
+        (set) => ({
+            currentActivePoint: null,
+            setCurrentActivePoint: (point) => {
+                set({ currentActivePoint: point });
+            },
+            filter: [],
+            points: [],
+            switchFilter: (typeKey) => {
+                set((state) => {
+                    const newFilter = state.filter.includes(typeKey)
+                        ? state.filter.filter((key) => key !== typeKey)
+                        : [...state.filter, typeKey];
 
-export const useMarkerStore = create<IMarkerStore>((set) => ({
-    currentActivePoint: null,
-    setCurrentActivePoint: (point) => {
-        set({ currentActivePoint: point });
-    },
-    filter: INIT_MARKER_FILTER,
-    points: [],
-    switchFilter: (typeKey) => {
-        set((state) => {
-            if (state.filter.includes(typeKey)) {
-                return {
-                    filter: state.filter.filter((key) => key !== typeKey),
-                };
-            }
-            return { filter: [...state.filter, typeKey] };
-        });
-    },
-    searchString: '',
-    setSearchString: (string) => {
-        set({ searchString: string });
-    },
-}));
+                    return { filter: newFilter };
+                });
+            },
+            searchString: '',
+            setSearchString: (string) => {
+                set({ searchString: string });
+            },
+        }),
+        {
+            name: 'marker-filter',
+            partialize: (state) => ({ filter: state.filter }),
+        },
+    ),
+);
 
 export const usePoints = () => useMarkerStore((state) => state.points);
 export const useFilter = () => useMarkerStore((state) => state.filter);

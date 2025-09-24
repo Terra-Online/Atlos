@@ -11,11 +11,9 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const [showLeftMask, setShowLeftMask] = useState(false);
     const [showRightMask, setShowRightMask] = useState(false);
 
-    // 计算显示相关参数
     const maxDisplayItems = 8;
     const shouldShowEighthHalf = filterList.length >= maxDisplayItems;
 
-    // 简单的宽度计算，只用于动画过渡
     const getContainerWidth = () => {
         const itemCount = Math.min(filterList.length, maxDisplayItems);
         if (itemCount === 0) return 0;
@@ -26,31 +24,65 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         }
     };
 
-    const checkScroll = () => {
-        const container = containerRef.current;
-        if (!container) return;
-
-        const { scrollLeft, scrollWidth, clientWidth } = container;
-        setShowLeftMask(scrollLeft > 0);
-        setShowRightMask(scrollLeft < scrollWidth - clientWidth);
-    };
-
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
+
+        const checkScroll = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            setShowLeftMask(scrollLeft > 0);
+            setShowRightMask(scrollLeft < scrollWidth - clientWidth - 1);
+        };
+
+        let isDragging = false;
+        let startX: number;
+        let startScroll: number;
+
+        const handleMouseDown = (e: MouseEvent) => {
+            isDragging = true;
+            startX = e.pageX;
+            startScroll = container.scrollLeft;
+            container.style.cursor = 'grabbing';
+        };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            const walk = e.pageX - startX;
+            container.scrollLeft = startScroll - walk;
+        };
+
+        const handleMouseUp = () => {
+            isDragging = false;
+            container.style.cursor = 'grab';
+        };
+
+        const handleMouseLeave = () => {
+            if (isDragging) {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            }
+        };
 
         const handleWheel = (e: globalThis.WheelEvent) => {
             e.preventDefault();
             container.scrollLeft += e.deltaY;
         };
 
+        container.addEventListener('mousedown', handleMouseDown);
+        container.addEventListener('mousemove', handleMouseMove);
+        container.addEventListener('mouseup', handleMouseUp);
+        container.addEventListener('mouseleave', handleMouseLeave);
         container.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('scroll', checkScroll);
 
-        // 初始化检查
         checkScroll();
 
         return () => {
+            container.removeEventListener('mousedown', handleMouseDown);
+            container.removeEventListener('mousemove', handleMouseMove);
+            container.removeEventListener('mouseup', handleMouseUp);
+            container.removeEventListener('mouseleave', handleMouseLeave);
             container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('scroll', checkScroll);
         };
@@ -70,8 +102,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 ref={containerRef}
                 className={classNames(styles.mainFilterContentContainer, {
                     [styles.leftMaskOpacity]: showLeftMask,
-                    [styles.rightMaskOpacity]:
-                        showRightMask || shouldShowEighthHalf, // 当有8个或更多物品时总是显示右侧mask
+                    [styles.rightMaskOpacity]: showRightMask, // rely on showRightMask
                 })}
             >
                 <div className={styles.innerContainer}>
@@ -83,7 +114,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                                     styles.mainFilterContentItem,
                                     {
                                         [styles.halfVisible]:
-                                            index === 7 && shouldShowEighthHalf, // 第8个物品在有8个或更多时半显示
+                                            index === 7 && shouldShowEighthHalf,
                                     },
                                 )}
                                 src={getItemIconUrl(item)}
@@ -93,6 +124,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                                 onClick={() => {
                                     switchFilter(item);
                                 }}
+                                draggable='false' // Prevent image dragging
                             />
                         ))}
                     </AnimatePresence>
