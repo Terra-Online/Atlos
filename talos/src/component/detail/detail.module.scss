@@ -54,8 +54,6 @@
             .pointName {
                 color: $white-0;
                 font-size: 1rem;
-                font-family:
-                    'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
                 margin: 0;
                 text-overflow: ellipsis;
                 overflow: hidden;
@@ -229,8 +227,6 @@
 
             .pointStats {
                 flex: 1;
-                font-family:
-                    'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
                 background-image:
                     url('../../asset/images/UI/brakt_L.svg'),
                     url('../../asset/images/UI/brakt_R.svg');
@@ -368,8 +364,7 @@
 
             .noImage {
                 color: $dim;
-                font-family:
-                    'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
+                font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
                 font-size: 0.875rem;
             }
         }
@@ -380,7 +375,7 @@
         position: relative;
         font-size: 0.875rem;
         font-family:
-            HMSans,
+            'HMSans',
             'HMSans_TC',
             'HMSans_SC',
             sans-serif;
@@ -417,7 +412,7 @@
         position: relative;
         font-size: 0.875rem;
         font-family:
-            HMSans,
+            'HMSans',
             'HMSans_TC',
             'HMSans_SC',
             sans-serif;

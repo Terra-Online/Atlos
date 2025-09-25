@@ -2,14 +2,11 @@
 @use './palette' as *;
 @import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
 
-/* 应用主容器 - 分层设计 */
 .app {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-
-    /* 所有子元素都是绝对定位，形成分层结构 */
     > * {
         position: absolute;
         top: 0;
@@ -33,7 +30,7 @@ button {
 }
 body {
     margin: 0;
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
 }
 
 ::selection {
