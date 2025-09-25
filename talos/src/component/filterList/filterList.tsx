@@ -18,7 +18,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         const itemCount = Math.min(filterList.length, maxDisplayItems);
         if (itemCount === 0) return 0;
         if (itemCount <= 7) {
-            return itemCount * 48 + 16; // 每个item约48px（包含gap），加上padding
+            return itemCount * 44 + 16; // 每个item约48px（包含gap），加上padding
         } else {
             return 7 * 48 + 24 + 16; // 7个完整 + 半个 + padding
         }
@@ -29,9 +29,19 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         if (!container) return;
 
         const checkScroll = () => {
+            if (!container) return;
             const { scrollLeft, scrollWidth, clientWidth } = container;
-            setShowLeftMask(scrollLeft > 0);
-            setShowRightMask(scrollLeft < scrollWidth - clientWidth - 1);
+            const isScrolledToStart = scrollLeft <= 0;
+
+            setShowLeftMask(!isScrolledToStart);
+
+            // 只有内容溢出时才显示右遮罩
+            if (filterList.length <= 7) {
+                setShowRightMask(false);
+            } else {
+                const isScrolledToEnd = scrollLeft >= scrollWidth - clientWidth - 1;
+                setShowRightMask(!isScrolledToEnd);
+            }
         };
 
         let isDragging = false;
@@ -76,7 +86,12 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         container.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('scroll', checkScroll);
 
+        // Initial check
         checkScroll();
+
+        // Re-check when filterList changes
+        const observer = new MutationObserver(checkScroll);
+        observer.observe(container, { childList: true, subtree: true });
 
         return () => {
             container.removeEventListener('mousedown', handleMouseDown);
@@ -85,8 +100,9 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             container.removeEventListener('mouseleave', handleMouseLeave);
             container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('scroll', checkScroll);
+            observer.disconnect();
         };
-    }, []);
+    }, [filterList]);
 
     const switchFilter = useSwitchFilter();
 
