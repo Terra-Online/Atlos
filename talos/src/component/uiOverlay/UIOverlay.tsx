@@ -36,8 +36,20 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     const handleTrigger2 = (isActive: boolean) =>
         setTrigger({ ...triggers, t2: isActive });
 
-    // 临时处理函数，可以根据需要实现具体功能
-    const handleReset = () => console.log('Reset');
+    const handleReset = () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        document.cookie.split(';').forEach(cookie => {
+            const name = cookie.split('=')[0].trim();
+            if (name) {
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+            }
+        });
+        
+        window.location.reload();
+    };
+
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
     const handleLanguage = () => console.log('Choose language');
