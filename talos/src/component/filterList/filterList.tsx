@@ -2,14 +2,17 @@ import classNames from 'classnames';
 import { getItemIconUrl } from '@/utils/resource.ts';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
 import styles from './filterList.module.scss';
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence, useMotionValue } from 'motion/react';
 
 const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const filterList = useFilter();
     const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     const [showLeftMask, setShowLeftMask] = useState(false);
     const [showRightMask, setShowRightMask] = useState(false);
+    const [maxScroll, setMaxScroll] = useState(0);
+    const x = useMotionValue(0);
 
     const maxDisplayItems = 8;
     const shouldShowEighthHalf = filterList.length >= maxDisplayItems;
@@ -18,91 +21,97 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         const itemCount = Math.min(filterList.length, maxDisplayItems);
         if (itemCount === 0) return 0;
         if (itemCount <= 7) {
-            return itemCount * 44 + 16; // 每个item约48px（包含gap），加上padding
+            return itemCount * 44 + 16; // 每个item约44px（包含gap），加上padding
         } else {
-            return 7 * 48 + 24 + 16; // 7个完整 + 半个 + padding
+            return 7 * 44 + 32 + 16; // 7个完整 + 半个 + padding
         }
     };
 
-    useEffect(() => {
+    // 1) 计算内容宽度与容器宽度，得到最大可滚动距离
+    useLayoutEffect(() => {
         const container = containerRef.current;
-        if (!container) return;
+        const content = contentRef.current;
+        if (!container || !content) return;
 
-        const checkScroll = () => {
-            if (!container) return;
-            const { scrollLeft, scrollWidth, clientWidth } = container;
-            const isScrolledToStart = scrollLeft <= 0;
-
-            setShowLeftMask(!isScrolledToStart);
-
-            // 只有内容溢出时才显示右遮罩
-            if (filterList.length <= 7) {
-                setShowRightMask(false);
-            } else {
-                const isScrolledToEnd = scrollLeft >= scrollWidth - clientWidth - 1;
-                setShowRightMask(!isScrolledToEnd);
-            }
+        const measure = () => {
+            const containerW = container.clientWidth;
+            const contentW = content.scrollWidth;
+            const nextMax = Math.max(contentW - containerW + 14, 0);
+            setMaxScroll(nextMax);
+            // 当内容变化时，重置到起点，避免越界
+            x.set(0);
         };
 
-        let isDragging = false;
-        let startX: number;
-        let startScroll: number;
+        // 首次测量
+        measure();
 
-        const handleMouseDown = (e: MouseEvent) => {
-            isDragging = true;
-            startX = e.pageX;
-            startScroll = container.scrollLeft;
-            container.style.cursor = 'grabbing';
-        };
+        // 监听尺寸变化
+        const ro = new ResizeObserver(() => measure());
+        ro.observe(container);
+        ro.observe(content);
 
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const walk = e.pageX - startX;
-            container.scrollLeft = startScroll - walk;
-        };
-
-        const handleMouseUp = () => {
-            isDragging = false;
-            container.style.cursor = 'grab';
-        };
-
-        const handleMouseLeave = () => {
-            if (isDragging) {
-                isDragging = false;
-                container.style.cursor = 'grab';
-            }
-        };
-
-        const handleWheel = (e: globalThis.WheelEvent) => {
-            e.preventDefault();
-            container.scrollLeft += e.deltaY;
-        };
-
-        container.addEventListener('mousedown', handleMouseDown);
-        container.addEventListener('mousemove', handleMouseMove);
-        container.addEventListener('mouseup', handleMouseUp);
-        container.addEventListener('mouseleave', handleMouseLeave);
-        container.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('scroll', checkScroll);
-
-        // Initial check
-        checkScroll();
-
-        // Re-check when filterList changes
-        const observer = new MutationObserver(checkScroll);
-        observer.observe(container, { childList: true, subtree: true });
+        // 图片加载完可能改变宽度
+        const imgs = content.querySelectorAll('img');
+        let pending = imgs.length;
+        if (pending > 0) {
+            imgs.forEach((img) => {
+                if (img.complete) {
+                    pending -= 1;
+                    if (pending === 0) measure();
+                } else {
+                    img.addEventListener('load', measure, { once: true });
+                    img.addEventListener('error', measure, { once: true });
+                }
+            });
+        }
 
         return () => {
-            container.removeEventListener('mousedown', handleMouseDown);
-            container.removeEventListener('mousemove', handleMouseMove);
-            container.removeEventListener('mouseup', handleMouseUp);
-            container.removeEventListener('mouseleave', handleMouseLeave);
-            container.removeEventListener('wheel', handleWheel);
-            container.removeEventListener('scroll', checkScroll);
-            observer.disconnect();
+            ro.disconnect();
         };
-    }, [filterList]);
+    }, [filterList, x]);
+
+    // 2) 根据 x 的值更新左右遮罩
+    useEffect(() => {
+        const unsub = x.on('change', (v) => {
+            if (maxScroll <= 0) {
+                setShowLeftMask(false);
+                setShowRightMask(false);
+                return;
+            }
+            // v 在 [ -maxScroll, 0 ] 区间
+            setShowLeftMask(v < -1); // 离开左侧就显示左遮罩
+            setShowRightMask(v > -maxScroll + 1); // 未到最右显示右遮罩
+        });
+        return () => unsub();
+    }, [x, maxScroll]);
+
+    // 当 maxScroll 变化（例如首次从 <=7 变为 >7）时，按当前 x 初始化遮罩，避免需要手动滚动
+    useEffect(() => {
+        const v = x.get();
+        if (maxScroll <= 0) {
+            setShowLeftMask(false);
+            setShowRightMask(false);
+        } else {
+            setShowLeftMask(v < -1);
+            setShowRightMask(v > -maxScroll + 1 || v === 0); // 初始在最左，显示右遮罩
+        }
+    }, [maxScroll, x]);
+
+    // 3) 处理滚轮 -> 修改 x（阻止默认滚动）
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (maxScroll <= 0) return; // 无溢出不处理
+            e.preventDefault();
+            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+            // 向下/右滚动 => 内容左移 => x 变小
+            const next = Math.max(-maxScroll, Math.min(0, x.get() - delta));
+            x.set(next);
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, [x, maxScroll]);
 
     const switchFilter = useSwitchFilter();
 
@@ -118,10 +127,19 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 ref={containerRef}
                 className={classNames(styles.mainFilterContentContainer, {
                     [styles.leftMaskOpacity]: showLeftMask,
-                    [styles.rightMaskOpacity]: showRightMask, // rely on showRightMask
+                    [styles.rightMaskOpacity]: showRightMask,
                 })}
             >
-                <div className={styles.innerContainer}>
+                <motion.div
+                    ref={contentRef}
+                    className={styles.innerContainer}
+                    style={{ x }}
+                    drag={maxScroll > 0 ? 'x' : false}
+                    dragConstraints={{ left: -maxScroll, right: 0 }}
+                    dragElastic={0.18}
+                    dragMomentum={true}
+                    dragTransition={{ power: 0.2, bounceStiffness: 320, bounceDamping: 22 }}
+                >
                     <AnimatePresence>
                         {filterList.map((item, index) => (
                             <motion.img
@@ -144,7 +162,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                             />
                         ))}
                     </AnimatePresence>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

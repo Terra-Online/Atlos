@@ -1,6 +1,19 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
+/* Register animatable custom properties for mask alphas */
+@property --leftMaskAlpha {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+}
+
+@property --rightMaskAlpha {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+}
+
 .mainFilterList {
     position: relative;
     top: 1rem;
@@ -45,29 +58,28 @@
     overflow-y: hidden;
     padding: 0 8px;
 
-    &.leftMaskOpacity {
-        mask-image: linear-gradient(to right, transparent 0%, $black 10%);
-    }
+    /* mask variables and transition for fade in/out */
+    --leftMaskAlpha: 0;
+    --rightMaskAlpha: 0;
+    transition: --leftMaskAlpha 200ms ease, --rightMaskAlpha 200ms ease;
 
-    &.rightMaskOpacity {
-        mask-image: linear-gradient(
-            to left,
-            transparent 0%,
-            rgba(0, 0, 0, 0.1) 5%,
-            $black 20%
-        );
-    }
-
-    &.leftMaskOpacity.rightMaskOpacity {
-        mask-image: linear-gradient(
+    /* Always define mask-image with two layers; alpha driven by variables */
+    /* Left edge (to right): 0% -> transparent, 10% -> black with animated alpha */
+    /* Right edge (to left): 0% -> transparent, 20% -> black with animated alpha */
+    mask-image: 
+        linear-gradient(
             to right,
-            transparent 0%,
-            $black 10%,
-            $black 80%,
-            rgba(0, 0, 0, 0.1) 95%,
-            transparent 100%
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, var(--leftMaskAlpha)) 10%
+        ),
+        linear-gradient(
+            to left,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, var(--rightMaskAlpha)) 20%
         );
-    }
+
+    &.leftMaskOpacity { --leftMaskAlpha: 1; }
+    &.rightMaskOpacity { --rightMaskAlpha: 1; }
 }
 
 .innerContainer {
