@@ -1,0 +1,133 @@
+@use '../../styles/palette.scss' as *;
+
+.markItem {
+    user-select: none;
+    touch-action: none;
+    position: relative;
+    background-color: $white-1;
+    color: $grey-1;
+    border-radius: 0 2px 2px 0;
+    padding: 0.25rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 0 3px 1px rgba($black, 0);
+    transition: all 0.2s ease;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 0.5fr 1.5fr;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0 2px;
+    grid-template-areas:
+        'icon Name'
+        'icon Num';
+    &.active {
+        background-color: $mid;
+        color: rgba($black, 1);
+        box-shadow: 0 3px 4px rgba($black, 0.4);
+        transition: all 0.2s ease;
+        &::after {
+            clip-path: polygon(
+                0 0,
+                var(--progress-percentage, 0%) 0,
+                var(--progress-percentage, 0%) 100%,
+                0 100%
+            );
+        }
+    }
+    &.completed {
+        background-color: $primary-accent-2;
+        box-shadow: 0 3px 6px rgba($black, 0.3);
+    }
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba($primary-accent-3, 1);
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        z-index: 1;
+        transition: clip-path 0.3s ease;
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 3px;
+        height: 100%;
+        background-color: $grey-1;
+        z-index: 3;
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+        transition: clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    &.active::before {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    &:hover {
+        box-shadow: 1px 3px 5px rgba($black, 0.2);
+        transform: translateY(-1px);
+    }
+    .markIcon {
+        grid-area: icon;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        position: relative;
+
+        --icon-feather-width: 10%;
+        --icon-feather-start: 4%;
+        mask-image:
+            linear-gradient(
+                to right,
+                transparent 0%,
+                transparent var(--icon-feather-start),
+                black var(--icon-feather-width),
+                black calc(100% - var(--icon-feather-width)),
+                transparent calc(100% - var(--icon-feather-start)),
+                transparent 100%
+            ),
+            linear-gradient(
+                to bottom,
+                transparent 0%,
+                transparent var(--icon-feather-start),
+                black var(--icon-feather-width),
+                black calc(100% - var(--icon-feather-width)),
+                transparent calc(100% - var(--icon-feather-start)),
+                transparent 100%
+            );
+        mask-composite: intersect;
+
+        img {
+            max-width: 2.25rem;
+            max-height: 2.25rem;
+            object-fit: contain;
+        }
+    }
+    .markName {
+        grid-area: Name;
+        font-weight: 500;
+        font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
+        color: inherit;
+        font-size: 0.735rem;
+        line-height: 1.2;
+        margin: 0;
+        align-self: end;
+        z-index: 2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .markStat {
+        grid-area: Num;
+        font-size: 0.8rem;
+        font-family: 'Novecento Medium', sans-serif;
+        color: inherit;
+        align-self: start;
+        z-index: 2;
+        line-height: 1;
+        margin: auto 0;
+    }
+}

@@ -1,6 +1,19 @@
 @use './fonts' as *;
 @use './palette' as *;
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap');
+@import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
+
+.app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    > * {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
 * {
     transform-origin: center;
     background-repeat: no-repeat;
@@ -17,7 +30,7 @@ button {
 }
 body {
     margin: 0;
-    font-family: "Noto Sans SC", sans-serif;
+    font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
 }
 
 ::selection {

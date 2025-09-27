@@ -105,23 +105,33 @@
             "Originium Ore": {
                 "tier": "1"
             },
-            "Originium Spot": {},
+            "Originium Spot": {
+                "subIcon": "ore_spot"
+            },
             "Amethyst Ore": {
                 "tier": "1"
             },
-            "Amethyst Spot": {},
+            "Amethyst Spot": {
+                "subIcon": "ore_spot"
+            },
             "Ferrium Ore": {
                 "tier": "1"
             },
-            "Ferrium Spot": {},
+            "Ferrium Spot": {
+                "subIcon": "ore_spot"
+            },
             "Cuprium Ore": {
                 "tier": "1"
             },
-            "Cuprium Spot": {},
+            "Cuprium Spot": {
+                "subIcon": "ore_spot"
+            },
             "Cyanite Ore": {
                 "tier": "1"
             },
-            "Cyanite Spot": {},
+            "Cyanite Spot": {
+                "subIcon": "ore_spot"
+            },
             "Clean Water": {
                 "tier": "1"
             },
@@ -170,39 +180,51 @@
         },
         "valuable": {
             "Pink Bolete Spot": {
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Red Bolete Spot": {
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Ruby Bolete Spot": {
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Bloodcap Spot": {
+                "subIcon": "plant_spot",
                 "tier": "5"
             },
             "Kalkodendra Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Chrysodendra Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Vitrodendra Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Blighted Jadeleaf Spot": {
+                "subIcon": "mine_spot",
                 "tier": "5"
             },
             "Kalkonyx Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Auronyx Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Umbronyx Spot": {
+                "subIcon": "mine_spot",
                 "tier": "4"
             },
             "Igneosite Spot": {
+                "subIcon": "mine_spot",
                 "tier": "5"
             }
         },

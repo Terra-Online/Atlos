@@ -1,0 +1,5636 @@
+[
+  {
+    "id": "int_doodad_grass_1_001",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -827.1735,
+      853.404
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_002",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -828.5517,
+      854.0581
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_003",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -816.943,
+      830.7222
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_004",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -810.624,
+      788.7428
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_005",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -807.5709,
+      793.7071
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_001",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -789.2215,
+      754.4226
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_006",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -776.7599,
+      801.3967
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_007",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -780.3214,
+      793.3846
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_008",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -804.3639,
+      778.1961
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_009",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -798.8744,
+      773.7938
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_010",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -801.9677,
+      768.6141
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_011",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -812.186,
+      794.6318
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_012",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -804.7166,
+      744.6269
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_013",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -766.6423,
+      713.0032
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_014",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -842.1003,
+      724.443
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_015",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -627.9957,
+      638.5231
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_016",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -694.258,
+      616.2612
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_017",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -694.9156,
+      615.844
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_018",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -697.5304,
+      621.4223
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_019",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -656.4277,
+      603.054
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_020",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -655.9888,
+      624.452
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_021",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -649.7373,
+      602.5737
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_022",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -705.4042,
+      706.7395
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_023",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -710.9882,
+      688.3074
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_024",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -745.7381,
+      719.5795
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_025",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -740.3784,
+      705.3891
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_026",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -744.2422,
+      714.7014
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_027",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -758.7978,
+      716.7636
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_028",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -719.9938,
+      714.8041
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_029",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -700.6197,
+      700.8083
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_030",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -705.5523,
+      706.1344
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_031",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -597.2641,
+      743.2543
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_032",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -606.7938,
+      741.4572
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_033",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -597.0038,
+      743.8604
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_001",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -795.4313,
+      755.8997
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_002",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -820.9049,
+      824.5927
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_003",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -819.2529,
+      838.436
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_004",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -787.9387,
+      747.136
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_005",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -824.1521,
+      848.1908
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_006",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -629.5624,
+      738.195
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_007",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -640.1787,
+      732.8843
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_008",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -622.6235,
+      739.6031
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_009",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -631.799,
+      739.354
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_034",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -744.8039,
+      701.5635
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_001",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -514.2946,
+      740.8096
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_002",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -516.2486,
+      741.1063
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_003",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -496.4454,
+      769.1544
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_004",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -504.7584,
+      792.3849
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_005",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -464.4046,
+      805.7814
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_006",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -448.0936,
+      799.9162
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_007",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -448.4579,
+      798.7757
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_008",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -443.005,
+      798.6917
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_009",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -440.4145,
+      774.9984
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_010",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -441.1386,
+      776.6546
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_011",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -435.6763,
+      775.3959
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_012",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -437.5324,
+      775.2607
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_013",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -495.49,
+      747.7705
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_014",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -489.7761,
+      749.0969
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_015",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -464.4046,
+      600.5179
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_016",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -475.3471,
+      605.7549
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_017",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -475.0904,
+      604.5499
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_018",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -475.8696,
+      616.85
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_019",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -475.1507,
+      616.1999
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_020",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -458.582,
+      602.3748
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_021",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -462.7343,
+      607.9174
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_022",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -448.948,
+      569.4409
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_023",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -437.0089,
+      565.5259
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_024",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -420.3692,
+      565.0179
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_025",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -434.2732,
+      564.5972
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_026",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -389.2993,
+      548.9735
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_027",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -383.0865,
+      547.0309
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_028",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -377.588,
+      540.9731
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_029",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -344.5291,
+      521.5403
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_030",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -362.0341,
+      517.4989
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_031",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -352.4698,
+      510.4831
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_032",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -343.7192,
+      497.8396
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_033",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -344.2268,
+      501.2958
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_034",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -350.249,
+      499.3428
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_001",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -384.7672,
+      537.1711
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_002",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -377.9155,
+      527.8294
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_003",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -365.9307,
+      522.2009
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_004",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -359.972,
+      508.1503
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_035",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -320.6949,
+      277.4198
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_036",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -344.0579,
+      285.0656
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_037",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -343.0362,
+      294.9182
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_038",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -322.8719,
+      303.1948
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_039",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -328.8672,
+      295.0515
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_2_001",
+    "type": "int_doodad_grass_spc_2",
+    "position": [
+      -344.6691,
+      293.6492
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_040",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -359.0267,
+      294.4796
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_041",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -284.0362,
+      295.2644
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_042",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -217.8962,
+      331.4789
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_043",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -215.0055,
+      334.3883
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_044",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -237.9261,
+      337.4321
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_045",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -235.1884,
+      345.9028
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_046",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -253.9437,
+      321.5955
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_047",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -215.458,
+      398.5502
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_048",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -214.5333,
+      397.8336
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_049",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -531.1203,
+      707.524
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_050",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -541.1987,
+      706.4528
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_051",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -570.7034,
+      747.2107
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_052",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -532.4892,
+      750.4569
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_001",
+    "type": "int_doodad_grade",
+    "position": [
+      -296.9074,
+      323.6633
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_002",
+    "type": "int_doodad_grade",
+    "position": [
+      -566.5324,
+      774.9891
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_003",
+    "type": "int_doodad_grade",
+    "position": [
+      -263.2374,
+      309.7526
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_004",
+    "type": "int_doodad_grade",
+    "position": [
+      -306.189,
+      303.0072
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_035",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -737.0752,
+      585.8496
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_036",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -741.4654,
+      581.2419
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_037",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -742.0627,
+      582.0269
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_038",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -731.9108,
+      576.7287
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_039",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -735.5138,
+      586.8954
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_040",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -736.7743,
+      587.477
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_041",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -741.89,
+      539.9504
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_042",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -748.8014,
+      536.1808
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_043",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -747.9846,
+      535.7607
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_044",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -736.8699,
+      523.8264
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_002",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -745.3891,
+      526.607
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_045",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -736.0776,
+      537.3748
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_046",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -746.4528,
+      522.6974
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_047",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -730.1643,
+      529.0952
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_003",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -903.8293,
+      626.5474
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_048",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -897.0949,
+      613.4847
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_049",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -897.5686,
+      602.2498
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_004",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -909.0463,
+      629.0974
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_005",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -910.5581,
+      621.8043
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_010",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -872.022,
+      585.0002
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_011",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -874.2165,
+      587.7718
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_012",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -902.3044,
+      624.0879
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_013",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -909.7335,
+      628.8289
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_014",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -910.8602,
+      625.9456
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_050",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -854.6076,
+      524.1447
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_051",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -862.12,
+      528.2586
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_052",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -853.902,
+      527.4838
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_053",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -861.1689,
+      529.6783
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_005",
+    "type": "int_doodad_grade",
+    "position": [
+      -289.1935,
+      319.4671
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_006",
+    "type": "int_doodad_grade",
+    "position": [
+      -290.6454,
+      319.386
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_054",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -646.731,
+      604.6779
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_055",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -657.5685,
+      604.074
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_056",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -700.3702,
+      632.7053
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_007",
+    "type": "int_doodad_grade",
+    "position": [
+      -529.7633,
+      478.7891
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_008",
+    "type": "int_doodad_grade",
+    "position": [
+      -530.4267,
+      477.3757
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_009",
+    "type": "int_doodad_grade",
+    "position": [
+      -530.3934,
+      484.095
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_010",
+    "type": "int_doodad_grade",
+    "position": [
+      -526.0075,
+      476.9805
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_011",
+    "type": "int_doodad_grade",
+    "position": [
+      -530.0418,
+      482.7726
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_012",
+    "type": "int_doodad_grade",
+    "position": [
+      -298.1055,
+      286.9934
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_053",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -166.0121,
+      398.1098
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_054",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -165.2721,
+      399.3984
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_055",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -529.507,
+      814.7578
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_056",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -522.7019,
+      812.035
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_057",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -521.6316,
+      811.184
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_058",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -512.5525,
+      808.9073
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_059",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -501.6913,
+      806.3412
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_060",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -504.2817,
+      806.2972
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_061",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -518.0942,
+      820.3126
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_013",
+    "type": "int_doodad_grade",
+    "position": [
+      -280.4783,
+      312.5165
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_014",
+    "type": "int_doodad_grade",
+    "position": [
+      -280.3869,
+      313.792
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_015",
+    "type": "int_doodad_grade",
+    "position": [
+      -295.2362,
+      319.4811
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_016",
+    "type": "int_doodad_grade",
+    "position": [
+      -222.6578,
+      362.8638
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_017",
+    "type": "int_doodad_grade",
+    "position": [
+      -229.7484,
+      387.3045
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_018",
+    "type": "int_doodad_grade",
+    "position": [
+      -247.4027,
+      397.102
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_019",
+    "type": "int_doodad_grade",
+    "position": [
+      -255.3061,
+      393.351
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_020",
+    "type": "int_doodad_grade",
+    "position": [
+      -338.5657,
+      311.9781
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_021",
+    "type": "int_doodad_grade",
+    "position": [
+      -357.5188,
+      294.3994
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_062",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -321.8501,
+      282.0209
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_063",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -332.3596,
+      286.1498
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_064",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -326.2142,
+      308.7635
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_065",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -244.3151,
+      317.3593
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_066",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -283.4773,
+      322.789
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_067",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -316.3768,
+      324.4518
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_068",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -307.3171,
+      330.4944
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_069",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -345.8915,
+      320.2612
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_070",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -330.0707,
+      334.798
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_071",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -290.5259,
+      331.5471
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_072",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -358.7727,
+      393.2868
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_073",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -356.7532,
+      364.4498
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_074",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -357.7932,
+      377.8858
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_075",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -245.1892,
+      462.3823
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_076",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -270.2663,
+      482.1553
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_077",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -290.0279,
+      487.3157
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_078",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -399.3048,
+      487.3217
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_057",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -842.1078,
+      730.2152
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_058",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -781.8202,
+      781.9192
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_059",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -780.599,
+      764.8353
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_060",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -778.9486,
+      794.4399
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_061",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -808.0039,
+      754.738
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_062",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -808.9594,
+      754.1576
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_022",
+    "type": "int_doodad_grade",
+    "position": [
+      -556.7162,
+      773.4121
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_023",
+    "type": "int_doodad_grade",
+    "position": [
+      -400.824,
+      726.465
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_024",
+    "type": "int_doodad_grade",
+    "position": [
+      -400.7484,
+      727.6062
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_025",
+    "type": "int_doodad_grade",
+    "position": [
+      -287.0641,
+      325.5724
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_079",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -476.6282,
+      754.9647
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_080",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -530.9206,
+      708.3377
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_081",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -579.1255,
+      776.6295
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_082",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -578.5787,
+      777.6764
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_083",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -451.2012,
+      707.5446
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_084",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -421.5846,
+      738.9434
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_006",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -560.0442,
+      344.7815
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_007",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -554.5047,
+      345.1097
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_063",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -646.1306,
+      492.4697
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_064",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -646.1306,
+      490.6733
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_065",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -644.8755,
+      491.1026
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_066",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -596.1323,
+      505.1023
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_067",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -585.6168,
+      533.9218
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_008",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -634.7794,
+      373.7652
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_1_009",
+    "type": "int_doodad_grass_spc_1",
+    "position": [
+      -636.0669,
+      378.9625
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_068",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -645.553,
+      376.0354
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_069",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -643.8771,
+      376.3779
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_070",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -643.8771,
+      368.7451
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_071",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -642.0888,
+      362.2785
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_072",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -639.9954,
+      361.0657
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_073",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -651.1123,
+      356.9218
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_085",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -710.8335,
+      356.0363
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_086",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -716.5337,
+      355.3654
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_087",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -717.8973,
+      357.3594
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_088",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -716.1579,
+      365.1265
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_2_002",
+    "type": "int_doodad_grass_spc_2",
+    "position": [
+      -702.4945,
+      362.3067
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_2_003",
+    "type": "int_doodad_grass_spc_2",
+    "position": [
+      -699.4992,
+      362.316
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_2_004",
+    "type": "int_doodad_grass_spc_2",
+    "position": [
+      -706.7504,
+      358.0126
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_074",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -656.3807,
+      360.4778
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_015",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -659.4985,
+      328.5658
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_016",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -674.922,
+      311.6293
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_017",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -687.4809,
+      329.9691
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_018",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -690.7654,
+      332.169
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_005",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -711.5362,
+      329.023
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_006",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -736.8512,
+      358.7143
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_007",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -576.8901,
+      403.5964
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_2_008",
+    "type": "int_doodad_insect_2",
+    "position": [
+      -594.8227,
+      352.2278
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_019",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -475.1978,
+      487.7418
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_026",
+    "type": "int_doodad_grade",
+    "position": [
+      -528.5669,
+      482.6207
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_027",
+    "type": "int_doodad_grade",
+    "position": [
+      -465.6391,
+      536.9509
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_028",
+    "type": "int_doodad_grade",
+    "position": [
+      -467.0172,
+      536.9509
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_075",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -598.7286,
+      503.9285
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_076",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -578.8493,
+      510.8788
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_077",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -580.2397,
+      512.1626
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_078",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -579.7009,
+      509.7722
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_079",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -630.5839,
+      430.7948
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_080",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -629.5008,
+      432.6336
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_081",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -641.4417,
+      511.4162
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_082",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -639.7248,
+      509.0648
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_083",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -654.482,
+      524.0105
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_084",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -655.8681,
+      522.1597
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_029",
+    "type": "int_doodad_grade",
+    "position": [
+      -399.0782,
+      729.5471
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_030",
+    "type": "int_doodad_grade",
+    "position": [
+      -557.0997,
+      758.1961
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grade_031",
+    "type": "int_doodad_grade",
+    "position": [
+      -557.2201,
+      759.4249
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_085",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -691.4092,
+      702.2259
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_086",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -684.551,
+      819.9458
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_087",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -683.2397,
+      829.0195
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_insect_1_020",
+    "type": "int_doodad_insect_1",
+    "position": [
+      -826.4755,
+      800.9927
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_088",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -777.0931,
+      780.8321
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_1_089",
+    "type": "int_doodad_grass_1",
+    "position": [
+      -792.2774,
+      783.0231
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_089",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -386.4813,
+      543.1192
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_090",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -390.5178,
+      555.3872
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_2_091",
+    "type": "int_doodad_grass_2",
+    "position": [
+      -370.0494,
+      545.1384
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_001",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -623.5949,
+      698.2753
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_002",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -645.3175,
+      703.6873
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_003",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -652.2971,
+      712.2998
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_004",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -628.2604,
+      704.3964
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_005",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -636.2514,
+      714.7342
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_006",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -667.2755,
+      474.2502
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_007",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -664.3588,
+      495.0117
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_008",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -668.3785,
+      471.019
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_009",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -660.5739,
+      494.4418
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_1_010",
+    "type": "int_doodad_grass_spc_once_1",
+    "position": [
+      -673.0592,
+      471.9024
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_2_001",
+    "type": "int_doodad_grass_spc_once_2",
+    "position": [
+      -446.4842,
+      793.8556
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_2_002",
+    "type": "int_doodad_grass_spc_once_2",
+    "position": [
+      -447.1261,
+      805.2868
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_2_003",
+    "type": "int_doodad_grass_spc_once_2",
+    "position": [
+      -449.3655,
+      810.5029
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_2_004",
+    "type": "int_doodad_grass_spc_once_2",
+    "position": [
+      -435.1357,
+      800.0801
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_grass_spc_once_2_005",
+    "type": "int_doodad_grass_spc_once_2",
+    "position": [
+      -437.377,
+      803.5793
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_001",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -578.4238,
+      806.7817
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_002",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -579.5118,
+      805.4491
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_003",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -580.9022,
+      806.2479
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_004",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -578.8842,
+      808.0934
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_005",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -580.7053,
+      807.9098
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_006",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -567.6121,
+      805.007
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_007",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -567.2244,
+      803.331
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_008",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -568.7071,
+      802.7206
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_009",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -568.9311,
+      805.446
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_010",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -569.9007,
+      803.8936
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_011",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -574.7636,
+      797.1369
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_012",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -576.1573,
+      796.1285
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_013",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -577.2959,
+      797.2575
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_014",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -574.8716,
+      798.5229
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_015",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -576.6788,
+      798.8131
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_016",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -565.2765,
+      813.185
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_017",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -566.934,
+      813.6454
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_018",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -566.7617,
+      815.2396
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_019",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -564.2605,
+      814.1339
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_020",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -565.1609,
+      815.7275
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_021",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -558.2047,
+      805.6581
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_022",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -559.6318,
+      806.6186
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_023",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -558.9646,
+      808.0766
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_024",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -556.9409,
+      806.2374
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_025",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -557.2917,
+      808.0338
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_001",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -160.0448,
+      359.3496
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_002",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -160.095,
+      361.016
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_003",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -158.2341,
+      361.2365
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_004",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -158.9105,
+      358.356
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_005",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -157.2655,
+      359.3804
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_006",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -150.7648,
+      346.2249
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_007",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -149.7155,
+      344.9293
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_008",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -152.2692,
+      346.3286
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_009",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -151.0628,
+      343.6268
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_010",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -152.9577,
+      344.5171
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_011",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -142.5544,
+      360.0187
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_012",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -143.1624,
+      358.4663
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_013",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -144.9605,
+      358.9941
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_014",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -143.2076,
+      361.3778
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_015",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -145.1227,
+      361.0814
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_016",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -147.5092,
+      352.5764
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_017",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -148.9922,
+      351.8146
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_018",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -149.9913,
+      353.4
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_019",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -147.0998,
+      354.0277
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_020",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -148.7319,
+      355.0725
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_021",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -140.6726,
+      351.2011
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_022",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -142.3311,
+      351.3711
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_023",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -142.3042,
+      353.2449
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_024",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -139.5381,
+      352.1944
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_025",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -140.3365,
+      353.9602
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_026",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -575.4087,
+      813.5701
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_027",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -576.219,
+      812.1864
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_028",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -578.0477,
+      814.2196
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_029",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -577.8791,
+      812.3971
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_copper_030",
+    "type": "int_doodad_ore_cluster_copper",
+    "position": [
+      -576.7322,
+      814.6691
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_026",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -171.0079,
+      359.1463
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_027",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -173.9397,
+      354.478
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_028",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -170.03,
+      373.6905
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_029",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -170.8325,
+      384.1039
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_030",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -169.7371,
+      385.2182
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_031",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -231.7345,
+      314.7408
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_032",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -207.1721,
+      311.686
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_033",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -208.3723,
+      311.9132
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_001",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -531.3545,
+      623.2576
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_002",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -550.5111,
+      644.4576
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_003",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -550.2405,
+      645.5307
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_004",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -547.1276,
+      663.8895
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_005",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -521.2957,
+      618.1535
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_006",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -501.6726,
+      609.4944
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_007",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -537.609,
+      625.6971
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_008",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -537.5097,
+      623.9759
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_009",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -539.0763,
+      623.6258
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_010",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -538.8428,
+      626.3499
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_011",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -540.0561,
+      624.9812
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_012",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -546.9022,
+      626.8176
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_013",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -547.3309,
+      628.4875
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_014",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -545.861,
+      629.1326
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_015",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -545.5657,
+      626.4145
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_016",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -544.6386,
+      627.9912
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_034",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -711.553,
+      558.4235
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_035",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -713.2188,
+      558.3566
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_036",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -713.4578,
+      560.2153
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_037",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -710.5707,
+      559.5676
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_038",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -711.6115,
+      561.2024
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_039",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -712.5294,
+      557.1239
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_040",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -711.4401,
+      555.8618
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_041",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -712.746,
+      554.5178
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_042",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -714.0363,
+      557.1805
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_043",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -714.6678,
+      555.3483
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_044",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -717.1599,
+      523.6378
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_045",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -711.8191,
+      521.1349
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_046",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -709.1482,
+      523.7082
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_047",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -709.5346,
+      530.7629
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_048",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -710.5639,
+      530.2703
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_049",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -706.8118,
+      549.1301
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_050",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -701.7011,
+      532.2809
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_051",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -706.7427,
+      559.0191
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_017",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -479.3276,
+      337.7643
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_018",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -478.387,
+      336.3195
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_019",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -479.5731,
+      335.2378
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_020",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -480.7228,
+      337.7185
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_021",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -481.0965,
+      335.928
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_022",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -480.9486,
+      341.6881
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_023",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -480.6906,
+      343.3927
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_024",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -479.0854,
+      343.4121
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_025",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -479.8759,
+      340.7947
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_026",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -478.4064,
+      341.8837
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_027",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -483.4139,
+      327.5819
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_028",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -484.9702,
+      326.8401
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_029",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -485.8859,
+      328.1586
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_030",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -483.2753,
+      328.971
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_031",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -485.0008,
+      329.5776
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_032",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -495.7524,
+      334.0119
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_033",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -495.834,
+      335.734
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_034",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -494.2639,
+      336.0681
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_035",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -494.5253,
+      333.3464
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_036",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -493.298,
+      334.7027
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_037",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -485.8401,
+      345.7135
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_038",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -488.5298,
+      345.2037
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_039",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -486.9777,
+      344.5809
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_040",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -488.2349,
+      347.0089
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_041",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -486.8431,
+      347.1158
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_042",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -525.4844,
+      327.9546
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_043",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -513.5116,
+      340.0502
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_044",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -566.956,
+      348.0768
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_045",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -574.8746,
+      347.2917
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_052",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -168.9663,
+      360.963
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_046",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -426.3247,
+      552.9765
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_047",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -427.4165,
+      551.6421
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_048",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -428.8068,
+      552.4446
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_049",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -426.7913,
+      554.2921
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_050",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -428.6108,
+      554.1055
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_051",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -430.0571,
+      561.3744
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_052",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -431.1489,
+      560.04
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_053",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -432.5392,
+      560.8425
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_054",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -430.5237,
+      562.69
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_055",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -432.3432,
+      562.5034
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_056",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -446.6626,
+      565.0638
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_057",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -426.7288,
+      557.5141
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_058",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -441.6649,
+      531.6738
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_059",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -426.6047,
+      545.605
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_iron_060",
+    "type": "int_doodad_ore_cluster_iron",
+    "position": [
+      -441.7675,
+      522.744
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_053",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -201.3822,
+      328.4085
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_054",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -155.1844,
+      354.3917
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_055",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -155.6628,
+      355.9887
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_056",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -153.9217,
+      356.6817
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_057",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -153.8322,
+      353.7242
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_058",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -152.5071,
+      355.1383
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_059",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -708.3414,
+      552.213
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_060",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -709.8572,
+      551.5188
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_061",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -707.8663,
+      553.5662
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_062",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -710.7838,
+      553.1476
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_doodad_ore_cluster_originium_063",
+    "type": "int_doodad_ore_cluster_originium",
+    "position": [
+      -709.4504,
+      554.7617
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_001",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -241.2162,
+      420.1216
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_002",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -283.7376,
+      387.2578
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_003",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -203.7336,
+      370.7699
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_004",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -315.0898,
+      265.9407
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_005",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -833.9084,
+      518.3304
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_001",
+    "type": "int_collection_coin",
+    "position": [
+      -860.158,
+      522.4567
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_006",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -828.3035,
+      554.8147
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_007",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -746.3689,
+      589.1341
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_008",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -838.5611,
+      578.0983
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_009",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -797.4447,
+      522.604
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_010",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -728.8826,
+      556.8632
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_011",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -501.6539,
+      808.9819
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_012",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -505.8296,
+      793.9646
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_013",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -509.324,
+      440.8738
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_014",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -570.0595,
+      352.8264
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_015",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -544.4553,
+      477.9832
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_016",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -544.138,
+      477.6193
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_017",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -623.6848,
+      640.2307
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_018",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -649.9982,
+      531.5711
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_019",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -647.4136,
+      412.3302
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_020",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -666.5701,
+      317.4992
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_021",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -552.088,
+      285.2793
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_022",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -543.7275,
+      273.9514
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_023",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -767.3356,
+      451.8004
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_024",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -490.9886,
+      569.1751
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_025",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -474.5847,
+      388.8348
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_002",
+    "type": "int_collection_coin",
+    "position": [
+      -497.7069,
+      406.3584
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_003",
+    "type": "int_collection_coin",
+    "position": [
+      -524.5802,
+      488.1166
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_026",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -833.6418,
+      748.0878
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_027",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -767.8115,
+      774.6345
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_collection_coin_puzzle_028",
+    "type": "int_collection_coin_puzzle",
+    "position": [
+      -651.3721,
+      709.7557
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_001",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -230.34,
+      289.9037
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_002",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -215.9012,
+      321.3903
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_001",
+    "type": "road_plunderer",
+    "position": [
+      -228.2555,
+      291.7923
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0068_lbtough2_001",
+    "type": "elite_executioner",
+    "position": [
+      -238.165,
+      309.148
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0049_rogue_001",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -215.0335,
+      323.1818
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_002",
+    "type": "road_plunderer",
+    "position": [
+      -213.6898,
+      322.2021
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_001",
+    "type": "cloud_stalker",
+    "position": [
+      -351.528,
+      523.1312
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_003",
+    "type": "road_plunderer",
+    "position": [
+      -416.7231,
+      517.8826
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_004",
+    "type": "road_plunderer",
+    "position": [
+      -416.2659,
+      515.6524
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_005",
+    "type": "road_plunderer",
+    "position": [
+      -414.0713,
+      516.7283
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_001",
+    "type": "eny_0057_dog",
+    "position": [
+      -402.681,
+      523.5801
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_002",
+    "type": "eny_0057_dog",
+    "position": [
+      -409.888,
+      527.8667
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_003",
+    "type": "eny_0057_dog",
+    "position": [
+      -166.0363,
+      407.6461
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_004",
+    "type": "eny_0057_dog",
+    "position": [
+      -172.3814,
+      405.2667
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_005",
+    "type": "eny_0057_dog",
+    "position": [
+      -233.3703,
+      463.7103
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_006",
+    "type": "eny_0057_dog",
+    "position": [
+      -313.6136,
+      509.6585
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_007",
+    "type": "eny_0057_dog",
+    "position": [
+      -271.0605,
+      485.9803
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_008",
+    "type": "eny_0057_dog",
+    "position": [
+      -296.7688,
+      501.3324
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0057_dog_009",
+    "type": "eny_0057_dog",
+    "position": [
+      -237.1829,
+      466.9577
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_002",
+    "type": "cloud_stalker",
+    "position": [
+      -798.8882,
+      597.482
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_006",
+    "type": "road_plunderer",
+    "position": [
+      -818.3439,
+      599.3227
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_007",
+    "type": "road_plunderer",
+    "position": [
+      -829.2558,
+      470.1158
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_008",
+    "type": "road_plunderer",
+    "position": [
+      -895.3853,
+      562.2452
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_009",
+    "type": "road_plunderer",
+    "position": [
+      -899.8658,
+      557.2816
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_010",
+    "type": "road_plunderer",
+    "position": [
+      -815.4235,
+      594.8003
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_011",
+    "type": "road_plunderer",
+    "position": [
+      -900.8034,
+      563.7035
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_012",
+    "type": "road_plunderer",
+    "position": [
+      -822.4998,
+      597.466
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_013",
+    "type": "road_plunderer",
+    "position": [
+      -781.2374,
+      459.8179
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_014",
+    "type": "road_plunderer",
+    "position": [
+      -725.2019,
+      583.3044
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_015",
+    "type": "road_plunderer",
+    "position": [
+      -730.8299,
+      588.9539
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_016",
+    "type": "road_plunderer",
+    "position": [
+      -742.0347,
+      583.4511
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_017",
+    "type": "road_plunderer",
+    "position": [
+      -709.558,
+      586.5588
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_018",
+    "type": "road_plunderer",
+    "position": [
+      -778.7381,
+      468.111
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_003",
+    "type": "cloud_stalker",
+    "position": [
+      -843.1033,
+      478.8509
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_019",
+    "type": "road_plunderer",
+    "position": [
+      -846.7705,
+      470.9289
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_020",
+    "type": "road_plunderer",
+    "position": [
+      -857.7623,
+      486.745
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_021",
+    "type": "road_plunderer",
+    "position": [
+      -779.6809,
+      459.4671
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_004",
+    "type": "cloud_stalker",
+    "position": [
+      -733.869,
+      597.2008
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_022",
+    "type": "road_plunderer",
+    "position": [
+      -731.0791,
+      533.1173
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_023",
+    "type": "road_plunderer",
+    "position": [
+      -743.7562,
+      529.0424
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_024",
+    "type": "road_plunderer",
+    "position": [
+      -720.4994,
+      542.0422
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_005",
+    "type": "cloud_stalker",
+    "position": [
+      -898.5531,
+      561.0077
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_025",
+    "type": "road_plunderer",
+    "position": [
+      -550.3151,
+      660.6563
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_003",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -548.7494,
+      663.2708
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_004",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -548.5674,
+      645.8601
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_005",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -549.131,
+      644.2813
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_006",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -500.4689,
+      611.1459
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_026",
+    "type": "road_plunderer",
+    "position": [
+      -500.8608,
+      613.1055
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_027",
+    "type": "road_plunderer",
+    "position": [
+      -547.2266,
+      463.359
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0049_rogue_002",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -566.1125,
+      537.1511
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0049_rogue_003",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -566.0565,
+      528.1
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_028",
+    "type": "road_plunderer",
+    "position": [
+      -526.3344,
+      415.6614
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_029",
+    "type": "road_plunderer",
+    "position": [
+      -530.3094,
+      419.3192
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_007",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -548.3369,
+      424.9737
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_030",
+    "type": "road_plunderer",
+    "position": [
+      -546.2375,
+      424.2646
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_001",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -560.8125,
+      474.2135
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_006",
+    "type": "cloud_stalker",
+    "position": [
+      -527.6035,
+      433.8195
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_031",
+    "type": "road_plunderer",
+    "position": [
+      -547.4598,
+      467.7377
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_007",
+    "type": "cloud_stalker",
+    "position": [
+      -569.4386,
+      529.3281
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0054_hsmino_001",
+    "type": "hill_smasher",
+    "position": [
+      -502.825,
+      537.222
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_002",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -566.3831,
+      494.0698
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_003",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -558.993,
+      493.9859
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_032",
+    "type": "road_plunderer",
+    "position": [
+      -608.8548,
+      466.2535
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_033",
+    "type": "road_plunderer",
+    "position": [
+      -611.5648,
+      463.6079
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_034",
+    "type": "road_plunderer",
+    "position": [
+      -513.9102,
+      334.9594
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_004",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -497.6883,
+      345.203
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_005",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -495.1559,
+      367.0342
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_035",
+    "type": "road_plunderer",
+    "position": [
+      -500.0363,
+      359.5095
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_008",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -511.1902,
+      336.6931
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0049_rogue_004",
+    "type": "bonekrusher_infiltrator",
+    "position": [
+      -661.9793,
+      492.4929
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_036",
+    "type": "road_plunderer",
+    "position": [
+      -664.1067,
+      491.5318
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_008",
+    "type": "cloud_stalker",
+    "position": [
+      -698.1329,
+      324.1701
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0054_hsmino_002",
+    "type": "hill_smasher",
+    "position": [
+      -502.7361,
+      517.248
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_009",
+    "type": "cloud_stalker",
+    "position": [
+      -568.714,
+      383.5789
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_010",
+    "type": "cloud_stalker",
+    "position": [
+      -579.9605,
+      431.869
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_037",
+    "type": "road_plunderer",
+    "position": [
+      -649.0751,
+      351.4805
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_038",
+    "type": "road_plunderer",
+    "position": [
+      -640.5247,
+      373.6411
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0033_lbhunt_006",
+    "type": "bonekrusher_ambusher",
+    "position": [
+      -643.1172,
+      369.6784
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_039",
+    "type": "road_plunderer",
+    "position": [
+      -732.5409,
+      358.8881
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_040",
+    "type": "road_plunderer",
+    "position": [
+      -526.9633,
+      477.0137
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_041",
+    "type": "road_plunderer",
+    "position": [
+      -528.3033,
+      476.7888
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0029_lbmob_001",
+    "type": "bonekrusher_raider",
+    "position": [
+      -614.783,
+      361.075
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0029_lbmob_002",
+    "type": "bonekrusher_raider",
+    "position": [
+      -610.2053,
+      355.1337
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0029_lbmob_003",
+    "type": "bonekrusher_raider",
+    "position": [
+      -610.9667,
+      366.5896
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0018_lbtough_001",
+    "type": "bonekrusher_executioner",
+    "position": [
+      -792.1841,
+      793.5578
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_042",
+    "type": "road_plunderer",
+    "position": [
+      -795.0526,
+      790.8302
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0053_hsmob_043",
+    "type": "road_plunderer",
+    "position": [
+      -793.8754,
+      798.9501
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_009",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -796.3011,
+      797.5528
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0050_hound_010",
+    "type": "bonekrusher_ripptusk",
+    "position": [
+      -793.2572,
+      794.9574
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_011",
+    "type": "cloud_stalker",
+    "position": [
+      -633.0393,
+      828.7326
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "eny_0055_hscrane_012",
+    "type": "cloud_stalker",
+    "position": [
+      -618.3191,
+      875.4882
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_pazzle_008",
+    "type": "mark_dg_pazzle",
+    "position": [
+      -688.7686,
+      828.2001
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_pazzle_009",
+    "type": "mark_dg_pazzle",
+    "position": [
+      -683.6085,
+      469.7346
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_sp_campfire_029",
+    "type": "tp",
+    "position": [
+      -820.625,
+      872.75
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_sp_campfire_030",
+    "type": "tp",
+    "position": [
+      -742.2072,
+      726.6265
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_sp_campfire_031",
+    "type": "tp",
+    "position": [
+      -553.553,
+      388.7135
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_sp_campfire_032",
+    "type": "tp",
+    "position": [
+      -386.5,
+      380.9781
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_sp_campfire_033",
+    "type": "tp",
+    "position": [
+      -470.9549,
+      601.423
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_047",
+    "type": "robot",
+    "position": [
+      -599.8348,
+      320.2239
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_048",
+    "type": "robot",
+    "position": [
+      -527.9114,
+      479.1029
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_049",
+    "type": "robot",
+    "position": [
+      -786.0096,
+      463.9443
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_050",
+    "type": "robot",
+    "position": [
+      -861.2548,
+      487.897
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_051",
+    "type": "robot",
+    "position": [
+      -702.6016,
+      536.7168
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_052",
+    "type": "robot",
+    "position": [
+      -762.4488,
+      592.7868
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_053",
+    "type": "robot",
+    "position": [
+      -316.8347,
+      242.3473
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_fixablerobot_054",
+    "type": "robot",
+    "position": [
+      -487.6093,
+      391.1424
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_iron_ore_013",
+    "type": "ferrium_spot",
+    "position": [
+      -487.9639,
+      338.2891
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_iron_ore_014",
+    "type": "ferrium_spot",
+    "position": [
+      -541.9715,
+      626.8161
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_copper_ore_001",
+    "type": "cuprium_spot",
+    "position": [
+      -571.6105,
+      806.7577
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_iron_ore_015",
+    "type": "ferrium_spot",
+    "position": [
+      -425.4971,
+      554.4892
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_originium_ore_014",
+    "type": "originium_spot",
+    "position": [
+      -149.8637,
+      354.2449
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_originium_ore_015",
+    "type": "originium_spot",
+    "position": [
+      -710.2429,
+      556.576
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_026",
+    "type": "blackbox",
+    "position": [
+      -227.397,
+      360.5525
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_027",
+    "type": "blackbox",
+    "position": [
+      -491.0819,
+      327.894
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_028",
+    "type": "blackbox",
+    "position": [
+      -138.6125,
+      361.3643
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_029",
+    "type": "blackbox",
+    "position": [
+      -585.4604,
+      801.351
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_030",
+    "type": "blackbox",
+    "position": [
+      -399.0782,
+      718.975
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_031",
+    "type": "blackbox",
+    "position": [
+      -519.5135,
+      286.7442
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_032",
+    "type": "blackbox",
+    "position": [
+      -548.5889,
+      749.0582
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_033",
+    "type": "blackbox",
+    "position": [
+      -653.852,
+      759.4063
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_034",
+    "type": "blackbox",
+    "position": [
+      -635.6098,
+      476.117
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_dg_blackbox_035",
+    "type": "blackbox",
+    "position": [
+      -494.3851,
+      627.8018
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_recycler_017",
+    "type": "recycler",
+    "position": [
+      -287.1061,
+      430.2028
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_recycler_018",
+    "type": "recycler",
+    "position": [
+      -245.9004,
+      391.6061
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_recycler_019",
+    "type": "recycler",
+    "position": [
+      -559.0583,
+      754.6381
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_recycler_020",
+    "type": "recycler",
+    "position": [
+      -509.2983,
+      437.272
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_crylplant_2_1_001",
+    "type": "blighted_jadeleaf_spot",
+    "position": [
+      -638.0079,
+      775.1943
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_mushroom_2_1_001",
+    "type": "bloodcap_spot",
+    "position": [
+      -281.9834,
+      245.8278
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_mushroom_2_1_002",
+    "type": "bloodcap_spot",
+    "position": [
+      -833.6791,
+      455.8874
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_crylplant_2_1_002",
+    "type": "blighted_jadeleaf_spot",
+    "position": [
+      -652.303,
+      467.3832
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_spcstone_2_1_001",
+    "type": "igneosite_spot",
+    "position": [
+      -460.9614,
+      449.0197
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "item_plant_spcstone_2_1_002",
+    "type": "igneosite_spot",
+    "position": [
+      -456.9957,
+      793.5858
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "mark_p_enemyspawner_005",
+    "type": "spawner",
+    "position": [
+      -520.8681,
+      515.8484
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_001",
+    "type": "treasure_chest",
+    "position": [
+      -204.7694,
+      354.8438
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_001",
+    "type": "treasure_chest",
+    "position": [
+      -266.8037,
+      443.2177
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_002",
+    "type": "treasure_chest",
+    "position": [
+      -290.6706,
+      329.0062
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_002",
+    "type": "treasure_chest",
+    "position": [
+      -243.2187,
+      274.2603
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_001",
+    "type": "treasure_chest",
+    "position": [
+      -358.0666,
+      333.6503
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_003",
+    "type": "treasure_chest",
+    "position": [
+      -302.6572,
+      290.1612
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_002",
+    "type": "treasure_chest",
+    "position": [
+      -389.1313,
+      404.7348
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_004",
+    "type": "treasure_chest",
+    "position": [
+      -330.5326,
+      395.3581
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_003",
+    "type": "treasure_chest",
+    "position": [
+      -274.765,
+      208.0951
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_005",
+    "type": "treasure_chest",
+    "position": [
+      -391.2271,
+      569.344
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_006",
+    "type": "treasure_chest",
+    "position": [
+      -217.8794,
+      435.4347
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_lock_001",
+    "type": "treasure_chest",
+    "position": [
+      -390.7433,
+      451.516
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_003",
+    "type": "treasure_chest",
+    "position": [
+      -508.3686,
+      279.8164
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_004",
+    "type": "treasure_chest",
+    "position": [
+      -747.1844,
+      560.7184
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_007",
+    "type": "treasure_chest",
+    "position": [
+      -724.1051,
+      515.7411
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_008",
+    "type": "treasure_chest",
+    "position": [
+      -840.7296,
+      611.1226
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_004",
+    "type": "treasure_chest",
+    "position": [
+      -844.8763,
+      469.7626
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_005",
+    "type": "treasure_chest",
+    "position": [
+      -910.0757,
+      628.5296
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_009",
+    "type": "treasure_chest",
+    "position": [
+      -860.0644,
+      537.2425
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_lock_002",
+    "type": "treasure_chest",
+    "position": [
+      -736.7423,
+      597.7001
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_006",
+    "type": "treasure_chest",
+    "position": [
+      -802.7375,
+      485.8585
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_010",
+    "type": "treasure_chest",
+    "position": [
+      -512.1215,
+      821.4183
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_011",
+    "type": "treasure_chest",
+    "position": [
+      -491.9404,
+      746.8281
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_005",
+    "type": "treasure_chest",
+    "position": [
+      -398.9289,
+      727.7462
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_007",
+    "type": "treasure_chest",
+    "position": [
+      -523.913,
+      490.6911
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_012",
+    "type": "treasure_chest",
+    "position": [
+      -503.5481,
+      411.7237
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_013",
+    "type": "treasure_chest",
+    "position": [
+      -633.3051,
+      378.6533
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_014",
+    "type": "treasure_chest",
+    "position": [
+      -610.5841,
+      524.4609
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_006",
+    "type": "treasure_chest",
+    "position": [
+      -522.1635,
+      440.076
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_008",
+    "type": "treasure_chest",
+    "position": [
+      -496.3539,
+      542.3951
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_007",
+    "type": "treasure_chest",
+    "position": [
+      -476.6758,
+      532.2551
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_015",
+    "type": "treasure_chest",
+    "position": [
+      -694.0714,
+      456.2662
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_008",
+    "type": "treasure_chest",
+    "position": [
+      -612.1573,
+      459.1952
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_009",
+    "type": "treasure_chest",
+    "position": [
+      -544.9759,
+      564.6981
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_010",
+    "type": "treasure_chest",
+    "position": [
+      -469.4041,
+      443.7393
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_016",
+    "type": "treasure_chest",
+    "position": [
+      -719.057,
+      328.2112
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_017",
+    "type": "treasure_chest",
+    "position": [
+      -788.5777,
+      752.0889
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_018",
+    "type": "treasure_chest",
+    "position": [
+      -788.8875,
+      803.3684
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_normal_019",
+    "type": "treasure_chest",
+    "position": [
+      -842.4288,
+      727.2768
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_011",
+    "type": "treasure_chest",
+    "position": [
+      -664.5434,
+      842.4821
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_012",
+    "type": "treasure_chest",
+    "position": [
+      -602.509,
+      696.3035
+    ],
+    "subregionId": "JL_1"
+  },
+  {
+    "id": "int_trchest_common_high_009",
+    "type": "treasure_chest",
+    "position": [
+      -604.2262,
+      850.8565
+    ],
+    "subregionId": "JL_1"
+  }
+]

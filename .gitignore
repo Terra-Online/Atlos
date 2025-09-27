@@ -34,6 +34,9 @@ talos/src/asset/images/item
 talos/src/asset/images/shared
 talos/src/asset/images/marker
 
+/output
 talos/src/data/process/output/log
 .history
 .vscode
+talos/.stylelintcache
+/talos/.vite

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "mark_sp_campfire_027",
+    "type": "tp",
+    "position": [
+      -500.0128,
+      303.6313
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_sp_campfire_028",
+    "type": "tp",
+    "position": [
+      -500.0128,
+      687.5127
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_ss_room_growcabin_001",
+    "type": "growth_cabin",
+    "position": [
+      -450.3729,
+      777.5228
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_ss_room_manufacturingstation_001",
+    "type": "manufacturing_cabin",
+    "position": [
+      -547.7757,
+      755.7036
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_ss_room_manufacturingstation_002",
+    "type": "manufacturing_cabin",
+    "position": [
+      -547.7757,
+      820.25
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_ss_controlcenter_001",
+    "type": "control_nexus",
+    "position": [
+      -500.8642,
+      133.25
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_npc_ss_trainingroom_001",
+    "type": "training_room",
+    "position": [
+      -441.8085,
+      695.4502
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_npc_ss_shop_001",
+    "type": "exchange",
+    "position": [
+      -398.0257,
+      461.2243
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "mark_npc_ss_manualCollect_001",
+    "type": "collect",
+    "position": [
+      -467.5519,
+      395.358
+    ],
+    "subregionId": "DJ_1"
+  }
+]

@@ -1,0 +1,98 @@
+import useRegion from '@/store/region';
+import { MapCore } from '../mapCore/map';
+import { DEFAULT_REGION, REGION_DICT, SUBREGION_DICT } from '@/data/map';
+import { useEffect, useRef, useState } from 'react';
+import { createHighlight } from '@/utils/visual';
+import { useMarkerStore } from '@/store/marker';
+import L from 'leaflet';
+
+// Assmeble all stores to useMap
+export function useMap(ele: HTMLDivElement | null) {
+    const {
+        currentRegionKey: currentRegion,
+        setCurrentRegion,
+        setCurrentSubregion,
+        currentSubregionKey: currentSubregion,
+    } = useRegion();
+    const { filter } = useMarkerStore();
+
+    const mapRef = useRef<MapCore | null>(null);
+    const [LMap, setLMap] = useState<L.Map | null>(null);
+    const [mapInitialized, setMapInitialized] = useState(false);
+
+    // initMap
+    useEffect(() => {
+        if (!ele || mapRef.current) return;
+
+        mapRef.current = new MapCore(ele, {
+            onSwitchCurrentMarker: (marker) => {
+                useMarkerStore.setState({ currentActivePoint: marker });
+            },
+        });
+        setLMap(mapRef.current.map);
+        setMapInitialized(true);
+    }, [ele]);
+
+    // 初始化和切换地图区域
+    useEffect(() => {
+        if (mapRef.current && mapInitialized) {
+            mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
+        }
+    }, [currentRegion, mapInitialized]);
+
+    // alterMap
+    useEffect(() => {
+        if (mapRef.current) {
+            mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
+        }
+    }, [currentRegion]);
+
+    const selectSubregion = (subregionId: string) => {
+        const subregion = SUBREGION_DICT[subregionId];
+        if (!subregion) return;
+
+        setCurrentSubregion(subregion.id);
+
+        if (subregion.bounds && subregion.bounds.length >= 2) {
+            const [[x1, y1], [x2, y2]] = subregion.bounds;
+            const centerX = (x1 + x2) / 2;
+            const centerY = (y1 + y2) / 2;
+
+            const config = REGION_DICT[currentRegion];
+            const center = mapRef.current!.map.unproject(
+                [centerX, centerY],
+                config.maxZoom,
+            );
+
+            mapRef.current?.map.once('moveend', () => {
+                createHighlight(mapRef.current?.map, subregion, config);
+            });
+
+            mapRef.current?.setMapView({
+                lat: center.lat,
+                lng: center.lng,
+                zoom: 1,
+            });
+        }
+    };
+
+    // set filter
+    useEffect(() => {
+        const markerLayer = mapRef.current?.markerLayer;
+        markerLayer?.filterMarker(filter);
+        useMarkerStore.setState({
+            points:
+                markerLayer
+                    ?.getCurrentPoints(currentRegion)
+                    .map((point) => point.id) ?? [],
+        });
+    }, [filter, currentRegion]);
+
+    return {
+        map: LMap,
+        currentRegion,
+        currentSubregion,
+        setCurrentRegion,
+        setCurrentSubregion: selectSubregion,
+    };
+}

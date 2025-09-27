@@ -1,0 +1,135 @@
+@use '../../styles/palette.scss' as *;
+
+$desktop-headbar-height: 4rem;
+$toggle-btn-size: 4rem;
+$transition-speed: 0.3s;
+
+.sidebarContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 300px; /* 固定侧边栏宽度 */
+    z-index: 1000;
+    pointer-events: none;
+    transition: transform $transition-speed ease-in-out;
+
+    transform: translateX(-300px);
+
+    &.open {
+        transform: translateX(0);
+        > .sidebarToggle {
+            right: 236px;
+            transition: 0.3s ease-in-out;
+        }
+    }
+
+    .sidebar {
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        width: 100%; /* 填满容器 */
+        background-color: rgba($white-0, 0.5);
+        color: $grey-1;
+        backdrop-filter: blur(35px) brightness(120%);
+
+        box-shadow: 4px 0 8px rgba($black, 0.25);
+        pointer-events: auto;
+        transform: none;
+        transition: none;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+
+        .headIcon {
+            z-index: 100;
+            background-color: $white-1;
+            box-shadow: 0 4px 4px rgba($black, 0.25);
+            display: flex;
+            justify-content: center;
+            > img {
+                width: $desktop-headbar-height;
+                height: $desktop-headbar-height;
+                padding: 0.25rem;
+            }
+        }
+        .sidebarContent {
+            height: 100%;
+            padding: 15px;
+            padding-bottom: 2rem;
+            flex: 1;
+            overflow-y: auto;
+            > .filters {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-around;
+                gap: 0.3rem;
+            }
+        }
+        .copyright {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            bottom: 0;
+            background-color: rgba($white-0, 0.3);
+            box-shadow: 0 -1px 3px rgba($black, 0.3);
+            height: 1.5rem;
+            font-size: 0.875rem;
+            font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
+            font-weight: 550;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            a {
+                color: black;
+                text-decoration: none;
+                transition: font-weight 0.2s;
+                &:hover {
+                    font-weight: 650;
+                    transition: font-weight 0.2s;
+                }
+            }
+            &::after {
+                content: '';
+                position: absolute;
+                backdrop-filter: blur(0.5rem);
+                width: 100%;
+                height: inherit;
+                z-index: -1;
+            }
+        }
+    }
+
+    .sidebarToggle {
+        position: absolute;
+        top: 0;
+        right: -$toggle-btn-size; /* Position button outside sidebar area */
+        width: $toggle-btn-size;
+        height: $toggle-btn-size;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        z-index: 1001;
+        filter: drop-shadow(0 0 2.5px rgba($black, 0.6));
+        pointer-events: auto;
+        transition:
+            background-color 0.3s ease,
+            right 0.3s ease-in-out;
+        svg {
+            transition: all 0.2s ease;
+            fill: $primary-accent-4;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        &:hover svg {
+            fill: $primary-accent-3;
+        }
+    }
+}

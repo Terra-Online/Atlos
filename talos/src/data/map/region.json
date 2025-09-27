@@ -1,0 +1,55 @@
+{
+    "Valley_4": {
+        "dimensions": [
+            8000,
+            10000
+        ],
+        "maxZoom": 3,
+        "tileSize": 200,
+        "initialOffset": {
+            "x": 750,
+            "y": 250
+        },
+        "initialZoom": 2,
+        "subregions": [
+            "VL_1",
+            "VL_2",
+            "VL_3",
+            "VL_5",
+            "VL_6",
+            "VL_7"
+        ]
+    },
+    "Jinlong": {
+        "dimensions": [
+            8000,
+            10000
+        ],
+        "maxZoom": 3,
+        "tileSize": 200,
+        "initialOffset": {
+            "x": -2400,
+            "y": -1250
+        },
+        "initialZoom": 2,
+        "subregions": [
+            "JL_1"
+        ]
+    },
+    "Dijiang": {
+        "dimensions": [
+            4000,
+            5000
+        ],
+        "maxZoom": 2,
+        "tileSize": 200,
+        "initialOffset": {
+            "x": 0,
+            "y": -500
+        },
+        "initialZoom": 0,
+        "subregions": [
+            "DJ_1"
+        ]
+    }
+}

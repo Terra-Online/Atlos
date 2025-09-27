@@ -1,101 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css');
-@import url('https://c.webfontfree.com/c.js?f=GothamMedium');
+@import 'https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@100..900&display=swap';
+@import 'https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css';
+@import 'https://c.webfontfree.com/c.js?f=GothamMedium';
 @font-face {
     font-family: 'Novecento Bold';
-    src: url('../asset/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideBold.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideBold.otf') format('opentype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideBold.woff') format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideBold.otf')
+            format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento DemiBold';
-    src: url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideDemiBold.otf') format('opentype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff2')
+            format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideDemiBold.woff')
+            format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideDemiBold.otf')
+            format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Book';
-    src: url('../asset/fonts/Novecento/Novecento-WideBook.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideBook.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideBook.otf') format('opentype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideBook.woff2') format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideBook.woff') format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideBook.otf')
+            format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Light';
-    src: url('../asset/fonts/Novecento/Novecento-WideLight.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideLight.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideLight.otf') format('opentype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideLight.woff2')
+            format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideLight.woff') format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideLight.otf')
+            format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Medium';
-    src: url('../asset/fonts/Novecento/Novecento-WideMedium.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideMedium.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideMedium.otf') format('opentype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideMedium.woff2')
+            format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideMedium.woff') format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideMedium.otf')
+            format('opentype');
     font-display: swap;
 }
 @font-face {
     font-family: 'Novecento Normal';
-    src: url('../asset/fonts/Novecento/Novecento-WideNormal.woff2') format('woff2'),
-         url('../asset/fonts/Novecento/Novecento-WideNormal.woff') format('woff'),
-         url('../asset/fonts/Novecento/Novecento-WideNormal.otf') format('opentype');
-    font-display: swap;
-}
-/* UD ShinGo -- Proper implementation */
-@font-face {
-    font-family: 'UD_ShinGo Bold';
-    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff2') format('woff2'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff') format('woff'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_B.ttf') format('truetype');
+    src:
+        url('../asset/fonts/Novecento/Novecento-WideNormal.woff2')
+            format('woff2'),
+        url('../asset/fonts/Novecento/Novecento-WideNormal.woff') format('woff'),
+        url('../asset/fonts/Novecento/Novecento-WideNormal.otf')
+            format('opentype');
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'UD_ShinGo DemiBold';
-    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2') format('woff2'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff') format('woff'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf') format('truetype');
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'UD_ShinGo Medium';
-    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2') format('woff2'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff') format('woff'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_M.ttf') format('truetype');
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'UD_ShinGo';
-    src: url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2') format('woff2'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff') format('woff'),
-         url('../asset/fonts/UD_ShinGo/UDShinGo_HK_R.ttf') format('truetype');
-    font-display: swap;
-}
-/* Harmony OS Sans - Free for non-/commercial use */
-@font-face {
-    font-family: 'HMSans_SC';
-    src: url('../asset/fonts/Harmony/HMSans_SC.woff2') format('woff2'),
-         url('../asset/fonts/Harmony/HMSans_SC.woff') format('woff');
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'HMSans_TC';
-    src: url('../asset/fonts/Harmony/HMSans_TC.woff2') format('woff2'),
-         url('../asset/fonts/Harmony/HMSans_TC.woff') format('woff');
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'HMSans';
-    src: url('../asset/fonts/Harmony/HMSans.woff2') format('woff2'),
-         url('../asset/fonts/Harmony/HMSans.woff') format('woff');
+    font-family: 'HMSans_EN';
+    src:
+        url('../asset/fonts/Harmony/HMSans.woff2') format('woff2'),
+        url('../asset/fonts/Harmony/HMSans.woff') format('woff');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
