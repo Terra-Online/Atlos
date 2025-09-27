@@ -183,7 +183,7 @@ function injectFontStyles(region: Region): void {
         .filter(rule => rule.length > 0)
         .join('\n');
     
-    console.log(`Generated CSS for region ${region}:`, cssRules);
+    //console.log(`Generated CSS for region ${region}:`, cssRules);
     
     if (cssRules) {
         const styleElement = document.createElement('style');

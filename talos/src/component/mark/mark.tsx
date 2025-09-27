@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 import styles from './mark.module.scss';
 import { getItemIconUrl } from '../../utils/resource';
 import { useTranslate } from '@/locale';
+import { MarkVisibilityContext } from '../markFilter/visibilityContext';
 import {
     useFilter,
     useRegionMarkerCount,
@@ -66,6 +67,18 @@ const Mark = ({
                 displayName.includes(searchString)),
         [cnt, searchString, displayName],
     );
+    const ctx = useContext(MarkVisibilityContext);
+    // 固定一次性的稳定 id，避免因为 i18n 或上层重渲染导致 id 改变从而重复上报
+    const idRef = useRef<string>(
+        (typeInfo?.key ?? iconKey ?? displayName ?? Math.random().toString(36).slice(2)) as string,
+    );
+    useEffect(() => {
+        // report visibility on mount/update
+        ctx?.report(idRef.current, !!showFilter);
+        return () => ctx?.report(idRef.current, false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ctx, showFilter]);
+
     if (!showFilter) return null;
     return (
         <div

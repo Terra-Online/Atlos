@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import DefaultFilterIcon from '../../asset/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
+import { MarkVisibilityContext } from './visibilityContext';
 
 interface MarkFilterProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>> | (() => React.ReactNode);
@@ -20,8 +21,31 @@ const MarkFilter = ({
         setIsExpanded(!isExpanded);
     };
 
+    // visibility state reported by children
+    const [visibleMap, setVisibleMap] = useState<Set<string>>(new Set());
+    const report = useCallback((id: string, visible: boolean) => {
+        setVisibleMap((prev) => {
+            const has = prev.has(id);
+            // 如果状态未变化，不要创建新 Set，避免不必要的重渲染
+            if (visible === has) return prev;
+            const next = new Set(prev);
+            if (visible) next.add(id);
+            else next.delete(id);
+            return next;
+        });
+    }, []);
+
+    const visibleCount = visibleMap.size;
+    const isEmpty = useMemo(() => {
+        // children 为空或可见项目为 0，则判定为空过滤器
+        if (!children) return true;
+        return visibleCount === 0;
+    }, [children, visibleCount]);
+
+    const contextValue = useMemo(() => ({ report }), [report]);
     return (
-        <div className={styles.markFilterContainer}>
+    <MarkVisibilityContext.Provider value={contextValue}>
+    <div className={styles.markFilterContainer}>
             <div
                 className={`${styles.filterHeader} ${isExpanded ? styles.expanded : ''}`}
                 onClick={toggleExpand}
@@ -52,18 +76,19 @@ const MarkFilter = ({
                 ref={contentRef}
                 className={`${styles.filterContent} ${isExpanded ? styles.expanded : ''}`}
             >
-                <div
-                    className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}
-                >
-                    {children || (
-                        <div className={styles.placeholderContent}>
-                            <p>我能夠吞下玻璃而不受損傷。</p>
-                            <p>The quick brown fox jumps over the lazy dog.</p>
-                        </div>
-                    )}
+                <div className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}>
+                    {children}
+                    <div
+                        className={`${styles.placeholderContent} ${styles.markEmpty}`}
+                        style={{ display: isEmpty ? 'block' : 'none' }}
+                    >
+                        <p>无满足条件的筛选项。</p>
+                        <p>请联系管理员。</p>
+                    </div>
                 </div>
             </div>
         </div>
+        </MarkVisibilityContext.Provider>
     );
 };
 

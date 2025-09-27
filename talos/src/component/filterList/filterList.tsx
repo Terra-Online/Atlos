@@ -138,7 +138,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                     dragConstraints={{ left: -maxScroll, right: 0 }}
                     dragElastic={0.18}
                     dragMomentum={true}
-                    dragTransition={{ power: 0.2, bounceStiffness: 320, bounceDamping: 22 }}
+                    dragTransition={{ power: 0.1, bounceStiffness: 300, bounceDamping: 25 }}
                 >
                     <AnimatePresence>
                         {filterList.map((item, index) => (
