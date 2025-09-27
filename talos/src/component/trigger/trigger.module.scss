@@ -41,20 +41,34 @@ $transition-speed: 0.3s; //import from global size.scss later
             justify-content: center;
             width: 1.35rem;
             height: 1.35rem;
-            transition: fill 0.4s ease;
+            transition: color 0.4s ease;// using color-driven transition for universal compatibility
+            svg {
+                display: block; // avoid slight offset caused by baseline
+                width: 100%;
+                height: 100%;
+                fill: currentColor;
+            }
+            svg path {
+                fill: currentColor;
+            }
+            svg [stroke] {
+                stroke: currentColor;
+            }
             &.off > svg {
                 transform: translateX(1px);
                 width: calc(1.35rem - 2px);
-                height: calc(1.35rem - 2px); //optimize for vertical center
+                height: calc(1.35rem - 2px); // optimize for vertical center
             }
             //on state
             &.on {
-                fill: $white-1;
-                margin-left: auto;
+                color: $white-1;
             }
             &.off {
-                fill: $grey-1;
-                margin-right: auto;
+                color: $grey-1;
+            }
+            &.on > svg {
+                width: calc(1.35rem - 2px);
+                height: calc(1.35rem - 2px);
             }
         }
     }
@@ -99,10 +113,10 @@ $transition-speed: 0.3s; //import from global size.scss later
             //off state
             .triggerIcons {
                 .on {
-                    fill: $grey-1;
+                    color: $grey-1;
                 }
                 .off {
-                    fill: $white-1;
+                    color: $white-1;
                 }
             }
         }
@@ -116,5 +130,3 @@ $transition-speed: 0.3s; //import from global size.scss later
         white-space: nowrap;
     }
 }
-
-/* removed unused .sidebarOpen placeholder to satisfy stylelint */
