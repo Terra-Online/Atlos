@@ -1,7 +1,7 @@
 @use '../../styles/palette.scss' as *;
 
-$desktop-headbar-height: 4rem;
-$toggle-btn-size: 4rem;
+$desktop-headbar-height: 5.5rem;
+$toggle-btn-size: 5.5rem;
 $transition-speed: 0.3s;
 
 .sidebarContainer {
@@ -9,7 +9,7 @@ $transition-speed: 0.3s;
     top: 0;
     left: 0;
     height: 100%;
-    width: 300px; /* 固定侧边栏宽度 */
+    width: 300px;
     z-index: 1000;
     pointer-events: none;
     transition: transform $transition-speed ease-in-out;
@@ -19,7 +19,7 @@ $transition-speed: 0.3s;
     &.open {
         transform: translateX(0);
         > .sidebarToggle {
-            right: 236px;
+            right: 225px;
             transition: 0.3s ease-in-out;
         }
     }

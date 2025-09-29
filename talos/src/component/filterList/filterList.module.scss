@@ -20,7 +20,7 @@
     left: 1rem;
     height: 56px;
     min-width: 0;
-    border-radius: 8px;
+    border-radius: 6px;
     box-sizing: border-box;
     box-shadow: 0 0 5px rgba($black, 0.6);
     background-color: rgba($white-2, 0.25);
@@ -75,7 +75,7 @@
         linear-gradient(
             to left,
             rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, var(--rightMaskAlpha)) 20%
+            rgba(0, 0, 0, var(--rightMaskAlpha)) 10%
         );
 
     &.leftMaskOpacity { --leftMaskAlpha: 1; }

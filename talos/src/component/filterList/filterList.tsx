@@ -38,8 +38,13 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             const contentW = content.scrollWidth;
             const nextMax = Math.max(contentW - containerW + 14, 0);
             setMaxScroll(nextMax);
-            // 当内容变化时，重置到起点，避免越界
-            x.set(0);
+
+            // 保留当前滚动位置，只在越界时修正
+            const currentX = x.get();
+            const clampedX = Math.max(-nextMax, Math.min(0, currentX));
+            if (clampedX !== currentX) {
+                x.set(clampedX);
+            }
         };
 
         // 首次测量
@@ -85,7 +90,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
         return () => unsub();
     }, [x, maxScroll]);
 
-    // 当 maxScroll 变化（例如首次从 <=7 变为 >7）时，按当前 x 初始化遮罩，避免需要手动滚动
+    // 当 maxScroll 变化时，按当前 x 初始化遮罩
     useEffect(() => {
         const v = x.get();
         if (maxScroll <= 0) {
@@ -93,7 +98,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             setShowRightMask(false);
         } else {
             setShowLeftMask(v < -1);
-            setShowRightMask(v > -maxScroll + 1 || v === 0); // 初始在最左，显示右遮罩
+            setShowRightMask(v > -maxScroll + 1);
         }
     }, [maxScroll, x]);
 
@@ -138,10 +143,10 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                     dragConstraints={{ left: -maxScroll, right: 0 }}
                     dragElastic={0.18}
                     dragMomentum={true}
-                    dragTransition={{ power: 0.1, bounceStiffness: 300, bounceDamping: 25 }}
+                    dragTransition={{ power: 0.2, bounceStiffness: 320, bounceDamping: 22 }}
                 >
                     <AnimatePresence>
-                        {filterList.map((item, index) => (
+                        {[...filterList].reverse().map((item, index) => (
                             <motion.img
                                 key={item}
                                 className={classNames(
