@@ -63,7 +63,7 @@
     /* transition the numeric toggles for smooth fade */
     --leftFade: 0;
     --rightFade: 0;
-    transition: --leftFade 200ms ease, --rightFade 200ms ease;
+    transition: --leftfade 200ms ease, --rightfade 200ms ease;
 
     /* Single mask gradient across the whole container.
        Logic:
@@ -77,14 +77,6 @@
         rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
         rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
     );
-    -webkit-mask-image: linear-gradient(
-        to right,
-        rgba(0, 0, 0, calc(1 - var(--leftFade))) 0,
-        rgba(0, 0, 0, 1) var(--fadeWidth),
-        rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
-        rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
-    );
-    mask-mode: alpha;
 
     &.leftMaskOpacity { --leftFade: 1; }
     &.rightMaskOpacity { --rightFade: 1; }
