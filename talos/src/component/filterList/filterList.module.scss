@@ -1,14 +1,13 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-/* Register animatable custom properties for mask alphas */
-@property --leftMaskAlpha {
+/* Animatable custom properties controlling mask fades (0 = off, 1 = on) */
+@property --leftFade {
     syntax: '<number>';
     inherits: false;
     initial-value: 0;
 }
-
-@property --rightMaskAlpha {
+@property --rightFade {
     syntax: '<number>';
     inherits: false;
     initial-value: 0;
@@ -58,28 +57,37 @@
     overflow-y: hidden;
     padding: 0 8px;
 
-    /* mask variables and transition for fade in/out */
-    --leftMaskAlpha: 0;
-    --rightMaskAlpha: 0;
-    transition: --leftMaskAlpha 200ms ease, --rightMaskAlpha 200ms ease;
+    /* edge fade width */
+    --fadeWidth: 48px;
 
-    /* Always define mask-image with two layers; alpha driven by variables */
-    /* Left edge (to right): 0% -> transparent, 10% -> black with animated alpha */
-    /* Right edge (to left): 0% -> transparent, 20% -> black with animated alpha */
-    mask-image: 
-        linear-gradient(
-            to right,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, var(--leftMaskAlpha)) 10%
-        ),
-        linear-gradient(
-            to left,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, var(--rightMaskAlpha)) 10%
-        );
+    /* transition the numeric toggles for smooth fade */
+    --leftFade: 0;
+    --rightFade: 0;
+    transition: --leftFade 200ms ease, --rightFade 200ms ease;
 
-    &.leftMaskOpacity { --leftMaskAlpha: 1; }
-    &.rightMaskOpacity { --rightMaskAlpha: 1; }
+    /* Single mask gradient across the whole container.
+       Logic:
+       - When fade is OFF (0): edges alpha = 1 => fully visible; no masking.
+       - When fade is ON (1): edges alpha = 0 at extreme, reach 1 after --fadeWidth.
+    */
+    mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, calc(1 - var(--leftFade))) 0,
+        rgba(0, 0, 0, 1) var(--fadeWidth),
+        rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
+        rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, calc(1 - var(--leftFade))) 0,
+        rgba(0, 0, 0, 1) var(--fadeWidth),
+        rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
+        rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
+    );
+    mask-mode: alpha;
+
+    &.leftMaskOpacity { --leftFade: 1; }
+    &.rightMaskOpacity { --rightFade: 1; }
 }
 
 .innerContainer {
@@ -94,6 +102,9 @@
     height: 2.5rem;
     flex-shrink: 0;
     cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
     transition: transform 0.2s ease;
 
     &:hover {
@@ -102,10 +113,5 @@
 
     &:active {
         transform: scale(0.95);
-    }
-
-    // 第8个物品的半显示效果
-    &.halfVisible {
-        opacity: 0.7;
     }
 }

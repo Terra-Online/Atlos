@@ -147,7 +147,7 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 >
                     <AnimatePresence>
                         {[...filterList].reverse().map((item, index) => (
-                            <motion.img
+                            <motion.span
                                 key={item}
                                 className={classNames(
                                     styles.mainFilterContentItem,
@@ -156,14 +156,13 @@ const FilterList = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                                             index === 7 && shouldShowEighthHalf,
                                     },
                                 )}
-                                src={getItemIconUrl(item)}
+                                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3 }}
                                 onClick={() => {
                                     switchFilter(item);
                                 }}
-                                draggable='false' // Prevent image dragging
                             />
                         ))}
                     </AnimatePresence>
