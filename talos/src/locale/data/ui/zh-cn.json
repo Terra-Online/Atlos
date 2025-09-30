@@ -1,0 +1,48 @@
+{
+  "headbar": {
+    "tos": "服务条款",
+    "hideUI": "隐藏界面",
+    "group": "加入相关群",
+    "language": "选择语言",
+    "help": "获取帮助"
+  },
+  "trigger": {
+    "complexSelect": "复杂筛选",
+    "regionalPoi": "区域点位"
+  },
+  "search": {
+    "placeholder": "全局搜索…"
+  },
+  "markFilter": {
+    "title": "筛选项",
+    "emptyTitle": "无满足条件的筛选项。",
+    "emptyDesc": "请联系管理员。"
+  },
+  "detail": {
+    "stat": {
+      "world": "世界",
+      "main": "区域"
+    },
+    "noInfo": "暂无信息"
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "由 observator 6 提供支持"
+    }
+  },
+  "language": {
+    "title": "选择语言",
+    "cancel": "取消",
+    "current": "当前",
+    "names": {
+      "en-us": "English",
+      "zh-cn": "简体中文",
+      "zh-tw": "繁體中文",
+      "ja-JP": "日本語",
+      "ko-KR": "한국어"
+    }
+  }
+}

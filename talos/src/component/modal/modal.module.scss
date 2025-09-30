@@ -1,0 +1,9 @@
+.modalMask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:#121212;border:1px solid rgba(255,255,255,.08);border-radius:12px;min-width:280px;max-width:92vw;color:#eee;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);font-weight:600}
+.content{padding:16px;max-height:60vh;overflow:auto}
+.footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;justify-content:flex-end}
+.btn{padding:6px 12px;border-radius:8px;background:#2a2a2a;border:1px solid rgba(255,255,255,.12);color:#fff;cursor:pointer}
+.btn:hover{background:#333}
+.primary{background:#3b82f6;border-color:#3b82f6}
+.primary:hover{background:#2563eb}

@@ -1,0 +1,48 @@
+{
+  "headbar": {
+    "tos": "Terms of Service",
+    "hideUI": "Hide UI",
+    "group": "Join related group",
+    "language": "Choose language",
+    "help": "Reach out for help"
+  },
+  "trigger": {
+    "complexSelect": "Complex Select",
+    "regionalPoi": "Regional POI"
+  },
+  "search": {
+    "placeholder": "Overall search..."
+  },
+  "markFilter": {
+    "title": "Filter Options",
+    "emptyTitle": "No filter options match.",
+    "emptyDesc": "Please contact the administrator."
+  },
+  "detail": {
+    "stat": {
+      "world": "World",
+      "main": "Main"
+    },
+    "noInfo": "No info."
+  },
+  "footer": {
+    "icp": "ICP 2025119702-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "supported by observator 6"
+    }
+  },
+  "language": {
+    "title": "Choose language",
+    "cancel": "Cancel",
+    "current": "Current",
+    "names": {
+      "en-us": "English",
+      "zh-cn": "Simplified Chinese",
+      "zh-tw": "Traditional Chinese",
+      "ja-JP": "Japanese",
+      "ko-KR": "Korean"
+    }
+  }
+}

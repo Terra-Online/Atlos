@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import styles from './mark.module.scss';
 import { getItemIconUrl } from '../../utils/resource';
-import { useTranslate } from '@/locale';
+import { useTranslateGame } from '@/locale';
 import { MarkVisibilityContext } from '../markFilter/visibilityContext';
 import {
     useFilter,
@@ -14,7 +14,7 @@ const Mark = ({
     // points = [],
     typeInfo,
 }) => {
-    const t = useTranslate();
+    const tGame = useTranslateGame();
     // assemble icon_key
     const iconKey = useMemo(() => {
         if (typeInfo?.key) {
@@ -28,7 +28,7 @@ const Mark = ({
         return getItemIconUrl(iconKey, 'png');
     }, [iconKey]);
     // get i18n_displayName
-    const displayName = t(`markerType.key.${typeInfo.key}`) ?? '';
+    const displayName = tGame(`markerType.key.${typeInfo.key}`) ?? '';
     // stats
     // const stats = useMemo(() => {
     //   if (!points || !points.length) return { total: 0, collected: 0, percentage: 0 };

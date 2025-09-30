@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import DefaultFilterIcon from '../../asset/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
+import { useTranslateUI } from '@/locale';
 
 interface MarkFilterProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>> | (() => React.ReactNode);
@@ -12,10 +13,11 @@ interface MarkFilterProps {
 
 const MarkFilter = ({
     icon: CustomIcon,
-    title = 'Filter Options',
+    title,
     children,
     empty,
 }: MarkFilterProps) => {
+    const t = useTranslateUI();
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleExpand = () => {
@@ -58,7 +60,7 @@ const MarkFilter = ({
                         <DefaultFilterIcon className={styles.icon} />
                     )}
                 </div>
-                <div className={styles.filterTitle}>{title}</div>
+                <div className={styles.filterTitle}>{title ?? t('markFilter.title')}</div>
                 <div className={styles.toggleIcon}>
                     <svg
                         viewBox='0 0 24 24'
@@ -75,8 +77,8 @@ const MarkFilter = ({
                     {isEmpty && (
                         empty ?? (
                             <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
-                                <p>无满足条件的筛选项。</p>
-                                <p>请联系管理员。</p>
+                                <p>{t('markFilter.emptyTitle')}</p>
+                                <p>{t('markFilter.emptyDesc')}</p>
                             </div>
                         )
                     )}

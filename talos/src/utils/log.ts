@@ -1,24 +1,29 @@
 class Logger {
-    constructor() {
-        // this.isDebugEnabled = process.env.NODE_ENV === 'development';
-        // if (!this.isDebugEnabled) {
-        //     console.debug = function() {};
-        // }
+    private onceSet = new Set<string>();
+
+    // debug only in dev to reduce noise in production
+    debug(...args: any[]) {
+        // vite exposes import.meta.env.DEV
+        if (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) {
+            console.info('[DEBUG]', ...args);
+        }
     }
 
-    debug(...args) {
-        console.info('[DEBUG]', ...args);
-    }
-
-    info(...args) {
+    info(...args: any[]) {
         console.info('[INFO]', ...args);
     }
 
-    warn(...args) {
-        //console.warn('[WARN]', ...args);
+    warn(...args: any[]) {
+        console.warn('[WARN]', ...args);
     }
 
-    error(...args) {
+    warnOnce(id: string, ...args: any[]) {
+        if (this.onceSet.has(id)) return;
+        this.onceSet.add(id);
+        this.warn(...args);
+    }
+
+    error(...args: any[]) {
         console.error('[ERROR]', ...args);
     }
 }

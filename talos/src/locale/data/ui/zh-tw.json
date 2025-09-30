@@ -1,0 +1,48 @@
+{
+  "headbar": {
+    "tos": "服務條款",
+    "hideUI": "隱藏介面",
+    "group": "加入相關群",
+    "language": "選擇語言",
+    "help": "取得協助"
+  },
+  "trigger": {
+    "complexSelect": "複雜篩選",
+    "regionalPoi": "區域點位"
+  },
+  "search": {
+    "placeholder": "全域搜尋…"
+  },
+  "markFilter": {
+    "title": "篩選項",
+    "emptyTitle": "無滿足條件的篩選項。",
+    "emptyDesc": "請聯繫管理員。"
+  },
+  "detail": {
+    "stat": {
+      "world": "世界",
+      "main": "區域"
+    },
+    "noInfo": "暫無資訊"
+  },
+  "footer": {
+    "icp": "滬ICP備2025119702號-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "由 observator 6 提供支援"
+    }
+  },
+  "language": {
+    "title": "選擇語言",
+    "cancel": "取消",
+    "current": "目前",
+    "names": {
+      "en-us": "English",
+      "zh-cn": "简体中文",
+      "zh-tw": "繁體中文",
+      "ja-JP": "日本語",
+      "ko-KR": "한국어"
+    }
+  }
+}

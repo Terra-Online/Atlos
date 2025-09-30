@@ -1,0 +1,48 @@
+{
+  "headbar": {
+    "tos": "서비스 약관",
+    "hideUI": "UI 숨기기",
+    "group": "관련 그룹 참여",
+    "language": "언어 선택",
+    "help": "도움말"
+  },
+  "trigger": {
+    "complexSelect": "복잡한 필터",
+    "regionalPoi": "지역 POI"
+  },
+  "search": {
+    "placeholder": "전체 검색…"
+  },
+  "markFilter": {
+    "title": "필터 항목",
+    "emptyTitle": "조건에 맞는 필터가 없습니다.",
+    "emptyDesc": "관리자에게 문의하세요."
+  },
+  "detail": {
+    "stat": {
+      "world": "월드",
+      "main": "지역"
+    },
+    "noInfo": "정보 없음"
+  },
+  "footer": {
+    "icp": "ICP 2025119702-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "observator 6에서 제공"
+    }
+  },
+  "language": {
+    "title": "언어 선택",
+    "cancel": "취소",
+    "current": "현재",
+    "names": {
+      "en-us": "English",
+      "zh-cn": "简体中文",
+      "zh-tw": "繁體中文",
+      "ja-JP": "日本語",
+      "ko-KR": "한국어"
+    }
+  }
+}
