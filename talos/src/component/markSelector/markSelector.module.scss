@@ -1,21 +1,35 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+/* Skeleton layer: participates ONLY in grid layout, occupies space and fixes collapsed height, no animation */
+.markSkeleton {
+    position: relative;
+    width: 100%;
+    /* Collapsed height */
+    --mark-item-collapsed-h: 3.2rem;
+    height: var(--mark-item-collapsed-h);
+    margin-bottom: 0.75rem;
+    overflow: visible; /* allow content layer(markItem) to overflow */
+}
 
 .markItem {
     user-select: none;
     touch-action: none;
-    position: relative;
+    /* Content layer: absolutely positioned within skeleton plot */
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
     background-color: $white-1;
     color: $grey-1;
     border-radius: 0 2px 2px 0;
     padding: 0.25rem;
-    margin-bottom: 0.75rem;
     cursor: pointer;
     box-shadow: 0 0 3px 1px rgba($black, 0);
-    transition: all 0.2s ease;
-    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    overflow: visible;
     display: grid;
     grid-template-columns: 0.5fr 1.5fr;
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-rows: auto auto; /* allow name row to grow when expanded */
     gap: 0 2px;
     grid-template-areas:
         'icon Name'
@@ -69,6 +83,37 @@
         box-shadow: 1px 3px 5px rgba($black, 0.2);
         transform: translateY(-1px);
     }
+    /* Name layer: expanded state */
+    .markNameExpanded {
+        display: block;
+        color: inherit;
+        font-size: 0.735rem;
+        line-height: 1.2;
+        margin: 2px 0;
+        word-break: break-word;
+        white-space: normal;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+            max-height 0.5s $presto-curve,
+            opacity 0.3s $presto-curve;
+    }
+    &[data-truncated='true']:hover .markNameExpanded {
+        /* expand to measured height and max 7 lines */
+        max-height: var(--expanded-height, 8.4em);
+        opacity: 1;
+    }
+    .markName {
+        transition:
+            max-height 0.5s $presto-curve,
+            opacity 0.3s $presto-curve;
+        max-height: 1.2em; /* single line height for smooth collapse */
+    }
+    &[data-truncated='true']:hover .markName {
+        max-height: 0;
+        opacity: 0;
+    }
     .markIcon {
         grid-area: icon;
         display: flex;
@@ -106,19 +151,23 @@
             object-fit: contain;
         }
     }
-    .markName {
-        grid-area: Name;
-        font-weight: 500;
+    .markName, .markNameExpanded {
+        grid-area: unset;
+        font-weight: 700;
         font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
         color: inherit;
         font-size: 0.735rem;
+    }
+    .markName {
         line-height: 1.2;
         margin: 0;
-        align-self: end;
         z-index: 2;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        display: block;
+        width: 100%;
+        max-width: 100%;
     }
     .markStat {
         grid-area: Num;
@@ -129,5 +178,16 @@
         z-index: 2;
         line-height: 1;
         margin: auto 0;
+    }
+
+    /* name cell wraps the main ellipsized name and an absolute expanded panel */
+    .nameCell {
+        grid-area: Name;
+        position: relative;
+        display: block;
+        min-width: 0; /* allow ellipsis to work in grid cell */
+        width: 100%;
+        align-self: end;
+        overflow: hidden; /* allow expansion within document flow, hide overflow for smooth transition */
     }
 }

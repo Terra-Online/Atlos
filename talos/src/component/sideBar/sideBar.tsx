@@ -6,7 +6,7 @@ import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
 
 import Search from '../search/search';
 import MarkFilter from '../markFilter/markFilter';
-import Mark from '../mark/mark';
+import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
@@ -58,7 +58,7 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                 <div className={styles.headIcon}>
                     <img
                         src={Icon}
-                        alt={t('sidebar.alt.supportedBy')}
+                        alt={String(t('sidebar.alt.supportedBy'))}
                         draggable={'false'}
                     />
                 </div>
@@ -67,11 +67,11 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                     <div className={styles.filters}>
                         {Object.entries(MARKER_TYPE_TREE).map(
                             ([key, value]) => (
-                                <MarkFilter title={tGame(`markerType.types.${key}`)} key={key}>
+                                <MarkFilter title={String(tGame(`markerType.types.${key}`))} key={key}>
                                     {Object.values(value)
                                         .flat()
                                         .map((typeInfo) => (
-                                            <Mark
+                                            <MarkSelector
                                                 key={typeInfo.key}
                                                 typeInfo={typeInfo}
                                             />
