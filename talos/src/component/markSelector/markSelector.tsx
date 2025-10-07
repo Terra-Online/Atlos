@@ -17,7 +17,7 @@ interface MarkSelectorProps {
 
 let zCounter = 80;
 const nextZ = () => {
-    zCounter = zCounter >= 16384 ? 80 : zCounter + 1;
+    zCounter = zCounter >= 500 ? 50 : zCounter + 1;
     return zCounter;
 };
 

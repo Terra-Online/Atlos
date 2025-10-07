@@ -1,7 +1,7 @@
 // dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
 
 type FontWeight = 'Bold' | 'DemiBold' | 'Medium' | 'Regular';
-type Region = 'CN' | 'HK';
+type Region = 'CN' | 'HK' | 'JP';
 
 interface FontDefinition {
     family: string;
@@ -13,6 +13,12 @@ interface FontDefinition {
         ttf?: string;
     };
     hkFiles?: {
+        woff2?: string;
+        woff?: string;
+        otf?: string;
+        ttf?: string;
+    };
+    jpFiles?: {
         woff2?: string;
         woff?: string;
         otf?: string;
@@ -34,21 +40,30 @@ const fontDefinitions: FontDefinition[] = [
             woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
             woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
             ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.ttf',
+        },
+        jpFiles: {
+            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
+            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
+            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.otf',
         }
     },
     {
         family: 'UD_ShinGo DemiBold',
         weight: 'DemiBold',
-        // 简中没有 DemiBold，用 Bold 替代
         cnFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.otf',
+            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
+            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
+            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.otf',
         },
         hkFiles: {
             woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
             woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
             ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf',
+        },
+        jpFiles: {
+            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
+            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
+            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.otf',
         }
     },
     {
@@ -63,6 +78,11 @@ const fontDefinitions: FontDefinition[] = [
             woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
             woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
             ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.ttf',
+        },
+        jpFiles: {
+            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
+            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
+            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.otf',
         }
     },
     {
@@ -77,6 +97,11 @@ const fontDefinitions: FontDefinition[] = [
             woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
             woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
             ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.ttf',
+        },
+        jpFiles: {
+            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
+            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
+            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.otf',
         }
     },
     {
@@ -108,7 +133,7 @@ const fontDefinitions: FontDefinition[] = [
 // detect document language
 function detectDocumentLanguage(): Region {
     const htmlLang = (document.documentElement.lang || document.documentElement.getAttribute('lang') || '').toLowerCase();
-    const navigatorLang = (navigator.language || (navigator as any).userLanguage || '').toLowerCase();
+    const navigatorLang = String(navigator.language || '').toLowerCase();
     
     // check HTML lang attribute first
     if (htmlLang) {
@@ -117,6 +142,9 @@ function detectDocumentLanguage(): Region {
         }
         if (htmlLang.includes('zh-tw') || htmlLang.includes('zh-hk') || htmlLang.includes('zh-hant')) {
             return 'HK';
+        }
+        if (htmlLang.includes('ja') || htmlLang.includes('jp')) {
+            return 'JP';
         }
     }
     
@@ -128,6 +156,9 @@ function detectDocumentLanguage(): Region {
         if (navigatorLang.includes('zh-tw') || navigatorLang.includes('zh-hk') || navigatorLang.includes('zh-hant')) {
             return 'HK';
         }
+        if (navigatorLang.includes('ja') || navigatorLang.includes('jp')) {
+            return 'JP';
+        }
     }
     
     // default to HK
@@ -136,7 +167,9 @@ function detectDocumentLanguage(): Region {
 
 // generate CSS @font-face rules
 function generateFontFaceCSS(definition: FontDefinition, region: Region): string {
-    const files = region === 'CN' ? definition.cnFiles : definition.hkFiles;
+    const files = region === 'CN' ? definition.cnFiles : 
+                  region === 'HK' ? definition.hkFiles : 
+                  definition.jpFiles;
     
     if (!files) return '';
     
@@ -190,7 +223,7 @@ function injectFontStyles(region: Region): void {
         styleElement.id = 'dynamic-font-loader';
         styleElement.textContent = cssRules;
         document.head.appendChild(styleElement);
-        console.log('Font styles injected into <head>, element ID: dynamic-font-loader');
+        //console.log('Font styles injected into <head>, element ID: dynamic-font-loader');
     } else {
         console.warn('No CSS rules generated for region:', region);
     }

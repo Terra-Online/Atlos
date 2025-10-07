@@ -26,6 +26,7 @@
     cursor: pointer;
     box-shadow: 0 0 3px 1px rgba($black, 0);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
+    will-change: box-shadow, transform;
     overflow: visible;
     display: grid;
     grid-template-columns: 0.5fr 1.5fr;
@@ -39,6 +40,7 @@
         color: rgba($black, 1);
         box-shadow: 0 3px 4px rgba($black, 0.4);
         transition: all 0.2s ease;
+        mix-blend-mode: luminosity;
         &::after {
             clip-path: polygon(
                 0 0,
@@ -87,10 +89,7 @@
     .markNameExpanded {
         display: block;
         color: inherit;
-        font-size: 0.735rem;
-        line-height: 1.2;
         margin: 2px 0;
-        word-break: break-word;
         white-space: normal;
         max-height: 0;
         opacity: 0;
@@ -104,15 +103,15 @@
         max-height: var(--expanded-height, 8.4em);
         opacity: 1;
     }
+    &[data-truncated='true']:hover .markName {
+        max-height: 0;
+        opacity: 0;
+    }
     .markName {
         transition:
             max-height 0.5s $presto-curve,
             opacity 0.3s $presto-curve;
         max-height: 1.2em; /* single line height for smooth collapse */
-    }
-    &[data-truncated='true']:hover .markName {
-        max-height: 0;
-        opacity: 0;
     }
     .markIcon {
         grid-area: icon;
@@ -153,13 +152,17 @@
     }
     .markName, .markNameExpanded {
         grid-area: unset;
-        font-weight: 700;
+        font-weight: 800;
+        line-height: 1.2;
         font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
         color: inherit;
-        font-size: 0.735rem;
+        font-size: 0.75rem;
+        letter-spacing: -.2px;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        hyphens: auto;
     }
     .markName {
-        line-height: 1.2;
         margin: 0;
         z-index: 2;
         white-space: nowrap;
