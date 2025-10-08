@@ -48,7 +48,11 @@ jobs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
-          
+
+    - name: Generate config
+      run: cp config/config.template.json config/config.json
+      working-directory: ./talos
+
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
       working-directory: ./talos
