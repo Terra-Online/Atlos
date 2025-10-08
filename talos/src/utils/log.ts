@@ -15,7 +15,7 @@ class Logger {
     }
 
     warn(...args) {
-        //console.warn('[WARN]', ...args);
+        console.warn('[WARN]', ...args);
     }
 
     error(...args) {

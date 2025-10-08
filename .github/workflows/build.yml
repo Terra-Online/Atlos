@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      # - 'feature/*'        # 匹配所有 feature/ 开头的分支
+      # - 'hotfix/*'         # 匹配所有 hotfix/ 开头的分支
+      - 'release/*'        # 匹配所有 release/ 开头的分支
+      - 'v*'               # 匹配所有 v 开头的版本分支
+  pull_request:
+    branches:
+      - main
+      - master
+      # - 'feature/*'
+      # - 'hotfix/*'
+      - 'release/*'
+      - 'v*' 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.5.0
+        
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+          
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      working-directory: ./talos
+      
+    - name: Run type check
+      run: pnpm run type-check
+      working-directory: ./talos
+    
+    # lint cannot pass by now
+    # - name: Run lint
+    #   run: pnpm run lint
+    #   working-directory: ./talos
+      
+    - name: Build project
+      run: pnpm run build
+      working-directory: ./talos
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: talos/dist/
+        retention-days: 7

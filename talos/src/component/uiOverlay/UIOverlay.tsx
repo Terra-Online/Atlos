@@ -95,7 +95,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
             <RegionContainer isSidebarOpen={false} />
 
             {/* TriggerBar */}
-            <TriggerBar isSidebarOpen={false}>
+            <TriggerBar>
                 <Trigger
                     isActive={triggers.t1}
                     onToggle={handleTrigger1}
