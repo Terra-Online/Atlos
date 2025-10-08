@@ -65,6 +65,7 @@
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
         z-index: 1;
         transition: clip-path 0.3s ease;
+        z-index: -1;
     }
     &::before {
         content: '';

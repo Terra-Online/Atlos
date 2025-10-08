@@ -26,7 +26,7 @@
     "noInfo": "暫無資訊"
   },
   "footer": {
-    "icp": "滬ICP備2025119702號-1"
+    "icp": "沪ICP备2025119702号-1"
   },
   "sidebar": {
     "alt": {
@@ -34,7 +34,7 @@
     }
   },
   "language": {
-    "title": "選擇語言",
+    "title": "語言切換",
     "cancel": "取消",
     "current": "目前",
     "names": {
@@ -44,5 +44,8 @@
       "ja-JP": "日本語",
       "ko-KR": "한국어"
     }
+  },
+  "common": {
+    "close": "關閉"
   }
 }

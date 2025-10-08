@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import Modal from '@/component/modal/Modal';
+import I18nIcon from '../../asset/logos/i18n.svg?react';
 import styles from './language.module.scss';
 import { SUPPORTED_LANGS, setLocale, useLocale } from '@/locale';
 import { useTranslateUI } from '@/locale';
@@ -35,15 +36,15 @@ const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose, onChange, 
       open={open}
       onClose={onClose}
       onChange={onChange}
-      title={t('language.title')}
-      footer={<button className={styles.btn} onClick={onClose}>{t('language.cancel')}</button>}
+      title={t('language.title') as unknown as string}
+      icon={<I18nIcon aria-hidden="true" />}
     >
       <div className={styles.langList}>
         {items.map(it => (
           <button
             key={it.key}
             className={`${styles.langItem} ${current === it.key ? styles.active : ''}`}
-            onClick={() => handlePick(it.key)}
+            onClick={() => { void handlePick(it.key); }}
           >
             <span className={styles.langName}>{t(`language.names.${it.key}`) || it.label}</span>
             {current === it.key && <span className={styles.badge}>{t('language.current')}</span>}

@@ -26,7 +26,7 @@
     "noInfo": "No info."
   },
   "footer": {
-    "icp": "ICP 2025119702-1"
+    "icp": "沪ICP备2025119702号-1"
   },
   "sidebar": {
     "alt": {
@@ -34,7 +34,7 @@
     }
   },
   "language": {
-    "title": "Choose language",
+    "title": "language",
     "cancel": "Cancel",
     "current": "Current",
     "names": {
@@ -44,5 +44,8 @@
       "ja-JP": "Japanese",
       "ko-KR": "Korean"
     }
+  },
+  "common": {
+    "close": "Close"
   }
 }

@@ -34,7 +34,7 @@
     }
   },
   "language": {
-    "title": "选择语言",
+    "title": "语言切换",
     "cancel": "取消",
     "current": "当前",
     "names": {
@@ -44,5 +44,8 @@
       "ja-JP": "日本語",
       "ko-KR": "한국어"
     }
+  },
+  "common": {
+    "close": "关闭"
   }
 }

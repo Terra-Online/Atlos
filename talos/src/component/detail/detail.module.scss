@@ -6,8 +6,8 @@
     bottom: 1rem;
     right: 1rem;
     width: 20rem;
-    background: $light-1;
-    border-radius: 0;
+    background-color: $light-1;
+    border-radius: 3px;
     box-shadow: 0 4px 4px rgba($black, 0.25);
     overflow: hidden;
     z-index: 1000;
@@ -36,6 +36,7 @@
         background-position-x: 3%;
         box-shadow: 0 2px 3px rgba($black, 0.25);
         position: sticky;
+        user-select: none;
 
         .pointInfo {
             display: flex;
@@ -84,7 +85,6 @@
                     outline 0.3s ease,
                     box-shadow 0.3s ease;
                 will-change: filter, outline, box-shadow;
-                font-family: 'Novecento Medium', sans-serif;
                 text-align: end;
                 padding-right: 1.1rem;
                 position: relative;
