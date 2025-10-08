@@ -5,6 +5,7 @@ import config from './config/config.json';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 import eslint from 'vite-plugin-eslint';
+import { existsSync } from 'fs';
 
 const isProd = process.env.NODE_ENV === 'production';
 const assetsHost = isProd
@@ -17,6 +18,7 @@ export default defineConfig({
     plugins: [
         react(),
         svgr(),
+        // 只复制存在的目录，避免构建失败
         viteStaticCopy({
             targets: [
                 {
@@ -35,7 +37,7 @@ export default defineConfig({
                     src: 'src/asset/images/category',
                     dest: 'asset/images',
                 },
-            ],
+            ].filter(target => existsSync(target.src)), // 只包含存在的源路径
         }),
         eslint({
             failOnWarning: false,
