@@ -176,7 +176,8 @@ export const Detail = () => {
                         {/* disabled in version1 */}
                         {/* <div className="header-actions">
             {!isCollected && <button className="next-button" onClick={handleNextPoint}>
-              <span>Complete</span>
+              <span className="deco"></span>
+              <span className={styles.nextText}>Next</span>
             </button>}
           </div> */}
                     </div>

@@ -201,7 +201,8 @@ const Modal: React.FC<ModalProps> = ({
                   onChange?.(false);
                 }}
               >
-                <span>{tUI('common.close') as unknown as string}</span>
+                <span className={styles.deco}></span>
+                <span className={styles.closeText}>{tUI('common.close') as unknown as string}</span>
               </button>
             )}
           </div>

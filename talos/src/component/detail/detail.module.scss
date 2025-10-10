@@ -94,24 +94,52 @@
                 justify-content: flex-end;
                 align-items: center;
 
-                span {
+                span.nextText {
+                    display: inline-flex;
+                    justify-content: center;
                     position: relative;
                     z-index: 3;
+                    letter-spacing: -.5px;
+                    font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
+                    font-weight: 900;
+                    text-shadow: 1px 1px 1px rgba($black, 0.25);
+                    width: auto;
+                    white-space: nowrap;
+                    padding: 0 2.5px;
+                    margin-left: auto; // push text to the right then complementing deco
                 }
-
-                &::before {
+                span.deco {
                     content: '';
-                    position: absolute;
-                    width: 40%;
-                    height: 100%;
-                    top: 0;
-                    left: 0.25rem;
-                    background-image: url('../../asset/images/UI/arrow.svg');
-                    background-size: contain;
-                    background-repeat: no-repeat;
-                    background-position: center;
+                    display: flex;
+                    flex: 1 1 auto;
+                    height: 1.5px;
+                    margin-left: .3rem;
+                    margin-right: 2px;
+                    background-color: $grey-1;
                     z-index: 1;
                     pointer-events: none;
+                    position: relative;
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        width: 0;
+                        height: 0;
+                        border-style: solid;
+                        border-width: 3.3px 0 3.3px 6.6px;
+                        border-color: transparent transparent transparent $grey-1;
+                        transform: translateY(calc(-50% + .75px));// plus 1/2 of deco height to align center
+                    }
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        width: 0;
+                        height: 0;
+                        right: 0;
+                        border-style: solid;
+                        border-width: 2.25px;
+                        border-color: $grey-1;
+                        transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px));// plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
+                    }
                 }
 
                 &::after {
