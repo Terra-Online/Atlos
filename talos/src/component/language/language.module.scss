@@ -17,6 +17,7 @@
 .langItem {
     position: relative;
     overflow: hidden;
+    user-select: none;
     display: grid;
     grid-template-columns: 1.5fr 0.5fr;
     grid-template-rows: repeat(3, 1fr);
@@ -40,10 +41,6 @@
         background-color .2s ease-in,
         color .2s ease-in,
         box-shadow .4s $moderato-curve;
-    &:hover {
-        background-color: $white-3;
-        box-shadow: 0 0 4px 1px rgba($black, 0.35);
-    }
     &::before {
         content: "";
         position: absolute;
@@ -52,15 +49,26 @@
         width: 3px;
         height: 80%;
         background-color: $grey-1;
+        box-shadow: 0 0 0 0 transparent;
         z-index: 0;
         pointer-events: none;
-        transition: background-color .4s ease-in;
+        transition: background-color .4s ease;
+    }
+     &:hover {
+        background-color: $white-3;
+        box-shadow: 0 0 4px 1px rgba($black, 0.35);
+        &::before {
+            background-color: $primary-accent-1;
+            transition: background-color .2s ease;
+        }
     }
     &.active {
         background-color: $dim;
         color: $white-1;
         &::before {
             background-color: $primary-accent-4;
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
         }
         &:hover {
             background-color: $grey-1;
