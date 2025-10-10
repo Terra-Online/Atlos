@@ -38,10 +38,10 @@
     "cancel": "취소",
     "current": "현재",
     "names": {
-      "en-us": "English",
-      "zh-cn": "简体中文",
-      "zh-tw": "繁體中文",
-      "ja-JP": "日本語",
+      "en-us": "영어",
+      "zh-cn": "중국어 간체",
+      "zh-tw": "중국어 번체",
+      "ja-JP": "일본어",
       "ko-KR": "한국어"
     }
   },

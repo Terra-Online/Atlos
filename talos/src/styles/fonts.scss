@@ -1,4 +1,13 @@
 @font-face {
+    font-family: 'Lang Origin';
+    src:
+        url('../asset/fonts/UD_ShinGO/LangOrigin.woff2') format('woff2'),
+        url('../asset/fonts/UD_ShinGO/LangOrigin.woff') format('woff'),
+        url('../asset/fonts/UD_ShinGO/LangOrigin.otf') format('opentype');
+    font-display: swap;
+}
+
+@font-face {
     font-family: 'Novecento Bold';
     src:
         url('../asset/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),

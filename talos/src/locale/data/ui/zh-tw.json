@@ -36,13 +36,13 @@
   "language": {
     "title": "語言切換",
     "cancel": "取消",
-    "current": "目前",
+    "current": "現時",
     "names": {
-      "en-us": "English",
-      "zh-cn": "简体中文",
+      "en-us": "英語",
+      "zh-cn": "簡體中文",
       "zh-tw": "繁體中文",
-      "ja-JP": "日本語",
-      "ko-KR": "한국어"
+      "ja-JP": "日語",
+      "ko-KR": "韓語"
     }
   },
   "common": {

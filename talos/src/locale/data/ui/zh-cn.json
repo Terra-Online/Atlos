@@ -38,11 +38,11 @@
     "cancel": "取消",
     "current": "当前",
     "names": {
-      "en-us": "English",
+      "en-us": "英语",
       "zh-cn": "简体中文",
-      "zh-tw": "繁體中文",
-      "ja-JP": "日本語",
-      "ko-KR": "한국어"
+      "zh-tw": "繁体中文",
+      "ja-JP": "日语",
+      "ko-KR": "韩语"
     }
   },
   "common": {

@@ -1,5 +1,7 @@
 // dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
 
+import { preloadFonts, getFontUrlsForRegion } from './fontCache';
+
 type FontWeight = 'Bold' | 'DemiBold' | 'Medium' | 'Regular';
 type Region = 'CN' | 'HK' | 'JP';
 
@@ -86,7 +88,7 @@ const fontDefinitions: FontDefinition[] = [
         }
     },
     {
-        family: 'UD_ShinGo',
+        family: 'UD_ShinGo Regular',
         weight: 'Regular',
         cnFiles: {
             woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
@@ -204,6 +206,10 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
 
 // inject or update font styles in document head
 function injectFontStyles(region: Region): void {
+    // Preload fonts for this region in the background
+    const fontUrls = getFontUrlsForRegion(region);
+    preloadFonts(fontUrls).catch(err => console.error('Font preload failed:', err));
+    
     // remove current font styles if exist
     const existingStyle = document.getElementById('dynamic-font-loader');
     if (existingStyle) {
