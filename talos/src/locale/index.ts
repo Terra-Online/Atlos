@@ -57,8 +57,8 @@ const deepGet = (obj: any, path: string) =>
 
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
-const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob('./data/ui/*.json');
-const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob('./data/game/*.json');
+const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/ui/*.json');
+const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/game/*.json');
 
 function resolveLoader(map: Record<string, () => Promise<JsonModule>>, locale: string): (() => Promise<JsonModule>) | undefined {
     const candidates = [locale, locale.toLowerCase(), toBCP47(locale as any as Lang), toBCP47(locale as any as Lang).toLowerCase()];
