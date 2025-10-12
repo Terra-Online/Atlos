@@ -74,11 +74,38 @@ async function setCache(entry: CacheEntry): Promise<void> {
   }
 }
 
-// Load JSON from network
-async function loadJSON(url: string): Promise<Record<string, unknown>> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to load ${url}`);
-  return response.json() as Promise<Record<string, unknown>>;
+// Build-safe loaders using Vite import.meta.glob
+// Match files next to this worker: ./data/ui/*.json and ./data/game/*.json
+type JsonData = Record<string, unknown>;
+type JsonModule = { default: JsonData };
+type ModuleLoader = () => Promise<JsonModule>;
+const uiModules: Record<string, ModuleLoader> = import.meta.glob<JsonModule>('./data/ui/*.json');
+const gameModules: Record<string, ModuleLoader> = import.meta.glob<JsonModule>('./data/game/*.json');
+
+function buildModuleMap(glob: Record<string, ModuleLoader>) {
+  const map = new Map<string, ModuleLoader>();
+  for (const [path, loader] of Object.entries(glob)) {
+    const base = path.split('/').pop() || '';
+    const key = base.replace(/\.json$/i, '');
+    // 多种键映射，避免大小写或分隔符差异
+    map.set(key, loader);
+    map.set(key.toLowerCase(), loader);
+    map.set(key.replace(/_/g, '-').toLowerCase(), loader);
+  }
+  return map;
+}
+
+const uiMap = buildModuleMap(uiModules);
+const gameMap = buildModuleMap(gameModules);
+
+async function loadJSONModule(kind: 'ui' | 'game', locale: string): Promise<JsonData> {
+  const k = locale;
+  const kl = locale.toLowerCase();
+  const map = kind === 'ui' ? uiMap : gameMap;
+  const loader = map.get(k) || map.get(kl);
+  if (!loader) throw new Error(`Locale file not found for ${kind}:${locale}`);
+  const mod = await loader();
+  return mod.default;
 }
 
 // Main message handler
@@ -104,10 +131,9 @@ self.addEventListener('message', (e: MessageEvent<WorkerMessage>) => {
         }
         
         // Cache miss - load from network
-        const baseUrl = self.location.origin;
         const [ui, game] = await Promise.all([
-          loadJSON(`${baseUrl}/src/locale/data/ui/${locale}.json`),
-          loadJSON(`${baseUrl}/src/locale/data/game/${locale}.json`),
+          loadJSONModule('ui', locale),
+          loadJSONModule('game', locale),
         ]);
         
         // Store in cache for next time

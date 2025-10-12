@@ -97,6 +97,7 @@
     font-family: 'Novecento Medium', 'UD_ShinGo Medium', sans-serif;
     font-weight: 500;
     padding-left: 6px;
+    max-width: 0;
     white-space: nowrap;
 }
 
@@ -133,7 +134,7 @@
     white-space: nowrap;
     margin-left: 0;
     color: $grey-1;
-    font-family: 'Novecento Bold', 'UD_ShinGo Bold', sans-serif;
+    font-family: 'Novecento Bold', 'Lang Origin', sans-serif;
     font-weight: 900;
     text-transform: uppercase;
     transition:
