@@ -1,0 +1,161 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+.langList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: .6rem .75rem;
+    align-items: stretch
+}
+
+@media (max-width:576px) {
+    .langList {
+        grid-template-columns: 1fr
+    }
+}
+
+.langItem {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    display: grid;
+    grid-template-columns: 1.5fr 0.5fr;
+    grid-template-rows: repeat(3, 1fr);
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "langOrigin langTag"
+        "langOrigin langTag"
+        "langDisplay langTag";
+
+    border-radius: 3px;
+    height: 3.6rem;
+    padding: .4rem .5rem;
+    box-shadow: 0 0 4px 1px rgba($black, 0.25);
+    background-color: $white-1;
+    color: $grey-1;
+    cursor: pointer;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        box-shadow .4s $moderato-curve;
+    &::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 10%;
+        width: 3px;
+        height: 80%;
+        background-color: $grey-1;
+        box-shadow: 0 0 0 0 transparent;
+        z-index: 0;
+        pointer-events: none;
+        transition: background-color .4s ease;
+    }
+     &:hover {
+        background-color: $white-3;
+        box-shadow: 0 0 4px 1px rgba($black, 0.35);
+        &::before {
+            background-color: $primary-accent-1;
+            transition: background-color .2s ease;
+        }
+    }
+    &.active {
+        background-color: $dim;
+        color: $white-1;
+        &::before {
+            background-color: $primary-accent-4;
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
+        }
+        &:hover {
+            background-color: $grey-1;
+        }
+    }
+}
+.langOrigin {
+    grid-area: langOrigin;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    line-height: 1;
+    font-size: 1.2rem;
+    font-family: 'Novecento DemiBold', 'Lang Origin', sans-serif;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    padding-left: 5px;
+}
+.langDisplay {
+    grid-area: langDisplay;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    line-height: 1;
+    font-size: 0.8rem;
+    font-family: 'Novecento Medium', 'UD_ShinGo Medium', sans-serif;
+    font-weight: 500;
+    padding-left: 6px;
+    max-width: 0;
+    white-space: nowrap;
+}
+
+.langTag {
+    grid-area: langTag;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    align-self: start;
+    border: 2px solid $dim;
+    border-radius: 4px;
+    padding: 2.5px 6px;
+    color: $dim;
+    font-size: .9rem;
+    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
+    height: 22px;
+    width: fit-content;
+    line-height: 1;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        border-color .2s ease-in,
+        box-shadow .4s $moderato-curve,
+        transform .3s $moderato-curve;
+    transform: translateY(0);
+    will-change: transform;
+}
+
+.currentLang {
+    opacity: 0;
+    overflow: hidden;
+    max-width: 0;
+    white-space: nowrap;
+    margin-left: 0;
+    color: $grey-1;
+    font-family: 'Novecento Bold', 'Lang Origin', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    transition:
+        opacity .4s $moderato-curve,
+        max-width .3s $moderato-curve;
+}
+.currentLang::before {
+    content: '\200A\00B7\200A'; // U+200A: HAIR SPACE, aka &hairsp;
+    display: inline-block;
+}
+
+.active .langTag {
+    background-color: $primary-accent-4;
+    color: $grey-1;
+    border-color: $primary-accent-4;
+    font-family: 'Novecento Bold', 'UD_ShinGo Bold', sans-serif;
+    box-shadow: 0 1px 2px rgba($black, 0.2);
+    transform: translateY(0.72rem);
+}
+
+.active .langTag .currentLang {
+    opacity: 1;
+    max-width: 3rem;
+}

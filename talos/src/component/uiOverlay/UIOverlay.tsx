@@ -14,6 +14,8 @@ import Group from '../../asset/logos/group.svg?react';
 import i18n from '../../asset/logos/i18n.svg?react';
 import Guide from '../../asset/logos/guide.svg?react';
 import L from 'leaflet';
+import { useTranslateUI } from '@/locale';
+import LanguageModal from '@/component/language/LanguageModal';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -26,10 +28,12 @@ interface TriggerState {
 }
 
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
+    const t = useTranslateUI();
     const [triggers, setTrigger] = useState<TriggerState>({
         t1: false,
         t2: false,
     });
+    const [langOpen, setLangOpen] = useState(false);
 
     const handleTrigger1 = (isActive: boolean) =>
         setTrigger({ ...triggers, t1: isActive });
@@ -52,7 +56,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
-    const handleLanguage = () => console.log('Choose language');
+    const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => console.log('Reach out for help');
 
     return (
@@ -64,30 +68,26 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* Headbar */}
             <HeadBar isSidebarOpen={isSidebarOpen}>
-                <HeadItem
-                    icon={ToS}
-                    onClick={handleReset}
-                    tooltip='Terms of Service'
-                />
+                <HeadItem icon={ToS} onClick={handleReset} tooltip={t('headbar.tos')} />
                 <HeadItem
                     icon={hideUI}
                     onClick={handleHideUI}
-                    tooltip='Hide UI'
+                    tooltip={t('headbar.hideUI')}
                 />
                 <HeadItem
                     icon={Group}
                     onClick={handleGroup}
-                    tooltip='Join related group'
+                    tooltip={t('headbar.group')}
                 />
                 <HeadItem
                     icon={i18n}
                     onClick={handleLanguage}
-                    tooltip='Choose language'
+                    tooltip={t('headbar.language')}
                 />
                 <HeadItem
                     icon={Guide}
                     onClick={handleHelp}
-                    tooltip='Reach out for help'
+                    tooltip={t('headbar.help')}
                 />
             </HeadBar>
 
@@ -96,15 +96,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* TriggerBar */}
             <TriggerBar>
-                <Trigger
-                    isActive={triggers.t1}
-                    onToggle={handleTrigger1}
-                    label='Complex Select'
-                />
+                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.complexSelect')} />
                 <Trigger
                     isActive={triggers.t2}
                     onToggle={handleTrigger2}
-                    label='Regional POI'
+                    label={t('trigger.regionalPoi')}
                 />
             </TriggerBar>
 
@@ -113,6 +109,17 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* Filter List */}
             <FilterList isSidebarOpen={false} />
+
+            {/* Language Modal */}
+            <LanguageModal
+                open={langOpen}
+                onClose={() => setLangOpen(false)}
+                onChange={(o) => setLangOpen(o)}
+                onSelected={(lang) => {
+                    // 可在此处记录选择结果或埋点
+                    console.log('Language switched to:', lang);
+                }}
+            />
         </div>
     );
 };

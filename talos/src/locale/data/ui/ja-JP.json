@@ -1,0 +1,51 @@
+{
+  "headbar": {
+    "tos": "利用規約",
+    "hideUI": "UIを隠す",
+    "group": "関連グループに参加",
+    "language": "言語を選択",
+    "help": "ヘルプ"
+  },
+  "trigger": {
+    "complexSelect": "詳細フィルター",
+    "regionalPoi": "地域POI"
+  },
+  "search": {
+    "placeholder": "全体検索…"
+  },
+  "markFilter": {
+    "title": "フィルター項目",
+    "emptyTitle": "条件に一致するフィルターはありません。",
+    "emptyDesc": "管理者に連絡してください。"
+  },
+  "detail": {
+    "stat": {
+      "world": "ワールド",
+      "main": "地域"
+    },
+    "noInfo": "情報がありません"
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "observator 6 によって提供"
+    }
+  },
+  "language": {
+    "title": "言語を選択",
+    "cancel": "キャンセル",
+    "current": "現在",
+    "names": {
+      "en-us": "英語",
+      "zh-cn": "簡体字中国語",
+      "zh-tw": "繁体字中国語",
+      "ja-JP": "日本語",
+      "ko-KR": "韓国語"
+    }
+  },
+  "common": {
+    "close": "閉じる"
+  }
+}

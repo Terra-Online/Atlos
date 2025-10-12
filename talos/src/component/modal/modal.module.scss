@@ -1,0 +1,212 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+.modalMask {
+    position: fixed;
+    inset: 0;
+    background: rgba($black, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    backdrop-filter: blur(0);
+    transition: opacity .3s $adagio-curve, backdrop-filter .3s $adagio-curve;
+    will-change: opacity, backdrop-filter;
+}
+
+.modalMask[data-state=open] {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+    transition: opacity .3s $adagio-curve, backdrop-filter .3s $adagio-curve;
+    will-change: opacity, backdrop-filter;
+}
+
+.modalContainer {
+    background-color: $light-1;
+    border-radius: 3px;
+    color: $grey-1;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 4px rgba($black, 0.25);
+    transform: scale(.92) translateY(4px);
+    opacity: 0;
+    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve;
+    will-change: opacity, transform;
+    overflow: hidden;
+
+    min-width: 20rem;
+    max-width: 92vw; // default size = s
+    &[data-size=s] {
+        width: 18rem;
+        max-width: 92vw
+    }
+    &[data-size=m] {
+        width: 27rem;
+        max-width: 92vw
+    }
+    &[data-size=l] {
+        width: 36em;
+        max-width: 96vw
+    }
+    &[data-size=full] {
+        width: 60%;
+        height: 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column
+    }
+
+    .modalHeader {
+        border-radius: 3px 3px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem;
+        background-color: $grey-1;
+        font-weight: 900;
+        box-shadow: 0 2px 3px rgba($black, 0.25);
+        position: sticky;
+        user-select: none;
+        .modalClose {
+            width: 6rem;
+            height: 1.5rem;
+            background: $white-3;
+            color: $grey-1;
+            border-radius: 0.75rem;
+            outline: 1.5px solid $white-3;
+            outline-offset: 2px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition:
+                filter 0.3s ease,
+                outline 0.3s ease,
+                box-shadow 0.3s ease;
+            will-change: filter, outline, box-shadow;
+            text-align: end;
+            padding-right: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+            span.closeText {
+                display: inline-flex;
+                justify-content: center;
+                position: relative;
+                z-index: 3;
+                letter-spacing: -.5px;
+                font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
+                font-weight: 900;
+                text-shadow: 1px 1px 1px rgba($black, 0.25);
+                width: auto;
+                white-space: nowrap;
+                padding: 0 2.5px;
+                margin-left: auto; // push text to the right then complementing deco
+            }
+            span.deco {
+                content: '';
+                display: flex;
+                flex: 1 1 auto;
+                height: 1.5px;
+                margin-left: .3rem;
+                margin-right: 2px;
+                background-color: $grey-1;
+                z-index: 1;
+                pointer-events: none;
+                position: relative;
+                &::before {
+                    content: '';
+                    position: absolute;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 3.3px 0 3.3px 6.6px;
+                    border-color: transparent transparent transparent $grey-1;
+                    transform: translateY(calc(-50% + .75px));// plus 1/2 of deco height to align center
+                }
+                &::after {
+                    content: '';
+                    position: absolute;
+                    width: 0;
+                    height: 0;
+                    right: 0;
+                    border-style: solid;
+                    border-width: 2.25px;
+                    border-color: $grey-1;
+                    transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px));// plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
+                }
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                right: 0;
+                background-image:
+                    url('../../asset/images/UI/close.svg'),
+                    url('../../asset/images/UI/bg.webp');
+                background-size: 11%, cover;
+                background-repeat: no-repeat;
+                background-position-x: 95%, 60%;
+                background-position-y: 47%, 40%;
+                filter: drop-shadow(-1px 1px 1px rgba($black, 0.25));
+                z-index: 0;
+                pointer-events: none;
+            }
+
+            &:hover {
+                filter: invert(1);
+                box-shadow: 0 0 1px 1px rgba($black, 0.5);
+                outline-color: $grey-1;
+            }
+        }
+    }
+}
+.modalIcon {
+    display: inline-flex;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: drop-shadow(1px 2px 1px rgba($black, 0.25));
+    svg {
+            transition: all 0.2s ease;
+            fill: $white-1;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+}
+.modalContainer[data-state=open] {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve;
+    will-change: opacity, transform;
+}
+
+.modalTitle {
+    color: $white-0;
+    font-size: 1rem;
+    margin: 0;
+    margin-left: .3rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1;
+    line-height: 1;
+    text-shadow: 1px 2px 1px rgba($black, 0.25);
+}
+
+.modalContent {
+    padding: 0.6rem;
+    max-height: 45vh;
+    overflow: hidden;
+    &::-webkit-scrollbar {
+            width: 0;
+    }
+}

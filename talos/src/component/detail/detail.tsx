@@ -14,7 +14,7 @@ import {
 import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
 import { motion, AnimatePresence, usePresence } from 'motion/react';
-import { useTranslate } from '@/locale';
+import { useTranslateGame, useTranslateUI } from '@/locale';
 
 // const mockPoint = {
 //   id: "001",
@@ -110,8 +110,9 @@ export const Detail = () => {
         currentPoint ? currentPoint.type : 'UKN',
     );
 
-    const t = useTranslate();
-    const pointName = t(`markerType.key.${currentPoint?.type}`);
+    const tGame = useTranslateGame();
+    const tUI = useTranslateUI();
+    const pointName = tGame(`markerType.key.${currentPoint?.type}`);
 
     // const noteContent = currentPoint?.status?.user?.localNote;
 
@@ -133,10 +134,10 @@ export const Detail = () => {
 
     const statItems = useMemo(
         () => [
-            { label: 'World', data: worldCnt, index: 0 },
-            { label: 'Main', data: regionCnt, index: 1 },
+            { label: tUI('detail.stat.world'), data: worldCnt, index: 0 },
+            { label: tUI('detail.stat.main'), data: regionCnt, index: 1 },
         ],
-        [worldCnt, regionCnt],
+        [worldCnt, regionCnt, tUI],
     );
 
     return (
@@ -175,7 +176,8 @@ export const Detail = () => {
                         {/* disabled in version1 */}
                         {/* <div className="header-actions">
             {!isCollected && <button className="next-button" onClick={handleNextPoint}>
-              <span>Complete</span>
+              <span className="deco"></span>
+              <span className={styles.nextText}>Next</span>
             </button>}
           </div> */}
                     </div>

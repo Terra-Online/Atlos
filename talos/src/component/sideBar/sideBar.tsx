@@ -6,9 +6,10 @@ import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
 
 import Search from '../search/search';
 import MarkFilter from '../markFilter/markFilter';
-import Mark from '../mark/mark';
+import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
+import { useTranslateGame, useTranslateUI } from '@/locale';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -19,6 +20,8 @@ interface SideBarProps {
 }
 
 const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
+    const t = useTranslateUI();
+    const tGame = useTranslateGame();
     const [isOpen, setIsOpen] = useState(false);
     useMemo(() => {
         if (!currentRegion) return null;
@@ -55,7 +58,7 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                 <div className={styles.headIcon}>
                     <img
                         src={Icon}
-                        alt='supported by observator 6'
+                        alt={String(t('sidebar.alt.supportedBy'))}
                         draggable={'false'}
                     />
                 </div>
@@ -64,11 +67,11 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                     <div className={styles.filters}>
                         {Object.entries(MARKER_TYPE_TREE).map(
                             ([key, value]) => (
-                                <MarkFilter title={key} key={key}>
+                                <MarkFilter title={String(tGame(`markerType.types.${key}`))} key={key}>
                                     {Object.values(value)
                                         .flat()
                                         .map((typeInfo) => (
-                                            <Mark
+                                            <MarkSelector
                                                 key={typeInfo.key}
                                                 typeInfo={typeInfo}
                                             />
@@ -80,7 +83,7 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                 </div>
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>
-                        沪ICP备<b>2025119702</b>号-1
+                        {t('footer.icp')}
                     </a>
                 </div>
             </div>

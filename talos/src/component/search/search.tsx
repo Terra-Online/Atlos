@@ -1,10 +1,12 @@
 import React, { useCallback } from 'react';
 import SearchIcon from '../../asset/logos/search.svg?react';
 import styles from './search.module.scss';
+import { useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker.ts';
 
 const Search = () => {
     const { searchString, setSearchString } = useMarkerStore();
+    const t = useTranslateUI();
     const changeHandler = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             setSearchString(e.target.value);
@@ -22,7 +24,7 @@ const Search = () => {
                     <input
                         type='text'
                         className={styles.searchInput}
-                        placeholder='Overall search...'
+                        placeholder={t('search.placeholder')}
                         value={searchString}
                         onChange={changeHandler}
                     />
