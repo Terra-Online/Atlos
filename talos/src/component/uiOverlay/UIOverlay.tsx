@@ -8,11 +8,11 @@ import { RegionContainer } from '../regSwitch/regSwitch';
 import { Detail } from '../detail/detail';
 import FilterList from '../filterList/filterList';
 
-import ToS from '../../asset/logos/tos.svg?react';
-import hideUI from '../../asset/logos/hideUI.svg?react';
-import Group from '../../asset/logos/group.svg?react';
-import i18n from '../../asset/logos/i18n.svg?react';
-import Guide from '../../asset/logos/guide.svg?react';
+import ToS from '../../assets/logos/tos.svg?react';
+import hideUI from '../../assets/logos/hideUI.svg?react';
+import Group from '../../assets/logos/group.svg?react';
+import i18n from '../../assets/logos/i18n.svg?react';
+import Guide from '../../assets/logos/guide.svg?react';
 import L from 'leaflet';
 import { useTranslateUI } from '@/locale';
 import LanguageModal from '@/component/language/LanguageModal';

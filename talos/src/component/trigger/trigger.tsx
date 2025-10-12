@@ -1,7 +1,7 @@
 import styles from './trigger.module.scss';
 
-import OnIcon from '../../asset/logos/on.svg?react';
-import OffIcon from '../../asset/logos/off.svg?react';
+import OnIcon from '../../assets/logos/on.svg?react';
+import OffIcon from '../../assets/logos/off.svg?react';
 import React from 'react';
 
 interface TriggerProps {

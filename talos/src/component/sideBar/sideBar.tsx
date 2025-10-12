@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import styles from './sideBar.module.scss';
 
-import Icon from '../../asset/images/UI/observator_6.webp';
-import SidebarIcon from '../../asset/logos/sideCollap.svg?react';
+import Icon from '../../assets/images/UI/observator_6.webp';
+import SidebarIcon from '../../assets/logos/sideCollap.svg?react';
 
 import Search from '../search/search';
 import MarkFilter from '../markFilter/markFilter';

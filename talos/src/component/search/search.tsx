@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import SearchIcon from '../../asset/logos/search.svg?react';
+import SearchIcon from '../../assets/logos/search.svg?react';
 import styles from './search.module.scss';
 import { useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker.ts';

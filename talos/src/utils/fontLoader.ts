@@ -34,100 +34,100 @@ const fontDefinitions: FontDefinition[] = [
         family: 'UD_ShinGo Bold',
         weight: 'Bold',
         cnFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.otf',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
-            ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.ttf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
+            ttf: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.ttf',
         },
         jpFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.otf',
         }
     },
     {
         family: 'UD_ShinGo DemiBold',
         weight: 'DemiBold',
         cnFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.otf',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
-            ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
+            ttf: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf',
         },
         jpFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.otf',
         }
     },
     {
         family: 'UD_ShinGo Medium',
         weight: 'Medium',
         cnFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_M.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_M.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_M.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.otf',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
-            ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.ttf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
+            ttf: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.ttf',
         },
         jpFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.otf',
         }
     },
     {
         family: 'UD_ShinGo Regular',
         weight: 'Regular',
         cnFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.otf',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
-            ttf: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.ttf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
+            ttf: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.ttf',
         },
         jpFiles: {
-            woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
-            woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
-            otf: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.otf',
+            woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
+            woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
+            otf: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.otf',
         }
     },
     {
         family: 'HMSans_SC', // 简体中文版本
         weight: 'Regular',
         cnFiles: {
-            woff2: '/src/asset/fonts/Harmony/HMSans_SC.woff2',
-            woff: '/src/asset/fonts/Harmony/HMSans_SC.woff',
+            woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
+            woff: '/src/assets/fonts/Harmony/HMSans_SC.woff',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/Harmony/HMSans_TC.woff2',
-            woff: '/src/asset/fonts/Harmony/HMSans_TC.woff',
+            woff2: '/src/assets/fonts/Harmony/HMSans_TC.woff2',
+            woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
         }
     },
     {
         family: 'HMSans_TC', // 繁体中文版本
         weight: 'Regular',
         cnFiles: {
-            woff2: '/src/asset/fonts/Harmony/HMSans_SC.woff2',
-            woff: '/src/asset/fonts/Harmony/HMSans_SC.woff',
+            woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
+            woff: '/src/assets/fonts/Harmony/HMSans_SC.woff',
         },
         hkFiles: {
-            woff2: '/src/asset/fonts/Harmony/HMSans_TC.woff2',
-            woff: '/src/asset/fonts/Harmony/HMSans_TC.woff',
+            woff2: '/src/assets/fonts/Harmony/HMSans_TC.woff2',
+            woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
         }
     }
 ];

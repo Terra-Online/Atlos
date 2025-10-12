@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import DefaultFilterIcon from '../../asset/logos/filter.svg?react';
+import DefaultFilterIcon from '../../assets/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
 import { useTranslateUI } from '@/locale';
