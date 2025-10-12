@@ -22,20 +22,20 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: 'src/asset/images/shared',
-                    dest: 'asset/images',
+                    src: 'src/assets/images/shared',
+                    dest: 'assets/images',
                 },
                 {
-                    src: 'src/asset/images/marker',
-                    dest: 'asset/images',
+                    src: 'src/assets/images/marker',
+                    dest: 'assets/images',
                 },
                 {
-                    src: 'src/asset/images/item',
-                    dest: 'asset/images',
+                    src: 'src/assets/images/item',
+                    dest: 'assets/images',
                 },
                 {
-                    src: 'src/asset/images/category',
-                    dest: 'asset/images',
+                    src: 'src/assets/images/category',
+                    dest: 'assets/images',
                 },
             ].filter(target => existsSync(target.src)), // 只包含存在的源路径
         }),
@@ -56,7 +56,7 @@ export default defineConfig({
             '@/components': resolve(__dirname, 'src/component'),
             '@/utils': resolve(__dirname, 'src/utils'),
             '@/data': resolve(__dirname, 'src/data'),
-            '@/assets': resolve(__dirname, 'src/asset'),
+            '@/assets': resolve(__dirname, 'src/assets'),
             '@/styles': resolve(__dirname, 'src/styles'),
         },
         extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],

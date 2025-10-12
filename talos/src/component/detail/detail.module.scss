@@ -31,7 +31,7 @@
         justify-content: space-between;
         padding: 0.45rem 0.5rem;
         background-color: $secondary-accent-1;
-        background-image: url('../../asset/images/UI/detail.webp');
+        background-image: url('../../assets/images/UI/detail.webp');
         background-size: 47%;
         background-position-x: 3%;
         box-shadow: 0 2px 3px rgba($black, 0.25);
@@ -150,8 +150,8 @@
                     top: 0;
                     right: 0;
                     background-image:
-                        url('../../asset/images/UI/next.svg'),
-                        url('../../asset/images/UI/bg.webp');
+                        url('../../assets/images/UI/next.svg'),
+                        url('../../assets/images/UI/bg.webp');
                     background-size: 11%, cover;
                     background-repeat: no-repeat;
                     background-position-x: 95%, 60%;
@@ -217,7 +217,7 @@
                     content: '';
                     width: 100%;
                     height: 100%;
-                    mask-image: url('../../asset/images/UI/posit.svg');
+                    mask-image: url('../../assets/images/UI/posit.svg');
                     mask-size: contain;
                     mask-repeat: no-repeat;
                     mask-position: center;
@@ -230,7 +230,7 @@
                     content: '';
                     width: 90%;
                     height: 90%;
-                    mask-image: url('../../asset/images/UI/check.svg');
+                    mask-image: url('../../assets/images/UI/check.svg');
                     mask-size: contain;
                     mask-repeat: no-repeat;
                     mask-position: center;
@@ -256,8 +256,8 @@
             .pointStats {
                 flex: 1;
                 background-image:
-                    url('../../asset/images/UI/brakt_L.svg'),
-                    url('../../asset/images/UI/brakt_R.svg');
+                    url('../../assets/images/UI/brakt_L.svg'),
+                    url('../../assets/images/UI/brakt_R.svg');
                 background-size: contain;
                 background-repeat: no-repeat;
                 background-position:
@@ -353,7 +353,7 @@
             height: 10rem;
             background: rgba($black, 0.25);
 
-            background-image: url('../../asset/images/UI/detest.png');
+            background-image: url('../../assets/images/UI/detest.png');
 
             background-size: cover;
             background-position: center;

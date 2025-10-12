@@ -184,68 +184,68 @@ export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
     const fontDefinitions = [
         {
             cnFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
             },
             hkFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
             },
             jpFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
             }
         },
         {
             cnFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
             },
             hkFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
             },
             jpFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
             }
         },
         {
             cnFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_M.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_M.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff',
             },
             hkFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
             },
             jpFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
             }
         },
         {
             cnFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_CN_R.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff',
             },
             hkFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
             },
             jpFiles: {
-                woff2: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
-                woff: '/src/asset/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
+                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
+                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
             }
         },
         {
             cnFiles: {
-                woff2: '/src/asset/fonts/Harmony/HMSans_SC.woff2',
-                woff: '/src/asset/fonts/Harmony/HMSans_SC.woff',
+                woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
+                woff: '/src/assets/fonts/Harmony/HMSans_SC.woff',
             },
             hkFiles: {
-                woff2: '/src/asset/fonts/Harmony/HMSans_TC.woff2',
-                woff: '/src/asset/fonts/Harmony/HMSans_TC.woff',
+                woff2: '/src/assets/fonts/Harmony/HMSans_TC.woff2',
+                woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
             }
         }
     ];

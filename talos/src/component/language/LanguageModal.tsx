@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Modal from '@/component/modal/Modal';
-import I18nIcon from '../../asset/logos/i18n.svg?react';
+import I18nIcon from '../../assets/logos/i18n.svg?react';
 import styles from './language.module.scss';
 import { SUPPORTED_LANGS, setLocale, useLocale } from '@/locale';
 import { useTranslateUI } from '@/locale';

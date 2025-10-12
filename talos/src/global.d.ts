@@ -1,7 +1,9 @@
 // 全局类型定义
 declare global {
+    declare const __ASSETS_HOST: string;
+
     interface Window {
-        __asset_HOST?: string;
+
     }
 
     namespace NodeJS {
@@ -60,4 +62,4 @@ declare module '*.css' {
     export default content;
 }
 
-export {};
+export { };

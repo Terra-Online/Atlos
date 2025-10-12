@@ -1,9 +1,6 @@
 // Access global objects or environment variables to avoid direct references to potentially undefined variables
 const prefix =
-    (typeof window !== 'undefined' && window.__asset_HOST) ||
-    // eslint-disable-next-line no-undef
-    (typeof process !== 'undefined' && process.env.ASSET_HOST) ||
-    '';
+    __ASSETS_HOST || ""
 
 // Initialize cache from localStorage if available
 const resourceCache = {
@@ -62,8 +59,8 @@ export function getResourceUrl(property, key, ext = 'png') {
     if (property === 'tiles') return `${prefix}${key}`;
 
     const resourceKey = `${key}.${ext}`;
-    const defaultUrl = `${prefix}/asset/images/${property}/${key}.${ext}`;
-    const sharedUrl = `${prefix}/asset/images/shared/${key}.${ext}`;
+    const defaultUrl = `${prefix}/assets/images/${property}/${key}.${ext}`;
+    const sharedUrl = `${prefix}/assets/images/shared/${key}.${ext}`;
 
     // Enable shared resource fallback only for marker and item
     if (property === 'marker' || property === 'item') {

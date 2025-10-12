@@ -4,10 +4,10 @@ import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
 import classNames from 'classnames';
 
-import Valley4 from '../../asset/logos/_Valley_4.svg?react';
-import Jinlong from '../../asset/logos/_Jinlong.svg?react';
-import Dijiang from '../../asset/logos/_Dijiang.svg?react';
-import Æther from '../../asset/logos/Æther.svg?react';
+import Valley4 from '../../assets/logos/_Valley_4.svg?react';
+import Jinlong from '../../assets/logos/_Jinlong.svg?react';
+import Dijiang from '../../assets/logos/_Dijiang.svg?react';
+import Æther from '../../assets/logos/Æther.svg?react';
 
 const REGION_ICON_DICT = {
     Valley_4: Valley4,
