@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import LOGGER from '@/utils/log';
 import ALP from 'accept-language-parser';
+// New i18n structure
+// divided into `ui` and `game` namespaces
 import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
 
 // New i18n structure
@@ -53,16 +55,19 @@ const deepGet = (obj: any, path: string) =>
         .split('.')
         .reduce((acc: any, k: string) => (acc && acc[k] !== undefined ? acc[k] : ''), obj);
 
-// Worker-based loading with fallback
-let worker: Worker | null = null;
+// Build-safe loaders using Vite import.meta.glob (no worker)
+type JsonModule = { default: Record<string, unknown> };
+const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob('./data/ui/*.json');
+const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob('./data/game/*.json');
 
-// Initialize worker if supported
-if (typeof Worker !== 'undefined') {
-    try {
-        worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-    } catch (error) {
-        LOGGER.warn('Failed to initialize i18n worker, falling back to main thread:', error);
+function resolveLoader(map: Record<string, () => Promise<JsonModule>>, locale: string): (() => Promise<JsonModule>) | undefined {
+    const candidates = [locale, locale.toLowerCase(), toBCP47(locale as any as Lang), toBCP47(locale as any as Lang).toLowerCase()];
+    for (const [path, loader] of Object.entries(map)) {
+        const base = (path.split('/').pop() || '').replace(/\.json$/i, '');
+        const baseLower = base.toLowerCase();
+        if (candidates.some(c => c.toLowerCase() === baseLower)) return loader;
     }
+    return undefined;
 }
 
 const useI18nStore = create<{
@@ -98,37 +103,18 @@ async function loadJSON(path: string) {
 }
 
 // Load locale data using Worker (with fallback)
-async function loadWithWorker(locale: Lang): Promise<II18nBundle> {
-    return new Promise((resolve, reject) => {
-        if (!worker) {
-            reject(new Error('Worker not available'));
-            return;
-        }
-
-        const handleMessage = (e: MessageEvent) => {
-            if (e.data.locale !== locale) return; // Ignore messages for other locales
-            
-            worker?.removeEventListener('message', handleMessage);
-            
-            if (e.data.type === 'success') {
-                resolve({
-                    ui: e.data.ui as Record<string, any>,
-                    game: e.data.game as Record<string, any>,
-                });
-            } else if (e.data.type === 'error') {
-                reject(new Error(e.data.error));
-            }
-        };
-
-        worker.addEventListener('message', handleMessage);
-        worker.postMessage({ type: 'load', locale });
-        
-        // Timeout after 10 seconds
-        setTimeout(() => {
-            worker?.removeEventListener('message', handleMessage);
-            reject(new Error('Worker timeout'));
-        }, 10000);
-    });
+// Load locale data on main thread (build-safe via glob)
+async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
+    const uiLoader = resolveLoader(uiModules, locale);
+    const gameLoader = resolveLoader(gameModules, locale);
+    const [uiMod, gameMod] = await Promise.all([
+        uiLoader ? uiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
+        gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
+    ]);
+    return {
+        ui: (uiMod.default as Record<string, any>),
+        game: (gameMod.default as Record<string, any>),
+    };
 }
 
 async function loadAndSet(locale: Lang) {
@@ -142,17 +128,13 @@ async function loadAndSet(locale: Lang) {
         LOGGER.warn('Font preload failed:', err)
     );
 
-    // Try worker first, fall back to main thread
+    // Load on main thread using build-safe module graph
     try {
-        if (worker) {
-            const data = await loadWithWorker(locale);
-            ui = data.ui;
-            game = data.game;
-        } else {
-            throw new Error('Worker not available');
-        }
+        const data = await loadLocaleOnMain(locale);
+        ui = data.ui;
+        game = data.game;
     } catch (error) {
-        LOGGER.warn('Worker loading failed, falling back to main thread:', error);
+        LOGGER.warn('Load locale on main failed, fallback to dynamic import path:', error);
         [ui, game] = await Promise.all([
             loadJSON(`./data/ui/${locale}.json`),
             loadJSON(`./data/game/${locale}.json`),
