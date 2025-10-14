@@ -2,51 +2,7 @@
 const prefix =
     __ASSETS_HOST || ""
 
-// Initialize cache from localStorage if available
-const resourceCache = {
-    exists: new Set(),
-    notExists: new Set(),
-};
-
-// Load cache from localStorage if available
-try {
-    if (typeof localStorage !== 'undefined') {
-        const savedExists = localStorage.getItem('resourceCacheExists');
-        const savedNotExists = localStorage.getItem('resourceCacheNotExists');
-
-        if (savedExists) {
-            JSON.parse(savedExists).forEach((item) =>
-                resourceCache.exists.add(item),
-            );
-        }
-
-        if (savedNotExists) {
-            JSON.parse(savedNotExists).forEach((item) =>
-                resourceCache.notExists.add(item),
-            );
-        }
-    }
-} catch (e) {
-    console.warn('Failed to load resource cache from localStorage:', e);
-}
-
-// Helper function to save cache to localStorage
-const saveCache = () => {
-    try {
-        if (typeof localStorage !== 'undefined') {
-            localStorage.setItem(
-                'resourceCacheExists',
-                JSON.stringify([...resourceCache.exists]),
-            );
-            localStorage.setItem(
-                'resourceCacheNotExists',
-                JSON.stringify([...resourceCache.notExists]),
-            );
-        }
-    } catch (e) {
-        console.warn('Failed to save resource cache to localStorage:', e);
-    }
-};
+// No runtime probing/cache needed under new layout
 
 /**
  * Get resource URL with shared resource fallback mechanism
@@ -58,42 +14,21 @@ const saveCache = () => {
 export function getResourceUrl(property, key, ext = 'png') {
     if (property === 'tiles') return `${prefix}${key}`;
 
-    const resourceKey = `${key}.${ext}`;
-    const defaultUrl = `${prefix}/assets/images/${property}/${key}.${ext}`;
-    const sharedUrl = `${prefix}/assets/images/shared/${key}.${ext}`;
-
-    // Enable shared resource fallback only for marker and item
-    if (property === 'marker' || property === 'item') {
-        // Check if resource is known to exist in shared directory
-        if (resourceCache.exists.has(resourceKey)) {
-            return sharedUrl;
-        }
-
-        // Check if resource is known not to exist in shared directory
-        if (resourceCache.notExists.has(resourceKey)) {
-            return defaultUrl;
-        }
-
-        // We don't know yet - prefer the original URL for safety and check in background
-        const img = new Image();
-
-        img.onload = () => {
-            resourceCache.exists.add(resourceKey);
-            saveCache();
-        };
-
-        img.onerror = () => {
-            resourceCache.notExists.add(resourceKey);
-            saveCache();
-        };
-
-        img.src = sharedUrl;
-
-        // Return default URL to ensure something displays
-        return defaultUrl;
+    // Route per new convention:
+    // - marker: all spot icons (地图点位底图) → /assets/images/marker
+    // - marker/sub: sub icons overlay → /assets/images/marker/sub
+    // - item: normal item icons (用于 UI 等) → /assets/images/item
+    // - category: remains in /assets/images/category
+    if (property === 'marker') {
+        return `${prefix}/assets/images/marker/${key}.${ext}`;
     }
-
-    return defaultUrl;
+    if (property === 'marker/sub') {
+        return `${prefix}/assets/images/marker/sub/${key}.${ext}`;
+    }
+    if (property === 'item') {
+        return `${prefix}/assets/images/item/${key}.${ext}`;
+    }
+    return `${prefix}/assets/images/${property}/${key}.${ext}`;
 }
 
 export const getTileResourceUrl = (path) => getResourceUrl('tiles', path);

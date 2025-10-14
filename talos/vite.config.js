@@ -22,10 +22,6 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: 'src/assets/images/shared',
-                    dest: 'assets/images',
-                },
-                {
                     src: 'src/assets/images/marker',
                     dest: 'assets/images',
                 },
@@ -36,6 +32,10 @@ export default defineConfig({
                 {
                     src: 'src/assets/images/category',
                     dest: 'assets/images',
+                },
+                {
+                    src: 'src/assets/fonts',
+                    dest: 'assets',
                 },
             ].filter(target => existsSync(target.src)), // 只包含存在的源路径
         }),

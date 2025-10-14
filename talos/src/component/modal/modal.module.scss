@@ -76,7 +76,7 @@
             border-radius: 0.75rem;
             outline: 1.5px solid $white-3;
             outline-offset: 2px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             cursor: pointer;
             transition:
                 filter 0.3s ease,
@@ -103,7 +103,7 @@
                 text-shadow: 1px 1px 1px rgba($black, 0.25);
                 width: auto;
                 white-space: nowrap;
-                padding: 0 2.5px;
+                padding: 0 5px 0 4px;
                 margin-left: auto; // push text to the right then complementing deco
             }
             span.deco {
@@ -150,7 +150,7 @@
                 background-image:
                     url('../../assets/images/UI/close.svg'),
                     url('../../assets/images/UI/bg.webp');
-                background-size: 11%, cover;
+                background-size: 15%, cover;
                 background-repeat: no-repeat;
                 background-position-x: 95%, 60%;
                 background-position-y: 47%, 40%;

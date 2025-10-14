@@ -38,9 +38,9 @@
     "cancel": "Cancel",
     "current": "Now",
     "names": {
-      "en-us": "English",
-      "zh-cn": "Simplified Chinese",
-      "zh-tw": "Traditional Chinese",
+      "en-US": "English",
+      "zh-CN": "Simplified Chinese",
+      "zh-TW": "Traditional Chinese",
       "ja-JP": "Japanese",
       "ko-KR": "Korean"
     }
