@@ -179,6 +179,7 @@ export async function cleanupFontCache(): Promise<void> {
 
 /**
  * Get all font URLs from font definitions for a specific region
+ * Returns dev paths (/src/assets/...) - caller applies CDN conversion for prod
  */
 export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
     const fontDefinitions = [

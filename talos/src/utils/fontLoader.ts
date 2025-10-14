@@ -2,20 +2,17 @@
 
 import { preloadFonts, getFontUrlsForRegion } from './fontCache';
 
-// Normalize a font path and prefix with CDN base defined by __ASSETS_HOST
+// Build CDN URL with base and normalize dev paths to production paths
 const toCdnUrl = (p: string): string => {
-    // 1) normalize repo-time paths to built assets paths
-    const normalized = p
-        .replace(/^\/src\/assets\/fonts/i, '/assets/fonts')
-        .replace(/^\/src\/asset\/fonts/i, '/assets/fonts');
-    // 2) prefix with ASSETS_HOST when present (vite define)
     // eslint-disable-next-line no-undef
-    const base = (__ASSETS_HOST as unknown as string) || '';
-    if (!base) return normalized;
-    const be = base.endsWith('/');
-    const ps = normalized.startsWith('/');
-    if (be && ps) return base + normalized.slice(1);
-    if (!be && !ps) return `${base}/${normalized}`;
+    const base = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+    // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
+    if (!base) return p; // Dev mode: return original path as-is
+    const normalized = p.replace(/^\/src\/assets/i, '/assets');
+    const baseEnds = base.endsWith('/');
+    const pathStarts = normalized.startsWith('/');
+    if (baseEnds && pathStarts) return base + normalized.slice(1);
+    if (!baseEnds && !pathStarts) return `${base}/${normalized}`;
     return base + normalized;
 };
 
@@ -223,7 +220,7 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
 
 // inject or update font styles in document head
 function injectFontStyles(region: Region): void {
-    // Preload fonts for this region in the background
+    // Preload fonts for this region in the background (map URLs through CDN)
     const fontUrls = getFontUrlsForRegion(region).map(toCdnUrl);
     preloadFonts(fontUrls).catch(err => console.error('Font preload failed:', err));
     

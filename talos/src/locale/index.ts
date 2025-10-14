@@ -4,6 +4,20 @@ import LOGGER from '@/utils/log';
 import ALP from 'accept-language-parser';
 import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
 
+// Build CDN URL for fonts (same logic as fontLoader)
+const toCdnUrl = (p: string): string => {
+    // eslint-disable-next-line no-undef
+    const base = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+    // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
+    if (!base) return p; // Dev mode: return original path as-is
+    const normalized = p.replace(/^\/src\/assets/i, '/assets');
+    const baseEnds = base.endsWith('/');
+    const pathStarts = normalized.startsWith('/');
+    if (baseEnds && pathStarts) return base + normalized.slice(1);
+    if (!baseEnds && !pathStarts) return `${base}/${normalized}`;
+    return base + normalized;
+};
+
 export interface II18nBundle {
     game: Record<string, unknown>; // Game stuff(point, category, etc)
     ui: Record<string, unknown>; // UI components text
@@ -114,9 +128,9 @@ async function loadAndSet(locale: Lang) {
     let ui: Record<string, unknown> = {};
     let game: Record<string, unknown> = {};
 
-    // Preload fonts for this locale in parallel
+    // Preload fonts for this locale in parallel (with CDN URLs)
     const fontRegion = localeToFontRegion(locale);
-    const fontUrls = getFontUrlsForRegion(fontRegion);
+    const fontUrls = getFontUrlsForRegion(fontRegion).map(toCdnUrl);
     const fontPreloadPromise = preloadFonts(fontUrls).catch(err => 
         LOGGER.warn('Font preload failed:', err)
     );
