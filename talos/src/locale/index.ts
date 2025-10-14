@@ -1,26 +1,23 @@
 import { create } from 'zustand';
+import type { UseBoundStore, StoreApi } from 'zustand';
 import LOGGER from '@/utils/log';
 import ALP from 'accept-language-parser';
-// New i18n structure
-// divided into `ui` and `game` namespaces
 import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
 
-// New i18n structure
-// divided into `ui` and `game` namespaces
 export interface II18nBundle {
-    game: Record<string, any>; // Game stuff(point, category, etc)
-    ui: Record<string, any>; // UI components text
+    game: Record<string, unknown>; // Game stuff(point, category, etc)
+    ui: Record<string, unknown>; // UI components text
 }
 
-export const SUPPORTED_LANGS = ['en-us', 'ja-JP', 'ko-KR', 'zh-cn', 'zh-tw'] as const;
+export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW'] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 const STORAGE_KEY = 'talos:locale';
 
 // Map locale to font region
 const localeToFontRegion = (locale: Lang): 'CN' | 'HK' | 'JP' => {
-    if (locale === 'zh-cn') return 'CN';
-    if (locale === 'zh-tw') return 'HK';
+    if (locale === 'zh-CN') return 'CN';
+    if (locale === 'zh-TW') return 'HK';
     if (locale === 'ja-JP') return 'JP';
     return 'HK'; // Default to HK for other locales
 };
@@ -35,7 +32,7 @@ const normalizeLang = (lang?: string): Lang => {
     const language = lang || navigator.language || 'en-US';
     // try to pick a supported lang
     const picked = ALP.pick([...SUPPORTED_LANGS], language);
-    return (picked as Lang) || 'en-us';
+    return (picked as Lang) || 'en-US';
 };
 
 const getStoredLocale = (): Lang | null => {
@@ -50,10 +47,13 @@ const getStoredLocale = (): Lang | null => {
 
 const getLanguage = () => getStoredLocale() || normalizeLang();
 
-const deepGet = (obj: any, path: string) =>
-    path
-        .split('.')
-        .reduce((acc: any, k: string) => (acc && acc[k] !== undefined ? acc[k] : ''), obj);
+const deepGet = (obj: unknown, path: string): unknown =>
+    path.split('.').reduce<unknown>((acc, k) => {
+        if (acc && typeof acc === 'object' && k in (acc as Record<string, unknown>)) {
+            return (acc as Record<string, unknown>)[k];
+        }
+        return undefined;
+    }, obj);
 
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
@@ -61,20 +61,23 @@ const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<Js
 const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/game/*.json');
 
 function resolveLoader(map: Record<string, () => Promise<JsonModule>>, locale: string): (() => Promise<JsonModule>) | undefined {
-    const candidates = [locale, locale.toLowerCase(), toBCP47(locale as any as Lang), toBCP47(locale as any as Lang).toLowerCase()];
+    const localeLower = locale.toLowerCase();
+    const canonLower = toBCP47(locale as Lang).toLowerCase();
     for (const [path, loader] of Object.entries(map)) {
         const base = (path.split('/').pop() || '').replace(/\.json$/i, '');
         const baseLower = base.toLowerCase();
-        if (candidates.some(c => c.toLowerCase() === baseLower)) return loader;
+        if (baseLower === localeLower || baseLower === canonLower) return loader;
     }
     return undefined;
 }
 
-const useI18nStore = create<{
+type I18nState = {
     locale: Lang;
     data: II18nBundle;
     t: <T = string>(key: string) => T;
-}>(() => ({
+};
+
+const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() => ({
     locale: getLanguage(),
     data: { game: {}, ui: {} },
     t: <T = string>(key: string) => {
@@ -93,16 +96,6 @@ const useI18nStore = create<{
     },
 }));
 
-async function loadJSON(path: string) {
-    try {
-        const mod: any = await import(/* @vite-ignore */ path);
-        return mod.default ?? mod;
-    } catch (_e) {
-        return {};
-    }
-}
-
-// Load locale data using Worker (with fallback)
 // Load locale data on main thread (build-safe via glob)
 async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     const uiLoader = resolveLoader(uiModules, locale);
@@ -112,14 +105,14 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
         gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
     ]);
     return {
-        ui: (uiMod.default as Record<string, any>),
-        game: (gameMod.default as Record<string, any>),
+        ui: uiMod.default,
+        game: gameMod.default,
     };
 }
 
 async function loadAndSet(locale: Lang) {
-    let ui: any;
-    let game: any;
+    let ui: Record<string, unknown> = {};
+    let game: Record<string, unknown> = {};
 
     // Preload fonts for this locale in parallel
     const fontRegion = localeToFontRegion(locale);
@@ -129,17 +122,9 @@ async function loadAndSet(locale: Lang) {
     );
 
     // Load on main thread using build-safe module graph
-    try {
-        const data = await loadLocaleOnMain(locale);
-        ui = data.ui;
-        game = data.game;
-    } catch (error) {
-        LOGGER.warn('Load locale on main failed, fallback to dynamic import path:', error);
-        [ui, game] = await Promise.all([
-            loadJSON(`./data/ui/${locale}.json`),
-            loadJSON(`./data/game/${locale}.json`),
-        ]);
-    }
+    const data = await loadLocaleOnMain(locale);
+    ui = data.ui;
+    game = data.game;
 
     useI18nStore.setState({ locale, data: { game, ui } });
     
@@ -163,7 +148,7 @@ async function init() {
 }
 void init();
 
-export const useTranslate = () => {
+export const useTranslate = (): (<T = string>(key: string) => T) => {
     const { t } = useI18nStore();
     return t;
 };
@@ -181,7 +166,7 @@ export const useTranslateGame = () => {
 export const useLocale = () => useI18nStore((s) => s.locale);
 
 export async function setLocale(lang: string) {
-    const normalized = normalizeLang(lang) as Lang;
+    const normalized = normalizeLang(lang);
     await loadAndSet(normalized);
     try {
         if (typeof window !== 'undefined' && 'localStorage' in window) {

@@ -2,6 +2,23 @@
 
 import { preloadFonts, getFontUrlsForRegion } from './fontCache';
 
+// Normalize a font path and prefix with CDN base defined by __ASSETS_HOST
+const toCdnUrl = (p: string): string => {
+    // 1) normalize repo-time paths to built assets paths
+    const normalized = p
+        .replace(/^\/src\/assets\/fonts/i, '/assets/fonts')
+        .replace(/^\/src\/asset\/fonts/i, '/assets/fonts');
+    // 2) prefix with ASSETS_HOST when present (vite define)
+    // eslint-disable-next-line no-undef
+    const base = (__ASSETS_HOST as unknown as string) || '';
+    if (!base) return normalized;
+    const be = base.endsWith('/');
+    const ps = normalized.startsWith('/');
+    if (be && ps) return base + normalized.slice(1);
+    if (!be && !ps) return `${base}/${normalized}`;
+    return base + normalized;
+};
+
 type FontWeight = 'Bold' | 'DemiBold' | 'Medium' | 'Regular';
 type Region = 'CN' | 'HK' | 'JP';
 
@@ -178,16 +195,16 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
     const sources: string[] = [];
     
     if (files.woff2) {
-        sources.push(`url('${files.woff2}') format('woff2')`);
+        sources.push(`url('${toCdnUrl(files.woff2)}') format('woff2')`);
     }
     if (files.woff) {
-        sources.push(`url('${files.woff}') format('woff')`);
+        sources.push(`url('${toCdnUrl(files.woff)}') format('woff')`);
     }
     if (files.ttf) {
-        sources.push(`url('${files.ttf}') format('truetype')`);
+        sources.push(`url('${toCdnUrl(files.ttf)}') format('truetype')`);
     }
     if (files.otf) {
-        sources.push(`url('${files.otf}') format('opentype')`);
+        sources.push(`url('${toCdnUrl(files.otf)}') format('opentype')`);
     }
     
     if (sources.length === 0) return '';
@@ -207,7 +224,7 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
 // inject or update font styles in document head
 function injectFontStyles(region: Region): void {
     // Preload fonts for this region in the background
-    const fontUrls = getFontUrlsForRegion(region);
+    const fontUrls = getFontUrlsForRegion(region).map(toCdnUrl);
     preloadFonts(fontUrls).catch(err => console.error('Font preload failed:', err));
     
     // remove current font styles if exist

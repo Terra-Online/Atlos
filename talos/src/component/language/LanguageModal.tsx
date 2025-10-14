@@ -13,9 +13,9 @@ export interface LanguageModalProps {
 }
 
 const LANG_LABEL_KEYS: Record<string, string> = {
-  'en-us': 'English',
-  'zh-cn': '简体中文',
-  'zh-tw': '繁體中文',
+  'en-US': 'English',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
   'ja-JP': '日本語',
   'ko-KR': '한국어',
 };
