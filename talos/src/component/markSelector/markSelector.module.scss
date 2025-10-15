@@ -14,7 +14,7 @@
 
 .markItem {
     user-select: none;
-    touch-action: none;
+    touch-action: pan-y;
     /* Content layer: absolutely positioned within skeleton plot */
     position: absolute;
     inset: 0 auto auto 0;
