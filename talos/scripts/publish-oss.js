@@ -11,6 +11,8 @@ const client = new OSS({
   accessKeySecret,
   authorizationV4: true,
   bucket,
+  timeout: 120000, // 2 minutes
+  agent: undefined, // 禁用连接池,避免callback twice
 });
 
 function getAllFiles(dirPath, arrayOfFiles) {
@@ -32,10 +34,11 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles('./dist');
 
-// for huge file upload(> 2MB)
-const MULTIPART_THRESHOLD = 2 * 1024 * 1024; // 2MB
+// 大文件阈值(>1MB使用分片)
+const MULTIPART_THRESHOLD = 1 * 1024 * 1024; // 1MB
+const MAX_RETRIES = 3; // 最多重试3次
 
-const upload = async (relativePath) => {
+const upload = async (relativePath, retryCount = 0) => {
   const objectKey = `${prefix}/${relativePath}`;
   const localPath = `./dist/${relativePath}`;
   
@@ -44,7 +47,7 @@ const upload = async (relativePath) => {
     'x-oss-storage-class': 'Standard',
     // 指定Object的访问权限。
     'x-oss-object-acl': 'default',
-    // 指定PutObject操作时是否覆盖同名目标Object。此处设置为true，表示禁止覆盖同名Object。
+    // 指定PutObject操作时是否覆盖同名目标Object。此处设置为true,表示禁止覆盖同名Object。
     'x-oss-forbid-overwrite': 'false',
   };
 
@@ -56,16 +59,8 @@ const upload = async (relativePath) => {
     if (fileSize > MULTIPART_THRESHOLD) {
       await client.multipartUpload(objectKey, localPath, {
         headers,
-        partSize: 1024 * 1024, // 1MB per part
-        progress: (p, cpt) => {
-          // progress callback
-          if (cpt && cpt.doneParts) {
-            const percent = Math.floor((cpt.doneParts.length / Math.ceil(fileSize / (1024 * 1024))) * 100);
-            if (percent % 20 === 0) {
-              console.log(`  ${relativePath}: ${percent}%`);
-            }
-          }
-        }
+        partSize: 2 * 1024 * 1024, // 2MB per part(减少分片数量)
+        parallel: 3, // 并行上传分片的数量
       });
       console.log(`${relativePath} uploaded (multipart, ${(fileSize / 1024 / 1024).toFixed(2)}MB)`);
     } else {
@@ -74,11 +69,18 @@ const upload = async (relativePath) => {
       console.log(`${relativePath} uploaded (${(fileSize / 1024).toFixed(2)}KB)`);
     }
   } catch (e) {
-    console.error(`Upload failed: ${relativePath}`, e?.name || e?.code || e?.message || e);
+    // retry logic
+    if (retryCount < MAX_RETRIES) {
+      const waitTime = 2000 * Math.pow(2, retryCount); // 2s, 4s, 8s
+      console.warn(`Retry ${retryCount + 1}/${MAX_RETRIES} after ${waitTime}ms: ${relativePath}`);
+      await new Promise(r => setTimeout(r, waitTime));
+      return upload(relativePath, retryCount + 1);
+    }
+    console.error(`Upload failed after ${MAX_RETRIES} retries: ${relativePath}`, e?.name || e?.code || e?.message || e);
   }
 }
 
-const concurrency = 20;
+const concurrency = 5; // 降低并发数(原20 -> 5)
 let index = 0;
 
 const worker = async () => {
