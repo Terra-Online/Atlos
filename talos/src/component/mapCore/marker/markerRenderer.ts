@@ -1,7 +1,7 @@
 import L, { divIcon, icon } from 'leaflet';
 import { IMarkerData, MARKER_TYPE_DICT } from '@/data/marker';
 
-import { getMarkerIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
+import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import LOGGER from '@/utils/log';
 
 import styles from './marker.module.scss';
@@ -22,7 +22,8 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     //     acc[type.key] = DEFAULT_ICON
     //     return acc
     // }
-    const iconUrl = getMarkerIconUrl(type.key);
+    // Now, getItemIconUrl will return marker icon if key ends with _spot automatically
+    const iconUrl = getItemIconUrl(type.key);
     if (type.noFrame) {
         acc[type.key] = icon({
             iconUrl,
