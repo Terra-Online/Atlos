@@ -32,7 +32,13 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles('./dist');
 
-const upload = async (path) => {
+// for huge file upload(> 2MB)
+const MULTIPART_THRESHOLD = 2 * 1024 * 1024; // 2MB
+
+const upload = async (relativePath) => {
+  const objectKey = `${prefix}/${relativePath}`;
+  const localPath = `./dist/${relativePath}`;
+  
   const headers = {
     // 指定Object的存储类型。
     'x-oss-storage-class': 'Standard',
@@ -43,13 +49,32 @@ const upload = async (path) => {
   };
 
   try {
-    await client.put(`${prefix}/${path}`, `./dist/${path}`
-      // 自定义headers
-      , { headers }
-    );
-    console.log(`${path} uploaded`);
+    const stats = fs.statSync(localPath);
+    const fileSize = stats.size;
+    
+    // huge file upload
+    if (fileSize > MULTIPART_THRESHOLD) {
+      await client.multipartUpload(objectKey, localPath, {
+        headers,
+        partSize: 1024 * 1024, // 1MB per part
+        progress: (p, cpt) => {
+          // progress callback
+          if (cpt && cpt.doneParts) {
+            const percent = Math.floor((cpt.doneParts.length / Math.ceil(fileSize / (1024 * 1024))) * 100);
+            if (percent % 20 === 0) {
+              console.log(`  ${relativePath}: ${percent}%`);
+            }
+          }
+        }
+      });
+      console.log(`${relativePath} uploaded (multipart, ${(fileSize / 1024 / 1024).toFixed(2)}MB)`);
+    } else {
+      // small file upload
+      await client.put(objectKey, localPath, { headers });
+      console.log(`${relativePath} uploaded (${(fileSize / 1024).toFixed(2)}KB)`);
+    }
   } catch (e) {
-    console.log(e);
+    console.error(`Upload failed: ${relativePath}`, e?.name || e?.code || e?.message || e);
   }
 }
 
