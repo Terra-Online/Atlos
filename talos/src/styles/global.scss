@@ -22,6 +22,9 @@
 
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 button {
     border: none;

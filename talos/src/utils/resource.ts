@@ -32,10 +32,13 @@ export function getResourceUrl(property, key, ext = 'png') {
 }
 
 export const getTileResourceUrl = (path) => getResourceUrl('tiles', path);
-export const getMarkerIconUrl = (key, ext = 'png') =>
-    getResourceUrl('marker', key, ext);
-export const getItemIconUrl = (key, ext = 'png') =>
-    getResourceUrl('item', key, ext);
+// remove get MarkerIconUrl - use getItemIconUrl with _spot suffix instead
+export const getItemIconUrl = (key, ext = 'png') => {
+    if (key && typeof key === 'string' && key.endsWith('_spot')) {
+        return getResourceUrl('marker', key, ext);
+    }
+    return getResourceUrl('item', key, ext);
+};
 export const getCtgrIconUrl = (key, ext = 'svg') =>
     getResourceUrl('category', key, ext);
 export const getMarkerSubIconUrl = (key, ext = 'png') =>
