@@ -28,7 +28,7 @@ $transition-speed: 0.3s;
         position: relative;
         overflow: hidden;
         height: 100%;
-        width: 100%; /* 填满容器 */
+        width: 100%;
         background-color: rgba($white-0, 0.5);
         color: $grey-1;
         backdrop-filter: blur(35px) brightness(120%);

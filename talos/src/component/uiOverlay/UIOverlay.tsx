@@ -11,6 +11,7 @@ import FilterList from '../filterList/filterList';
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
 import Group from '../../assets/logos/group.svg?react';
+import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import L from 'leaflet';
@@ -56,6 +57,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
+    const handleDarkMode = () => console.log('Toggle dark mode');
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => console.log('Reach out for help');
 
@@ -68,7 +70,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* Headbar */}
             <HeadBar isSidebarOpen={isSidebarOpen}>
-                <HeadItem icon={ToS} onClick={handleReset} tooltip={t('headbar.tos')} />
+                <HeadItem 
+                    icon={ToS}
+                    onClick={handleReset}
+                    tooltip={t('headbar.tos')}
+                />
                 <HeadItem
                     icon={hideUI}
                     onClick={handleHideUI}
@@ -78,6 +84,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
                     icon={Group}
                     onClick={handleGroup}
                     tooltip={t('headbar.group')}
+                />
+                <HeadItem
+                    icon={Darkmode}
+                    onClick={handleDarkMode}
+                    tooltip={t('headbar.darkMode')}
                 />
                 <HeadItem
                     icon={i18n}

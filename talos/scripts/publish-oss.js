@@ -34,9 +34,9 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles('./dist');
 
-// 大文件阈值(>1MB使用分片)
-const MULTIPART_THRESHOLD = 1 * 1024 * 1024; // 1MB
-const MAX_RETRIES = 3; // 最多重试3次
+// threshold for large file uploading
+const MULTIPART_THRESHOLD = 1 * 1024 * 1024;
+const MAX_RETRIES = 3;
 
 const upload = async (relativePath, retryCount = 0) => {
   const objectKey = `${prefix}/${relativePath}`;
@@ -47,7 +47,7 @@ const upload = async (relativePath, retryCount = 0) => {
     'x-oss-storage-class': 'Standard',
     // 指定Object的访问权限。
     'x-oss-object-acl': 'default',
-    // 指定PutObject操作时是否覆盖同名目标Object。此处设置为true,表示禁止覆盖同名Object。
+    // 指定PutObject操作时是否覆盖同名目标Object。
     'x-oss-forbid-overwrite': 'false',
   };
 
@@ -59,8 +59,8 @@ const upload = async (relativePath, retryCount = 0) => {
     if (fileSize > MULTIPART_THRESHOLD) {
       await client.multipartUpload(objectKey, localPath, {
         headers,
-        partSize: 2 * 1024 * 1024, // 2MB per part(减少分片数量)
-        parallel: 3, // 并行上传分片的数量
+        partSize: 2 * 1024 * 1024, // 2MB per part (reduce part quantity)
+        parallel: 3, // 3 parts upload concurrency
       });
       console.log(`${relativePath} uploaded (multipart, ${(fileSize / 1024 / 1024).toFixed(2)}MB)`);
     } else {
@@ -80,7 +80,7 @@ const upload = async (relativePath, retryCount = 0) => {
   }
 }
 
-const concurrency = 5; // 降低并发数(原20 -> 5)
+const concurrency = 5; // limit concurrency
 let index = 0;
 
 const worker = async () => {

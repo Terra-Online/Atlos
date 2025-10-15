@@ -25,8 +25,8 @@
     padding: 0.25rem;
     cursor: pointer;
     box-shadow: 0 0 3px 1px rgba($black, 0);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-    will-change: box-shadow, transform;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.3s ease;
+    will-change: box-shadow, transform, background-color;
     overflow: visible;
     display: grid;
     grid-template-columns: 0.5fr 1.5fr;
