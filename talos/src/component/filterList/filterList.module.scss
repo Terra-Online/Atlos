@@ -1,6 +1,17 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
+:root[data-theme='light'] {
+    --filterlist-surface: rgba(#{$white-2}, 0.25);
+    --filterlist-scrollbar: rgba(#{$white-0}, 0.3);
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-theme='dark'] {
+        --filterlist-surface: rgba(#{$black-0}, 0.25);
+        --filterlist-scrollbar: rgba(#{$white-0}, 0.25);
+    }
+}
+
 /* Animatable custom properties controlling mask fades (0 = off, 1 = on) */
 @property --leftFade {
     syntax: '<number>';
@@ -21,8 +32,8 @@
     min-width: 0;
     border-radius: 6px;
     box-sizing: border-box;
-    box-shadow: 0 0 5px rgba($black, 0.6);
-    background-color: rgba($white-2, 0.25);
+    box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+    background-color: var(--filterlist-surface);
     backdrop-filter: blur(8px);
     user-select: none;
     touch-action: pan-x;
@@ -40,7 +51,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: rgba($white-0, 0.3);
+    background-color: var(--filterlist-scrollbar);
         border-radius: 3px;
     }
 

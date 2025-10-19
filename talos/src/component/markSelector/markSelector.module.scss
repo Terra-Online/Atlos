@@ -24,7 +24,7 @@
     border-radius: 0 2px 2px 0;
     padding: 0.25rem;
     cursor: pointer;
-    box-shadow: 0 0 3px 1px rgba($black, 0);
+    box-shadow: 0 0 3px 1px rgba($black-0, 0);
     transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.3s ease;
     will-change: box-shadow, transform, background-color;
     overflow: visible;
@@ -37,8 +37,8 @@
         'icon Num';
     &.active {
         background-color: $mid;
-        color: rgba($black, 1);
-        box-shadow: 0 3px 4px rgba($black, 0.4);
+        color: rgba($black-0, 1);
+        box-shadow: 0 3px 4px rgba($black-0, 0.4);
         transition: all 0.2s ease;
         mix-blend-mode: luminosity;
         &::after {
@@ -52,7 +52,7 @@
     }
     &.completed {
         background-color: $primary-accent-2;
-        box-shadow: 0 3px 6px rgba($black, 0.3);
+        box-shadow: 0 3px 6px rgba($black-0, 0.3);
     }
     &::after {
         content: '';
@@ -82,7 +82,7 @@
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     }
     &:hover {
-        box-shadow: 1px 3px 5px rgba($black, 0.2);
+        box-shadow: 1px 3px 5px rgba($black-0, 0.2);
         transform: translateY(-1px);
     }
     /* Name layer: expanded state */

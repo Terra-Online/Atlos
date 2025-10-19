@@ -66,7 +66,7 @@ const MarkFilter = ({
                         viewBox='0 0 24 24'
                         className={isExpanded ? styles.expanded : ''}
                     >
-                        <path d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z' />
+                        <path d='M0,10.3923L18,0v20.7846L0,10.3923Z' />
                     </svg>
                 </div>
             </div>

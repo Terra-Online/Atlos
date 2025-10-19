@@ -1,8 +1,24 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
 
 $desktop-headbar-height: 5.5rem;
 $toggle-btn-size: 5.5rem;
 $transition-speed: 0.3s;
+
+:root[data-theme='light'] {
+    --sidebar-header: #{$white-1};
+    --sidebar-bg: #{rgba($white-0, 0.5)};
+    --sidebar-footer: #{rgba($white-0, 0.3)};
+    --sidebar-footer-txt: #{$black-1};
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-theme='dark'] {
+        --sidebar-header: #{$black-1};
+        --sidebar-bg: #{rgba($black-0, 0.6)};
+        --sidebar-footer: #{rgba($black-1, 0.8)};
+        --sidebar-footer-txt: #{$light-1};
+    }
+}
 
 .sidebarContainer {
     position: absolute;
@@ -29,22 +45,21 @@ $transition-speed: 0.3s;
         overflow: hidden;
         height: 100%;
         width: 100%;
-        background-color: rgba($white-0, 0.5);
+        background-color: var(--sidebar-bg);
         color: $grey-1;
         backdrop-filter: blur(35px) brightness(120%);
 
-        box-shadow: 4px 0 8px rgba($black, 0.25);
+        box-shadow: 4px 0 8px rgba($black-0, 0.25);
         pointer-events: auto;
         transform: none;
-        transition: none;
         display: flex;
         flex-direction: column;
         user-select: none;
 
         .headIcon {
             z-index: 100;
-            background-color: $white-1;
-            box-shadow: 0 4px 4px rgba($black, 0.25);
+            background-color: var(--sidebar-header);
+            box-shadow: 0 4px 4px rgba($black-0, 0.25);
             display: flex;
             justify-content: center;
             > img {
@@ -72,8 +87,8 @@ $transition-speed: 0.3s;
             z-index: 100;
             width: 100%;
             bottom: 0;
-            background-color: rgba($white-0, 0.3);
-            box-shadow: 0 -1px 3px rgba($black, 0.3);
+            background-color: var(--sidebar-footer);
+            box-shadow: 0 -1px 3px rgba($black-0, 0.3);
             height: 1.5rem;
             font-size: 0.875rem;
             font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
@@ -83,9 +98,9 @@ $transition-speed: 0.3s;
             align-items: center;
             justify-content: center;
             a {
-                color: black;
+                color: var(--sidebar-footer-txt);
                 text-decoration: none;
-                transition: font-weight 0.2s;
+                transition: font-weight 0.2s, color .3s $moderato-curve;
                 &:hover {
                     font-weight: 650;
                     transition: font-weight 0.2s;
@@ -116,7 +131,7 @@ $transition-speed: 0.3s;
         justify-content: center;
         border-radius: 4px;
         z-index: 1001;
-        filter: drop-shadow(0 0 2.5px rgba($black, 0.6));
+        filter: drop-shadow(0 0 2.5px rgba($black-0, 0.6));
         pointer-events: auto;
         transition:
             background-color 0.3s ease,

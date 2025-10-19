@@ -1,6 +1,27 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
+:root[data-theme='light'] {
+    --lang-surface: #{$white-1};
+    --lang-surface-hover: #{$white-3};
+    --lang-fg: #{$grey-1};
+    --lang-sep: #{$grey-1};
+    --lang-dim: #{$dim};
+    --lang-accent: #{$primary-accent-4};
+    --lang-accent-weak: #{$primary-accent-1};
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-theme='dark'] {
+        --lang-surface: #222;
+        --lang-surface-hover: #333;
+        --lang-fg: #e6e6e6;
+        --lang-sep: #a1a1a1;
+        --lang-dim: #b0b0b0;
+        --lang-accent: #ffb020;
+        --lang-accent-weak: #ffe28a;
+    }
+}
+
 .langList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
@@ -33,9 +54,9 @@
     border-radius: 3px;
     height: 3.6rem;
     padding: .4rem .5rem;
-    box-shadow: 0 0 4px 1px rgba($black, 0.25);
-    background-color: $white-1;
-    color: $grey-1;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
+    background-color: var(--lang-surface);
+    color: var(--lang-fg);
     cursor: pointer;
     transition:
         background-color .2s ease-in,
@@ -55,23 +76,23 @@
         transition: background-color .4s ease;
     }
      &:hover {
-        background-color: $white-3;
-        box-shadow: 0 0 4px 1px rgba($black, 0.35);
+    background-color: var(--lang-surface-hover);
+        box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
         &::before {
-            background-color: $primary-accent-1;
+            background-color: var(--lang-accent-weak);
             transition: background-color .2s ease;
         }
     }
     &.active {
-        background-color: $dim;
-        color: $white-1;
+    background-color: var(--lang-dim);
+    color: $white-1; /* THEME-TODO: consider token if needed */
         &::before {
-            background-color: $primary-accent-4;
+            background-color: var(--lang-accent);
             transition: background-color .4s ease-in, box-shadow .5s ease;
             box-shadow: 0 0 3px 0 $primary-accent-4;
         }
         &:hover {
-            background-color: $grey-1;
+            background-color: var(--lang-fg);
         }
     }
 }
@@ -108,10 +129,10 @@
     justify-content: center;
     justify-self: end;
     align-self: start;
-    border: 2px solid $dim;
+    border: 2px solid var(--lang-dim);
     border-radius: 4px;
     padding: 2.5px 6px;
-    color: $dim;
+    color: var(--lang-dim);
     font-size: .9rem;
     font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
     height: 22px;
@@ -133,7 +154,7 @@
     max-width: 0;
     white-space: nowrap;
     margin-left: 0;
-    color: $grey-1;
+    color: var(--lang-fg);
     font-family: 'Novecento Bold', 'Lang Origin', sans-serif;
     font-weight: 900;
     text-transform: uppercase;
@@ -147,11 +168,11 @@
 }
 
 .active .langTag {
-    background-color: $primary-accent-4;
-    color: $grey-1;
-    border-color: $primary-accent-4;
+    background-color: var(--lang-accent);
+    color: var(--lang-fg);
+    border-color: var(--lang-accent);
     font-family: 'Novecento Bold', 'UD_ShinGo Bold', sans-serif;
-    box-shadow: 0 1px 2px rgba($black, 0.2);
+    box-shadow: 0 1px 2px rgba($black-0, 0.2); /* THEME-NOTE: keep shadow */
     transform: translateY(0.72rem);
 }
 

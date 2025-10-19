@@ -24,8 +24,8 @@
         backdrop-filter: blur(1px) brightness(100%);
         background-color: #ececec61;
         box-shadow:
-            0 0 2px 1px rgba($black, 0.4),
-            inset 0 0 2px rgba($black, 0.2);
+            0 0 2px 1px rgba($black-0, 0.4),
+            inset 0 0 2px rgba($black-0, 0.2);
         &:has(.in) {
             margin-bottom: 6px;
         }
@@ -39,7 +39,7 @@
         width: calc(1rem + 1px);
         border-radius: 1px;
         background-color: $grey-1;
-        box-shadow: 0 0 2px 1px rgba($black, 0.4);
+        box-shadow: 0 0 2px 1px rgba($black-0, 0.4);
         cursor: pointer;
         transition: all 0.2s ease;
         font-family: 'Novecento Medium', sans-serif;
@@ -90,11 +90,11 @@
                 transform 0.4s ease,
                 box-shadow 0.1s ease;
             box-shadow:
-                0 0 3px 0.5px rgba($black, 0.4),
+                0 0 3px 0.5px rgba($black-0, 0.4),
                 0 calc(1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
-                    0.5px rgba($black, 0.2),
+                    0.5px rgba($black-0, 0.2),
                 0 calc(-1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
-                    0.5px rgba($black, 0.2); // make shadow grow with scale
+                    0.5px rgba($black-0, 0.2); // make shadow grow with scale
         }
     }
 }

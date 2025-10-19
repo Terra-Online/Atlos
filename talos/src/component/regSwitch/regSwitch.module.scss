@@ -3,6 +3,25 @@
 @use 'sass:color';
 @use 'sass:math';
 
+:root[data-theme='light'] {
+    --regswitch-surface: rgba(#{$white-2}, 0.25);
+    --regswitch-item: #{$grey-1};
+    --regswitch-item-hover: #{$grey-2};
+    --regswitch-selected: #{$primary-accent-4};
+    --regswitch-icon-on: #{$white-1};
+    --regswitch-icon-off: #{$grey-1};
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-theme='dark'] {
+        --regswitch-surface: rgba(#{$black-0}, 0.25);
+        --regswitch-item: #2e2e2e;
+        --regswitch-item-hover: #3a3a3a;
+        --regswitch-selected: #ffb020;
+        --regswitch-icon-on: #f0f0f0;
+        --regswitch-icon-off: #cacaca;
+    }
+}
+
 $transition-speed: 0.3s;
 $item-height: 2.5rem;
 $item-gap: 0.6rem;
@@ -39,11 +58,11 @@ $indicator-height: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: $item-gap;
-    background-color: rgba($white-2, 0.25);
+    background-color: var(--regswitch-surface);
     backdrop-filter: blur(8px);
     border-radius: 3px;
     padding: 5px;
-    box-shadow: 0 0 5px rgba($black, 0.6);
+    box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
     z-index: 900;
     transform: translateY(-50%);
     transition: transform 0.3s ease-in-out;
@@ -61,7 +80,7 @@ $indicator-height: 0.75rem;
         transform 0.4s $presto-curve,
         opacity 0.3s ease;
     z-index: 10;
-    filter: drop-shadow(0 0 1px rgba($black, 0.8));
+    filter: drop-shadow(0 0 1px rgba($black-0, 0.8));
     transform: translateY(calc(-50% + 1.25rem));
 
     &.hidden {
@@ -77,23 +96,23 @@ $indicator-height: 0.75rem;
     height: $item-height;
     padding: 0.25rem;
     border-radius: 3px;
-    background-color: $grey-1;
-    box-shadow: 0 0 4px rgba($black, 0.6);
+    background-color: var(--regswitch-item);
+    box-shadow: 0 0 4px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
 
     &:hover {
-        background-color: $grey-2;
-        box-shadow: 0 0 2px rgba($black, 0.75);
+    background-color: var(--regswitch-item-hover);
+    box-shadow: 0 0 2px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
     }
 
     &.selected {
-        background-color: $primary-accent-4;
-        box-shadow: 0 0 4px rgba($black, 0.75);
+    background-color: var(--regswitch-selected);
+    box-shadow: 0 0 4px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
 
         .icon svg {
-            fill: $grey-1;
+            fill: var(--regswitch-icon-off);
         }
     }
 
@@ -111,7 +130,7 @@ $indicator-height: 0.75rem;
 
         svg {
             transition: all 0.3s ease;
-            fill: $white-1;
+            fill: var(--regswitch-icon-on);
             width: 1.5rem;
             height: 1.5rem;
         }
@@ -143,10 +162,10 @@ $indicator-height: 0.75rem;
         display: flex;
         flex-direction: column;
         gap: $item-gap;
-        background-color: rgba($white-2, 0.25);
+    background-color: var(--regswitch-surface);
         border-radius: 3px;
         padding: 5px;
-        box-shadow: 0 0 5px rgba($black, 0.6);
+    box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
         max-height: 300px;
         overflow-y: auto;
         backdrop-filter: blur(8px);
@@ -160,7 +179,7 @@ $indicator-height: 0.75rem;
 //   background-color: rgba($white-2, 0.25);
 //   border-radius: 3px;
 //   padding: 5px;
-//   box-shadow: 0 0 5px rgba($black, 0.6);
+//   box-shadow: 0 0 5px rgba($black-0, 0.6);
 //   position: relative;
 //   max-height: 300px;
 //   overflow-y: auto;
@@ -176,8 +195,8 @@ $indicator-height: 0.75rem;
     height: $item-height;
     padding: 0.25rem;
     border-radius: 3px;
-    background-color: $grey-1;
-    box-shadow: 0 0 4px rgba($black, 0.6);
+    background-color: var(--regswitch-item);
+    box-shadow: 0 0 4px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -195,12 +214,12 @@ $indicator-height: 0.75rem;
     //   transition: opacity 0.4s $presto-curve;
     //   opacity: 0;
     //   z-index: 10;
-    //   filter: drop-shadow(0 0 1px rgba($black, 0.8));
+    //   filter: drop-shadow(0 0 1px rgba($black-0, 0.8));
     // }
 
     &:hover {
-        background-color: $grey-2;
-        box-shadow: 0 0 2px rgba($black, 0.75);
+    background-color: var(--regswitch-item-hover);
+    box-shadow: 0 0 2px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
     }
 
     // &.selected {

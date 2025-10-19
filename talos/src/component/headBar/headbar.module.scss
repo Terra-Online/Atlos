@@ -1,5 +1,14 @@
 @use '../../styles/palette.scss' as *;
 
+:root[data-theme='light'] {
+    /* headbar icon color on light */
+    --headbar-icon-fill: #{$white-1};
+}
+:root[data-theme='dark'] {
+    /* headbar icon color on dark (still using light foreground for contrast) */
+    --headbar-icon-fill: #{$white-1};
+}
+
 .headbar {
     display: flex;
     flex-direction: row;
@@ -38,7 +47,7 @@
 
         svg {
             transition: all 0.2s ease;
-            fill: $white-1;
+            fill: var(--headbar-icon-fill);
             width: 2rem;
             height: 2rem;
         }

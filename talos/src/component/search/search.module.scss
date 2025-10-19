@@ -1,5 +1,28 @@
 @use '../../styles/palette.scss' as *;
 
+:root[data-theme='light'] {
+    --search-bg: #{$grey-1};
+    --search-txt: #{rgba($white-0, 0.9)};
+    --search-shadow-out: #{rgba($black-0, 0.15)};
+    --search-shadow-in: #{rgba($black-0, 0.25)};
+    --search-placeholder: #{rgba($white-0, 0.7)};
+    --search-icon: #{$white-0};
+    --search-focus: #{$primary-accent-4};
+    --search-outline: #{$primary-accent-3};
+}
+@media (prefers-color-scheme: dark) {
+    :root[data-theme='dark'] {
+        --search-bg: #{$black-1};
+        --search-txt: #{rgba($white-0, 0.9)};
+        --search-shadow-out: #{rgba($black-0, 0.5)};
+        --search-shadow-in: #{rgba($black-0, 0.6)};
+        --search-placeholder: #{rgba($white-0, 0.7)};
+        --search-icon: #{$white-2};
+        --search-focus: #{$primary-accent-4};
+        --search-outline: #{$primary-accent-3};
+    }
+}
+
 .searchContainer {
     width: 100%;
     margin-bottom: 1rem;
@@ -13,23 +36,23 @@
             height: 3rem;
             display: flex;
             align-items: center;
-            background-color: $grey-1;
+            background-color: var(--search-bg);
             border-radius: 6px;
             transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba($black, 0.15);
+            box-shadow: 0 2px 8px var(--search-shadow-out);
             &:focus-within {
-                box-shadow: 0 2px 4px rgba($black, 0.25);
+                box-shadow: 0 2px 4px var(--search-shadow-in);
                 > .searchIcon {
                     .icon {
-                        fill: $primary-accent-4;
+                        fill: var(--search-focus);
                     }
                 }
             }
 
             &:has(.searchInput:not(:placeholder-shown)) {
                 box-shadow:
-                    0 0 0 2px $primary-accent-3,
-                    0 2px 12px rgba($black, 0.25);
+                    0 0 0 2px var(--search-outline),
+                    0 2px 12px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
             }
 
             .searchInput {
@@ -39,14 +62,14 @@
                 background: transparent;
                 border: none;
                 outline: none;
-                color: rgba($white-0, 0.9);
+                color: var(--search-txt);
                 font-size: 1rem;
                 font-family: 'Roboto Slab', 'UD_ShinGo Demibold', sans-serif;
                 font-weight: 400;
 
                 &::placeholder {
-                    color: rgba($white-0, 0.7);
-                    text-shadow: 0 3px 1.5px rgba($black, 0.5);
+                    color: var(--search-placeholder);
+                    text-shadow: 0 3px 1.5px rgba($black-0, 0.5);
                     transition:
                         opacity 0.3s,
                         filter 0.2s;
@@ -74,7 +97,7 @@
                     height: 100%;
                     fill: $white-0;
                     transition: fill 0.3s;
-                    filter: drop-shadow(0 3px 1.5px rgba($black, 0.5));
+                    filter: drop-shadow(0 3px 1.5px rgba($black-0, 0.5)); /* THEME-NOTE: keep shadow */
                 }
             }
         }

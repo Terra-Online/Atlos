@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
@@ -57,7 +57,52 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
-    const handleDarkMode = () => console.log('Toggle dark mode');
+
+    // Apply stored theme on mount (if any)
+    useEffect(() => {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+    }, []);
+
+    // Helper to apply and persist theme; mode 'system' removes override
+    const applyTheme = (mode: 'light' | 'dark' | 'system') => {
+        // Indicate a theme switching window to enable scoped transitions
+        const root = document.documentElement;
+        const DURATION = getComputedStyle(root)
+            .getPropertyValue('--theme-transition-duration')
+            .trim() || '250ms';
+        // convert to ms number (basic parsing)
+        const ms = /ms$/.test(DURATION)
+            ? parseFloat(DURATION)
+            : /s$/.test(DURATION)
+              ? parseFloat(DURATION) * 1000
+              : 250;
+        root.setAttribute('data-theme-switching', '');
+        if (mode === 'system') {
+            root.removeAttribute('data-theme');
+            localStorage.removeItem('theme');
+            window.setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
+            return;
+        }
+        root.setAttribute('data-theme', mode);
+        localStorage.setItem('theme', mode);
+        window.setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
+    };
+
+    // Dark mode logic: always invert (base = saved theme if exists, otherwise system preference)
+    const handleDarkMode = () => {
+        const saved = localStorage.getItem('theme');
+        const base: 'light' | 'dark' =
+            saved === 'light' || saved === 'dark'
+                ? saved
+                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                    ? 'dark'
+                    : 'light');
+        const next: 'light' | 'dark' = base === 'dark' ? 'light' : 'dark';
+        applyTheme(next); // always persist override
+    };
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => console.log('Reach out for help');
 

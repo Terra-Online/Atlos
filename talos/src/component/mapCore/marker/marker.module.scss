@@ -27,7 +27,7 @@
         background-color: $white-1;
         outline: $border-weight solid $white-1;
         outline-offset: $border-weight;
-        box-shadow: 0 0 10px $black;
+        box-shadow: 0 0 10px $black-0;
 
         //transform: translateY(-50%);
         &::after {
@@ -42,7 +42,7 @@
             border-top: 7px solid $white-1;
             transition: transform 0.2s $presto-curve;
             z-index: 10;
-            filter: drop-shadow(0 0 2px rgba($black, 0.7));
+            filter: drop-shadow(0 0 2px rgba($black-0, 0.7));
         }
     }
 
