@@ -88,6 +88,7 @@
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    content-visibility: auto;
     &.expanded {
         grid-template-rows: 1fr;
         transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -124,6 +125,7 @@
         gap: 0 0.75rem;
         width: 100%;
         will-change: opacity, transform, filter;
+        content-visibility: auto;
         &.visible {
             opacity: 1;
             transform: translateY(0);

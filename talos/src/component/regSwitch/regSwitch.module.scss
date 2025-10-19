@@ -4,21 +4,21 @@
 @use 'sass:math';
 
 :root[data-theme='light'] {
-    --regswitch-surface: rgba(#{$white-2}, 0.25);
+    --regswitch-surface: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
     --regswitch-selected: #{$primary-accent-4};
-    --regswitch-icon-on: #{$white-1};
-    --regswitch-icon-off: #{$grey-1};
+    --regswitch-icon-on: #{$grey-1};
+    --regswitch-icon-off: #{$white-1};
 }
 @media (prefers-color-scheme: dark) {
     :root[data-theme='dark'] {
-        --regswitch-surface: rgba(#{$black-0}, 0.25);
-        --regswitch-item: #2e2e2e;
-        --regswitch-item-hover: #3a3a3a;
-        --regswitch-selected: #ffb020;
-        --regswitch-icon-on: #f0f0f0;
-        --regswitch-icon-off: #cacaca;
+        --regswitch-surface: #{rgba($grey-2, 0.3)};
+        --regswitch-item: #{$black-1};
+        --regswitch-item-hover: #{$grey-1};
+        --regswitch-selected: #{$primary-accent-4};
+        --regswitch-icon-on: #{$black-1};
+        --regswitch-icon-off: #{$light-2};
     }
 }
 
@@ -112,7 +112,7 @@ $indicator-height: 0.75rem;
     box-shadow: 0 0 4px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
 
         .icon svg {
-            fill: var(--regswitch-icon-off);
+            fill: var(--regswitch-icon-on);
         }
     }
 
@@ -130,7 +130,7 @@ $indicator-height: 0.75rem;
 
         svg {
             transition: all 0.3s ease;
-            fill: var(--regswitch-icon-on);
+            fill: var(--regswitch-icon-off);
             width: 1.5rem;
             height: 1.5rem;
         }
@@ -162,10 +162,10 @@ $indicator-height: 0.75rem;
         display: flex;
         flex-direction: column;
         gap: $item-gap;
-    background-color: var(--regswitch-surface);
+        background-color: var(--regswitch-surface);
         border-radius: 3px;
         padding: 5px;
-    box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+        box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
         max-height: 300px;
         overflow-y: auto;
         backdrop-filter: blur(8px);

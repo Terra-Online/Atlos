@@ -10,12 +10,12 @@
 }
 @media (prefers-color-scheme: dark) {
     :root[data-theme='dark'] {
-        --trigger-bg: #2e2e2e;
-        --trigger-knob: #555;
-        --trigger-on: #efefef;
-        --trigger-off: #cacaca;
-        --trigger-active: #ffb020;
-        --trigger-label: #f0f0f0;
+    --trigger-bg: #{$black-1};
+    --trigger-knob: #{$grey-2};
+    --trigger-on: #{$white-1};
+    --trigger-off: #{$grey-1};
+    --trigger-active: #{$primary-accent-4};
+    --trigger-label: #{$white-1};
     }
 }
 
