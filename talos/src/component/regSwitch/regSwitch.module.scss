@@ -3,7 +3,7 @@
 @use 'sass:color';
 @use 'sass:math';
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --regswitch-surface: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
@@ -11,15 +11,13 @@
     --regswitch-icon-on: #{$grey-1};
     --regswitch-icon-off: #{$white-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --regswitch-surface: #{rgba($grey-2, 0.3)};
-        --regswitch-item: #{$black-1};
-        --regswitch-item-hover: #{$grey-1};
-        --regswitch-selected: #{$primary-accent-4};
-        --regswitch-icon-on: #{$black-1};
-        --regswitch-icon-off: #{$light-2};
-    }
+:root[data-theme='dark'] {
+    --regswitch-surface: #{rgba($grey-2, 0.3)};
+    --regswitch-item: #{$black-1};
+    --regswitch-item-hover: #{$grey-1};
+    --regswitch-selected: #{$primary-accent-4};
+    --regswitch-icon-on: #{$black-1};
+    --regswitch-icon-off: #{$light-2};
 }
 
 $transition-speed: 0.3s;

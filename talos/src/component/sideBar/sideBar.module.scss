@@ -11,13 +11,11 @@ $transition-speed: 0.3s;
     --sidebar-footer: #{rgba($white-0, 0.3)};
     --sidebar-footer-txt: #{$black-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --sidebar-header: #{$black-1};
-        --sidebar-bg: #{rgba($black-0, 0.6)};
-        --sidebar-footer: #{rgba($black-1, 0.8)};
-        --sidebar-footer-txt: #{$light-1};
-    }
+:root[data-theme='dark'] {
+    --sidebar-header: #{$black-1};
+    --sidebar-bg: #{rgba($black-0, 0.6)};
+    --sidebar-footer: #{rgba($black-1, 0.8)};
+    --sidebar-footer-txt: #{$light-1};
 }
 
 .sidebarContainer {

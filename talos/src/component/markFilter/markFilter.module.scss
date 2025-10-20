@@ -1,18 +1,16 @@
 @use '../../styles/palette.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --markfilter-surface: #{$white-1};
     --markfilter-title: #{$grey-1};
     --markfilter-title-shadow: #{rgba($black-0, 0.25)};
     --markfilter-accent: #{$primary-accent-5};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --markfilter-surface: #{$grey-1};
-        --markfilter-title: #{$light-1};
-        --markfilter-title-shadow: #{rgba($black-0, 0.8)};
-        --markfilter-accent: #{$primary-accent-4};
-    }
+:root[data-theme='dark'] {
+    --markfilter-surface: #{$grey-1};
+    --markfilter-title: #{$light-1};
+    --markfilter-title-shadow: #{rgba($black-0, 0.8)};
+    --markfilter-accent: #{$primary-accent-4};
 }
 
 .markFilterContainer {

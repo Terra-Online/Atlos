@@ -1,7 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --mark-bg: #{$white-1};
     --mark-fg: #{$grey-1};
     --mark-active-bg: #{$mid};
@@ -10,16 +10,14 @@
     --mark-progress-bg: #{rgba($primary-accent-3, 1)};
     --mark-separator: #{$grey-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --mark-bg: #{$grey-1};
-        --mark-fg: #{$white-1};
-        --mark-active-bg: #{$grey-2};
-        --mark-active-fg: #{$white-1};
-        --mark-completed-bg: #{$primary-accent-4};
-        --mark-progress-bg: #{rgba($primary-accent-4, 0.8)};
-        --mark-separator: #{$white-2};
-    }
+:root[data-theme='dark'] {
+    --mark-bg: #{$grey-1};
+    --mark-fg: #{$white-1};
+    --mark-active-bg: #{$grey-2};
+    --mark-active-fg: #{$white-1};
+    --mark-completed-bg: #{$primary-accent-4};
+    --mark-progress-bg: #{rgba($primary-accent-4, 0.8)};
+    --mark-separator: #{$white-2};
 }
 
 /* Skeleton layer: participates ONLY in grid layout, occupies space and fixes collapsed height, no animation */

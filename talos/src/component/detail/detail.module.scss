@@ -1,7 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --detail-surface: #{$light-1};
     --detail-header-bg: #{$secondary-accent-1};
     --detail-fg-strong: #{$white-0};
@@ -10,16 +10,14 @@
     --detail-border: #{$light-2};
     --detail-prog: #{$grey-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --detail-surface: #1e1e1e;
-        --detail-header-bg: #234;
-        --detail-fg-strong: #fafafa;
-        --detail-fg: #e6e6e6;
-        --detail-dim: #b0b0b0;
-        --detail-border: #3a3a3a;
-        --detail-prog: #a1a1a1;
-    }
+:root[data-theme='dark'] {
+    --detail-surface: #1e1e1e;
+    --detail-header-bg: #234;
+    --detail-fg-strong: #fafafa;
+    --detail-fg: #e6e6e6;
+    --detail-dim: #b0b0b0;
+    --detail-border: #3a3a3a;
+    --detail-prog: #a1a1a1;
 }
 
 .detailContainer {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
@@ -58,51 +58,64 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
 
-    // Apply stored theme on mount (if any)
+    const unsubRef = useRef<(() => void) | null>(null);
+    const invertRef = useRef(false);
+
+    const applyTheme = (mode: 'light' | 'dark', withTransition = true) => {
+        const root = document.documentElement;
+        if (withTransition) {
+            const dur = getComputedStyle(root).getPropertyValue('--theme-transition-duration').trim();
+            const ms = /ms$/i.test(dur) ? parseFloat(dur) || 350 : 350;
+            root.setAttribute('data-theme-switching', '');
+            setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
+        }
+        root.setAttribute('data-theme', mode);
+    };
+
+    const getSystemTheme = (): 'light' | 'dark' =>
+        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    const startSystemFollow = (immediate = true) => {
+        unsubRef.current?.();
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        const apply = () => {
+            const sys = mql.matches ? 'dark' : 'light';
+            const theme = invertRef.current ? (sys === 'dark' ? 'light' : 'dark') : sys;
+            applyTheme(theme);
+        };
+        const listener = (e: MediaQueryListEvent) => {
+            invertRef.current = false; // reset invert on system change
+            applyTheme(e.matches ? 'dark' : 'light');
+        };
+        if (immediate) apply();
+        if (mql.addEventListener) {
+            mql.addEventListener('change', listener);
+            unsubRef.current = () => mql.removeEventListener('change', listener);
+        } else if ('onchange' in mql) {
+            mql.onchange = listener;
+            unsubRef.current = () => { mql.onchange = null; };
+        }
+    };
+
     useEffect(() => {
         const saved = localStorage.getItem('theme');
         if (saved === 'light' || saved === 'dark') {
-            document.documentElement.setAttribute('data-theme', saved);
+            applyTheme(saved, false);
+        } else {
+            startSystemFollow();
         }
+        return () => unsubRef.current?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Helper to apply and persist theme; mode 'system' removes override
-    const applyTheme = (mode: 'light' | 'dark' | 'system') => {
-        // Indicate a theme switching window to enable scoped transitions
-        const root = document.documentElement;
-        const DURATION = getComputedStyle(root)
-            .getPropertyValue('--theme-transition-duration')
-            .trim() || '250ms';
-        // convert to ms number (basic parsing)
-        const ms = /ms$/.test(DURATION)
-            ? parseFloat(DURATION)
-            : /s$/.test(DURATION)
-              ? parseFloat(DURATION) * 1000
-              : 250;
-        root.setAttribute('data-theme-switching', '');
-        if (mode === 'system') {
-            root.removeAttribute('data-theme');
-            localStorage.removeItem('theme');
-            window.setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
-            return;
-        }
-        root.setAttribute('data-theme', mode);
-        localStorage.setItem('theme', mode);
-        window.setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
+    const handleDarkMode = () => {
+        localStorage.removeItem('theme');
+        if (!unsubRef.current) startSystemFollow(false);
+        invertRef.current = !invertRef.current;
+        const sys = getSystemTheme();
+        applyTheme(invertRef.current ? (sys === 'dark' ? 'light' : 'dark') : sys);
     };
 
-    // Dark mode logic: always invert (base = saved theme if exists, otherwise system preference)
-    const handleDarkMode = () => {
-        const saved = localStorage.getItem('theme');
-        const base: 'light' | 'dark' =
-            saved === 'light' || saved === 'dark'
-                ? saved
-                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-                    ? 'dark'
-                    : 'light');
-        const next: 'light' | 'dark' = base === 'dark' ? 'light' : 'dark';
-        applyTheme(next); // always persist override
-    };
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => console.log('Reach out for help');
 

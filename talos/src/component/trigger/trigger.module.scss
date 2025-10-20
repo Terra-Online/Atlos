@@ -1,6 +1,6 @@
 @use '../../styles/palette.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --trigger-bg: #{$grey-1};
     --trigger-knob: #{$grey-3};
     --trigger-on: #{$white-1};
@@ -8,15 +8,13 @@
     --trigger-active: #{$primary-accent-4};
     --trigger-label: #{$white-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
+:root[data-theme='dark'] {
     --trigger-bg: #{$black-1};
     --trigger-knob: #{$grey-2};
     --trigger-on: #{$white-1};
     --trigger-off: #{$grey-1};
     --trigger-active: #{$primary-accent-4};
     --trigger-label: #{$white-1};
-    }
 }
 
 $transition-speed: 0.3s; //import from global size.scss later

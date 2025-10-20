@@ -10,17 +10,15 @@
     --search-focus: #{$primary-accent-4};
     --search-outline: #{$primary-accent-3};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --search-bg: #{$black-1};
-        --search-txt: #{rgba($white-0, 0.9)};
-        --search-shadow-out: #{rgba($black-0, 0.5)};
-        --search-shadow-in: #{rgba($black-0, 0.6)};
-        --search-placeholder: #{rgba($white-0, 0.7)};
-        --search-icon: #{$white-2};
-        --search-focus: #{$primary-accent-4};
-        --search-outline: #{$primary-accent-3};
-    }
+:root[data-theme='dark'] {
+    --search-bg: #{$black-1};
+    --search-txt: #{rgba($white-0, 0.9)};
+    --search-shadow-out: #{rgba($black-0, 0.5)};
+    --search-shadow-in: #{rgba($black-0, 0.6)};
+    --search-placeholder: #{rgba($white-0, 0.7)};
+    --search-icon: #{$white-2};
+    --search-focus: #{$primary-accent-4};
+    --search-outline: #{$primary-accent-3};
 }
 
 .searchContainer {

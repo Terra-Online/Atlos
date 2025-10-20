@@ -1,7 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --modal-bg: #{$light-1};
     --modal-fg: #{$grey-1};
     --modal-header-bg: #{$grey-1};
@@ -9,15 +9,13 @@
     --modal-chip-fg: #{$grey-1};
     --modal-deco: #{$grey-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --modal-bg: #1c1c1c;
-        --modal-fg: #e6e6e6;
-        --modal-header-bg: #2e2e2e;
-        --modal-chip-bg: #3a3a3a;
-        --modal-chip-fg: #e6e6e6;
-        --modal-deco: #a1a1a1;
-    }
+:root[data-theme='dark'] {
+    --modal-bg: #1c1c1c;
+    --modal-fg: #e6e6e6;
+    --modal-header-bg: #2e2e2e;
+    --modal-chip-bg: #3a3a3a;
+    --modal-chip-fg: #e6e6e6;
+    --modal-deco: #a1a1a1;
 }
 
 .modalMask {

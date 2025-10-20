@@ -1,7 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --lang-surface: #{$white-1};
     --lang-surface-hover: #{$white-3};
     --lang-fg: #{$grey-1};
@@ -10,16 +10,14 @@
     --lang-accent: #{$primary-accent-4};
     --lang-accent-weak: #{$primary-accent-1};
 }
-@media (prefers-color-scheme: dark) {
-    :root[data-theme='dark'] {
-        --lang-surface: #222;
-        --lang-surface-hover: #333;
-        --lang-fg: #e6e6e6;
-        --lang-sep: #a1a1a1;
-        --lang-dim: #b0b0b0;
-        --lang-accent: #ffb020;
-        --lang-accent-weak: #ffe28a;
-    }
+:root[data-theme='dark'] {
+    --lang-surface: #222;
+    --lang-surface-hover: #333;
+    --lang-fg: #e6e6e6;
+    --lang-sep: #a1a1a1;
+    --lang-dim: #b0b0b0;
+    --lang-accent: #ffb020;
+    --lang-accent-weak: #ffe28a;
 }
 
 .langList {
