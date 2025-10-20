@@ -42,6 +42,13 @@ const MarkFilter = ({
     const isEmpty = useMemo(() => visibleCount === 0, [visibleCount]);
 
     const contextValue = useMemo(() => ({ report }), [report]);
+
+    // lazy render: only render children when expanded or after first expansion
+    const [hasEverExpanded, setHasEverExpanded] = useState(false);
+    if (isExpanded && !hasEverExpanded) {
+        setHasEverExpanded(true);
+    }
+
     return (
     <MarkVisibilityContext.Provider value={contextValue}>
     <div className={styles.markFilterContainer}>
@@ -73,14 +80,18 @@ const MarkFilter = ({
 
             <div className={`${styles.filterContent} ${isExpanded ? styles.expanded : ''}`}>
                 <div className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}>
-                    {children}
-                    {isEmpty && (
-                        empty ?? (
-                            <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
-                                <p>{t('markFilter.emptyTitle')}</p>
-                                <p>{t('markFilter.emptyDesc')}</p>
-                            </div>
-                        )
+                    {hasEverExpanded && (
+                        <>
+                            {children}
+                            {isEmpty && (
+                                empty ?? (
+                                    <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
+                                        <p>{t('markFilter.emptyTitle')}</p>
+                                        <p>{t('markFilter.emptyDesc')}</p>
+                                    </div>
+                                )
+                            )}
+                        </>
                     )}
                 </div>
             </div>

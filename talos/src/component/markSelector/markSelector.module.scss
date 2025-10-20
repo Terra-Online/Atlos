@@ -95,7 +95,7 @@
         background-color: var(--mark-separator);
         z-index: 3;
         clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-        transition: clip-path 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: clip-path 0.3s $standard-curve;
     }
     &.active::before {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);

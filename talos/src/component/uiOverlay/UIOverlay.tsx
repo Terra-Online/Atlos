@@ -60,14 +60,19 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     const unsubRef = useRef<(() => void) | null>(null);
     const invertRef = useRef(false);
+    const switchingRef = useRef(false);
 
     const applyTheme = (mode: 'light' | 'dark', withTransition = true) => {
         const root = document.documentElement;
         if (withTransition) {
             const dur = getComputedStyle(root).getPropertyValue('--theme-transition-duration').trim();
             const ms = /ms$/i.test(dur) ? parseFloat(dur) || 350 : 350;
+            switchingRef.current = true;
             root.setAttribute('data-theme-switching', '');
-            setTimeout(() => root.removeAttribute('data-theme-switching'), ms);
+            setTimeout(() => {
+                root.removeAttribute('data-theme-switching');
+                switchingRef.current = false;
+            }, ms);
         }
         root.setAttribute('data-theme', mode);
     };
@@ -109,6 +114,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     }, []);
 
     const handleDarkMode = () => {
+        if (switchingRef.current) return; // debounce: prevent interrupting animation
         localStorage.removeItem('theme');
         if (!unsubRef.current) startSystemFollow(false);
         invertRef.current = !invertRef.current;

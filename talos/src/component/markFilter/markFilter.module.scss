@@ -1,4 +1,5 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
     --markfilter-surface: #{$white-1};
@@ -85,11 +86,11 @@
     background-color: var(--markfilter-surface);
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: grid-template-rows 0.4s $standard-curve;
     content-visibility: auto;
     &.expanded {
         grid-template-rows: 1fr;
-        transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: grid-template-rows 0.4s $standard-curve;
     }
     &:not(.expanded) {
         transition: grid-template-rows 0.4s cubic-bezier(0.7, 0, 0.45, 1) 0.08s;
@@ -114,10 +115,12 @@
         padding: 0 0.75rem;
         transform: translateY(-8px);
         filter: blur(5px);
+        background-color: inherit;
         transition:
             opacity 0.4s ease 0.1s,
             transform 0.4s ease 0.1s,
-            filter 0.3s ease 0.15s;
+            filter 0.3s ease 0.15s,
+            background-color 0.35s $moderato-curve 0;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0 0.75rem;
