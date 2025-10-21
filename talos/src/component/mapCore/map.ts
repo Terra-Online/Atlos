@@ -115,19 +115,13 @@ export class MapCore {
             config.maxZoom,
         );
 
-        // 三层地图结构：
-        // 1. 背景色层 (最底层)
-        // 2. 背景纹理层 (可选)
-        // 3. 地图瓦片层 (主内容)
-        
         const mapBounds = L.latLngBounds(southWest, northEast);
         
-        // Layer 3: 地图瓦片层
         L.tileLayer(getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`), {
             tileSize: config.tileSize,
             noWrap: true,
             bounds: mapBounds,
-            pane: 'tilePane', // z-index: 200
+            pane: 'tilePane',
         }).addTo(this.map);
 
         this.markerLayer.changeRegion(regionId);
