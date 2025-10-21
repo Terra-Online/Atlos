@@ -6,12 +6,14 @@
     --markfilter-title: #{$grey-1};
     --markfilter-title-shadow: #{rgba($black-0, 0.25)};
     --markfilter-accent: #{$primary-accent-5};
+    --markfilter-placeholder: #{$black-1};
 }
 :root[data-theme='dark'] {
     --markfilter-surface: #{$grey-1};
     --markfilter-title: #{$light-1};
     --markfilter-title-shadow: #{rgba($black-0, 0.8)};
     --markfilter-accent: #{$primary-accent-4};
+    --markfilter-placeholder: #{$light-2};
 }
 
 .markFilterContainer {
@@ -125,7 +127,7 @@
     }
     .placeholderContent {
         p {
-            color: #000;
+            color: var(--markfilter-placeholder);
             margin: 8px 0;
             font-family: 'Roboto Slab', serif;
             font-size: 0.85rem;

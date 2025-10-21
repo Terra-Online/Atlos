@@ -24,6 +24,7 @@
     /* Custom positioning for components that need it */
 
     /* Override Headbar positioning to keep it in top-right */
+    /*
     :global(.headbar-container) {
         position: fixed !important;
         top: 1rem !important;
@@ -31,4 +32,5 @@
         left: auto !important;
         transition: transform 0.3s ease-in-out !important;
     }
+        */
 }

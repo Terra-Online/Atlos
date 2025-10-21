@@ -97,19 +97,27 @@ export class MarkerLayer {
         });
     }
 
-    filterMarker(typeKeys) {
-        const markerIds = typeKeys.flatMap((key) => this.markerTypeMap[key]);
+    filterMarker(typeKeys: string[]) {
+        const markerIds = typeKeys.flatMap((key) => this.markerTypeMap[key] || []);
         Object.entries(this.markerDict).forEach(([id, layer]) => {
-            // console.log(id, layer, this.markerDataDict[id])
             const parent =
                 this.layerSubregionDict[this.markerDataDict[id].subregionId];
             if (markerIds.includes(id)) {
                 layer.addTo(parent);
             } else {
-                // @ts-ignore leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
+                // @ts-expect-error leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
                 layer.remove(parent);
             }
         });
+    }
+
+    /**
+     * 初始化时渲染已选中的 filter 对应的 markers
+     * 应在 changeRegion 之后调用
+     */
+    initializeWithFilter(typeKeys: string[]) {
+        if (typeKeys.length === 0) return;
+        this.filterMarker(typeKeys);
     }
 
     getCurrentPoints(regionId: string) {
