@@ -2,12 +2,10 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --filterlist-surface: rgba(#{$white-2}, 0.25);
-    --filterlist-scrollbar: rgba(#{$white-0}, 0.3);
+    --filterlist-surface: #{rgba($white-2, 0.25)};
 }
 :root[data-theme='dark'] {
-    --filterlist-surface: rgba(#{$black-0}, 0.25);
-    --filterlist-scrollbar: rgba(#{$white-0}, 0.25);
+    --filterlist-surface: #{rgba($black-1, 0.3)};
 }
 
 /* Animatable custom properties controlling mask fades (0 = off, 1 = on) */
@@ -43,15 +41,6 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     cursor: grab;
-
-    &::-webkit-scrollbar {
-        height: 6px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-    background-color: var(--filterlist-scrollbar);
-        border-radius: 3px;
-    }
 
     &.hidden {
         opacity: 0;

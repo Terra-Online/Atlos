@@ -61,6 +61,8 @@ const HeadBar = ({ children }: HeadBarProps) => {
                 position: 'fixed',
                 top: '1rem',
                 right: '1rem',
+                backgroundColor: 'var(--headbar-bg)',
+                borderRadius: '50%',
             }}
         >
             <div className={styles.headbar}>{children}</div>

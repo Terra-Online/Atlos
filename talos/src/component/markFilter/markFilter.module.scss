@@ -99,38 +99,28 @@
         }
     }
     .contentInner {
-        .filterContent.expanded & {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-            transition:
-                opacity 0.4s ease 0.15s,
-                transform 0.4s ease 0.15s,
-                filter 0.3s ease 0.2s;
-        }
-    }
-    .contentInner {
         min-height: 0;
         opacity: 0;
         padding: 0 0.75rem;
-        transform: translateY(-8px);
-        filter: blur(5px);
-        background-color: inherit;
+        transform: translateY(-6px);
+        filter: blur(6px);
+        background-color: var(--markfilter-surface);
         transition:
-            opacity 0.4s ease 0.1s,
-            transform 0.4s ease 0.1s,
+            opacity 0.4s ease 0.15s,
+            transform 0.4s ease 0.15s,
             filter 0.3s ease 0.15s,
-            background-color 0.35s $moderato-curve 0;
+            background-color 0.35s $moderato-curve 0s;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0 0.75rem;
         width: 100%;
         will-change: opacity, transform, filter;
-        content-visibility: auto;
+        overflow: visible;
         &.visible {
             opacity: 1;
             transform: translateY(0);
             filter: blur(0);
+            overflow: visible;
         }
     }
     .placeholderContent {

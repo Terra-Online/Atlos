@@ -22,7 +22,7 @@
         border: 1.5px solid $white-1;
         border-radius: 4px;
         backdrop-filter: blur(1px) brightness(100%);
-        background-color: #ececec61;
+        background-color: rgba($white-2, .35);
         box-shadow:
             0 0 2px 1px rgba($black-0, 0.4),
             inset 0 0 2px rgba($black-0, 0.2);

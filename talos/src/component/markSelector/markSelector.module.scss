@@ -5,6 +5,7 @@
     --mark-bg: #{$white-1};
     --mark-fg: #{$grey-1};
     --mark-active-bg: #{$mid};
+    --mark-stats-text: #{$dim};
     --mark-active-fg: #{rgba($black-0, 1)};
     --mark-completed-bg: #{$primary-accent-2};
     --mark-progress-bg: #{rgba($primary-accent-3, 1)};
@@ -14,6 +15,7 @@
     --mark-bg: #{$grey-1};
     --mark-fg: #{$white-1};
     --mark-active-bg: #{$grey-2};
+    --mark-stats-text: #{$light-1};
     --mark-active-fg: #{$white-1};
     --mark-completed-bg: #{$primary-accent-4};
     --mark-progress-bg: #{rgba($primary-accent-4, 0.8)};
@@ -59,7 +61,7 @@
         color: var(--mark-active-fg);
         box-shadow: 0 3px 4px rgba($black-0, 0.4); /* THEME-NOTE: keep shadow */
         transition: all 0.2s ease;
-        mix-blend-mode: luminosity;
+        //mix-blend-mode: luminosity;
         &::after {
             clip-path: polygon(
                 0 0,
@@ -95,7 +97,7 @@
         background-color: var(--mark-separator);
         z-index: 3;
         clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-        transition: clip-path 0.3s $standard-curve;
+        transition: clip-path 0.3s $standard-curve, background-color 0.35s $moderato-curve;
     }
     &.active::before {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
@@ -195,7 +197,8 @@
         grid-area: Num;
         font-size: 0.8rem;
         font-family: 'Novecento Medium', sans-serif;
-        color: inherit;
+        color: var(--mark-stats-text);
+        font-weight: 600;
         align-self: start;
         z-index: 2;
         line-height: 1;

@@ -1,12 +1,12 @@
 @use '../../styles/palette.scss' as *;
 
-:root[data-theme='light'] {
-    /* headbar icon color on light */
+:root, :root[data-theme='light'] {
     --headbar-icon-fill: #{$white-1};
+    --headbar-bg: #{rgba($white-0, 0.1)};
 }
 :root[data-theme='dark'] {
-    /* headbar icon color on dark (still using light foreground for contrast) */
-    --headbar-icon-fill: #{$white-1};
+    --headbar-icon-fill: #{$light-1};
+    --headbar-bg: #{rgba($black-1, 0.15)}; // no direct use
 }
 
 .headbar {
