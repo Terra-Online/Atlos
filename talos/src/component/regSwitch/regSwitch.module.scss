@@ -60,7 +60,7 @@ $indicator-height: 0.75rem;
     backdrop-filter: blur(8px);
     border-radius: 3px;
     padding: 5px;
-    box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 5px rgba($black-0, 0.6);
     z-index: 900;
     transform: translateY(-50%);
     transition: transform 0.3s ease-in-out,
@@ -96,19 +96,19 @@ $indicator-height: 0.75rem;
     padding: 0.25rem;
     border-radius: 3px;
     background-color: var(--regswitch-item);
-    box-shadow: 0 0 4px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 4px rgba($black-0, 0.6);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
 
     &:hover {
     background-color: var(--regswitch-item-hover);
-    box-shadow: 0 0 2px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 2px rgba($black-0, 0.75);
     }
 
     &.selected {
     background-color: var(--regswitch-selected);
-    box-shadow: 0 0 4px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 4px rgba($black-0, 0.75);
 
         .icon svg {
             fill: var(--regswitch-icon-on);
@@ -164,7 +164,7 @@ $indicator-height: 0.75rem;
         background-color: var(--regswitch-surface);
         border-radius: 3px;
         padding: 5px;
-        box-shadow: 0 0 5px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+        box-shadow: 0 0 5px rgba($black-0, 0.6);
         max-height: 300px;
         overflow-y: auto;
         backdrop-filter: blur(8px);
@@ -195,7 +195,7 @@ $indicator-height: 0.75rem;
     padding: 0.25rem;
     border-radius: 3px;
     background-color: var(--regswitch-item);
-    box-shadow: 0 0 4px rgba($black-0, 0.6); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 4px rgba($black-0, 0.6);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -217,8 +217,8 @@ $indicator-height: 0.75rem;
     // }
 
     &:hover {
-    background-color: var(--regswitch-item-hover);
-    box-shadow: 0 0 2px rgba($black-0, 0.75); /* THEME-NOTE: keep shadow */
+        background-color: var(--regswitch-item-hover);
+        box-shadow: 0 0 2px rgba($black-0, 0.75);
     }
 
     // &.selected {

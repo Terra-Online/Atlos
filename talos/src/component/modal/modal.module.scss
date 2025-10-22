@@ -2,20 +2,22 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --modal-bg: #{$light-1};
-    --modal-fg: #{$grey-1};
     --modal-header-bg: #{$grey-1};
-    --modal-chip-bg: #{$white-3};
-    --modal-chip-fg: #{$grey-1};
+    --modal-bg: #{$light-1};
+    --modal-header-text: #{$white-1};
+    --modal-icon-fill: #{$white-1};
+    --modal-btn-bg: #{$white-3};
+    --modal-btn-text: #{$grey-1};
     --modal-deco: #{$grey-1};
 }
 :root[data-theme='dark'] {
-    --modal-bg: #1c1c1c;
-    --modal-fg: #e6e6e6;
-    --modal-header-bg: #2e2e2e;
-    --modal-chip-bg: #3a3a3a;
-    --modal-chip-fg: #e6e6e6;
-    --modal-deco: #a1a1a1;
+    --modal-header-bg: #{$black-1};
+    --modal-bg: #{$dim-1};
+    --modal-header-text: #{$light-1};
+    --modal-icon-fill: #{$light-1};
+    --modal-btn-bg: #{$mid};
+    --modal-btn-text: #{$black-1};
+    --modal-deco: #{$black-1};
 }
 
 .modalMask {
@@ -42,10 +44,10 @@
 .modalContainer {
     background-color: var(--modal-bg);
     border-radius: 3px;
-    color: var(--modal-fg);
+    color: var(--modal-header-text);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 4px rgba($black-0, 0.25); /* THEME-NOTE: box-shadow keeps rgba($black-0, .25) as per instruction */
+    box-shadow: 0 4px 4px rgba($black-0, 0.25);
     transform: scale(.92) translateY(4px);
     opacity: 0;
     transition: opacity .2s $adagio-curve, transform .25s $adagio-curve;
@@ -80,18 +82,18 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.5rem;
-    background-color: var(--modal-header-bg);
+        background-color: var(--modal-header-bg);
         font-weight: 900;
-    box-shadow: 0 2px 3px rgba($black-0, 0.25); /* THEME-NOTE: keep box-shadow */
+        box-shadow: 0 2px 3px rgba($black-0, 0.25);
         position: sticky;
         user-select: none;
         .modalClose {
             width: 6rem;
             height: 1.5rem;
-            background: var(--modal-chip-bg);
-            color: var(--modal-chip-fg);
+            background: var(--modal-btn-bg);
+            color: var(--modal-btn-text);
             border-radius: 0.75rem;
-            outline: 1.5px solid var(--modal-chip-bg);
+            outline: 1.5px solid var(--modal-btn-bg);
             outline-offset: 2px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -171,14 +173,14 @@
                 background-repeat: no-repeat;
                 background-position-x: 95%, 60%;
                 background-position-y: 47%, 40%;
-                filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
+                filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25));
                 z-index: 0;
                 pointer-events: none;
             }
 
             &:hover {
                 filter: invert(1);
-                box-shadow: 0 0 1px 1px rgba($black-0, 0.5); /* THEME-NOTE: keep shadow */
+                box-shadow: 0 0 1px 1px rgba($black-0, 0.5);
                 outline-color: var(--modal-deco);
             }
         }
@@ -191,10 +193,10 @@
     height: 1.5rem;
     background-size: contain;
     background-repeat: no-repeat;
-    filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
+    filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25));
     svg {
             transition: all 0.2s ease;
-        fill: $white-1; /* THEME-TODO: consider using a semantic token if needed */
+        fill: var(--modal-icon-fill);
             width: 1.5rem;
             height: 1.5rem;
         }
@@ -207,7 +209,7 @@
 }
 
 .modalTitle {
-    color: $white-0; /* THEME-TODO: consider a token if foreground needs theme contrast */
+    color: var(--modal-header-text);
     font-size: 1rem;
     margin: 0;
     margin-left: .3rem;

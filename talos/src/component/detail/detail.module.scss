@@ -6,7 +6,7 @@
     --detail-header-bg: #{$secondary-accent-1};
     --detail-fg-strong: #{$white-0};
     --detail-fg: #{$grey-1};
-    --detail-dim: #{$dim};
+    --detail-dim: #{$dim-1};
     --detail-border: #{$light-2};
     --detail-prog: #{$grey-1};
 }
@@ -187,7 +187,7 @@
                 }
 
                 &:disabled {
-                    background: $dim;
+                    background: $dim-1;
                     cursor: not-allowed;
                 }
             }
@@ -336,7 +336,7 @@
                     }
 
                     .userValue {
-                        color: $dim;
+                        color: $dim-1;
                         transition: color 0.3s ease;
 
                         &.check {

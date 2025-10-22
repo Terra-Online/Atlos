@@ -20,7 +20,7 @@
     width: 100%;
     overflow: hidden;
     border-radius: 3px;
-    box-shadow: 0 3px 4px rgba($black-0, 0.25); /* THEME-NOTE: keep box-shadow */
+    box-shadow: 0 3px 4px rgba($black-0, 0.25);
     margin-bottom: 0.25rem;
 }
 
@@ -52,7 +52,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        filter: drop-shadow(0 2px 3px var(--markfilter-title-shadow)); /* THEME-NOTE: keep shadow */
+        filter: drop-shadow(0 2px 3px var(--markfilter-title-shadow));
         > .icon {
             width: 100%;
             height: 100%;

@@ -111,7 +111,7 @@ $transition-speed: 0.3s; //import from global size.scss later
             height: calc(2.25rem - 6px);
             border-radius: 2px;
             background-color: var(--trigger-knob);
-            box-shadow: 0 1px 2px rgba($black-0, 0.3); /* THEME-NOTE: keep shadow */
+            box-shadow: 0 1px 2px rgba($black-0, 0.3);
             transition:
                 transform 0.2s,
                 background-color 0.2s ease;
@@ -119,13 +119,13 @@ $transition-speed: 0.3s; //import from global size.scss later
         }
         &:focus {
             outline: none;
-            box-shadow: 0 0 2px 1px rgba($white-0, 0.75); /* THEME-NOTE: keep shadow */
+            box-shadow: 0 0 2px 1px rgba($white-0, 0.75);
         }
         &.active {
             &::after {
                 transform: translateX(calc(calc(2.25rem - 6px) + 2px));
                 background-color: var(--trigger-active);
-                box-shadow: 0 1px 3px rgba($black-0, 0.4); /* THEME-NOTE: keep shadow */
+                box-shadow: 0 1px 3px rgba($black-0, 0.4);
             }
             //off state
             .triggerIcons {
@@ -143,7 +143,7 @@ $transition-speed: 0.3s; //import from global size.scss later
         font-size: 1rem;
         text-transform: uppercase;
     color: var(--trigger-label);
-    text-shadow: 0 1px 2px rgba($black-0, 1); /* THEME-NOTE: keep shadow */
+    text-shadow: 0 1px 2px rgba($black-0, 1);
         white-space: nowrap;
     }
 }

@@ -5,7 +5,7 @@
     --mark-bg: #{$white-1};
     --mark-fg: #{$grey-1};
     --mark-active-bg: #{$mid};
-    --mark-stats-text: #{$dim};
+    --mark-stats-text: #{$dim-1};
     --mark-active-fg: #{rgba($black-0, 1)};
     --mark-completed-bg: #{$primary-accent-2};
     --mark-progress-bg: #{rgba($primary-accent-3, 1)};
@@ -45,7 +45,7 @@
     border-radius: 0 2px 2px 0;
     padding: 0.25rem;
     cursor: pointer;
-    box-shadow: 0 0 3px 1px rgba($black-0, 0); /* THEME-NOTE: keep shadow */
+    box-shadow: 0 0 3px 1px rgba($black-0, 0);
     transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.3s ease;
     will-change: box-shadow, transform, background-color;
     overflow: visible;
@@ -59,7 +59,7 @@
     &.active {
         background-color: var(--mark-active-bg);
         color: var(--mark-active-fg);
-        box-shadow: 0 3px 4px rgba($black-0, 0.4); /* THEME-NOTE: keep shadow */
+        box-shadow: 0 3px 4px rgba($black-0, 0.4);
         transition: all 0.2s ease;
         //mix-blend-mode: luminosity;
         &::after {
@@ -73,7 +73,7 @@
     }
     &.completed {
         background-color: var(--mark-completed-bg);
-        box-shadow: 0 3px 6px rgba($black-0, 0.3); /* THEME-NOTE: keep shadow */
+        box-shadow: 0 3px 6px rgba($black-0, 0.3);
     }
     &::after {
         content: '';
@@ -103,7 +103,7 @@
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     }
     &:hover {
-        box-shadow: 1px 3px 5px rgba($black-0, 0.2); /* THEME-NOTE: keep shadow */
+        box-shadow: 1px 3px 5px rgba($black-0, 0.2);
         transform: translateY(-1px);
     }
     /* Name layer: expanded state */

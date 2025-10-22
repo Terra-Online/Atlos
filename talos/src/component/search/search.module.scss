@@ -50,7 +50,7 @@
             &:has(.searchInput:not(:placeholder-shown)) {
                 box-shadow:
                     0 0 0 2px var(--search-outline),
-                    0 2px 12px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
+                    0 2px 12px rgba($black-0, 0.25);
             }
 
             .searchInput {
@@ -95,7 +95,7 @@
                     height: 100%;
                     fill: $white-0;
                     transition: fill 0.3s;
-                    filter: drop-shadow(0 3px 1.5px rgba($black-0, 0.5)); /* THEME-NOTE: keep shadow */
+                    filter: drop-shadow(0 3px 1.5px rgba($black-0, 0.5));
                 }
             }
         }
