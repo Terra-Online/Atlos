@@ -42,6 +42,13 @@ const MarkFilter = ({
     const isEmpty = useMemo(() => visibleCount === 0, [visibleCount]);
 
     const contextValue = useMemo(() => ({ report }), [report]);
+
+    // lazy render: only render children when expanded or after first expansion
+    const [hasEverExpanded, setHasEverExpanded] = useState(false);
+    if (isExpanded && !hasEverExpanded) {
+        setHasEverExpanded(true);
+    }
+
     return (
     <MarkVisibilityContext.Provider value={contextValue}>
     <div className={styles.markFilterContainer}>
@@ -66,21 +73,25 @@ const MarkFilter = ({
                         viewBox='0 0 24 24'
                         className={isExpanded ? styles.expanded : ''}
                     >
-                        <path d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z' />
+                        <path d='M0,10.3923L18,0v20.7846L0,10.3923Z' />
                     </svg>
                 </div>
             </div>
 
             <div className={`${styles.filterContent} ${isExpanded ? styles.expanded : ''}`}>
                 <div className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}>
-                    {children}
-                    {isEmpty && (
-                        empty ?? (
-                            <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
-                                <p>{t('markFilter.emptyTitle')}</p>
-                                <p>{t('markFilter.emptyDesc')}</p>
-                            </div>
-                        )
+                    {hasEverExpanded && (
+                        <>
+                            {children}
+                            {isEmpty && (
+                                empty ?? (
+                                    <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
+                                        <p>{t('markFilter.emptyTitle')}</p>
+                                        <p>{t('markFilter.emptyDesc')}</p>
+                                    </div>
+                                )
+                            )}
+                        </>
                     )}
                 </div>
             </div>

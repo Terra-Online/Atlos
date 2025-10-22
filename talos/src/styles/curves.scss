@@ -1,5 +1,6 @@
-$adagio-curve: cubic-bezier(0.6, 0, 0.6, 1);
-$moderato-curve: cubic-bezier(0.8, 0.2, 0.35, 0.7);
-$standard-curve: cubic-bezier(0.4, 0, 0.2, 1);
-$presto-curve: cubic-bezier(0.6, 0, 0, 1);
-$vivacissimo-curve: cubic-bezier(0, 0, 0, 1);
+// fluid-to-dynamic transitions for various animation feelings
+$adagio-curve: cubic-bezier(0.6, 0, 0.6, 1); // compatible with 400ms-500ms transitions
+$moderato-curve: cubic-bezier(0.8, 0.2, 0.35, 0.7); //compatible with 300ms-400ms transitions
+$standard-curve: cubic-bezier(0.4, 0, 0.2, 1); // compatible with 500ms-600ms transitions
+$presto-curve: cubic-bezier(0.6, 0, 0, 1); // compatible with 600ms-800ms transitions
+$vivacissimo-curve: cubic-bezier(0, 0, 0, 1); // compatible with 400ms-550ms transitions

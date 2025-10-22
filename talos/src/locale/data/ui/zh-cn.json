@@ -7,8 +7,8 @@
     "help": "获取帮助"
   },
   "trigger": {
-    "complexSelect": "复杂筛选",
-    "regionalPoi": "区域点位"
+    "boundaryMode": "地区边界显示",
+    "clusterMode": "点位聚合"
   },
   "search": {
     "placeholder": "全局搜索…"

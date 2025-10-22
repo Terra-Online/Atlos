@@ -3,6 +3,23 @@
 @use 'sass:color';
 @use 'sass:math';
 
+:root, :root[data-theme='light'] {
+    --regswitch-bg: #{rgba($white-2, 0.25)};
+    --regswitch-item: #{$grey-1};
+    --regswitch-item-hover: #{$grey-2};
+    --regswitch-selected: #{$primary-accent-4};
+    --regswitch-icon-on: #{$grey-1};
+    --regswitch-icon-off: #{$white-1};
+}
+:root[data-theme='dark'] {
+    --regswitch-bg: #{rgba($grey-2, 0.3)};
+    --regswitch-item: #{$black-1};
+    --regswitch-item-hover: #{$grey-1};
+    --regswitch-selected: #{$primary-accent-4};
+    --regswitch-icon-on: #{$black-1};
+    --regswitch-icon-off: #{$light-2};
+}
+
 $transition-speed: 0.3s;
 $item-height: 2.5rem;
 $item-gap: 0.6rem;
@@ -39,14 +56,15 @@ $indicator-height: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: $item-gap;
-    background-color: rgba($white-2, 0.25);
+    background-color: var(--regswitch-bg);
     backdrop-filter: blur(8px);
     border-radius: 3px;
     padding: 5px;
-    box-shadow: 0 0 5px rgba($black, 0.6);
+    box-shadow: 0 0 5px rgba($black-0, 0.6);
     z-index: 900;
     transform: translateY(-50%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out,
+                background-color 0.35s $moderato-curve;
 }
 
 .indicator {
@@ -61,7 +79,7 @@ $indicator-height: 0.75rem;
         transform 0.4s $presto-curve,
         opacity 0.3s ease;
     z-index: 10;
-    filter: drop-shadow(0 0 1px rgba($black, 0.8));
+    filter: drop-shadow(0 0 1px rgba($black-0, 0.8));
     transform: translateY(calc(-50% + 1.25rem));
 
     &.hidden {
@@ -77,23 +95,23 @@ $indicator-height: 0.75rem;
     height: $item-height;
     padding: 0.25rem;
     border-radius: 3px;
-    background-color: $grey-1;
-    box-shadow: 0 0 4px rgba($black, 0.6);
+    background-color: var(--regswitch-item);
+    box-shadow: 0 0 4px rgba($black-0, 0.6);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
 
     &:hover {
-        background-color: $grey-2;
-        box-shadow: 0 0 2px rgba($black, 0.75);
+    background-color: var(--regswitch-item-hover);
+    box-shadow: 0 0 2px rgba($black-0, 0.75);
     }
 
     &.selected {
-        background-color: $primary-accent-4;
-        box-shadow: 0 0 4px rgba($black, 0.75);
+    background-color: var(--regswitch-selected);
+    box-shadow: 0 0 4px rgba($black-0, 0.75);
 
         .icon svg {
-            fill: $grey-1;
+            fill: var(--regswitch-icon-on);
         }
     }
 
@@ -111,7 +129,7 @@ $indicator-height: 0.75rem;
 
         svg {
             transition: all 0.3s ease;
-            fill: $white-1;
+            fill: var(--regswitch-icon-off);
             width: 1.5rem;
             height: 1.5rem;
         }
@@ -143,10 +161,10 @@ $indicator-height: 0.75rem;
         display: flex;
         flex-direction: column;
         gap: $item-gap;
-        background-color: rgba($white-2, 0.25);
+        background-color: var(--regswitch-bg);
         border-radius: 3px;
         padding: 5px;
-        box-shadow: 0 0 5px rgba($black, 0.6);
+        box-shadow: 0 0 5px rgba($black-0, 0.6);
         max-height: 300px;
         overflow-y: auto;
         backdrop-filter: blur(8px);
@@ -160,7 +178,7 @@ $indicator-height: 0.75rem;
 //   background-color: rgba($white-2, 0.25);
 //   border-radius: 3px;
 //   padding: 5px;
-//   box-shadow: 0 0 5px rgba($black, 0.6);
+//   box-shadow: 0 0 5px rgba($black-0, 0.6);
 //   position: relative;
 //   max-height: 300px;
 //   overflow-y: auto;
@@ -176,8 +194,8 @@ $indicator-height: 0.75rem;
     height: $item-height;
     padding: 0.25rem;
     border-radius: 3px;
-    background-color: $grey-1;
-    box-shadow: 0 0 4px rgba($black, 0.6);
+    background-color: var(--regswitch-item);
+    box-shadow: 0 0 4px rgba($black-0, 0.6);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
@@ -195,12 +213,12 @@ $indicator-height: 0.75rem;
     //   transition: opacity 0.4s $presto-curve;
     //   opacity: 0;
     //   z-index: 10;
-    //   filter: drop-shadow(0 0 1px rgba($black, 0.8));
+    //   filter: drop-shadow(0 0 1px rgba($black-0, 0.8));
     // }
 
     &:hover {
-        background-color: $grey-2;
-        box-shadow: 0 0 2px rgba($black, 0.75);
+        background-color: var(--regswitch-item-hover);
+        box-shadow: 0 0 2px rgba($black-0, 0.75);
     }
 
     // &.selected {

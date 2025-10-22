@@ -1,5 +1,22 @@
 @use '../../styles/palette.scss' as *;
 
+:root, :root[data-theme='light'] {
+    --trigger-bg: #{$grey-1};
+    --trigger-knob: #{$grey-3};
+    --trigger-on: #{$white-1};
+    --trigger-off: #{$grey-1};
+    --trigger-active: #{$primary-accent-4};
+    --trigger-label: #{$white-1};
+}
+:root[data-theme='dark'] {
+    --trigger-bg: #{$black-1};
+    --trigger-knob: #{$grey-3};
+    --trigger-on: #{$light-1};
+    --trigger-off: #{$grey-1};
+    --trigger-active: #{$primary-accent-4};
+    --trigger-label: #{$light-1};
+}
+
 $transition-speed: 0.3s; //import from global size.scss later
 
 .triggerContainer {
@@ -61,10 +78,10 @@ $transition-speed: 0.3s; //import from global size.scss later
             }
             //on state
             &.on {
-                color: $white-1;
+                color: var(--trigger-on);
             }
             &.off {
-                color: $grey-1;
+                color: var(--trigger-off);
             }
             &.on > svg {
                 width: calc(1.35rem - 2px);
@@ -77,14 +94,14 @@ $transition-speed: 0.3s; //import from global size.scss later
         width: calc(4.5rem - 4px);
         height: 2.25rem;
         border-radius: 4px;
-        background-color: $grey-1;
+    background-color: var(--trigger-bg);
         padding: 2px;
         cursor: pointer;
         overflow: hidden;
         transition: all 0.2s ease;
         box-shadow:
             0px 0px 4px 1px rgba($white-1, 0.5),
-            inset 0px 0px 2px rgba($black, 0.2);
+            inset 0px 0px 2px rgba($black-0, 0.2);
         &::after {
             content: '';
             position: absolute;
@@ -93,8 +110,8 @@ $transition-speed: 0.3s; //import from global size.scss later
             width: calc(2.25rem - 6px);
             height: calc(2.25rem - 6px);
             border-radius: 2px;
-            background-color: $grey-3;
-            box-shadow: 0 1px 2px rgba($black, 0.3);
+            background-color: var(--trigger-knob);
+            box-shadow: 0 1px 2px rgba($black-0, 0.3);
             transition:
                 transform 0.2s,
                 background-color 0.2s ease;
@@ -107,16 +124,16 @@ $transition-speed: 0.3s; //import from global size.scss later
         &.active {
             &::after {
                 transform: translateX(calc(calc(2.25rem - 6px) + 2px));
-                background-color: $primary-accent-4;
-                box-shadow: 0 1px 3px rgba($black, 0.4);
+                background-color: var(--trigger-active);
+                box-shadow: 0 1px 3px rgba($black-0, 0.4);
             }
             //off state
             .triggerIcons {
                 .on {
-                    color: $grey-1;
+                    color: var(--trigger-off);
                 }
                 .off {
-                    color: $white-1;
+                    color: var(--trigger-on);
                 }
             }
         }
@@ -125,8 +142,8 @@ $transition-speed: 0.3s; //import from global size.scss later
         user-select: none;
         font-size: 1rem;
         text-transform: uppercase;
-        color: $white-1;
-        text-shadow: 0 1px 2px rgba($black, 1);
+    color: var(--trigger-label);
+    text-shadow: 0 1px 2px rgba($black-0, 1);
         white-space: nowrap;
     }
 }

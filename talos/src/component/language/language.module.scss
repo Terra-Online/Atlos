@@ -1,6 +1,33 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
+:root, :root[data-theme='light'] {
+    --lang-bg: #{$white-1};
+    --lang-hover-bg: #{$white-3};
+    --lang-actived-bg: #{$dim-1};
+    --lang-text: #{$grey-1};
+    --lang-actived-text: #{$white-1};
+    --lang-bar: #{$grey-1};
+    --lang-active-bar: #{$primary-accent-4};
+    --lang-hover-bar: #{$primary-accent-1};
+    --lang-tag: #{$dim-1};
+    --lang-actived-tag: #{$primary-accent-4};
+    --lang--actived-tag-text: #{$grey-1};
+}
+:root[data-theme='dark'] {
+    --lang-bg: #{$black-1};
+    --lang-hover-bg: #{$grey-2};
+    --lang-actived-bg: #{$light-1};
+    --lang-text: #{$light-1};
+    --lang-actived-text: #{$black-1};
+    --lang-bar: #{$light-1};
+    --lang-active-bar: #{$primary-accent-5};
+    --lang-hover-bar: #{$primary-accent-2};
+    --lang-tag: #{$dim-2};
+    --lang-actived-tag: #{$primary-accent-4};
+    --lang--actived-tag-text: #{$black-1};
+}
+
 .langList {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
@@ -33,9 +60,9 @@
     border-radius: 3px;
     height: 3.6rem;
     padding: .4rem .5rem;
-    box-shadow: 0 0 4px 1px rgba($black, 0.25);
-    background-color: $white-1;
-    color: $grey-1;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    background-color: var(--lang-bg);
+    color: var(--lang-text);
     cursor: pointer;
     transition:
         background-color .2s ease-in,
@@ -48,30 +75,30 @@
         top: 10%;
         width: 3px;
         height: 80%;
-        background-color: $grey-1;
+        background-color: var(--lang-bar);
         box-shadow: 0 0 0 0 transparent;
         z-index: 0;
         pointer-events: none;
         transition: background-color .4s ease;
     }
-     &:hover {
-        background-color: $white-3;
-        box-shadow: 0 0 4px 1px rgba($black, 0.35);
+    &:hover {
+        background-color: var(--lang-hover-bg);
+        box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
         &::before {
-            background-color: $primary-accent-1;
+            background-color: var(--lang-hover-bar);
             transition: background-color .2s ease;
         }
     }
     &.active {
-        background-color: $dim;
-        color: $white-1;
+        background-color: var(--lang-actived-bg);
+        color: var(--lang-actived-text);
         &::before {
-            background-color: $primary-accent-4;
+            background-color: var(--lang-active-bar);
             transition: background-color .4s ease-in, box-shadow .5s ease;
             box-shadow: 0 0 3px 0 $primary-accent-4;
         }
         &:hover {
-            background-color: $grey-1;
+            background-color: var(--lang-text);
         }
     }
 }
@@ -108,10 +135,10 @@
     justify-content: center;
     justify-self: end;
     align-self: start;
-    border: 2px solid $dim;
+    border: 2px solid var(--lang-tag);
     border-radius: 4px;
     padding: 2.5px 6px;
-    color: $dim;
+    color: var(--lang-tag);
     font-size: .9rem;
     font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
     height: 22px;
@@ -133,7 +160,7 @@
     max-width: 0;
     white-space: nowrap;
     margin-left: 0;
-    color: $grey-1;
+    color: var(--lang--actived-tag-text);
     font-family: 'Novecento Bold', 'Lang Origin', sans-serif;
     font-weight: 900;
     text-transform: uppercase;
@@ -147,11 +174,11 @@
 }
 
 .active .langTag {
-    background-color: $primary-accent-4;
-    color: $grey-1;
-    border-color: $primary-accent-4;
+    background-color: var(--lang-actived-tag);
+    color: var(--lang--actived-tag-text);
+    border-color: var(--lang-actived-tag);
     font-family: 'Novecento Bold', 'UD_ShinGo Bold', sans-serif;
-    box-shadow: 0 1px 2px rgba($black, 0.2);
+    box-shadow: 0 1px 2px rgba($black-0, 0.2);
     transform: translateY(0.72rem);
 }
 

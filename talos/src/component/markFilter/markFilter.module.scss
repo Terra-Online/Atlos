@@ -1,10 +1,26 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --markfilter-bg: #{$white-1};
+    --markfilter-title: #{$grey-1};
+    --markfilter-title-shadow: #{rgba($black-0, 0.25)};
+    --markfilter-accent: #{$primary-accent-5};
+    --markfilter-placeholder: #{$black-1};
+}
+:root[data-theme='dark'] {
+    --markfilter-bg: #{$grey-1};
+    --markfilter-title: #{$light-1};
+    --markfilter-title-shadow: #{rgba($black-0, 0.8)};
+    --markfilter-accent: #{$primary-accent-4};
+    --markfilter-placeholder: #{$light-2};
+}
 
 .markFilterContainer {
     width: 100%;
     overflow: hidden;
     border-radius: 3px;
-    box-shadow: 0 3px 4px rgba($black, 0.25);
+    box-shadow: 0 3px 4px rgba($black-0, 0.25);
     margin-bottom: 0.25rem;
 }
 
@@ -17,16 +33,16 @@
     height: 3rem;
     display: flex;
     align-items: center;
-    background-color: $white-1;
+    background-color: var(--markfilter-bg);
     border-radius: 3px 3px 0 0;
     cursor: pointer;
     transition: all 0.2s;
     > .filterTitle {
-        color: $grey-1;
+        color: var(--markfilter-title);
         text-transform: uppercase;
         font-weight: 400;
         font-size: 1rem;
-        text-shadow: 0 2px 3px rgba($black, 0.25);
+        text-shadow: 0 2px 3px var(--markfilter-title-shadow);
         flex-grow: 1;
     }
     > .filterIcon {
@@ -36,11 +52,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        filter: drop-shadow(0 2px 3px rgba($black, 0.25));
+        filter: drop-shadow(0 2px 3px var(--markfilter-title-shadow));
         > .icon {
             width: 100%;
             height: 100%;
-            fill: $grey-1;
+            fill: var(--markfilter-title);
             transition: fill 0.2s;
         }
     }
@@ -48,15 +64,18 @@
     .toggleIcon {
         margin-left: auto;
         margin-right: 1rem;
+        display: flex;
         svg {
             //will replace
-            width: 20px;
-            height: 20px;
-            fill: $grey-1;
-            transition: transform 0.3s;
+            width: .8rem;
+            height: .8rem;
+            fill: var(--markfilter-title);
+            transform: translateY(1px) rotate(0deg);
+            transition: transform 0.3s, fill .3s;
+            will-change: transform, fill;
             &.expanded {
-                transform: rotate(180deg);
-                fill: $primary-accent-5;
+                transform: translateY(1px) rotate(90deg);
+                fill: var(--markfilter-accent);
             }
         }
     }
@@ -66,61 +85,49 @@
     z-index: 2;
     position: relative;
     border-radius: 0 0 3px 3px;
-    background-color: $white-1;
+    background-color: var(--markfilter-bg);
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: grid-template-rows 0.4s $standard-curve;
+    content-visibility: auto;
     &.expanded {
         grid-template-rows: 1fr;
-        transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: grid-template-rows 0.4s $standard-curve;
     }
     &:not(.expanded) {
         transition: grid-template-rows 0.4s cubic-bezier(0.7, 0, 0.45, 1) 0.08s;
-    }
-    .contentInner {
-        .filterContent.expanded & {
-            opacity: 1;
-            transform: translateY(0);
-            filter: blur(0);
-            transition:
-                opacity 0.4s ease 0.15s,
-                transform 0.4s ease 0.15s,
-                filter 0.3s ease 0.2s;
-        }
-        .filterContent:not(.expanded) & {
-            opacity: 0;
-            transform: translateY(-5px);
-            filter: blur(1rem);
-            transition:
-                opacity 0.12s cubic-bezier(0, 0.3, 0.25, 1),
-                transform 0.12s cubic-bezier(0, 0.3, 0.25, 1),
-                filter 0.04s cubic-bezier(0, 0.3, 0.25, 1);
+        .contentInner {
+            pointer-events: none;
         }
     }
     .contentInner {
         min-height: 0;
         opacity: 0;
         padding: 0 0.75rem;
-        transform: translateY(-8px);
-        filter: blur(5px);
+        transform: translateY(-6px);
+        filter: blur(6px);
+        background-color: var(--markfilter-bg);
         transition:
-            opacity 0.4s ease 0.1s,
-            transform 0.4s ease 0.1s,
-            filter 0.3s ease 0.15s;
+            opacity 0.4s ease 0.15s,
+            transform 0.4s ease 0.15s,
+            filter 0.3s ease 0.15s,
+            background-color 0.35s $moderato-curve 0s;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0 0.75rem;
         width: 100%;
         will-change: opacity, transform, filter;
+        overflow: visible;
         &.visible {
             opacity: 1;
             transform: translateY(0);
             filter: blur(0);
+            overflow: visible;
         }
     }
     .placeholderContent {
         p {
-            color: #000;
+            color: var(--markfilter-placeholder);
             margin: 8px 0;
             font-family: 'Roboto Slab', serif;
             font-size: 0.85rem;

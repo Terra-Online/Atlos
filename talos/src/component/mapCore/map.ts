@@ -115,10 +115,13 @@ export class MapCore {
             config.maxZoom,
         );
 
+        const mapBounds = L.latLngBounds(southWest, northEast);
+        
         L.tileLayer(getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`), {
             tileSize: config.tileSize,
             noWrap: true,
-            bounds: L.latLngBounds(southWest, northEast),
+            bounds: mapBounds,
+            pane: 'tilePane',
         }).addTo(this.map);
 
         this.markerLayer.changeRegion(regionId);

@@ -1,14 +1,40 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
+:root, :root[data-theme='light'] {
+    --detail-bg: #{$light-1};
+    --detail-header-bg: #{$secondary-accent-1};
+    --detail-title: #{$white-0};
+    --detail-brakt: #{$grey-1};
+    --detail-checked-deco: #{$primary-accent-6};
+    --detail-text: #{$grey-1};
+    --detail-placeholder: #{$dim-1};
+    --detail-image-border: #{$light-2};
+    --detail-prog: #{$grey-1};
+    --detail-checked-prog: #{$primary-accent-6};
+}
+:root[data-theme='dark'] {
+    --detail-bg: #{$light-1};
+    --detail-header-bg: #{$secondary-accent-1};
+    --detail-title: #{$white-0};
+    --detail-brakt: #{$grey-1};
+    --detail-text: #{$grey-1};
+    --detail-placeholder: #{$dim-1};
+    --detail-image-border: #{$light-2};
+    --detail-prog: #{$grey-1};
+    --detail-checked-prog: #{$primary-accent-6};
+
+    // no difference for now
+}
+
 .detailContainer {
     position: absolute;
     bottom: 1rem;
     right: 1rem;
     width: 20rem;
-    background-color: $light-1;
+    background-color: var(--detail-bg);
     border-radius: 3px;
-    box-shadow: 0 4px 4px rgba($black, 0.25);
+    box-shadow: 0 4px 4px rgba($black-0, 0.25);
     overflow: hidden;
     z-index: 1000;
     display: flex;
@@ -30,11 +56,11 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.45rem 0.5rem;
-        background-color: $secondary-accent-1;
+    background-color: var(--detail-header-bg);
         background-image: url('../../assets/images/UI/detail.webp');
         background-size: 47%;
         background-position-x: 3%;
-        box-shadow: 0 2px 3px rgba($black, 0.25);
+        box-shadow: 0 2px 3px rgba($black-0, 0.25);
         position: sticky;
         user-select: none;
 
@@ -49,11 +75,11 @@
                 height: 1rem;
                 width: 1rem;
                 background-size: contain;
-                filter: drop-shadow(1px 2px 1px rgba($black, 0.25));
+                filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
             }
 
             .pointName {
-                color: $white-0;
+                color: var(--detail-title);
                 font-size: 1rem;
                 margin: 0;
                 text-overflow: ellipsis;
@@ -61,7 +87,7 @@
                 white-space: nowrap;
                 flex: 1;
                 line-height: 1;
-                text-shadow: 1px 2px 1px rgba($black, 0.25);
+                text-shadow: 1px 2px 1px rgba($black-0, 0.25);
             }
         }
 
@@ -73,10 +99,10 @@
             .nextButton {
                 width: 6rem;
                 height: 1.5rem;
-                background: $white-3;
-                color: $grey-1;
+                background: $white-3; /* THEME-TODO: consider token if needed */
+                color: var(--detail-text);
                 border-radius: 0.75rem;
-                outline: 1.5px solid $white-3;
+                outline: 1.5px solid $white-3; /* THEME-TODO */
                 outline-offset: 2px;
                 font-size: 0.75rem;
                 cursor: pointer;
@@ -102,7 +128,7 @@
                     letter-spacing: -.5px;
                     font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
                     font-weight: 900;
-                    text-shadow: 1px 1px 1px rgba($black, 0.25);
+                    text-shadow: 1px 1px 1px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
                     width: auto;
                     white-space: nowrap;
                     padding: 0 2.5px;
@@ -115,7 +141,7 @@
                     height: 1.5px;
                     margin-left: .3rem;
                     margin-right: 2px;
-                    background-color: $grey-1;
+                    background-color: var(--detail-text);
                     z-index: 1;
                     pointer-events: none;
                     position: relative;
@@ -126,7 +152,7 @@
                         height: 0;
                         border-style: solid;
                         border-width: 3.3px 0 3.3px 6.6px;
-                        border-color: transparent transparent transparent $grey-1;
+                        border-color: transparent transparent transparent var(--detail-text);
                         transform: translateY(calc(-50% + .75px));// plus 1/2 of deco height to align center
                     }
                     &::after {
@@ -137,7 +163,7 @@
                         right: 0;
                         border-style: solid;
                         border-width: 2.25px;
-                        border-color: $grey-1;
+                        border-color: var(--detail-text);
                         transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px));// plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
                     }
                 }
@@ -156,19 +182,19 @@
                     background-repeat: no-repeat;
                     background-position-x: 95%, 60%;
                     background-position-y: 47%, 40%;
-                    filter: drop-shadow(-1px 1px 1px rgba($black, 0.25));
+                    filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
                     z-index: 0;
                     pointer-events: none;
                 }
 
                 &:hover {
                     filter: invert(1);
-                    box-shadow: 0 0 1px 1px rgba($black, 0.5);
+                    box-shadow: 0 0 1px 1px rgba($black-0, 0.5); /* THEME-NOTE: keep shadow */
                     outline-color: $grey-1;
                 }
 
                 &:disabled {
-                    background: $dim;
+                    background: $dim-1;
                     cursor: not-allowed;
                 }
             }
@@ -202,7 +228,7 @@
                 &.collected {
                     &::before {
                         z-index: 2;
-                        background-color: $primary-accent-6;
+                        background-color: var(--detail-checked-deco);
                         filter: grayscale(0) brightness(1);
                         transform: scale(0.8);
                     }
@@ -221,8 +247,10 @@
                     mask-size: contain;
                     mask-repeat: no-repeat;
                     mask-position: center;
-                    background-color: #333;
-                    filter: drop-shadow(0 2px 2px rgba($black, 0.25));
+                    background-color: var(--detail-brakt);
+                    filter: drop-shadow(0 2px 2px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
+                     transition:
+                        background-color 0.2s ease,
                 }
 
                 &::before {
@@ -260,9 +288,7 @@
                     url('../../assets/images/UI/brakt_R.svg');
                 background-size: contain;
                 background-repeat: no-repeat;
-                background-position:
-                    left center,
-                    right center;
+                background-position: left center, right center;
                 height: 3.75rem;
                 padding: 0 1.15rem 0 1.1rem;
                 display: flex;
@@ -289,9 +315,10 @@
 
                 .statRow {
                     display: flex;
+                    align-items: center;
                     justify-content: flex-start;
                     font-size: 0.875rem;
-                    text-shadow: 0 1px 1px rgba($black, 0.25);
+                    text-shadow: 0 1px 1px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
 
                     &:first-of-type {
                         transform: translateY(3px);
@@ -315,7 +342,7 @@
                     }
 
                     .userValue {
-                        color: $dim;
+                        color: $dim-1;
                         transition: color 0.3s ease;
 
                         &.check {
@@ -334,11 +361,11 @@
                         width 0.25s $standard-curve 0.1s;
                     will-change: width, background-color;
                     max-width: 100%;
-                    background-color: $secondary-accent-1;
-                    background-color: $grey-1;
+                    background-color: var(--detail-header-bg);
+                    background-color: var(--detail-prog);
 
                     &.check {
-                        background-color: $primary-accent-6;
+                        background-color: var(--detail-checked-prog);
                         transition:
                             width 0.25s $standard-curve 0s,
                             background-color 0.15s $standard-curve 0.15s;
@@ -351,7 +378,7 @@
             margin: 0.5rem 0 1.5rem;
             width: 100%;
             height: 10rem;
-            background: rgba($black, 0.25);
+            background: rgba($black-0, 0.25); /* THEME-NOTE: keep overlay */
 
             background-image: url('../../assets/images/UI/detest.png');
 
@@ -359,9 +386,9 @@
             background-position: center;
             background-repeat: no-repeat;
 
-            border: 2px solid $light-2;
+            border: 2px solid var(--detail-image-border);
             box-shadow:
-                0 0 4px 0.5px rgba($black, 0.6),
+                0 0 4px 0.5px rgba($black-0, 0.6),
                 0 0 4px 2px rgba($light-2, 0.6) inset;
             overflow: hidden;
             display: flex;
@@ -379,7 +406,7 @@
                 border-style: solid;
                 border-width: 0 0 15px 15px;
                 border-color: transparent transparent $light-2;
-                filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6));
+                filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6)); /* THEME-NOTE: keep shadow */
                 z-index: 2;
                 pointer-events: none;
             }
@@ -391,7 +418,7 @@
             }
 
             .noImage {
-                color: $dim;
+                color: var(--detail-placeholder);
                 font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
                 font-size: 0.875rem;
             }
@@ -408,7 +435,7 @@
             'HMSans_SC',
             sans-serif;
         font-weight: 400;
-        border-left: 4px solid $grey-1;
+    border-left: 4px solid var(--detail-text);
         padding-top: 2px;
         padding-left: 0.25rem;
 
@@ -416,8 +443,8 @@
             position: absolute;
             content: 'NOTE';
             font-family: GothamMedium, sans-serif;
-            color: $light-1;
-            background-color: $grey-1;
+            color: $light-1; /* THEME-TODO */
+            background-color: var(--detail-text);
             padding: 3px 3px 2px 4px;
             left: -4px;
             top: -1rem;
@@ -429,7 +456,7 @@
         }
 
         .noNote {
-            color: $dim;
+            color: var(--detail-placeholder);
             font-style: italic;
         }
     }
@@ -450,8 +477,8 @@
             position: relative;
             content: 'WIKI';
             font-family: GothamMedium, sans-serif;
-            color: $light-1;
-            background-color: $grey-1;
+            color: $light-1; /* THEME-TODO */
+            background-color: var(--detail-text);
             padding: 3px 3px 2px;
             margin-right: 3px;
             left: 0;

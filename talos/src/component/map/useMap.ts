@@ -19,6 +19,7 @@ export function useMap(ele: HTMLDivElement | null) {
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
     const [mapInitialized, setMapInitialized] = useState(false);
+    const initialFilterApplied = useRef(false);
 
     // initMap
     useEffect(() => {
@@ -33,19 +34,22 @@ export function useMap(ele: HTMLDivElement | null) {
         setMapInitialized(true);
     }, [ele]);
 
-    // 初始化和切换地图区域
+    // 初始化地图区域（只在地图初始化或区域切换时触发）
     useEffect(() => {
         if (mapRef.current && mapInitialized) {
             mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
+            // 切换区域后重置标记，需要重新应用 filter
+            initialFilterApplied.current = false;
         }
     }, [currentRegion, mapInitialized]);
 
-    // alterMap
+    // 第一次初始化时应用已保存的 filter
     useEffect(() => {
-        if (mapRef.current) {
-            mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
+        if (mapRef.current && mapInitialized && !initialFilterApplied.current) {
+            mapRef.current.markerLayer.initializeWithFilter(filter);
+            initialFilterApplied.current = true;
         }
-    }, [currentRegion]);
+    }, [mapInitialized, filter]);
 
     const selectSubregion = (subregionId: string) => {
         const subregion = SUBREGION_DICT[subregionId];
@@ -53,22 +57,22 @@ export function useMap(ele: HTMLDivElement | null) {
 
         setCurrentSubregion(subregion.id);
 
-        if (subregion.bounds && subregion.bounds.length >= 2) {
+        if (subregion.bounds && subregion.bounds.length >= 2 && mapRef.current) {
             const [[x1, y1], [x2, y2]] = subregion.bounds;
             const centerX = (x1 + x2) / 2;
             const centerY = (y1 + y2) / 2;
 
             const config = REGION_DICT[currentRegion];
-            const center = mapRef.current!.map.unproject(
+            const center = mapRef.current.map.unproject(
                 [centerX, centerY],
                 config.maxZoom,
             );
 
-            mapRef.current?.map.once('moveend', () => {
+            mapRef.current.map.once('moveend', () => {
                 createHighlight(mapRef.current?.map, subregion, config);
             });
 
-            mapRef.current?.setMapView({
+            mapRef.current.setMapView({
                 lat: center.lat,
                 lng: center.lng,
                 zoom: 1,

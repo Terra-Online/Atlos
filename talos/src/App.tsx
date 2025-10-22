@@ -22,7 +22,7 @@ function App() {
     };
 
     return (
-        <div className='app'>
+        <div className='app theme-transition-scope'>
             {/* Map layer - always fill the entire window */}
             <Map onMapReady={handleMapReady} />
             {/* UI layer - floats over the map */}

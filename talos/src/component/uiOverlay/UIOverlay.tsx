@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
@@ -11,6 +11,7 @@ import FilterList from '../filterList/filterList';
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
 import Group from '../../assets/logos/group.svg?react';
+import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import L from 'leaflet';
@@ -56,6 +57,71 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     const handleHideUI = () => console.log('HideUI');
     const handleGroup = () => console.log('Join related group');
+
+    const unsubRef = useRef<(() => void) | null>(null);
+    const invertRef = useRef(false);
+    const switchingRef = useRef(false);
+
+    const applyTheme = (mode: 'light' | 'dark', withTransition = true) => {
+        const root = document.documentElement;
+        if (withTransition) {
+            const dur = getComputedStyle(root).getPropertyValue('--theme-transition-duration').trim();
+            const ms = /ms$/i.test(dur) ? parseFloat(dur) || 350 : 350;
+            switchingRef.current = true;
+            root.setAttribute('data-theme-switching', '');
+            setTimeout(() => {
+                root.removeAttribute('data-theme-switching');
+                switchingRef.current = false;
+            }, ms);
+        }
+        root.setAttribute('data-theme', mode);
+    };
+
+    const getSystemTheme = (): 'light' | 'dark' =>
+        window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+    const startSystemFollow = (immediate = true) => {
+        unsubRef.current?.();
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        const apply = () => {
+            const sys = mql.matches ? 'dark' : 'light';
+            const theme = invertRef.current ? (sys === 'dark' ? 'light' : 'dark') : sys;
+            applyTheme(theme);
+        };
+        const listener = (e: MediaQueryListEvent) => {
+            invertRef.current = false; // reset invert on system change
+            applyTheme(e.matches ? 'dark' : 'light');
+        };
+        if (immediate) apply();
+        if (mql.addEventListener) {
+            mql.addEventListener('change', listener);
+            unsubRef.current = () => mql.removeEventListener('change', listener);
+        } else if ('onchange' in mql) {
+            mql.onchange = listener;
+            unsubRef.current = () => { mql.onchange = null; };
+        }
+    };
+
+    useEffect(() => {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') {
+            applyTheme(saved, false);
+        } else {
+            startSystemFollow();
+        }
+        return () => unsubRef.current?.();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleDarkMode = () => {
+        if (switchingRef.current) return; // debounce: prevent interrupting animation
+        localStorage.removeItem('theme');
+        if (!unsubRef.current) startSystemFollow(false);
+        invertRef.current = !invertRef.current;
+        const sys = getSystemTheme();
+        applyTheme(invertRef.current ? (sys === 'dark' ? 'light' : 'dark') : sys);
+    };
+
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => console.log('Reach out for help');
 
@@ -68,7 +134,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* Headbar */}
             <HeadBar isSidebarOpen={isSidebarOpen}>
-                <HeadItem icon={ToS} onClick={handleReset} tooltip={t('headbar.tos')} />
+                <HeadItem 
+                    icon={ToS}
+                    onClick={handleReset}
+                    tooltip={t('headbar.tos')}
+                />
                 <HeadItem
                     icon={hideUI}
                     onClick={handleHideUI}
@@ -78,6 +148,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
                     icon={Group}
                     onClick={handleGroup}
                     tooltip={t('headbar.group')}
+                />
+                <HeadItem
+                    icon={Darkmode}
+                    onClick={handleDarkMode}
+                    tooltip={t('headbar.darkMode')}
                 />
                 <HeadItem
                     icon={i18n}
@@ -96,11 +171,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* TriggerBar */}
             <TriggerBar>
-                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.complexSelect')} />
+                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.clusterMode')} />
                 <Trigger
                     isActive={triggers.t2}
                     onToggle={handleTrigger2}
-                    label={t('trigger.regionalPoi')}
+                    label={t('trigger.boundaryMode')}
                 />
             </TriggerBar>
 
