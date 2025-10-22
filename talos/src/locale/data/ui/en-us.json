@@ -7,8 +7,8 @@
     "help": "Reach out for help"
   },
   "trigger": {
-    "complexSelect": "Complex Select",
-    "regionalPoi": "Regional POI"
+    "boundaryMode": "Boundary Mode",
+    "clusterMode": "Cluster Mode"
   },
   "search": {
     "placeholder": "Overall search..."

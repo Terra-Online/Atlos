@@ -171,11 +171,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* TriggerBar */}
             <TriggerBar>
-                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.complexSelect')} />
+                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.clusterMode')} />
                 <Trigger
                     isActive={triggers.t2}
                     onToggle={handleTrigger2}
-                    label={t('trigger.regionalPoi')}
+                    label={t('trigger.boundaryMode')}
                 />
             </TriggerBar>
 

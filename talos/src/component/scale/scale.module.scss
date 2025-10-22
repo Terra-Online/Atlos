@@ -1,5 +1,12 @@
 @use '../../styles/palette.scss' as *;
-
+:root, :root[data-theme='light'] {
+    --scale-bg: #{rgba($white-1, 0.2)};
+    --scale-prog: #{$primary-accent-4};
+}
+:root[data-theme='dark'] {
+    --scale-bg: #{rgba($grey-2, 0.2)};
+    --scale-prog: #{$primary-accent-4};
+}
 .scaleContainer {
     user-select: none;
     display: flex;
@@ -73,6 +80,7 @@
             inset 0 0 2px rgba($white-0, 0.3);
         padding: 2px;
         backdrop-filter: blur(10px) brightness(100%);
+        background-color: var(--scale-bg);
         overflow: hidden;
         cursor: pointer;
         > .scaler {
@@ -82,7 +90,7 @@
             left: 0;
             width: calc(100% - 4px);
             margin: 2px;
-            background-color: $primary-accent-4;
+            background-color: var(--scale-prog);
             border-radius: 2px;
             transform: scaleY(var(--scale));
             transform-origin: bottom;

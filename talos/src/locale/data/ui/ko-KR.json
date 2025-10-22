@@ -7,8 +7,8 @@
     "help": "도움말"
   },
   "trigger": {
-    "complexSelect": "복잡한 필터",
-    "regionalPoi": "지역 POI"
+    "boundaryMode": "경계 모드",
+    "clusterMode": "클러스터 모드"
   },
   "search": {
     "placeholder": "전체 검색…"

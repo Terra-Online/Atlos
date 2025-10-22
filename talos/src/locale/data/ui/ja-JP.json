@@ -7,8 +7,8 @@
     "help": "ヘルプ"
   },
   "trigger": {
-    "complexSelect": "詳細フィルター",
-    "regionalPoi": "地域POI"
+    "boundaryMode": "バウンダリーモード",
+    "clusterMode": "クラスター モード"
   },
   "search": {
     "placeholder": "全体検索…"

@@ -2,22 +2,29 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --detail-surface: #{$light-1};
+    --detail-bg: #{$light-1};
     --detail-header-bg: #{$secondary-accent-1};
-    --detail-fg-strong: #{$white-0};
-    --detail-fg: #{$grey-1};
-    --detail-dim: #{$dim-1};
-    --detail-border: #{$light-2};
+    --detail-title: #{$white-0};
+    --detail-brakt: #{$grey-1};
+    --detail-checked-deco: #{$primary-accent-6};
+    --detail-text: #{$grey-1};
+    --detail-placeholder: #{$dim-1};
+    --detail-image-border: #{$light-2};
     --detail-prog: #{$grey-1};
+    --detail-checked-prog: #{$primary-accent-6};
 }
 :root[data-theme='dark'] {
-    --detail-surface: #1e1e1e;
-    --detail-header-bg: #234;
-    --detail-fg-strong: #fafafa;
-    --detail-fg: #e6e6e6;
-    --detail-dim: #b0b0b0;
-    --detail-border: #3a3a3a;
-    --detail-prog: #a1a1a1;
+    --detail-bg: #{$light-1};
+    --detail-header-bg: #{$secondary-accent-1};
+    --detail-title: #{$white-0};
+    --detail-brakt: #{$grey-1};
+    --detail-text: #{$grey-1};
+    --detail-placeholder: #{$dim-1};
+    --detail-image-border: #{$light-2};
+    --detail-prog: #{$grey-1};
+    --detail-checked-prog: #{$primary-accent-6};
+
+    // no difference for now
 }
 
 .detailContainer {
@@ -25,7 +32,7 @@
     bottom: 1rem;
     right: 1rem;
     width: 20rem;
-    background-color: var(--detail-surface);
+    background-color: var(--detail-bg);
     border-radius: 3px;
     box-shadow: 0 4px 4px rgba($black-0, 0.25);
     overflow: hidden;
@@ -72,7 +79,7 @@
             }
 
             .pointName {
-                color: var(--detail-fg-strong);
+                color: var(--detail-title);
                 font-size: 1rem;
                 margin: 0;
                 text-overflow: ellipsis;
@@ -93,7 +100,7 @@
                 width: 6rem;
                 height: 1.5rem;
                 background: $white-3; /* THEME-TODO: consider token if needed */
-                color: var(--detail-fg);
+                color: var(--detail-text);
                 border-radius: 0.75rem;
                 outline: 1.5px solid $white-3; /* THEME-TODO */
                 outline-offset: 2px;
@@ -134,7 +141,7 @@
                     height: 1.5px;
                     margin-left: .3rem;
                     margin-right: 2px;
-                    background-color: var(--detail-fg);
+                    background-color: var(--detail-text);
                     z-index: 1;
                     pointer-events: none;
                     position: relative;
@@ -145,7 +152,7 @@
                         height: 0;
                         border-style: solid;
                         border-width: 3.3px 0 3.3px 6.6px;
-                        border-color: transparent transparent transparent var(--detail-fg);
+                        border-color: transparent transparent transparent var(--detail-text);
                         transform: translateY(calc(-50% + .75px));// plus 1/2 of deco height to align center
                     }
                     &::after {
@@ -156,7 +163,7 @@
                         right: 0;
                         border-style: solid;
                         border-width: 2.25px;
-                        border-color: var(--detail-fg);
+                        border-color: var(--detail-text);
                         transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px));// plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
                     }
                 }
@@ -221,7 +228,7 @@
                 &.collected {
                     &::before {
                         z-index: 2;
-                        background-color: $primary-accent-6;
+                        background-color: var(--detail-checked-deco);
                         filter: grayscale(0) brightness(1);
                         transform: scale(0.8);
                     }
@@ -240,7 +247,7 @@
                     mask-size: contain;
                     mask-repeat: no-repeat;
                     mask-position: center;
-                    background-color: #333;
+                    background-color: var(--detail-brakt);
                     filter: drop-shadow(0 2px 2px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
                      transition:
                         background-color 0.2s ease,
@@ -281,9 +288,7 @@
                     url('../../assets/images/UI/brakt_R.svg');
                 background-size: contain;
                 background-repeat: no-repeat;
-                background-position:
-                    left center,
-                    right center;
+                background-position: left center, right center;
                 height: 3.75rem;
                 padding: 0 1.15rem 0 1.1rem;
                 display: flex;
@@ -310,6 +315,7 @@
 
                 .statRow {
                     display: flex;
+                    align-items: center;
                     justify-content: flex-start;
                     font-size: 0.875rem;
                     text-shadow: 0 1px 1px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
@@ -359,7 +365,7 @@
                     background-color: var(--detail-prog);
 
                     &.check {
-                        background-color: $primary-accent-6; /* THEME-TODO */
+                        background-color: var(--detail-checked-prog);
                         transition:
                             width 0.25s $standard-curve 0s,
                             background-color 0.15s $standard-curve 0.15s;
@@ -380,7 +386,7 @@
             background-position: center;
             background-repeat: no-repeat;
 
-            border: 2px solid var(--detail-border);
+            border: 2px solid var(--detail-image-border);
             box-shadow:
                 0 0 4px 0.5px rgba($black-0, 0.6),
                 0 0 4px 2px rgba($light-2, 0.6) inset;
@@ -412,7 +418,7 @@
             }
 
             .noImage {
-                color: var(--detail-dim);
+                color: var(--detail-placeholder);
                 font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
                 font-size: 0.875rem;
             }
@@ -429,7 +435,7 @@
             'HMSans_SC',
             sans-serif;
         font-weight: 400;
-    border-left: 4px solid var(--detail-fg);
+    border-left: 4px solid var(--detail-text);
         padding-top: 2px;
         padding-left: 0.25rem;
 
@@ -438,7 +444,7 @@
             content: 'NOTE';
             font-family: GothamMedium, sans-serif;
             color: $light-1; /* THEME-TODO */
-            background-color: var(--detail-fg);
+            background-color: var(--detail-text);
             padding: 3px 3px 2px 4px;
             left: -4px;
             top: -1rem;
@@ -450,7 +456,7 @@
         }
 
         .noNote {
-            color: var(--detail-dim);
+            color: var(--detail-placeholder);
             font-style: italic;
         }
     }
@@ -472,7 +478,7 @@
             content: 'WIKI';
             font-family: GothamMedium, sans-serif;
             color: $light-1; /* THEME-TODO */
-            background-color: var(--detail-fg);
+            background-color: var(--detail-text);
             padding: 3px 3px 2px;
             margin-right: 3px;
             left: 0;
