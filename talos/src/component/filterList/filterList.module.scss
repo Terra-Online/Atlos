@@ -2,10 +2,10 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --filterlist-surface: #{rgba($white-2, 0.25)};
+    --filterlist-bg: #{rgba($white-2, 0.25)};
 }
 :root[data-theme='dark'] {
-    --filterlist-surface: #{rgba($black-1, 0.3)};
+    --filterlist-bg: #{rgba($black-1, 0.3)};
 }
 
 /* Animatable custom properties controlling mask fades (0 = off, 1 = on) */
@@ -29,7 +29,7 @@
     border-radius: 6px;
     box-sizing: border-box;
     box-shadow: 0 0 5px rgba($black-0, 0.6);
-    background-color: var(--filterlist-surface);
+    background-color: var(--filterlist-bg);
     backdrop-filter: blur(8px);
     user-select: none;
     touch-action: pan-x;

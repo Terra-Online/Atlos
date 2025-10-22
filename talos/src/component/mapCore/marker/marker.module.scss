@@ -1,6 +1,14 @@
 @use '../../../styles/palette.scss' as *;
 @use '../../../styles/curves.scss' as *;
 
+/* TODO: more point action include:
+   1. next point highlight
+   2. checked point indication
+   3. point pulse animation
+   4. point click feedback
+   5. dark mode
+   6. point stuff posit
+*/
 .customMarkerIcon {
     background-color: transparent;
 

@@ -3,7 +3,7 @@
 
 :root, :root[data-theme='light'] {
     --mark-bg: #{$white-1};
-    --mark-fg: #{$grey-1};
+    --mark-text: #{$grey-1};
     --mark-active-bg: #{$mid};
     --mark-stats-text: #{$dim-1};
     --mark-active-fg: #{rgba($black-0, 1)};
@@ -13,7 +13,7 @@
 }
 :root[data-theme='dark'] {
     --mark-bg: #{$grey-1};
-    --mark-fg: #{$white-1};
+    --mark-text: #{$white-1};
     --mark-active-bg: #{$grey-2};
     --mark-stats-text: #{$light-1};
     --mark-active-fg: #{$white-1};
@@ -41,7 +41,7 @@
     inset: 0 auto auto 0;
     width: 100%;
     background-color: var(--mark-bg);
-    color: var(--mark-fg);
+    color: var(--mark-text);
     border-radius: 0 2px 2px 0;
     padding: 0.25rem;
     cursor: pointer;
