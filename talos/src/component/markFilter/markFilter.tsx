@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DefaultFilterIcon from '../../assets/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
@@ -45,9 +45,12 @@ const MarkFilter = ({
 
     // lazy render: only render children when expanded or after first expansion
     const [hasEverExpanded, setHasEverExpanded] = useState(false);
-    if (isExpanded && !hasEverExpanded) {
-        setHasEverExpanded(true);
-    }
+    
+    useEffect(() => {
+        if (isExpanded && !hasEverExpanded) {
+            setHasEverExpanded(true);
+        }
+    }, [isExpanded, hasEverExpanded]);
 
     return (
     <MarkVisibilityContext.Provider value={contextValue}>

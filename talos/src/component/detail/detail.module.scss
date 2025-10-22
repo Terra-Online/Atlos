@@ -56,7 +56,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 0.45rem 0.5rem;
-    background-color: var(--detail-header-bg);
+        background-color: var(--detail-header-bg);
         background-image: url('../../assets/images/UI/detail.webp');
         background-size: 47%;
         background-position-x: 3%;
@@ -361,7 +361,6 @@
                         width 0.25s $standard-curve 0.1s;
                     will-change: width, background-color;
                     max-width: 100%;
-                    background-color: var(--detail-header-bg);
                     background-color: var(--detail-prog);
 
                     &.check {
