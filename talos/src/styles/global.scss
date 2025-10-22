@@ -49,6 +49,8 @@
 
     scrollbar-width: none;
     -ms-overflow-style: none;
+
+    -webkit-tap-highlight-color: transparent;
 }
 button {
     border: none;

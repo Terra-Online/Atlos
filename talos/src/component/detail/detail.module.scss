@@ -119,6 +119,8 @@
                 display: flex;
                 justify-content: flex-end;
                 align-items: center;
+                touch-action: none;
+                user-select: none;
 
                 span.nextText {
                     display: inline-flex;
