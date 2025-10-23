@@ -5,6 +5,8 @@ import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import LOGGER from '@/utils/log';
 
 import styles from './marker.module.scss';
+import { useMarkerStore } from '@/store/marker';
+import { getActivePoints, useUserRecordStore } from '@/store/userRecord';
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
@@ -30,7 +32,6 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
             className: styles.FrameMarkerIcon,
             html: `<div class="${styles.markerInner}"><div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div></div>`,
         });
-    // Keep a shared class for outer and inner hierarchy should originally be a bug; but for the reason that leaflet will occupy the outer div's transform style when creating location index, I intentionally keep it this way therefore we can use a shared fall-back animation for inner div only.
     return acc;
 }, {});
 
@@ -46,22 +47,48 @@ const RENDERER_DICT: Record<
             icon: MARKER_ICON_DICT[markerData.type],
             alt: markerData.type,
         });
+
+        // 初次添加到地图时，按存储状态渲染 selected/checked
+        layer.on('add', () => {
+            const markerRoot = layer.getElement?.() as HTMLElement | null;
+            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
+            if (!inner) return;
+            const { selectedPoints } = useMarkerStore.getState();
+            const isSelected = selectedPoints.includes(markerData.id);
+            if (isSelected) inner.classList.add(styles.selected);
+            const collected = getActivePoints();
+            if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
+        });
         
         layer.addEventListener('click', (e) => {
             e.originalEvent.stopPropagation();
             
-            // 获取 marker 的 DOM 元素
+            // 获取 marker 的 DOM 
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (inner) {
-                const isSelected = inner.classList.contains(styles.selected);
-                if (isSelected) {
-                    // 已选中 → 取消选中
-                    inner.classList.remove(styles.selected);
+                // 当前状态
+                const selectedNow = useMarkerStore.getState().selectedPoints.includes(markerData.id);
+                const checkedNow = getActivePoints().includes(markerData.id);
+                
+                // 目标状态：none -> selected -> selected+checked -> none
+                if (!selectedNow && !checkedNow) {
+                    // none -> selected
+                    useMarkerStore.getState().setSelected(markerData.id, true);
+                } else if (selectedNow && !checkedNow) {
+                    // selected -> selected+checked
+                    useUserRecordStore.getState().addPoint(markerData.id);
                 } else {
-                    // 未选中 → 添加选中状态
-                    inner.classList.add(styles.selected);
+                    // selected+checked 或日后其他组合 -> none
+                    useUserRecordStore.getState().deletePoint(markerData.id);
+                    useMarkerStore.getState().setSelected(markerData.id, false);
                 }
+                
+                // 同步类名
+                const selectedAfter = useMarkerStore.getState().selectedPoints.includes(markerData.id);
+                const checkedAfter = getActivePoints().includes(markerData.id);
+                inner.classList.toggle(styles.selected, selectedAfter);
+                inner.classList.toggle(styles.checked, checkedAfter);
             }
             
             LOGGER.debug('marker clicked', markerData);
@@ -71,21 +98,43 @@ const RENDERER_DICT: Record<
         return layer;
     },
     sub_icon: (markerData, onClick) => {
+        const sub = MARKER_TYPE_DICT[markerData.type].subIcon;
+        const iconUrl = getItemIconUrl(markerData.type);
+        const subIconUrl = getMarkerSubIconUrl(sub);
+        
+        // 将 subIcon 改为直接嵌入到 marker HTML 中，取消使用 Leaflet tooltip
+        // + DOM 联动，CSS选择器控制样式
+        // - 失去tooltip的高z轴，在点密集场景下会被覆盖
+        // - 需要pointer-events: none 使 subIcon 不接收鼠标事件
+        const markerIcon = divIcon({
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, 0],
+            tooltipAnchor: [0, 0],
+            className: styles.FrameMarkerIcon,
+            html: `<div class="${styles.markerInner}">
+                       <div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div>
+                       <div class="${styles.subIconContainer}">
+                           <div class="${styles.subIcon}" style="background-image: url(${subIconUrl})"></div>
+                       </div>
+                   </div>`,
+        });
+        
         const layer = new L.Marker(markerData.position, {
-            icon: MARKER_ICON_DICT[markerData.type],
+            icon: markerIcon,
             alt: markerData.type,
         });
-        const sub = MARKER_TYPE_DICT[markerData.type].subIcon;
-        layer
-            .bindTooltip(
-                `<div class="${styles.tooltipInner}" style="background-image:  url(${getMarkerSubIconUrl(sub)})"></div></div>`,
-                {
-                    permanent: true,
-                    className: styles.customTooltip,
-                    direction: 'right',
-                },
-            )
-            .openTooltip();
+        // 初次添加到地图时，按存储状态渲染 selected/checked（sub_icon）
+        layer.on('add', () => {
+            const markerRoot = layer.getElement?.() as HTMLElement | null;
+            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
+            if (!inner) return;
+            const { selectedPoints } = useMarkerStore.getState();
+            const isSelected = selectedPoints.includes(markerData.id);
+            if (isSelected) inner.classList.add(styles.selected);
+            const collected = getActivePoints();
+            if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
+        });
             
         layer.addEventListener('click', (e) => {
             e.originalEvent.stopPropagation();
@@ -94,14 +143,21 @@ const RENDERER_DICT: Record<
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (inner) {
-                const isSelected = inner.classList.contains(styles.selected);
-                if (isSelected) {
-                    // 已选中 → 取消选中
-                    inner.classList.remove(styles.selected);
+                const selectedNow = useMarkerStore.getState().selectedPoints.includes(markerData.id);
+                const checkedNow = getActivePoints().includes(markerData.id);
+                
+                if (!selectedNow && !checkedNow) {
+                    useMarkerStore.getState().setSelected(markerData.id, true);
+                } else if (selectedNow && !checkedNow) {
+                    useUserRecordStore.getState().addPoint(markerData.id);
                 } else {
-                    // 未选中 → 添加选中状态
-                    inner.classList.add(styles.selected);
+                    useUserRecordStore.getState().deletePoint(markerData.id);
+                    useMarkerStore.getState().setSelected(markerData.id, false);
                 }
+                const selectedAfter = useMarkerStore.getState().selectedPoints.includes(markerData.id);
+                const checkedAfter = getActivePoints().includes(markerData.id);
+                inner.classList.toggle(styles.selected, selectedAfter);
+                inner.classList.toggle(styles.checked, checkedAfter);
             }
             
             LOGGER.debug('marker clicked', markerData);
@@ -130,7 +186,7 @@ export function getMarkerLayer(
         }
     })();
     
-    // 添加 checked 类（如果已收集）
+    // add checked class (if collected)
     if (collectedPoints?.includes(markerData.id)) {
         setTimeout(() => {
             const markerRoot = layer.getElement?.() as HTMLElement | null;

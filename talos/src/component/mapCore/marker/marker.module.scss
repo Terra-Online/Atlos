@@ -12,13 +12,42 @@
 
 /* state injected on Inner */
 
-.noFrameInner, .markerInner {
-    transition: transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
+.markerInner {
+    opacity: 1;
+    transition: opacity 0.2s $adagio-curve;
+    &::before {
+         content: '';
+        position: absolute;
+        width: var(--icon-size);
+        height: var(--icon-size);
+        background-color: $white-1;
+        box-shadow: 0 0 10px $black-0;
+        border-radius: 50%;
+        z-index: -1;
+        outline: 2px solid transparent;
+        outline-offset: 12px;
+        transform: translate3d(calc((var(--image-size) - var(--icon-size)) / 2), calc((var(--image-size) - var(--icon-size)) / 2), 0);
+
+        transition: outline 0.35s $presto-curve, outline-offset 0.35s $presto-curve;
+    }
     &:hover {
-        transform: translate3d(-50%, -60%, 0);
-        transition: transform 0.35s $presto-curve;
+        &::before {
+            outline: 2px solid rgba($white-1, 0.4);
+            outline-offset: 8px;
+            transition: outline 0.25s ease-in, outline-offset 0.25s ease-in;
+        }
+        // hover 时 subIcon 也有反应
+        .subIconContainer .subIcon {
+            transform: translate3d(-50%, -50%, 0) scale(1.1);
+            transition: transform 0.35s $presto-curve;
+        }
     }
     &.selected {
+        &::before {
+            outline: 2px solid $white-1;
+            outline-offset: 6px;
+            transition: outline 0.125s $adagio-curve, outline-offset 0.125s $adagio-curve;
+        }
         .FrameImage {
             opacity: 1;
             &::before {
@@ -26,9 +55,49 @@
             }
             &::after {
                 border-top-color: $primary-accent-4;
+            }
+            &:has(+ .subIconContainer)::after {
                 transform: rotate(-90deg);
             }
+            &:not(:has(+ .subIconContainer))::after {
+                bottom: -11px;
+            }
         }
+        
+        .subIconContainer .subIcon {
+            &::before {
+                background-color: rgba($primary-accent-4, 0.1);
+                box-shadow: 0 0 8px $primary-accent-4;
+            }
+            &::after {
+                background-color: $primary-accent-4;
+            }
+        }
+    }
+    &.checked {
+        opacity: 0.3;
+        .FrameImage {
+            box-shadow: 0 0 0 rgba($black-0, 0.3);
+            outline-color: $grey-3;
+            
+            &::after {
+                border-top-color: $grey-3;
+            }
+        }
+        // 已收集时 subIcon 也变灰
+        .subIconContainer .subIcon {
+            opacity: 0.5;
+            filter: grayscale(0.6);
+        }
+    }
+}
+.noFrameInner {
+    transition: transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
+    &:hover {
+        transform: translate3d(-50%, -60%, 0);
+        transition: transform 0.35s $moderato-curve;
+    }
+    &.selected {
         .noFrameImage {
             opacity: 1;
             filter: invert(1);
@@ -36,17 +105,8 @@
         }
     }
     &.checked {
-        .FrameImage, .noFrameImage {
+        .noFrameImage {
             opacity: 0.5;
-        }
-        
-        .FrameImage {
-            outline-color: $grey-3;
-            box-shadow: 0 0 10px rgba($black-0, 0.3);
-            
-            &::after {
-                border-top-color: $grey-3;
-            }
         }
     }
 }
@@ -114,68 +174,61 @@
             z-index: 10;
             filter: drop-shadow(0 0 2px rgba($black-0, 0.7));
             -webkit-transform-origin-x: center;
-            -webkit-transform-origin-y: calc(var(--image-size) / -2);
+            -webkit-transform-origin-y: calc(calc(var(--image-size) + 4px) / -2);
 
-            transition: border-top-color 0.3s $moderato-curve, transform 0.3s $presto-curve;
+            transition: border-top-color 0.1s $adagio-curve, transform 0.3s $presto-curve, bottom .15s $adagio-curve;
         }
     }
 }
 
-.customTooltip {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-
-    &::before {
-        display: none;
-    }
-
-    .tooltipInner {
+.subIconContainer {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    pointer-events: none;
+    z-index: 1;
+    
+    .subIcon {
         position: absolute;
-        left: 0.4rem;
+        left: 50%;
         top: 50%;
-        transform: translateY(-50%);
-        width: 2.5rem;
-        height: 2.5rem;
+        transform: translate3d(-50%, -50%, 0);
+        width: 100%;
+        height: 100%;
+        background-position: center;
         background-size: contain;
-
-
-            &::before {
-                content: "";
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate3d(-50%, -50%, 0);
-                width: 29px;
-                height: 29px;
-                background-color: rgba(#d9d9d9, 0.02);
-                box-shadow: 0 0 3px rgba(#000000, 0.5);
-                border-radius: 50%;
-                z-index: -1;
-            }
-
-            &::after {
-                content: "";
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate3d(-50%, -50%, 0);
-                width: 25px;
-                height: 25px;
-                box-shadow: 0 0 1px rgba(#000000, 0.25);
-                border-radius: 50%;
-                z-index: -1;
-            }
-        .image {
+        background-repeat: no-repeat;
+        will-change: transform; // 提示浏览器优化 transform 动画
+        
+        &::before {
+            content: "";
             position: absolute;
             left: 50%;
             top: 50%;
-            height: 3rem;
-            width: 3rem;
             transform: translate3d(-50%, -50%, 0);
-            background-position: center;
-            background-size: cover;
-            background-repeat: no-repeat;
+            width: 29px;
+            height: 29px;
+            background-color: rgba(#d9d9d9, 0.02);
+            box-shadow: 0 0 3px rgba(#000000, 0.5);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        &::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate3d(-50%, -50%, 0);
+            width: 25px;
+            height: 25px;
+            background-color: transparent;
+            box-shadow: 0 0 1px rgba(#000000, 0.25);
+            border-radius: 50%;
+            z-index: -2;
         }
     }
 }
