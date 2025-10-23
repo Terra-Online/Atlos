@@ -4,7 +4,7 @@
 @use 'sass:math';
 
 :root, :root[data-theme='light'] {
-    --regswitch-bg: #{rgba($white-2, 0.25)};
+    y: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
     --regswitch-selected: #{$primary-accent-4};
@@ -25,34 +25,10 @@ $item-height: 2.5rem;
 $item-gap: 0.6rem;
 $indicator-height: 0.75rem;
 
-// .region-selection-wrapper {
-//   -webkit-user-select: none;
-//   user-select: none;
-//   position: absolute;
-//   z-index: 900;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: flex-start;
-//   top: 40%;
-//   left: 1rem;
-//   transform: translateY(-50%);
-//   transition: transform .3s ease-in-out;
-
-//   &.sidebar-open {
-//     transform: translateY(-50%) translateX($sidebar-width);
-//   }
-
-//   // 修复 hover 效果
-//   &:hover .subregswitch {
-//     margin-top: max(-150px, -100vh + 20px);
-//     margin-bottom: max(-150px, -100vh + 20px);
-//   }
-// }
-
 .regswitch {
     position: absolute;
     left: 1rem;
-    top: 50%;
+    top: 40%;
     display: flex;
     flex-direction: column;
     gap: $item-gap;

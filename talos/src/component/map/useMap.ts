@@ -4,6 +4,7 @@ import { DEFAULT_REGION, REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { useEffect, useRef, useState } from 'react';
 import { createHighlight } from '@/utils/visual';
 import { useMarkerStore } from '@/store/marker';
+import { useUserRecord } from '@/store/userRecord';
 import L from 'leaflet';
 
 // Assmeble all stores to useMap
@@ -15,6 +16,7 @@ export function useMap(ele: HTMLDivElement | null) {
         currentSubregionKey: currentSubregion,
     } = useRegion();
     const { filter } = useMarkerStore();
+    const collectedPoints = useUserRecord();
 
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
@@ -91,6 +93,14 @@ export function useMap(ele: HTMLDivElement | null) {
                     .map((point) => point.id) ?? [],
         });
     }, [filter, currentRegion]);
+    
+    // 更新已收集的点位
+    useEffect(() => {
+        const markerLayer = mapRef.current?.markerLayer;
+        if (markerLayer) {
+            markerLayer.updateCollectedPoints(collectedPoints);
+        }
+    }, [collectedPoints]);
 
     return {
         map: LMap,

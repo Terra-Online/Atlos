@@ -4,7 +4,7 @@
 :root, :root[data-theme='light'] {
     --mark-bg: #{$white-1};
     --mark-text: #{$grey-1};
-    --mark-active-bg: #{$mid};
+    --mark-active-bg: #{$white-3};
     --mark-stats-text: #{$dim-1};
     --mark-active-fg: #{rgba($black-0, 1)};
     --mark-completed-bg: #{$primary-accent-2};

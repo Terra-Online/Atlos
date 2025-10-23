@@ -9,35 +9,97 @@
    5. dark mode
    6. point stuff posit
 */
-.customMarkerIcon {
+
+/* state injected on Inner */
+
+.noFrameInner, .markerInner {
+    transition: transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
+    &:hover {
+        transform: translate3d(-50%, -60%, 0);
+        transition: transform 0.35s $presto-curve;
+    }
+    &.selected {
+        .FrameImage {
+            opacity: 1;
+            &::before {
+                outline-color: $primary-accent-4;
+            }
+            &::after {
+                border-top-color: $primary-accent-4;
+                transform: rotate(-90deg);
+            }
+        }
+        .noFrameImage {
+            opacity: 1;
+            filter: invert(1);
+            transition: filter 0.3s $standard-curve, opacity 0.3s $moderato-curve;
+        }
+    }
+    &.checked {
+        .FrameImage, .noFrameImage {
+            opacity: 0.5;
+        }
+        
+        .FrameImage {
+            outline-color: $grey-3;
+            box-shadow: 0 0 10px rgba($black-0, 0.3);
+            
+            &::after {
+                border-top-color: $grey-3;
+            }
+        }
+    }
+}
+.noFrameInner, .markerInner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+.noFrameMarkerIcon {
+    background-color: transparent;
+    clip-path: polygon(35% 0, 65% 0, 100% 35%, 100% 50%, 50% 100%, 0 50%, 0 35%);
+    .noFrameImage {
+        display: block;
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        transition: filter 0.3s $moderato-curve, opacity 0.3s $moderato-curve;
+        opacity: 1;
+        filter: invert(0);
+    }
+}
+.FrameMarkerIcon {
     background-color: transparent;
 
-    $icon-size: 1.75rem;
-    $deco-size: 2rem;
-    $border-weight: 2px;
-    $border-margin: 4px;
-
-    .markerInner {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate3d(-50%, -50%, 0);
-    }
-    .customMarkerIcon {
+    --image-size: 2rem;
+    --icon-size: 1.75rem;
+    .FrameImage {
         position: relative;
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
-        width: $icon-size;
-        height: $icon-size;
-        border-radius: 50%;
+        width: var(--image-size);
+        height: var(--image-size);
 
-        background-color: $white-1;
-        outline: $border-weight solid $white-1;
-        outline-offset: $border-weight;
-        box-shadow: 0 0 10px $black-0;
+        opacity: 1;
+        transition: opacity 0.3s $moderato-curve;
 
-        //transform: translateY(-50%);
+        &::before {
+            content: '';
+            position: absolute;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            background-color: $white-1;
+            box-shadow: 0 0 10px $black-0;
+            border-radius: 50%;
+            z-index: -1;
+            outline: 2px solid $white-1;
+            outline-offset: 2px;
+            transform: translate3d(calc((var(--image-size) - var(--icon-size)) / 2), calc((var(--image-size) - var(--icon-size)) / 2), 0);
+
+            transition: outline-color 0.3s $moderato-curve;
+        }
         &::after {
             content: '';
             position: absolute;
@@ -51,20 +113,11 @@
             transition: transform 0.2s $presto-curve;
             z-index: 10;
             filter: drop-shadow(0 0 2px rgba($black-0, 0.7));
-        }
-    }
+            -webkit-transform-origin-x: center;
+            -webkit-transform-origin-y: calc(var(--image-size) / -2);
 
-    .defaultMarkerIcon {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 30px;
-        height: 30px;
-        box-sizing: border-box;
-        border-radius: 50%;
-        background-color: #ccc;
-        border: 3px solid #000;
+            transition: border-top-color 0.3s $moderato-curve, transform 0.3s $presto-curve;
+        }
     }
 }
 
@@ -79,22 +132,13 @@
 
     .tooltipInner {
         position: absolute;
-        left: 0.5rem;
+        left: 0.4rem;
         top: 50%;
         transform: translateY(-50%);
         width: 2.5rem;
         height: 2.5rem;
-        /*
-        .bg {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            height: 33px;
-            width: 33px;
-            transform: translate3d(-50%, -50%, 0);
-            background-color: rgba(#d9d9d9, 0.02);
-            box-shadow: 0 0 3px rgba(#000000, 0.5);
-            border-radius: 50%;
+        background-size: contain;
+
 
             &::before {
                 content: "";
@@ -107,6 +151,7 @@
                 background-color: rgba(#d9d9d9, 0.02);
                 box-shadow: 0 0 3px rgba(#000000, 0.5);
                 border-radius: 50%;
+                z-index: -1;
             }
 
             &::after {
@@ -117,12 +162,10 @@
                 transform: translate3d(-50%, -50%, 0);
                 width: 25px;
                 height: 25px;
-                background-color: #fcfcfc;
                 box-shadow: 0 0 1px rgba(#000000, 0.25);
                 border-radius: 50%;
+                z-index: -1;
             }
-        }
-        */
         .image {
             position: absolute;
             left: 50%;
