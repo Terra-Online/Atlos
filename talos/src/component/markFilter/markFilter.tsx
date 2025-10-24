@@ -3,12 +3,15 @@ import DefaultFilterIcon from '../../assets/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
 import { useTranslateUI } from '@/locale';
+import { useMarkFilterExpanded, useToggleMarkFilterExpanded } from '@/store/uiPrefs';
 
 interface MarkFilterProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>> | (() => React.ReactNode);
     title?: string;
     children: React.ReactNode;
     empty?: React.ReactNode;
+    // stable id for persisting expanded state
+    idKey: string;
 }
 
 const MarkFilter = ({
@@ -16,13 +19,12 @@ const MarkFilter = ({
     title,
     children,
     empty,
+    idKey,
 }: MarkFilterProps) => {
     const t = useTranslateUI();
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
-    };
+    const isExpanded = useMarkFilterExpanded(idKey);
+    const toggleExpandByKey = useToggleMarkFilterExpanded();
+    const toggleExpand = () => toggleExpandByKey(idKey);
 
     // visibility state reported by children
     const [visibleMap, setVisibleMap] = useState<Set<string>>(new Set());
@@ -44,7 +46,7 @@ const MarkFilter = ({
     const contextValue = useMemo(() => ({ report }), [report]);
 
     // lazy render: only render children when expanded or after first expansion
-    const [hasEverExpanded, setHasEverExpanded] = useState(false);
+    const [hasEverExpanded, setHasEverExpanded] = useState(() => isExpanded);
     
     useEffect(() => {
         if (isExpanded && !hasEverExpanded) {

@@ -11,7 +11,13 @@
 */
 
 /* state injected on Inner */
-
+/* fade-in/out (removed next frame) */
+.markerInner.appearing,
+.noFrameInner.appearing,
+.markerInner.disappearing,
+.noFrameInner.disappearing {
+    opacity: 0;
+}
 .markerInner {
     opacity: 1;
     transition: opacity 0.15s ease-in;
@@ -96,7 +102,8 @@
     }
 }
 .noFrameInner {
-    transition: transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
+    opacity: 1;
+    transition: opacity 0.15s ease-in, transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
     &:hover {
         transform: translate3d(-50%, -60%, 0);
         transition: transform 0.35s $moderato-curve;
@@ -120,6 +127,7 @@
     top: 50%;
     transform: translate3d(-50%, -50%, 0);
 }
+
 .noFrameMarkerIcon {
     background-color: transparent;
     clip-path: polygon(35% 0, 65% 0, 100% 35%, 100% 50%, 50% 100%, 0 50%, 0 35%);

@@ -41,6 +41,10 @@ export class MarkerLayer {
     collectedPoints: string[] = [];
 
     private _onSwitchCurrentMarker?: (marker: IMarkerData) => void;
+    /**
+     * 延迟移除的定时器，避免直接移除导致无法看到淡出动画
+     */
+    private pendingRemovalTimers: Record<string, number> = {};
 
     constructor(
         map: L.Map,
@@ -137,11 +141,36 @@ export class MarkerLayer {
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const parent =
                 this.layerSubregionDict[this.markerDataDict[id].subregionId];
-            if (markerIds.includes(id)) {
+            const shouldShow = markerIds.includes(id);
+            const group = parent;
+            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
+            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
+
+            if (shouldShow) {
+                // 取消待移除并移除淡出类
+                if (this.pendingRemovalTimers[id] !== undefined) {
+                    clearTimeout(this.pendingRemovalTimers[id]);
+                    delete this.pendingRemovalTimers[id];
+                }
+                if (inner) inner.classList.remove(styles.disappearing);
                 layer.addTo(parent);
             } else {
-                // @ts-expect-error leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
-                layer.remove(parent);
+                // 已经不在可见组内则忽略
+                if (!group.hasLayer(layer)) return;
+                if (inner) {
+                    // 添加淡出类
+                    inner.classList.add(styles.disappearing);
+                }
+                if (this.pendingRemovalTimers[id] !== undefined) {
+                    clearTimeout(this.pendingRemovalTimers[id]);
+                }
+                // 延迟实际移除以展示淡出动画
+                this.pendingRemovalTimers[id] = window.setTimeout(() => {
+                    // 二次确认：若在等待期间被要求显示，会在显示分支取消该定时器
+                    // @ts-expect-error leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
+                    layer.remove(parent);
+                    delete this.pendingRemovalTimers[id];
+                }, 160);
             }
         });
     }

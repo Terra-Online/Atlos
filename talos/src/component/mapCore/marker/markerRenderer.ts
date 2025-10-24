@@ -53,11 +53,17 @@ const RENDERER_DICT: Record<
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
+            // entry fade-in
+            inner.classList.add(styles.appearing);
             const { selectedPoints } = useMarkerStore.getState();
             const isSelected = selectedPoints.includes(markerData.id);
             if (isSelected) inner.classList.add(styles.selected);
             const collected = getActivePoints();
             if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
+            // next frame remove to trigger transition to final opacity (1 or 0.3 when checked)
+            requestAnimationFrame(() => {
+                inner.classList.remove(styles.appearing);
+            });
         });
         
         layer.addEventListener('click', (e) => {
@@ -129,11 +135,16 @@ const RENDERER_DICT: Record<
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
+            // entry fade-in
+            inner.classList.add(styles.appearing);
             const { selectedPoints } = useMarkerStore.getState();
             const isSelected = selectedPoints.includes(markerData.id);
             if (isSelected) inner.classList.add(styles.selected);
             const collected = getActivePoints();
             if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
+            requestAnimationFrame(() => {
+                inner.classList.remove(styles.appearing);
+            });
         });
             
         layer.addEventListener('click', (e) => {
