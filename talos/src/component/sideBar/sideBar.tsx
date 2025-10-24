@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import styles from './sideBar.module.scss';
 
 import Icon from '../../assets/images/UI/observator_6.webp';
@@ -10,6 +10,7 @@ import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
+import { useSetSidebarOpen, useSidebarOpen } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -22,7 +23,8 @@ interface SideBarProps {
 const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
     const t = useTranslateUI();
     const tGame = useTranslateGame();
-    const [isOpen, setIsOpen] = useState(false);
+    const isOpen = useSidebarOpen();
+    const setIsOpen = useSetSidebarOpen();
     useMemo(() => {
         if (!currentRegion) return null;
         return {
@@ -67,7 +69,7 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                     <div className={styles.filters}>
                         {Object.entries(MARKER_TYPE_TREE).map(
                             ([key, value]) => (
-                                <MarkFilter title={String(tGame(`markerType.types.${key}`))} key={key}>
+                                <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
                                     {Object.values(value)
                                         .flat()
                                         .map((typeInfo) => (

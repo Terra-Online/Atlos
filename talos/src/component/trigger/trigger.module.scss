@@ -10,7 +10,7 @@
 }
 :root[data-theme='dark'] {
     --trigger-bg: #{$black-1};
-    --trigger-knob: #{$grey-3};
+    --trigger-knob: #{$dim-1};
     --trigger-on: #{$light-1};
     --trigger-off: #{$grey-1};
     --trigger-active: #{$primary-accent-4};
@@ -114,7 +114,7 @@ $transition-speed: 0.3s; //import from global size.scss later
             box-shadow: 0 1px 2px rgba($black-0, 0.3);
             transition:
                 transform 0.2s,
-                background-color 0.2s ease;
+                background-color 0.25s ease;
             z-index: 0;
         }
         &:focus {

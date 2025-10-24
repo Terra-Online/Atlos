@@ -7,7 +7,7 @@
     "help": "ヘルプ"
   },
   "trigger": {
-    "boundaryMode": "バウンダリーモード",
+    "boundaryMode": "バウンダリー モード",
     "clusterMode": "クラスター モード"
   },
   "search": {

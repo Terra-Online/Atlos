@@ -167,7 +167,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
             </HeadBar>
 
             {/* Region Switch */}
-            <RegionContainer isSidebarOpen={false} />
+            <RegionContainer isSidebarOpen={isSidebarOpen} />
 
             {/* TriggerBar */}
             <TriggerBar>
@@ -183,7 +183,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
             <Detail />
 
             {/* Filter List */}
-            <FilterList isSidebarOpen={false} />
+            <FilterList isSidebarOpen={isSidebarOpen} />
 
             {/* Language Modal */}
             <LanguageModal
