@@ -12,12 +12,6 @@
 
 /* state injected on Inner */
 /* fade-in/out (removed next frame) */
-.markerInner.appearing,
-.noFrameInner.appearing,
-.markerInner.disappearing,
-.noFrameInner.disappearing {
-    opacity: 0;
-}
 .markerInner {
     opacity: 1;
     transition: opacity 0.15s ease-in;
@@ -140,6 +134,12 @@
         opacity: 1;
         filter: invert(0);
     }
+}
+.markerInner.appearing,
+.noFrameInner.appearing,
+.markerInner.disappearing,
+.noFrameInner.disappearing {
+    opacity: 0;
 }
 .FrameMarkerIcon {
     background-color: transparent;
