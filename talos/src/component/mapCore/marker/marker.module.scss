@@ -3,11 +3,11 @@
 
 /* TODO: more point action include:
    1. next point highlight
-   2. checked point indication
+   2. checked point indication √
    3. point pulse animation
-   4. point click feedback
-   5. dark mode
-   6. point stuff posit
+   4. point click feedback √
+   5. dark mode √
+   6. point stuff posit √
 */
 
 /* state injected on Inner */
@@ -37,9 +37,16 @@
             transition: outline 0.25s ease-in, outline-offset 0.25s ease-in;
         }
         // hover 时 subIcon 也有反应
-        .subIconContainer .subIcon {
-            transform: translate3d(-50%, -50%, 0) scale(1.1);
-            transition: transform 0.35s $presto-curve;
+        .subIconContainer{
+            &::before {
+                transform: translate3d(-50%, -50%, 0) scale(1);
+                opacity: 1;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+            }
+            .subIcon {
+                transform: translate3d(-50%, -50%, 0) scale(1.05);
+                transition: transform 0.35s $presto-curve;
+            }
         }
     }
     &.selected {
@@ -64,30 +71,29 @@
             }
         }
         
-        .subIconContainer .subIcon {
+        .subIconContainer {
             &::before {
-                background-color: rgba($primary-accent-4, 0.1);
-                box-shadow: 0 0 8px $primary-accent-4;
+                transform: translate3d(-50%, -50%, 0) scale(1.1);
+                opacity: 0;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
             }
             &::after {
-                background-color: $primary-accent-4;
+                transform: translate3d(-50%, -50%, 0) scale(1);
+                opacity: 1;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
             }
         }
     }
     &.checked {
         opacity: 0.3;
         .FrameImage {
-            box-shadow: 0 0 0 rgba($black-0, 0.3);
-            outline-color: $grey-3;
-            
+            outline-color: $grey-3;       
             &::after {
                 border-top-color: $grey-3;
             }
         }
-        // 已收集时 subIcon 也变灰
         .subIconContainer .subIcon {
             opacity: 0.5;
-            filter: grayscale(0.6);
         }
     }
 }
@@ -190,7 +196,39 @@
     height: 2.5rem;
     pointer-events: none;
     z-index: 1;
+    &::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(1.2);
+        width: 29px;
+        height: 29px;
+        z-index: -1;
+        background-image: url(../../../assets/images/UI/marker-hover.webp);
+        background-position: center;
+        background-size: contain;
+
+        opacity: 0;
+        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+    }
     
+    &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(0.8);
+        width: 25px;
+        height: 25px;
+        z-index: -2;
+        background-image: url(../../../assets/images/UI/marker-select.webp);
+        background-position: center;
+        background-size: contain;
+
+        opacity: 0;
+        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+    }
     .subIcon {
         position: absolute;
         left: 50%;
@@ -201,34 +239,8 @@
         background-position: center;
         background-size: contain;
         background-repeat: no-repeat;
-        will-change: transform; // 提示浏览器优化 transform 动画
-        
-        &::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate3d(-50%, -50%, 0);
-            width: 29px;
-            height: 29px;
-            background-color: rgba(#d9d9d9, 0.02);
-            box-shadow: 0 0 3px rgba(#000000, 0.5);
-            border-radius: 50%;
-            z-index: -1;
-        }
-        
-        &::after {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate3d(-50%, -50%, 0);
-            width: 25px;
-            height: 25px;
-            background-color: transparent;
-            box-shadow: 0 0 1px rgba(#000000, 0.25);
-            border-radius: 50%;
-            z-index: -2;
-        }
+        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+        will-change: transform, opacity;   
+
     }
 }
