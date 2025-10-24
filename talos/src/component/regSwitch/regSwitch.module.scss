@@ -4,7 +4,7 @@
 @use 'sass:math';
 
 :root, :root[data-theme='light'] {
-    y: #{rgba($white-2, 0.25)};
+    --regswitch-bg: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
     --regswitch-selected: #{$primary-accent-4};
