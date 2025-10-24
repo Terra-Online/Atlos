@@ -14,7 +14,7 @@
 
 .markerInner {
     opacity: 1;
-    transition: opacity 0.2s $adagio-curve;
+    transition: opacity 0.15s ease-in;
     &::before {
          content: '';
         position: absolute;
@@ -36,7 +36,6 @@
             outline-offset: 8px;
             transition: outline 0.25s ease-in, outline-offset 0.25s ease-in;
         }
-        // hover 时 subIcon 也有反应
         .subIconContainer{
             &::before {
                 transform: translate3d(-50%, -50%, 0) scale(1);
@@ -73,12 +72,12 @@
         
         .subIconContainer {
             &::before {
-                transform: translate3d(-50%, -50%, 0) scale(1.1);
+                transform: translate3d(-50%, -50%, 0) scale(1);
                 opacity: 0;
                 transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
             }
             &::after {
-                transform: translate3d(-50%, -50%, 0) scale(1);
+                transform: translate3d(-50%, -50%, 0) scale(1.05);
                 opacity: 1;
                 transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
             }
@@ -86,13 +85,12 @@
     }
     &.checked {
         opacity: 0.3;
-        .FrameImage {
-            outline-color: $grey-3;       
-            &::after {
-                border-top-color: $grey-3;
+        .FrameImage { 
+            &::before {
+                background-color: $primary-accent-4;
             }
         }
-        .subIconContainer .subIcon {
+        .subIconContainer {
             opacity: 0.5;
         }
     }
@@ -164,7 +162,7 @@
             outline-offset: 2px;
             transform: translate3d(calc((var(--image-size) - var(--icon-size)) / 2), calc((var(--image-size) - var(--icon-size)) / 2), 0);
 
-            transition: outline-color 0.3s $moderato-curve;
+            transition: outline-color 0.15s $moderato-curve, background-color 0.15s $moderato-curve;
         }
         &::after {
             content: '';
@@ -196,21 +194,23 @@
     height: 2.5rem;
     pointer-events: none;
     z-index: 1;
+
+    transition: opacity 0.15s ease-in;
     &::before {
         content: "";
         position: absolute;
         left: 50%;
         top: 50%;
         transform: translate3d(-50%, -50%, 0) scale(1.2);
-        width: 29px;
-        height: 29px;
+        width: 30px;
+        height: 30px;
         z-index: -1;
         background-image: url(../../../assets/images/UI/marker-hover.webp);
         background-position: center;
         background-size: contain;
 
         opacity: 0;
-        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+        transition: transform 0.5s $presto-curve, opacity 0.5s $presto-curve;
     }
     
     &::after {
@@ -218,7 +218,7 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        transform: translate3d(-50%, -50%, 0) scale(0.8);
+        transform: translate3d(-50%, -50%, 0) scale(1.2);// 25 * 1.2 = 30 = ::before size
         width: 25px;
         height: 25px;
         z-index: -2;
