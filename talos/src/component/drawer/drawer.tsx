@@ -31,7 +31,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	initialSize = 0,
 	snapThreshold = 0.12,
 	handleSize = 16,
-	debug = true,
+	debug = false,
 	onProgressChange,
 	className,
 	handleClassName,
@@ -45,6 +45,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	const startSizeRef = useRef(size.get());
 	const startPosRef = useRef<{ x: number; y: number } | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const handleRef = useRef<HTMLDivElement>(null);
+	const isDraggingRef = useRef(false);
 
 	// Update progress and inject CSS vars when size changes
 	useEffect(() => {
@@ -90,6 +92,13 @@ export const Drawer: React.FC<DrawerProps> = ({
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 		startSizeRef.current = size.get();
 		startPosRef.current = { x: e.clientX, y: e.clientY };
+		
+		// Set dragging state
+		isDraggingRef.current = true;
+		if (handleRef.current) {
+			handleRef.current.setAttribute('data-dragging', 'true');
+		}
+
 		if (debug) console.log('[Drawer] pointerdown', { side, startSize: startSizeRef.current, startPos: startPosRef.current });
 	};
 
@@ -122,6 +131,13 @@ export const Drawer: React.FC<DrawerProps> = ({
 
 	const onPointerUp = () => {
 		startPosRef.current = null;
+		
+		// Clear dragging state
+		isDraggingRef.current = false;
+		if (handleRef.current) {
+			handleRef.current.removeAttribute('data-dragging');
+		}
+		
 		// snapping: snap to max if close to max, snap to 0 if close to min
 		const cur = size.get();
 		const thr = snapThreshold <= 1 ? maxSize * snapThreshold : snapThreshold;
@@ -154,6 +170,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		<div ref={containerRef} className={`${styles.drawerContainer} ${className ?? ''}`} style={{ ...containerStyle, ...style }}>
 			<div className={`${styles.content} ${contentClassName ?? ''}`}>{children}</div>
 			<div
+				ref={handleRef}
 				className={`${styles.handle} ${handleClass} ${handleClassName ?? ''}`}
 				onPointerDown={onPointerDown}
 				onPointerMove={onPointerMove}

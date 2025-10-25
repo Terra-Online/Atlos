@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import styles from './sideBar.module.scss';
-import drawerStyles from './sidebarDrawer.module.scss';
+import drawerStyles from './triggerDrawer.module.scss';
 
 import Icon from '../../assets/images/UI/observator_6.webp';
 import SidebarIcon from '../../assets/logos/sideCollap.svg?react';
