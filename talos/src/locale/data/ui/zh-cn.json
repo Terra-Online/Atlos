@@ -8,7 +8,8 @@
   },
   "trigger": {
     "boundaryMode": "地区边界显示",
-    "clusterMode": "点位聚合"
+    "clusterMode": "点位聚合",
+    "optimalPath": "最优路径"
   },
   "search": {
     "placeholder": "全局搜索…"

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import styles from './UIOverlay.module.scss';
 
 import Scale from '../scale/scale';
-import { Trigger, TriggerBar } from '../trigger/trigger';
 import { HeadBar, HeadItem } from '../headBar/headBar.tsx';
 import { RegionContainer } from '../regSwitch/regSwitch';
 import { Detail } from '../detail/detail';
@@ -23,23 +22,9 @@ interface UIOverlayProps {
     isSidebarOpen: boolean; // 保留用于某些需要的组件
 }
 
-interface TriggerState {
-    t1: boolean;
-    t2: boolean;
-}
-
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     const t = useTranslateUI();
-    const [triggers, setTrigger] = useState<TriggerState>({
-        t1: false,
-        t2: false,
-    });
     const [langOpen, setLangOpen] = useState(false);
-
-    const handleTrigger1 = (isActive: boolean) =>
-        setTrigger({ ...triggers, t1: isActive });
-    const handleTrigger2 = (isActive: boolean) =>
-        setTrigger({ ...triggers, t2: isActive });
 
     const handleReset = () => {
         localStorage.clear();
@@ -168,16 +153,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
             {/* Region Switch */}
             <RegionContainer isSidebarOpen={isSidebarOpen} />
-
-            {/* TriggerBar */}
-            <TriggerBar>
-                <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.clusterMode')} />
-                <Trigger
-                    isActive={triggers.t2}
-                    onToggle={handleTrigger2}
-                    label={t('trigger.boundaryMode')}
-                />
-            </TriggerBar>
 
             {/* Detail Panel */}
             <Detail />
