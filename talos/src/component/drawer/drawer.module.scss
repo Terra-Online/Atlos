@@ -59,26 +59,32 @@
   order: 1; /* handle at bottom of flex container for top drawer */
   width: 100%;
   height: var(--handle-size, 16px);
-  cursor: ns-resize;
+  cursor: grab;
 }
 
 .handleBottom {
   order: -1; /* handle at top of flex container for bottom drawer */
   width: 100%;
   height: var(--handle-size, 16px);
-  cursor: ns-resize;
+  cursor: grab;
 }
 
 .handleLeft {
   order: 1; /* handle at right of flex container for left drawer */
   height: 100%;
   width: var(--handle-size, 16px);
-  cursor: ew-resize;
+  cursor: grab;
 }
 
 .handleRight {
   order: -1; /* handle at left of flex container for right drawer */
   height: 100%;
   width: var(--handle-size, 16px);
-  cursor: ew-resize;
+  cursor: grab;
+}
+
+.handleTop, .handleBottom, .handleLeft, .handleRight {
+  &[data-dragging='true'] {
+    cursor: grabbing;
+  }
 }

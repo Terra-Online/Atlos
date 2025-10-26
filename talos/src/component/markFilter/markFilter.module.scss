@@ -22,6 +22,9 @@
     border-radius: 3px;
     box-shadow: 0 3px 4px rgba($black-0, 0.25);
     margin-bottom: 0.25rem;
+    &.dragging {
+        overflow: visible; // allow overlay while dragging
+    }
 }
 
 .filterHeader {
@@ -35,7 +38,7 @@
     align-items: center;
     background-color: var(--markfilter-bg);
     border-radius: 3px 3px 0 0;
-    cursor: pointer;
+    cursor: grab;
     transition: all 0.2s;
     > .filterTitle {
         color: var(--markfilter-title);

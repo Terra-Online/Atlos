@@ -9,6 +9,7 @@ import Search from '../search/search';
 import Drawer from '../drawer/drawer';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
+import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
@@ -74,20 +75,22 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                 <div className={styles.sidebarContent}>
                     <Search />
                     <div className={styles.filters}>
-                        {Object.entries(MARKER_TYPE_TREE).map(
-                            ([key, value]) => (
-                                <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
-                                    {Object.values(value)
-                                        .flat()
-                                        .map((typeInfo) => (
-                                            <MarkSelector
-                                                key={typeInfo.key}
-                                                typeInfo={typeInfo}
-                                            />
-                                        ))}
-                                </MarkFilter>
-                            ),
-                        )}
+                        <MarkFilterDragProvider>
+                            {Object.entries(MARKER_TYPE_TREE).map(
+                                ([key, value]) => (
+                                    <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
+                                        {Object.values(value)
+                                            .flat()
+                                            .map((typeInfo) => (
+                                                <MarkSelector
+                                                    key={typeInfo.key}
+                                                    typeInfo={typeInfo}
+                                                />
+                                            ))}
+                                    </MarkFilter>
+                                ),
+                            )}
+                        </MarkFilterDragProvider>
                     </div>
                 </div>
                 <div className={styles.copyright}>
