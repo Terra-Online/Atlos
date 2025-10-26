@@ -84,7 +84,7 @@
         height: 100%;
         background-color: var(--mark-progress-bg);
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-        transition: clip-path 0.3s ease;
+        transition: clip-path 0.3s ease, background-color 0.35s $moderato-curve;
         z-index: -1;
     }
     &::before {

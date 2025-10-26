@@ -8,7 +8,8 @@
   },
   "trigger": {
     "boundaryMode": "バウンダリー モード",
-    "clusterMode": "クラスター モード"
+    "clusterMode": "クラスター モード",
+    "optimalPath": "最適パス"
   },
   "search": {
     "placeholder": "全体検索…"

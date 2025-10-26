@@ -8,7 +8,8 @@
   },
   "trigger": {
     "boundaryMode": "Boundary Mode",
-    "clusterMode": "Cluster Mode"
+    "clusterMode": "Cluster Mode",
+    "optimalPath": "Optimal Path"
   },
   "search": {
     "placeholder": "Overall search..."
