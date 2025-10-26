@@ -35,9 +35,10 @@ export function useMap(ele: HTMLDivElement | null) {
 
     // 初始化地图区域（只在地图初始化或区域切换时触发）
     useEffect(() => {
-        if (mapRef.current && mapInitialized) {
-            mapRef.current.switchRegion(currentRegion ?? DEFAULT_REGION);
-        }
+        if (!mapRef.current || !mapInitialized) return;
+        const target = currentRegion ?? DEFAULT_REGION;
+        if (mapRef.current.currentRegionId === target) return;
+        void mapRef.current.switchRegion(target);
     }, [currentRegion, mapInitialized]);
 
     // 抽出的useMarker用来管理点位逻辑
@@ -97,17 +98,18 @@ export function useMap(ele: HTMLDivElement | null) {
         };
 
         // 如果子区域不属于当前主区域，先切换主区域
-        if (targetRegionKey !== currentRegion) {
-            setCurrentRegion(targetRegionKey);
-            // 等待区域切换完成后再选择子区域，此处应该可以优化
-            setTimeout(() => {
-                selectSubregionInternal(targetRegionKey);
-            }, 100);
-        } else {
+        const run = async () => {
+            const mapCore = mapRef.current;
+            if (targetRegionKey !== currentRegion && mapCore) {
+                // 直接切换地图区域并等待底图加载完成，避免使用任意超时
+                await mapCore.switchRegion(targetRegionKey);
+                // 同步更新 store 状态（不会重复切换，下面的 effect 有去重）
+                setCurrentRegion(targetRegionKey);
+            }
             selectSubregionInternal(targetRegionKey);
-        }
-
-        clearSubregionSwitchRequest();
+            clearSubregionSwitchRequest();
+        };
+        void run();
     }, [subregionSwitchRequest, currentRegion, setCurrentRegion, setCurrentSubregion, clearSubregionSwitchRequest]);
 
     return {

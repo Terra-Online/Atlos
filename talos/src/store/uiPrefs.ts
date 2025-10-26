@@ -8,6 +8,10 @@ interface IUiPrefsStore {
   markFilterExpanded: Record<string, boolean>;
   setMarkFilterExpanded: (key: string, value: boolean) => void;
   toggleMarkFilterExpanded: (key: string) => void;
+
+  // Persistent custom order of mark filters (array of idKey)
+  markFilterOrder: string[];
+  setMarkFilterOrder: (order: string[]) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -25,12 +29,16 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         const current = get().markFilterExpanded[key] ?? false;
         get().setMarkFilterExpanded(key, !current);
       },
+
+      markFilterOrder: [],
+      setMarkFilterOrder: (order) => set({ markFilterOrder: order }),
     }),
     {
       name: 'ui-prefs',
       partialize: (state) => ({
         sidebarOpen: state.sidebarOpen,
         markFilterExpanded: state.markFilterExpanded,
+        markFilterOrder: state.markFilterOrder,
       }),
     },
   ),
@@ -42,3 +50,6 @@ export const useMarkFilterExpanded = (key: string) =>
   useUiPrefsStore((s) => s.markFilterExpanded[key] ?? false);
 export const useToggleMarkFilterExpanded = () =>
   useUiPrefsStore((s) => s.toggleMarkFilterExpanded);
+
+export const useMarkFilterOrder = () => useUiPrefsStore((s) => s.markFilterOrder);
+export const useSetMarkFilterOrder = () => useUiPrefsStore((s) => s.setMarkFilterOrder);
