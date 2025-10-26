@@ -69,11 +69,11 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Decide absolute positioning style per side
 	const containerStyle = useMemo<React.CSSProperties>(() => {
 		const common: React.CSSProperties = {
-			// CSS var for handle thickness
-			['--handle-size' as unknown as string]: `${handleSize}px`,
+			// CSS var for handle area height/width
+			['--handle-size' as string]: `${handleSize}px`,
 			// Initial values; will be updated by size.on('change')
-			['--drawer-size' as unknown as string]: `${initialSize}px`,
-			['--drawer-progress' as unknown as string]: `${clamp(initialSize / maxSize, 0, 1)}`,
+			['--drawer-size' as string]: `${initialSize}px`,
+			['--drawer-progress' as string]: `${clamp(initialSize / maxSize, 0, 1)}`,
 		};
 		if (side === 'bottom') {
 			// Use CSS var for dynamic height

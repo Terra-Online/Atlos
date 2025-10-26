@@ -109,9 +109,10 @@ const MarkFilter = ({
             ref={containerRef}
             className={`${styles.markFilterContainer} ${isSelfDragging ? styles.dragging : ''}`}
             layout
-            style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1 }}
+        style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1, touchAction: isSelfDragging ? 'none' : 'auto' }}
             drag="y"
             dragControls={dragControls}
+        dragListener={false}
             dragElastic={0.05}
             dragMomentum={false}
             onDragStart={onDragStart}

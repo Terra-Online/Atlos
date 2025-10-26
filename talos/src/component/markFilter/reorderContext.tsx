@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { DragContext, GetLayout, LayoutRect } from './reorderCore.tsx';
+import { useMarkFilterOrder, useSetMarkFilterOrder } from '@/store/uiPrefs';
 
 function moveItem<T>(arr: T[], from: number, to: number) {
   const next = arr.slice();
@@ -12,7 +13,10 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
   // registered items and their measurement callbacks
   const registryRef = useRef<Map<string, { getLayout: GetLayout }>>(new Map());
   // visual order mapped to idKey; this drives flex order
-  const [order, setOrder] = useState<string[]>([]);
+  const persistedOrder = useMarkFilterOrder();
+  const setPersistedOrder = useSetMarkFilterOrder();
+  const [order, setOrder] = useState<string[]>(() => persistedOrder ?? []);
+  const orderRef = useRef<string[]>(order);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragOriginCenterRef = useRef<number>(0);
@@ -21,14 +25,26 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
   const register = useCallback((id: string, getLayout: GetLayout) => {
     const m = registryRef.current;
     m.set(id, { getLayout });
-    setOrder((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  }, []);
+    setOrder((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      orderRef.current = next;
+      // persist structural change
+      setPersistedOrder(next);
+      return next;
+    });
+  }, [setPersistedOrder]);
 
   const unregister = useCallback((id: string) => {
     const m = registryRef.current;
     m.delete(id);
-    setOrder((prev) => prev.filter((x) => x !== id));
-  }, []);
+    setOrder((prev) => {
+      const next = prev.filter((x) => x !== id);
+      orderRef.current = next;
+      setPersistedOrder(next);
+      return next;
+    });
+  }, [setPersistedOrder]);
 
   const orderOf = useCallback(
     (id: string) => {
@@ -106,6 +122,7 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
         dragOriginRectRef.current = newRect;
         dragOriginCenterRef.current = newRect.center;
       }
+      orderRef.current = nextOrder;
       return nextOrder;
     }
 
@@ -117,7 +134,9 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
     setDraggingId(null);
     dragOriginCenterRef.current = 0;
     dragOriginRectRef.current = null;
-  }, []);
+    // persist the final order after interaction ends
+    setPersistedOrder(orderRef.current);
+  }, [setPersistedOrder]);
 
   const value = useMemo(
     () => ({ register, unregister, startDrag, updateDrag, endDrag, orderOf, isDragging: !!draggingId, draggingId }),
