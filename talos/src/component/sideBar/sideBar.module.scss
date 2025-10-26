@@ -69,7 +69,7 @@ $transition-speed: 0.3s;
         .sidebarContent {
             height: 100%;
             padding: 15px;
-            padding-bottom: 2rem;
+            padding-bottom: calc(3rem + 15px); // drawer + copyright + origin padding
             flex: 1;
             overflow-y: auto;
             > .filters {

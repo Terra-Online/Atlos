@@ -13,7 +13,7 @@ export interface DrawerProps {
 	debug?: boolean; // print debug logs
 
 	onProgressChange?: (progress: number) => void;
-	className?: string; // container class
+	className?: string; // container class for custom styling
 	handleClassName?: string; // handle class for custom styling
 	contentClassName?: string; // content class for custom styling
 	backdropClassName?: string; // backdrop class for custom styling
@@ -29,8 +29,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	side = 'bottom',
 	maxSize,
 	initialSize = 0,
-	snapThreshold = 0.12,
-	handleSize = 16,
+	snapThreshold = 0.5,
+	handleSize = 24,
 	debug = false,
 	onProgressChange,
 	className,
