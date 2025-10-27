@@ -109,10 +109,10 @@ const MarkFilter = ({
             ref={containerRef}
             className={`${styles.markFilterContainer} ${isSelfDragging ? styles.dragging : ''}`}
             layout
-        style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1, touchAction: isSelfDragging ? 'none' : 'auto' }}
+            style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1 }}
             drag="y"
             dragControls={dragControls}
-        dragListener={false}
+            dragListener={false}
             dragElastic={0.05}
             dragMomentum={false}
             onDragStart={onDragStart}
@@ -132,7 +132,7 @@ const MarkFilter = ({
                     // start drag from header only; allow scrolling elsewhere
                     dragControls.start(e);
                 }}
-                style={{ cursor: isSelfDragging ? 'grabbing' : 'grab' }}
+                style={{ cursor: isSelfDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
             >
                 <div className={styles.filterIcon}>
                     {CustomIcon ? (
