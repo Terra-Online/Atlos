@@ -75,13 +75,13 @@ const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose, onChange, 
       size="m"
       onClose={onClose}
       onChange={onChange}
-  title={t('language.title')}
+      title={t('language.title')}
       icon={<I18nIcon aria-hidden="true" />}
     >
       <div
         className={styles.langList}
         role="radiogroup"
-  aria-label={t('language.title')}
+        aria-label={t('language.title')}
         id={groupId}
       >
         {items.map(it => (

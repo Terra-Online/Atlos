@@ -3,6 +3,8 @@
     "tos": "Terms of Service",
     "hideUI": "Hide UI",
     "group": "Join related group",
+    "darkmode": "Switch to dark mode",
+    "lightmode": "Switch to light mode",
     "language": "Choose language",
     "help": "Reach out for help"
   },

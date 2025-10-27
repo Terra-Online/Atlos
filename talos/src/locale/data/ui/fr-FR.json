@@ -1,0 +1,54 @@
+{
+  "headbar": {
+    "tos": "Conditions d’utilisation",
+    "hideUI": "Masquer l’interface utilisateur",
+    "group": "Rejoindre les groupes associés",
+    "darkmode": "Passer en mode sombre",
+    "lightmode": "Passer en mode clair",
+    "language": "Choisir la langue",
+    "help": "Demander de l’aide"
+  },
+  "trigger": {
+    "boundaryMode": "Mode des limites",
+    "clusterMode": "Mode de regroupement",
+    "optimalPath": "Itinéraire optimal"
+  },
+  "search": {
+    "placeholder": "Recherche générale..."
+  },
+  "markFilter": {
+    "title": "Filtres",
+    "emptyTitle": "Aucun filtre approprié",
+    "emptyDesc": "Veuillez contacter l’administrateur."
+  },
+  "detail": {
+    "stat": {
+      "world": "Monde",
+      "main": "Principal"
+    },
+    "noInfo": "Aucune information."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "pris en charge par Observator 6"
+    }
+  },
+  "language": {
+    "title": "Langue",
+    "cancel": "Annuler",
+    "current": "Actuelle",
+    "names": {
+      "en-US": "anglais",
+      "zh-CN": "chinois (simplifié)",
+      "zh-TW": "chinois (traditionnel)",
+      "ja-JP": "japonais",
+      "ko-KR": "coréen"
+    }
+  },
+  "common": {
+    "close": "Fermer"
+  }
+}

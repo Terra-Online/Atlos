@@ -2,7 +2,9 @@
   "headbar": {
     "tos": "服务条款",
     "hideUI": "隐藏界面",
-    "group": "加入相关群",
+    "group": "加入相关群组",
+    "darkmode": "切换到深色模式",
+    "lightmode": "切换到浅色模式",
     "language": "选择语言",
     "help": "获取帮助"
   },

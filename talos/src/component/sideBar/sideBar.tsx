@@ -109,7 +109,7 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                     handleClassName={drawerStyles.TriggerDrawerHandle}
                     contentClassName={drawerStyles.TriggerDrawerContent}
                     backdropClassName={drawerStyles.TriggerDrawerBackdrop}
-                    style={{ bottom: '1.5rem', left: 0, right: 0 }}
+                    style={{ bottom: 'var(--drawer-bottom)', left: 0, right: 0 }}
                 >
                     <TriggerBar>
                         <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.clusterMode')} />

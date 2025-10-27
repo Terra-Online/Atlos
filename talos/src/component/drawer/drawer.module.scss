@@ -1,3 +1,5 @@
+@use '../../styles/curves.scss' as *;
+
 .drawerContainer {
   position: absolute;
   z-index: 150; /* above sidebar content/footer */
@@ -6,6 +8,7 @@
   overflow: hidden;
   pointer-events: none; /* enable internal hit areas only */
   width: 100%;
+  transition: bottom 0.35s $moderato-curve, top 0.35s $moderato-curve, left 0.35s $moderato-curve, right 0.35s $moderato-curve;
   
   // Use CSS variables to control size dynamically
   // For bottom/top: height = handleSize + drawerSize

@@ -3,6 +3,8 @@
     "tos": "利用規約",
     "hideUI": "UIを隠す",
     "group": "関連グループに参加",
+    "darkmode": "ダークモードに切り替え",
+    "lightmode": "ライトモードに切り替え",
     "language": "言語を選択",
     "help": "ヘルプ"
   },
