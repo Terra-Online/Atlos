@@ -1,0 +1,90 @@
+.drawerContainer {
+  position: absolute;
+  z-index: 150; /* above sidebar content/footer */
+  display: flex;
+  flex-direction: column; /* stack handle and content */
+  overflow: hidden;
+  pointer-events: none; /* enable internal hit areas only */
+  width: 100%;
+  
+  // Use CSS variables to control size dynamically
+  // For bottom/top: height = handleSize + drawerSize
+  // For left/right: width = handleSize + drawerSize
+  height: calc(var(--handle-size, 16px) + var(--drawer-size, 0px));
+  
+  // Alternate for left/right (will be overridden by specific rules below)
+  &.drawerLeft,
+  &.drawerRight {
+    height: auto;
+    flex-direction: row; /* handle and content side by side */
+    width: calc(var(--handle-size, 16px) + var(--drawer-size, 0px));
+  }
+}
+
+.content {
+  position: relative;
+  flex: 1; /* take remaining space after handle */
+  min-height: 0; /* allow flex shrink */
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1; /* behind content and handle */
+  
+  // Use CSS variables for dynamic backdrop styling
+  // Example: opacity: calc(var(--drawer-progress) * 0.4);
+  // Background and blur can be controlled via custom classes
+}
+
+.handle {
+  position: relative; /* no longer absolute */
+  flex-shrink: 0; /* fixed size, won't shrink */
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  // Default minimal styling - override with custom handleClassName
+  // Example default styles:
+  // background: rgba(24, 24, 28, 0.9);
+  // border-radius: 12px 12px 0 0;
+  // box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+/* Handles per side - positioning only, styling via custom classes */
+.handleTop {
+  order: 1; /* handle at bottom of flex container for top drawer */
+  width: 100%;
+  height: var(--handle-size, 16px);
+  cursor: grab;
+}
+
+.handleBottom {
+  order: -1; /* handle at top of flex container for bottom drawer */
+  width: 100%;
+  height: var(--handle-size, 16px);
+  cursor: grab;
+}
+
+.handleLeft {
+  order: 1; /* handle at right of flex container for left drawer */
+  height: 100%;
+  width: var(--handle-size, 16px);
+  cursor: grab;
+}
+
+.handleRight {
+  order: -1; /* handle at left of flex container for right drawer */
+  height: 100%;
+  width: var(--handle-size, 16px);
+  cursor: grab;
+}
+
+.handleTop, .handleBottom, .handleLeft, .handleRight {
+  &[data-dragging='true'] {
+    cursor: grabbing;
+  }
+}

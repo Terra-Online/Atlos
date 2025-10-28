@@ -6,7 +6,8 @@
     --trigger-on: #{$white-1};
     --trigger-off: #{$grey-1};
     --trigger-active: #{$primary-accent-4};
-    --trigger-label: #{$white-1};
+    --trigger-label: #{$grey-1};
+    --trigger-shadow: #{rgba($black-0, 0.3)};
 }
 :root[data-theme='dark'] {
     --trigger-bg: #{$black-1};
@@ -15,6 +16,7 @@
     --trigger-off: #{$grey-1};
     --trigger-active: #{$primary-accent-4};
     --trigger-label: #{$light-1};
+    --trigger-shadow: #{rgba($black-0, 1)};
 }
 
 $transition-speed: 0.3s; //import from global size.scss later
@@ -94,7 +96,7 @@ $transition-speed: 0.3s; //import from global size.scss later
         width: calc(4.5rem - 4px);
         height: 2.25rem;
         border-radius: 4px;
-    background-color: var(--trigger-bg);
+        background-color: var(--trigger-bg);
         padding: 2px;
         cursor: pointer;
         overflow: hidden;
@@ -114,7 +116,7 @@ $transition-speed: 0.3s; //import from global size.scss later
             box-shadow: 0 1px 2px rgba($black-0, 0.3);
             transition:
                 transform 0.2s,
-                background-color 0.2s ease;
+                background-color 0.3s ease;
             z-index: 0;
         }
         &:focus {
@@ -142,8 +144,9 @@ $transition-speed: 0.3s; //import from global size.scss later
         user-select: none;
         font-size: 1rem;
         text-transform: uppercase;
-    color: var(--trigger-label);
-    text-shadow: 0 1px 2px rgba($black-0, 1);
+        font-weight: 700;
+        color: var(--trigger-label);
+        text-shadow: 0 1px 2px var(--trigger-shadow);
         white-space: nowrap;
     }
 }

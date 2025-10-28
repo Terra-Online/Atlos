@@ -8,7 +8,7 @@ interface IUserRecordStore {
     clearPoints: () => void;
 }
 
-const useUserRecordStore = create<IUserRecordStore>()(
+export const useUserRecordStore = create<IUserRecordStore>()(
     persist(
         (set, get) => ({
             activePoints: [],
@@ -50,3 +50,6 @@ export const useUserRecord = () =>
 export const useAddPoint = () => useUserRecordStore((state) => state.addPoint);
 export const useDeletePoint = () =>
     useUserRecordStore((state) => state.deletePoint);
+
+// Non-hook accessors for non-React modules (e.g., Leaflet renderer)
+export const getActivePoints = () => useUserRecordStore.getState().activePoints;

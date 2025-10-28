@@ -35,7 +35,7 @@ const RegionContainer: React.FC<{
         currentRegionKey,
         currentSubregionKey,
         setCurrentRegion,
-        setCurrentSubregion,
+        requestSubregionSwitch,
     } = useRegion();
     const regionIndex = useMemo(
         () => Object.keys(REGION_DICT).indexOf(currentRegionKey),
@@ -98,7 +98,7 @@ const RegionContainer: React.FC<{
                                                     styles.selected,
                                             )}
                                             onClick={() => {
-                                                setCurrentSubregion(subregion);
+                                                requestSubregionSwitch(subregion);
                                             }}
                                         ></div>
                                     ))}

@@ -53,7 +53,7 @@ export class MapCore {
         });
     }
 
-    switchRegion(regionId: string) {
+    async switchRegion(regionId: string): Promise<void> {
         this.currentRegionId = regionId;
 
         this.map.eachLayer((layer) => this.map.removeLayer(layer));
@@ -118,7 +118,7 @@ export class MapCore {
 
         const mapBounds = L.latLngBounds(southWest, northEast);
         
-        L.tileLayer(getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`), {
+        const tileLayer = L.tileLayer(getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`), {
             tileSize: config.tileSize,
             noWrap: true,
             bounds: mapBounds,
@@ -126,14 +126,34 @@ export class MapCore {
         }).addTo(this.map);
 
         this.markerLayer.changeRegion(regionId);
+
+        // Resolve when base tiles finish initial load to signal readiness
+        await new Promise<void>((resolve) => {
+            // If the layer is already loaded (from cache), resolve on next tick
+            let resolved = false;
+            const done = () => {
+                if (resolved) return;
+                resolved = true;
+                tileLayer.off('load', done);
+                resolve();
+            };
+            tileLayer.once('load', done);
+            // Fallback: if no tiles are needed, Leaflet may not fire 'load';
+            // use a microtask to resolve quickly without arbitrary timeout
+            void Promise.resolve().then(done);
+        });
     }
 
     setMapView(view: IMapView) {
         if (this.transforming) return;
         this.transforming = true;
-        this.map.setView([view.lat, view.lng], view.zoom);
-        setTimeout(() => {
+        const onEnd = () => {
             this.transforming = false;
-        }, 100);
+            this.map.off('moveend', onEnd);
+            this.map.off('zoomend', onEnd);
+        };
+        this.map.on('moveend', onEnd);
+        this.map.on('zoomend', onEnd);
+        this.map.setView([view.lat, view.lng], view.zoom);
     }
 }

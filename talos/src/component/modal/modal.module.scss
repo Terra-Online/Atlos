@@ -110,6 +110,8 @@
             display: flex;
             justify-content: flex-start;
             align-items: center;
+            touch-action: none;
+            user-select: none;
 
             span.closeText {
                 display: inline-flex;

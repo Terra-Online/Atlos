@@ -1,9 +1,12 @@
 import OSS from 'ali-oss';
 import fs from "fs-extra";
-import path from "path"
+import path from "path";
+import https from "https";
+import http from "http";
 
 const config = JSON.parse(fs.readFileSync('./config/config.json', 'utf-8'));
 const { region, bucket, accessKeyId, accessKeySecret, prefix } = config.web.build.oss
+const cdnPath = config.web.build.cdn + config.web.build.oss.prefix;
 
 const client = new OSS({
   region,
@@ -14,6 +17,33 @@ const client = new OSS({
   timeout: 120000, // 2 minutes
   agent: undefined, // 禁用连接池,避免callback twice
 });
+
+// 检查CDN资源是否存在
+const checkCDNResourceExists = async (relativePath) => {
+  return new Promise((resolve) => {
+    const cdnUrl = `${cdnPath}/${relativePath}`;
+    const url = new URL(cdnUrl);
+    const client = url.protocol === 'https:' ? https : http;
+    
+    const req = client.request(url, { method: 'HEAD' }, (res) => {
+      resolve({
+        exists: res.statusCode === 200,
+        size: parseInt(res.headers['content-length']) || 0
+      });
+    });
+    
+    req.on('error', () => {
+      resolve({ exists: false, size: 0 });
+    });
+    
+    req.setTimeout(5000, () => {
+      req.destroy();
+      resolve({ exists: false, size: 0 });
+    });
+    
+    req.end();
+  });
+};
 
 function getAllFiles(dirPath, arrayOfFiles) {
   const files = fs.readdirSync(dirPath);
@@ -54,6 +84,15 @@ const upload = async (relativePath, retryCount = 0) => {
   try {
     const stats = fs.statSync(localPath);
     const fileSize = stats.size;
+    
+    // 检查CDN是否已存在该资源
+    const cdnCheck = await checkCDNResourceExists(relativePath);
+    
+    // 如果CDN已存在该资源且文件较大（大于1MB），则跳过上传
+    if (cdnCheck.exists && fileSize > MULTIPART_THRESHOLD) {
+      console.log(`跳过上传 ${relativePath} - CDN已存在该资源 (${(fileSize / 1024 / 1024).toFixed(2)}MB)`);
+      return;
+    }
     
     // huge file upload
     if (fileSize > MULTIPART_THRESHOLD) {

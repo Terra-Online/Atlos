@@ -3,41 +3,174 @@
 
 /* TODO: more point action include:
    1. next point highlight
-   2. checked point indication
+   2. checked point indication √
    3. point pulse animation
-   4. point click feedback
-   5. dark mode
-   6. point stuff posit
+   4. point click feedback √
+   5. dark mode √
+   6. point stuff posit √
 */
-.customMarkerIcon {
+
+/* state injected on Inner */
+/* fade-in/out (removed next frame) */
+.markerInner {
+    opacity: 1;
+    transition: opacity 0.15s ease-in;
+    &::before {
+         content: '';
+        position: absolute;
+        width: var(--icon-size);
+        height: var(--icon-size);
+        background-color: $white-1;
+        box-shadow: 0 0 10px $black-0;
+        border-radius: 50%;
+        z-index: -1;
+        outline: 2px solid transparent;
+        outline-offset: 12px;
+        transform: translate3d(calc((var(--image-size) - var(--icon-size)) / 2), calc((var(--image-size) - var(--icon-size)) / 2), 0);
+
+        transition: outline 0.35s $presto-curve, outline-offset 0.35s $presto-curve;
+    }
+    &:hover {
+        &::before {
+            outline: 2px solid rgba($white-1, 0.4);
+            outline-offset: 8px;
+            transition: outline 0.25s ease-in, outline-offset 0.25s ease-in;
+        }
+        .subIconContainer{
+            &::before {
+                transform: translate3d(-50%, -50%, 0) scale(1);
+                opacity: 1;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+            }
+            .subIcon {
+                transform: translate3d(-50%, -50%, 0) scale(1.05);
+                transition: transform 0.35s $presto-curve;
+            }
+        }
+    }
+    &.selected {
+        &::before {
+            outline: 2px solid $white-1;
+            outline-offset: 6px;
+            transition: outline 0.125s $adagio-curve, outline-offset 0.125s $adagio-curve;
+        }
+        .FrameImage {
+            opacity: 1;
+            &::before {
+                outline-color: $primary-accent-4;
+            }
+            &::after {
+                border-top-color: $primary-accent-4;
+            }
+            &:has(+ .subIconContainer)::after {
+                transform: rotate(-90deg);
+            }
+            &:not(:has(+ .subIconContainer))::after {
+                bottom: -11px;
+            }
+        }
+        
+        .subIconContainer {
+            &::before {
+                transform: translate3d(-50%, -50%, 0) scale(1);
+                opacity: 0;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+            }
+            &::after {
+                transform: translate3d(-50%, -50%, 0) scale(1.05);
+                opacity: 1;
+                transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+            }
+        }
+    }
+    &.checked {
+        opacity: 0.3;
+        .FrameImage { 
+            &::before {
+                background-color: $primary-accent-4;
+            }
+        }
+        .subIconContainer {
+            opacity: 0.5;
+        }
+    }
+}
+.noFrameInner {
+    opacity: 1;
+    transition: opacity 0.15s ease-in, transform 0.3s $moderato-curve; // faster on reverse animation for visual unity
+    &:hover {
+        transform: translate3d(-50%, -60%, 0);
+        transition: transform 0.35s $moderato-curve;
+    }
+    &.selected {
+        .noFrameImage {
+            opacity: 1;
+            filter: invert(1);
+            transition: filter 0.3s $standard-curve, opacity 0.3s $moderato-curve;
+        }
+    }
+    &.checked {
+        .noFrameImage {
+            opacity: 0.5;
+        }
+    }
+}
+.noFrameInner, .markerInner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+
+.noFrameMarkerIcon {
+    background-color: transparent;
+    .noFrameImage {
+        display: block;
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        transition: filter 0.3s $moderato-curve, opacity 0.3s $moderato-curve;
+        opacity: 1;
+        filter: invert(0);
+    }
+}
+.markerInner.appearing,
+.noFrameInner.appearing,
+.markerInner.disappearing,
+.noFrameInner.disappearing {
+    opacity: 0;
+}
+.FrameMarkerIcon {
     background-color: transparent;
 
-    $icon-size: 1.75rem;
-    $deco-size: 2rem;
-    $border-weight: 2px;
-    $border-margin: 4px;
-
-    .markerInner {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate3d(-50%, -50%, 0);
-    }
-    .customMarkerIcon {
+    --image-size: 2rem;
+    --icon-size: 1.75rem;
+    .FrameImage {
         position: relative;
         background-position: center;
         background-size: cover;
         background-repeat: no-repeat;
-        width: $icon-size;
-        height: $icon-size;
-        border-radius: 50%;
+        width: var(--image-size);
+        height: var(--image-size);
 
-        background-color: $white-1;
-        outline: $border-weight solid $white-1;
-        outline-offset: $border-weight;
-        box-shadow: 0 0 10px $black-0;
+        opacity: 1;
+        transition: opacity 0.3s $moderato-curve;
 
-        //transform: translateY(-50%);
+        &::before {
+            content: '';
+            position: absolute;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            background-color: $white-1;
+            box-shadow: 0 0 10px $black-0;
+            border-radius: 50%;
+            z-index: -1;
+            outline: 2px solid $white-1;
+            outline-offset: 2px;
+            transform: translate3d(calc((var(--image-size) - var(--icon-size)) / 2), calc((var(--image-size) - var(--icon-size)) / 2), 0);
+
+            transition: outline-color 0.15s $moderato-curve, background-color 0.15s $moderato-curve;
+        }
         &::after {
             content: '';
             position: absolute;
@@ -51,88 +184,70 @@
             transition: transform 0.2s $presto-curve;
             z-index: 10;
             filter: drop-shadow(0 0 2px rgba($black-0, 0.7));
-        }
-    }
+            -webkit-transform-origin-x: center;
+            -webkit-transform-origin-y: calc(calc(var(--image-size) + 4px) / -2);
 
-    .defaultMarkerIcon {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        width: 30px;
-        height: 30px;
-        box-sizing: border-box;
-        border-radius: 50%;
-        background-color: #ccc;
-        border: 3px solid #000;
+            transition: border-top-color 0.1s $adagio-curve, transform 0.3s $presto-curve, bottom .15s $adagio-curve;
+        }
     }
 }
 
-.customTooltip {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
+.subIconContainer {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    pointer-events: none;
+    z-index: 1;
 
+    transition: opacity 0.15s ease-in;
     &::before {
-        display: none;
-    }
-
-    .tooltipInner {
+        content: "";
         position: absolute;
-        left: 0.5rem;
+        left: 50%;
         top: 50%;
-        transform: translateY(-50%);
-        width: 2.5rem;
-        height: 2.5rem;
-        /*
-        .bg {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            height: 33px;
-            width: 33px;
-            transform: translate3d(-50%, -50%, 0);
-            background-color: rgba(#d9d9d9, 0.02);
-            box-shadow: 0 0 3px rgba(#000000, 0.5);
-            border-radius: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(1.2);
+        width: 30px;
+        height: 30px;
+        z-index: -1;
+        background-image: url(../../../assets/images/UI/marker-hover.webp);
+        background-position: center;
+        background-size: contain;
 
-            &::before {
-                content: "";
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate3d(-50%, -50%, 0);
-                width: 29px;
-                height: 29px;
-                background-color: rgba(#d9d9d9, 0.02);
-                box-shadow: 0 0 3px rgba(#000000, 0.5);
-                border-radius: 50%;
-            }
+        opacity: 0;
+        transition: transform 0.5s $presto-curve, opacity 0.5s $presto-curve;
+    }
+    
+    &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0) scale(1.2);// 25 * 1.2 = 30 = ::before size
+        width: 25px;
+        height: 25px;
+        z-index: -2;
+        background-image: url(../../../assets/images/UI/marker-select.webp);
+        background-position: center;
+        background-size: contain;
 
-            &::after {
-                content: "";
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate3d(-50%, -50%, 0);
-                width: 25px;
-                height: 25px;
-                background-color: #fcfcfc;
-                box-shadow: 0 0 1px rgba(#000000, 0.25);
-                border-radius: 50%;
-            }
-        }
-        */
-        .image {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            height: 3rem;
-            width: 3rem;
-            transform: translate3d(-50%, -50%, 0);
-            background-position: center;
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
+        opacity: 0;
+        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+    }
+    .subIcon {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0);
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        transition: transform 0.35s $presto-curve, opacity 0.35s $presto-curve;
+        will-change: transform, opacity;   
+
     }
 }

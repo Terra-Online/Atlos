@@ -15,11 +15,16 @@ interface IMarkerStore {
 
     searchString: string;
     setSearchString: (string) => void;
+
+    // Persisted selected points (for UI selected state)
+    selectedPoints: string[];
+    toggleSelected: (id: string) => void;
+    setSelected: (id: string, value: boolean) => void;
 }
 
 export const useMarkerStore = create<IMarkerStore>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             currentActivePoint: null,
             setCurrentActivePoint: (point) => {
                 set({ currentActivePoint: point });
@@ -36,13 +41,36 @@ export const useMarkerStore = create<IMarkerStore>()(
                 });
             },
             searchString: '',
-            setSearchString: (newString:string) => {
-                set({ searchString: newString });
+            setSearchString: (value: string) => {
+                set({ searchString: value });
+            },
+            selectedPoints: [],
+            toggleSelected: (id: string) => {
+                const exists = get().selectedPoints.includes(id);
+                get().setSelected(id, !exists);
+            },
+            setSelected: (id: string, value: boolean) => {
+                set((state) => {
+                    const exists = state.selectedPoints.includes(id);
+                    if (value) {
+                        return {
+                            selectedPoints: exists
+                                ? state.selectedPoints
+                                : [...state.selectedPoints, id],
+                        };
+                    } else {
+                        return {
+                            selectedPoints: exists
+                                ? state.selectedPoints.filter((x) => x !== id)
+                                : state.selectedPoints,
+                        };
+                    }
+                });
             },
         }),
         {
             name: 'marker-filter',
-            partialize: (state) => ({ filter: state.filter }),
+            partialize: (state) => ({ filter: state.filter, selectedPoints: state.selectedPoints }),
         },
     ),
 );
@@ -54,6 +82,11 @@ export const useSwitchFilter = () =>
 
 export const useSearchString = () =>
     useMarkerStore((state) => state.searchString);
+
+export const useSelectedPoints = () =>
+    useMarkerStore((state) => state.selectedPoints);
+export const useToggleSelected = () =>
+    useMarkerStore((state) => state.toggleSelected);
 
 export const useWorldMarkerCount = (type) => {
     const pointsRecord = useUserRecord();
@@ -85,5 +118,5 @@ export const useRegionMarkerCount = (type) => {
             pointsRecord.includes(m.id),
         ).length;
         return ret;
-    }, [pointsRecord, subRegions, type, currentRegion]);
+    }, [pointsRecord, subRegions, type]);
 };

@@ -8,6 +8,11 @@ interface IRegionStore {
 
     setCurrentRegion: (regionKey: string) => void;
     setCurrentSubregion: (subregionKey: string) => void;
+    
+    // 触发子区域切换的请求
+    subregionSwitchRequest: string | null;
+    requestSubregionSwitch: (subregionKey: string) => void;
+    clearSubregionSwitchRequest: () => void;
 }
 
 const useRegion = create<IRegionStore>()(
@@ -15,6 +20,7 @@ const useRegion = create<IRegionStore>()(
         (set) => ({
             currentRegionKey: 'Valley_4',
             currentSubregionKey: null,
+            subregionSwitchRequest: null,
 
             setCurrentRegion: (regionKey: string) => {
                 set({
@@ -25,6 +31,14 @@ const useRegion = create<IRegionStore>()(
 
             setCurrentSubregion: (subregionKey: string) => {
                 set({ currentSubregionKey: subregionKey });
+            },
+
+            requestSubregionSwitch: (subregionKey: string) => {
+                set({ subregionSwitchRequest: subregionKey });
+            },
+
+            clearSubregionSwitchRequest: () => {
+                set({ subregionSwitchRequest: null });
             },
         }),
         {
