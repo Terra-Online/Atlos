@@ -250,9 +250,9 @@
                     mask-repeat: no-repeat;
                     mask-position: center;
                     background-color: var(--detail-brakt);
-                    filter: drop-shadow(0 2px 2px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
+                    filter: drop-shadow(0 2px 2px rgba($black-0, 0.25));
                      transition:
-                        background-color 0.2s ease,
+                        background-color 0.2s ease;
                 }
 
                 &::before {
@@ -431,7 +431,7 @@
         position: relative;
         font-size: 0.875rem;
         font-family:
-            'HMSans',
+            HMSans,
             'HMSans_TC',
             'HMSans_SC',
             sans-serif;
