@@ -18,6 +18,7 @@ export interface IMarkerType {
     };
 }
 // TODO 当前实现并不能实现懒加载内容
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 const modules = import.meta.glob('./data/*.json', { eager: true }) as Record<
     string,
     { default: IMarkerData[] }
@@ -42,7 +43,7 @@ export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce(
 export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
 
 export const MARKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce(
-    (acc, type) => {
+    (acc:Record<string, Record<string, IMarkerType[]>> , type) => {
         acc[type.category.main] = acc[type.category.main] || {};
         acc[type.category.main][type.category.sub] =
             acc[type.category.main][type.category.sub] || [];
@@ -50,4 +51,4 @@ export const MARKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce(
         return acc;
     },
     {},
-) as Record<string, Record<string, IMarkerType[]>>;
+);

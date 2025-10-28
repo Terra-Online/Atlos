@@ -2,28 +2,28 @@ class Logger {
     private onceSet = new Set<string>();
 
     // debug only in dev to reduce noise in production
-    debug(...args: any[]) {
+    debug(...args: unknown[]) {
         // vite exposes import.meta.env.DEV
-        if (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) {
+        if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
             console.info('[DEBUG]', ...args);
         }
     }
 
-    info(...args: any[]) {
+    info(...args: unknown[]) {
         console.info('[INFO]', ...args);
     }
 
-    warn(...args: any[]) {
+    warn(...args: unknown[]) {
         console.warn('[WARN]', ...args);
     }
 
-    warnOnce(id: string, ...args: any[]) {
+    warnOnce(id: string, ...args: unknown[]) {
         if (this.onceSet.has(id)) return;
         this.onceSet.add(id);
         this.warn(...args);
     }
 
-    error(...args: any[]) {
+    error(...args: unknown[]) {
         console.error('[ERROR]', ...args);
     }
 }

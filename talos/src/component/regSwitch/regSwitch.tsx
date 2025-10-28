@@ -9,7 +9,7 @@ import Jinlong from '../../assets/logos/_Jinlong.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
 import Æther from '../../assets/logos/Æther.svg?react';
 
-const REGION_ICON_DICT = {
+const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
     Jinlong: Jinlong,
     Dijiang: Dijiang,
@@ -53,7 +53,7 @@ const RegionContainer: React.FC<{
                 style={getContainerStyle(regionIndex)}
             ></div>
             {Object.entries(REGION_DICT).map(([key, region]) => {
-                const Icon = REGION_ICON_DICT[key];
+                const Icon: React.FC = REGION_ICON_DICT[key];
                 const subRegionIndex = currentSubregionKey
                     ? region.subregions.indexOf(currentSubregionKey)
                     : -1;

@@ -1,9 +1,5 @@
 import { REGION_DICT } from '@/data/map';
-import {
-    IMarkerData,
-    MARKER_TYPE_DICT,
-    SUBREGION_MARKS_MAP,
-} from '@/data/marker';
+import { IMarkerData, MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, } from '@/data/marker';
 import LOGGER from '@/utils/log';
 import L from 'leaflet';
 import { getMarkerLayer } from './markerRenderer';
@@ -78,8 +74,8 @@ export class MarkerLayer {
                 LOGGER.warn(`Missing type config for '${typeKey}'`);
                 return;
             }
-            const layer = getMarkerLayer(marker, this._onSwitchCurrentMarker);
-            this.markerDict[marker.id] = layer;
+
+            this.markerDict[marker.id] = getMarkerLayer(marker, this._onSwitchCurrentMarker);
             this.markerDataDict[marker.id] = marker;
 
             this.markerTypeMap[typeKey].push(marker.id);

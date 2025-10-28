@@ -36,8 +36,8 @@ export const useMarkerStore = create<IMarkerStore>()(
                 });
             },
             searchString: '',
-            setSearchString: (string) => {
-                set({ searchString: string });
+            setSearchString: (newString:string) => {
+                set({ searchString: newString });
             },
         }),
         {

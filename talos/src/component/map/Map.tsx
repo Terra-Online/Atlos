@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import styles from './Map.module.scss';
 import { useMap } from './useMap';
+import L from 'leaflet';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;
