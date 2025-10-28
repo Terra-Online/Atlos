@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styles from './detail.module.scss';
 import { getItemIconUrl, getCtgrIconUrl } from '@/utils/resource.ts';
 import {
@@ -41,13 +41,9 @@ import { useTranslateGame, useTranslateUI } from '@/locale';
 // };
 
 const TEXT_DURATION = 30;
-const AnimatedText = (props) => {
+const AnimatedText = (props:{text:string} & React.ComponentProps<typeof motion.span>) => {
     const {
         text,
-        initial = {},
-        animate = {},
-        exit = {},
-        transition = {},
         ...rest
     } = props;
     const [isPresent, safeToRemove] = usePresence();

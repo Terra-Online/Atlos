@@ -7,33 +7,28 @@ class Logger {
     }
 
     // debug only in dev to reduce noise in production
-    debug(...args: any[]) {
-        if (!this.enabled) return;
+    debug(...args: unknown[]) {
         // vite exposes import.meta.env.DEV
-        if (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) {
+        if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
             console.info('[DEBUG]', ...args);
         }
     }
 
-    info(...args: any[]) {
-        if (!this.enabled) return;
+    info(...args: unknown[]) {
         console.info('[INFO]', ...args);
     }
 
-    warn(...args: any[]) {
-        if (!this.enabled) return;
+    warn(...args: unknown[]) {
         console.warn('[WARN]', ...args);
     }
 
-    warnOnce(id: string, ...args: any[]) {
-        if (!this.enabled) return;
+    warnOnce(id: string, ...args: unknown[]) {
         if (this.onceSet.has(id)) return;
         this.onceSet.add(id);
         this.warn(...args);
     }
 
-    error(...args: any[]) {
-        if (!this.enabled) return;
+    error(...args: unknown[]) {
         console.error('[ERROR]', ...args);
     }
 }

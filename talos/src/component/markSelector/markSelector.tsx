@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './markSelector.module.scss';
-import { getItemIconUrl } from '../../utils/resource';
+import { getItemIconUrl } from '@/utils/resource.ts';
 import { useTranslateGame } from '@/locale';
 import { MarkVisibilityContext } from '../markFilter/visibilityContext';
 import {
@@ -9,7 +9,7 @@ import {
     useRegionMarkerCount,
     useSearchString,
     useSwitchFilter,
-} from '../../store/marker';
+} from '@/store/marker.ts';
 
 interface MarkSelectorProps {
     typeInfo: { key: string; main?: string; sub?: string };

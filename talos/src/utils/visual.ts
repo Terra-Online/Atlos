@@ -1,4 +1,5 @@
 import L, { DivOverlay } from 'leaflet';
+import { IMapRegion, IMapSubregionAreaData } from '@/data/map';
 
 let activeHighlight: L.LayerGroup | null = null;
 
@@ -11,7 +12,7 @@ export const removeHighlight = () => {
     }
 };
 
-export const createHighlight = (map, subregion, config) => {
+export const createHighlight = (map: L.Map | undefined, subregion: IMapSubregionAreaData, config: IMapRegion) => {
     removeHighlight();
 
     let highlight: L.LayerGroup | null = null;
@@ -41,8 +42,11 @@ export const createHighlight = (map, subregion, config) => {
     return highlight;
 };
 
-export const createPolygonHighlight = (map, polygonData, config) => {
+export const createPolygonHighlight = (map: L.Map | undefined, polygonData: number[][][], config:IMapRegion) => {
     try {
+        if (!map) {
+            throw new Error('Map is not defined.');
+        }
         const polygonPoints = polygonData.map((polygon) => {
             return polygon.map(([x, y]) => {
                 return map.unproject([x, y], config.maxZoom);
@@ -72,8 +76,11 @@ export const createPolygonHighlight = (map, polygonData, config) => {
     }
 };
 
-export const createRectangleHighlight = (map, bounds, config) => {
+export const createRectangleHighlight = (map:L.Map | undefined, bounds: number[][], config: IMapRegion) => {
     try {
+        if (!map) {
+            throw new Error('Map is not defined.');
+        }
         const [[x1, y1], [x2, y2]] = bounds;
         const sw = map.unproject([x1, y2], config.maxZoom);
         const ne = map.unproject([x2, y1], config.maxZoom);
@@ -95,7 +102,7 @@ export const createRectangleHighlight = (map, bounds, config) => {
         strokeLayer.addTo(map);
 
         return L.layerGroup([fillLayer, strokeLayer]);
-    } catch (error) {
+    } catch (_) {
         //console.error('Failed to create rectangle highlight:', error);
         return null;
     }
