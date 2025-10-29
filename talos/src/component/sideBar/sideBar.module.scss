@@ -151,7 +151,7 @@ $transition-speed: 0.3s;
     }
 }
 
-html:not(:lang(zh-CN)):not(:lang(zh-TW)) {
+html:not(:lang(zh-CN), :lang(zh-TW)) {
     .copyright {
         clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
     }

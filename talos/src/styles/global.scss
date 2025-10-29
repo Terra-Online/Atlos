@@ -1,7 +1,7 @@
 @use './fonts' as *;
 @use './curves.scss' as *;
 @use './palette' as *;
-@use './highlight.scss';
+@use './highlight';
 @import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
 
 /* Global theme transition variables (scoped) */

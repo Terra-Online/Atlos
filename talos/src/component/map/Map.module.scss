@@ -36,7 +36,7 @@
         background-color: var(--map-pattern-bg);
         opacity: var(--map-pattern-opacity);
         
-        mask-image: url(../../assets/images/UI/map-pattern.svg);
+        mask-image: url('../../assets/images/UI/map-pattern.svg');
         mask-repeat: repeat;
         mask-size: 100px;
         
