@@ -1,6 +1,7 @@
 import styles from './headbar.module.scss';
-import LiquidGlass from 'liquid-glass-react-positioning';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import HeadBarDesktop from './headBar.desktop';
+import HeadBarMobile from './headBar.mobile';
 
 interface HeadBarProps {
     children: React.ReactNode;
@@ -43,30 +44,23 @@ const HeadItem = ({
     );
 };
 
-// modified (changed UI but sidebar binding reserved)
+// Main HeadBar component with responsive detection
 const HeadBar = ({ children }: HeadBarProps) => {
-    return (
-        <LiquidGlass
-            displacementScale={60}
-            blurAmount={0}
-            saturation={120}
-            aberrationIntensity={2}
-            elasticity={0.1}
-            cornerRadius={50}
-            padding='8px 16px'
-            mode='standard'
-            overLight={false}
-            positioning='top-right'
-            style={{
-                position: 'fixed',
-                top: '1rem',
-                right: '1rem',
-                backgroundColor: 'var(--headbar-bg)',
-                borderRadius: '50%',
-            }}
-        >
-            <div className={styles.headbar}>{children}</div>
-        </LiquidGlass>
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    return isMobile ? (
+        <HeadBarMobile>{children}</HeadBarMobile>
+    ) : (
+        <HeadBarDesktop>{children}</HeadBarDesktop>
     );
 };
 
