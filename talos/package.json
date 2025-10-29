@@ -30,7 +30,7 @@
     "ahooks": "^3.8.4",
     "classnames": "^2.5.1",
     "leaflet": "^1.9.4",
-    "liquid-glass-react-positioning": "^1.0.4",
+    "liquid-glass-react-positioning": "^1.1.0",
     "motion": "^12.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

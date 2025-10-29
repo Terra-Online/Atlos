@@ -1,10 +1,12 @@
 @use '../../styles/palette.scss' as *;
 :root, :root[data-theme='light'] {
     --scale-bg: #{rgba($white-1, 0.2)};
+    --scale-deco-bg: #{rgba($white-1, 0.25)};
     --scale-prog: #{$primary-accent-4};
 }
 :root[data-theme='dark'] {
     --scale-bg: #{rgba($grey-2, 0.2)};
+    --scale-deco-bg: #{rgba($grey-2, 0.25)};
     --scale-prog: #{$primary-accent-4};
 }
 .scaleContainer {
@@ -79,7 +81,7 @@
             0 0 2.5px 1px rgba($white-0, 0.6),
             inset 0 0 2px rgba($white-0, 0.3);
         padding: 2px;
-        backdrop-filter: blur(10px) brightness(100%);
+        backdrop-filter: blur(10px);
         background-color: var(--scale-bg);
         overflow: hidden;
         cursor: pointer;
@@ -106,35 +108,81 @@
         }
     }
 }
-/*
-.zoom-label {
-  position: absolute;
-  right: 100%;
-  margin-right: 8px;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  font-size: 12px;
-  cursor: pointer;
-  user-select: none;
-  transition: opacity 300ms ease, transform 300ms ease, background-color 200ms ease;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
-  }
-  &.active {
-    background-color: #2c7be5;
-    color: white;
-    font-weight: bold;
-  }
+
+// Mobile-specific styles
+.scaleContainerMobile {
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0;
+    position: absolute;
+    z-index: 1000;
+    right: 0;
+    top: 45%;
+    transform: translateY(-50%);
 }
 
-.scaler-wrapper {
-  position: relative;
-  // Add pointer cursor to show it's clickable
-  cursor: pointer;
-} */
+.scalerWrapperMobile {
+    --scale: 0;
+    --drag-distance: 0;
+
+    position: relative;
+    height: 10rem;
+    width: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 6px 0 0 6px;
+    box-shadow:
+        inset 0 0 2px rgba($white-0, 0.3);
+    padding: 3px;
+    backdrop-filter: blur(10px);
+    background-color: var(--scale-bg);
+    cursor: grab;
+    touch-action: none;
+    
+    &:active {
+        cursor: grabbing;
+    }
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: var(--scale-deco-bg);
+    }
+    &::before {
+        top: 0;
+        transform: translateY(-100%);
+        clip-path: path("M0 24h24V0c0 6.2388-10.4322 23.871-24 24Z");
+    }
+    &::after {
+        bottom: 0;
+        transform: translateY(100%);
+        clip-path: path("M0 0h24v24C24 17.7612 13.5678.129 0 0Z");
+    }
+}
+
+.scalerMobile {
+    height: calc(10rem - 6px);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: calc(100% - 6px);
+    margin: 3px;
+    background-color: var(--scale-prog);
+    border-radius: 3px;
+    transform: scaleY(min(var(--scale), 1));
+    transform-origin: bottom;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.1s ease;
+    box-shadow:
+        0 0 3px 0.5px rgba($black-0, 0.4),
+        0 calc(1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
+            0.5px rgba($black-0, 0.2),
+        0 calc(-1.5px * max(1, min(10, 1 / max(0.1, var(--scale))))) 4px
+            0.5px rgba($black-0, 0.2);
+}
