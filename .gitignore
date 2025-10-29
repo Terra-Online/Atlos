@@ -40,3 +40,4 @@ talos/src/data/process/output/log
 .vscode
 talos/.stylelintcache
 /talos/.vite
+/talos/src/asset
