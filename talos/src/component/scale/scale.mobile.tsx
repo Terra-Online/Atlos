@@ -30,6 +30,21 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     const touchStartYRef = useRef<number>(null);
     const lastTouchYRef = useRef<number>(null);
     const initialZoomRef = useRef<number>(null); // Store initial zoom when drag starts
+    const dragActiveRef = useRef<boolean>(false); // Track drag state inside event handlers
+    const verificationTimeoutRef = useRef<number | null>(null); // Timeout to verify final zoom matches target
+
+    // Snap a zoom value to Leaflet's configured zoomSnap (if any)
+    const snapZoom = useCallback(
+        (z: number) => {
+            const snap = map?.options?.zoomSnap;
+            if (typeof snap === 'number' && snap > 0) {
+                const snapped = Math.round(z / snap) * snap;
+                return Math.max(zoomBounds.min, Math.min(zoomBounds.max, snapped));
+            }
+            return Math.max(zoomBounds.min, Math.min(zoomBounds.max, z));
+        },
+        [map, zoomBounds.min, zoomBounds.max],
+    );
 
     const scaleRatio = useMemo(
         () => calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
@@ -79,7 +94,14 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
             map.dragging.disable();
         }
         
+        // Clear any pending verification timeout from previous drag
+        if (verificationTimeoutRef.current !== null) {
+            clearTimeout(verificationTimeoutRef.current);
+            verificationTimeoutRef.current = null;
+        }
+        
         setIsDragging(true);
+        dragActiveRef.current = true;
         const touch = e.touches[0];
         touchStartYRef.current = touch.clientY;
         lastTouchYRef.current = touch.clientY;
@@ -116,12 +138,45 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     }, [map, zoomLevel, zoomBounds, handleZoomChange]);
 
     const handleTouchEnd = useCallback(() => {
+        // Commit final zoom to the map using the slider's target, not the map's current value
+        const desired = targetZoomRef.current ?? zoomLevel;
+        // Snap to map's zoomSnap step so slider and map converge on the same final zoom
+        const clamped = snapZoom(desired);
+        if (map) {
+            // Animate towards the final target; UI already reflects target and should not bounce back
+            isZoomingRef.current = true;
+            map.setZoom(clamped, { animate: true });
+        }
+        // Sync state and target to the committed value to avoid UI rebound
+        targetZoomRef.current = clamped;
+        setZoomLevel(clamped);
+        // Update UI scale immediately to the snapped value
+        const snappedScale = calculateScale(clamped, zoomBounds.min, zoomBounds.max);
+        updateScalerUI(snappedScale);
+
+        // After animation completes, verify map zoom matches target and force sync if needed
+        // Use a timeout slightly longer than typical zoom animation duration
+        verificationTimeoutRef.current = window.setTimeout(() => {
+            if (!map) return;
+            const actualZoom = map.getZoom();
+            const targetZoom = targetZoomRef.current;
+            // If zoom doesn't match target (due to fast zoomend or interrupted animation), force sync
+            if (targetZoom !== null && Math.abs(actualZoom - targetZoom) > 0.001) {
+                map.setZoom(targetZoom, { animate: false });
+                // Update UI to match
+                const correctedScale = calculateScale(targetZoom, zoomBounds.min, zoomBounds.max);
+                updateScalerUI(correctedScale);
+            }
+            verificationTimeoutRef.current = null;
+        }, 350); // Leaflet default zoom animation is ~250ms, add buffer
+
         // Re-enable map dragging
         if (map) {
             map.dragging.enable();
         }
         
         setIsDragging(false);
+        dragActiveRef.current = false;
         touchStartYRef.current = null;
         lastTouchYRef.current = null;
         initialZoomRef.current = null;
@@ -132,7 +187,7 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
             scalerWrapperRef.current.style.removeProperty('--drag-distance');
             scalerWrapperRef.current.style.transform = '';
         }
-    }, [map]);
+    }, [map, zoomBounds.min, zoomBounds.max, zoomLevel, snapZoom, updateScalerUI]);
 
     useEffect(() => {
         if (!map) return;
@@ -166,7 +221,12 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
             }
         };
         const handleZoomEnd = () => {
-            const finalZoom = map.getZoom();
+            // If user is dragging, ignore intermediate zoomend events caused by interrupted animations
+            if (dragActiveRef.current) return;
+            // Prefer the slider's committed target to avoid UI bouncing back to map's interim zoom
+            const finalTarget = targetZoomRef.current;
+            const actual = map.getZoom();
+            const finalZoom = finalTarget ?? actual;
             setZoomLevel(finalZoom);
             targetZoomRef.current = finalZoom;
             isZoomingRef.current = false;
@@ -181,6 +241,9 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
+            if (verificationTimeoutRef.current !== null) {
+                clearTimeout(verificationTimeoutRef.current);
+            }
             map.off('zoomstart', handleZoomStart);
             map.off('zoomanim', handleZoomAnim);
             map.off('zoomend', handleZoomEnd);
@@ -189,8 +252,11 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     }, [map, updateScalerUI]);
 
     useEffect(() => {
-        updateScalerUI(scaleRatio);
-    }, [scaleRatio, updateScalerUI]);
+        // While dragging, UI is driven by the slider; avoid overriding it with map-derived state
+        if (!isDragging) {
+            updateScalerUI(scaleRatio);
+        }
+    }, [scaleRatio, updateScalerUI, isDragging]);
 
     if (!map) return null;
     
@@ -198,7 +264,8 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
         <div 
             ref={containerRef}
             className={`${styles.scaleContainerMobile} ${isDragging ? styles.dragging : ''}`}
-        >
+        >   
+            {/*<div className={styles.scaleDecoTop} />*/}
             <div
                 className={styles.scalerWrapperMobile}
                 ref={scalerWrapperRef}
@@ -209,6 +276,7 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
             >
                 <div className={styles.scalerMobile} ref={scalerRef} />
             </div>
+            {/*<div className={styles.scaleDecoBottom} />*/}
         </div>
     );
 };

@@ -1,12 +1,10 @@
 @use '../../styles/palette.scss' as *;
 :root, :root[data-theme='light'] {
     --scale-bg: #{rgba($white-1, 0.2)};
-    --scale-deco-bg: #{rgba($white-1, 0.25)};
     --scale-prog: #{$primary-accent-4};
 }
 :root[data-theme='dark'] {
     --scale-bg: #{rgba($grey-2, 0.2)};
-    --scale-deco-bg: #{rgba($grey-2, 0.25)};
     --scale-prog: #{$primary-accent-4};
 }
 .scaleContainer {
@@ -115,12 +113,31 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0.5rem 0;
     position: absolute;
     z-index: 1000;
     right: 0;
-    top: 45%;
+    top: 40%;
     transform: translateY(-50%);
+    border-radius: 6px 0 0 6px;
+    .scaleDecoTop,
+    .scaleDecoBottom {
+        position: absolute;
+        right: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        backdrop-filter: blur(10px);
+        background-color: var(--scale-bg);
+    }
+    .scaleDecoTop {
+        top: 1px;
+        transform: translateY(-100%);
+        clip-path: path("M0 24h24V0c0 6.2388-10.4322 23.871-24 24Z");
+    }
+    .scaleDecoBottom {
+        bottom: 0;
+        transform: translateY(100%);
+        clip-path: path("M0 0h24v24C24 17.7612 13.5678.129 0 0Z");
+    }
 }
 
 .scalerWrapperMobile {
@@ -134,9 +151,8 @@
     flex-direction: column;
     justify-content: flex-end;
     border-radius: 6px 0 0 6px;
-    box-shadow:
-        inset 0 0 2px rgba($white-0, 0.3);
-    padding: 3px;
+    box-shadow: inset 0 0 2px rgba($white-0, 0.3);
+    padding: 4px;
     backdrop-filter: blur(10px);
     background-color: var(--scale-bg);
     cursor: grab;
@@ -145,33 +161,15 @@
     &:active {
         cursor: grabbing;
     }
-    &::before, &::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        width: 1.5rem;
-        height: 1.5rem;
-        background-color: var(--scale-deco-bg);
-    }
-    &::before {
-        top: 0;
-        transform: translateY(-100%);
-        clip-path: path("M0 24h24V0c0 6.2388-10.4322 23.871-24 24Z");
-    }
-    &::after {
-        bottom: 0;
-        transform: translateY(100%);
-        clip-path: path("M0 0h24v24C24 17.7612 13.5678.129 0 0Z");
-    }
 }
 
 .scalerMobile {
-    height: calc(10rem - 6px);
+    height: calc(10rem - 8px);
     position: absolute;
     bottom: 0;
     left: 0;
-    width: calc(100% - 6px);
-    margin: 3px;
+    width: calc(100% - 8px);
+    margin: 4px;
     background-color: var(--scale-prog);
     border-radius: 3px;
     transform: scaleY(min(var(--scale), 1));

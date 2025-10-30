@@ -6,10 +6,11 @@ class Logger {
         this.enabled = enabled;
     }
 
-    // debug only in dev to reduce noise in production
+    // debug only when explicitly enabled or in dev to reduce noise in production
     debug(...args: unknown[]) {
         // vite exposes import.meta.env.DEV
-        if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+        const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+        if (this.enabled || isDev) {
             console.info('[DEBUG]', ...args);
         }
     }

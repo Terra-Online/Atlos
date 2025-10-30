@@ -17,9 +17,9 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
 
     return (
         <LiquidGlass
-            displacementScale={60}
+            displacementScale={20}
             blurAmount={0}
-            saturation={120}
+            saturation={20}
             aberrationIntensity={2}
             elasticity={0.1}
             cornerRadius={36}
