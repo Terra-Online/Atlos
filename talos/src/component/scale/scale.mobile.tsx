@@ -1,282 +1,108 @@
-import React, {
-    useState,
-    useEffect,
-    useRef,
-    useCallback,
-    useMemo,
-} from 'react';
-// No drag translate/scale animations; Motion not needed
-import styles from './scale.module.scss';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
+import styles from './scale.module.scss';
 
-const calculateScale = (current: number, min: number, max: number) =>
-    Math.max(0, Math.min(1, (current - min) / (max - min)));
+const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+const calcScale = (z: number, min: number, max: number) => clamp((z - min) / (max - min), 0, 1);
 
 const ScaleMobile = ({ map }: { map: L.Map }) => {
-    const [zoomLevel, setZoomLevel] = useState(map?.getZoom() || 0);
-    const [zoomBounds, setZoomBounds] = useState({
-        min: map?.getMinZoom() || 0,
-        max: map?.getMaxZoom() || 3,
+    const [zoomLevel, setZoomLevel] = useState(map?.getZoom() ?? 0);
+    const [bounds, setBounds] = useState({
+        min: map?.getMinZoom() ?? 0,
+        max: map?.getMaxZoom() ?? 3,
     });
-    const [isDragging, setIsDragging] = useState(false);
-    // Use CSS variable for drag distance; avoid React state to prevent re-render thrash
-    
-    const scalerRef = useRef<HTMLDivElement>(null);
-    const scalerWrapperRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const animationFrameRef = useRef<number>(null);
-    const isZoomingRef = useRef<boolean>(false);
-    const targetZoomRef = useRef<number>(null);
-    const touchStartYRef = useRef<number>(null);
-    const lastTouchYRef = useRef<number>(null);
-    const initialZoomRef = useRef<number>(null); // Store initial zoom when drag starts
-    const dragActiveRef = useRef<boolean>(false); // Track drag state inside event handlers
-    const verificationTimeoutRef = useRef<number | null>(null); // Timeout to verify final zoom matches target
+    const [dragging, setDragging] = useState(false);
 
-    // Snap a zoom value to Leaflet's configured zoomSnap (if any)
-    const snapZoom = useCallback(
-        (z: number) => {
-            const snap = map?.options?.zoomSnap;
-            if (typeof snap === 'number' && snap > 0) {
-                const snapped = Math.round(z / snap) * snap;
-                return Math.max(zoomBounds.min, Math.min(zoomBounds.max, snapped));
-            }
-            return Math.max(zoomBounds.min, Math.min(zoomBounds.max, z));
-        },
-        [map, zoomBounds.min, zoomBounds.max],
-    );
+    const wrapRef = useRef<HTMLDivElement>(null);
+    const touchStartRef = useRef<number | null>(null);
+    const initialZoomRef = useRef<number | null>(null);
+    const frameRef = useRef<number | null>(null);
 
-    const scaleRatio = useMemo(
-        () => calculateScale(zoomLevel, zoomBounds.min, zoomBounds.max),
-        [zoomLevel, zoomBounds.min, zoomBounds.max],
-    );
+    // Derived ratio was unused; removed to avoid unused variable warning
 
-    const updateScalerUI = useCallback((newScale: number) => {
-        if (animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current);
-        }
-        animationFrameRef.current = requestAnimationFrame(() => {
-            if (scalerWrapperRef.current) {
-                scalerWrapperRef.current.style.setProperty(
-                    '--scale',
-                    newScale.toString(),
-                );
-            }
-            animationFrameRef.current = null;
+    const setUIScale = useCallback((s: number) => {
+        if (frameRef.current) cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(() => {
+            wrapRef.current?.style.setProperty('--scale', s.toString());
         });
     }, []);
 
-    const handleZoomChange = useCallback(
-        (newZoom: number) => {
-            if (!map) return;
-            const validZoom = Math.max(
-                zoomBounds.min,
-                Math.min(zoomBounds.max, newZoom),
-            );
-            if (targetZoomRef.current === validZoom) return;
-            isZoomingRef.current = true;
-            targetZoomRef.current = validZoom;
-            const newScale = calculateScale(
-                validZoom,
-                zoomBounds.min,
-                zoomBounds.max,
-            );
-            updateScalerUI(newScale);
-            map.setZoom(validZoom, { animate: true });
+    const snapZoom = useCallback(
+        (z: number) => {
+            const snap = map?.options?.zoomSnap ?? 0.1;
+            return clamp(Math.round(z / snap) * snap, bounds.min, bounds.max);
         },
-        [map, zoomBounds, updateScalerUI],
+        [map, bounds]
     );
 
-    const handleTouchStart = useCallback((e: React.TouchEvent) => {
-        // Prevent map dragging
+    // --- Touch handlers ---
+    const onTouchStart = useCallback((e: React.TouchEvent) => {
         e.stopPropagation();
-        if (map) {
-            map.dragging.disable();
-        }
-        
-        // Clear any pending verification timeout from previous drag
-        if (verificationTimeoutRef.current !== null) {
-            clearTimeout(verificationTimeoutRef.current);
-            verificationTimeoutRef.current = null;
-        }
-        
-        setIsDragging(true);
-        dragActiveRef.current = true;
-        const touch = e.touches[0];
-        touchStartYRef.current = touch.clientY;
-        lastTouchYRef.current = touch.clientY;
-        initialZoomRef.current = zoomLevel; // Store current zoom level
-        // Cancel any pending release animation and clear inline transform
-        if (scalerWrapperRef.current) {
-            scalerWrapperRef.current.getAnimations().forEach((a) => a.cancel());
-            // Keep current transform as-is; move handler will take over
-        }
+        map?.dragging.disable();
+        setDragging(true);
+        const y = e.touches[0].clientY;
+        touchStartRef.current = y;
+        initialZoomRef.current = zoomLevel;
     }, [map, zoomLevel]);
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const onTouchMove = useCallback((e: React.TouchEvent) => {
         e.stopPropagation();
-        // Don't call preventDefault - CSS touch-action: none handles this
-        
-        if (!scalerWrapperRef.current || !map || touchStartYRef.current === null || lastTouchYRef.current === null || initialZoomRef.current === null) return;
-        
-        const touch = e.touches[0];
-        const currentY = touch.clientY;
-        lastTouchYRef.current = currentY;
+        if (!touchStartRef.current || !wrapRef.current || initialZoomRef.current == null) return;
+        const deltaY = touchStartRef.current - e.touches[0].clientY;
+        const h = wrapRef.current.getBoundingClientRect().height || 1;
+        const dz = (deltaY / h) * (bounds.max - bounds.min);
+        const newZoom = clamp(initialZoomRef.current + dz, bounds.min, bounds.max);
+        setUIScale(calcScale(newZoom, bounds.min, bounds.max));
+        map?.setZoom(newZoom, { animate: false });
+    }, [map, bounds, setUIScale]);
 
-        // Calculate total drag distance from start
-        const totalDragDistance = touchStartYRef.current - currentY; // up = positive
-
-        // Calculate new zoom based on cumulative drag from start
-    const rect = scalerWrapperRef.current.getBoundingClientRect();
-    const wrapperHeight = rect.height || 1;
-    const ratioFromStart = totalDragDistance / wrapperHeight; // up increases
-        const zoomRange = zoomBounds.max - zoomBounds.min;
-        const unclampedZoom = (initialZoomRef.current ?? zoomLevel) + ratioFromStart * zoomRange;
-        const newZoom = Math.max(zoomBounds.min, Math.min(zoomBounds.max, unclampedZoom));
-
-        handleZoomChange(newZoom);
-    }, [map, zoomLevel, zoomBounds, handleZoomChange]);
-
-    const handleTouchEnd = useCallback(() => {
-        // Commit final zoom to the map using the slider's target, not the map's current value
-        const desired = targetZoomRef.current ?? zoomLevel;
-        // Snap to map's zoomSnap step so slider and map converge on the same final zoom
-        const clamped = snapZoom(desired);
-        if (map) {
-            // Animate towards the final target; UI already reflects target and should not bounce back
-            isZoomingRef.current = true;
-            map.setZoom(clamped, { animate: true });
-        }
-        // Sync state and target to the committed value to avoid UI rebound
-        targetZoomRef.current = clamped;
+    const onTouchEnd = useCallback(() => {
+        if (!map) return;
+        const clamped = snapZoom(map.getZoom());
+        map.setZoom(clamped, { animate: true });
         setZoomLevel(clamped);
-        // Update UI scale immediately to the snapped value
-        const snappedScale = calculateScale(clamped, zoomBounds.min, zoomBounds.max);
-        updateScalerUI(snappedScale);
-
-        // After animation completes, verify map zoom matches target and force sync if needed
-        // Use a timeout slightly longer than typical zoom animation duration
-        verificationTimeoutRef.current = window.setTimeout(() => {
-            if (!map) return;
-            const actualZoom = map.getZoom();
-            const targetZoom = targetZoomRef.current;
-            // If zoom doesn't match target (due to fast zoomend or interrupted animation), force sync
-            if (targetZoom !== null && Math.abs(actualZoom - targetZoom) > 0.001) {
-                map.setZoom(targetZoom, { animate: false });
-                // Update UI to match
-                const correctedScale = calculateScale(targetZoom, zoomBounds.min, zoomBounds.max);
-                updateScalerUI(correctedScale);
-            }
-            verificationTimeoutRef.current = null;
-        }, 350); // Leaflet default zoom animation is ~250ms, add buffer
-
-        // Re-enable map dragging
-        if (map) {
-            map.dragging.enable();
-        }
-        
-        setIsDragging(false);
-        dragActiveRef.current = false;
-        touchStartYRef.current = null;
-        lastTouchYRef.current = null;
+        setUIScale(calcScale(clamped, bounds.min, bounds.max));
+        setDragging(false);
+        map.dragging.enable();
+        touchStartRef.current = null;
         initialZoomRef.current = null;
-        
-        // Ensure no leftover animations or transforms
-        if (scalerWrapperRef.current) {
-            scalerWrapperRef.current.getAnimations().forEach((a) => a.cancel());
-            scalerWrapperRef.current.style.removeProperty('--drag-distance');
-            scalerWrapperRef.current.style.transform = '';
-        }
-    }, [map, zoomBounds.min, zoomBounds.max, zoomLevel, snapZoom, updateScalerUI]);
+    }, [map, bounds, snapZoom, setUIScale]);
 
+    // --- Sync with map zoom ---
     useEffect(() => {
         if (!map) return;
-        const initialZoom = map.getZoom();
-        setZoomLevel(initialZoom);
-        setZoomBounds({
-            min: map.getMinZoom(),
-            max: map.getMaxZoom(),
-        });
-        targetZoomRef.current = initialZoom;
-
-        const initialScale = calculateScale(
-            initialZoom,
-            map.getMinZoom(),
-            map.getMaxZoom(),
-        );
-        updateScalerUI(initialScale);
-
-        const handleZoomStart = () => {
-            isZoomingRef.current = true;
+        const sync = () => {
+            const z = map.getZoom();
+            setZoomLevel(z);
+            setUIScale(calcScale(z, bounds.min, bounds.max));
         };
-        const handleZoomAnim = (e: L.ZoomAnimEvent) => {
-            if (isZoomingRef.current) {
-                const currentZoom = e.zoom;
-                const scale = calculateScale(
-                    currentZoom,
-                    map.getMinZoom(),
-                    map.getMaxZoom(),
-                );
-                updateScalerUI(scale);
-            }
-        };
-        const handleZoomEnd = () => {
-            // If user is dragging, ignore intermediate zoomend events caused by interrupted animations
-            if (dragActiveRef.current) return;
-            // Prefer the slider's committed target to avoid UI bouncing back to map's interim zoom
-            const finalTarget = targetZoomRef.current;
-            const actual = map.getZoom();
-            const finalZoom = finalTarget ?? actual;
-            setZoomLevel(finalZoom);
-            targetZoomRef.current = finalZoom;
-            isZoomingRef.current = false;
-        };
-        
-        map.on('zoomstart', handleZoomStart);
-        map.on('zoomanim', handleZoomAnim);
-        map.on('zoomend', handleZoomEnd);
-        map.on('zoom', handleZoomEnd);
-        
+        map.on('zoom', sync);
         return () => {
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-            }
-            if (verificationTimeoutRef.current !== null) {
-                clearTimeout(verificationTimeoutRef.current);
-            }
-            map.off('zoomstart', handleZoomStart);
-            map.off('zoomanim', handleZoomAnim);
-            map.off('zoomend', handleZoomEnd);
-            map.off('zoom', handleZoomEnd);
+            map.off('zoom', sync);
         };
-    }, [map, updateScalerUI]);
+    }, [map, bounds, setUIScale]);
 
+    // --- Init ---
     useEffect(() => {
-        // While dragging, UI is driven by the slider; avoid overriding it with map-derived state
-        if (!isDragging) {
-            updateScalerUI(scaleRatio);
-        }
-    }, [scaleRatio, updateScalerUI, isDragging]);
+        if (!map) return;
+        const min = map.getMinZoom(), max = map.getMaxZoom();
+        setBounds({ min, max });
+        setZoomLevel(map.getZoom());
+        setUIScale(calcScale(map.getZoom(), min, max));
+    }, [map, setUIScale]);
 
-    if (!map) return null;
-    
     return (
-        <div 
-            ref={containerRef}
-            className={`${styles.scaleContainerMobile} ${isDragging ? styles.dragging : ''}`}
-        >   
-            {/*<div className={styles.scaleDecoTop} />*/}
+        <div className={`${styles.scaleContainerMobile} ${dragging ? styles.dragging : ''}`}>
             <div
                 className={styles.scalerWrapperMobile}
-                ref={scalerWrapperRef}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onTouchCancel={handleTouchEnd}
+                ref={wrapRef}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                onTouchCancel={onTouchEnd}
             >
-                <div className={styles.scalerMobile} ref={scalerRef} />
+                <div className={styles.scalerMobile} />
             </div>
-            {/*<div className={styles.scaleDecoBottom} />*/}
         </div>
     );
 };

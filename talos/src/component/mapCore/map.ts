@@ -29,7 +29,6 @@ export class MapCore {
             zoomDelta: 0.25,
             wheelPxPerZoomLevel: 50,
             wheelDebounceTime:0,
-            preferCanvas: true,
         });
 
         this.markerLayer = new MarkerLayer(

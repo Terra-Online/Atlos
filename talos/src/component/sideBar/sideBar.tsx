@@ -101,9 +101,9 @@ const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
                 {/* Drawer placed above copyright */}
                 <Drawer
                     side='bottom'
-                    maxSize={150}
                     initialSize={0}
-                    snapThreshold={0.5}
+                    snap={[0, 150]}
+                    snapThreshold={[50, 50]}
                     handleSize={28}
                     className={drawerStyles.TriggerDrawer}
                     handleClassName={drawerStyles.TriggerDrawerHandle}

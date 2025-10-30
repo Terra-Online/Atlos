@@ -116,7 +116,7 @@
     position: absolute;
     z-index: 1000;
     right: 0;
-    top: 40%;
+    top: 45%;
     transform: translateY(-50%);
     border-radius: 6px 0 0 6px;
     .scaleDecoTop,
@@ -151,9 +151,9 @@
     flex-direction: column;
     justify-content: flex-end;
     border-radius: 6px 0 0 6px;
-    box-shadow: inset 0 0 2px rgba($white-0, 0.3);
+    box-shadow: inset 0 0 2px rgba($white-0, 0.3), 0 0 3px 1px rgba($black-0, 0.3);
     padding: 4px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(4px);
     background-color: var(--scale-bg);
     cursor: grab;
     touch-action: none;

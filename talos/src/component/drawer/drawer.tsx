@@ -6,9 +6,25 @@ type Side = 'top' | 'bottom' | 'left' | 'right';
 
 export interface DrawerProps {
 	side?: Side; // which edge to attach
-	maxSize: number; // px
+	/**
+	 * Initial opened size in px; will be clamped to [0, maxSnap].
+	 */
 	initialSize?: number; // px
-	snapThreshold?: number; // px or [0,1] if <=1 treat as ratio of max
+	/**
+	 * Snap points in absolute px from 0 to maxSize (inclusive). Example: [0, 200, 400, 600, 1000].
+	 * Defaults to [0, 300]. Values will be clamped to [0, maxSize], de-duplicated and sorted.
+	 */
+	snap?: number[];
+	/**
+	 * Snap thresholds as percentages per snap point. Each value applies to both sides of a snap point
+	 * and is measured as a percentage of the neighboring interval width. Example for snaps [0,200,400]:
+	 * thresholds [50,30,50] means:
+	 * - near 0 within 50% of [0,200], snap to 0
+	 * - near 200 within 30% of [0,200] on the left OR within 30% of [200,400] on the right, snap to 200
+	 * - near 400 within 50% of [200,400] on the left, snap to 400
+	 * If provided as a single number, it is used for all snap points. Defaults to [50, 50].
+	 */
+	snapThreshold?: number | number[];
 	handleSize?: number; // px for hit area
 	debug?: boolean; // print debug logs
 
@@ -27,9 +43,9 @@ function clamp(n: number, min: number, max: number) {
 
 export const Drawer: React.FC<DrawerProps> = ({
 	side = 'bottom',
-	maxSize,
 	initialSize = 0,
-	snapThreshold = 0.5,
+	snap = [0, 300],
+	snapThreshold = [50, 50],
 	handleSize = 24,
 	debug = false,
 	onProgressChange,
@@ -40,8 +56,22 @@ export const Drawer: React.FC<DrawerProps> = ({
 	style,
 	children,
 }) => {
-	const size = useMotionValue(clamp(initialSize, 0, maxSize));
-	const progress = useMotionValue(clamp(initialSize / maxSize, 0, 1));
+	// Normalize snaps and compute extent
+	const snapsNormalized = useMemo(() => {
+		const input = (snap ?? [0, 300]).slice();
+		if (input.length === 0) input.push(0);
+		// ensure 0 exists for sane baseline
+		if (!input.includes(0)) input.push(0);
+		const maxVal = Math.max(...input);
+		const dedup = Array.from(new Set(input.map((v) => clamp(v, 0, maxVal))));
+		dedup.sort((a, b) => a - b);
+		return dedup;
+	}, [snap]);
+	const extent = snapsNormalized[snapsNormalized.length - 1] ?? 0;
+	const safeExtent = extent > 0 ? extent : 1; // avoid divide-by-zero
+
+	const size = useMotionValue(clamp(initialSize, 0, extent));
+	const progress = useMotionValue(clamp(initialSize / safeExtent, 0, 1));
 	const startSizeRef = useRef(size.get());
 	const startPosRef = useRef<{ x: number; y: number } | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +81,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Update progress and inject CSS vars when size changes
 	useEffect(() => {
 		const unsub = size.on('change', (v) => {
-			const p = clamp(v / maxSize, 0, 1);
+			const p = clamp(v / safeExtent, 0, 1);
 			progress.set(p);
 			if (debug) console.log('[Drawer] size/progress', { v, p });
 			onProgressChange?.(p);
@@ -60,11 +90,18 @@ export const Drawer: React.FC<DrawerProps> = ({
 			if (containerRef.current) {
 				containerRef.current.style.setProperty('--drawer-size', `${v}px`);
 				containerRef.current.style.setProperty('--drawer-progress', `${p}`);
+				// set data-snap index when exactly at a snap (with tolerance)
+				const idx = snapsNormalized.findIndex((s) => Math.abs(s - v) <= 0.5);
+				if (idx >= 0) {
+					containerRef.current.setAttribute('data-snap', String(idx));
+				} else {
+					containerRef.current.removeAttribute('data-snap');
+				}
 				if (debug) console.log('[Drawer] CSS vars updated', { size: v, progress: p });
 			}
 		});
 		return () => unsub();
-	}, [debug, maxSize, onProgressChange, size, progress]);
+	}, [debug, onProgressChange, size, progress, safeExtent, snapsNormalized]);
 
 	// Decide absolute positioning style per side
 	const containerStyle = useMemo<React.CSSProperties>(() => {
@@ -73,7 +110,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			['--handle-size' as string]: `${handleSize}px`,
 			// Initial values; will be updated by size.on('change')
 			['--drawer-size' as string]: `${initialSize}px`,
-			['--drawer-progress' as string]: `${clamp(initialSize / maxSize, 0, 1)}`,
+			['--drawer-progress' as string]: `${clamp(initialSize / safeExtent, 0, 1)}`,
 		};
 		if (side === 'bottom') {
 			// Use CSS var for dynamic height
@@ -86,7 +123,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			return { ...common, top: 0, bottom: 0, left: 0 };
 		}
 		return { ...common, top: 0, bottom: 0, right: 0 };
-	}, [handleSize, initialSize, maxSize, side]);
+	}, [handleSize, initialSize, safeExtent, side]);
 
 	const onPointerDown = (e: React.PointerEvent) => {
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -121,10 +158,10 @@ export const Drawer: React.FC<DrawerProps> = ({
 				delta = -dx; // drag left opens
 				break;
 		}
-		const next = clamp(startSizeRef.current + delta, 0, maxSize);
+		const next = clamp(startSizeRef.current + delta, 0, extent);
 		size.set(next);
 		if (debug) {
-			const progress = clamp(next / maxSize, 0, 1);
+			const progress = clamp(next / safeExtent, 0, 1);
 			console.log('[Drawer] move', { dx, dy, delta, next, progress });
 		}
 	};
@@ -138,16 +175,47 @@ export const Drawer: React.FC<DrawerProps> = ({
 			handleRef.current.removeAttribute('data-dragging');
 		}
 		
-		// snapping: snap to max if close to max, snap to 0 if close to min
+		// snapping using snap points and per-point thresholds
 		const cur = size.get();
-		const thr = snapThreshold <= 1 ? maxSize * snapThreshold : snapThreshold;
-		const willSnapMax = maxSize - cur <= thr;
-		const willSnapMin = cur <= thr;
-		if (debug) console.log('[Drawer] pointerup', { cur, thr, willSnapMax, willSnapMin });
-		if (willSnapMax) {
-			animate(size, maxSize, { duration: 0.25 });
-		} else if (willSnapMin) {
-			animate(size, 0, { duration: 0.25 });
+		// snaps are pre-normalized
+		const snaps = snapsNormalized;
+		// resolve thresholds per snap point
+		const toPct = (v: number) => clamp(v, 0, 100);
+		const thresholds: number[] = Array.isArray(snapThreshold)
+			? snaps.map((_, i) => toPct(snapThreshold[i] ?? (snapThreshold.length ? snapThreshold[snapThreshold.length - 1] : 50)))
+			: snaps.map(() => toPct(typeof snapThreshold === 'number' ? snapThreshold : 50));
+		let target: number | null = null;
+		let targetIndex: number | null = null;
+		for (let i = 0; i < snaps.length; i++) {
+			const s = snaps[i];
+			const pct = thresholds[i] / 100;
+			// left band for s (towards snaps[i-1])
+			if (i > 0) {
+				const leftWidth = s - snaps[i - 1];
+				const leftStart = s - pct * leftWidth;
+				if (cur >= leftStart && cur <= s) {
+					target = s;
+					targetIndex = i;
+					break;
+				}
+			}
+			// right band for s (towards snaps[i+1])
+			if (i < snaps.length - 1) {
+				const rightWidth = snaps[i + 1] - s;
+				const rightEnd = s + pct * rightWidth;
+				if (cur >= s && cur <= rightEnd) {
+					target = s;
+					targetIndex = i;
+					break;
+				}
+			}
+		}
+		if (debug) console.log('[Drawer] pointerup', { cur, snaps, thresholds, target, targetIndex });
+		if (target != null && Math.abs(target - cur) > 0.5) {
+			animate(size, target, { duration: 0.25 });
+			if (containerRef.current && targetIndex != null) {
+				containerRef.current.setAttribute('data-snap', String(targetIndex));
+			}
 		}
 	};
 
