@@ -10,53 +10,9 @@ interface HeadBarMobileProps {
 const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const childrenArray = React.Children.toArray(children);
-    const animationRef = React.useRef<number | null>(null);
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
-    
-        // Cancel any ongoing animation
-        if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current);
-        }
-        
-        // Continuously trigger resize during transition to update LiquidGlass
-        const startTime = Date.now();
-        const duration = 300;
-        let toggle = false;
-        
-        const animate = () => {
-            const elapsed = Date.now() - startTime;
-            
-            if (elapsed < duration) {
-                // add a tiny jitter to force resize event
-                const offset = toggle ? 0.01 : 0;
-                toggle = !toggle;
-                
-                const originWidth = window.innerWidth;
-                const originHeight = window.innerHeight;
-                
-                Object.defineProperty(window, 'innerWidth', {
-                    writable: true,
-                    configurable: true,
-                    value: originWidth + offset
-                });
-                Object.defineProperty(window, 'innerHeight', {
-                    writable: true,
-                    configurable: true,
-                    value: originHeight + offset
-                });
-                
-                window.dispatchEvent(new Event('resize'));
-                
-                animationRef.current = requestAnimationFrame(animate);
-            } else {
-                // Final resize to ensure correct state
-                window.dispatchEvent(new Event('resize'));
-                animationRef.current = null;
-            }
-        };  
-        animate();
     };
 
     return (
@@ -71,6 +27,8 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
             mode='standard'
             overLight={false}
             positioning='top-right'
+            border1Transition='none'
+            border2Transition='none'
             style={{
                 position: 'fixed',
                 top: '1rem',
