@@ -4,12 +4,14 @@
 :root,
 :root[data-theme='light'] {
     --headbar-icon-fill: #{$white-1};
+    --headbar-icon-active-fill: #{$primary-accent-4};
     --headbar-bg: #{rgba($white-0, 0.1)};
     --darkmode-rotate: rotate3d(0, 0, 0, 0deg);
 }
 
 :root[data-theme='dark'] {
     --headbar-icon-fill: #{$light-1};
+    --headbar-icon-active-fill: #{$primary-accent-4};
     --headbar-bg: #{rgba($black-1, 0.15)}; // no direct use
     --darkmode-rotate: rotate3d(2, 1, 0, 180deg);
 }
@@ -72,32 +74,31 @@
         filter: drop-shadow(0 0 1.75px rgba(0, 0, 0, 0.6));
 
         svg {
-            fill: $primary-accent-4;
+            fill: var(--headbar-icon-active-fill);
         }
     }
 }
 
 
 // Mobile collapsible headbar
-.bg-black + .relative:has(.headbarMobile.expanded) {
-    opacity: 0 !important;
-    width: 176px !important;
-    height: 176px !important;
-}
 .headbarMobile {
     position: relative;
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
     transition: width 0.3s $moderato-curve, height 0.3s $moderato-curve;
+    .toggleIcon {
+        width: 48px;
+        height: 48px;
+    }
 
     &.collapsed {
-        --toggleRotate: rotate3d(0, 0, 1, 45deg);
+        --toggleRotate: rotate(135deg);
         width: 48px;
         height: 48px;
 
         .toggleIcon {
-            transition: transform 0.45s $moderato-curve;
+            transition: transform 0.35s $standard-curve;
             transform: var(--toggleRotate);
             grid-column: 3;
             grid-row: 1;
@@ -105,7 +106,7 @@
 
         .headbarGrid {
             gap: 0;      
-            transition: gap 0.2s $moderato-curve, grid-template-columns 0.2s $moderato-curve;
+            transition: gap 0.15s $moderato-curve, grid-template-columns 0.15s $moderato-curve;
         }
 
         // Wave 1: Only toggle button (top-right corner) has size
@@ -136,21 +137,24 @@
     }
 
     &.expanded {
-        --toggleRotate: rotate3d(0, 0, 0, 0deg);
+        --toggleRotate: rotate(0deg);
         width: 152px; // 3 * 48px + 2 * 4px gap
         height: 152px; // 3 * 48px + 2 * 4px gap
 
         .toggleIcon {
             grid-column: 3;
             grid-row: 1;
-            transition: transform 0.45s $moderato-curve;
+            transition: transform 0.35s $standard-curve;
             transform: var(--toggleRotate);
+            svg {
+                fill: var(--headbar-icon-active-fill);
+            }
         }
 
         .headbarGrid {
             gap: 4px;
             grid-template-columns: repeat(3, 48px);
-            transition: gap 0.2s $moderato-curve, grid-template-columns 0.2s $moderato-curve;
+            transition: gap 0.15s $moderato-curve, grid-template-columns 0.15s $moderato-curve;
         }
 
         // All items expand to full size with staggered timing
@@ -162,40 +166,23 @@
             pointer-events: auto;
 
             // Wave 2: positions 3, 5, 6 (expanding from top-right)
-            &:nth-of-type(3) {
-                transition: width 0.2s $moderato-curve 0.05s, height 0.2s $moderato-curve 0.05s, opacity 0.2s ease-out 0.1s;
-            }
-
-            &:nth-of-type(5) {
-                transition: width 0.2s $moderato-curve 0.05s, height 0.2s $moderato-curve 0.05s, opacity 0.2s ease-out 0.1s;
-            }
-
+            &:nth-of-type(3),
+            &:nth-of-type(5),
             &:nth-of-type(6) {
                 transition: width 0.2s $moderato-curve 0.05s, height 0.2s $moderato-curve 0.05s, opacity 0.2s ease-out 0.1s;
             }
 
             // Wave 3: positions 2, 4, 7, 8, 9 (completing 3x3)
-            &:nth-of-type(2) {
-                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.2s;
-            }
-
-            &:nth-of-type(4) {
-                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.2s;
-            }
-
-            &:nth-of-type(7) {
-                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.2s;
-            }
-
-            &:nth-of-type(8) {
-                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.2s;
-            }
-
+            &:nth-of-type(2),
+            &:nth-of-type(4),
+            &:nth-of-type(7),
+            &:nth-of-type(8),
             &:nth-of-type(9) {
-                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.2s;
+                transition: width 0.2s $moderato-curve 0.15s, height 0.2s $moderato-curve 0.15s, opacity 0.2s ease-out 0.3s;
             }
         }
     }
+
 
     .headbarItem {
         &:nth-of-type(4)>.headbarIcon {
@@ -207,12 +194,6 @@
         }
     }
 }
-
-.toggleIcon {
-    width: 48px;
-    height: 48px;
-}
-
 .headbarGrid {
     display: grid;
     grid-template-columns: repeat(3, auto);
@@ -222,5 +203,3 @@
     justify-items: center;
     align-items: center;
 }
-
-/* Removed keyframes - now using width/height transitions */
