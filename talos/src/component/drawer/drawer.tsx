@@ -40,6 +40,11 @@ export interface DrawerProps {
 	 * When false, positioning leaves horizontal freedom for custom width and centering (e.g., mobile width calc).
 	 */
 	fullWidth?: boolean;
+	/**
+	 * Programmatically snap to a given snap index when this value changes.
+	 * If out of range or undefined, no action.
+	 */
+	snapToIndex?: number | null;
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -61,6 +66,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	style,
 	children,
 	fullWidth = true,
+	snapToIndex = null,
 }) => {
 	// Normalize snaps and compute min/max/range
 	const snapsNormalized = useMemo(() => {
@@ -109,6 +115,18 @@ export const Drawer: React.FC<DrawerProps> = ({
 		});
 		return () => unsub();
 	}, [debug, onProgressChange, size, progress, safeRange, minSnap, snapsNormalized]);
+
+	// Imperative snapping via prop
+	useEffect(() => {
+		if (snapToIndex == null) return;
+		const idx = Math.trunc(snapToIndex);
+		if (idx < 0 || idx >= snapsNormalized.length) return;
+		const target = snapsNormalized[idx];
+		if (typeof target !== 'number') return;
+		if (Math.abs(size.get() - target) <= 0.5) return;
+		if (debug) console.log('[Drawer] snapToIndex', { idx, target });
+		animate(size, target, { duration: 0.25 });
+	}, [snapToIndex, snapsNormalized, size, debug]);
 
 	// Decide absolute positioning style per side
 	const containerStyle = useMemo<React.CSSProperties>(() => {

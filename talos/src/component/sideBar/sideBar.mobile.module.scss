@@ -49,3 +49,38 @@
   gap: 0.5rem;
   transform: translateY(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 1rem), 1rem));
 }
+
+/* Top row with draggable divider: Search (left) + FilterList (right) */
+.TopRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.TopRowPane {
+  min-width: 0; /* allow content to shrink */
+  display: flex;
+}
+
+.Divider {
+  width: 8px;
+  flex: 0 0 8px;
+  cursor: col-resize;
+  align-self: stretch;
+  border-radius: 4px;
+  background: var(--drawer-handle-bg);
+  opacity: 0.6;
+  touch-action: none;
+}
+.Divider:active {
+  opacity: 1;
+}
+
+/* Mobile trigger bar in normal flow: 2-column grid */
+.MobileTriggerBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  padding: 0.25rem 0;
+}
