@@ -1,0 +1,51 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+.MobileDrawer {
+  pointer-events: auto;
+  /* Horizontal spacing as dynamic width instead of margins: width = vw - 2 * margin */
+  /* margin = (1 - progress) * 1rem */
+  width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
+  /* Center horizontally via container centering in Drawer (left:50% translateX(-50%)) */
+  /* Vertical spacing: keep bottom gap by margin-bottom */
+  margin-bottom: clamp(0rem, calc((1 - var(--drawer-progress)) * 1rem), 1rem);
+
+  /* Rounded corners at rest: 36px (capsule), reduce to 0 when fully opened */
+  border-radius: calc((1 - var(--drawer-progress)) * 36px) calc((1 - var(--drawer-progress)) * 36px) 0 0;
+  box-shadow: 0 -2px 6px rgba($black-1, 0.25);
+  background: var(--drawer-bg);
+}
+
+.MobileDrawerHandle {
+  background: transparent;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 3rem;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--drawer-handle-bg);
+    transition: background-color 0.3s $moderato-curve, width 0.3s $standard-curve;
+    box-shadow: 0 1px 3px rgba($black-0, 0.4);
+  }
+  &[data-dragging="true"]::before {
+    background-color: var(--drawing-handle-bg);
+    width: 4rem;
+  }
+}
+
+.MobileDrawerBackdrop {
+  border-radius: calc((1 - var(--drawer-progress)) * 36px) calc((1 - var(--drawer-progress)) * 36px) 0 0;
+  background-color: var(--drawer-backdrop-bg);
+  backdrop-filter: blur(clamp(3px, calc(calc(1 - var(--drawer-progress)) * 12px), 12px));
+}
+
+.MobileDrawerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transform: translateY(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 1rem), 1rem));
+}

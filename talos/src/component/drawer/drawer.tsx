@@ -35,6 +35,11 @@ export interface DrawerProps {
 	backdropClassName?: string; // backdrop class for custom styling
 	style?: React.CSSProperties;
 	children?: React.ReactNode;
+	/**
+	 * When true (default), the drawer stretches to the container edges (left/right or top/bottom).
+	 * When false, positioning leaves horizontal freedom for custom width and centering (e.g., mobile width calc).
+	 */
+	fullWidth?: boolean;
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -55,23 +60,25 @@ export const Drawer: React.FC<DrawerProps> = ({
 	backdropClassName,
 	style,
 	children,
+	fullWidth = true,
 }) => {
-	// Normalize snaps and compute extent
+	// Normalize snaps and compute min/max/range
 	const snapsNormalized = useMemo(() => {
 		const input = (snap ?? [0, 300]).slice();
 		if (input.length === 0) input.push(0);
-		// ensure 0 exists for sane baseline
-		if (!input.includes(0)) input.push(0);
 		const maxVal = Math.max(...input);
 		const dedup = Array.from(new Set(input.map((v) => clamp(v, 0, maxVal))));
 		dedup.sort((a, b) => a - b);
 		return dedup;
 	}, [snap]);
-	const extent = snapsNormalized[snapsNormalized.length - 1] ?? 0;
-	const safeExtent = extent > 0 ? extent : 1; // avoid divide-by-zero
+	const minSnap = snapsNormalized[0] ?? 0;
+	const maxSnap = snapsNormalized[snapsNormalized.length - 1] ?? 0;
+	const range = maxSnap - minSnap;
+	const safeRange = range > 0 ? range : 1; // avoid divide-by-zero
 
-	const size = useMotionValue(clamp(initialSize, 0, extent));
-	const progress = useMotionValue(clamp(initialSize / safeExtent, 0, 1));
+	const initSize = clamp(initialSize, minSnap, maxSnap);
+	const size = useMotionValue(initSize);
+	const progress = useMotionValue(clamp((initSize - minSnap) / safeRange, 0, 1));
 	const startSizeRef = useRef(size.get());
 	const startPosRef = useRef<{ x: number; y: number } | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -81,7 +88,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Update progress and inject CSS vars when size changes
 	useEffect(() => {
 		const unsub = size.on('change', (v) => {
-			const p = clamp(v / safeExtent, 0, 1);
+			const p = clamp((v - minSnap) / safeRange, 0, 1);
 			progress.set(p);
 			if (debug) console.log('[Drawer] size/progress', { v, p });
 			onProgressChange?.(p);
@@ -101,7 +108,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			}
 		});
 		return () => unsub();
-	}, [debug, onProgressChange, size, progress, safeExtent, snapsNormalized]);
+	}, [debug, onProgressChange, size, progress, safeRange, minSnap, snapsNormalized]);
 
 	// Decide absolute positioning style per side
 	const containerStyle = useMemo<React.CSSProperties>(() => {
@@ -109,21 +116,29 @@ export const Drawer: React.FC<DrawerProps> = ({
 			// CSS var for handle area height/width
 			['--handle-size' as string]: `${handleSize}px`,
 			// Initial values; will be updated by size.on('change')
-			['--drawer-size' as string]: `${initialSize}px`,
-			['--drawer-progress' as string]: `${clamp(initialSize / safeExtent, 0, 1)}`,
+			['--drawer-size' as string]: `${initSize}px`,
+			['--drawer-progress' as string]: `${clamp((initSize - minSnap) / safeRange, 0, 1)}`,
 		};
 		if (side === 'bottom') {
-			// Use CSS var for dynamic height
-			return { ...common, left: 0, right: 0, bottom: 0 };
+			// By default stretch to full width. If not fullWidth, allow custom width/centering.
+			return fullWidth
+				? { ...common, left: 0, right: 0, bottom: 0 }
+				: { ...common, bottom: 0, left: '50%', transform: 'translateX(-50%)' };
 		}
 		if (side === 'top') {
-			return { ...common, left: 0, right: 0, top: 0 };
+			return fullWidth
+				? { ...common, left: 0, right: 0, top: 0 }
+				: { ...common, top: 0, left: '50%', transform: 'translateX(-50%)' };
 		}
 		if (side === 'left') {
-			return { ...common, top: 0, bottom: 0, left: 0 };
+			return fullWidth
+				? { ...common, top: 0, bottom: 0, left: 0 }
+				: { ...common, top: '50%', left: 0, transform: 'translateY(-50%)' };
 		}
-		return { ...common, top: 0, bottom: 0, right: 0 };
-	}, [handleSize, initialSize, safeExtent, side]);
+		return fullWidth
+			? { ...common, top: 0, bottom: 0, right: 0 }
+			: { ...common, top: '50%', right: 0, transform: 'translateY(-50%)' };
+	}, [handleSize, initSize, minSnap, safeRange, side, fullWidth]);
 
 	const onPointerDown = (e: React.PointerEvent) => {
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -158,10 +173,10 @@ export const Drawer: React.FC<DrawerProps> = ({
 				delta = -dx; // drag left opens
 				break;
 		}
-		const next = clamp(startSizeRef.current + delta, 0, extent);
+		const next = clamp(startSizeRef.current + delta, minSnap, maxSnap);
 		size.set(next);
 		if (debug) {
-			const progress = clamp(next / safeExtent, 0, 1);
+			const progress = clamp((next - minSnap) / safeRange, 0, 1);
 			console.log('[Drawer] move', { dx, dy, delta, next, progress });
 		}
 	};
