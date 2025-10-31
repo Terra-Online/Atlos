@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import styles from './sideBar.module.scss';
-import drawerStyles from './sideBar.mobile.module.scss';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import mobileStyles from './sideBar.mobile.module.scss';
 
 import Search from '../search/search';
 import FilterListMobile from '../filterList/filterList.mobile';
@@ -21,7 +20,7 @@ interface SideBarProps {
   onToggle: (isOpen: boolean) => void;
 }
 
-const SNAP0 = 72; // px
+const SNAP0 = 64; // px
 
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   const t = useTranslateUI();
@@ -45,17 +44,27 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
 
   const snaps = useMemo(() => {
     const s1 = Math.round(vh * 0.5);
-    const s2 = Math.round(vh * 0.85);
+    const s2 = Math.round(vh * 0.82);
     // Ensure ascending order and clamp
     const arr = [SNAP0, Math.max(SNAP0, s1), Math.max(SNAP0, s2)];
     const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
     return dedup;
   }, [vh]);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
     if (p >= 0.999) onToggle?.(true);
     else if (p <= 0.001) onToggle?.(false);
+
+    // When collapsed (snap-0), ensure content scrolls back to top
+    if (p <= 0.02) {
+      const scroller = rootRef.current?.querySelector(`.${mobileStyles.mobileDrawerContent}`) as HTMLElement | null;
+      if (scroller && scroller.scrollTop !== 0) {
+        scroller.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
   };
 
   // When a point is activated, snap to middle (index 1)
@@ -75,7 +84,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     const onMove = (ev: PointerEvent) => {
       const x = ev.clientX;
       const ratio = (x - rect.left) / rect.width;
-      const clamped = Math.max(0.3, Math.min(0.7, ratio));
+      const clamped = Math.max(0.12, Math.min(0.8, ratio));
       setLeftRatio(clamped);
     };
     const onUp = () => {
@@ -86,44 +95,45 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   };
 
   return (
-    <div className={styles.sidebarContainer}>
+    <div className={mobileStyles.sidebarContainer} ref={rootRef}>
       {/* Mobile places the whole sidebar into a bottom drawer */}
       <Drawer
         side="bottom"
         initialSize={SNAP0}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
+        handleSize={16}
         fullWidth={false}
-        className={drawerStyles.MobileDrawer}
-        handleClassName={drawerStyles.MobileDrawerHandle}
-        contentClassName={drawerStyles.MobileDrawerContent}
-        backdropClassName={drawerStyles.MobileDrawerBackdrop}
+        className={mobileStyles.mobileDrawer}
+        handleClassName={mobileStyles.mobileDrawerHandle}
+        contentClassName={mobileStyles.mobileDrawerContent}
+        backdropClassName={mobileStyles.mobileDrawerBackdrop}
         onProgressChange={handleProgress}
         style={{ bottom: 0 }}
         snapToIndex={snapToIndex}
         debug={true}
       >
-  <div className={styles.sidebarContent}>
+  <div className={mobileStyles.sidebarContent}>
           {/* Top row: Search + FilterList with draggable divider */}
-          <div className={drawerStyles.TopRow}>
-            <div className={drawerStyles.TopRowPane} style={{ flexBasis: `${leftRatio * 100}%` }}>
+          <div className={mobileStyles.topRow}>
+            <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }}>
               <Search />
             </div>
             <div
-              className={drawerStyles.Divider}
+              className={mobileStyles.divider}
               role="separator"
               aria-orientation="vertical"
               onPointerDown={handleDividerPointerDown}
             />
-            <div className={drawerStyles.TopRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%` }}>
+            <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%` }}>
               <FilterListMobile width="100%" />
             </div>
           </div>
 
           {/* Detail slot between top row and filters */}
-          <Detail inline />
+          <div className={mobileStyles.detailSlot}><Detail inline /></div>
 
-          <div className={styles.filters}>
+          <div className={mobileStyles.filters}>
             <MarkFilterDragProvider>
               {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
                 <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
@@ -138,7 +148,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
           </div>
         </div>
         {/* Mobile in-flow trigger bar with 2-column layout */}
-        <div className={drawerStyles.MobileTriggerBar}>
+        <div className={mobileStyles.mobileTriggerBar}>
           <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
           <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
           <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />

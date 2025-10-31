@@ -1,22 +1,103 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-.MobileDrawer {
-  pointer-events: auto;
-  /* Horizontal spacing as dynamic width instead of margins: width = vw - 2 * margin */
-  /* margin = (1 - progress) * 1rem */
-  width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
-  /* Center horizontally via container centering in Drawer (left:50% translateX(-50%)) */
-  /* Vertical spacing: keep bottom gap by margin-bottom */
-  margin-bottom: clamp(0rem, calc((1 - var(--drawer-progress)) * 1rem), 1rem);
+.sidebarContainer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    height: auto;
+    transform: none;
+    pointer-events: none;
+    z-index: 1000;
 
-  /* Rounded corners at rest: 36px (capsule), reduce to 0 when fully opened */
-  border-radius: calc((1 - var(--drawer-progress)) * 36px) calc((1 - var(--drawer-progress)) * 36px) 0 0;
-  box-shadow: 0 -2px 6px rgba($black-1, 0.25);
-  background: var(--drawer-bg);
+    .sidebarContent {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0;
+        > .filters {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            gap: 0.3rem;
+        }
+    }
+    .copyright {
+        position: absolute;
+        z-index: 100;
+        width: 100%;
+        bottom: 0;
+        background-color: var(--sidebar-footer);
+        box-shadow: 0 -2px 3px rgba($black-0, 0.35);
+        height: 1.5rem;
+        font-size: 0.875rem;
+        font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
+        font-weight: 550;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        transition: clip-path 0.35s $moderato-curve;
+        a {
+            color: var(--sidebar-footer-txt);
+            text-decoration: none;
+            transition: font-weight 0.2s, color .3s $moderato-curve;
+            &:hover {
+                font-weight: 650;
+                transition: font-weight 0.2s;
+            }
+        }
+        &::after {
+            content: '';
+            position: absolute;
+            backdrop-filter: blur(0.5rem);
+            width: 100%;
+            height: inherit;
+            z-index: -1;
+        }
+    }
 }
 
-.MobileDrawerHandle {
+:root, :root[data-theme='light'] {
+    --drawer-backdrop-bg: #{rgba($white-1, 0.5)};
+    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --drawer-backdrop-bg: #{rgba($white-0, 0.2)};
+}
+:root[data-theme='dark'] {
+    --drawer-bg: #1E1E1E;
+    --drawer-backdrop-bg: rgba(30, 30, 30, 0.7);
+    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --drawer-backdrop-bg: #{rgba($mid, 0.2)};
+}
+.mobileDrawer {
+    pointer-events: auto;
+    width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
+    margin-bottom: clamp(0rem, calc((1 - var(--drawer-progress)) * 1rem), 1rem);
+    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
+    box-shadow: 0 -2px 6px rgba($black-1, 0.25);
+    background: transparent;
+  .mobileDrawerContent {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        padding-top: 0;
+        gap: 0.5rem;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        touch-action: pan-y;
+    }
+  &[data-snap="0"] > .mobileDrawerContent {
+        overflow-y: hidden;
+        touch-action: none;
+    }
+}
+
+.mobileDrawerHandle {
   background: transparent;
   &::before {
     content: '';
@@ -37,50 +118,50 @@
   }
 }
 
-.MobileDrawerBackdrop {
-  border-radius: calc((1 - var(--drawer-progress)) * 36px) calc((1 - var(--drawer-progress)) * 36px) 0 0;
+.mobileDrawerBackdrop {
+  --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
+  border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
   background-color: var(--drawer-backdrop-bg);
   backdrop-filter: blur(clamp(3px, calc(calc(1 - var(--drawer-progress)) * 12px), 12px));
 }
 
-.MobileDrawerContent {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transform: translateY(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 1rem), 1rem));
-}
-
 /* Top row with draggable divider: Search (left) + FilterList (right) */
-.TopRow {
+.topRow {
   display: flex;
   align-items: stretch;
   gap: 0.25rem;
 }
 
-.TopRowPane {
+.topRowPane {
   min-width: 0; /* allow content to shrink */
   display: flex;
 }
 
-.Divider {
-  width: 8px;
-  flex: 0 0 8px;
+.divider {
+  width: 6px;
+  flex: 0 0 6px;
   cursor: col-resize;
   align-self: stretch;
-  border-radius: 4px;
-  background: var(--drawer-handle-bg);
-  opacity: 0.6;
+  border-radius: 2px;
+  background: rgba($black-1, 0.5);
   touch-action: none;
 }
-.Divider:active {
+.divider:active {
   opacity: 1;
 }
 
 /* Mobile trigger bar in normal flow: 2-column grid */
-.MobileTriggerBar {
+.mobileTriggerBar {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem 1rem;
   align-items: center;
   padding: 0.25rem 0;
+}
+
+/* When collapsed at snap-0: show only top row (Search + FilterList); hide detail, filters and triggers */
+.mobileDrawer[data-snap="0"] .sidebarContent > .filters,
+.mobileDrawer[data-snap="0"] .detailSlot,
+.mobileDrawer[data-snap="0"] .mobileTriggerBar {
+  display: none;
 }

@@ -162,17 +162,3 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
         --drawer-bottom: 0;
     }
 }
-@media screen and (max-width: $mobile-bp) {
-    // Mobile: container becomes a neutral wrapper at the bottom; actual UI is the Drawer
-    .sidebarContainer {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        top: auto;
-        width: auto; // no fixed width
-        height: auto;
-        transform: none; // no desktop slide-in transform
-        pointer-events: none; // let inner Drawer re-enable interactions
-    }
-}

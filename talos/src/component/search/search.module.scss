@@ -1,4 +1,6 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 :root[data-theme='light'] {
     --search-bg: #{$grey-1};
@@ -98,6 +100,14 @@
                     filter: drop-shadow(0 3px 1.5px rgba($black-0, 0.5));
                 }
             }
+        }
+    }
+}
+@media screen and (max-width: $mobile-bp) {
+    .searchContainer {
+        margin-bottom: 0;
+        .searchForm > .searchInputWrapper {
+            border-radius: 1.5rem;
         }
     }
 }
