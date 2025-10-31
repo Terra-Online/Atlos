@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useDevice } from '@/utils/device';
 import Desktop from './sideBar.desktop';
 import Mobile from './sideBar.mobile';
 
@@ -8,14 +8,7 @@ interface SideBarProps {
 }
 
 const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth <= 768);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
+    const { isMobile } = useDevice();
 
     return isMobile ? (
         <Mobile currentRegion={currentRegion} onToggle={onToggle} />

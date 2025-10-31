@@ -1,12 +1,10 @@
-import styles from './headbar.module.scss';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useDevice } from '@/utils/device';
+
 import HeadBarDesktop from './headBar.desktop';
 import HeadBarMobile from './headBar.mobile';
 
-interface HeadBarProps {
-    children: React.ReactNode;
-    isSidebarOpen: boolean;
-}
+import styles from './headbar.module.scss';
 
 interface HeadItemProps {
     icon: React.FC;
@@ -45,18 +43,8 @@ const HeadItem = ({
 };
 
 // Main HeadBar component with responsive detection
-const HeadBar = ({ children }: HeadBarProps) => {
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
+const HeadBar = ({ children }: { children: React.ReactNode }) => {
+    const { isMobile } = useDevice();
     return isMobile ? (
         <HeadBarMobile>{children}</HeadBarMobile>
     ) : (
