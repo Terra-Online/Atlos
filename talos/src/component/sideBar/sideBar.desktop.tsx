@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import styles from './sideBar.module.scss';
 import drawerStyles from './triggerDrawer.module.scss';
 
@@ -14,7 +14,7 @@ import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useSetSidebarOpen, useSidebarOpen } from '@/store/uiPrefs';
+import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -29,10 +29,13 @@ const SideBarDesktop = ({ currentRegion, onToggle }: SideBarProps) => {
     const tGame = useTranslateGame();
     const isOpen = useSidebarOpen();
     const setIsOpen = useSetSidebarOpen();
-    const [triggers, setTriggers] = useState({ t1: false, t2: false, t3: false });
-    const handleTrigger1 = (active: boolean) => setTriggers((s) => ({ ...s, t1: active }));
-    const handleTrigger2 = (active: boolean) => setTriggers((s) => ({ ...s, t2: active }));
-    const handleTrigger3 = (active: boolean) => setTriggers((s) => ({ ...s, t3: active }));
+    // Persistent trigger states
+    const trigCluster = useTriggerCluster();
+    const trigBoundary = useTriggerBoundary();
+    const trigOptimal = useTriggerOptimalPath();
+    const setTrigCluster = useSetTriggerCluster();
+    const setTrigBoundary = useSetTriggerBoundary();
+    const setTrigOptimal = useSetTriggerOptimalPath();
     useMemo(() => {
         if (!currentRegion) return null;
         return {
@@ -105,9 +108,9 @@ const SideBarDesktop = ({ currentRegion, onToggle }: SideBarProps) => {
                     style={{ bottom: 'var(--drawer-bottom)', left: 0, right: 0 }}
                 >
                     <TriggerBar>
-                        <Trigger isActive={triggers.t1} onToggle={handleTrigger1} label={t('trigger.clusterMode')} />
-                        <Trigger isActive={triggers.t2} onToggle={handleTrigger2} label={t('trigger.boundaryMode')} />
-                        <Trigger isActive={triggers.t3} onToggle={handleTrigger3} label={t('trigger.optimalPath')} />
+                        <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
+                        <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
+                        <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
                     </TriggerBar>
                 </Drawer>
             </div>

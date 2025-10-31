@@ -153,11 +153,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
                 />
             </HeadBar>
 
-            {/* Region Switch */}
-            <RegionContainer isSidebarOpen={isSidebarOpen} />
+            {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}
+            <RegionContainer isSidebarOpen={!isMobile && isSidebarOpen} />
 
-            {/* Detail Panel */}
-            <Detail />
+            {/* Detail Panel: hide on mobile (rendered inside SideBarMobile) */}
+            {!isMobile && <Detail />}
 
             {/* Filter List: hide on mobile (rendered inside SideBarMobile) */}
             {!isMobile && <FilterList isSidebarOpen={isSidebarOpen} />}

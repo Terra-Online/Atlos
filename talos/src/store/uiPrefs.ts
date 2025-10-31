@@ -12,6 +12,14 @@ interface IUiPrefsStore {
   // Persistent custom order of mark filters (array of idKey)
   markFilterOrder: string[];
   setMarkFilterOrder: (order: string[]) => void;
+
+  // Trigger states (persistent)
+  triggerCluster: boolean;
+  triggerBoundary: boolean;
+  triggerOptimalPath: boolean;
+  setTriggerCluster: (value: boolean) => void;
+  setTriggerBoundary: (value: boolean) => void;
+  setTriggerOptimalPath: (value: boolean) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -32,6 +40,14 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
 
       markFilterOrder: [],
       setMarkFilterOrder: (order) => set({ markFilterOrder: order }),
+
+      // triggers (default off)
+      triggerCluster: false,
+      triggerBoundary: false,
+      triggerOptimalPath: false,
+      setTriggerCluster: (value: boolean) => set({ triggerCluster: value }),
+      setTriggerBoundary: (value: boolean) => set({ triggerBoundary: value }),
+      setTriggerOptimalPath: (value: boolean) => set({ triggerOptimalPath: value }),
     }),
     {
       name: 'ui-prefs',
@@ -39,6 +55,9 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         sidebarOpen: state.sidebarOpen,
         markFilterExpanded: state.markFilterExpanded,
         markFilterOrder: state.markFilterOrder,
+        triggerCluster: state.triggerCluster,
+        triggerBoundary: state.triggerBoundary,
+        triggerOptimalPath: state.triggerOptimalPath,
       }),
     },
   ),
@@ -53,3 +72,11 @@ export const useToggleMarkFilterExpanded = () =>
 
 export const useMarkFilterOrder = () => useUiPrefsStore((s) => s.markFilterOrder);
 export const useSetMarkFilterOrder = () => useUiPrefsStore((s) => s.setMarkFilterOrder);
+
+// Triggers hooks
+export const useTriggerCluster = () => useUiPrefsStore((s) => s.triggerCluster);
+export const useSetTriggerCluster = () => useUiPrefsStore((s) => s.setTriggerCluster);
+export const useTriggerBoundary = () => useUiPrefsStore((s) => s.triggerBoundary);
+export const useSetTriggerBoundary = () => useUiPrefsStore((s) => s.setTriggerBoundary);
+export const useTriggerOptimalPath = () => useUiPrefsStore((s) => s.triggerOptimalPath);
+export const useSetTriggerOptimalPath = () => useUiPrefsStore((s) => s.setTriggerOptimalPath);

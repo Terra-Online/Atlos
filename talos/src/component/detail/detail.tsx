@@ -72,7 +72,7 @@ const AnimatedText = (props:{text:string} & React.ComponentProps<typeof motion.s
             }, TEXT_DURATION);
             return () => clearInterval(interval);
         }
-    }, [isPresent]);
+    }, [isPresent, safeToRemove, text]);
     return (
         <motion.span
             {...rest}
@@ -86,7 +86,7 @@ const AnimatedText = (props:{text:string} & React.ComponentProps<typeof motion.s
     );
 };
 
-export const Detail = () => {
+export const Detail = ({ inline = false }: { inline?: boolean }) => {
     /**
      * @type {import('../mapContainer/store/marker.type').IMarkerData}
      */
@@ -145,7 +145,7 @@ export const Detail = () => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                     key={currentPoint ? 'active' : 'null'}
-                    className={styles.detailContainer}
+                    className={`${styles.detailContainer} ${inline ? styles.inline : ''}`}
                     ref={ref}
                 >
                     {/* Head */}

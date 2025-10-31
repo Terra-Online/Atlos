@@ -487,3 +487,14 @@
         }
     }
 }
+
+/* Inline variant for mobile sidebar: render in normal flow */
+.inline {
+    position: static;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-height: 40vh;
+    margin: 0;
+    z-index: auto;
+}

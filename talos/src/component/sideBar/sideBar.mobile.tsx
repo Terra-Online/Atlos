@@ -14,6 +14,7 @@ import Detail from '../detail/detail';
 import { MARKER_TYPE_TREE } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
+import { useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath } from '@/store/uiPrefs';
 
 interface SideBarProps {
   currentRegion: null;
@@ -29,6 +30,12 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
   const currentPoint = useMarkerStore((s) => s.currentActivePoint);
   const [snapToIndex, setSnapToIndex] = useState<number | null>(null);
+  const trigCluster = useTriggerCluster();
+  const trigBoundary = useTriggerBoundary();
+  const trigOptimal = useTriggerOptimalPath();
+  const setTrigCluster = useSetTriggerCluster();
+  const setTrigBoundary = useSetTriggerBoundary();
+  const setTrigOptimal = useSetTriggerOptimalPath();
 
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight);
@@ -114,7 +121,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
           </div>
 
           {/* Detail slot between top row and filters */}
-          <Detail />
+          <Detail inline />
 
           <div className={styles.filters}>
             <MarkFilterDragProvider>
@@ -132,9 +139,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         </div>
         {/* Mobile in-flow trigger bar with 2-column layout */}
         <div className={drawerStyles.MobileTriggerBar}>
-          <Trigger isActive={false} onToggle={() => {}} label={t('trigger.clusterMode')} />
-          <Trigger isActive={false} onToggle={() => {}} label={t('trigger.boundaryMode')} />
-          <Trigger isActive={false} onToggle={() => {}} label={t('trigger.optimalPath')} />
+          <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
+          <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
+          <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
         </div>
       </Drawer>
     </div>
