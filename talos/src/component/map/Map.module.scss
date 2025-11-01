@@ -4,7 +4,7 @@
 :root, :root[data-theme='light'] {
     --map-bg: #{$light-1};
     --map-pattern-opacity: 1;
-    --map-pattern-bg: #{$secondary-accent-1};
+    --map-pattern-bg: #{$white-3};
 }
 :root[data-theme='dark'] {
     --map-bg: #111;

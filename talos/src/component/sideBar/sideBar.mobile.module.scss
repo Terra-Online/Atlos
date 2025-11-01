@@ -64,14 +64,15 @@
 }
 
 :root, :root[data-theme='light'] {
-    --drawer-backdrop-bg: #{rgba($white-1, 0.5)};
+    --drawer-backdrop-bg: #{rgba($white-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --divider-bg: #{rgba($black-1, 0.5)};
     --drawer-backdrop-bg: #{rgba($white-0, 0.2)};
 }
 :root[data-theme='dark'] {
-    --drawer-bg: #1E1E1E;
-    --drawer-backdrop-bg: rgba(30, 30, 30, 0.7);
+    --drawer-backdrop-bg: #{rgba($black-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --divider-bg: #{rgba($light-2, 0.5)};
     --drawer-backdrop-bg: #{rgba($mid, 0.2)};
 }
 .mobileDrawer {
@@ -119,49 +120,65 @@
 }
 
 .mobileDrawerBackdrop {
-  --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
-  border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
-  background-color: var(--drawer-backdrop-bg);
-  backdrop-filter: blur(clamp(3px, calc(calc(1 - var(--drawer-progress)) * 12px), 12px));
+    --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
+    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
+    background-color: var(--drawer-backdrop-bg);
+    backdrop-filter: blur(clamp(6px, calc(calc(1 - var(--drawer-progress)) * 16px), 16px));
 }
 
-/* Top row with draggable divider: Search (left) + FilterList (right) */
 .topRow {
-  display: flex;
-  align-items: stretch;
-  gap: 0.25rem;
+    display: flex;
+    align-items: stretch;
+    gap: .8rem;
 }
 
 .topRowPane {
-  min-width: 0; /* allow content to shrink */
-  display: flex;
+    min-width: 0; /* allow content to shrink */
+    display: flex;
 }
 
 .divider {
-  width: 6px;
-  flex: 0 0 6px;
-  cursor: col-resize;
-  align-self: stretch;
-  border-radius: 2px;
-  background: rgba($black-1, 0.5);
-  touch-action: none;
-}
-.divider:active {
-  opacity: 1;
+    --divider-width: 4px;
+    position: relative;
+    width: var(--divider-width);
+    flex: 0 0 var(--divider-width);
+    cursor: col-resize;
+    align-self: stretch;
+    border-radius: calc(var(--divider-bg) / 3);
+    background-color: var(--divider-bg);
+    touch-action: none;
+    &:active {
+        opacity: 1;
+    }
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--divider-bg);
+        transition: background-color 0.35s $moderato-curve;
+    }
+    &::before {
+        transform: translate(calc(-50% - var(--divider-width) / 2), -50%);
+        clip-path: path('M8.6924 1.0615v11.3669c0 .9073-1.0661 1.3948-1.7524.8014L.3665 7.5464c-.4887-.4225-.4887-1.1803 0-1.6029L6.94.2601c.6863-.5934 1.7524-.1059 1.7524.8014Z');
+    }
+    &::after {
+        transform: translate(calc(50% - 3px), -50%);
+        clip-path: path('M0 1.0615v11.3669c0 .9073 1.0661 1.3948 1.7524.8014l6.5734-5.6834c.4887-.4225.4887-1.1803 0-1.6029L1.7524.2601c-.6863-.5934-1.7524-.1059-1.7524.8014Z');
+    }
 }
 
-/* Mobile trigger bar in normal flow: 2-column grid */
 .mobileTriggerBar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem 1rem;
-  align-items: center;
-  padding: 0.25rem 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.25rem 0;
 }
 
-/* When collapsed at snap-0: show only top row (Search + FilterList); hide detail, filters and triggers */
 .mobileDrawer[data-snap="0"] .sidebarContent > .filters,
 .mobileDrawer[data-snap="0"] .detailSlot,
 .mobileDrawer[data-snap="0"] .mobileTriggerBar {
-  display: none;
+    display: none;
 }
