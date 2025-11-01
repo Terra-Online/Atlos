@@ -94,6 +94,7 @@ $transition-speed: 0.3s; // import from global size.scss later
     }
     .triggerButton {
         position: relative;
+        flex: 0 0 auto; // do not let the switch shrink when space is tight
         width: calc(4.5rem - 4px);
         height: 2.25rem;
         border-radius: 4px;
@@ -143,12 +144,17 @@ $transition-speed: 0.3s; // import from global size.scss later
         }
     }
     .triggerLabel {
+        flex: 1 1 auto;
+        min-width: 0;
         user-select: none;
         font-size: 1rem;
         text-transform: uppercase;
         font-weight: 700;
         color: var(--trigger-label);
         text-shadow: 0 1px 2px var(--trigger-shadow);
-        white-space: nowrap;
+        line-height: 1;
+        word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
