@@ -57,6 +57,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
   const [currentSnap, setCurrentSnap] = useState(0);
+  const [rightContentWidth, setRightContentWidth] = useState(0);
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
@@ -112,24 +113,77 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   }, [currentPoint]);
 
   const [leftRatio, setLeftRatio] = useState(0.6); // Search pane width ratio in TopRow
+  const [atLeftEdge, setAtLeftEdge] = useState(false);
+  const [atRightEdge, setAtRightEdge] = useState(false);
+
+  // Smooth animate helper
+  const animateLeftRatio = (to: number, duration = 220) => {
+    const from = leftRatio;
+    const start = performance.now();
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const v = from + (to - from) * ease(t);
+      setLeftRatio(v);
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
     if (!container) return;
     const rect = container.getBoundingClientRect();
+    const rowHeight = rect.height; // approximate Search height
+    const minLeftBound = Math.max(0.0, Math.min(1, rowHeight / rect.width)); // width == height (square)
+    const maxLeftBound = 0.98; // allow near-full width when right content is tiny
+    const snapPoint = 0.6;
+    const snapBand = 0.1; // 10% snapping
+    let latestRatio = leftRatio;
 
     const onMove = (ev: PointerEvent) => {
       const x = ev.clientX;
       const ratio = (x - rect.left) / rect.width;
-      const clamped = Math.max(0.12, Math.min(0.8, ratio));
+      // No snap during move; snap on release for smoothness
+      const clamped = Math.max(minLeftBound, Math.min(maxLeftBound, ratio));
+      latestRatio = clamped;
       setLeftRatio(clamped);
+      const eps = 0.005;
+      setAtLeftEdge(clamped <= minLeftBound + eps);
+      setAtRightEdge(clamped >= maxLeftBound - eps);
     };
     const onUp = () => {
+      // Snap on release if within band
+      if (Math.abs(latestRatio - snapPoint) <= snapBand) {
+        animateLeftRatio(snapPoint);
+      }
       window.removeEventListener('pointermove', onMove);
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp, { once: true });
   };
+
+  // Expand Search to 0.6 when focused/clicked
+  const handleSearchFocus = () => {
+    if (leftRatio < 0.6) animateLeftRatio(0.6);
+  };
+
+  // Constrain right pane to its content width by capping max-width
+  const [rightMaxWidth, setRightMaxWidth] = useState<string | number>('auto');
+  useEffect(() => {
+    const row = rootRef.current?.querySelector(`.${mobileStyles.topRow}`) as HTMLElement | null;
+    if (!row) return;
+    const rowWidth = row.clientWidth || 1;
+    const dynMaxWidth = Math.min(rightContentWidth, rowWidth * (1 - leftRatio));
+    setRightMaxWidth(dynMaxWidth);
+  }, [rightContentWidth, leftRatio]);
+
+  // When empty, push divider to far right
+  useEffect(() => {
+    if (rightContentWidth <= 1) {
+      animateLeftRatio(0.98, 260);
+    }
+  }, [rightContentWidth]);
 
   return (
     <div className={mobileStyles.sidebarContainer} ref={rootRef}>
@@ -154,17 +208,17 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
           <div className={mobileStyles.sidebarContent}>
             {/* Top row: Search + FilterList with draggable divider */}
             <div className={mobileStyles.topRow}>
-              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }}>
+              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }} onFocus={handleSearchFocus} onClick={handleSearchFocus}>
                 <Search />
               </div>
               <div
-                className={mobileStyles.divider}
+                className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
                 role="separator"
                 aria-orientation="vertical"
                 onPointerDown={handleDividerPointerDown}
               />
-              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%` }}>
-                <FilterListMobile width="100%" />
+              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%`, maxWidth: rightMaxWidth }}>
+                <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
               </div>
             </div>
 
@@ -196,7 +250,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         {currentSnap > 0 && !isScrolledTop && (
           <LinearBlur
             side='top'
-            strength={20}
+            strength={24}
             falloffPercentage={100}
             style={{
               position: "absolute",
@@ -222,7 +276,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
               left: 0,
               right: 0,
               zIndex: 10,
-              height: '3.5rem',
+              height: '3rem',
               pointerEvents: 'none'
             }}
           />

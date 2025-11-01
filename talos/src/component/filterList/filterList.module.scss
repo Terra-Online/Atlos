@@ -54,6 +54,8 @@
         left: 0;
         height: 100%;
         border-radius: 28px;
+        /* Use inner shadow on mobile to adapt rounded corners */
+        box-shadow: inset 0 0 8px rgba($black-0, 0.35);
     }
     
 }
@@ -66,7 +68,7 @@
     overflow-y: hidden;
     padding: 0 8px;
 
-    --fadeWidth: 48px;
+    --fadeWidth: 36px;
     --leftFade: 0;
     --rightFade: 0;
     /* animate the registered custom properties (case-sensitive names) */

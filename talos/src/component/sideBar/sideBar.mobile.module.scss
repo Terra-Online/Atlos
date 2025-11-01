@@ -175,7 +175,8 @@
         width: 1rem;
         height: 1rem;
         background-color: var(--divider-bg);
-        transition: background-color 0.35s $moderato-curve;
+        transition: background-color 0.35s $moderato-curve, opacity 0.25s $standard-curve;
+        opacity: 1;
     }
     &::before {
         transform: translate(calc(-50% - var(--divider-width) / 2), -50%);
@@ -185,6 +186,16 @@
         transform: translate(calc(50% - 3px), -50%);
         clip-path: path('M0 1.0615v11.3669c0 .9073 1.0661 1.3948 1.7524.8014l6.5734-5.6834c.4887-.4225.4887-1.1803 0-1.6029L1.7524.2601c-.6863-.5934-1.7524-.1059-1.7524.8014Z');
     }
+}
+
+/* Edge states: show only one chevron at extremes */
+.atLeft {
+    &::before { opacity: 0; }
+    &::after { opacity: 1; }
+}
+.atRight {
+    &::after { opacity: 0; }
+    &::before { opacity: 1; }
 }
 
 .mobileTriggerBar {

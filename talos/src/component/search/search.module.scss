@@ -108,6 +108,9 @@
         margin-bottom: 0;
         .searchForm > .searchInputWrapper {
             border-radius: 1.5rem;
+            .searchIcon {
+                left: 0.9rem;
+            }
         }
     }
 }
