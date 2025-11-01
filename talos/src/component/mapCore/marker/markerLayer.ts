@@ -30,7 +30,7 @@ export class MarkerLayer {
      * type唯一id到markerId列表映射
      */
     markerTypeMap: Record<string, string[]> = {};
-    
+
     /**
      * 已收集的点位列表
      */
@@ -80,19 +80,19 @@ export class MarkerLayer {
     updateCollectedPoints(collectedPoints: string[]) {
         const prevCollected = new Set(this.collectedPoints);
         const newCollected = new Set(collectedPoints);
-        
+
         this.collectedPoints = collectedPoints;
-        
+
         // 更新所有 marker 的 checked 类
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             if (!markerRoot) return;
             const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
-            
+
             const wasCollected = prevCollected.has(id);
             const isCollected = newCollected.has(id);
-            
+
             if (wasCollected !== isCollected) {
                 if (isCollected) {
                     inner.classList.add(styles.checked);
@@ -114,7 +114,7 @@ export class MarkerLayer {
                 return;
             }
 
-            this.markerDict[marker.id] = getMarkerLayer(marker, this._onSwitchCurrentMarker);
+            this.markerDict[marker.id] = getMarkerLayer(marker, this._onSwitchCurrentMarker, this.collectedPoints);
             this.markerDataDict[marker.id] = marker;
 
             this.markerTypeMap[typeKey].push(marker.id);
