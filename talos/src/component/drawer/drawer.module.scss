@@ -1,3 +1,5 @@
+@use '../../styles/curves.scss' as *;
+
 .drawerContainer {
   position: absolute;
   z-index: 150; /* above sidebar content/footer */
@@ -6,6 +8,7 @@
   overflow: hidden;
   pointer-events: none; /* enable internal hit areas only */
   width: 100%;
+  transition: bottom 0.35s $moderato-curve, top 0.35s $moderato-curve, left 0.35s $moderato-curve, right 0.35s $moderato-curve;
   
   // Use CSS variables to control size dynamically
   // For bottom/top: height = handleSize + drawerSize
@@ -87,4 +90,40 @@
   &[data-dragging='true'] {
     cursor: grabbing;
   }
+}
+
+/* Invisible expanded hit area around the handle to improve grab without changing visuals */
+.hitArea {
+  position: absolute;
+  pointer-events: auto;
+  background: transparent;
+  z-index: 5; /* above content, below any custom overlays */
+}
+
+.hitAreaBottom {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--handle-size, 16px) + var(--hit-slop, 16px));
+}
+
+.hitAreaTop {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--handle-size, 16px) + var(--hit-slop, 16px));
+}
+
+.hitAreaLeft {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: calc(var(--handle-size, 16px) + var(--hit-slop, 16px));
+}
+
+.hitAreaRight {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--handle-size, 16px) + var(--hit-slop, 16px));
 }

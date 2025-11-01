@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 @use 'sass:color';
 @use 'sass:math';
 
@@ -42,7 +43,11 @@ $indicator-height: 0.75rem;
     transition: transform 0.3s ease-in-out,
                 background-color 0.35s $moderato-curve;
 }
-
+@media screen and (max-width: $mobile-bp) {
+    .regswitch {
+        top: 45%;
+    }
+}
 .indicator {
     position: absolute;
     left: 1.5px;

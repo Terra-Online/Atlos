@@ -27,6 +27,7 @@ export default {
             },
         ],
         'no-descending-specificity': null,
+        "custom-property-pattern": null,
         // shorthand
         'declaration-block-no-redundant-longhand-properties': null,
     },

@@ -4,7 +4,7 @@
 :root, :root[data-theme='light'] {
     --map-bg: #{$light-1};
     --map-pattern-opacity: 1;
-    --map-pattern-bg: #{$secondary-accent-1};
+    --map-pattern-bg: #{$white-3};
 }
 :root[data-theme='dark'] {
     --map-bg: #111;
@@ -36,7 +36,7 @@
         background-color: var(--map-pattern-bg);
         opacity: var(--map-pattern-opacity);
         
-        mask-image: url(../../assets/images/UI/map-pattern.svg);
+        mask-image: url('../../assets/images/UI/map-pattern.svg');
         mask-repeat: repeat;
         mask-size: 100px;
         

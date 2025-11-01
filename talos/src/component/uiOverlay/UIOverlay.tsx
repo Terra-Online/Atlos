@@ -6,6 +6,7 @@ import { HeadBar, HeadItem } from '../headBar/headBar.tsx';
 import { RegionContainer } from '../regSwitch/regSwitch';
 import { Detail } from '../detail/detail';
 import FilterList from '../filterList/filterList';
+import { useDevice } from '@/utils/device';
 
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
@@ -25,6 +26,7 @@ interface UIOverlayProps {
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     const t = useTranslateUI();
     const [langOpen, setLangOpen] = useState(false);
+    const { isMobile } = useDevice();
 
     const handleReset = () => {
         localStorage.clear();
@@ -118,7 +120,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
             {map && <Scale map={map} />}
 
             {/* Headbar */}
-            <HeadBar isSidebarOpen={isSidebarOpen}>
+            <HeadBar>
                 <HeadItem 
                     icon={ToS}
                     onClick={handleReset}
@@ -151,14 +153,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
                 />
             </HeadBar>
 
-            {/* Region Switch */}
-            <RegionContainer isSidebarOpen={isSidebarOpen} />
+            {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}
+            <RegionContainer isSidebarOpen={!isMobile && isSidebarOpen} />
 
-            {/* Detail Panel */}
-            <Detail />
+            {/* Detail Panel: hide on mobile (rendered inside SideBarMobile) */}
+            {!isMobile && <Detail />}
 
-            {/* Filter List */}
-            <FilterList isSidebarOpen={isSidebarOpen} />
+            {/* Filter List: hide on mobile (rendered inside SideBarMobile) */}
+            {!isMobile && <FilterList isSidebarOpen={isSidebarOpen} />}
 
             {/* Language Modal */}
             <LanguageModal
