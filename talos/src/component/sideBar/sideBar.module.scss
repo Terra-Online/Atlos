@@ -97,8 +97,8 @@ $transition-speed: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-            transition: clip-path 0.35s $moderato-curve;
+            transform: translateY(0);
+            transition: transform 0.35s $moderato-curve;
             a {
                 color: var(--sidebar-footer-txt);
                 text-decoration: none;
@@ -153,7 +153,7 @@ $transition-speed: 0.3s;
 
 html:not(:lang(zh-CN), :lang(zh-TW)) {
     .sidebar > .copyright {
-        clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+        transform: translateY(1.5rem);
     }
     .sidebarContent {
         padding-bottom: calc(1.5rem + 15px);

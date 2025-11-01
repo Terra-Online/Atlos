@@ -141,7 +141,7 @@
     --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
     background-color: var(--drawer-backdrop-bg);
-    backdrop-filter: blur(clamp(6px, calc(calc(1 - var(--drawer-progress)) * 16px), 16px));
+    backdrop-filter: blur(6px);
 }
 
 .topRow {
@@ -156,14 +156,22 @@
 }
 
 .divider {
-    --divider-width: 4px;
+    --divider-width: 3px;
+    --divider-hit: 2rem; /* 扩大识别区域，覆盖左右箭头区域 */
     position: relative;
-    width: var(--divider-width);
+    width: calc(var(--divider-width) + var(--divider-hit));
     flex: 0 0 var(--divider-width);
     cursor: col-resize;
     align-self: stretch;
     border-radius: calc(var(--divider-width) / 3);
-    background-color: var(--divider-bg);
+    /* 居中细条背景，保持视觉是细分割线，但点击区域更宽 */
+    background: linear-gradient(
+        to right,
+        transparent calc(50% - (var(--divider-width) / 2)),
+        var(--divider-bg) 0,
+        var(--divider-bg) calc(50% + (var(--divider-width) / 2)),
+        transparent 0
+    );
     touch-action: none;
     &:active {
         opacity: 1;
@@ -179,11 +187,11 @@
         opacity: 1;
     }
     &::before {
-        transform: translate(calc(-50% - var(--divider-width) / 2), -50%);
+        transform: translate(calc(-50% - 3px), -50%) scale(0.75);
         clip-path: path('M8.6924 1.0615v11.3669c0 .9073-1.0661 1.3948-1.7524.8014L.3665 7.5464c-.4887-.4225-.4887-1.1803 0-1.6029L6.94.2601c.6863-.5934 1.7524-.1059 1.7524.8014Z');
     }
     &::after {
-        transform: translate(calc(50% - 3px), -50%);
+        transform: translate(calc(50% - 4.5px), -50%) scale(0.75);
         clip-path: path('M0 1.0615v11.3669c0 .9073 1.0661 1.3948 1.7524.8014l6.5734-5.6834c.4887-.4225.4887-1.1803 0-1.6029L1.7524.2601c-.6863-.5934-1.7524-.1059-1.7524.8014Z');
     }
 }

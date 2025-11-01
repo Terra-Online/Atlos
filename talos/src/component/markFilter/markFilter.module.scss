@@ -49,9 +49,9 @@
         flex-grow: 1;
     }
     > .filterIcon {
-        width: 18px;
-        height: 18px;
-        margin: 0 0.8rem;
+        width: 3rem;
+        height: 3rem;
+        padding: 0 1rem 0 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -61,7 +61,25 @@
             height: 100%;
             fill: var(--markfilter-title);
             transition: fill 0.2s;
+            //transform: translateX(7px);
         }
+        /*
+        &::before, &::after {
+            content: "";
+            position: absolute;
+            width: 3px;
+            height: 2rem;
+            border-radius: 1px;
+            z-index: -1;
+            background: var(--markfilter-title);
+            transition: all 0.35s $moderato-curve;
+            transform: translateX(-10.5px);
+        }
+        
+        &::after {
+            transform: translateX(-5.5px);
+        }
+        */
     }
 
     .toggleIcon {
