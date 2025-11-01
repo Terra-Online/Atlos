@@ -117,7 +117,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   const [atRightEdge, setAtRightEdge] = useState(false);
 
   // Smooth animate helper
-  const animateLeftRatio = (to: number, duration = 220) => {
+  const animateLeftRatio = React.useCallback((to: number, duration = 220) => {
     const from = leftRatio;
     const start = performance.now();
     const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
@@ -128,7 +128,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
       if (t < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
-  };
+  }, [leftRatio]);
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
@@ -183,7 +183,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     if (rightContentWidth <= 1) {
       animateLeftRatio(0.98, 260);
     }
-  }, [rightContentWidth]);
+  }, [rightContentWidth, animateLeftRatio]);
 
   return (
     <div className={mobileStyles.sidebarContainer} ref={rootRef}>
@@ -194,6 +194,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         snap={snaps}
         snapThreshold={[50, 50, 50]}
         handleSize={16}
+        handleHitSlop={32}
         fullWidth={false}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}

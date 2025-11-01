@@ -26,6 +26,13 @@ export interface DrawerProps {
 	 */
 	snapThreshold?: number | number[];
 	handleSize?: number; // px for hit area
+	/**
+	 * Extra invisible hit slop around the handle, in px. Expands the interactive region
+	 * without changing the visual size, making it easier to start dragging on touch devices.
+	 * Applied outward along the moving axis (e.g., vertical for top/bottom drawers).
+	 * Defaults to 16px (~1rem).
+	 */
+	handleHitSlop?: number;
 	debug?: boolean; // print debug logs
 
 	onProgressChange?: (progress: number) => void;
@@ -67,6 +74,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	children,
 	fullWidth = true,
 	snapToIndex = null,
+	handleHitSlop = 16,
 }) => {
 	// Normalize snaps and compute min/max/range
 	const snapsNormalized = useMemo(() => {
@@ -133,6 +141,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		const common: React.CSSProperties = {
 			// CSS var for handle area height/width
 			['--handle-size' as string]: `${handleSize}px`,
+			['--hit-slop' as string]: `${handleHitSlop}px`,
 			// Initial values; will be updated by size.on('change')
 			['--drawer-size' as string]: `${initSize}px`,
 			['--drawer-progress' as string]: `${clamp((initSize - minSnap) / safeRange, 0, 1)}`,
@@ -156,7 +165,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		return fullWidth
 			? { ...common, top: 0, bottom: 0, right: 0 }
 			: { ...common, top: '50%', right: 0, transform: 'translateY(-50%)' };
-	}, [handleSize, initSize, minSnap, safeRange, side, fullWidth]);
+	}, [handleSize, handleHitSlop, initSize, minSnap, safeRange, side, fullWidth]);
 
 	const onPointerDown = (e: React.PointerEvent) => {
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -267,8 +276,31 @@ export const Drawer: React.FC<DrawerProps> = ({
 		}
 	}, [side]);
 
+	const hitAreaClass = useMemo(() => {
+		switch (side) {
+			case 'bottom':
+				return styles.hitAreaBottom;
+			case 'top':
+				return styles.hitAreaTop;
+			case 'left':
+				return styles.hitAreaLeft;
+			case 'right':
+			default:
+				return styles.hitAreaRight;
+		}
+	}, [side]);
+
 	return (
 		<div ref={containerRef} className={`${styles.drawerContainer} ${className ?? ''}`} style={{ ...containerStyle, ...style }}>
+			{/* Expanded invisible hit area around the handle to improve grab on touch */}
+			<div
+				className={`${styles.hitArea} ${hitAreaClass}`}
+				onPointerDown={onPointerDown}
+				onPointerMove={onPointerMove}
+				onPointerUp={onPointerUp}
+				onPointerCancel={onPointerUp}
+				aria-hidden
+			/>
 			<div className={`${styles.content} ${contentClassName ?? ''}`}>{children}</div>
 			<div
 				ref={handleRef}
