@@ -82,17 +82,32 @@
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
     box-shadow: 0 -2px 6px rgba($black-1, 0.25);
     background: transparent;
+    position: relative;
+    overflow: hidden;
+
   .mobileDrawerContent {
         display: flex;
         flex-direction: column;
-        padding: 1rem;
+        overflow: visible;
+        position: relative;
+        height: 100%;
+    }
+
+  // Content wrapper is the scrollable container
+  .contentWrapper {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1rem 1rem 1rem;
         padding-top: 0;
         gap: 0.5rem;
         overflow-x: hidden;
-        overflow-y: scroll;
+        overflow-y: auto;
         touch-action: pan-y;
+        height: 100%;
+        position: relative;
     }
-  &[data-snap="0"] > .mobileDrawerContent {
+
+  &[data-snap="0"] .contentWrapper {
         overflow-y: hidden;
         touch-action: none;
     }
@@ -100,6 +115,9 @@
 
 .mobileDrawerHandle {
   background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   &::before {
     content: '';
     position: absolute;
@@ -144,7 +162,7 @@
     flex: 0 0 var(--divider-width);
     cursor: col-resize;
     align-self: stretch;
-    border-radius: calc(var(--divider-bg) / 3);
+    border-radius: calc(var(--divider-width) / 3);
     background-color: var(--divider-bg);
     touch-action: none;
     &:active {

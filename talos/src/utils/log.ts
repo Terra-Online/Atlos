@@ -20,7 +20,7 @@ class Logger {
     }
 
     warn(...args: unknown[]) {
-        //console.warn('[WARN]', ...args);
+        console.warn('[WARN]', ...args);
     }
 
     warnOnce(id: string, ...args: unknown[]) {

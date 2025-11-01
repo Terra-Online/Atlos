@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { LinearBlur } from "progressive-blur";
 import mobileStyles from './sideBar.mobile.module.scss';
 
 import Search from '../search/search';
@@ -52,6 +53,10 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   }, [vh]);
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isScrolledTop, setIsScrolledTop] = useState(true);
+  const [isScrolledBottom, setIsScrolledBottom] = useState(false);
+  const [currentSnap, setCurrentSnap] = useState(0);
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
@@ -60,12 +65,44 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
 
     // When collapsed (snap-0), ensure content scrolls back to top
     if (p <= 0.02) {
-      const scroller = rootRef.current?.querySelector(`.${mobileStyles.mobileDrawerContent}`) as HTMLElement | null;
+      setCurrentSnap(0);
+      const scroller = contentRef.current;
       if (scroller && scroller.scrollTop !== 0) {
         scroller.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    } else {
+      // Determine current snap index based on progress
+      const snapIndex = snapsNormalized.findIndex((s, i) => {
+        if (i === snapsNormalized.length - 1) return true;
+        const nextSnap = snapsNormalized[i + 1];
+        const snapProgress = (s - minSnap) / safeRange;
+        const nextProgress = (nextSnap - minSnap) / safeRange;
+        return p >= snapProgress && p < nextProgress;
+      });
+      setCurrentSnap(Math.max(0, snapIndex));
     }
   };
+
+  // Track scroll position for blur effects
+  useEffect(() => {
+    const scroller = contentRef.current;
+    if (!scroller) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scroller;
+      setIsScrolledTop(scrollTop <= 1);
+      setIsScrolledBottom(scrollTop + clientHeight >= scrollHeight - 1);
+    };
+
+    handleScroll(); // Initial check
+    scroller.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scroller.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const snapsNormalized = snaps;
+  const minSnap = snaps[0] ?? 0;
+  const maxSnap = snaps[snaps.length - 1] ?? 0;
+  const safeRange = (maxSnap - minSnap) || 1;
 
   // When a point is activated, snap to middle (index 1)
   useEffect(() => {
@@ -113,46 +150,83 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         snapToIndex={snapToIndex}
         debug={true}
       >
-  <div className={mobileStyles.sidebarContent}>
-          {/* Top row: Search + FilterList with draggable divider */}
-          <div className={mobileStyles.topRow}>
-            <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }}>
-              <Search />
+        <div className={mobileStyles.contentWrapper} ref={contentRef}>
+          <div className={mobileStyles.sidebarContent}>
+            {/* Top row: Search + FilterList with draggable divider */}
+            <div className={mobileStyles.topRow}>
+              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }}>
+                <Search />
+              </div>
+              <div
+                className={mobileStyles.divider}
+                role="separator"
+                aria-orientation="vertical"
+                onPointerDown={handleDividerPointerDown}
+              />
+              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%` }}>
+                <FilterListMobile width="100%" />
+              </div>
             </div>
-            <div
-              className={mobileStyles.divider}
-              role="separator"
-              aria-orientation="vertical"
-              onPointerDown={handleDividerPointerDown}
-            />
-            <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%` }}>
-              <FilterListMobile width="100%" />
+
+            {/* Detail slot between top row and filters */}
+            <div className={mobileStyles.detailSlot}><Detail inline /></div>
+
+            <div className={mobileStyles.filters}>
+              <MarkFilterDragProvider>
+                {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
+                  <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
+                    {Object.values(value)
+                      .flat()
+                      .map((typeInfo) => (
+                        <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
+                      ))}
+                  </MarkFilter>
+                ))}
+              </MarkFilterDragProvider>
             </div>
           </div>
-
-          {/* Detail slot between top row and filters */}
-          <div className={mobileStyles.detailSlot}><Detail inline /></div>
-
-          <div className={mobileStyles.filters}>
-            <MarkFilterDragProvider>
-              {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
-                <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
-                  {Object.values(value)
-                    .flat()
-                    .map((typeInfo) => (
-                      <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                    ))}
-                </MarkFilter>
-              ))}
-            </MarkFilterDragProvider>
+          <div className={mobileStyles.mobileTriggerBar}>
+            <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
+            <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
+            <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
           </div>
         </div>
-        {/* Mobile in-flow trigger bar with 2-column layout */}
-        <div className={mobileStyles.mobileTriggerBar}>
-          <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
-          <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
-          <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
-        </div>
+
+        {/* Top blur: visible when not at snap-0 and not scrolled to top */}
+        {currentSnap > 0 && !isScrolledTop && (
+          <LinearBlur
+            side='top'
+            strength={20}
+            falloffPercentage={100}
+            style={{
+              position: "absolute",
+              top: '-1rem',
+              left: 0,
+              right: 0,
+              zIndex: 15,
+              height: '3.5rem',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
+
+        {/* Bottom blur: visible when not at snap-0 and not scrolled to bottom */}
+        {currentSnap > 0 && !isScrolledBottom && (
+          <LinearBlur
+            side='bottom'
+            strength={16}
+            falloffPercentage={100}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 10,
+              height: '3.5rem',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
       </Drawer>
     </div>
   );

@@ -38,6 +38,9 @@ importers:
       motion:
         specifier: ^12.9.4
         version: 12.9.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      progressive-blur:
+        specifier: ^1.0.0
+        version: 1.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2813,6 +2816,12 @@ packages:
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
+
+  progressive-blur@1.0.0:
+    resolution: {integrity: sha512-BZkJJHksqsxt9eJ+bv5ptXyUDa+ZbpOzdGJNJVxFo2qF0u+Y38E1oKWidt6JIaHCM1xk9o8LSjf9TbtHpbx9WQ==}
+    peerDependencies:
+      react: ^18.2.0
+      react-dom: ^18.2.0
 
   pump@3.0.2:
     resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
@@ -6293,6 +6302,11 @@ snapshots:
       react-is: 17.0.2
 
   process-nextick-args@2.0.1: {}
+
+  progressive-blur@1.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   pump@3.0.2:
     dependencies:
