@@ -1,6 +1,6 @@
 import styles from './headbar.module.scss';
 import LiquidGlass from 'liquid-glass-react-positioning';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '../../assets/logos/close.svg?react';
 
 interface HeadBarMobileProps {
@@ -10,10 +10,31 @@ interface HeadBarMobileProps {
 const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const childrenArray = React.Children.toArray(children);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const toggleExpand = () => {
         setIsExpanded(!isExpanded);
     };
+
+    // Auto-collapse when clicking outside
+    useEffect(() => {
+        if (!isExpanded) return;
+
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsExpanded(false);
+            }
+        };
+
+        // Add listeners for both mouse and touch events
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [isExpanded]);
 
     return (
         <LiquidGlass
@@ -39,6 +60,7 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
             }}
         >
             <div
+                ref={containerRef}
                 className={`${styles.headbarMobile} ${isExpanded ? styles.expanded : styles.collapsed}`}
             >
                 <div className={styles.headbarGrid}>

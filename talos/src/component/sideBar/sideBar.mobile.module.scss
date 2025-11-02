@@ -80,7 +80,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
     transform: translate(calc(calc(1 - var(--drawer-progress)) * 1rem), calc(calc(1 - var(--drawer-progress)) * -1rem));
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
 
-    box-shadow: 0 -2px 6px rgba($black-1, 0.25);
+    box-shadow: 0 0 6px rgba($black-1, 0.25);
     background: transparent;
     position: relative;
     overflow: hidden;
