@@ -152,9 +152,15 @@ $transition-speed: 0.3s; // import from global size.scss later
         font-weight: 700;
         color: var(--trigger-label);
         text-shadow: 0 1px 2px var(--trigger-shadow);
-        line-height: 1;
+        line-height: 1.1;
         word-break: break-word;
-        overflow: hidden;
         text-overflow: ellipsis;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .trigger > .triggerLabel {
+        font-size: 1rem;
+        text-shadow: none;
     }
 }

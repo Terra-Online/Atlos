@@ -68,6 +68,7 @@
                 font-weight: 400;
 
                 &::placeholder {
+                    user-select: noneside;
                     color: var(--search-placeholder);
                     text-shadow: 0 3px 1.5px rgba($black-0, 0.5);
                     transition:

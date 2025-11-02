@@ -44,8 +44,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   }, []);
 
   const snaps = useMemo(() => {
-    const s1 = Math.round(vh * 0.5);
-    const s2 = Math.round(vh * 0.82);
+    const s1 = Math.round(vh * 0.55);
+    const s2 = Math.round(vh * 0.85);
     // Ensure ascending order and clamp
     const arr = [SNAP0, Math.max(SNAP0, s1), Math.max(SNAP0, s2)];
     const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
@@ -134,7 +134,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    // 左侧最小 3rem，右侧不超过内容宽度
+    // 左侧最小 50px，右侧不超过内容宽度
     const minLeftPx = 50;
     const minLeftBound = Math.max(minLeftPx / rect.width, 1 - Math.min(1, (rightContentWidth || 0) / rect.width));
     const maxLeftBound = 0.98; // allow near-full width when right content is tiny
@@ -271,21 +271,26 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
             <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
             <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
           </div>
+          <div className={mobileStyles.copyright}>
+            <a href='https://beian.miit.gov.cn/'>
+                {t('footer.icp')}
+            </a>
+          </div>
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
         {currentSnap > 0 && !isScrolledTop && (
           <LinearBlur
             side='top'
-            strength={24}
-            falloffPercentage={100}
+            strength={32}
+            falloffPercentage={80}
             style={{
               position: "absolute",
               top: '-1rem',
               left: 0,
               right: 0,
               zIndex: 15,
-              height: '3.5rem',
+              height: '6.5rem',
               pointerEvents: 'none'
             }}
           />

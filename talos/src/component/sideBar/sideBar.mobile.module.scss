@@ -27,13 +27,11 @@
         }
     }
     .copyright {
-        position: absolute;
-        z-index: 100;
+        position: relative;
         width: 100%;
         bottom: 0;
-        background-color: var(--sidebar-footer);
-        box-shadow: 0 -2px 3px rgba($black-0, 0.35);
         height: 1.5rem;
+        max-height: 1.5rem;
         font-size: 0.875rem;
         font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
         font-weight: 550;
@@ -41,8 +39,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-        transition: clip-path 0.35s $moderato-curve;
+        transform: translateY(0);
+        filter: blur(0);
+        opacity: 1;
+        transition: transform 0.35s $moderato-curve, filter 0.35s $moderato-curve, opacity 0.35s $moderato-curve, max-height 0.35s $moderato-curve;
+        will-change: transform, filter, opacity, max-height;
         a {
             color: var(--sidebar-footer-txt);
             text-decoration: none;
@@ -52,14 +53,14 @@
                 transition: font-weight 0.2s;
             }
         }
-        &::after {
-            content: '';
-            position: absolute;
-            backdrop-filter: blur(0.5rem);
-            width: 100%;
-            height: inherit;
-            z-index: -1;
-        }
+    }
+}
+html:not(:lang(zh-CN), :lang(zh-TW)) {
+    .contentWrapper > .copyright {
+        transform: translateY(2rem);
+        filter: blur(1rem);
+        opacity: 0;
+        max-height: 0;
     }
 }
 
@@ -148,23 +149,25 @@
     display: flex;
     align-items: stretch;
     gap: .8rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .topRowPane {
-    min-width: 0; /* allow content to shrink */
+    min-width: 0;
     display: flex;
 }
 
 .divider {
     --divider-width: 3px;
-    --divider-hit: 2rem; /* 扩大识别区域，覆盖左右箭头区域 */
+    --divider-hit: 2rem;
     position: relative;
     width: calc(var(--divider-width) + var(--divider-hit));
     flex: 0 0 var(--divider-width);
     cursor: col-resize;
     align-self: stretch;
     border-radius: calc(var(--divider-width) / 3);
-    /* 居中细条背景，保持视觉是细分割线，但点击区域更宽 */
     background: linear-gradient(
         to right,
         transparent calc(50% - (var(--divider-width) / 2)),
