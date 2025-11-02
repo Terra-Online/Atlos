@@ -44,8 +44,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   }, []);
 
   const snaps = useMemo(() => {
-    const s1 = Math.round(vh * 0.5);
-    const s2 = Math.round(vh * 0.82);
+    const s1 = Math.round(vh * 0.55);
+    const s2 = Math.round(vh * 0.85);
     // Ensure ascending order and clamp
     const arr = [SNAP0, Math.max(SNAP0, s1), Math.max(SNAP0, s2)];
     const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
@@ -134,8 +134,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
     if (!container) return;
     const rect = container.getBoundingClientRect();
-    const rowHeight = rect.height; // approximate Search height
-    const minLeftBound = Math.max(0.0, Math.min(1, rowHeight / rect.width)); // width == height (square)
+    // 左侧最小 50px，右侧不超过内容宽度
+    const minLeftPx = 50;
+    const minLeftBound = Math.max(minLeftPx / rect.width, 1 - Math.min(1, (rightContentWidth || 0) / rect.width));
     const maxLeftBound = 0.98; // allow near-full width when right content is tiny
     const snapPoint = 0.6;
     const snapBand = 0.1; // 10% snapping
@@ -170,20 +171,37 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
 
   // Constrain right pane to its content width by capping max-width
   const [rightMaxWidth, setRightMaxWidth] = useState<string | number>('auto');
+  const hasRightContent = rightContentWidth > 1;
+
   useEffect(() => {
     const row = rootRef.current?.querySelector(`.${mobileStyles.topRow}`) as HTMLElement | null;
     if (!row) return;
     const rowWidth = row.clientWidth || 1;
-    const dynMaxWidth = Math.min(rightContentWidth, rowWidth * (1 - leftRatio));
-    setRightMaxWidth(dynMaxWidth);
-  }, [rightContentWidth, leftRatio]);
+    const minLeftPx = 48; // 3rem
 
-  // When empty, push divider to far right
-  useEffect(() => {
-    if (rightContentWidth <= 1) {
-      animateLeftRatio(0.98, 260);
+    if (!hasRightContent) {
+      // 右侧无内容时，左侧占满（接近 100%）
+      setRightMaxWidth(0);
+      setAtRightEdge(true); // 右侧空内容时标记为在右边缘（隐藏右箭头）
+      if (leftRatio < 0.98) {
+        animateLeftRatio(0.98, 260);
+      }
+    } else {
+      // 右侧有内容：按内容宽度弹出，最多到 divider 在 0.6 处
+      setAtRightEdge(false);
+      const targetRatio = Math.max(0.6, 1 - Math.min(rightContentWidth / rowWidth, 1));
+      // 限定左侧最小 3rem
+      const minLeftBound = Math.max(minLeftPx / rowWidth, targetRatio);
+      const dynMaxWidth = Math.min(rightContentWidth, rowWidth * (1 - leftRatio));
+      setRightMaxWidth(dynMaxWidth);
+      
+      // 只在 leftRatio 明显大于目标时才自动调整（避免循环触发）
+      if (leftRatio > minLeftBound + 0.01) {
+        // 自动收缩左侧以容纳右侧内容（直到 divider 到 0.6）
+        animateLeftRatio(minLeftBound);
+      }
     }
-  }, [rightContentWidth, animateLeftRatio]);
+  }, [rightContentWidth, leftRatio, animateLeftRatio, hasRightContent]);
 
   return (
     <div className={mobileStyles.sidebarContainer} ref={rootRef}>
@@ -194,7 +212,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         snap={snaps}
         snapThreshold={[50, 50, 50]}
         handleSize={16}
-        handleHitSlop={32}
         fullWidth={false}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}
@@ -218,7 +235,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
                 aria-orientation="vertical"
                 onPointerDown={handleDividerPointerDown}
               />
-              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${(1 - leftRatio) * 100}%`, maxWidth: rightMaxWidth }}>
+              <div 
+                className={mobileStyles.topRowPane} 
+                style={{ 
+                  flexBasis: `${(1 - leftRatio) * 100}%`, 
+                  maxWidth: rightMaxWidth,
+                  visibility: hasRightContent ? 'visible' : 'hidden',
+                  position: hasRightContent ? 'relative' : 'absolute',
+                  pointerEvents: hasRightContent ? 'auto' : 'none',
+                }}
+              >
                 <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
               </div>
             </div>
@@ -245,21 +271,26 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
             <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
             <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
           </div>
+          <div className={mobileStyles.copyright}>
+            <a href='https://beian.miit.gov.cn/'>
+                {t('footer.icp')}
+            </a>
+          </div>
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
         {currentSnap > 0 && !isScrolledTop && (
           <LinearBlur
             side='top'
-            strength={24}
-            falloffPercentage={100}
+            strength={32}
+            falloffPercentage={80}
             style={{
               position: "absolute",
               top: '-1rem',
               left: 0,
               right: 0,
               zIndex: 15,
-              height: '3.5rem',
+              height: '6.5rem',
               pointerEvents: 'none'
             }}
           />

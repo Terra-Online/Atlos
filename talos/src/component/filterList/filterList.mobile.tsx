@@ -53,7 +53,7 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
         ].join(' ')}
         style={{ overflowX: 'auto' }}
       >
-        <div ref={innerRef} className={styles.innerContainer} style={{ display: 'flex', gap: 8 }}>
+        <div ref={innerRef} className={styles.innerContainer} >
           {[...filterList].reverse().map((item) => (
             <span
               key={item}

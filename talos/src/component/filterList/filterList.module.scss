@@ -125,3 +125,8 @@
         transform: scale(0.95);
     }
 }
+@media screen and (max-width: $mobile-bp) {
+    .innerContainer {
+        gap: 0
+    }
+}

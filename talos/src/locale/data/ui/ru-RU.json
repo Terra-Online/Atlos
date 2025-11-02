@@ -1,54 +1,54 @@
 {
   "headbar": {
-    "tos": "Conditions d’utilisation",
-    "hideUI": "Masquer l’interface utilisateur",
-    "group": "Rejoindre les groupes associés",
-    "darkmode": "Passer en mode sombre",
-    "lightmode": "Passer en mode clair",
-    "language": "Choisir la langue",
-    "help": "Demander de l’aide"
+    "tos": "Условия использования",
+    "hideUI": "Скрыть интерфейс пользователя",
+    "group": "Присоединиться к связанным группам",
+    "darkmode": "Переключиться на темный режим",
+    "lightmode": "Переключиться на светлый режим",
+    "language": "Выбрать язык",
+    "help": "Запросить помощь"
   },
   "trigger": {
-    "boundaryMode": "Mode des limites",
-    "clusterMode": "Mode de regroupement",
-    "optimalPath": "Itinéraire optimal"
+    "boundaryMode": "Режим границ",
+    "clusterMode": "Режим кластеризации",
+    "optimalPath": "Оптимальный маршрут"
   },
   "search": {
-    "placeholder": "Recherche générale..."
+    "placeholder": "Общий поиск..."
   },
   "markFilter": {
-    "title": "Filtres",
-    "emptyTitle": "Aucun filtre approprié",
-    "emptyDesc": "Veuillez contacter l’administrateur."
+    "title": "Фильтры",
+    "emptyTitle": "Нет подходящих фильтров",
+    "emptyDesc": "Пожалуйста, свяжитесь с администратором."
   },
   "detail": {
     "stat": {
-      "world": "Monde",
-      "main": "Principal"
+      "world": "Мир",
+      "main": "Основной"
     },
-    "noInfo": "Aucune information."
+    "noInfo": "Нет информации."
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "pris en charge par Observator 6"
+      "supportedBy": "поддерживается Observator 6"
     }
   },
   "language": {
-    "title": "Langue",
-    "cancel": "Annuler",
-    "current": "Actuelle",
+    "title": "Язык",
+    "cancel": "Отмена",
+    "current": "Текущий",
     "names": {
-      "en-US": "anglais",
-      "zh-CN": "chinois (simplifié)",
-      "zh-TW": "chinois (traditionnel)",
-      "ja-JP": "japonais",
-      "ko-KR": "coréen"
+      "en-US": "английский",
+      "zh-CN": "китайский (упрощенный)",
+      "zh-TW": "китайский (традиционный)",
+      "ja-JP": "японский",
+      "ko-KR": "корейский"
     }
   },
   "common": {
-    "close": "Fermer"
+    "close": "Закрыть"
   }
 }
