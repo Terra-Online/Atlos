@@ -192,7 +192,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			if (first) {
 				const target = event.target as Element | null;
 				const interactive = target?.closest(
-					'button, a, input, select, textarea, label, [role="button"], [role="link"], [contenteditable="true"]'
+					'button, a, select, label, [role="button"], [role="link"], [contenteditable="true"]'
 				);
 				if (interactive) {
 					cancel();
