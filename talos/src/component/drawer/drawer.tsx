@@ -1,9 +1,12 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMotionValue, animate } from 'motion/react';
 import { useDrag } from '@use-gesture/react';
 import styles from './drawer.module.scss';
 
 type Side = 'top' | 'bottom' | 'left' | 'right';
+
+// Interactive elements selector: taps on these should not initiate drawer drags
+const INTERACTIVE_SELECTOR = 'button, a, select, label, [role="button"], [role="link"], [contenteditable="true"]';
 
 export interface DrawerProps {
 	side?: Side; // which edge to attach
@@ -92,6 +95,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const handleRef = useRef<HTMLDivElement>(null);
 	const isDraggingRef = useRef(false);
+    // Track last applied size to avoid redundant updates on drag
+    const lastSizeRef = useRef(initSize);
 
 	// Update progress and inject CSS vars when size changes
 	useEffect(() => {
@@ -100,6 +105,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 			progress.set(p);
 			if (debug) console.log('[Drawer] size/progress', { v, p });
 			onProgressChange?.(p);
+			// keep the latest size for change guards
+			lastSizeRef.current = v;
 			
 			// Inject CSS variables for animations
 			if (containerRef.current) {
@@ -117,6 +124,35 @@ export const Drawer: React.FC<DrawerProps> = ({
 		});
 		return () => unsub();
 	}, [debug, onProgressChange, size, progress, safeRange, minSnap, snapsNormalized]);
+
+	// Set initial data-snap attribute on mount
+	useEffect(() => {
+		if (containerRef.current) {
+			const v = initSize;
+			const p = clamp((v - minSnap) / safeRange, 0, 1);
+			containerRef.current.style.setProperty('--drawer-size', `${v}px`);
+			containerRef.current.style.setProperty('--drawer-progress', `${p}`);
+			const idx = snapsNormalized.findIndex((s) => Math.abs(s - v) <= 0.5);
+			if (idx >= 0) {
+				containerRef.current.setAttribute('data-snap', String(idx));
+			}
+			if (debug) console.log('[Drawer] Initial data-snap set', { initSize, idx });
+		}
+	}, [initSize, minSnap, safeRange, snapsNormalized, debug]);
+
+	// Precompute normalized thresholds (0..1) per snap point
+	const thresholdsPct = useMemo(() => {
+		const toPct01 = (v: number) => clamp(v, 0, 100) / 100;
+		if (Array.isArray(snapThreshold)) {
+			return snapsNormalized.map((_, i) =>
+				toPct01(
+					snapThreshold[i] ?? (snapThreshold.length ? snapThreshold[snapThreshold.length - 1] : 50)
+				)
+			);
+		}
+		const base = typeof snapThreshold === 'number' ? snapThreshold : 50;
+		return snapsNormalized.map(() => toPct01(base));
+	}, [snapThreshold, snapsNormalized]);
 
 	// Imperative snapping via prop
 	useEffect(() => {
@@ -162,7 +198,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
 	// Gesture: use-gesture across the whole drawer container without blocking inner interactions
 	const axis: 'x' | 'y' = side === 'left' || side === 'right' ? 'x' : 'y';
-	const onDrag = (state: unknown) => {
+	const onDrag = useCallback((state: unknown) => {
 			const { first, last, movement, cancel, event, intentional } = state as {
 				first: boolean;
 				last: boolean;
@@ -191,9 +227,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			// Avoid interfering with native interactions: ignore taps on interactive elements
 			if (first) {
 				const target = event.target as Element | null;
-				const interactive = target?.closest(
-					'button, a, select, label, [role="button"], [role="link"], [contenteditable="true"]'
-				);
+				const interactive = target?.closest(INTERACTIVE_SELECTOR);
 				if (interactive) {
 					cancel();
 					return;
@@ -273,7 +307,10 @@ export const Drawer: React.FC<DrawerProps> = ({
 					break;
 			}
 			const next = clamp(baseSize + delta, minSnap, maxSnap);
-			size.set(next);
+			// Avoid redundant updates if value hasn't changed meaningfully
+			if (Math.abs(next - lastSizeRef.current) > 0.01) {
+				size.set(next);
+			}
 
 			// When dragging, block native scrolling
 			if (didDragRef.current && event && 'preventDefault' in event && typeof (event as Event & { preventDefault?: () => void }).preventDefault === 'function') {
@@ -291,15 +328,11 @@ export const Drawer: React.FC<DrawerProps> = ({
 				// snapping using snap points and per-point thresholds
 				const cur = size.get();
 				const snaps = snapsNormalized;
-				const toPct = (v: number) => clamp(v, 0, 100);
-				const thresholds: number[] = Array.isArray(snapThreshold)
-					? snaps.map((_, i) => toPct(snapThreshold[i] ?? (snapThreshold.length ? snapThreshold[snapThreshold.length - 1] : 50)))
-					: snaps.map(() => toPct(typeof snapThreshold === 'number' ? snapThreshold : 50));
 				let target: number | null = null;
 				let targetIndex: number | null = null;
 				for (let i = 0; i < snaps.length; i++) {
 					const s = snaps[i];
-					const pct = thresholds[i] / 100;
+					const pct = thresholdsPct[i];
 					if (i > 0) {
 						const leftWidth = s - snaps[i - 1];
 						const leftStart = s - pct * leftWidth;
@@ -319,7 +352,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 						}
 					}
 				}
-				if (debug) console.log('[Drawer] drag end', { cur, snaps, thresholds, target, targetIndex });
+				if (debug) console.log('[Drawer] drag end', { cur, snaps, thresholds: thresholdsPct, target, targetIndex });
 				if (target != null && Math.abs(target - cur) > 0.5) {
 					animate(size, target, { duration: 0.25 });
 					if (containerRef.current && targetIndex != null) {
@@ -337,18 +370,21 @@ export const Drawer: React.FC<DrawerProps> = ({
 			}
 
 			return;
-		};
-		(useDrag as unknown as (h: (s: unknown) => void, o: Record<string, unknown>) => void)(
-			onDrag,
-			{
-				target: containerRef,
-				axis,
-				filterTaps: true,
-				threshold: 8,
-				pointer: { touch: true },
-				eventOptions: { passive: false },
-			}
-		);
+		}, [axis, side, size, minSnap, maxSnap, debug, snapsNormalized, thresholdsPct]);
+
+	const dragOptions = useMemo(
+		() => ({
+			target: containerRef,
+			axis,
+			filterTaps: true,
+			threshold: 8,
+			pointer: { touch: true },
+			eventOptions: { passive: false },
+		}),
+		[axis]
+	);
+
+	(useDrag as unknown as (h: (s: unknown) => void, o: Record<string, unknown>) => void)(onDrag, dragOptions);
 
 	// Decide handle position class
 	const handleClass = useMemo(() => {

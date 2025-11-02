@@ -65,13 +65,11 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 }
 
 :root, :root[data-theme='light'] {
-    --drawer-backdrop-bg: #{rgba($white-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($black-1, 0.5)};
-    --drawer-backdrop-bg: #{rgba($white-0, 0.4)};
+    --drawer-backdrop-bg: #{rgba($white-1, 1)};
 }
 :root[data-theme='dark'] {
-    --drawer-backdrop-bg: #{rgba($black-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($light-2, 0.5)};
     --drawer-backdrop-bg: #{rgba($mid, 0.4)};
@@ -108,7 +106,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
         position: relative;
     }
 
-  &[data-snap="0"] .contentWrapper {
+    &[data-snap="0"] .contentWrapper {
         overflow-y: hidden;
         touch-action: none;
     }
@@ -142,7 +140,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
     --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
     background-color: var(--drawer-backdrop-bg);
-    backdrop-filter: blur(6px);
+    //backdrop-filter: blur(6px);
 }
 
 .topRow {
@@ -219,6 +217,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 
 .mobileDrawer[data-snap="0"] .sidebarContent > .filters,
 .mobileDrawer[data-snap="0"] .detailSlot,
-.mobileDrawer[data-snap="0"] .mobileTriggerBar {
+.mobileDrawer[data-snap="0"] .mobileTriggerBar,
+.mobileDrawer[data-snap="0"] .copyright {
     display: none;
 }
