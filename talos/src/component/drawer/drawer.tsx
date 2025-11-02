@@ -1,59 +1,95 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMotionValue, animate } from 'motion/react';
 import { useDrag } from '@use-gesture/react';
+import { createLogger } from './drawer.debug';
 import styles from './drawer.module.scss';
 
 type Side = 'top' | 'bottom' | 'left' | 'right';
 
-// Interactive elements selector: taps on these should not initiate drawer drags
 const INTERACTIVE_SELECTOR = 'button, a, select, label, [role="button"], [role="link"], [contenteditable="true"]';
+const FILTER_ICON_SELECTOR = '[class*="filterIcon"]';
 
 export interface DrawerProps {
-	side?: Side; // which edge to attach
-	/**
-	 * Initial opened size in px; will be clamped to [0, maxSnap].
-	 */
-	initialSize?: number; // px
-	/**
-	 * Snap points in absolute px from 0 to maxSize (inclusive). Example: [0, 200, 400, 600, 1000].
-	 * Defaults to [0, 300]. Values will be clamped to [0, maxSize], de-duplicated and sorted.
-	 */
+	side?: Side;
+	initialSize?: number;
 	snap?: number[];
-	/**
-	 * Snap thresholds as percentages per snap point. Each value applies to both sides of a snap point
-	 * and is measured as a percentage of the neighboring interval width. Example for snaps [0,200,400]:
-	 * thresholds [50,30,50] means:
-	 * - near 0 within 50% of [0,200], snap to 0
-	 * - near 200 within 30% of [0,200] on the left OR within 30% of [200,400] on the right, snap to 200
-	 * - near 400 within 50% of [200,400] on the left, snap to 400
-	 * If provided as a single number, it is used for all snap points. Defaults to [50, 50].
-	 */
 	snapThreshold?: number | number[];
-	handleSize?: number; // px for hit area
-	debug?: boolean; // print debug logs
-
+	handleSize?: number;
+	debug?: boolean;
 	onProgressChange?: (progress: number) => void;
-	className?: string; // container class for custom styling
-	handleClassName?: string; // handle class for custom styling
-	contentClassName?: string; // content class for custom styling
-	backdropClassName?: string; // backdrop class for custom styling
+	className?: string;
+	handleClassName?: string;
+	contentClassName?: string;
+	backdropClassName?: string;
 	style?: React.CSSProperties;
 	children?: React.ReactNode;
-	/**
-	 * When true (default), the drawer stretches to the container edges (left/right or top/bottom).
-	 * When false, positioning leaves horizontal freedom for custom width and centering (e.g., mobile width calc).
-	 */
 	fullWidth?: boolean;
-	/**
-	 * Programmatically snap to a given snap index when this value changes.
-	 * If out of range or undefined, no action.
-	 */
 	snapToIndex?: number | null;
 }
 
-function clamp(n: number, min: number, max: number) {
-	return Math.max(min, Math.min(max, n));
-}
+const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+
+// Normalize and deduplicate snap points
+const normalizeSnaps = (snap: number[]) => {
+	const input = snap.length ? snap : [0, 300];
+	const maxVal = Math.max(...input);
+	return Array.from(new Set(input.map(v => clamp(v, 0, maxVal)))).sort((a, b) => a - b);
+};
+
+// Convert threshold percentage to 0-1 range
+const normalizeThreshold = (threshold: number | number[], snapsCount: number): number[] => {
+	const toPct = (v: number) => clamp(v, 0, 100) / 100;
+	if (Array.isArray(threshold)) {
+		const last = threshold[threshold.length - 1] ?? 50;
+		return Array.from({ length: snapsCount }, (_, i) => toPct(threshold[i] ?? last));
+	}
+	return Array.from({ length: snapsCount }, () => toPct(typeof threshold === 'number' ? threshold : 50));
+};
+
+// Find target snap point based on current position and thresholds
+const findSnapTarget = (
+	cur: number,
+	snaps: number[],
+	thresholds: number[]
+): { target: number; index: number } | null => {
+	for (let i = 0; i < snaps.length; i++) {
+		const s = snaps[i];
+		const pct = thresholds[i];
+		
+		// Check left threshold (from previous snap)
+		if (i > 0) {
+			const leftWidth = s - snaps[i - 1];
+			if (cur >= s - pct * leftWidth && cur <= s) {
+				return { target: s, index: i };
+			}
+		}
+		
+		// Check right threshold (to next snap)
+		if (i < snaps.length - 1) {
+			const rightWidth = snaps[i + 1] - s;
+			if (cur >= s && cur <= s + pct * rightWidth) {
+				return { target: s, index: i };
+			}
+		}
+	}
+	return null;
+};
+
+// Find scrollable ancestor
+const findScrollable = (el: Element | null, container: HTMLElement | null): HTMLElement | null => {
+	let cur = el;
+	while (cur && container && cur !== container) {
+		if (cur instanceof HTMLElement) {
+			const { overflowY } = getComputedStyle(cur);
+			if ((overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') && 
+			    cur.scrollHeight > cur.clientHeight + 1) {
+				return cur;
+			}
+		}
+		cur = cur.parentElement;
+	}
+	return null;
+};
 
 export const Drawer: React.FC<DrawerProps> = ({
 	side = 'bottom',
@@ -72,335 +108,243 @@ export const Drawer: React.FC<DrawerProps> = ({
 	fullWidth = true,
 	snapToIndex = null,
 }) => {
-	// Normalize snaps and compute min/max/range
-	const snapsNormalized = useMemo(() => {
-		const input = (snap ?? [0, 300]).slice();
-		if (input.length === 0) input.push(0);
-		const maxVal = Math.max(...input);
-		const dedup = Array.from(new Set(input.map((v) => clamp(v, 0, maxVal))));
-		dedup.sort((a, b) => a - b);
-		return dedup;
-	}, [snap]);
+	const logger = useMemo(() => createLogger(debug), [debug]);
+	const renderCount = useRef(0);
+	
+	// Memoize normalized values
+	const snapsNormalized = useMemo(() => normalizeSnaps(snap), [snap]);
+	const thresholdsPct = useMemo(
+		() => normalizeThreshold(snapThreshold, snapsNormalized.length),
+		[snapThreshold, snapsNormalized.length]
+	);
+	
 	const minSnap = snapsNormalized[0] ?? 0;
 	const maxSnap = snapsNormalized[snapsNormalized.length - 1] ?? 0;
-	const range = maxSnap - minSnap;
-	const safeRange = range > 0 ? range : 1; // avoid divide-by-zero
-
+	const safeRange = Math.max(1, maxSnap - minSnap);
 	const initSize = clamp(initialSize, minSnap, maxSnap);
+	
+	// Motion values
 	const size = useMotionValue(initSize);
-	const progress = useMotionValue(clamp((initSize - minSnap) / safeRange, 0, 1));
-	const dragStartSizeRef = useRef(size.get());
-	const didDragRef = useRef(false);
-	const scrollElRef = useRef<HTMLElement | null>(null);
+	const progress = useMotionValue((initSize - minSnap) / safeRange);
+	
+	// Refs
 	const containerRef = useRef<HTMLDivElement>(null);
 	const handleRef = useRef<HTMLDivElement>(null);
+	const dragStartSizeRef = useRef(initSize);
+	const lastSizeRef = useRef(initSize);
 	const isDraggingRef = useRef(false);
-    // Track last applied size to avoid redundant updates on drag
-    const lastSizeRef = useRef(initSize);
-
-	// Update progress and inject CSS vars when size changes
+	const scrollElRef = useRef<HTMLElement | null>(null);
+	
+	// Debug: track renders
+	logger.logRender(++renderCount.current, { side, initialSize, snapToIndex, handleSize, fullWidth });
+	
+	// Update progress and CSS vars when size changes
 	useEffect(() => {
 		const unsub = size.on('change', (v) => {
 			const p = clamp((v - minSnap) / safeRange, 0, 1);
 			progress.set(p);
-			if (debug) console.log('[Drawer] size/progress', { v, p });
 			onProgressChange?.(p);
-			// keep the latest size for change guards
 			lastSizeRef.current = v;
 			
-			// Inject CSS variables for animations
-			if (containerRef.current) {
-				containerRef.current.style.setProperty('--drawer-size', `${v}px`);
-				containerRef.current.style.setProperty('--drawer-progress', `${p}`);
-				// set data-snap index when exactly at a snap (with tolerance)
-				const idx = snapsNormalized.findIndex((s) => Math.abs(s - v) <= 0.5);
-				if (idx >= 0) {
-					containerRef.current.setAttribute('data-snap', String(idx));
-				} else {
-					containerRef.current.removeAttribute('data-snap');
+			const container = containerRef.current;
+			if (!container) return;
+			
+			container.style.setProperty('--drawer-size', `${v}px`);
+			container.style.setProperty('--drawer-progress', `${p}`);
+			
+			// Update data-snap attribute
+			const idx = snapsNormalized.findIndex(s => Math.abs(s - v) <= 0.5);
+			const prevSnap = container.getAttribute('data-snap');
+			
+			if (idx >= 0) {
+				const newSnap = String(idx);
+				if (prevSnap !== newSnap) {
+					container.setAttribute('data-snap', newSnap);
+					logger.logDataSnapChange(prevSnap, idx, v);
 				}
-				if (debug) console.log('[Drawer] CSS vars updated', { size: v, progress: p });
+			} else if (prevSnap !== null) {
+				container.removeAttribute('data-snap');
+				logger.logDataSnapRemoved(prevSnap, v);
 			}
+			
+			logger.logSizeChange(v, p);
 		});
 		return () => unsub();
-	}, [debug, onProgressChange, size, progress, safeRange, minSnap, snapsNormalized]);
-
-	// Set initial data-snap attribute on mount
+	}, [onProgressChange, size, progress, safeRange, minSnap, snapsNormalized, logger]);
+	
+	// Initialize on mount only
 	useEffect(() => {
-		if (containerRef.current) {
-			const v = initSize;
-			const p = clamp((v - minSnap) / safeRange, 0, 1);
-			containerRef.current.style.setProperty('--drawer-size', `${v}px`);
-			containerRef.current.style.setProperty('--drawer-progress', `${p}`);
-			const idx = snapsNormalized.findIndex((s) => Math.abs(s - v) <= 0.5);
-			if (idx >= 0) {
-				containerRef.current.setAttribute('data-snap', String(idx));
-			}
-			if (debug) console.log('[Drawer] Initial data-snap set', { initSize, idx });
-		}
-	}, [initSize, minSnap, safeRange, snapsNormalized, debug]);
-
-	// Precompute normalized thresholds (0..1) per snap point
-	const thresholdsPct = useMemo(() => {
-		const toPct01 = (v: number) => clamp(v, 0, 100) / 100;
-		if (Array.isArray(snapThreshold)) {
-			return snapsNormalized.map((_, i) =>
-				toPct01(
-					snapThreshold[i] ?? (snapThreshold.length ? snapThreshold[snapThreshold.length - 1] : 50)
-				)
-			);
-		}
-		const base = typeof snapThreshold === 'number' ? snapThreshold : 50;
-		return snapsNormalized.map(() => toPct01(base));
-	}, [snapThreshold, snapsNormalized]);
-
-	// Imperative snapping via prop
+		const container = containerRef.current;
+		if (!container) return;
+		
+		const p = (initSize - minSnap) / safeRange;
+		container.style.setProperty('--drawer-size', `${initSize}px`);
+		container.style.setProperty('--drawer-progress', `${p}`);
+		
+		const idx = snapsNormalized.findIndex(s => Math.abs(s - initSize) <= 0.5);
+		if (idx >= 0) container.setAttribute('data-snap', String(idx));
+		
+		logger.logInitialMount(initSize, idx);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+	
+	// Imperative snap via prop
 	useEffect(() => {
 		if (snapToIndex == null) return;
 		const idx = Math.trunc(snapToIndex);
-		if (idx < 0 || idx >= snapsNormalized.length) return;
 		const target = snapsNormalized[idx];
-		if (typeof target !== 'number') return;
-		if (Math.abs(size.get() - target) <= 0.5) return;
-		if (debug) console.log('[Drawer] snapToIndex', { idx, target });
+		if (target == null || Math.abs(size.get() - target) <= 0.5) return;
 		animate(size, target, { duration: 0.25 });
-	}, [snapToIndex, snapsNormalized, size, debug]);
-
-	// Decide absolute positioning style per side
+	}, [snapToIndex, snapsNormalized, size]);
+	
+	// Container positioning
 	const containerStyle = useMemo<React.CSSProperties>(() => {
-		const common: React.CSSProperties = {
-			// CSS var for handle area height/width
-			['--handle-size' as string]: `${handleSize}px`,
-			// Initial values; will be updated by size.on('change')
-			['--drawer-size' as string]: `${initSize}px`,
-			['--drawer-progress' as string]: `${clamp((initSize - minSnap) / safeRange, 0, 1)}`,
+		const common = {
+			'--handle-size': `${handleSize}px`,
+			'--drawer-size': `${initSize}px`,
+			'--drawer-progress': `${(initSize - minSnap) / safeRange}`,
+		} as React.CSSProperties;
+		
+		const posMap = {
+			bottom: fullWidth ? { left: 0, right: 0, bottom: 0 } : { bottom: 0, left: '50%', transform: 'translateX(-50%)' },
+			top: fullWidth ? { left: 0, right: 0, top: 0 } : { top: 0, left: '50%', transform: 'translateX(-50%)' },
+			left: fullWidth ? { top: 0, bottom: 0, left: 0 } : { top: '50%', left: 0, transform: 'translateY(-50%)' },
+			right: fullWidth ? { top: 0, bottom: 0, right: 0 } : { top: '50%', right: 0, transform: 'translateY(-50%)' },
 		};
-		if (side === 'bottom') {
-			// By default stretch to full width. If not fullWidth, allow custom width/centering.
-			return fullWidth
-				? { ...common, left: 0, right: 0, bottom: 0 }
-				: { ...common, bottom: 0, left: '50%', transform: 'translateX(-50%)' };
-		}
-		if (side === 'top') {
-			return fullWidth
-				? { ...common, left: 0, right: 0, top: 0 }
-				: { ...common, top: 0, left: '50%', transform: 'translateX(-50%)' };
-		}
-		if (side === 'left') {
-			return fullWidth
-				? { ...common, top: 0, bottom: 0, left: 0 }
-				: { ...common, top: '50%', left: 0, transform: 'translateY(-50%)' };
-		}
-		return fullWidth
-			? { ...common, top: 0, bottom: 0, right: 0 }
-			: { ...common, top: '50%', right: 0, transform: 'translateY(-50%)' };
+		
+		return { ...common, ...posMap[side] };
 	}, [handleSize, initSize, minSnap, safeRange, side, fullWidth]);
-
-	// Gesture: use-gesture across the whole drawer container without blocking inner interactions
+	
+	// Gesture handler
 	const axis: 'x' | 'y' = side === 'left' || side === 'right' ? 'x' : 'y';
-	const onDrag = useCallback((state: unknown) => {
-			const { first, last, movement, cancel, event, intentional } = state as {
-				first: boolean;
-				last: boolean;
-				movement: [number, number];
-				cancel: () => void;
-				event: Event;
-				intentional?: boolean;
-			};
-			const [mx, my] = movement;
-
-			// helper: find nearest scrollable ancestor from the event target up to container
-			const findScrollable = (el: Element | null) => {
-				let cur = el;
-				while (cur && containerRef.current && cur !== containerRef.current) {
-					if (cur instanceof HTMLElement) {
-						const style = getComputedStyle(cur);
-						const overflowY = style.overflowY;
-						if ((overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') && cur.scrollHeight > cur.clientHeight + 1) {
-							return cur;
-						}
-					}
-					cur = cur.parentElement;
-				}
-				return null;
-			};
-			// Avoid interfering with native interactions: ignore taps on interactive elements
-			if (first) {
-				const target = event.target as Element | null;
-				const interactive = target?.closest(INTERACTIVE_SELECTOR);
-				if (interactive) {
-					cancel();
-					return;
-				}
-				// TODO: fix this and using more universal way to detect
-				const isDraggableFilter = target?.closest('[class*="filterIcon"]');
-				if (isDraggableFilter) {
-					cancel();
-					return;
-				}
-				// init start size
-				dragStartSizeRef.current = size.get();
-				didDragRef.current = false;
-				// detect scrollable inner element at gesture start (may be null)
-				scrollElRef.current = findScrollable(target ?? null);
-			}
-
-			// If gesture hasn't become intentional (under threshold), don't update size or states
-			if (!intentional) {
-				if (last) {
-					// tap ended without drag: ensure dragging state is not set
-					isDraggingRef.current = false;
-					if (handleRef.current) handleRef.current.removeAttribute('data-dragging');
-				}
+	const onDrag = useCallback((state: {
+		first: boolean;
+		last: boolean;
+		movement: [number, number];
+		cancel: () => void;
+		event: Event;
+		intentional?: boolean;
+	}) => {
+		const { first, last, movement, cancel, event, intentional } = state;
+		const [mx, my] = movement;
+		
+		logger.logGesture(first ? 'START' : last ? 'END' : 'MOVE', {
+			intentional,
+			movement: { mx, my },
+			size: size.get(),
+		});
+		
+		// First touch: initialize and check cancellation conditions
+		if (first) {
+			const target = event.target as Element | null;
+			
+			if (target?.closest(INTERACTIVE_SELECTOR)) {
+				logger.logGestureCancel('interactive element');
+				cancel();
 				return;
 			}
-
-			// If there is a scrollable inner element and it can scroll in the gesture direction,
-			// cancel the drawer gesture so native/content scrolling takes precedence.
-			if (scrollElRef.current) {
-				const scrollEl = scrollElRef.current;
-				const atTop = scrollEl.scrollTop <= 1;
-				const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
-				// For vertical drawers: my > 0 means finger moved down (intent to scroll up/close),
-				// my < 0 means finger moved up (intent to scroll down/open).
-				if (axis === 'y') {
-					if (my > 0 && !atTop) {
-						// user is dragging down but content can scroll up -> prefer content scroll
-						cancel();
-						return;
-					}
-					if (my < 0 && !atBottom) {
-						// user is dragging up but content can scroll down -> prefer content scroll
-						cancel();
-						return;
-					}
-				}
+			
+			if (target?.closest(FILTER_ICON_SELECTOR)) {
+				logger.logGestureCancel('filterIcon drag');
+				cancel();
+				return;
 			}
-
-			// Mark we have actually dragged, and set dragging state once
-			if (!didDragRef.current) {
-				didDragRef.current = true;
-				isDraggingRef.current = true;
-				if (handleRef.current) handleRef.current.setAttribute('data-dragging', 'true');
-				// While dragging, prevent content from scrolling by disabling touch-action
-				if (containerRef.current) {
-					containerRef.current.style.touchAction = 'none';
-					// Contain overscroll to avoid browser bounce/back gesture on mobile
-					(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = 'contain';
-				}
-			}
-
-			const baseSize = dragStartSizeRef.current ?? size.get();
-			let delta = 0;
-			switch (side) {
-				case 'bottom':
-					delta = -my; // drag up opens
-					break;
-				case 'top':
-					delta = my; // drag down opens
-					break;
-				case 'left':
-					delta = mx; // drag right opens
-					break;
-				case 'right':
-					delta = -mx; // drag left opens
-					break;
-			}
-			const next = clamp(baseSize + delta, minSnap, maxSnap);
-			// Avoid redundant updates if value hasn't changed meaningfully
-			if (Math.abs(next - lastSizeRef.current) > 0.01) {
-				size.set(next);
-			}
-
-			// When dragging, block native scrolling
-			if (didDragRef.current && event && 'preventDefault' in event && typeof (event as Event & { preventDefault?: () => void }).preventDefault === 'function') {
-				(event as Event & { preventDefault?: () => void }).preventDefault?.();
-			}
-
-			if (last) {
-				// If there was no effective drag, skip snapping altogether
-				if (!didDragRef.current) {
-					isDraggingRef.current = false;
-					if (handleRef.current) handleRef.current.removeAttribute('data-dragging');
-					return;
-				}
-
-				// snapping using snap points and per-point thresholds
-				const cur = size.get();
-				const snaps = snapsNormalized;
-				let target: number | null = null;
-				let targetIndex: number | null = null;
-				for (let i = 0; i < snaps.length; i++) {
-					const s = snaps[i];
-					const pct = thresholdsPct[i];
-					if (i > 0) {
-						const leftWidth = s - snaps[i - 1];
-						const leftStart = s - pct * leftWidth;
-						if (cur >= leftStart && cur <= s) {
-							target = s;
-							targetIndex = i;
-							break;
-						}
-					}
-					if (i < snaps.length - 1) {
-						const rightWidth = snaps[i + 1] - s;
-						const rightEnd = s + pct * rightWidth;
-						if (cur >= s && cur <= rightEnd) {
-							target = s;
-							targetIndex = i;
-							break;
-						}
-					}
-				}
-				if (debug) console.log('[Drawer] drag end', { cur, snaps, thresholds: thresholdsPct, target, targetIndex });
-				if (target != null && Math.abs(target - cur) > 0.5) {
-					animate(size, target, { duration: 0.25 });
-					if (containerRef.current && targetIndex != null) {
-						containerRef.current.setAttribute('data-snap', String(targetIndex));
-					}
-				}
-				// Clear dragging state
-				isDraggingRef.current = false;
-				if (handleRef.current) handleRef.current.removeAttribute('data-dragging');
-				// Restore scrolling behavior
-				if (containerRef.current) {
-					containerRef.current.style.removeProperty('touch-action');
-					(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = '';
-				}
-			}
-
-			return;
-		}, [axis, side, size, minSnap, maxSnap, debug, snapsNormalized, thresholdsPct]);
-
-	const dragOptions = useMemo(
-		() => ({
-			target: containerRef,
-			axis,
-			filterTaps: true,
-			threshold: 8,
-			pointer: { touch: true },
-			eventOptions: { passive: false },
-		}),
-		[axis]
-	);
-
-	(useDrag as unknown as (h: (s: unknown) => void, o: Record<string, unknown>) => void)(onDrag, dragOptions);
-
-	// Decide handle position class
-	const handleClass = useMemo(() => {
-		switch (side) {
-			case 'bottom':
-				return styles.handleBottom;
-			case 'top':
-				return styles.handleTop;
-			case 'left':
-				return styles.handleLeft;
-			case 'right':
-			default:
-				return styles.handleRight;
+			
+			dragStartSizeRef.current = size.get();
+			isDraggingRef.current = false;
+			scrollElRef.current = findScrollable(target, containerRef.current);
+			
+			if (scrollElRef.current) logger.logScrollableDetected(scrollElRef.current);
 		}
-	}, [side]);
-
+		
+		// Not intentional yet: wait for threshold
+		if (!intentional) {
+			if (last && handleRef.current) {
+				handleRef.current.removeAttribute('data-dragging');
+			}
+			return;
+		}
+		
+		// Check scroll conflict
+		const scrollEl = scrollElRef.current;
+		if (scrollEl && axis === 'y') {
+			const atTop = scrollEl.scrollTop <= 1;
+			const atBottom = scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
+			
+			if ((my > 0 && !atTop) || (my < 0 && !atBottom)) {
+				logger.logGestureCancel('content scroll priority');
+				cancel();
+				return;
+			}
+		}
+		
+		// Start dragging state
+		if (!isDraggingRef.current) {
+			isDraggingRef.current = true;
+			if (handleRef.current) handleRef.current.setAttribute('data-dragging', 'true');
+			if (containerRef.current) {
+				containerRef.current.style.touchAction = 'none';
+				(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = 'contain';
+			}
+			logger.logDragStart(dragStartSizeRef.current, size.get());
+		}
+		
+		// Calculate new size
+		const deltaMap = { bottom: -my, top: my, left: mx, right: -mx };
+		const delta = deltaMap[side];
+		const next = clamp(dragStartSizeRef.current + delta, minSnap, maxSnap);
+		
+		if (Math.abs(next - lastSizeRef.current) > 0.01) {
+			size.set(next);
+			logger.logSizeUpdate(lastSizeRef.current, next, delta);
+		}
+		
+		event.preventDefault?.();
+		
+		// Drag end: snap to nearest point
+		if (last) {
+			if (!isDraggingRef.current) return;
+			
+			const cur = size.get();
+			const snapResult = findSnapTarget(cur, snapsNormalized, thresholdsPct);
+			
+			if (snapResult && Math.abs(snapResult.target - cur) > 0.5) {
+				animate(size, snapResult.target, { duration: 0.25 });
+				if (containerRef.current) {
+					containerRef.current.setAttribute('data-snap', String(snapResult.index));
+				}
+				logger.logSnapTarget(cur, snapResult.target, snapResult.index);
+			}
+			
+			isDraggingRef.current = false;
+			if (handleRef.current) handleRef.current.removeAttribute('data-dragging');
+			if (containerRef.current) {
+				containerRef.current.style.removeProperty('touch-action');
+				(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = '';
+			}
+			logger.logDragComplete();
+		}
+	}, [axis, side, size, minSnap, maxSnap, snapsNormalized, thresholdsPct, logger]);
+	
+	const dragOptions = useMemo(() => ({
+		target: containerRef,
+		axis,
+		filterTaps: true,
+		threshold: 8,
+		pointer: { touch: true },
+		eventOptions: { passive: false },
+	}), [axis]);
+	
+	useDrag(onDrag, dragOptions);
+	
+	// Handle class
+	const handleClass = useMemo(() => ({
+		bottom: styles.handleBottom,
+		top: styles.handleTop,
+		left: styles.handleLeft,
+		right: styles.handleRight,
+	}[side]), [side]);
+	
 	return (
 		<div ref={containerRef} className={`${styles.drawerContainer} ${className ?? ''}`} style={{ ...containerStyle, ...style }}>
 			<div className={`${styles.content} ${contentClassName ?? ''}`}>{children}</div>
@@ -408,10 +352,10 @@ export const Drawer: React.FC<DrawerProps> = ({
 				ref={handleRef}
 				className={`${styles.handle} ${handleClass} ${handleClassName ?? ''}`}
 				role="separator"
-				aria-orientation={side === 'left' || side === 'right' ? 'vertical' : 'horizontal'}
+				aria-orientation={axis === 'x' ? 'vertical' : 'horizontal'}
 				aria-label="Drawer drag handle"
 			/>
-            <div className={`${styles.backdrop} ${backdropClassName ?? ''}`} />
+			<div className={`${styles.backdrop} ${backdropClassName ?? ''}`} />
 		</div>
 	);
 };

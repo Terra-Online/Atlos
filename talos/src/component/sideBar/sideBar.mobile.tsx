@@ -115,10 +115,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   const [leftRatio, setLeftRatio] = useState(0.6); // Search pane width ratio in TopRow
   const [atLeftEdge, setAtLeftEdge] = useState(false);
   const [atRightEdge, setAtRightEdge] = useState(false);
+  const leftRatioRef = useRef(0.6); // Track current value without triggering re-renders
 
-  // Smooth animate helper
+  // Update ref when state changes
+  useEffect(() => {
+    leftRatioRef.current = leftRatio;
+  }, [leftRatio]);
+
+  // Smooth animate helper - stable, no dependency on leftRatio state
   const animateLeftRatio = React.useCallback((to: number, duration = 220) => {
-    const from = leftRatio;
+    const from = leftRatioRef.current; // Use ref to get current value
     const start = performance.now();
     const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
     const step = (now: number) => {
@@ -128,7 +134,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
       if (t < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
-  }, [leftRatio]);
+  }, []); // No dependencies - stable reference
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
@@ -140,7 +146,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     const maxLeftBound = 0.98; // allow near-full width when right content is tiny
     const snapPoint = 0.6;
     const snapBand = 0.1; // 10% snapping
-    let latestRatio = leftRatio;
+    let latestRatio = leftRatioRef.current; // Use ref for initial value
 
     const onMove = (ev: PointerEvent) => {
       const x = ev.clientX;
@@ -172,6 +178,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   // Constrain right pane to its content width by capping max-width
   const [rightMaxWidth, setRightMaxWidth] = useState<string | number>('auto');
   const hasRightContent = rightContentWidth > 1;
+  const prevRightContentWidthRef = useRef(rightContentWidth);
 
   useEffect(() => {
     const row = rootRef.current?.querySelector(`.${mobileStyles.topRow}`) as HTMLElement | null;
@@ -179,11 +186,15 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
     const rowWidth = row.clientWidth || 1;
     const minLeftPx = 48; // 3rem
 
+    // Only trigger adjustment when right content width actually changes
+    const widthChanged = Math.abs(rightContentWidth - prevRightContentWidthRef.current) > 2;
+    prevRightContentWidthRef.current = rightContentWidth;
+
     if (!hasRightContent) {
       // 右侧无内容时，左侧占满（接近 100%）
       setRightMaxWidth(0);
       setAtRightEdge(true); // 右侧空内容时标记为在右边缘（隐藏右箭头）
-      if (leftRatio < 0.98) {
+      if (widthChanged && leftRatio < 0.98) {
         animateLeftRatio(0.98, 260);
       }
     } else {
@@ -195,13 +206,14 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
       const dynMaxWidth = Math.min(rightContentWidth, rowWidth * (1 - leftRatio));
       setRightMaxWidth(dynMaxWidth);
       
-      // 只在 leftRatio 明显大于目标时才自动调整（避免循环触发）
-      if (leftRatio > minLeftBound + 0.01) {
+      // 只在内容宽度变化且 leftRatio 明显大于目标时才自动调整（避免循环触发）
+      if (widthChanged && leftRatio > minLeftBound + 0.02) {
         // 自动收缩左侧以容纳右侧内容（直到 divider 到 0.6）
         animateLeftRatio(minLeftBound);
       }
     }
-  }, [rightContentWidth, leftRatio, animateLeftRatio, hasRightContent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rightContentWidth, hasRightContent]); // Remove leftRatio and animateLeftRatio from deps
 
   return (
     <div className={mobileStyles.sidebarContainer} ref={rootRef}>
@@ -212,7 +224,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         snap={snaps}
         snapThreshold={[50, 50, 50]}
         handleSize={16}
-        fullWidth={false}
+        fullWidth={true}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}
         contentClassName={mobileStyles.mobileDrawerContent}
@@ -220,7 +232,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         onProgressChange={handleProgress}
         style={{ bottom: 0 }}
         snapToIndex={snapToIndex}
-        debug={true}
       >
         <div className={mobileStyles.contentWrapper} ref={contentRef}>
           <div className={mobileStyles.sidebarContent}>

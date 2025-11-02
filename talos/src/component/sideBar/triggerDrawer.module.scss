@@ -14,11 +14,11 @@
     --drawer-backdrop-bg: #{rgba($mid, 0.2)};
 }
 
-.TriggerDrawer {
+.triggerDrawer {
     border-radius: calc(var(--drawer-progress) * 1.5rem) calc(var(--drawer-progress) * 1.5rem) 0 0;
     box-shadow: 0 -2px 4px rgba($black-1, 0.35);
 }
-.TriggerDrawerHandle {
+.triggerDrawerHandle {
     background: transparent;
     &::before {
         content: '';
@@ -40,13 +40,13 @@
         transition: background-color 0.25s $moderato-curve, width 0.25s $standard-curve;
     }
 }
-.TriggerDrawerBackdrop {
+.triggerDrawerBackdrop {
     border-radius: calc(var(--drawer-progress) * 1.5rem) calc(var(--drawer-progress) * 1.5rem) 0 0;
     background-color: var(--drawer-backdrop-bg);
     backdrop-filter: blur(clamp(3px, calc(calc(1 - var(--drawer-progress)) * 12px), 12px));
 }
 
-.TriggerDrawerContent {
+.triggerDrawerContent {
     display: flex;
     flex-direction: column;
     transform: translateY(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 1.25rem), 1.25rem));
