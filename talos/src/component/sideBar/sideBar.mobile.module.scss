@@ -39,7 +39,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transform: translateY(0);
+        transform: translateY(0.5rem);
         filter: blur(0);
         opacity: 1;
         transition: transform 0.35s $moderato-curve, filter 0.35s $moderato-curve, opacity 0.35s $moderato-curve, max-height 0.35s $moderato-curve;
