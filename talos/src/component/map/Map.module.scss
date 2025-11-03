@@ -5,11 +5,13 @@
     --map-bg: #{$light-1};
     --map-pattern-opacity: 1;
     --map-pattern-bg: #{$white-3};
+    --map-pattern-error-bg: #{$primary-accent-6};
 }
 :root[data-theme='dark'] {
     --map-bg: #111;
     --map-pattern-opacity: 1;
     --map-pattern-bg: #{$grey-1};
+    --map-pattern-error-bg: #{$primary-accent-4};
 }
 
 .mapContainer {
@@ -44,9 +46,7 @@
             opacity 0.35s ease,
             background-color 0.35s $moderato-curve ;
     }
-    :global(.leaflet-container) {
-        position: relative;
-        z-index: 2;
-        background: transparent !important;
+    &.overdrag::before {
+        background-color: var(--map-pattern-error-bg);
     }
 }
