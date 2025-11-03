@@ -6,6 +6,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 import eslint from 'vite-plugin-eslint';
 import { existsSync } from 'fs';
+import Inspect from 'vite-plugin-inspect';
 
 const isProd = process.env.NODE_ENV === 'production';
 const assetsHost = isProd
@@ -37,14 +38,15 @@ export default defineConfig({
                     src: 'src/assets/fonts',
                     dest: 'assets',
                 },
-            ].filter(target => existsSync(target.src)), // 只包含存在的源路径
+            ].filter((target) => existsSync(target.src)), // 只包含存在的源路径
         }),
         eslint({
             failOnWarning: false,
-            failOnError: false,
+            failOnError: true,
             emitWarning: true,
             emitError: true,
         }),
+        Inspect(),
     ],
     base: assetsHost,
     define: {

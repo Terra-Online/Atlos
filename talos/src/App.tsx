@@ -6,8 +6,10 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
+import { fontLoader } from '@/utils/fontLoader.ts';
 
 function App() {
+    fontLoader();
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
     const [mapInstance, setMapInstance] = useState<L.Map | undefined>(
