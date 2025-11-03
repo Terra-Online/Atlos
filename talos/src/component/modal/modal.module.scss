@@ -34,7 +34,7 @@
     will-change: opacity, backdrop-filter;
 }
 
-.modalMask[data-state=open] {
+.modalMask[data-state="open"] {
     opacity: 1;
     backdrop-filter: blur(4px);
     transition: opacity .3s $adagio-curve, backdrop-filter .3s $adagio-curve;
@@ -56,19 +56,19 @@
 
     min-width: 20rem;
     max-width: 92vw; // default size = s
-    &[data-size=s] {
+    &[data-size="s"] {
         width: 18rem;
         max-width: 92vw
     }
-    &[data-size=m] {
+    &[data-size="m"] {
         width: 27rem;
         max-width: 92vw
     }
-    &[data-size=l] {
+    &[data-size="l"] {
         width: 36em;
         max-width: 96vw
     }
-    &[data-size=full] {
+    &[data-size="full"] {
         width: 60%;
         height: 100%;
         max-width: 100%;
@@ -203,7 +203,7 @@
             height: 1.5rem;
         }
 }
-.modalContainer[data-state=open] {
+.modalContainer[data-state="open"] {
     opacity: 1;
     transform: scale(1) translateY(0);
     transition: opacity .2s $adagio-curve, transform .25s $adagio-curve;

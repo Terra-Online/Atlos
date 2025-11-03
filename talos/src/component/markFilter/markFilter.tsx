@@ -128,13 +128,18 @@ const MarkFilter = ({
             <div
                 className={`${styles.filterHeader} ${isExpanded ? styles.expanded : ''}`}
                 onClick={toggleExpand}
-                onPointerDown={(e) => {
-                    // start drag from header only; allow scrolling elsewhere
-                    dragControls.start(e);
-                }}
-                style={{ cursor: isSelfDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
             >
-                <div className={styles.filterIcon}>
+                <div 
+                    className={styles.filterIcon}
+                    onPointerDown={(e) => {
+                        e.stopPropagation();
+                        dragControls.start(e);
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                    style={{ cursor: isSelfDragging ? 'grabbing' : 'grab', touchAction: 'none' }}
+                >
                     {CustomIcon ? (
                         typeof CustomIcon === 'function' ? (
                             <CustomIcon className={styles.icon} />

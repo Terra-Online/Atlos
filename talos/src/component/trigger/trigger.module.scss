@@ -19,7 +19,7 @@
     --trigger-shadow: #{rgba($black-0, 1)};
 }
 
-$transition-speed: 0.3s; //import from global size.scss later
+$transition-speed: 0.3s; // import from global size.scss later
 
 .triggerContainer {
     position: absolute;
@@ -65,20 +65,21 @@ $transition-speed: 0.3s; //import from global size.scss later
                 display: block; // avoid slight offset caused by baseline
                 width: 100%;
                 height: 100%;
-                fill: currentColor;
+                fill: currentcolor;
             }
             svg path {
-                fill: currentColor;
+                fill: currentcolor;
             }
             svg [stroke] {
-                stroke: currentColor;
+                stroke: currentcolor;
             }
             &.off > svg {
                 transform: translateX(1px);
                 width: calc(1.35rem - 2px);
                 height: calc(1.35rem - 2px); // optimize for vertical center
             }
-            //on state
+
+            // on state
             &.on {
                 color: var(--trigger-on);
             }
@@ -93,6 +94,7 @@ $transition-speed: 0.3s; //import from global size.scss later
     }
     .triggerButton {
         position: relative;
+        flex: 0 0 auto; // do not let the switch shrink when space is tight
         width: calc(4.5rem - 4px);
         height: 2.25rem;
         border-radius: 4px;
@@ -102,8 +104,8 @@ $transition-speed: 0.3s; //import from global size.scss later
         overflow: hidden;
         transition: all 0.2s ease;
         box-shadow:
-            0px 0px 4px 1px rgba($white-1, 0.5),
-            inset 0px 0px 2px rgba($black-0, 0.2);
+            0 0 4px 1px rgba($white-1, 0.5),
+            inset 0 0 2px rgba($black-0, 0.2);
         &::after {
             content: '';
             position: absolute;
@@ -129,7 +131,8 @@ $transition-speed: 0.3s; //import from global size.scss later
                 background-color: var(--trigger-active);
                 box-shadow: 0 1px 3px rgba($black-0, 0.4);
             }
-            //off state
+
+            // off state
             .triggerIcons {
                 .on {
                     color: var(--trigger-off);
@@ -141,12 +144,23 @@ $transition-speed: 0.3s; //import from global size.scss later
         }
     }
     .triggerLabel {
+        flex: 1 1 auto;
+        min-width: 0;
         user-select: none;
         font-size: 1rem;
         text-transform: uppercase;
         font-weight: 700;
         color: var(--trigger-label);
         text-shadow: 0 1px 2px var(--trigger-shadow);
-        white-space: nowrap;
+        line-height: 1.1;
+        word-break: break-word;
+        text-overflow: ellipsis;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .trigger > .triggerLabel {
+        font-size: 1rem;
+        text-shadow: none;
     }
 }

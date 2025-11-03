@@ -2,7 +2,9 @@
   "headbar": {
     "tos": "服務條款",
     "hideUI": "隱藏介面",
-    "group": "加入相關群",
+    "group": "加入相關群組",
+    "darkmode": "切換至深色模式",
+    "lightmode": "切換至淺色模式",
     "language": "選擇語言",
     "help": "取得協助"
   },

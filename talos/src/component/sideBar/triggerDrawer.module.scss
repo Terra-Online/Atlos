@@ -16,7 +16,7 @@
 
 .TriggerDrawer {
     border-radius: calc(var(--drawer-progress) * 1.5rem) calc(var(--drawer-progress) * 1.5rem) 0 0;
-    box-shadow: 0px -2px 4px rgba($black-1, 0.35);
+    box-shadow: 0 -2px 4px rgba($black-1, 0.35);
 }
 .TriggerDrawerHandle {
     background: transparent;
@@ -31,7 +31,7 @@
         border-radius: 3px;
         background-color: var(--drawer-handle-bg);
         transition: background-color 0.35s $moderato-curve, width 0.35s $standard-curve;
-        will-change: width background-color;
+        will-change: width, background-color;
         box-shadow: 0 1px 3px rgba($black-0, 0.4);
     }
     &[data-dragging="true"]::before {

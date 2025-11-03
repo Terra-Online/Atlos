@@ -1,0 +1,224 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+.sidebarContainer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    height: auto;
+    transform: none;
+    pointer-events: none;
+    z-index: 1000;
+
+    .sidebarContent {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0;
+        > .filters {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            gap: 0.3rem;
+        }
+    }
+    .copyright {
+        position: relative;
+        width: 100%;
+        bottom: 0;
+        height: 1.5rem;
+        max-height: 1.5rem;
+        font-size: 0.875rem;
+        font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
+        font-weight: 550;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(0.5rem);
+        filter: blur(0);
+        opacity: 1;
+        transition: transform 0.35s $moderato-curve, filter 0.35s $moderato-curve, opacity 0.35s $moderato-curve, max-height 0.35s $moderato-curve;
+        will-change: transform, filter, opacity, max-height;
+        a {
+            color: var(--sidebar-footer-txt);
+            text-decoration: none;
+            transition: font-weight 0.2s, color .3s $moderato-curve;
+            &:hover {
+                font-weight: 650;
+                transition: font-weight 0.2s;
+            }
+        }
+    }
+}
+html:not(:lang(zh-CN), :lang(zh-TW)) {
+    .contentWrapper > .copyright {
+        transform: translateY(2rem);
+        filter: blur(1rem);
+        opacity: 0;
+        max-height: 0;
+    }
+}
+
+:root, :root[data-theme='light'] {
+    --drawer-backdrop-bg: #{rgba($white-1, 0.6)};
+    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --divider-bg: #{rgba($black-1, 0.5)};
+    --drawer-backdrop-bg: #{rgba($white-0, 0.4)};
+}
+:root[data-theme='dark'] {
+    --drawer-backdrop-bg: #{rgba($black-1, 0.6)};
+    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
+    --divider-bg: #{rgba($light-2, 0.5)};
+    --drawer-backdrop-bg: #{rgba($mid, 0.4)};
+}
+.mobileDrawer {
+    pointer-events: auto;
+    width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
+    margin-bottom: clamp(0rem, calc((1 - var(--drawer-progress)) * 1rem), 1rem);
+    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
+    box-shadow: 0 -2px 6px rgba($black-1, 0.25);
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+
+  .mobileDrawerContent {
+        display: flex;
+        flex-direction: column;
+        overflow: visible;
+        position: relative;
+        height: 100%;
+    }
+
+  // Content wrapper is the scrollable container
+  .contentWrapper {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1rem 1rem 1rem;
+        padding-top: 0;
+        gap: 0.5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        touch-action: pan-y;
+        height: 100%;
+        position: relative;
+    }
+
+  &[data-snap="0"] .contentWrapper {
+        overflow-y: hidden;
+        touch-action: none;
+    }
+}
+
+.mobileDrawerHandle {
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 3rem;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--drawer-handle-bg);
+    transition: background-color 0.3s $moderato-curve, width 0.3s $standard-curve;
+    box-shadow: 0 1px 3px rgba($black-0, 0.4);
+  }
+  &[data-dragging="true"]::before {
+    background-color: var(--drawing-handle-bg);
+    width: 4rem;
+  }
+}
+
+.mobileDrawerBackdrop {
+    --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
+    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
+    background-color: var(--drawer-backdrop-bg);
+    backdrop-filter: blur(6px);
+}
+
+.topRow {
+    display: flex;
+    align-items: stretch;
+    gap: .8rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.topRowPane {
+    min-width: 0;
+    display: flex;
+}
+
+.divider {
+    --divider-width: 3px;
+    --divider-hit: 2rem;
+    position: relative;
+    width: calc(var(--divider-width) + var(--divider-hit));
+    flex: 0 0 var(--divider-width);
+    cursor: col-resize;
+    align-self: stretch;
+    border-radius: calc(var(--divider-width) / 3);
+    background: linear-gradient(
+        to right,
+        transparent calc(50% - (var(--divider-width) / 2)),
+        var(--divider-bg) 0,
+        var(--divider-bg) calc(50% + (var(--divider-width) / 2)),
+        transparent 0
+    );
+    touch-action: none;
+    &:active {
+        opacity: 1;
+    }
+    &::before, &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--divider-bg);
+        transition: background-color 0.35s $moderato-curve, opacity 0.25s $standard-curve;
+        opacity: 1;
+    }
+    &::before {
+        transform: translate(calc(-50% - 3px), -50%) scale(0.75);
+        clip-path: path('M8.6924 1.0615v11.3669c0 .9073-1.0661 1.3948-1.7524.8014L.3665 7.5464c-.4887-.4225-.4887-1.1803 0-1.6029L6.94.2601c.6863-.5934 1.7524-.1059 1.7524.8014Z');
+    }
+    &::after {
+        transform: translate(calc(50% - 4.5px), -50%) scale(0.75);
+        clip-path: path('M0 1.0615v11.3669c0 .9073 1.0661 1.3948 1.7524.8014l6.5734-5.6834c.4887-.4225.4887-1.1803 0-1.6029L1.7524.2601c-.6863-.5934-1.7524-.1059-1.7524.8014Z');
+    }
+}
+
+/* Edge states: show only one chevron at extremes */
+.atLeft {
+    &::before { opacity: 0; }
+    &::after { opacity: 1; }
+}
+.atRight {
+    &::after { opacity: 0; }
+    &::before { opacity: 1; }
+}
+
+.mobileTriggerBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.mobileDrawer[data-snap="0"] .sidebarContent > .filters,
+.mobileDrawer[data-snap="0"] .detailSlot,
+.mobileDrawer[data-snap="0"] .mobileTriggerBar {
+    display: none;
+}

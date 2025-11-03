@@ -1,7 +1,7 @@
 @use './fonts' as *;
 @use './curves.scss' as *;
 @use './palette' as *;
-@use './highlight.scss';
+@use './highlight';
 @import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
 
 /* Global theme transition variables (scoped) */
@@ -22,11 +22,12 @@
     transition-timing-function: var(--theme-transition-ease);
     transition-delay: 0s; /* Explicit 0 delay to prevent inheritance issues */
 }
-
 .app {
     position: relative;
     width: 100vw;
+    width: 100dvw;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     /* opt-in container for theme transitions */
     &.theme-transition-scope {
@@ -38,7 +39,20 @@
         left: 0;
     }
 }
-
+@supports not (height: 100dvh) {
+    app {
+        width: 100vw;
+        width: 100svw;
+        height: 100vh;
+        height: 100svh;
+    }
+}
+@supports (not (height: 100dvh)) and (not (height: 100svh)) {
+    app {
+        width: 100%;
+        height: 100%;
+    }
+}
 * {
     transform-origin: center;
     background-repeat: no-repeat;

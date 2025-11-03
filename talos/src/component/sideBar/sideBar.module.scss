@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 $desktop-headbar-height: 5.5rem;
 $toggle-btn-size: 5.5rem;
@@ -39,6 +40,7 @@ $transition-speed: 0.3s;
     }
 
     .sidebar {
+        --drawer-bottom: 1.5rem;
         position: relative;
         overflow: hidden;
         height: 100%;
@@ -95,6 +97,8 @@ $transition-speed: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
+            transform: translateY(0);
+            transition: transform 0.35s $moderato-curve;
             a {
                 color: var(--sidebar-footer-txt);
                 text-decoration: none;
@@ -144,5 +148,17 @@ $transition-speed: 0.3s;
         &:hover svg {
             fill: $primary-accent-3;
         }
+    }
+}
+
+html:not(:lang(zh-CN), :lang(zh-TW)) {
+    .sidebar > .copyright {
+        transform: translateY(1.5rem);
+    }
+    .sidebarContent {
+        padding-bottom: calc(1.5rem + 15px);
+    }
+     .sidebar {
+        --drawer-bottom: 0;
     }
 }

@@ -1,0 +1,54 @@
+{
+  "headbar": {
+    "tos": "Ketentuan Layanan",
+    "hideUI": "Sembunyikan UI",
+    "group": "Bergabung dengan grup terkait",
+    "darkmode": "Beralih ke mode gelap",
+    "lightmode": "Beralih ke mode terang",
+    "language": "Pilih bahasa",
+    "help": "Minta bantuan"
+  },
+  "trigger": {
+    "boundaryMode": "Mode Batas",
+    "clusterMode": "Mode Kluster",
+    "optimalPath": "Jalur Optimal"
+  },
+  "search": {
+    "placeholder": "Pencarian keseluruhan..."
+  },
+  "markFilter": {
+    "title": "Opsi Filter",
+    "emptyTitle": "Tidak ada opsi filter yang cocok.",
+    "emptyDesc": "Silakan hubungi administrator."
+  },
+  "detail": {
+    "stat": {
+      "world": "Dunia",
+      "main": "Utama"
+    },
+    "noInfo": "Tidak ada informasi."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "didukung oleh observator 6"
+    }
+  },
+  "language": {
+    "title": "bahasa",
+    "cancel": "Batal",
+    "current": "Saat ini",
+    "names": {
+      "en-US": "Inggris",
+      "zh-CN": "Cina Sederhana",
+      "zh-TW": "Cina Tradisional",
+      "ja-JP": "Jepang",
+      "ko-KR": "Korea"
+    }
+  },
+  "common": {
+    "close": "Tutup"
+  }
+}
