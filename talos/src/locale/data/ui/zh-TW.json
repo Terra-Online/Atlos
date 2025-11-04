@@ -37,16 +37,32 @@
     }
   },
   "language": {
-    "title": "語言切換",
+    "title": "語言",
     "cancel": "取消",
-    "current": "現時",
+    "current": "當前",
+    "fullSupport": "全語言支援",
+    "fullSupportHint": "UI 和遊戲內容均有完整翻譯",
+    "uiOnly": "僅 UI 語言",
+    "uiOnlyHint": "僅有 UI 翻譯，遊戲內容將顯示為英文",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡體中文",
       "zh-TW": "繁體中文",
       "ja-JP": "日語",
-      "ko-KR": "韓語"
+      "ko-KR": "韓語",
+      "es-ES": "西班牙語",
+      "fr-FR": "法語",
+      "de-DE": "德語",
+      "it-IT": "義大利語",
+      "ru-RU": "俄語",
+      "pt-BR": "葡萄牙語",
+      "id-ID": "印尼語",
+      "ar-AE": "阿拉伯語"
     }
+  },
+  "group": {
+    "title": "社群與社交",
+    "visit": "訪問"
   },
   "common": {
     "close": "關閉"

@@ -40,13 +40,29 @@
     "title": "language",
     "cancel": "Cancel",
     "current": "Now",
+    "fullSupport": "Full Language Support",
+    "fullSupportHint": "Complete translations for both UI and in-game content",
+    "uiOnly": "UI Language Only",
+    "uiOnlyHint": "UI translations only, in-game content will be displayed in English",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
       "zh-TW": "Traditional Chinese",
       "ja-JP": "Japanese",
-      "ko-KR": "Korean"
+      "ko-KR": "Korean",
+      "es-ES": "Spanish",
+      "fr-FR": "French",
+      "de-DE": "German",
+      "it-IT": "Italian",
+      "ru-RU": "Russian",
+      "pt-BR": "Portuguese",
+      "id-ID": "Indonesian",
+      "ar-AE": "Arabic"
     }
+  },
+  "group": {
+    "title": "Community & Social",
+    "visit": "Visit"
   },
   "common": {
     "close": "Close"

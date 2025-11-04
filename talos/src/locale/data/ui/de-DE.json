@@ -39,14 +39,30 @@
   "language": {
     "title": "Sprache",
     "cancel": "Abbrechen",
-    "current": "Aktuelle",
+    "current": "Aktuell",
+    "fullSupport": "Vollständige Sprachunterstützung",
+    "fullSupportHint": "Vollständige Übersetzungen für Benutzeroberfläche und Spielinhalte",
+    "uiOnly": "Nur Benutzeroberfläche",
+    "uiOnlyHint": "Nur UI-Übersetzungen, Spielinhalte werden auf Englisch angezeigt",
     "names": {
       "en-US": "Englisch",
-      "zh-CN": "Chinesisch (vereinfacht)",
-      "zh-TW": "Chinesisch (traditionell)",
+      "zh-CN": "Vereinfachtes Chinesisch",
+      "zh-TW": "Traditionelles Chinesisch",
       "ja-JP": "Japanisch",
-      "ko-KR": "Koreanisch"
+      "ko-KR": "Koreanisch",
+      "es-ES": "Spanisch",
+      "fr-FR": "Französisch",
+      "de-DE": "Deutsch",
+      "it-IT": "Italienisch",
+      "ru-RU": "Russisch",
+      "pt-BR": "Portugiesisch",
+      "id-ID": "Indonesisch",
+      "ar-AE": "Arabisch"
     }
+  },
+  "group": {
+    "title": "Community und soziale Medien",
+    "visit": "Besuchen"
   },
   "common": {
     "close": "Schließen"

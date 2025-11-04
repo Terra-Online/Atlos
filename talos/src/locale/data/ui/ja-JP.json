@@ -37,16 +37,32 @@
     }
   },
   "language": {
-    "title": "言語を選択",
+    "title": "言語",
     "cancel": "キャンセル",
     "current": "現在",
+    "fullSupport": "完全言語サポート",
+    "fullSupportHint": "UIとゲーム内コンテンツの両方に完全な翻訳を提供",
+    "uiOnly": "UIのみの言語",
+    "uiOnlyHint": "UI翻訳のみ、ゲーム内コンテンツは英語で表示されます",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡体字中国語",
       "zh-TW": "繁体字中国語",
       "ja-JP": "日本語",
-      "ko-KR": "韓国語"
+      "ko-KR": "韓国語",
+      "es-ES": "スペイン語",
+      "fr-FR": "フランス語",
+      "de-DE": "ドイツ語",
+      "it-IT": "イタリア語",
+      "ru-RU": "ロシア語",
+      "pt-BR": "ポルトガル語",
+      "id-ID": "インドネシア語",
+      "ar-AE": "アラビア語"
     }
+  },
+  "group": {
+    "title": "コミュニティとソーシャル",
+    "visit": "訪問"
   },
   "common": {
     "close": "閉じる"

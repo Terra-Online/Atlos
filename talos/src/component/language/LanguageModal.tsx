@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 
 import Modal from '@/component/modal/Modal';
 import I18nIcon from '../../assets/logos/i18n.svg?react';
 import styles from './language.module.scss';
-import { SUPPORTED_LANGS, setLocale, useLocale } from '@/locale';
+import { FULL_LANGS, UI_ONLY_LANGS, setLocale, useLocale } from '@/locale';
 import { useTranslateUI } from '@/locale';
 
-export interface LanguageModalProps {
+export interface LanguageProps {
   open: boolean;
   onClose: () => void;
   onChange?: (open: boolean) => void;
@@ -18,6 +18,13 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'zh-TW': '繁體中文',
   'ja-JP': '日本語',
   'ko-KR': '한국어',
+
+  'fr-FR': 'Français',
+  'de-DE': 'Deutsch',
+  'es-ES': 'Español',
+  'ru-RU': 'Русский',
+  'id-ID': 'Bahasa Indonesia',
+  'ar-AE': 'العربية',
 };
 
 // Convert possible locale like "en-us" to canonical BCP-47 casing: "en-US"
@@ -38,10 +45,18 @@ const toLangCode = (lang: string) => {
 // Match the currentLang transition duration in CSS
 const FREEZE_MS = 400;
 
-const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose, onChange, onSelected }) => {
+const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected }) => {
   const current = useLocale();
   const t: (k: string) => string = useTranslateUI();
-  const items = useMemo(() => SUPPORTED_LANGS.map(l => ({ key: l, label: LANG_LABEL_KEYS[l] || l })), []);
+  
+  const fullLangItems = useMemo(() => 
+    [...FULL_LANGS].map(l => ({ key: l, label: LANG_LABEL_KEYS[l] || l })), 
+  []);
+  
+  const uiOnlyItems = useMemo(() => 
+    [...UI_ONLY_LANGS].map(l => ({ key: l, label: LANG_LABEL_KEYS[l] || l })), 
+  []);
+  
   const groupId = useId();
   
   // freeze last active current lang, avoiding flicker when switching langs
@@ -69,6 +84,35 @@ const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose, onChange, 
     if (freezeTimerRef.current) window.clearTimeout(freezeTimerRef.current);
   }, []);
 
+  const renderLanguageItem = (it: { key: string; label: string }) => (
+    <button
+      key={it.key}
+      type="button"
+      className={`${styles.langItem} ${current === it.key ? styles.active : ''}`}
+      onClick={() => { void handlePick(it.key); }}
+      role="radio"
+      aria-checked={current === it.key}
+      aria-label={t(`language.names.${it.key}`) || (LANG_LABEL_KEYS[it.key] || it.key)}
+    >
+      <div 
+        className={styles.langOrigin}
+        lang={toBCP47(it.key)}>
+          {it.label}
+      </div>
+      <div className={styles.langDisplay}>
+        {t(`language.names.${it.key}`) || it.label}
+      </div>
+      <div className={styles.langTag}>
+        {toLangCode(it.key)}
+        <span className={styles.currentLang} lang={toBCP47(it.key)}>
+          {freeze && it.key === freeze.from
+            ? freeze.currentText
+            : t('language.current')}
+        </span>
+      </div>
+    </button>
+  );
+
   return (
     <Modal
       open={open}
@@ -84,34 +128,21 @@ const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose, onChange, 
         aria-label={t('language.title')}
         id={groupId}
       >
-        {items.map(it => (
-          <button
-            key={it.key}
-            type="button"
-            className={`${styles.langItem} ${current === it.key ? styles.active : ''}`}
-            onClick={() => { void handlePick(it.key); }}
-            role="radio"
-            aria-checked={current === it.key}
-            aria-label={t(`language.names.${it.key}`) || (LANG_LABEL_KEYS[it.key] || it.key)}
-          >
-            <div 
-              className={styles.langOrigin}
-              lang={toBCP47(it.key)}>
-                {it.label}
-            </div>
-            <div className={styles.langDisplay}>
-              {t(`language.names.${it.key}`) || it.label}
-            </div>
-            <div className={styles.langTag}>
-              {toLangCode(it.key)}
-              <span className={styles.currentLang} lang={toBCP47(it.key)}>
-                {freeze && it.key === freeze.from
-                  ? freeze.currentText
-                  : t('language.current')}
-              </span>
-            </div>
-          </button>
-        ))}
+        {/* Full Language Support Section */}
+        <div className={styles.langSection}>
+            <span className={styles.sectionText}>{t('language.fullSupport')}</span>
+          <div className={styles.sectionItems}>
+            {fullLangItems.map(renderLanguageItem)}
+          </div>
+        </div>
+
+        {/* UI-Only Language Support Section */}
+        <div className={styles.langSection}>
+            <span className={styles.sectionText}>{t('language.uiOnly')}</span>
+          <div className={styles.sectionItems}>
+            {uiOnlyItems.map(renderLanguageItem)}
+          </div>
+        </div>
       </div>
     </Modal>
   );

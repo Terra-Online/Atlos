@@ -42,8 +42,8 @@
 }
 
 .modalContainer {
-    background-color: var(--modal-bg);
-    border-radius: 3px;
+    background-color: transparent;
+    border-radius: 5px;
     color: var(--modal-header-text);
     display: flex;
     flex-direction: column;
@@ -77,10 +77,11 @@
     }
 
     .modalHeader {
-        border-radius: 3px 3px 0 0;
+        z-index: 3;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        height: 2.5rem;
         padding: 0.5rem;
         background-color: var(--modal-header-bg);
         font-weight: 900;
@@ -224,10 +225,37 @@
 }
 
 .modalContent {
+    z-index: 1;
     padding: 0.6rem;
     max-height: 45vh;
-    overflow: hidden;
+    background-color: var(--modal-bg);
+    overflow: scroll;
     &::-webkit-scrollbar {
             width: 0;
+    }
+}
+
+.topBlur,
+.bottomBlur {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    height: 2.5rem;
+    pointer-events: none;
+    transition: transform 0.25s ease-out;
+}
+.topBlur {
+    top: 2.5rem;
+    transform: translateY(-2.5rem);
+    &.visible {
+        transform: translateY(0);
+    }
+}
+.bottomBlur {
+    bottom: 0;
+    transform: translateY(2.5rem);
+    &.visible {
+        transform: translateY(0);
     }
 }

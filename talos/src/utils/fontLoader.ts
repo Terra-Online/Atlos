@@ -121,7 +121,7 @@ const fontDefinitions: FontDefinition[] = [
         }
     },
     {
-        family: 'HMSans_SC', // 简体中文版本
+        family: 'HMSans',
         weight: 'Regular',
         cnFiles: {
             woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
@@ -132,18 +132,6 @@ const fontDefinitions: FontDefinition[] = [
             woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
         }
     },
-    {
-        family: 'HMSans_TC', // 繁体中文版本
-        weight: 'Regular',
-        cnFiles: {
-            woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
-            woff: '/src/assets/fonts/Harmony/HMSans_SC.woff',
-        },
-        hkFiles: {
-            woff2: '/src/assets/fonts/Harmony/HMSans_TC.woff2',
-            woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
-        }
-    }
 ];
 
 // detect document language
@@ -211,12 +199,12 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
     const fontWeightProperty = isHMSans ? '\n    font-weight: 100 900;\n    font-style: normal;' : '';
     
     return `
-@font-face {
-    font-family: '${definition.family}';
-    src: ${sources.join(',\n        ')};${fontWeightProperty}
-    font-display: swap;
-}`;
-}
+        @font-face {
+            font-family: '${definition.family}';
+            src: ${sources.join(',\n        ')};${fontWeightProperty}
+            font-display: swap;
+        }`;
+    }
 
 // inject or update font styles in document head
 function injectFontStyles(region: Region): void {

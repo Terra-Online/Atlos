@@ -17,6 +17,7 @@ import Guide from '../../assets/logos/guide.svg?react';
 import L from 'leaflet';
 import { useTranslateUI } from '@/locale';
 import LanguageModal from '@/component/language/LanguageModal';
+import GroupsModal from '@/component/group/group';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -26,6 +27,7 @@ interface UIOverlayProps {
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     const t = useTranslateUI();
     const [langOpen, setLangOpen] = useState(false);
+    const [groupOpen, setGroupOpen] = useState(false);
     const { isMobile } = useDevice();
 
     const handleReset = () => {
@@ -43,7 +45,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
     };
 
     const handleHideUI = () => console.log('HideUI');
-    const handleGroup = () => console.log('Join related group');
+    const handleGroup = () => setGroupOpen(true);
 
     const unsubRef = useRef<(() => void) | null>(null);
     const invertRef = useRef(false);
@@ -170,6 +172,16 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
                 onSelected={(lang) => {
                     // 可在此处记录选择结果或埋点
                     console.log('Language switched to:', lang);
+                }}
+            />
+
+            {/* Groups Modal */}
+            <GroupsModal
+                open={groupOpen}
+                onClose={() => setGroupOpen(false)}
+                onChange={(o) => setGroupOpen(o)}
+                onSelected={(platform) => {
+                    console.log('Opened social platform:', platform);
                 }}
             />
         </div>

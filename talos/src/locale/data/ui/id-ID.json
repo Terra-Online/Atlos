@@ -37,16 +37,32 @@
     }
   },
   "language": {
-    "title": "bahasa",
+    "title": "Bahasa",
     "cancel": "Batal",
     "current": "Saat ini",
+    "fullSupport": "Dukungan bahasa lengkap",
+    "fullSupportHint": "Terjemahan lengkap untuk antarmuka dan konten permainan",
+    "uiOnly": "Hanya antarmuka",
+    "uiOnlyHint": "Hanya terjemahan antarmuka, konten permainan akan ditampilkan dalam bahasa Inggris",
     "names": {
-      "en-US": "Inggris",
-      "zh-CN": "Cina Sederhana",
-      "zh-TW": "Cina Tradisional",
-      "ja-JP": "Jepang",
-      "ko-KR": "Korea"
+      "en-US": "Bahasa Inggris",
+      "zh-CN": "Bahasa Tionghoa Sederhana",
+      "zh-TW": "Bahasa Tionghoa Tradisional",
+      "ja-JP": "Bahasa Jepang",
+      "ko-KR": "Bahasa Korea",
+      "es-ES": "Bahasa Spanyol",
+      "fr-FR": "Bahasa Prancis",
+      "de-DE": "Bahasa Jerman",
+      "it-IT": "Bahasa Italia",
+      "ru-RU": "Bahasa Rusia",
+      "pt-BR": "Bahasa Portugis",
+      "id-ID": "Bahasa Indonesia",
+      "ar-AE": "Bahasa Arab"
     }
+  },
+  "group": {
+    "title": "Komunitas dan Media Sosial",
+    "visit": "Kunjungi"
   },
   "common": {
     "close": "Tutup"

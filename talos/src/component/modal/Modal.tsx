@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useId, useCallback } from 'react';
 import { useTranslateUI } from '@/locale';
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss';
+import { LinearBlur } from 'progressive-blur';
 
 export interface ModalProps {
   open: boolean;
@@ -58,7 +59,12 @@ const Modal: React.FC<ModalProps> = ({
   const prevActiveRef = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const maskRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
+  
+  // Track scroll position for blur effects
+  const [isScrolledTop, setIsScrolledTop] = useState(true);
+  const [isScrolledBottom, setIsScrolledBottom] = useState(true);
 
   // 当 open 变为 true 时挂载；变为 false 时触发退出动画
   useEffect(() => {
@@ -102,6 +108,30 @@ const Modal: React.FC<ModalProps> = ({
   }, [phase, exitDuration]);
 
   useEffect(() => { onChange?.(open); }, [open, onChange]);
+
+  // Track scroll position for blur effects
+  useEffect(() => {
+    const scroller = contentRef.current;
+    if (!scroller) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scroller;
+      setIsScrolledTop(scrollTop <= 1);
+      setIsScrolledBottom(scrollTop + clientHeight >= scrollHeight - 1);
+    };
+
+    handleScroll(); // Initial check
+    scroller.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Also check on content changes
+    const resizeObserver = new ResizeObserver(handleScroll);
+    resizeObserver.observe(scroller);
+    
+    return () => {
+      scroller.removeEventListener('scroll', handleScroll);
+      resizeObserver.disconnect();
+    };
+  }, [phase]); // Re-run when modal opens/closes
 
   // 保证所有 hooks 已调用后再做环境判定
   const isSSR = typeof document === 'undefined';
@@ -178,7 +208,7 @@ const Modal: React.FC<ModalProps> = ({
       <div
         className={styles.modalContainer}
         data-size={size}
-  data-state={phase === 'open' ? 'open' : 'closed'}
+        data-state={phase === 'open' ? 'open' : 'closed'}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
@@ -207,7 +237,21 @@ const Modal: React.FC<ModalProps> = ({
             )}
           </div>
         )}
-        <div className={styles.modalContent}>{children}</div>
+        <div className={styles.modalContent} ref={contentRef}>{children}</div>
+        
+        {/* Top blur: visible when not scrolled to top */}
+        <LinearBlur
+          side='top'
+          strength={4}
+          className={`${styles.topBlur} ${!isScrolledTop ? styles.visible : ''}`}
+        />
+        
+        {/* Bottom blur: visible when not scrolled to bottom */}
+        <LinearBlur
+          side='bottom'
+          strength={4}
+          className={`${styles.bottomBlur} ${!isScrolledBottom ? styles.visible : ''}`}
+        />
       </div>
     </div>,
     root,
