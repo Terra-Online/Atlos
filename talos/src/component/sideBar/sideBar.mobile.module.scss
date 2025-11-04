@@ -65,23 +65,22 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 }
 
 :root, :root[data-theme='light'] {
-    --drawer-backdrop-bg: #{rgba($white-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($black-1, 0.5)};
-    --drawer-backdrop-bg: #{rgba($white-0, 0.4)};
+    --mobile-drawer-backdrop-bg: #{rgba($white-1, 1)};
 }
 :root[data-theme='dark'] {
-    --drawer-backdrop-bg: #{rgba($black-1, 0.6)};
     --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($light-2, 0.5)};
-    --drawer-backdrop-bg: #{rgba($mid, 0.4)};
+    --mobile-drawer-backdrop-bg: #{rgba($black-1, 1)};
 }
 .mobileDrawer {
     pointer-events: auto;
-    width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
-    margin-bottom: clamp(0rem, calc((1 - var(--drawer-progress)) * 1rem), 1rem);
+    max-width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
+    transform: translate(calc(calc(1 - var(--drawer-progress)) * 1rem), calc(calc(1 - var(--drawer-progress)) * -1rem));
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
-    box-shadow: 0 -2px 6px rgba($black-1, 0.25);
+
+    box-shadow: 0 0 6px rgba($black-1, 0.25);
     background: transparent;
     position: relative;
     overflow: hidden;
@@ -108,7 +107,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
         position: relative;
     }
 
-  &[data-snap="0"] .contentWrapper {
+    &[data-snap="0"] .contentWrapper {
         overflow-y: hidden;
         touch-action: none;
     }
@@ -141,8 +140,8 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 .mobileDrawerBackdrop {
     --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
     border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
-    background-color: var(--drawer-backdrop-bg);
-    backdrop-filter: blur(6px);
+    background-color: var(--mobile-drawer-backdrop-bg);
+    //backdrop-filter: blur(6px);
 }
 
 .topRow {
@@ -219,6 +218,7 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 
 .mobileDrawer[data-snap="0"] .sidebarContent > .filters,
 .mobileDrawer[data-snap="0"] .detailSlot,
-.mobileDrawer[data-snap="0"] .mobileTriggerBar {
+.mobileDrawer[data-snap="0"] .mobileTriggerBar,
+.mobileDrawer[data-snap="0"] .copyright {
     display: none;
 }

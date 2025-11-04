@@ -1,6 +1,7 @@
 @use '../../styles/curves.scss' as *;
 
 .drawerContainer {
+  touch-action: none;
   position: absolute;
   z-index: 150; /* above sidebar content/footer */
   display: flex;
