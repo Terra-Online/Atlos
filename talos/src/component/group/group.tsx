@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
-import Modal from '@/component/modal/Modal';
+import Modal from '@/component/modal/modal';
 import GroupIcon from '../../assets/logos/group.svg?react';
 import styles from './group.module.scss';
 
 import GitHubLogo from '../../assets/images/UI/media/github.svg?react';
-import DiscordLogo from '../../assets/images/UI/media/discord.svg?react';
+import DiscordLogo from '../../assets/images/UI/media/discord-light.svg?react';
 import SklandLogo from '../../assets/images/UI/media/skland.svg?react';
 import SkportLogo from '../../assets/images/UI/media/skport.svg?react';
 // import BilibiliLogo from '../../assets/images/UI/media/bilibili.svg?react';

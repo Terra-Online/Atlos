@@ -37,7 +37,7 @@
     }
   },
   "language": {
-    "title": "Bahasa",
+    "title": "Pilih Bahasa",
     "cancel": "Btl.",
     "current": "Skrg",
     "fullSupport": "Bahasa yang Didukung Penuh",
@@ -46,19 +46,19 @@
     "uiOnlyHint": "Hanya terjemahan antarmuka, konten permainan akan ditampilkan dalam bahasa Inggris.",
     "fyi": "Jika bahasa Anda belum tersedia di situs web ini, Anda dapat menghubungi administrator situs melalui email di translate@talos.wiki, atau kunjungi GitHub untuk berpartisipasi dalam proyek terjemahan open source kami. Anda dapat meminta entri terjemahan untuk bahasa Anda dan membantu menerjemahkan dan melokalisasi bagian WIKI sesuai dengan pedoman kami. Kami sangat menghargai dan menantikan kontribusi Anda.\nAnda juga dapat mengklik untuk melihat daftar kontributor terjemahan.",
     "names": {
-      "en-US": "Bahasa Inggris",
-      "zh-CN": "Bahasa Tionghoa Sederhana",
-      "zh-TW": "Bahasa Tionghoa Tradisional",
-      "ja-JP": "Bahasa Jepang",
-      "ko-KR": "Bahasa Korea",
-      "es-ES": "Bahasa Spanyol",
-      "fr-FR": "Bahasa Prancis",
-      "de-DE": "Bahasa Jerman",
-      "it-IT": "Bahasa Italia",
-      "ru-RU": "Bahasa Rusia",
-      "pt-BR": "Bahasa Portugis",
-      "id-ID": "Bahasa Indonesia",
-      "ar-AE": "Bahasa Arab"
+      "en-US": "Inggris",
+      "zh-CN": "Tionghoa Sederhana",
+      "zh-TW": "Tionghoa Tradisional",
+      "ja-JP": "Jepang",
+      "ko-KR": "Korea",
+      "es-ES": "Spanyol",
+      "fr-FR": "Prancis",
+      "de-DE": "Jerman",
+      "it-IT": "Italia",
+      "ru-RU": "Rusia",
+      "pt-BR": "Portugis",
+      "id-ID": "Indonesia",
+      "ar-AE": "Arab"
     }
   },
   "group": {
