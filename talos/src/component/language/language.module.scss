@@ -14,6 +14,7 @@
     --lang-actived-tag: #{$primary-accent-4};
     --lang--actived-tag-text: #{$grey-1};
     --lang-section-border: #{rgba($grey-1, 0.75)};
+    --lang-title-text: #{$black-1};
     --lang-section-text: #{$grey-1};
 }
 :root[data-theme='dark'] {
@@ -29,6 +30,7 @@
     --lang-actived-tag: #{$primary-accent-4};
     --lang--actived-tag-text: #{$black-1};
     --lang-section-border: #{rgba($light-1, 0.75)};
+    --lang-title-text: #{$light-2};
     --lang-section-text: #{$light-1};
 }
 
@@ -49,15 +51,33 @@
         width: 100%;
         height: 3px;
         background-color: var(--lang-section-border);
+        box-shadow: 0 0 2px rgba($black-0, 0.3);
     }
 }
-.sectionText {
+.sectionHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.sectionTitle {
     font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'HMSans_EN','HMSans','UD_ShinGo Regular', sans-serif;
+    letter-spacing: -.3px;
+    color: var(--lang-section-text);
+    unicode-bidi: plaintext;
+}
+.sectionHint {
+    font-size: 0.85rem;
     font-weight: 600;
     line-height: 1.25;
-    font-family: 'HMSans_EN','HMSans','UD_ShinGo Medium', sans-serif;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', sans-serif;
     letter-spacing: -.2px;
     color: var(--lang-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
 }
 
 .sectionItems {
@@ -145,6 +165,10 @@
     font-weight: 700;
     letter-spacing: -.5px;
     padding-left: 5px;
+    text-align: left;
+    &[lang='id-ID'] {
+        line-height: 0.77;
+    }
 }
 .langDisplay {
     grid-area: langDisplay;
@@ -217,4 +241,7 @@
 .active .langTag .currentLang {
     opacity: 1;
     max-width: 3rem;
+    &[lang='de-DE'] {
+        max-width: 4rem;
+    }
 }

@@ -130,7 +130,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       >
         {/* Full Language Support Section */}
         <div className={styles.langSection}>
-            <span className={styles.sectionText}>{t('language.fullSupport')}</span>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTitle}>{t('language.fullSupport')}</span>
+            <span className={styles.sectionHint}>{t('language.fullSupportHint')}</span>
+          </div>
           <div className={styles.sectionItems}>
             {fullLangItems.map(renderLanguageItem)}
           </div>
@@ -138,10 +141,14 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
 
         {/* UI-Only Language Support Section */}
         <div className={styles.langSection}>
-            <span className={styles.sectionText}>{t('language.uiOnly')}</span>
+          <div className={styles.sectionHeader}>
+            <span className={styles.sectionTitle}>{t('language.uiOnly')}</span>
+            <span className={styles.sectionHint}>{t('language.uiOnlyHint')}</span>
+          </div>
           <div className={styles.sectionItems}>
             {uiOnlyItems.map(renderLanguageItem)}
           </div>
+          <span className={styles.sectionHint}>{t('language.fyi')}</span>
         </div>
       </div>
     </Modal>

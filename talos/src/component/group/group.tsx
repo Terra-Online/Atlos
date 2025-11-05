@@ -83,7 +83,6 @@ const GroupsModal: React.FC<GroupsProps> = ({ open, onClose, onChange, onSelecte
                 e.preventDefault();
                 handleClick(link.name, link.url);
               }}
-              style={{ '--group-color': link.color } as React.CSSProperties}
               aria-label={`${t('group.visit')} ${link.name}`}
             >
               <IconComponent aria-hidden="true" />

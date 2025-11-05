@@ -290,40 +290,20 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
-        {currentSnap > 0 && !isScrolledTop && (
-          <LinearBlur
-            side='top'
-            strength={32}
-            falloffPercentage={80}
-            style={{
-              position: "absolute",
-              top: '-1rem',
-              left: 0,
-              right: 0,
-              zIndex: 15,
-              height: '6.5rem',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
+        <LinearBlur
+          side='top'
+          strength={32}
+          falloffPercentage={80}
+          className={`${mobileStyles.topBlur} ${currentSnap > 0 && !isScrolledTop ? mobileStyles.visible : ''}`}
+        />
 
         {/* Bottom blur: visible when not at snap-0 and not scrolled to bottom */}
-        {currentSnap > 0 && !isScrolledBottom && (
-          <LinearBlur
-            side='bottom'
-            strength={16}
-            falloffPercentage={100}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 10,
-              height: '3rem',
-              pointerEvents: 'none'
-            }}
-          />
-        )}
+        <LinearBlur
+          side='bottom'
+          strength={16}
+          falloffPercentage={100}
+          className={`${mobileStyles.bottomBlur} ${currentSnap > 0 && !isScrolledBottom ? mobileStyles.visible : ''}`}
+        />
       </Drawer>
     </div>
   );

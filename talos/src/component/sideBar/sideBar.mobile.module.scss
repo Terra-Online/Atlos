@@ -222,3 +222,29 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 .mobileDrawer[data-snap="0"] .copyright {
     display: none;
 }
+
+.topBlur,
+.bottomBlur {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 15;
+    pointer-events: none;
+    transition: transform 0.35s ease-out;
+}
+.topBlur {
+    top: -1rem;
+    height: 6.5rem;
+    transform: translateY(-6.5rem);
+    &.visible {
+        transform: translateY(0);
+    }
+}
+.bottomBlur {
+    bottom: 0;
+    height: 3rem;
+    transform: translateY(3rem);
+    &.visible {
+        transform: translateY(0);
+    }
+}
