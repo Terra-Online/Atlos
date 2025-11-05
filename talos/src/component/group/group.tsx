@@ -7,10 +7,9 @@ import GitHubLogo from '../../assets/images/UI/media/github.svg?react';
 import DiscordLogo from '../../assets/images/UI/media/discord.svg?react';
 import SklandLogo from '../../assets/images/UI/media/skland.svg?react';
 import SkportLogo from '../../assets/images/UI/media/skport.svg?react';
-import BilibiliLogo from '../../assets/images/UI/media/bilibili.svg?react';
+// import BilibiliLogo from '../../assets/images/UI/media/bilibili.svg?react';
 
 import { useTranslateUI } from '@/locale';
-
 export interface GroupsProps {
   open: boolean;
   onClose: () => void;
@@ -27,29 +26,31 @@ interface SocialLink {
 const SOCIAL_LINKS: SocialLink[] = [
   {
     icon: GitHubLogo,
-    url: 'https://github.com/Terra-Online',
+    url: 'https://github.com/Terra-Online/Atlos',
     name: 'GitHub'
   },
   {
     icon: DiscordLogo,
-    url: 'https://discord.gg/your-discord',
+    url: 'https://discord.gg/9zDwGe9Sht',
     name: 'Discord'
   },
   {
     icon: SklandLogo,
-    url: 'https://www.skland.com',
+    url: 'https://www.skland.com/profile?id=2730585909766',
     name: 'Skland'
   },
   {
     icon: SkportLogo,
-    url: 'https://www.skport.com',
+    url: 'https://www.skport.com/profile?id=3182563593139&cate=2',
     name: 'Skport'
   },
+  /*
   {
     icon: BilibiliLogo,
     url: 'https://space.bilibili.com/your-id',
     name: 'Bilibili'
   },
+  */
 ];
 
 const GroupsModal: React.FC<GroupsProps> = ({ open, onClose, onChange, onSelected }) => {

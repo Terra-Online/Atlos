@@ -19,11 +19,12 @@ import { useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTri
 interface SideBarProps {
   currentRegion: null;
   onToggle: (isOpen: boolean) => void;
+  visible?: boolean;
 }
 
 const SNAP0 = 64; // px
 
-const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
+const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
   const t = useTranslateUI();
   const tGame = useTranslateGame();
 
@@ -216,7 +217,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle }) => {
   }, [rightContentWidth, hasRightContent]); // Remove leftRatio and animateLeftRatio from deps
 
   return (
-    <div className={mobileStyles.sidebarContainer} ref={rootRef}>
+    <div className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`} ref={rootRef}>
       {/* Mobile places the whole sidebar into a bottom drawer */}
       <Drawer
         side="bottom"

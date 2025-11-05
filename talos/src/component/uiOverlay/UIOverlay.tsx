@@ -22,9 +22,11 @@ import GroupsModal from '@/component/group/group';
 interface UIOverlayProps {
     map?: L.Map;
     isSidebarOpen: boolean; // 保留用于某些需要的组件
+    visible?: boolean;
+    onHideUI?: () => void;
 }
 
-const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
+const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = true, onHideUI }) => {
     const t = useTranslateUI();
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
@@ -44,7 +46,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
         window.location.reload();
     };
 
-    const handleHideUI = () => console.log('HideUI');
+    const handleHideUI = () => {
+        if (onHideUI) {onHideUI();}
+    };
     const handleGroup = () => setGroupOpen(true);
 
     const unsubRef = useRef<(() => void) | null>(null);
@@ -116,7 +120,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen }) => {
 
     return (
         <div
-            className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''}`}
+            className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''} ${!visible ? styles.hidden : ''}`}
         >
             {/* Scale Component */}
             {map && <Scale map={map} />}

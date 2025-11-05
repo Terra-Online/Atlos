@@ -6,9 +6,11 @@
     height: 100%;
     /* Remove z-index to avoid creating stacking context that blocks backdrop-filter */
     pointer-events: none;
+    opacity: 1;
     transition:
         left 0.3s ease-in-out,
-        width 0.3s ease-in-out;
+        width 0.3s ease-in-out,
+        opacity 0.2s ease-out;
 
     /* Sidebar open state */
     &.sidebarOpen {
@@ -16,9 +18,20 @@
         width: calc(100% - 300px); /* Subtract sidebar width */
     }
 
+    /* Hidden state */
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
     /* Allow child components to receive pointer events */
     & > * {
         pointer-events: auto;
+    }
+    
+    /* When hidden, disable pointer events for all children too */
+    &.hidden > * {
+        pointer-events: none;
     }
 
     /* Custom positioning for components that need it */
