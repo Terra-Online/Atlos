@@ -244,4 +244,7 @@
     &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'] {
         max-width: 4rem;
     }
+    &[lang='ar-AE'] {
+        height: 1rem;
+    }
 }
