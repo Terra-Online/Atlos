@@ -39,7 +39,7 @@
   "language": {
     "title": "Langue",
     "cancel": "Ann.",
-    "current": "Act.",
+    "current": "Actu.",
     "fullSupport": "Langues entièrement prises en charge",
     "fullSupportHint": "Traductions complètes pour l'interface et le contenu du jeu.",
     "uiOnly": "Langues d'interface uniquement",
@@ -62,7 +62,7 @@
     }
   },
   "group": {
-    "title": "Communauté et réseaux sociaux",
+    "title": "Communauté & médias",
     "visit": "Visiter"
   },
   "common": {

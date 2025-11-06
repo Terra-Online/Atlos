@@ -2,7 +2,6 @@
 @use './curves.scss' as *;
 @use './palette' as *;
 @use './highlight';
-@import 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap';
 
 /* Global theme transition variables (scoped) */
 :root {
@@ -80,7 +79,7 @@ button {
 }
 body {
     margin: 0;
-    font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', sans-serif;
+    font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
 }
 
 ::selection {
