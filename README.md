@@ -1,26 +1,39 @@
 # Atlos
-Atlos is an open-source online map for the 3D RTSRPG game Arknights: Endfield (by Hypergryph). This repository contains the web client (codename “talos”) built with React + Vite, featuring a high‑performance map (Leaflet), rich UI, multilingual support, and a CDN‑friendly build pipeline.
+Atlos is an open-source online map for the 3D RTSRPG game Arknights: Endfield (by Hypergryph). This repository contains the web client (codename “talos”) built with React + Vite, featuring an Endfield-esque UI, multilingual support, and a CDN‑friendly build pipeline.
 
 PRs are warmly welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ## Community
 
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/2PMegCX4wJ)
+[![Build](https://img.shields.io/github/actions/workflow/status/Terra-Online/Atlos/build.yml?branch=main&label=build&logo=github)](https://github.com/Terra-Online/Atlos/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/Terra-Online/Atlos?label=license)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 Come and chat with us on **Discord**: https://discord.gg/2PMegCX4wJ
 
 ## Highlights
 
-- Modern stack: React 18, TypeScript, Vite, SCSS Modules
-- Map rendering with Leaflet and custom hooks/components (verb.1, we consider to migrate current structure to Canvaskit in next version)
-- Clean UI with modals, sidebars, blur/fade transitions
-- Full internationalization (UI/Game), clear fallback rules
-- CDN/OSS friendly build and publish scripts
+- Modern stack: React, TypeScript, Vite, SCSS Modules;
+- Map rendering with Leaflet and custom hooks/components (verb.1, we consider to migrate current structure to Canvaskit in next version);
+- The project is well organized in our JIRA Kanban, consider joining us and take some todos!
+- Clean UI with Figma workflow;
+- Full internationalization (UI/Game), clear fallback rules;
+- CDN/OSS friendly build and publish scripts;
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- environment setup
+- coding standards & linting
+- branch/commit/PR conventions
+- translation workflow
 
 ## Repository layout
 
 Top-level folders you’ll most likely interact with:
 
-> [!IMPORTANT]
-> - `talos/` – the web app
+- `talos/` – the web app
 	- `src/` – application source
 		- `component/` – UI components (modal, sidebar, language selector, groups modal, etc.)
     		- `component/map/` – map integration (Leaflet + hooks)
@@ -37,7 +50,7 @@ Top-level folders you’ll most likely interact with:
 
 Requirements:
 - Node.js 20+
-- pnpm 8+
+- pnpm 10+
 
 Install & run (from the `talos` directory):
 
@@ -65,23 +78,6 @@ pnpm build
 - Main latin letters are displayed in Novencento Sans Wide family provided by [Synthview Type Design](https://typography.synthview.com/novecento-sans-font-family.php).
 - Variable font HMSans (weights 100–900) is used alongside region‑specific fonts.
 - Fonts are loaded dynamically using the utilities in `src/utils/fontLoader.ts` and `src/utils/fontCache.ts`.
-
-## Build & Deploy (CDN/OSS)
-
-- Build output is designed to be CDN‑hosted. The base public path is determined from `talos/config/config.json` at build time:
-	- `web.build.cdn`: your CDN origin (e.g. `https://cdn.example.com`)
-	- `web.build.oss.prefix`: object prefix/path (e.g. `/talos`)
-- The file `talos/config/config.json` is Git‑ignored by default. Use `config/config.template.json` as a starting point, and generate a real config.json in your CI/ECS.
-- Publishing: `talos/scripts/publish-oss.js` uploads the `dist/` artifacts to OSS and can skip already‑present large assets on the CDN to save time.
-- Now we hosted the service on Aliyun for users from China mainland and consider to deploy the site on AWS Singapore server for global users.
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- environment setup
-- coding standards & linting
-- branch/commit/PR conventions
-- translation workflow
 
 ## License
 

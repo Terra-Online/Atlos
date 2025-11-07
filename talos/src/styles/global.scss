@@ -1,7 +1,8 @@
 @use './fonts' as *;
-@use './curves.scss' as *;
+@use './curves' as *;
 @use './palette' as *;
 @use './highlight';
+@use './boundary';
 
 /* Global theme transition variables (scoped) */
 :root {

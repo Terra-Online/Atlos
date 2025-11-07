@@ -5,6 +5,7 @@ import { IMapView } from './type';
 import { getTileResourceUrl } from '@/utils/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
+import { SubregionBoundaryManager } from '@/utils/boundary';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
@@ -15,6 +16,8 @@ export class MapCore {
     map!: L.Map;
 
     currentRegionId!: string;
+    private boundaryLayer?: L.Rectangle;
+    private boundaryManager!: SubregionBoundaryManager;
 
     private transforming = false;
 
@@ -36,6 +39,8 @@ export class MapCore {
             options?.onSwitchCurrentMarker,
         );
 
+        this.boundaryManager = new SubregionBoundaryManager(this.map);
+
         this.map.on('moveend', () => {
             if (!this.transforming) {
                 useViewState
@@ -56,11 +61,14 @@ export class MapCore {
     async switchRegion(regionId: string): Promise<void> {
         this.currentRegionId = regionId;
 
+        // 清理子地区边界层
+        this.boundaryManager.hideBoundaries();
+
         this.map.eachLayer((layer) => this.map.removeLayer(layer));
 
         const config = REGION_DICT[regionId];
 
-        // 验证配置存在
+        // fallback for missing region config
         if (!config) {
             throw new Error(`Region config not found for: ${regionId}`);
         }
@@ -118,12 +126,27 @@ export class MapCore {
 
         const mapBounds = L.latLngBounds(southWest, northEast);
         
+        // set map bounds to restrict panning
+        this.map.setMaxBounds(mapBounds);
+        
         const tileLayer = L.tileLayer(getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`), {
             tileSize: config.tileSize,
             noWrap: true,
             bounds: mapBounds,
             pane: 'tilePane',
         }).addTo(this.map);
+
+        if (this.boundaryLayer) {
+            this.map.removeLayer(this.boundaryLayer);
+        }
+
+        // visualize region boundary (for debugging)
+        // this.boundaryLayer = L.rectangle(mapBounds, {
+        //     color: '#000000',
+        //     weight: 5,
+        //     fillOpacity: 0,
+        //     interactive: false,
+        // }).addTo(this.map);
 
         this.markerLayer.changeRegion(regionId);
 
@@ -155,5 +178,13 @@ export class MapCore {
         this.map.on('moveend', onEnd);
         this.map.on('zoomend', onEnd);
         this.map.setView([view.lat, view.lng], view.zoom);
+    }
+
+    showSubregionBoundaries() {
+        this.boundaryManager.showBoundaries(this.currentRegionId);
+    }
+
+    hideSubregionBoundaries() {
+        this.boundaryManager.hideBoundaries();
     }
 }

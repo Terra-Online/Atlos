@@ -1,0 +1,44 @@
+@use './palette.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --boundary: #{$primary-accent-5};
+}
+:root[data-theme='dark'] {
+    --boundary: #{$primary-accent-4};
+}
+
+path.subregion-boundary-stroke {
+    stroke: var(--boundary);
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 5, 3;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 4px rgba(var(--boundary), 0.4));
+}
+
+path.subregion-boundary-fill {
+    fill: var(--boundary);
+    fill-opacity: 0.2;
+    stroke: $primary-accent-2;
+    stroke-width: 1;
+    stroke-dasharray: 2, 2;
+    opacity: 0.6;
+}
+
+.subregion-boundary-stroke {
+    stroke: var(--boundary);
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 5, 3;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 4px rgba(var(--boundary), 0.4));
+}
+
+.subregion-boundary-fill {
+    fill: var(--boundary);
+    fill-opacity: 0.2;
+    stroke: var(--boundary);
+    stroke-width: 1;
+    stroke-dasharray: 2, 2;
+    opacity: 0.6;
+}
