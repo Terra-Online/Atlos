@@ -31,37 +31,42 @@
 .loadingProgress {
   background-color: rgb(255, 250, 0);
   border-radius: 2px;
+  position: relative;
+  display: flex;
   transition: all 0.1s linear;
+  justify-content: center;
+  align-items: center;
 
   .loadingBar:not(.mobile) & {
     width: 100%;
     height: 0;
+    flex-direction: column-reverse;
   }
 
   .loadingBar.mobile & {
     width: 0;
     height: 100%;
-  }
-}
-
-.textContainer {
-  position: absolute;
-  white-space: nowrap;
-
-  .loadingBar:not(.mobile) & {
-    left: calc(100% + 2px);
-    transform: translateY(-300%);
-  }
-
-  .loadingBar.mobile & {
-    bottom: calc(100% + 2px);
-    transform: translateX(-200%);
+    flex-direction: row;
   }
 }
 
 .loadingText {
+  position: absolute;
   color: rgb(255, 250, 0);
   font-size: 14px;
+  white-space: nowrap;
+
+  .loadingBar:not(.mobile) & {
+    left: calc(100% + 2px);
+    bottom: 0;
+    transform: translateY(-50%);
+  }
+
+  .loadingBar.mobile & {
+    bottom: calc(100% + 2px);
+    right: 0;
+    transform: translateX(-50%);
+  }
 }
 
 .completionEffect {
@@ -81,23 +86,5 @@
   }
   100% {
     width: 100%;
-  }
-}
-
-@keyframes loadingAnimation {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes loadingAnimationMobile {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(100%);
   }
 }

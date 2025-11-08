@@ -22,17 +22,19 @@ const Loading = ({
 
         intervalRef.current = window.setInterval(() => {
             setProgress((prev) => {
-                if (prev >= maxProgress) {
-                    // 当进度达到maxProgress时，启动完成效果
-                    if (maxProgress === 100 && !showCompletionEffect) {
+                if (prev < maxProgress) {
+                    return prev + 1;
+                }
+                // 当进度达到maxProgress时，启动完成效果
+                if (maxProgress === 100 && !showCompletionEffect) {
+                    setTimeout(() => {
                         setShowCompletionEffect(true);
-                        completionTimeoutRef.current = window.setTimeout(() => {
+                        setTimeout(() => {
                             completeController?.();
                         }, 450); // 与CSS动画持续时间保持一致
-                    }
-                    return maxProgress;
+                    }, 300);
                 }
-                return prev + 1;
+                return maxProgress;
             });
         }, 30);
 
@@ -49,7 +51,7 @@ const Loading = ({
     return (
         <div className={styles.loadingContainer}>
             {showCompletionEffect && (
-                <div className={styles.completionEffect} />
+                <div className={styles.completionEffect}></div>
             )}
 
             <div
@@ -63,16 +65,7 @@ const Loading = ({
                             : { height: `${progress}%` }
                     }
                 >
-                    <div
-                        className={styles.textContainer}
-                        style={
-                            isMobile
-                                ? { left: `${progress}%` } // 横向移动（进度%）
-                                : { top: `${progress}%` } // 纵向移动（进度%）
-                        }
-                    >
-                        <div className={styles.loadingText}>{progress}%</div>
-                    </div>
+                    <span className={styles.loadingText}>{progress}%</span>
                 </div>
             </div>
         </div>
