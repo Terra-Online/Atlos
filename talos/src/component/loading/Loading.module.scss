@@ -1,0 +1,103 @@
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgb(25, 25, 25);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.loadingBar {
+  position: fixed;
+  height: 100vh;
+  width: 32px;
+  overflow: visible;
+  background-color: transparent;
+  left: 0;
+  top: 0;
+
+  &.mobile {
+    height: 32px;
+    width: 100vw;
+    left: 0;
+    top: 80vh;
+  }
+}
+
+.loadingProgress {
+  background-color: rgb(255, 250, 0);
+  border-radius: 2px;
+  transition: all 0.1s linear;
+
+  .loadingBar:not(.mobile) & {
+    width: 100%;
+    height: 0;
+  }
+
+  .loadingBar.mobile & {
+    width: 0;
+    height: 100%;
+  }
+}
+
+.textContainer {
+  position: absolute;
+  white-space: nowrap;
+
+  .loadingBar:not(.mobile) & {
+    left: calc(100% + 2px);
+    transform: translateY(-300%);
+  }
+
+  .loadingBar.mobile & {
+    bottom: calc(100% + 2px);
+    transform: translateX(-200%);
+  }
+}
+
+.loadingText {
+  color: rgb(255, 250, 0);
+  font-size: 14px;
+}
+
+.completionEffect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background-color: rgb(255, 250, 0);
+  animation: completionAnimation 0.4s ease-out forwards;
+  z-index: 10000;
+}
+
+@keyframes completionAnimation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes loadingAnimation {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes loadingAnimationMobile {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
