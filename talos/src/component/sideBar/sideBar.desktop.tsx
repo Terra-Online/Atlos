@@ -101,11 +101,12 @@ const SideBarDesktop = ({ currentRegion, onToggle }: SideBarProps) => {
                     snap={[0, 150]}
                     snapThreshold={[50, 50]}
                     handleSize={28}
-                    className={drawerStyles.TriggerDrawer}
-                    handleClassName={drawerStyles.TriggerDrawerHandle}
-                    contentClassName={drawerStyles.TriggerDrawerContent}
-                    backdropClassName={drawerStyles.TriggerDrawerBackdrop}
+                    className={drawerStyles.triggerDrawer}
+                    handleClassName={drawerStyles.triggerDrawerHandle}
+                    contentClassName={drawerStyles.triggerDrawerContent}
+                    backdropClassName={drawerStyles.triggerDrawerBackdrop}
                     style={{ bottom: 'var(--drawer-bottom)', left: 0, right: 0 }}
+                    debug={true}
                 >
                     <TriggerBar>
                         <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
