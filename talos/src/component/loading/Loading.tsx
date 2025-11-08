@@ -13,7 +13,6 @@ const Loading = ({
     const [progress, setProgress] = useState(0);
     const [showCompletionEffect, setShowCompletionEffect] = useState(false);
     const intervalRef = useRef<number | null>(null);
-    const completionTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (intervalRef.current) {
@@ -25,8 +24,8 @@ const Loading = ({
                 if (prev < maxProgress) {
                     return prev + 1;
                 }
-                // 当进度达到maxProgress时，启动完成效果
-                if (maxProgress === 100 && !showCompletionEffect) {
+
+                if (maxProgress === 100) {
                     setTimeout(() => {
                         setShowCompletionEffect(true);
                         setTimeout(() => {
@@ -41,9 +40,6 @@ const Loading = ({
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
-            }
-            if (completionTimeoutRef.current) {
-                clearTimeout(completionTimeoutRef.current);
             }
         };
     }, [completeController, maxProgress]);
