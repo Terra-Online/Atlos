@@ -187,4 +187,12 @@ export class MapCore {
     hideSubregionBoundaries() {
         this.boundaryManager.hideBoundaries();
     }
+
+    enableMarkerClustering() {
+        this.markerLayer.enableClustering();
+    }
+
+    disableMarkerClustering() {
+        this.markerLayer.disableClustering();
+    }
 }

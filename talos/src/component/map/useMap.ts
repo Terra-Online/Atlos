@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createHighlight } from '@/utils/visual';
 import { useMarkerStore } from '@/store/marker';
 import { useMarker } from './useMarker';
-import { useTriggerBoundary } from '@/store/uiPrefs';
+import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
 import L from 'leaflet';
 
 // Hook for map initialization and region management
@@ -18,6 +18,7 @@ export function useMap(ele: HTMLDivElement | null) {
     } = useRegion();
 
     const triggerBoundary = useTriggerBoundary();
+    const triggerCluster = useTriggerCluster();
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
     const [mapInitialized, setMapInitialized] = useState(false);
@@ -124,6 +125,17 @@ export function useMap(ele: HTMLDivElement | null) {
             mapRef.current.hideSubregionBoundaries();
         }
     }, [triggerBoundary, mapInitialized, currentRegion]);
+
+    // 监听聚合触发器状态
+    useEffect(() => {
+        if (!mapRef.current || !mapInitialized) return;
+
+        if (triggerCluster) {
+            mapRef.current.enableMarkerClustering();
+        } else {
+            mapRef.current.disableMarkerClustering();
+        }
+    }, [triggerCluster, mapInitialized]);
 
     return {
         map: LMap,

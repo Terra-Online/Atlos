@@ -1,8 +1,16 @@
 @use './fonts' as *;
-@use './curves' as *;
+@use './curves.scss' as *;
 @use './palette' as *;
 @use './highlight';
 @use './boundary';
+@use './markerCluster';
+
+/* Import Leaflet MarkerCluster styles */
+@import 'leaflet.markercluster/dist/MarkerCluster.css';
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+
+/* Import custom MarkerCluster styles */
+
 
 /* Global theme transition variables (scoped) */
 :root {

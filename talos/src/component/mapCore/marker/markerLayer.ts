@@ -4,6 +4,7 @@ import LOGGER from '@/utils/log';
 import L from 'leaflet';
 import { getMarkerLayer } from './markerRenderer';
 import styles from './marker.module.scss';
+import { ClusterLayer } from './clusterLayer';
 
 // leaflet renderer
 export class MarkerLayer {
@@ -15,6 +16,9 @@ export class MarkerLayer {
      * 子区域到存放该区域marker的LayerGroup映射
      */
     layerSubregionDict: Record<string, L.LayerGroup> = {};
+
+    private clusterLayer: ClusterLayer;
+    private activeFilterKeys: string[] = [];
 
     /**
      * marker唯一id到marker Layer映射
@@ -48,6 +52,7 @@ export class MarkerLayer {
     ) {
         this.map = map;
         this._onSwitchCurrentMarker = onSwitchCurrentMarker;
+
         // 初始化markerType到markerId列表的映射
         this.markerTypeMap = Object.values(MARKER_TYPE_DICT).reduce(
             (acc, type) => {
@@ -69,6 +74,18 @@ export class MarkerLayer {
             },
             {},
         );
+
+        this.clusterLayer = new ClusterLayer({
+            map: this.map,
+            getMarkerDict: () => this.markerDict,
+            getMarkerDataDict: () => this.markerDataDict,
+            getMarkerTypeMap: () => this.markerTypeMap,
+            getLayerSubregionDict: () => this.layerSubregionDict,
+        });
+
+        Object.values(MARKER_TYPE_DICT).forEach((type) => {
+            this.clusterLayer.registerType(type);
+        });
 
         // 导入全图marker
         this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat());
@@ -120,30 +137,55 @@ export class MarkerLayer {
             this.markerTypeMap[typeKey].push(marker.id);
             // layer.addTo(this.layerSubregionDict[marker.region.sub]);
         });
+
+        const newMarkerIds = markers.map((marker) => marker.id);
+        this.clusterLayer.notifyMarkersAdded(newMarkerIds);
     }
 
     changeRegion(regionId: string) {
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
         });
+        
         const subregions = REGION_DICT[regionId].subregions;
         subregions.forEach((subregion) => {
             this.layerSubregionDict[subregion].addTo(this.map);
         });
+
+        this.clusterLayer.setActiveSubregions(subregions);
+        if (this.clusterLayer.isEnabled()) {
+            this.clusterLayer.applyFilter(this.activeFilterKeys);
+        }
     }
 
     filterMarker(typeKeys: string[]) {
-        const markerIds = typeKeys.flatMap((key) => this.markerTypeMap[key] || []);
+        this.activeFilterKeys = typeKeys;
+        this.clusterLayer.applyFilter(typeKeys);
+
+        const clusterEnabled = this.clusterLayer.isEnabled();
+        const markerIdsSet = new Set(
+            (clusterEnabled
+                ? typeKeys.filter((key) => !this.clusterLayer.isTypeManaged(key))
+                : typeKeys
+            ).flatMap((key) => this.markerTypeMap[key] || []),
+        );
+
         Object.entries(this.markerDict).forEach(([id, layer]) => {
-            const parent =
-                this.layerSubregionDict[this.markerDataDict[id].subregionId];
-            const shouldShow = markerIds.includes(id);
-            const group = parent;
+            const markerData = this.markerDataDict[id];
+            const parent = this.layerSubregionDict[markerData.subregionId];
+
+            if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
+                if (parent?.hasLayer(layer)) {
+                    parent.removeLayer(layer);
+                }
+                return;
+            }
+
+            const shouldShow = markerIdsSet.has(id);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 
             if (shouldShow) {
-                // 取消待移除并移除淡出类
                 if (this.pendingRemovalTimers[id] !== undefined) {
                     clearTimeout(this.pendingRemovalTimers[id]);
                     delete this.pendingRemovalTimers[id];
@@ -151,18 +193,14 @@ export class MarkerLayer {
                 if (inner) inner.classList.remove(styles.disappearing);
                 layer.addTo(parent);
             } else {
-                // 已经不在可见组内则忽略
-                if (!group.hasLayer(layer)) return;
+                if (!parent.hasLayer(layer)) return;
                 if (inner) {
-                    // 添加淡出类
                     inner.classList.add(styles.disappearing);
                 }
                 if (this.pendingRemovalTimers[id] !== undefined) {
                     clearTimeout(this.pendingRemovalTimers[id]);
                 }
-                // 延迟实际移除以展示淡出动画
                 this.pendingRemovalTimers[id] = window.setTimeout(() => {
-                    // 二次确认：若在等待期间被要求显示，会在显示分支取消该定时器
                     // @ts-expect-error leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
                     layer.remove(parent);
                     delete this.pendingRemovalTimers[id];
@@ -184,5 +222,30 @@ export class MarkerLayer {
         const subregions = REGION_DICT[regionId].subregions;
         const points = Object.values(this.markerDataDict);
         return points.filter((point) => subregions.includes(point.subregionId));
+    }
+
+    /**
+     * 启用聚合模式
+     */
+    enableClustering() {
+        if (this.clusterLayer.isEnabled()) return;
+        this.clusterLayer.enable();
+        this.clusterLayer.applyFilter(this.activeFilterKeys);
+    }
+
+    /**
+     * 禁用聚合模式
+     */
+    disableClustering() {
+        if (!this.clusterLayer.isEnabled()) return;
+        this.clusterLayer.disable();
+        this.filterMarker(this.activeFilterKeys);
+    }
+
+    /**
+     * 检查是否启用了聚合
+     */
+    isClusteringEnabled(): boolean {
+        return this.clusterLayer.isEnabled();
     }
 }

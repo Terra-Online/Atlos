@@ -251,3 +251,53 @@
 
     }
 }
+
+// 聚合marker的样式
+.clusterMarker {
+    position: relative;
+    
+    .clusterCount {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: $primary-accent-4;
+        color: $white-1;
+        font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        box-shadow: 0 0 4px rgba($black-0, 0.5);
+        z-index: 10;
+        pointer-events: none;
+    }
+    
+    // 聚合marker也有hover效果
+    &:hover {
+        &::before {
+            outline: 2px solid rgba($white-1, 0.6);
+            outline-offset: 10px;
+            transition: outline 0.25s ease-in, outline-offset 0.25s ease-in;
+        }
+    }
+}
+
+// noFrame类型的聚合marker
+.noFrameInner.clusterMarker {
+    .clusterCount {
+        top: 2px;
+        right: 2px;
+        background-color: rgba($primary-accent-4, 0.9);
+        backdrop-filter: blur(4px);
+    }
+    
+    &:hover {
+        transform: translate3d(-50%, -55%, 0);
+        transition: transform 0.35s $moderato-curve;
+    }
+}
