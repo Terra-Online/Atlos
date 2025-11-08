@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "types": [
-      "vite/client",
-      "vite-plugin-font/src/font"
-    ],
+    "types": ["vite/client"],
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": [
