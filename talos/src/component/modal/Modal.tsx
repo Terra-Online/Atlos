@@ -7,19 +7,19 @@ import { LinearBlur } from 'progressive-blur';
 export interface ModalProps {
   open: boolean;
   title?: React.ReactNode;
-  /** 标题前的图标插槽 */
+  /** image slot before title */
   icon?: React.ReactNode;
   children?: React.ReactNode;
-  onClose?: () => void; // 关闭时回传
-  onChange?: (open: boolean) => void; // 开关状态变化回传
+  onClose?: () => void; // close callback
+  onChange?: (open: boolean) => void; // switch state change callback
   maskClosable?: boolean;
-  showClose?: boolean; // 是否在 header 右侧显示关闭按钮
+  showClose?: boolean; // show close button on the header
   size?: 's' | 'm' | 'l' | 'full';
   closeOnEsc?: boolean;
-  keepMounted?: boolean; // 是否在关闭时保留节点（用于动画退出）
-  /** 退出动画的毫秒时长，需与 CSS 对应 */
+  keepMounted?: boolean; // whether to keep the node when closing (for animation exit)
+  /** exit animation duration in milliseconds, must correspond with CSS */
   exitDuration?: number;
-  /** 首次 / 每次打开时是否播放进入动画（通过首帧 closed -> open 触发） */
+  /** whether to play enter animation on first / every open (triggered by first frame closed -> open) */
   animateOnOpen?: boolean;
 }
 
@@ -49,10 +49,10 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const tUI = useTranslateUI();
   /**
-   * 状态机：
+   * Lifecycle phases:
    * 'unmounted' -> 'entering' -> 'open' -> 'exiting' -> 'unmounted'
-   * entering: 首帧 data-state=closed，下一帧切 open 触发过渡
-   * exiting: data-state=closed，等待 CSS 动画结束后卸载
+   * entering: first frame data-state=closed, next frame switch to open triggers transition
+   * exiting: data-state=closed, wait for CSS animation to end before unmounting
    */
   type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
   const [phase, setPhase] = useState<Phase>(() => (open ? (animateOnOpen ? 'entering' : 'open') : 'unmounted'));
@@ -66,13 +66,13 @@ const Modal: React.FC<ModalProps> = ({
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
 
-  // 当 open 变为 true 时挂载；变为 false 时触发退出动画
+  // When open becomes true, mount; when it becomes false, trigger exit animation
   useEffect(() => {
     if (open) {
       if (phase === 'unmounted') {
         setPhase(animateOnOpen ? 'entering' : 'open');
       } else if (phase === 'exiting') {
-        // 打开过程中立即反向：重新进入
+        // if reverting during exit, go to open directly
         setPhase(animateOnOpen ? 'entering' : 'open');
       }
     } else {
@@ -83,13 +83,13 @@ const Modal: React.FC<ModalProps> = ({
           setPhase('unmounted');
         }
       } else if (phase === 'entering') {
-        // 尚未到 open 就关闭，直接卸载
+        // unmount directly if closing during entering
         setPhase('unmounted');
       }
     }
   }, [open, phase, animateOnOpen, keepMounted]);
 
-  // entering -> open 下一帧
+  // entering -> open switch on next frame
   useEffect(() => {
     if (phase === 'entering') {
       const raf = requestAnimationFrame(() => setPhase('open'));
@@ -98,7 +98,7 @@ const Modal: React.FC<ModalProps> = ({
     return undefined;
   }, [phase]);
 
-  // exiting -> unmounted 等待动画时间
+  // exiting -> unmounted after exitDuration
   useEffect(() => {
     if (phase === 'exiting') {
       const timer = window.setTimeout(() => setPhase('unmounted'), exitDuration);
@@ -133,10 +133,10 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [phase]); // Re-run when modal opens/closes
 
-  // 保证所有 hooks 已调用后再做环境判定
+  // Ensure all hooks have run before doing environment checks
   const isSSR = typeof document === 'undefined';
 
-  // 焦点保存 & 进入时聚焦容器
+  // Focus management & focus container on enter
   useEffect(() => {
     if (open) {
       prevActiveRef.current = document.activeElement as HTMLElement | null;
@@ -150,7 +150,7 @@ const Modal: React.FC<ModalProps> = ({
     return undefined;
   }, [open]);
 
-  // ESC 关闭
+  // keyboard support
   useEffect(() => {
     if (!open || !closeOnEsc) return undefined;
     const onKey = (e: KeyboardEvent) => {
@@ -165,7 +165,7 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [open, closeOnEsc, onClose, onChange]);
 
-  // 焦点陷阱
+  // escape key focus trap
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key !== 'Tab') return;
     const container = dialogRef.current;
@@ -188,7 +188,7 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, []);
 
-  // 在所有 hooks 之后才根据 present 决定渲染，避免条件 hook 违规
+  // Ensure all hooks have run before doing environment checks
   if (isSSR || phase === 'unmounted') return null;
 
   const handleMaskClick = () => {
@@ -242,14 +242,14 @@ const Modal: React.FC<ModalProps> = ({
         {/* Top blur: visible when not scrolled to top */}
         <LinearBlur
           side='top'
-          strength={4}
+          strength={2}
           className={`${styles.topBlur} ${!isScrolledTop ? styles.visible : ''}`}
         />
         
         {/* Bottom blur: visible when not scrolled to bottom */}
         <LinearBlur
           side='bottom'
-          strength={4}
+          strength={2}
           className={`${styles.bottomBlur} ${!isScrolledBottom ? styles.visible : ''}`}
         />
       </div>

@@ -1,22 +1,18 @@
+// override default marker cluster styles in leaflet plugin
 @use './palette.scss' as *;
 @use './curves.scss' as *;
 
-// 自定义 MarkerCluster 样式 - 使用原始marker样式
-
-// 隐藏默认的圆圈样式
 .marker-cluster-custom {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-// Spiderfy 线条样式
 .leaflet-cluster-anim .leaflet-marker-icon,
 .leaflet-cluster-anim .leaflet-marker-shadow {
     transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-// 覆盖默认的多边形样式
 .marker-cluster-cover-polygon {
     stroke: $primary-accent-4 !important;
     stroke-width: 2 !important;

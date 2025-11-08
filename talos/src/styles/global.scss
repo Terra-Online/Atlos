@@ -3,7 +3,7 @@
 @use './palette' as *;
 @use './highlight';
 @use './boundary';
-@use './markerCluster';
+@use './cluster';
 
 /* Import Leaflet MarkerCluster styles */
 @import 'leaflet.markercluster/dist/MarkerCluster.css';

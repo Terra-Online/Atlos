@@ -6,7 +6,6 @@
 :root[data-theme='dark'] {
     --boundary: #{$primary-accent-4};
 }
-
 path.subregion-boundary-stroke {
     stroke: var(--boundary);
     stroke-width: 2;
@@ -14,6 +13,12 @@ path.subregion-boundary-stroke {
     stroke-dasharray: 5, 3;
     opacity: 0.8;
     filter: drop-shadow(0 0 4px rgba(var(--boundary), 0.4));
+
+    transition: opacity 0.3s ease-out;
+    &.boundary-hidden {
+        opacity: 0;
+        fill-opacity: 0;
+    }
 }
 
 path.subregion-boundary-fill {
@@ -23,6 +28,12 @@ path.subregion-boundary-fill {
     stroke-width: 1;
     stroke-dasharray: 2, 2;
     opacity: 0.6;
+
+    transition: opacity 0.3s ease-out, fill-opacity 0.3s ease-out;
+    &.boundary-hidden {
+        opacity: 0;
+        fill-opacity: 0;
+    }
 }
 
 .subregion-boundary-stroke {
