@@ -25,14 +25,14 @@ interface SocialLink {
 
 const SOCIAL_LINKS: SocialLink[] = [
   {
-    icon: GitHubLogo,
-    url: 'https://github.com/Terra-Online/Atlos',
-    name: 'GitHub'
-  },
-  {
     icon: DiscordLogo,
     url: 'https://discord.gg/9zDwGe9Sht',
     name: 'Discord'
+  },
+  {
+    icon: GitHubLogo,
+    url: 'https://github.com/Terra-Online/Atlos',
+    name: 'GitHub'
   },
   {
     icon: SklandLogo,
