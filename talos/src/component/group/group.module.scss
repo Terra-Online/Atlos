@@ -17,16 +17,11 @@
 
 .groupList {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-.groupList {
-    display: flex;
     align-items: center;
     flex-direction: column;
     gap: 1.5rem;
     padding-top: 0.8rem;
+    margin-bottom: 1rem;
 }
 .groupItem {
     position: relative;
@@ -52,10 +47,10 @@
         scale: 0.88;
     }
     &:nth-of-type(2) > svg {
-        scale: 1.03
+        scale: 1.03;
     }
     &:nth-of-type(3) > svg {
-        scale: 1.15
+        scale: 1.15;
     }
 
     &::before {
