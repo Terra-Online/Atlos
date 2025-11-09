@@ -27,7 +27,10 @@ $transition-speed: 0.3s;
     width: 300px;
     z-index: 1000;
     pointer-events: none;
-    transition: transform $transition-speed ease-in-out;
+    opacity: 1;
+    transition: 
+        transform $transition-speed ease-in-out,
+        opacity 0.2s ease-out;
 
     transform: translateX(-300px);
 
@@ -36,6 +39,16 @@ $transition-speed: 0.3s;
         > .sidebarToggle {
             right: 225px;
             transition: 0.3s ease-in-out;
+        }
+    }
+
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+        
+        .sidebar,
+        .sidebarToggle {
+            pointer-events: none;
         }
     }
 
@@ -91,14 +104,14 @@ $transition-speed: 0.3s;
             box-shadow: 0 -2px 3px rgba($black-0, 0.35);
             height: 1.5rem;
             font-size: 0.875rem;
-            font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
+            font-family: 'HMSans_EN', 'HMSans', sans-serif;
             font-weight: 550;
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
             justify-content: center;
             transform: translateY(0);
-            transition: transform 0.35s $moderato-curve;
+            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve;
             a {
                 color: var(--sidebar-footer-txt);
                 text-decoration: none;

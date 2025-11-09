@@ -38,17 +38,34 @@
   },
   "language": {
     "title": "Sprache",
-    "cancel": "Abbrechen",
-    "current": "Aktuelle",
+    "cancel": "Abbr.",
+    "current": "Jetzt",
+    "fullSupport": "Vollständig unterstützte Sprachen",
+    "fullSupportHint": "Vollständige Übersetzungen für Benutzeroberfläche und Spielinhalte.",
+    "uiOnly": "Nur Benutzeroberfläche",
+    "uiOnlyHint": "Nur UI-Übersetzungen, Spielinhalte werden auf Englisch angezeigt.",
+    "fyi": "Wenn Ihre Sprache auf dieser Website noch nicht verfügbar ist, können Sie den Site-Administrator per E-Mail unter translate@talos.wiki kontaktieren oder GitHub besuchen, um an unserem Open-Source-Übersetzungsprojekt teilzunehmen. Sie können Übersetzungseinträge für Ihre Sprache anfordern und gemäß unseren Richtlinien bei der Übersetzung und Lokalisierung des WIKI-Abschnitts helfen. Wir schätzen Ihre Beiträge aufrichtig und freuen uns darauf.\nSie können auch auf die Liste der Übersetzungsbeiträge klicken.",
     "names": {
       "en-US": "Englisch",
-      "zh-CN": "Chinesisch (vereinfacht)",
-      "zh-TW": "Chinesisch (traditionell)",
+      "zh-CN": "Chinesisch (Vereinfacht)",
+      "zh-TW": "Chinesisch (Traditionell)",
       "ja-JP": "Japanisch",
-      "ko-KR": "Koreanisch"
+      "ko-KR": "Koreanisch",
+      "es-ES": "Spanisch",
+      "fr-FR": "Französisch",
+      "de-DE": "Deutsch",
+      "it-IT": "Italienisch",
+      "ru-RU": "Russisch",
+      "pt-BR": "Portugiesisch",
+      "id-ID": "Indonesisch",
+      "ar-AE": "Arabisch"
     }
   },
+  "group": {
+    "title": "Community & Medien",
+    "visit": "Besuchen"
+  },
   "common": {
-    "close": "Schließen"
+    "close": "Fertig"
   }
 }

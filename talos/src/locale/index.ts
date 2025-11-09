@@ -23,8 +23,24 @@ export interface II18nBundle {
     ui: Record<string, unknown>; // UI components text
 }
 
-export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW'] as const;
+export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'fr-FR', 'de-DE', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
+
+// Languages that have both game and UI translations (full support)
+export const FULL_LANGS: readonly Lang[] = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW'] as const;
+
+// Languages that only have UI translations
+export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
+
+// Check if a language has full support (game + UI)
+export const hasFullSupport = (lang: Lang): boolean => {
+    return (FULL_LANGS as readonly string[]).includes(lang);
+};
+
+// Check if a language has UI-only support
+export const isUIOnly = (lang: Lang): boolean => {
+    return (UI_ONLY_LANGS as readonly string[]).includes(lang);
+};
 
 const STORAGE_KEY = 'talos:locale';
 
@@ -113,7 +129,11 @@ const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() =>
 // Load locale data on main thread (build-safe via glob)
 async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     const uiLoader = resolveLoader(uiModules, locale);
-    const gameLoader = resolveLoader(gameModules, locale);
+    
+    // For UI-only languages, fallback to English for game content
+    const gameLocale = hasFullSupport(locale) ? locale : 'en-US';
+    const gameLoader = resolveLoader(gameModules, gameLocale);
+    
     const [uiMod, gameMod] = await Promise.all([
         uiLoader ? uiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
         gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),

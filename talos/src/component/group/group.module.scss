@@ -1,0 +1,88 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --group-border: #{$grey-1};
+    --group-border-hover: #{$black-1};
+
+    --discord-fill: #5865F2;
+}
+
+:root[data-theme='dark'] {
+    --group-border: #{$light-1};
+    --group-border-hover: #{$light-2};
+
+    --discord-fill: #e0e3ff;
+}
+
+.groupList {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 0.8rem;
+    margin-bottom: 1rem;
+}
+.groupItem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 90%;
+    height: 3.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 
+        transform 0.2s $moderato-curve,
+        opacity 0.2s ease;
+    svg {
+        width: auto;
+        height: 100%;
+        transition: transform 0.2s $moderato-curve;
+        transform-origin: left;
+    }
+    &:nth-of-type(1) > svg {
+        color: var(--discord-fill);
+        fill: var(--discord-fill);
+        scale: 0.88;
+    }
+    &:nth-of-type(2) > svg {
+        scale: 1.03;
+    }
+    &:nth-of-type(3) > svg {
+        scale: 1.15;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: -5%;
+        top: 50%;
+        width: 1.5rem;
+        height: 105%;
+        background-color: var(--group-border);
+        transform: translateY(-50%);
+        pointer-events: none;
+        transition: background-color 0.3s ease, clip-path 0.25s ease;
+
+        clip-path: polygon(0 0, 4px 0, 4px 100%, 0% 100%);
+    }
+    &:hover {
+        svg {
+            transform: translateX(1.25rem);
+        }
+        &::before {
+            background-color: var(--group-border-hover);
+            clip-path: polygon(6px 30%, 95% 50%, 6px 70%, 6px 70%);
+        }
+    }
+}
+@media (max-width: 576px) {
+    .groupList {
+        gap: 1.25rem;
+    }
+
+    .groupItem {
+        height: 2.5rem;
+    }
+}

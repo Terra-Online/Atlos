@@ -38,15 +38,32 @@
   },
   "language": {
     "title": "Idioma",
-    "cancel": "Cancelar",
-    "current": "Actual",
+    "cancel": "Canc.",
+    "current": "Ahora",
+    "fullSupport": "Idiomas totalmente compatibles",
+    "fullSupportHint": "Traducciones completas para la interfaz y el contenido del juego.",
+    "uiOnly": "Solo interfaz",
+    "uiOnlyHint": "Solo traducciones de interfaz, el contenido del juego se mostrará en inglés.",
+    "fyi": "Si su idioma aún no está disponible en este sitio web, puede contactar al administrador del sitio por correo electrónico en translate@talos.wiki, o visitar GitHub para participar en nuestro proyecto de traducción de código abierto. Puede solicitar entradas de traducción para su idioma y ayudar a traducir y localizar la sección WIKI según nuestras pautas. Apreciamos sinceramente y esperamos con interés sus contribuciones.\nTambién puede hacer clic para ver la lista de colaboradores de traducción.",
     "names": {
-      "en-US": "inglés",
-      "zh-CN": "chino (simplificado)",
-      "zh-TW": "chino (tradicional)",
-      "ja-JP": "japonés",
-      "ko-KR": "coreano"
+      "en-US": "Inglés",
+      "zh-CN": "Chino simplificado",
+      "zh-TW": "Chino tradicional",
+      "ja-JP": "Japonés",
+      "ko-KR": "Coreano",
+      "es-ES": "Español",
+      "fr-FR": "Francés",
+      "de-DE": "Alemán",
+      "it-IT": "Italiano",
+      "ru-RU": "Ruso",
+      "pt-BR": "Portugués",
+      "id-ID": "Indonesio",
+      "ar-AE": "Árabe"
     }
+  },
+  "group": {
+    "title": "Comunidad & medios",
+    "visit": "Visitar"
   },
   "common": {
     "close": "Cerrar"

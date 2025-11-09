@@ -13,6 +13,9 @@
     --lang-tag: #{$dim-1};
     --lang-actived-tag: #{$primary-accent-4};
     --lang--actived-tag-text: #{$grey-1};
+    --lang-section-border: #{rgba($grey-1, 0.75)};
+    --lang-title-text: #{$black-1};
+    --lang-section-text: #{$grey-1};
 }
 :root[data-theme='dark'] {
     --lang-bg: #{$black-1};
@@ -26,17 +29,66 @@
     --lang-tag: #{$dim-2};
     --lang-actived-tag: #{$primary-accent-4};
     --lang--actived-tag-text: #{$black-1};
+    --lang-section-border: #{rgba($light-1, 0.75)};
+    --lang-title-text: #{$light-2};
+    --lang-section-text: #{$light-1};
 }
 
 .langList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.langSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &:not(:last-child)::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 3px;
+        background-color: var(--lang-section-border);
+        box-shadow: 0 0 2px rgba($black-0, 0.3);
+    }
+}
+.sectionHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', sans-serif;
+    letter-spacing: -.3px;
+    color: var(--lang-section-text);
+    unicode-bidi: plaintext;
+}
+.sectionHint {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic',sans-serif;
+    letter-spacing: -.2px;
+    color: var(--lang-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+}
+
+.sectionItems {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
     gap: .6rem .75rem;
-    align-items: stretch
+    align-items: stretch;
 }
 
 @media (max-width:576px) {
-    .langList {
+    .sectionItems {
         grid-template-columns: 1fr
     }
 }
@@ -109,10 +161,14 @@
     align-items: flex-start;
     line-height: 1;
     font-size: 1.2rem;
-    font-family: 'Novecento DemiBold', 'Lang Origin', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Lang Origin', 'Noto Sans Arabic', sans-serif;
     font-weight: 700;
     letter-spacing: -.5px;
     padding-left: 5px;
+    text-align: left;
+    &[lang='id-ID'] {
+        line-height: 0.77;
+    }
 }
 .langDisplay {
     grid-area: langDisplay;
@@ -121,7 +177,7 @@
     justify-content: flex-start;
     line-height: 1;
     font-size: 0.8rem;
-    font-family: 'Novecento Medium', 'UD_ShinGo Medium', sans-serif;
+    font-family: 'Novecento Medium', 'Novecento Cyrillic', 'UD_ShinGo Medium', 'Noto Sans Arabic', sans-serif;
     font-weight: 500;
     padding-left: 6px;
     max-width: 0;
@@ -140,7 +196,7 @@
     padding: 2.5px 6px;
     color: var(--lang-tag);
     font-size: .9rem;
-    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', sans-serif;
+    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', sans-serif;
     height: 22px;
     width: fit-content;
     line-height: 1;
@@ -161,7 +217,7 @@
     white-space: nowrap;
     margin-left: 0;
     color: var(--lang--actived-tag-text);
-    font-family: 'Novecento Bold', 'Lang Origin', sans-serif;
+    font-family: 'Novecento Bold', 'Lang Origin', 'Noto Sans Arabic',sans-serif;
     font-weight: 900;
     text-transform: uppercase;
     transition:
@@ -177,7 +233,7 @@
     background-color: var(--lang-actived-tag);
     color: var(--lang--actived-tag-text);
     border-color: var(--lang-actived-tag);
-    font-family: 'Novecento Bold', 'UD_ShinGo Bold', sans-serif;
+    font-family: 'Novecento Bold', 'UD_ShinGo Bold', 'Noto Sans Arabic', sans-serif;
     box-shadow: 0 1px 2px rgba($black-0, 0.2);
     transform: translateY(0.72rem);
 }
@@ -185,4 +241,10 @@
 .active .langTag .currentLang {
     opacity: 1;
     max-width: 3rem;
+    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'] {
+        max-width: 4rem;
+    }
+    &[lang='ar-AE'] {
+        height: 1rem;
+    }
 }

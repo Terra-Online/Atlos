@@ -6,14 +6,19 @@
         url('../assets/fonts/UD_ShinGo/LangOrigin.otf') format('opentype');
     font-display: swap;
 }
-
+@font-face {
+    font-family: 'Novecento Cyrillic';
+    src: url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.woff2') format('woff2'),
+        url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.otf') format('opentype');
+    font-display: swap;
+}
 @font-face {
     font-family: 'Novecento Bold';
     src:
         url('../assets/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),
         url('../assets/fonts/Novecento/Novecento-WideBold.woff') format('woff'),
-        url('../assets/fonts/Novecento/Novecento-WideBold.otf')
-            format('opentype');
+        url('../assets/fonts/Novecento/Novecento-WideBold.otf') format('opentype');
     font-display: swap;
 }
 @font-face {

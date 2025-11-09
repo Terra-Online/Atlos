@@ -1,0 +1,21 @@
+// override default marker cluster styles in leaflet plugin
+@use './palette.scss' as *;
+@use './curves.scss' as *;
+
+.marker-cluster-custom {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.leaflet-cluster-anim .leaflet-marker-icon,
+.leaflet-cluster-anim .leaflet-marker-shadow {
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.marker-cluster-cover-polygon {
+    stroke: $primary-accent-4 !important;
+    stroke-width: 2 !important;
+    fill: rgba($primary-accent-1, 0.2) !important;
+    fill-opacity: 0.5 !important;
+}

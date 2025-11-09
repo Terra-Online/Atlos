@@ -2,13 +2,13 @@
     "Valley_4": {
         "dimensions": [
             8000,
-            10000
+            8000
         ],
         "maxZoom": 3,
         "tileSize": 200,
         "initialOffset": {
-            "x": 750,
-            "y": 250
+            "x": 0,
+            "y": 500
         },
         "initialZoom": 2,
         "subregions": [
@@ -23,7 +23,7 @@
     "Jinlong": {
         "dimensions": [
             8000,
-            10000
+            8000
         ],
         "maxZoom": 3,
         "tileSize": 200,

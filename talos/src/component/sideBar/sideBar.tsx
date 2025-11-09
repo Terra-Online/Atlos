@@ -5,15 +5,16 @@ import Mobile from './sideBar.mobile';
 interface SideBarProps {
     currentRegion: null;
     onToggle: (isOpen: boolean) => void;
+    visible?: boolean;
 }
 
-const SideBar = ({ currentRegion, onToggle }: SideBarProps) => {
+const SideBar = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const { isMobile } = useDevice();
 
     return isMobile ? (
-        <Mobile currentRegion={currentRegion} onToggle={onToggle} />
+        <Mobile currentRegion={currentRegion} onToggle={onToggle} visible={visible} />
     ) : (
-        <Desktop currentRegion={currentRegion} onToggle={onToggle} />
+        <Desktop currentRegion={currentRegion} onToggle={onToggle} visible={visible} />
     );
 };
 

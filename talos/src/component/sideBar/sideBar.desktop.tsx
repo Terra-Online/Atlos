@@ -22,9 +22,10 @@ interface SideBarProps {
     // TODO: fix this after region is nonNull
     currentRegion: null;
     onToggle: (isOpen: boolean) => void;
+    visible?: boolean;
 }
 
-const SideBarDesktop = ({ currentRegion, onToggle }: SideBarProps) => {
+const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
     const tGame = useTranslateGame();
     const isOpen = useSidebarOpen();
@@ -57,9 +58,9 @@ const SideBarDesktop = ({ currentRegion, onToggle }: SideBarProps) => {
     };
 
     return (
-        <div className={`${styles.sidebarContainer} ${isOpen ? styles.open : ''}`}>
+        <div className={`${styles.sidebarContainer} ${isOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}>
             <button
-                className={`${styles.sidebarToggle} ${isOpen ? styles.open : ''}`}
+                className={`${styles.sidebarToggle} ${isOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}
                 onClick={toggleSidebar}
             >
                 <SidebarIcon />

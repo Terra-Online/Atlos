@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './styles/global.scss';
 
 import Map from './component/map/Map';
@@ -13,6 +13,7 @@ function App() {
     const [mapInstance, setMapInstance] = useState<L.Map | undefined>(
         undefined,
     );
+    const [uiVisible, setUiVisible] = useState(true);
 
     // onToggle is retained for potential side effects/analytics
     const handleSidebarToggle = (_isOpen: boolean) => {
@@ -23,17 +24,58 @@ function App() {
         setMapInstance(map);
     };
 
+    const handleHideUI = () => {
+        setUiVisible(false);
+    };
+
+    // Show UI on any click or page visibility change
+    useEffect(() => {
+        const showUI = () => {
+            setUiVisible(true);
+        };
+
+        const handleClick = (e: MouseEvent) => {
+            if (!uiVisible) {
+                e.stopPropagation();
+                showUI();
+            }
+        };
+        
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                showUI();
+            }
+        };
+
+        if (!uiVisible) {
+            // Use capture phase to catch clicks before they reach other elements
+            document.addEventListener('click', handleClick, true);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClick, true);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [uiVisible]);
+
     return (
         <div className='app theme-transition-scope'>
             {/* Map layer - always fill the entire window */}
             <Map onMapReady={handleMapReady} />
             {/* UI layer - floats over the map */}
-            <UIOverlay map={mapInstance} isSidebarOpen={isSidebarOpen} />
+            <UIOverlay 
+                map={mapInstance} 
+                isSidebarOpen={isSidebarOpen} 
+                visible={uiVisible}
+                onHideUI={handleHideUI}
+            />
             {/* Sidebar layer - floats over the map */}
             <SideBar
                 // map={mapInstance}
                 currentRegion={null}
                 onToggle={handleSidebarToggle}
+                visible={uiVisible}
             />
         </div>
     );

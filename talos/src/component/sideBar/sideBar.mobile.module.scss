@@ -12,6 +12,13 @@
     transform: none;
     pointer-events: none;
     z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.2s ease-out;
+
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
 
     .sidebarContent {
         display: flex;
@@ -33,7 +40,7 @@
         height: 1.5rem;
         max-height: 1.5rem;
         font-size: 0.875rem;
-        font-family: 'HMSans_EN', 'HMSans_SC', sans-serif;
+        font-family: 'HMSans_EN', 'HMSans', sans-serif;
         font-weight: 550;
         letter-spacing: -0.5px;
         display: flex;
@@ -221,4 +228,30 @@ html:not(:lang(zh-CN), :lang(zh-TW)) {
 .mobileDrawer[data-snap="0"] .mobileTriggerBar,
 .mobileDrawer[data-snap="0"] .copyright {
     display: none;
+}
+
+.topBlur,
+.bottomBlur {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 15;
+    pointer-events: none;
+    transition: transform 0.35s ease-out;
+}
+.topBlur {
+    top: -1rem;
+    height: 6.5rem;
+    transform: translateY(-6.5rem);
+    &.visible {
+        transform: translateY(0);
+    }
+}
+.bottomBlur {
+    bottom: 0;
+    height: 3rem;
+    transform: translateY(3rem);
+    &.visible {
+        transform: translateY(0);
+    }
 }
