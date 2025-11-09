@@ -3,10 +3,13 @@
     "types": ["vite/client"],
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -14,28 +17,36 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/components/*": ["src/component/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/data/*": ["src/data/*"],
-      "@/assets/*": ["src/assets/*"],
-      "@/styles/*": ["src/styles/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/components/*": [
+        "src/component/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/data/*": [
+        "src/data/*"
+      ],
+      "@/assets/*": [
+        "src/assets/*"
+      ],
+      "@/styles/*": [
+        "src/styles/*"
+      ]
     },
-
     /* Allow JavaScript files */
     "allowJs": true,
     "checkJs": false,
-
     /* Type checking */
     "noImplicitAny": false,
     "noImplicitReturns": true,
@@ -47,7 +58,6 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false,
-
     /* Module resolution */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
