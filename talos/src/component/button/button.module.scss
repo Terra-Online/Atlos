@@ -96,7 +96,7 @@
     top: 0;
     right: 0;
     background-image:
-      url('../assets/images/UI/close.svg'),
+      url('../../assets/images/UI/close.svg'),
       url('../assets/images/UI/bg.webp');
     background-size: 15%, cover;
     background-repeat: no-repeat;
@@ -122,7 +122,7 @@
 /* Variant for next button only changes the leading icon asset and sizes */
 .button[data-variant='next']::after {
   background-image:
-    url('../assets/images/UI/next.svg'),
-    url('../assets/images/UI/bg.webp');
+    url('../../assets/images/UI/next.svg'),
+    url('../../assets/images/UI/bg.webp');
   background-size: 11%, cover;
 }
