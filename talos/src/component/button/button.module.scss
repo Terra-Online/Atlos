@@ -1,4 +1,4 @@
-@use '../styles/palette.scss' as *;
+@use '../../styles/palette.scss' as *;
 
 :root, :root[data-theme='light'] {
   --btn-bg: #{$white-3};

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styles from './detail.module.scss';
-//import Button from '@/component/button.tsx';
+//import Button from '@/component/button/button';
 
 import { getItemIconUrl, getCtgrIconUrl } from '@/utils/resource.ts';
 import {

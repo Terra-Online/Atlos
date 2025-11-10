@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useId, useCallback } from 'react';
 import ReactDOM from 'react-dom';
-import styles from './modal.module.scss';
-import Button from '@/component/button.tsx';
+import styles from './modal.module.scss'; 
+import Button from '@/component/button/button';
 
 import { useTranslateUI } from '@/locale';
 import { LinearBlur } from 'progressive-blur';
