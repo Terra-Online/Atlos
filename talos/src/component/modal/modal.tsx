@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState, useId, useCallback } from 'react';
-import { useTranslateUI } from '@/locale';
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss';
+import Button from '@/component/button.tsx';
+
+import { useTranslateUI } from '@/locale';
 import { LinearBlur } from 'progressive-blur';
 
 export interface ModalProps {
@@ -222,18 +224,15 @@ const Modal: React.FC<ModalProps> = ({
             {icon && <span className={styles.modalIcon}>{icon}</span>}
             {title && <div id={titleId} className={styles.modalTitle}>{title}</div>}
             {showClose && (
-              <button
-                type="button"
-                aria-label={(tUI('common.close') as unknown as string) || 'Close'}
-                className={styles.modalClose}
+              <Button
+                text={tUI('common.close')}
+                aria-label={tUI('common.close') || 'Close'}
+                variant='close'
                 onClick={() => {
                   onClose?.();
                   onChange?.(false);
                 }}
-              >
-                <span className={styles.deco}></span>
-                <span className={styles.closeText}>{tUI('common.close') as unknown as string}</span>
-              </button>
+              />
             )}
           </div>
         )}
