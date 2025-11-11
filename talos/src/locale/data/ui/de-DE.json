@@ -65,6 +65,19 @@
     "title": "Community & Medien",
     "visit": "Besuchen"
   },
+  "storage": {
+    "title": "Speicher und Cache",
+    "localStorage": "Lokaler Speicher",
+    "sessionStorage": "Sitzungsspeicher",
+    "cookies": "Cookies",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "Cache-Speicher",
+    "total": "Gesamt",
+    "calculating": "Berechnung der Speichernutzung...",
+    "clearAll": "Alle Daten löschen",
+    "clearing": "Löschen...",
+    "warning": "⚠️ Dadurch werden alle gespeicherten Daten einschließlich Ihrer Einstellungen und Fortschritte gelöscht. Diese Aktion kann nicht rückgängig gemacht werden und die Seite wird neu geladen."
+  },
   "common": {
     "close": "Fertig"
   }

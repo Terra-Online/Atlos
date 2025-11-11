@@ -65,6 +65,19 @@
     "title": "Communauté & médias",
     "visit": "Visiter"
   },
+  "storage": {
+    "title": "Stockage et cache",
+    "localStorage": "Stockage local",
+    "sessionStorage": "Stockage de session",
+    "cookies": "Cookies",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "Stockage de cache",
+    "total": "Total",
+    "calculating": "Calcul de l'utilisation du stockage...",
+    "clearAll": "Effacer toutes les données",
+    "clearing": "Effacement...",
+    "warning": "⚠️ Cela effacera toutes les données stockées, y compris vos préférences et votre progression. Cette action ne peut pas être annulée et la page sera rechargée."
+  },
   "common": {
     "close": "Fermer"
   }

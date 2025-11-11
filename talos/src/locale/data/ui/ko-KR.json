@@ -65,6 +65,19 @@
     "title": "커뮤니티 및 미디어",
     "visit": "방문"
   },
+  "storage": {
+    "title": "저장소 및 캐시",
+    "localStorage": "로컬 저장소",
+    "sessionStorage": "세션 저장소",
+    "cookies": "쿠키",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "캐시 저장소",
+    "total": "총계",
+    "calculating": "저장소 사용량 계산 중...",
+    "clearAll": "모든 데이터 삭제",
+    "clearing": "삭제 중...",
+    "warning": "⚠️ 설정 및 진행 상황을 포함한 모든 저장된 데이터가 삭제됩니다. 이 작업은 취소할 수 없으며 페이지가 다시 로드됩니다."
+  },
   "common": {
     "close": "닫기"
   }

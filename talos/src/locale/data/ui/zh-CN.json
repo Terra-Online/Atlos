@@ -65,6 +65,19 @@
     "title": "社区与媒体",
     "visit": "访问"
   },
+  "storage": {
+    "title": "存储与缓存",
+    "localStorage": "本地存储",
+    "sessionStorage": "会话存储",
+    "cookies": "Cookies",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "缓存存储",
+    "total": "总计",
+    "calculating": "正在计算存储占用...",
+    "clearAll": "清除所有数据",
+    "clearing": "清除中...",
+    "warning": "⚠️ 这将清除所有存储的数据，包括您的偏好设置和进度。此操作无法撤销，执行后将重新加载页面。"
+  },
   "common": {
     "close": "关闭"
   }

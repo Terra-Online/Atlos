@@ -1,0 +1,104 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --storage-bg: #{$light-1};
+    --storage-text: #{$grey-1};
+    --storage-label: #{$grey-1};
+    --storage-size: #{$grey-1};
+    --storage-total-bg: #{$light-2};
+    --storage-total-text: #{$grey-1};
+    --storage-border: #{$light-2};
+    --storage-warning-bg: #{rgba($secondary-accent-1, 0.1)};
+    --storage-warning-text: #{$grey-1};
+}
+
+:root[data-theme='dark'] {
+    --storage-bg: #{$dim-1};
+    --storage-text: #{$light-1};
+    --storage-label: #{$light-1};
+    --storage-size: #{$light-1};
+    --storage-total-bg: #{$mid};
+    --storage-total-text: #{$light-1};
+    --storage-border: #{$mid};
+    --storage-warning-bg: #{rgba($secondary-accent-1, 0.15)};
+    --storage-warning-text: #{$light-1};
+}
+
+.storageContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-family: 'HMSans', 'HMSans_TC', 'HMSans_SC', sans-serif;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--storage-text);
+    font-size: 0.875rem;
+}
+
+.storageList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.storageItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 3px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: rgba($grey-1, 0.05);
+    }
+
+    &.total {
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--storage-border);
+        background-color: var(--storage-total-bg);
+        font-weight: 600;
+
+        .storageLabel,
+        .storageSize {
+            color: var(--storage-total-text);
+            font-size: 1rem;
+        }
+    }
+}
+
+.storageLabel {
+    color: var(--storage-label);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.storageSize {
+    color: var(--storage-size);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.warning {
+    padding: 0.75rem;
+    border-radius: 3px;
+    background-color: var(--storage-warning-bg);
+    color: var(--storage-warning-text);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    text-align: center;
+    border: 1px solid rgba($secondary-accent-1, 0.2);
+}

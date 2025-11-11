@@ -65,6 +65,19 @@
     "title": "Comunidad & medios",
     "visit": "Visitar"
   },
+  "storage": {
+    "title": "Almacenamiento y caché",
+    "localStorage": "Almacenamiento local",
+    "sessionStorage": "Almacenamiento de sesión",
+    "cookies": "Cookies",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "Almacenamiento de caché",
+    "total": "Total",
+    "calculating": "Calculando uso de almacenamiento...",
+    "clearAll": "Borrar todos los datos",
+    "clearing": "Borrando...",
+    "warning": "⚠️ Esto borrará todos los datos almacenados, incluidas sus preferencias y progreso. Esta acción no se puede deshacer y la página se recargará."
+  },
   "common": {
     "close": "Cerrar"
   }

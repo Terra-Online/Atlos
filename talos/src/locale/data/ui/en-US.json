@@ -65,6 +65,19 @@
     "title": "Community & Media",
     "visit": "Visit"
   },
+  "storage": {
+    "title": "Storage & Cache",
+    "localStorage": "Local Storage",
+    "sessionStorage": "Session Storage",
+    "cookies": "Cookies",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "Cache Storage",
+    "total": "Total",
+    "calculating": "Calculating storage usage...",
+    "clearAll": "Clear All Data",
+    "clearing": "Clearing...",
+    "warning": "⚠️ This will clear all stored data including your preferences and progress. This action cannot be undone and will reload the page."
+  },
   "common": {
     "close": "Close"
   }

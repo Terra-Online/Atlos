@@ -65,6 +65,19 @@
     "title": "Komunitas & Media",
     "visit": "Kunjungi"
   },
+  "storage": {
+    "title": "Penyimpanan & Cache",
+    "localStorage": "Penyimpanan Lokal",
+    "sessionStorage": "Penyimpanan Sesi",
+    "cookies": "Cookie",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "Penyimpanan Cache",
+    "total": "Total",
+    "calculating": "Menghitung penggunaan penyimpanan...",
+    "clearAll": "Hapus Semua Data",
+    "clearing": "Menghapus...",
+    "warning": "⚠️ Ini akan menghapus semua data yang disimpan termasuk preferensi dan kemajuan Anda. Tindakan ini tidak dapat dibatalkan dan halaman akan dimuat ulang."
+  },
   "common": {
     "close": "Tutup"
   }

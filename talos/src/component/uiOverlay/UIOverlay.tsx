@@ -19,6 +19,7 @@ import L from 'leaflet';
 import { useTranslateUI } from '@/locale';
 import LanguageModal from '@/component/language/LanguageModal';
 import GroupsModal from '@/component/group/group';
+import StorageModal from '@/component/storage/storage';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -31,20 +32,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const t = useTranslateUI();
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
+    const [storageOpen, setStorageOpen] = useState(false);
     const { isMobile } = useDevice();
 
     const handleReset = () => {
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        document.cookie.split(';').forEach(cookie => {
-            const name = cookie.split('=')[0].trim();
-            if (name) {
-                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-            }
-        });
-        
-        window.location.reload();
+        setStorageOpen(true);
     };
 
     const handleHideUI = () => {
@@ -117,7 +109,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 onClose={() => setLangOpen(false)}
                 onChange={(o) => setLangOpen(o)}
                 onSelected={(lang) => {
-                    // 可在此处记录选择结果或埋点
                     console.log('Language switched to:', lang);
                 }}
             />
@@ -130,6 +121,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 onSelected={(platform) => {
                     console.log('Opened social platform:', platform);
                 }}
+            />
+
+            {/* Storage Modal */}
+            <StorageModal
+                open={storageOpen}
+                onClose={() => setStorageOpen(false)}
+                onChange={(o) => setStorageOpen(o)}
             />
         </div>
     );

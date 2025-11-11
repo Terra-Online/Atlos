@@ -65,6 +65,19 @@
     "title": "コミュニティとメディア",
     "visit": "訪問"
   },
+  "storage": {
+    "title": "ストレージとキャッシュ",
+    "localStorage": "ローカルストレージ",
+    "sessionStorage": "セッションストレージ",
+    "cookies": "Cookie",
+    "indexedDB": "IndexedDB",
+    "cacheStorage": "キャッシュストレージ",
+    "total": "合計",
+    "calculating": "ストレージ使用量を計算中...",
+    "clearAll": "すべてのデータを消去",
+    "clearing": "消去中...",
+    "warning": "⚠️ これにより、設定や進行状況を含むすべての保存データが消去されます。この操作は元に戻せず、ページがリロードされます。"
+  },
   "common": {
     "close": "閉じる"
   }
