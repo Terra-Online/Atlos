@@ -62,7 +62,7 @@
         }
     }
 }
-html:not(:lang(zh-CN), :lang(zh-TW)) {
+html:not(:lang(zh-CN), :lang(zh-HK)) {
     .contentWrapper > .copyright {
         transform: translateY(2rem);
         filter: blur(1rem);

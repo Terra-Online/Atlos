@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Anglais",
       "zh-CN": "Chinois simplifié",
-      "zh-TW": "Chinois traditionnel",
+      "zh-HK": "Chinois traditionnel",
       "ja-JP": "Japonais",
       "ko-KR": "Coréen",
       "es-ES": "Espagnol",
@@ -66,26 +66,23 @@
     "visit": "Visiter"
   },
   "storage": {
-    "title": "Stockage et cache",
+    "title": "Protocoles et stockage",
     "localStorage": "Stockage local",
-    "localStorageDesc": "Stocke les préférences utilisateur, les paramètres et l'état de l'application de manière permanente.",
-    "sessionStorage": "Stockage de session",
-    "sessionStorageDesc": "Données de session temporaires, effacées lorsque l'onglet du navigateur est fermé.",
+    "localStorageDesc": "Stocke votre disposition d’interface, l’état de la carte, les paramètres, préférences et données de marqueurs.",
     "cookies": "Cookies",
-    "cookiesDesc": "Petits morceaux de données pour le suivi, l'authentification et les préférences.",
+    "cookiesDesc": "Stocke votre état de connexion et vos préférences de consentement.",
     "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Base de données locale pour stocker des données structurées et du contenu hors ligne.",
-    "cacheStorage": "Stockage de cache",
-    "cacheStorageDesc": "Ressources mises en cache comme les images, scripts et polices pour un chargement plus rapide.",
+    "indexedDBDesc": "Stocke les tuiles de la carte actuelle pour une consultation hors ligne.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Stocke les ressources de polices nécessaires à l’affichage du site.",
     "total": "Stockage total",
-    "calculating": "Calcul de l'utilisation du stockage...",
+    "calculating": "Calcul de l’utilisation du stockage…",
     "clear": "Effacer",
     "disable": "Désactiver",
-    "clearAll": "Effacer toutes les données",
-    "clearing": "Effacement...",
-    "noData": "Aucune donnée de stockage trouvée.",
-    "disableManual": "Les paramètres des cookies doivent être gérés via les paramètres du navigateur.",
-    "warning": "⚠️ Cela effacera toutes les données stockées, y compris vos préférences et votre progression. Cette action ne peut pas être annulée et la page sera rechargée."
+    "clearAll": "Effacer toutes les données stockées",
+    "clearing": "Effacement…",
+    "noData": "Aucune donnée stockée trouvée.",
+    "warning": "Cette action effacera toutes les données enregistrées lors de l’utilisation du site, y compris vos préférences et votre progression, et peut ralentir votre prochaine visite. Action irréversible ; la page sera rechargée une fois terminée."
   },
   "common": {
     "close": "Fermer"

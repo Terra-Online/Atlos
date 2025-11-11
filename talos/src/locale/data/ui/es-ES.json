@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Inglés",
       "zh-CN": "Chino simplificado",
-      "zh-TW": "Chino tradicional",
+      "zh-HK": "Chino tradicional",
       "ja-JP": "Japonés",
       "ko-KR": "Coreano",
       "es-ES": "Español",
@@ -66,26 +66,23 @@
     "visit": "Visitar"
   },
   "storage": {
-    "title": "Almacenamiento y caché",
+    "title": "Protocolos y almacenamiento",
     "localStorage": "Almacenamiento local",
-    "localStorageDesc": "Almacena preferencias de usuario, configuraciones y estado de la aplicación de forma permanente.",
-    "sessionStorage": "Almacenamiento de sesión",
-    "sessionStorageDesc": "Datos de sesión temporales, se borran cuando se cierra la pestaña del navegador.",
+    "localStorageDesc": "Almacena el diseño de la interfaz, estado del mapa, configuraciones, preferencias y datos de marcadores.",
     "cookies": "Cookies",
-    "cookiesDesc": "Pequeños fragmentos de datos para seguimiento, autenticación y preferencias.",
+    "cookiesDesc": "Almacena tu estado de inicio de sesión y preferencias de consentimiento.",
     "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Base de datos local para almacenar datos estructurados y contenido sin conexión.",
-    "cacheStorage": "Almacenamiento de caché",
-    "cacheStorageDesc": "Recursos almacenados en caché como imágenes, scripts y fuentes para una carga más rápida.",
+    "indexedDBDesc": "Almacena los datos de teselas del mapa actual para visualización sin conexión.",
+    "cacheStorage": "Caché",
+    "cacheStorageDesc": "Almacena recursos de fuentes necesarios para mostrar el sitio.",
     "total": "Almacenamiento total",
-    "calculating": "Calculando uso de almacenamiento...",
+    "calculating": "Calculando uso de almacenamiento…",
     "clear": "Borrar",
     "disable": "Desactivar",
-    "clearAll": "Borrar todos los datos",
-    "clearing": "Borrando...",
-    "noData": "No se encontraron datos de almacenamiento.",
-    "disableManual": "La configuración de cookies debe gestionarse a través de la configuración del navegador.",
-    "warning": "⚠️ Esto borrará todos los datos almacenados, incluidas sus preferencias y progreso. Esta acción no se puede deshacer y la página se recargará."
+    "clearAll": "Borrar todos los datos almacenados",
+    "clearing": "Borrando…",
+    "noData": "No se encontraron datos almacenados.",
+    "warning": "Esto borrará todos los datos guardados al usar el sitio, incluidos tus preferencias y progreso, y puede ralentizar tu próxima visita. Acción irreversible; la página se recargará al finalizar."
   },
   "common": {
     "close": "Cerrar"

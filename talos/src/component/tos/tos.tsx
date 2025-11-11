@@ -23,7 +23,6 @@ interface StorageItemConfig {
   label: string;
   description: string;
   clearable: boolean;
-  disableable: boolean;
 }
 
 const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
@@ -88,35 +87,30 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
       label: t('storage.localStorage'), 
       description: t('storage.localStorageDesc'),
       clearable: true,
-      disableable: false,
     },
     { 
       key: 'sessionStorage' as const, 
       label: t('storage.sessionStorage'), 
       description: t('storage.sessionStorageDesc'),
       clearable: true,
-      disableable: false,
     },
     { 
       key: 'cookies' as const, 
       label: t('storage.cookies'), 
       description: t('storage.cookiesDesc'),
       clearable: true,
-      disableable: true,
     },
     { 
       key: 'indexedDB' as const, 
       label: t('storage.indexedDB'), 
       description: t('storage.indexedDBDesc'),
       clearable: true,
-      disableable: false,
     },
     { 
       key: 'cacheStorage' as const, 
       label: t('storage.cacheStorage'), 
       description: t('storage.cacheStorageDesc'),
       clearable: true,
-      disableable: false,
     },
   ].filter(item => storageInfo[item.key] > 0); // Only show items with data
 
@@ -151,24 +145,9 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
                           <Button
                             text={clearingItem === item.key ? t('storage.clearing') : t('storage.clear')}
                             variant="close"
-                            width="auto"
-                            height="1.8rem"
+
                             onClick={() => void handleClearItem(item.key)}
                             disabled={clearingItem === item.key || clearingAll}
-                          />
-                        )}
-                        {item.disableable && (
-                          <Button
-                            text={t('storage.disable')}
-                            variant="close"
-                            width="auto"
-                            height="1.8rem"
-                            onClick={() => {
-                              // Disable cookies by setting document.cookie to a restrictive SameSite policy
-                              console.log('Cookie management - manual browser settings required');
-                              alert(t('storage.disableManual'));
-                            }}
-                            disabled={clearingAll}
                           />
                         )}
                       </div>
@@ -186,8 +165,7 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
                   <Button
                     text={clearingAll ? t('storage.clearing') : t('storage.clearAll')}
                     variant="next"
-                    width="100%"
-                    height="2.5rem"
+
                     onClick={() => void handleClearAll()}
                     disabled={clearingAll}
                   />

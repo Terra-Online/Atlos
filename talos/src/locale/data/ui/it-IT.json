@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Inglese",
       "zh-CN": "Cinese Semplificato",
-      "zh-TW": "Cinese Tradizionale",
+      "zh-HK": "Cinese Tradizionale",
       "ja-JP": "Giapponese",
       "ko-KR": "Coreano",
       "es-ES": "Spagnolo",
@@ -66,26 +66,23 @@
     "visit": "Visita"
   },
   "storage": {
-    "title": "Archiviazione e Cache",
+    "title": "Protocolli e Archiviazione",
     "localStorage": "Archiviazione Locale",
-    "localStorageDesc": "Memorizza preferenze utente, impostazioni e stato dell'applicazione in modo permanente.",
-    "sessionStorage": "Archiviazione di Sessione",
-    "sessionStorageDesc": "Dati temporanei della sessione, cancellati quando la scheda del browser viene chiusa.",
+    "localStorageDesc": "Memorizza il layout dell’interfaccia, lo stato della mappa, impostazioni, preferenze e dati dei marker.",
     "cookies": "Cookie",
-    "cookiesDesc": "Piccole porzioni di dati per tracciamento, autenticazione e preferenze.",
+    "cookiesDesc": "Memorizza lo stato di accesso e le preferenze di consenso.",
     "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Database locale per l'archiviazione di dati strutturati e contenuti offline.",
-    "cacheStorage": "Archiviazione Cache",
-    "cacheStorageDesc": "Risorse memorizzate nella cache come immagini, script e font per un caricamento più veloce.",
-    "total": "Archiviazione Totale",
-    "calculating": "Calcolo dell'utilizzo dell'archiviazione...",
+    "indexedDBDesc": "Memorizza i dati delle tile della mappa corrente per la visualizzazione offline.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Memorizza le risorse di font necessarie alla visualizzazione del sito.",
+    "total": "Archiviazione totale",
+    "calculating": "Calcolo dell’utilizzo dell’archiviazione…",
     "clear": "Cancella",
     "disable": "Disabilita",
-    "clearAll": "Cancella Tutti i Dati",
-    "clearing": "Cancellazione in corso...",
-    "noData": "Nessun dato di archiviazione trovato.",
-    "disableManual": "Le impostazioni dei cookie devono essere gestite tramite le impostazioni del browser.",
-    "warning": "⚠️ Questo cancellerà tutti i dati memorizzati, incluse le tue preferenze e progressi. Questa azione non può essere annullata e ricaricherà la pagina."
+    "clearAll": "Cancella tutti i dati memorizzati",
+    "clearing": "Cancellazione…",
+    "noData": "Nessun dato memorizzato trovato.",
+    "warning": "Cancellerà tutti i dati salvati durante l’uso del sito, incluse preferenze e progressi, e può rallentare la prossima visita. Azione irreversibile; al termine la pagina verrà ricaricata."
   },
   "common": {
     "close": "Chiudi"

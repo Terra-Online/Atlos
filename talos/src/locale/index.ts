@@ -23,14 +23,29 @@ export interface II18nBundle {
     ui: Record<string, unknown>; // UI components text
 }
 
-export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'fr-FR', 'de-DE', 'it-IT', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
+export const SUPPORTED_LANGS = [
+    'en-US',
+    'zh-CN',
+    'zh-HK',
+    'ja-JP',
+    'ko-KR',
+
+    'fr-FR',
+    'de-DE',
+    'it-IT',
+    'ru-RU',
+    'id-ID',
+    'es-ES',
+    'pt-BR',
+    'ar-AE'
+] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 // Languages that have both game and UI translations (full support)
-export const FULL_LANGS: readonly Lang[] = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW'] as const;
+export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR'] as const;
 
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'it-IT', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'it-IT', 'ru-RU', 'id-ID', 'es-ES', 'pt-BR', 'ar-AE'] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {
@@ -47,7 +62,7 @@ const STORAGE_KEY = 'talos:locale';
 // Map locale to font region
 const localeToFontRegion = (locale: Lang): 'CN' | 'HK' | 'JP' => {
     if (locale === 'zh-CN') return 'CN';
-    if (locale === 'zh-TW') return 'HK';
+    if (locale === 'zh-HK') return 'HK';
     if (locale === 'ja-JP') return 'JP';
     return 'HK'; // Default to HK for other locales
 };
@@ -59,7 +74,9 @@ const toBCP47 = (locale: Lang): string => {
 };
 
 const normalizeLang = (lang?: string): Lang => {
-    const language = lang || navigator.language || 'en-US';
+    let language = lang || navigator.language || 'en-US';
+    // Backward compatibility: map legacy zh-TW to zh-HK
+    if (language.toLowerCase().startsWith('zh-tw')) language = 'zh-HK';
     // try to pick a supported lang
     const picked = ALP.pick([...SUPPORTED_LANGS], language);
     return (picked as Lang) || 'en-US';
@@ -129,11 +146,19 @@ const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() =>
 // Load locale data on main thread (build-safe via glob)
 async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     const uiLoader = resolveLoader(uiModules, locale);
-    
+
     // For UI-only languages, fallback to English for game content
     const gameLocale = hasFullSupport(locale) ? locale : 'en-US';
-    const gameLoader = resolveLoader(gameModules, gameLocale);
-    
+    let gameLoader = resolveLoader(gameModules, gameLocale);
+
+    // Special alias: use zh-TW game content for zh-HK locale if direct match not found
+    if (!gameLoader) {
+        const lower = gameLocale.toLowerCase();
+        if (lower === 'zh-hk') {
+            gameLoader = resolveLoader(gameModules, 'zh-TW');
+        }
+    }
+
     const [uiMod, gameMod] = await Promise.all([
         uiLoader ? uiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
         gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),

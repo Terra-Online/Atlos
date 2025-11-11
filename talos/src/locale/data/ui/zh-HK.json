@@ -1,0 +1,90 @@
+{
+  "headbar": {
+    "tos": "服務條款",
+    "hideUI": "隱藏介面",
+    "group": "加入相關群組",
+    "darkmode": "切換至深色模式",
+    "lightmode": "切換至淺色模式",
+    "language": "選擇語言",
+    "help": "取得協助"
+  },
+  "trigger": {
+    "boundaryMode": "地區邊界顯示",
+    "clusterMode": "點位聚合",
+    "optimalPath": "最優路徑"
+  },
+  "search": {
+    "placeholder": "全域搜尋…"
+  },
+  "markFilter": {
+    "title": "篩選項目",
+    "emptyTitle": "沒有符合條件的篩選項目。",
+    "emptyDesc": "請聯絡管理員。"
+  },
+  "detail": {
+    "stat": {
+      "world": "世界",
+      "main": "區域"
+    },
+    "noInfo": "暫無資料"
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "由 Observator 6 提供支援"
+    }
+  },
+  "language": {
+    "title": "語言",
+    "cancel": "取消",
+    "current": "現時",
+    "fullSupport": "完整支援的語言",
+    "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
+    "uiOnly": "只支援介面翻譯的語言",
+    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的用語及術語將以英文顯示。",
+    "fyi": "如本網站暫未提供你所使用的語言，请透過電郵 translate@talos.wiki 聯絡本站管理員；或前往 GitHub 參與我們的開源翻譯項目，為你的語言申請翻譯條目，並依照我們的指引協助網站 WIKI 部分的翻譯及本地化。衷心感謝並期待你的貢獻。\n你亦可點擊查看翻譯貢獻名單。",
+    "names": {
+      "en-US": "英語",
+      "zh-CN": "簡體中文",
+      "zh-HK": "繁體中文",
+      "ja-JP": "日語",
+      "ko-KR": "韓語",
+      "es-ES": "西班牙語",
+      "fr-FR": "法語",
+      "de-DE": "德語",
+      "it-IT": "意大利語",
+      "ru-RU": "俄語",
+      "pt-BR": "葡萄牙語",
+      "id-ID": "印尼語",
+      "ar-AE": "阿拉伯語"
+    }
+  },
+  "group": {
+    "title": "社群與媒體",
+    "visit": "前往"
+  },
+  "storage": {
+    "title": "協議與儲存",
+    "localStorage": "本機儲存",
+    "localStorageDesc": "儲存你的介面佈局、地圖狀態、設定、偏好以及標記資料。",
+    "cookies": "Cookies",
+    "cookiesDesc": "儲存你的登入狀態與許可偏好。",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "儲存目前地圖的圖磚資料以供離線瀏覽。",
+    "cacheStorage": "快取",
+    "cacheStorageDesc": "儲存網站顯示所需的字型資源。",
+    "total": "總儲存量",
+    "calculating": "正在計算儲存占用…",
+    "clear": "清除",
+    "disable": "停用",
+    "clearAll": "清除所有已儲存的資料",
+    "clearing": "清除中…",
+    "noData": "未找到已儲存的資料。",
+    "warning": "此操作將清除你使用網站時的所有儲存資料，包括偏好設定與進度，並可能使下次造訪速度下降。操作無法復原；完成後頁面將重新載入。"
+  },
+  "common": {
+    "close": "關閉"
+  }
+}

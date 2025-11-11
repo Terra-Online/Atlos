@@ -48,7 +48,7 @@
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
-      "zh-TW": "Traditional Chinese",
+      "zh-HK": "Traditional Chinese",
       "ja-JP": "Japanese",
       "ko-KR": "Korean",
       "es-ES": "Spanish",
@@ -66,26 +66,23 @@
     "visit": "Visit"
   },
   "storage": {
-    "title": "Storage & Cache",
+    "title": "Protocols & Storage",
     "localStorage": "Local Storage",
-    "localStorageDesc": "Stores user preferences, settings, and application state permanently.",
-    "sessionStorage": "Session Storage",
-    "sessionStorageDesc": "Temporary session data, cleared when the browser tab is closed.",
+    "localStorageDesc": "Stores your UI layout, map state, settings, preferences, and marker data.",
     "cookies": "Cookies",
-    "cookiesDesc": "Small pieces of data for tracking, authentication, and preferences.",
+    "cookiesDesc": "Stores your login state and consent preferences.",
     "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Local database for storing structured data and offline content.",
-    "cacheStorage": "Cache Storage",
-    "cacheStorageDesc": "Cached resources like images, scripts, and fonts for faster loading.",
+    "indexedDBDesc": "Stores current map tile data for offline viewing.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Stores font resources required for site display.",
     "total": "Total Storage",
-    "calculating": "Calculating storage usage...",
+    "calculating": "Calculating storage usage…",
     "clear": "Clear",
     "disable": "Disable",
-    "clearAll": "Clear All Data",
-    "clearing": "Clearing...",
-    "noData": "No storage data found.",
-    "disableManual": "Cookie settings must be managed through your browser settings.",
-    "warning": "⚠️ This will clear all stored data including your preferences and progress. This action cannot be undone and will reload the page."
+    "clearAll": "Clear all stored data",
+    "clearing": "Clearing…",
+    "noData": "No stored data found.",
+    "warning": "This will clear all data saved while using the site, including your preferences and progress, and may slow down your next visit. This action cannot be undone; the page will reload after completion."
   },
   "common": {
     "close": "Close"

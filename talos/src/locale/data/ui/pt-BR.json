@@ -1,0 +1,90 @@
+{
+  "headbar": {
+    "tos": "Termos de Serviço",
+    "hideUI": "Ocultar Interface",
+    "group": "Junte-se ao grupo relacionado",
+    "darkmode": "Mudar para modo escuro",
+    "lightmode": "Mudar para modo claro",
+    "language": "Escolher idioma",
+    "help": "Entre em contato para obter ajuda"
+  },
+  "trigger": {
+    "boundaryMode": "Modo de Limite",
+    "clusterMode": "Modo de Agrupamento",
+    "optimalPath": "Caminho Ideal"
+  },
+  "search": {
+    "placeholder": "Busca geral..."
+  },
+  "markFilter": {
+    "title": "Opções de Filtro",
+    "emptyTitle": "Nenhuma opção de filtro correspondente.",
+    "emptyDesc": "Por favor, entre em contato com o administrador."
+  },
+  "detail": {
+    "stat": {
+      "world": "Mundo",
+      "main": "Principal"
+    },
+    "noInfo": "Sem informações."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "suportado pelo observador 6"
+    }
+  },
+  "language": {
+    "title": "idioma",
+    "cancel": "Cancelar",
+    "current": "Atual",
+    "fullSupport": "Idiomas Totalmente Suportados",
+    "fullSupportHint": "Traduções completas para a interface e conteúdo do jogo.",
+    "uiOnly": "Idiomas Apenas da Interface",
+    "uiOnlyHint": "Apenas traduções da interface, o conteúdo do jogo será exibido em inglês.",
+    "fyi": "Se o seu idioma ainda não está disponível neste site, você pode entrar em contato com o administrador do site por e-mail em translate@talos.wiki, ou visitar o GitHub para participar do nosso projeto de tradução de código aberto. Você pode solicitar entradas de tradução para o seu idioma e ajudar a traduzir e localizar a seção WIKI de acordo com nossas diretrizes. Agradecemos sinceramente e esperamos suas contribuições.\nVocê também pode clicar para ver a lista de colaboradores de tradução.",
+    "names": {
+      "en-US": "Inglês",
+      "zh-CN": "Chinês Simplificado",
+  "zh-HK": "Chinês Tradicional (Hong Kong)",
+      "ja-JP": "Japonês",
+      "ko-KR": "Coreano",
+      "es-ES": "Espanhol",
+      "fr-FR": "Francês",
+      "de-DE": "Alemão",
+      "it-IT": "Italiano",
+      "ru-RU": "Russo",
+      "pt-BR": "Português",
+      "id-ID": "Indonésio",
+      "ar-AE": "Árabe"
+    }
+  },
+  "group": {
+    "title": "Comunidade e Mídia",
+    "visit": "Visitar"
+  },
+  "storage": {
+    "title": "Protocolos e Armazenamento",
+    "localStorage": "Armazenamento Local",
+    "localStorageDesc": "Armazena o layout da interface, estado do mapa, configurações, preferências e dados de marcadores.",
+    "cookies": "Cookies",
+    "cookiesDesc": "Armazena seu estado de login e preferências de consentimento.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Armazena dados de tiles do mapa atual para visualização offline.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Armazena recursos de fontes necessários para exibir o site.",
+    "total": "Armazenamento Total",
+    "calculating": "Calculando uso de armazenamento…",
+    "clear": "Limpar",
+    "disable": "Desativar",
+    "clearAll": "Limpar todos os dados armazenados",
+    "clearing": "Limpando…",
+    "noData": "Nenhum dado armazenado encontrado.",
+    "warning": "Isso limpará todos os dados salvos durante o uso do site, incluindo suas preferências e progresso, e pode tornar sua próxima visita mais lenta. A ação é irreversível; a página será recarregada após a conclusão."
+  },
+  "common": {
+    "close": "Fechar"
+  }
+}

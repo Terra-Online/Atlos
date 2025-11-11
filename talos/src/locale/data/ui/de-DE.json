@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Englisch",
       "zh-CN": "Chinesisch (Vereinfacht)",
-      "zh-TW": "Chinesisch (Traditionell)",
+      "zh-HK": "Chinesisch (Traditionell)",
       "ja-JP": "Japanisch",
       "ko-KR": "Koreanisch",
       "es-ES": "Spanisch",
@@ -66,26 +66,23 @@
     "visit": "Besuchen"
   },
   "storage": {
-    "title": "Speicher und Cache",
+    "title": "Protokolle & Speicher",
     "localStorage": "Lokaler Speicher",
-    "localStorageDesc": "Speichert Benutzereinstellungen, Konfigurationen und Anwendungszustand dauerhaft.",
-    "sessionStorage": "Sitzungsspeicher",
-    "sessionStorageDesc": "Temporäre Sitzungsdaten, werden beim Schließen des Browser-Tabs gelöscht.",
+    "localStorageDesc": "Speichert Ihr UI‑Layout, Kartenstatus, Einstellungen, Präferenzen und Markerdaten.",
     "cookies": "Cookies",
-    "cookiesDesc": "Kleine Datenmengen für Tracking, Authentifizierung und Präferenzen.",
+    "cookiesDesc": "Speichert Ihren Anmeldestatus und Zustimmungspräferenzen.",
     "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Lokale Datenbank zum Speichern strukturierter Daten und Offline-Inhalte.",
-    "cacheStorage": "Cache-Speicher",
-    "cacheStorageDesc": "Zwischengespeicherte Ressourcen wie Bilder, Skripte und Schriftarten für schnelleres Laden.",
+    "indexedDBDesc": "Speichert Kachel­daten der aktuellen Karte für die Offline‑Ansicht.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Speichert Schrift­ressourcen, die für die Darstellung der Seite benötigt werden.",
     "total": "Gesamtspeicher",
-    "calculating": "Berechnung der Speichernutzung...",
+    "calculating": "Speichernutzung wird berechnet…",
     "clear": "Löschen",
     "disable": "Deaktivieren",
-    "clearAll": "Alle Daten löschen",
-    "clearing": "Löschen...",
-    "noData": "Keine Speicherdaten gefunden.",
-    "disableManual": "Cookie-Einstellungen müssen über die Browser-Einstellungen verwaltet werden.",
-    "warning": "⚠️ Dadurch werden alle gespeicherten Daten einschließlich Ihrer Einstellungen und Fortschritte gelöscht. Diese Aktion kann nicht rückgängig gemacht werden und die Seite wird neu geladen."
+    "clearAll": "Alle gespeicherten Daten löschen",
+    "clearing": "Löschen…",
+    "noData": "Keine gespeicherten Daten gefunden.",
+    "warning": "Dies löscht alle während der Nutzung der Seite gespeicherten Daten, einschließlich Ihrer Einstellungen und Fortschritte, und kann Ihren nächsten Besuch verlangsamen. Dieser Vorgang ist nicht rückgängig zu machen; die Seite lädt anschließend neu."
   },
   "common": {
     "close": "Fertig"
