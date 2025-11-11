@@ -6,9 +6,11 @@
     --storage-text: #{$grey-1};
     --storage-label: #{$grey-1};
     --storage-size: #{$grey-1};
+    --storage-desc: #{$dim-1};
     --storage-total-bg: #{$light-2};
     --storage-total-text: #{$grey-1};
     --storage-border: #{$light-2};
+    --storage-item-bg: #{$white-3};
     --storage-warning-bg: #{rgba($secondary-accent-1, 0.1)};
     --storage-warning-text: #{$grey-1};
 }
@@ -18,9 +20,11 @@
     --storage-text: #{$light-1};
     --storage-label: #{$light-1};
     --storage-size: #{$light-1};
+    --storage-desc: #{$grey-1};
     --storage-total-bg: #{$mid};
     --storage-total-text: #{$light-1};
     --storage-border: #{$mid};
+    --storage-item-bg: #{$black-1};
     --storage-warning-bg: #{rgba($secondary-accent-1, 0.15)};
     --storage-warning-text: #{$light-1};
 }
@@ -39,6 +43,13 @@
     font-size: 0.875rem;
 }
 
+.noData {
+    text-align: center;
+    padding: 2rem;
+    color: var(--storage-desc);
+    font-size: 0.875rem;
+}
+
 .storageList {
     display: flex;
     flex-direction: column;
@@ -46,22 +57,18 @@
 }
 
 .storageItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem;
     border-radius: 3px;
-    background-color: transparent;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-        background-color: rgba($grey-1, 0.05);
-    }
+    background-color: var(--storage-item-bg);
+    border: 1px solid var(--storage-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
 
     &.total {
         margin-top: 0.5rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--storage-border);
+        padding: 0.75rem;
+        border-top: 2px solid var(--storage-border);
         background-color: var(--storage-total-bg);
         font-weight: 600;
 
@@ -70,7 +77,17 @@
             color: var(--storage-total-text);
             font-size: 1rem;
         }
+        
+        .itemHeader {
+            padding: 0;
+        }
     }
+}
+
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .storageLabel {
@@ -84,6 +101,20 @@
     font-size: 0.875rem;
     font-weight: 500;
     font-family: 'Courier New', monospace;
+}
+
+.itemDescription {
+    font-size: 0.75rem;
+    color: var(--storage-desc);
+    line-height: 1.4;
+    margin-top: -0.1rem;
+}
+
+.itemActions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+    flex-wrap: wrap;
 }
 
 .actions {

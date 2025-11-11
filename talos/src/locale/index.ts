@@ -23,14 +23,14 @@ export interface II18nBundle {
     ui: Record<string, unknown>; // UI components text
 }
 
-export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'fr-FR', 'de-DE', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
+export const SUPPORTED_LANGS = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW', 'fr-FR', 'de-DE', 'it-IT', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 // Languages that have both game and UI translations (full support)
 export const FULL_LANGS: readonly Lang[] = ['en-US', 'ja-JP', 'ko-KR', 'zh-CN', 'zh-TW'] as const;
 
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'it-IT', 'ru-RU', 'id-ID', 'es-ES', 'ar-AE'] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {

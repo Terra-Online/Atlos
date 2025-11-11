@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import L from 'leaflet';
 import styles from './UIOverlay.module.scss';
 
-import Scale from '../scale/scale';
-import { HeadBar, HeadItem } from '../headBar/headBar.tsx';
-import { RegionContainer } from '../regSwitch/regSwitch';
-import { Detail } from '../detail/detail';
-import FilterList from '../filterList/filterList';
+import LanguageModal from '@/component/language/language';
+import GroupsModal from '@/component/group/group';
+import ToSModal from '@/component/tos/tos';
+import Scale from '@/component/scale/scale';
+import { HeadBar, HeadItem } from '@/component/headBar/headBar';
+import { RegionContainer } from '@/component/regSwitch/regSwitch';
+import { Detail } from '@/component/detail/detail';
+import FilterList from '@/component/filterList/filterList';
+
+import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
 import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
 
@@ -15,15 +21,10 @@ import Group from '../../assets/logos/group.svg?react';
 import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
-import L from 'leaflet';
-import { useTranslateUI } from '@/locale';
-import LanguageModal from '@/component/language/LanguageModal';
-import GroupsModal from '@/component/group/group';
-import StorageModal from '@/component/storage/storage';
 
 interface UIOverlayProps {
     map?: L.Map;
-    isSidebarOpen: boolean; // 保留用于某些需要的组件
+    isSidebarOpen: boolean;
     visible?: boolean;
     onHideUI?: () => void;
 }
@@ -124,7 +125,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
             />
 
             {/* Storage Modal */}
-            <StorageModal
+            <ToSModal
                 open={storageOpen}
                 onClose={() => setStorageOpen(false)}
                 onChange={(o) => setStorageOpen(o)}

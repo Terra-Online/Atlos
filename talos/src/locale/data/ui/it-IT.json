@@ -1,0 +1,93 @@
+{
+  "headbar": {
+    "tos": "Termini di Servizio",
+    "hideUI": "Nascondi Interfaccia",
+    "group": "Unisciti al gruppo correlato",
+    "darkmode": "Passa alla modalità scura",
+    "lightmode": "Passa alla modalità chiara",
+    "language": "Scegli la lingua",
+    "help": "Richiedi aiuto"
+  },
+  "trigger": {
+    "boundaryMode": "Modalità Confine",
+    "clusterMode": "Modalità Cluster",
+    "optimalPath": "Percorso Ottimale"
+  },
+  "search": {
+    "placeholder": "Ricerca globale..."
+  },
+  "markFilter": {
+    "title": "Opzioni Filtro",
+    "emptyTitle": "Nessuna opzione di filtro corrisponde.",
+    "emptyDesc": "Contatta l'amministratore."
+  },
+  "detail": {
+    "stat": {
+      "world": "Mondo",
+      "main": "Principale"
+    },
+    "noInfo": "Nessuna informazione."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "supportato da observator 6"
+    }
+  },
+  "language": {
+    "title": "lingua",
+    "cancel": "Annulla",
+    "current": "Attuale",
+    "fullSupport": "Lingue Completamente Supportate",
+    "fullSupportHint": "Traduzioni complete sia per l'interfaccia che per i contenuti di gioco.",
+    "uiOnly": "Lingue Solo Interfaccia",
+    "uiOnlyHint": "Solo traduzioni dell'interfaccia, i contenuti di gioco saranno visualizzati in inglese.",
+    "fyi": "Se la tua lingua non è ancora disponibile su questo sito web, puoi contattare l'amministratore del sito via email a translate@talos.wiki, o visitare GitHub per partecipare al nostro progetto di traduzione open-source. Puoi richiedere voci di traduzione per la tua lingua e aiutare a tradurre e localizzare la sezione WIKI secondo le nostre linee guida. Apprezziamo sinceramente e aspettiamo i tuoi contributi.\nPuoi anche cliccare per visualizzare l'elenco dei contributori alla traduzione.",
+    "names": {
+      "en-US": "Inglese",
+      "zh-CN": "Cinese Semplificato",
+      "zh-TW": "Cinese Tradizionale",
+      "ja-JP": "Giapponese",
+      "ko-KR": "Coreano",
+      "es-ES": "Spagnolo",
+      "fr-FR": "Francese",
+      "de-DE": "Tedesco",
+      "it-IT": "Italiano",
+      "ru-RU": "Russo",
+      "pt-BR": "Portoghese",
+      "id-ID": "Indonesiano",
+      "ar-AE": "Arabo"
+    }
+  },
+  "group": {
+    "title": "Comunità e Media",
+    "visit": "Visita"
+  },
+  "storage": {
+    "title": "Archiviazione e Cache",
+    "localStorage": "Archiviazione Locale",
+    "localStorageDesc": "Memorizza preferenze utente, impostazioni e stato dell'applicazione in modo permanente.",
+    "sessionStorage": "Archiviazione di Sessione",
+    "sessionStorageDesc": "Dati temporanei della sessione, cancellati quando la scheda del browser viene chiusa.",
+    "cookies": "Cookie",
+    "cookiesDesc": "Piccole porzioni di dati per tracciamento, autenticazione e preferenze.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Database locale per l'archiviazione di dati strutturati e contenuti offline.",
+    "cacheStorage": "Archiviazione Cache",
+    "cacheStorageDesc": "Risorse memorizzate nella cache come immagini, script e font per un caricamento più veloce.",
+    "total": "Archiviazione Totale",
+    "calculating": "Calcolo dell'utilizzo dell'archiviazione...",
+    "clear": "Cancella",
+    "disable": "Disabilita",
+    "clearAll": "Cancella Tutti i Dati",
+    "clearing": "Cancellazione in corso...",
+    "noData": "Nessun dato di archiviazione trovato.",
+    "disableManual": "Le impostazioni dei cookie devono essere gestite tramite le impostazioni del browser.",
+    "warning": "⚠️ Questo cancellerà tutti i dati memorizzati, incluse le tue preferenze e progressi. Questa azione non può essere annullata e ricaricherà la pagina."
+  },
+  "common": {
+    "close": "Chiudi"
+  }
+}
