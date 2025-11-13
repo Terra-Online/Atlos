@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Anglais",
       "zh-CN": "Chinois simplifié",
-      "zh-TW": "Chinois traditionnel",
+      "zh-HK": "Chinois traditionnel",
       "ja-JP": "Japonais",
       "ko-KR": "Coréen",
       "es-ES": "Espagnol",
@@ -64,6 +64,25 @@
   "group": {
     "title": "Communauté & médias",
     "visit": "Visiter"
+  },
+  "storage": {
+    "title": "Protocoles et stockage",
+    "localStorage": "Stockage local",
+    "localStorageDesc": "Stocke votre disposition d’interface, l’état de la carte, les paramètres, préférences et données de marqueurs.",
+    "cookies": "Cookies",
+    "cookiesDesc": "Stocke votre état de connexion et vos préférences de consentement.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Stocke les tuiles de la carte actuelle pour une consultation hors ligne.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Stocke les ressources de polices nécessaires à l’affichage du site.",
+    "total": "Stockage total",
+    "calculating": "Calcul de l’utilisation du stockage…",
+    "clear": "Effacer",
+    "disable": "Désactiver",
+    "clearAll": "Effacer toutes les données stockées",
+    "clearing": "Effacement…",
+    "noData": "Aucune donnée stockée trouvée.",
+    "warning": "Cette action effacera toutes les données enregistrées lors de l’utilisation du site, y compris vos préférences et votre progression, et peut ralentir votre prochaine visite. Action irréversible ; la page sera rechargée une fois terminée."
   },
   "common": {
     "close": "Fermer"

@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Englisch",
       "zh-CN": "Chinesisch (Vereinfacht)",
-      "zh-TW": "Chinesisch (Traditionell)",
+      "zh-HK": "Chinesisch (Traditionell)",
       "ja-JP": "Japanisch",
       "ko-KR": "Koreanisch",
       "es-ES": "Spanisch",
@@ -64,6 +64,25 @@
   "group": {
     "title": "Community & Medien",
     "visit": "Besuchen"
+  },
+  "storage": {
+    "title": "Protokolle & Speicher",
+    "localStorage": "Lokaler Speicher",
+    "localStorageDesc": "Speichert Ihr UI‑Layout, Kartenstatus, Einstellungen, Präferenzen und Markerdaten.",
+    "cookies": "Cookies",
+    "cookiesDesc": "Speichert Ihren Anmeldestatus und Zustimmungspräferenzen.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Speichert Kachel­daten der aktuellen Karte für die Offline‑Ansicht.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Speichert Schrift­ressourcen, die für die Darstellung der Seite benötigt werden.",
+    "total": "Gesamtspeicher",
+    "calculating": "Speichernutzung wird berechnet…",
+    "clear": "Löschen",
+    "disable": "Deaktivieren",
+    "clearAll": "Alle gespeicherten Daten löschen",
+    "clearing": "Löschen…",
+    "noData": "Keine gespeicherten Daten gefunden.",
+    "warning": "Dies löscht alle während der Nutzung der Seite gespeicherten Daten, einschließlich Ihrer Einstellungen und Fortschritte, und kann Ihren nächsten Besuch verlangsamen. Dieser Vorgang ist nicht rückgängig zu machen; die Seite lädt anschließend neu."
   },
   "common": {
     "close": "Fertig"

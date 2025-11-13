@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import L from 'leaflet';
 import styles from './UIOverlay.module.scss';
 
-import Scale from '../scale/scale';
-import { HeadBar, HeadItem } from '../headBar/headBar.tsx';
-import { RegionContainer } from '../regSwitch/regSwitch';
-import { Detail } from '../detail/detail';
-import FilterList from '../filterList/filterList';
+import LanguageModal from '@/component/language/language';
+import GroupsModal from '@/component/group/group';
+import ToSModal from '@/component/tos/tos';
+import Scale from '@/component/scale/scale';
+import { HeadBar, HeadItem } from '@/component/headBar/headBar';
+import { RegionContainer } from '@/component/regSwitch/regSwitch';
+import { Detail } from '@/component/detail/detail';
+import FilterList from '@/component/filterList/filterList';
+
+import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
 import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
 
@@ -15,14 +21,11 @@ import Group from '../../assets/logos/group.svg?react';
 import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
-import L from 'leaflet';
-import { useTranslateUI } from '@/locale';
-import LanguageModal from '@/component/language/LanguageModal';
-import GroupsModal from '@/component/group/group';
+//import Settings from '../../assets/logos/settings.svg?react';
 
 interface UIOverlayProps {
     map?: L.Map;
-    isSidebarOpen: boolean; // 保留用于某些需要的组件
+    isSidebarOpen: boolean;
     visible?: boolean;
     onHideUI?: () => void;
 }
@@ -31,20 +34,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const t = useTranslateUI();
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
+    const [storageOpen, setStorageOpen] = useState(false);
     const { isMobile } = useDevice();
 
     const handleReset = () => {
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        document.cookie.split(';').forEach(cookie => {
-            const name = cookie.split('=')[0].trim();
-            if (name) {
-                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-            }
-        });
-        
-        window.location.reload();
+        setStorageOpen(true);
     };
 
     const handleHideUI = () => {
@@ -100,6 +94,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
                 />
+                {/*
+                <HeadItem
+                    icon={Settings}
+                    onClick={() => console.log('Open settings')}
+                    tooltip={t('headbar.settings')}
+                />
+                */}
             </HeadBar>
 
             {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}
@@ -117,7 +118,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 onClose={() => setLangOpen(false)}
                 onChange={(o) => setLangOpen(o)}
                 onSelected={(lang) => {
-                    // 可在此处记录选择结果或埋点
                     console.log('Language switched to:', lang);
                 }}
             />
@@ -130,6 +130,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 onSelected={(platform) => {
                     console.log('Opened social platform:', platform);
                 }}
+            />
+
+            {/* Storage Modal */}
+            <ToSModal
+                open={storageOpen}
+                onClose={() => setStorageOpen(false)}
+                onChange={(o) => setStorageOpen(o)}
             />
         </div>
     );

@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styles from './detail.module.scss';
+//import Button from '@/component/button/button';
+
 import { getItemIconUrl, getCtgrIconUrl } from '@/utils/resource.ts';
 import {
     useMarkerStore,
@@ -169,13 +171,18 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 </AnimatedText>
                             </AnimatePresence>
                         </div>
-                        {/* disabled in version1 */}
-                        {/* <div className="header-actions">
-            {!isCollected && <button className="next-button" onClick={handleNextPoint}>
-              <span className="deco"></span>
-              <span className={styles.nextText}>Next</span>
-            </button>}
-          </div> */}
+                        {/* actions                        <div className={styles.headerActions}>
+                            {!isCollected && (
+                                <Button
+                                    text={'Next'}
+                                    variant='next'
+                                    width='6rem'
+                                    height='1.5rem'
+                                    onClick={() => {}}
+                                />
+                            )}
+                        </div>
+                         */}
                     </div>
                     {/* Content */}
                     <div className={styles.detailContent}>

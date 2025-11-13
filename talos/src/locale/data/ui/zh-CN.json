@@ -48,7 +48,7 @@
     "names": {
       "en-US": "英语",
       "zh-CN": "简体中文",
-      "zh-TW": "繁体中文",
+      "zh-HK": "繁体中文",
       "ja-JP": "日语",
       "ko-KR": "韩语",
       "es-ES": "西班牙语",
@@ -64,6 +64,25 @@
   "group": {
     "title": "社区与媒体",
     "visit": "访问"
+  },
+  "storage": {
+    "title": "协议与存储",
+    "localStorage": "本地存储",
+    "localStorageDesc": "储存您的UI布局、地图状态，设置与偏好以及点位信息。",
+    "cookies": "Cookies",
+    "cookiesDesc": "储存您的登录状态与许可偏好的信息。",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "储存当前地图的瓦片信息以供离线浏览。",
+    "cacheStorage": "缓存",
+    "cacheStorageDesc": "储存网站显示需要的字体资源。",
+    "total": "总存储量",
+    "calculating": "计算存储占用中…",
+    "clear": "清除",
+    "disable": "禁用",
+    "clearAll": "清除所有已储存的数据",
+    "clearing": "清除中…",
+    "noData": "未找到储存数据。",
+    "warning": "此操作将清除所有您此前使用网站时储存的数据，包括您的偏好设置和进度，亦可能导致您下次访问网站的速度下降。此操作无法撤销，执行后将重新加载页面。"
   },
   "common": {
     "close": "关闭"

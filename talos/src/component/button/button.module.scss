@@ -1,0 +1,223 @@
+@use '../../styles/palette.scss' as *;
+
+:root,
+:root[data-schema='light'] {
+  --btn-bg-light: #{$white-3};
+  --btn-text-light: #{$grey-1};
+  --btn-deco-light: #{$grey-1};
+
+  --btn-bg-dark: #{$grey-1};
+  --btn-text-dark: #{$light-1};
+  --btn-deco-dark: #{$light-1};
+}
+
+:root[data-schema='dark'] {
+  --btn-bg-light: #{$mid};
+  --btn-text-light: #{$black-1};
+  --btn-deco-light: #{$black-1};
+
+  --btn-bg-dark: #{$black-1};
+  --btn-text-dark: #{$light-2};
+  --btn-deco-dark: #{$light-2};
+}
+
+.button {
+    &[data-schema='light'] {
+        background: var(--btn-bg-light);
+        color: var(--btn-text-light);
+        --btn-deco: var(--btn-deco-light);
+        --btn-outline: var(--btn-bg-light);
+        --btn-icon-color: var(--btn-text-light);
+    }
+    &[data-schema='dark'] {
+        background: var(--btn-bg-dark);
+        color: var(--btn-text-dark);
+        --btn-deco: var(--btn-deco-dark);
+        --btn-outline: var(--btn-bg-dark);
+        --btn-icon-color: var(--btn-text-dark);
+    }
+
+    width: var(--btn-width, 6rem);
+    height: var(--btn-height, 1.5rem);
+  
+    border-radius: calc(var(--btn-height) / 2);
+    outline: 1.5px solid var(--btn-outline);
+    outline-offset: 2px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition:
+      filter 0.3s ease,
+      outline 0.3s ease,
+      box-shadow 0.3s ease;
+    will-change: filter, outline, box-shadow;
+    text-align: end;
+    padding-right: calc(var(--btn-height) * 3/4 + 0.1rem);
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    touch-action: none;
+    user-select: none;
+
+    &:focus {
+        outline: 1.5px solid var(--btn-bg-light);
+        outline-color: var(--btn-deco);
+    }
+
+    .text {
+        display: inline-flex;
+        justify-content: center;
+        position: relative;
+        z-index: 3;
+        letter-spacing: -.5px;
+        font-family: 'Novecento Medium', 'Novecento Cyrillic', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+        font-weight: 900;
+        text-shadow: 1px 1px 1px rgba($black-0, 0.25);
+        width: auto;
+        white-space: nowrap;
+        padding: 0 5px 0 4px;
+        margin-left: auto; // push text to the right then complementing deco
+    }
+
+  .deco {
+      content: '';
+      display: flex;
+      flex: 1 1 auto;
+      height: 1.5px;
+      margin-left: .3rem;
+      margin-right: 2px;
+      background-color: var(--btn-deco);
+      z-index: 1;
+      pointer-events: none;
+      position: relative;
+
+      &::before {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 0;
+          border-style: solid;
+          border-width: 3.3px 0 3.3px 6.6px;
+          border-color: transparent transparent transparent var(--btn-deco);
+          transform: translateY(calc(-50% + .75px)); // plus 1/2 of deco height to align center
+      }
+
+      &::after {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 0;
+          right: 0;
+          border-style: solid;
+          border-width: 2.25px;
+          border-color: var(--btn-deco);
+          transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px)); // plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
+        }
+    }
+
+    &[data-deco='false'] .deco {
+        display: none;
+    }
+
+    .icon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        right: 5%;
+        background-color: var(--btn-icon-color);
+        mask-image: url('../../assets/images/UI/close.svg');
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+        z-index: 2;
+        pointer-events: none;
+        filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25));
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        right: 0;
+        background-image: url('../../assets/images/UI/bg.webp');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: 60% 40%;
+        z-index: 0;
+        pointer-events: none;
+    }
+    &[data-schema='dark']::after {
+        filter: invert(1);
+    }
+
+    &:hover {
+        filter: invert(1);
+        box-shadow: 0 0 2px 1px var(--btn-deco);
+        outline-color: var(--btn-deco);
+    }
+
+    &:disabled {
+        background: $dim-1;
+        cursor: not-allowed;
+    }
+}
+
+/* Button type variants - different icons */
+.button[data-type='next'] .icon {
+    mask-image: url('../../assets/images/UI/next.svg');
+    width: 11%;
+}
+
+.button[data-type='prev'] .icon {
+    mask-image: url('../../assets/images/UI/prev.svg');
+    width: 11%;
+}
+
+.button[data-type='close'] .icon {
+    mask-image: url('../../assets/images/UI/close.svg');
+    width: 15%;
+}
+
+.button[data-type='confirm'] .icon {
+    mask-image: url('../../assets/images/UI/confirm.svg');
+    width: 13%;
+}
+
+.button[data-button-style='icon'] {
+    padding: 0;
+    text-align: center;
+    justify-content: center;
+    background: transparent;
+    outline: 2px solid var(--btn-deco);
+    outline-offset: 2px;
+    border-radius: 50%;
+    .icon {
+        width: 100%;
+        height: 100%;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+        mask-size: contain;
+        mask-position: center;
+    }
+    &::after {
+        display: none;
+    }
+
+    &:hover {
+        filter: invert(1);
+        box-shadow: none;
+        outline-color: var(--btn-deco);
+        background: radial-gradient(circle, var(--btn-bg-light) 60%, transparent 60%); // avoiding edge rag
+    }
+
+    &:focus {
+        outline-color: var(--btn-deco);
+    }
+}

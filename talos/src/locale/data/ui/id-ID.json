@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Inggris",
       "zh-CN": "Tionghoa Sederhana",
-      "zh-TW": "Tionghoa Tradisional",
+      "zh-HK": "Tionghoa Tradisional",
       "ja-JP": "Jepang",
       "ko-KR": "Korea",
       "es-ES": "Spanyol",
@@ -64,6 +64,25 @@
   "group": {
     "title": "Komunitas & Media",
     "visit": "Kunjungi"
+  },
+  "storage": {
+    "title": "Protokol & Penyimpanan",
+    "localStorage": "Penyimpanan Lokal",
+    "localStorageDesc": "Menyimpan tata letak UI, status peta, pengaturan, preferensi, dan data penanda Anda.",
+    "cookies": "Cookie",
+    "cookiesDesc": "Menyimpan status login dan preferensi persetujuan Anda.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Menyimpan data tile peta saat ini untuk penelusuran offline.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Menyimpan sumber daya font yang diperlukan untuk tampilan situs.",
+    "total": "Total Penyimpanan",
+    "calculating": "Menghitung penggunaan penyimpanan…",
+    "clear": "Hapus",
+    "disable": "Nonaktifkan",
+    "clearAll": "Hapus semua data tersimpan",
+    "clearing": "Menghapus…",
+    "noData": "Tidak ditemukan data tersimpan.",
+    "warning": "Ini akan menghapus semua data yang disimpan saat menggunakan situs, termasuk preferensi dan progres Anda, dan dapat memperlambat kunjungan berikutnya. Tindakan tidak dapat dibatalkan; halaman akan dimuat ulang setelah selesai."
   },
   "common": {
     "close": "Tutup"

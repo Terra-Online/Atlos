@@ -48,7 +48,7 @@
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
-      "zh-TW": "Traditional Chinese",
+      "zh-HK": "Traditional Chinese",
       "ja-JP": "Japanese",
       "ko-KR": "Korean",
       "es-ES": "Spanish",
@@ -64,6 +64,25 @@
   "group": {
     "title": "Community & Media",
     "visit": "Visit"
+  },
+  "storage": {
+    "title": "Protocols & Storage",
+    "localStorage": "Local Storage",
+    "localStorageDesc": "Stores your UI layout, map state, settings, preferences, and marker data.",
+    "cookies": "Cookies",
+    "cookiesDesc": "Stores your login state and consent preferences.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Stores current map tile data for offline viewing.",
+    "cacheStorage": "Cache",
+    "cacheStorageDesc": "Stores font resources required for site display.",
+    "total": "Total Storage",
+    "calculating": "Calculating storage usage…",
+    "clear": "Clear",
+    "disable": "Disable",
+    "clearAll": "Clear all stored data",
+    "clearing": "Clearing…",
+    "noData": "No stored data found.",
+    "warning": "This will clear all data saved while using the site, including your preferences and progress, and may slow down your next visit. This action cannot be undone; the page will reload after completion."
   },
   "common": {
     "close": "Close"

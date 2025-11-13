@@ -15,14 +15,16 @@ export interface LanguageProps {
 const LANG_LABEL_KEYS: Record<string, string> = {
   'en-US': 'English',
   'zh-CN': '简体中文',
-  'zh-TW': '繁體中文',
+  'zh-HK': '繁體中文',
   'ja-JP': '日本語',
   'ko-KR': '한국어',
 
   'fr-FR': 'Français',
   'de-DE': 'Deutsch',
+  'it-IT': 'Italiano',
   'es-ES': 'Español',
   'ru-RU': 'Русский',
+  'pt-BR': 'Português',
   'id-ID': 'Bahasa Indonesia',
   'ar-AE': 'العربية',
 };
@@ -36,8 +38,9 @@ const toBCP47 = (tag: string) => {
 // Map locale to short region tag displayed at right
 const toLangCode = (lang: string) => {
   const lower = lang.toLowerCase();
-  if (lower.startsWith('zh-tw') || lower.startsWith('zh-hk')) return 'HK';
+  if (lower.startsWith('zh-hk')) return 'HK';
   if (lower.startsWith('zh-cn') || lower.startsWith('zh-hans')) return 'CN';// for HK only
+  if (lower.startsWith('zh-sg')) return 'SG';
   const base = (lower.split('-')[0] || lower).slice(0, 2);
   return base.toUpperCase();
 };

@@ -48,7 +48,7 @@
     "names": {
       "en-US": "英語",
       "zh-CN": "簡体字中国語",
-      "zh-TW": "繁体字中国語",
+      "zh-HK": "繁字体中国語",
       "ja-JP": "日本語",
       "ko-KR": "韓国語",
       "es-ES": "スペイン語",
@@ -64,6 +64,25 @@
   "group": {
     "title": "コミュニティとメディア",
     "visit": "訪問"
+  },
+  "storage": {
+    "title": "プロトコルとストレージ",
+    "localStorage": "ローカルストレージ",
+    "localStorageDesc": "UIレイアウト、マップ状態、設定、環境設定、マーカー情報を保存します。",
+    "cookies": "Cookie",
+    "cookiesDesc": "ログイン状態と同意プリファレンスを保存します。",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "現在のマップのタイルデータをオフライン閲覧用に保存します。",
+    "cacheStorage": "キャッシュ",
+    "cacheStorageDesc": "サイト表示に必要なフォントリソースを保存します。",
+    "total": "総ストレージ",
+    "calculating": "ストレージ使用量を計算中…",
+    "clear": "消去",
+    "disable": "無効化",
+    "clearAll": "保存された全データを消去",
+    "clearing": "消去中…",
+    "noData": "保存データが見つかりません。",
+    "warning": "サイト利用中に保存された全データ (設定・進行状況含む) を消去し、次回訪問が遅くなる可能性があります。操作は元に戻せません。完了後ページが再読み込みされます。"
   },
   "common": {
     "close": "閉じる"

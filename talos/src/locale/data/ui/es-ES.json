@@ -48,7 +48,7 @@
     "names": {
       "en-US": "Inglés",
       "zh-CN": "Chino simplificado",
-      "zh-TW": "Chino tradicional",
+      "zh-HK": "Chino tradicional",
       "ja-JP": "Japonés",
       "ko-KR": "Coreano",
       "es-ES": "Español",
@@ -64,6 +64,25 @@
   "group": {
     "title": "Comunidad & medios",
     "visit": "Visitar"
+  },
+  "storage": {
+    "title": "Protocolos y almacenamiento",
+    "localStorage": "Almacenamiento local",
+    "localStorageDesc": "Almacena el diseño de la interfaz, estado del mapa, configuraciones, preferencias y datos de marcadores.",
+    "cookies": "Cookies",
+    "cookiesDesc": "Almacena tu estado de inicio de sesión y preferencias de consentimiento.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Almacena los datos de teselas del mapa actual para visualización sin conexión.",
+    "cacheStorage": "Caché",
+    "cacheStorageDesc": "Almacena recursos de fuentes necesarios para mostrar el sitio.",
+    "total": "Almacenamiento total",
+    "calculating": "Calculando uso de almacenamiento…",
+    "clear": "Borrar",
+    "disable": "Desactivar",
+    "clearAll": "Borrar todos los datos almacenados",
+    "clearing": "Borrando…",
+    "noData": "No se encontraron datos almacenados.",
+    "warning": "Esto borrará todos los datos guardados al usar el sitio, incluidos tus preferencias y progreso, y puede ralentizar tu próxima visita. Acción irreversible; la página se recargará al finalizar."
   },
   "common": {
     "close": "Cerrar"
