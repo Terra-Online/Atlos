@@ -5,6 +5,7 @@
   --btn-bg-light: #{$white-3};
   --btn-text-light: #{$grey-1};
   --btn-deco-light: #{$grey-1};
+
   --btn-bg-dark: #{$grey-1};
   --btn-text-dark: #{$light-1};
   --btn-deco-dark: #{$light-1};
@@ -14,6 +15,7 @@
   --btn-bg-light: #{$mid};
   --btn-text-light: #{$black-1};
   --btn-deco-light: #{$black-1};
+
   --btn-bg-dark: #{$black-1};
   --btn-text-dark: #{$light-2};
   --btn-deco-dark: #{$light-2};
@@ -35,7 +37,10 @@
         --btn-icon-color: var(--btn-text-dark);
     }
 
-    border-radius: 0.75rem;
+    width: var(--btn-width, 6rem);
+    height: var(--btn-height, 1.5rem);
+  
+    border-radius: calc(var(--btn-height) / 2);
     outline: 1.5px solid var(--btn-outline);
     outline-offset: 2px;
     font-size: 0.8rem;
@@ -46,7 +51,7 @@
       box-shadow 0.3s ease;
     will-change: filter, outline, box-shadow;
     text-align: end;
-    padding-right: 1.1rem;
+    padding-right: calc(var(--btn-height) * 3/4 + 0.1rem);
     position: relative;
     overflow: hidden;
     z-index: 2;
@@ -152,7 +157,7 @@
 
     &:hover {
         filter: invert(1);
-        box-shadow: 0 0 1px 1px rgba($black-1, 0.5);
+        box-shadow: 0 0 2px 1px var(--btn-deco);
         outline-color: var(--btn-deco);
     }
 
@@ -178,8 +183,8 @@
     width: 15%;
 }
 
-.button[data-type='check'] .icon {
-    mask-image: url('../../assets/images/UI/check.svg');
+.button[data-type='confirm'] .icon {
+    mask-image: url('../../assets/images/UI/confirm.svg');
     width: 13%;
 }
 
@@ -188,13 +193,12 @@
     text-align: center;
     justify-content: center;
     background: transparent;
-    outline: 1.5px solid var(--btn-deco);
-    outline-offset: 0;
+    outline: 2px solid var(--btn-deco);
+    outline-offset: 2px;
     border-radius: 50%;
-
     .icon {
-        width: 60%;
-        height: 60%;
+        width: 100%;
+        height: 100%;
         top: 50%;
         left: 50%;
         right: auto;
@@ -202,24 +206,18 @@
         mask-size: contain;
         mask-position: center;
     }
-
     &::after {
         display: none;
     }
 
     &:hover {
         filter: invert(1);
-        box-shadow: 0 0 2px 1px rgba($black-1, 0.5);
+        box-shadow: none;
         outline-color: var(--btn-deco);
-        background: var(--btn-bg-light);
+        background: radial-gradient(circle, var(--btn-bg-light) 60%, transparent 60%); // avoiding edge rag
     }
 
     &:focus {
         outline-color: var(--btn-deco);
     }
-}
-
-.button[data-button-style='icon']:is([data-type='next'], [data-type='prev'], [data-type='close'], [data-type='check']) .icon {
-    width: 50%;
-    height: 50%;
 }

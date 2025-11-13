@@ -165,8 +165,10 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
                 <div className={styles.actions}>
                   <Button
                     text={clearingAll ? t('storage.clearing') : t('storage.clearAll')}
-                    buttonType="check"
-                    buttonStyle='icon'
+                    buttonType="confirm"
+                    buttonStyle='normal'
+                    width= '12rem'
+                    height= '2.5rem'
 
                     onClick={() => void handleClearAll()}
                     disabled={clearingAll}
