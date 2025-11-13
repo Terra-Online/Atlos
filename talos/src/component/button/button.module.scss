@@ -1,23 +1,42 @@
 @use '../../styles/palette.scss' as *;
 
 :root,
-:root[data-theme='light'] {
-  --btn-bg: #{$white-3};
-  --btn-text: #{$grey-1};
-  --btn-deco: #{$grey-1};
+:root[data-schema='light'] {
+  --btn-bg-light: #{$white-3};
+  --btn-text-light: #{$grey-1};
+  --btn-deco-light: #{$grey-1};
+  --btn-bg-dark: #{$grey-1};
+  --btn-text-dark: #{$light-1};
+  --btn-deco-dark: #{$light-1};
 }
 
-:root[data-theme='dark'] {
-  --btn-bg: #{$mid};
-  --btn-text: #{$black-1};
-  --btn-deco: #{$black-1};
+:root[data-schema='dark'] {
+  --btn-bg-light: #{$mid};
+  --btn-text-light: #{$black-1};
+  --btn-deco-light: #{$black-1};
+  --btn-bg-dark: #{$black-1};
+  --btn-text-dark: #{$light-2};
+  --btn-deco-dark: #{$light-2};
 }
 
 .button {
-    background: var(--btn-bg);
-    color: var(--btn-text);
+    &[data-schema='light'] {
+        background: var(--btn-bg-light);
+        color: var(--btn-text-light);
+        --btn-deco: var(--btn-deco-light);
+        --btn-outline: var(--btn-bg-light);
+        --btn-icon-color: var(--btn-text-light);
+    }
+    &[data-schema='dark'] {
+        background: var(--btn-bg-dark);
+        color: var(--btn-text-dark);
+        --btn-deco: var(--btn-deco-dark);
+        --btn-outline: var(--btn-bg-dark);
+        --btn-icon-color: var(--btn-text-dark);
+    }
+
     border-radius: 0.75rem;
-    outline: 1.5px solid var(--btn-bg);
+    outline: 1.5px solid var(--btn-outline);
     outline-offset: 2px;
     font-size: 0.8rem;
     cursor: pointer;
@@ -38,7 +57,7 @@
     user-select: none;
 
     &:focus {
-        outline: 1.5px solid var(--btn-bg);
+        outline: 1.5px solid var(--btn-bg-light);
         outline-color: var(--btn-deco);
     }
 
@@ -93,6 +112,26 @@
         }
     }
 
+    &[data-deco='false'] .deco {
+        display: none;
+    }
+
+    .icon {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        right: 5%;
+        background-color: var(--btn-icon-color);
+        mask-image: url('../../assets/images/UI/close.svg');
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+        z-index: 2;
+        pointer-events: none;
+        filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25));
+    }
+
     &::after {
         content: '';
         position: absolute;
@@ -100,16 +139,15 @@
         height: 100%;
         top: 0;
         right: 0;
-        background-image:
-          url('../../assets/images/UI/close.svg'),
-          url('../assets/images/UI/bg.webp');
-        background-size: 15%, cover;
+        background-image: url('../../assets/images/UI/bg.webp');
+        background-size: cover;
         background-repeat: no-repeat;
-        background-position-x: 95%, 60%;
-        background-position-y: 47%, 40%;
-        filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25));
+        background-position: 60% 40%;
         z-index: 0;
         pointer-events: none;
+    }
+    &[data-schema='dark']::after {
+        filter: invert(1);
     }
 
     &:hover {
@@ -124,10 +162,64 @@
     }
 }
 
-/* Variant for next button only changes the leading icon asset and sizes */
-.button[data-variant='next']::after {
-    background-image:
-      url('../../assets/images/UI/next.svg'),
-      url('../../assets/images/UI/bg.webp');
-    background-size: 11%, cover;
+/* Button type variants - different icons */
+.button[data-type='next'] .icon {
+    mask-image: url('../../assets/images/UI/next.svg');
+    width: 11%;
+}
+
+.button[data-type='prev'] .icon {
+    mask-image: url('../../assets/images/UI/prev.svg');
+    width: 11%;
+}
+
+.button[data-type='close'] .icon {
+    mask-image: url('../../assets/images/UI/close.svg');
+    width: 15%;
+}
+
+.button[data-type='check'] .icon {
+    mask-image: url('../../assets/images/UI/check.svg');
+    width: 13%;
+}
+
+.button[data-button-style='icon'] {
+    padding: 0;
+    text-align: center;
+    justify-content: center;
+    background: transparent;
+    outline: 1.5px solid var(--btn-deco);
+    outline-offset: 0;
+    border-radius: 50%;
+
+    .icon {
+        width: 60%;
+        height: 60%;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+        mask-size: contain;
+        mask-position: center;
+    }
+
+    &::after {
+        display: none;
+    }
+
+    &:hover {
+        filter: invert(1);
+        box-shadow: 0 0 2px 1px rgba($black-1, 0.5);
+        outline-color: var(--btn-deco);
+        background: var(--btn-bg-light);
+    }
+
+    &:focus {
+        outline-color: var(--btn-deco);
+    }
+}
+
+.button[data-button-style='icon']:is([data-type='next'], [data-type='prev'], [data-type='close'], [data-type='check']) .icon {
+    width: 50%;
+    height: 50%;
 }

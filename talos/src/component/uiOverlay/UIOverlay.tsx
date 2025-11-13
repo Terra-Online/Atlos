@@ -21,6 +21,7 @@ import Group from '../../assets/logos/group.svg?react';
 import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
+//import Settings from '../../assets/logos/settings.svg?react';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -93,6 +94,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
                 />
+                {/*
+                <HeadItem
+                    icon={Settings}
+                    onClick={() => console.log('Open settings')}
+                    tooltip={t('headbar.settings')}
+                />
+                */}
             </HeadBar>
 
             {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}

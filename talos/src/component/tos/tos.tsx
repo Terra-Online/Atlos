@@ -144,7 +144,8 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
                         {item.clearable && (
                           <Button
                             text={clearingItem === item.key ? t('storage.clearing') : t('storage.clear')}
-                            variant="close"
+                            buttonType="close"
+                            schema='dark'
 
                             onClick={() => void handleClearItem(item.key)}
                             disabled={clearingItem === item.key || clearingAll}
@@ -164,7 +165,8 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
                 <div className={styles.actions}>
                   <Button
                     text={clearingAll ? t('storage.clearing') : t('storage.clearAll')}
-                    variant="next"
+                    buttonType="check"
+                    buttonStyle='icon'
 
                     onClick={() => void handleClearAll()}
                     disabled={clearingAll}

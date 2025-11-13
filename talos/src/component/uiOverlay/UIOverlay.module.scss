@@ -4,7 +4,6 @@
     left: 0; /* Default full screen */
     width: 100%; /* Default full screen */
     height: 100%;
-    /* Remove z-index to avoid creating stacking context that blocks backdrop-filter */
     pointer-events: none;
     opacity: 1;
     transition:
@@ -14,8 +13,8 @@
 
     /* Sidebar open state */
     &.sidebarOpen {
-        left: 300px; /* Give space for the sidebar */
-        width: calc(100% - 300px); /* Subtract sidebar width */
+        left: 300px;
+        width: calc(100% - 300px);
     }
 
     /* Hidden state */
@@ -33,17 +32,4 @@
     &.hidden > * {
         pointer-events: none;
     }
-
-    /* Custom positioning for components that need it */
-
-    /* Override Headbar positioning to keep it in top-right */
-    /*
-    :global(.headbar-container) {
-        position: fixed !important;
-        top: 1rem !important;
-        right: 1rem !important;
-        left: auto !important;
-        transition: transform 0.3s ease-in-out !important;
-    }
-    */
 }

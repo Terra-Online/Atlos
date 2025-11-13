@@ -1,13 +1,18 @@
 import React from 'react';
 import styles from './button.module.scss';
 
-export type ButtonVariant = 'next' | 'close';
+export type ButtonType = 'next' | 'prev' | 'close' | 'check';
+export type ButtonStyle = 'normal' | 'icon';
+export type ButtonSchema = 'light' | 'dark';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;
   width?: string | number; // e.g., '6rem' | 96
   height?: string | number; // e.g., '1.5rem' | 24
-  variant?: ButtonVariant;
+  buttonType?: ButtonType;
+  buttonStyle?: ButtonStyle;
+  schema?: ButtonSchema;
+  deco?: boolean; // Control whether to show decorative elements
 }
 
 const toCssSize = (v?: string | number): string | undefined => {
@@ -19,7 +24,10 @@ const Button: React.FC<ButtonProps> = ({
   text,
   width = '6rem',
   height = '1.5rem',
-  variant = 'close',
+  buttonType = 'close',
+  buttonStyle = 'normal',
+  schema = 'light',
+  deco = true,
   className,
   style,
   ...rest
@@ -35,13 +43,18 @@ const Button: React.FC<ButtonProps> = ({
       type="button"
       className={[styles.button, className].filter(Boolean).join(' ')}
       style={mergedStyle}
-      data-variant={variant}
+      data-type={buttonType}
+      data-button-style={buttonStyle}
+      data-schema={schema}
+      data-deco={deco}
       {...rest}
     >
       {/* decorative line */}
-      <span className={styles.deco} aria-hidden="true" />
+      {deco && buttonStyle === 'normal' && <span className={styles.deco} aria-hidden="true" />}
       {/* content text */}
-      <span className={styles.text}>{text}</span>
+      {buttonStyle === 'normal' && <span className={styles.text}>{text}</span>}
+      {/* icon */}
+      <span className={styles.icon} aria-hidden="true" />
     </button>
   );
 };
