@@ -1,0 +1,92 @@
+{
+  "headbar": {
+    "tos": "Điều khoản dịch vụ",
+    "hideUI": "Ẩn giao diện",
+    "group": "Tham gia nhóm liên quan",
+    "darkmode": "Chuyển sang chế độ tối",
+    "lightmode": "Chuyển sang chế độ sáng",
+    "language": "Chọn ngôn ngữ",
+    "help": "Nhận trợ giúp"
+  },
+  "trigger": {
+    "boundaryMode": "Hiển thị ranh giới khu vực",
+    "clusterMode": "Gộp điểm",
+    "optimalPath": "Lộ trình tối ưu"
+  },
+  "search": {
+    "placeholder": "Tìm kiếm toàn cục…"
+  },
+  "markFilter": {
+    "title": "Bộ lọc",
+    "emptyTitle": "Không có bộ lọc phù hợp",
+    "emptyDesc": "Vui lòng liên hệ quản trị viên"
+  },
+  "detail": {
+    "stat": {
+      "world": "Thế giới",
+      "main": "Khu vực"
+    },
+    "noInfo": "Chưa có thông tin"
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "được hỗ trợ bởi observator 6"
+    }
+  },
+  "language": {
+    "title": "Ngôn ngữ",
+    "cancel": "Hủy",
+    "current": "Hiện tại",
+    "fullSupport": "Ngôn ngữ hỗ trợ đầy đủ",
+    "fullSupportHint": "Cung cấp bản dịch đầy đủ cho UI và nội dung trong game.",
+    "uiOnly": "Chỉ hỗ trợ UI",
+    "uiOnlyHint": "Chỉ dịch UI, nội dung trong game sẽ hiển thị bằng tiếng Anh.",
+    "fyi": "Nếu ngôn ngữ của bạn chưa có trên website, bạn có thể liên hệ quản trị viên qua email translate@talos.wiki, hoặc truy cập GitHub để tham gia dự án dịch mã nguồn mở. Bạn có thể đề xuất mục dịch cho ngôn ngữ của mình và hỗ trợ dịch/bản địa hóa phần WIKI theo hướng dẫn của chúng tôi. Chúng tôi trân trọng và mong đợi đóng góp của bạn.\nBạn cũng có thể bấm để xem danh sách người đóng góp dịch.",
+    "names": {
+      "en-US": "Tiếng Anh",
+      "zh-CN": "Tiếng Trung Giản thể",
+      "zh-HK": "Tiếng Trung Phồn thể",
+      "ja-JP": "Tiếng Nhật",
+      "ko-KR": "Tiếng Hàn",
+      "es-ES": "Tiếng Tây Ban Nha",
+      "fr-FR": "Tiếng Pháp",
+      "de-DE": "Tiếng Đức",
+      "it-IT": "Tiếng Ý",
+      "ru-RU": "Tiếng Nga",
+      "pt-BR": "Tiếng Bồ Đào Nha",
+      "id-ID": "Tiếng Indonesia",
+      "ar-AE": "Tiếng Ả Rập",
+      "th-TH": "Tiếng Thái",
+      "vi-VN": "Tiếng Việt"
+    }
+  },
+  "group": {
+    "title": "Cộng đồng & Truyền thông",
+    "visit": "Truy cập"
+  },
+  "storage": {
+    "title": "Giao thức & Lưu trữ",
+    "localStorage": "Bộ nhớ cục bộ",
+    "localStorageDesc": "Lưu bố cục UI, trạng thái bản đồ, thiết lập, tùy chọn và dữ liệu đánh dấu của bạn.",
+    "cookies": "Cookie",
+    "cookiesDesc": "Lưu trạng thái đăng nhập và tùy chọn đồng ý của bạn.",
+    "indexedDB": "IndexedDB",
+    "indexedDBDesc": "Lưu dữ liệu ô bản đồ hiện tại để xem ngoại tuyến.",
+    "cacheStorage": "Bộ nhớ đệm",
+    "cacheStorageDesc": "Lưu tài nguyên phông chữ cần thiết cho việc hiển thị trang.",
+    "total": "Tổng dung lượng lưu trữ",
+    "calculating": "Đang tính toán dung lượng…",
+    "clear": "Xóa",
+    "disable": "Tắt",
+    "clearAll": "Xóa mọi dữ liệu đã lưu",
+    "clearing": "Đang xóa…",
+    "noData": "Không tìm thấy dữ liệu đã lưu.",
+    "warning": "Thao tác này sẽ xóa toàn bộ dữ liệu đã lưu trong quá trình bạn sử dụng trang, bao gồm tùy chọn và tiến trình, và có thể làm chậm lần truy cập tiếp theo. Hành động không thể hoàn tác; trang sẽ tải lại sau khi hoàn tất."
+  },
+  "common": {
+    "close": "Đóng"
+  }
+}

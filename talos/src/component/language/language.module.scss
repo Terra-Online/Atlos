@@ -63,7 +63,8 @@
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.25;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
     letter-spacing: -.3px;
     color: var(--lang-section-text);
     unicode-bidi: plaintext;
@@ -72,7 +73,8 @@
     font-size: 0.85rem;
     font-weight: 600;
     line-height: 1.25;
-    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic',sans-serif;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai',
+sans-serif;
     letter-spacing: -.2px;
     color: var(--lang-section-text);
     overflow-wrap: break-word;
@@ -161,7 +163,8 @@
     align-items: flex-start;
     line-height: 1;
     font-size: 1.2rem;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Lang Origin', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Lang Origin', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
     font-weight: 700;
     letter-spacing: -.5px;
     padding-left: 5px;
@@ -177,7 +180,8 @@
     justify-content: flex-start;
     line-height: 1;
     font-size: 0.8rem;
-    font-family: 'Novecento Medium', 'Novecento Cyrillic', 'UD_ShinGo Medium', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento Medium', 'Novecento Cyrillic', 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
     font-weight: 500;
     padding-left: 6px;
     max-width: 0;
@@ -196,7 +200,8 @@
     padding: 2.5px 6px;
     color: var(--lang-tag);
     font-size: .9rem;
-    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
     height: 22px;
     width: fit-content;
     line-height: 1;
@@ -217,7 +222,8 @@
     white-space: nowrap;
     margin-left: 0;
     color: var(--lang--actived-tag-text);
-    font-family: 'Novecento Bold', 'Lang Origin', 'Noto Sans Arabic',sans-serif;
+    font-family: 'Novecento Bold', 'Lang Origin', 'Noto Sans Arabic', 'Noto Sans Thai',
+sans-serif;
     font-weight: 900;
     text-transform: uppercase;
     transition:
@@ -233,7 +239,8 @@
     background-color: var(--lang-actived-tag);
     color: var(--lang--actived-tag-text);
     border-color: var(--lang-actived-tag);
-    font-family: 'Novecento Bold', 'UD_ShinGo Bold', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento Bold', 'UD_ShinGo Bold', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
     box-shadow: 0 1px 2px rgba($black-0, 0.2);
     transform: translateY(0.72rem);
 }
@@ -241,7 +248,7 @@
 .active .langTag .currentLang {
     opacity: 1;
     max-width: 3rem;
-    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'] {
+    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'], &[lang='it-IT'] {
         max-width: 4rem;
     }
     &[lang='ar-AE'] {
