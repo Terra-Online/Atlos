@@ -205,7 +205,6 @@ async function init() {
     const locale = getLanguage();
     await loadAndSet(locale);
 }
-void init();
 
 export const useTranslate = (): (<T = string>(key: string) => T) => {
     const { t } = useI18nStore();
@@ -235,3 +234,5 @@ export async function setLocale(lang: string) {
         // ignore storage errors (e.g., Safari private mode)
     }
 }
+
+export const i18nInitPromise = init();

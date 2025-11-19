@@ -6,9 +6,7 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
-import Joyride from 'react-joyride';
-import { userGuideSteps } from '@/component/userGuide/UserGuide.tsx';
-import { MinimalTooltip } from '@/component/userGuide/tooltip/UserGuideTooltip.tsx';
+import UserGuide from '@/component/userGuide/UserGuide.tsx';
 
 function App() {
     // Use persisted sidebar open state as the single source of truth
@@ -72,20 +70,8 @@ function App() {
     document.documentElement.setAttribute('data-theme', 'dark')
     return (
         <StrictMode>
-            <Joyride
-                steps={userGuideSteps}
-                run={true}
-                continuous={true}
-                debug={true}
-                tooltipComponent={MinimalTooltip}
-                styles={{
-                    options: {
-                        arrowColor: 'rgba(0,0,0,0)',
-                        zIndex: 10000,
-                    },
-                }}
-            />
             <div className='app theme-transition-scope'>
+                <UserGuide/>
                 <div className={'text'}>text</div>
                 {/* Map layer - always fill the entire window */}
                 <Map onMapReady={handleMapReady} />

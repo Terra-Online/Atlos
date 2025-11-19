@@ -58,7 +58,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
     return (
         <div className={styles.UserGuideHeader}>
             <div className={styles.textContainer}>
-                <div className={styles.index}>{prop.index}</div>
+                <div className={styles.index}>{`${prop.index + 1}`}</div>
                 <div className={styles.size}>{`/${prop.size}`}</div>
             </div>
             <div className={styles.spacer}></div>
@@ -82,7 +82,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
     );
 };
 
-export const MinimalTooltip = ({
+export const UserGuideTooltip = ({
     index,
     step,
     backProps,
