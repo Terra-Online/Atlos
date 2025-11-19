@@ -76,7 +76,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                 >
                     <NextIcon className={styles.button} />
                 </div>
-                <AtlosButton text={'SKIP'} onClick={prop.onClickSkip}/>
+                <AtlosButton text={'SKIP'} onClick={prop.onClickSkip} />
             </div>
         </div>
     );
@@ -91,6 +91,8 @@ export const MinimalTooltip = ({
     skipProps,
     size,
 }: TooltipRenderProps) => {
+    const isDarkMode =
+        document.documentElement.getAttribute('data-theme') === 'dark';
     return (
         <div className={styles.UserGuideTooltipWrapper}>
             <div className={styles.UserGuideTooltipContainer}>
@@ -102,11 +104,20 @@ export const MinimalTooltip = ({
                     index={index}
                     size={size}
                 />
-                <GradientDivider />
+                {isDarkMode ? (
+                    <GradientDivider
+                        c1={'#F2F2EB4D'}
+                        c2={'#F2F2EB'}
+                        c3={'#F2F2EB'}
+                        c4={'#F2F2EB4D'}
+                    />
+                ) : (
+                    <GradientDivider />
+                )}
                 <div className={styles.UserGuideContentBase}>
                     {step.content}
                 </div>
-                <RangeIndicator value={((index + 1)/size).toFixed(2)}/>
+                <RangeIndicator value={parseFloat(((index + 1) / size).toFixed(2))} />
             </div>
         </div>
     );

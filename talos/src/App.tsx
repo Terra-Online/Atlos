@@ -68,6 +68,8 @@ function App() {
         };
     }, [uiVisible]);
 
+    // TODO: Remove this before merge
+    document.documentElement.setAttribute('data-theme', 'dark')
     return (
         <StrictMode>
             <Joyride

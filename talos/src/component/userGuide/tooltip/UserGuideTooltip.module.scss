@@ -1,31 +1,47 @@
 .UserGuideTooltipWrapper {
+  --ug-wrapper-glow-bg: ivory;
+
+  :root[data-theme='dark'] & {
+    --ug-wrapper-glow-bg: #111111;
+  }
+
   position: relative;
   display: inline-block;
   border-radius: 12px;
-}
 
-.UserGuideTooltipWrapper::before {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  border-radius: inherit;
-  background: ivory;
-  filter: blur(3px);
-  z-index: -1;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    background: var(--ug-wrapper-glow-bg);
+    filter: blur(3px);
+    z-index: -1;
+  }
 }
 
 .UserGuideTooltipContainer {
+  --ug-tooltip-svg-color: ivory;
+
+  :root[data-theme='dark'] & {
+    --ug-tooltip-svg-color: dark-schema-0;
+  }
+  
   background-image: url('@/assets/images/UI/tooltip/background.svg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  background-color: ivory;
+  background-color: var(--ug-tooltip-svg-color);
   max-width: 460px;
   padding: 10px 24px;
   border-radius: 8px;
 }
 
 .UserGuideHeader {
+  --ug-tooltip-header-color:black;
+  :root[data-theme='dark'] & {
+    --ug-tooltip-header-color: white;
+  }
   display: flex;
   flex-direction: row;
 
@@ -42,11 +58,12 @@
 
   .index {
     font-size: 48px;
+    color: var(--ug-tooltip-header-color);
   }
 
   .size {
     font-size: 24px;
-
+    color: var(--ug-tooltip-header-color);
   }
 
   .buttonContainer {
@@ -58,13 +75,13 @@
   .button {
     width: 42px;
     height: 42px;
-    fill: black;
+    fill: var(--ug-tooltip-header-color);
     margin: 4px 4px;
   }
 
   .iconCircle {
     border-radius: 100%;
-    border: 0.725px solid black;
+    border: 0.725px solid var(--ug-tooltip-header-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,13 +91,23 @@
 }
 
 .UserGuideContentBase {
+  --ug-tooltip-header-color:black;
+  :root[data-theme='dark'] & {
+    --ug-tooltip-header-color: white;
+  }
   margin-top: 5px;
   font-size: 24px;
   line-height: 32px;
   letter-spacing: -0.5px;
+  color: var(--ug-tooltip-header-color);
 }
 
 .UserGuideRangeIndicatorContainer {
+  --ug-tooltip-progress-color: #333;
+  :root[data-theme='dark'] & {
+    --ug-tooltip-progress-color: #D9D9D9;
+  }
+
   width: 179px;
   height: 24px;
   display: flex;
@@ -93,7 +120,7 @@
   .square {
     width: 20px;
     height: 20px;
-    border: 3px solid #333;
+    border: 3px solid var(--ug-tooltip-progress-color);
     box-sizing: border-box;
     background-color: transparent;
     position: relative;
@@ -103,7 +130,7 @@
   .line {
     width: 58px;
     height: 3px;
-    background-color: #333;
+    background-color: var(--ug-tooltip-progress-color);
     flex-shrink: 0;
   }
 
@@ -118,7 +145,7 @@
   .range {
     font-size: 16px;
     font-weight: 500;
-    color: #333;
+    color: var(--ug-tooltip-progress-color);
     text-align: center;
     flex-grow: 1;
     line-height: 1;
