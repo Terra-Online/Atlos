@@ -1,0 +1,126 @@
+.UserGuideTooltipWrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+}
+
+.UserGuideTooltipWrapper::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: ivory;
+  filter: blur(3px);
+  z-index: -1;
+}
+
+.UserGuideTooltipContainer {
+  background-image: url('@/assets/images/UI/tooltip/background.svg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: ivory;
+  max-width: 460px;
+  padding: 10px 24px;
+  border-radius: 8px;
+}
+
+.UserGuideHeader {
+  display: flex;
+  flex-direction: row;
+
+  .textContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    margin-right: auto;
+  }
+
+  .spacer {
+    min-width: 80px;
+  }
+
+  .index {
+    font-size: 48px;
+  }
+
+  .size {
+    font-size: 24px;
+
+  }
+
+  .buttonContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+  }
+
+  .button {
+    width: 42px;
+    height: 42px;
+    fill: black;
+    margin: 4px 4px;
+  }
+
+  .iconCircle {
+    border-radius: 100%;
+    border: 0.725px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: 0 4px;
+  }
+}
+
+.UserGuideContentBase {
+  margin-top: 5px;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.5px;
+}
+
+.UserGuideRangeIndicatorContainer {
+  width: 179px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  background-color: transparent;
+  margin: 0 auto;
+
+  .square {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #333;
+    box-sizing: border-box;
+    background-color: transparent;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .line {
+    width: 58px;
+    height: 3px;
+    background-color: #333;
+    flex-shrink: 0;
+  }
+
+  .square + .line {
+    margin-left: -10px;
+  }
+
+  .range + .line {
+    margin-right: -10px;
+  }
+
+  .range {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    text-align: center;
+    flex-grow: 1;
+    line-height: 1;
+  }
+}
