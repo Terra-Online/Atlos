@@ -58,7 +58,9 @@
       "ru-RU": "Russian",
       "pt-BR": "Portuguese",
       "id-ID": "Indonesian",
-      "ar-AE": "Arabic"
+      "ar-AE": "Arabic",
+      "th-TH": "Thai",
+      "vi-VN": "Vietnamese"
     }
   },
   "group": {
