@@ -137,6 +137,14 @@ $indicator-height: 0.75rem;
     pointer-events: none;
     opacity: 0;
 
+    &.forceOpen {
+        opacity: 1;
+        transition:
+            opacity 0.2s ease-in-out,
+            visibility 0s;
+        pointer-events: auto;
+    }
+
     .subregionSwitch {
         position: relative;
         display: flex;

@@ -3,17 +3,14 @@ import styles from './UserGuideTooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
 import { CSSProperties, MouseEventHandler } from 'react';
 
-import PreviousIcon from '@/assets/images/UI/prev.svg?react';
-import NextIcon from '@/assets/images/UI/next.svg?react';
 import AtlosButton from '@/component/button/button';
-import { Property } from 'csstype';
 
 const RangeIndicator = ({ value }: { value: number }) => {
     return (
-        <div className={styles.UserGuideRangeIndicatorContainer}>
+        <div className={styles.UserGuideRangeIndicatorContainer} style={{ width: `${value}%` }}>
             <div className={styles.square} />
             <div className={styles.line} />
-            <span className={styles.range}>{`${value * 100}%`}</span>
+            <span className={styles.range}>{`${value}%`}</span>
             <div className={styles.line} />
             <div className={styles.square} />
         </div>
@@ -22,10 +19,10 @@ const RangeIndicator = ({ value }: { value: number }) => {
 
 interface GradientDividerInterface {
     height?: number;
-    c1?: Property.Color;
-    c2?: Property.Color;
-    c3?: Property.Color;
-    c4?: Property.Color;
+    c1?: string;
+    c2?: string;
+    c3?: string;
+    c4?: string;
 }
 
 const GradientDivider = ({
@@ -63,19 +60,24 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
             </div>
             <div className={styles.spacer}></div>
             <div className={styles.buttonContainer}>
-                <div className={styles.iconCircle} onClick={prop.onClickBack}>
-                    <PreviousIcon className={styles.button} />
-                </div>
-                <div
-                    className={styles.iconCircle}
+                <AtlosButton
+                    text=''
+                    buttonType='prev'
+                    buttonStyle='icon'
+                    onClick={prop.onClickBack}
+                    size={'2rem'}
+                />
+                <AtlosButton
+                    text=''
+                    buttonType='next'
+                    buttonStyle='icon'
                     onClick={
                         prop.index !== prop.size - 1
                             ? prop.onClickNext
                             : prop.onComplete
                     }
-                >
-                    <NextIcon className={styles.button} />
-                </div>
+                    size={'2rem'}
+                />
                 <AtlosButton text={'SKIP'} onClick={prop.onClickSkip} />
             </div>
         </div>
@@ -117,7 +119,7 @@ export const UserGuideTooltip = ({
                 <div className={styles.UserGuideContentBase}>
                     {step.content}
                 </div>
-                <RangeIndicator value={parseFloat(((index + 1) / size).toFixed(2))} />
+                <RangeIndicator value={Math.round(((index + 1) / size) * 100)} />
             </div>
         </div>
     );

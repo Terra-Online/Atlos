@@ -20,6 +20,14 @@ interface IUiPrefsStore {
   setTriggerCluster: (value: boolean) => void;
   setTriggerBoundary: (value: boolean) => void;
   setTriggerOptimalPath: (value: boolean) => void;
+
+  // User Guide States (Transient)
+  drawerSnapIndex: number | null;
+  setDrawerSnapIndex: (index: number | null) => void;
+  forceSubregionOpen: boolean;
+  setForceSubregionOpen: (value: boolean) => void;
+  forceDetailOpen: boolean;
+  setForceDetailOpen: (value: boolean) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -48,6 +56,14 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setTriggerCluster: (value: boolean) => set({ triggerCluster: value }),
       setTriggerBoundary: (value: boolean) => set({ triggerBoundary: value }),
       setTriggerOptimalPath: (value: boolean) => set({ triggerOptimalPath: value }),
+
+      // User Guide States
+      drawerSnapIndex: null,
+      setDrawerSnapIndex: (index) => set({ drawerSnapIndex: index }),
+      forceSubregionOpen: false,
+      setForceSubregionOpen: (value) => set({ forceSubregionOpen: value }),
+      forceDetailOpen: false,
+      setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
     }),
     {
       name: 'ui-prefs',
@@ -80,3 +96,11 @@ export const useTriggerBoundary = () => useUiPrefsStore((s) => s.triggerBoundary
 export const useSetTriggerBoundary = () => useUiPrefsStore((s) => s.setTriggerBoundary);
 export const useTriggerOptimalPath = () => useUiPrefsStore((s) => s.triggerOptimalPath);
 export const useSetTriggerOptimalPath = () => useUiPrefsStore((s) => s.setTriggerOptimalPath);
+
+// User Guide hooks
+export const useDrawerSnapIndex = () => useUiPrefsStore((s) => s.drawerSnapIndex);
+export const useSetDrawerSnapIndex = () => useUiPrefsStore((s) => s.setDrawerSnapIndex);
+export const useForceSubregionOpen = () => useUiPrefsStore((s) => s.forceSubregionOpen);
+export const useSetForceSubregionOpen = () => useUiPrefsStore((s) => s.setForceSubregionOpen);
+export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen);
+export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
