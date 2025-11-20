@@ -9,25 +9,30 @@ interface SpotlightProps {
 }
 
 const buildPath = (rect: DOMRect, padding: number, vw: number, vh: number) => {
-  const x = Math.max(0, rect.x - padding);
-  const y = Math.max(0, rect.y - padding);
-  const w = Math.min(vw - x, rect.width + padding * 2);
-  const h = Math.min(vh - y, rect.height + padding * 2);
+  const x = rect.x - padding;
+  const y = rect.y - padding;
+  const w = rect.width + padding * 2;
+  const h = rect.height + padding * 2;
   // Even-odd fill rule: outer rect then hole rect
   return `M0 0H${vw}V${vh}H0V0Z M${x} ${y}H${x + w}V${y + h}H${x}V${y}Z`;
 };
 
 export const GuideSpotlight: React.FC<SpotlightProps> = ({ getCurrentTarget, active, padding = 10, onAdvance }) => {
   const [path, setPath] = useState<string>('');
+  const [rect, setRect] = useState<DOMRect | null>(null);
   const [vw, setVw] = useState<number>(window.innerWidth);
   const [vh, setVh] = useState<number>(window.innerHeight);
 
   const update = useCallback(() => {
     if (!active) return;
     const el = getCurrentTarget();
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setPath(buildPath(rect, padding, vw, vh));
+    if (!el) {
+        setRect(null);
+        return;
+    }
+    const r = el.getBoundingClientRect();
+    setRect(r);
+    setPath(buildPath(r, padding, vw, vh));
   }, [active, getCurrentTarget, padding, vw, vh]);
 
   useEffect(() => {
@@ -62,6 +67,17 @@ export const GuideSpotlight: React.FC<SpotlightProps> = ({ getCurrentTarget, act
           <path className={styles.pathMask} d={path} fillRule="evenodd" />
         )}
       </svg>
+      {active && rect && (
+        <div
+            className={styles.spotlightBox}
+            style={{
+                left: rect.x - padding,
+                top: rect.y - padding,
+                width: rect.width + padding * 2,
+                height: rect.height + padding * 2,
+            }}
+        />
+      )}
     </div>
   );
 };

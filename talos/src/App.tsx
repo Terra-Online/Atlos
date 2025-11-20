@@ -66,13 +66,10 @@ function App() {
         };
     }, [uiVisible]);
 
-    // TODO: Remove this before merge
-    document.documentElement.setAttribute('data-theme', 'dark')
     return (
         <StrictMode>
             <div className='app theme-transition-scope'>
-                <UserGuide/>
-                <div className={'text'}>text</div>
+                <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}
                 <Map onMapReady={handleMapReady} />
                 {/* UI layer - floats over the map */}

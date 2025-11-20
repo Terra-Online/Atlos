@@ -2,6 +2,7 @@ import styles from './tooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
 import { MouseEventHandler } from 'react';
 import Button from '@/component/button/button';
+import { useTheme } from '@/store/uiPrefs';
 
 const RangeIndicator = ({ value }: { value: number }) => {
     return (
@@ -27,6 +28,9 @@ interface TooltipHeaderInterface {
 }
 
 const TooltipHeader = (prop: TooltipHeaderInterface) => {
+    const theme = useTheme();
+    const buttonSchema = theme === 'light' ? 'dark' : 'light';
+
     return (
         <div className={styles.header}>
             <div className={styles.textContainer}>
@@ -40,6 +44,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     buttonStyle='icon'
                     onClick={prop.onClickBack}
                     size={'1.5rem'}
+                    schema={buttonSchema}
                 />
                 <Button
                     text=''
@@ -51,8 +56,9 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                             : prop.onComplete
                     }
                     size={'1.5rem'}
+                    schema={buttonSchema}
                 />
-                <Button text={'SKIP'} onClick={prop.onClickSkip} />
+                <Button text={'SKIP'} onClick={prop.onClickSkip} schema={'dark'} />
             </div>
         </div>
     );

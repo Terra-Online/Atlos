@@ -2,6 +2,7 @@ import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import { useMemo } from 'react';
+import L from 'leaflet';
 import {
     useSetSidebarOpen,
     useToggleMarkFilterExpanded,
@@ -11,7 +12,7 @@ import {
     useSetForceDetailOpen,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
-import { useAddPoint } from '@/store/userRecord';
+import { useAddPoint, useDeletePoint } from '@/store/userRecord';
 import { MARKER_TYPE_TREE, WORLD_MARKS } from '@/data/marker';
 
 export type GuideStep = Step & {
@@ -19,16 +20,24 @@ export type GuideStep = Step & {
     delay?: number;
 };
 
-export const useGuideSteps = () => {
+export const useGuideSteps = (map?: L.Map) => {
     const t = useTranslateUI();
     const setSidebarOpen = useSetSidebarOpen();
     const toggleMarkFilterExpanded = useToggleMarkFilterExpanded();
     const switchFilter = useSwitchFilter();
     const addPoint = useAddPoint();
+    const deletePoint = useDeletePoint();
     const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
     const setForceSubregionOpen = useSetForceSubregionOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
+
+    const firstKey = Object.keys(MARKER_TYPE_TREE)[0];
+    const firstType = Object.values(MARKER_TYPE_TREE[firstKey])[0][1].key;
+
+    const targetPoint = useMemo(() => {
+        return WORLD_MARKS.find((m) => m.type === firstType);
+    }, [firstType]);
 
     const steps: GuideStep[] = useMemo(() => [
         {
@@ -67,15 +76,11 @@ export const useGuideSteps = () => {
             disableBeacon: true,
         },
         {
-            target: '[class*="markItem"]',
+            target: `[data-key="${firstType}"]`,
             content: parse(t('guide.selectorSelect') || ''),
             placement: 'right',
             disableBeacon: true,
             onNext: () => {
-                const firstKey = Object.keys(MARKER_TYPE_TREE)[0];
-                const firstType = Object.values(
-                    MARKER_TYPE_TREE[firstKey],
-                )[0][0].key;
                 const currentFilter = useMarkerStore.getState().filter;
                 if (!currentFilter.includes(firstType)) {
                     switchFilter(firstType);
@@ -83,15 +88,11 @@ export const useGuideSteps = () => {
             },
         },
         {
-            target: '[class*="markItem"]',
+            target: `[data-key="${firstType}"]`,
             content: parse(t('guide.selectorComplete') || ''),
             placement: 'right',
             disableBeacon: true,
             onNext: () => {
-                const firstKey = Object.keys(MARKER_TYPE_TREE)[0];
-                const firstType = Object.values(
-                    MARKER_TYPE_TREE[firstKey],
-                )[0][0].key;
                 const points = WORLD_MARKS.filter(
                     (m) => m.type === firstType,
                 );
@@ -103,7 +104,13 @@ export const useGuideSteps = () => {
             content: parse(t('guide.triggerHandle') || ''),
             placement: 'top',
             disableBeacon: true,
-            onNext: () => setDrawerSnapIndex(1),
+            onNext: () => {
+                setDrawerSnapIndex(1);
+                const points = WORLD_MARKS.filter(
+                    (m) => m.type === firstType,
+                );
+                points.forEach((p) => deletePoint(p.id));
+            },
             delay: 300,
         },
         {
@@ -111,11 +118,6 @@ export const useGuideSteps = () => {
             content: parse(t('guide.triggerSwitch') || ''),
             placement: 'top',
             disableBeacon: true,
-            onNext: () => {
-                setSidebarOpen(false);
-                setDrawerSnapIndex(0);
-            },
-            delay: 300,
         },
         {
             target: '[class*="scaleContainer"]',
@@ -184,7 +186,10 @@ export const useGuideSteps = () => {
             content: parse(t('guide.subregionSwitch') || ''),
             placement: 'right',
             disableBeacon: true,
-            onNext: () => setForceSubregionOpen(false),
+            onNext: () => {
+                setForceSubregionOpen(false);
+                map?.setZoom(map.getMinZoom(), { animate: true });
+            },
             delay: 300,
         },
         {
@@ -193,8 +198,7 @@ export const useGuideSteps = () => {
             placement: 'top',
             disableBeacon: true,
             onNext: () => {
-                const p = WORLD_MARKS[0];
-                if (p) setCurrentActivePoint(p);
+                if (targetPoint) setCurrentActivePoint(targetPoint);
                 setForceDetailOpen(true);
             },
             delay: 300,
@@ -205,8 +209,7 @@ export const useGuideSteps = () => {
             placement: 'top',
             disableBeacon: true,
             onNext: () => {
-                const p = useMarkerStore.getState().currentActivePoint;
-                if (p) addPoint(p.id);
+                if (targetPoint) addPoint(targetPoint.id);
             },
         },
         {
@@ -228,10 +231,14 @@ export const useGuideSteps = () => {
         toggleMarkFilterExpanded,
         switchFilter,
         addPoint,
+        deletePoint,
         setDrawerSnapIndex,
         setForceSubregionOpen,
         setCurrentActivePoint,
         setForceDetailOpen,
+        map,
+        firstType,
+        targetPoint,
     ]);
 
     return steps;

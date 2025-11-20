@@ -1,20 +1,25 @@
 @use '../../../styles/palette.scss' as *;
 
-.wrapper {
+:root, :root[data-theme='light'] {
   --ug-wrapper-glow-bg: #{$light-1};
+  --ug-tooltip-header-color: #{$black-0};
+  --ug-tooltip-progress-color: #{$grey-1};
+}
+:root[data-theme='dark'] {
+  --ug-wrapper-glow-bg: #{$black-1};
+  --ug-tooltip-header-color: #{$white-1};
+  --ug-tooltip-progress-color: #{$grey-3};
+}
 
-  :root[data-theme='dark'] & {
-    --ug-wrapper-glow-bg: #{$black-1};
-  }
-
+.wrapper {
   position: relative;
   display: inline-block;
-  border-radius: 12px;
+  border-radius: .5rem;
 
   &::before {
     content: "";
     position: absolute;
-    inset: -8px;
+    inset: -.5rem;
     border-radius: inherit;
     background: var(--ug-wrapper-glow-bg);
     filter: blur(3px);
@@ -22,30 +27,19 @@
   }
 }
 
-.container {
-  --ug-tooltip-svg-color: #{$white-1};
-
-  :root[data-theme='dark'] & {
-    --ug-tooltip-svg-color: #{$black-1};
-  }
-  
+.container {  
   background-image: url('@/assets/images/UI/tooltip/background.svg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  background-color: var(--ug-tooltip-svg-color);
   width: 24rem;
-  padding: 0 1rem;
-  border-radius: 8px;
+  padding: 0 .75rem;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
 }
 
 .header {
-  --ug-tooltip-header-color: #{$black-0};
-  :root[data-theme='dark'] & {
-    --ug-tooltip-header-color: #{$white-1};
-  }
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -88,10 +82,6 @@
 }
 
 .contentBase {
-  --ug-tooltip-header-color: #{$black-0};
-  :root[data-theme='dark'] & {
-    --ug-tooltip-header-color: #{$white-1};
-  }
   font-family: 'HMSans_EN', 'UD_ShinGo Medium', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
   font-weight: 500;
   font-size: 1rem;
@@ -99,14 +89,13 @@
   padding-top: .25rem;
   unicode-bidi: plaintext;
   color: var(--ug-tooltip-header-color);
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  unicode-bidi: plaintext;
 }
 
 .indicatorContainer {
-  --ug-tooltip-progress-color: #{$grey-1};
-  :root[data-theme='dark'] & {
-    --ug-tooltip-progress-color: #{$white-3};
-  }
-
   width: 100%;
   height: 2rem;
   display: flex;

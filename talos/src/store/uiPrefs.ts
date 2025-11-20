@@ -30,6 +30,10 @@ interface IUiPrefsStore {
   setForceDetailOpen: (value: boolean) => void;
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
+
+  // Theme
+  theme: 'light' | 'dark';
+  setTheme: (value: 'light' | 'dark') => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -68,6 +72,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
+
+      // Theme
+      theme: 'dark',
+      setTheme: (value) => set({ theme: value }),
     }),
     {
       name: 'ui-prefs',
@@ -78,6 +86,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerCluster: state.triggerCluster,
         triggerBoundary: state.triggerBoundary,
         triggerOptimalPath: state.triggerOptimalPath,
+        theme: state.theme,
       }),
     },
   ),
@@ -110,3 +119,7 @@ export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen
 export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
 export const useIsUserGuideOpen = () => useUiPrefsStore((s) => s.isUserGuideOpen);
 export const useSetIsUserGuideOpen = () => useUiPrefsStore((s) => s.setIsUserGuideOpen);
+
+// Theme hooks
+export const useTheme = () => useUiPrefsStore((s) => s.theme);
+export const useSetTheme = () => useUiPrefsStore((s) => s.setTheme);

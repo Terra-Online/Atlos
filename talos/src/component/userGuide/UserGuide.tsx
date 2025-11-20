@@ -1,6 +1,7 @@
 import { GuideTooltip } from '@/component/userGuide/tooltip/tooltip';
 import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import L from 'leaflet';
 import {
     useIsUserGuideOpen,
     useSetIsUserGuideOpen,
@@ -11,14 +12,18 @@ import {
 import { GuideSpotlight } from './spotlight/spotlight';
 import { useGuideSteps } from './procedure/steps';
 
-const UserGuide = () => {
+interface UserGuideProps {
+    map?: L.Map;
+}
+
+const UserGuide = ({ map }: UserGuideProps) => {
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
     const setForceSubregionOpen = useSetForceSubregionOpen();
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
 
-    const steps = useGuideSteps();
+    const steps = useGuideSteps(map);
     const helpersRef = useRef<StoreHelpers | null>(null);
 
     // Controlled step index
