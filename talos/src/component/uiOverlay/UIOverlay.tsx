@@ -10,6 +10,7 @@ import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
+import { useSetIsUserGuideOpen } from '@/store/uiPrefs';
 
 import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
@@ -36,6 +37,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [groupOpen, setGroupOpen] = useState(false);
     const [storageOpen, setStorageOpen] = useState(false);
     const { isMobile } = useDevice();
+    const setIsUserGuideOpen = useSetIsUserGuideOpen();
 
     const handleReset = () => {
         setStorageOpen(true);
@@ -53,7 +55,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
 
     const handleDarkMode = () => toggleTheme();
     const handleLanguage = () => setLangOpen(true);
-    const handleHelp = () => console.log('Reach out for help');
+    const handleHelp = () => setIsUserGuideOpen(true);
 
     return (
         <div

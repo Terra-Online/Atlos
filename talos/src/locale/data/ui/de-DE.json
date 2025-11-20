@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Fertig"
+  },
+  "guide": {
+    "sidebarToggle": "Klicken zum Ausklappen der Seitenleiste.<br>Darin: häufig genutzte Marker‑Filter und an die Anzeige gebundene Schalter.",
+    "search": "Sie können Marker in beliebiger Spielsprache suchen und aus den Ergebnissen auswählen.",
+    "filterContainer": "Marker gleichen Typs sind zu einem Filter gruppiert.<br>Klicken zum Aufklappen der Liste.",
+    "filterSort": "Icon links halten und ziehen, um Filter neu zu ordnen.",
+    "selectorSelect": "Einzelner Marker‑Selektor. Klick toggelt Auswahl; gewählte erscheinen auf der Karte.<br>Sichtbar: Gesamtzahl und Ihre erledigten.",
+    "selectorComplete": "Sind alle dieses Typs erledigt, wechselt der Selektor in den Status ‘vollständig’.",
+    "triggerHandle": "Anzeige‑Schalter unten in der Seitenleiste.<br>Griff hochziehen und bedienen.",
+    "triggerSwitch": "Klick toggelt:<br>• Cluster fasst dichte Marker zusammen;<br>• Grenzen hebt Unterregionen & Umrisse hervor.",
+    "scale": "Zoom steuern per Rad, Trackpad, +/- oder Klick auf die Leiste.",
+    "filterList": "Liste Ihrer gewählten Marker; Klick auf das Icon entfernt Auswahl.",
+    "headbar": "Karten‑Einstellungen oben in der Leiste.",
+    "tos": "Nutzungsbedingungen & Datenverwaltung.",
+    "hideUI": "UI verbergen für Screenshots oder Randmarker.",
+    "group": "Projektbezogene Gruppen & Communities anzeigen.",
+    "darkMode": "Aktuellen Lichtmodus wechseln.",
+    "language": "UI‑Sprache wechseln.",
+    "help": "Diesen Guide erneut starten.",
+    "regionSwitch": "Verschiedene Hauptregion‑Karten wählen.",
+    "subregionSwitch": "Hauptregions‑Icon überfahren für Unterregionen; Klick wechselt.<br>Ebenen lassen sich ebenso wählen.",
+    "pointSelect": "Marker anklicken, um Info anzuzeigen.",
+    "pointMark": "Marker erneut anklicken, um ihn als erledigt zu markieren.",
+    "detail": "Detailinfo: Gesamt / Hauptregion / Unterregion dieses Typs.",
+    "pointIcon": "Auch Klick auf das Marker‑Icon markiert erledigt."
   }
 }

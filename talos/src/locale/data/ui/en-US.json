@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Close"
+  },
+  "guide": {
+    "sidebarToggle": "Click to expand the sidebar.<br>The sidebar includes your most frequently used marker filters,<br>and switches closely related to marker display.",
+    "search": "You can search for markers using any in-game language and select them from the search results.",
+    "filterContainer": "Markers of the same type are grouped in one filter.<br>Click to expand the list of markers for that type.",
+    "filterSort": "Hold the icon on the left of the filter to drag it; you can sort the filters according to your needs.",
+    "selectorSelect": "Specific marker selector. Click to toggle selection; selected markers will appear on the map.<br>You can see the total number of such markers in the current area, as well as the number you have marked.",
+    "selectorComplete": "When all markers of this type are marked as complete, the selector will change to a completed state for quick reference.",
+    "triggerHandle": "Switches related to map display are located at the bottom of the sidebar.<br>You can click and drag the handle to operate it.",
+    "triggerSwitch": "Click to toggle the switch state.<br>• Cluster Mode allows dense markers to be displayed together;<br>• Boundary Mode highlights each sub-region and its boundaries within the current area.",
+    "scale": "Use the scaler to view and manipulate map zoom.<br>Mouse wheel or trackpad can be used to zoom.<br>You can also zoom by clicking the +/- buttons or anywhere on the scale bar.",
+    "filterList": "The marker list shows the markers you have selected; click the icon to deselect.",
+    "headbar": "Switches related to map settings are located in the top bar.",
+    "tos": "Website Terms of Service and Data Management.",
+    "hideUI": "Hide the website UI to take screenshots or view edge markers.",
+    "group": "View discussion groups and communities related to this project.",
+    "darkMode": "Switch the current ambient light mode.",
+    "language": "Switch interface language.",
+    "help": "Launch this guide again.",
+    "regionSwitch": "Click to select different in-game box maps (main regions).",
+    "subregionSwitch": "Hover over the main region icon to show available sub-regions; click a sub-region icon to jump to that sub-region view.<br>Similarly, you can select a layer for a region.",
+    "pointSelect": "Click a marker to select it. You will be able to view the marker's information.",
+    "pointMark": "Click the marker again to mark it as complete.",
+    "detail": "You can view specific information about the selected marker, including the count of that marker type in all regions, the current main region, and the current sub-region.",
+    "pointIcon": "Clicking the marker icon can also mark it as complete."
   }
 }

@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Fechar"
+  },
+  "guide": {
+    "sidebarToggle": "Clique para expandir a barra lateral.<br>Lá ficam filtros frequentes e controles de exibição.",
+    "search": "Você pode pesquisar marcadores em qualquer idioma do jogo e selecionar pelos resultados.",
+    "filterContainer": "Marcadores do mesmo tipo são agrupados.<br>Clique para expandir.",
+    "filterSort": "Segure o ícone à esquerda do filtro e arraste para reordenar.",
+    "selectorSelect": "Seletor individual de marcador. Clique para selecionar ou desselecionar; selecionados aparecem no mapa.<br>Mostra total e quantos concluídos.",
+    "selectorComplete": "Ao completar todos os marcadores de um tipo o seletor muda para estado ‘concluído’.",
+    "triggerHandle": "Controles de exibição do mapa na parte inferior.<br>Puxe a alça para cima para ver.",
+    "triggerSwitch": "Clique para alternar.<br>• Agrupamento une marcadores densos;<br>• Limites destacam sub‑regiões e contornos.",
+    "scale": "Zoom: roda do mouse, trackpad, botões +/- ou clique direto na escala.",
+    "filterList": "Lista dos marcadores selecionados; clique no ícone para remover.",
+    "headbar": "Alternadores de preferências do mapa no topo.",
+    "tos": "Termos do site e gerenciamento de dados.",
+    "hideUI": "Oculta a interface para capturas ou ver marcadores extremos.",
+    "group": "Grupos e comunidades do projeto.",
+    "darkMode": "Alternar tema claro/escuro.",
+    "language": "Mudar o idioma da interface.",
+    "help": "Reinicia este guia.",
+    "regionSwitch": "Escolher outro mapa principal da região.",
+    "subregionSwitch": "Passe o mouse sobre o ícone da região para a lista de sub‑regiões; clique para ir.<br>Camadas podem ser selecionadas.",
+    "pointSelect": "Clique em um marcador para ver detalhes.",
+    "pointMark": "Clique novamente para marcar como concluído.",
+    "detail": "Detalhes: global / principal / sub‑região contagem deste tipo.",
+    "pointIcon": "Clique também no ícone do marcador para concluir."
   }
 }

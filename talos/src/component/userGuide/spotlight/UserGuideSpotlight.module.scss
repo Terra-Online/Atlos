@@ -1,0 +1,21 @@
+.overlayRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 99999; /* below tooltip (100000) but above app */
+  pointer-events: auto;
+}
+.svgLayer {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pathMask {
+  fill: rgba(0,0,0,0.55);
+  transition: d 160ms ease, fill 160ms ease;
+  cursor: pointer;
+}
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}

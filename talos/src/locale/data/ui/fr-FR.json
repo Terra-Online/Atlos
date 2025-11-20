@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Fermer"
+  },
+  "guide": {
+    "sidebarToggle": "Cliquer pour déployer la barre latérale.<br>Elle contient vos filtres de marqueurs fréquents et des commutateurs liés à l’affichage.",
+    "search": "Vous pouvez rechercher des marqueurs dans toute langue du jeu et les sélectionner depuis les résultats.",
+    "filterContainer": "Les marqueurs du même type sont regroupés.<br>Cliquez pour afficher la liste de ce type.",
+    "filterSort": "Maintenez l’icône à gauche pour faire glisser et réordonner selon vos besoins.",
+    "selectorSelect": "Sélecteur individuel. Cliquez pour basculer ; les marqueurs sélectionnés apparaissent sur la carte.<br>Vous voyez le total dans la zone et ceux complétés.",
+    "selectorComplete": "Quand tous les marqueurs de ce type sont complétés, l’état passe à ‘terminé’.",
+    "triggerHandle": "Les commutateurs d’affichage carte sont en bas de la barre latérale.<br>Faites glisser la poignée pour l’utiliser.",
+    "triggerSwitch": "Cliquer pour basculer.<br>• Regroupement affiche les marqueurs denses ;<br>• Limites met en évidence sous-régions et frontières.",
+    "scale": "Utilisez le contrôle d’échelle pour voir/ajuster le zoom.<br>Molette, trackpad, +/- ou clic sur la barre.",
+    "filterList": "Liste des marqueurs sélectionnés ; clic pour les retirer.",
+    "headbar": "Commutateurs de configuration carte dans la barre supérieure.",
+    "tos": "Conditions du site & gestion des données.",
+    "hideUI": "Masquer l’UI pour captures ou bords.",
+    "group": "Groupes & communautés du projet.",
+    "darkMode": "Changer le mode lumineux.",
+    "language": "Changer la langue de l’interface.",
+    "help": "Relancer ce guide.",
+    "regionSwitch": "Sélectionner différentes cartes principales.",
+    "subregionSwitch": "Survolez l’icône principale pour voir les sous-régions et cliquez pour y accéder.<br>Vous pouvez aussi choisir une couche.",
+    "pointSelect": "Cliquez un marqueur pour voir ses infos.",
+    "pointMark": "Cliquez à nouveau pour le marquer complété.",
+    "detail": "Infos détaillées : totaux global / principal / sous-région.",
+    "pointIcon": "Clique sur l’icône pour compléter aussi."
   }
 }

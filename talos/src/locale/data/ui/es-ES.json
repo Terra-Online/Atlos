@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Cerrar"
+  },
+  "guide": {
+    "sidebarToggle": "Haz clic para expandir la barra lateral.<br>Incluye tus filtros de marcadores más usados<br>y conmutadores ligados a la visualización.",
+    "search": "Puedes buscar marcadores en cualquier idioma del juego y seleccionarlos en los resultados.",
+    "filterContainer": "Los marcadores del mismo tipo se agrupan en un filtro.<br>Haz clic para desplegar la lista de ese tipo.",
+    "filterSort": "Mantén pulsado el icono izquierdo del filtro para arrastrarlo y reordenarlo según tus necesidades.",
+    "selectorSelect": "Selector individual de marcadores. Clic para alternar selección; los seleccionados aparecen en el mapa.<br>Ves el total en la zona actual y cuántos has marcado.",
+    "selectorComplete": "Cuando todos los de ese tipo están completados, el selector cambia a estado de completado.",
+    "triggerHandle": "Interruptores relacionados con la vista del mapa al final de la barra lateral.<br>Arrastra el asa para usarlo.",
+    "triggerSwitch": "Haz clic para alternar estado.<br>• Modo agrupamiento junta marcadores densos;<br>• Modo límites resalta subregiones y bordes.",
+    "scale": "Usa el control de escala para ver y ajustar el zoom.<br>Rueda del ratón / trackpad / clic en +/- o barra.",
+    "filterList": "Lista de marcadores seleccionados: clic en el icono para desmarcar.",
+    "headbar": "Interruptores de configuración del mapa en la barra superior.",
+    "tos": "Términos del sitio y gestión de datos.",
+    "hideUI": "Oculta la interfaz para capturas o ver bordes.",
+    "group": "Grupos y comunidades del proyecto.",
+    "darkMode": "Cambiar modo de luz ambiental.",
+    "language": "Cambiar idioma de interfaz.",
+    "help": "Reiniciar esta guía.",
+    "regionSwitch": "Seleccionar distintos mapas principales.",
+    "subregionSwitch": "Coloca el cursor sobre el ícono principal para ver subregiones y clic para ir.<br>También puedes elegir capas.",
+    "pointSelect": "Clic en un marcador para verlo.",
+    "pointMark": "Clic otra vez para marcar completado.",
+    "detail": "Información del marcador: totales global / principal / subregión.",
+    "pointIcon": "Clic en el icono del marcador para completar."
   }
 }

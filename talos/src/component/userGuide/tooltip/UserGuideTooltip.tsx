@@ -1,45 +1,20 @@
 import styles from './UserGuideTooltip.module.scss';
-
 import { TooltipRenderProps } from 'react-joyride';
-import { CSSProperties, MouseEventHandler } from 'react';
-
-import AtlosButton from '@/component/button/button';
+import { MouseEventHandler } from 'react';
+import Button from '@/component/button/button';
 
 const RangeIndicator = ({ value }: { value: number }) => {
     return (
-        <div className={styles.UserGuideRangeIndicatorContainer} style={{ width: `${value}%` }}>
-            <div className={styles.square} />
-            <div className={styles.line} />
-            <span className={styles.range}>{`${value}%`}</span>
-            <div className={styles.line} />
-            <div className={styles.square} />
+        <div className={styles.indicatorContainer}>
+            <div className={styles.progressLeft}>
+                <span className={styles.progress} style={{ width: `${value}%` }} />
+            </div>
+            <span className={styles.percentage}>{value}%</span>
+            <div className={styles.progressRight}>
+                <span className={styles.progress} style={{ width: `${value}%` }} />
+            </div>
         </div>
     );
-};
-
-interface GradientDividerInterface {
-    height?: number;
-    c1?: string;
-    c2?: string;
-    c3?: string;
-    c4?: string;
-}
-
-const GradientDivider = ({
-    height = 3,
-    c1 = 'black',
-    c2 = 'black',
-    c3 = 'black',
-    c4 = 'black',
-}: GradientDividerInterface) => {
-    const style: CSSProperties = {
-        width: '100%',
-        height,
-        background: `linear-gradient(to right, ${c1}, ${c2}, ${c3}, ${c4})`,
-        boxShadow: `0px 2px 4px rgba(0,0,0,0.25)`,
-        pointerEvents: 'none',
-    };
-    return <div style={style} />;
 };
 
 interface TooltipHeaderInterface {
@@ -53,21 +28,20 @@ interface TooltipHeaderInterface {
 
 const TooltipHeader = (prop: TooltipHeaderInterface) => {
     return (
-        <div className={styles.UserGuideHeader}>
+        <div className={styles.header}>
             <div className={styles.textContainer}>
                 <div className={styles.index}>{`${prop.index + 1}`}</div>
                 <div className={styles.size}>{`/${prop.size}`}</div>
             </div>
-            <div className={styles.spacer}></div>
             <div className={styles.buttonContainer}>
-                <AtlosButton
+                <Button
                     text=''
                     buttonType='prev'
                     buttonStyle='icon'
                     onClick={prop.onClickBack}
-                    size={'2rem'}
+                    size={'1.5rem'}
                 />
-                <AtlosButton
+                <Button
                     text=''
                     buttonType='next'
                     buttonStyle='icon'
@@ -76,9 +50,9 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                             ? prop.onClickNext
                             : prop.onComplete
                     }
-                    size={'2rem'}
+                    size={'1.5rem'}
                 />
-                <AtlosButton text={'SKIP'} onClick={prop.onClickSkip} />
+                <Button text={'SKIP'} onClick={prop.onClickSkip} />
             </div>
         </div>
     );
@@ -93,11 +67,9 @@ export const UserGuideTooltip = ({
     skipProps,
     size,
 }: TooltipRenderProps) => {
-    const isDarkMode =
-        document.documentElement.getAttribute('data-theme') === 'dark';
     return (
-        <div className={styles.UserGuideTooltipWrapper}>
-            <div className={styles.UserGuideTooltipContainer}>
+        <div className={styles.wrapper}>
+            <div className={styles.container}>
                 <TooltipHeader
                     onClickBack={backProps.onClick}
                     onClickNext={primaryProps.onClick}
@@ -106,17 +78,7 @@ export const UserGuideTooltip = ({
                     index={index}
                     size={size}
                 />
-                {isDarkMode ? (
-                    <GradientDivider
-                        c1={'#F2F2EB4D'}
-                        c2={'#F2F2EB'}
-                        c3={'#F2F2EB'}
-                        c4={'#F2F2EB4D'}
-                    />
-                ) : (
-                    <GradientDivider />
-                )}
-                <div className={styles.UserGuideContentBase}>
+                <div className={styles.contentBase}>
                     {step.content}
                 </div>
                 <RangeIndicator value={Math.round(((index + 1) / size) * 100)} />

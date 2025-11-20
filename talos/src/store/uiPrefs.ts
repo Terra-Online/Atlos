@@ -28,6 +28,8 @@ interface IUiPrefsStore {
   setForceSubregionOpen: (value: boolean) => void;
   forceDetailOpen: boolean;
   setForceDetailOpen: (value: boolean) => void;
+  isUserGuideOpen: boolean;
+  setIsUserGuideOpen: (value: boolean) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -64,6 +66,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceSubregionOpen: (value) => set({ forceSubregionOpen: value }),
       forceDetailOpen: false,
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
+      isUserGuideOpen: false,
+      setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
     }),
     {
       name: 'ui-prefs',
@@ -104,3 +108,5 @@ export const useForceSubregionOpen = () => useUiPrefsStore((s) => s.forceSubregi
 export const useSetForceSubregionOpen = () => useUiPrefsStore((s) => s.setForceSubregionOpen);
 export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen);
 export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
+export const useIsUserGuideOpen = () => useUiPrefsStore((s) => s.isUserGuideOpen);
+export const useSetIsUserGuideOpen = () => useUiPrefsStore((s) => s.setIsUserGuideOpen);

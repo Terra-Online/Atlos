@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Tutup"
+  },
+  "guide": {
+    "sidebarToggle": "Klik untuk membuka panel samping.<br>Berisi filter penanda yang sering dipakai dan kontrol tampilan.",
+    "search": "Anda bisa mencari penanda dalam bahasa apa pun di game dan memilih dari hasil.",
+    "filterContainer": "Penanda dengan tipe sama dikelompokkan.<br>Klik untuk membuka daftar.",
+    "filterSort": "Tahan ikon kiri filter lalu seret untuk mengurutkan.",
+    "selectorSelect": "Selektor penanda individual. Klik untuk pilih/batal; yang dipilih akan tampil di peta.<br>Menunjukkan total dan jumlah selesai.",
+    "selectorComplete": "Jika semua penanda tipe itu selesai selektor menjadi ‘selesai’.",
+    "triggerHandle": "Sakelar tampilan peta di bawah panel.<br>Tarik pegangan ke atas untuk akses.",
+    "triggerSwitch": "Klik untuk mengubah.<br>• Klaster menggabungkan penanda rapat;<br>• Batas menyorot sub‑wilayah dan kontur.",
+    "scale": "Perbesar: roda, trackpad, tombol +/- atau klik skala langsung.",
+    "filterList": "Daftar penanda terpilih; klik ikon untuk hapus.",
+    "headbar": "Sakelar preferensi peta di bagian atas.",
+    "tos": "Ketentuan situs dan manajemen data.",
+    "hideUI": "Sembunyikan antarmuka untuk tangkapan layar atau penanda ujung.",
+    "group": "Grup dan komunitas proyek.",
+    "darkMode": "Ganti mode terang/gelap.",
+    "language": "Ubah bahasa antarmuka.",
+    "help": "Mulai ulang panduan ini.",
+    "regionSwitch": "Pilih peta utama wilayah lain.",
+    "subregionSwitch": "Arahkan ke ikon wilayah utama untuk daftar subwilayah; klik untuk pergi.<br>Dapat memilih lapisan.",
+    "pointSelect": "Klik penanda untuk melihat rinciannya.",
+    "pointMark": "Klik lagi untuk menandai selesai.",
+    "detail": "Detail: global / utama / subwilayah jumlah tipe ini.",
+    "pointIcon": "Klik ikon penanda juga menandai selesai."
   }
 }

@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Chiudi"
+  },
+  "guide": {
+    "sidebarToggle": "Clic per espandere la sidebar.<br>Contiene i filtri di marker più usati<br>e switch collegati alla visualizzazione.",
+    "search": "Puoi cercare marker in qualunque lingua di gioco e selezionarli dai risultati.",
+    "filterContainer": "I marker dello stesso tipo sono raggruppati.<br>Clic per espandere la lista del tipo.",
+    "filterSort": "Tieni l’icona a sinistra e trascina per riordinare i filtri.",
+    "selectorSelect": "Selettore singolo: clic per selezione; i marker selezionati appaiono sulla mappa.<br>Vedi il totale e quelli completati.",
+    "selectorComplete": "Quando tutti i marker di quel tipo sono completati il selettore mostra stato ‘completato’.",
+    "triggerHandle": "Switch relativi alla mappa in fondo alla sidebar.<br>Trascina la maniglia verso l’alto per usarli.",
+    "triggerSwitch": "Clic per alternare.<br>• Cluster unisce marker densi;<br>• Confini evidenzia sotto‑regioni e limiti.",
+    "scale": "Usa il controllo scala per zoom (rotella, trackpad, +/- o barra).",
+    "filterList": "Lista dei marker selezionati; clic icona per annullare.",
+    "headbar": "Switch impostazioni mappa nella barra superiore.",
+    "tos": "Termini del sito e gestione dati.",
+    "hideUI": "Nascondi UI per screenshot o marker ai margini.",
+    "group": "Gruppi e comunità del progetto.",
+    "darkMode": "Cambia modalità luminosa.",
+    "language": "Cambia lingua interfaccia.",
+    "help": "Riavvia questa guida.",
+    "regionSwitch": "Seleziona mappe principali differenti.",
+    "subregionSwitch": "Hover icona principale per sotto‑regioni; clic per andare.<br>Puoi anche scegliere layer.",
+    "pointSelect": "Clic marker per vederne i dettagli.",
+    "pointMark": "Riclic per segnarlo completato.",
+    "detail": "Dettagli: totale globale / principale / sotto‑regione del tipo.",
+    "pointIcon": "Clic icona marker segna completato."
   }
 }

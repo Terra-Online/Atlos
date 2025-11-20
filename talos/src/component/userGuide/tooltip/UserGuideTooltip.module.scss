@@ -1,4 +1,4 @@
-.UserGuideTooltipWrapper {
+.wrapper {
   --ug-wrapper-glow-bg: ivory;
 
   :root[data-theme='dark'] & {
@@ -20,7 +20,7 @@
   }
 }
 
-.UserGuideTooltipContainer {
+.container {
   --ug-tooltip-svg-color: ivory;
 
   :root[data-theme='dark'] & {
@@ -32,122 +32,145 @@
   background-repeat: no-repeat;
   background-position: center;
   background-color: var(--ug-tooltip-svg-color);
-  max-width: 460px;
-  padding: 10px 24px;
+  width: 24rem;
+  padding: 0 1rem;
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
-.UserGuideHeader {
+.header {
   --ug-tooltip-header-color:black;
   :root[data-theme='dark'] & {
     --ug-tooltip-header-color: white;
   }
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--ug-tooltip-header-color), transparent);
+    opacity: 0.3;
+  }
 
   .textContainer {
     display: flex;
     flex-direction: row;
     align-items: baseline;
-    margin-right: auto;
-  }
-
-  .spacer {
-    min-width: 80px;
   }
 
   .index {
-    font-size: 48px;
+    font-size: 2.25rem;
     color: var(--ug-tooltip-header-color);
   }
 
   .size {
-    font-size: 24px;
+    font-size: 1.1rem;
     color: var(--ug-tooltip-header-color);
   }
 
   .buttonContainer {
     display: flex;
     flex-direction: row;
-    align-items: start;
-  }
-
-  .button {
-    width: 42px;
-    height: 42px;
-    fill: var(--ug-tooltip-header-color);
-    margin: 4px 4px;
-  }
-
-  .iconCircle {
-    border-radius: 100%;
-    border: 0.725px solid var(--ug-tooltip-header-color);
-    display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    margin: 0 4px;
+    gap: .75rem;
   }
 }
 
-.UserGuideContentBase {
+.contentBase {
   --ug-tooltip-header-color:black;
   :root[data-theme='dark'] & {
     --ug-tooltip-header-color: white;
   }
-  margin-top: 5px;
-  font-size: 24px;
-  line-height: 32px;
-  letter-spacing: -0.5px;
+  font-family: 'HMSans_EN', 'UDShinGO Demibold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  unicode-bidi: plaintext;
   color: var(--ug-tooltip-header-color);
 }
 
-.UserGuideRangeIndicatorContainer {
+.indicatorContainer {
   --ug-tooltip-progress-color: #333;
   :root[data-theme='dark'] & {
     --ug-tooltip-progress-color: #D9D9D9;
   }
 
-  width: 179px;
-  height: 24px;
+  width: 100%;
+  height: 2rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   user-select: none;
   background-color: transparent;
   margin: 0 auto;
+  gap: 0.5rem;
 
-  .square {
-    width: 20px;
-    height: 20px;
-    border: 3px solid var(--ug-tooltip-progress-color);
-    box-sizing: border-box;
-    background-color: transparent;
+  .progressLeft, .progressRight {
+    flex: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .progressLeft {
+    justify-content: flex-end;
+    padding-right: 2px;
+    
+    .progress {
+      justify-content: flex-end;
+    }
+  }
+
+  .progressRight {
+    justify-content: flex-start;
+    padding-left: 2px;
+  }
+
+  .progress {
+    display: inline-flex;
+    height: 2px;
+    background: var(--ug-tooltip-progress-color);
+    transition: width 0.3s ease;
     position: relative;
-    flex-shrink: 0;
   }
 
-  .line {
-    width: 58px;
-    height: 3px;
-    background-color: var(--ug-tooltip-progress-color);
-    flex-shrink: 0;
-  }
-
-  .square + .line {
-    margin-left: -10px;
-  }
-
-  .range + .line {
-    margin-right: -10px;
-  }
-
-  .range {
-    font-size: 16px;
-    font-weight: 500;
+  .percentage {
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--ug-tooltip-progress-color);
+    min-width: 2.5rem;
     text-align: center;
-    flex-grow: 1;
-    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .progressLeft > .progress::before,
+  .progressRight > .progress::after {
+    content: "";
+    position: absolute;
+    display: block;
+    width: .8rem;
+    height: .8rem;
+    border: 2px solid var(--ug-tooltip-progress-color);
+    background-color: transparent;
+    top: 50%;
+    box-sizing: border-box;
+  }
+
+  .progressLeft > .progress::before {
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .progressRight > .progress::after {
+    right: 0;
+    transform: translate(50%, -50%);
   }
 }
