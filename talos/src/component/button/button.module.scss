@@ -5,20 +5,24 @@
   --btn-bg-light: #{$white-3};
   --btn-text-light: #{$grey-1};
   --btn-deco-light: #{$grey-1};
+  --btn-icon-light: #{$light-2};
 
   --btn-bg-dark: #{$grey-1};
   --btn-text-dark: #{$light-1};
   --btn-deco-dark: #{$light-1};
+  --btn-icon-dark: #{$grey-1};
 }
 
 :root[data-schema='dark'] {
   --btn-bg-light: #{$mid};
   --btn-text-light: #{$black-1};
   --btn-deco-light: #{$black-1};
+  --btn-icon-light: #{$light-2};
 
-  --btn-bg-dark: #{$black-1};
+  --btn-bg-dark: #{$grey-1};
   --btn-text-dark: #{$light-2};
   --btn-deco-dark: #{$light-2};
+  --btn-icon-dark: #{$grey-1};
 }
 
 .button {
@@ -32,6 +36,7 @@
     &[data-schema='dark'] {
         background: var(--btn-bg-dark);
         color: var(--btn-text-dark);
+
         --btn-deco: var(--btn-deco-dark);
         --btn-outline: var(--btn-bg-dark);
         --btn-icon-color: var(--btn-text-dark);
@@ -189,11 +194,17 @@
 }
 
 .button[data-button-style='icon'] {
+    &[data-schema='light'] {
+        --icon-fill: var(--btn-icon-light);
+    }
+    &[data-schema='dark'] {
+        --icon-fill: var(--btn-icon-dark);
+    }
     padding: 0;
     text-align: center;
     justify-content: center;
     background: transparent;
-    outline: 2px solid var(--btn-deco);
+    outline: 2px solid var(--btn-outline);
     outline-offset: 2px;
     border-radius: 50%;
     .icon {
@@ -202,6 +213,7 @@
         top: 50%;
         left: 50%;
         right: auto;
+        background: var(--icon-fill);
         transform: translate(-50%, -50%);
         mask-size: contain;
         mask-position: center;
@@ -214,7 +226,13 @@
         filter: invert(1);
         box-shadow: none;
         outline-color: var(--btn-deco);
+    }
+    &[data-schema='dark']:hover {
         background: radial-gradient(circle, var(--btn-bg-light) 60%, transparent 60%); // avoiding edge rag
+    }
+    &[data-schema='light']:hover {
+        background: radial-gradient(circle, var(--btn-bg-dark) 60%, transparent 60%); // avoiding edge rag
+
     }
 
     &:focus {

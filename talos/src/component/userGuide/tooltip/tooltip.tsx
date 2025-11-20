@@ -1,8 +1,7 @@
 import styles from './tooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
-import { MouseEventHandler } from 'react';
+import { MouseEventHandler, useEffect, useState } from 'react';
 import Button from '@/component/button/button';
-import { useTheme } from '@/store/uiPrefs';
 
 const RangeIndicator = ({ value }: { value: number }) => {
     return (
@@ -28,7 +27,25 @@ interface TooltipHeaderInterface {
 }
 
 const TooltipHeader = (prop: TooltipHeaderInterface) => {
-    const theme = useTheme();
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+    useEffect(() => {
+        const updateTheme = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'light' ? 'light' : 'dark');
+        };
+
+        updateTheme();
+
+        const observer = new MutationObserver(updateTheme);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['data-theme'],
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
     const buttonSchema = theme === 'light' ? 'dark' : 'light';
 
     return (
@@ -58,7 +75,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     size={'1.5rem'}
                     schema={buttonSchema}
                 />
-                <Button text={'SKIP'} onClick={prop.onClickSkip} schema={'dark'} />
+                <Button text={'SKIP'} onClick={prop.onClickSkip} schema={buttonSchema} />
             </div>
         </div>
     );
