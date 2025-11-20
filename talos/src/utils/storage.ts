@@ -2,6 +2,12 @@
 // Supports: localStorage, sessionStorage, cookies, IndexedDB, Cache Storage
 // All size estimations are approximate (UTF-16 * 2 bytes per char, JSON length, Blob size)
 
+// Development environment detection
+const isDevelopment = import.meta.env.DEV;
+
+// User Guide related localStorage keys (protected in production)
+const USER_GUIDE_KEYS = ['ui-prefs'];
+
 export interface StorageInfo {
   localStorage: number;
   sessionStorage: number;
@@ -155,7 +161,20 @@ export const calculateStorageInfo = async (): Promise<StorageInfo> => {
 export const clearStorageItem = async (key: StorageKey): Promise<void> => {
   switch (key) {
     case 'localStorage':
-      localStorage?.clear();
+      if (!isDevelopment) {
+        // In production, preserve user guide data
+        const preserved: Record<string, string> = {};
+        USER_GUIDE_KEYS.forEach(k => {
+          const value = localStorage?.getItem(k);
+          if (value) preserved[k] = value;
+        });
+        localStorage?.clear();
+        // Restore preserved data
+        Object.entries(preserved).forEach(([k, v]) => localStorage?.setItem(k, v));
+      } else {
+        // In development, clear everything
+        localStorage?.clear();
+      }
       break;
     case 'sessionStorage':
       sessionStorage?.clear();

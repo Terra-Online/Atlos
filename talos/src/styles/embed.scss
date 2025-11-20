@@ -1,0 +1,21 @@
+@use './palette.scss' as *;
+:root, :root[data-theme='light'] {
+    --embed-keyword-color: #{$primary-accent-6};
+}
+:root[data-theme='dark'] {
+    --embed-keyword-color: #{$primary-accent-4};
+}
+span.keyword {
+    color: var(--embed-keyword-color);
+    font-size: inherit;
+    font-weight: 700;
+    font-family: 'Novecento Bold', 'Novecento Cyrillic', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    text-transform: inherit;
+    line-height: inherit;
+    &::before, &::after {
+        content: '\200A';
+    }
+}
+
+span.keyboard {
+}

@@ -30,6 +30,10 @@ interface IUiPrefsStore {
   setForceDetailOpen: (value: boolean) => void;
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
+  userGuideVersion: string;
+  setUserGuideVersion: (version: string) => void;
+  userGuideStepCompleted: Record<string, boolean>;
+  setUserGuideStepCompleted: (stepId: string, completed: boolean) => void;
 
   // Theme
   theme: 'light' | 'dark';
@@ -72,6 +76,13 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
+      userGuideVersion: '',
+      setUserGuideVersion: (version) => set({ userGuideVersion: version }),
+      userGuideStepCompleted: {},
+      setUserGuideStepCompleted: (stepId, completed) =>
+        set((state) => ({
+          userGuideStepCompleted: { ...state.userGuideStepCompleted, [stepId]: completed },
+        })),
 
       // Theme
       theme: 'dark',
@@ -86,6 +97,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerCluster: state.triggerCluster,
         triggerBoundary: state.triggerBoundary,
         triggerOptimalPath: state.triggerOptimalPath,
+        userGuideVersion: state.userGuideVersion,
+        userGuideStepCompleted: state.userGuideStepCompleted,
         theme: state.theme,
       }),
     },
@@ -119,6 +132,10 @@ export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen
 export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
 export const useIsUserGuideOpen = () => useUiPrefsStore((s) => s.isUserGuideOpen);
 export const useSetIsUserGuideOpen = () => useUiPrefsStore((s) => s.setIsUserGuideOpen);
+export const useUserGuideVersion = () => useUiPrefsStore((s) => s.userGuideVersion);
+export const useSetUserGuideVersion = () => useUiPrefsStore((s) => s.setUserGuideVersion);
+export const useUserGuideStepCompleted = () => useUiPrefsStore((s) => s.userGuideStepCompleted);
+export const useSetUserGuideStepCompleted = () => useUiPrefsStore((s) => s.setUserGuideStepCompleted);
 
 // Theme hooks
 export const useTheme = () => useUiPrefsStore((s) => s.theme);

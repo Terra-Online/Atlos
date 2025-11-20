@@ -1,9 +1,10 @@
 @use './fonts' as *;
-@use './curves.scss' as *;
+@use './curves' as *;
 @use './palette' as *;
 @use './highlight';
 @use './boundary';
 @use './cluster';
+@use './embed' as *;
 
 /* Import Leaflet MarkerCluster styles */
 @import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -90,7 +91,17 @@ body {
     margin: 0;
     font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
 }
-
+ul {
+    display: block;
+    list-style-type: square;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    padding-inline-start: 1rem;
+    unicode-bidi: plaintext;
+}
+li {
+    unicode-bidi: plaintext;
+}
 ::selection {
     background-color: $primary-accent-4;
 }

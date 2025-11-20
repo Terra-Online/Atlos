@@ -8,9 +8,14 @@ import {
     useSetForceDetailOpen,
     useSetForceSubregionOpen,
     useSetDrawerSnapIndex,
+    useUserGuideVersion,
+    useSetUserGuideVersion,
+    useSetUserGuideStepCompleted,
 } from '@/store/uiPrefs';
 import { GuideSpotlight } from './spotlight/spotlight';
-import { useGuideSteps } from './procedure/steps';
+import { useGuideSteps, type GuideStep } from './procedure/steps';
+
+const CURRENT_GUIDE_VERSION = '1.0.0';
 
 interface UserGuideProps {
     map?: L.Map;
@@ -22,9 +27,24 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const setForceDetailOpen = useSetForceDetailOpen();
     const setForceSubregionOpen = useSetForceSubregionOpen();
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
+    const userGuideVersion = useUserGuideVersion();
+    const setUserGuideVersion = useSetUserGuideVersion();
+    const setUserGuideStepCompleted = useSetUserGuideStepCompleted();
 
-    const steps = useGuideSteps(map);
+    const steps: GuideStep[] = useGuideSteps(map);
     const helpersRef = useRef<StoreHelpers | null>(null);
+
+    // Initialize all steps as incomplete on first load
+    useEffect(() => {
+        if (userGuideVersion !== CURRENT_GUIDE_VERSION) {
+            // Initialize all steps as incomplete
+            steps.forEach((step: GuideStep) => {
+                setUserGuideStepCompleted(step.id, false);
+            });
+            setIsUserGuideOpen(true);
+            setUserGuideVersion(CURRENT_GUIDE_VERSION);
+        }
+    }, [userGuideVersion, setIsUserGuideOpen, setUserGuideVersion, steps, setUserGuideStepCompleted]);
 
     // Controlled step index
     const [stepIndex, setStepIndex] = useState(0);
@@ -68,7 +88,10 @@ const UserGuide = ({ map }: UserGuideProps) => {
 
             if (type === EVENTS.STEP_AFTER) {
                 if (action === 'next') {
+                    // Mark current step as completed
                     const currentStep = steps[index];
+                    setUserGuideStepCompleted(currentStep.id, true);
+                    
                     if (currentStep && currentStep.onNext) {
                         const result = currentStep.onNext();
                         if (result instanceof Promise) {
@@ -114,6 +137,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
             setForceSubregionOpen,
             setDrawerSnapIndex,
             setIsUserGuideOpen,
+            setUserGuideStepCompleted,
         ],
     );
 
