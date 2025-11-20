@@ -15,13 +15,13 @@ const UserGuide = () => {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    const localSteps:Array<Record<string, string>> = useTranslateUI()('guide');
+    const localSteps:Array<string> = useTranslateUI()('guide');
     useEffect(() => {
 
         const userGuideSteps: Array<Step> = [
             {
                 target: '[class*="sidebarToggle"]',
-                content: parse(localSteps[0]['content'] ?? ''),
+                content: parse(localSteps[0] ?? ''),
                 placement: 'right',
                 disableBeacon: false,
                 spotlightClicks: true,
