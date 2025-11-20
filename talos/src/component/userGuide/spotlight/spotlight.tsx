@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import styles from './UserGuideSpotlight.module.scss';
+import styles from './spotlight.module.scss';
 
 interface SpotlightProps {
   getCurrentTarget: () => Element | null;
@@ -17,7 +17,7 @@ const buildPath = (rect: DOMRect, padding: number, vw: number, vh: number) => {
   return `M0 0H${vw}V${vh}H0V0Z M${x} ${y}H${x + w}V${y + h}H${x}V${y}Z`;
 };
 
-export const UserGuideSpotlight: React.FC<SpotlightProps> = ({ getCurrentTarget, active, padding = 10, onAdvance }) => {
+export const GuideSpotlight: React.FC<SpotlightProps> = ({ getCurrentTarget, active, padding = 10, onAdvance }) => {
   const [path, setPath] = useState<string>('');
   const [vw, setVw] = useState<number>(window.innerWidth);
   const [vh, setVh] = useState<number>(window.innerHeight);
@@ -66,4 +66,4 @@ export const UserGuideSpotlight: React.FC<SpotlightProps> = ({ getCurrentTarget,
   );
 };
 
-export default UserGuideSpotlight;
+export default GuideSpotlight;

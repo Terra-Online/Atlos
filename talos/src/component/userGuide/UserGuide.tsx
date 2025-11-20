@@ -1,170 +1,39 @@
-import { UserGuideTooltip } from '@/component/userGuide/tooltip/UserGuideTooltip.tsx';
-import Joyride, { Step, StoreHelpers, CallBackProps, EVENTS } from 'react-joyride';
-import { useTranslateUI, useLocale } from '@/locale';
-import parse from 'html-react-parser';
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useIsUserGuideOpen } from '@/store/uiPrefs';
-import { useGuideActions } from './useGuideActions';
-import { UserGuideSpotlight } from './spotlight/UserGuideSpotlight';
+import { GuideTooltip } from '@/component/userGuide/tooltip/tooltip';
+import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+    useIsUserGuideOpen,
+    useSetIsUserGuideOpen,
+    useSetForceDetailOpen,
+    useSetForceSubregionOpen,
+    useSetDrawerSnapIndex,
+} from '@/store/uiPrefs';
+import { GuideSpotlight } from './spotlight/spotlight';
+import { useGuideSteps } from './procedure/steps';
 
 const UserGuide = () => {
-    const t = useTranslateUI();
-    const locale = useLocale();
     const isUserGuideOpen = useIsUserGuideOpen();
-    const { handleJoyrideCallback } = useGuideActions();
+    const setIsUserGuideOpen = useSetIsUserGuideOpen();
+    const setForceDetailOpen = useSetForceDetailOpen();
+    const setForceSubregionOpen = useSetForceSubregionOpen();
+    const setDrawerSnapIndex = useSetDrawerSnapIndex();
+
+    const steps = useGuideSteps();
     const helpersRef = useRef<StoreHelpers | null>(null);
-    const steps = useMemo<Array<Step>>(() => [
-        {
-            target: '[class*="sidebarToggle"]',
-            content: parse(t('guide.sidebarToggle') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="searchContainer"]',
-            content: parse(t('guide.search') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="markFilterContainer"]',
-            content: parse(t('guide.filterContainer') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="filterIcon"]',
-            content: parse(t('guide.filterSort') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="markItem"]',
-            content: parse(t('guide.selectorSelect') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="markItem"]',
-            content: parse(t('guide.selectorComplete') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="triggerDrawerHandle"]',
-            content: parse(t('guide.triggerHandle') || ''),
-            placement: 'top',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="triggerButton"]',
-            content: parse(t('guide.triggerSwitch') || ''),
-            placement: 'top',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="scaleContainer"]',
-            content: parse(t('guide.scale') || ''),
-            placement: 'left',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="mainFilterList"]',
-            content: parse(t('guide.filterList') || ''),
-            placement: 'top',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbar"]',
-            content: parse(t('guide.headbar') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(1)',
-            content: parse(t('guide.tos') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(2)',
-            content: parse(t('guide.hideUI') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(3)',
-            content: parse(t('guide.group') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(4)',
-            content: parse(t('guide.darkMode') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(5)',
-            content: parse(t('guide.language') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="headbarItem"]:nth-child(6)',
-            content: parse(t('guide.help') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="regswitch"]',
-            content: parse(t('guide.regionSwitch') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="subregionSwitch"]',
-            content: parse(t('guide.subregionSwitch') || ''),
-            placement: 'right',
-            disableBeacon: true,
-        },
-        {
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointSelect') || ''),
-            placement: 'top',
-            disableBeacon: true,
-        },
-        {
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointMark') || ''),
-            placement: 'top',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="detailContainer"]',
-            content: parse(t('guide.detail') || ''),
-            placement: 'left',
-            disableBeacon: true,
-        },
-        {
-            target: '[class*="pointIcon"]',
-            content: parse(t('guide.pointIcon') || ''),
-            placement: 'left',
-            disableBeacon: true,
-        },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    ], [locale]);
+
+    // Controlled step index
+    const [stepIndex, setStepIndex] = useState(0);
 
     // Custom spotlight tracking
     const [currentTarget, setCurrentTarget] = useState<Element | null>(null);
-    const [currentIndex, setCurrentIndex] = useState<number>(0);
 
     useEffect(() => {
         if (!isUserGuideOpen) {
             setCurrentTarget(null);
+            setStepIndex(0);
             return;
         }
-        const step = steps[currentIndex];
+        const step = steps[stepIndex];
         if (!step) {
             setCurrentTarget(null);
             return;
@@ -177,23 +46,75 @@ const UserGuide = () => {
             el = targetSel;
         }
         setCurrentTarget(el);
-    }, [isUserGuideOpen, currentIndex, steps]);
+    }, [isUserGuideOpen, stepIndex, steps]);
 
+    const handleJoyrideCallback = useCallback(
+        (data: CallBackProps) => {
+            const { action, index, type, status } = data;
 
-    const wrappedCallback = useCallback((data: CallBackProps) => {
-        handleJoyrideCallback(data);
-        if (
-            data.type === EVENTS.STEP_AFTER ||
-            data.type === EVENTS.STEP_BEFORE ||
-            data.type === EVENTS.TARGET_NOT_FOUND
-        ) {
-            if (typeof data.index === 'number') setCurrentIndex(data.index);
-        }
-    }, [handleJoyrideCallback]);
+            if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+                setForceDetailOpen(false);
+                setForceSubregionOpen(false);
+                setDrawerSnapIndex(null);
+                setIsUserGuideOpen(false);
+                setStepIndex(0);
+                return;
+            }
+
+            if (type === EVENTS.STEP_AFTER) {
+                if (action === 'next') {
+                    const currentStep = steps[index];
+                    if (currentStep && currentStep.onNext) {
+                        const result = currentStep.onNext();
+                        if (result instanceof Promise) {
+                            void result.then(() => {
+                                if (currentStep.delay) {
+                                    setTimeout(() => {
+                                        setStepIndex(index + 1);
+                                    }, currentStep.delay);
+                                } else {
+                                    setStepIndex(index + 1);
+                                }
+                            }).catch((err) => {
+                                console.error('Step action failed', err);
+                                setStepIndex(index + 1);
+                            });
+                        } else {
+                            if (currentStep.delay) {
+                                setTimeout(() => {
+                                    setStepIndex(index + 1);
+                                }, currentStep.delay);
+                            } else {
+                                setStepIndex(index + 1);
+                            }
+                        }
+                    } else {
+                        setStepIndex(index + 1);
+                    }
+                } else if (action === 'prev') {
+                    setStepIndex(index - 1);
+                }
+            } else if (type === EVENTS.TARGET_NOT_FOUND) {
+                // If target not found, we might want to retry or skip.
+                // For now, let's skip to avoid getting stuck.
+                // But if we are waiting for an element to appear, this might be premature.
+                // However, Joyride usually retries a bit.
+                console.warn('Target not found for step', index);
+                setStepIndex(index + 1);
+            }
+        },
+        [
+            steps,
+            setForceDetailOpen,
+            setForceSubregionOpen,
+            setDrawerSnapIndex,
+            setIsUserGuideOpen,
+        ],
+    );
 
     return (
         <>
-            <UserGuideSpotlight
+            <GuideSpotlight
                 active={isUserGuideOpen}
                 getCurrentTarget={() => currentTarget}
                 padding={10}
@@ -202,10 +123,11 @@ const UserGuide = () => {
             <Joyride
                 steps={steps}
                 run={isUserGuideOpen}
+                stepIndex={stepIndex}
                 continuous={true}
                 debug={true}
-                tooltipComponent={UserGuideTooltip}
-                callback={wrappedCallback}
+                tooltipComponent={GuideTooltip}
+                callback={handleJoyrideCallback}
                 getHelpers={(helpers) => {
                     helpersRef.current = helpers;
                 }}

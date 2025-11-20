@@ -1,4 +1,4 @@
-import styles from './UserGuideTooltip.module.scss';
+import styles from './tooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
 import { MouseEventHandler } from 'react';
 import Button from '@/component/button/button';
@@ -58,7 +58,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
     );
 };
 
-export const UserGuideTooltip = ({
+export const GuideTooltip = ({
     index,
     step,
     backProps,
