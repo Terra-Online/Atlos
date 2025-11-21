@@ -63,7 +63,7 @@
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.25;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai',
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Novecento Vietnamese DemiBold', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai',
  sans-serif;
     letter-spacing: -.3px;
     color: var(--lang-section-text);
@@ -163,7 +163,7 @@ sans-serif;
     align-items: flex-start;
     line-height: 1;
     font-size: 1.2rem;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Lang Origin', 'Noto Sans Arabic', 'Noto Sans Thai',
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic', 'Novecento Vietnamese DemiBold', 'Lang Origin', 'Noto Sans Arabic', 'Noto Sans Thai',
  sans-serif;
     font-weight: 700;
     letter-spacing: -.5px;
@@ -178,9 +178,10 @@ sans-serif;
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
+    text-transform: uppercase;
     line-height: 1;
     font-size: 0.8rem;
-    font-family: 'Novecento Medium', 'Novecento Cyrillic', 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai',
+    font-family: 'Novecento Medium', 'Novecento Cyrillic', 'Novecento Vietnamese Medium', 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai',
  sans-serif;
     font-weight: 500;
     padding-left: 6px;

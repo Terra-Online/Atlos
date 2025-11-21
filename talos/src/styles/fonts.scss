@@ -14,6 +14,24 @@
     font-display: swap;
 }
 @font-face {
+    font-family: 'Novecento Vietnamese DemiBold';
+    src:
+        url('../assets/fonts/Novecento/NWBold+Viet.woff2')
+            format('woff2'),
+        url('../assets/fonts/Novecento/NWBold+Viet.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWBold+Viet.otf')
+            format('opentype');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Novecento Vietnamese Medium';
+    src: 
+        url('../assets/fonts/Novecento/NWMed+Viet.woff2') format('woff2'),
+        url('../assets/fonts/Novecento/NWMed+Viet.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWMed+Viet.otf') format('opentype');
+    font-display: swap;
+}
+@font-face {
     font-family: 'Novecento Bold';
     src:
         url('../assets/fonts/Novecento/Novecento-WideBold.woff2') format('woff2'),

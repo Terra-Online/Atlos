@@ -46,21 +46,21 @@
     "uiOnlyHint": "Chỉ dịch UI, nội dung trong game sẽ hiển thị bằng tiếng Anh.",
     "fyi": "Nếu ngôn ngữ của bạn chưa có trên website, bạn có thể liên hệ quản trị viên qua email translate@talos.wiki, hoặc truy cập GitHub để tham gia dự án dịch mã nguồn mở. Bạn có thể đề xuất mục dịch cho ngôn ngữ của mình và hỗ trợ dịch/bản địa hóa phần WIKI theo hướng dẫn của chúng tôi. Chúng tôi trân trọng và mong đợi đóng góp của bạn.\nBạn cũng có thể bấm để xem danh sách người đóng góp dịch.",
     "names": {
-      "en-US": "Tiếng Anh",
-      "zh-CN": "Tiếng Trung Giản thể",
-      "zh-HK": "Tiếng Trung Phồn thể",
-      "ja-JP": "Tiếng Nhật",
-      "ko-KR": "Tiếng Hàn",
-      "es-ES": "Tiếng Tây Ban Nha",
-      "fr-FR": "Tiếng Pháp",
-      "de-DE": "Tiếng Đức",
-      "it-IT": "Tiếng Ý",
-      "ru-RU": "Tiếng Nga",
-      "pt-BR": "Tiếng Bồ Đào Nha",
-      "id-ID": "Tiếng Indonesia",
-      "ar-AE": "Tiếng Ả Rập",
-      "th-TH": "Tiếng Thái",
-      "vi-VN": "Tiếng Việt"
+      "en-US": "Anh",
+      "zh-CN": "Trung Giản thể",
+      "zh-HK": "Trung Phồn thể",
+      "ja-JP": "Nhật",
+      "ko-KR": "Hàn",
+      "es-ES": "Tây Ban Nha",
+      "fr-FR": "Pháp",
+      "de-DE": "Đức",
+      "it-IT": "Ý",
+      "ru-RU": "Nga",
+      "pt-BR": "Bồ Đào Nha",
+      "id-ID": "Indonesia",
+      "ar-AE": "Ả Rập",
+      "th-TH": "Thái",
+      "vi-VN": "Việt"
     }
   },
   "group": {
@@ -88,5 +88,30 @@
   },
   "common": {
     "close": "Đóng"
+  },
+  "guide": {
+    "sidebarToggle": "Nhấp để mở rộng <span class=\"keyword\">thanh bên</span>.<br>Thanh bên bao gồm các bộ lọc điểm bạn thường dùng nhất, cũng như các công tắc liên quan chặt chẽ đến hiển thị điểm.",
+    "search": "Bạn có thể tìm kiếm các điểm cần xem bằng <span class=\"keyword\">ngôn ngữ được trò chơi hỗ trợ</span> và chọn chúng trong kết quả tìm kiếm.",
+    "filterContainer": "Các điểm cùng loại được nhóm trong một <span class=\"keyword\">bộ lọc</span>.<br>Nhấp để mở rộng danh sách điểm thuộc loại đó.",
+    "filterSort": "Giữ BIỂU TƯỢNG bên trái bộ lọc để vào <span class=\"keyword\">chế độ kéo</span>.<br>Bạn có thể sắp xếp các bộ lọc quan trọng với mình theo nhu cầu.",
+    "selectorSelect": "<span class=\"keyword\">Bộ chọn điểm</span> cụ thể. Nhấp để chuyển đổi trạng thái chọn; các điểm đã chọn sẽ xuất hiện trên bản đồ.<br>Bạn có thể thấy tổng số điểm loại này trong khu vực hiện tại, cũng như số lượng bạn đã đánh dấu.",
+    "selectorComplete": "Khi tất cả các điểm loại này được đánh dấu hoàn thành, bộ chọn sẽ chuyển sang <span class=\"keyword\">trạng thái hoàn thành</span> để bạn đánh giá nhanh tiến độ đánh dấu.",
+    "triggerHandle": "Các công tắc liên quan đến hiển thị bản đồ nằm ở dưới cùng của thanh bên.<br>Bạn có thể giữ chuột để <span class=\"keyword\">kéo và thao tác chúng.</span>",
+    "triggerSwitch": "Nhấp để chuyển đổi trạng thái công tắc.<br><ul><li><span class=\"keyword\">Chế độ Gộp Điểm</span> cho phép hiển thị các điểm dày đặc được gộp lại;</li><li><span class=\"keyword\">Hiển thị Ranh giới Khu vực</span> làm nổi bật từng khu vực con và ranh giới của nó trong khu vực hiện tại.</li></ul>",
+    "scale": "Sử dụng <span class=\"keyword\">Điều khiển Thu phóng</span> để xem và thao tác thu phóng bản đồ.<br>Có thể sử dụng con lăn chuột hoặc bàn di chuột để thu phóng. Bạn cũng có thể thu phóng bằng cách nhấp vào nút <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> hoặc bất kỳ đâu trên thanh thu phóng.",
+    "filterList": "<span class=\"keyword\">Danh sách Điểm</span> liệt kê các điểm bạn đã chọn; nhấp vào biểu tượng để bỏ chọn.",
+    "headbar": "Các công tắc liên quan đến cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên cùng</span>.",
+    "tos": "<span class=\"keyword\">Điều khoản Dịch vụ</span> và <span class=\"keyword\">Quản lý Dữ liệu</span> của trang web.",
+    "hideUI": "<span class=\"keyword\">Ẩn Giao diện Trang web</span> để chụp ảnh màn hình hoặc xem các điểm ở rìa.",
+    "group": "Xem <span class=\"keyword\">nhóm thảo luận</span> và <span class=\"keyword\">cộng đồng</span> liên quan đến dự án này.",
+    "darkMode": "Chuyển đổi <span class=\"keyword\">chế độ ánh sáng môi trường</span> hiện tại.",
+    "language": "Chuyển đổi <span class=\"keyword\">ngôn ngữ giao diện</span>.<br>Hiện tại, các ngôn ngữ có <span class=\"keyword\">hỗ trợ dịch thuật nội dung trò chơi đầy đủ</span> bao gồm tiếng Anh, tiếng Trung Giản thể, tiếng Trung Phồn thể, tiếng Nhật và tiếng Hàn.<br>Các ngôn ngữ có <span class=\"keyword\">hỗ trợ dịch thuật giao diện</span> cũng bao gồm tiếng Pháp, tiếng Đức, tiếng Ý, tiếng Nga, tiếng Tây Ban Nha, tiếng Indonesia, tiếng Bồ Đào Nha, tiếng Ả Rập, tiếng Thái và tiếng Việt.",
+    "help": "Khởi động lại <span class=\"keyword\">hướng dẫn</span> này.",
+    "regionSwitch": "Nhấp để chuyển đổi giữa <span class=\"keyword\">các bản đồ sandbox khác nhau</span> (khu vực chính) trong trò chơi.",
+    "subregionSwitch": "<span class=\"keyword\">Di chuột qua biểu tượng khu vực chính</span> để hiển thị các khu vực con có sẵn; nhấp vào biểu tượng khu vực con sẽ chuyển đến chế độ xem khu vực con đó.<br>Tương tự, bạn cũng có thể chọn một lớp cho một khu vực.",
+    "pointSelect": "Nhấp vào một điểm để vào <span class=\"keyword\">trạng thái đã chọn</span>. Bạn sẽ có thể xem thông tin của điểm.",
+    "pointMark": "Nhấp vào điểm một lần nữa để đánh dấu là hoàn thành.",
+    "detail": "Bạn có thể xem thông tin cụ thể về điểm đã chọn, bao gồm số lượng điểm loại này trong <span class=\"keyword\">tất cả các khu vực</span>, <span class=\"keyword\">khu vực chính</span> hiện tại và <span class=\"keyword\">khu vực con</span> hiện tại.",
+    "pointIcon": "Nhấp vào biểu tượng điểm cũng có thể đánh dấu nó là hoàn thành."
   }
 }
