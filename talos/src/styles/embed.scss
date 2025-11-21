@@ -10,10 +10,11 @@ span.keyword {
     font-size: inherit;
     font-weight: 700;
     font-family: 'Novecento Bold', 'Novecento Cyrillic', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
-    text-transform: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0;
     line-height: inherit;
     &::before, &::after {
-        content: '\200A';
+        content: '\2008'; /* PUNCTUATION SPACE */
     }
 }
 
