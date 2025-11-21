@@ -39,7 +39,7 @@
   "language": {
     "title": "ภาษา",
     "cancel": "ยกเลิก",
-    "current": "ปัจจุบัน",
+    "current": "ตอนนี้",
     "fullSupport": "ภาษาที่รองรับเต็มรูปแบบ",
     "fullSupportHint": "มีคำแปลครบทั้ง UI และเนื้อหาในเกม",
     "uiOnly": "ภาษาแบบแปลเฉพาะ UI",
