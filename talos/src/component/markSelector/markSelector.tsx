@@ -108,6 +108,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
         <div className={styles.markSkeleton}>
             <div
                 className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
+                data-key={typeInfo.key}
                 onClick={() => switchFilter(typeInfo.key)}
                 style={((): StyleVars => {
                     const styleObj: StyleVars = {

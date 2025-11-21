@@ -88,5 +88,30 @@
   },
   "common": {
     "close": "關閉"
+  },
+  "guide": {
+    "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
+    "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並且在搜索結果中選中它們。",
+    "filterContainer": "同類型的點位位于同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
+    "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可以根據自己的需要排序對您重要的篩選器。",
+    "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。",
+    "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
+    "triggerHandle": "與地圖顯示有關的開關位於側邊欄底部。<br>您可以按住鼠標將其<span class=\"keyword\">拖起並操作。</span>",
+    "triggerSwitch": "單擊切換開關狀態。<br><ul><li><span class=\"keyword\">點位聚合模式</span>將允許將密集點位合併顯示；</li><li><span class=\"keyword\">地區邊界顯示</span>會高亮當前區域內每一個子區域以及其邊界。</li></ul>",
+    "scale": "使用<span class=\"keyword\">縮放器</span>查看與操縱地圖縮放。<br>滾輪或者觸控板可用於縮放。您也可以通過點擊<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>按鈕或者縮放條的任意位置縮放。",
+    "filterList": "<span class=\"keyword\">點位列表</span>列出了您已經選擇的點位，單擊圖標即可取消選擇。",
+    "headbar": "與地圖設置有關的開關位於<span class=\"keyword\">頂欄</span>。",
+    "tos": "網站的<span class=\"keyword\">服務協議</span>與<span class=\"keyword\">數據管理</span>。",
+    "hideUI": "<span class=\"keyword\">隱藏網站UI</span>以截圖或查看邊緣點位。",
+    "group": "查看與本項目有關的<span class=\"keyword\">討論群組</span>與<span class=\"keyword\">社區</span>。",
+    "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
+    "language": "切換<span class=\"keyword\">界面語言</span>。<br>目前<span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語以及韓語。<br>已<span class=\"keyword\">支持界面翻譯</span>的語言還包括法語，德語，意大利語，俄語，西班牙語，印度尼西亞語，葡萄牙語，阿拉伯語，泰語以及越南語。",
+    "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
+    "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱亭地圖</span>（主區域）。",
+    "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",
+    "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
+    "pointMark": "再次單擊點位，點位將被標記為完成。",
+    "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
+    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
   }
 }

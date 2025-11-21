@@ -17,6 +17,7 @@ import classNames from 'classnames';
 import { useClickAway } from 'ahooks';
 import { motion, AnimatePresence, usePresence } from 'motion/react';
 import { useTranslateGame, useTranslateUI } from '@/locale';
+import { useForceDetailOpen } from '@/store/uiPrefs';
 
 // const mockPoint = {
 //   id: "001",
@@ -115,9 +116,10 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     // const noteContent = currentPoint?.status?.user?.localNote;
 
     const [isVisible, setIsVisible] = useState(false);
+    const forceDetailOpen = useForceDetailOpen();
     const ref = useRef(null);
     useClickAway(() => {
-        setIsVisible(false);
+        if (!forceDetailOpen) setIsVisible(false);
     }, ref);
     useEffect(() => {
         if (currentPoint) setIsVisible(true);

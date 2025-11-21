@@ -88,5 +88,30 @@
   },
   "common": {
     "close": "閉じる"
+  },
+  "guide": {
+    "sidebarToggle": "クリックして<span class=\"keyword\">サイドバー</span>を展開します。<br>サイドバーには、よく使うピンフィルターや、ピン表示に関連するスイッチが含まれています。",
+    "search": "<span class=\"keyword\">ゲーム内でサポートされている言語</span>で表示したいピンを検索し、検索結果から選択できます。",
+    "filterContainer": "同じタイプのピンは1つの<span class=\"keyword\">フィルター</span>にまとめられています。<br>クリックして、そのタイプのピンリストを展開します。",
+    "filterSort": "フィルターの左側にあるアイコンを長押しすると、<span class=\"keyword\">ドラッグ状態</span>になります。<br>必要に応じて、重要なフィルターを並べ替えることができます。",
+    "selectorSelect": "具体的な<span class=\"keyword\">ピンセレクター</span>です。クリックして選択状態を切り替えると、選択されたピンがマップ上に表示されます。<br>現在のエリアにあるこのタイプのピンの総数と、すでにマークした数を確認できます。",
+    "selectorComplete": "このタイプのすべてのピンが完了としてマークされると、セレクターは<span class=\"keyword\">完了状態</span>になり、マーク状況をすばやく判断できます。",
+    "triggerHandle": "マップ表示に関連するスイッチはサイドバーの下部にあります。<br>マウスを長押しして<span class=\"keyword\">ドラッグして操作</span>できます。",
+    "triggerSwitch": "クリックしてスイッチの状態を切り替えます。<br><ul><li><span class=\"keyword\">ピン凝集モード</span>は、密集したピンをまとめて表示することを許可します。</li><li><span class=\"keyword\">地域境界表示</span>は、現在のエリア内の各サブエリアとその境界をハイライトします。</li></ul>",
+    "scale": "<span class=\"keyword\">ズームコントロール</span>を使用して、マップのズームを確認および操作します。<br>ホイールまたはトラックパッドを使用してズームできます。<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>ボタンまたはズームバーの任意の場所をクリックしてズームすることもできます。",
+    "filterList": "<span class=\"keyword\">ピンリスト</span>には、選択したピンがリストされています。アイコンをクリックすると選択を解除できます。",
+    "headbar": "マップ設定に関連するスイッチは<span class=\"keyword\">トップバー</span>にあります。",
+    "tos": "ウェブサイトの<span class=\"keyword\">利用規約</span>と<span class=\"keyword\">データ管理</span>。",
+    "hideUI": "スクリーンショットを撮ったり、端のピンを確認したりするために<span class=\"keyword\">ウェブサイトのUIを非表示</span>にします。",
+    "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
+    "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
+    "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br>現在、<span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語です。<br><span class=\"keyword\">インターフェース翻訳をサポート</span>している言語には、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、アラビア語、タイ語、ベトナム語も含まれます。",
+    "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
+    "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",
+    "subregionSwitch": "マウスを<span class=\"keyword\">メインエリアアイコンにホバー</span>すると、利用可能なサブエリアが表示されます。サブエリアアイコンをクリックすると、そのサブエリアビューにジャンプします。<br>同様に、特定のエリアのレイヤーを選択することもできます。",
+    "pointSelect": "ピンをクリックすると、ピンは<span class=\"keyword\">選択状態</span>になります。ピンの情報を確認できます。",
+    "pointMark": "ピンをもう一度クリックすると、完了としてマークされます。",
+    "detail": "選択したピンの具体的な情報を確認できます。これには、<span class=\"keyword\">すべてのエリア</span>、現在の<span class=\"keyword\">メインエリア</span>、および現在の<span class=\"keyword\">サブエリア</span>におけるそのタイプのピンの数が含まれます。",
+    "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。"
   }
 }

@@ -88,5 +88,30 @@
   },
   "common": {
     "close": "Fermer"
+  },
+  "guide": {
+    "sidebarToggle": "Cliquez pour développer la <span class=\"keyword\">barre latérale</span>.<br>La barre latérale comprend vos filtres de marqueurs les plus utilisés, ainsi que des commutateurs étroitement liés à l'affichage des marqueurs.",
+    "search": "Vous pouvez rechercher des marqueurs à afficher en utilisant <span class=\"keyword\">les langues prises en charge par le jeu</span> et les sélectionner dans les résultats de recherche.",
+    "filterContainer": "Les marqueurs du même type sont regroupés dans un <span class=\"keyword\">filtre</span>.<br>Cliquez pour développer la liste des marqueurs de ce type.",
+    "filterSort": "Maintenez l'ICÔNE à gauche du filtre pour entrer en <span class=\"keyword\">mode glisser</span>.<br>Vous pouvez trier les filtres importants pour vous selon vos besoins.",
+    "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.",
+    "selectorComplete": "Lorsque tous les marqueurs de ce type sont marqués comme terminés, le sélecteur passera à l'état <span class=\"keyword\">terminé</span> pour un jugement rapide de la progression du marquage.",
+    "triggerHandle": "Les commutateurs liés à l'affichage de la carte sont situés au bas de la barre latérale.<br>Vous pouvez maintenir la souris pour <span class=\"keyword\">les faire glisser et les utiliser.</span>",
+    "triggerSwitch": "Cliquez pour basculer l'état du commutateur.<br><ul><li><span class=\"keyword\">Le mode de regroupement des marqueurs</span> permet d'afficher les marqueurs denses fusionnés;</li><li><span class=\"keyword\">L'affichage des limites de région</span> met en évidence chaque sous-région et ses limites dans la zone actuelle.</li></ul>",
+    "scale": "Utilisez le <span class=\"keyword\">contrôle de zoom</span> pour afficher et manipuler le zoom de la carte.<br>La molette ou le pavé tactile peuvent être utilisés pour zoomer. Vous pouvez également zoomer en cliquant sur les boutons <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ou n'importe où sur la barre de zoom.",
+    "filterList": "La <span class=\"keyword\">liste des marqueurs</span> répertorie les marqueurs que vous avez sélectionnés ; cliquez sur l'icône pour désélectionner.",
+    "headbar": "Les commutateurs liés aux paramètres de la carte sont situés dans la <span class=\"keyword\">barre supérieure</span>.",
+    "tos": "Les <span class=\"keyword\">Conditions d'utilisation</span> et la <span class=\"keyword\">Gestion des données</span> du site Web.",
+    "hideUI": "<span class=\"keyword\">Masquer l'interface utilisateur</span> pour prendre des captures d'écran ou voir les marqueurs en bordure.",
+    "group": "Voir les <span class=\"keyword\">groupes de discussion</span> et les <span class=\"keyword\">communautés</span> liés à ce projet.",
+    "darkMode": "Basculer le <span class=\"keyword\">mode d'éclairage ambiant</span> actuel.",
+    "language": "Changer la <span class=\"keyword\">langue de l'interface</span>.<br>Actuellement, les langues avec <span class=\"keyword\">un support complet de traduction du contenu du jeu</span> incluent l'anglais, le chinois simplifié, le chinois traditionnel, le japonais et le coréen.<br>Les langues avec <span class=\"keyword\">un support de traduction de l'interface</span> incluent également le français, l'allemand, l'italien, le russe, l'espagnol, l'indonésien, le portugais, l'arabe, le thaï et le vietnamien.",
+    "help": "Redémarrer ce <span class=\"keyword\">guide</span>.",
+    "regionSwitch": "Cliquez pour basculer entre <span class=\"keyword\">différentes cartes bac à sable</span> (régions principales) dans le jeu.",
+    "subregionSwitch": "<span class=\"keyword\">Survolez l'icône de la région principale</span> pour afficher les sous-régions disponibles ; cliquer sur une icône de sous-région vous fera passer à cette vue de sous-région.<br>De même, vous pouvez également sélectionner un calque pour une région.",
+    "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
+    "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
+    "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
+    "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé."
   }
 }

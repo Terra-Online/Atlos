@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, StrictMode } from 'react';
 import './styles/global.scss';
 
 import Map from './component/map/Map';
@@ -6,6 +6,7 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
+import UserGuide from '@/component/userGuide/UserGuide.tsx';
 
 function App() {
     // Use persisted sidebar open state as the single source of truth
@@ -40,7 +41,7 @@ function App() {
                 showUI();
             }
         };
-        
+
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 showUI();
@@ -50,34 +51,43 @@ function App() {
         if (!uiVisible) {
             // Use capture phase to catch clicks before they reach other elements
             document.addEventListener('click', handleClick, true);
-            document.addEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            );
         }
 
         return () => {
             document.removeEventListener('click', handleClick, true);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            document.removeEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            );
         };
     }, [uiVisible]);
 
     return (
-        <div className='app theme-transition-scope'>
-            {/* Map layer - always fill the entire window */}
-            <Map onMapReady={handleMapReady} />
-            {/* UI layer - floats over the map */}
-            <UIOverlay 
-                map={mapInstance} 
-                isSidebarOpen={isSidebarOpen} 
-                visible={uiVisible}
-                onHideUI={handleHideUI}
-            />
-            {/* Sidebar layer - floats over the map */}
-            <SideBar
-                // map={mapInstance}
-                currentRegion={null}
-                onToggle={handleSidebarToggle}
-                visible={uiVisible}
-            />
-        </div>
+        <StrictMode>
+            <div className='app theme-transition-scope'>
+                <UserGuide map={mapInstance} />
+                {/* Map layer - always fill the entire window */}
+                <Map onMapReady={handleMapReady} />
+                {/* UI layer - floats over the map */}
+                <UIOverlay
+                    map={mapInstance}
+                    isSidebarOpen={isSidebarOpen}
+                    visible={uiVisible}
+                    onHideUI={handleHideUI}
+                />
+                {/* Sidebar layer - floats over the map */}
+                <SideBar
+                    // map={mapInstance}
+                    currentRegion={null}
+                    onToggle={handleSidebarToggle}
+                    visible={uiVisible}
+                />
+            </div>
+        </StrictMode>
     );
 }
 

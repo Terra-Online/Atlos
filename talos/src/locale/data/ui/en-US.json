@@ -88,5 +88,30 @@
   },
   "common": {
     "close": "Close"
+  },
+  "guide": {
+    "sidebarToggle": "Click to expand the <span class=\"keyword\">sidebar</span>.<br>The sidebar includes your most frequently used marker filters and switches closely related to marker display.",
+    "search": "You can search for markers to view using <span class=\"keyword\">languages supported by the game</span> and select them in the search results.",
+    "filterContainer": "Markers of the same type are grouped in a <span class=\"keyword\">filter</span>.<br>Click to expand the list of markers of that type.",
+    "filterSort": "Hold the ICON on the left of the filter to enter <span class=\"keyword\">drag mode</span>.<br>You can sort the filters important to you according to your needs.",
+    "selectorSelect": "Specific <span class=\"keyword\">marker selector</span>. Click to toggle selection status; selected markers will appear on the map.<br>You can see the total number of such markers in the current area, as well as the number you have marked.",
+    "selectorComplete": "When all markers of this type are marked as complete, the selector will change to <span class=\"keyword\">completed status</span> for quick judgment of marking progress.",
+    "triggerHandle": "Switches related to map display are located at the bottom of the sidebar.<br>You can hold the mouse to <span class=\"keyword\">drag and operate them.</span>",
+    "triggerSwitch": "Click to toggle switch status.<br><ul><li><span class=\"keyword\">Marker Clustering Mode</span> allows dense markers to be displayed merged;</li><li><span class=\"keyword\">Region Boundary Display</span> highlights every sub-region and its boundaries within the current area.</li></ul>",
+    "scale": "Use the <span class=\"keyword\">Zoom Control</span> to view and manipulate map zoom.<br>Scroll wheel or trackpad can be used to zoom. You can also zoom by clicking the <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> buttons or anywhere on the zoom bar.",
+    "filterList": "The <span class=\"keyword\">Marker List</span> lists the markers you have selected; click the icon to deselect.",
+    "headbar": "Switches related to map settings are located in the <span class=\"keyword\">header bar</span>.",
+    "tos": "The website's <span class=\"keyword\">Terms of Service</span> and <span class=\"keyword\">Data Management</span>.",
+    "hideUI": "<span class=\"keyword\">Hide Website UI</span> to take screenshots or view edge markers.",
+    "group": "View <span class=\"keyword\">discussion groups</span> and <span class=\"keyword\">communities</span> related to this project.",
+    "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",
+    "language": "Switch <span class=\"keyword\">interface language</span>.<br>Currently, languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.<br>Languages with <span class=\"keyword\">interface translation support</span> also include French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Arabic, Thai, and Vietnamese.",
+    "help": "Restart this <span class=\"keyword\">guide</span>.",
+    "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",
+    "subregionSwitch": "<span class=\"keyword\">Hover over the main region icon</span> to show available sub-regions; clicking a sub-region icon will jump to that sub-region view.<br>Similarly, you can also select a layer for a region.",
+    "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
+    "pointMark": "Click the marker again to mark it as complete.",
+    "detail": "You can view specific information about the selected marker, including the number of markers of this type in <span class=\"keyword\">all regions</span>, the current <span class=\"keyword\">main region</span>, and the current <span class=\"keyword\">sub-region</span>.",
+    "pointIcon": "Clicking the marker icon can also mark it as complete."
   }
 }

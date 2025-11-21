@@ -8,6 +8,7 @@ import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Jinlong from '../../assets/logos/_Jinlong.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
 import Æther from '../../assets/logos/Æther.svg?react';
+import { useForceSubregionOpen } from '@/store/uiPrefs';
 
 const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
@@ -37,6 +38,7 @@ const RegionContainer: React.FC<{
         setCurrentRegion,
         requestSubregionSwitch,
     } = useRegion();
+    const forceSubregionOpen = useForceSubregionOpen();
     const regionIndex = useMemo(
         () => Object.keys(REGION_DICT).indexOf(currentRegionKey),
         [currentRegionKey],
@@ -73,7 +75,9 @@ const RegionContainer: React.FC<{
                         </div>
                         {region.subregions.length > 1 && (
                             <div
-                                className={styles.subregionSwitchContainer}
+                                className={classNames(styles.subregionSwitchContainer, {
+                                    [styles.forceOpen]: forceSubregionOpen && currentRegionKey === key,
+                                })}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                 }}
