@@ -14,7 +14,7 @@ import MarkSelector from '../markSelector/markSelector';
 
 import { MARKER_TYPE_TREE } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath } from '@/store/uiPrefs';
+import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath, useDrawerSnapIndex } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -37,6 +37,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigCluster = useSetTriggerCluster();
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerOptimalPath();
+    const drawerSnapIndex = useDrawerSnapIndex();
     useMemo(() => {
         if (!currentRegion) return null;
         return {
@@ -101,6 +102,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     initialSize={0}
                     snap={[0, 150]}
                     snapThreshold={[50, 50]}
+                    snapToIndex={drawerSnapIndex}
                     handleSize={28}
                     className={drawerStyles.triggerDrawer}
                     handleClassName={drawerStyles.triggerDrawerHandle}

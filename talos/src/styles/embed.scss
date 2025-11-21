@@ -1,0 +1,73 @@
+@use './palette.scss' as *;
+:root, :root[data-theme='light'] {
+    --embed-keyword-color: #{$primary-accent-6};
+}
+:root[data-theme='dark'] {
+    --embed-keyword-color: #{$primary-accent-4};
+}
+span.keyword {
+    color: var(--embed-keyword-color);
+    font-size: inherit;
+    font-weight: 700;
+    font-family: 'Novecento Bold', 'Novecento Cyrillic', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: inherit;
+    &::before, &::after {
+        content: '\2008'; /* PUNCTUATION SPACE */
+    }
+}
+
+span.keyboard {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(1rem + 1px);
+    width: calc(1rem + 1px);
+    transform: translateY(-1px); // complementary for height plus 1px
+    border-radius: 1px;
+    background-color: $grey-1;
+    box-shadow: 0 0 2px 1px rgba($black-0, 0.4);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Novecento Medium', sans-serif;
+    font-size: 14px;
+    color: $white-1;
+    margin: 0 4.5px;
+    &.sym {
+        font-size: 18px;
+    }
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 1.5px solid $white-1;
+        border-radius: 4px;
+        box-shadow:
+            0 0 2px 1px rgba($black-0, 0.4),
+            inset 0 0 2px rgba($black-0, 0.2);
+        z-index: -1;
+    }
+    &:not(:disabled):hover {
+        background-color: $primary-accent-4;
+        color: $grey-1;
+    }
+    &:active {
+        background-color: rgba($grey-1, 0.2);
+    }
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

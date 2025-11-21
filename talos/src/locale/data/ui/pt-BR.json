@@ -86,5 +86,30 @@
   },
   "common": {
     "close": "Fechar"
+  },
+  "guide": {
+    "sidebarToggle": "Clique para expandir a <span class=\"keyword\">barra lateral</span>.<br>A barra lateral inclui seus filtros de marcadores mais usados, bem como interruptores intimamente relacionados à exibição de marcadores.",
+    "search": "Você pode pesquisar marcadores para visualizar usando <span class=\"keyword\">idiomas suportados pelo jogo</span> e selecioná-los nos resultados da pesquisa.",
+    "filterContainer": "Marcadores do mesmo tipo são agrupados em um <span class=\"keyword\">filtro</span>.<br>Clique para expandir a lista de marcadores desse tipo.",
+    "filterSort": "Segure o ÍCONE à esquerda do filtro para entrar no <span class=\"keyword\">modo de arrastar</span>.<br>Você pode ordenar os filtros importantes para você de acordo com suas necessidades.",
+    "selectorSelect": "<span class=\"keyword\">Seletor de marcadores</span> específico. Clique para alternar o status de seleção; os marcadores selecionados aparecerão no mapa.<br>Você pode ver o número total desses marcadores na área atual, bem como o número que você marcou.",
+    "selectorComplete": "Quando todos os marcadores deste tipo forem marcados como concluídos, o seletor mudará para o <span class=\"keyword\">status concluído</span> para um julgamento rápido do progresso da marcação.",
+    "triggerHandle": "Os interruptores relacionados à exibição do mapa estão localizados na parte inferior da barra lateral.<br>Você pode segurar o mouse para <span class=\"keyword\">arrastá-los e operá-los.</span>",
+    "triggerSwitch": "Clique para alternar o estado do interruptor.<br><ul><li><span class=\"keyword\">O modo de agrupamento de marcadores</span> permite que marcadores densos sejam exibidos mesclados;</li><li><span class=\"keyword\">A exibição de limites de região</span> destaca cada sub-região e seus limites dentro da área atual.</li></ul>",
+    "scale": "Use o <span class=\"keyword\">controle de zoom</span> para visualizar e manipular o zoom do mapa.<br>A roda de rolagem ou o trackpad podem ser usados para ampliar. Você também pode ampliar clicando nos botões <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ou em qualquer lugar na barra de zoom.",
+    "filterList": "A <span class=\"keyword\">lista de marcadores</span> lista os marcadores que você selecionou; clique no ícone para desmarcar.",
+    "headbar": "Os interruptores relacionados às configurações do mapa estão localizados na <span class=\"keyword\">barra superior</span>.",
+    "tos": "Os <span class=\"keyword\">Termos de Serviço</span> e o <span class=\"keyword\">Gerenciamento de Dados</span> do site.",
+    "hideUI": "<span class=\"keyword\">Ocultar a interface do usuário do site</span> para tirar capturas de tela ou visualizar marcadores de borda.",
+    "group": "Veja <span class=\"keyword\">grupos de discussão</span> e <span class=\"keyword\">comunidades</span> relacionados a este projeto.",
+    "darkMode": "Alternar o <span class=\"keyword\">modo de luz ambiente</span> atual.",
+    "language": "Alternar <span class=\"keyword\">idioma da interface</span>.<br>Atualmente, os idiomas com <span class=\"keyword\">suporte completo à tradução de conteúdo do jogo</span> incluem inglês, chinês simplificado, chinês tradicional, japonês e coreano.<br>Os idiomas com <span class=\"keyword\">suporte à tradução de interface</span> também incluem francês, alemão, italiano, russo, espanhol, indonésio, português, árabe, tailandês e vietnamita.",
+    "help": "Reiniciar este <span class=\"keyword\">guia</span>.",
+    "regionSwitch": "Clique para alternar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiões principais) no jogo.",
+    "subregionSwitch": "<span class=\"keyword\">Passe o mouse sobre o ícone da região principal</span> para mostrar as sub-regiões disponíveis; clicar em um ícone de sub-região o levará a essa visualização de sub-região.<br>Da mesma forma, você também pode selecionar uma camada para uma região.",
+    "pointSelect": "Clique em um marcador para entrar no <span class=\"keyword\">status selecionado</span>. Você poderá visualizar as informações do marcador.",
+    "pointMark": "Clique no marcador novamente para marcá-lo como concluído.",
+    "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
+    "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído."
   }
 }
