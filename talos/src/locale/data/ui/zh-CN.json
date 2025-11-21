@@ -96,7 +96,7 @@
     "selectorComplete": "当此类型所有点位都被标记为完成时，选择器将会变为<span class=\"keyword\">完成状态</span>，以便您快捷判断标记情况。",
     "triggerHandle": "与地图显示有关的开关位于侧边栏底部。<br>您可以按住鼠标将其<span class=\"keyword\">拖起并操作。</span>",
     "triggerSwitch": "单击切换开关状态。<br><ul><li><span class=\"keyword\">点位聚合模式</span>将允许将密集点位合并显示；</li><li><span class=\"keyword\">地区边界显示</span>会高亮当前区域内每一个子区域以及其边界。</li></ul>",
-    "scale": "使用<span class=\"keyword\">缩放器</span>查看与操纵地图缩放。<br>滚轮或者触控板可用于缩放。您也可以通过点击 +/- 按钮或者缩放条的任意位置缩放。",
+    "scale": "使用<span class=\"keyword\">缩放器</span>查看与操纵地图缩放。<br>滚轮或者触控板可用于缩放。您也可以通过点击<span class=\"keyboard\">+</span>/<span class=\"keyboard\">-</span>按钮或者缩放条的任意位置缩放。",
     "filterList": "<span class=\"keyword\">点位列表</span>列出了您已经选择的点位，单击图标即可取消选择。",
     "headbar": "与地图设置有关的开关位于<span class=\"keyword\">顶栏</span>。",
     "tos": "网站的<span class=\"keyword\">服务协议</span>与<span class=\"keyword\">数据管理</span>。",
