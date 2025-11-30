@@ -67,6 +67,11 @@
     "title": "Comunidade e Mídia",
     "visit": "Visitar"
   },
+  "tos": {
+    "title": "Termos e Armazenamento",
+    "calculating": "Calculando uso de armazenamento...",
+    "policy": "<p>Usamos Cookies para armazenar suas informações de login automático; LocalStorage para salvar suas preferências de interface e progresso dos marcadores; e CacheStorage para armazenar dados de fonte e recursos de imagem para seu idioma. Esses arquivos permitem que você acesse o site mais rapidamente no futuro e garantem a disponibilidade do site offline.</p><p>Excluir o armazenamento local do site pode economizar espaço no seu dispositivo. No entanto, pode levar mais tempo para carregar esses arquivos quando você visitar novamente; se você desativar o armazenamento do site, o site não poderá registrar automaticamente seus dados para seu próximo uso.</p><p>Não relatamos seus dados ao servidor, então você não precisa se preocupar com problemas de privacidade.</p><p>Você pode decidir por si mesmo se deseja ativar o armazenamento local.</p>"
+  },
   "storage": {
     "title": "Protocolos e Armazenamento",
     "localStorage": "Armazenamento Local",

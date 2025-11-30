@@ -67,6 +67,11 @@
     "title": "Comunidad & medios",
     "visit": "Visitar"
   },
+  "tos": {
+    "title": "Términos y Almacenamiento",
+    "calculating": "Calculando uso de almacenamiento...",
+    "policy": "<p>Utilizamos Cookies para almacenar su información de inicio de sesión automático; LocalStorage para guardar sus preferencias de interfaz y el progreso de los marcadores; y CacheStorage para almacenar datos de fuentes y recursos de imagen para su idioma. Estos archivos le permiten acceder al sitio web más rápidamente en el futuro y garantizan su disponibilidad sin conexión.</p><p>Eliminar el almacenamiento local del sitio web puede ahorrar espacio en su dispositivo. Sin embargo, puede tardar más en cargar estos archivos cuando vuelva a visitarlo; si deshabilita el almacenamiento del sitio web, este no podrá registrar automáticamente sus datos para su próximo uso.</p><p>No informamos de sus datos al servidor, por lo que no debe preocuparse por problemas de privacidad.</p><p>Puede decidir por sí mismo si habilitar el almacenamiento local.</p>"
+  },
   "storage": {
     "title": "Protocolos y almacenamiento",
     "localStorage": "Almacenamiento local",

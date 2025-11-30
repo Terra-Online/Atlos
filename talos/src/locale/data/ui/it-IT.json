@@ -67,6 +67,11 @@
     "title": "Comunità e Media",
     "visit": "Visita"
   },
+  "tos": {
+    "title": "Termini e Archiviazione",
+    "calculating": "Calcolo utilizzo memoria...",
+    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcatori; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, potrebbe essere necessario più tempo per caricare questi file alla tua prossima visita; se disabiliti la memoria del sito web, il sito non sarà in grado di registrare automaticamente i tuoi dati per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>"
+  },
   "storage": {
     "title": "Protocolli e Archiviazione",
     "localStorage": "Archiviazione Locale",

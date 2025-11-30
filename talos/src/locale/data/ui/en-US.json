@@ -11,7 +11,7 @@
   "tos": {
     "title": "Terms & Storage",
     "calculating": "Calculating storage usage...",
-    "policy": "<p>We use Cookies to store your auto-login info; LocalStorage for UI prefs & marker progress; CacheStorage for fonts & images. These enable faster access and offline availability.</p><p>Clearing local storage saves space but may increase load times next visit. Disabling storage prevents data saving.</p><p>We do not upload your data to servers, ensuring your privacy.</p><p>You can manage local storage usage as you wish.</p>"
+    "policy": "<p>We use Cookies to store your auto-login information; LocalStorage to store your UI preferences and marker progress; and CacheStorage to store font data and image resources for your language. These files allow you to access the website more quickly in the future and ensure the website's availability when offline.</p><p>Deleting the website's local storage can save space on your device. However, it may take longer to load these files when you visit again; if you disable website storage, the website will not be able to automatically record your data for your next use.</p><p>We do not report your data to the server, so you do not need to worry about privacy issues.</p><p>You can decide whether to enable local storage.</p>"
   },
   "trigger": {
     "boundaryMode": "Boundary Mode",

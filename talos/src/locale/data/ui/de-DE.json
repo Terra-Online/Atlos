@@ -67,6 +67,11 @@
     "title": "Community & Medien",
     "visit": "Besuchen"
   },
+  "tos": {
+    "title": "Bedingungen & Speicher",
+    "calculating": "Speichernutzung wird berechnet...",
+    "policy": "<p>Wir verwenden Cookies, um Ihre automatischen Anmeldeinformationen zu speichern; LocalStorage, um Ihre UI-Einstellungen und den Fortschritt der Markierungen zu speichern; und CacheStorage, um Schriftartdaten und Bildressourcen für Ihre Sprache zu speichern. Diese Dateien ermöglichen Ihnen in Zukunft einen schnelleren Zugriff auf die Website und gewährleisten deren Verfügbarkeit im Offline-Modus.</p><p>Das Löschen des lokalen Speichers der Website kann Platz auf Ihrem Gerät sparen. Es kann jedoch länger dauern, diese Dateien bei Ihrem nächsten Besuch zu laden; wenn Sie den Website-Speicher deaktivieren, kann die Website Ihre Daten nicht automatisch für Ihre nächste Verwendung aufzeichnen.</p><p>Wir melden Ihre Daten nicht an den Server, sodass Sie sich keine Sorgen um Datenschutzprobleme machen müssen.</p><p>Sie können selbst entscheiden, ob Sie den lokalen Speicher aktivieren möchten.</p>"
+  },
   "storage": {
     "title": "Protokolle & Speicher",
     "localStorage": "Lokaler Speicher",
