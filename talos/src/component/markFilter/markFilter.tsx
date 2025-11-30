@@ -63,6 +63,11 @@ const MarkFilter = ({
 
     // lazy render: only render children when expanded or after first expansion
     const [hasEverExpanded, setHasEverExpanded] = useState(() => isExpanded);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     
     useEffect(() => {
         if (isExpanded && !hasEverExpanded) {
@@ -110,8 +115,8 @@ const MarkFilter = ({
             className={`${styles.markFilterContainer} ${isSelfDragging ? styles.dragging : ''}`}
             layout
             style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1 }}
-            drag="y"
-            dragControls={dragControls}
+            drag={isMounted ? "y" : false}
+            dragControls={isMounted ? dragControls : undefined}
             dragListener={false}
             dragElastic={0.05}
             dragMomentum={false}
@@ -133,7 +138,7 @@ const MarkFilter = ({
                     className={styles.filterIcon}
                     onPointerDown={(e) => {
                         e.stopPropagation();
-                        dragControls.start(e);
+                        if (isMounted) dragControls.start(e);
                     }}
                     onClick={(e) => {
                         e.stopPropagation();

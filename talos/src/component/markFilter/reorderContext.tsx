@@ -30,7 +30,7 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
       const next = [...prev, id];
       orderRef.current = next;
       // persist structural change
-      setPersistedOrder(next);
+      setTimeout(() => setPersistedOrder(next), 0);
       return next;
     });
   }, [setPersistedOrder]);
@@ -41,7 +41,7 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
     setOrder((prev) => {
       const next = prev.filter((x) => x !== id);
       orderRef.current = next;
-      setPersistedOrder(next);
+      setTimeout(() => setPersistedOrder(next), 0);
       return next;
     });
   }, [setPersistedOrder]);

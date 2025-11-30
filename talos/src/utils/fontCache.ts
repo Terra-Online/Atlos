@@ -1,7 +1,7 @@
 // Font caching utility using Cache API
 // Provides cache-first strategy for font files to avoid re-downloading on language switch
 
-const CACHE_NAME = 'talos-font-cache-v1';
+const CACHE_NAME = 'Talos_FontCache';
 const CACHE_EXPIRY_DAYS = 30; // Cache fonts for 30 days
 
 interface CachedFontMetadata {
@@ -17,7 +17,7 @@ const isCacheAvailable = (): boolean => {
 // Get cached font metadata from localStorage
 const getCacheMetadata = (): Record<string, CachedFontMetadata> => {
     try {
-        const data = localStorage.getItem('talos:font-cache-metadata');
+        const data = localStorage.getItem('Talos:fontMetadata');
         return data ? (JSON.parse(data) as Record<string, CachedFontMetadata>) : {};
     } catch {
         return {};
@@ -32,7 +32,7 @@ const setCacheMetadata = (url: string): void => {
             url,
             cachedAt: Date.now(),
         };
-        localStorage.setItem('talos:font-cache-metadata', JSON.stringify(metadata));
+        localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
     } catch {
         // Ignore localStorage errors
     }
@@ -169,7 +169,7 @@ export async function cleanupFontCache(): Promise<void> {
         }
         
         if (cleaned > 0) {
-            localStorage.setItem('talos:font-cache-metadata', JSON.stringify(metadata));
+            localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
             console.log(`Cleaned up ${cleaned} expired font cache entries`);
         }
     } catch (error) {

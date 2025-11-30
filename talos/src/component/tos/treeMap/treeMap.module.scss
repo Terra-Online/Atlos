@@ -1,0 +1,91 @@
+@use '../../../styles/palette.scss' as *;
+:root, :root[data-theme='light'] {
+    --treeMap-root-stroke: #{$light-1};
+    --treeMap-root-fill: #{$primary-accent-4};
+    --treeMap-parent-fill: #{$primary-accent-3};
+    --treeMap-leaf-fill: #{$primary-accent-3};
+    --treeMap-highlight-fill: #{$primary-accent-6};
+    --treeMap-text-fill: #{$black-1};
+}
+:root[data-theme='dark'] {
+    --treeMap-root-stroke: #{$dim-1};
+    --treeMap-root-fill: #{$primary-accent-4};
+    --treeMap-parent-fill: #{$primary-accent-3};
+    --treeMap-leaf-fill: #{$primary-accent-3};
+    --treeMap-highlight-fill: #{$primary-accent-6};
+    --treeMap-text-fill: #{$light-1};
+}
+.wrapper {
+  width: 100%;
+  height: 25rem;
+  position: relative;
+  > * {
+    user-select: none;
+  }
+}
+
+.controls {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  font-family: 'Roboto Slab', sans-serif;
+  font-size: 10px;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.rect {
+  stroke: var(--treeMap-root-stroke);
+  fill: var(--treeMap-root-fill);
+  stroke-width: 3px;
+  cursor: pointer;
+  filter: brightness(1)
+}
+
+.rectParent {
+  fill: var(--treeMap-parent-fill);
+  transition: filter 0.3s ease;
+  &:hover {
+    filter: brightness(0.9);
+  }
+}
+
+.rectLeaf {
+  fill: var(--treeMap-leaf-fill);
+  transition: filter 0.3s ease;
+  &:hover {
+    filter: brightness(0.9);
+  }
+}
+
+.textRoot {
+  font-weight: bold;
+}
+
+.tspanName {
+  font-family: 'Roboto Slab', sans-serif;
+  font-weight: 400;
+}
+
+.tspanValue {
+  font-family: 'Roboto Slab', sans-serif;
+  font-weight: 700;
+  fill-opacity: 0.7;
+}
+
+$anim-duration: 350;
+$anim-ease: 'easeCubic';
+
+:export {
+  animDuration: $anim-duration;
+  animEase: $anim-ease;
+}
