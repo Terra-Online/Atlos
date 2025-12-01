@@ -18,6 +18,17 @@ span.keyword {
     }
 }
 
+a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    &:hover {
+        opacity: 0.6;
+    }
+}
+
 span.keyboard {
     position: relative;
     display: inline-flex;

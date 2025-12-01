@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "筛选项",
     "emptyTitle": "无满足条件的筛选项。",
-    "emptyDesc": "请联系管理员。"
+    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"报告点位错误\">Issue</a>。"
   },
   "detail": {
     "stat": {

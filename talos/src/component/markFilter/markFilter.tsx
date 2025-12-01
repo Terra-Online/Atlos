@@ -175,7 +175,7 @@ const MarkFilter = ({
                                 empty ?? (
                                     <div className={`${styles.placeholderContent} ${styles.markEmpty}`}>
                                         <p>{t('markFilter.emptyTitle')}</p>
-                                        <p>{t('markFilter.emptyDesc')}</p>
+                                        <p dangerouslySetInnerHTML={{ __html: String(t('markFilter.emptyDesc')) }} />
                                     </div>
                                 )
                             )}
