@@ -7,6 +7,7 @@ import parse from 'html-react-parser';
 import TreeMap from './treeMap/treeMap';
 import Button from '../button/button';
 import { clearAllStorage, clearStorageItem } from '@/utils/storage';
+import { useDevice } from '@/utils/device';
 
 export interface ToSProps {
   open: boolean;
@@ -16,6 +17,7 @@ export interface ToSProps {
 
 const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
   const t = useTranslateUI();
+  const { type: deviceType } = useDevice();
   const [selectedPath, setSelectedPath] = useState<string[] | null>(null);
   const [selectedName, setSelectedName] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -52,31 +54,30 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
       <div className={styles.storageContainer}>
           {parse(t('tos.policy') || '')}
       </div>
-      <div className={styles.storageMap}>
-        <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
-      </div>
-      <div className={styles.controls}>
-        <Button 
-          text={`Clear ${selectedName || 'Selected'}`}
-          onClick={() => { void handleClearSelected(); }}
-          buttonStyle="normal"
-          schema="light"
-          height="1.8rem"
-          width="auto"
-          style={{ 
-            opacity: selectedPath ? 1 : 0.5, 
-            pointerEvents: selectedPath ? 'auto' : 'none',
-            padding: '0 1rem'
-          }}
-        />
-        <Button 
-          text="Clear All" 
-          onClick={() => { void handleClearAll(); }} 
-          buttonStyle="normal"
-          schema="light"
-          width= "6rem"
-          height="1.8rem"
-        />
+      <div className={styles.storageController} data-device={deviceType}>
+        <div className={styles.storageMap}>
+          <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
+        </div>
+        <div className={styles.controls}>
+          <Button 
+            text={`${t('common.clear')} ${selectedName || t('common.selected')}`}
+            onClick={() => { void handleClearSelected(); }}
+            buttonStyle="square"
+            schema="light"
+            width="100%"
+            style={{ 
+              opacity: selectedPath ? 1 : 0.5, 
+              pointerEvents: selectedPath ? 'auto' : 'none'
+            }}
+          />
+          <Button 
+            text={t('common.clear') + t('common.all')} 
+            onClick={() => { void handleClearAll(); }} 
+            buttonStyle="square"
+            schema="light"
+            width="100%"
+          />
+        </div>
       </div>
     </Modal>
   );

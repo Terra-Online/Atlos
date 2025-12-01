@@ -66,6 +66,26 @@
     touch-action: none;
     user-select: none;
 
+    &[data-button-style='square'] {
+        border-radius: 4px;
+        padding: 0.25rem;
+        justify-content: center;
+        align-items: center;
+        text-align: left;
+        
+        .text {
+            justify-content: flex-start;
+            padding: 0;
+            white-space: normal;
+            word-break: break-all;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+            text-transform: uppercase;
+            margin-left: 1rem;
+            width: 10rem;
+        }
+    }
+
     &:focus {
         outline: 1.5px solid var(--btn-bg-light);
         outline-color: var(--btn-deco);

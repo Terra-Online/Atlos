@@ -1,5 +1,4 @@
-// Font caching utility using Cache API
-// Provides cache-first strategy for font files to avoid re-downloading on language switch
+import logger from '@/utils/log';
 
 const CACHE_NAME = 'Talos_FontCache';
 const CACHE_EXPIRY_DAYS = 30; // Cache fonts for 30 days
@@ -56,7 +55,7 @@ const isCacheExpired = (url: string): boolean => {
  */
 export async function cacheFontFile(url: string): Promise<void> {
     if (!isCacheAvailable()) {
-        console.warn('Cache API not available, skipping font caching');
+        logger.debug('Cache API not available, skipping font caching');
         return;
     }
 
@@ -66,12 +65,12 @@ export async function cacheFontFile(url: string): Promise<void> {
         // Check if already cached and not expired
         const cachedResponse = await cache.match(url);
         if (cachedResponse && !isCacheExpired(url)) {
-            console.log(`Font already cached: ${url}`);
+            logger.debug(`Font already cached: ${url}`);
             return;
         }
 
         // Fetch and cache the font
-        console.log(`Caching font: ${url}`);
+        logger.debug(`Caching font: ${url}`);
         const response = await fetch(url);
         
         if (!response.ok) {
@@ -81,9 +80,9 @@ export async function cacheFontFile(url: string): Promise<void> {
         await cache.put(url, response);
         setCacheMetadata(url);
         
-        console.log(`Font cached successfully: ${url}`);
+        logger.debug(`Font cached successfully: ${url}`);
     } catch (error) {
-        console.error(`Failed to cache font ${url}:`, error);
+        logger.debug(`Failed to cache font ${url}:`, error);
     }
 }
 
@@ -94,11 +93,11 @@ export async function cacheFontFile(url: string): Promise<void> {
  */
 export async function preloadFonts(urls: string[]): Promise<void> {
     if (!isCacheAvailable()) {
-        console.warn('Cache API not available, skipping font preloading');
+        logger.debug('Cache API not available, skipping font preloading');
         return;
     }
 
-    console.log(`Preloading ${urls.length} fonts...`);
+    logger.debug(`Preloading ${urls.length} fonts...`);
     
     // Use Promise.allSettled to continue even if some fonts fail
     const results = await Promise.allSettled(
@@ -108,7 +107,7 @@ export async function preloadFonts(urls: string[]): Promise<void> {
     const succeeded = results.filter(r => r.status === 'fulfilled').length;
     const failed = results.filter(r => r.status === 'rejected').length;
     
-    console.log(`Font preloading complete: ${succeeded} succeeded, ${failed} failed`);
+    logger.debug(`Font preloading complete: ${succeeded} succeeded, ${failed} failed`);
 }
 
 /**
@@ -127,12 +126,12 @@ export async function getCachedFont(url: string): Promise<Response> {
         
         // Return cached response if available and not expired
         if (cachedResponse && !isCacheExpired(url)) {
-            console.log(`Serving font from cache: ${url}`);
+            logger.debug(`Serving font from cache: ${url}`);
             return cachedResponse;
         }
 
         // Fetch from network and update cache
-        console.log(`Fetching font from network: ${url}`);
+        logger.debug(`Fetching font from network: ${url}`);
         const response = await fetch(url);
         
         if (response.ok) {
@@ -142,7 +141,7 @@ export async function getCachedFont(url: string): Promise<Response> {
         
         return response;
     } catch (error) {
-        console.error(`Error getting cached font ${url}:`, error);
+        logger.debug(`Error getting cached font ${url}:`, error);
         return fetch(url);
     }
 }
@@ -170,10 +169,10 @@ export async function cleanupFontCache(): Promise<void> {
         
         if (cleaned > 0) {
             localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
-            console.log(`Cleaned up ${cleaned} expired font cache entries`);
+            logger.debug(`Cleaned up ${cleaned} expired font cache entries`);
         }
     } catch (error) {
-        console.error('Failed to cleanup font cache:', error);
+        logger.debug('Failed to cleanup font cache:', error);
     }
 }
 
@@ -270,5 +269,5 @@ export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
 
 // Auto cleanup on initialization
 if (isCacheAvailable()) {
-    cleanupFontCache().catch(err => console.error('Font cache cleanup failed:', err));
+    cleanupFontCache().catch(err => logger.debug('Font cache cleanup failed:', err));
 }

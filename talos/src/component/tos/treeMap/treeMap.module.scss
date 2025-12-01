@@ -9,7 +9,7 @@
 }
 :root[data-theme='dark'] {
     --treeMap-root-stroke: #{$dim-1};
-    --treeMap-root-fill: #{$grey-3};
+    --treeMap-root-fill: #{$white-1};
     --treeMap-parent-fill: #{$mid};
     --treeMap-leaf-fill: #{$white-2};
     --treeMap-highlight-fill: #{$primary-accent-4};
@@ -17,7 +17,7 @@
 }
 .wrapper {
   width: 100%;
-  height: 25rem;
+  height: 20rem;
   position: relative;
   > * {
     user-select: none;
@@ -58,9 +58,8 @@
 .rect {
   stroke: var(--treeMap-root-stroke);
   fill: var(--treeMap-root-fill);
-  stroke-width: 3px;
+  stroke-width: 2.5px;
   cursor: pointer;
-  filter: brightness(1)
 }
 
 .rectParent {

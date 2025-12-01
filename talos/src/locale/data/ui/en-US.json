@@ -91,9 +91,6 @@
     "noData": "No stored data found.",
     "warning": "This will clear all data saved while using the site, including your preferences and progress, and may slow down your next visit. This action cannot be undone; the page will reload after completion."
   },
-  "common": {
-    "close": "Close"
-  },
   "guide": {
     "sidebarToggle": "Click to expand the <span class=\"keyword\">sidebar</span>.<br>The sidebar includes your most frequently used marker filters and switches closely related to marker display.",
     "search": "You can search for markers to view using <span class=\"keyword\">languages supported by the game</span> and select them in the search results.",
@@ -118,5 +115,15 @@
     "pointMark": "Click the marker again to mark it as complete.",
     "detail": "You can view specific information about the selected marker, including the number of markers of this type in <span class=\"keyword\">all regions</span>, the current <span class=\"keyword\">main region</span>, and the current <span class=\"keyword\">sub-region</span>.",
     "pointIcon": "Clicking the marker icon can also mark it as complete."
+  },
+  "common": {
+    "close": "Close",
+    "skip": "Skip",
+    "clear": "Clear",
+    "all": "All",
+    "selected": "Selected",
+    "confirm": "Confirm",
+    "enable": "Enable",
+    "disable": "Disable"
   }
 }
