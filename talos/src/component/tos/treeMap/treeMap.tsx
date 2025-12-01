@@ -134,7 +134,10 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
 
       node.filter(d => d === root ? !!d.parent : !!d.children)
           .attr("class", styles.node)
-          .on("click", (_event, d) => d === root ? zoomout(root) : zoomin(d));
+          .on("click", (_event, d) => {
+            handleNodeClick(d);
+            return d === root ? zoomout(root) : zoomin(d);
+          });
 
       // Add click handler for leaf nodes (items that can be deleted)
       node.filter(d => !d.children && d !== root)
@@ -161,13 +164,64 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
       node.append("text")
           .attr("clip-path", d => `url(#${d.clipUid})`)
           .attr("class", d => d === root ? `${styles.text} ${styles.textRoot}` : styles.text)
-        .selectAll("tspan")
-        .data(d => [d === root ? name(d) : formatName(d.data.name), formatSize(d.realValue || 0)])
-        .join("tspan")
-          .attr("x", 3)
-          .attr("y", (_d, i, nodes) => `${(Number(i === nodes.length - 1)) * 0.3 + 1.1 + i * 0.9}em`)
-          .attr("class", (_d, i, nodes) => i === nodes.length - 1 ? styles.tspanValue : styles.tspanName)
-          .text(d => d);
+          .each(function(d) {
+            const textElement = d3.select(this);
+            const rectWidth = (d === root ? width : x(d.x1) - x(d.x0)) - 8;
+            const nameStr = d === root ? name(d) : formatName(d.data.name);
+            const sizeStr = formatSize(d.realValue || 0);
+            
+            const lineHeight = 1.1;
+            const yOffset = 1.1;
+            
+            let tspan = textElement.append("tspan")
+              .attr("x", 3)
+              .attr("y", `${yOffset}em`)
+              .attr("class", styles.tspanName);
+            
+            tspan.text(nameStr);
+            
+            const textLength = tspan.node()?.getComputedTextLength() || 0;
+            
+            if (textLength > rectWidth) {
+              tspan.text("");
+              let line: string[] = [];
+              let lineNumber = 0;
+              
+              for (let i = 0; i < nameStr.length; i++) {
+                const char = nameStr[i];
+                line.push(char);
+                tspan.text(line.join(""));
+                
+                if ((tspan.node()?.getComputedTextLength() || 0) > rectWidth) {
+                  line.pop();
+                  if (line.length > 0) {
+                     tspan.text(line.join("") + "-");
+                  }
+                  
+                  line = [char];
+                  lineNumber++;
+                  tspan = textElement.append("tspan")
+                    .attr("x", 3)
+                    .attr("y", `${yOffset + lineNumber * lineHeight}em`)
+                    .attr("class", styles.tspanName)
+                    .text(char);
+                }
+              }
+              
+              textElement.append("tspan")
+                .attr("x", 3)
+                .attr("y", `${yOffset + (lineNumber + 1) * lineHeight}em`)
+                .attr("class", styles.tspanValue)
+                .text(sizeStr);
+                
+            } else {
+              textElement.append("tspan")
+                .attr("x", 3)
+                .attr("y", `${yOffset + lineHeight}em`)
+                .attr("class", styles.tspanValue)
+                .text(sizeStr);
+            }
+          });
 
       group.call(position, root);
     }

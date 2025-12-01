@@ -52,6 +52,9 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
       <div className={styles.storageContainer}>
           {parse(t('tos.policy') || '')}
       </div>
+      <div className={styles.storageMap}>
+        <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
+      </div>
       <div className={styles.controls}>
         <Button 
           text={`Clear ${selectedName || 'Selected'}`}
@@ -71,11 +74,9 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
           onClick={() => { void handleClearAll(); }} 
           buttonStyle="normal"
           schema="light"
+          width= "6rem"
           height="1.8rem"
         />
-      </div>
-      <div className={styles.storageMap}>
-        <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
       </div>
     </Modal>
   );
