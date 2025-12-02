@@ -65,10 +65,7 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
             buttonStyle="square"
             schema="light"
             width="100%"
-            style={{ 
-              opacity: selectedPath ? 1 : 0.5, 
-              pointerEvents: selectedPath ? 'auto' : 'none'
-            }}
+            disabled={!selectedPath}
           />
           <Button 
             text={t('common.clear') + t('common.all')} 

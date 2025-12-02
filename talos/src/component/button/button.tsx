@@ -58,6 +58,8 @@ const Button: React.FC<ButtonProps> = ({
     >
       {/* decorative line */}
       {deco && buttonStyle === 'normal' && <span className={styles.deco} aria-hidden="true" />}
+      {/* square deco layer */}
+      {buttonStyle === 'square' && <span className={styles.squareDeco} aria-hidden="true" />}
       {/* content text */}
       {(buttonStyle === 'normal' || buttonStyle === 'square') && <span className={styles.text}>{text}</span>}
       {/* icon */}

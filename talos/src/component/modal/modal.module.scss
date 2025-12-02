@@ -77,7 +77,7 @@
         will-change: opacity, transform, filter;
     }
     &[data-size="full"] {
-        width: 70%;
+        width: 65%;
         @media (max-width: 768px) {
             width: 100%;
         }
