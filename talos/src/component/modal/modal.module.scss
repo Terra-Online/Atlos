@@ -154,7 +154,6 @@
             width: 0;
     }
 }
-
 .topBlur,
 .bottomBlur {
     position: absolute;
@@ -178,4 +177,8 @@
     &.visible {
         transform: translateY(0);
     }
+}
+.modalContainer[data-size="full"] .modalContent {
+    max-height: none;
+    flex: 1;
 }

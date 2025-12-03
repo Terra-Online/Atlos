@@ -3,16 +3,28 @@
 
 :root, :root[data-theme='light'] {
     --tos-text: #{$grey-1};
+
+    --warning-bg: #{$grey-1};
+    --warning-text: #{$light-2};
+    --warning-shadow: #{rgba($black-1, 0.4)};
+    --warning-shadow-inner: #{rgba($black-1, 0.75)};
+    --warning-highlight: #{$primary-accent-4};
 }
 
 :root[data-theme='dark'] {
     --tos-text: #{$light-2};
+
+    --warning-bg: #{$light-1};
+    --warning-text: #{$black-1};
+    --warning-shadow: #{rgba($black-1, 0.4)};
+    --warning-shadow-inner: #{rgba($black-1, 0.75)};
+    --warning-highlight: #{$primary-accent-6};
 }
 
 .storageContainer {
     display: flex;
     flex-direction: column;
-    font-size: .85rem;
+    font-size: .925rem;
     color: var(--tos-text);
     font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     letter-spacing: -0.2px;
@@ -68,10 +80,72 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
+        
+        .warning {
+            grid-column: 1 / -1;
+        }
     }
     &[data-device='mobile'] .controls {
         display: flex;
         flex-direction: column;
         gap: 1.1rem;
+    }
+}
+
+.warning {
+    display: grid;
+    grid-template-rows: 0fr;
+    user-select: none;
+    opacity: 1;
+    transition: grid-template-rows 0.3s $standard-curve, opacity 0.3s $standard-curve, padding 0.3s $standard-curve, border-top 0.3s $standard-curve, border-bottom 0.3s $standard-curve, box-shadow 0.2s $standard-curve .3s;
+    width: 103%;
+    transform: translateX(-1.5%);
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-top: 0 solid var(--warning-text);
+    border-bottom: 0 solid var(--warning-text);
+    padding: 0 0;
+    box-shadow: 0px 0 2px transparent, 0 0 2px transparent;
+    text-align: left;
+
+
+    will-change: grid-template-rows, opacity, padding, border-top, border-bottom, box-shadow;
+    .warningInner {
+        overflow: hidden;
+        font-size: 0.925rem;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        font-weight: 500;
+        line-height: 1.2;
+        letter-spacing: -.25px;
+        text-transform: uppercase;
+        opacity: 0;
+        transition: opacity 0.25s $adagio-curve 0.2s;
+        strong {
+            color: var(--warning-highlight);
+            font-family: "Novecento Bold", "Novecento Cyrillic DemiBold", "Novecento Vietnamese Demibold", "UD_ShinGo Bold", "Noto Sans SC", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+        p {
+            unicode-bidi: plaintext;
+            margin-bottom: 0.8em;
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+    &.visible {
+        border-top: 3px solid var(--warning-text);
+        border-bottom: 3px solid var(--warning-text);
+        padding: .4rem .3rem;
+        box-shadow: -1px 0 2px var(--warning-shadow), 1px 0 2px var(--warning-shadow);
+        grid-template-rows: 1fr;
+        opacity: 1;
+        .warningInner {
+            opacity: 1;
+            transition: opacity 0.25s $adagio-curve 0;
+        }
     }
 }

@@ -12,7 +12,7 @@
     "title": "Terms & Storage",
     "calculating": "Calculating storage usage...",
     "policy": "<p>We use Cookies to store your auto-login information; LocalStorage to store your UI preferences and marker progress; and CacheStorage to store font data and image resources for your language. These files allow you to access the website more quickly in the future and ensure the website's availability when offline.</p><p>Deleting the website's local storage can save space on your device. However, <span class=\"keyword\">it may take longer to load these files</span> when you visit again; if you disable website storage, the website <span class=\"keyword\">will not be able to automatically record your data</span> for your next use.</p><p>We do not report your data to the server, so you do not need to worry about privacy issues.</p><p>You can decide whether to enable local storage.</p>",
-    "warning": "<strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time."
+    "warning": "<p><strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time.</p><p>If confirmed, please click the delete button again.</p>"
   },
   "trigger": {
     "boundaryMode": "Boundary Mode",
