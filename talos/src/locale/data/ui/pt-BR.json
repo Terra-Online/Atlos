@@ -70,29 +70,18 @@
   "tos": {
     "title": "Termos e Armazenamento",
     "calculating": "Calculando uso de armazenamento...",
-    "policy": "<p>Usamos Cookies para armazenar suas informações de login automático; LocalStorage para salvar suas preferências de interface e progresso dos marcadores; e CacheStorage para armazenar dados de fonte e recursos de imagem para seu idioma. Esses arquivos permitem que você acesse o site mais rapidamente no futuro e garantem a disponibilidade do site offline.</p><p>Excluir o armazenamento local do site pode economizar espaço no seu dispositivo. No entanto, pode levar mais tempo para carregar esses arquivos quando você visitar novamente; se você desativar o armazenamento do site, o site não poderá registrar automaticamente seus dados para seu próximo uso.</p><p>Não relatamos seus dados ao servidor, então você não precisa se preocupar com problemas de privacidade.</p><p>Você pode decidir por si mesmo se deseja ativar o armazenamento local.</p>"
-  },
-  "storage": {
-    "title": "Protocolos e Armazenamento",
-    "localStorage": "Armazenamento Local",
-    "localStorageDesc": "Armazena o layout da interface, estado do mapa, configurações, preferências e dados de marcadores.",
-    "cookies": "Cookies",
-    "cookiesDesc": "Armazena seu estado de login e preferências de consentimento.",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Armazena dados de tiles do mapa atual para visualização offline.",
-    "cacheStorage": "Cache",
-    "cacheStorageDesc": "Armazena recursos de fontes necessários para exibir o site.",
-    "total": "Armazenamento Total",
-    "calculating": "Calculando uso de armazenamento…",
-    "clear": "Limpar",
-    "disable": "Desativar",
-    "clearAll": "Limpar todos os dados armazenados",
-    "clearing": "Limpando…",
-    "noData": "Nenhum dado armazenado encontrado.",
-    "warning": "Isso limpará todos os dados salvos durante o uso do site, incluindo suas preferências e progresso, e pode tornar sua próxima visita mais lenta. A ação é irreversível; a página será recarregada após a conclusão."
+    "policy": "<p>Usamos Cookies para armazenar suas informações de login automático; LocalStorage para salvar suas preferências de interface e progresso dos marcadores; e CacheStorage para armazenar dados de fonte e recursos de imagem para seu idioma. Esses arquivos permitem que você acesse o site mais rapidamente no futuro e garantem a disponibilidade do site offline.</p><p>Excluir o armazenamento local do site pode economizar espaço no seu dispositivo. No entanto, <span class=\"keyword\">pode levar mais tempo para carregar esses arquivos</span> quando você visitar novamente; se você desativar o armazenamento do site, o site <span class=\"keyword\">não poderá registrar automaticamente seus dados</span> para seu próximo uso.</p><p>Não relatamos seus dados ao servidor, então você não precisa se preocupar com problemas de privacidade.</p><p>Você pode decidir por si mesmo se deseja ativar o armazenamento local.</p>",
+    "warning": "<strong>Aviso:</strong> Se você limpar os dados armazenados, suas informações de login automático, preferências de interface e progresso dos marcadores serão perdidos; e pode levar mais tempo do que o normal para carregar o site na próxima vez."
   },
   "common": {
-    "close": "Fechar"
+    "close": "Fechar",
+    "skip": "Pular",
+    "clear": "Limpar",
+    "all": "Tudo",
+    "selected": "Selecionado",
+    "confirm": "Confirmar",
+    "enable": "Ativar",
+    "disable": "Desativar"
   },
   "guide": {
     "sidebarToggle": "Clique para expandir a <span class=\"keyword\">barra lateral</span>.<br>A barra lateral inclui seus filtros de marcadores mais usados, bem como interruptores intimamente relacionados à exibição de marcadores.",

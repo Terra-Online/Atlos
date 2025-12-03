@@ -70,29 +70,18 @@
   "tos": {
     "title": "Termini e Archiviazione",
     "calculating": "Calcolo utilizzo memoria...",
-    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcatori; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, potrebbe essere necessario più tempo per caricare questi file alla tua prossima visita; se disabiliti la memoria del sito web, il sito non sarà in grado di registrare automaticamente i tuoi dati per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>"
-  },
-  "storage": {
-    "title": "Protocolli e Archiviazione",
-    "localStorage": "Archiviazione Locale",
-    "localStorageDesc": "Memorizza il layout dell’interfaccia, lo stato della mappa, impostazioni, preferenze e dati dei marker.",
-    "cookies": "Cookie",
-    "cookiesDesc": "Memorizza lo stato di accesso e le preferenze di consenso.",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Memorizza i dati delle tile della mappa corrente per la visualizzazione offline.",
-    "cacheStorage": "Cache",
-    "cacheStorageDesc": "Memorizza le risorse di font necessarie alla visualizzazione del sito.",
-    "total": "Archiviazione totale",
-    "calculating": "Calcolo dell’utilizzo dell’archiviazione…",
-    "clear": "Cancella",
-    "disable": "Disabilita",
-    "clearAll": "Cancella tutti i dati memorizzati",
-    "clearing": "Cancellazione…",
-    "noData": "Nessun dato memorizzato trovato.",
-    "warning": "Cancellerà tutti i dati salvati durante l’uso del sito, incluse preferenze e progressi, e può rallentare la prossima visita. Azione irreversibile; al termine la pagina verrà ricaricata."
+    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcatori; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
+    "warning": "<strong>Attenzione:</strong> Se cancelli i dati memorizzati, le tue informazioni di accesso automatico, le preferenze dell'interfaccia utente e i progressi dei marcatori andranno persi; e potrebbe essere necessario più tempo del solito per caricare il sito web la prossima volta."
   },
   "common": {
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "skip": "Salta",
+    "clear": "Cancella",
+    "all": "Tutto",
+    "selected": "Selezionato",
+    "confirm": "Conferma",
+    "enable": "Abilita",
+    "disable": "Disabilita"
   },
   "guide": {
     "sidebarToggle": "Clicca per espandere la <span class=\"keyword\">barra laterale</span>.<br>La barra laterale include i filtri dei marcatori più utilizzati, così come gli interruttori strettamente correlati alla visualizzazione dei marcatori.",

@@ -70,29 +70,18 @@
   "tos": {
     "title": "Bedingungen & Speicher",
     "calculating": "Speichernutzung wird berechnet...",
-    "policy": "<p>Wir verwenden Cookies, um Ihre automatischen Anmeldeinformationen zu speichern; LocalStorage, um Ihre UI-Einstellungen und den Fortschritt der Markierungen zu speichern; und CacheStorage, um Schriftartdaten und Bildressourcen für Ihre Sprache zu speichern. Diese Dateien ermöglichen Ihnen in Zukunft einen schnelleren Zugriff auf die Website und gewährleisten deren Verfügbarkeit im Offline-Modus.</p><p>Das Löschen des lokalen Speichers der Website kann Platz auf Ihrem Gerät sparen. Es kann jedoch länger dauern, diese Dateien bei Ihrem nächsten Besuch zu laden; wenn Sie den Website-Speicher deaktivieren, kann die Website Ihre Daten nicht automatisch für Ihre nächste Verwendung aufzeichnen.</p><p>Wir melden Ihre Daten nicht an den Server, sodass Sie sich keine Sorgen um Datenschutzprobleme machen müssen.</p><p>Sie können selbst entscheiden, ob Sie den lokalen Speicher aktivieren möchten.</p>"
-  },
-  "storage": {
-    "title": "Protokolle & Speicher",
-    "localStorage": "Lokaler Speicher",
-    "localStorageDesc": "Speichert Ihr UI‑Layout, Kartenstatus, Einstellungen, Präferenzen und Markerdaten.",
-    "cookies": "Cookies",
-    "cookiesDesc": "Speichert Ihren Anmeldestatus und Zustimmungspräferenzen.",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Speichert Kachel­daten der aktuellen Karte für die Offline‑Ansicht.",
-    "cacheStorage": "Cache",
-    "cacheStorageDesc": "Speichert Schrift­ressourcen, die für die Darstellung der Seite benötigt werden.",
-    "total": "Gesamtspeicher",
-    "calculating": "Speichernutzung wird berechnet…",
-    "clear": "Löschen",
-    "disable": "Deaktivieren",
-    "clearAll": "Alle gespeicherten Daten löschen",
-    "clearing": "Löschen…",
-    "noData": "Keine gespeicherten Daten gefunden.",
-    "warning": "Dies löscht alle während der Nutzung der Seite gespeicherten Daten, einschließlich Ihrer Einstellungen und Fortschritte, und kann Ihren nächsten Besuch verlangsamen. Dieser Vorgang ist nicht rückgängig zu machen; die Seite lädt anschließend neu."
+    "policy": "<p>Wir verwenden Cookies, um Ihre automatischen Anmeldeinformationen zu speichern; LocalStorage, um Ihre UI-Einstellungen und den Marker-Fortschritt zu speichern; und CacheStorage, um Schriftdaten und Bildressourcen für Ihre Sprache zu speichern. Diese Dateien ermöglichen Ihnen in Zukunft einen schnelleren Zugriff auf die Website und gewährleisten deren Verfügbarkeit im Offline-Modus.</p><p>Das Löschen des lokalen Speichers der Website kann Platz auf Ihrem Gerät sparen. Allerdings <span class=\"keyword\">kann das Laden dieser Dateien länger dauern</span>, wenn Sie die Website erneut besuchen; wenn Sie den Website-Speicher deaktivieren, kann die Website <span class=\"keyword\">Ihre Daten nicht automatisch für die nächste Nutzung aufzeichnen</span>.</p><p>Wir melden Ihre Daten nicht an den Server, sodass Sie sich keine Sorgen um Datenschutzprobleme machen müssen.</p><p>Sie können selbst entscheiden, ob Sie den lokalen Speicher aktivieren möchten.</p>",
+    "warning": "<strong>Warnung:</strong> Wenn Sie gespeicherte Daten löschen, gehen Ihre automatischen Anmeldeinformationen, UI-Einstellungen und der Marker-Fortschritt verloren; und das Laden der Website kann beim nächsten Mal länger dauern als gewöhnlich."
   },
   "common": {
-    "close": "Fertig"
+    "close": "Schließen",
+    "skip": "Überspringen",
+    "clear": "Löschen",
+    "all": "Alle",
+    "selected": "Ausgewählt",
+    "confirm": "Bestätigen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren"
   },
   "guide": {
     "sidebarToggle": "Klicken Sie, um die <span class=\"keyword\">Seitenleiste</span> zu erweitern.<br>Die Seitenleiste enthält Ihre am häufigsten verwendeten Markierungsfilter sowie Schalter, die eng mit der Markierungsanzeige verbunden sind.",
