@@ -1,14 +1,19 @@
 @use '../../../styles/palette.scss' as *;
+@use '../../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
   --ug-wrapper-glow-bg: #{$light-1};
   --ug-tooltip-header-color: #{$black-0};
   --ug-tooltip-progress-color: #{$grey-1};
+
+  --invert-bg: 1;
 }
 :root[data-theme='dark'] {
   --ug-wrapper-glow-bg: #{$black-1};
   --ug-tooltip-header-color: #{$white-1};
   --ug-tooltip-progress-color: #{$white-3};
+
+  --invert-bg: 0;
 }
 
 .wrapper {
@@ -26,17 +31,26 @@
     z-index: -1;
   }
 }
-
 .container {  
-  background-image: url('@/assets/images/UI/tooltip/background.svg');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  position: relative;
   width: 24rem;
   padding: 0 .75rem;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
+    &::before {
+      content: "";
+      background-image: url('@/assets/images/UI/tooltip_bg.webp');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: absolute;
+      inset: -.5rem;
+      z-index: -1;
+      opacity: .4;
+      filter: invert(var(--invert-bg));
+      transition: filter .3s $adagio-curve;
+    }
 }
 
 .header {
