@@ -41,3 +41,5 @@ talos/src/data/process/output/log
 talos/.stylelintcache
 /talos/.vite
 /talos/src/asset
+
+*.glyphs
