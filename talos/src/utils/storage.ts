@@ -131,10 +131,16 @@ export const clearStorageItem = async (path: string[]) => {
 
 const getStorageTree = (storage: Storage | undefined, rootName: string): TreeMapNode => {
   const children: TreeMapNode[] = [];
+  const isDev = import.meta.env.DEV;
+  
   if (storage) {
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
       if (!key) continue;
+      
+      // Whitelist: Hide UserGuide in production to prevent accidental deletion
+      if (!isDev && key === 'UserGuide') continue;
+      
       const value = storage.getItem(key) || '';
       const size = (key.length + value.length) * 2; // UTF-16 estimate
       children.push({ name: key, value: size });

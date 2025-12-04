@@ -64,6 +64,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     onClick={prop.onClickBack}
                     size={'1.5rem'}
                     schema={buttonSchema}
+                    disabled={prop.index === 0}
                 />
                 <Button
                     text=''

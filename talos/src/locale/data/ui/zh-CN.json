@@ -74,6 +74,7 @@
     "warning": "<p><strong>注意：</strong>如果您清除储存数据，对应的自动登录信息、UI偏好设置、点位进度将会丢失；并且下次加载网站可能要花费比平常更多的时间。</p><p>如果确认，请再次点击删除按钮。</p>"
   },
   "guide": {
+    "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
     "filterContainer": "同类型的点位可用一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",

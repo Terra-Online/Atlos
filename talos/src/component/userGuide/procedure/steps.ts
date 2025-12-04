@@ -42,6 +42,13 @@ export const useGuideSteps = (map?: L.Map) => {
 
     const steps: GuideStep[] = useMemo(() => [
         {
+            id: 'STEP-0_welcome',
+            target: 'body',
+            content: parse(t('guide.welcome') || ''),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
             id: 'STEP-1_sidebar-toggle',
             target: '[class*="sidebarToggle"]',
             content: parse(t('guide.sidebarToggle') || ''),

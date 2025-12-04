@@ -73,17 +73,8 @@
     "policy": "<p>Nous utilisons des Cookies pour stocker vos informations de connexion automatique ; LocalStorage pour enregistrer vos préférences d'interface et la progression des marqueurs ; et CacheStorage pour stocker les données de police et les ressources d'image pour votre langue. Ces fichiers vous permettent d'accéder au site web plus rapidement à l'avenir et garantissent sa disponibilité hors ligne.</p><p>La suppression du stockage local du site web peut libérer de l'espace sur votre appareil. Cependant, <span class=\"keyword\">le chargement de ces fichiers peut prendre plus de temps</span> lors de votre prochaine visite ; si vous désactivez le stockage du site web, celui-ci <span class=\"keyword\">ne pourra pas enregistrer automatiquement vos données</span> pour votre prochaine utilisation.</p><p>Nous ne transmettons pas vos données au serveur, vous n'avez donc pas à vous soucier des problèmes de confidentialité.</p><p>Vous pouvez décider vous-même d'activer ou non le stockage local.</p>",
     "warning": "<p><strong>Attention :</strong> Si vous effacez les données stockées, vos informations de connexion automatique, vos préférences d'interface et la progression des marqueurs seront perdues ; et le chargement du site web pourrait prendre plus de temps que d'habitude la prochaine fois.</p><p>Si vous confirmez, veuillez cliquer à nouveau sur le bouton de suppression.</p>"
   },
-  "common": {
-    "close": "Fermer",
-    "skip": "Passer",
-    "clear": "Effacer",
-    "all": "Tout",
-    "selected": "Sélectionné",
-    "confirm": "Confirmer",
-    "enable": "Activer",
-    "disable": "Désactiver"
-  },
   "guide": {
+    "welcome": "Bienvenue sur <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>C'est votre première utilisation de cette carte. Nous vous proposons une brève visite guidée pour vous aider à comprendre rapidement les différentes fonctionnalités de la carte.</p><p>Vous pouvez cliquer sur le bouton '<span class=\"keyword\">Ignorer</span>' à tout moment pour terminer le guide, ou le redémarrer depuis le bouton d'aide dans la barre supérieure.",
     "sidebarToggle": "Cliquez pour développer la <span class=\"keyword\">barre latérale</span>.<br>La barre latérale comprend vos filtres de marqueurs les plus utilisés, ainsi que des commutateurs étroitement liés à l'affichage des marqueurs.",
     "search": "Vous pouvez rechercher des marqueurs à afficher en utilisant <span class=\"keyword\">les langues prises en charge par le jeu</span> et les sélectionner dans les résultats de recherche.",
     "filterContainer": "Les marqueurs du même type sont regroupés dans un <span class=\"keyword\">filtre</span>.<br>Cliquez pour développer la liste des marqueurs de ce type.",
@@ -107,5 +98,15 @@
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
     "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé."
+  },
+  "common": {
+    "close": "Fermer",
+    "skip": "Passer",
+    "clear": "Effacer",
+    "all": "Tout",
+    "selected": "Sélectionné",
+    "confirm": "Confirmer",
+    "enable": "Activer",
+    "disable": "Désactiver"
   }
 }

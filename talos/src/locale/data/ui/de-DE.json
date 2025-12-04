@@ -73,17 +73,8 @@
     "policy": "<p>Wir verwenden Cookies, um Ihre automatischen Anmeldeinformationen zu speichern; LocalStorage, um Ihre UI-Einstellungen und den Marker-Fortschritt zu speichern; und CacheStorage, um Schriftdaten und Bildressourcen für Ihre Sprache zu speichern. Diese Dateien ermöglichen Ihnen in Zukunft einen schnelleren Zugriff auf die Website und gewährleisten deren Verfügbarkeit im Offline-Modus.</p><p>Das Löschen des lokalen Speichers der Website kann Platz auf Ihrem Gerät sparen. Allerdings <span class=\"keyword\">kann das Laden dieser Dateien länger dauern</span>, wenn Sie die Website erneut besuchen; wenn Sie den Website-Speicher deaktivieren, kann die Website <span class=\"keyword\">Ihre Daten nicht automatisch für die nächste Nutzung aufzeichnen</span>.</p><p>Wir melden Ihre Daten nicht an den Server, sodass Sie sich keine Sorgen um Datenschutzprobleme machen müssen.</p><p>Sie können selbst entscheiden, ob Sie den lokalen Speicher aktivieren möchten.</p>",
     "warning": "<p><strong>Warnung:</strong> Wenn Sie gespeicherte Daten löschen, gehen Ihre automatischen Anmeldeinformationen, UI-Einstellungen und der Marker-Fortschritt verloren; und das Laden der Website kann beim nächsten Mal länger dauern als gewöhnlich.</p><p>Wenn Sie sicher sind, klicken Sie bitte erneut auf die Löschen-Schaltfläche.</p>"
   },
-  "common": {
-    "close": "Schließen",
-    "skip": "Überspringen",
-    "clear": "Löschen",
-    "all": "Alle",
-    "selected": "Ausgewählt",
-    "confirm": "Bestätigen",
-    "enable": "Aktivieren",
-    "disable": "Deaktivieren"
-  },
   "guide": {
+    "welcome": "Willkommen bei <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Dies ist Ihre erste Verwendung dieser Karte. Wir bieten Ihnen eine kurze Führung an, um Ihnen zu helfen, die verschiedenen Funktionen der Karte schnell zu verstehen.</p><p>Sie können jederzeit auf die Schaltfläche '<span class=\"keyword\">Überspringen</span>' klicken, um die Anleitung zu beenden, oder sie über die Hilfeschaltfläche in der oberen Leiste neu starten.",
     "sidebarToggle": "Klicken Sie, um die <span class=\"keyword\">Seitenleiste</span> zu erweitern.<br>Die Seitenleiste enthält Ihre am häufigsten verwendeten Markierungsfilter sowie Schalter, die eng mit der Markierungsanzeige verbunden sind.",
     "search": "Sie können nach Markierungen suchen, die angezeigt werden sollen, indem Sie <span class=\"keyword\">vom Spiel unterstützte Sprachen</span> verwenden, und diese in den Suchergebnissen auswählen.",
     "filterContainer": "Markierungen desselben Typs sind in einem <span class=\"keyword\">Filter</span> gruppiert.<br>Klicken Sie, um die Liste der Markierungen dieses Typs zu erweitern.",
@@ -107,5 +98,15 @@
     "pointMark": "Klicken Sie erneut auf die Markierung, um sie als erledigt zu markieren.",
     "detail": "Sie können spezifische Informationen zur ausgewählten Markierung anzeigen, einschließlich der Anzahl der Markierungen dieses Typs in <span class=\"keyword\">allen Regionen</span>, der aktuellen <span class=\"keyword\">Hauptregion</span> und der aktuellen <span class=\"keyword\">Unterregion</span>.",
     "pointIcon": "Das Klicken auf das Markierungssymbol kann es auch als erledigt markieren."
+  },
+  "common": {
+    "close": "Schließen",
+    "skip": "Überspringen",
+    "clear": "Löschen",
+    "all": "Alle",
+    "selected": "Ausgewählt",
+    "confirm": "Bestätigen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren"
   }
 }

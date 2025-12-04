@@ -73,17 +73,8 @@
     "policy": "<p>我們使用 Cookies 儲存您的自動登入資訊；使用 LocalStorage 儲存您的介面偏好設定與標記進度；使用 CacheStorage 儲存您語言使用的字型資料以及圖片資源。這些檔案允許您日後更快速地存取網站，並保障網站離線時的可用性；刪除網站的本機儲存空間可以節省您的裝置空間。但是您再次存取時<span class=\"keyword\">可能需要更長的時間載入</span>這些檔案；如果您停用網站儲存，那麼網站<span class=\"keyword\">將無法自動記錄您的資料</span>供您下次使用。</p><p>我們不會向伺服器回報您的資料，您不需要擔心隱私問題。</p><p>您可以自行決定是否啟用本機儲存。</p>",
     "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>"
   },
-  "common": {
-    "close": "關閉",
-    "skip": "跳過",
-    "clear": "清除",
-    "all": "全部",
-    "selected": "選取項目",
-    "confirm": "確認",
-    "enable": "啟用",
-    "disable": "停用"
-  },
   "guide": {
+    "welcome": "歡迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>這是您第一次使用本地圖，我們將為您提供簡短的新手引導，幫助您快速了解地圖的各項功能。</p><p>您可以隨時點擊「<span class=\"keyword\">跳過</span>」按鈕結束引導，或在頂欄的幫助按鈕中重新啟動引導。",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
     "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並且在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位于同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
@@ -107,5 +98,15 @@
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
     "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
+  },
+  "common": {
+    "close": "關閉",
+    "skip": "跳過",
+    "clear": "清除",
+    "all": "全部",
+    "selected": "選取項目",
+    "confirm": "確認",
+    "enable": "啟用",
+    "disable": "停用"
   }
 }
