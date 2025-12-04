@@ -1,41 +1,127 @@
 {
-    "VL": {
-        "main": "四号谷地",
-        "sub": {
-            "PL": {
-                "name": "供能高地",
-                "site": {
-                    "united_parking_lot": "联盟停车场"
-                }
-            },
-            "OL": {
-                "name": "OL",
-                "site": {}
-            },
-            "OP": {
-                "name": "OP",
-                "site": {}
-            },
-            "AQ": {
-                "name": "AQ",
-                "site": {}
-            },
-            "VP": {
-                "name": "VP",
-                "site": {}
-            },
-            "HB": {
-                "name": "HB",
-                "site": {}
-            }
+  "VL": {
+    "main": "四号谷地",
+    "sub": {
+      "PL": {
+        "name": "供能高地",
+        "short": "供",
+        "site": {
+          "old_dorms": "宿舍区",
+          "originium_power_plant": "源石发电站",
+          "power_plant_comm_station": "电站通信站",
+          "bridge_approach_camp": "桥头区营地",
+          "united_parking_lot": "联盟停车场",
+          "planned_construction_area": "建设规划区",
+          "plateau_trunkway": "高地主路",
+          "bonekrusher_warcamp": "碾骨战营",
+          "evacuation_zone": "疏散区",
+          "shattered_fringe": "破碎边界",
+          "Æther_test_site": "超域试验场"
         }
-    },
-    "Jinlong": {
-        "main": "Jinlong",
-        "sub": {}
-    },
-    "Dijiang": {
-        "main": "Dijiang",
-        "sub": {}
+      },
+
+      "OL": {
+        "name": "矿脉源区",
+        "short": "脉",
+        "site": {
+          "originium_passage": "源石隧道",
+          "cradle_of_the_ages": "世代摇篮",
+          "mines_cable_car_station": "矿区缆车站",
+          "logistices_area": "运输区",
+          "containment_zone_intersection": "隔离区岔路",
+          "old_mines": "旧矿区",
+          "meteorological_station": "气候检测站",
+          "cliffside_mining_area": "崖边开采区",
+          "temporary_stockpile": "临时堆放区",
+          "blightcliff_ovservation_post": "蚀崖观测站",
+          "mining_area_clinic": "矿区医疗站",
+          "mining_ca,p": "矿区营地",
+          "mountain_passage": "山地通道",
+          "landbreaker_camp": "裂地者营地"
+        }
+      },
+
+      "OP": {
+        "name": "源石研究园",
+        "short": "研",
+        "site": {
+          "control_center": "总控中心",
+          "route_5": "五号公路",
+          "Transport_nexus": "转运枢纽",
+          "the_depression": "沉降地带",
+          "originium_science_park": "源石实验园区",
+          "research_center": "研究所",
+          "cliffside_trail": "崖边山道",
+          "mountain_path_slope": "山道缓坡",
+          "kohl_plant": "醇化合物工厂",
+          "eco_farm": "生态种植区",
+          "infra_station": "基建前站"
+        }
+      },
+
+      "AQ": {
+        "name": "阿伯莉采石场",
+        "short": "采",
+        "site": {
+          "quarry_entrance": "采石场入口",
+          "refuse_stockpile": "废料堆放区",
+          "loading_area": "装卸区",
+          "stockpile_area": "存料处",
+          "deep_management_post": "深层管理区",
+          "lifter_central": "吊运中枢",
+          "listening_post": "联络区",
+          "transfer_area": "传递区",
+          "quarry_site": "采石作业区",
+          "staff_lounge": "工人休息站"
+        }
+      },
+
+      "VP": {
+        "name": "谷地通道",
+        "short": "谷",
+        "site": {
+          "valley_fort": "谷地要塞",
+          "arsenal": "军械库",
+          "valley_transfer": "谷地中转站",
+          "temporary_shelter": "临时避难所",
+          "abandoned_trail": "废弃小径",
+          "passage_entrance": "通道入口"
+        }
+      },
+
+      "HB": {
+        "name": "枢纽区",
+        "short": "枢",
+        "site": {
+          "lohistics_platform": "货运平台",
+          "rockhill_passage": "岩丘通道",
+          "bridge_approach": "桥头工事",
+          "shorecove_camp": "岸窟营地",
+          "old_water_plant": "旧供水设施",
+          "hub_base_power_plant": "枢纽基地电站",
+          "hub_west": "枢纽区西部",
+          "originium_byproduct_precessing_center": "源石副产物中心",
+          "construction_site": "待建设区",
+          "hub_base": "枢纽基地区",
+          "old_factory": "旧工厂区",
+          "aic_research_center": "集成工业研究所",
+          "southern_meadows": "南部草甸",
+          "worker_dorms": "工人之家",
+          "mountain_side_trail": "山地侧路",
+          "woodland_fringes": "边缘林地",
+          "mountain_top": "山地顶端",
+          "eastern_passageway": "东部通道",
+          "core_aic_area": "集成核心区域"
+        }
+      }
     }
+  },
+  "WL": {
+    "main": "武陵",
+    "sub": {}
+  },
+  "DJ": {
+    "main": "OMV帝江号",
+    "sub": {}
+  }
 }

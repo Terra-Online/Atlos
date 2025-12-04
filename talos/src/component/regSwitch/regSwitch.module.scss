@@ -5,7 +5,6 @@
 @use 'sass:math';
 
 :root, :root[data-theme='light'] {
-    --regswitch-bg: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
     --regswitch-selected: #{$primary-accent-4};
@@ -13,7 +12,6 @@
     --regswitch-icon-off: #{$white-1};
 }
 :root[data-theme='dark'] {
-    --regswitch-bg: #{rgba($grey-2, 0.3)};
     --regswitch-item: #{$black-1};
     --regswitch-item-hover: #{$grey-1};
     --regswitch-selected: #{$primary-accent-4};
@@ -47,6 +45,36 @@ $indicator-height: 0.75rem;
     .regswitch {
         top: 45%;
     }
+}
+.regLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $item-height;
+    height: $item-height / 2.25;
+    border-radius: 2px;
+    background-color: var(--regswitch-item);
+    filter: drop-shadow(0 0 2px rgba($black-0, 0.6));
+    position: relative;
+    &::before {
+        content: '';
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        border-style: solid;
+        border-width: 10px 10px 0 10px;
+        border-color: var(--regswitch-item) transparent transparent transparent;
+        transform: translateY(8.5px);
+        z-index: -1;
+    }
+    &::after {
+        content: "RGN";
+        font-size: 0.88rem;
+        color: var(--regswitch-selected);
+        z-index: 1;
+        text-shadow: 0 0 2px rgba($black-0, 0.6);
+    }
+    
 }
 .indicator {
     position: absolute;

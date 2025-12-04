@@ -53,7 +53,6 @@
     filter: blur(.25rem);
     transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve;
     will-change: opacity, transform, filter;
-    overflow: hidden;
 
     min-width: 20rem;
     max-width: 92vw; // default size = s
