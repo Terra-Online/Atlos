@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import styles from './regSwitch.module.scss';
 import useRegion from '@/store/region';
-import { REGION_DICT } from '@/data/map';
+import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import classNames from 'classnames';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
@@ -104,7 +104,11 @@ const RegionContainer: React.FC<{
                                             onClick={() => {
                                                 requestSubregionSwitch(subregion);
                                             }}
-                                        ></div>
+                                        >
+                                            <div className={styles.subregName}>
+                                                {SUBREGION_DICT[subregion]?.name}
+                                            </div> 
+                                        </div>
                                     ))}
                                 </div>
                             </div>

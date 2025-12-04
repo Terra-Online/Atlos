@@ -1,0 +1,42 @@
+{
+    "VL": {
+        "main": "Valley 4",
+        "sub": {
+            "PL": {
+                "name": "PL",
+                "site": {
+
+                }
+            },
+            "OL": {
+                "name": "OL",
+                "site": {}
+            },
+            "OP": {
+                "name": "OP",
+                "site": {}
+            },
+            "AQ": {
+                "name": "AQ",
+                "site": {}
+            },
+            "VP": {
+                "name": "VP",
+                "site": {}
+            },
+            "HB": {
+                "name": "HB",
+                "site": {
+                }
+            }
+        }
+    },
+    "WL": {
+        "main": "Wuling",
+        "sub": {}
+    },
+    "DJ": {
+        "main": "OMV Dijiang",
+        "sub": {}
+    }
+}

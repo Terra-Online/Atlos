@@ -17,7 +17,6 @@ export interface IMapRegion {
 export interface IMapSubregionAreaData {
     id: string;
     name: string;
-    color: string;
     bounds: number[][];
     tiles: number;
     tileCoords: number[][];

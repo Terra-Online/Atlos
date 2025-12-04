@@ -1,0 +1,41 @@
+{
+    "VL": {
+        "main": "四号谷地",
+        "sub": {
+            "PL": {
+                "name": "供能高地",
+                "site": {
+                    "united_parking_lot": "联盟停车场"
+                }
+            },
+            "OL": {
+                "name": "OL",
+                "site": {}
+            },
+            "OP": {
+                "name": "OP",
+                "site": {}
+            },
+            "AQ": {
+                "name": "AQ",
+                "site": {}
+            },
+            "VP": {
+                "name": "VP",
+                "site": {}
+            },
+            "HB": {
+                "name": "HB",
+                "site": {}
+            }
+        }
+    },
+    "Jinlong": {
+        "main": "Jinlong",
+        "sub": {}
+    },
+    "Dijiang": {
+        "main": "Dijiang",
+        "sub": {}
+    }
+}
