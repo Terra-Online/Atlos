@@ -118,10 +118,31 @@
   },
   "WL": {
     "main": "武陵",
-    "sub": {}
+    "sub": {
+        "WL": {
+            "name": "武陵",
+            "short": "武",
+            "site": {}
+        },
+        "JV": {
+            "name": "景玉谷",
+            "short": "景",
+            "site": {}
+        }
+    }
   },
   "DJ": {
     "main": "OMV帝江号",
-    "sub": {}
+    "sub": {
+        "name": "OMV帝江号",
+        "site": {
+            "bridge": "舰桥",
+            "reception_room": "接待室",
+            "kernel_sector": "核心区",
+            "central_ring": "中央环",
+            "working_sector": "作业区",
+            "living_sector": "生活区"
+        }
+    }
   }
 }
