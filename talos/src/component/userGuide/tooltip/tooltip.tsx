@@ -2,6 +2,7 @@ import styles from './tooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
 import { MouseEventHandler, useEffect, useState } from 'react';
 import Button from '@/component/button/button';
+import { useTranslateUI } from '@/locale';
 
 const RangeIndicator = ({ value }: { value: number }) => {
     return (
@@ -27,6 +28,7 @@ interface TooltipHeaderInterface {
 }
 
 const TooltipHeader = (prop: TooltipHeaderInterface) => {
+    const t = useTranslateUI();
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
     useEffect(() => {
@@ -62,6 +64,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     onClick={prop.onClickBack}
                     size={'1.5rem'}
                     schema={buttonSchema}
+                    disabled={prop.index === 0}
                 />
                 <Button
                     text=''
@@ -75,7 +78,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     size={'1.5rem'}
                     schema={buttonSchema}
                 />
-                <Button text={'SKIP'} onClick={prop.onClickSkip} schema={buttonSchema} />
+                <Button text={t('common.skip')} onClick={prop.onClickSkip} schema={buttonSchema} />
             </div>
         </div>
     );

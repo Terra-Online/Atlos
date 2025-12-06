@@ -1,16 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Modal from '@/component/modal/modal';
-import Button from '@/component/button/button';
 import ToSIcon from '../../assets/logos/tos.svg?react';
 import styles from './tos.module.scss';
 import { useTranslateUI } from '@/locale';
-import {
-  calculateStorageInfo,
-  clearStorageItem,
-  clearAllStorage,
-  formatBytes,
-  type StorageInfo,
-} from '@/utils/storage';
+import parse from 'html-react-parser';
+import TreeMap from './treeMap/treeMap';
+import Button from '../button/button';
+import { clearAllStorage, clearStorageItem } from '@/utils/storage';
+import { useDevice } from '@/utils/device';
 
 export interface ToSProps {
   open: boolean;
@@ -18,171 +15,127 @@ export interface ToSProps {
   onChange?: (open: boolean) => void;
 }
 
-interface StorageItemConfig {
-  key: keyof Omit<StorageInfo, 'total'>;
-  label: string;
-  description: string;
-  clearable: boolean;
-}
-
 const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
   const t = useTranslateUI();
-  const [storageInfo, setStorageInfo] = useState<StorageInfo>({
-    localStorage: 0,
-    sessionStorage: 0,
-    cookies: 0,
-    indexedDB: 0,
-    cacheStorage: 0,
-    total: 0,
-  });
-  const [loading, setLoading] = useState(false);
-  const [clearingAll, setClearingAll] = useState(false);
-  const [clearingItem, setClearingItem] = useState<string | null>(null);
+  const { type: deviceType } = useDevice();
+  const [selectedPath, setSelectedPath] = useState<string[] | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const calculateStorage = useCallback(async () => {
-    setLoading(true);
-    try {
-      const info = await calculateStorageInfo();
-      setStorageInfo(info);
-    } catch (error) {
-      console.error('Error calculating storage:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Confirmation state
+  const [pendingAction, setPendingAction] = useState<'selected' | 'all' | null>(null);
+  const [isActionReady, setIsActionReady] = useState(false);
+  const actionTimeoutRef = useRef<number | null>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+
+  const handleSelect = useCallback((path: string[], name: string) => {
+    setSelectedPath(path);
+    setSelectedName(name);
+    // Reset pending action on selection change
+    setPendingAction(null);
+    setIsActionReady(false);
   }, []);
 
+  const handleClearAll = useCallback(async () => {
+    await clearAllStorage();
+    setRefreshKey(prev => prev + 1);
+    setSelectedPath(null);
+    setSelectedName(null);
+  }, []);
+
+  const handleClearSelected = useCallback(async () => {
+    if (!selectedPath || !selectedName) return;
+    await clearStorageItem(selectedPath);
+    setRefreshKey(prev => prev + 1);
+    setSelectedPath(null);
+    setSelectedName(null);
+  }, [selectedPath, selectedName]);
+
+  const handleActionClick = (e: React.MouseEvent, action: 'selected' | 'all') => {
+    e.stopPropagation();
+    
+    if (pendingAction === action) {
+      if (isActionReady) {
+        // Execute
+        if (action === 'selected') void handleClearSelected();
+        else void handleClearAll();
+        
+        // Reset
+        setPendingAction(null);
+        setIsActionReady(false);
+      }
+    } else {
+      // Start new action
+      setPendingAction(action);
+      setIsActionReady(false);
+      if (actionTimeoutRef.current) clearTimeout(actionTimeoutRef.current);
+      actionTimeoutRef.current = window.setTimeout(() => {
+        setIsActionReady(true);
+      }, 800);
+    }
+  };
+
+  // Click outside to cancel
   useEffect(() => {
-    if (open) {
-      void calculateStorage();
-    }
-  }, [open, calculateStorage]);
+    if (!pendingAction) return;
 
-  const handleClearItem = async (key: keyof Omit<StorageInfo, 'total'>) => {
-    setClearingItem(key);
-    try {
-      await clearStorageItem(key);
-      await calculateStorage();
-    } catch (error) {
-      console.error(`Error clearing ${key}:`, error);
-    } finally {
-      setClearingItem(null);
-    }
-  };
+    const handleClickOutside = (e: MouseEvent) => {
+      if (controlsRef.current && !controlsRef.current.contains(e.target as Node)) {
+        setPendingAction(null);
+        setIsActionReady(false);
+      }
+    };
 
-  const handleClearAll = async () => {
-    setClearingAll(true);
-    try {
-      await clearAllStorage();
-      setTimeout(() => { window.location.reload(); }, 500);
-    } catch (error) {
-      console.error('Error clearing all storage:', error);
-    } finally {
-      setClearingAll(false);
-    }
-  };
+    window.addEventListener('click', handleClickOutside, { capture: true });
+    return () => window.removeEventListener('click', handleClickOutside, { capture: true });
+  }, [pendingAction]);
 
-  const storageItems: StorageItemConfig[] = [
-    { 
-      key: 'localStorage' as const, 
-      label: t('storage.localStorage'), 
-      description: t('storage.localStorageDesc'),
-      clearable: true,
-    },
-    { 
-      key: 'sessionStorage' as const, 
-      label: t('storage.sessionStorage'), 
-      description: t('storage.sessionStorageDesc'),
-      clearable: true,
-    },
-    { 
-      key: 'cookies' as const, 
-      label: t('storage.cookies'), 
-      description: t('storage.cookiesDesc'),
-      clearable: true,
-    },
-    { 
-      key: 'indexedDB' as const, 
-      label: t('storage.indexedDB'), 
-      description: t('storage.indexedDBDesc'),
-      clearable: true,
-    },
-    { 
-      key: 'cacheStorage' as const, 
-      label: t('storage.cacheStorage'), 
-      description: t('storage.cacheStorageDesc'),
-      clearable: true,
-    },
-  ].filter(item => storageInfo[item.key] > 0); // Only show items with data
+  // Cleanup timeout
+  useEffect(() => {
+    return () => {
+      if (actionTimeoutRef.current) clearTimeout(actionTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <Modal
       open={open}
-      size="l"
+      size="full"
       onClose={onClose}
       onChange={onChange}
-      title={t('storage.title')}
+      title={t('tos.title')}
       icon={<ToSIcon aria-hidden="true" />}
     >
       <div className={styles.storageContainer}>
-        {loading ? (
-          <div className={styles.loading}>{t('storage.calculating')}</div>
-        ) : (
-          <>
-            {storageItems.length === 0 ? (
-              <div className={styles.noData}>{t('storage.noData')}</div>
-            ) : (
-              <>
-                <div className={styles.storageList}>
-                  {storageItems.map(item => (
-                    <div key={item.key} className={styles.storageItem}>
-                      <div className={styles.itemHeader}>
-                        <span className={styles.storageLabel}>{item.label}</span>
-                        <span className={styles.storageSize}>{formatBytes(storageInfo[item.key])}</span>
-                      </div>
-                      <div className={styles.itemDescription}>{item.description}</div>
-                      <div className={styles.itemActions}>
-                        {item.clearable && (
-                          <Button
-                            text={clearingItem === item.key ? t('storage.clearing') : t('storage.clear')}
-                            buttonType="close"
-                            schema='dark'
-
-                            onClick={() => void handleClearItem(item.key)}
-                            disabled={clearingItem === item.key || clearingAll}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  <div className={`${styles.storageItem} ${styles.total}`}>
-                    <div className={styles.itemHeader}>
-                      <span className={styles.storageLabel}>{t('storage.total')}</span>
-                      <span className={styles.storageSize}>{formatBytes(storageInfo.total)}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={styles.actions}>
-                  <Button
-                    text={clearingAll ? t('storage.clearing') : t('storage.clearAll')}
-                    buttonType="confirm"
-                    buttonStyle='normal'
-                    width= '12rem'
-                    height= '2.5rem'
-
-                    onClick={() => void handleClearAll()}
-                    disabled={clearingAll}
-                  />
-                </div>
-                
-                <div className={styles.warning}>
-                  {t('storage.warning')}
-                </div>
-              </>
-            )}
-          </>
-        )}
+          {parse(t('tos.policy') || '')}
       </div>
+      <div className={styles.storageController} data-device={deviceType}>
+        <div className={styles.storageMap}>
+          <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
+        </div>
+        <div className={styles.controls} ref={controlsRef}>
+          <Button 
+            text={`${t('common.clear')} ${selectedName || t('common.selected')}`}
+            onClick={(e) => handleActionClick(e, 'selected')}
+              buttonStyle="square"
+              schema="light"
+              width="100%"
+              disabled={!selectedPath}
+            />
+            <Button 
+              text={t('common.clear') + ' ' + t('common.all')} 
+              onClick={(e) => handleActionClick(e, 'all')} 
+              buttonStyle="square"
+              schema="light"
+              width="100%"
+            />
+            <div className={`${styles.warning} ${pendingAction ? styles.visible : ''}`}>
+              <div className={styles.warningInner}>
+                {parse(t('tos.warning'))}
+              </div>
+            </div>
+          </div>
+        </div>
     </Modal>
   );
 };

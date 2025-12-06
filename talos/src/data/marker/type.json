@@ -4,270 +4,257 @@
         "name": "Triaggelos",
         "category": {
             "main": "enemy",
-            "sub": "Aggeloi"
+            "sub": "boss"
         },
-        "tier": "boss"
+        "faction": "Aggeloi"
     },
     "marble_aggelomoirai": {
         "key": "marble_aggelomoirai",
         "name": "Marble Aggelomoirai",
         "category": {
             "main": "enemy",
-            "sub": "Aggeloi"
+            "sub": "boss"
         },
-        "tier": "boss"
-    },
-    "effigy": {
-        "key": "effigy",
-        "name": "Effigy",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "elite"
-    },
-    "heavy_ram": {
-        "key": "heavy_ram",
-        "name": "Heavy Ram",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "advanced"
-    },
-    "heavy_ram_a": {
-        "key": "heavy_ram_a",
-        "name": "Heavy Ram α",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "advanced"
-    },
-    "heavy_sting": {
-        "key": "heavy_sting",
-        "name": "Heavy Sting",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "advanced"
-    },
-    "heavy_sting_a": {
-        "key": "heavy_sting_a",
-        "name": "Heavy Sting α",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "advanced"
-    },
-    "poison_ivy": {
-        "key": "poison_ivy",
-        "name": "Poison Ivy",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "advanced"
-    },
-    "ram": {
-        "key": "ram",
-        "name": "Ram",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "common"
-    },
-    "ram_a": {
-        "key": "ram_a",
-        "name": "Ram α",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "common"
-    },
-    "sting": {
-        "key": "sting",
-        "name": "Sting",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "common"
-    },
-    "sting_a": {
-        "key": "sting_a",
-        "name": "Sting α",
-        "category": {
-            "main": "enemy",
-            "sub": "Aggeloi"
-        },
-        "tier": "common"
+        "faction": "Aggeloi"
     },
     "rhodagn": {
         "key": "rhodagn",
         "name": "Rhodagn",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "boss"
         },
-        "tier": "boss"
+        "faction": "Landbreakers"
+    },
+    "effigy": {
+        "key": "effigy",
+        "name": "Effigy",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "heavy_ram": {
+        "key": "heavy_ram",
+        "name": "Heavy Ram",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "heavy_ram_a": {
+        "key": "heavy_ram_a",
+        "name": "Heavy Ram α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "heavy_sting": {
+        "key": "heavy_sting",
+        "name": "Heavy Sting",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "heavy_sting_a": {
+        "key": "heavy_sting_a",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "ram": {
+        "key": "ram",
+        "name": "Ram",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "ram_a": {
+        "key": "ram_a",
+        "name": "Ram α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "sting": {
+        "key": "sting",
+        "name": "Sting",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "sting_a": {
+        "key": "sting_a",
+        "name": "Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
     },
     "bonekrusher_ballista": {
         "key": "bonekrusher_ballista",
         "name": "Bonekrusher Ballista",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "elite"
+        "tier": "elite",
+        "faction": "Landbreakers"
     },
     "bonekrusher_executioner": {
         "key": "bonekrusher_executioner",
         "name": "Bonekrusher Executioner",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "elite"
+        "tier": "elite",
+        "faction": "Landbreakers"
     },
     "elite_executioner": {
         "key": "elite_executioner",
         "name": "Elite Executioner",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "elite"
+        "tier": "elite",
+        "faction": "Landbreakers"
     },
     "bonekrusher_pyromancer": {
         "key": "bonekrusher_pyromancer",
         "name": "Bonekrusher Pyromancer",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "advanced"
+        "tier": "advanced",
+        "faction": "Landbreakers"
     },
     "bonekrusher_arsonist": {
         "key": "bonekrusher_arsonist",
         "name": "Bonekrusher Arsonist",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "advanced"
-    },
-    "blighted_tuskbeast": {
-        "key": "blighted_tuskbeast",
-        "name": "Blighted Tuskbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "Landbreakers"
-        },
-        "tier": "common"
+        "tier": "advanced",
+        "faction": "Landbreakers"
     },
     "bonekrusher_ripptusk": {
         "key": "bonekrusher_ripptusk",
         "name": "Bonekrusher Ripptusk",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "elite_ripptusk": {
         "key": "elite_ripptusk",
         "name": "Elite Ripptusk",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
-    },
-    "blighted_klaw": {
-        "key": "blighted_klaw",
-        "name": "Blighted Klaw",
-        "category": {
-            "main": "enemy",
-            "sub": "Landbreakers"
-        },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "bonekrusher_raider": {
         "key": "bonekrusher_raider",
         "name": "Bonekrusher Raider",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "elite_raider": {
         "key": "elite_raider",
         "name": "Elite Raider",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "bonekrusher_ambusher": {
         "key": "bonekrusher_ambusher",
         "name": "Bonekrusher Ambusher",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "elite_ambusher": {
         "key": "elite_ambusher",
         "name": "Elite Ambusher",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
     "bonekrusher_infiltrator": {
         "key": "bonekrusher_infiltrator",
         "name": "Bonekrusher Infiltrator",
         "category": {
             "main": "enemy",
-            "sub": "Landbreakers"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Landbreakers"
     },
-    "hill_smasher": {
-        "key": "hill_smasher",
-        "name": "Hill Smasher",
+    "grove_archer": {
+        "key": "grove_archer",
+        "name": "Grove Archer",
         "category": {
             "main": "enemy",
-            "sub": "Cangzei"
+            "sub": "mob"
         },
-        "tier": "elite"
-    },
-    "cloud_stalker": {
-        "key": "cloud_stalker",
-        "name": "Cloud Stalker",
-        "category": {
-            "main": "enemy",
-            "sub": "Cangzei"
-        },
-        "tier": "advanced"
+        "tier": "elite",
+        "faction": "Cangzei"
     },
     "road_plunderer": {
         "key": "road_plunderer",
         "name": "Road Plunderer",
         "category": {
             "main": "enemy",
-            "sub": "Cangzei"
+            "sub": "mob"
         },
-        "tier": "common"
+        "tier": "common",
+        "faction": "Cangzei"
     },
     "wood": {
         "key": "wood",
@@ -326,42 +313,6 @@
     "ferrium_spot": {
         "key": "ferrium_spot",
         "name": "Ferrium Spot",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "subIcon": "ore_spot"
-    },
-    "cuprium_ore": {
-        "key": "cuprium_ore",
-        "name": "Cuprium Ore",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "tier": "1"
-    },
-    "cuprium_spot": {
-        "key": "cuprium_spot",
-        "name": "Cuprium Spot",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "subIcon": "ore_spot"
-    },
-    "cyanite_ore": {
-        "key": "cyanite_ore",
-        "name": "Cyanite Ore",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "tier": "1"
-    },
-    "cyanite_spot": {
-        "key": "cyanite_spot",
-        "name": "Cyanite Spot",
         "category": {
             "main": "resource",
             "sub": "natural"
@@ -503,6 +454,24 @@
         },
         "tier": "2"
     },
+    "glowbug": {
+        "key": "glowbug",
+        "name": "Glowbug",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "2"
+    },
+    "scorchbug": {
+        "key": "scorchbug",
+        "name": "Scorchbug",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "3"
+    },
     "pink_bolete_spot": {
         "key": "pink_bolete_spot",
         "name": "Pink Bolete Spot",
@@ -623,220 +592,303 @@
         "subIcon": "mine_spot",
         "tier": "5"
     },
-    "glowbug": {
-        "key": "glowbug",
-        "name": "Glowbug",
-        "category": {
-            "main": "resource",
-            "sub": "gatherable"
-        },
-        "tier": "2"
-    },
-    "scorchbug": {
-        "key": "scorchbug",
-        "name": "Scorchbug",
-        "category": {
-            "main": "resource",
-            "sub": "gatherable"
-        },
-        "tier": "3"
-    },
-    "aetherium": {
-        "key": "aetherium",
-        "name": "aetherium",
+    "aurylene": {
+        "key": "aurylene",
+        "name": "Aurylene",
         "category": {
             "main": "poi",
-            "sub": "collect"
+            "sub": "collection"
         }
-    },
-    "vr_simulator": {
-        "key": "vr_simulator",
-        "name": "VR Simulator",
-        "category": {
-            "main": "poi",
-            "sub": "collect"
-        }
-    },
-    "fixable_robot": {
-        "key": "fixable_robot",
-        "name": "Fixable Robot",
-        "category": {
-            "main": "poi",
-            "sub": "collect"
-        }
-    },
-    "treasure_chest": {
-        "key": "treasure_chest",
-        "name": "Treasure Chest",
-        "category": {
-            "main": "poi",
-            "sub": "collect"
-        },
-        "noFrame": true
-    },
-    "blackbox": {
-        "key": "blackbox",
-        "name": "blackbox",
-        "category": {
-            "main": "poi",
-            "sub": "collect"
-        },
-        "noFrame": true
     },
     "crate": {
         "key": "crate",
-        "name": "crate",
+        "name": "Crate",
         "category": {
             "main": "poi",
-            "sub": "collect"
+            "sub": "collection"
         }
     },
-    "longear": {
-        "key": "longear",
-        "name": "longear",
+    "delta_bot": {
+        "key": "delta_bot",
+        "name": "Delta Bot",
         "category": {
             "main": "poi",
-            "sub": "collect"
+            "sub": "collection"
         }
     },
-    "slug": {
-        "key": "slug",
-        "name": "slug",
+    "protocol_dl": {
+        "key": "protocol_dl",
+        "name": "Protocol DL",
         "category": {
             "main": "poi",
-            "sub": "collect"
+            "sub": "collection"
         }
     },
-    "alluvium": {
-        "key": "alluvium",
-        "name": "alluvium",
+    "gear_template": {
+        "key": "gear_template",
+        "name": "Gear Template",
         "category": {
             "main": "poi",
-            "sub": "trial"
+            "sub": "collection"
         }
     },
-    "mission_npc": {
-        "key": "mission_npc",
-        "name": "mission_npc",
+    "repair_logic": {
+        "key": "repair_logic",
+        "name": "Repair Logic",
         "category": {
             "main": "poi",
-            "sub": "trial"
-        },
-        "noFrame": true
+            "sub": "collection"
+        }
+    },
+    "athletic_race": {
+        "key": "athletic_race",
+        "name": "Athletic Race",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "gather": {
+        "key": "gather",
+        "name": "Gather",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "mission": {
+        "key": "mission",
+        "name": "Mission",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "protocol_space": {
+        "key": "protocol_space",
+        "name": "Protocol Space",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        }
+    },
+    "energy_alluvium": {
+        "key": "energy_alluvium",
+        "name": "Energy Alluvium",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        }
     },
     "re_crisis": {
         "key": "re_crisis",
-        "name": "re-crisis",
+        "name": "RE-Crisis",
         "category": {
             "main": "poi",
-            "sub": "trial"
+            "sub": "combat"
         },
         "noFrame": true
     },
-    "spawner": {
-        "key": "spawner",
-        "name": "spawner",
+    "temporary_energy_alluvium": {
+        "key": "temporary_energy_alluvium",
+        "name": "Temporary Energy Alluvium",
         "category": {
             "main": "poi",
-            "sub": "trial"
-        },
-        "noFrame": true
-    },
-    "tp": {
-        "key": "tp",
-        "name": "tp",
-        "category": {
-            "main": "facility",
-            "sub": "basic"
-        },
-        "collectable": false,
-        "noFrame": true
-    },
-    "recycler": {
-        "key": "recycler",
-        "name": "recycler",
-        "category": {
-            "main": "facility",
-            "sub": "basic"
-        },
-        "noFrame": true
-    },
-    "base": {
-        "key": "base",
-        "name": "base",
-        "category": {
-            "main": "facility",
-            "sub": "basic"
+            "sub": "combat"
         }
     },
-    "hub": {
-        "key": "hub",
-        "name": "hub",
+    "ew_terminal": {
+        "key": "ew_terminal",
+        "name": "EW Terminal",
         "category": {
-            "main": "facility",
-            "sub": "basic"
+            "main": "poi",
+            "sub": "combat"
         }
     },
-    "training_room": {
-        "key": "training_room",
-        "name": "Training Room",
+    "dorm_trade": {
+        "key": "dorm_trade",
+        "name": "dorm_trade",
         "category": {
-            "main": "facility",
-            "sub": "regional"
-        },
-        "noFrame": true
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "seed_trade": {
+        "key": "seed_trade",
+        "name": "seed_trade",
+        "category": {
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "clinic_trade": {
+        "key": "clinic_trade",
+        "name": "clinic_trade",
+        "category": {
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "lounge_trade": {
+        "key": "lounge_trade",
+        "name": "lounge_trade",
+        "category": {
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "taikoo_trade": {
+        "key": "taikoo_trade",
+        "name": "taikoo_trade",
+        "category": {
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "bubbletea_trade": {
+        "key": "bubbletea_trade",
+        "name": "bubbletea_trade",
+        "category": {
+            "main": "poi",
+            "sub": "npc"
+        }
+    },
+    "tp_point": {
+        "key": "tp_point",
+        "name": "TP Point",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "stock_redistrib": {
+        "key": "stock_redistrib",
+        "name": "Stock Redistrib.",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "depot_node": {
+        "key": "depot_node",
+        "name": "Depot Node",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "env_monitoring": {
+        "key": "env_monitoring",
+        "name": "ENV Monitoring",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "recycling_stn": {
+        "key": "recycling_stn",
+        "name": "Recycling STN",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "pac": {
+        "key": "pac",
+        "name": "PAC",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "sub_pac": {
+        "key": "sub_pac",
+        "name": "Sub-PAC",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
     },
     "control_nexus": {
         "key": "control_nexus",
         "name": "Control Nexus",
         "category": {
-            "main": "facility",
-            "sub": "regional"
+            "main": "general",
+            "sub": "facility"
         },
         "noFrame": true
     },
-    "growth_cabin": {
-        "key": "growth_cabin",
-        "name": "Growth Cabin",
+    "growth_chamber": {
+        "key": "growth_chamber",
+        "name": "Growth Chamber",
         "category": {
-            "main": "facility",
-            "sub": "regional"
-        },
-        "noFrame": true
+            "main": "general",
+            "sub": "facility"
+        }
     },
     "manufacturing_cabin": {
         "key": "manufacturing_cabin",
         "name": "Manufacturing Cabin",
         "category": {
-            "main": "facility",
-            "sub": "regional"
+            "main": "general",
+            "sub": "facility"
         },
         "noFrame": true
     },
-    "exchange": {
-        "key": "exchange",
-        "name": "Exchange",
+    "tactical_training_cabin": {
+        "key": "tactical_training_cabin",
+        "name": "Tactical Training Cabin",
         "category": {
-            "main": "facility",
-            "sub": "regional"
-        },
-        "noFrame": true
+            "main": "general",
+            "sub": "facility"
+        }
     },
-    "collect": {
-        "key": "collect",
-        "name": "Collect",
+    "etchspace_salvage": {
+        "key": "etchspace_salvage",
+        "name": "Etchspace Salvage",
         "category": {
-            "main": "facility",
-            "sub": "regional"
-        },
-        "noFrame": true
+            "main": "general",
+            "sub": "facility"
+        }
     },
-    "barrel": {
-        "key": "barrel",
-        "name": "barrel",
+    "guest_terminal": {
+        "key": "guest_terminal",
+        "name": "Guest Terminal",
         "category": {
-            "main": "facility",
-            "sub": "others"
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "stock_redistribution_terminal": {
+        "key": "stock_redistribution_terminal",
+        "name": "Stock Redistribution Terminal",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "protocol_singularity": {
+        "key": "protocol_singularity",
+        "name": "Protocol Singularity",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "tower_of_trails": {
+        "key": "tower_of_trails",
+        "name": "Tower of Trails",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "operator_contact_panel": {
+        "key": "operator_contact_panel",
+        "name": "Operator Contact Panel",
+        "category": {
+            "main": "general",
+            "sub": "facility"
         }
     }
 }

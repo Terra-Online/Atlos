@@ -42,12 +42,11 @@ export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce(
 
 export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
 
-export const MARKER_TYPE_TREE = Object.values(MARKER_TYPE_DICT).reduce(
-    (acc:Record<string, Record<string, IMarkerType[]>> , type) => {
-        acc[type.category.main] = acc[type.category.main] || {};
-        acc[type.category.main][type.category.sub] =
-            acc[type.category.main][type.category.sub] || [];
-        acc[type.category.main][type.category.sub].push(type);
+export const MARKER_TYPE_TREE: Record<string, IMarkerType[]> = Object.values(MARKER_TYPE_DICT).reduce(
+    (acc: Record<string, IMarkerType[]>, type) => {
+        const subCategory = type.category.sub;
+        acc[subCategory] = acc[subCategory] || [];
+        acc[subCategory].push(type);
         return acc;
     },
     {},

@@ -27,6 +27,8 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'pt-BR': 'Português',
   'id-ID': 'Bahasa Indonesia',
   'ar-AE': 'العربية',
+  'th-TH': 'ไทย',
+  'vi-VN': 'Tiếng Việt',
 };
 
 // Convert possible locale like "en-us" to canonical BCP-47 casing: "en-US"

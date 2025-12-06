@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import styles from './regSwitch.module.scss';
 import useRegion from '@/store/region';
-import { REGION_DICT } from '@/data/map';
+import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import classNames from 'classnames';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
@@ -17,13 +17,14 @@ const REGION_ICON_DICT: Record<string, React.FC> = {
     Æther: Æther,
 };
 
-const getContainerStyle = (selectedIndex: number) => {
+const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
     if (selectedIndex < 0) return {};
 
     const itemHeight = 2.5; // rem
     const itemGap = 0.6; // rem
+    const labelHeight = itemHeight / 2.25; // rem
 
-    const top = selectedIndex * (itemHeight + itemGap) + itemHeight / 2;
+    const top = selectedIndex * (itemHeight + itemGap) + (hasLabel ? itemHeight / 2 + labelHeight + itemGap : itemHeight / 2);
     return {
         transform: `translateY(calc(${top}rem - 50%))`,
     };
@@ -50,9 +51,12 @@ const RegionContainer: React.FC<{
                 isSidebarOpen && styles.sidebarOpen,
             )}
         >
+             <div
+                className={styles.regLabel}
+            ></div>
             <div
                 className={styles.indicator}
-                style={getContainerStyle(regionIndex)}
+                style={getContainerStyle(regionIndex, true)}
             ></div>
             {Object.entries(REGION_DICT).map(([key, region]) => {
                 const Icon: React.FC = REGION_ICON_DICT[key];
@@ -89,7 +93,7 @@ const RegionContainer: React.FC<{
                                             subRegionIndex < 0 && styles.hidden,
                                         )}
                                         style={getContainerStyle(
-                                            subRegionIndex,
+                                            subRegionIndex, false
                                         )}
                                     ></div>
                                     {region.subregions.map((subregion) => (
@@ -104,7 +108,11 @@ const RegionContainer: React.FC<{
                                             onClick={() => {
                                                 requestSubregionSwitch(subregion);
                                             }}
-                                        ></div>
+                                        >
+                                            <div className={styles.subregName}>
+                                                {SUBREGION_DICT[subregion]?.name}
+                                            </div> 
+                                        </div>
                                     ))}
                                 </div>
                             </div>

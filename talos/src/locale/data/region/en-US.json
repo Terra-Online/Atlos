@@ -1,0 +1,127 @@
+{
+  "VL": {
+    "main": "Valley 4",
+    "sub": {
+      "PL": {
+        "name": "Power Plateau",
+        "short": "PL",
+        "site": {
+          "old_dorms": "Old Dorms",
+          "originium_power_plant": "Originium Power Plant",
+          "power_plant_comm_station": "Power Plant Comm Station",
+          "bridge_approach_camp": "Bridge Approach Camp",
+          "united_parking_lot": "United Parking Lot",
+          "planned_construction_area": "Planned Construction Area",
+          "plateau_trunkway": "Plateau Trunkway",
+          "bonekrusher_warcamp": "Bonekrusher Warcamp",
+          "evacuation_zone": "Evacuation Zone",
+          "shattered_fringe": "Shattered Fringe",
+          "Æther_test_site": "Æther Test Site"
+        }
+      },
+
+      "OL": {
+        "name": "Origin Lodespring",
+        "short": "OL",
+        "site": {
+          "originium_passage": "Originium Passage",
+          "cradle_of_the_ages": "Cradle of the Ages",
+          "mines_cable_car_station": "Mines Cable Car Station",
+          "logistices_area": "Logistics Area",
+          "containment_zone_intersection": "Containment Zone Intersection",
+          "old_mines": "Old Mines",
+          "meteorological_station": "Meteorological Station",
+          "cliffside_mining_area": "Cliffside Mining Area",
+          "temporary_stockpile": "Temporary Stockpile",
+          "blightcliff_ovservation_post": "Blightcliff Observation Post",
+          "mining_area_clinic": "Mining Area Clinic",
+          "mining_camp": "Mining Camp",
+          "mountain_passage": "Mountain Passage",
+          "landbreaker_camp": "Landbreaker Camp"
+        }
+      },
+
+      "OP": {
+        "name": "Originium Science Park",
+        "short": "OP",
+        "site": {
+          "control_center": "Control Center",
+          "route_5": "Route 5",
+          "Transport_nexus": "Transport Nexus",
+          "the_depression": "The Depression",
+          "originium_science_park": "Originium Science Park",
+          "research_center": "Research Center",
+          "cliffside_trail": "Cliffside Trail",
+          "mountain_path_slope": "Mountain Path Slope",
+          "kohl_plant": "Kohl Plant",
+          "eco_farm": "Eco Farm",
+          "infra_station": "Infra Station"
+        }
+      },
+
+      "AQ": {
+        "name": "Aburrey Quarry",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "Quarry Entrance",
+          "refuse_stockpile": "Refuse Stockpile",
+          "loading_area": "Loading Area",
+          "stockpile_area": "Stockpile Area",
+          "deep_management_post": "Deep Management Post",
+          "lifter_central": "Lifter Central",
+          "listening_post": "Listening Post",
+          "transfer_area": "Transfer Area",
+          "quarry_site": "Quarry Site",
+          "staff_lounge": "Staff Lounge"
+        }
+      },
+
+      "VP": {
+        "name": "Valley Pass",
+        "short": "VP",
+        "site": {
+          "valley_fort": "Valley Fort",
+          "arsenal": "Arsenal",
+          "valley_transfer": "Valley Transfer",
+          "temporary_shelter": "Temporary Shelter",
+          "abandoned_trail": "Abandoned Trail",
+          "passage_entrance": "Passage Entrance"
+        }
+      },
+
+      "HB": {
+        "name": "The Hub",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "Logistics Platform",
+          "rockhill_passage": "Rockhill Passage",
+          "bridge_approach": "Bridge Approach",
+          "shorecove_camp": "Shorecove Camp",
+          "old_water_plant": "Old Water Plant",
+          "hub_base_power_plant": "Hub Base Power Plant",
+          "hub_west": "Hub West",
+          "originium_byproduct_precessing_center": "Originium Byproduct Processing Center",
+          "construction_site": "Construction Site",
+          "hub_base": "Hub Base",
+          "old_factory": "Old Factory",
+          "aic_research_center": "AIC Research Center",
+          "southern_meadows": "Southern Meadows",
+          "worker_dorms": "Worker Dorms",
+          "mountain_side_trail": "Mountain Side Trail",
+          "woodland_fringes": "Woodland Fringes",
+          "mountain_top": "Mountain Top",
+          "eastern_passageway": "Eastern Passageway",
+          "core_aic_area": "Core AIC Area"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {}
+  },
+  "DJ": {
+    "main": "OMV Dijiang",
+    "sub": {}
+  }
+}

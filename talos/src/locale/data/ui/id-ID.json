@@ -58,36 +58,23 @@
       "ru-RU": "Rusia",
       "pt-BR": "Portugis",
       "id-ID": "Indonesia",
-      "ar-AE": "Arab"
+      "ar-AE": "Arab",
+      "th-TH": "Thailand",
+      "vi-VN": "Vietnam"
     }
   },
   "group": {
     "title": "Komunitas & Media",
     "visit": "Kunjungi"
   },
-  "storage": {
-    "title": "Protokol & Penyimpanan",
-    "localStorage": "Penyimpanan Lokal",
-    "localStorageDesc": "Menyimpan tata letak UI, status peta, pengaturan, preferensi, dan data penanda Anda.",
-    "cookies": "Cookie",
-    "cookiesDesc": "Menyimpan status login dan preferensi persetujuan Anda.",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Menyimpan data tile peta saat ini untuk penelusuran offline.",
-    "cacheStorage": "Cache",
-    "cacheStorageDesc": "Menyimpan sumber daya font yang diperlukan untuk tampilan situs.",
-    "total": "Total Penyimpanan",
-    "calculating": "Menghitung penggunaan penyimpanan…",
-    "clear": "Hapus",
-    "disable": "Nonaktifkan",
-    "clearAll": "Hapus semua data tersimpan",
-    "clearing": "Menghapus…",
-    "noData": "Tidak ditemukan data tersimpan.",
-    "warning": "Ini akan menghapus semua data yang disimpan saat menggunakan situs, termasuk preferensi dan progres Anda, dan dapat memperlambat kunjungan berikutnya. Tindakan tidak dapat dibatalkan; halaman akan dimuat ulang setelah selesai."
-  },
-  "common": {
-    "close": "Tutup"
+  "tos": {
+    "title": "Ketentuan & Penyimpanan",
+    "calculating": "Menghitung penggunaan penyimpanan...",
+    "policy": "<p>Kami menggunakan Cookie untuk menyimpan kredensial login otomatis Anda; LocalStorage untuk menyimpan preferensi UI dan progres penanda; serta CacheStorage untuk menyimpan data font dan sumber daya gambar untuk bahasa Anda. File-file ini memungkinkan Anda mengakses situs web lebih cepat di masa mendatang dan memastikan ketersediaan dalam mode offline.</p><p>Menghapus penyimpanan lokal situs web dapat menghemat ruang di perangkat Anda. Namun, <span class=\"keyword\">memuat file-file ini mungkin akan membutuhkan waktu lebih lama</span> saat Anda mengunjungi kembali situs web; jika Anda menonaktifkan penyimpanan situs web, maka situs <span class=\"keyword\">tidak dapat merekam data Anda secara otomatis untuk penggunaan berikutnya</span>.</p><p>Kami tidak mengirimkan data Anda ke server, sehingga Anda tidak perlu khawatir tentang masalah privasi.</p><p>Anda dapat memutuskan sendiri apakah ingin mengaktifkan penyimpanan lokal.</p>",
+    "warning": "<p><strong>Peringatan:</strong> Jika Anda menghapus data yang tersimpan, kredensial login otomatis, preferensi UI, dan progres penanda Anda akan hilang; dan pemuatan situs web berikutnya mungkin memakan waktu lebih lama dari biasanya.</p><p>Jika sudah yakin, silakan klik tombol Hapus sekali lagi.</p>"
   },
   "guide": {
+    "welcome": "Selamat datang di <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Kami akan memberikan tur panduan singkat untuk membantu Anda memahami berbagai fitur peta dengan cepat.</p><p>Anda dapat mengklik tombol '<span class=\"keyword\">Lewati</span>' kapan saja untuk mengakhiri panduan, atau memulai ulang dari tombol bantuan di bilah atas.",
     "sidebarToggle": "Klik untuk memperluas <span class=\"keyword\">bilah sisi</span>.<br>Bilah sisi mencakup filter penanda yang paling sering Anda gunakan, serta sakelar yang terkait erat dengan tampilan penanda.",
     "search": "Anda dapat mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang didukung oleh game</span> dan memilihnya di hasil pencarian.",
     "filterContainer": "Penanda dengan jenis yang sama dikelompokkan dalam <span class=\"keyword\">filter</span>.<br>Klik untuk memperluas daftar penanda jenis itu.",
@@ -111,5 +98,15 @@
     "pointMark": "Klik penanda lagi untuk menandainya sebagai selesai.",
     "detail": "Anda dapat melihat informasi spesifik tentang penanda yang dipilih, termasuk jumlah penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> saat ini, dan <span class=\"keyword\">sub-wilayah</span> saat ini.",
     "pointIcon": "Mengklik ikon penanda juga dapat menandainya sebagai selesai."
+  },
+  "common": {
+    "close": "Tutup",
+    "skip": "Lewati",
+    "clear": "Hapus",
+    "all": "Semua",
+    "selected": "Terpilih",
+    "confirm": "Konfirmasi",
+    "enable": "Aktifkan",
+    "disable": "Nonaktifkan"
   }
 }

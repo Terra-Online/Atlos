@@ -9,12 +9,23 @@ span.keyword {
     color: var(--embed-keyword-color);
     font-size: inherit;
     font-weight: 700;
-    font-family: 'Novecento Bold', 'Novecento Cyrillic', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
     text-transform: uppercase;
     letter-spacing: 0;
     line-height: inherit;
     &::before, &::after {
         content: '\2008'; /* PUNCTUATION SPACE */
+    }
+}
+
+a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    &:hover {
+        opacity: 0.6;
     }
 }
 

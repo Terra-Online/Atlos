@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "筛选项",
     "emptyTitle": "无满足条件的筛选项。",
-    "emptyDesc": "请联系管理员。"
+    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"报告点位错误\">Issue</a>。"
   },
   "detail": {
     "stat": {
@@ -33,7 +33,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "由 observator 6 提供支持"
+      "supportedBy": "由 Observator 6 提供支持"
     }
   },
   "language": {
@@ -58,33 +58,23 @@
       "ru-RU": "俄语",
       "pt-BR": "葡萄牙语",
       "id-ID": "印度尼西亚语",
-      "ar-AE": "阿拉伯语"
+      "ar-AE": "阿拉伯语",
+      "th-TH": "泰语",
+      "vi-VN": "越南语"
     }
   },
   "group": {
     "title": "社区与媒体",
     "visit": "访问"
   },
-  "storage": {
+  "tos": {
     "title": "协议与存储",
-    "localStorage": "本地存储",
-    "localStorageDesc": "储存您的UI布局、地图状态，设置与偏好以及点位信息。",
-    "cookies": "Cookies",
-    "cookiesDesc": "储存您的登录状态与许可偏好的信息。",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "储存当前地图的瓦片信息以供离线浏览。",
-    "cacheStorage": "缓存",
-    "cacheStorageDesc": "储存网站显示需要的字体资源。",
-    "total": "总存储量",
     "calculating": "计算存储占用中…",
-    "clear": "清除",
-    "disable": "禁用",
-    "clearAll": "清除所有已储存的数据",
-    "clearing": "清除中…",
-    "noData": "未找到储存数据。",
-    "warning": "此操作将清除所有您此前使用网站时储存的数据，包括您的偏好设置和进度，亦可能导致您下次访问网站的速度下降。此操作无法撤销，执行后将重新加载页面。"
+    "policy": "<p>我们使用 Cookies 储存您的自动登录信息；使用 LocalStorage 储存您的UI偏好设置与点位进度；使用 CacheStorage 储存您的语言使用的字体数据以及图片资源。这些文件允许您更以后快捷地访问网站，并保障网站在离线时的可用性；删除网站的本地存储可以节省您的设备空间。但是您再次访问时<span class=\"keyword\">可能需要更长的时间加载</span>这些文件；如果您禁用网站存储，那么网站<span class=\"keyword\">将无法自动记录您的数据</span>并供您下次取用。</p><p>我们不会向服务器上报您的数据，您不需要担心隐私问题。</p><p>您可以自行决定是否启用本地储存。</p>",
+    "warning": "<p><strong>注意：</strong>如果您清除储存数据，对应的自动登录信息、UI偏好设置、点位进度将会丢失；并且下次加载网站可能要花费比平常更多的时间。</p><p>如果确认，请再次点击删除按钮。</p>"
   },
   "guide": {
+    "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
     "filterContainer": "同类型的点位可用一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
@@ -110,6 +100,13 @@
     "pointIcon": "单击点位图标也可以将其标记为完成状态。"
   },
   "common": {
-    "close": "关闭"
+    "close": "关闭",
+    "skip": "跳过",
+    "clear": "清除",
+    "all": "全部",
+    "selected": "选中项",
+    "confirm": "确认",
+    "enable": "启用",
+    "disable": "禁用"
   }
 }

@@ -1,99 +1,124 @@
 {
     "enemy": {
-        "Aggeloi": {
+        "boss" : {
             "Triaggelos": {
-                "tier": "boss"
+                "faction": "Aggeloi"
             },
             "Marble Aggelomoirai": {
-                "tier": "boss"
+                "faction": "Aggeloi"
             },
+            "Rhodagn": {
+                "faction": "Landbreakers"
+            }
+        },
+        "mob": {
             "Effigy": {
-                "tier": "elite"
+                "tier": "elite",
+                "faction": "Aggeloi"
             },
             "Heavy Ram": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Aggeloi"
             },
             "Heavy Ram α": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Aggeloi"
             },
             "Heavy Sting": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Aggeloi"
             },
             "Heavy Sting α": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Aggeloi"
             },
             "Poison Ivy": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Aggeloi"
             },
             "Ram": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Aggeloi"
             },
             "Ram α": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Aggeloi"
             },
             "Sting": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Aggeloi"
             },
             "Sting α": {
-                "tier": "common"
-            }
-        },
-        "Landbreakers": {
-            "Rhodagn": {
-                "tier": "boss"
+                "tier": "common",
+                "faction": "Aggeloi"
             },
             "Bonekrusher Ballista": {
-                "tier": "elite"
+                "tier": "elite",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Executioner": {
-                "tier": "elite"
+                "tier": "elite",
+                "faction": "Landbreakers"
             },
             "Elite Executioner": {
-                "tier": "elite"
+                "tier": "elite",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Pyromancer": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Arsonist": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Landbreakers"
             },
             "Blighted Tuskbeast": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Ripptusk": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Elite Ripptusk": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Blighted Klaw": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Raider": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Elite Raider": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Ambusher": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Elite Ambusher": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Landbreakers"
             },
             "Bonekrusher Infiltrator": {
-                "tier": "common"
-            }
-        },
-        "Cangzei": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
             "Hill Smasher": {
-                "tier": "elite"
+                "tier": "elite",
+                "faction": "Cangzei"
             },
             "Cloud Stalker": {
-                "tier": "advanced"
+                "tier": "advanced",
+                "faction": "Cangzei"
             },
             "Road Plunderer": {
-                "tier": "common"
+                "tier": "common",
+                "faction": "Cangzei"
             }
         }
     },
@@ -176,6 +201,12 @@
             },
             "Amber Rice": {
                 "tier": "2"
+            },
+            "Glowbug": {
+                "tier": "2"
+            },
+            "Scorchbug": {
+                "tier": "3"
             }
         },
         "valuable": {
@@ -227,55 +258,60 @@
                 "subIcon": "mine_spot",
                 "tier": "5"
             }
-        },
-        "gatherable": {
-            "Glowbug": {
-                "tier": "2"
-            },
-            "Scorchbug": {
-                "tier": "3"
-            }
         }
     },
     "poi": {
-        "collect": {
+        "collection": {
             "aetherium": {},
-            "VR Simulator": {},
-            "Fixable Robot": {},
             "Treasure Chest": {},
-            "blackbox": {},
 
-            "crate": {},
-            "longear": {},
-            "slug": {}
+            "Fixable Robot": {},
+            "blackbox": {},
+            "Gear Template": {},
+            "Repair Logic": {},
+
+            "race": {},
+            "gather": {},
+
+            "mission": {}
         },
-        "trial": {
+        "combat": {
+            "Protocol Space": {},
             "alluvium": {},
-            "mission_npc": {},
             "re-crisis": {},
-            "spawner": {}
+            "spawner": {},
+            "EW Terminal": {}
         },
-        "npc": {}
+        "npc": { 
+            "dorm_trade": {},
+            "seed_trade": {},
+            "clinic_trade": {},
+            "lounge_trade": {},
+            "taikoo_trade": {},
+            "bubbletea_trade": {}
+        }
     },
-    "facility": {
-        "basic": {
-            "tp": {
-                "collectable": false
-            },
+    "general": {
+        "facility": {
+            "tp": {},
+            "stock": {},
+            "depot": {},
+            "ENV": {},
             "recycler": {},
             "base": {},
-            "hub": {}
-        },
-        "regional": {
+            "hub": {},
+
             "Training Room": {},
             "Control Nexus": {},
             "Growth Cabin": {},
             "Manufacturing Cabin": {},
-            "Exchange": {},
-            "Collect": {}
-        },
-        "others": {
-            "barrel": {}
+
+            "Etchspace salvage": {},
+            "Guest Terminal": {},
+            "Stock Terminal": {},
+            "Singularity": {},
+            "Trail Tower": {},
+            "Contact Panel": {}
         }
     }
 }

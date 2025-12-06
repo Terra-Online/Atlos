@@ -2,16 +2,19 @@ import { GuideTooltip } from '@/component/userGuide/tooltip/tooltip';
 import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
+import { i18nInitPromise } from '@/locale';
 import {
     useIsUserGuideOpen,
     useSetIsUserGuideOpen,
     useSetForceDetailOpen,
     useSetForceSubregionOpen,
     useSetDrawerSnapIndex,
+} from '@/store/uiPrefs';
+import {
     useUserGuideVersion,
     useSetUserGuideVersion,
     useSetUserGuideStepCompleted,
-} from '@/store/uiPrefs';
+} from '@/store/userGuide';
 import { GuideSpotlight } from './spotlight/spotlight';
 import { useGuideSteps, type GuideStep } from './procedure/steps';
 
@@ -34,9 +37,22 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const steps: GuideStep[] = useGuideSteps(map);
     const helpersRef = useRef<StoreHelpers | null>(null);
 
+    // Track i18n loading status
+    const [i18nReady, setI18nReady] = useState(false);
+
+    // Wait for i18n to be ready before starting guide
+    useEffect(() => {
+        i18nInitPromise.then(() => {
+            setI18nReady(true);
+        }).catch((err) => {
+            console.error('Failed to load i18n:', err);
+            setI18nReady(true); // Still allow guide to proceed
+        });
+    }, []);
+
     // Initialize all steps as incomplete on first load
     useEffect(() => {
-        if (userGuideVersion !== CURRENT_GUIDE_VERSION) {
+        if (i18nReady && userGuideVersion !== CURRENT_GUIDE_VERSION) {
             // Initialize all steps as incomplete
             steps.forEach((step: GuideStep) => {
                 setUserGuideStepCompleted(step.id, false);
@@ -44,7 +60,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
             setIsUserGuideOpen(true);
             setUserGuideVersion(CURRENT_GUIDE_VERSION);
         }
-    }, [userGuideVersion, setIsUserGuideOpen, setUserGuideVersion, steps, setUserGuideStepCompleted]);
+    }, [i18nReady, userGuideVersion, setIsUserGuideOpen, setUserGuideVersion, steps, setUserGuideStepCompleted]);
 
     // Controlled step index
     const [stepIndex, setStepIndex] = useState(0);
@@ -151,7 +167,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
             />
             <Joyride
                 steps={steps}
-                run={isUserGuideOpen}
+                run={isUserGuideOpen && i18nReady}
                 stepIndex={stepIndex}
                 continuous={true}
                 debug={true}

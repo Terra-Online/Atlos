@@ -7,10 +7,37 @@
     font-display: swap;
 }
 @font-face {
-    font-family: 'Novecento Cyrillic';
+    font-family: 'Novecento Cyrillic DemiBold';
+    src:
+        url('../assets/fonts/Novecento/NWDemiBold+Grek+Cyrl.woff2') format('woff2'),
+        url('../assets/fonts/Novecento/NWDemiBold+Grek+Cyrl.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWDemiBold+Grek+Cyrl.otf') format('opentype');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Novecento Cyrillic Medium';
     src: url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.woff2') format('woff2'),
         url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.woff') format('woff'),
         url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.otf') format('opentype');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Novecento Vietnamese DemiBold';
+    src:
+        url('../assets/fonts/Novecento/NWBold+Viet.woff2')
+            format('woff2'),
+        url('../assets/fonts/Novecento/NWBold+Viet.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWBold+Viet.otf')
+            format('opentype');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Novecento Vietnamese Medium';
+    src: 
+        url('../assets/fonts/Novecento/NWMed+Viet.woff2') format('woff2'),
+        url('../assets/fonts/Novecento/NWMed+Viet.woff') format('woff'),
+        url('../assets/fonts/Novecento/NWMed+Viet.otf') format('opentype');
     font-display: swap;
 }
 @font-face {

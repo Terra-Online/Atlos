@@ -33,11 +33,14 @@ talos/src/assets/fonts/Harmony
 talos/src/assets/images/item
 talos/src/assets/images/shared
 talos/src/assets/images/marker
+talos/src/locale/data/ui/*.fixed.json
+talos/src/locale/data/ui/reports
 
 /output
-talos/src/data/process/output/log
 .history
 .vscode
 talos/.stylelintcache
 /talos/.vite
 /talos/src/asset
+
+*.glyphs

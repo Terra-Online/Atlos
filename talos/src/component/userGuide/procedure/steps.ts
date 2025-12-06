@@ -13,7 +13,7 @@ import {
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { useAddPoint, useDeletePoint } from '@/store/userRecord';
-import { MARKER_TYPE_TREE, WORLD_MARKS } from '@/data/marker';
+import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
     id: string;
@@ -33,14 +33,21 @@ export const useGuideSteps = (map?: L.Map) => {
     const setForceSubregionOpen = useSetForceSubregionOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
 
-    const firstKey = Object.keys(MARKER_TYPE_TREE)[0];
-    const firstType = Object.values(MARKER_TYPE_TREE[firstKey])[0][1].key;
+    const firstSubCategory = Object.keys(MARKER_TYPE_TREE)[0];
+    const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
 
     const targetPoint = useMemo(() => {
         return WORLD_MARKS.find((m) => m.type === firstType);
     }, [firstType]);
 
     const steps: GuideStep[] = useMemo(() => [
+        {
+            id: 'STEP-0_welcome',
+            target: 'body',
+            content: parse(t('guide.welcome') || ''),
+            placement: 'center',
+            disableBeacon: true,
+        },
         {
             id: 'STEP-1_sidebar-toggle',
             target: '[class*="sidebarToggle"]',
@@ -64,11 +71,11 @@ export const useGuideSteps = (map?: L.Map) => {
             placement: 'right',
             disableBeacon: true,
             onNext: () => {
-                const firstKey = Object.keys(MARKER_TYPE_TREE)[0];
+                const firstSubCategory = Object.keys(MARKER_TYPE_TREE)[0];
                 const isExpanded =
-                    useUiPrefsStore.getState().markFilterExpanded[firstKey];
+                    useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
                 if (!isExpanded) {
-                    toggleMarkFilterExpanded(firstKey);
+                    toggleMarkFilterExpanded(firstSubCategory);
                 }
             },
             delay: 300,

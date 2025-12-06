@@ -11,10 +11,31 @@ import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Detail from '../detail/detail';
 
-import { MARKER_TYPE_TREE } from '@/data/marker';
+// Category icons
+import BossIcon from '../../assets/images/category/boss.svg?react';
+import MobIcon from '../../assets/images/category/mob.svg?react';
+import NaturalIcon from '../../assets/images/category/natural.svg?react';
+import ValuableIcon from '../../assets/images/category/valuable.svg?react';
+import CollectionIcon from '../../assets/images/category/collection.svg?react';
+import CombatIcon from '../../assets/images/category/combat.svg?react';
+import NpcIcon from '../../assets/images/category/npc.svg?react';
+import FacilityIcon from '../../assets/images/category/facility.svg?react';
+
+import { MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath } from '@/store/uiPrefs';
+
+const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
+    boss: BossIcon,
+    mob: MobIcon,
+    natural: NaturalIcon,
+    valuable: ValuableIcon,
+    collection: CollectionIcon,
+    combat: CombatIcon,
+    npc: NpcIcon,
+    facility: FacilityIcon,
+};
 
 interface SideBarProps {
   currentRegion: null;
@@ -266,15 +287,21 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
             <div className={mobileStyles.filters}>
               <MarkFilterDragProvider>
-                {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
-                  <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
-                    {Object.values(value)
-                      .flat()
-                      .map((typeInfo) => (
+                {Object.entries(MARKER_TYPE_TREE).map(([subCategory, types]: [string, IMarkerType[]]) => {
+                  const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                  return (
+                    <MarkFilter 
+                      idKey={subCategory} 
+                      title={String(tGame(`markerType.category.${subCategory}`))} 
+                      icon={CategoryIcon}
+                      key={subCategory}
+                    >
+                      {types.map((typeInfo) => (
                         <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
                       ))}
-                  </MarkFilter>
-                ))}
+                    </MarkFilter>
+                  );
+                })}
               </MarkFilterDragProvider>
             </div>
           </div>

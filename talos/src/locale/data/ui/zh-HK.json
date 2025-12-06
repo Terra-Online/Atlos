@@ -43,8 +43,8 @@
     "fullSupport": "完整支援的語言",
     "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
     "uiOnly": "只支援介面翻譯的語言",
-    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的用語及術語將以英文顯示。",
-    "fyi": "如本網站暫未提供你所使用的語言，请透過電郵 translate@talos.wiki 聯絡本站管理員；或前往 GitHub 參與我們的開源翻譯項目，為你的語言申請翻譯條目，並依照我們的指引協助網站 WIKI 部分的翻譯及本地化。衷心感謝並期待你的貢獻。\n你亦可點擊查看翻譯貢獻名單。",
+    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
+    "fyi": "如本網站暫未提供你所使用的語言，請透過電郵 translate@talos.wiki 聯絡本站管理員；或前往 GitHub 參與我們的開源翻譯項目，為你的語言申請翻譯條目，並依照我們的指引協助網站 WIKI 部分的翻譯及本地化。衷心感謝並期待你的貢獻。\n你亦可點擊查看翻譯貢獻名單。",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡體中文",
@@ -58,36 +58,23 @@
       "ru-RU": "俄語",
       "pt-BR": "葡萄牙語",
       "id-ID": "印尼語",
-      "ar-AE": "阿拉伯語"
+      "ar-AE": "阿拉伯語",
+      "th-TH": "泰語",
+      "vi-VN": "越南語"
     }
   },
   "group": {
     "title": "社群與媒體",
     "visit": "前往"
   },
-  "storage": {
+  "tos": {
     "title": "協議與儲存",
-    "localStorage": "本機儲存",
-    "localStorageDesc": "儲存你的介面佈局、地圖狀態、設定、偏好以及標記資料。",
-    "cookies": "Cookies",
-    "cookiesDesc": "儲存你的登入狀態與許可偏好。",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "儲存目前地圖的圖磚資料以供離線瀏覽。",
-    "cacheStorage": "快取",
-    "cacheStorageDesc": "儲存網站顯示所需的字型資源。",
-    "total": "總儲存量",
     "calculating": "正在計算儲存占用…",
-    "clear": "清除",
-    "disable": "停用",
-    "clearAll": "清除所有已儲存的資料",
-    "clearing": "清除中…",
-    "noData": "未找到已儲存的資料。",
-    "warning": "此操作將清除你使用網站時的所有儲存資料，包括偏好設定與進度，並可能使下次造訪速度下降。操作無法復原；完成後頁面將重新載入。"
-  },
-  "common": {
-    "close": "關閉"
+    "policy": "<p>我們使用 Cookies 儲存您的自動登入資訊；使用 LocalStorage 儲存您的介面偏好設定與標記進度；使用 CacheStorage 儲存您語言使用的字型資料以及圖片資源。這些檔案允許您日後更快速地存取網站，並保障網站離線時的可用性；刪除網站的本機儲存空間可以節省您的裝置空間。但是您再次存取時<span class=\"keyword\">可能需要更長的時間載入</span>這些檔案；如果您停用網站儲存，那麼網站<span class=\"keyword\">將無法自動記錄您的資料</span>供您下次使用。</p><p>我們不會向伺服器回報您的資料，您不需要擔心隱私問題。</p><p>您可以自行決定是否啟用本機儲存。</p>",
+    "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>"
   },
   "guide": {
+    "welcome": "歡迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>這是您第一次使用本地圖，我們將為您提供簡短的新手引導，幫助您快速了解地圖的各項功能。</p><p>您可以隨時點擊「<span class=\"keyword\">跳過</span>」按鈕結束引導，或在頂欄的幫助按鈕中重新啟動引導。",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
     "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並且在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位于同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
@@ -111,5 +98,15 @@
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
     "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
+  },
+  "common": {
+    "close": "關閉",
+    "skip": "跳過",
+    "clear": "清除",
+    "all": "全部",
+    "selected": "選取項目",
+    "confirm": "確認",
+    "enable": "啟用",
+    "disable": "停用"
   }
 }

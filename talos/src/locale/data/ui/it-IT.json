@@ -39,7 +39,7 @@
   "language": {
     "title": "lingua",
     "cancel": "Annulla",
-    "current": "Attuale",
+    "current": "Nunc",
     "fullSupport": "Lingue Completamente Supportate",
     "fullSupportHint": "Traduzioni complete sia per l'interfaccia che per i contenuti di gioco.",
     "uiOnly": "Lingue Solo Interfaccia",
@@ -58,36 +58,23 @@
       "ru-RU": "Russo",
       "pt-BR": "Portoghese",
       "id-ID": "Indonesiano",
-      "ar-AE": "Arabo"
+      "ar-AE": "Arabo",
+      "th-TH": "Tailandese",
+      "vi-VN": "Vietnamita"
     }
   },
   "group": {
     "title": "Comunità e Media",
     "visit": "Visita"
   },
-  "storage": {
-    "title": "Protocolli e Archiviazione",
-    "localStorage": "Archiviazione Locale",
-    "localStorageDesc": "Memorizza il layout dell’interfaccia, lo stato della mappa, impostazioni, preferenze e dati dei marker.",
-    "cookies": "Cookie",
-    "cookiesDesc": "Memorizza lo stato di accesso e le preferenze di consenso.",
-    "indexedDB": "IndexedDB",
-    "indexedDBDesc": "Memorizza i dati delle tile della mappa corrente per la visualizzazione offline.",
-    "cacheStorage": "Cache",
-    "cacheStorageDesc": "Memorizza le risorse di font necessarie alla visualizzazione del sito.",
-    "total": "Archiviazione totale",
-    "calculating": "Calcolo dell’utilizzo dell’archiviazione…",
-    "clear": "Cancella",
-    "disable": "Disabilita",
-    "clearAll": "Cancella tutti i dati memorizzati",
-    "clearing": "Cancellazione…",
-    "noData": "Nessun dato memorizzato trovato.",
-    "warning": "Cancellerà tutti i dati salvati durante l’uso del sito, incluse preferenze e progressi, e può rallentare la prossima visita. Azione irreversibile; al termine la pagina verrà ricaricata."
-  },
-  "common": {
-    "close": "Chiudi"
+  "tos": {
+    "title": "Termini e Archiviazione",
+    "calculating": "Calcolo utilizzo memoria...",
+    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcatori; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
+    "warning": "<p><strong>Avviso:</strong> Se elimini i dati salvati, perderai le credenziali di accesso automatico, le preferenze dell'UI e i progressi dei segnalibri; e il caricamento del sito potrebbe richiedere più tempo del solito la prossima volta.</p><p>Se confermi, fai clic di nuovo sul pulsante Elimina.</p>"
   },
   "guide": {
+    "welcome": "Benvenuto su <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Questa è la tua prima volta usando questa mappa. Ti forniremo un breve tour guidato per aiutarti a comprendere rapidamente le varie funzionalità della mappa.</p><p>Puoi fare clic sul pulsante '<span class=\"keyword\">Salta</span>' in qualsiasi momento per terminare la guida, o riavviarla dal pulsante di aiuto nella barra superiore.",
     "sidebarToggle": "Clicca per espandere la <span class=\"keyword\">barra laterale</span>.<br>La barra laterale include i filtri dei marcatori più utilizzati, così come gli interruttori strettamente correlati alla visualizzazione dei marcatori.",
     "search": "Puoi cercare i marcatori da visualizzare utilizzando <span class=\"keyword\">le lingue supportate dal gioco</span> e selezionarli nei risultati di ricerca.",
     "filterContainer": "I marcatori dello stesso tipo sono raggruppati in un <span class=\"keyword\">filtro</span>.<br>Clicca per espandere l'elenco dei marcatori di quel tipo.",
@@ -111,5 +98,15 @@
     "pointMark": "Clicca di nuovo sul marcatore per contrassegnarlo come completato.",
     "detail": "Puoi visualizzare informazioni specifiche sul marcatore selezionato, incluso il numero di marcatori di questo tipo in <span class=\"keyword\">tutte le regioni</span>, la <span class=\"keyword\">regione principale</span> corrente e la <span class=\"keyword\">sottoregione</span> corrente.",
     "pointIcon": "Cliccare sull'icona del marcatore può anche contrassegnarlo come completato."
+  },
+  "common": {
+    "close": "Chiudi",
+    "skip": "Salta",
+    "clear": "Cancella",
+    "all": "Tutto",
+    "selected": "Selezionato",
+    "confirm": "Conferma",
+    "enable": "Abilita",
+    "disable": "Disabilita"
   }
 }
