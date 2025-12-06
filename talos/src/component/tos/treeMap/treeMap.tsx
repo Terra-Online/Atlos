@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 import { getStorageTreeMapData, TreeMapNode } from '@/utils/storage';
 import styles from './treeMap.module.scss';
 
-interface CustomHierarchyRectangularNode extends d3.HierarchyRectangularNode<TreeMapNode> {
+type CustomHierarchyRectangularNode = d3.HierarchyRectangularNode<TreeMapNode> & {
   realValue?: number;
   leafUid?: string;
   clipUid?: string;
@@ -14,12 +14,11 @@ interface CustomHierarchyRectangularNode extends d3.HierarchyRectangularNode<Tre
     y0: number;
     y1: number;
   };
-}
+};
 
-interface CustomHierarchyNode extends d3.HierarchyNode<TreeMapNode> {
+type CustomHierarchyNode = d3.HierarchyNode<TreeMapNode> & {
   realValue?: number;
-  value?: number;
-}
+};
 
 interface TreeMapProps {
   onSelect?: (path: string[], name: string) => void;
@@ -102,10 +101,12 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
           const minVal = Math.min(...validValues);
           d.children.forEach(c => {
             if ((c.value || 0) > minVal * 5) {
-              c.value = minVal * 5;
+              // TypeScript workaround: value is readonly but d3 allows mutation
+              (c as { value?: number }).value = minVal * 5;
             }
           });
-          d.value = d.children.reduce((acc, c) => acc + (c.value || 0), 0);
+          // TypeScript workaround: value is readonly but d3 allows mutation
+          (d as { value?: number }).value = d.children.reduce((acc, c) => acc + (c.value || 0), 0);
         }
       }
     });
