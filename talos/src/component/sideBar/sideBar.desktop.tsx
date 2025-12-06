@@ -1,9 +1,19 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import styles from './sideBar.module.scss';
 import drawerStyles from './triggerDrawer.module.scss';
 
 import Icon from '../../assets/images/UI/observator_6.webp';
 import SidebarIcon from '../../assets/logos/sideCollap.svg?react';
+
+// Category icons
+import BossIcon from '../../assets/images/category/boss.svg?react';
+import MobIcon from '../../assets/images/category/mob.svg?react';
+import NaturalIcon from '../../assets/images/category/natural.svg?react';
+import ValuableIcon from '../../assets/images/category/valuable.svg?react';
+import CollectionIcon from '../../assets/images/category/collection.svg?react';
+import CombatIcon from '../../assets/images/category/combat.svg?react';
+import NpcIcon from '../../assets/images/category/npc.svg?react';
+import FacilityIcon from '../../assets/images/category/facility.svg?react';
 
 import Search from '../search/search';
 import Drawer from '../drawer/drawer';
@@ -12,11 +22,22 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 
-import { MARKER_TYPE_TREE } from '@/data/marker';
+import { MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath, useDrawerSnapIndex } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
+
+const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
+    boss: BossIcon,
+    mob: MobIcon,
+    natural: NaturalIcon,
+    valuable: ValuableIcon,
+    collection: CollectionIcon,
+    combat: CombatIcon,
+    npc: NpcIcon,
+    facility: FacilityIcon,
+};
 
 interface SideBarProps {
     // TODO: fix this after region is nonNull
@@ -79,15 +100,21 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     <Search />
                     <div className={styles.filters}>
                         <MarkFilterDragProvider>
-                            {Object.entries(MARKER_TYPE_TREE).map(([key, value]) => (
-                                <MarkFilter idKey={key} title={String(tGame(`markerType.types.${key}`))} key={key}>
-                                    {Object.values(value)
-                                        .flat()
-                                        .map((typeInfo) => (
+                            {Object.entries(MARKER_TYPE_TREE).map(([subCategory, types]: [string, IMarkerType[]]) => {
+                                const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                                return (
+                                    <MarkFilter 
+                                        idKey={subCategory} 
+                                        title={String(tGame(`markerType.category.${subCategory}`))} 
+                                        icon={CategoryIcon}
+                                        key={subCategory}
+                                    >
+                                        {types.map((typeInfo) => (
                                             <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
                                         ))}
-                                </MarkFilter>
-                            ))}
+                                    </MarkFilter>
+                                );
+                            })}
                         </MarkFilterDragProvider>
                     </div>
                 </div>
