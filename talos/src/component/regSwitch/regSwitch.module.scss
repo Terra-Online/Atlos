@@ -5,6 +5,7 @@
 @use 'sass:math';
 
 :root, :root[data-theme='light'] {
+    --regswitch-bg: #{rgba($white-2, 0.25)};
     --regswitch-item: #{$grey-1};
     --regswitch-item-hover: #{$grey-2};
     --regswitch-selected: #{$primary-accent-4};
@@ -12,6 +13,7 @@
     --regswitch-icon-off: #{$white-1};
 }
 :root[data-theme='dark'] {
+    --regswitch-bg: #{rgba($grey-2, 0.3)};
     --regswitch-item: #{$black-1};
     --regswitch-item-hover: #{$grey-1};
     --regswitch-selected: #{$primary-accent-4};

@@ -104,8 +104,8 @@
         "category": {
             "boss": "ボス",
             "mob": "敵",
-            "natural": "自然資源",
-            "valuable": "貴重な材料",
+            "natural": "天然資源",
+            "valuable": "貴重素材",
             "collection": "収集物",
             "combat": "戦闘",
             "npc": "NPC",
