@@ -11,7 +11,6 @@
 import json
 import re
 import argparse
-import os
 from pathlib import Path
 from html.parser import HTMLParser
 from typing import Any, List, Tuple, Dict, Optional
