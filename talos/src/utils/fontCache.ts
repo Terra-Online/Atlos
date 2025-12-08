@@ -8,6 +8,15 @@ interface CachedFontMetadata {
     cachedAt: number;
 }
 
+// Normalize URL to absolute path for consistent cache keys
+const normalizeUrl = (url: string): string => {
+    try {
+        return new URL(url, window.location.href).href;
+    } catch {
+        return url;
+    }
+};
+
 // Check if Cache API is available
 const isCacheAvailable = (): boolean => {
     return typeof caches !== 'undefined';
@@ -26,9 +35,10 @@ const getCacheMetadata = (): Record<string, CachedFontMetadata> => {
 // Set cached font metadata in localStorage
 const setCacheMetadata = (url: string): void => {
     try {
+        const fullUrl = normalizeUrl(url);
         const metadata = getCacheMetadata();
-        metadata[url] = {
-            url,
+        metadata[fullUrl] = {
+            url: fullUrl,
             cachedAt: Date.now(),
         };
         localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
@@ -39,8 +49,9 @@ const setCacheMetadata = (url: string): void => {
 
 // Check if cached font is expired
 const isCacheExpired = (url: string): boolean => {
+    const fullUrl = normalizeUrl(url);
     const metadata = getCacheMetadata();
-    const entry = metadata[url];
+    const entry = metadata[fullUrl];
     
     if (!entry) return true;
     
@@ -108,6 +119,29 @@ export async function preloadFonts(urls: string[]): Promise<void> {
     const failed = results.filter(r => r.status === 'rejected').length;
     
     logger.debug(`Font preloading complete: ${succeeded} succeeded, ${failed} failed`);
+}
+
+/**
+ * Get cached font blob if available
+ * @param url Font file URL
+ * @returns Blob if cached and valid, null otherwise
+ */
+export async function getCachedFontBlob(url: string): Promise<Blob | null> {
+    if (!isCacheAvailable()) return null;
+
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(url);
+        
+        if (cachedResponse && !isCacheExpired(url)) {
+            logger.debug(`Hit font cache: ${url}`);
+            return await cachedResponse.blob();
+        }
+        return null;
+    } catch (error) {
+        logger.debug(`Error checking font cache ${url}:`, error);
+        return null;
+    }
 }
 
 /**

@@ -337,6 +337,24 @@ export const Drawer: React.FC<DrawerProps> = ({
 	
 	useDrag(onDrag, dragOptions);
 	
+	// Handle click to cycle snaps
+	const onHandleClick = useCallback((e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (isDraggingRef.current) return;
+
+		const currentSize = size.get();
+		// Find closest snap index
+		const closestIndex = snapsNormalized.reduce((bestIdx, s, i) => {
+			return Math.abs(s - currentSize) < Math.abs(snapsNormalized[bestIdx] - currentSize) ? i : bestIdx;
+		}, 0);
+
+		const nextIndex = (closestIndex + 1) % snapsNormalized.length;
+		const target = snapsNormalized[nextIndex];
+
+		animate(size, target, { duration: 0.25 });
+		logger.logSnapTarget(currentSize, target, nextIndex);
+	}, [size, snapsNormalized, logger]);
+
 	// Handle class
 	const handleClass = useMemo(() => ({
 		bottom: styles.handleBottom,
@@ -354,6 +372,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 				role="separator"
 				aria-orientation={axis === 'x' ? 'vertical' : 'horizontal'}
 				aria-label="Drawer drag handle"
+				onClick={onHandleClick}
 			/>
 			<div className={`${styles.backdrop} ${backdropClassName ?? ''}`} />
 		</div>

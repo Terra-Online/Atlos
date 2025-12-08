@@ -1,6 +1,6 @@
 // dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
 
-import { preloadFonts, getFontUrlsForRegion } from './fontCache';
+import { cacheFontFile, getCachedFontBlob } from './fontCache';
 
 // Build CDN URL with base and normalize dev paths to production paths
 const toCdnUrl = (p: string): string => {
@@ -169,8 +169,12 @@ function detectDocumentLanguage(): Region {
     return 'HK';
 }
 
+// Keep track of active Blob URLs to revoke them when switching
+let activeBlobUrls: string[] = [];
+let lastInjectId = 0;
+
 // generate CSS @font-face rules
-function generateFontFaceCSS(definition: FontDefinition, region: Region): string {
+async function generateFontFaceCSS(definition: FontDefinition, region: Region): Promise<string> {
     const files = region === 'CN' ? definition.cnFiles : 
                   region === 'HK' ? definition.hkFiles : 
                   definition.jpFiles;
@@ -179,17 +183,33 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
     
     const sources: string[] = [];
     
+    // Helper to process a font file
+    const processFile = async (filePath: string | undefined, format: string) => {
+        if (!filePath) return;
+        const url = toCdnUrl(filePath);
+        
+        // Try to get from cache first
+        const blob = await getCachedFontBlob(url);
+        let finalUrl = url;
+        
+        if (blob) {
+            finalUrl = URL.createObjectURL(blob);
+            activeBlobUrls.push(finalUrl);
+        } else {
+            // Not in cache, trigger background cache
+            void cacheFontFile(url).catch(err => console.error('Font background cache failed:', err));
+        }
+        
+        sources.push(`url('${finalUrl}') format('${format}')`);
+    };
+
+    // Priority: woff2 > woff > ttf > otf
     if (files.woff2) {
-        sources.push(`url('${toCdnUrl(files.woff2)}') format('woff2')`);
-    }
-    if (files.woff) {
-        sources.push(`url('${toCdnUrl(files.woff)}') format('woff')`);
-    }
-    if (files.ttf) {
-        sources.push(`url('${toCdnUrl(files.ttf)}') format('truetype')`);
-    }
-    if (files.otf) {
-        sources.push(`url('${toCdnUrl(files.otf)}') format('opentype')`);
+        await processFile(files.woff2, 'woff2');
+    } else {
+        await processFile(files.woff, 'woff');
+        await processFile(files.ttf, 'truetype');
+        await processFile(files.otf, 'opentype');
     }
     
     if (sources.length === 0) return '';
@@ -207,11 +227,13 @@ function generateFontFaceCSS(definition: FontDefinition, region: Region): string
     }
 
 // inject or update font styles in document head
-function injectFontStyles(region: Region): void {
-    // Preload fonts for this region in the background (map URLs through CDN)
-    const fontUrls = getFontUrlsForRegion(region).map(toCdnUrl);
-    preloadFonts(fontUrls).catch(err => console.error('Font preload failed:', err));
-    
+async function injectFontStyles(region: Region): Promise<void> {
+    const currentId = ++lastInjectId;
+
+    // Revoke previous Blob URLs to prevent memory leaks
+    activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
+    activeBlobUrls = [];
+
     // remove current font styles if exist
     const existingStyle = document.getElementById('dynamic-font-loader');
     if (existingStyle) {
@@ -219,8 +241,14 @@ function injectFontStyles(region: Region): void {
     }
     
     // generate new @fontface
-    const cssRules = fontDefinitions
-        .map(definition => generateFontFaceCSS(definition, region))
+    const cssRulesArray = await Promise.all(
+        fontDefinitions.map(definition => generateFontFaceCSS(definition, region))
+    );
+
+    // If a newer injection has started, abort this one
+    if (currentId !== lastInjectId) return;
+    
+    const cssRules = cssRulesArray
         .filter(rule => rule.length > 0)
         .join('\n');
     
@@ -244,7 +272,7 @@ function setupLanguageObserver(): void {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
                 const newRegion = detectDocumentLanguage();
-                injectFontStyles(newRegion);
+                void injectFontStyles(newRegion);
             }
         });
     });
@@ -259,7 +287,7 @@ function setupLanguageObserver(): void {
 export function fontLoader(): void {
     // detect current language and inject corresponding fonts
     const region = detectDocumentLanguage();
-    injectFontStyles(region);
+    void injectFontStyles(region);
     
     // set up observer for future changes
     setupLanguageObserver();
@@ -271,7 +299,7 @@ export function fontLoader(): void {
 
 // for manual region switch (external call)
 export function switchFontRegion(region: Region): void {
-    injectFontStyles(region);
+    void injectFontStyles(region);
     console.log(`Font switched to region: ${region}`);
 }
 
