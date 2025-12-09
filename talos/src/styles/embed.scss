@@ -1,4 +1,5 @@
 @use './palette.scss' as *;
+
 :root, :root[data-theme='light'] {
     --embed-keyword-color: #{$primary-accent-6};
 }
@@ -17,18 +18,6 @@ span.keyword {
         content: '\2008'; /* PUNCTUATION SPACE */
     }
 }
-
-a.embed {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    &:hover {
-        opacity: 0.6;
-    }
-}
-
 span.keyboard {
     position: relative;
     display: inline-flex;
@@ -80,5 +69,25 @@ span.keyboard {
     &.disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+}
+
+a.embed {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    &:hover {
+        opacity: 0.6;
+    }
+}
+
+.quoteEmbed {
+    &::before {
+        content: open-quote;
+    }
+    &::after {
+        content: close-quote;
     }
 }
