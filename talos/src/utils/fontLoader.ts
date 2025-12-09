@@ -95,11 +95,6 @@ interface FontDefinition {
         ttf?: string;
     };
 }
-
-// 在某些环境下（例如 CI）可以通过环境变量短接字体加载，避免构建依赖真实字体文件
-// eslint-disable-next-line no-undef
-const DISABLE_DYNAMIC_FONTS = typeof process !== 'undefined' && process.env && process.env.TALOS_DISABLE_DYNAMIC_FONTS === '1';
-
 // font path configs
 const fontDefinitions: FontDefinition[] = [
     {
@@ -343,10 +338,6 @@ function setupLanguageObserver(): void {
 
 // main initialization function
 export function fontLoader(): void {
-    if (DISABLE_DYNAMIC_FONTS) {
-        // 在 CI 或禁用字体环境下直接返回，跳过动态字体注入
-        return;
-    }
     // detect current language and inject corresponding fonts
     const region = detectDocumentLanguage();
     void injectFontStyles(region);
@@ -361,7 +352,6 @@ export function fontLoader(): void {
 
 // for manual region switch (external call)
 export function switchFontRegion(region: Region): void {
-    if (DISABLE_DYNAMIC_FONTS) return;
     void injectFontStyles(region);
     console.log(`Font switched to region: ${region}`);
 }
