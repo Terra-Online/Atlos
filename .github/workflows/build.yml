@@ -67,7 +67,7 @@ jobs:
     #   working-directory: ./talos
       
     - name: Build project
-      run: pnpm run build
+      run: TALOS_DISABLE_DYNAMIC_FONTS=1 pnpm run build
       working-directory: ./talos
       
     - name: Upload build artifacts
