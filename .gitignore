@@ -25,6 +25,7 @@ dist-ssr
 
 
 **/config/config.json
+**/config/config.r2.json
 
 talos/public/clips
 talos/originData

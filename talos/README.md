@@ -2,6 +2,8 @@
 
 Copy `config/config.template.json` to `config/config.json` and configure your settings.
 
+Generally you need `config.json` only, to enable local build. R2 version is used for CloudFlare CDN.
+
 
 ### dev
 
