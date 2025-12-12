@@ -1,18 +1,29 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import config from './config/config.json';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 import eslint from 'vite-plugin-eslint';
-import { existsSync } from 'fs';
+import fs, { existsSync } from 'fs';
 import Inspect from 'vite-plugin-inspect';
+import autoprefixer from 'autoprefixer';
+
+// 通过 BUILD_TARGET 选择使用哪份配置：
+// - 默认 / 未设置：使用 config/config.json（阿里云 OSS / .cn）
+// - BUILD_TARGET=r2：使用 config/config.r2.json（Cloudflare R2 / .org）
+const buildTarget = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
+const configPath =
+    buildTarget === 'r2' ? './config/config.r2.json' : './config/config.json';
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
 const isProd = process.env.NODE_ENV === 'production';
 const assetsHost = isProd
-    ? `${config.web.build.cdn}${config.web.build.oss.prefix}`
+    ? `${config.web.build.cdn}${
+          buildTarget === 'r2'
+              ? config.web.build.r2.prefix
+              : config.web.build.oss.prefix
+      }`
     : '';
-import autoprefixer from 'autoprefixer';
 
 // https://vite.dev/config/
 export default defineConfig({

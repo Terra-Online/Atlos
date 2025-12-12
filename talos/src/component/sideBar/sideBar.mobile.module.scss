@@ -146,7 +146,7 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
 
 .mobileDrawerBackdrop {
     --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
-    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
+    border-radius: 40px 40px calc(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 100px), 40px)) calc(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 100px), 40px));
     background-color: var(--mobile-drawer-backdrop-bg);
     //backdrop-filter: blur(6px);
 }

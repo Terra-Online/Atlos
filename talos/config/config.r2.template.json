@@ -1,0 +1,15 @@
+{
+  "web": {
+    "build": {
+      "cdn": "",
+      "r2": {
+        "endpoint": "",
+        "bucket": "",
+        "region": "auto",
+        "prefix": "",
+        "accessKeyId": "",
+        "accessKeySecret": ""
+      }
+    }
+  }
+}

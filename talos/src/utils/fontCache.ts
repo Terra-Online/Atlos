@@ -1,5 +1,39 @@
 import logger from '@/utils/log';
 
+// Import font assets so Vite can hash and emit them
+import UDShinGo_CN_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff2';
+import UDShinGo_CN_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff';
+import UDShinGo_HK_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff2';
+import UDShinGo_HK_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff';
+import UDShinGo_JP_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff2';
+import UDShinGo_JP_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff';
+
+import UDShinGo_CN_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2';
+import UDShinGo_CN_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff';
+import UDShinGo_HK_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2';
+import UDShinGo_HK_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff';
+import UDShinGo_JP_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2';
+import UDShinGo_JP_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff';
+
+import UDShinGo_CN_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff2';
+import UDShinGo_CN_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff';
+import UDShinGo_HK_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff2';
+import UDShinGo_HK_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff';
+import UDShinGo_JP_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff2';
+import UDShinGo_JP_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff';
+
+import UDShinGo_CN_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff2';
+import UDShinGo_CN_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff';
+import UDShinGo_HK_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff2';
+import UDShinGo_HK_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff';
+import UDShinGo_JP_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff2';
+import UDShinGo_JP_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff';
+
+import HMSans_SC_woff2 from '@/assets/fonts/Harmony/HMSans_SC.woff2';
+import HMSans_SC_woff from '@/assets/fonts/Harmony/HMSans_SC.woff';
+import HMSans_TC_woff2 from '@/assets/fonts/Harmony/HMSans_TC.woff2';
+import HMSans_TC_woff from '@/assets/fonts/Harmony/HMSans_TC.woff';
+
 const CACHE_NAME = 'Talos_FontCache';
 const CACHE_EXPIRY_DAYS = 30; // Cache fonts for 30 days
 
@@ -7,6 +41,15 @@ interface CachedFontMetadata {
     url: string;
     cachedAt: number;
 }
+
+// Normalize URL to absolute path for consistent cache keys
+const normalizeUrl = (url: string): string => {
+    try {
+        return new URL(url, window.location.href).href;
+    } catch {
+        return url;
+    }
+};
 
 // Check if Cache API is available
 const isCacheAvailable = (): boolean => {
@@ -26,9 +69,10 @@ const getCacheMetadata = (): Record<string, CachedFontMetadata> => {
 // Set cached font metadata in localStorage
 const setCacheMetadata = (url: string): void => {
     try {
+        const fullUrl = normalizeUrl(url);
         const metadata = getCacheMetadata();
-        metadata[url] = {
-            url,
+        metadata[fullUrl] = {
+            url: fullUrl,
             cachedAt: Date.now(),
         };
         localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
@@ -39,8 +83,9 @@ const setCacheMetadata = (url: string): void => {
 
 // Check if cached font is expired
 const isCacheExpired = (url: string): boolean => {
+    const fullUrl = normalizeUrl(url);
     const metadata = getCacheMetadata();
-    const entry = metadata[url];
+    const entry = metadata[fullUrl];
     
     if (!entry) return true;
     
@@ -108,6 +153,29 @@ export async function preloadFonts(urls: string[]): Promise<void> {
     const failed = results.filter(r => r.status === 'rejected').length;
     
     logger.debug(`Font preloading complete: ${succeeded} succeeded, ${failed} failed`);
+}
+
+/**
+ * Get cached font blob if available
+ * @param url Font file URL
+ * @returns Blob if cached and valid, null otherwise
+ */
+export async function getCachedFontBlob(url: string): Promise<Blob | null> {
+    if (!isCacheAvailable()) return null;
+
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(url);
+        
+        if (cachedResponse && !isCacheExpired(url)) {
+            logger.debug(`Hit font cache: ${url}`);
+            return await cachedResponse.blob();
+        }
+        return null;
+    } catch (error) {
+        logger.debug(`Error checking font cache ${url}:`, error);
+        return null;
+    }
 }
 
 /**
@@ -184,68 +252,68 @@ export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
     const fontDefinitions = [
         {
             cnFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff',
+                woff2: UDShinGo_CN_B_woff2,
+                woff: UDShinGo_CN_B_woff,
             },
             hkFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff',
+                woff2: UDShinGo_HK_B_woff2,
+                woff: UDShinGo_HK_B_woff,
             },
             jpFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff',
+                woff2: UDShinGo_JP_B_woff2,
+                woff: UDShinGo_JP_B_woff,
             }
         },
         {
             cnFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff',
+                woff2: UDShinGo_CN_DB_woff2,
+                woff: UDShinGo_CN_DB_woff,
             },
             hkFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff',
+                woff2: UDShinGo_HK_DB_woff2,
+                woff: UDShinGo_HK_DB_woff,
             },
             jpFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff',
+                woff2: UDShinGo_JP_DB_woff2,
+                woff: UDShinGo_JP_DB_woff,
             }
         },
         {
             cnFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff',
+                woff2: UDShinGo_CN_M_woff2,
+                woff: UDShinGo_CN_M_woff,
             },
             hkFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff',
+                woff2: UDShinGo_HK_M_woff2,
+                woff: UDShinGo_HK_M_woff,
             },
             jpFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff',
+                woff2: UDShinGo_JP_M_woff2,
+                woff: UDShinGo_JP_M_woff,
             }
         },
         {
             cnFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff',
+                woff2: UDShinGo_CN_R_woff2,
+                woff: UDShinGo_CN_R_woff,
             },
             hkFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff',
+                woff2: UDShinGo_HK_R_woff2,
+                woff: UDShinGo_HK_R_woff,
             },
             jpFiles: {
-                woff2: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff2',
-                woff: '/src/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff',
+                woff2: UDShinGo_JP_R_woff2,
+                woff: UDShinGo_JP_R_woff,
             }
         },
         {
             cnFiles: {
-                woff2: '/src/assets/fonts/Harmony/HMSans_SC.woff2',
-                woff: '/src/assets/fonts/Harmony/HMSans_SC.woff',
+                woff2: HMSans_SC_woff2,
+                woff: HMSans_SC_woff,
             },
             hkFiles: {
-                woff2: '/src/assets/fonts/Harmony/HMSans_TC.woff2',
-                woff: '/src/assets/fonts/Harmony/HMSans_TC.woff',
+                woff2: HMSans_TC_woff2,
+                woff: HMSans_TC_woff,
             }
         }
     ];

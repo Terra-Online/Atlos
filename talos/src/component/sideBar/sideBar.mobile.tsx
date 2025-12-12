@@ -294,6 +294,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                       idKey={subCategory} 
                       title={String(tGame(`markerType.category.${subCategory}`))} 
                       icon={CategoryIcon}
+                      dataCategory={subCategory}
                       key={subCategory}
                     >
                       {types.map((typeInfo) => (

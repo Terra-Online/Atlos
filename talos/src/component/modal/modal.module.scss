@@ -55,18 +55,18 @@
     will-change: opacity, transform, filter;
 
     min-width: 20rem;
-    max-width: 92vw; // default size = s
+    max-width: 92dvw; // default size = s
     &[data-size="s"] {
         width: 18rem;
-        max-width: 92vw
+        max-width: 92dvw
     }
     &[data-size="m"] {
         width: 27rem;
-        max-width: 92vw
+        max-width: 92dvw
     }
     &[data-size="l"] {
         width: 36em;
-        max-width: 96vw
+        max-width: 96dvw
     }
     &[data-state="open"] {
         opacity: 1;
@@ -80,7 +80,7 @@
         @media (max-width: 768px) {
             width: 100%;
         }
-        height: 90vh;
+        height: 90dvh;
         max-width: 100%;
         display: flex;
         flex-direction: column;
@@ -111,8 +111,7 @@
         box-shadow: 0 2px 3px rgba($black-0, 0.25);
         position: sticky;
         user-select: none;
-        font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular','Noto Sans Arabic', 'Noto Sans Thai',
- sans-serif;
+        font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular','Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     }
 }
 .modalIcon {

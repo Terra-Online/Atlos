@@ -104,8 +104,8 @@
         "category": {
             "boss": "보스",
             "mob": "적",
-            "natural": "자연 자원",
-            "valuable": "귀중한 재료",
+            "natural": "천연자원",
+            "valuable": "희귀 재료",
             "collection": "수집물",
             "combat": "전투",
             "npc": "NPC",

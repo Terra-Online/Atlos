@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "筛选项",
     "emptyTitle": "无满足条件的筛选项。",
-    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"报告点位错误\">Issue</a>。"
+    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='报告点位错误'>Issue</a>。"
   },
   "detail": {
     "stat": {
@@ -44,7 +44,7 @@
     "fullSupportHint": "网站界面及游戏内容均已提供完整翻译。",
     "uiOnly": "仅支持界面翻译的语言",
     "uiOnlyHint": "仅提供网站界面文字翻译，游戏内的用语及术语将以英文显示。",
-    "fyi": "如本网站暂未提供您所使用的语言，您可通过邮箱 translate@talos.wiki 联系本站管理员；或前往 GitHub 参与我们的开源翻译项目，为您的语言申请翻译条目，并依照我们的指引协助网站 WIKI 部分的翻译及本地化。我们衷心感谢并期待您的贡献。\n您亦可点击查看翻译贡献名单。",
+    "fyi": "如本网站暂未提供您所使用的语言，您可通过邮箱 translate@talos.wiki 联系本站管理员；或前往 GitHub 参与我们的开源翻译项目，为您的语言申请翻译条目，并依照我们的指引协助网站 WIKI 部分的翻译及本地化。我们衷心感谢并期待您的贡献。您亦可点击查看翻译贡献名单。",
     "names": {
       "en-US": "英语",
       "zh-CN": "简体中文",

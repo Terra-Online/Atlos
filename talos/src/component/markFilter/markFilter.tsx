@@ -15,6 +15,8 @@ interface MarkFilterProps {
     empty?: React.ReactNode;
     // stable id for persisting expanded state
     idKey: string;
+    // optional data attribute for visual styling
+    dataCategory?: string;
 }
 
 const MarkFilter = ({
@@ -23,6 +25,7 @@ const MarkFilter = ({
     children,
     empty,
     idKey,
+    dataCategory,
 }: MarkFilterProps) => {
     const t = useTranslateUI();
     const isExpanded = useMarkFilterExpanded(idKey);
@@ -147,12 +150,12 @@ const MarkFilter = ({
                 >
                     {CustomIcon ? (
                         typeof CustomIcon === 'function' ? (
-                            <CustomIcon className={styles.icon} />
+                            <CustomIcon className={styles.icon} data-ctgr={dataCategory}/>
                         ) : (
                             CustomIcon
                         )
                     ) : (
-                        <DefaultFilterIcon className={styles.icon} />
+                        <DefaultFilterIcon className={styles.icon} data-ctgr={dataCategory}/>
                     )}
                 </div>
                 <div className={styles.filterTitle}>{title ?? t('markFilter.title')}</div>

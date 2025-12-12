@@ -61,25 +61,31 @@
             height: 100%;
             fill: var(--markfilter-title);
             transition: fill 0.2s;
-            //transform: translateX(7px);
+            &[data-ctgr='boss'] {
+                scale: 1.25
+            }
+            &[data-ctgr='mob'] {
+                scale: 1.02
+            }
+            &[data-ctgr='natural'] {
+                scale: 1 // use round shape as baseline
+            }
+            &[data-ctgr='valuable'] {
+                scale: 1.08
+            }
+            &[data-ctgr='collection'] {
+                scale: 1.08
+            }
+            &[data-ctgr='combat'] {
+                scale: 0.9
+            }
+            &[data-ctgr='npc'] {
+                scale: 1.15
+            }
+            &[data-ctgr='facility'] {
+                scale: 0.95
+            }
         }
-        /*
-        &::before, &::after {
-            content: "";
-            position: absolute;
-            width: 3px;
-            height: 2rem;
-            border-radius: 1px;
-            z-index: -1;
-            background: var(--markfilter-title);
-            transition: all 0.35s $moderato-curve;
-            transform: translateX(-10.5px);
-        }
-        
-        &::after {
-            transform: translateX(-5.5px);
-        }
-        */
     }
 
     .toggleIcon {
