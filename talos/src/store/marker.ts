@@ -105,12 +105,12 @@ export const useWorldMarkerCount = (type) => {
 export const useRegionMarkerCount = (type) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
-    // 兼容老的 region key（例如 Jinlong 已重命名为 Wuling）
-    const regionConfig = REGION_DICT[currentRegion];
-    const subRegions = regionConfig?.subregions ?? [];
     return useMemo(() => {
         const ret = { total: 0, collected: 0 };
         if (!type) return ret;
+        // 兼容老的 region key（例如 Jinlong 已重命名为 Wuling）
+        const regionConfig = REGION_DICT[currentRegion];
+        const subRegions = regionConfig?.subregions ?? [];
         const regionTotal = subRegions
             .map((sr) => SUBREGION_MARKS_MAP[sr])
             .flat()
@@ -120,5 +120,5 @@ export const useRegionMarkerCount = (type) => {
             pointsRecord.includes(m.id),
         ).length;
         return ret;
-    }, [pointsRecord, subRegions, type]);
+    }, [pointsRecord, currentRegion, type]);
 };
