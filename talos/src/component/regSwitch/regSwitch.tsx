@@ -5,14 +5,14 @@ import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import classNames from 'classnames';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
-import Jinlong from '../../assets/logos/_Jinlong.svg?react';
+import Wuling from '../../assets/logos/_Wuling.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
 import Æther from '../../assets/logos/Æther.svg?react';
 import { useForceSubregionOpen } from '@/store/uiPrefs';
 
 const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
-    Jinlong: Jinlong,
+    Wuling: Wuling,
     Dijiang: Dijiang,
     Æther: Æther,
 };
