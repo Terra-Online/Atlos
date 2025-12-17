@@ -32,10 +32,6 @@
                 "tier": "advanced",
                 "faction": "Aggeloi"
             },
-            "Poison Ivy": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
             "Ram": {
                 "tier": "common",
                 "faction": "Aggeloi"
@@ -72,19 +68,11 @@
                 "tier": "advanced",
                 "faction": "Landbreakers"
             },
-            "Blighted Tuskbeast": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
             "Bonekrusher Ripptusk": {
                 "tier": "common",
                 "faction": "Landbreakers"
             },
             "Elite Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Blighted Klaw": {
                 "tier": "common",
                 "faction": "Landbreakers"
             },
@@ -108,12 +96,8 @@
                 "tier": "common",
                 "faction": "Landbreakers"
             },
-            "Hill Smasher": {
+            "Grove Archer": {
                 "tier": "elite",
-                "faction": "Cangzei"
-            },
-            "Cloud Stalker": {
-                "tier": "advanced",
                 "faction": "Cangzei"
             },
             "Road Plunderer": {
@@ -143,18 +127,6 @@
                 "tier": "1"
             },
             "Ferrium Spot": {
-                "subIcon": "ore_spot"
-            },
-            "Cuprium Ore": {
-                "tier": "1"
-            },
-            "Cuprium Spot": {
-                "subIcon": "ore_spot"
-            },
-            "Cyanite Ore": {
-                "tier": "1"
-            },
-            "Cyanite Spot": {
                 "subIcon": "ore_spot"
             },
             "Clean Water": {
@@ -262,24 +234,24 @@
     },
     "poi": {
         "collection": {
-            "aetherium": {},
-            "Treasure Chest": {},
+            "Aurylene": {},
+            "Crate": {},
 
-            "Fixable Robot": {},
-            "blackbox": {},
-            "Gear Template": {},
-            "Repair Logic": {},
+            "Delta Bot": {},
+            "Protocol DL": {},
+            "Gear Template": {},
+            "Repair Logic": {},
 
-            "race": {},
-            "gather": {},
+            "Athletic Race": {},
+            "Gather": {},
 
-            "mission": {}
+            "Mission": {}
         },
         "combat": {
-            "Protocol Space": {},
-            "alluvium": {},
-            "re-crisis": {},
-            "spawner": {},
+            "Protocol Space": {},
+            "Energy Alluvium": {},
+            "RE-Crisis": {},
+            "Temporary Energy Alluvium": {},
             "EW Terminal": {}
         },
         "npc": { 
@@ -293,25 +265,24 @@
     },
     "general": {
         "facility": {
-            "tp": {},
-            "stock": {},
-            "depot": {},
-            "ENV": {},
-            "recycler": {},
-            "base": {},
-            "hub": {},
+            "TP Point": {},
+            "Stock Redistrib.": {},
+            "Depot Node": {},
+            "ENV Monitoring": {},
+            "Recycling STN": {},
+            "PAC": {},
+            "Sub-PAC": {},
 
-            "Training Room": {},
             "Control Nexus": {},
-            "Growth Cabin": {},
+            "Growth Chamber": {},
             "Manufacturing Cabin": {},
-
-            "Etchspace salvage": {},
+            "Tactical Training Cabin": {},
+            "Etchspace Salvage": {},
             "Guest Terminal": {},
-            "Stock Terminal": {},
-            "Singularity": {},
-            "Trail Tower": {},
-            "Contact Panel": {}
+            "Stock Redistribution Terminal": {},
+            "Protocol Singularity": {},
+            "Tower of Trails": {},
+            "Operator Contact Panel": {}
         }
     }
 }

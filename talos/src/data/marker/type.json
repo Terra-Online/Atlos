@@ -759,7 +759,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true 
     },
     "stock_redistrib": {
         "key": "stock_redistrib",
