@@ -1,111 +1,36 @@
 {
-    "enemy": {
-        "boss" : {
-            "Triaggelos": {
-                "faction": "Aggeloi"
-            },
-            "Marble Aggelomoirai": {
-                "faction": "Aggeloi"
-            },
-            "Rhodagn": {
-                "faction": "Landbreakers"
-            }
+    "poi": {
+        "collection": {
+            "Aurylene": {},
+            "Crate": {},
+
+            "Delta Bot": {},
+            "Protocol DL": {},
+            "Gear Template": {},
+            "Repair Logic": {},
+
+            "Athletic Race": {},
+            "Gather": {},
+
+            "Mission": {}
         },
-        "mob": {
-            "Effigy": {
-                "tier": "elite",
-                "faction": "Aggeloi"
-            },
-            "Heavy Ram": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Ram α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Sting": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Sting α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Ram": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Ram α": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Sting": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Sting α": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Bonekrusher Ballista": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Elite Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Pyromancer": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Arsonist": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Infiltrator": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Grove Archer": {
-                "tier": "elite",
-                "faction": "Cangzei"
-            },
-            "Road Plunderer": {
-                "tier": "common",
-                "faction": "Cangzei"
-            }
+        "combat": {
+            "Temporary Energy Alluvium": {},
+            "RE-Crisis": {},
+            "Protocol Space": {},
+            "Energy Alluvium": {},
+            "EW Terminal": {}
+        },
+        "npc": { 
+            "dorm_trade": {},
+            "seed_trade": {},
+            "clinic_trade": {},
+            "lounge_trade": {},
+            "taikoo_trade": {},
+            "bubbletea_trade": {}
         }
     },
+
     "resource": {
         "natural": {
             "Wood": {
@@ -232,37 +157,7 @@
             }
         }
     },
-    "poi": {
-        "collection": {
-            "Aurylene": {},
-            "Crate": {},
 
-            "Delta Bot": {},
-            "Protocol DL": {},
-            "Gear Template": {},
-            "Repair Logic": {},
-
-            "Athletic Race": {},
-            "Gather": {},
-
-            "Mission": {}
-        },
-        "combat": {
-            "Protocol Space": {},
-            "Energy Alluvium": {},
-            "RE-Crisis": {},
-            "Temporary Energy Alluvium": {},
-            "EW Terminal": {}
-        },
-        "npc": { 
-            "dorm_trade": {},
-            "seed_trade": {},
-            "clinic_trade": {},
-            "lounge_trade": {},
-            "taikoo_trade": {},
-            "bubbletea_trade": {}
-        }
-    },
     "general": {
         "facility": {
             "TP Point": {},
@@ -283,6 +178,113 @@
             "Protocol Singularity": {},
             "Tower of Trails": {},
             "Operator Contact Panel": {}
+        }
+    },
+    "enemy": {
+        "boss" : {
+            "Triaggelos": {
+                "faction": "Aggeloi"
+            },
+            "Marble Aggelomoirai": {
+                "faction": "Aggeloi"
+            },
+            "Rhodagn": {
+                "faction": "Landbreakers"
+            }
+        },
+        "mob": {
+            "Effigy": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Heavy Ram": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Ram α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Sting": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Sting α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Ram": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Ram α": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Sting": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Sting α": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Bonekrusher Ballista": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Executioner": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Elite Executioner": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Pyromancer": {
+                "tier": "advanced",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Arsonist": {
+                "tier": "advanced",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Ripptusk": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Ripptusk": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Ambusher": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Ambusher": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Infiltrator": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Grove Archer": {
+                "tier": "elite",
+                "faction": "Cangzei"
+            },
+            "Road Plunderer": {
+                "tier": "common",
+                "faction": "Cangzei"
+            }
         }
     }
 }

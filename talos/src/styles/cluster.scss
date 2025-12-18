@@ -19,3 +19,6 @@
     fill: rgba($primary-accent-1, 0.2) !important;
     fill-opacity: 0.5 !important;
 }
+.leaflet-tile-container {
+    filter: drop-shadow(0 0 0 var(--map-dropshadow)) !important;
+}

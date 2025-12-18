@@ -6,12 +6,16 @@
     --map-pattern-opacity: 1;
     --map-pattern-bg: #{$white-3};
     --map-pattern-error-bg: #{$primary-accent-6};
+
+    --map-dropshadow: #{rgba($black-0, .3)};
 }
 :root[data-theme='dark'] {
     --map-bg: #111;
     --map-pattern-opacity: 1;
     --map-pattern-bg: #{$grey-1};
     --map-pattern-error-bg: #{$primary-accent-4};
+
+    --map-dropshadow: #{rgba($light-2, .25)};
 }
 
 .mapContainer {

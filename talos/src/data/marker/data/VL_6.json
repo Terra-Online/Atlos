@@ -1197,8 +1197,593 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_trchest_common_high_019",
+    "type": "crate",
+    "position": [
+      -381.7368,
+      791.6207
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_030",
+    "type": "crate",
+    "position": [
+      -382.1379,
+      804.6397
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_020",
+    "type": "crate",
+    "position": [
+      -439.471,
+      828.7561
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_021",
+    "type": "crate",
+    "position": [
+      -194.6409,
+      667.3053
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_022",
+    "type": "crate",
+    "position": [
+      -263.5168,
+      698.8412
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_031",
+    "type": "crate",
+    "position": [
+      -282.6935,
+      827.908
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_023",
+    "type": "crate",
+    "position": [
+      -360.1067,
+      742.7688
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_032",
+    "type": "crate",
+    "position": [
+      -229.7002,
+      843.8733
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_033",
+    "type": "crate",
+    "position": [
+      -363.9599,
+      739.5949
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_034",
+    "type": "crate",
+    "position": [
+      -214.4901,
+      816.9829
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_028",
+    "type": "crate",
+    "position": [
+      -381.9599,
+      779.6253
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_024",
+    "type": "crate",
+    "position": [
+      -283.5456,
+      795.1002
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_029",
+    "type": "crate",
+    "position": [
+      -361.1146,
+      807.8957
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_035",
+    "type": "crate",
+    "position": [
+      -343.0536,
+      772.2012
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_030",
+    "type": "crate",
+    "position": [
+      -327.2801,
+      774.8169
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_036",
+    "type": "crate",
+    "position": [
+      -193.8501,
+      821.7014
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_031",
+    "type": "crate",
+    "position": [
+      -257.5524,
+      697.5039
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_032",
+    "type": "crate",
+    "position": [
+      -369.5943,
+      786.8732
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_033",
+    "type": "crate",
+    "position": [
+      -351.252,
+      765.6064
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_034",
+    "type": "crate",
+    "position": [
+      -277.33,
+      747.9621
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_025",
+    "type": "crate",
+    "position": [
+      -334.1895,
+      778.7867
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_035",
+    "type": "crate",
+    "position": [
+      -415.2957,
+      801.7587
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_037",
+    "type": "crate",
+    "position": [
+      -458.4815,
+      835.5672
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_036",
+    "type": "crate",
+    "position": [
+      -328.5471,
+      785.9478
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_038",
+    "type": "crate",
+    "position": [
+      -335.4387,
+      805.6232
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_026",
+    "type": "crate",
+    "position": [
+      -357.3458,
+      836.9452
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_037",
+    "type": "crate",
+    "position": [
+      -194.0235,
+      666.5072
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_039",
+    "type": "crate",
+    "position": [
+      -194.0563,
+      668.1151
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_040",
+    "type": "crate",
+    "position": [
+      -303.2332,
+      724.3558
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_041",
+    "type": "crate",
+    "position": [
+      -374.2349,
+      767.8747
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_038",
+    "type": "crate",
+    "position": [
+      -240.8738,
+      642.7298
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_039",
+    "type": "crate",
+    "position": [
+      -247.794,
+      645.2072
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_042",
+    "type": "crate",
+    "position": [
+      -305.6341,
+      784.8974
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_043",
+    "type": "crate",
+    "position": [
+      -356.8255,
+      679.5479
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_027",
+    "type": "crate",
+    "position": [
+      -334.0643,
+      806.9516
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_044",
+    "type": "crate",
+    "position": [
+      -286.5644,
+      768.9715
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_040",
+    "type": "crate",
+    "position": [
+      -366.7485,
+      755.3848
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_041",
+    "type": "crate",
+    "position": [
+      -336.0434,
+      808.3509
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_045",
+    "type": "crate",
+    "position": [
+      -331.5036,
+      813.3248
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_046",
+    "type": "crate",
+    "position": [
+      -385.4099,
+      812.2795
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_028",
+    "type": "crate",
+    "position": [
+      -341.0862,
+      829.7798
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_lock_007",
+    "type": "crate",
+    "position": [
+      -323.3236,
+      758.3223
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_029",
+    "type": "crate",
+    "position": [
+      -373.1896,
+      677.8885
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_030",
+    "type": "crate",
+    "position": [
+      -401.7432,
+      848.5208
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_031",
+    "type": "crate",
+    "position": [
+      -282.295,
+      722.5943
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_032",
+    "type": "crate",
+    "position": [
+      -220.9345,
+      610.0977
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_047",
+    "type": "crate",
+    "position": [
+      -397.7662,
+      740.734
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_033",
+    "type": "crate",
+    "position": [
+      -369.6876,
+      721.5663
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_042",
+    "type": "crate",
+    "position": [
+      -382.1259,
+      737.7049
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_048",
+    "type": "crate",
+    "position": [
+      -436.2057,
+      770.1031
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_049",
+    "type": "crate",
+    "position": [
+      -453.0751,
+      767.682
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_034",
+    "type": "crate",
+    "position": [
+      -398.0871,
+      741.5746
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_050",
+    "type": "crate",
+    "position": [
+      -445.4855,
+      751.7965
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_051",
+    "type": "crate",
+    "position": [
+      -397.5225,
+      761.734
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_043",
+    "type": "crate",
+    "position": [
+      -361.2692,
+      716.4808
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_044",
+    "type": "crate",
+    "position": [
+      -406.4456,
+      747.4231
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_035",
+    "type": "crate",
+    "position": [
+      -410.5631,
+      683.1948
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_052",
+    "type": "crate",
+    "position": [
+      -412.4002,
+      735.3147
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_053",
+    "type": "crate",
+    "position": [
+      -395.354,
+      726.5571
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_036",
+    "type": "crate",
+    "position": [
+      -405.7976,
+      736.1046
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_high_037",
+    "type": "crate",
+    "position": [
+      -450.8195,
+      753.5215
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_normal_054",
+    "type": "crate",
+    "position": [
+      -399.5522,
+      706.2123
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_common_045",
+    "type": "crate",
+    "position": [
+      -399.9712,
+      787.1108
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_lock_008",
+    "type": "crate",
+    "position": [
+      -393.046,
+      712.4911
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_trchest_lock_009",
+    "type": "crate",
+    "position": [
+      -370.4708,
+      698.1104
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_doodad_flower_spc_once_2_001",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -412.1818,
       796.1317
@@ -1207,7 +1792,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_002",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -410.6237,
       803.5463
@@ -1216,7 +1801,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_003",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -411.7389,
       807.2868
@@ -1225,7 +1810,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_004",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -404.2141,
       803.7339
@@ -1234,7 +1819,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_005",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -407.2232,
       805.6307
@@ -1243,7 +1828,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_006",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -317.4779,
       694.119
@@ -1252,7 +1837,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_007",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -318.7676,
       694.8011
@@ -1261,7 +1846,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_008",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -319.8645,
       695.2182
@@ -1270,7 +1855,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_009",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -318.3691,
       696.0104
@@ -1279,7 +1864,7 @@
   },
   {
     "id": "int_doodad_flower_spc_once_2_010",
-    "type": "int_doodad_flower_spc_once_2",
+    "type": "umbraline",
     "position": [
       -319.7426,
       696.7183
@@ -1288,7 +1873,7 @@
   },
   {
     "id": "int_doodad_flower_2_024",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -435.2193,
       785.3658
@@ -1297,7 +1882,7 @@
   },
   {
     "id": "int_doodad_flower_1_034",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -345.6228,
       849.4585
@@ -1306,7 +1891,7 @@
   },
   {
     "id": "int_doodad_flower_2_025",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -438.1041,
       780.159
@@ -1315,7 +1900,7 @@
   },
   {
     "id": "int_doodad_flower_1_035",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -349.3911,
       847.7311
@@ -1324,7 +1909,7 @@
   },
   {
     "id": "int_doodad_flower_1_036",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -354.3309,
       842.9615
@@ -1333,7 +1918,7 @@
   },
   {
     "id": "int_doodad_flower_1_037",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -354.9955,
       812.2227
@@ -1342,7 +1927,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_003",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -372.6256,
       765.2295
@@ -1351,7 +1936,7 @@
   },
   {
     "id": "int_doodad_flower_1_038",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -356.6192,
       835.9045
@@ -1360,7 +1945,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_114",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -393.3709,
       761.3832
@@ -1369,7 +1954,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_115",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -386.8443,
       760.1122
@@ -1378,7 +1963,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_116",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -394.5159,
       763.4105
@@ -1387,7 +1972,7 @@
   },
   {
     "id": "int_doodad_grade_038",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -393.4907,
       745.1937
@@ -1396,7 +1981,7 @@
   },
   {
     "id": "int_doodad_insect_2_025",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -376.7962,
       727.1416
@@ -1405,7 +1990,7 @@
   },
   {
     "id": "int_doodad_flower_2_026",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -471.5095,
       838.5696
@@ -1414,7 +1999,7 @@
   },
   {
     "id": "int_doodad_flower_2_027",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -473.2703,
       838.102
@@ -1423,7 +2008,7 @@
   },
   {
     "id": "int_doodad_flower_2_028",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -459.7557,
       850.7442
@@ -1432,7 +2017,7 @@
   },
   {
     "id": "int_doodad_flower_2_029",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -461.1905,
       841.8632
@@ -1441,7 +2026,7 @@
   },
   {
     "id": "int_doodad_flower_2_030",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -375.9927,
       842.9874
@@ -1450,7 +2035,7 @@
   },
   {
     "id": "int_doodad_insect_2_026",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -372.299,
       721.4402
@@ -1459,7 +2044,7 @@
   },
   {
     "id": "int_doodad_insect_2_027",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -381.7584,
       723.948
@@ -1468,7 +2053,7 @@
   },
   {
     "id": "int_doodad_insect_2_028",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -371.3487,
       717.3311
@@ -1477,7 +2062,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_085",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -420.4099,
       695.628
@@ -1486,7 +2071,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_086",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -420.8775,
       695.2716
@@ -1495,7 +2080,7 @@
   },
   {
     "id": "int_doodad_grade_039",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -405.7022,
       761.434
@@ -1504,7 +2089,7 @@
   },
   {
     "id": "int_doodad_grade_040",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -405.4631,
       762.1465
@@ -1513,7 +2098,7 @@
   },
   {
     "id": "int_doodad_grade_041",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -391.5623,
       754.0296
@@ -1522,7 +2107,7 @@
   },
   {
     "id": "int_doodad_grade_042",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -399.6412,
       758.5746
@@ -1531,7 +2116,7 @@
   },
   {
     "id": "int_doodad_insect_2_029",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -373.4413,
       714.8249
@@ -1540,7 +2125,7 @@
   },
   {
     "id": "int_doodad_corp_2_001",
-    "type": "int_doodad_corp_2",
+    "type": "tartpepper",
     "position": [
       -401.692,
       799.6612
@@ -1549,7 +2134,7 @@
   },
   {
     "id": "int_doodad_flower_2_031",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -441.923,
       779.2527
@@ -1558,7 +2143,7 @@
   },
   {
     "id": "int_doodad_flower_2_032",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -442.134,
       778.3817
@@ -1567,7 +2152,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_003",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -419.7928,
       779.8747
@@ -1576,7 +2161,7 @@
   },
   {
     "id": "int_doodad_flower_2_033",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -367.0677,
       842.7281
@@ -1585,7 +2170,7 @@
   },
   {
     "id": "int_doodad_flower_2_034",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -367.4345,
       843.3254
@@ -1594,7 +2179,7 @@
   },
   {
     "id": "int_doodad_flower_2_035",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -375.4151,
       848.3867
@@ -1603,7 +2188,7 @@
   },
   {
     "id": "int_doodad_flower_2_036",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -383.4918,
       849.7144
@@ -1612,7 +2197,7 @@
   },
   {
     "id": "int_doodad_insect_1_080",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -398.3662,
       842.5889
@@ -1621,7 +2206,7 @@
   },
   {
     "id": "int_doodad_flower_1_039",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -426.5891,
       830.4473
@@ -1630,7 +2215,7 @@
   },
   {
     "id": "int_doodad_flower_1_040",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -427.6772,
       825.8029
@@ -1639,7 +2224,7 @@
   },
   {
     "id": "int_doodad_flower_1_041",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -430.0594,
       823.5032
@@ -1648,7 +2233,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_004",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -423.789,
       823.2875
@@ -1657,7 +2242,7 @@
   },
   {
     "id": "int_doodad_flower_1_042",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -424.9257,
       834.5044
@@ -1666,7 +2251,7 @@
   },
   {
     "id": "int_doodad_insect_1_081",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -389.5728,
       833.3734
@@ -1675,7 +2260,7 @@
   },
   {
     "id": "int_doodad_grade_043",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -361.5036,
       763.7965
@@ -1684,7 +2269,7 @@
   },
   {
     "id": "int_doodad_grade_044",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -362.061,
       763.2575
@@ -1693,7 +2278,7 @@
   },
   {
     "id": "int_doodad_grade_045",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -351.0003,
       767.728
@@ -1702,7 +2287,7 @@
   },
   {
     "id": "int_doodad_grade_046",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -352.633,
       764.8854
@@ -1711,7 +2296,7 @@
   },
   {
     "id": "int_doodad_grade_047",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -359.2583,
       761.4668
@@ -1720,7 +2305,7 @@
   },
   {
     "id": "int_doodad_flower_2_037",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -414.8911,
       781.5514
@@ -1729,7 +2314,7 @@
   },
   {
     "id": "int_doodad_flower_2_038",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -423.6712,
       783.0787
@@ -1738,7 +2323,7 @@
   },
   {
     "id": "int_doodad_grade_048",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -349.738,
       721.6886
@@ -1747,7 +2332,7 @@
   },
   {
     "id": "int_doodad_flower_2_039",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -408.6724,
       762.2394
@@ -1756,7 +2341,7 @@
   },
   {
     "id": "int_doodad_flower_2_040",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -410.2566,
       764.7879
@@ -1765,7 +2350,7 @@
   },
   {
     "id": "int_doodad_flower_2_041",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -414.4946,
       781.3744
@@ -1774,7 +2359,7 @@
   },
   {
     "id": "int_doodad_flower_2_042",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -412.44,
       766.0168
@@ -1783,7 +2368,7 @@
   },
   {
     "id": "int_doodad_grade_049",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -287.0425,
       776.3684
@@ -1792,7 +2377,7 @@
   },
   {
     "id": "int_doodad_grade_050",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -279.9316,
       780.6575
@@ -1801,7 +2386,7 @@
   },
   {
     "id": "int_doodad_grade_051",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -280.5128,
       781.0888
@@ -1810,7 +2395,7 @@
   },
   {
     "id": "int_doodad_grade_052",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -284.0894,
       773.2184
@@ -1819,7 +2404,7 @@
   },
   {
     "id": "int_doodad_grade_053",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -283.4894,
       772.8341
@@ -1828,7 +2413,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_117",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -258.5564,
       708.8051
@@ -1837,7 +2422,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_118",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -255.8082,
       709.8625
@@ -1846,7 +2431,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_119",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -259.3112,
       704.837
@@ -1855,7 +2440,7 @@
   },
   {
     "id": "int_doodad_bbflower_1_010",
-    "type": "int_doodad_bbflower_1",
+    "type": "aketine",
     "position": [
       -272.7034,
       677.5463
@@ -1864,7 +2449,7 @@
   },
   {
     "id": "int_doodad_grade_054",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -239.3002,
       647.9447
@@ -1873,7 +2458,7 @@
   },
   {
     "id": "int_doodad_grade_055",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -238.7087,
       648.64
@@ -1882,7 +2467,7 @@
   },
   {
     "id": "int_doodad_bbflower_1_011",
-    "type": "int_doodad_bbflower_1",
+    "type": "aketine",
     "position": [
       -268.2662,
       683.9475
@@ -1891,7 +2476,7 @@
   },
   {
     "id": "int_doodad_bbflower_1_012",
-    "type": "int_doodad_bbflower_1",
+    "type": "aketine",
     "position": [
       -272.1248,
       676.9934
@@ -1900,7 +2485,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_007",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -444.5055,
       702.477
@@ -1909,7 +2494,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_009",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -448.1638,
       709.7031
@@ -1918,7 +2503,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_010",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -447.9191,
       709.4207
@@ -1927,7 +2512,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_011",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -444.1951,
       710.0695
@@ -1936,7 +2521,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_012",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -442.3734,
       700.9722
@@ -1945,7 +2530,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_013",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -446.6083,
       704.1308
@@ -1954,7 +2539,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_014",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -442.5914,
       708.5954
@@ -1963,7 +2548,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_015",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -445.601,
       705.4171
@@ -1972,7 +2557,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_016",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -445.2205,
       704.7472
@@ -1981,7 +2566,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_008",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -376.438,
       732.634
@@ -1990,7 +2575,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_019",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -379.5956,
       731.712
@@ -1999,7 +2584,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_020",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -376.2838,
       728.8284
@@ -2008,7 +2593,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_021",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -378.9077,
       733.3953
@@ -2017,7 +2602,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_022",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -378.8802,
       732.2554
@@ -2026,7 +2611,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_023",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -378.5513,
       732.0195
@@ -2035,7 +2620,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_024",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -377.6777,
       731.5533
@@ -2044,7 +2629,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_025",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -379.3446,
       733.3698
@@ -2053,7 +2638,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_026",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -376.6204,
       728.6628
@@ -2062,7 +2647,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_009",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -364.513,
       666.4041
@@ -2071,7 +2656,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_027",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -361.7905,
       670.1847
@@ -2080,7 +2665,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_028",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -358.9065,
       669.0515
@@ -2089,7 +2674,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_029",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -362.7838,
       668.3984
@@ -2098,7 +2683,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_030",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -362.6286,
       668.9024
@@ -2107,7 +2692,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_031",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -358.4188,
       669.128
@@ -2116,7 +2701,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_032",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -361.5346,
       670.3777
@@ -2125,7 +2710,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_033",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -360.8813,
       667.6373
@@ -2134,7 +2719,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_034",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -357.981,
       667.3798
@@ -2143,7 +2728,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_010",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -421.3772,
       822.2311
@@ -2152,7 +2737,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_017",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -417.5809,
       824.3792
@@ -2161,7 +2746,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_018",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -419.3713,
       821.9384
@@ -2170,7 +2755,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_019",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -420.3517,
       825.6525
@@ -2179,7 +2764,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_020",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -418.0601,
       822.8333
@@ -2188,7 +2773,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_021",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -422.1915,
       820.4229
@@ -2197,7 +2782,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_022",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -415.0823,
       823.9038
@@ -2206,7 +2791,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_023",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -416.526,
       824.7379
@@ -2215,7 +2800,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_024",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -422.4387,
       820.1371
@@ -2224,7 +2809,7 @@
   },
   {
     "id": "int_doodad_grade_056",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -347.6502,
       728.2422
@@ -2233,7 +2818,7 @@
   },
   {
     "id": "int_doodad_grade_057",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -343.2645,
       742.6324
@@ -2242,7 +2827,7 @@
   },
   {
     "id": "int_doodad_grade_058",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -343.663,
       742.1355
@@ -2251,7 +2836,7 @@
   },
   {
     "id": "int_doodad_grade_059",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -350.8302,
       768.3856
@@ -2260,7 +2845,7 @@
   },
   {
     "id": "int_doodad_insect_2_030",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -363.5158,
       686.0435
@@ -2269,7 +2854,7 @@
   },
   {
     "id": "int_doodad_insect_2_031",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -361.2099,
       697.3522
@@ -2278,7 +2863,7 @@
   },
   {
     "id": "int_doodad_insect_2_032",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -354.0301,
       698.1388
@@ -2287,7 +2872,7 @@
   },
   {
     "id": "int_doodad_insect_2_033",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -360.3599,
       689.8089
@@ -2296,7 +2881,7 @@
   },
   {
     "id": "int_doodad_insect_2_034",
-    "type": "int_doodad_insect_2",
+    "type": "scorchbug",
     "position": [
       -364.9542,
       691.5407
@@ -2305,7 +2890,7 @@
   },
   {
     "id": "int_doodad_insect_1_082",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -444.1261,
       712.2722
@@ -2314,7 +2899,7 @@
   },
   {
     "id": "int_doodad_insect_1_083",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -447.1875,
       708.5993
@@ -2323,7 +2908,7 @@
   },
   {
     "id": "int_doodad_insect_1_084",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -443.2351,
       708.9855
@@ -2332,7 +2917,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_011",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -304.166,
       671.2088
@@ -2341,7 +2926,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_025",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -302.7728,
       672.1106
@@ -2350,7 +2935,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_026",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -302.0214,
       671.6788
@@ -2359,7 +2944,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_027",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -298.5026,
       670.785
@@ -2368,7 +2953,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_028",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -300.949,
       666.5427
@@ -2377,7 +2962,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_029",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -301.8697,
       668.1353
@@ -2386,7 +2971,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_030",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -299.6166,
       670.2113
@@ -2395,7 +2980,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_031",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -302.7639,
       669.2904
@@ -2404,7 +2989,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_032",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -303.7396,
       666.9261
@@ -2413,7 +2998,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_004",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -444.7491,
       773.6872
@@ -2422,7 +3007,7 @@
   },
   {
     "id": "int_doodad_corp_2_002",
-    "type": "int_doodad_corp_2",
+    "type": "tartpepper",
     "position": [
       -402.5837,
       797.857
@@ -2431,7 +3016,7 @@
   },
   {
     "id": "int_doodad_corp_2_003",
-    "type": "int_doodad_corp_2",
+    "type": "tartpepper",
     "position": [
       -403.1387,
       800.399
@@ -2440,7 +3025,7 @@
   },
   {
     "id": "int_doodad_corp_2_004",
-    "type": "int_doodad_corp_2",
+    "type": "tartpepper",
     "position": [
       -402.3786,
       800.9906
@@ -2449,7 +3034,7 @@
   },
   {
     "id": "int_doodad_corp_2_005",
-    "type": "int_doodad_corp_2",
+    "type": "tartpepper",
     "position": [
       -401.6879,
       799.891
@@ -2458,7 +3043,7 @@
   },
   {
     "id": "int_doodad_core_spcstone_004",
-    "type": "int_doodad_core_spcstone",
+    "type": "rare_mining_site",
     "position": [
       -316.9113,
       690.3292
@@ -2467,7 +3052,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_009",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -316.7862,
       696.8462
@@ -2476,7 +3061,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_010",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -315.5936,
       697.399
@@ -2485,7 +3070,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_011",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -320.9754,
       692.1043
@@ -2494,7 +3079,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_012",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -321.4775,
       691.9796
@@ -2503,7 +3088,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_013",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -318.8699,
       689.592
@@ -2512,7 +3097,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_014",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -316.7153,
       693.5362
@@ -2521,7 +3106,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_015",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -315.3398,
       695.789
@@ -2530,7 +3115,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_016",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -315.3771,
       696.959
@@ -2539,7 +3124,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_017",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -316.0146,
       697.9737
@@ -2548,7 +3133,7 @@
   },
   {
     "id": "int_doodad_core_spcstone_005",
-    "type": "int_doodad_core_spcstone",
+    "type": "rare_mining_site",
     "position": [
       -242.1877,
       723.4277
@@ -2557,7 +3142,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_018",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -244.0315,
       721.5399
@@ -2566,7 +3151,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_019",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -246.8576,
       718.6328
@@ -2575,7 +3160,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_020",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -245.4482,
       719.5693
@@ -2584,7 +3169,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_021",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -248.1781,
       723.2957
@@ -2593,7 +3178,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_022",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -247.2572,
       718.4197
@@ -2602,7 +3187,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_023",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -248.2506,
       722.9613
@@ -2611,7 +3196,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_024",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -246.5337,
       721.166
@@ -2620,7 +3205,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_025",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -244.8741,
       723.1482
@@ -2629,7 +3214,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_026",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -246.2199,
       723.8241
@@ -2638,7 +3223,7 @@
   },
   {
     "id": "int_doodad_core_spcstone_006",
-    "type": "int_doodad_core_spcstone",
+    "type": "rare_mining_site",
     "position": [
       -346.2223,
       856.2577
@@ -2647,7 +3232,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_027",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -342.68,
       851.3094
@@ -2656,7 +3241,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_028",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -343.4922,
       849.267
@@ -2665,7 +3250,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_029",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -347.237,
       852.4483
@@ -2674,7 +3259,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_030",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -345.4023,
       850.6755
@@ -2683,7 +3268,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_031",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -344.9491,
       851.1536
@@ -2692,7 +3277,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_032",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -344.1071,
       852.2091
@@ -2701,7 +3286,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_033",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -348.9765,
       850.941
@@ -2710,7 +3295,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_034",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -346.8491,
       850.8937
@@ -2719,7 +3304,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_2_035",
-    "type": "int_doodad_spcstone_1_2",
+    "type": "auronyx_spot",
     "position": [
       -345.7707,
       853.3784
@@ -2728,7 +3313,7 @@
   },
   {
     "id": "int_doodad_core_recycle_006",
-    "type": "int_doodad_core_recycle",
+    "type": "recycling_station",
     "position": [
       -346.2322,
       738.3766
@@ -2737,7 +3322,7 @@
   },
   {
     "id": "int_doodad_core_recycle_007",
-    "type": "int_doodad_core_recycle",
+    "type": "recycling_station",
     "position": [
       -396.1298,
       758.9693
@@ -2746,7 +3331,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_005",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -350.9798,
       850.6606
@@ -2755,7 +3340,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_006",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -386.4182,
       779.6972
@@ -2764,7 +3349,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_007",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -382.555,
       775.7184
@@ -2773,7 +3358,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_008",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -426.3172,
       833.0882
@@ -2782,7 +3367,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_035",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -378.6829,
       731.4263
@@ -2791,7 +3376,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_033",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -444.6065,
       704.0659
@@ -2800,7 +3385,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_2_036",
-    "type": "int_doodad_crylplant_1_2",
+    "type": "chrysodendra_spot",
     "position": [
       -363.9975,
       665.0528
@@ -2809,7 +3394,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_034",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -418.9994,
       822.1647
@@ -2818,7 +3403,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_022",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -386.3943,
       760.8715
@@ -2827,7 +3412,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_120",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -385.4568,
       760.6981
@@ -2836,7 +3421,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_121",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -386.3427,
       759.9059
@@ -2845,7 +3430,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_122",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -387.2371,
       760.444
@@ -2854,7 +3439,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_123",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -385.9443,
       761.6262
@@ -2863,7 +3448,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_124",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -386.9174,
       761.5676
@@ -2872,7 +3457,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_023",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -384.0506,
       758.059
@@ -2881,7 +3466,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_125",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -383.1131,
       757.8856
@@ -2890,7 +3475,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_126",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -383.999,
       757.0934
@@ -2899,7 +3484,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_127",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -384.8934,
       757.6315
@@ -2908,7 +3493,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_128",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -383.6006,
       758.8137
@@ -2917,7 +3502,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_129",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -384.5737,
       758.7551
@@ -2926,7 +3511,7 @@
   },
   {
     "id": "int_doodad_core_mine_originium_015",
-    "type": "int_doodad_core_mine_originium",
+    "type": "originium_vein",
     "position": [
       -408.8944,
       691.4964
@@ -2935,7 +3520,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_087",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -408.1598,
       691.4017
@@ -2944,7 +3529,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_088",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -408.4866,
       690.6264
@@ -2953,7 +3538,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_089",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -409.7147,
       691.0276
@@ -2962,7 +3547,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_090",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -408.3464,
       691.989
@@ -2971,7 +3556,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_091",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -409.4311,
       692.2384
@@ -2980,7 +3565,7 @@
   },
   {
     "id": "int_doodad_core_mine_originium_016",
-    "type": "int_doodad_core_mine_originium",
+    "type": "originium_vein",
     "position": [
       -407.0194,
       696.1839
@@ -2989,7 +3574,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_092",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -406.2848,
       696.0892
@@ -2998,7 +3583,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_093",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -406.6115,
       695.3139
@@ -3007,7 +3592,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_094",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -407.8397,
       695.7151
@@ -3016,7 +3601,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_095",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -406.4714,
       696.6765
@@ -3025,7 +3610,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_originium_096",
-    "type": "int_doodad_ore_cluster_originium",
+    "type": "originium_spot",
     "position": [
       -407.5561,
       696.9259
@@ -3034,7 +3619,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_024",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -250.9252,
       725.2464
@@ -3043,7 +3628,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_130",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -249.9877,
       725.073
@@ -3052,7 +3637,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_131",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -250.8737,
       724.2808
@@ -3061,7 +3646,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_132",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -251.768,
       724.8189
@@ -3070,7 +3655,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_133",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -250.4752,
       726.0011
@@ -3079,7 +3664,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_134",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -251.4484,
       725.9425
@@ -3088,7 +3673,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_025",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -252.3315,
       721.0277
@@ -3097,7 +3682,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_135",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -251.394,
       720.8542
@@ -3106,7 +3691,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_136",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -252.2799,
       720.0621
@@ -3115,7 +3700,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_137",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -253.1743,
       720.6002
@@ -3124,7 +3709,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_138",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -251.8815,
       721.7824
@@ -3133,7 +3718,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_139",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -252.8546,
       721.7238
@@ -3142,7 +3727,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_026",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -219.0502,
       812.9029
@@ -3151,7 +3736,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_140",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.1127,
       812.7295
@@ -3160,7 +3745,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_141",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.9986,
       811.9373
@@ -3169,7 +3754,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_142",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -219.893,
       812.4754
@@ -3178,7 +3763,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_143",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.6002,
       813.6576
@@ -3187,7 +3772,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_144",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -219.5733,
       813.599
@@ -3196,7 +3781,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_027",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -218.1127,
       810.0904
@@ -3205,7 +3790,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_145",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -217.1752,
       809.917
@@ -3214,7 +3799,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_146",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.0611,
       809.1248
@@ -3223,7 +3808,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_147",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.9555,
       809.6629
@@ -3232,7 +3817,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_148",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -217.6627,
       810.8451
@@ -3241,7 +3826,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_149",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -218.6358,
       810.7865
@@ -3250,7 +3835,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_028",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -302.0191,
       659.6213
@@ -3259,7 +3844,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_150",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.0816,
       659.4478
@@ -3268,7 +3853,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_151",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.9675,
       658.6557
@@ -3277,7 +3862,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_152",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -302.8619,
       659.1938
@@ -3286,7 +3871,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_153",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.5691,
       660.376
@@ -3295,7 +3880,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_154",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -302.5422,
       660.3174
@@ -3304,7 +3889,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_029",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -295.9253,
       664.7775
@@ -3313,7 +3898,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_155",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -294.9878,
       664.6041
@@ -3322,7 +3907,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_156",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -295.8738,
       663.8119
@@ -3331,7 +3916,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_157",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -296.7682,
       664.35
@@ -3340,7 +3925,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_158",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -295.4753,
       665.5322
@@ -3349,7 +3934,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_159",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -296.4485,
       665.4736
@@ -3358,7 +3943,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_030",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -300.6129,
       657.2775
@@ -3367,7 +3952,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_160",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.136,
       657.9736
@@ -3376,7 +3961,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_161",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -299.6754,
       657.1041
@@ -3385,7 +3970,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_162",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.4557,
       656.85
@@ -3394,7 +3979,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_163",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -300.5613,
       656.3119
@@ -3403,7 +3988,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_164",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -300.1629,
       658.0322
@@ -3412,7 +3997,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_031",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -301.5504,
       662.4338
@@ -3421,7 +4006,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_165",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -300.6129,
       662.2604
@@ -3430,7 +4015,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_166",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.4988,
       661.4682
@@ -3439,7 +4024,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_167",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -301.1004,
       663.1885
@@ -3448,7 +4033,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_168",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -302.3932,
       662.0063
@@ -3457,7 +4042,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_169",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -302.0735,
       663.1299
@@ -3466,7 +4051,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_032",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -294.0503,
       659.1525
@@ -3475,7 +4060,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_170",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -293.1128,
       658.9791
@@ -3484,7 +4069,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_171",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -293.9988,
       658.1869
@@ -3493,7 +4078,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_172",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -294.8932,
       658.725
@@ -3502,7 +4087,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_173",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -293.6003,
       659.9072
@@ -3511,7 +4096,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_174",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -294.5735,
       659.8486
@@ -3520,7 +4105,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_033",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -287.9566,
       835.8717
@@ -3529,7 +4114,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_175",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -287.0191,
       835.6983
@@ -3538,7 +4123,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_176",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -287.905,
       834.9061
@@ -3547,7 +4132,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_177",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -288.7994,
       835.4442
@@ -3556,7 +4141,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_178",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -287.5066,
       836.6264
@@ -3565,7 +4150,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_179",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -288.4797,
       836.5678
@@ -3574,7 +4159,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_034",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -286.5503,
       838.2155
@@ -3583,7 +4168,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_180",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -285.6128,
       838.042
@@ -3592,7 +4177,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_181",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -286.4988,
       837.2498
@@ -3601,7 +4186,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_182",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -287.3931,
       837.788
@@ -3610,7 +4195,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_183",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -286.1003,
       838.9702
@@ -3619,7 +4204,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_184",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -287.0734,
       838.9116
@@ -3628,7 +4213,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_035",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -285.1441,
       834.4655
@@ -3637,7 +4222,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_185",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -285.6672,
       835.1616
@@ -3646,7 +4231,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_186",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -284.2066,
       834.292
@@ -3655,7 +4240,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_187",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -285.9869,
       834.038
@@ -3664,7 +4249,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_188",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -285.0925,
       833.4998
@@ -3673,7 +4258,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_189",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -284.6941,
       835.2201
@@ -3682,7 +4267,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_036",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -282.3316,
       836.3405
@@ -3691,7 +4276,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_190",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -281.3941,
       836.167
@@ -3700,7 +4285,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_191",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -282.28,
       835.3748
@@ -3709,7 +4294,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_192",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -281.8816,
       837.0952
@@ -3718,7 +4303,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_193",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -283.1744,
       835.913
@@ -3727,7 +4312,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_194",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -282.8547,
       837.0366
@@ -3736,7 +4321,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_037",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -282.3316,
       839.6217
@@ -3745,7 +4330,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_195",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -281.3941,
       839.4483
@@ -3754,7 +4339,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_196",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -282.28,
       838.6561
@@ -3763,7 +4348,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_197",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -283.1744,
       839.1942
@@ -3772,7 +4357,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_198",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -281.8816,
       840.3764
@@ -3781,7 +4366,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_199",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -282.8547,
       840.3178
@@ -3790,7 +4375,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_2_035",
-    "type": "int_doodad_mushroom_1_2",
+    "type": "red_bolete_spot",
     "position": [
       -300.2016,
       667.724
@@ -3799,7 +4384,7 @@
   },
   {
     "id": "int_doodad_flower_2_043",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -395.7637,
       810.32
@@ -3808,7 +4393,7 @@
   },
   {
     "id": "int_doodad_flower_2_044",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -395.9343,
       810.9013
@@ -3817,7 +4402,7 @@
   },
   {
     "id": "int_doodad_flower_2_045",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -392.9184,
       799.6119
@@ -3826,7 +4411,7 @@
   },
   {
     "id": "int_doodad_flower_2_046",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -390.1631,
       788.1513
@@ -3835,7 +4420,7 @@
   },
   {
     "id": "int_doodad_flower_1_043",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -440.0251,
       848.1764
@@ -3844,7 +4429,7 @@
   },
   {
     "id": "int_doodad_flower_1_044",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -424.62,
       859.9247
@@ -3853,7 +4438,7 @@
   },
   {
     "id": "int_doodad_flower_1_045",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -424.8766,
       860.079
@@ -3862,7 +4447,7 @@
   },
   {
     "id": "int_doodad_flower_1_046",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -409.1865,
       875.9815
@@ -3871,7 +4456,7 @@
   },
   {
     "id": "int_doodad_flower_1_047",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -404.1628,
       869.9962
@@ -3880,7 +4465,7 @@
   },
   {
     "id": "int_doodad_flower_1_048",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -228.2662,
       686.6431
@@ -3889,7 +4474,7 @@
   },
   {
     "id": "int_doodad_flower_1_049",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -248.469,
       686.6068
@@ -3898,7 +4483,7 @@
   },
   {
     "id": "int_doodad_flower_1_050",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -237.7546,
       683.4632
@@ -3907,7 +4492,7 @@
   },
   {
     "id": "int_doodad_flower_2_047",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -228.1716,
       681.9796
@@ -3916,7 +4501,7 @@
   },
   {
     "id": "int_doodad_flower_2_048",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -228.5435,
       682.24
@@ -3925,7 +4510,7 @@
   },
   {
     "id": "int_doodad_flower_2_049",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -226.1513,
       685.8057
@@ -3934,7 +4519,7 @@
   },
   {
     "id": "int_doodad_flower_1_051",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -401.7738,
       791.3725
@@ -3943,7 +4528,7 @@
   },
   {
     "id": "int_doodad_flower_1_052",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -407.4316,
       794.466
@@ -3952,7 +4537,7 @@
   },
   {
     "id": "int_doodad_flower_2_050",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -402.0366,
       791.5927
@@ -3961,7 +4546,7 @@
   },
   {
     "id": "int_doodad_flower_2_051",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -419.7272,
       791.3732
@@ -3970,7 +4555,7 @@
   },
   {
     "id": "int_doodad_flower_2_052",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -420.1172,
       791.1083
@@ -3979,7 +4564,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_038",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -363.4255,
       839.6217
@@ -3988,7 +4573,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_200",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -362.488,
       839.4483
@@ -3997,7 +4582,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_201",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -363.3739,
       838.6561
@@ -4006,7 +4591,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_202",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -364.2683,
       839.1942
@@ -4015,7 +4600,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_203",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -362.9755,
       840.3764
@@ -4024,7 +4609,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_204",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -363.9486,
       840.3178
@@ -4033,7 +4618,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_205",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -363.7607,
       838.807
@@ -4042,7 +4627,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_206",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -360.0107,
       840.2133
@@ -4051,7 +4636,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_207",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -360.1986,
       841.7241
@@ -4060,7 +4645,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_208",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -359.2255,
       841.7827
@@ -4069,7 +4654,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_209",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -360.5183,
       840.6005
@@ -4078,7 +4663,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_210",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -359.6239,
       840.0623
@@ -4087,7 +4672,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_iron_211",
-    "type": "int_doodad_ore_cluster_iron",
+    "type": "ferrium_spot",
     "position": [
       -358.738,
       840.8545
@@ -4096,7 +4681,7 @@
   },
   {
     "id": "int_doodad_core_mine_iron_039",
-    "type": "int_doodad_core_mine_iron",
+    "type": "ferrium_vein",
     "position": [
       -359.6755,
       841.028
@@ -4105,7 +4690,7 @@
   },
   {
     "id": "int_doodad_insect_1_085",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -399.4587,
       843.1036
@@ -4114,7 +4699,7 @@
   },
   {
     "id": "int_doodad_insect_1_086",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -441.7814,
       705.6681
@@ -4123,7 +4708,7 @@
   },
   {
     "id": "int_doodad_insect_1_087",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -395.8292,
       854.5655
@@ -4132,7 +4717,7 @@
   },
   {
     "id": "int_doodad_insect_1_088",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -401.6445,
       854.3433

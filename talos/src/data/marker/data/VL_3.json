@@ -558,8 +558,296 @@
     "subregionId": "VL_3"
   },
   {
+    "id": "int_trchest_common_high_097",
+    "type": "crate",
+    "position": [
+      -800.9408,
+      669.7851
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_098",
+    "type": "crate",
+    "position": [
+      -858.6658,
+      595.1914
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_166",
+    "type": "crate",
+    "position": [
+      -730.4028,
+      673.921
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_099",
+    "type": "crate",
+    "position": [
+      -795.5423,
+      587.5817
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_167",
+    "type": "crate",
+    "position": [
+      -740.1781,
+      623.9282
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_168",
+    "type": "crate",
+    "position": [
+      -776.5162,
+      591.8957
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_100",
+    "type": "crate",
+    "position": [
+      -790.5675,
+      595.8383
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_101",
+    "type": "crate",
+    "position": [
+      -825.473,
+      688.6206
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_102",
+    "type": "crate",
+    "position": [
+      -888.5721,
+      606.4508
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_103",
+    "type": "crate",
+    "position": [
+      -891.8858,
+      640.793
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_104",
+    "type": "crate",
+    "position": [
+      -771.2563,
+      696.2968
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_169",
+    "type": "crate",
+    "position": [
+      -881.7116,
+      651.7996
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_170",
+    "type": "crate",
+    "position": [
+      -897.7502,
+      674.6823
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_105",
+    "type": "crate",
+    "position": [
+      -786.1078,
+      663.7232
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_140",
+    "type": "crate",
+    "position": [
+      -811.7156,
+      586.782
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_141",
+    "type": "crate",
+    "position": [
+      -775.0968,
+      595.1774
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_106",
+    "type": "crate",
+    "position": [
+      -774.2156,
+      595.8102
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_142",
+    "type": "crate",
+    "position": [
+      -773.3896,
+      596.413
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_171",
+    "type": "crate",
+    "position": [
+      -779.1131,
+      674.9809
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_172",
+    "type": "crate",
+    "position": [
+      -766.1183,
+      739.6273
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_143",
+    "type": "crate",
+    "position": [
+      -760.6124,
+      657.8775
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_107",
+    "type": "crate",
+    "position": [
+      -762.4166,
+      617.8106
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_144",
+    "type": "crate",
+    "position": [
+      -785.6934,
+      683.9223
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_145",
+    "type": "crate",
+    "position": [
+      -770.2957,
+      731.4412
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_146",
+    "type": "crate",
+    "position": [
+      -853.5245,
+      701.7892
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_173",
+    "type": "crate",
+    "position": [
+      -843.7135,
+      689.0706
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_108",
+    "type": "crate",
+    "position": [
+      -774.2873,
+      732.7849
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_174",
+    "type": "crate",
+    "position": [
+      -825.8504,
+      582.4991
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_109",
+    "type": "crate",
+    "position": [
+      -822.3886,
+      582.7063
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_147",
+    "type": "crate",
+    "position": [
+      -834.7027,
+      604.379
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_normal_148",
+    "type": "crate",
+    "position": [
+      -798.7359,
+      698.1526
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_trchest_common_high_110",
+    "type": "crate",
+    "position": [
+      -801.787,
+      630.3693
+    ],
+    "subregionId": "VL_3"
+  },
+  {
     "id": "int_doodad_core_plant_rabbithole_023",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -764.0624,
       600.6477
@@ -568,7 +856,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_025",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -765.0964,
       603.1195
@@ -577,7 +865,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_026",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -765.878,
       602.0564
@@ -586,7 +874,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_027",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -766.4228,
       600.5948
@@ -595,7 +883,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_028",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -762.1015,
       603.0042
@@ -604,7 +892,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_029",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -763.2117,
       603.8252
@@ -613,7 +901,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_030",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -762.1364,
       603.6663
@@ -622,7 +910,7 @@
   },
   {
     "id": "int_doodad_core_spcstone_012",
-    "type": "int_doodad_core_spcstone",
+    "type": "rare_mining_site",
     "position": [
       -792.7312,
       657.451
@@ -631,7 +919,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_025",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -787.8139,
       654.546
@@ -640,7 +928,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_026",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -789.9277,
       655.5525
@@ -649,7 +937,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_027",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -789.7603,
       654.6051
@@ -658,7 +946,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_028",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -790.6406,
       656.8895
@@ -667,7 +955,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_029",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -795.2038,
       661.0096
@@ -676,7 +964,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_030",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -796.0405,
       661.6865
@@ -685,7 +973,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_024",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -744.028,
       688.3182
@@ -694,7 +982,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_025",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -744.0261,
       685.5291
@@ -703,7 +991,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_026",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -745.2159,
       686.1308
@@ -712,7 +1000,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_027",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -744.0899,
       686.1286
@@ -721,7 +1009,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_028",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -745.9443,
       687.08
@@ -730,7 +1018,7 @@
   },
   {
     "id": "int_doodad_core_plant_rabbithole_025",
-    "type": "int_doodad_core_plant_rabbithole",
+    "type": "rare_gathering_site",
     "position": [
       -796.0453,
       584.2274
@@ -739,7 +1027,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_029",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -797.808,
       586.2045
@@ -748,7 +1036,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_030",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -797.9652,
       584.6675
@@ -757,7 +1045,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_031",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -798.6588,
       583.9069
@@ -766,7 +1054,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_032",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -798.6922,
       584.775
@@ -775,7 +1063,7 @@
   },
   {
     "id": "int_doodad_core_recycle_012",
-    "type": "int_doodad_core_recycle",
+    "type": "recycling_station",
     "position": [
       -847.0004,
       689.9368
@@ -784,7 +1072,7 @@
   },
   {
     "id": "int_doodad_flower_1_196",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -755.0129,
       647.7099
@@ -793,7 +1081,7 @@
   },
   {
     "id": "int_doodad_flower_1_197",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -762.4213,
       624.7978
@@ -802,7 +1090,7 @@
   },
   {
     "id": "int_doodad_flower_1_198",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -780.0939,
       592.3508
@@ -811,7 +1099,7 @@
   },
   {
     "id": "int_doodad_flower_1_199",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -783.7772,
       592.0355
@@ -820,7 +1108,7 @@
   },
   {
     "id": "int_doodad_flower_1_200",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -772.9942,
       594.8668
@@ -829,7 +1117,7 @@
   },
   {
     "id": "int_doodad_flower_1_201",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -746.4107,
       611.1612
@@ -838,7 +1126,7 @@
   },
   {
     "id": "int_doodad_flower_1_202",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -748.7737,
       617.225
@@ -847,7 +1135,7 @@
   },
   {
     "id": "int_doodad_flower_1_203",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -749.0414,
       618.8553
@@ -856,7 +1144,7 @@
   },
   {
     "id": "int_doodad_flower_1_204",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -731.7205,
       627.8949
@@ -865,7 +1153,7 @@
   },
   {
     "id": "int_doodad_flower_1_205",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -737.0973,
       650.3198
@@ -874,7 +1162,7 @@
   },
   {
     "id": "int_doodad_flower_1_206",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -738.4931,
       652.0607
@@ -883,7 +1171,7 @@
   },
   {
     "id": "int_doodad_flower_1_207",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -729.8108,
       653.6728
@@ -892,7 +1180,7 @@
   },
   {
     "id": "int_doodad_flower_1_208",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -726.8529,
       654.7369
@@ -901,7 +1189,7 @@
   },
   {
     "id": "int_doodad_flower_1_209",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -729.991,
       658.483
@@ -910,7 +1198,7 @@
   },
   {
     "id": "int_doodad_flower_1_210",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -733.3283,
       661.4415
@@ -919,7 +1207,7 @@
   },
   {
     "id": "int_doodad_flower_1_211",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -732.955,
       664.3418
@@ -928,7 +1216,7 @@
   },
   {
     "id": "int_doodad_flower_1_212",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -730.6676,
       665.7136
@@ -937,7 +1225,7 @@
   },
   {
     "id": "int_doodad_flower_1_213",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -740.5183,
       667.0399
@@ -946,7 +1234,7 @@
   },
   {
     "id": "int_doodad_flower_1_214",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -748.4874,
       667.3098
@@ -955,7 +1243,7 @@
   },
   {
     "id": "int_doodad_flower_1_215",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -740.1057,
       676.4567
@@ -964,7 +1252,7 @@
   },
   {
     "id": "int_doodad_flower_1_216",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -738.6948,
       675.0922
@@ -973,7 +1261,7 @@
   },
   {
     "id": "int_doodad_flower_1_217",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -755.3858,
       680.8791
@@ -982,7 +1270,7 @@
   },
   {
     "id": "int_doodad_flower_1_218",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -747.9186,
       690.062
@@ -991,7 +1279,7 @@
   },
   {
     "id": "int_doodad_flower_1_219",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -751.3686,
       681.2448
@@ -1000,7 +1288,7 @@
   },
   {
     "id": "int_doodad_flower_1_220",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -757.0805,
       684.7309
@@ -1009,7 +1297,7 @@
   },
   {
     "id": "int_doodad_flower_1_221",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -754.4626,
       680.5968
@@ -1018,7 +1306,7 @@
   },
   {
     "id": "int_doodad_flower_1_222",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -785.99,
       682.2581
@@ -1027,7 +1315,7 @@
   },
   {
     "id": "int_doodad_flower_1_223",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -778.4046,
       670.7003
@@ -1036,7 +1324,7 @@
   },
   {
     "id": "int_doodad_flower_1_224",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -805.5553,
       693.1632
@@ -1045,7 +1333,7 @@
   },
   {
     "id": "int_doodad_flower_1_225",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -805.8824,
       698.5563
@@ -1054,7 +1342,7 @@
   },
   {
     "id": "int_doodad_flower_1_226",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -795.0656,
       633.0665
@@ -1063,7 +1351,7 @@
   },
   {
     "id": "int_doodad_flower_1_227",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -756.6566,
       649.5061
@@ -1072,7 +1360,7 @@
   },
   {
     "id": "int_doodad_flower_1_228",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -759.6199,
       627.8822
@@ -1081,7 +1369,7 @@
   },
   {
     "id": "int_doodad_flower_1_229",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -760.7474,
       624.9162
@@ -1090,7 +1378,7 @@
   },
   {
     "id": "int_doodad_flower_1_230",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -807.5429,
       598.9353
@@ -1099,7 +1387,7 @@
   },
   {
     "id": "int_doodad_flower_1_231",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -808.6293,
       587.7623
@@ -1108,7 +1396,7 @@
   },
   {
     "id": "int_doodad_flower_1_232",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -820.794,
       590.6197
@@ -1117,7 +1405,7 @@
   },
   {
     "id": "int_doodad_flower_1_233",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -847.0708,
       587.7826
@@ -1126,7 +1414,7 @@
   },
   {
     "id": "int_doodad_flower_1_234",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -801.3292,
       608.4571
@@ -1135,7 +1423,7 @@
   },
   {
     "id": "int_doodad_flower_1_235",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -796.3428,
       687.7544
@@ -1144,7 +1432,7 @@
   },
   {
     "id": "int_doodad_flower_1_236",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -792.9932,
       687.4587
@@ -1153,7 +1441,7 @@
   },
   {
     "id": "int_doodad_flower_2_159",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -749.5109,
       617.9451
@@ -1162,7 +1450,7 @@
   },
   {
     "id": "int_doodad_flower_2_160",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -744.2781,
       615.3184
@@ -1171,7 +1459,7 @@
   },
   {
     "id": "int_doodad_flower_2_161",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -730.4483,
       630.1368
@@ -1180,7 +1468,7 @@
   },
   {
     "id": "int_doodad_flower_2_162",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -730.6665,
       657.5445
@@ -1189,7 +1477,7 @@
   },
   {
     "id": "int_doodad_flower_2_163",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -741.9547,
       656.8805
@@ -1198,7 +1486,7 @@
   },
   {
     "id": "int_doodad_flower_2_164",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -738.8169,
       671.8548
@@ -1207,7 +1495,7 @@
   },
   {
     "id": "int_doodad_flower_2_165",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -753.8905,
       676.9463
@@ -1216,7 +1504,7 @@
   },
   {
     "id": "int_doodad_flower_2_166",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -741.0751,
       678.2403
@@ -1225,7 +1513,7 @@
   },
   {
     "id": "int_doodad_flower_2_167",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -742.0545,
       686.2182
@@ -1234,7 +1522,7 @@
   },
   {
     "id": "int_doodad_flower_2_168",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -742.568,
       685.4884
@@ -1243,7 +1531,7 @@
   },
   {
     "id": "int_doodad_flower_2_169",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -742.9395,
       686.2267
@@ -1252,7 +1540,7 @@
   },
   {
     "id": "int_doodad_flower_2_170",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -741.5858,
       685.7635
@@ -1261,7 +1549,7 @@
   },
   {
     "id": "int_doodad_flower_2_171",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -797.0535,
       672.5424
@@ -1270,7 +1558,7 @@
   },
   {
     "id": "int_doodad_flower_2_172",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -795.4475,
       669.2468
@@ -1279,7 +1567,7 @@
   },
   {
     "id": "int_doodad_flower_2_173",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -807.9621,
       699.2063
@@ -1288,7 +1576,7 @@
   },
   {
     "id": "int_doodad_flower_2_174",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -761.6174,
       624.2748
@@ -1297,7 +1585,7 @@
   },
   {
     "id": "int_doodad_flower_2_175",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -796.3282,
       605.9853
@@ -1306,7 +1594,7 @@
   },
   {
     "id": "int_doodad_flower_2_176",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -798.7266,
       607.1038
@@ -1315,7 +1603,7 @@
   },
   {
     "id": "int_doodad_flower_2_177",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -812.1434,
       611.8921
@@ -1324,7 +1612,7 @@
   },
   {
     "id": "int_doodad_flower_2_178",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -810.1851,
       605.2648
@@ -1333,7 +1621,7 @@
   },
   {
     "id": "int_doodad_flower_2_179",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -817.4868,
       599.3927
@@ -1342,7 +1630,7 @@
   },
   {
     "id": "int_doodad_flower_2_180",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -843.3483,
       603.3511
@@ -1351,7 +1639,7 @@
   },
   {
     "id": "int_doodad_flower_2_181",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -832.9164,
       611.2722
@@ -1360,7 +1648,7 @@
   },
   {
     "id": "int_doodad_flower_1_237",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -824.7455,
       611.7782
@@ -1369,7 +1657,7 @@
   },
   {
     "id": "int_doodad_flower_2_182",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -774.8632,
       668.3724
@@ -1378,7 +1666,7 @@
   },
   {
     "id": "int_doodad_flower_2_183",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -768.665,
       670.3425
@@ -1387,7 +1675,7 @@
   },
   {
     "id": "int_doodad_flower_1_238",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -774.7845,
       666.2982
@@ -1396,7 +1684,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_028",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -795.4172,
       632.1853
@@ -1405,7 +1693,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_029",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -805.3508,
       607.3148
@@ -1414,7 +1702,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_030",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -796.405,
       670.1871
@@ -1423,7 +1711,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_031",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -844.191,
       605.2365
@@ -1432,7 +1720,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_020",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -812.5528,
       611.1571
@@ -1441,7 +1729,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_021",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -808.8103,
       589.1483
@@ -1450,7 +1738,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_022",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -783.9375,
       591.343
@@ -1459,7 +1747,7 @@
   },
   {
     "id": "int_doodad_flower_spc_2_023",
-    "type": "int_doodad_flower_spc_2",
+    "type": "umbraline",
     "position": [
       -726.2413,
       654.4987
@@ -1468,7 +1756,7 @@
   },
   {
     "id": "int_doodad_flower_1_239",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -834.8761,
       586.0325
@@ -1477,7 +1765,7 @@
   },
   {
     "id": "int_doodad_flower_1_240",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -839.1817,
       585.9146
@@ -1486,7 +1774,7 @@
   },
   {
     "id": "int_doodad_insect_1_165",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -808.7344,
       590.1899
@@ -1495,7 +1783,7 @@
   },
   {
     "id": "int_doodad_insect_1_166",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -784.2117,
       657.0717
@@ -1504,7 +1792,7 @@
   },
   {
     "id": "int_doodad_flower_spc_1_032",
-    "type": "int_doodad_flower_spc_1",
+    "type": "firebuckle",
     "position": [
       -739.1973,
       676.3759
@@ -1513,7 +1801,7 @@
   },
   {
     "id": "int_doodad_flower_1_241",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -819.6849,
       597.3743
@@ -1522,7 +1810,7 @@
   },
   {
     "id": "int_doodad_insect_1_167",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -811.8703,
       612.6337
@@ -1531,7 +1819,7 @@
   },
   {
     "id": "int_doodad_insect_1_168",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -868.9642,
       686.0401
@@ -1540,7 +1828,7 @@
   },
   {
     "id": "int_doodad_insect_1_169",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -799.2675,
       639.8784
@@ -1549,7 +1837,7 @@
   },
   {
     "id": "int_doodad_insect_1_170",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -776.5452,
       688.4635
@@ -1558,7 +1846,7 @@
   },
   {
     "id": "int_doodad_flower_1_242",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -727.0905,
       648.5789
@@ -1567,7 +1855,7 @@
   },
   {
     "id": "int_doodad_flower_1_243",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -726.9076,
       649.1221
@@ -1576,7 +1864,7 @@
   },
   {
     "id": "int_doodad_flower_1_244",
-    "type": "int_doodad_flower_1",
+    "type": "buckflower",
     "position": [
       -731.0258,
       665.1502
@@ -1585,7 +1873,7 @@
   },
   {
     "id": "int_doodad_flower_2_184",
-    "type": "int_doodad_flower_2",
+    "type": "citrome",
     "position": [
       -753.6681,
       677.9774
@@ -1594,7 +1882,7 @@
   },
   {
     "id": "int_doodad_grade_135",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -822.2804,
       700.682
@@ -1603,7 +1891,7 @@
   },
   {
     "id": "int_doodad_grade_136",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -834.1023,
       691.6309
@@ -1612,7 +1900,7 @@
   },
   {
     "id": "int_doodad_grade_137",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -854.1765,
       694.2681
@@ -1621,7 +1909,7 @@
   },
   {
     "id": "int_doodad_grade_138",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -858.7862,
       692.2225
@@ -1630,7 +1918,7 @@
   },
   {
     "id": "int_doodad_grade_139",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -844.9618,
       689.0012
@@ -1639,7 +1927,7 @@
   },
   {
     "id": "int_doodad_grade_140",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -854.7001,
       684.9193
@@ -1648,7 +1936,7 @@
   },
   {
     "id": "int_doodad_grade_141",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -818.2969,
       662.3869
@@ -1657,7 +1945,7 @@
   },
   {
     "id": "int_doodad_grade_142",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -779.7885,
       617.6507
@@ -1666,7 +1954,7 @@
   },
   {
     "id": "int_doodad_grade_143",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -774.9202,
       591.3497
@@ -1675,7 +1963,7 @@
   },
   {
     "id": "int_doodad_grade_144",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -740.9563,
       618.9145
@@ -1684,7 +1972,7 @@
   },
   {
     "id": "int_doodad_grade_145",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -740.7767,
       623.1257
@@ -1693,7 +1981,7 @@
   },
   {
     "id": "int_doodad_grade_146",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -785.0578,
       621.0384
@@ -1702,7 +1990,7 @@
   },
   {
     "id": "int_doodad_grade_147",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -775.6921,
       730.9136
@@ -1711,7 +1999,7 @@
   },
   {
     "id": "int_doodad_grade_148",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -778.3673,
       730.2382
@@ -1720,7 +2008,7 @@
   },
   {
     "id": "int_doodad_grade_149",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -771.7691,
       728.5502
@@ -1729,7 +2017,7 @@
   },
   {
     "id": "int_doodad_grade_150",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -766.9499,
       681.6292
@@ -1738,7 +2026,7 @@
   },
   {
     "id": "int_doodad_grade_151",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -821.4406,
       603.9194
@@ -1747,7 +2035,7 @@
   },
   {
     "id": "int_doodad_grade_152",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -906.1062,
       653.5688
@@ -1756,7 +2044,7 @@
   },
   {
     "id": "int_doodad_grade_153",
-    "type": "int_doodad_grade",
+    "type": null,
     "position": [
       -881.5748,
       645.0846
@@ -1765,7 +2053,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_052",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -788.0766,
       603.9062
@@ -1774,7 +2062,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_053",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -786.3967,
       603.8374
@@ -1783,7 +2071,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_054",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -786.482,
       602.6814
@@ -1792,7 +2080,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_055",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -787.403,
       604.2963
@@ -1801,7 +2089,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_056",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -788.0445,
       603.0716
@@ -1810,7 +2098,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_057",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -787.3523,
       602.4586
@@ -1819,7 +2107,7 @@
   },
   {
     "id": "int_doodad_core_mine_quartz_007",
-    "type": "int_doodad_core_mine_quartz",
+    "type": "amethyst_vein",
     "position": [
       -787.1765,
       603.3712
@@ -1828,7 +2116,7 @@
   },
   {
     "id": "int_doodad_core_mine_quartz_008",
-    "type": "int_doodad_core_mine_quartz",
+    "type": "amethyst_vein",
     "position": [
       -785.3015,
       599.6211
@@ -1837,7 +2125,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_058",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -784.8713,
       598.7974
@@ -1846,7 +2134,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_059",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -785.7946,
       598.8465
@@ -1855,7 +2143,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_060",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -786.0544,
       600.2045
@@ -1864,7 +2152,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_061",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -784.3286,
       599.5133
@@ -1873,7 +2161,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_062",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -784.9812,
       600.4714
@@ -1882,7 +2170,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_063",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -786.3391,
       599.48
@@ -1891,7 +2179,7 @@
   },
   {
     "id": "int_doodad_core_mine_quartz_009",
-    "type": "int_doodad_core_mine_quartz",
+    "type": "amethyst_vein",
     "position": [
       -795.614,
       667.1213
@@ -1900,7 +2188,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_064",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -794.6869,
       667.058
@@ -1909,7 +2197,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_065",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -795.2109,
       666.2963
@@ -1918,7 +2206,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_066",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -796.5047,
       666.7838
@@ -1927,7 +2215,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_067",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -795.014,
       667.8947
@@ -1936,7 +2224,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_068",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -796.1719,
       667.8385
@@ -1945,7 +2233,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_069",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -796.0355,
       666.1627
@@ -1954,7 +2242,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_070",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -804.2239,
       672.6711
@@ -1963,7 +2251,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_071",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -804.7691,
       674.2273
@@ -1972,7 +2260,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_072",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -803.6615,
       674.5685
@@ -1981,7 +2269,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_073",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -804.8305,
       673.1401
@@ -1990,7 +2278,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_074",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -803.4582,
       673.0032
@@ -1999,7 +2287,7 @@
   },
   {
     "id": "int_doodad_ore_cluster_quartz_075",
-    "type": "int_doodad_ore_cluster_quartz",
+    "type": "amethyst_spot",
     "position": [
       -803.139,
       673.8585
@@ -2008,7 +2296,7 @@
   },
   {
     "id": "int_doodad_core_mine_quartz_010",
-    "type": "int_doodad_core_mine_quartz",
+    "type": "amethyst_vein",
     "position": [
       -804.0516,
       673.6838
@@ -2017,7 +2305,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_031",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -763.3092,
       604.8342
@@ -2026,7 +2314,7 @@
   },
   {
     "id": "int_doodad_mushroom_1_1_032",
-    "type": "int_doodad_mushroom_1_1",
+    "type": "pink_bolete_spot",
     "position": [
       -761.3963,
       604.0788
@@ -2035,7 +2323,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_031",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -796.105,
       662.5047
@@ -2044,7 +2332,7 @@
   },
   {
     "id": "int_doodad_spcstone_1_1_032",
-    "type": "int_doodad_spcstone_1_1",
+    "type": "kalkonyx_spot",
     "position": [
       -797.0405,
       661.8295
@@ -2053,7 +2341,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_033",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -746.6206,
       687.8753
@@ -2062,7 +2350,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_034",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -746.8491,
       688.9521
@@ -2071,7 +2359,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_035",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -747.0317,
       688.4238
@@ -2080,7 +2368,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_036",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -747.1052,
       689.7167
@@ -2089,7 +2377,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_037",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -799.7981,
       584.6397
@@ -2098,7 +2386,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_038",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -800.6446,
       585.0231
@@ -2107,7 +2395,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_039",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -798.6032,
       585.9869
@@ -2116,7 +2404,7 @@
   },
   {
     "id": "int_doodad_crylplant_1_1_040",
-    "type": "int_doodad_crylplant_1_1",
+    "type": "kalkodendra_spot",
     "position": [
       -798.5064,
       587.0811
@@ -2125,7 +2413,7 @@
   },
   {
     "id": "int_doodad_insect_1_171",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -796.8234,
       688.7776
@@ -2134,7 +2422,7 @@
   },
   {
     "id": "int_doodad_insect_1_172",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -806.6391,
       699.3339
@@ -2143,7 +2431,7 @@
   },
   {
     "id": "int_doodad_insect_1_173",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -796.2667,
       631.2784
@@ -2152,7 +2440,7 @@
   },
   {
     "id": "int_doodad_insect_1_174",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -824.8878,
       612.4264
@@ -2161,7 +2449,7 @@
   },
   {
     "id": "int_doodad_insect_1_175",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -852.0702,
       692.8608
@@ -2170,7 +2458,7 @@
   },
   {
     "id": "int_doodad_insect_1_176",
-    "type": "int_doodad_insect_1",
+    "type": "glowbug",
     "position": [
       -775.3968,
       646.8994
