@@ -190,9 +190,12 @@ async function loadAndSet(locale: Lang) {
     // Preload fonts for this locale in parallel (with CDN URLs)
     const fontRegion = localeToFontRegion(locale);
     const fontUrls = getFontUrlsForRegion(fontRegion).map(toCdnUrl);
-    const fontPreloadPromise = preloadFonts(fontUrls).catch(err => 
-        LOGGER.warn('Font preload failed:', err)
-    );
+    const safePreloadFonts = (urls: string[]): Promise<void> => {
+        return (preloadFonts as unknown as (u: string[]) => Promise<void>)(urls);
+    };
+    const fontPreloadPromise: Promise<void> = safePreloadFonts(fontUrls).catch((err: unknown) => {
+        LOGGER.warn('Font preload failed:', err);
+    });
 
     // Load on main thread using build-safe module graph
     const data = await loadLocaleOnMain(locale);
