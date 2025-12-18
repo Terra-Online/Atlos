@@ -31,7 +31,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
 
     // icon url (no extra key munging)
     const iconUrl = useMemo<string | null>(() => {
-        return typeInfo?.key ? String(getItemIconUrl(typeInfo.key, 'png')) : null;
+        return typeInfo?.key ? String(getItemIconUrl(typeInfo.key, 'webp')) : null;
     }, [typeInfo?.key]);
 
     // i18n display name
