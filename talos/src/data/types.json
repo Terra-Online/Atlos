@@ -1,127 +1,36 @@
 {
-    "enemy": {
-        "boss" : {
-            "Triaggelos": {
-                "faction": "Aggeloi"
-            },
-            "Marble Aggelomoirai": {
-                "faction": "Aggeloi"
-            },
-            "Rhodagn": {
-                "faction": "Landbreakers"
-            }
+    "poi": {
+        "collection": {
+            "Aurylene": {},
+            "Crate": {},
+
+            "Delta Bot": {},
+            "Protocol DL": {},
+            "Gear Template": {},
+            "Repair Logic": {},
+
+            "Athletic Race": {},
+            "Gather": {},
+
+            "Mission": {}
         },
-        "mob": {
-            "Effigy": {
-                "tier": "elite",
-                "faction": "Aggeloi"
-            },
-            "Heavy Ram": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Ram α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Sting": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Heavy Sting α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Poison Ivy": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Ram": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Ram α": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Sting": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Sting α": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Bonekrusher Ballista": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Elite Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Pyromancer": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Arsonist": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
-            },
-            "Blighted Tuskbeast": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Blighted Klaw": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Infiltrator": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Hill Smasher": {
-                "tier": "elite",
-                "faction": "Cangzei"
-            },
-            "Cloud Stalker": {
-                "tier": "advanced",
-                "faction": "Cangzei"
-            },
-            "Road Plunderer": {
-                "tier": "common",
-                "faction": "Cangzei"
-            }
+        "combat": {
+            "Temporary Energy Alluvium": {},
+            "RE-Crisis": {},
+            "Protocol Space": {},
+            "Energy Alluvium": {},
+            "EW Terminal": {}
+        },
+        "npc": { 
+            "dorm_trade": {},
+            "seed_trade": {},
+            "clinic_trade": {},
+            "lounge_trade": {},
+            "taikoo_trade": {},
+            "bubbletea_trade": {}
         }
     },
+
     "resource": {
         "natural": {
             "Wood": {
@@ -143,18 +52,6 @@
                 "tier": "1"
             },
             "Ferrium Spot": {
-                "subIcon": "ore_spot"
-            },
-            "Cuprium Ore": {
-                "tier": "1"
-            },
-            "Cuprium Spot": {
-                "subIcon": "ore_spot"
-            },
-            "Cyanite Ore": {
-                "tier": "1"
-            },
-            "Cyanite Spot": {
                 "subIcon": "ore_spot"
             },
             "Clean Water": {
@@ -260,58 +157,166 @@
             }
         }
     },
-    "poi": {
-        "collection": {
-            "aetherium": {},
-            "Treasure Chest": {},
 
-            "Fixable Robot": {},
-            "blackbox": {},
-            "Gear Template": {},
-            "Repair Logic": {},
-
-            "race": {},
-            "gather": {},
-
-            "mission": {}
-        },
-        "combat": {
-            "Protocol Space": {},
-            "alluvium": {},
-            "re-crisis": {},
-            "spawner": {},
-            "EW Terminal": {}
-        },
-        "npc": { 
-            "dorm_trade": {},
-            "seed_trade": {},
-            "clinic_trade": {},
-            "lounge_trade": {},
-            "taikoo_trade": {},
-            "bubbletea_trade": {}
-        }
-    },
     "general": {
         "facility": {
-            "tp": {},
-            "stock": {},
-            "depot": {},
-            "ENV": {},
-            "recycler": {},
-            "base": {},
-            "hub": {},
+            "TP Point": {},
+            "Stock Redistrib.": {},
+            "Depot Node": {},
+            "ENV Monitoring": {},
+            "Recycling STN": {},
+            "PAC": {},
+            "Sub-PAC": {},
 
-            "Training Room": {},
             "Control Nexus": {},
-            "Growth Cabin": {},
+            "Growth Chamber": {},
             "Manufacturing Cabin": {},
-
-            "Etchspace salvage": {},
+            "Tactical Training Cabin": {},
+            "Etchspace Salvage": {},
             "Guest Terminal": {},
-            "Stock Terminal": {},
-            "Singularity": {},
-            "Trail Tower": {},
-            "Contact Panel": {}
+            "Stock Redistribution Terminal": {},
+            "Protocol Singularity": {},
+            "Tower of Trails": {},
+            "Operator Contact Panel": {}
+        }
+    },
+    "enemy": {
+        "boss" : {
+            "Triaggelos": {
+                "faction": "Aggeloi"
+            },
+            "Marble Aggelomoirai": {
+                "faction": "Aggeloi"
+            },
+            "Rhodagn": {
+                "faction": "Landbreakers"
+            }
+        },
+        "mob": {
+            "Effigy": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Heavy Ram": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Ram α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Sting": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Sting α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Ram": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Ram α": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Sting": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Sting α": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Bonekrusher Ballista": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Executioner": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Elite Executioner": {
+                "tier": "elite",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Pyromancer": {
+                "tier": "advanced",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Arsonist": {
+                "tier": "advanced",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Ripptusk": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Ripptusk": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Ambusher": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Ambusher": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Infiltrator": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Grove Archer": {
+                "tier": "elite",
+                "faction": "Cangzei"
+            },
+            "Acid Originium Slug": {},
+            "Acid Originium Slug·α": {},
+            "Axe Armorbeast": {},
+            "Bonekrusher Siegeknuckles": {},
+            "Bonekrusher Vanguard": {},
+            "Brutal Pincerbeast": {},
+            "Ereignis": {},
+            "Falsewings": {},
+            "Falsewings α": {},
+            "Firemist Originium Slug": {},
+            "Glaring Rakerbeast": {},
+            "Hazefyre Axe Armorbeast": {},
+            "Hazefyre Claw": {},
+            "Hazefyre Tuskbeast": {},
+            "Hedron": {},
+            "Hedron δ": {},
+            "Imbued Quillbeast": {},
+            "Indigenous Pincerbeast": {},
+            "Marble Appendage": {},
+            "Mudflow": {},
+            "Mudflow δ": {},
+            "Prism": {},
+            "Quillbeast": {},
+            "Sentinel": {},
+            "Spotted Rakerbeast": {},
+            "Tidalklast": {},
+            "Tidewalker": {},
+            "Tidewalker δ": {},
+            "Tunneling Nidwyrm": {},
+            "Walking Chrysopolis": {},
+            "Waterlamp": {},
+            "Wild Tuskbeast": {},
+            "Road Plunderer": {
+                "tier": "common",
+                "faction": "Cangzei"
+            }
         }
     }
 }

@@ -6,7 +6,7 @@
         "name": "供能高地",
         "short": "供",
         "site": {
-          "old_dorms": "宿舍区",
+          "old_dorms": "旧宿舍区",
           "originium_power_plant": "源石发电站",
           "power_plant_comm_station": "电站通信站",
           "bridge_approach_camp": "桥头区营地",
@@ -19,7 +19,6 @@
           "Æther_test_site": "超域试验场"
         }
       },
-
       "OL": {
         "name": "矿脉源区",
         "short": "脉",
@@ -30,7 +29,7 @@
           "logistices_area": "运输区",
           "containment_zone_intersection": "隔离区岔路",
           "old_mines": "旧矿区",
-          "meteorological_station": "气候检测站",
+          "meteorological_station": "气候监测站",
           "cliffside_mining_area": "崖边开采区",
           "temporary_stockpile": "临时堆放区",
           "blightcliff_ovservation_post": "蚀崖观测站",
@@ -40,7 +39,6 @@
           "landbreaker_camp": "裂地者营地"
         }
       },
-
       "OP": {
         "name": "源石研究园",
         "short": "研",
@@ -49,7 +47,7 @@
           "route_5": "五号公路",
           "Transport_nexus": "转运枢纽",
           "the_depression": "沉降地带",
-          "originium_science_park": "源石实验园区",
+          "originium_science_park": "源石研究园",
           "research_center": "研究所",
           "cliffside_trail": "崖边山道",
           "mountain_path_slope": "山道缓坡",
@@ -58,7 +56,6 @@
           "infra_station": "基建前站"
         }
       },
-
       "AQ": {
         "name": "阿伯莉采石场",
         "short": "采",
@@ -75,7 +72,6 @@
           "staff_lounge": "工人休息站"
         }
       },
-
       "VP": {
         "name": "谷地通道",
         "short": "谷",
@@ -88,7 +84,6 @@
           "passage_entrance": "通道入口"
         }
       },
-
       "HB": {
         "name": "枢纽区",
         "short": "枢",
@@ -102,7 +97,7 @@
           "hub_west": "枢纽区西部",
           "originium_byproduct_precessing_center": "源石副产物中心",
           "construction_site": "待建设区",
-          "hub_base": "枢纽基地区",
+          "hub_base": "枢纽区基地",
           "old_factory": "旧工厂区",
           "aic_research_center": "集成工业研究所",
           "southern_meadows": "南部草甸",
@@ -119,30 +114,70 @@
   "WL": {
     "main": "武陵",
     "sub": {
-        "WL": {
-            "name": "武陵",
-            "short": "武",
-            "site": {}
-        },
-        "JV": {
-            "name": "景玉谷",
-            "short": "景",
-            "site": {}
+      "WL": {
+        "name": "武陵城",
+        "short": "武",
+        "site": {
+          "bugui_grove": "不归林",
+          "agricultural_test_site": "实验作物试点区",
+          "technological_production_office": "技术生产办公室",
+          "core_aic_area": "集成核心区域",
+          "chenshan_way": "沉山道",
+          "bureau_of_swordmancers": "选剑局",
+          "residential_area": "居民区",
+          "monitoring_center": "观测站",
+          "marker_stone_flats": "界石坪",
+          "xiranflow_channel": "息流行道",
+          "fangxing_avenue": "方兴衢",
+          "tianshi_pillar_array": "天师桩阵列",
+          "maintenance_zone": "待修缮区",
+          "institute_of_materials_science": "材料研究所",
+          "tianshi_bureau_academy": "天师府学院",
+          "citizen_square": "市民广场",
+          "restricted_area": "警戒区",
+          "tianjing_courtyard": "天井院",
+          "riverbank_grotto": "岸边石窟",
+          "sanku_ridge": "三窟岗",
+          "outskirt_barrens": "城外荒地",
+          "lingshui_way": "陵水道",
+          "guhou_marsh": "孤喉泽",
+          "field_logistics_depot": "储备站",
+          "hulu_cave": "葫芦洞"
         }
+      },
+      "JY": {
+        "name": "景玉谷",
+        "short": "玉",
+        "site": {
+          "treadway": "踩道",
+          "ecological_research_station": "生态实验站",
+          "qingbo bailey": "清波寨外寨",
+          "treasure_grotto": "聚宝窟",
+          "sky_king_flats": "天王坪",
+          "stragglers_ford": "迷踪渡",
+          "burdosnout_hill": "驮鼻山",
+          "stragglers_grove": "迷踪林",
+          "zhailing_islet": "摘菱屿",
+          "gloomvale": "幽谷",
+          "south_hill": "南山",
+          "sword_quenching_marsh": "淬剑荡",
+          "everwater_brook": "水泽涧"
+        }
+      }
     }
   },
   "DJ": {
-    "main": "OMV帝江号",
+    "main": "O.M.V.帝江号",
     "sub": {
-        "name": "OMV帝江号",
-        "site": {
-            "bridge": "舰桥",
-            "reception_room": "接待室",
-            "kernel_sector": "核心区",
-            "central_ring": "中央环",
-            "working_sector": "作业区",
-            "living_sector": "生活区"
-        }
+      "name": "O.M.V.帝江号",
+      "site": {
+        "bridge": "舰桥",
+        "reception_room": "会客室",
+        "kernel_sector": "核心区",
+        "central_ring": "中央环厅",
+        "working_sector": "基建区",
+        "living_sector": "生活区"
+      }
     }
   }
 }

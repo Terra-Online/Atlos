@@ -22,11 +22,14 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 
-import { MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath, useDrawerSnapIndex } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
+
+const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
+const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -100,22 +103,33 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     <Search />
                     <div className={styles.filters}>
                         <MarkFilterDragProvider>
-                            {Object.entries(MARKER_TYPE_TREE).map(([subCategory, types]: [string, IMarkerType[]]) => {
-                                const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
-                                return (
-                                    <MarkFilter 
-                                        idKey={subCategory} 
-                                        title={String(tGame(`markerType.category.${subCategory}`))} 
-                                        icon={CategoryIcon}
-                                        dataCategory={subCategory}
-                                        key={subCategory}
-                                    >
-                                        {types.map((typeInfo) => (
-                                            <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                                        ))}
-                                    </MarkFilter>
-                                );
-                            })}
+                            {(
+                                DEFAULT_SUBCATEGORY_ORDER_LIST.filter(
+                                    (k) => Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
+                                )
+                            )
+                                .concat(
+                                    Object.keys(MARKER_TYPE_TREE).filter(
+                                        (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
+                                    ),
+                                )
+                                .map((subCategory) => {
+                                    const types: IMarkerType[] = MARKER_TYPE_TREE[subCategory] ?? [];
+                                    const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                                    return (
+                                        <MarkFilter
+                                            idKey={subCategory}
+                                            title={String(tGame(`markerType.category.${subCategory}`))}
+                                            icon={CategoryIcon}
+                                            dataCategory={subCategory}
+                                            key={subCategory}
+                                        >
+                                            {types.map((typeInfo) => (
+                                                <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
+                                            ))}
+                                        </MarkFilter>
+                                    );
+                                })}
                         </MarkFilterDragProvider>
                     </div>
                 </div>

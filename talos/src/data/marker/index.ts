@@ -42,6 +42,17 @@ export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce(
 
 export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
 
+export const DEFAULT_SUBCATEGORY_ORDER = [
+    'collection',
+    'natural',
+    'valuable',
+    'combat',
+    'npc',
+    'facility',
+    'mob',
+    'boss',
+] as const;
+
 export const MARKER_TYPE_TREE: Record<string, IMarkerType[]> = Object.values(MARKER_TYPE_DICT).reduce(
     (acc: Record<string, IMarkerType[]>, type) => {
         const subCategory = type.category.sub;

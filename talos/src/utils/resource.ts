@@ -8,10 +8,10 @@ const prefix:string = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? 
  * Get resource URL with shared resource fallback mechanism
  * @param {string} property - Resource category
  * @param {string} key - Resource key name
- * @param {string} [ext="png"] - File extension
+ * @param {string} [ext="webp"] - File extension
  * @returns {string} - Assembled URL
  */
-export function getResourceUrl(property: string, key: string, ext: string = 'png'): string {
+export function getResourceUrl(property: string, key: string, ext: string = 'webp'): string {
     if (property === 'tiles') return `${prefix}${key}`;
 
     // Route per new convention:
@@ -33,7 +33,7 @@ export function getResourceUrl(property: string, key: string, ext: string = 'png
 
 export const getTileResourceUrl = (path:string) => getResourceUrl('tiles', path);
 // remove get MarkerIconUrl - use getItemIconUrl with _spot suffix instead
-export const getItemIconUrl = (key:string, ext = 'png') => {
+export const getItemIconUrl = (key:string, ext = 'webp') => {
     if (key && key.endsWith('_spot')) {
         return getResourceUrl('marker', key, ext);
     }
@@ -41,5 +41,5 @@ export const getItemIconUrl = (key:string, ext = 'png') => {
 };
 export const getCtgrIconUrl = (key:string, ext = 'svg') =>
     getResourceUrl('category', key, ext);
-export const getMarkerSubIconUrl = (key:string | undefined, ext = 'png') =>
+export const getMarkerSubIconUrl = (key:string | undefined, ext = 'webp') =>
     getResourceUrl('marker/sub', `${key}`, ext);

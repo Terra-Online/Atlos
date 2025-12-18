@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "四號谷地",
+    "sub": {
+      "PL": {
+        "name": "供能高地",
+        "short": "供",
+        "site": {
+          "old_dorms": "舊宿舍區",
+          "originium_power_plant": "源石發電站",
+          "power_plant_comm_station": "電站通訊站",
+          "bridge_approach_camp": "橋頭區營地",
+          "united_parking_lot": "聯盟停車場",
+          "planned_construction_area": "建設規劃區",
+          "plateau_trunkway": "高地主路",
+          "bonekrusher_warcamp": "碾骨戰營",
+          "evacuation_zone": "疏散區",
+          "shattered_fringe": "破碎邊界",
+          "Æther_test_site": "超域實驗場"
+        }
+      },
+      "OL": {
+        "name": "礦脈源區",
+        "short": "脈",
+        "site": {
+          "originium_passage": "源石隧道",
+          "cradle_of_the_ages": "世代搖籃",
+          "mines_cable_car_station": "礦區纜車站",
+          "logistices_area": "運輸區",
+          "containment_zone_intersection": "隔離區岔路",
+          "old_mines": "舊礦區",
+          "meteorological_station": "氣象監測站",
+          "cliffside_mining_area": "崖邊開採區",
+          "temporary_stockpile": "臨時堆放區",
+          "blightcliff_ovservation_post": "蝕崖觀測站",
+          "mining_area_clinic": "礦區醫療站",
+          "mining_camp": "礦區營地",
+          "mountain_passage": "山地通道",
+          "landbreaker_camp": "裂地者營地"
+        }
+      },
+      "OP": {
+        "name": "源石研究園",
+        "short": "研",
+        "site": {
+          "control_center": "總控中心",
+          "route_5": "五號公路",
+          "Transport_nexus": "轉運樞紐",
+          "the_depression": "沉降地帶",
+          "originium_science_park": "源石研究園",
+          "research_center": "研究所",
+          "cliffside_trail": "崖邊山道",
+          "mountain_path_slope": "山道緩坡",
+          "kohl_plant": "醇化合物工廠",
+          "eco_farm": "生態種植區",
+          "infra_station": "基建前站"
+        }
+      },
+      "AQ": {
+        "name": "阿伯莉採石場",
+        "short": "採",
+        "site": {
+          "quarry_entrance": "採石場入口",
+          "refuse_stockpile": "廢料堆放區",
+          "loading_area": "裝卸區",
+          "stockpile_area": "存料處",
+          "deep_management_post": "深層管理區",
+          "lifter_central": "吊運中樞",
+          "listening_post": "聯絡區",
+          "transfer_area": "傳遞區",
+          "quarry_site": "採石作業區",
+          "staff_lounge": "工人休息站"
+        }
+      },
+      "VP": {
+        "name": "谷地通道",
+        "short": "谷",
+        "site": {
+          "valley_fort": "谷地要塞",
+          "arsenal": "軍械庫",
+          "valley_transfer": "谷地中轉站",
+          "temporary_shelter": "臨時避難所",
+          "abandoned_trail": "廢棄小徑",
+          "passage_entrance": "通道入口"
+        }
+      },
+      "HB": {
+        "name": "樞紐區",
+        "short": "樞",
+        "site": {
+          "lohistics_platform": "貨運平台",
+          "rockhill_passage": "岩丘通道",
+          "bridge_approach": "橋頭工事",
+          "shorecove_camp": "岸窟營地",
+          "old_water_plant": "舊供水設施",
+          "hub_base_power_plant": "樞紐基地電站",
+          "hub_west": "樞紐區西部",
+          "originium_byproduct_precessing_center": "源石副產物中心",
+          "construction_site": "待建設區",
+          "hub_base": "樞紐區基地",
+          "old_factory": "舊工廠區",
+          "aic_research_center": "集成工業研究所",
+          "southern_meadows": "南部草甸",
+          "worker_dorms": "工人之家",
+          "mountain_side_trail": "山地側路",
+          "woodland_fringes": "邊緣林地",
+          "mountain_top": "山地頂端",
+          "eastern_passageway": "東部通道",
+          "core_aic_area": "集成核心區域"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "武陵",
+    "sub": {
+      "WL": {
+        "name": "武陵城",
+        "short": "武",
+        "site": {
+          "bugui_grove": "不歸林",
+          "agricultural_test_site": "實驗作物測試區",
+          "technological_production_office": "技術生產辦公室",
+          "core_aic_area": "集成核心區域",
+          "chenshan_way": "沉山道",
+          "bureau_of_swordmancers": "選劍局",
+          "residential_area": "居民區",
+          "monitoring_center": "觀測站",
+          "marker_stone_flats": "界石坪",
+          "xiranflow_channel": "息流行道",
+          "fangxing_avenue": "方興衢",
+          "tianshi_pillar_array": "天師樁陣列",
+          "maintenance_zone": "待修繕區",
+          "institute_of_materials_science": "材料研究所",
+          "tianshi_bureau_academy": "天師府學院",
+          "citizen_square": "市民廣場",
+          "restricted_area": "警戒區",
+          "tianjing_courtyard": "天井院",
+          "riverbank_grotto": "岸邊石窟",
+          "sanku_ridge": "三窟崗",
+          "outskirt_barrens": "城外荒地",
+          "lingshui_way": "陵水道",
+          "guhou_marsh": "孤喉澤",
+          "field_logistics_depot": "儲備站",
+          "hulu_cave": "葫蘆洞"
+        }
+      },
+      "JY": {
+        "name": "景玉谷",
+        "short": "玉",
+        "site": {
+          "treadway": "踩道",
+          "ecological_research_station": "生態實驗站",
+          "qingbo bailey": "清波寨外寨",
+          "treasure_grotto": "聚寶窟",
+          "sky_king_flats": "天王坪",
+          "stragglers_ford": "迷蹤渡",
+          "burdosnout_hill": "馱鼻山",
+          "stragglers_grove": "迷蹤林",
+          "zhailing_islet": "摘菱嶼",
+          "gloomvale": "幽谷",
+          "south_hill": "南山",
+          "sword_quenching_marsh": "淬劍蕩",
+          "everwater_brook": "水澤澗"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "O.M.V.帝江號",
+    "sub": {
+      "name": "O.M.V.帝江號",
+      "site": {
+        "bridge": "艦橋",
+        "reception_room": "會客室",
+        "kernel_sector": "核心區",
+        "central_ring": "中央環廳",
+        "working_sector": "基建區",
+        "living_sector": "生活區"
+      }
+    }
+  }
+}

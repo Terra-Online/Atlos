@@ -7,8 +7,8 @@
         "maxZoom": 3,
         "tileSize": 200,
         "initialOffset": {
-            "x": 0,
-            "y": 500
+            "x": -1000,
+            "y": 1000
         },
         "initialZoom": 2,
         "subregions": [
@@ -20,7 +20,7 @@
             "VL_7"
         ]
     },
-    "Jinlong": {
+    "Wuling": {
         "dimensions": [
             8000,
             8000
@@ -28,12 +28,13 @@
         "maxZoom": 3,
         "tileSize": 200,
         "initialOffset": {
-            "x": -2400,
-            "y": -1250
+            "x": 0,
+            "y": -1000
         },
         "initialZoom": 2,
         "subregions": [
-            "JL_1"
+            "WL_1",
+            "WL_2"
         ]
     },
     "Dijiang": {

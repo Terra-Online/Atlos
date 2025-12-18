@@ -1,6 +1,6 @@
 {
   "VL": {
-    "main": "Valley 4",
+    "main": "Valley IV",
     "sub": {
       "PL": {
         "name": "Power Plateau",
@@ -19,7 +19,6 @@
           "Æther_test_site": "Æther Test Site"
         }
       },
-
       "OL": {
         "name": "Origin Lodespring",
         "short": "OL",
@@ -40,7 +39,6 @@
           "landbreaker_camp": "Landbreaker Camp"
         }
       },
-
       "OP": {
         "name": "Originium Science Park",
         "short": "OP",
@@ -54,11 +52,10 @@
           "cliffside_trail": "Cliffside Trail",
           "mountain_path_slope": "Mountain Path Slope",
           "kohl_plant": "Kohl Plant",
-          "eco_farm": "Eco Farm",
-          "infra_station": "Infra Station"
+          "eco_farm": "Eco-Farm",
+          "infra_station": "Infra-Station"
         }
       },
-
       "AQ": {
         "name": "Aburrey Quarry",
         "short": "AQ",
@@ -75,7 +72,6 @@
           "staff_lounge": "Staff Lounge"
         }
       },
-
       "VP": {
         "name": "Valley Pass",
         "short": "VP",
@@ -88,7 +84,6 @@
           "passage_entrance": "Passage Entrance"
         }
       },
-
       "HB": {
         "name": "The Hub",
         "short": "HB",
@@ -118,10 +113,71 @@
   },
   "WL": {
     "main": "Wuling",
-    "sub": {}
+    "sub": {
+      "WL": {
+        "name": "Wuling City",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Bugui Grove",
+          "agricultural_test_site": "Agricultural Test Site",
+          "technological_production_office": "Technological Production Office",
+          "core_aic_area": "Core AIC Area",
+          "chenshan_way": "Chenshan Way",
+          "bureau_of_swordmancers": "Bureau of Swordmancers",
+          "residential_area": "Residential Area",
+          "monitoring_center": "Monitoring Center",
+          "marker_stone_flats": "Marker Stone Flats",
+          "xiranflow_channel": "Xiranflow Channel",
+          "fangxing_avenue": "Fangxing Avenue",
+          "tianshi_pillar_array": "Tianshi Pillar Array",
+          "maintenance_zone": "Maintenance Zone",
+          "institute_of_materials_science": "Institute of Materials Science",
+          "tianshi_bureau_academy": "Tianshi Bureau Academy",
+          "citizen_square": "Citizen Square",
+          "restricted_area": "Restricted Area",
+          "tianjing_courtyard": "Tianjing Courtyard",
+          "riverbank_grotto": "Riverbank Grotto",
+          "sanku_ridge": "Sanku Ridge",
+          "outskirt_barrens": "Outskirt Barrens",
+          "lingshui_way": "Lingshui Way",
+          "guhou_marsh": "Guhou Marsh",
+          "field_logistics_depot": "Field Logistics Depot",
+          "hulu_cave": "Hulu Cave"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Treadway",
+          "ecological_research_station": "Ecological Research Station",
+          "qingbo bailey": "Qingbo Bailey",
+          "treasure_grotto": "Treasure Grotto",
+          "sky_king_flats": "Sky King Flats",
+          "stragglers_ford": "Stragglers Ford",
+          "burdosnout_hill": "Burdosnout Hill",
+          "stragglers_grove": "Stragglers Grove",
+          "zhailing_islet": "Zhailing Islet",
+          "gloomvale": "Gloomvale",
+          "south_hill": "South Hill",
+          "sword_quenching_marsh": "Sword Quenching Marsh",
+          "everwater_brook": "Everwater Brook"
+        }
+      }
+    }
   },
   "DJ": {
     "main": "OMV Dijiang",
-    "sub": {}
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Bridge",
+        "reception_room": "Reception Room",
+        "kernel_sector": "Kernel Sector",
+        "central_ring": "Central Ring",
+        "working_sector": "Working Sector",
+        "living_sector": "Living Sector"
+      }
+    }
   }
 }

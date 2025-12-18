@@ -1,39 +1,183 @@
 {
-    "Valley_4": {
-        "main": "Valley 4",
-        "sub": {
-            "PL": {
-                "name": "PL",
-                "site": {}
-            },
-            "OL": {
-                "name": "OL",
-                "site": {}
-            },
-            "OP": {
-                "name": "OP",
-                "site": {}
-            },
-            "AQ": {
-                "name": "AQ",
-                "site": {}
-            },
-            "VP": {
-                "name": "VP",
-                "site": {}
-            },
-            "HB": {
-                "name": "HB",
-                "site": {}
-            }
+  "VL": {
+    "main": "4번 협곡",
+    "sub": {
+      "PL": {
+        "name": "에너지 공급 고지",
+        "short": "PL",
+        "site": {
+          "old_dorms": "옛 숙소 구역",
+          "originium_power_plant": "오리지늄 발전소",
+          "power_plant_comm_station": "발전소 통신소",
+          "bridge_approach_camp": "다리 입구 구역 캠프",
+          "united_parking_lot": "연맹 주차장",
+          "planned_construction_area": "건설 계획 구역",
+          "plateau_trunkway": "고지대 큰길",
+          "bonekrusher_warcamp": "본 크러셔 캠프",
+          "evacuation_zone": "대피 구역",
+          "shattered_fringe": "파괴된 경계",
+          "Æther_test_site": "초자연 실험장"
         }
-    },
-    "Jinlong": {
-        "main": "Jinlong",
-        "sub": {}
-    },
-    "Dijiang": {
-        "main": "Dijiang",
-        "sub": {}
+      },
+      "OL": {
+        "name": "광맥 구역",
+        "short": "OL",
+        "site": {
+          "originium_passage": "오리지늄 터널",
+          "cradle_of_the_ages": "세대의 요람",
+          "mines_cable_car_station": "케이블카 탑승장",
+          "logistices_area": "운송 구역",
+          "containment_zone_intersection": "격리 구역 갈림길",
+          "old_mines": "옛 광산 지역",
+          "meteorological_station": "기상 관측소",
+          "cliffside_mining_area": "절벽 채굴 구역",
+          "temporary_stockpile": "임시 보관 구역",
+          "blightcliff_ovservation_post": "침식 절벽 관측소",
+          "mining_area_clinic": "광산 지역 의료소",
+          "mining_camp": "광산 생활 구역",
+          "mountain_passage": "산지 통로",
+          "landbreaker_camp": "랜드브레이커 캠프"
+        }
+      },
+      "OP": {
+        "name": "오리지늄 실험 구역",
+        "short": "OP",
+        "site": {
+          "control_center": "제어실",
+          "route_5": "5번 국도",
+          "Transport_nexus": "환승 거점",
+          "the_depression": "침강 지대",
+          "originium_science_park": "오리지늄 실험 구역",
+          "research_center": "연구소",
+          "cliffside_trail": "절벽 산길",
+          "mountain_path_slope": "완만한 산길",
+          "kohl_plant": "콜 화합물 공장",
+          "eco_farm": "생태 재배 구역",
+          "infra_station": "기초 건설 주둔지"
+        }
+      },
+      "AQ": {
+        "name": "아부레이 채석장",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "채석장 입구",
+          "refuse_stockpile": "폐기물 적재 구역",
+          "loading_area": "하역 구역",
+          "stockpile_area": "재료 보관소",
+          "deep_management_post": "심층 관리 구역",
+          "lifter_central": "리프트 센터",
+          "listening_post": "통신 구역",
+          "transfer_area": "전달 구역",
+          "quarry_site": "채석 작업 구역",
+          "staff_lounge": "작업자 휴게소"
+        }
+      },
+      "VP": {
+        "name": "협곡길",
+        "short": "VP",
+        "site": {
+          "valley_fort": "협곡 요새",
+          "arsenal": "무기고",
+          "valley_transfer": "협곡 환승역",
+          "temporary_shelter": "임시 대피소",
+          "abandoned_trail": "버려진 오솔길",
+          "passage_entrance": "통로 입구"
+        }
+      },
+      "HB": {
+        "name": "거점 지역",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "화물 플랫폼",
+          "rockhill_passage": "바위 언덕 통로",
+          "bridge_approach": "다리 입구 공사장",
+          "shorecove_camp": "강변 동굴 캠프",
+          "old_water_plant": "오래된 급수 설비",
+          "hub_base_power_plant": "거점 기지 발전소",
+          "hub_west": "거점 지역 서부",
+          "originium_byproduct_precessing_center": "오리지늄 부산물 센터",
+          "construction_site": "건설대기 구역",
+          "hub_base": "거점 지역 기지",
+          "old_factory": "옛 공장 구역",
+          "aic_research_center": "통합 공업 연구소",
+          "southern_meadows": "남쪽 초원",
+          "worker_dorms": "직원 숙소 구역",
+          "mountain_side_trail": "산지 옆길",
+          "woodland_fringes": "변두리 숲지대",
+          "mountain_top": "산지 정상",
+          "eastern_passageway": "동쪽 통로",
+          "core_aic_area": "통합 핵심 구역"
+        }
+      }
     }
+  },
+  "WL": {
+    "main": "무릉",
+    "sub": {
+      "WL": {
+        "name": "무릉성",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "불귀림",
+          "agricultural_test_site": "실험 작물 시범 구역",
+          "technological_production_office": "기술 생산 사무소",
+          "core_aic_area": "통합 핵심 구역",
+          "chenshan_way": "침산길",
+          "bureau_of_swordmancers": "무기 대장간",
+          "residential_area": "거주 구역",
+          "monitoring_center": "관측소",
+          "marker_stone_flats": "경계석 평원",
+          "xiranflow_channel": "식류 통로",
+          "fangxing_avenue": "방흥거리",
+          "tianshi_pillar_array": "천사장 배열",
+          "maintenance_zone": "보수 예정 구역",
+          "institute_of_materials_science": "재료 연구소",
+          "tianshi_bureau_academy": "천사부 학원",
+          "citizen_square": "시민 광장",
+          "restricted_area": "경계 구역",
+          "tianjing_courtyard": "천정원",
+          "riverbank_grotto": "안변 석굴",
+          "sanku_ridge": "삼굴 언덕",
+          "outskirt_barrens": "성 밖 황무지",
+          "lingshui_way": "능수길",
+          "guhou_marsh": "고후 늪지",
+          "field_logistics_depot": "보급소",
+          "hulu_cave": "호로 동굴"
+        }
+      },
+      "JY": {
+        "name": "경옥 골짜기",
+        "short": "JY",
+        "site": {
+          "treadway": "채길",
+          "ecological_research_station": "생태 실험실",
+          "qingbo bailey": "청파채 외곽",
+          "treasure_grotto": "보물의 심장부",
+          "sky_king_flats": "천왕 평지",
+          "stragglers_ford": "미종도",
+          "burdosnout_hill": "태비산",
+          "stragglers_grove": "미종림",
+          "zhailing_islet": "적릉서",
+          "gloomvale": "깊은 골짜기",
+          "south_hill": "남산",
+          "sword_quenching_marsh": "쉬검탕",
+          "everwater_brook": "수택 계곡"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "O.M.V. 제강호",
+    "sub": {
+      "name": "O.M.V. 제강호",
+      "site": {
+        "bridge": "갑판",
+        "reception_room": "응접실",
+        "kernel_sector": "핵심 구역",
+        "central_ring": "중앙 홀",
+        "working_sector": "기초 건설 구역",
+        "living_sector": "생활 구역"
+      }
+    }
+  }
 }

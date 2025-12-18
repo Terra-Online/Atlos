@@ -1,5 +1,5 @@
 import L, { divIcon } from 'leaflet';
-import { IMarkerData, MARKER_TYPE_DICT } from '@/data/marker';
+import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import LOGGER from '@/utils/log';
@@ -10,20 +10,20 @@ import { getActivePoints, useUserRecordStore } from '@/store/userRecord';
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
->((acc, type) => {
+>((acc, typeInfo: IMarkerType) => {
     // Now, getItemIconUrl will return marker icon if key ends with _spot automatically
-    const iconUrl = getItemIconUrl(type.key);
-    if (type.noFrame) {
-        acc[type.key] = divIcon({
+    const iconUrl = getItemIconUrl(typeInfo.key, 'webp');
+    if (typeInfo.noFrame) {
+        acc[typeInfo.key] = divIcon({
             iconSize: [50, 50],
             iconAnchor: [25, 25],
             popupAnchor: [0, 0],
             tooltipAnchor: [0, 0],
             className: styles.noFrameMarkerIcon,
-            html: `<div class="${styles.noFrameInner}"><img src="${iconUrl}" class="${styles.noFrameImage}" alt="${type.key}" /></div>`,
+            html: `<div class="${styles.noFrameInner}"><img src="${iconUrl}" class="${styles.noFrameImage}" alt="${typeInfo.key}" /></div>`,
         });
     } else
-        acc[type.key] = divIcon({
+        acc[typeInfo.key] = divIcon({
             // iconUrl,
             iconSize: [32, 32],
             iconAnchor: [16, 16],

@@ -2,59 +2,8 @@
 
 import { cacheFontFile, getCachedFontBlob } from './fontCache';
 
-// Import font assets so Vite can hash and emit them
-import UDShinGo_CN_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff2';
-import UDShinGo_CN_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_B.woff';
-import UDShinGo_CN_B_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_B.otf';
+import { getFontAssetUrl } from './fontAssets';
 
-import UDShinGo_HK_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff2';
-import UDShinGo_HK_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_B.woff';
-import UDShinGo_HK_B_ttf from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_B.ttf';
-
-import UDShinGo_JP_B_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff2';
-import UDShinGo_JP_B_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_B.woff';
-import UDShinGo_JP_B_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_B.otf';
-
-import UDShinGo_CN_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff2';
-import UDShinGo_CN_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.woff';
-import UDShinGo_CN_DB_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_DB.otf';
-
-import UDShinGo_HK_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff2';
-import UDShinGo_HK_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.woff';
-import UDShinGo_HK_DB_ttf from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf';
-
-import UDShinGo_JP_DB_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff2';
-import UDShinGo_JP_DB_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.woff';
-import UDShinGo_JP_DB_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_DB.otf';
-
-import UDShinGo_CN_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff2';
-import UDShinGo_CN_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_M.woff';
-import UDShinGo_CN_M_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_M.otf';
-
-import UDShinGo_HK_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff2';
-import UDShinGo_HK_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_M.woff';
-import UDShinGo_HK_M_ttf from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_M.ttf';
-
-import UDShinGo_JP_M_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff2';
-import UDShinGo_JP_M_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_M.woff';
-import UDShinGo_JP_M_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_M.otf';
-
-import UDShinGo_CN_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff2';
-import UDShinGo_CN_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_R.woff';
-import UDShinGo_CN_R_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_CN_R.otf';
-
-import UDShinGo_HK_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff2';
-import UDShinGo_HK_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_R.woff';
-import UDShinGo_HK_R_ttf from '@/assets/fonts/UD_ShinGo/UDShinGo_HK_R.ttf';
-
-import UDShinGo_JP_R_woff2 from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff2';
-import UDShinGo_JP_R_woff from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_R.woff';
-import UDShinGo_JP_R_otf from '@/assets/fonts/UD_ShinGo/UDShinGo_JP_R.otf';
-
-import HMSans_SC_woff2 from '@/assets/fonts/Harmony/HMSans_SC.woff2';
-import HMSans_SC_woff from '@/assets/fonts/Harmony/HMSans_SC.woff';
-import HMSans_TC_woff2 from '@/assets/fonts/Harmony/HMSans_TC.woff2';
-import HMSans_TC_woff from '@/assets/fonts/Harmony/HMSans_TC.woff';
 
 // Build CDN URL with base and normalize dev paths to production paths
 const toCdnUrl = (p: string): string => {
@@ -101,88 +50,88 @@ const fontDefinitions: FontDefinition[] = [
         family: 'UD_ShinGo Bold',
         weight: 'Bold',
         cnFiles: {
-            woff2: UDShinGo_CN_B_woff2,
-            woff: UDShinGo_CN_B_woff,
-            otf: UDShinGo_CN_B_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.otf'),
         },
         hkFiles: {
-            woff2: UDShinGo_HK_B_woff2,
-            woff: UDShinGo_HK_B_woff,
-            ttf: UDShinGo_HK_B_ttf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.woff'),
+            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.ttf'),
         },
         jpFiles: {
-            woff2: UDShinGo_JP_B_woff2,
-            woff: UDShinGo_JP_B_woff,
-            otf: UDShinGo_JP_B_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.otf'),
         }
     },
     {
         family: 'UD_ShinGo DemiBold',
         weight: 'DemiBold',
         cnFiles: {
-            woff2: UDShinGo_CN_DB_woff2,
-            woff: UDShinGo_CN_DB_woff,
-            otf: UDShinGo_CN_DB_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.otf'),
         },
         hkFiles: {
-            woff2: UDShinGo_HK_DB_woff2,
-            woff: UDShinGo_HK_DB_woff,
-            ttf: UDShinGo_HK_DB_ttf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.woff'),
+            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.ttf'),
         },
         jpFiles: {
-            woff2: UDShinGo_JP_DB_woff2,
-            woff: UDShinGo_JP_DB_woff,
-            otf: UDShinGo_JP_DB_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.otf'),
         }
     },
     {
         family: 'UD_ShinGo Medium',
         weight: 'Medium',
         cnFiles: {
-            woff2: UDShinGo_CN_M_woff2,
-            woff: UDShinGo_CN_M_woff,
-            otf: UDShinGo_CN_M_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.otf'),
         },
         hkFiles: {
-            woff2: UDShinGo_HK_M_woff2,
-            woff: UDShinGo_HK_M_woff,
-            ttf: UDShinGo_HK_M_ttf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.woff'),
+            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.ttf'),
         },
         jpFiles: {
-            woff2: UDShinGo_JP_M_woff2,
-            woff: UDShinGo_JP_M_woff,
-            otf: UDShinGo_JP_M_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.otf'),
         }
     },
     {
         family: 'UD_ShinGo Regular',
         weight: 'Regular',
         cnFiles: {
-            woff2: UDShinGo_CN_R_woff2,
-            woff: UDShinGo_CN_R_woff,
-            otf: UDShinGo_CN_R_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.otf'),
         },
         hkFiles: {
-            woff2: UDShinGo_HK_R_woff2,
-            woff: UDShinGo_HK_R_woff,
-            ttf: UDShinGo_HK_R_ttf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.woff'),
+            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.ttf'),
         },
         jpFiles: {
-            woff2: UDShinGo_JP_R_woff2,
-            woff: UDShinGo_JP_R_woff,
-            otf: UDShinGo_JP_R_otf,
+            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.woff2'),
+            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.woff'),
+            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.otf'),
         }
     },
     {
         family: 'HMSans',
         weight: 'Regular',
         cnFiles: {
-            woff2: HMSans_SC_woff2,
-            woff: HMSans_SC_woff,
+            woff2: getFontAssetUrl('Harmony/HMSans_SC.woff2'),
+            woff: getFontAssetUrl('Harmony/HMSans_SC.woff'),
         },
         hkFiles: {
-            woff2: HMSans_TC_woff2,
-            woff: HMSans_TC_woff,
+            woff2: getFontAssetUrl('Harmony/HMSans_TC.woff2'),
+            woff: getFontAssetUrl('Harmony/HMSans_TC.woff'),
         }
     },
 ];
@@ -235,6 +184,13 @@ async function generateFontFaceCSS(definition: FontDefinition, region: Region): 
     if (!files) return '';
     
     const sources: string[] = [];
+
+    const safeGetCachedFontBlob = (url: string): Promise<Blob | null> => {
+        return (getCachedFontBlob as unknown as (u: string) => Promise<Blob | null>)(url);
+    };
+    const safeCacheFontFile = (url: string): Promise<void> => {
+        return (cacheFontFile as unknown as (u: string) => Promise<void>)(url);
+    };
     
     // Helper to process a font file
     const processFile = async (filePath: string | undefined, format: string) => {
@@ -242,7 +198,7 @@ async function generateFontFaceCSS(definition: FontDefinition, region: Region): 
         const url = toCdnUrl(filePath);
         
         // Try to get from cache first
-        const blob = await getCachedFontBlob(url);
+        const blob = await safeGetCachedFontBlob(url);
         let finalUrl = url;
         
         if (blob) {
@@ -250,7 +206,7 @@ async function generateFontFaceCSS(definition: FontDefinition, region: Region): 
             activeBlobUrls.push(finalUrl);
         } else {
             // Not in cache, trigger background cache
-            void cacheFontFile(url).catch(err => console.error('Font background cache failed:', err));
+            void safeCacheFontFile(url).catch((err: unknown) => console.error('Font background cache failed:', err));
         }
         
         sources.push(`url('${finalUrl}') format('${format}')`);
