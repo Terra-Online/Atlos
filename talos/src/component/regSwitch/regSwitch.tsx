@@ -9,12 +9,20 @@ import Wuling from '../../assets/logos/_Wuling.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
 import Æther from '../../assets/logos/Æther.svg?react';
 import { useForceSubregionOpen } from '@/store/uiPrefs';
+import { useTranslateGame } from '@/locale';
 
 const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
     Wuling: Wuling,
     Dijiang: Dijiang,
     Æther: Æther,
+};
+
+// i18n region code mapping (locale/data/region/*.json)
+const REGION_I18N_CODE: Record<string, string> = {
+    Valley_4: 'VL',
+    Wuling: 'WL',
+    Dijiang: 'DJ',
 };
 
 const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
@@ -33,6 +41,7 @@ const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
 const RegionContainer: React.FC<{
     isSidebarOpen: boolean;
 }> = ({ isSidebarOpen }) => {
+    const tGame = useTranslateGame();
     const {
         currentRegionKey,
         currentSubregionKey,
@@ -60,6 +69,7 @@ const RegionContainer: React.FC<{
             ></div>
             {Object.entries(REGION_DICT).map(([key, region]) => {
                 const Icon: React.FC = REGION_ICON_DICT[key];
+                const regionCode = REGION_I18N_CODE[key] ?? key;
                 const subRegionIndex = currentSubregionKey
                     ? region.subregions.indexOf(currentSubregionKey)
                     : -1;
@@ -110,7 +120,12 @@ const RegionContainer: React.FC<{
                                             }}
                                         >
                                             <div className={styles.subregName}>
-                                                {SUBREGION_DICT[subregion]?.name}
+                                                {(() => {
+                                                    const subKey = SUBREGION_DICT[subregion]?.name;
+                                                    if (!subKey) return subregion;
+                                                    const v = tGame<unknown>(`region.${regionCode}.sub.${subKey}.short`);
+                                                    return typeof v === 'string' && v.trim() ? v : subKey;
+                                                })()}
                                             </div> 
                                         </div>
                                     ))}

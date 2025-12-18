@@ -1,39 +1,183 @@
 {
-    "Valley_4": {
-        "main": "Valley 4",
-        "sub": {
-            "PL": {
-                "name": "PL",
-                "site": {}
-            },
-            "OL": {
-                "name": "OL",
-                "site": {}
-            },
-            "OP": {
-                "name": "OP",
-                "site": {}
-            },
-            "AQ": {
-                "name": "AQ",
-                "site": {}
-            },
-            "VP": {
-                "name": "VP",
-                "site": {}
-            },
-            "HB": {
-                "name": "HB",
-                "site": {}
-            }
+  "VL": {
+    "main": "Долина IV",
+    "sub": {
+      "PL": {
+        "name": "Плато Энергии",
+        "short": "ПЭ",
+        "site": {
+          "old_dorms": "Старые общежития",
+          "originium_power_plant": "Ориджиниевая электростанция",
+          "power_plant_comm_station": "Пункт связи электростанции",
+          "bridge_approach_camp": "Лагерь у моста",
+          "united_parking_lot": "Объединенная парковка",
+          "planned_construction_area": "Зона планируемого строительства",
+          "plateau_trunkway": "Главная дорога плато",
+          "bonekrusher_warcamp": "Военный лагерь Костоломов",
+          "evacuation_zone": "Зона эвакуации",
+          "shattered_fringe": "Расколотый Предел",
+          "Æther_test_site": "Лаборатория исследования эфира"
         }
-    },
-    "Wuling": {
-        "main": "Wuling",
-        "sub": {}
-    },
-    "Dijiang": {
-        "main": "Dijiang",
-        "sub": {}
+      },
+      "OL": {
+        "name": "Первое месторождение",
+        "short": "ПМ",
+        "site": {
+          "originium_passage": "Ориджиниевый проход",
+          "cradle_of_the_ages": "Колыбель Веков",
+          "mines_cable_car_station": "Станция шахтового фуникулера",
+          "logistices_area": "Логистическая зона",
+          "containment_zone_intersection": "Развилка зоны изоляции",
+          "old_mines": "Старые шахты",
+          "meteorological_station": "Метеорологическая станция",
+          "cliffside_mining_area": "Горное место разработки",
+          "temporary_stockpile": "Временный склад",
+          "blightcliff_ovservation_post": "Наблюдательный пункт Блайтклиф",
+          "mining_area_clinic": "Шахтерский медпункт",
+          "mining_camp": "Шахтерский лагерь",
+          "mountain_passage": "Горный перевал",
+          "landbreaker_camp": "Лагерь Землекрушителей"
+        }
+      },
+      "OP": {
+        "name": "Центр исследования ориджиния",
+        "short": "ЦИ",
+        "site": {
+          "control_center": "Центр управления",
+          "route_5": "Маршрут 5",
+          "Transport_nexus": "Транспортный нексус",
+          "the_depression": "Впадина",
+          "originium_science_park": "Центр исследования ориджиния",
+          "research_center": "Исследовательский центр",
+          "cliffside_trail": "Тропа на краю утеса",
+          "mountain_path_slope": "Крутая горная тропа",
+          "kohl_plant": "Завод кайала",
+          "eco_farm": "Экоферма",
+          "infra_station": "Инфрастанция"
+        }
+      },
+      "AQ": {
+        "name": "Карьер Эберрей",
+        "short": "КЭ",
+        "site": {
+          "quarry_entrance": "Вход в карьер",
+          "refuse_stockpile": "Склад отходов",
+          "loading_area": "Область загрузки",
+          "stockpile_area": "Складская зона",
+          "deep_management_post": "Глубинный пост управления",
+          "lifter_central": "Центральный подъемник",
+          "listening_post": "Пост связи",
+          "transfer_area": "Область трансфера",
+          "quarry_site": "Рабочая зона карьера",
+          "staff_lounge": "Лобби для сотрудников"
+        }
+      },
+      "VP": {
+        "name": "Перевал",
+        "short": "Пе",
+        "site": {
+          "valley_fort": "Форт Долины",
+          "arsenal": "Арсенал",
+          "valley_transfer": "Трансфер Долины",
+          "temporary_shelter": "Временный приют",
+          "abandoned_trail": "Забытая тропа",
+          "passage_entrance": "Начало пути"
+        }
+      },
+      "HB": {
+        "name": "Центр",
+        "short": "Це",
+        "site": {
+          "lohistics_platform": "Логистическая платформа",
+          "rockhill_passage": "Скалистый перевал",
+          "bridge_approach": "У моста",
+          "shorecove_camp": "Береговой лагерь",
+          "old_water_plant": "Старая станция водоочистки",
+          "hub_base_power_plant": "Электростанция базы Центра",
+          "hub_west": "Западная часть Центра",
+          "originium_byproduct_precessing_center": "Центр обработки побочного продукта ориджиния",
+          "construction_site": "Строительная площадка",
+          "hub_base": "База Центра",
+          "old_factory": "Старый завод",
+          "aic_research_center": "Исследовательский центр АПК",
+          "southern_meadows": "Южные луга",
+          "worker_dorms": "Общежитие рабочих",
+          "mountain_side_trail": "Горная обходная тропа",
+          "woodland_fringes": "Окраина леса",
+          "mountain_top": "Вершина горы",
+          "eastern_passageway": "Восточный путь",
+          "core_aic_area": "Ключевая область АПК"
+        }
+      }
     }
+  },
+  "WL": {
+    "main": "Улин",
+    "sub": {
+      "WL": {
+        "name": "Улин",
+        "short": "Ул",
+        "site": {
+          "bugui_grove": "Роща Бугуй",
+          "agricultural_test_site": "Сельскохозяйственная лаборатория",
+          "technological_production_office": "Отдел технологий и производства",
+          "core_aic_area": "Ключевая область АПК",
+          "chenshan_way": "Дорога Чэньшань",
+          "bureau_of_swordmancers": "Бюро мастеров меча",
+          "residential_area": "Жилой район",
+          "monitoring_center": "Центр наблюдений",
+          "marker_stone_flats": "Плоскость Межевого камня",
+          "xiranflow_channel": "Ксиранадовый канал",
+          "fangxing_avenue": "Улица Фансин",
+          "tianshi_pillar_array": "Группа столбов Тяньши",
+          "maintenance_zone": "Ремонтная зона",
+          "institute_of_materials_science": "Институт материаловедения",
+          "tianshi_bureau_academy": "Академия бюро Тяньши",
+          "citizen_square": "Площадь Граждан",
+          "restricted_area": "Закрытая область",
+          "tianjing_courtyard": "Двор Тяньцзин",
+          "riverbank_grotto": "Речной грот",
+          "sanku_ridge": "Хребет Саньку",
+          "outskirt_barrens": "Окраинные пустоши",
+          "lingshui_way": "Дорога Линшуй",
+          "guhou_marsh": "Топи Гухоу",
+          "field_logistics_depot": "Склад полевого снабжения",
+          "hulu_cave": "Пещера Хулу"
+        }
+      },
+      "JY": {
+        "name": "Долина Цзинъю",
+        "short": "ДЦ",
+        "site": {
+          "treadway": "Протоптанный путь",
+          "ecological_research_station": "Станция экологических исследований",
+          "qingbo bailey": "Окрестности Циньбо",
+          "treasure_grotto": "Грот с сокровищами",
+          "sky_king_flats": "Равнина Небесного Царя",
+          "stragglers_ford": "Переправа Скитальцев",
+          "burdosnout_hill": "Холм Звериного Носа",
+          "stragglers_grove": "Роща Скитальцев",
+          "zhailing_islet": "Островок Чжайлин",
+          "gloomvale": "Мглистая долина",
+          "south_hill": "Южный холм",
+          "sword_quenching_marsh": "Топь Омовения Клинков",
+          "everwater_brook": "Вечный источник"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "ОМК «Дицзян»",
+    "sub": {
+      "name": "ОМК «Дицзян»",
+      "site": {
+        "bridge": "Мостик",
+        "reception_room": "Приемная",
+        "kernel_sector": "Центральный сектор",
+        "central_ring": "Центральное кольцо",
+        "working_sector": "Рабочий сектор",
+        "living_sector": "Жилой сектор"
+      }
+    }
+  }
 }

@@ -1,39 +1,183 @@
 {
-    "Valley_4": {
-        "main": "Valley 4",
-        "sub": {
-            "PL": {
-                "name": "PL",
-                "site": {}
-            },
-            "OL": {
-                "name": "OL",
-                "site": {}
-            },
-            "OP": {
-                "name": "OP",
-                "site": {}
-            },
-            "AQ": {
-                "name": "AQ",
-                "site": {}
-            },
-            "VP": {
-                "name": "VP",
-                "site": {}
-            },
-            "HB": {
-                "name": "HB",
-                "site": {}
-            }
+  "VL": {
+    "main": "四号谷地",
+    "sub": {
+      "PL": {
+        "name": "エネルギー高地",
+        "short": "高",
+        "site": {
+          "old_dorms": "旧宿舎",
+          "originium_power_plant": "源石発電所",
+          "power_plant_comm_station": "発電所通信局",
+          "bridge_approach_camp": "橋頭野営地",
+          "united_parking_lot": "工業団駐車場",
+          "planned_construction_area": "建設計画地",
+          "plateau_trunkway": "高地大通り",
+          "bonekrusher_warcamp": "骨砕野営地",
+          "evacuation_zone": "避難場所",
+          "shattered_fringe": "破砕辺境",
+          "Æther_test_site": "超域実験場"
         }
-    },
-    "Wuling": {
-        "main": "Wuling",
-        "sub": {}
-    },
-    "Dijiang": {
-        "main": "Dijiang",
-        "sub": {}
+      },
+      "OL": {
+        "name": "鉱山エリア",
+        "short": "鉱",
+        "site": {
+          "originium_passage": "源石トンネル",
+          "cradle_of_the_ages": "時代揺籠",
+          "mines_cable_car_station": "鉱区連絡所",
+          "logistices_area": "物流区",
+          "containment_zone_intersection": "分かれ道",
+          "old_mines": "旧鉱区",
+          "meteorological_station": "気象観測所",
+          "cliffside_mining_area": "崖の採掘区",
+          "temporary_stockpile": "臨時物資保管場",
+          "blightcliff_ovservation_post": "蝕崖観測所",
+          "mining_area_clinic": "鉱区診療所",
+          "mining_camp": "鉱区居住地",
+          "mountain_passage": "山岳通路",
+          "landbreaker_camp": "無法者野営地"
+        }
+      },
+      "OP": {
+        "name": "源石実験エリア",
+        "short": "実",
+        "site": {
+          "control_center": "管制センター",
+          "route_5": "五号道路",
+          "Transport_nexus": "大型輸送拠点",
+          "the_depression": "窪地",
+          "originium_science_park": "源石実験エリア",
+          "research_center": "研究所",
+          "cliffside_trail": "崖の山道",
+          "mountain_path_slope": "山の坂道",
+          "kohl_plant": "合成コール工場",
+          "eco_farm": "栽培場",
+          "infra_station": "建設基地"
+        }
+      },
+      "AQ": {
+        "name": "アブリー採石場",
+        "short": "採",
+        "site": {
+          "quarry_entrance": "採石場入口",
+          "refuse_stockpile": "廃棄物保管場",
+          "loading_area": "積卸場",
+          "stockpile_area": "資材保管所",
+          "deep_management_post": "深層管理エリア",
+          "lifter_central": "運搬制御室",
+          "listening_post": "通信拠点",
+          "transfer_area": "中継場",
+          "quarry_site": "採掘現場",
+          "staff_lounge": "作業員休憩所"
+        }
+      },
+      "VP": {
+        "name": "谷地通路",
+        "short": "谷",
+        "site": {
+          "valley_fort": "谷地要塞",
+          "arsenal": "武器庫",
+          "valley_transfer": "谷地中継所",
+          "temporary_shelter": "臨時避難所",
+          "abandoned_trail": "廃道",
+          "passage_entrance": "通路入口"
+        }
+      },
+      "HB": {
+        "name": "中枢エリア",
+        "short": "枢",
+        "site": {
+          "lohistics_platform": "物流基地",
+          "rockhill_passage": "岩丘の道",
+          "bridge_approach": "橋頭建設場",
+          "shorecove_camp": "岸窟野営地",
+          "old_water_plant": "旧水処理場",
+          "hub_base_power_plant": "中枢基地発電所",
+          "hub_west": "中枢西部",
+          "originium_byproduct_precessing_center": "源石副産物センター",
+          "construction_site": "建設予定地",
+          "hub_base": "中枢基地",
+          "old_factory": "旧工場",
+          "aic_research_center": "集成工業研究所",
+          "southern_meadows": "南芝原",
+          "worker_dorms": "従業員寮",
+          "mountain_side_trail": "山岳の道",
+          "woodland_fringes": "外れの森",
+          "mountain_top": "山頂",
+          "eastern_passageway": "東通路",
+          "core_aic_area": "集成工業エリア"
+        }
+      }
     }
+  },
+  "WL": {
+    "main": "武陵",
+    "sub": {
+      "WL": {
+        "name": "武陵城",
+        "short": "武",
+        "site": {
+          "bugui_grove": "不帰林",
+          "agricultural_test_site": "実験栽培試行区",
+          "technological_production_office": "技術生産室",
+          "core_aic_area": "集成工業エリア",
+          "chenshan_way": "沈山道",
+          "bureau_of_swordmancers": "選剣局",
+          "residential_area": "居住区",
+          "monitoring_center": "観測所",
+          "marker_stone_flats": "界石広場",
+          "xiranflow_channel": "息流道路",
+          "fangxing_avenue": "方興街",
+          "tianshi_pillar_array": "天師杭陣",
+          "maintenance_zone": "修繕工事区",
+          "institute_of_materials_science": "材料研究所",
+          "tianshi_bureau_academy": "天師府学院",
+          "citizen_square": "市民広場",
+          "restricted_area": "警戒区",
+          "tianjing_courtyard": "観天院",
+          "riverbank_grotto": "岸辺の洞窟",
+          "sanku_ridge": "三窟丘",
+          "outskirt_barrens": "城外荒地",
+          "lingshui_way": "陵水道",
+          "guhou_marsh": "孤喉沢",
+          "field_logistics_depot": "備蓄施設",
+          "hulu_cave": "瓢箪洞"
+        }
+      },
+      "JY": {
+        "name": "景玉谷",
+        "short": "玉",
+        "site": {
+          "treadway": "ぬかるんだ道",
+          "ecological_research_station": "生態研究所",
+          "qingbo bailey": "清波砦外郭",
+          "treasure_grotto": "集宝洞",
+          "sky_king_flats": "天王原",
+          "stragglers_ford": "迷踪津",
+          "burdosnout_hill": "駄鼻山",
+          "stragglers_grove": "迷踪林",
+          "zhailing_islet": "菱摘島",
+          "gloomvale": "幽谷",
+          "south_hill": "南山",
+          "sword_quenching_marsh": "淬剣湖",
+          "everwater_brook": "水沢谷"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "O.M.V.帝江号",
+    "sub": {
+      "name": "O.M.V.帝江号",
+      "site": {
+        "bridge": "ブリッジ",
+        "reception_room": "応接室",
+        "kernel_sector": "中枢区画",
+        "central_ring": "中央ホール",
+        "working_sector": "基礎建設区画",
+        "living_sector": "生活区画"
+      }
+    }
+  }
 }

@@ -108,6 +108,7 @@ const deepGet = (obj: unknown, path: string): unknown =>
 type JsonModule = { default: Record<string, unknown> };
 const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/ui/*.json');
 const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/game/*.json');
+const regionModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/region/*.json');
 
 function resolveLoader(map: Record<string, () => Promise<JsonModule>>, locale: string): (() => Promise<JsonModule>) | undefined {
     const localeLower = locale.toLowerCase();
@@ -153,6 +154,9 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     const gameLocale = hasFullSupport(locale) ? locale : 'en-US';
     let gameLoader = resolveLoader(gameModules, gameLocale);
 
+    // Region bundle follows the same fallback rule as game content
+    let regionLoader = resolveLoader(regionModules, gameLocale);
+
     // Special alias: use zh-TW game content for zh-HK locale if direct match not found
     if (!gameLoader) {
         const lower = gameLocale.toLowerCase();
@@ -161,13 +165,21 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
         }
     }
 
-    const [uiMod, gameMod] = await Promise.all([
+    if (!regionLoader) {
+        const lower = gameLocale.toLowerCase();
+        if (lower === 'zh-hk') {
+            regionLoader = resolveLoader(regionModules, 'zh-TW');
+        }
+    }
+
+    const [uiMod, gameMod, regionMod] = await Promise.all([
         uiLoader ? uiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
         gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
+        regionLoader ? regionLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
     ]);
     return {
         ui: uiMod.default,
-        game: gameMod.default,
+        game: { ...gameMod.default, region: regionMod.default },
     };
 }
 

@@ -204,7 +204,8 @@ $indicator-height: 0.75rem;
     transition: all 0.3s ease;
     position: relative;
     .subregName {
-        font-family: 'Novecento DemiBold', sans-serif;
+        font-family: "Novecento Bold", "Novecento Cyrillic DemiBold", "UD_ShinGo DemiBold", sans-serif;
+        text-transform: uppercase;
         font-weight: 700;
         font-size: 1.25rem;
         color: var(--regswitch-icon-off);

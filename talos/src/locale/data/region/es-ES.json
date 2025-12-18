@@ -1,39 +1,183 @@
 {
-    "Valley_4": {
-        "main": "Valley 4",
-        "sub": {
-            "PL": {
-                "name": "PL",
-                "site": {}
-            },
-            "OL": {
-                "name": "OL",
-                "site": {}
-            },
-            "OP": {
-                "name": "OP",
-                "site": {}
-            },
-            "AQ": {
-                "name": "AQ",
-                "site": {}
-            },
-            "VP": {
-                "name": "VP",
-                "site": {}
-            },
-            "HB": {
-                "name": "HB",
-                "site": {}
-            }
+  "VL": {
+    "main": "Valle IV",
+    "sub": {
+      "PL": {
+        "name": "Meseta de poder",
+        "short": "MP",
+        "site": {
+          "old_dorms": "Dormitorios antiguos",
+          "originium_power_plant": "Planta de energía de originio",
+          "power_plant_comm_station": "Estación de comunicaciones de la Planta de energía",
+          "bridge_approach_camp": "Campamento de aproximación al puente",
+          "united_parking_lot": "Estacionamiento unificado",
+          "planned_construction_area": "Área de construcción planificada",
+          "plateau_trunkway": "Vía principal de la meseta",
+          "bonekrusher_warcamp": "Campamento de guerra Rompehuesos",
+          "evacuation_zone": "Zona de evacuación",
+          "shattered_fringe": "Lindero fracturado",
+          "Æther_test_site": "Zona de pruebas de éter"
         }
-    },
-    "Wuling": {
-        "main": "Wuling",
-        "sub": {}
-    },
-    "Dijiang": {
-        "main": "Dijiang",
-        "sub": {}
+      },
+      "OL": {
+        "name": "Veta de origen",
+        "short": "VO",
+        "site": {
+          "originium_passage": "Pasaje de originio",
+          "cradle_of_the_ages": "Cuna de las Eras",
+          "mines_cable_car_station": "Estación de tranvías de las minas",
+          "logistices_area": "Área de logística",
+          "containment_zone_intersection": "Cruce de la zona de contención",
+          "old_mines": "Minas antiguas",
+          "meteorological_station": "Estación meteorológica",
+          "cliffside_mining_area": "Área minera del acantilado",
+          "temporary_stockpile": "Almacén temporal",
+          "blightcliff_ovservation_post": "Puesto de observación de Riscoplaga",
+          "mining_area_clinic": "Clínica de la zona minera",
+          "mining_camp": "Campamento minero",
+          "mountain_passage": "Paso montañoso",
+          "landbreaker_camp": "Campamento Rompesuelo"
+        }
+      },
+      "OP": {
+        "name": "Parque científico de originio",
+        "short": "CO",
+        "site": {
+          "control_center": "Centro de control",
+          "route_5": "Ruta 5",
+          "Transport_nexus": "Nexus de transporte",
+          "the_depression": "La depresión",
+          "originium_science_park": "Parque científico de originio",
+          "research_center": "Centro de investigación",
+          "cliffside_trail": "Sendero del acantilado",
+          "mountain_path_slope": "Pendiente del sendero de la montaña",
+          "kohl_plant": "Planta de Kohl",
+          "eco_farm": "Granja ecológica",
+          "infra_station": "Infraestación"
+        }
+      },
+      "AQ": {
+        "name": "Cantera Aburrey",
+        "short": "CA",
+        "site": {
+          "quarry_entrance": "Entrada a la cantera",
+          "refuse_stockpile": "Pila de desechos",
+          "loading_area": "Zona de carga",
+          "stockpile_area": "Área de almacenamiento",
+          "deep_management_post": "Puesto de gestión profunda",
+          "lifter_central": "Central de elevadores",
+          "listening_post": "Puesto de escucha",
+          "transfer_area": "Área de transferencia",
+          "quarry_site": "Cantera",
+          "staff_lounge": "Sala del personal"
+        }
+      },
+      "VP": {
+        "name": "Senda del valle",
+        "short": "SV",
+        "site": {
+          "valley_fort": "Fuerte del valle",
+          "arsenal": "Arsenal",
+          "valley_transfer": "Transferencia del valle",
+          "temporary_shelter": "Refugio temporal",
+          "abandoned_trail": "Sendero abandonado",
+          "passage_entrance": "Entrada del pasaje"
+        }
+      },
+      "HB": {
+        "name": "La Base",
+        "short": "LB",
+        "site": {
+          "lohistics_platform": "Plataforma logística",
+          "rockhill_passage": "Paso de Rockhill",
+          "bridge_approach": "Aproximación al puente",
+          "shorecove_camp": "Campamento Shorecove",
+          "old_water_plant": "Antigua planta de agua",
+          "hub_base_power_plant": "Planta de energía de la Base central",
+          "hub_west": "Base Oeste",
+          "originium_byproduct_precessing_center": "Centro de procesamiento de subproductos de originio",
+          "construction_site": "Zona de construcción",
+          "hub_base": "La Base Central",
+          "old_factory": "Fábrica antigua",
+          "aic_research_center": "Centro de investigación del CAI",
+          "southern_meadows": "Prados del sur",
+          "worker_dorms": "Dormitorios de trabajadores",
+          "mountain_side_trail": "Sendero de la montaña",
+          "woodland_fringes": "Linderos del bosque",
+          "mountain_top": "Cima de la montaña",
+          "eastern_passageway": "Pasillo del Este",
+          "core_aic_area": "Área central del CAI"
+        }
+      }
     }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {
+      "WL": {
+        "name": "Ciudad de Wuling",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Arboleda Bugui",
+          "agricultural_test_site": "Zona de pruebas agrícolas",
+          "technological_production_office": "Oficina de Producción Tecnológica",
+          "core_aic_area": "Área central del CAI",
+          "chenshan_way": "Camino Chenshan",
+          "bureau_of_swordmancers": "Agencia de Espadachines",
+          "residential_area": "Área residencial",
+          "monitoring_center": "Centro de Monitoreo",
+          "marker_stone_flats": "Llanuras de Piedra Marcadora",
+          "xiranflow_channel": "Canal de Flujo Xiran",
+          "fangxing_avenue": "Avenida Fangxing",
+          "tianshi_pillar_array": "Conjunto de pilares de Tianshi",
+          "maintenance_zone": "Zona de mantenimiento",
+          "institute_of_materials_science": "Instituto de ciencia de los materiales",
+          "tianshi_bureau_academy": "Academia de la Agencia de Tianshi",
+          "citizen_square": "Plaza Ciudadana",
+          "restricted_area": "Área restringida",
+          "tianjing_courtyard": "Patio de Tianjing",
+          "riverbank_grotto": "Gruta de la ribera",
+          "sanku_ridge": "Cresta Sanku",
+          "outskirt_barrens": "Baldíos periféricos",
+          "lingshui_way": "Camino Lingshui",
+          "guhou_marsh": "Marisma de Guhou",
+          "field_logistics_depot": "Depósito logístico de campo",
+          "hulu_cave": "Cueva Hulu"
+        }
+      },
+      "JY": {
+        "name": "Valle de Jingyu",
+        "short": "JY",
+        "site": {
+          "treadway": "Pasarela",
+          "ecological_research_station": "Estación de investigación ecológica",
+          "qingbo bailey": "Qingbo Bailey",
+          "treasure_grotto": "Gruta del tesoro",
+          "sky_king_flats": "Llanuras del Rey Celestial",
+          "stragglers_ford": "Vado de los Rezagados",
+          "burdosnout_hill": "Colina de Burdosnout",
+          "stragglers_grove": "Arboleda de los Rezagados",
+          "zhailing_islet": "Islote Zhailing",
+          "gloomvale": "Valle sombrío",
+          "south_hill": "Colina Sur",
+          "sword_quenching_marsh": "Pantano del Templado de espadas",
+          "everwater_brook": "Arroyo de Aguas Eternas"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "NMO Dijiang",
+    "sub": {
+      "name": "NMO Dijiang",
+      "site": {
+        "bridge": "Puente",
+        "reception_room": "Sala de recepción",
+        "kernel_sector": "Sector del núcleo",
+        "central_ring": "Anillo Central",
+        "working_sector": "Sector laboral",
+        "living_sector": "Sector residencial"
+      }
+    }
+  }
 }

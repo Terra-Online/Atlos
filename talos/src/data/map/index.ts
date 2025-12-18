@@ -1,6 +1,7 @@
 import REGION_JSON from './region.json';
 
 import VL_SUBREGIONS from './subregionData/VL.json';
+import WL_SUBREGIONS from './subregionData/WL.json';
 
 export interface IMapRegion {
     dimensions: number[];
@@ -25,7 +26,7 @@ export interface IMapSubregionAreaData {
 
 export const REGION_DICT = REGION_JSON as Record<string, IMapRegion>;
 
-export const SUBREGION_DICT = VL_SUBREGIONS.reduce(
+export const SUBREGION_DICT = [...VL_SUBREGIONS, ...WL_SUBREGIONS].reduce(
     (acc, subregion) => {
         acc[subregion.id] = subregion;
         return acc;
