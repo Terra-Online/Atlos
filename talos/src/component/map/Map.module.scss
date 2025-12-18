@@ -5,7 +5,7 @@
     --map-bg: #{$light-1};
     --map-pattern-opacity: 1;
     --map-pattern-bg: #{$white-3};
-    --map-pattern-error-bg: #{$primary-accent-6};
+    --map-pattern-error-bg: #{$secondary-accent-1};
 
     --map-dropshadow: #{rgba($black-0, .3)};
 }
@@ -48,7 +48,7 @@
         
         transition: 
             opacity 0.35s ease,
-            background-color 0.35s $moderato-curve ;
+            background-color 0.3s $moderato-curve ;
     }
     &.overdrag::before {
         background-color: var(--map-pattern-error-bg);
