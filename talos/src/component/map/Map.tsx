@@ -29,11 +29,18 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
             rafIdRef.current = null;
             const maxBounds = map.options.maxBounds;
             if (!maxBounds) return;
-            const max = L.latLngBounds(maxBounds);
+                        const max =
+                                maxBounds instanceof L.LatLngBounds
+                                        ? maxBounds
+                                        : Array.isArray(maxBounds) && maxBounds.length === 2
+                                            ? L.latLngBounds(maxBounds[0], maxBounds[1])
+                                            : null;
+                        if (!max) return;
             const view = map.getBounds();
 
-            // 任意边界越界：只要视口 bounds 不被 maxBounds 完整包含，就算 overdrag
-            const over = !max.contains(view);
+            const sw = view.getSouthWest();
+            const ne = view.getNorthEast();
+            const over = !(max.contains(sw) && max.contains(ne));
             if (over === isOverdragRef.current) return;
             isOverdragRef.current = over;
             setIsOverdrag(over);

@@ -123,7 +123,7 @@ const RegionContainer: React.FC<{
                                                 {(() => {
                                                     const subKey = SUBREGION_DICT[subregion]?.name;
                                                     if (!subKey) return subregion;
-                                                    const v = tGame<unknown>(`region.${regionCode}.sub.${subKey}.short`);
+                                                    const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
                                                     return typeof v === 'string' && v.trim() ? v : subKey;
                                                 })()}
                                             </div> 
