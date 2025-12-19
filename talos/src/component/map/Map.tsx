@@ -3,6 +3,8 @@ import 'leaflet/dist/leaflet.css';
 import styles from './Map.module.scss';
 import { useMap } from './useMap';
 import L from 'leaflet';
+import { useLabelLayer } from './useLabelLayer';
+import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;
@@ -10,7 +12,7 @@ interface MapProps {
 
 const Map: React.FC<MapProps> = ({ onMapReady }) => {
     const mapElementRef = useRef<HTMLDivElement>(null);
-    const { map } = useMap(mapElementRef.current);
+    const { map, currentRegion } = useMap(mapElementRef.current);
     const [isOverdrag, setIsOverdrag] = useState(false);
 
     const isOverdragRef = useRef(false);
@@ -21,6 +23,9 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
             onMapReady(map);
         }
     }, [map, onMapReady]);
+
+    const maxZoom = (currentRegion && REGION_DICT[currentRegion]?.maxZoom) ?? REGION_DICT[DEFAULT_REGION].maxZoom;
+    useLabelLayer(map, currentRegion, maxZoom);
 
     useEffect(() => {
         if (!map) return;
