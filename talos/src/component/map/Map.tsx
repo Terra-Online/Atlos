@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import styles from './Map.module.scss';
 import { useMap } from './useMap';
 import L from 'leaflet';
-import { useLabelLayer } from './useLabelLayer';
+import { useLayer } from './useLayer';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 
 interface MapProps {
@@ -24,8 +24,8 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
         }
     }, [map, onMapReady]);
 
-    const maxZoom = (currentRegion && REGION_DICT[currentRegion]?.maxZoom) ?? REGION_DICT[DEFAULT_REGION].maxZoom;
-    useLabelLayer(map, currentRegion, maxZoom);
+    const maxZoom = (currentRegion ? REGION_DICT[currentRegion]?.maxZoom : undefined) ?? REGION_DICT[DEFAULT_REGION].maxZoom;
+    useLayer(map, currentRegion, maxZoom);
 
     useEffect(() => {
         if (!map) return;

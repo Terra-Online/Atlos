@@ -28,7 +28,7 @@ const waitForMap = async (): Promise<L.Map | null> => {
     return null;
 };
 
-export const maybeLoadLabelTool = async (): Promise<void> => {
+export const loadLabelTool = async (): Promise<void> => {
     if (!import.meta.env.DEV) return;
     if (!hasLabelToolFlag()) return;
 
@@ -37,7 +37,8 @@ export const maybeLoadLabelTool = async (): Promise<void> => {
 
     try {
         // Local-only devtool entry. This path is intentionally gitignored.
-        const mod: unknown = await import(/* @vite-ignore */ '/src/devtools/labelTool/bootstrap.tsx');
+        const entry: string = '/src/devtools/labelTool/bootstrap.tsx';
+        const mod: unknown = await import(/* @vite-ignore */ entry);
         const bootstrap = (mod as { bootstrapLabelTool?: (m: L.Map) => void } | null | undefined)?.bootstrapLabelTool;
         if (typeof bootstrap === 'function') bootstrap(map);
     } catch {

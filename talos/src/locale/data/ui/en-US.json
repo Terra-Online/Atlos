@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Boundary Mode",
     "clusterMode": "Cluster Mode",
-    "optimalPath": "Optimal Path"
+    "optimalPath": "Region Names"
   },
   "search": {
     "placeholder": "Overall search..."

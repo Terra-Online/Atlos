@@ -1,4 +1,1362 @@
 {
   "version": 1,
-  "regions": {}
+  "regions": {
+    "DJ": {
+      "labels": {
+        "DJ/__root__/bridge": {
+          "id": "DJ/__root__/bridge",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "bridge",
+          "point": [
+            1115.4762738725524,
+            2104.8965935548163
+          ]
+        },
+        "DJ/__root__/working_sector": {
+          "id": "DJ/__root__/working_sector",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "working_sector",
+          "point": [
+            3274,
+            2100
+          ]
+        },
+        "DJ/__root__/central_ring": {
+          "id": "DJ/__root__/central_ring",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "central_ring",
+          "point": [
+            1888,
+            2106
+          ]
+        },
+        "DJ/__root__/living_sector": {
+          "id": "DJ/__root__/living_sector",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "living_sector",
+          "point": [
+            2402,
+            2694
+          ]
+        },
+        "DJ/__root__/reception_room": {
+          "id": "DJ/__root__/reception_room",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "reception_room",
+          "point": [
+            2120,
+            1349
+          ]
+        },
+        "DJ/__root__/kernel_sector": {
+          "id": "DJ/__root__/kernel_sector",
+          "type": "site",
+          "region": "DJ",
+          "sub": "__root__",
+          "site": "kernel_sector",
+          "point": [
+            2223.143720050505,
+            1493.4095218659884
+          ]
+        }
+      }
+    },
+    "WL": {
+      "labels": {
+        "WL/JY": {
+          "id": "WL/JY",
+          "type": "sub",
+          "region": "WL",
+          "sub": "JY",
+          "point": [
+            4720,
+            6080
+          ]
+        },
+        "WL/WL": {
+          "id": "WL/WL",
+          "type": "sub",
+          "region": "WL",
+          "sub": "WL",
+          "point": [
+            4152,
+            2344
+          ]
+        },
+        "WL/JY/burdosnout_hill": {
+          "id": "WL/JY/burdosnout_hill",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "burdosnout_hill",
+          "point": [
+            5266,
+            6521
+          ]
+        },
+        "WL/JY/stragglers_ford": {
+          "id": "WL/JY/stragglers_ford",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "stragglers_ford",
+          "point": [
+            4703,
+            6252
+          ]
+        },
+        "WL/JY/stragglers_grove": {
+          "id": "WL/JY/stragglers_grove",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "stragglers_grove",
+          "point": [
+            4660,
+            6631
+          ]
+        },
+        "WL/JY/treadway": {
+          "id": "WL/JY/treadway",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "treadway",
+          "point": [
+            5289,
+            4785
+          ]
+        },
+        "WL/JY/ecological_research_station": {
+          "id": "WL/JY/ecological_research_station",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "ecological_research_station",
+          "point": [
+            4605,
+            4982
+          ]
+        },
+        "WL/JY/qingbo bailey": {
+          "id": "WL/JY/qingbo bailey",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "qingbo bailey",
+          "point": [
+            5396,
+            5377
+          ]
+        },
+        "WL/JY/sky_king_flats": {
+          "id": "WL/JY/sky_king_flats",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "sky_king_flats",
+          "point": [
+            4931,
+            5660
+          ]
+        },
+        "WL/JY/gloomvale": {
+          "id": "WL/JY/gloomvale",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "gloomvale",
+          "point": [
+            4599,
+            6972
+          ]
+        },
+        "WL/JY/south_hill": {
+          "id": "WL/JY/south_hill",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "south_hill",
+          "point": [
+            4663,
+            7265
+          ]
+        },
+        "WL/JY/everwater_brook": {
+          "id": "WL/JY/everwater_brook",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "everwater_brook",
+          "point": [
+            3815,
+            7551
+          ]
+        },
+        "WL/JY/sword_quenching_marsh": {
+          "id": "WL/JY/sword_quenching_marsh",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "sword_quenching_marsh",
+          "point": [
+            4026,
+            7289
+          ]
+        },
+        "WL/JY/zhailing_islet": {
+          "id": "WL/JY/zhailing_islet",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "zhailing_islet",
+          "point": [
+            3945,
+            6695
+          ]
+        },
+        "WL/JY/treasure_grotto": {
+          "id": "WL/JY/treasure_grotto",
+          "type": "site",
+          "region": "WL",
+          "sub": "JY",
+          "site": "treasure_grotto",
+          "point": [
+            4172,
+            5499
+          ]
+        },
+        "WL/WL/sanku_ridge": {
+          "id": "WL/WL/sanku_ridge",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "sanku_ridge",
+          "point": [
+            3766,
+            3492
+          ]
+        },
+        "WL/WL/field_logistics_depot": {
+          "id": "WL/WL/field_logistics_depot",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "field_logistics_depot",
+          "point": [
+            4980,
+            3690
+          ]
+        },
+        "WL/WL/hulu_cave": {
+          "id": "WL/WL/hulu_cave",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "hulu_cave",
+          "point": [
+            3882,
+            4017
+          ]
+        },
+        "WL/WL/lingshui_way": {
+          "id": "WL/WL/lingshui_way",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "lingshui_way",
+          "point": [
+            3095,
+            3796
+          ]
+        },
+        "WL/WL/guhou_marsh": {
+          "id": "WL/WL/guhou_marsh",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "guhou_marsh",
+          "point": [
+            4209,
+            3711
+          ]
+        },
+        "WL/WL/outskirt_barrens": {
+          "id": "WL/WL/outskirt_barrens",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "outskirt_barrens",
+          "point": [
+            4442,
+            3298
+          ]
+        },
+        "WL/WL/tianjing_courtyard": {
+          "id": "WL/WL/tianjing_courtyard",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "tianjing_courtyard",
+          "point": [
+            4931,
+            2979
+          ]
+        },
+        "WL/WL/riverbank_grotto": {
+          "id": "WL/WL/riverbank_grotto",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "riverbank_grotto",
+          "point": [
+            5371,
+            2963
+          ]
+        },
+        "WL/WL/restricted_area": {
+          "id": "WL/WL/restricted_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "restricted_area",
+          "point": [
+            4491,
+            2689
+          ]
+        },
+        "WL/WL/maintenance_zone": {
+          "id": "WL/WL/maintenance_zone",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "maintenance_zone",
+          "point": [
+            5074,
+            2350
+          ]
+        },
+        "WL/WL/monitoring_center": {
+          "id": "WL/WL/monitoring_center",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "monitoring_center",
+          "point": [
+            5018,
+            1409
+          ]
+        },
+        "WL/WL/residential_area": {
+          "id": "WL/WL/residential_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "residential_area",
+          "point": [
+            3802,
+            1905
+          ]
+        },
+        "WL/WL/bugui_grove": {
+          "id": "WL/WL/bugui_grove",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "bugui_grove",
+          "point": [
+            3642,
+            710
+          ]
+        },
+        "WL/WL/technological_production_office": {
+          "id": "WL/WL/technological_production_office",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "technological_production_office",
+          "point": [
+            3304,
+            808
+          ]
+        },
+        "WL/WL/agricultural_test_site": {
+          "id": "WL/WL/agricultural_test_site",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "agricultural_test_site",
+          "point": [
+            4006,
+            770
+          ]
+        },
+        "WL/WL/core_aic_area": {
+          "id": "WL/WL/core_aic_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "core_aic_area",
+          "point": [
+            3675,
+            1134
+          ]
+        },
+        "WL/WL/chenshan_way": {
+          "id": "WL/WL/chenshan_way",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "chenshan_way",
+          "point": [
+            3255,
+            1336
+          ]
+        },
+        "WL/WL/bureau_of_swordmancers": {
+          "id": "WL/WL/bureau_of_swordmancers",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "bureau_of_swordmancers",
+          "point": [
+            3278,
+            1927
+          ]
+        },
+        "WL/WL/tianshi_pillar_array": {
+          "id": "WL/WL/tianshi_pillar_array",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "tianshi_pillar_array",
+          "point": [
+            4336,
+            2351
+          ]
+        },
+        "WL/WL/fangxing_avenue": {
+          "id": "WL/WL/fangxing_avenue",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "fangxing_avenue",
+          "point": [
+            3767,
+            2351
+          ]
+        },
+        "WL/WL/xiranflow_channel": {
+          "id": "WL/WL/xiranflow_channel",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "xiranflow_channel",
+          "point": [
+            3255,
+            2352
+          ]
+        },
+        "WL/WL/marker_stone_flats": {
+          "id": "WL/WL/marker_stone_flats",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "marker_stone_flats",
+          "point": [
+            2914,
+            2350
+          ]
+        },
+        "WL/WL/institute_of_materials_science": {
+          "id": "WL/WL/institute_of_materials_science",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "institute_of_materials_science",
+          "point": [
+            2839,
+            2896
+          ]
+        },
+        "WL/WL/tianshi_bureau_academy": {
+          "id": "WL/WL/tianshi_bureau_academy",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "tianshi_bureau_academy",
+          "point": [
+            3221,
+            2882
+          ]
+        },
+        "WL/WL/citizen_square": {
+          "id": "WL/WL/citizen_square",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "citizen_square",
+          "point": [
+            3745,
+            2845
+          ]
+        }
+      }
+    },
+    "VL": {
+      "labels": {
+        "VL/HB/aic_research_center": {
+          "id": "VL/HB/aic_research_center",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "aic_research_center",
+          "point": [
+            4469,
+            5194
+          ]
+        },
+        "VL/PL": {
+          "id": "VL/PL",
+          "type": "sub",
+          "region": "VL",
+          "sub": "PL",
+          "point": [
+            3744,
+            2088
+          ]
+        },
+        "VL/HB": {
+          "id": "VL/HB",
+          "type": "sub",
+          "region": "VL",
+          "sub": "HB",
+          "point": [
+            3136,
+            5008
+          ]
+        },
+        "VL/OP": {
+          "id": "VL/OP",
+          "type": "sub",
+          "region": "VL",
+          "sub": "OP",
+          "point": [
+            6592,
+            4624
+          ]
+        },
+        "VL/VP": {
+          "id": "VL/VP",
+          "type": "sub",
+          "region": "VL",
+          "sub": "VP",
+          "point": [
+            1352,
+            3384
+          ]
+        },
+        "VL/OL": {
+          "id": "VL/OL",
+          "type": "sub",
+          "region": "VL",
+          "sub": "OL",
+          "point": [
+            6056,
+            2496
+          ]
+        },
+        "VL/AQ": {
+          "id": "VL/AQ",
+          "type": "sub",
+          "region": "VL",
+          "sub": "AQ",
+          "point": [
+            5240,
+            6608
+          ]
+        },
+        "VL/VP/passage_entrance": {
+          "id": "VL/VP/passage_entrance",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "passage_entrance",
+          "point": [
+            1626,
+            4042
+          ]
+        },
+        "VL/VP/valley_transfer": {
+          "id": "VL/VP/valley_transfer",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "valley_transfer",
+          "point": [
+            1314,
+            3686
+          ]
+        },
+        "VL/VP/valley_fort": {
+          "id": "VL/VP/valley_fort",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "valley_fort",
+          "point": [
+            962,
+            3105
+          ]
+        },
+        "VL/VP/abandoned_trail": {
+          "id": "VL/VP/abandoned_trail",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "abandoned_trail",
+          "point": [
+            1795,
+            3652
+          ]
+        },
+        "VL/VP/temporary_shelter": {
+          "id": "VL/VP/temporary_shelter",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "temporary_shelter",
+          "point": [
+            1461,
+            3289
+          ]
+        },
+        "VL/VP/arsenal": {
+          "id": "VL/VP/arsenal",
+          "type": "site",
+          "region": "VL",
+          "sub": "VP",
+          "site": "arsenal",
+          "point": [
+            916,
+            3802
+          ]
+        },
+        "VL/AQ/transfer_area": {
+          "id": "VL/AQ/transfer_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "transfer_area",
+          "point": [
+            4872,
+            6961
+          ]
+        },
+        "VL/AQ/lifter_central": {
+          "id": "VL/AQ/lifter_central",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "lifter_central",
+          "point": [
+            5267,
+            6590
+          ]
+        },
+        "VL/AQ/stockpile_area": {
+          "id": "VL/AQ/stockpile_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "stockpile_area",
+          "point": [
+            5417,
+            6303
+          ]
+        },
+        "VL/AQ/staff_lounge": {
+          "id": "VL/AQ/staff_lounge",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "staff_lounge",
+          "point": [
+            5558,
+            6728
+          ]
+        },
+        "VL/AQ/refuse_stockpile": {
+          "id": "VL/AQ/refuse_stockpile",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "refuse_stockpile",
+          "point": [
+            4795,
+            6248
+          ]
+        },
+        "VL/AQ/deep_management_post": {
+          "id": "VL/AQ/deep_management_post",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "deep_management_post",
+          "point": [
+            5749,
+            6177
+          ]
+        },
+        "VL/AQ/listening_post": {
+          "id": "VL/AQ/listening_post",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "listening_post",
+          "point": [
+            4791,
+            6648
+          ]
+        },
+        "VL/AQ/quarry_entrance": {
+          "id": "VL/AQ/quarry_entrance",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "quarry_entrance",
+          "point": [
+            5279,
+            5872
+          ]
+        },
+        "VL/AQ/quarry_site": {
+          "id": "VL/AQ/quarry_site",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "quarry_site",
+          "point": [
+            5272,
+            7010
+          ]
+        },
+        "VL/AQ/loading_area": {
+          "id": "VL/AQ/loading_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "AQ",
+          "site": "loading_area",
+          "point": [
+            5059,
+            6280
+          ]
+        },
+        "VL/PL/planned_construction_area": {
+          "id": "VL/PL/planned_construction_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "planned_construction_area",
+          "point": [
+            2988,
+            2171
+          ]
+        },
+        "VL/PL/old_dorms": {
+          "id": "VL/PL/old_dorms",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "old_dorms",
+          "point": [
+            3293,
+            1400
+          ]
+        },
+        "VL/PL/bridge_approach_camp": {
+          "id": "VL/PL/bridge_approach_camp",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "bridge_approach_camp",
+          "point": [
+            2706,
+            1649
+          ]
+        },
+        "VL/PL/originium_power_plant": {
+          "id": "VL/PL/originium_power_plant",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "originium_power_plant",
+          "point": [
+            3988,
+            1346
+          ]
+        },
+        "VL/PL/power_plant_comm_station": {
+          "id": "VL/PL/power_plant_comm_station",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "power_plant_comm_station",
+          "point": [
+            4451,
+            1554
+          ]
+        },
+        "VL/PL/evacuation_zone": {
+          "id": "VL/PL/evacuation_zone",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "evacuation_zone",
+          "point": [
+            3431,
+            2612
+          ]
+        },
+        "VL/PL/shattered_fringe": {
+          "id": "VL/PL/shattered_fringe",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "shattered_fringe",
+          "point": [
+            4379.849804555022,
+            2009.7600243545987
+          ]
+        },
+        "VL/PL/bonekrusher_warcamp": {
+          "id": "VL/PL/bonekrusher_warcamp",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "bonekrusher_warcamp",
+          "point": [
+            3768.597347443623,
+            2053.7606876096993
+          ]
+        },
+        "VL/PL/united_parking_lot": {
+          "id": "VL/PL/united_parking_lot",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "united_parking_lot",
+          "point": [
+            3103.830570157102,
+            1775.4862226990626
+          ]
+        },
+        "VL/PL/Æther_test_site": {
+          "id": "VL/PL/Æther_test_site",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "Æther_test_site",
+          "point": [
+            4149,
+            3060
+          ]
+        },
+        "VL/PL/plateau_trunkway": {
+          "id": "VL/PL/plateau_trunkway",
+          "type": "site",
+          "region": "VL",
+          "sub": "PL",
+          "site": "plateau_trunkway",
+          "point": [
+            3769,
+            1776
+          ]
+        },
+        "VL/HB/eastern_passageway": {
+          "id": "VL/HB/eastern_passageway",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "eastern_passageway",
+          "point": [
+            5003,
+            5254
+          ]
+        },
+        "VL/HB/southern_meadows": {
+          "id": "VL/HB/southern_meadows",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "southern_meadows",
+          "point": [
+            3683,
+            5652
+          ]
+        },
+        "VL/HB/mountain_side_trail": {
+          "id": "VL/HB/mountain_side_trail",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "mountain_side_trail",
+          "point": [
+            4311,
+            6029
+          ]
+        },
+        "VL/HB/mountain_top": {
+          "id": "VL/HB/mountain_top",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "mountain_top",
+          "point": [
+            3493,
+            6113
+          ]
+        },
+        "VL/HB/worker_dorms": {
+          "id": "VL/HB/worker_dorms",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "worker_dorms",
+          "point": [
+            4056,
+            5804
+          ]
+        },
+        "VL/HB/shorecove_camp": {
+          "id": "VL/HB/shorecove_camp",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "shorecove_camp",
+          "point": [
+            1536,
+            5083
+          ]
+        },
+        "VL/HB/rockhill_passage": {
+          "id": "VL/HB/rockhill_passage",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "rockhill_passage",
+          "point": [
+            3333,
+            4263
+          ]
+        },
+        "VL/HB/construction_site": {
+          "id": "VL/HB/construction_site",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "construction_site",
+          "point": [
+            3200,
+            5168
+          ]
+        },
+        "VL/HB/lohistics_platform": {
+          "id": "VL/HB/lohistics_platform",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "lohistics_platform",
+          "point": [
+            3679,
+            3948
+          ]
+        },
+        "VL/HB/old_factory": {
+          "id": "VL/HB/old_factory",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "old_factory",
+          "point": [
+            3968,
+            4794
+          ]
+        },
+        "VL/HB/hub_base": {
+          "id": "VL/HB/hub_base",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "hub_base",
+          "point": [
+            3818,
+            5240
+          ]
+        },
+        "VL/HB/old_water_plant": {
+          "id": "VL/HB/old_water_plant",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "old_water_plant",
+          "point": [
+            2316,
+            5209
+          ]
+        },
+        "VL/HB/hub_west": {
+          "id": "VL/HB/hub_west",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "hub_west",
+          "point": [
+            2026,
+            5488
+          ]
+        },
+        "VL/HB/hub_base_power_plant": {
+          "id": "VL/HB/hub_base_power_plant",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "hub_base_power_plant",
+          "point": [
+            2696,
+            4982
+          ]
+        },
+        "VL/HB/bridge_approach": {
+          "id": "VL/HB/bridge_approach",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "bridge_approach",
+          "point": [
+            2258,
+            4493
+          ]
+        },
+        "VL/HB/originium_byproduct_precessing_center": {
+          "id": "VL/HB/originium_byproduct_precessing_center",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "originium_byproduct_precessing_center",
+          "point": [
+            2350,
+            5880
+          ]
+        },
+        "VL/HB/woodland_fringes": {
+          "id": "VL/HB/woodland_fringes",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "woodland_fringes",
+          "point": [
+            3021,
+            5926
+          ]
+        },
+        "VL/HB/core_aic_area": {
+          "id": "VL/HB/core_aic_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "HB",
+          "site": "core_aic_area",
+          "point": [
+            2694,
+            4380
+          ]
+        },
+        "VL/OP/route_5": {
+          "id": "VL/OP/route_5",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "route_5",
+          "point": [
+            5539,
+            4881
+          ]
+        },
+        "VL/OP/infra_station": {
+          "id": "VL/OP/infra_station",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "infra_station",
+          "point": [
+            7073,
+            5200
+          ]
+        },
+        "VL/OP/kohl_plant": {
+          "id": "VL/OP/kohl_plant",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "kohl_plant",
+          "point": [
+            6373,
+            5302
+          ]
+        },
+        "VL/OP/eco_farm": {
+          "id": "VL/OP/eco_farm",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "eco_farm",
+          "point": [
+            7367,
+            4971
+          ]
+        },
+        "VL/OP/cliffside_trail": {
+          "id": "VL/OP/cliffside_trail",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "cliffside_trail",
+          "point": [
+            7203,
+            4221
+          ]
+        },
+        "VL/OP/research_center": {
+          "id": "VL/OP/research_center",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "research_center",
+          "point": [
+            6733,
+            4553
+          ]
+        },
+        "VL/OP/the_depression": {
+          "id": "VL/OP/the_depression",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "the_depression",
+          "point": [
+            5817,
+            5109
+          ]
+        },
+        "VL/OP/mountain_path_slope": {
+          "id": "VL/OP/mountain_path_slope",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "mountain_path_slope",
+          "point": [
+            7224,
+            4580
+          ]
+        },
+        "VL/OP/originium_science_park": {
+          "id": "VL/OP/originium_science_park",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "originium_science_park",
+          "point": [
+            6184,
+            4551
+          ]
+        },
+        "VL/OP/control_center": {
+          "id": "VL/OP/control_center",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "control_center",
+          "point": [
+            5248,
+            4603
+          ]
+        },
+        "VL/OP/Transport_nexus": {
+          "id": "VL/OP/Transport_nexus",
+          "type": "site",
+          "region": "VL",
+          "sub": "OP",
+          "site": "Transport_nexus",
+          "point": [
+            5794,
+            4516
+          ]
+        },
+        "VL/OL/cradle_of_the_ages": {
+          "id": "VL/OL/cradle_of_the_ages",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "cradle_of_the_ages",
+          "point": [
+            5793,
+            1440
+          ]
+        },
+        "VL/OL/originium_passage": {
+          "id": "VL/OL/originium_passage",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "originium_passage",
+          "point": [
+            5163,
+            1282
+          ]
+        },
+        "VL/OL/mines_cable_car_station": {
+          "id": "VL/OL/mines_cable_car_station",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "mines_cable_car_station",
+          "point": [
+            5177,
+            1829
+          ]
+        },
+        "VL/OL/logistices_area": {
+          "id": "VL/OL/logistices_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "logistices_area",
+          "point": [
+            5324,
+            2154
+          ]
+        },
+        "VL/OL/meteorological_station": {
+          "id": "VL/OL/meteorological_station",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "meteorological_station",
+          "point": [
+            5386,
+            2720
+          ]
+        },
+        "VL/OL/temporary_stockpile": {
+          "id": "VL/OL/temporary_stockpile",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "temporary_stockpile",
+          "point": [
+            5910,
+            3059
+          ]
+        },
+        "VL/OL/cliffside_mining_area": {
+          "id": "VL/OL/cliffside_mining_area",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "cliffside_mining_area",
+          "point": [
+            5486,
+            3233
+          ]
+        },
+        "VL/OL/blightcliff_ovservation_post": {
+          "id": "VL/OL/blightcliff_ovservation_post",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "blightcliff_ovservation_post",
+          "point": [
+            5874,
+            3537
+          ]
+        },
+        "VL/OL/mining_area_clinic": {
+          "id": "VL/OL/mining_area_clinic",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "mining_area_clinic",
+          "point": [
+            6366,
+            2979
+          ]
+        },
+        "VL/OL/mining_camp": {
+          "id": "VL/OL/mining_camp",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "mining_camp",
+          "point": [
+            6405,
+            2807
+          ]
+        },
+        "VL/OL/mountain_passage": {
+          "id": "VL/OL/mountain_passage",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "mountain_passage",
+          "point": [
+            6873,
+            3106
+          ]
+        },
+        "VL/OL/landbreaker_camp": {
+          "id": "VL/OL/landbreaker_camp",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "landbreaker_camp",
+          "point": [
+            6942,
+            3359
+          ]
+        },
+        "VL/OL/old_mines": {
+          "id": "VL/OL/old_mines",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "old_mines",
+          "point": [
+            6758,
+            1983
+          ]
+        },
+        "VL/OL/containment_zone_intersection": {
+          "id": "VL/OL/containment_zone_intersection",
+          "type": "site",
+          "region": "VL",
+          "sub": "OL",
+          "site": "containment_zone_intersection",
+          "point": [
+            6043,
+            2136
+          ]
+        }
+      }
+    }
+  }
 }

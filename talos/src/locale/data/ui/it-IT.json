@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Modalità Confine",
     "clusterMode": "Modalità Cluster",
-    "optimalPath": "Percorso Ottimale"
+    "optimalPath": "Nomi delle regioni"
   },
   "search": {
     "placeholder": "Ricerca globale..."

@@ -5,7 +5,11 @@
     border: 0;
 }
 
-.inner {
+.innerSub {
+    // Anchor the label center at the marker position.
+    position: absolute;
+    left: 0;
+    top: 0;
     color: $white-0;
     font-size: 18px;
     font-weight: 700;
@@ -16,4 +20,23 @@
         0 0 2px rgba($black-0, 0.9),
         0 0 6px rgba($black-0, 0.75),
         0 2px 6px rgba($black-0, 0.85);
+}
+
+.innerSite {
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    text-shadow: 1px 1px 1px hsl(0deg 0% 0% / 80%), 0 0 1px #333;
+    font-family: 'HMSans';
 }

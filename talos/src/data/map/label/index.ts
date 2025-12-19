@@ -3,6 +3,7 @@ import type { AnyLabel, LabelDataV1 } from './types';
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
+
 const isPoint = (v: unknown): v is [number, number] =>
     Array.isArray(v) && v.length === 2 && typeof v[0] === 'number' && typeof v[1] === 'number';
 

@@ -13,7 +13,8 @@ export interface BaseLabel {
     type: LabelType;
     // Region code used by locale region bundle, e.g. "VL" / "WL" / "DJ"
     region: string;
-    // Subregion short code used by locale region bundle, e.g. "HB"
+    // Stable subregion short code (from en-US), e.g. "HB" / "JY".
+    // This must NOT be localized; it is used as the cross-locale index.
     sub: string;
     point: LabelPoint;
 }

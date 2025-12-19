@@ -3,8 +3,9 @@ import L from 'leaflet';
 import type { AnyLabel } from '@/data/map/label/types';
 import { useTranslate, useLocale } from '@/locale';
 import { mapRegionKeyToLocaleCode } from '@/data/map/label/placeIndex';
-import styles from './LabelLayer.module.scss';
+import styles from './Label.module.scss';
 import { selectLabelMapForRegion, useLabelStore } from '@/store/label';
+import { useTriggerOptimalPath } from '@/store/uiPrefs';
 
 const escapeHtml = (s: string): string =>
     s
@@ -26,40 +27,33 @@ const ensurePane = (map: L.Map): string => {
     return paneName;
 };
 
-const ZOOM_THRESHOLD = 0.5;
+const ZOOM_THRESHOLD = 0.25;
 
-type ShortToSubKey = Record<string, string>;
+type RegionStructure =
+    | { kind: 'nested' }
+    | { kind: 'flat' };
 
-const useShortToSubKey = (regionCode: string | null): ShortToSubKey => {
-    const t = useTranslate();
-    // re-run when locale changes
-    useLocale();
-
-    return useMemo(() => {
-        if (!regionCode) return {};
-        const regionBundle = t<unknown>('game.region');
-        if (!isObject(regionBundle)) return {};
-        const regionNode = regionBundle[regionCode];
-        if (!isObject(regionNode)) return {};
-        const subNode = regionNode.sub;
-        if (!isObject(subNode)) return {};
-
-        const map: ShortToSubKey = {};
-        for (const subKey of Object.keys(subNode)) {
-            const sub = subNode[subKey];
-            if (!isObject(sub)) continue;
-            const short = sub.short;
-            if (typeof short === 'string') {
-                map[short] = subKey;
-            }
-        }
-        return map;
-    }, [regionCode, t]);
+const detectRegionStructure = (t: <T = string>(key: string) => T, regionCode: string): RegionStructure => {
+    // Heuristic: flat regions use structure like game.region.DJ.sub = { name, site: {..} }
+    // nested regions use game.region.VL.sub.<subKey> = { short, name, site: {..} }
+    const subNode = t<unknown>(`game.region.${regionCode}.sub`);
+    if (isObject(subNode) && isObject(subNode.site) && typeof subNode.name === 'string') {
+        return { kind: 'flat' };
+    }
+    return { kind: 'nested' };
 };
 
-const resolveLabelText = (t: <T = string>(key: string) => T, regionCode: string, shortToSubKey: ShortToSubKey, label: AnyLabel): string => {
-    const subKey = shortToSubKey[label.sub];
-    if (!subKey) return label.type === 'site' ? label.site : label.sub;
+const resolveLabelText = (t: <T = string>(key: string) => T, regionCode: string, structure: RegionStructure, label: AnyLabel): string => {
+    if (structure.kind === 'flat') {
+        if (label.type === 'sub') {
+            return t<string>(`game.region.${regionCode}.sub.name`) || regionCode;
+        }
+        return t<string>(`game.region.${regionCode}.sub.site.${label.site}`) || label.site;
+    }
+
+    // `label.sub` is the stable sub-region key (e.g. PL/WL/JY), which is also the key
+    // used in all locale JSON. Do NOT use localized `short` for label lookup.
+    const subKey = label.sub;
 
     if (label.type === 'sub') {
         return t<string>(`game.region.${regionCode}.sub.${subKey}.name`) || label.sub;
@@ -77,25 +71,25 @@ const renderLabels = (
     maxZoom: number,
     t: <T = string>(key: string) => T,
     regionCode: string,
-    shortToSubKey: ShortToSubKey,
+    structure: RegionStructure,
 ) => {
     layer.clearLayers();
 
-    const showType: AnyLabel['type'] = zoom <= ZOOM_THRESHOLD ? 'sub' : 'site';
+    const showType: AnyLabel['type'] = structure.kind === 'flat' ? 'site' : (zoom <= ZOOM_THRESHOLD ? 'sub' : 'site');
 
     for (const label of labels) {
         if (label.type !== showType) continue;
 
         const [x, y] = label.point;
         const latLng = map.unproject([x, y], maxZoom);
-        const text = resolveLabelText(t, regionCode, shortToSubKey, label);
+        const text = resolveLabelText(t, regionCode, structure, label);
 
         const marker = L.marker(latLng, {
             pane,
             interactive: false,
             icon: L.divIcon({
                 className: styles.label,
-                html: `<div class="${styles.inner}">${escapeHtml(text)}</div>`,
+                html: `<div class="${label.type === 'site' ? styles.innerSite : styles.innerSub}">${escapeHtml(text)}</div>`,
                 iconSize: [0, 0],
             }),
         });
@@ -103,12 +97,15 @@ const renderLabels = (
     }
 };
 
-export const useLabelLayer = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
+export const useLayer = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
     const t = useTranslate();
-    const locale = useLocale();
+    // ensure rerender on locale changes
+    useLocale();
+
+    const showRegionLabels = useTriggerOptimalPath();
 
     const regionCode = useMemo(() => mapRegionKeyToLocaleCode(mapRegionKey), [mapRegionKey]);
-    const shortToSubKey = useShortToSubKey(regionCode);
+    const structure = useMemo(() => (regionCode ? detectRegionStructure(t, regionCode) : null), [t, regionCode]);
 
     const labelMap = useLabelStore(useMemo(() => (regionCode ? selectLabelMapForRegion(regionCode) : () => undefined), [regionCode]));
     const labels = useMemo(() => (labelMap ? Object.values(labelMap) : []), [labelMap]);
@@ -117,30 +114,97 @@ export const useLabelLayer = (map: L.Map | null, mapRegionKey: string | null | u
     const paneRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (!map || !regionCode || typeof maxZoom !== 'number') return;
+        if (!map || !regionCode || typeof maxZoom !== 'number' || !structure) return;
+
+        const isLabelToolMounted = (): boolean => {
+            if (!import.meta.env.DEV) return false;
+            if (typeof document === 'undefined') return false;
+            return Boolean(document.getElementById('talos-label-tool-root'));
+        };
+
+        // If the dev label tool is active, it will render draggable labels itself.
+        // Avoid rendering the main label layer at the same time to prevent duplicates.
+        if (isLabelToolMounted()) {
+            if (layerRef.current && map.hasLayer(layerRef.current)) {
+                layerRef.current.remove();
+            }
+            return;
+        }
+
+        if (!showRegionLabels) {
+            if (layerRef.current && map.hasLayer(layerRef.current)) {
+                layerRef.current.remove();
+            }
+            return;
+        }
 
         const pane = ensurePane(map);
         paneRef.current = pane;
 
         if (!layerRef.current) {
             layerRef.current = L.layerGroup([], { pane });
+        }
+        if (!map.hasLayer(layerRef.current)) {
             layerRef.current.addTo(map);
         }
 
         const layer = layerRef.current;
 
         const doRender = () => {
+            if (isLabelToolMounted()) {
+                if (map.hasLayer(layer)) {
+                    layer.remove();
+                }
+                return;
+            }
+
+            if (!showRegionLabels) {
+                if (map.hasLayer(layer)) {
+                    layer.remove();
+                }
+                return;
+            }
             const z = map.getZoom();
-            renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, shortToSubKey);
+            renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure);
+        };
+
+        const onToolMounted = () => {
+            if (map.hasLayer(layer)) {
+                layer.remove();
+            }
+        };
+
+        const onRegionSwitched = () => {
+            if (isLabelToolMounted()) {
+                if (map.hasLayer(layer)) {
+                    layer.remove();
+                }
+                return;
+            }
+
+            if (!showRegionLabels) {
+                if (map.hasLayer(layer)) {
+                    layer.remove();
+                }
+                return;
+            }
+            if (!map.hasLayer(layer)) {
+                layer.addTo(map);
+            }
+            doRender();
         };
 
         doRender();
         map.on('zoomend', doRender);
+        map.on('talos:regionSwitched', onRegionSwitched);
+        map.on('talos:labelToolMounted', onToolMounted);
 
         return () => {
             map.off('zoomend', doRender);
+            map.off('talos:regionSwitched', onRegionSwitched);
+            map.off('talos:labelToolMounted', onToolMounted);
         };
-    }, [map, regionCode, maxZoom, t, locale, shortToSubKey, labels]);
+    }, [map, regionCode, maxZoom, t, labels, structure, showRegionLabels]);
 
     // Cleanup if map is destroyed
     useEffect(() => {

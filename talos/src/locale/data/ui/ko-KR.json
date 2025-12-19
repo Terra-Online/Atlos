@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "경계 모드",
     "clusterMode": "클러스터 모드",
-    "optimalPath": "최적 경로"
+    "optimalPath": "지역명"
   },
   "search": {
     "placeholder": "전체 검색…"
