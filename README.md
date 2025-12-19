@@ -1,5 +1,8 @@
 # Atlos
-Atlos is an open-source online map for the 3D RTSRPG game Arknights: Endfield (by Hypergryph). This repository contains the web client (codename “talos”) built with React + Vite, featuring an Endfield-esque UI, multilingual support, and a CDN‑friendly build pipeline.
+<ruby>
+Atlos (= Atlas)
+<rt>from Talos, an anagram trick</rt>
+</ruby>is an open-source online map for the 3D RTSRPG game Arknights: Endfield (by Hypergryph). This repository contains the web client (codename “talos”) built with React + Vite, featuring an Endfield-esque UI, multilingual support, and a CDN‑friendly build pipeline.
 
 PRs are warmly welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
