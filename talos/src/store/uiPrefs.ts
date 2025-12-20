@@ -58,7 +58,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       // triggers (default off)
       triggerCluster: false,
       triggerBoundary: false,
-      triggerOptimalPath: false,
+      // Repurposed: controls region/place name labels visibility
+      triggerOptimalPath: true,
       setTriggerCluster: (value: boolean) => set({ triggerCluster: value }),
       setTriggerBoundary: (value: boolean) => set({ triggerBoundary: value }),
       setTriggerOptimalPath: (value: boolean) => set({ triggerOptimalPath: value }),

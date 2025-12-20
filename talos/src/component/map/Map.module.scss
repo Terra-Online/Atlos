@@ -7,7 +7,7 @@
     --map-pattern-bg: #{$white-3};
     --map-pattern-error-bg: #{$secondary-accent-1};
 
-    --map-dropshadow: #{rgba($black-0, .3)};
+    --map-dropshadow: #{rgba($black-0, .4)};
 }
 :root[data-theme='dark'] {
     --map-bg: #111;
@@ -15,7 +15,7 @@
     --map-pattern-bg: #{$grey-1};
     --map-pattern-error-bg: #{$primary-accent-4};
 
-    --map-dropshadow: #{rgba($light-2, .25)};
+    --map-dropshadow: #{rgba($light-2, .3)};
 }
 
 .mapContainer {

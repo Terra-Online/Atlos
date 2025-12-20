@@ -1,0 +1,38 @@
+@use '@/styles/palette.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --label-color: #{$light-1};
+    --label-shadow-1: #{rgba($black-0, 0.8)};
+    --label-shadow-2: #{$grey-1};
+}
+:root[data-theme='dark'] {
+    --label-color: #{$light-2};
+    --label-shadow-1: #{$black-0};
+}
+
+.innerSub, .innerSite {
+    color: var(--label-color);
+    font-size: 15px;
+    font-weight: 560;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    word-break: break-word;
+    text-overflow: ellipsis;
+    width: 8.8rem;
+    text-align: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    text-shadow: 1px 1px 1px var(--label-shadow-1), 0 0 1px var(--label-shadow-2), -.5px -.5px 2px var(--label-shadow-2);
+    font-family: 'HMSans_EN','HMSans';
+}
+.innerSub {
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    text-transform: capitalize;
+    letter-spacing: -0.2px;
+    font-size: 18px;
+    font-weight: 700;
+    width: 9.6rem;
+}

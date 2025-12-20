@@ -165,6 +165,11 @@ export class MapCore {
             // use a microtask to resolve quickly without arbitrary timeout
             void Promise.resolve().then(done);
         });
+
+        // Notify external layers/tools that region switch finished.
+        // MapCore clears all layers at the start of switchRegion, so any custom overlays
+        // must re-attach after this point.
+        this.map.fire('talos:regionSwitched', { regionId });
     }
 
     setMapView(view: IMapView) {

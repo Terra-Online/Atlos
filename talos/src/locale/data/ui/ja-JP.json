@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "バウンダリー モード",
     "clusterMode": "クラスター モード",
-    "optimalPath": "最適パス"
+    "optimalPath": "地区名"
   },
   "search": {
     "placeholder": "全体検索…"

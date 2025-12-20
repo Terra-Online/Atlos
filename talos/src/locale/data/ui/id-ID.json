@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Mode Batas",
     "clusterMode": "Mode Kluster",
-    "optimalPath": "Jalur Optimal"
+    "optimalPath": "Nama wilayah"
   },
   "search": {
     "placeholder": "Pencarian keseluruhan..."

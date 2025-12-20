@@ -8,6 +8,14 @@ import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
 import UserGuide from '@/component/userGuide/UserGuide.tsx';
 
+declare global {
+    interface Window {
+        __TALOS_DEV__?: {
+            map?: L.Map;
+        };
+    }
+}
+
 function App() {
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
@@ -23,6 +31,11 @@ function App() {
 
     const handleMapReady = (map: L.Map) => {
         setMapInstance(map);
+
+        if (import.meta.env.DEV) {
+            window.__TALOS_DEV__ = window.__TALOS_DEV__ ?? {};
+            window.__TALOS_DEV__.map = map;
+        }
     };
 
     const handleHideUI = () => {

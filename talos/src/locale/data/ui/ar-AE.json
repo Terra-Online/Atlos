@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "عرض حدود المنطقة",
     "clusterMode": "تجميع النقاط",
-    "optimalPath": "المسار الأمثل"
+    "optimalPath": "أسماء المناطق"
   },
   "search": {
     "placeholder": "البحث الشامل…"

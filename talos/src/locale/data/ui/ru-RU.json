@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Режим границ",
     "clusterMode": "Режим кластеризации",
-    "optimalPath": "Оптимальный маршрут"
+    "optimalPath": "Названия регионов"
   },
   "search": {
     "placeholder": "Общий поиск..."
