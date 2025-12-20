@@ -13,7 +13,10 @@ import {
 import {
     useUserGuideVersion,
     useSetUserGuideVersion,
+    useUserGuideStepCompleted,
     useSetUserGuideStepCompleted,
+    useSetUserGuideStepCompletedBulk,
+    useReplaceUserGuideStepCompleted,
 } from '@/store/userGuide';
 import { GuideSpotlight } from './spotlight/spotlight';
 import { useGuideSteps, type GuideStep } from './procedure/steps';
@@ -32,7 +35,10 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
     const userGuideVersion = useUserGuideVersion();
     const setUserGuideVersion = useSetUserGuideVersion();
+    const stepCompleted = useUserGuideStepCompleted();
     const setUserGuideStepCompleted = useSetUserGuideStepCompleted();
+    const setUserGuideStepCompletedBulk = useSetUserGuideStepCompletedBulk();
+    const replaceUserGuideStepCompleted = useReplaceUserGuideStepCompleted();
 
     const steps: GuideStep[] = useGuideSteps(map);
     const helpersRef = useRef<StoreHelpers | null>(null);
@@ -50,20 +56,80 @@ const UserGuide = ({ map }: UserGuideProps) => {
         });
     }, []);
 
-    // Initialize all steps as incomplete on first load
-    useEffect(() => {
-        if (i18nReady && userGuideVersion !== CURRENT_GUIDE_VERSION) {
-            // Initialize all steps as incomplete
-            steps.forEach((step: GuideStep) => {
-                setUserGuideStepCompleted(step.id, false);
-            });
-            setIsUserGuideOpen(true);
-            setUserGuideVersion(CURRENT_GUIDE_VERSION);
-        }
-    }, [i18nReady, userGuideVersion, setIsUserGuideOpen, setUserGuideVersion, steps, setUserGuideStepCompleted]);
-
     // Controlled step index
     const [stepIndex, setStepIndex] = useState(0);
+
+    const didAutoOpenRef = useRef(false);
+    const wasOpenRef = useRef(false);
+
+    const firstIncompleteIndex = useCallback((): number => {
+        for (let i = 0; i < steps.length; i++) {
+            const id = steps[i]?.id;
+            if (!id) continue;
+            if (stepCompleted[id] !== true) return i;
+        }
+        return 0;
+    }, [steps, stepCompleted]);
+
+    const buildAllStepsCompletionMap = useCallback(
+        (completed: boolean): Record<string, boolean> => {
+            const map: Record<string, boolean> = {};
+            for (const step of steps) {
+                map[step.id] = completed;
+            }
+            return map;
+        },
+        [steps],
+    );
+
+    // Initialize/upgrade guide state.
+    // - On version bump: reset all steps to incomplete and open guide.
+    // - Otherwise: ensure missing step keys default to incomplete.
+    // - Auto-open guide until all steps are completed.
+    useEffect(() => {
+        if (!i18nReady) return;
+
+        if (userGuideVersion !== CURRENT_GUIDE_VERSION) {
+            // Atomic reset to avoid race that can cause STEP-0 to be treated as completed.
+            replaceUserGuideStepCompleted(buildAllStepsCompletionMap(false));
+            setUserGuideVersion(CURRENT_GUIDE_VERSION);
+            didAutoOpenRef.current = true;
+            wasOpenRef.current = true; // Mark as already opened
+            setStepIndex(0);
+            setIsUserGuideOpen(true);
+            return;
+        }
+
+        // Ensure new steps appear as incomplete for existing users.
+        const missingUpdates: Record<string, boolean> = {};
+        for (const step of steps) {
+            if (stepCompleted[step.id] === undefined) missingUpdates[step.id] = false;
+        }
+        if (Object.keys(missingUpdates).length > 0) {
+            setUserGuideStepCompletedBulk(missingUpdates);
+        }
+
+        const hasIncomplete = steps.some((s) => stepCompleted[s.id] !== true);
+        if (!didAutoOpenRef.current && hasIncomplete) {
+            didAutoOpenRef.current = true;
+            wasOpenRef.current = true; // Mark as already opened to prevent the second effect from resetting stepIndex
+            const resumeIndex = firstIncompleteIndex();
+            setStepIndex(resumeIndex);
+            setIsUserGuideOpen(true);
+        }
+    }, [
+        i18nReady,
+        userGuideVersion,
+        steps,
+        stepCompleted,
+        setIsUserGuideOpen,
+        setUserGuideVersion,
+        setUserGuideStepCompleted,
+        setUserGuideStepCompletedBulk,
+        replaceUserGuideStepCompleted,
+        buildAllStepsCompletionMap,
+        firstIncompleteIndex,
+    ]);
 
     // Custom spotlight tracking
     const [currentTarget, setCurrentTarget] = useState<Element | null>(null);
@@ -72,7 +138,18 @@ const UserGuide = ({ map }: UserGuideProps) => {
         if (!isUserGuideOpen) {
             setCurrentTarget(null);
             setStepIndex(0);
+            wasOpenRef.current = false;
             return;
+        }
+
+        // When opening (including via the help button), resume from the first incomplete step.
+        if (!wasOpenRef.current) {
+            wasOpenRef.current = true;
+            const resumeAt = firstIncompleteIndex();
+            if (stepIndex !== resumeAt) {
+                setStepIndex(resumeAt);
+                return;
+            }
         }
         const step = steps[stepIndex];
         if (!step) {
@@ -87,13 +164,15 @@ const UserGuide = ({ map }: UserGuideProps) => {
             el = targetSel;
         }
         setCurrentTarget(el);
-    }, [isUserGuideOpen, stepIndex, steps]);
+    }, [isUserGuideOpen, stepIndex, steps, firstIncompleteIndex]);
 
     const handleJoyrideCallback = useCallback(
         (data: CallBackProps) => {
             const { action, index, type, status } = data;
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+                // FINISHED / SKIPPED: treat as fully completed so it won't auto-run again.
+                replaceUserGuideStepCompleted(buildAllStepsCompletionMap(true));
                 setForceDetailOpen(false);
                 setForceSubregionOpen(false);
                 setDrawerSnapIndex(null);
@@ -154,6 +233,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
             setDrawerSnapIndex,
             setIsUserGuideOpen,
             setUserGuideStepCompleted,
+            replaceUserGuideStepCompleted,
+            buildAllStepsCompletionMap,
         ],
     );
 

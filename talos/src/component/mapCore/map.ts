@@ -73,6 +73,15 @@ export class MapCore {
             throw new Error(`Region config not found for: ${regionId}`);
         }
 
+        if (config.maxZoom === undefined) {
+            throw new Error(`Invalid region config for: ${regionId}. Missing maxZoom.`);
+        }
+
+        // Keep Leaflet's zoom constraints in sync with region config.
+        // Otherwise users can zoom beyond available tiles (blank map).
+        const maxZoom = config.maxZoom;
+        this.map.setMaxZoom(maxZoom);
+
         const view = useViewState.getState().getViewState(regionId);
         if (
             view &&
@@ -80,7 +89,8 @@ export class MapCore {
             view.lng !== undefined &&
             view.zoom !== undefined
         ) {
-            this.map.setView([view.lat, view.lng], view.zoom, {
+            const clampedZoom = Math.min(view.zoom, maxZoom);
+            this.map.setView([view.lat, view.lng], clampedZoom, {
                 animate: false,
             });
         } else {
@@ -110,7 +120,8 @@ export class MapCore {
                     `Invalid center coordinates for region: ${regionId}. Center: ${JSON.stringify(center)}`,
                 );
             }
-            this.map.setView([center.lat, center.lng], config.initialZoom, {
+            const clampedZoom = Math.min(config.initialZoom, maxZoom);
+            this.map.setView([center.lat, center.lng], clampedZoom, {
                 animate: false,
             });
         }
@@ -171,7 +182,6 @@ export class MapCore {
         // must re-attach after this point.
         this.map.fire('talos:regionSwitched', { regionId });
     }
-
     setMapView(view: IMapView) {
         if (this.transforming) return;
         this.transforming = true;

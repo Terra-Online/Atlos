@@ -38,6 +38,11 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
 
   const handleClearAll = useCallback(async () => {
     await clearAllStorage();
+    // After clearing storage, reload to ensure all in-memory state is reset.
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+      return;
+    }
     setRefreshKey(prev => prev + 1);
     setSelectedPath(null);
     setSelectedName(null);
@@ -46,6 +51,11 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
   const handleClearSelected = useCallback(async () => {
     if (!selectedPath || !selectedName) return;
     await clearStorageItem(selectedPath);
+    // Selected deletions can remove state the app relies on; reload for consistency.
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+      return;
+    }
     setRefreshKey(prev => prev + 1);
     setSelectedPath(null);
     setSelectedName(null);

@@ -7,6 +7,9 @@ interface IUserGuideStore {
   
   stepCompleted: Record<string, boolean>;
   setStepCompleted: (stepId: string, completed: boolean) => void;
+
+  setStepCompletedBulk: (updates: Record<string, boolean>) => void;
+  replaceStepCompleted: (stepCompleted: Record<string, boolean>) => void;
 }
 
 export const useUserGuideStore = create<IUserGuideStore>()(
@@ -20,6 +23,13 @@ export const useUserGuideStore = create<IUserGuideStore>()(
         set((state) => ({
           stepCompleted: { ...state.stepCompleted, [stepId]: completed },
         })),
+
+      setStepCompletedBulk: (updates) =>
+        set((state) => ({
+          stepCompleted: { ...state.stepCompleted, ...updates },
+        })),
+
+      replaceStepCompleted: (stepCompleted) => set({ stepCompleted }),
     }),
     {
       name: 'UserGuide',
@@ -32,3 +42,5 @@ export const useUserGuideVersion = () => useUserGuideStore((s) => s.version);
 export const useSetUserGuideVersion = () => useUserGuideStore((s) => s.setVersion);
 export const useUserGuideStepCompleted = () => useUserGuideStore((s) => s.stepCompleted);
 export const useSetUserGuideStepCompleted = () => useUserGuideStore((s) => s.setStepCompleted);
+export const useSetUserGuideStepCompletedBulk = () => useUserGuideStore((s) => s.setStepCompletedBulk);
+export const useReplaceUserGuideStepCompleted = () => useUserGuideStore((s) => s.replaceStepCompleted);
