@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Hiển thị ranh giới khu vực",
     "clusterMode": "Gộp điểm",
-    "optimalPath": "Tên khu vực"
+    "labelName": "Tên khu vực"
   },
   "search": {
     "placeholder": "Tìm kiếm toàn cục…"

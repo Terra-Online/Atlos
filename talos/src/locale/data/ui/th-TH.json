@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "แสดงขอบเขตพื้นที่",
     "clusterMode": "การรวมจุด",
-    "optimalPath": "ชื่อพื้นที่"
+    "labelName": "ชื่อพื้นที่"
   },
   "search": {
     "placeholder": "ค้นหาทั่วทั้งระบบ…"

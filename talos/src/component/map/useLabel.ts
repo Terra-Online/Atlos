@@ -5,7 +5,7 @@ import { useTranslate, useLocale } from '@/locale';
 import { mapRegionKeyToLocaleCode } from '@/data/map/label/placeIndex';
 import styles from './Label.module.scss';
 import { selectLabelMapForRegion, useLabelStore } from '@/store/label';
-import { useTriggerOptimalPath } from '@/store/uiPrefs';
+import { useTriggerlabelName } from '@/store/uiPrefs';
 
 const escapeHtml = (s: string): string =>
     s
@@ -102,7 +102,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
     // Force effects/memos to react to locale changes even if `t` is referentially stable.
     const locale = useLocale();
 
-    const showRegionLabels = useTriggerOptimalPath();
+    const showRegionLabels = useTriggerlabelName();
 
     const regionCode = useMemo(() => mapRegionKeyToLocaleCode(mapRegionKey), [mapRegionKey]);
     const structure = useMemo(() => {
