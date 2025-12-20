@@ -18,7 +18,7 @@ const escapeHtml = (s: string): string =>
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 const ensurePane = (map: L.Map): string => {
-    const paneName = 'talos-labels';
+    const paneName = 'labels';
     const existing = map.getPane(paneName);
     if (existing) return paneName;
     const pane = map.createPane(paneName);
@@ -97,7 +97,7 @@ const renderLabels = (
     }
 };
 
-export const useLayer = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
+export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
     const t = useTranslate();
     // Force effects/memos to react to locale changes even if `t` is referentially stable.
     const locale = useLocale();

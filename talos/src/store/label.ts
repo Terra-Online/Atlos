@@ -3,7 +3,7 @@ import type { UseBoundStore, StoreApi } from 'zustand';
 import { getLabelData, mergeLabelData, tryParseLabelData } from '@/data/map/label';
 import type { AnyLabel, LabelDataV1 } from '@/data/map/label/types';
 
-const STORAGE_KEY = 'talos:labelData:v1';
+const STORAGE_KEY = 'talos:labelData';
 const UNDO_LIMIT = 50;
 
 const safeParseStored = (): LabelDataV1 | null => {
