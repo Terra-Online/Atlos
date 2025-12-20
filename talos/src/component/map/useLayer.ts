@@ -99,13 +99,17 @@ const renderLabels = (
 
 export const useLayer = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
     const t = useTranslate();
-    // ensure rerender on locale changes
-    useLocale();
+    // Force effects/memos to react to locale changes even if `t` is referentially stable.
+    const locale = useLocale();
 
     const showRegionLabels = useTriggerOptimalPath();
 
     const regionCode = useMemo(() => mapRegionKeyToLocaleCode(mapRegionKey), [mapRegionKey]);
-    const structure = useMemo(() => (regionCode ? detectRegionStructure(t, regionCode) : null), [t, regionCode]);
+    const structure = useMemo(() => {
+        // Intentionally reference `locale` so memo recomputes on language switch.
+        void locale;
+        return regionCode ? detectRegionStructure(t, regionCode) : null;
+    }, [t, regionCode, locale]);
 
     const labelMap = useLabelStore(useMemo(() => (regionCode ? selectLabelMapForRegion(regionCode) : () => undefined), [regionCode]));
     const labels = useMemo(() => (labelMap ? Object.values(labelMap) : []), [labelMap]);
@@ -114,6 +118,9 @@ export const useLayer = (map: L.Map | null, mapRegionKey: string | null | undefi
     const paneRef = useRef<string | null>(null);
 
     useEffect(() => {
+        // Intentionally reference `locale` so the effect re-runs on language switch
+        // and re-renders labels immediately (without requiring a zoom event).
+        void locale;
         if (!map || !regionCode || typeof maxZoom !== 'number' || !structure) return;
 
         const isLabelToolMounted = (): boolean => {
@@ -204,7 +211,7 @@ export const useLayer = (map: L.Map | null, mapRegionKey: string | null | undefi
             map.off('talos:regionSwitched', onRegionSwitched);
             map.off('talos:labelToolMounted', onToolMounted);
         };
-    }, [map, regionCode, maxZoom, t, labels, structure, showRegionLabels]);
+    }, [map, regionCode, maxZoom, t, labels, structure, showRegionLabels, locale]);
 
     // Cleanup if map is destroyed
     useEffect(() => {

@@ -1,42 +1,35 @@
 @use '@/styles/palette.scss' as *;
 
-.label {
-    background: transparent;
-    border: 0;
+:root, :root[data-theme='light'] {
+    --label-color: #{$light-1};
+    --label-shadow-1: #{rgba($black-0, 0.8)};
+    --label-shadow-2: #{$grey-1};
+}
+:root[data-theme='dark'] {
+    --label-color: #{$light-2};
+    --label-shadow-1: #{$black-0};
 }
 
-.innerSub {
-    // Anchor the label center at the marker position.
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: $white-0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.2;
-    white-space: nowrap;
-    transform: translate(-50%, -50%);
-    text-shadow:
-        0 0 2px rgba($black-0, 0.9),
-        0 0 6px rgba($black-0, 0.75),
-        0 2px 6px rgba($black-0, 0.85);
-}
-
-.innerSite {
-    color: rgb(255, 255, 255);
+.innerSub, .innerSite {
+    color: var(--label-color);
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 560;
+    text-transform: uppercase;
     letter-spacing: -0.5px;
     white-space: nowrap;
     position: absolute;
     left: 0;
     top: 0;
     transform: translate(-50%, -50%);
-    -webkit-user-select: none;
-    -moz-user-select: none;
     user-select: none;
-    -webkit-user-drag: none;
     user-drag: none;
-    text-shadow: 1px 1px 1px hsl(0deg 0% 0% / 80%), 0 0 1px #333;
-    font-family: 'HMSans';
+    text-shadow: 1px 1px 1px var(--label-shadow-1), 0 0 1px var(--label-shadow-2), -.5px -.5px 2px var(--label-shadow-2);
+    font-family: 'HMSans_EN','HMSans';
+}
+.innerSub {
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    text-transform: capitalize;
+    letter-spacing: -0.2px;
+    font-size: 18px;
+    font-weight: 700;
 }
