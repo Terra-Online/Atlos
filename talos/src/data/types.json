@@ -193,35 +193,32 @@
             }
         },
         "mob": {
-            "Effigy": {
+            "Grove Archer": {
                 "tier": "elite",
+                "faction": "Cangzei"
+            },
+            "Road Plunderer": {
+                "tier": "common",
+                "faction": "Cangzei"
+            },
+
+            "Ram": {
+                "tier": "common",
                 "faction": "Aggeloi"
             },
             "Heavy Ram": {
                 "tier": "advanced",
                 "faction": "Aggeloi"
             },
-            "Heavy Ram α": {
-                "tier": "advanced",
+            "Sting": {
+                "tier": "common",
                 "faction": "Aggeloi"
             },
             "Heavy Sting": {
                 "tier": "advanced",
                 "faction": "Aggeloi"
             },
-            "Heavy Sting α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
-            },
-            "Ram": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
             "Ram α": {
-                "tier": "common",
-                "faction": "Aggeloi"
-            },
-            "Sting": {
                 "tier": "common",
                 "faction": "Aggeloi"
             },
@@ -229,15 +226,76 @@
                 "tier": "common",
                 "faction": "Aggeloi"
             },
-            "Bonekrusher Ballista": {
+            "Heavy Ram α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Heavy Sting α": {
+                "tier": "advanced",
+                "faction": "Aggeloi"
+            },
+            "Effigy": {
                 "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Falsewings": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Falsewings α": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Walking Chrysopolis": {
+                "tier": "Alpha",
+                "faction": "Aggeloi"
+            },
+            "Mudflow": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Hedron": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Prism": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Tidewalker": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Mudflow δ": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Hedron δ": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+             "Tidewalker δ": {
+                "tier": "elite",
+                "faction": "Aggeloi"
+            },
+            "Sentinel": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+            "Tidalklast": {
+                "tier": "common",
+                "faction": "Aggeloi"
+            },
+
+            "Bonekrusher Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Ambusher": {
+                "tier": "common",
                 "faction": "Landbreakers"
             },
             "Bonekrusher Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
-            },
-            "Elite Executioner": {
                 "tier": "elite",
                 "faction": "Landbreakers"
             },
@@ -249,73 +307,110 @@
                 "tier": "advanced",
                 "faction": "Landbreakers"
             },
-            "Bonekrusher Ripptusk": {
-                "tier": "common",
+            "Bonekrusher Ballista": {
+                "tier": "elite",
                 "faction": "Landbreakers"
             },
-            "Elite Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Bonekrusher Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
-            },
-            "Elite Ambusher": {
-                "tier": "common",
+            "Elite Executioner": {
+                "tier": "elite",
                 "faction": "Landbreakers"
             },
             "Bonekrusher Infiltrator": {
                 "tier": "common",
                 "faction": "Landbreakers"
             },
-            "Grove Archer": {
-                "tier": "elite",
-                "faction": "Cangzei"
+            "Hazefyre Claw": {
+                "tier": "advanced",
+                "faction": "Landbreakers"
             },
-            "Acid Originium Slug": {},
-            "Acid Originium Slug·α": {},
-            "Axe Armorbeast": {},
-            "Bonekrusher Siegeknuckles": {},
-            "Bonekrusher Vanguard": {},
-            "Brutal Pincerbeast": {},
-            "Ereignis": {},
-            "Falsewings": {},
-            "Falsewings α": {},
-            "Firemist Originium Slug": {},
-            "Glaring Rakerbeast": {},
-            "Hazefyre Axe Armorbeast": {},
-            "Hazefyre Claw": {},
-            "Hazefyre Tuskbeast": {},
-            "Hedron": {},
-            "Hedron δ": {},
-            "Imbued Quillbeast": {},
-            "Indigenous Pincerbeast": {},
-            "Marble Appendage": {},
-            "Mudflow": {},
-            "Mudflow δ": {},
-            "Prism": {},
-            "Quillbeast": {},
-            "Sentinel": {},
-            "Spotted Rakerbeast": {},
-            "Tidalklast": {},
-            "Tidewalker": {},
-            "Tidewalker δ": {},
-            "Tunneling Nidwyrm": {},
-            "Walking Chrysopolis": {},
-            "Waterlamp": {},
-            "Wild Tuskbeast": {},
-            "Road Plunderer": {
+            "Bonekrusher Ripptusk": {
                 "tier": "common",
-                "faction": "Cangzei"
+                "faction": "Landbreakers"
+            },
+            "Hazefyre Tuskbeast": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Vanguard": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Bonekrusher Siegeknuckles": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Elite Raider": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            }, 
+            "Elite Ambusher": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            }, 
+            "Elite Ripptusk": {
+                "tier": "common",
+                "faction": "Landbreakers"
+            },
+            "Ereignis": {
+                "tier": "unknown",
+                "faction": "Landbreakers"
+            },
+
+            "Tunneling Nidwyrm": {
+                "tier": "advanced",
+                "faction": "Wildlife"
+            },
+            "Waterlamp": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Axe Armorbeast": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Hazefyre Axe Armorbeast": {
+                "tier": "elite",
+                "faction": "Wildlife"
+            },
+            "Indigenous Pincerbeast": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Brutal Pincerbeast": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Acid Originium Slug": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Acid Originium Slug·α": {
+                "tier": "elite",
+                "faction": "Wildlife"
+            },
+            "Firemist Originium Slug": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Blazemist Originium Slug": {
+                "tier": "elite",
+                "faction": "Wildlife"
+            },
+            "Quillbeast": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Imbued Quillbeast": {
+                "tier": "advanced",
+                "faction": "Wildlife"
+            },
+            "Spotted Rakerbeast": {
+                "tier": "common",
+                "faction": "Wildlife"
+            },
+            "Glaring Rakerbeast": {
+                "tier": "elite",
+                "faction": "Wildlife"
             }
         }
     }
