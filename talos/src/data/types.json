@@ -2,24 +2,61 @@
     "poi": {
         "collection": {
             "Aurylene": {},
-            "Crate": {},
+            "Crate I": {
+                "noFrame": true
+            },
+            "Crate II": {
+                "noFrame": true
+            },
+            "Crate III": {
+                "noFrame": true
+            },
+            "Crate(Locked)": {
+                "noFrame": true
+            },
+            "Delta Bot": {
+                "noFrame": true
+            },
+            "Protocol DL": {
+                "noFrame": true
+            },
+            "Protocol DL II": {
+                "noFrame": true
+            },
 
-            "Delta Bot": {},
-            "Protocol DL": {},
-            "Gear Template": {},
-            "Repair Logic": {},
-
-            "Athletic Race": {},
+            "Gear Template": {
+                "noFrame": true
+            },
+            "Repair Logic": {
+                "noFrame": true
+            },
             "Gather": {},
-
-            "Mission": {}
+            "Athletic Race": {
+                "noFrame": true
+            },
+            "Mission": {
+                "noFrame": true
+            }
         },
         "combat": {
-            "Temporary Energy Alluvium": {},
-            "RE-Crisis": {},
-            "Protocol Space": {},
-            "Energy Alluvium": {},
-            "EW Terminal": {}
+            "Temporary Energy Alluvium": {
+                "noFrame": true
+            },
+            "RE-Crisis": {
+                "noFrame": true
+            },
+            "Protocol Space": {
+                "noFrame": true
+            },
+            "Exploration Level": {
+                "noFrame": true
+            },
+            "Energy Alluvium": {
+                "noFrame": true
+            },
+            "EW Terminal": {
+                "noFrame": true
+            }
         },
         "npc": { 
             "dorm_trade": {},
@@ -160,24 +197,56 @@
 
     "general": {
         "facility": {
-            "TP Point": {},
-            "Stock Redistrib.": {},
-            "Depot Node": {},
-            "ENV Monitoring": {},
-            "Recycling STN": {},
-            "PAC": {},
-            "Sub-PAC": {},
+            "TP Point": {
+                "noFrame": true
+            },
+            "Stock Redistrib.": {
+                "noFrame": true
+            },
+            "Depot Node": {
+                "noFrame": true
+            },
+            "ENV Monitoring": { 
+                "noFrame": true
+            },
+            "Recycling STN": {
+                "noFrame": true
+            },
+            "PAC": {
+                "noFrame": true
+            },
+            "Sub-PAC": {
+                "noFrame": true
+            },
 
-            "Control Nexus": {},
-            "Growth Chamber": {},
-            "Manufacturing Cabin": {},
-            "Tactical Training Cabin": {},
-            "Etchspace Salvage": {},
-            "Guest Terminal": {},
-            "Stock Redistribution Terminal": {},
-            "Protocol Singularity": {},
-            "Tower of Trails": {},
-            "Operator Contact Panel": {}
+            "Control Nexus": {
+                "noFrame": true
+            },
+            "Etchspace Salvage": {
+                "noFrame": true
+            },
+            "Guest Terminal": {
+                "noFrame": true
+            },
+            "Protocol Singularity": {
+                "noFrame": true
+            },
+            "Operator Contact Panel": {
+                "noFrame": true
+            },
+            "TP Platform": {
+                "noFrame": true
+            },
+            "Tower of Trails": {
+                "noFrame": true
+            },
+            "Stock Redistribution Terminal": {
+                "noFrame": true
+            },
+            
+            "Tactical Training Cabin": {
+                "noFrame": true
+            }
         }
     },
     "enemy": {

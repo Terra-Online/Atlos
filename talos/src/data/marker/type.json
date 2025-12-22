@@ -7,13 +7,41 @@
             "sub": "collection"
         }
     },
-    "crate": {
-        "key": "crate",
-        "name": "Crate",
+    "crate_i": {
+        "key": "crate_i",
+        "name": "Crate I",
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
+    },
+    "crate_ii": {
+        "key": "crate_ii",
+        "name": "Crate II",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "crate_iii": {
+        "key": "crate_iii",
+        "name": "Crate III",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "cratelocked": {
+        "key": "cratelocked",
+        "name": "Crate(Locked)",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
     },
     "delta_bot": {
         "key": "delta_bot",
@@ -21,7 +49,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "protocol_dl": {
         "key": "protocol_dl",
@@ -29,7 +58,17 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
+    },
+    "protocol_dl_ii": {
+        "key": "protocol_dl_ii",
+        "name": "Protocol DL II",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
     },
     "gear_template": {
         "key": "gear_template",
@@ -37,11 +76,21 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "repair_logic": {
         "key": "repair_logic",
         "name": "Repair Logic",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "gather": {
+        "key": "gather",
+        "name": "Gather",
         "category": {
             "main": "poi",
             "sub": "collection"
@@ -53,15 +102,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
-    },
-    "gather": {
-        "key": "gather",
-        "name": "Gather",
-        "category": {
-            "main": "poi",
-            "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "mission": {
         "key": "mission",
@@ -69,7 +111,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "temporary_energy_alluvium": {
         "key": "temporary_energy_alluvium",
@@ -77,7 +120,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "re_crisis": {
         "key": "re_crisis",
@@ -94,7 +138,17 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
+    },
+    "exploration_level": {
+        "key": "exploration_level",
+        "name": "Exploration Level",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        },
+        "noFrame": true
     },
     "energy_alluvium": {
         "key": "energy_alluvium",
@@ -102,7 +156,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "ew_terminal": {
         "key": "ew_terminal",
@@ -110,7 +165,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "dorm_trade": {
         "key": "dorm_trade",
@@ -502,7 +558,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "stock_redistrib": {
         "key": "stock_redistrib",
@@ -510,7 +567,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "depot_node": {
         "key": "depot_node",
@@ -518,7 +576,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "env_monitoring": {
         "key": "env_monitoring",
@@ -526,7 +585,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "recycling_stn": {
         "key": "recycling_stn",
@@ -534,7 +594,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "pac": {
         "key": "pac",
@@ -542,7 +603,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "sub_pac": {
         "key": "sub_pac",
@@ -550,7 +612,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "control_nexus": {
         "key": "control_nexus",
@@ -561,17 +624,63 @@
         },
         "noFrame": true
     },
-    "growth_chamber": {
-        "key": "growth_chamber",
-        "name": "Growth Chamber",
+    "etchspace_salvage": {
+        "key": "etchspace_salvage",
+        "name": "Etchspace Salvage",
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
-    "manufacturing_cabin": {
-        "key": "manufacturing_cabin",
-        "name": "Manufacturing Cabin",
+    "guest_terminal": {
+        "key": "guest_terminal",
+        "name": "Guest Terminal",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "protocol_singularity": {
+        "key": "protocol_singularity",
+        "name": "Protocol Singularity",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "operator_contact_panel": {
+        "key": "operator_contact_panel",
+        "name": "Operator Contact Panel",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "tp_platform": {
+        "key": "tp_platform",
+        "name": "TP Platform",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "tower_of_trails": {
+        "key": "tower_of_trails",
+        "name": "Tower of Trails",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "stock_redistribution_terminal": {
+        "key": "stock_redistribution_terminal",
+        "name": "Stock Redistribution Terminal",
         "category": {
             "main": "general",
             "sub": "facility"
@@ -584,55 +693,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
-    },
-    "etchspace_salvage": {
-        "key": "etchspace_salvage",
-        "name": "Etchspace Salvage",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "guest_terminal": {
-        "key": "guest_terminal",
-        "name": "Guest Terminal",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "stock_redistribution_terminal": {
-        "key": "stock_redistribution_terminal",
-        "name": "Stock Redistribution Terminal",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "protocol_singularity": {
-        "key": "protocol_singularity",
-        "name": "Protocol Singularity",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "tower_of_trails": {
-        "key": "tower_of_trails",
-        "name": "Tower of Trails",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "operator_contact_panel": {
-        "key": "operator_contact_panel",
-        "name": "Operator Contact Panel",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "triaggelos": {
         "key": "triaggelos",
