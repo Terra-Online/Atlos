@@ -71,6 +71,7 @@
     "title": "Ketentuan & Penyimpanan",
     "calculating": "Menghitung penggunaan penyimpanan...",
     "policy": "<p>Kami menggunakan Cookie untuk menyimpan kredensial login otomatis Anda; LocalStorage untuk menyimpan preferensi UI dan progres penanda; serta CacheStorage untuk menyimpan data font dan sumber daya gambar untuk bahasa Anda. File-file ini memungkinkan Anda mengakses situs web lebih cepat di masa mendatang dan memastikan ketersediaan dalam mode offline.</p><p>Menghapus penyimpanan lokal situs web dapat menghemat ruang di perangkat Anda. Namun, <span class=\"keyword\">memuat file-file ini mungkin akan membutuhkan waktu lebih lama</span> saat Anda mengunjungi kembali situs web; jika Anda menonaktifkan penyimpanan situs web, maka situs <span class=\"keyword\">tidak dapat merekam data Anda secara otomatis untuk penggunaan berikutnya</span>.</p><p>Kami tidak mengirimkan data Anda ke server, sehingga Anda tidak perlu khawatir tentang masalah privasi.</p><p>Anda dapat memutuskan sendiri apakah ingin mengaktifkan penyimpanan lokal.</p>",
+    "filtersAndMarkers": "Filter & Data Titik",
     "warning": "<p><strong>Peringatan:</strong> Jika Anda menghapus data yang tersimpan, kredensial login otomatis, preferensi UI, dan progres penanda Anda akan hilang; dan pemuatan situs web berikutnya mungkin memakan waktu lebih lama dari biasanya.</p><p>Jika sudah yakin, silakan klik tombol Hapus sekali lagi.</p>"
   },
   "guide": {

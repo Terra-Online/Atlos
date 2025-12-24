@@ -23,7 +23,7 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Confirmation state
-  const [pendingAction, setPendingAction] = useState<'selected' | 'all' | null>(null);
+  const [pendingAction, setPendingAction] = useState<'selected' | 'all' | 'markers-filters' | null>(null);
   const [isActionReady, setIsActionReady] = useState(false);
   const actionTimeoutRef = useRef<number | null>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
@@ -48,6 +48,18 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
     setSelectedName(null);
   }, []);
 
+  const handleClearMarkersAndFilters = useCallback(async () => {
+    await clearStorageItem(['LocalStorage', 'marker-filter']);
+    await clearStorageItem(['LocalStorage', 'points-storage']);
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+      return;
+    }
+    setRefreshKey(prev => prev + 1);
+    setSelectedPath(null);
+    setSelectedName(null);
+  }, []);
+
   const handleClearSelected = useCallback(async () => {
     if (!selectedPath || !selectedName) return;
     await clearStorageItem(selectedPath);
@@ -61,13 +73,14 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
     setSelectedName(null);
   }, [selectedPath, selectedName]);
 
-  const handleActionClick = (e: React.MouseEvent, action: 'selected' | 'all') => {
+  const handleActionClick = (e: React.MouseEvent, action: 'selected' | 'all' | 'markers-filters') => {
     e.stopPropagation();
     
     if (pendingAction === action) {
       if (isActionReady) {
         // Execute
         if (action === 'selected') void handleClearSelected();
+        else if (action === 'markers-filters') void handleClearMarkersAndFilters();
         else void handleClearAll();
         
         // Reset
@@ -131,6 +144,13 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
               schema="light"
               width="100%"
               disabled={!selectedPath}
+            />
+            <Button 
+              text={t('common.clear') + ' ' + t('tos.filtersAndMarkers')}
+              onClick={(e) => handleActionClick(e, 'markers-filters')} 
+              buttonStyle="square"
+              schema="light"
+              width="100%"
             />
             <Button 
               text={t('common.clear') + ' ' + t('common.all')} 
