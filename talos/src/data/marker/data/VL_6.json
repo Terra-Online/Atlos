@@ -1,5 +1,23 @@
 [
   {
+    "id": "int_collection_piece_002",
+    "type": "repair_logic",
+    "position": [
+      -218.1548,
+      614.8415
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_piece_003",
+    "type": "repair_logic",
+    "position": [
+      -437.1516,
+      752.2376
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_blackbox_entry_001",
     "type": "protocol_dl",
     "position": [

@@ -1,5 +1,14 @@
 [
   {
+    "id": "int_collection_piece_001",
+    "type": "repair_logic",
+    "position": [
+      -643.8314,
+      552.129
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_blackbox_entry_wuling_1_001",
     "type": "protocol_dl",
     "position": [

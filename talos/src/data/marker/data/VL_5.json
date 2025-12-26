@@ -1,5 +1,14 @@
 [
   {
+    "id": "int_collection_piece_in_door_002",
+    "type": "repair_logic",
+    "position": [
+      -543.628,
+      777.0209
+    ],
+    "subregionId": "VL_5"
+  },
+  {
     "id": "int_blackbox_entry_018",
     "type": "protocol_dl",
     "position": [
