@@ -49,6 +49,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.958.0",
     "@eslint/js": "^9.22.0",
     "@svgr/webpack": "^5.5.0",
     "@types/accept-language-parser": "^1.5.8",

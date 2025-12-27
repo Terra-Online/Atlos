@@ -101,6 +101,7 @@ const getMimeType = (filePath) => {
     ".woff": "font/woff",
     ".woff2": "font/woff2",
     ".ttf": "font/ttf",
+    ".otf": "font/otf",
     ".eot": "application/vnd.ms-fontobject",
     ".txt": "text/plain",
     ".xml": "application/xml",
