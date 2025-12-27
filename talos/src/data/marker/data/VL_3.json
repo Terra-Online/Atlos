@@ -1,5 +1,41 @@
 [
   {
+    "id": "int_collection_piece_in_door_001",
+    "type": "repair_logic",
+    "position": [
+      -824.0898,
+      586.9995
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_blackbox_entry_013",
+    "type": "protocol_dl",
+    "position": [
+      -797.5031,
+      663.4182
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_blackbox_entry_014",
+    "type": "protocol_dl",
+    "position": [
+      -766.2327,
+      619.9884
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_blackbox_entry_hard_003",
+    "type": "protocol_dl_ii",
+    "position": [
+      -878.5174,
+      609.2493
+    ],
+    "subregionId": "VL_3"
+  },
+  {
     "id": "int_campfire_v2_037",
     "type": "tp_point",
     "position": [
@@ -559,7 +595,7 @@
   },
   {
     "id": "int_trchest_common_high_097",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -800.9408,
       669.7851
@@ -568,7 +604,7 @@
   },
   {
     "id": "int_trchest_common_high_098",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -858.6658,
       595.1914
@@ -577,7 +613,7 @@
   },
   {
     "id": "int_trchest_common_166",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -730.4028,
       673.921
@@ -586,7 +622,7 @@
   },
   {
     "id": "int_trchest_common_high_099",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -795.5423,
       587.5817
@@ -595,7 +631,7 @@
   },
   {
     "id": "int_trchest_common_167",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -740.1781,
       623.9282
@@ -604,7 +640,7 @@
   },
   {
     "id": "int_trchest_common_168",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -776.5162,
       591.8957
@@ -613,7 +649,7 @@
   },
   {
     "id": "int_trchest_common_high_100",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -790.5675,
       595.8383
@@ -622,7 +658,7 @@
   },
   {
     "id": "int_trchest_common_high_101",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -825.473,
       688.6206
@@ -631,7 +667,7 @@
   },
   {
     "id": "int_trchest_common_high_102",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -888.5721,
       606.4508
@@ -640,7 +676,7 @@
   },
   {
     "id": "int_trchest_common_high_103",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -891.8858,
       640.793
@@ -649,7 +685,7 @@
   },
   {
     "id": "int_trchest_common_high_104",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -771.2563,
       696.2968
@@ -658,7 +694,7 @@
   },
   {
     "id": "int_trchest_common_169",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -881.7116,
       651.7996
@@ -667,7 +703,7 @@
   },
   {
     "id": "int_trchest_common_170",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -897.7502,
       674.6823
@@ -676,7 +712,7 @@
   },
   {
     "id": "int_trchest_common_high_105",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -786.1078,
       663.7232
@@ -685,7 +721,7 @@
   },
   {
     "id": "int_trchest_common_normal_140",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -811.7156,
       586.782
@@ -694,7 +730,7 @@
   },
   {
     "id": "int_trchest_common_normal_141",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -775.0968,
       595.1774
@@ -703,7 +739,7 @@
   },
   {
     "id": "int_trchest_common_high_106",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -774.2156,
       595.8102
@@ -712,7 +748,7 @@
   },
   {
     "id": "int_trchest_common_normal_142",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -773.3896,
       596.413
@@ -721,7 +757,7 @@
   },
   {
     "id": "int_trchest_common_171",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -779.1131,
       674.9809
@@ -730,7 +766,7 @@
   },
   {
     "id": "int_trchest_common_172",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -766.1183,
       739.6273
@@ -738,8 +774,35 @@
     "subregionId": "VL_3"
   },
   {
+    "id": "int_fixable_robot_060",
+    "type": "delta_bot",
+    "position": [
+      -857.1001,
+      701.3542
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_fixable_robot_061",
+    "type": "delta_bot",
+    "position": [
+      -891.633,
+      609.2446
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_fixable_robot_062",
+    "type": "delta_bot",
+    "position": [
+      -773.7622,
+      592.7028
+    ],
+    "subregionId": "VL_3"
+  },
+  {
     "id": "int_trchest_common_normal_143",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -760.6124,
       657.8775
@@ -748,7 +811,7 @@
   },
   {
     "id": "int_trchest_common_high_107",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -762.4166,
       617.8106
@@ -757,7 +820,7 @@
   },
   {
     "id": "int_trchest_common_normal_144",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -785.6934,
       683.9223
@@ -766,7 +829,7 @@
   },
   {
     "id": "int_trchest_common_normal_145",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -770.2957,
       731.4412
@@ -775,7 +838,7 @@
   },
   {
     "id": "int_trchest_common_normal_146",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -853.5245,
       701.7892
@@ -784,7 +847,7 @@
   },
   {
     "id": "int_trchest_common_173",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -843.7135,
       689.0706
@@ -793,7 +856,7 @@
   },
   {
     "id": "int_trchest_common_high_108",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -774.2873,
       732.7849
@@ -802,7 +865,7 @@
   },
   {
     "id": "int_trchest_common_174",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -825.8504,
       582.4991
@@ -811,7 +874,7 @@
   },
   {
     "id": "int_trchest_common_high_109",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -822.3886,
       582.7063
@@ -820,7 +883,7 @@
   },
   {
     "id": "int_trchest_common_normal_147",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -834.7027,
       604.379
@@ -829,7 +892,7 @@
   },
   {
     "id": "int_trchest_common_normal_148",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -798.7359,
       698.1526
@@ -838,10 +901,325 @@
   },
   {
     "id": "int_trchest_common_high_110",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -801.787,
       630.3693
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_540",
+    "type": "gather",
+    "position": [
+      -805.4306,
+      591.3866
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_541",
+    "type": "gather",
+    "position": [
+      -828.32,
+      585.9731
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_542",
+    "type": "gather",
+    "position": [
+      -815.6304,
+      606.4234
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_543",
+    "type": "gather",
+    "position": [
+      -760.1319,
+      661.3907
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_544",
+    "type": "gather",
+    "position": [
+      -777.3421,
+      627.2587
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_545",
+    "type": "gather",
+    "position": [
+      -906.155,
+      659.2063
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_546",
+    "type": "gather",
+    "position": [
+      -896.2494,
+      667.7247
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_547",
+    "type": "gather",
+    "position": [
+      -864.6189,
+      637.6603
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_548",
+    "type": "gather",
+    "position": [
+      -828.7547,
+      593.4437
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_549",
+    "type": "gather",
+    "position": [
+      -887.0641,
+      669.4859
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_550",
+    "type": "gather",
+    "position": [
+      -817.6735,
+      631.9556
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_551",
+    "type": "gather",
+    "position": [
+      -898.4188,
+      643.5869
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_552",
+    "type": "gather",
+    "position": [
+      -793.5433,
+      666.8624
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_553",
+    "type": "gather",
+    "position": [
+      -797.2119,
+      604.018
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_554",
+    "type": "gather",
+    "position": [
+      -838.09,
+      688.2475
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_555",
+    "type": "gather",
+    "position": [
+      -863.0738,
+      592.4762
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_556",
+    "type": "gather",
+    "position": [
+      -796.6199,
+      586.911
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_557",
+    "type": "gather",
+    "position": [
+      -790.4846,
+      686.6268
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_558",
+    "type": "gather",
+    "position": [
+      -771.9841,
+      699.5021
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_559",
+    "type": "gather",
+    "position": [
+      -754.9396,
+      725.5975
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_560",
+    "type": "gather",
+    "position": [
+      -757.6269,
+      730.9661
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_561",
+    "type": "gather",
+    "position": [
+      -766.1155,
+      681.8588
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_562",
+    "type": "gather",
+    "position": [
+      -730.9639,
+      662.4788
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_563",
+    "type": "gather",
+    "position": [
+      -771.2992,
+      646.1275
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_564",
+    "type": "gather",
+    "position": [
+      -772.1403,
+      681.8683
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_565",
+    "type": "gather",
+    "position": [
+      -764.269,
+      678.6209
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_566",
+    "type": "gather",
+    "position": [
+      -819.8022,
+      656.4408
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_567",
+    "type": "gather",
+    "position": [
+      -755.9961,
+      673.1863
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_568",
+    "type": "gather",
+    "position": [
+      -775.8738,
+      666.4018
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_569",
+    "type": "gather",
+    "position": [
+      -827.0157,
+      619.4634
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_570",
+    "type": "gather",
+    "position": [
+      -824.3279,
+      690.3959
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_571",
+    "type": "gather",
+    "position": [
+      -810.888,
+      671.898
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_572",
+    "type": "gather",
+    "position": [
+      -858.9517,
+      689.0139
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_573",
+    "type": "gather",
+    "position": [
+      -810.6647,
+      600.6872
+    ],
+    "subregionId": "VL_3"
+  },
+  {
+    "id": "int_collection_common_574",
+    "type": "gather",
+    "position": [
+      -809.0002,
+      710.6922
     ],
     "subregionId": "VL_3"
   },
@@ -1063,7 +1441,7 @@
   },
   {
     "id": "int_doodad_core_recycle_012",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -847.0004,
       689.9368

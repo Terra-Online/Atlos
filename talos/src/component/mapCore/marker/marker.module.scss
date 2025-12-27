@@ -101,6 +101,7 @@
     &:hover {
         transform: translate3d(-50%, -60%, 0);
         transition: transform 0.35s $moderato-curve;
+        z-index: 1000;
     }
     &.selected {
         .noFrameImage {

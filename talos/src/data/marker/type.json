@@ -7,13 +7,41 @@
             "sub": "collection"
         }
     },
-    "crate": {
-        "key": "crate",
-        "name": "Crate",
+    "crate_i": {
+        "key": "crate_i",
+        "name": "Crate I",
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
+    },
+    "crate_ii": {
+        "key": "crate_ii",
+        "name": "Crate II",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "crate_iii": {
+        "key": "crate_iii",
+        "name": "Crate III",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "cratelocked": {
+        "key": "cratelocked",
+        "name": "Crate(Locked)",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
     },
     "delta_bot": {
         "key": "delta_bot",
@@ -21,7 +49,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "protocol_dl": {
         "key": "protocol_dl",
@@ -29,7 +58,17 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
+    },
+    "protocol_dl_ii": {
+        "key": "protocol_dl_ii",
+        "name": "Protocol DL II",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
     },
     "gear_template": {
         "key": "gear_template",
@@ -37,11 +76,21 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "repair_logic": {
         "key": "repair_logic",
         "name": "Repair Logic",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
+    "gather": {
+        "key": "gather",
+        "name": "Gather",
         "category": {
             "main": "poi",
             "sub": "collection"
@@ -53,15 +102,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
-    },
-    "gather": {
-        "key": "gather",
-        "name": "Gather",
-        "category": {
-            "main": "poi",
-            "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "mission": {
         "key": "mission",
@@ -69,7 +111,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "temporary_energy_alluvium": {
         "key": "temporary_energy_alluvium",
@@ -77,7 +120,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "re_crisis": {
         "key": "re_crisis",
@@ -94,7 +138,17 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
+    },
+    "exploration_level": {
+        "key": "exploration_level",
+        "name": "Exploration Level",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        },
+        "noFrame": true
     },
     "energy_alluvium": {
         "key": "energy_alluvium",
@@ -102,7 +156,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "ew_terminal": {
         "key": "ew_terminal",
@@ -110,7 +165,8 @@
         "category": {
             "main": "poi",
             "sub": "combat"
-        }
+        },
+        "noFrame": true
     },
     "dorm_trade": {
         "key": "dorm_trade",
@@ -502,7 +558,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "stock_redistrib": {
         "key": "stock_redistrib",
@@ -510,7 +567,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "depot_node": {
         "key": "depot_node",
@@ -518,7 +576,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "env_monitoring": {
         "key": "env_monitoring",
@@ -526,7 +585,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "recycling_stn": {
         "key": "recycling_stn",
@@ -534,7 +594,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "pac": {
         "key": "pac",
@@ -542,7 +603,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "sub_pac": {
         "key": "sub_pac",
@@ -550,7 +612,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "control_nexus": {
         "key": "control_nexus",
@@ -561,17 +624,63 @@
         },
         "noFrame": true
     },
-    "growth_chamber": {
-        "key": "growth_chamber",
-        "name": "Growth Chamber",
+    "etchspace_salvage": {
+        "key": "etchspace_salvage",
+        "name": "Etchspace Salvage",
         "category": {
             "main": "general",
             "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
-    "manufacturing_cabin": {
-        "key": "manufacturing_cabin",
-        "name": "Manufacturing Cabin",
+    "guest_terminal": {
+        "key": "guest_terminal",
+        "name": "Guest Terminal",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "protocol_singularity": {
+        "key": "protocol_singularity",
+        "name": "Protocol Singularity",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "operator_contact_panel": {
+        "key": "operator_contact_panel",
+        "name": "Operator Contact Panel",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "tp_platform": {
+        "key": "tp_platform",
+        "name": "TP Platform",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "tower_of_trails": {
+        "key": "tower_of_trails",
+        "name": "Tower of Trails",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "stock_redistribution_terminal": {
+        "key": "stock_redistribution_terminal",
+        "name": "Stock Redistribution Terminal",
         "category": {
             "main": "general",
             "sub": "facility"
@@ -584,55 +693,8 @@
         "category": {
             "main": "general",
             "sub": "facility"
-        }
-    },
-    "etchspace_salvage": {
-        "key": "etchspace_salvage",
-        "name": "Etchspace Salvage",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "guest_terminal": {
-        "key": "guest_terminal",
-        "name": "Guest Terminal",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "stock_redistribution_terminal": {
-        "key": "stock_redistribution_terminal",
-        "name": "Stock Redistribution Terminal",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "protocol_singularity": {
-        "key": "protocol_singularity",
-        "name": "Protocol Singularity",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "tower_of_trails": {
-        "key": "tower_of_trails",
-        "name": "Tower of Trails",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
-    },
-    "operator_contact_panel": {
-        "key": "operator_contact_panel",
-        "name": "Operator Contact Panel",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        }
+        },
+        "noFrame": true
     },
     "triaggelos": {
         "key": "triaggelos",
@@ -652,23 +714,43 @@
         },
         "faction": "Aggeloi"
     },
-    "rhodagn_the_bonekrushing_fist": {
-        "key": "rhodagn_the_bonekrushing_fist",
-        "name": "Rhodagn the Bonekrushing Fist",
+    "rhodagn": {
+        "key": "rhodagn",
+        "name": "Rhodagn",
         "category": {
             "main": "enemy",
             "sub": "boss"
         },
         "faction": "Landbreakers"
     },
-    "effigy": {
-        "key": "effigy",
-        "name": "Effigy",
+    "grove_archer": {
+        "key": "grove_archer",
+        "name": "Grove Archer",
         "category": {
             "main": "enemy",
             "sub": "mob"
         },
         "tier": "elite",
+        "faction": "Cangzei"
+    },
+    "road_plunderer": {
+        "key": "road_plunderer",
+        "name": "Road Plunderer",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Cangzei"
+    },
+    "ram": {
+        "key": "ram",
+        "name": "Ram",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
         "faction": "Aggeloi"
     },
     "heavy_ram": {
@@ -681,14 +763,14 @@
         "tier": "advanced",
         "faction": "Aggeloi"
     },
-    "heavy_ram_a": {
-        "key": "heavy_ram_a",
-        "name": "Heavy Ram α",
+    "sting": {
+        "key": "sting",
+        "name": "Sting",
         "category": {
             "main": "enemy",
             "sub": "mob"
         },
-        "tier": "advanced",
+        "tier": "common",
         "faction": "Aggeloi"
     },
     "heavy_sting": {
@@ -701,39 +783,9 @@
         "tier": "advanced",
         "faction": "Aggeloi"
     },
-    "heavy_sting_a": {
-        "key": "heavy_sting_a",
-        "name": "Heavy Sting α",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "advanced",
-        "faction": "Aggeloi"
-    },
-    "ram": {
-        "key": "ram",
-        "name": "Ram",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "common",
-        "faction": "Aggeloi"
-    },
     "ram_a": {
         "key": "ram_a",
         "name": "Ram α",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "common",
-        "faction": "Aggeloi"
-    },
-    "sting": {
-        "key": "sting",
-        "name": "Sting",
         "category": {
             "main": "enemy",
             "sub": "mob"
@@ -751,29 +803,179 @@
         "tier": "common",
         "faction": "Aggeloi"
     },
-    "bonekrusher_ballista": {
-        "key": "bonekrusher_ballista",
-        "name": "Bonekrusher Ballista",
+    "heavy_ram_a": {
+        "key": "heavy_ram_a",
+        "name": "Heavy Ram α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "heavy_sting_a": {
+        "key": "heavy_sting_a",
+        "name": "Heavy Sting α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Aggeloi"
+    },
+    "effigy": {
+        "key": "effigy",
+        "name": "Effigy",
         "category": {
             "main": "enemy",
             "sub": "mob"
         },
         "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "falsewings": {
+        "key": "falsewings",
+        "name": "Falsewings",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "falsewings_a": {
+        "key": "falsewings_a",
+        "name": "Falsewings α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "walking_chrysopolis": {
+        "key": "walking_chrysopolis",
+        "name": "Walking Chrysopolis",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "Alpha",
+        "faction": "Aggeloi"
+    },
+    "mudflow": {
+        "key": "mudflow",
+        "name": "Mudflow",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "hedron": {
+        "key": "hedron",
+        "name": "Hedron",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "prism": {
+        "key": "prism",
+        "name": "Prism",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "tidewalker": {
+        "key": "tidewalker",
+        "name": "Tidewalker",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "mudflow_d": {
+        "key": "mudflow_d",
+        "name": "Mudflow δ",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "hedron_d": {
+        "key": "hedron_d",
+        "name": "Hedron δ",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "tidewalker_d": {
+        "key": "tidewalker_d",
+        "name": "Tidewalker δ",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Aggeloi"
+    },
+    "sentinel": {
+        "key": "sentinel",
+        "name": "Sentinel",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "tidalklast": {
+        "key": "tidalklast",
+        "name": "Tidalklast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Aggeloi"
+    },
+    "bonekrusher_raider": {
+        "key": "bonekrusher_raider",
+        "name": "Bonekrusher Raider",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Landbreakers"
+    },
+    "bonekrusher_ambusher": {
+        "key": "bonekrusher_ambusher",
+        "name": "Bonekrusher Ambusher",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
         "faction": "Landbreakers"
     },
     "bonekrusher_executioner": {
         "key": "bonekrusher_executioner",
         "name": "Bonekrusher Executioner",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "elite",
-        "faction": "Landbreakers"
-    },
-    "elite_executioner": {
-        "key": "elite_executioner",
-        "name": "Elite Executioner",
         "category": {
             "main": "enemy",
             "sub": "mob"
@@ -801,6 +1003,46 @@
         "tier": "advanced",
         "faction": "Landbreakers"
     },
+    "bonekrusher_ballista": {
+        "key": "bonekrusher_ballista",
+        "name": "Bonekrusher Ballista",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Landbreakers"
+    },
+    "elite_executioner": {
+        "key": "elite_executioner",
+        "name": "Elite Executioner",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Landbreakers"
+    },
+    "bonekrusher_infiltrator": {
+        "key": "bonekrusher_infiltrator",
+        "name": "Bonekrusher Infiltrator",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Landbreakers"
+    },
+    "hazefyre_claw": {
+        "key": "hazefyre_claw",
+        "name": "Hazefyre Claw",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Landbreakers"
+    },
     "bonekrusher_ripptusk": {
         "key": "bonekrusher_ripptusk",
         "name": "Bonekrusher Ripptusk",
@@ -811,9 +1053,9 @@
         "tier": "common",
         "faction": "Landbreakers"
     },
-    "elite_ripptusk": {
-        "key": "elite_ripptusk",
-        "name": "Elite Ripptusk",
+    "hazefyre_tuskbeast": {
+        "key": "hazefyre_tuskbeast",
+        "name": "Hazefyre Tuskbeast",
         "category": {
             "main": "enemy",
             "sub": "mob"
@@ -821,9 +1063,19 @@
         "tier": "common",
         "faction": "Landbreakers"
     },
-    "bonekrusher_raider": {
-        "key": "bonekrusher_raider",
-        "name": "Bonekrusher Raider",
+    "bonekrusher_vanguard": {
+        "key": "bonekrusher_vanguard",
+        "name": "Bonekrusher Vanguard",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Landbreakers"
+    },
+    "bonekrusher_siegeknuckles": {
+        "key": "bonekrusher_siegeknuckles",
+        "name": "Bonekrusher Siegeknuckles",
         "category": {
             "main": "enemy",
             "sub": "mob"
@@ -841,16 +1093,6 @@
         "tier": "common",
         "faction": "Landbreakers"
     },
-    "bonekrusher_ambusher": {
-        "key": "bonekrusher_ambusher",
-        "name": "Bonekrusher Ambusher",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "common",
-        "faction": "Landbreakers"
-    },
     "elite_ambusher": {
         "key": "elite_ambusher",
         "name": "Elite Ambusher",
@@ -861,9 +1103,9 @@
         "tier": "common",
         "faction": "Landbreakers"
     },
-    "bonekrusher_infiltrator": {
-        "key": "bonekrusher_infiltrator",
-        "name": "Bonekrusher Infiltrator",
+    "elite_ripptusk": {
+        "key": "elite_ripptusk",
+        "name": "Elite Ripptusk",
         "category": {
             "main": "enemy",
             "sub": "mob"
@@ -871,239 +1113,15 @@
         "tier": "common",
         "faction": "Landbreakers"
     },
-    "grove_archer": {
-        "key": "grove_archer",
-        "name": "Grove Archer",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        },
-        "tier": "elite",
-        "faction": "Cangzei"
-    },
-    "acid_originium_slug": {
-        "key": "acid_originium_slug",
-        "name": "Acid Originium Slug",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "acid_originium_sluga": {
-        "key": "acid_originium_sluga",
-        "name": "Acid Originium Slug·α",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "axe_armorbeast": {
-        "key": "axe_armorbeast",
-        "name": "Axe Armorbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "bonekrusher_siegeknuckles": {
-        "key": "bonekrusher_siegeknuckles",
-        "name": "Bonekrusher Siegeknuckles",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "bonekrusher_vanguard": {
-        "key": "bonekrusher_vanguard",
-        "name": "Bonekrusher Vanguard",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "brutal_pincerbeast": {
-        "key": "brutal_pincerbeast",
-        "name": "Brutal Pincerbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
     "ereignis": {
         "key": "ereignis",
         "name": "Ereignis",
         "category": {
             "main": "enemy",
             "sub": "mob"
-        }
-    },
-    "falsewings": {
-        "key": "falsewings",
-        "name": "Falsewings",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "falsewings_a": {
-        "key": "falsewings_a",
-        "name": "Falsewings α",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "firemist_originium_slug": {
-        "key": "firemist_originium_slug",
-        "name": "Firemist Originium Slug",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "glaring_rakerbeast": {
-        "key": "glaring_rakerbeast",
-        "name": "Glaring Rakerbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "hazefyre_axe_armorbeast": {
-        "key": "hazefyre_axe_armorbeast",
-        "name": "Hazefyre Axe Armorbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "hazefyre_claw": {
-        "key": "hazefyre_claw",
-        "name": "Hazefyre Claw",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "hazefyre_tuskbeast": {
-        "key": "hazefyre_tuskbeast",
-        "name": "Hazefyre Tuskbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "hedron": {
-        "key": "hedron",
-        "name": "Hedron",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "hedron_d": {
-        "key": "hedron_d",
-        "name": "Hedron δ",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "imbued_quillbeast": {
-        "key": "imbued_quillbeast",
-        "name": "Imbued Quillbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "indigenous_pincerbeast": {
-        "key": "indigenous_pincerbeast",
-        "name": "Indigenous Pincerbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "marble_appendage": {
-        "key": "marble_appendage",
-        "name": "Marble Appendage",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "mudflow": {
-        "key": "mudflow",
-        "name": "Mudflow",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "mudflow_d": {
-        "key": "mudflow_d",
-        "name": "Mudflow δ",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "prism": {
-        "key": "prism",
-        "name": "Prism",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "quillbeast": {
-        "key": "quillbeast",
-        "name": "Quillbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "sentinel": {
-        "key": "sentinel",
-        "name": "Sentinel",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "spotted_rakerbeast": {
-        "key": "spotted_rakerbeast",
-        "name": "Spotted Rakerbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "tidalklast": {
-        "key": "tidalklast",
-        "name": "Tidalklast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "tidewalker": {
-        "key": "tidewalker",
-        "name": "Tidewalker",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "tidewalker_d": {
-        "key": "tidewalker_d",
-        "name": "Tidewalker δ",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
+        },
+        "tier": "unknown",
+        "faction": "Landbreakers"
     },
     "tunneling_nidwyrm": {
         "key": "tunneling_nidwyrm",
@@ -1111,15 +1129,9 @@
         "category": {
             "main": "enemy",
             "sub": "mob"
-        }
-    },
-    "walking_chrysopolis": {
-        "key": "walking_chrysopolis",
-        "name": "Walking Chrysopolis",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
+        },
+        "tier": "advanced",
+        "faction": "Wildlife"
     },
     "waterlamp": {
         "key": "waterlamp",
@@ -1127,24 +1139,128 @@
         "category": {
             "main": "enemy",
             "sub": "mob"
-        }
+        },
+        "tier": "common",
+        "faction": "Wildlife"
     },
-    "wild_tuskbeast": {
-        "key": "wild_tuskbeast",
-        "name": "Wild Tuskbeast",
-        "category": {
-            "main": "enemy",
-            "sub": "mob"
-        }
-    },
-    "road_plunderer": {
-        "key": "road_plunderer",
-        "name": "Road Plunderer",
+    "axe_armorbeast": {
+        "key": "axe_armorbeast",
+        "name": "Axe Armorbeast",
         "category": {
             "main": "enemy",
             "sub": "mob"
         },
         "tier": "common",
-        "faction": "Cangzei"
+        "faction": "Wildlife"
+    },
+    "hazefyre_axe_armorbeast": {
+        "key": "hazefyre_axe_armorbeast",
+        "name": "Hazefyre Axe Armorbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Wildlife"
+    },
+    "indigenous_pincerbeast": {
+        "key": "indigenous_pincerbeast",
+        "name": "Indigenous Pincerbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "brutal_pincerbeast": {
+        "key": "brutal_pincerbeast",
+        "name": "Brutal Pincerbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "acid_originium_slug": {
+        "key": "acid_originium_slug",
+        "name": "Acid Originium Slug",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "acid_originium_sluga": {
+        "key": "acid_originium_sluga",
+        "name": "Acid Originium Slug·α",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Wildlife"
+    },
+    "firemist_originium_slug": {
+        "key": "firemist_originium_slug",
+        "name": "Firemist Originium Slug",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "blazemist_originium_slug": {
+        "key": "blazemist_originium_slug",
+        "name": "Blazemist Originium Slug",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Wildlife"
+    },
+    "quillbeast": {
+        "key": "quillbeast",
+        "name": "Quillbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "imbued_quillbeast": {
+        "key": "imbued_quillbeast",
+        "name": "Imbued Quillbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Wildlife"
+    },
+    "spotted_rakerbeast": {
+        "key": "spotted_rakerbeast",
+        "name": "Spotted Rakerbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Wildlife"
+    },
+    "glaring_rakerbeast": {
+        "key": "glaring_rakerbeast",
+        "name": "Glaring Rakerbeast",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Wildlife"
     }
 }

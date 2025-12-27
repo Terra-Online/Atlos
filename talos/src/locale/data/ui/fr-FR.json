@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Mode des limites",
     "clusterMode": "Mode de regroupement",
-    "optimalPath": "Noms de région"
+    "labelName": "Noms de région"
   },
   "search": {
     "placeholder": "Recherche générale..."
@@ -71,6 +71,7 @@
     "title": "Conditions et Stockage",
     "calculating": "Calcul de l'utilisation du stockage...",
     "policy": "<p>Nous utilisons des Cookies pour stocker vos informations de connexion automatique ; LocalStorage pour enregistrer vos préférences d'interface et la progression des marqueurs ; et CacheStorage pour stocker les données de police et les ressources d'image pour votre langue. Ces fichiers vous permettent d'accéder au site web plus rapidement à l'avenir et garantissent sa disponibilité hors ligne.</p><p>La suppression du stockage local du site web peut libérer de l'espace sur votre appareil. Cependant, <span class=\"keyword\">le chargement de ces fichiers peut prendre plus de temps</span> lors de votre prochaine visite ; si vous désactivez le stockage du site web, celui-ci <span class=\"keyword\">ne pourra pas enregistrer automatiquement vos données</span> pour votre prochaine utilisation.</p><p>Nous ne transmettons pas vos données au serveur, vous n'avez donc pas à vous soucier des problèmes de confidentialité.</p><p>Vous pouvez décider vous-même d'activer ou non le stockage local.</p>",
+    "filtersAndMarkers": "Filtres & Données des marqueurs",
     "warning": "<p><strong>Attention :</strong> Si vous effacez les données stockées, vos informations de connexion automatique, vos préférences d'interface et la progression des marqueurs seront perdues ; et le chargement du site web pourrait prendre plus de temps que d'habitude la prochaine fois.</p><p>Si vous confirmez, veuillez cliquer à nouveau sur le bouton de suppression.</p>"
   },
   "guide": {

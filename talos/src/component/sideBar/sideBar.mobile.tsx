@@ -24,7 +24,7 @@ import FacilityIcon from '../../assets/images/category/facility.svg?react';
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
-import { useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath } from '@/store/uiPrefs';
+import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName } from '@/store/uiPrefs';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -57,10 +57,10 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const [snapToIndex, setSnapToIndex] = useState<number | null>(null);
   const trigCluster = useTriggerCluster();
   const trigBoundary = useTriggerBoundary();
-  const trigOptimal = useTriggerOptimalPath();
+  const trigOptimal = useTriggerlabelName();
   const setTrigCluster = useSetTriggerCluster();
   const setTrigBoundary = useSetTriggerBoundary();
-  const setTrigOptimal = useSetTriggerOptimalPath();
+  const setTrigOptimal = useSetTriggerlabelName();
 
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight);
@@ -321,7 +321,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
           <div className={mobileStyles.mobileTriggerBar}>
             <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
             <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
-            <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
+            <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.labelName')} />
           </div>
           <div className={mobileStyles.copyright}>
             <a href='https://beian.miit.gov.cn/'>

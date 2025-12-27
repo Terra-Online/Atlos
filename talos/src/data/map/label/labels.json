@@ -153,7 +153,7 @@
           "type": "site",
           "region": "WL",
           "sub": "JY",
-          "site": "qingbo bailey",
+          "site": "qingbo_bailey",
           "point": [
             5396,
             5377
@@ -971,12 +971,12 @@
             5168
           ]
         },
-        "VL/HB/lohistics_platform": {
-          "id": "VL/HB/lohistics_platform",
+        "VL/HB/logistics_platform": {
+          "id": "VL/HB/logistics_platform",
           "type": "site",
           "region": "VL",
           "sub": "HB",
-          "site": "lohistics_platform",
+          "site": "logistics_platform",
           "point": [
             3679,
             3948
@@ -1235,12 +1235,12 @@
             1829
           ]
         },
-        "VL/OL/logistices_area": {
-          "id": "VL/OL/logistices_area",
+        "VL/OL/logistics_area": {
+          "id": "VL/OL/logistics_area",
           "type": "site",
           "region": "VL",
           "sub": "OL",
-          "site": "logistices_area",
+          "site": "logistics_area",
           "point": [
             5324,
             2154
@@ -1279,12 +1279,12 @@
             3233
           ]
         },
-        "VL/OL/blightcliff_ovservation_post": {
-          "id": "VL/OL/blightcliff_ovservation_post",
+        "VL/OL/blightcliff_observation_post": {
+          "id": "VL/OL/blightcliff_observation_post",
           "type": "site",
           "region": "VL",
           "sub": "OL",
-          "site": "blightcliff_ovservation_post",
+          "site": "blightcliff_observation_post",
           "point": [
             5874,
             3537

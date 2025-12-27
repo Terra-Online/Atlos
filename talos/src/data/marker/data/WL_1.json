@@ -1,5 +1,68 @@
 [
   {
+    "id": "int_collection_piece_001",
+    "type": "repair_logic",
+    "position": [
+      -643.8314,
+      552.129
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_001",
+    "type": "protocol_dl",
+    "position": [
+      -677.1124,
+      616.8216
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_002",
+    "type": "protocol_dl",
+    "position": [
+      -580.0423,
+      565.6338
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_003",
+    "type": "protocol_dl",
+    "position": [
+      -620.6764,
+      626.5356
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_004",
+    "type": "protocol_dl",
+    "position": [
+      -949.3571,
+      509.7378
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_005",
+    "type": "protocol_dl",
+    "position": [
+      -777.0482,
+      548.3982
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_blackbox_entry_wuling_1_006",
+    "type": "protocol_dl",
+    "position": [
+      -803.0091,
+      489.0224
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_campfire_v2_001",
     "type": "tp_point",
     "position": [
@@ -406,7 +469,7 @@
   },
   {
     "id": "eny_0108_slbomb2_001",
-    "type": "firemist_originium_slug",
+    "type": "blazemist_originium_slug",
     "position": [
       -636.2488,
       617.8092
@@ -955,7 +1018,7 @@
   },
   {
     "id": "int_trchest_common_001",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -754.8904,
       634.6718
@@ -964,7 +1027,7 @@
   },
   {
     "id": "int_trchest_common_normal_001",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -707.081,
       659.9037
@@ -973,7 +1036,7 @@
   },
   {
     "id": "int_trchest_common_002",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -600.2209,
       563.3604
@@ -982,7 +1045,7 @@
   },
   {
     "id": "int_trchest_common_003",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -724.8867,
       521.1832
@@ -991,7 +1054,7 @@
   },
   {
     "id": "int_trchest_common_normal_002",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -586.3966,
       661.4189
@@ -1000,7 +1063,7 @@
   },
   {
     "id": "int_trchest_common_004",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -540.339,
       669.1382
@@ -1009,7 +1072,7 @@
   },
   {
     "id": "int_trchest_common_005",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -592.5125,
       544.0403
@@ -1017,8 +1080,26 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_fixable_robot_001",
+    "type": "delta_bot",
+    "position": [
+      -636.6392,
+      566.3574
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_fixable_robot_002",
+    "type": "delta_bot",
+    "position": [
+      -597.3293,
+      583.525
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_common_006",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -600.8306,
       590.9104
@@ -1027,7 +1108,7 @@
   },
   {
     "id": "int_trchest_common_normal_003",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -668.6537,
       644.9178
@@ -1036,7 +1117,7 @@
   },
   {
     "id": "int_trchest_common_normal_004",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -642.6668,
       555.3899
@@ -1045,7 +1126,7 @@
   },
   {
     "id": "int_trchest_common_007",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -729.3716,
       494.6645
@@ -1054,7 +1135,7 @@
   },
   {
     "id": "int_trchest_common_normal_005",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -654.2698,
       578.7942
@@ -1063,7 +1144,7 @@
   },
   {
     "id": "int_trchest_common_normal_006",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -713.9055,
       667.0295
@@ -1071,8 +1152,17 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_system_domain_shop_001",
+    "type": "stock_redistrib",
+    "position": [
+      -692.511,
+      666.1548
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_common_high_001",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -779.6632,
       582.5936
@@ -1081,7 +1171,7 @@
   },
   {
     "id": "int_trchest_common_high_002",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -777.7111,
       662.4378
@@ -1090,7 +1180,7 @@
   },
   {
     "id": "int_trchest_lock_001",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -576.0636,
       576.1724
@@ -1099,7 +1189,7 @@
   },
   {
     "id": "int_trchest_lock_002",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -712.2849,
       483.6141
@@ -1108,7 +1198,7 @@
   },
   {
     "id": "int_trchest_lock_003",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -625.4188,
       631.1932
@@ -1117,7 +1207,7 @@
   },
   {
     "id": "int_trchest_common_normal_007",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -609.4504,
       567.3438
@@ -1126,7 +1216,7 @@
   },
   {
     "id": "int_trchest_common_normal_008",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -666.9402,
       552.527
@@ -1135,7 +1225,7 @@
   },
   {
     "id": "int_trchest_common_normal_009",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -689.2613,
       662.5904
@@ -1144,7 +1234,7 @@
   },
   {
     "id": "int_trchest_common_normal_010",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -676.6955,
       586.7043
@@ -1153,7 +1243,7 @@
   },
   {
     "id": "int_trchest_equip_001",
-    "type": "int_trchest_equip",
+    "type": "gear_template",
     "position": [
       -553.7503,
       574.6671
@@ -1162,7 +1252,7 @@
   },
   {
     "id": "int_trchest_equip_002",
-    "type": "int_trchest_equip",
+    "type": "gear_template",
     "position": [
       -669.0661,
       628.1351
@@ -1171,7 +1261,7 @@
   },
   {
     "id": "int_trchest_common_normal_011",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -739.7634,
       562.7014
@@ -1180,7 +1270,7 @@
   },
   {
     "id": "int_trchest_common_high_003",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -642.2449,
       586.5214
@@ -1189,7 +1279,7 @@
   },
   {
     "id": "int_trchest_common_high_004",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -704.1076,
       495.6626
@@ -1197,8 +1287,26 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_fixable_robot_003",
+    "type": "delta_bot",
+    "position": [
+      -808.4487,
+      485.5988
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_fixable_robot_004",
+    "type": "delta_bot",
+    "position": [
+      -835.968,
+      603.6898
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_lock_004",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -815.7849,
       678.0296
@@ -1207,7 +1315,7 @@
   },
   {
     "id": "int_trchest_common_normal_012",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -919.4582,
       588.7519
@@ -1216,7 +1324,7 @@
   },
   {
     "id": "int_trchest_common_008",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -785.6966,
       644.3465
@@ -1224,8 +1332,17 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_fixable_robot_005",
+    "type": "delta_bot",
+    "position": [
+      -813.9459,
+      631.7616
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_common_009",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -889.9552,
       500.9698
@@ -1233,8 +1350,17 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_fixable_robot_006",
+    "type": "delta_bot",
+    "position": [
+      -791.4331,
+      564.8505
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_common_high_005",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -831.4275,
       458.9635
@@ -1243,7 +1369,7 @@
   },
   {
     "id": "int_trchest_common_010",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -871.5681,
       597.4231
@@ -1251,17 +1377,8 @@
     "subregionId": "WL_1"
   },
   {
-    "id": "int_trchest_supplybox_001",
-    "type": "int_trchest_supplybox",
-    "position": [
-      -820.4165,
-      647.4016
-    ],
-    "subregionId": "WL_1"
-  },
-  {
     "id": "int_trchest_common_high_006",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -793.5033,
       660.7317
@@ -1270,7 +1387,7 @@
   },
   {
     "id": "int_trchest_lock_005",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -871.5292,
       587.5375
@@ -1279,7 +1396,7 @@
   },
   {
     "id": "int_trchest_common_normal_013",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -910.2205,
       564.3938
@@ -1288,7 +1405,7 @@
   },
   {
     "id": "int_trchest_common_high_007",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -804.2835,
       594.1891
@@ -1296,8 +1413,35 @@
     "subregionId": "WL_1"
   },
   {
+    "id": "int_fixable_robot_007",
+    "type": "delta_bot",
+    "position": [
+      -868.4568,
+      449.5373
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_fixable_robot_008",
+    "type": "delta_bot",
+    "position": [
+      -900.8144,
+      600.4571
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_fixable_robot_009",
+    "type": "delta_bot",
+    "position": [
+      -859.729,
+      589.7932
+    ],
+    "subregionId": "WL_1"
+  },
+  {
     "id": "int_trchest_common_011",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -832.8107,
       653.9135
@@ -1306,7 +1450,7 @@
   },
   {
     "id": "int_trchest_common_normal_014",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -874.2914,
       455.6625
@@ -1315,7 +1459,7 @@
   },
   {
     "id": "int_trchest_equip_003",
-    "type": "int_trchest_equip",
+    "type": "gear_template",
     "position": [
       -769.6749,
       571.1802
@@ -1324,7 +1468,7 @@
   },
   {
     "id": "int_trchest_equip_004",
-    "type": "int_trchest_equip",
+    "type": "gear_template",
     "position": [
       -851.685,
       545.2425
@@ -1333,7 +1477,7 @@
   },
   {
     "id": "int_trchest_common_012",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -941.2407,
       562.0806
@@ -1342,7 +1486,7 @@
   },
   {
     "id": "int_trchest_common_013",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -786.4274,
       543.9008
@@ -1351,7 +1495,7 @@
   },
   {
     "id": "int_trchest_common_high_008",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -887.8449,
       559.0979
@@ -1360,7 +1504,7 @@
   },
   {
     "id": "int_trchest_common_014",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -791.7506,
       596.942
@@ -1369,7 +1513,7 @@
   },
   {
     "id": "int_trchest_common_normal_015",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -821.2865,
       499.5175
@@ -1378,7 +1522,7 @@
   },
   {
     "id": "int_trchest_common_normal_016",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -834.8752,
       473.9122
@@ -1387,10 +1531,541 @@
   },
   {
     "id": "int_trchest_common_normal_017",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -922.7738,
       553.6607
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_system_dungeon_entry_red03_001",
+    "type": "exploration_level",
+    "position": [
+      -673.0581,
+      639.5568
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_system_dungeon_entry_red02_001",
+    "type": "protocol_space",
+    "position": [
+      -644.8088,
+      566.258
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_warning_terminal_001",
+    "type": "ew_terminal",
+    "position": [
+      -713.6423,
+      597.4181
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_001",
+    "type": "gather",
+    "position": [
+      -576.3341,
+      591.817
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_002",
+    "type": "gather",
+    "position": [
+      -689.7685,
+      678.0811
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_003",
+    "type": "gather",
+    "position": [
+      -706.4379,
+      576.5387
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_004",
+    "type": "gather",
+    "position": [
+      -629.7079,
+      566.1762
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_005",
+    "type": "gather",
+    "position": [
+      -579.9025,
+      562.1804
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_006",
+    "type": "gather",
+    "position": [
+      -607.5026,
+      578.2354
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_007",
+    "type": "gather",
+    "position": [
+      -597.5125,
+      579.6808
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_008",
+    "type": "gather",
+    "position": [
+      -625.3993,
+      606.2236
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_009",
+    "type": "gather",
+    "position": [
+      -690.3814,
+      661.3189
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_010",
+    "type": "gather",
+    "position": [
+      -669.92,
+      506.0215
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_011",
+    "type": "gather",
+    "position": [
+      -693.6257,
+      513.8903
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_012",
+    "type": "gather",
+    "position": [
+      -638.1651,
+      646.4495
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_013",
+    "type": "gather",
+    "position": [
+      -630.8413,
+      647.1574
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_014",
+    "type": "gather",
+    "position": [
+      -713.9278,
+      524.4107
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_015",
+    "type": "gather",
+    "position": [
+      -707.5084,
+      507.6712
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_016",
+    "type": "gather",
+    "position": [
+      -544.1529,
+      646.3439
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_017",
+    "type": "gather",
+    "position": [
+      -659.2103,
+      582.1738
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_018",
+    "type": "gather",
+    "position": [
+      -577.6497,
+      591.2043
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_019",
+    "type": "gather",
+    "position": [
+      -678.0142,
+      629.933
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_020",
+    "type": "gather",
+    "position": [
+      -621.8836,
+      572.6884
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_021",
+    "type": "gather",
+    "position": [
+      -706.5367,
+      602.0249
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_022",
+    "type": "gather",
+    "position": [
+      -711.9091,
+      552.1875
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_023",
+    "type": "gather",
+    "position": [
+      -631.0223,
+      626.1936
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_024",
+    "type": "gather",
+    "position": [
+      -703.3113,
+      666.4971
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_025",
+    "type": "gather",
+    "position": [
+      -853.468,
+      449.0419
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_026",
+    "type": "gather",
+    "position": [
+      -842.8321,
+      461.2613
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_027",
+    "type": "gather",
+    "position": [
+      -882.2845,
+      496.4375
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_028",
+    "type": "gather",
+    "position": [
+      -848.5007,
+      459.47
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_029",
+    "type": "gather",
+    "position": [
+      -875.4311,
+      568.2938
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_030",
+    "type": "gather",
+    "position": [
+      -877.1626,
+      568.4703
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_031",
+    "type": "gather",
+    "position": [
+      -877.438,
+      569.6024
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_032",
+    "type": "gather",
+    "position": [
+      -931.2514,
+      550.7174
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_033",
+    "type": "gather",
+    "position": [
+      -930.5074,
+      553.7604
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_034",
+    "type": "gather",
+    "position": [
+      -931.9836,
+      550.9926
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_035",
+    "type": "gather",
+    "position": [
+      -800.3595,
+      666.0741
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_036",
+    "type": "gather",
+    "position": [
+      -778.7403,
+      640.181
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_037",
+    "type": "gather",
+    "position": [
+      -830.4708,
+      640.3806
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_038",
+    "type": "gather",
+    "position": [
+      -866.766,
+      483.8668
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_039",
+    "type": "gather",
+    "position": [
+      -878.2813,
+      501.4653
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_040",
+    "type": "gather",
+    "position": [
+      -877.3032,
+      502.5378
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_041",
+    "type": "gather",
+    "position": [
+      -803.8358,
+      482.5194
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_042",
+    "type": "gather",
+    "position": [
+      -802.5106,
+      498.8905
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_043",
+    "type": "gather",
+    "position": [
+      -803.6236,
+      499.3711
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_044",
+    "type": "gather",
+    "position": [
+      -878.1656,
+      499.3304
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_045",
+    "type": "gather",
+    "position": [
+      -869.5906,
+      599.5289
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_046",
+    "type": "gather",
+    "position": [
+      -873.7901,
+      597.5831
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_047",
+    "type": "gather",
+    "position": [
+      -895.8978,
+      594.8017
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_048",
+    "type": "gather",
+    "position": [
+      -894.6705,
+      586.3326
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_049",
+    "type": "gather",
+    "position": [
+      -813.1508,
+      670.459
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_050",
+    "type": "gather",
+    "position": [
+      -823.7545,
+      531.7207
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_051",
+    "type": "gather",
+    "position": [
+      -792.9312,
+      556.9002
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_052",
+    "type": "gather",
+    "position": [
+      -909.733,
+      578.6215
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_053",
+    "type": "gather",
+    "position": [
+      -795.3279,
+      538.7646
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_054",
+    "type": "gather",
+    "position": [
+      -834.6943,
+      479.7534
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_055",
+    "type": "gather",
+    "position": [
+      -874.7823,
+      537.7199
+    ],
+    "subregionId": "WL_1"
+  },
+  {
+    "id": "int_collection_common_056",
+    "type": "gather",
+    "position": [
+      -876.221,
+      538.5357
     ],
     "subregionId": "WL_1"
   },
@@ -3763,7 +4438,7 @@
   },
   {
     "id": "int_doodad_core_recycle_001",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -641.8148,
       577.6921
@@ -3772,7 +4447,7 @@
   },
   {
     "id": "int_doodad_core_recycle_002",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -747.5868,
       631.8775
@@ -3835,7 +4510,7 @@
   },
   {
     "id": "int_doodad_core_recycle_003",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -802.4804,
       515.8936

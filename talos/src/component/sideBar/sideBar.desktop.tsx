@@ -24,7 +24,7 @@ import MarkSelector from '../markSelector/markSelector';
 
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerOptimalPath, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerOptimalPath, useDrawerSnapIndex } from '@/store/uiPrefs';
+import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDrawerSnapIndex } from '@/store/uiPrefs';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -57,10 +57,10 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     // Persistent trigger states
     const trigCluster = useTriggerCluster();
     const trigBoundary = useTriggerBoundary();
-    const trigOptimal = useTriggerOptimalPath();
+    const trigOptimal = useTriggerlabelName();
     const setTrigCluster = useSetTriggerCluster();
     const setTrigBoundary = useSetTriggerBoundary();
-    const setTrigOptimal = useSetTriggerOptimalPath();
+    const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDrawerSnapIndex();
     useMemo(() => {
         if (!currentRegion) return null;
@@ -156,7 +156,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     <TriggerBar>
                         <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />
                         <Trigger isActive={trigBoundary} onToggle={(v) => setTrigBoundary(v)} label={t('trigger.boundaryMode')} />
-                        <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.optimalPath')} />
+                        <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.labelName')} />
                     </TriggerBar>
                 </Drawer>
             </div>

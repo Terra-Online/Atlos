@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "地區邊界顯示",
     "clusterMode": "點位聚合",
-    "optimalPath": "地區名稱"
+    "labelName": "地區名稱"
   },
   "search": {
     "placeholder": "全域搜尋…"
@@ -71,6 +71,7 @@
     "title": "協議與儲存",
     "calculating": "正在計算儲存占用…",
     "policy": "<p>我們使用 Cookies 儲存您的自動登入資訊；使用 LocalStorage 儲存您的介面偏好設定與標記進度；使用 CacheStorage 儲存您語言使用的字型資料以及圖片資源。這些檔案允許您日後更快速地存取網站，並保障網站離線時的可用性；刪除網站的本機儲存空間可以節省您的裝置空間。但是您再次存取時<span class=\"keyword\">可能需要更長的時間載入</span>這些檔案；如果您停用網站儲存，那麼網站<span class=\"keyword\">將無法自動記錄您的資料</span>供您下次使用。</p><p>我們不會向伺服器回報您的資料，您不需要擔心隱私問題。</p><p>您可以自行決定是否啟用本機儲存。</p>",
+    "filtersAndMarkers": "篩選器與標記資料",
     "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>"
   },
   "guide": {

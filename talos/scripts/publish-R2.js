@@ -83,8 +83,37 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles("./dist");
 
+// 简单的 MIME 类型映射，避免引入额外依赖
+const getMimeType = (filePath) => {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeMap = {
+    ".html": "text/html",
+    ".css": "text/css",
+    ".js": "application/javascript",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+    ".eot": "application/vnd.ms-fontobject",
+    ".txt": "text/plain",
+    ".xml": "application/xml",
+    ".pdf": "application/pdf",
+    ".zip": "application/zip",
+    ".wasm": "application/wasm",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+  };
+  return mimeMap[ext] || "application/octet-stream";
+};
+
 // 与 OSS 脚本保持一致的阈值和重试逻辑
-const MULTIPART_THRESHOLD = 1 * 1024 * 1024; // 1MB
+const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB
 const MAX_RETRIES = 3;
 
 const upload = async (relativePath, retryCount = 0) => {
@@ -94,11 +123,12 @@ const upload = async (relativePath, retryCount = 0) => {
   try {
     const stats = fs.statSync(localPath);
     const fileSize = stats.size;
+    const contentType = getMimeType(localPath); // 获取 MIME 类型
 
     // 检查 CDN 是否已存在该资源
     const cdnCheck = await checkCDNResourceExists(relativePath);
 
-    // 如果 CDN 已存在该资源且文件较大（大于 1MB），则跳过上传
+    // 如果 CDN 已存在该资源且文件较大（大于 5MB），则跳过上传
     if (cdnCheck.exists && fileSize > MULTIPART_THRESHOLD) {
       console.log(
         `跳过上传 ${relativePath} - CDN已存在该资源 (${(
@@ -111,16 +141,15 @@ const upload = async (relativePath, retryCount = 0) => {
     }
 
     if (fileSize > MULTIPART_THRESHOLD) {
-      // 使用 AWS SDK v3 的 Upload 进行分片上传
+      // 使用 AWS SDK v3 的 Upload 进行上传（不再强制分片）
       const upload = new Upload({
         client,
         params: {
           Bucket: bucket,
           Key: objectKey,
           Body: fs.createReadStream(localPath),
+          ContentType: contentType, // 指定 Content-Type
         },
-        partSize: 2 * 1024 * 1024, // 2MB per part
-        queueSize: 3, // 并发分片数
         leavePartsOnError: false,
       });
 
@@ -130,7 +159,7 @@ const upload = async (relativePath, retryCount = 0) => {
           fileSize /
           1024 /
           1024
-        ).toFixed(2)}MB)`
+        ).toFixed(2)}MB, ${contentType})`
       );
     } else {
       // 小文件直接 PutObject
@@ -138,10 +167,13 @@ const upload = async (relativePath, retryCount = 0) => {
         Bucket: bucket,
         Key: objectKey,
         Body: fs.createReadStream(localPath),
+        ContentType: contentType, // 指定 Content-Type
       });
       await client.send(command);
       console.log(
-        `${relativePath} uploaded (${(fileSize / 1024).toFixed(2)}KB)`
+        `${relativePath} uploaded (${(fileSize / 1024).toFixed(
+          2
+        )}KB, ${contentType})`
       );
     }
   } catch (e) {
@@ -163,7 +195,7 @@ const upload = async (relativePath, retryCount = 0) => {
   }
 };
 
-const concurrency = 5; // limit concurrency
+const concurrency = 20; // limit concurrency
 let index = 0;
 
 const worker = async () => {
@@ -189,4 +221,4 @@ run()
   })
   .catch((err) => {
     console.error("Error uploading files to R2:", err);
-  });
+});

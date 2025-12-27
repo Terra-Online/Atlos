@@ -1,5 +1,50 @@
 [
   {
+    "id": "int_collection_piece_002",
+    "type": "repair_logic",
+    "position": [
+      -218.1548,
+      614.8415
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_piece_003",
+    "type": "repair_logic",
+    "position": [
+      -437.1516,
+      752.2376
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_blackbox_entry_001",
+    "type": "protocol_dl",
+    "position": [
+      -403.1967,
+      796.2346
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_blackbox_entry_hard_001",
+    "type": "protocol_dl_ii",
+    "position": [
+      -322.7145,
+      693.2823
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_blackbox_entry_hard_002",
+    "type": "protocol_dl_ii",
+    "position": [
+      -222.6174,
+      815.3685
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_campfire_v2_016",
     "type": "tp_point",
     "position": [
@@ -1197,8 +1242,17 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_fixable_robot_015",
+    "type": "delta_bot",
+    "position": [
+      -237.6767,
+      634.8575
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_high_019",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -381.7368,
       791.6207
@@ -1207,7 +1261,7 @@
   },
   {
     "id": "int_trchest_common_normal_030",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -382.1379,
       804.6397
@@ -1216,7 +1270,7 @@
   },
   {
     "id": "int_trchest_common_high_020",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -439.471,
       828.7561
@@ -1225,7 +1279,7 @@
   },
   {
     "id": "int_trchest_common_high_021",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -194.6409,
       667.3053
@@ -1234,7 +1288,7 @@
   },
   {
     "id": "int_trchest_common_high_022",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -263.5168,
       698.8412
@@ -1243,7 +1297,7 @@
   },
   {
     "id": "int_trchest_common_normal_031",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -282.6935,
       827.908
@@ -1252,7 +1306,7 @@
   },
   {
     "id": "int_trchest_common_high_023",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -360.1067,
       742.7688
@@ -1261,7 +1315,7 @@
   },
   {
     "id": "int_trchest_common_normal_032",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -229.7002,
       843.8733
@@ -1270,7 +1324,7 @@
   },
   {
     "id": "int_trchest_common_normal_033",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -363.9599,
       739.5949
@@ -1279,7 +1333,7 @@
   },
   {
     "id": "int_trchest_common_normal_034",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -214.4901,
       816.9829
@@ -1288,7 +1342,7 @@
   },
   {
     "id": "int_trchest_common_028",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -381.9599,
       779.6253
@@ -1297,7 +1351,7 @@
   },
   {
     "id": "int_trchest_common_high_024",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -283.5456,
       795.1002
@@ -1306,7 +1360,7 @@
   },
   {
     "id": "int_trchest_common_029",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -361.1146,
       807.8957
@@ -1315,7 +1369,7 @@
   },
   {
     "id": "int_trchest_common_normal_035",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -343.0536,
       772.2012
@@ -1324,7 +1378,7 @@
   },
   {
     "id": "int_trchest_common_030",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -327.2801,
       774.8169
@@ -1333,7 +1387,7 @@
   },
   {
     "id": "int_trchest_common_normal_036",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -193.8501,
       821.7014
@@ -1342,7 +1396,7 @@
   },
   {
     "id": "int_trchest_common_031",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -257.5524,
       697.5039
@@ -1351,7 +1405,7 @@
   },
   {
     "id": "int_trchest_common_032",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -369.5943,
       786.8732
@@ -1360,7 +1414,7 @@
   },
   {
     "id": "int_trchest_common_033",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -351.252,
       765.6064
@@ -1369,7 +1423,7 @@
   },
   {
     "id": "int_trchest_common_034",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -277.33,
       747.9621
@@ -1378,7 +1432,7 @@
   },
   {
     "id": "int_trchest_common_high_025",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -334.1895,
       778.7867
@@ -1387,7 +1441,7 @@
   },
   {
     "id": "int_trchest_common_035",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -415.2957,
       801.7587
@@ -1396,7 +1450,7 @@
   },
   {
     "id": "int_trchest_common_normal_037",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -458.4815,
       835.5672
@@ -1405,7 +1459,7 @@
   },
   {
     "id": "int_trchest_common_036",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -328.5471,
       785.9478
@@ -1414,7 +1468,7 @@
   },
   {
     "id": "int_trchest_common_normal_038",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -335.4387,
       805.6232
@@ -1423,7 +1477,7 @@
   },
   {
     "id": "int_trchest_common_high_026",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -357.3458,
       836.9452
@@ -1432,7 +1486,7 @@
   },
   {
     "id": "int_trchest_common_037",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -194.0235,
       666.5072
@@ -1441,7 +1495,7 @@
   },
   {
     "id": "int_trchest_common_normal_039",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -194.0563,
       668.1151
@@ -1450,7 +1504,7 @@
   },
   {
     "id": "int_trchest_common_normal_040",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -303.2332,
       724.3558
@@ -1459,7 +1513,7 @@
   },
   {
     "id": "int_trchest_common_normal_041",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -374.2349,
       767.8747
@@ -1468,7 +1522,7 @@
   },
   {
     "id": "int_trchest_common_038",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -240.8738,
       642.7298
@@ -1477,7 +1531,7 @@
   },
   {
     "id": "int_trchest_common_039",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -247.794,
       645.2072
@@ -1486,7 +1540,7 @@
   },
   {
     "id": "int_trchest_common_normal_042",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -305.6341,
       784.8974
@@ -1495,7 +1549,7 @@
   },
   {
     "id": "int_trchest_common_normal_043",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -356.8255,
       679.5479
@@ -1503,8 +1557,44 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_fixable_robot_016",
+    "type": "delta_bot",
+    "position": [
+      -280.4021,
+      820.4025
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_017",
+    "type": "delta_bot",
+    "position": [
+      -363.8288,
+      820.1163
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_018",
+    "type": "delta_bot",
+    "position": [
+      -382.114,
+      799.196
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_019",
+    "type": "delta_bot",
+    "position": [
+      -426.6999,
+      834.9094
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_high_027",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -334.0643,
       806.9516
@@ -1513,7 +1603,7 @@
   },
   {
     "id": "int_trchest_common_normal_044",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -286.5644,
       768.9715
@@ -1522,7 +1612,7 @@
   },
   {
     "id": "int_trchest_common_040",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -366.7485,
       755.3848
@@ -1531,7 +1621,7 @@
   },
   {
     "id": "int_trchest_common_041",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -336.0434,
       808.3509
@@ -1540,7 +1630,7 @@
   },
   {
     "id": "int_trchest_common_normal_045",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -331.5036,
       813.3248
@@ -1549,7 +1639,7 @@
   },
   {
     "id": "int_trchest_common_normal_046",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -385.4099,
       812.2795
@@ -1558,7 +1648,7 @@
   },
   {
     "id": "int_trchest_common_high_028",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -341.0862,
       829.7798
@@ -1567,7 +1657,7 @@
   },
   {
     "id": "int_trchest_lock_007",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -323.3236,
       758.3223
@@ -1575,8 +1665,26 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_system_domain_shop_002",
+    "type": "stock_redistrib",
+    "position": [
+      -363.6458,
+      781.5341
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_system_domain_depot_002",
+    "type": "depot_node",
+    "position": [
+      -235.883,
+      647.8697
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_high_029",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -373.1896,
       677.8885
@@ -1585,7 +1693,7 @@
   },
   {
     "id": "int_trchest_common_high_030",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -401.7432,
       848.5208
@@ -1594,7 +1702,7 @@
   },
   {
     "id": "int_trchest_common_high_031",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -282.295,
       722.5943
@@ -1603,7 +1711,7 @@
   },
   {
     "id": "int_trchest_common_high_032",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -220.9345,
       610.0977
@@ -1611,8 +1719,62 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_fixable_robot_020",
+    "type": "delta_bot",
+    "position": [
+      -207.4439,
+      659.7385
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_021",
+    "type": "delta_bot",
+    "position": [
+      -206.7267,
+      654.0197
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_022",
+    "type": "delta_bot",
+    "position": [
+      -203.2532,
+      671.0073
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_023",
+    "type": "delta_bot",
+    "position": [
+      -209.1501,
+      654.8541
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_024",
+    "type": "delta_bot",
+    "position": [
+      -203.3139,
+      661.74
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_025",
+    "type": "delta_bot",
+    "position": [
+      -191.2874,
+      653.9127
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_normal_047",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -397.7662,
       740.734
@@ -1621,7 +1783,7 @@
   },
   {
     "id": "int_trchest_common_high_033",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -369.6876,
       721.5663
@@ -1630,7 +1792,7 @@
   },
   {
     "id": "int_trchest_common_042",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -382.1259,
       737.7049
@@ -1639,7 +1801,7 @@
   },
   {
     "id": "int_trchest_common_normal_048",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -436.2057,
       770.1031
@@ -1648,7 +1810,7 @@
   },
   {
     "id": "int_trchest_common_normal_049",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -453.0751,
       767.682
@@ -1657,7 +1819,7 @@
   },
   {
     "id": "int_trchest_common_high_034",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -398.0871,
       741.5746
@@ -1666,7 +1828,7 @@
   },
   {
     "id": "int_trchest_common_normal_050",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -445.4855,
       751.7965
@@ -1675,7 +1837,7 @@
   },
   {
     "id": "int_trchest_common_normal_051",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -397.5225,
       761.734
@@ -1684,7 +1846,7 @@
   },
   {
     "id": "int_trchest_common_043",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -361.2692,
       716.4808
@@ -1693,7 +1855,7 @@
   },
   {
     "id": "int_trchest_common_044",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -406.4456,
       747.4231
@@ -1702,7 +1864,7 @@
   },
   {
     "id": "int_trchest_common_high_035",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -410.5631,
       683.1948
@@ -1711,7 +1873,7 @@
   },
   {
     "id": "int_trchest_common_normal_052",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -412.4002,
       735.3147
@@ -1719,8 +1881,17 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_fixable_robot_026",
+    "type": "delta_bot",
+    "position": [
+      -408.2428,
+      779.3544
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_normal_053",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -395.354,
       726.5571
@@ -1728,8 +1899,62 @@
     "subregionId": "VL_6"
   },
   {
+    "id": "int_fixable_robot_027",
+    "type": "delta_bot",
+    "position": [
+      -404.0194,
+      701.4948
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_028",
+    "type": "delta_bot",
+    "position": [
+      -451.1195,
+      741.7793
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_029",
+    "type": "delta_bot",
+    "position": [
+      -410.7871,
+      814.5546
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_030",
+    "type": "delta_bot",
+    "position": [
+      -389.987,
+      705.1421
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_031",
+    "type": "delta_bot",
+    "position": [
+      -403.124,
+      731.073
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_fixable_robot_032",
+    "type": "delta_bot",
+    "position": [
+      -431.3959,
+      704.5391
+    ],
+    "subregionId": "VL_6"
+  },
+  {
     "id": "int_trchest_common_high_036",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -405.7976,
       736.1046
@@ -1738,7 +1963,7 @@
   },
   {
     "id": "int_trchest_common_high_037",
-    "type": "crate",
+    "type": "crate_iii",
     "position": [
       -450.8195,
       753.5215
@@ -1747,7 +1972,7 @@
   },
   {
     "id": "int_trchest_common_normal_054",
-    "type": "crate",
+    "type": "crate_ii",
     "position": [
       -399.5522,
       706.2123
@@ -1756,7 +1981,7 @@
   },
   {
     "id": "int_trchest_common_045",
-    "type": "crate",
+    "type": "crate_i",
     "position": [
       -399.9712,
       787.1108
@@ -1765,7 +1990,7 @@
   },
   {
     "id": "int_trchest_lock_008",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -393.046,
       712.4911
@@ -1774,10 +1999,370 @@
   },
   {
     "id": "int_trchest_lock_009",
-    "type": "crate",
+    "type": "cratelocked",
     "position": [
       -370.4708,
       698.1104
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_system_dungeon_entry_002",
+    "type": "re_crisis",
+    "position": [
+      -203.7674,
+      731.1602
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_system_dungeon_entry_red02_003",
+    "type": "protocol_space",
+    "position": [
+      -212.7689,
+      617.7616
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_system_dungeon_entry_red03_003",
+    "type": "exploration_level",
+    "position": [
+      -435.4404,
+      784.3756
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_system_world_energy_point_002",
+    "type": "energy_alluvium",
+    "position": [
+      -392.6428,
+      680.551
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_089",
+    "type": "gather",
+    "position": [
+      -272.8931,
+      785.8581
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_090",
+    "type": "gather",
+    "position": [
+      -367.2198,
+      801.1736
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_091",
+    "type": "gather",
+    "position": [
+      -343.9213,
+      804.0766
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_092",
+    "type": "gather",
+    "position": [
+      -326.4387,
+      799.1459
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_093",
+    "type": "gather",
+    "position": [
+      -336.7404,
+      763.362
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_094",
+    "type": "gather",
+    "position": [
+      -284.6718,
+      767.2452
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_095",
+    "type": "gather",
+    "position": [
+      -328.9535,
+      795.1151
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_096",
+    "type": "gather",
+    "position": [
+      -419.4335,
+      781.1514
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_097",
+    "type": "gather",
+    "position": [
+      -393.7312,
+      697.8789
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_098",
+    "type": "gather",
+    "position": [
+      -378.6053,
+      737.9987
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_099",
+    "type": "gather",
+    "position": [
+      -456.857,
+      744.0909
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_100",
+    "type": "gather",
+    "position": [
+      -403.2779,
+      806.1994
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_101",
+    "type": "gather",
+    "position": [
+      -416.4928,
+      728.5854
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_102",
+    "type": "gather",
+    "position": [
+      -416.2809,
+      734.9072
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_103",
+    "type": "gather",
+    "position": [
+      -410.374,
+      736.8851
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_104",
+    "type": "gather",
+    "position": [
+      -413.6401,
+      811.1967
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_105",
+    "type": "gather",
+    "position": [
+      -410.638,
+      779.2457
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_106",
+    "type": "gather",
+    "position": [
+      -408.0539,
+      776.4603
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_107",
+    "type": "gather",
+    "position": [
+      -414.5055,
+      778.5132
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_108",
+    "type": "gather",
+    "position": [
+      -442.6278,
+      772.9683
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_109",
+    "type": "gather",
+    "position": [
+      -404.2273,
+      756.7887
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_110",
+    "type": "gather",
+    "position": [
+      -377.7067,
+      736.1511
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_111",
+    "type": "gather",
+    "position": [
+      -374.3236,
+      742.9999
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_112",
+    "type": "gather",
+    "position": [
+      -392.1067,
+      696.532
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_113",
+    "type": "gather",
+    "position": [
+      -443.2351,
+      771.3184
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_114",
+    "type": "gather",
+    "position": [
+      -455.0869,
+      735.8675
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_115",
+    "type": "gather",
+    "position": [
+      -416.3042,
+      735.2168
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_116",
+    "type": "gather",
+    "position": [
+      -428.4994,
+      701.7119
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_117",
+    "type": "gather",
+    "position": [
+      -425.4977,
+      701.4826
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_118",
+    "type": "gather",
+    "position": [
+      -408.7055,
+      711.8293
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_119",
+    "type": "gather",
+    "position": [
+      -408.0217,
+      681.1463
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_120",
+    "type": "gather",
+    "position": [
+      -406.7931,
+      682.792
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_121",
+    "type": "gather",
+    "position": [
+      -389.6203,
+      668.9293
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_122",
+    "type": "gather",
+    "position": [
+      -392.8311,
+      723.7213
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_123",
+    "type": "gather",
+    "position": [
+      -362.1265,
+      726.8691
+    ],
+    "subregionId": "VL_6"
+  },
+  {
+    "id": "int_collection_common_124",
+    "type": "gather",
+    "position": [
+      -361.7111,
+      694.6588
     ],
     "subregionId": "VL_6"
   },
@@ -3313,7 +3898,7 @@
   },
   {
     "id": "int_doodad_core_recycle_006",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -346.2322,
       738.3766
@@ -3322,7 +3907,7 @@
   },
   {
     "id": "int_doodad_core_recycle_007",
-    "type": "recycling_station",
+    "type": "recycling_stn",
     "position": [
       -396.1298,
       758.9693

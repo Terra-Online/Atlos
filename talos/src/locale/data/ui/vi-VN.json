@@ -11,7 +11,7 @@
   "trigger": {
     "boundaryMode": "Hiển thị ranh giới khu vực",
     "clusterMode": "Gộp điểm",
-    "optimalPath": "Tên khu vực"
+    "labelName": "Tên khu vực"
   },
   "search": {
     "placeholder": "Tìm kiếm toàn cục…"
@@ -71,6 +71,7 @@
     "title": "Điều khoản & Lưu trữ",
     "calculating": "Đang tính toán dung lượng lưu trữ...",
     "policy": "<p>Chúng tôi sử dụng Cookies để lưu trữ thông tin đăng nhập tự động của bạn; LocalStorage để lưu tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn; và CacheStorage để lưu trữ dữ liệu phông chữ và tài nguyên hình ảnh cho ngôn ngữ của bạn. Những tệp này cho phép bạn truy cập trang web nhanh hơn trong tương lai và đảm bảo tính khả dụng của trang web khi ngoại tuyến.</p><p>Xóa bộ nhớ cục bộ của trang web có thể tiết kiệm dung lượng trên thiết bị của bạn. Tuy nhiên, có thể mất nhiều thời gian hơn để tải các tệp này khi bạn truy cập lại; nếu bạn tắt bộ nhớ trang web, trang web sẽ không thể tự động ghi lại dữ liệu của bạn cho lần sử dụng tiếp theo.</p><p>Chúng tôi không báo cáo dữ liệu của bạn cho máy chủ, vì vậy bạn không cần lo lắng về các vấn đề quyền riêng tư.</p><p>Bạn có thể tự quyết định xem có bật bộ nhớ cục bộ hay không.</p>",
+    "filtersAndMarkers": "Bộ lọc & Dữ liệu điểm",
     "warning": "<p><strong>Chú ý:</strong> Nếu bạn xóa dữ liệu lưu trữ, thông tin đăng nhập tự động, tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn sẽ bị mất; lần truy cập tiếp theo có thể mất nhiều thời gian hơn bình thường để tải trang.</p><p>Nếu bạn đã chắc chắn, vui lòng nhấn lại nút «Xóa».</p>"
   },
   "guide": {

@@ -16,10 +16,10 @@ interface IUiPrefsStore {
   // Trigger states (persistent)
   triggerCluster: boolean;
   triggerBoundary: boolean;
-  triggerOptimalPath: boolean;
+  triggerlabelName: boolean;
   setTriggerCluster: (value: boolean) => void;
   setTriggerBoundary: (value: boolean) => void;
-  setTriggerOptimalPath: (value: boolean) => void;
+  setTriggerlabelName: (value: boolean) => void;
 
   // User Guide States (Transient)
   drawerSnapIndex: number | null;
@@ -59,10 +59,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       triggerCluster: false,
       triggerBoundary: false,
       // Repurposed: controls region/place name labels visibility
-      triggerOptimalPath: true,
+      triggerlabelName: true,
       setTriggerCluster: (value: boolean) => set({ triggerCluster: value }),
       setTriggerBoundary: (value: boolean) => set({ triggerBoundary: value }),
-      setTriggerOptimalPath: (value: boolean) => set({ triggerOptimalPath: value }),
+      setTriggerlabelName: (value: boolean) => set({ triggerlabelName: value }),
 
       // User Guide States
       drawerSnapIndex: null,
@@ -86,7 +86,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         markFilterOrder: state.markFilterOrder,
         triggerCluster: state.triggerCluster,
         triggerBoundary: state.triggerBoundary,
-        triggerOptimalPath: state.triggerOptimalPath,
+        triggerlabelName: state.triggerlabelName,
         theme: state.theme,
       }),
     },
@@ -108,8 +108,8 @@ export const useTriggerCluster = () => useUiPrefsStore((s) => s.triggerCluster);
 export const useSetTriggerCluster = () => useUiPrefsStore((s) => s.setTriggerCluster);
 export const useTriggerBoundary = () => useUiPrefsStore((s) => s.triggerBoundary);
 export const useSetTriggerBoundary = () => useUiPrefsStore((s) => s.setTriggerBoundary);
-export const useTriggerOptimalPath = () => useUiPrefsStore((s) => s.triggerOptimalPath);
-export const useSetTriggerOptimalPath = () => useUiPrefsStore((s) => s.setTriggerOptimalPath);
+export const useTriggerlabelName = () => useUiPrefsStore((s) => s.triggerlabelName);
+export const useSetTriggerlabelName = () => useUiPrefsStore((s) => s.setTriggerlabelName);
 
 // User Guide hooks
 export const useDrawerSnapIndex = () => useUiPrefsStore((s) => s.drawerSnapIndex);
