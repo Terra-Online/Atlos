@@ -74,13 +74,7 @@ export default defineConfig({
                 },
             ]
                 .filter((target) => existsSync(target.src))
-                .concat([
-                    {
-                        src: ['public/*', '!public/clips'],
-                        dest: '',
-                    },
-                    ...getMapClipTargets(),
-                ]), // 只包含存在的源路径
+                .concat(getMapClipTargets()), // 只包含存在的源路径
         }),
         eslint({
             failOnWarning: false,
