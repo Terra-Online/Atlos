@@ -25,8 +25,35 @@ const assetsHost = isProd
       }`
     : '';
 
+const getMapClipTargets = () => {
+    const clipsDir = resolve(__dirname, 'public/clips');
+    if (!existsSync(clipsDir)) return [];
+
+    const targets = [];
+    const mapDirs = fs.readdirSync(clipsDir);
+
+    for (const mapName of mapDirs) {
+        const mapPath = resolve(clipsDir, mapName);
+        if (!fs.statSync(mapPath).isDirectory()) continue;
+
+        const items = fs.readdirSync(mapPath);
+        for (const item of items) {
+            const itemPath = resolve(mapPath, item);
+            // Only copy directories (e.g. 0, 1, 2, 3)
+            if (fs.statSync(itemPath).isDirectory()) {
+                targets.push({
+                    src: `public/clips/${mapName}/${item}`,
+                    dest: `clips/${mapName}`,
+                });
+            }
+        }
+    }
+    return targets;
+};
+
 // https://vite.dev/config/
 export default defineConfig({
+    publicDir: false,
     plugins: [
         react(),
         svgr(),
@@ -45,11 +72,9 @@ export default defineConfig({
                     src: 'src/assets/images/category',
                     dest: 'assets/images',
                 },
-                {
-                    src: 'src/assets/fonts',
-                    dest: 'assets',
-                },
-            ].filter((target) => existsSync(target.src)), // 只包含存在的源路径
+            ]
+                .filter((target) => existsSync(target.src))
+                .concat(getMapClipTargets()), // 只包含存在的源路径
         }),
         eslint({
             failOnWarning: false,

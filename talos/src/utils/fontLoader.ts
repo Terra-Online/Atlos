@@ -7,8 +7,15 @@ import { getFontAssetUrl } from './fontAssets';
 
 // Build CDN URL with base and normalize dev paths to production paths
 const toCdnUrl = (p: string): string => {
+    const str = String(p);
+    if (str.indexOf('://') !== -1 || str.startsWith('//')) return str;
+
     // eslint-disable-next-line no-undef
     const base = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+    
+    if (base && str.startsWith(base)) return str;
+
+    // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
     // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
     if (!base) return p; // Dev mode: return original path as-is
     const normalized = p.replace(/^\/src\/assets/i, '/assets');
