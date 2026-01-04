@@ -108,6 +108,8 @@
     "selected": "选中项",
     "confirm": "确认",
     "enable": "启用",
-    "disable": "禁用"
+    "disable": "禁用",
+    "expand": "展开",
+    "collapse": "收起"
   }
 }

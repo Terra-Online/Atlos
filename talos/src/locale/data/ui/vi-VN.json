@@ -108,6 +108,8 @@
     "selected": "Đã chọn",
     "confirm": "Xác nhận",
     "enable": "Bật",
-    "disable": "Tắt"
+    "disable": "Tắt",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn"
   }
 }

@@ -108,6 +108,8 @@
     "selected": "المحدد",
     "confirm": "تأكيد",
     "enable": "تمكين",
-    "disable": "تعطيل"
+    "disable": "تعطيل",
+    "expand": "توسيع",
+    "collapse": "طي"
   }
 }

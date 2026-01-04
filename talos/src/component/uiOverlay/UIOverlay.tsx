@@ -84,7 +84,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 <HeadItem
                     icon={Darkmode}
                     onClick={handleDarkMode}
-                    tooltip={t('headbar.darkMode')}
+                    tooltip={t('headbar.darkmode')}
                 />
                 <HeadItem
                     icon={i18n}

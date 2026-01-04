@@ -108,6 +108,8 @@
     "selected": "選取項目",
     "confirm": "確認",
     "enable": "啟用",
-    "disable": "停用"
+    "disable": "禁用",
+    "expand": "展開",
+    "collapse": "收起"
   }
 }

@@ -33,6 +33,7 @@ const Trigger = ({
                 className={`${styles.triggerButton} ${isActive ? styles.active : ''}`}
                 onClick={handleClick}
                 disabled={disabled}
+                aria-label={label}
             >
                 <div className={styles.triggerIcons}>
                     <span className={`${styles.triggerIcon} ${styles.off}`}>

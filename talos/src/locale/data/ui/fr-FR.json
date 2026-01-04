@@ -108,6 +108,8 @@
     "selected": "Sélectionné",
     "confirm": "Confirmer",
     "enable": "Activer",
-    "disable": "Désactiver"
+    "disable": "Désactiver",
+    "expand": "Développer",
+    "collapse": "Réduire"
   }
 }

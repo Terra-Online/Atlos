@@ -87,6 +87,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
             <button
                 className={`${styles.sidebarToggle} ${isOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}
                 onClick={toggleSidebar}
+                aria-label={isOpen ? t('common.collapse') : t('common.expand')}
             >
                 <SidebarIcon />
             </button>

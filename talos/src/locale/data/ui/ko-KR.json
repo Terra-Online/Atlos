@@ -108,6 +108,8 @@
     "selected": "선택됨",
     "confirm": "확인",
     "enable": "활성화",
-    "disable": "비활성화"
+    "disable": "비활성화",
+    "expand": "펼치기",
+    "collapse": "접기"
   }
 }

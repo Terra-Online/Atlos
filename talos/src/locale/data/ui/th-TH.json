@@ -108,6 +108,8 @@
     "selected": "ที่เลือก",
     "confirm": "ยืนยัน",
     "enable": "เปิดใช้งาน",
-    "disable": "ปิดใช้งาน"
+    "disable": "ปิดใช้งาน",
+    "expand": "ขยาย",
+    "collapse": "ยุบ"
   }
 }

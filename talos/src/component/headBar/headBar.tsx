@@ -36,6 +36,7 @@ const HeadItem = ({
             onClick={handleClick}
             disabled={disabled}
             title={tooltip}
+            aria-label={tooltip}
         >
             <div className={styles.headbarIcon}>{Icon && <Icon />}</div>
         </button>
