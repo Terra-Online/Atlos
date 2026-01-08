@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "ตัวกรอง",
     "emptyTitle": "ไม่มีตัวกรองที่ตรงกัน",
-    "emptyDesc": "โปรดติดต่อผู้ดูแลระบบ"
+    "emptyDesc": "โปรดติดต่อผู้ดูแลระบบหากคุณยืนยันว่ามีข้อมูลจุดใดที่ขาดหายไปหรือไม่ถูกต้อง กรุณาติดต่อผู้ดูแลในชุมชนของเรา หรือส่ง <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='รายงานข้อผิดพลาดตำแหน่ง'>Issue</a> ในที่เก็บ GitHub ของเรา"
   },
   "detail": {
     "stat": {
@@ -33,7 +33,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "ขับเคลื่อนโดย observator 6"
+      "supportedBy": "ขับเคลื่อนโดย Observator 6"
     }
   },
   "language": {

@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "フィルター項目",
     "emptyTitle": "条件に一致するフィルターはありません。",
-    "emptyDesc": "管理者に連絡してください。"
+    "emptyDesc": "位置情報に欠落や誤りがあることを確認した場合は、プロジェクトのコミュニティで管理者に連絡するか、本プロジェクトの GitHub リポジトリに <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='位置情報の誤りを報告'>Issue</a> を投稿してください。"
   },
   "detail": {
     "stat": {
@@ -33,7 +33,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "observator 6 によって提供"
+      "supportedBy": "Observator 6 によって提供"
     }
   },
   "language": {

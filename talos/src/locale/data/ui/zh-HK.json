@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "篩選項目",
     "emptyTitle": "沒有符合條件的篩選項目。",
-    "emptyDesc": "請聯絡管理員。"
+    "emptyDesc": "如果您確認點位資訊缺失或有誤，請於項目社群中聯絡管理員；或到本項目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='報告點位錯誤'>Issue</a>。"
   },
   "detail": {
     "stat": {

@@ -72,29 +72,55 @@ const renderLabels = (
     t: <T = string>(key: string) => T,
     regionCode: string,
     structure: RegionStructure,
+    currentType: AnyLabel['type'] | null,
 ) => {
-    layer.clearLayers();
-
     const showType: AnyLabel['type'] = structure.kind === 'flat' ? 'site' : (zoom <= ZOOM_THRESHOLD ? 'sub' : 'site');
-
-    for (const label of labels) {
-        if (label.type !== showType) continue;
-
-        const [x, y] = label.point;
-        const latLng = map.unproject([x, y], maxZoom);
-        const text = resolveLabelText(t, regionCode, structure, label);
-
-        const marker = L.marker(latLng, {
-            pane,
-            interactive: false,
-            icon: L.divIcon({
-                className: styles.label,
-                html: `<div class="${label.type === 'site' ? styles.innerSite : styles.innerSub}">${escapeHtml(text)}</div>`,
-                iconSize: [0, 0],
-            }),
-        });
-        layer.addLayer(marker);
+    
+    // 只在标签类型切换时才重新渲染
+    if (currentType === showType) {
+        return showType;
     }
+
+    // 淡出旧标签
+    if (currentType !== null && layer.getLayers().length > 0) {
+        layer.eachLayer((marker) => {
+            const element = (marker as L.Marker).getElement();
+            if (element) {
+                element.style.animation = 'fadeOut 0.2s ease-in-out';
+            }
+        });
+        // 等待淡出动画完成后清除
+        setTimeout(() => {
+            layer.clearLayers();
+            addNewLabels();
+        }, 200);
+    } else {
+        layer.clearLayers();
+        addNewLabels();
+    }
+
+    function addNewLabels() {
+        for (const label of labels) {
+            if (label.type !== showType) continue;
+
+            const [x, y] = label.point;
+            const latLng = map.unproject([x, y], maxZoom);
+            const text = resolveLabelText(t, regionCode, structure, label);
+
+            const marker = L.marker(latLng, {
+                pane,
+                interactive: false,
+                icon: L.divIcon({
+                    className: styles.label,
+                    html: `<div class="${label.type === 'site' ? styles.innerSite : styles.innerSub}">${escapeHtml(text)}</div>`,
+                    iconSize: [0, 0],
+                }),
+            });
+            layer.addLayer(marker);
+        }
+    }
+
+    return showType;
 };
 
 export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
@@ -116,12 +142,16 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
 
     const layerRef = useRef<L.LayerGroup | null>(null);
     const paneRef = useRef<string | null>(null);
+    const currentLabelTypeRef = useRef<AnyLabel['type'] | null>(null);
 
     useEffect(() => {
         // Intentionally reference `locale` so the effect re-runs on language switch
         // and re-renders labels immediately (without requiring a zoom event).
         void locale;
         if (!map || !regionCode || typeof maxZoom !== 'number' || !structure) return;
+
+        // Reset current label type to force re-render when dependencies change (e.g. locale, labels)
+        currentLabelTypeRef.current = null;
 
         const isLabelToolMounted = (): boolean => {
             if (!import.meta.env.DEV) return false;
@@ -172,7 +202,8 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
                 return;
             }
             const z = map.getZoom();
-            renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure);
+            const newType = renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure, currentLabelTypeRef.current);
+            currentLabelTypeRef.current = newType;
         };
 
         const onToolMounted = () => {
@@ -195,6 +226,8 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
                 }
                 return;
             }
+            // Reset current label type to force re-render
+            currentLabelTypeRef.current = null;
             if (!map.hasLayer(layer)) {
                 layer.addTo(map);
             }

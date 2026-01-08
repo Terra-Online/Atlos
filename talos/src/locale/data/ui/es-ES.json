@@ -18,8 +18,8 @@
   },
   "markFilter": {
     "title": "Filtros",
-    "emptyTitle": "Ningún filtro apropiado",
-    "emptyDesc": "Por favor, contacte al administrador."
+    "emptyTitle": "Ningún filtro apropiado.",
+    "emptyDesc": "Si confirma que falta información de algún punto o es incorrecta, por favor contacte a los administradores en nuestra comunidad, o envíe un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Report location error'>Issue</a> en nuestro repositorio de GitHub."
   },
   "detail": {
     "stat": {

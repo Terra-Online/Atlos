@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "خيارات التصفية",
     "emptyTitle": "لا توجد خيارات تصفية مطابقة.",
-    "emptyDesc": "يرجى الاتصال بالمسؤول."
+    "emptyDesc": "إذا كنت تؤكد أن أي معلومات نقطة مفقودة أو غير صحيحة، يرجى الاتصال بالمسؤولين في مجتمعنا، أو تقديم <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='الإبلاغ عن خطأ في الموقع'>Issue</a> في مستودع GitHub الخاص بنا."
   },
   "detail": {
     "stat": {

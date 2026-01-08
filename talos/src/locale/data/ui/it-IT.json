@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "Opzioni Filtro",
     "emptyTitle": "Nessuna opzione di filtro corrisponde.",
-    "emptyDesc": "Contatta l'amministratore."
+    "emptyDesc": "Se confermi che alcune informazioni sui punti mancano o sono errate, contatta gli amministratori nella nostra comunità o invia un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Segnala errore di posizione'>Issue</a> nel nostro repository GitHub."
   },
   "detail": {
     "stat": {
@@ -33,7 +33,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "supportato da observator 6"
+      "supportedBy": "supportato da Observator 6"
     }
   },
   "language": {

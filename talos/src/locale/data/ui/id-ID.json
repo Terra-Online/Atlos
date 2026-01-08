@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "Opsi Filter",
     "emptyTitle": "Tidak ada opsi filter yang cocok.",
-    "emptyDesc": "Silakan hubungi administrator."
+    "emptyDesc": "Jika Anda yakin ada informasi titik yang hilang atau salah, silakan hubungi administrator di komunitas kami, atau kirimkan <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Laporkan kesalahan lokasi'>Issue</a> di repositori GitHub kami."
   },
   "detail": {
     "stat": {
@@ -33,7 +33,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "didukung oleh observator 6"
+      "supportedBy": "didukung oleh Observator 6"
     }
   },
   "language": {

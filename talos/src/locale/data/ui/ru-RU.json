@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "Фильтры",
     "emptyTitle": "Нет подходящих фильтров",
-    "emptyDesc": "Пожалуйста, свяжитесь с администратором."
+    "emptyDesc": "Если вы обнаружили, что информация о точках отсутствует или содержит ошибки, пожалуйста, свяжитесь с администраторами в сообществе проекта или создайте <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Сообщить об ошибке точки'>Issue</a> в GitHub-репозитории проекта."
   },
   "detail": {
     "stat": {

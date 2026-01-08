@@ -19,7 +19,7 @@
   "markFilter": {
     "title": "Filter",
     "emptyTitle": "Kein passender Filter",
-    "emptyDesc": "Bitte kontaktieren Sie den Administrator."
+    "emptyDesc": "Wenn Sie bestätigen, dass Punktinformationen fehlen oder falsch sind, wenden Sie sich bitte an die Administratoren in unserer Community oder senden Sie ein <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Fehler bei Standort melden'>Issue</a> in unserem GitHub-Repository."
   },
   "detail": {
     "stat": {
