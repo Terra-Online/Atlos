@@ -46,6 +46,9 @@ const UserGuide = ({ map }: UserGuideProps) => {
     // Track i18n loading status
     const [i18nReady, setI18nReady] = useState(false);
 
+    // Track transition state to prevent rapid clicks/race conditions
+    const isTransitioningRef = useRef(false);
+
     // Wait for i18n to be ready before starting guide
     useEffect(() => {
         i18nInitPromise.then(() => {
@@ -172,47 +175,55 @@ const UserGuide = ({ map }: UserGuideProps) => {
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
                 // FINISHED / SKIPPED: treat as fully completed so it won't auto-run again.
+                // Reset transition state
+                isTransitioningRef.current = false;
+                
                 replaceUserGuideStepCompleted(buildAllStepsCompletionMap(true));
                 setForceDetailOpen(false);
                 setForceSubregionOpen(false);
                 setDrawerSnapIndex(null);
                 setIsUserGuideOpen(false);
                 setStepIndex(0);
+                
+                // FORCE CLEANUP: React Joyride might leave body overflow hidden if unmounted abruptly
+                // especially when disableScrolling is true.
+                document.body.style.overflow = '';
                 return;
             }
 
             if (type === EVENTS.STEP_AFTER) {
                 if (action === 'next') {
+                    // Mark starts of transition
+                    isTransitioningRef.current = true;
+
                     // Mark current step as completed
                     const currentStep = steps[index];
                     setUserGuideStepCompleted(currentStep.id, true);
                     
+                    const proceed = () => {
+                         if (currentStep.delay) {
+                            setTimeout(() => {
+                                setStepIndex(index + 1);
+                                isTransitioningRef.current = false;
+                            }, currentStep.delay);
+                        } else {
+                            setStepIndex(index + 1);
+                            isTransitioningRef.current = false;
+                        }
+                    };
+
                     if (currentStep && currentStep.onNext) {
                         const result = currentStep.onNext();
                         if (result instanceof Promise) {
-                            void result.then(() => {
-                                if (currentStep.delay) {
-                                    setTimeout(() => {
-                                        setStepIndex(index + 1);
-                                    }, currentStep.delay);
-                                } else {
-                                    setStepIndex(index + 1);
-                                }
-                            }).catch((err) => {
+                            void result.then(proceed).catch((err) => {
                                 console.error('Step action failed', err);
-                                setStepIndex(index + 1);
+                                proceed();
                             });
                         } else {
-                            if (currentStep.delay) {
-                                setTimeout(() => {
-                                    setStepIndex(index + 1);
-                                }, currentStep.delay);
-                            } else {
-                                setStepIndex(index + 1);
-                            }
+                            proceed();
                         }
                     } else {
-                        setStepIndex(index + 1);
+                        proceed();
                     }
                 } else if (action === 'prev') {
                     setStepIndex(index - 1);
@@ -244,7 +255,11 @@ const UserGuide = ({ map }: UserGuideProps) => {
                 active={isUserGuideOpen}
                 getCurrentTarget={() => currentTarget}
                 padding={10}
-                onAdvance={() => helpersRef.current?.next()}
+                onAdvance={() => {
+                     // Block advance if already transitioning
+                     if (isTransitioningRef.current) return;
+                     helpersRef.current?.next();
+                }}
             />
             <Joyride
                 steps={steps}

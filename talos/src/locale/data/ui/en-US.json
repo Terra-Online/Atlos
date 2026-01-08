@@ -111,5 +111,9 @@
     "disable": "Disable",
     "expand": "Expand",
     "collapse": "Collapse"
+  },
+  "meta": {
+    "title": "Open Endfield Map",
+    "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
   }
 }

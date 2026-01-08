@@ -33,7 +33,12 @@ export const useGuideSteps = (map?: L.Map) => {
     const setForceSubregionOpen = useSetForceSubregionOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
 
-    const firstSubCategory = Object.keys(MARKER_TYPE_TREE)[0];
+    const targetSubCategory = 'boss';
+    // Fallback to first available if boss is missing/empty, though unlikely
+    const firstSubCategory = MARKER_TYPE_TREE[targetSubCategory]?.length 
+        ? targetSubCategory 
+        : Object.keys(MARKER_TYPE_TREE)[0];
+        
     const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
 
     const targetPoint = useMemo(() => {
@@ -63,26 +68,70 @@ export const useGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.search') || ''),
             placement: 'right',
             disableBeacon: true,
+            onNext: () => {
+                 // Scroll target filter category into view BEFORE step 3 highlights it
+                 const el = document.querySelector(`[data-category="${firstSubCategory}"]`);
+                 const container = document.querySelector('[class*="sidebarContent"]');
+
+                 if (el && container) {
+                     const containerRect = container.getBoundingClientRect();
+                     const elRect = el.getBoundingClientRect();
+                     
+                     // Calculate target scroll position manually to avoid 'scrollIntoView' affecting parent containers
+                     const relativeTop = elRect.top - containerRect.top; // Distance from container top to element top
+                     const currentScroll = container.scrollTop;
+                     
+                     // Target: Center the element in the container
+                     // newScroll = currentScroll + relativeTop - (containerHeight / 2) + (elHeight / 2)
+                     const targetScroll = currentScroll + relativeTop - (containerRect.height / 2) + (elRect.height / 2);
+
+                     container.scrollTo({
+                         top: targetScroll,
+                         behavior: 'smooth'
+                     });
+                 }
+            },
+            delay: 300, // Wait for scroll
         },
         {
             id: 'STEP-3_filter-container',
-            target: '[class*="markFilterContainer"]',
+            target: `[data-category="${firstSubCategory}"]`,
             content: parse(t('guide.filterContainer') || ''),
             placement: 'right',
             disableBeacon: true,
             onNext: () => {
-                const firstSubCategory = Object.keys(MARKER_TYPE_TREE)[0];
+                // Ensure the target subcategory is expanded
                 const isExpanded =
                     useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
                 if (!isExpanded) {
                     toggleMarkFilterExpanded(firstSubCategory);
                 }
+                
+                // Scroll target item (inside the category) into view if needed
+                setTimeout(() => {
+                    const el = document.querySelector(`[data-key="${firstType}"]`);
+                    const container = document.querySelector('[class*="sidebarContent"]');
+                    
+                    if (el && container) {
+                         const containerRect = container.getBoundingClientRect();
+                         const elRect = el.getBoundingClientRect();
+                         const relativeTop = elRect.top - containerRect.top;
+                         const currentScroll = container.scrollTop;
+                         
+                         const targetScroll = currentScroll + relativeTop - (containerRect.height / 2) + (elRect.height / 2);
+    
+                         container.scrollTo({
+                             top: targetScroll,
+                             behavior: 'smooth'
+                         });
+                    }
+                }, 100);
             },
-            delay: 300,
+            delay: 400,
         },
         {
             id: 'STEP-4_filter-icon',
-            target: '[class*="filterIcon"]',
+            target: `[data-category="${firstSubCategory}"] [class*="filterIcon"]`, // Use specific category icon
             content: parse(t('guide.filterSort') || ''),
             placement: 'right',
             disableBeacon: true,

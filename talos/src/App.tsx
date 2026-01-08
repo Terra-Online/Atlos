@@ -7,6 +7,7 @@ import SideBar from './component/sideBar/sideBar';
 import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
 import UserGuide from '@/component/userGuide/UserGuide.tsx';
+import { MetaHelper } from './component/MetaHelper';
 
 declare global {
     interface Window {
@@ -81,6 +82,7 @@ function App() {
 
     return (
         <StrictMode>
+            <MetaHelper />
             <div className='app theme-transition-scope'>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}

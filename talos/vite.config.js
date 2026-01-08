@@ -7,6 +7,7 @@ import eslint from 'vite-plugin-eslint';
 import fs, { existsSync } from 'fs';
 import Inspect from 'vite-plugin-inspect';
 import autoprefixer from 'autoprefixer';
+import { createHtmlPlugin } from 'vite-plugin-html';
 
 // 通过 BUILD_TARGET 选择使用哪份配置：
 // - 默认 / 未设置：使用 config/config.json（阿里云 OSS / .cn）
@@ -15,6 +16,21 @@ const buildTarget = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const configPath =
     buildTarget === 'r2' ? './config/config.r2.json' : './config/config.json';
 const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Define meta info based on build target
+const metaInfo = buildTarget === 'r2' 
+    ? {
+        title: "Open Endfield Map",
+        description: "Open Endfield Map is an open-source online map for Arknights: Endfield.",
+        ogUrl: "https://opendfieldmap.org", // Example URL for R2/Global
+        keywords: "Arknights: Endfield, Endfield, endfield, Arknights, Endfield Map, Atlos, online map, Hypergryph"
+      }
+    : {
+        title: "终末地地图集",
+        description: "Open Endfield Map 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。",
+        ogUrl: "https://opendfieldmap.cn",
+        keywords: "明日方舟：终末地, 终末地, 终末地地图, 终末地WIKI, Arknights Endfield, Atlos, 在线地图, 鹰角网络"
+      };
 
 const isProd = process.env.NODE_ENV === 'production';
 const assetsHost = isProd
@@ -57,6 +73,17 @@ export default defineConfig({
     plugins: [
         react(),
         svgr(),
+        createHtmlPlugin({
+            minify: true,
+            inject: {
+                data: {
+                    title: metaInfo.title,
+                    description: metaInfo.description,
+                    ogUrl: metaInfo.ogUrl,
+                    keywords: metaInfo.keywords,
+                },
+            },
+        }),
         // 只复制存在的目录，避免构建失败
         viteStaticCopy({
             targets: [

@@ -115,6 +115,7 @@ const MarkFilter = ({
     <MarkVisibilityContext.Provider value={contextValue}>
     <motion.div
             ref={containerRef}
+            data-category={dataCategory} // Added data-category attribute for UserGuide selection
             className={`${styles.markFilterContainer} ${isSelfDragging ? styles.dragging : ''}`}
             layout
             style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1 }}
