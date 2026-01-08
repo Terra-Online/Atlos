@@ -79,7 +79,8 @@ export class MapCore {
 
         // Keep Leaflet's zoom constraints in sync with region config.
         // Otherwise users can zoom beyond available tiles (blank map).
-        const maxZoom = config.maxZoom;
+        const maxNativeZoom = config.maxZoom;
+        const maxZoom = maxNativeZoom + 1;
         this.map.setMaxZoom(maxZoom);
 
         const view = useViewState.getState().getViewState(regionId);
@@ -145,6 +146,8 @@ export class MapCore {
             noWrap: true,
             bounds: mapBounds,
             pane: 'tilePane',
+            maxNativeZoom: config.maxZoom,
+            maxZoom: maxZoom,
         }).addTo(this.map);
 
         if (this.boundaryLayer) {

@@ -85,10 +85,20 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     // --- Init ---
     useEffect(() => {
         if (!map) return;
-        const min = map.getMinZoom(), max = map.getMaxZoom();
-        setBounds({ min, max });
-        setZoomLevel(map.getZoom());
-        setUIScale(calcScale(map.getZoom(), min, max));
+        
+        const updateBounds = () => {
+            const min = map.getMinZoom(), max = map.getMaxZoom();
+            setBounds({ min, max });
+            setZoomLevel(map.getZoom());
+            setUIScale(calcScale(map.getZoom(), min, max));
+        };
+
+        updateBounds();
+        map.on('talos:regionSwitched', updateBounds);
+        
+        return () => {
+            map.off('talos:regionSwitched', updateBounds);
+        };
     }, [map, setUIScale]);
 
     return (

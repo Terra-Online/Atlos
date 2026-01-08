@@ -7,8 +7,7 @@ import styles from './Label.module.scss';
 import { selectLabelMapForRegion, useLabelStore } from '@/store/label';
 import { useTriggerlabelName } from '@/store/uiPrefs';
 
-const escapeHtml = (s: string): string =>
-    s
+const escapeHtml = (s: string): string => s
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
