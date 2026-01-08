@@ -9,7 +9,7 @@ import Inspect from 'vite-plugin-inspect';
 import autoprefixer from 'autoprefixer';
 import { createHtmlPlugin } from 'vite-plugin-html';
 
-// 通过 BUILD_TARGET 选择使用哪份配置：
+// 通过 BUILD_TARGET 选择使用的配置：
 // - 默认 / 未设置：使用 config/config.json（阿里云 OSS / .cn）
 // - BUILD_TARGET=r2：使用 config/config.r2.json（Cloudflare R2 / .org）
 const buildTarget = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
@@ -23,13 +23,13 @@ const metaInfo = buildTarget === 'r2'
         title: "Open Endfield Map",
         description: "Open Endfield Map is an open-source online map for Arknights: Endfield.",
         ogUrl: "https://opendfieldmap.org", // Example URL for R2/Global
-        keywords: "Arknights: Endfield, Endfield, endfield, Arknights, Endfield Map, Atlos, online map, Hypergryph"
+        keywords: "Endfield Map, Arknights: Endfield, Endfield, endfield, Arknights, Atlos, online map"
       }
     : {
         title: "终末地地图集",
-        description: "Open Endfield Map 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。",
+        description: "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。",
         ogUrl: "https://opendfieldmap.cn",
-        keywords: "明日方舟：终末地, 终末地, 终末地地图, 终末地WIKI, Arknights Endfield, Atlos, 在线地图, 鹰角网络"
+        keywords: "终末地地图, 明日方舟：终末地, 终末地, 终末地WIKI, Arknights Endfield, Atlos, 在线地图"
       };
 
 const isProd = process.env.NODE_ENV === 'production';

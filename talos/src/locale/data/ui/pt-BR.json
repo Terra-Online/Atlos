@@ -44,7 +44,7 @@
     "fullSupportHint": "Traduções completas para a interface e conteúdo do jogo.",
     "uiOnly": "Idiomas Apenas da Interface",
     "uiOnlyHint": "Apenas traduções da interface, o conteúdo do jogo será exibido em inglês.",
-    "fyi": "Se o seu idioma ainda não está disponível neste site, você pode entrar em contato com o administrador do site por e-mail em translate@talos.wiki, ou visitar o GitHub para participar do nosso projeto de tradução de código aberto. Você pode solicitar entradas de tradução para o seu idioma e ajudar a traduzir e localizar a seção WIKI de acordo com nossas diretrizes. Agradecemos sinceramente e esperamos suas contribuições.\nVocê também pode clicar para ver a lista de colaboradores de tradução.",
+    "fyi": "Se o seu idioma ainda não está disponível neste site, você pode entrar em contato com o administrador do site por e-mail em <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, ou visitar o GitHub para participar do nosso projeto de tradução de código aberto. Você pode solicitar entradas de tradução para o seu idioma e ajudar a traduzir e localizar a seção WIKI de acordo com nossas diretrizes. Agradecemos sinceramente e esperamos suas contribuições.\nVocê também pode clicar para ver a lista de colaboradores de tradução.",
     "names": {
       "en-US": "Inglês",
       "zh-CN": "Chinês Simplificado",

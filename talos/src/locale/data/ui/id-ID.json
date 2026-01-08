@@ -44,7 +44,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk antarmuka dan konten permainan.",
     "uiOnly": "Hanya antarmuka",
     "uiOnlyHint": "Hanya terjemahan antarmuka, konten permainan akan ditampilkan dalam bahasa Inggris.",
-    "fyi": "Jika bahasa Anda belum tersedia di situs web ini, Anda dapat menghubungi administrator situs melalui email di translate@talos.wiki, atau kunjungi GitHub untuk berpartisipasi dalam proyek terjemahan open source kami. Anda dapat meminta entri terjemahan untuk bahasa Anda dan membantu menerjemahkan dan melokalisasi bagian WIKI sesuai dengan pedoman kami. Kami sangat menghargai dan menantikan kontribusi Anda.\nAnda juga dapat mengklik untuk melihat daftar kontributor terjemahan.",
+    "fyi": "Jika bahasa Anda belum tersedia di situs web ini, Anda dapat menghubungi administrator situs melalui email di <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, atau kunjungi GitHub untuk berpartisipasi dalam proyek terjemahan open source kami. Anda dapat meminta entri terjemahan untuk bahasa Anda dan membantu menerjemahkan dan melokalisasi bagian WIKI sesuai dengan pedoman kami. Kami sangat menghargai dan menantikan kontribusi Anda.\nAnda juga dapat mengklik untuk melihat daftar kontributor terjemahan.",
     "names": {
       "en-US": "Inggris",
       "zh-CN": "Tionghoa Sederhana",
