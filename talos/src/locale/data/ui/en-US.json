@@ -119,21 +119,21 @@
     "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
   },
   "settings": {
-    "title": "Preferences",
+    "title": "Settings",
     "uiPrefs": {
       "title": "UI Preferences",
-      "sidebar": "Sidebar state",
-      "filterOrder": "Filter order",
-      "triggers": "Trigger switches"
+      "sidebar": "Keep sidebar state",
+      "filterOrder": "Keep filter order",
+      "triggers": "Keep trigger state"
     },
     "mapPrefs": {
       "title": "Map Preferences",
-      "viewState": "Map view",
-      "markerProgress": "Marker progress",
-      "autoCluster": "Auto-cluster (1000+ pts)"
+      "viewState": "Keep map view",
+      "markerProgress": "Keep marker & progress",
+      "autoCluster": "Auto cluster"
     },
     "theme": {
-      "title": "Theme Mode",
+      "title": "Theme Preferences",
       "light": "Light",
       "dark": "Dark",
       "auto": "Auto"

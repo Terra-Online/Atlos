@@ -75,6 +75,27 @@
     "filtersAndMarkers": "筛选器与点位数据",
     "warning": "<p><strong>注意：</strong>如果您清除储存数据，对应的自动登录信息、UI偏好设置、点位进度将会丢失；并且下次加载网站可能要花费比平常更多的时间。</p><p>如果确认，请再次点击删除按钮。</p>"
   },
+  "settings": {
+    "title": "偏好设置",
+    "uiPrefs": {
+      "title": "用户界面",
+      "sidebar": "保存侧边栏状态",
+      "filterOrder": "保存筛选器排序",
+      "triggers": "保存底栏状态"
+    },
+    "mapPrefs": {
+      "title": "地图与点位",
+      "viewState": "保存当前视图",
+      "markerProgress": "保存点位与筛选器",
+      "autoCluster": "点位自动聚合"
+    },
+    "theme": {
+      "title": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "auto": "自动"
+    }
+  },
   "guide": {
     "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
@@ -117,26 +138,5 @@
   "meta": {
     "title": "终末地地图集",
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
-  },
-  "settings": {
-    "title": "偏好设置",
-    "uiPrefs": {
-      "title": "界面偏好",
-      "sidebar": "侧边栏状态",
-      "filterOrder": "筛选器排序",
-      "triggers": "底栏开关状态"
-    },
-    "mapPrefs": {
-      "title": "地图偏好",
-      "viewState": "地图视角",
-      "markerProgress": "点位标记进度",
-      "autoCluster": "超千点自动聚合"
-    },
-    "theme": {
-      "title": "主题模式",
-      "light": "浅色",
-      "dark": "深色",
-      "auto": "自动"
-    }
   }
 }

@@ -5,7 +5,7 @@
     --settings-section-border: #{rgba($grey-1, 0.75)};
     --settings-section-text: #{$grey-1};
     --settings-title-text: #{$black-1};
-    --settings-trigger-border: #{rgba($grey-1, 0.25)};
+    --settings-trigger-border: #{rgba($grey-1, 0.75)};
     
     // Theme selector
     --theme-bg: #{$white-1};
@@ -24,7 +24,7 @@
     --settings-section-border: #{rgba($light-1, 0.75)};
     --settings-section-text: #{$light-1};
     --settings-title-text: #{$light-2};
-    --settings-trigger-border: #{rgba($light-1, 0.25)};
+    --settings-trigger-border: #{rgba($light-1, 0.75)};
     
     // Theme selector
     --theme-bg: #{$black-1};
@@ -43,7 +43,7 @@
 .settingsList {
     display: flex;
     flex-direction: column;
-    gap: .5rem;
+    gap: .25rem;
 }
 
 .settingsSection {
@@ -51,13 +51,11 @@
     flex-direction: column;
     gap: 0.5rem;
 }
-
 .sectionHeader {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
-
 .sectionTitle {
     font-size: 1rem;
     font-weight: 700;
@@ -66,8 +64,8 @@
     letter-spacing: -.3px;
     color: var(--settings-section-text);
     unicode-bidi: plaintext;
+    transition: color .35s $adagio-curve;
 }
-
 .sectionHint {
     font-size: 0.85rem;
     font-weight: 600;
@@ -78,59 +76,51 @@
     overflow-wrap: break-word;
     hyphens: auto;
     unicode-bidi: plaintext;
+    transition: color .35s $adagio-curve;
 }
 
 .triggerGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
+    gap: 0 0.5rem;
     position: relative;
-
-    // Left column shared border
-    &::before {
+    &::before, &::after {
         content: "";
         position: absolute;
         left: 0;
-        top: 0.5rem;
-        bottom: 0.5rem;
         width: 3px;
+        border-radius: 1px;
+        height: 99%;
         background-color: var(--settings-trigger-border);
-        transition: background-color 0.2s ease;
+        transition: background-color .35s $adagio-curve;
     }
-    // Right column shared border
     &::after {
-        content: "";
-        position: absolute;
-        left: calc(50% + 0.5rem);
-        top: 0.5rem;
-        bottom: 0.5rem;
-        width: 3px;
-        background-color: var(--settings-trigger-border);
-        transition: background-color 0.2s ease;
+        left: calc(50% + 4px);
+    }
+    .triggerRow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.2rem 0;
+        padding-left: 0.5rem;
+    }
+    .settingsTrigger {
+        gap: 0.4rem;
+        // Target the internal label of the Trigger component
+        // This relies on the internal structure of Trigger (label is the last div)
+        > div:last-child {
+            flex: 1 1 auto;
+            min-width: 0;
+            user-select: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--settings-section-text);
+            line-height: 1.2;
+            word-break: break-word;
+        }
     }
 }
 
-.triggerRow {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0;
-    padding-left: 0.75rem;
-}
-
-.triggerLabel {
-    flex: 1 1 auto;
-    min-width: 0;
-    user-select: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--settings-section-text);
-    line-height: 1.2;
-    word-break: break-word;
-}
-
-// Theme selector items (similar to language selector)
 .themeItems {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -144,7 +134,6 @@
     }
     .triggerGrid {
         grid-template-columns: 1fr;
-        // Only left border in single column mode
         &::after {
             display: none;
         }

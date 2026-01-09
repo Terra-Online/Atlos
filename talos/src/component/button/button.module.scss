@@ -65,8 +65,10 @@
     transition:
       filter 0.3s ease,
       outline 0.3s ease,
-      box-shadow 0.3s ease;
-    will-change: filter, outline, box-shadow;
+      box-shadow 0.3s ease,
+      background 0.3s ease,
+      color 0.3s ease;
+    will-change: filter, outline, box-shadow, background, color;
     text-align: end;
     padding-right: calc(var(--btn-height) * 3 / 4 + 0.1rem);
     position: relative;

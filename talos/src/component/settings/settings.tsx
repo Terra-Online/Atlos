@@ -75,25 +75,25 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                             <Trigger
                                 isActive={prefsSidebar}
                                 onToggle={setPrefsSidebar}
-                                label=""
+                                label={t('settings.uiPrefs.sidebar')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.uiPrefs.sidebar')}</span>
                         </div>
                         <div className={styles.triggerRow}>
                             <Trigger
                                 isActive={prefsFilterOrder}
                                 onToggle={setPrefsFilterOrder}
-                                label=""
+                                label={t('settings.uiPrefs.filterOrder')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.uiPrefs.filterOrder')}</span>
                         </div>
                         <div className={styles.triggerRow}>
                             <Trigger
                                 isActive={prefsTriggers}
                                 onToggle={setPrefsTriggers}
-                                label=""
+                                label={t('settings.uiPrefs.triggers')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.uiPrefs.triggers')}</span>
                         </div>
                     </div>
                 </div>
@@ -108,25 +108,25 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                             <Trigger
                                 isActive={prefsViewState}
                                 onToggle={setPrefsViewState}
-                                label=""
+                                label={t('settings.mapPrefs.viewState')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.mapPrefs.viewState')}</span>
                         </div>
                         <div className={styles.triggerRow}>
                             <Trigger
                                 isActive={prefsMarkerProgress}
                                 onToggle={setPrefsMarkerProgress}
-                                label=""
+                                label={t('settings.mapPrefs.markerProgress')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.mapPrefs.markerProgress')}</span>
                         </div>
                         <div className={styles.triggerRow}>
                             <Trigger
                                 isActive={prefsAutoCluster}
                                 onToggle={setPrefsAutoCluster}
-                                label=""
+                                label={t('settings.mapPrefs.autoCluster')}
+                                className={styles.settingsTrigger}
                             />
-                            <span className={styles.triggerLabel}>{t('settings.mapPrefs.autoCluster')}</span>
                         </div>
                     </div>
                 </div>
