@@ -248,7 +248,14 @@ export const useGuideSteps = (map?: L.Map) => {
             disableBeacon: true,
         },
         {
-            id: 'STEP-18_region-switch',
+            id: 'STEP-18_settings',
+            target: '[class*="headbarItem"]:nth-child(7)',
+            content: parse(t('guide.settings') || ''),
+            placement: 'bottom',
+            disableBeacon: true,
+        },
+        {
+            id: 'STEP-19_region-switch',
             target: '[class*="regswitch"]',
             content: parse(t('guide.regionSwitch') || ''),
             placement: 'right',
@@ -257,7 +264,7 @@ export const useGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-19_subregion-switch',
+            id: 'STEP-20_subregion-switch',
             target: '[class*="subregionSwitch"]',
             content: parse(t('guide.subregionSwitch') || ''),
             placement: 'right',
@@ -269,7 +276,7 @@ export const useGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-20_point-select',
+            id: 'STEP-21_point-select',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
@@ -281,7 +288,7 @@ export const useGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-21_point-check',
+            id: 'STEP-22_point-check',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',
@@ -291,14 +298,14 @@ export const useGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-22_detail-container',
+            id: 'STEP-23_detail-container',
             target: '[class*="detailContainer"]',
             content: parse(t('guide.detail') || ''),
             placement: 'top',
             disableBeacon: true,
         },
         {
-            id: 'STEP-23_point-icon',
+            id: 'STEP-24_point-icon',
             target: '[class*="pointIcon"]',
             content: parse(t('guide.pointIcon') || ''),
             placement: 'top',

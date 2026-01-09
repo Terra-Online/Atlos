@@ -1,0 +1,257 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --settings-section-border: #{rgba($grey-1, 0.75)};
+    --settings-section-text: #{$grey-1};
+    --settings-title-text: #{$black-1};
+    --settings-trigger-border: #{rgba($grey-1, 0.25)};
+    
+    // Theme selector
+    --theme-bg: #{$white-1};
+    --theme-hover-bg: #{$white-3};
+    --theme-active-bg: #{$dim-1};
+    --theme-text: #{$grey-1};
+    --theme-active-text: #{$white-1};
+    --theme-bar: #{$grey-1};
+    --theme-active-bar: #{$primary-accent-4};
+    --theme-hover-bar: #{$primary-accent-1};
+    --theme-tag: #{$dim-1};
+    --theme-active-tag: #{$primary-accent-4};
+    --theme-active-tag-text: #{$grey-1};
+}
+:root[data-theme='dark'] {
+    --settings-section-border: #{rgba($light-1, 0.75)};
+    --settings-section-text: #{$light-1};
+    --settings-title-text: #{$light-2};
+    --settings-trigger-border: #{rgba($light-1, 0.25)};
+    
+    // Theme selector
+    --theme-bg: #{$black-1};
+    --theme-hover-bg: #{$grey-2};
+    --theme-active-bg: #{$light-1};
+    --theme-text: #{$light-1};
+    --theme-active-text: #{$black-1};
+    --theme-bar: #{$light-1};
+    --theme-active-bar: #{$primary-accent-5};
+    --theme-hover-bar: #{$primary-accent-2};
+    --theme-tag: #{$dim-2};
+    --theme-active-tag: #{$primary-accent-4};
+    --theme-active-tag-text: #{$black-1};
+}
+
+.settingsList {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.settingsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sectionHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.3px;
+    color: var(--settings-section-text);
+    unicode-bidi: plaintext;
+}
+
+.sectionHint {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.2px;
+    color: var(--settings-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+}
+
+.triggerGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    position: relative;
+
+    // Left column shared border
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        bottom: 0.5rem;
+        width: 3px;
+        background-color: var(--settings-trigger-border);
+        transition: background-color 0.2s ease;
+    }
+    // Right column shared border
+    &::after {
+        content: "";
+        position: absolute;
+        left: calc(50% + 0.5rem);
+        top: 0.5rem;
+        bottom: 0.5rem;
+        width: 3px;
+        background-color: var(--settings-trigger-border);
+        transition: background-color 0.2s ease;
+    }
+}
+
+.triggerRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    padding-left: 0.75rem;
+}
+
+.triggerLabel {
+    flex: 1 1 auto;
+    min-width: 0;
+    user-select: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--settings-section-text);
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+// Theme selector items (similar to language selector)
+.themeItems {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .6rem .75rem;
+    align-items: stretch;
+}
+
+@media (max-width: 576px) {
+    .themeItems {
+        grid-template-columns: 1fr;
+    }
+    .triggerGrid {
+        grid-template-columns: 1fr;
+        // Only left border in single column mode
+        &::after {
+            display: none;
+        }
+    }
+}
+
+.themeItem {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+
+    border-radius: 3px;
+    height: 3.6rem;
+    padding: .5rem .6rem;
+    padding-left: 1rem;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    cursor: pointer;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        box-shadow .4s $moderato-curve;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 10%;
+        width: 3px;
+        height: 80%;
+        background-color: var(--theme-bar);
+        box-shadow: 0 0 0 0 transparent;
+        z-index: 0;
+        pointer-events: none;
+        transition: background-color .4s ease;
+    }
+
+    &:hover {
+        background-color: var(--theme-hover-bg);
+        box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
+        &::before {
+            background-color: var(--theme-hover-bar);
+            transition: background-color .2s ease;
+        }
+    }
+
+    &.active {
+        background-color: var(--theme-active-bg);
+        color: var(--theme-active-text);
+        &::before {
+            background-color: var(--theme-active-bar);
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
+        }
+        &:hover {
+            background-color: var(--theme-text);
+        }
+    }
+}
+
+.themeName {
+    font-size: 1.1rem;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    line-height: 1;
+}
+
+.themeTag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    font-family: 'Novecento Medium', 'HMSans_EN', 'HMSans', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.themeHint {
+    display: inline-flex;
+    font-size: 0.8rem;
+    font-family: 'HMSans_EN', 'HMSans', sans-serif;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-left: 0.25rem;
+}
+
+.active .themeTag {
+    opacity: 1;
+}
+
+.currentIndicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    padding: 2px 6px;
+    background-color: var(--theme-active-tag);
+    color: var(--theme-active-tag-text);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}

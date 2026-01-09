@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+type ThemeMode = 'light' | 'dark' | 'auto';
+
 interface IUiPrefsStore {
   sidebarOpen: boolean;
   setSidebarOpen: (value: boolean) => void;
@@ -31,9 +33,26 @@ interface IUiPrefsStore {
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
 
-  // Theme
-  theme: 'light' | 'dark';
-  setTheme: (value: 'light' | 'dark') => void;
+  // Theme (now supports 'auto')
+  theme: ThemeMode;
+  setTheme: (value: ThemeMode) => void;
+
+  // Settings: Preference Enable Flags
+  // UI Preferences
+  prefsSidebarEnabled: boolean;
+  setPrefsSidebarEnabled: (value: boolean) => void;
+  prefsFilterOrderEnabled: boolean;
+  setPrefsFilterOrderEnabled: (value: boolean) => void;
+  prefsTriggersEnabled: boolean;
+  setPrefsTriggersEnabled: (value: boolean) => void;
+  prefsViewStateEnabled: boolean;
+  setPrefsViewStateEnabled: (value: boolean) => void;
+
+  // Map Preferences
+  prefsMarkerProgressEnabled: boolean;
+  setPrefsMarkerProgressEnabled: (value: boolean) => void;
+  prefsAutoClusterEnabled: boolean;
+  setPrefsAutoClusterEnabled: (value: boolean) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -74,9 +93,23 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
 
-      // Theme
-      theme: 'dark',
+      // Theme (supports 'auto')
+      theme: 'auto',
       setTheme: (value) => set({ theme: value }),
+
+      // Settings: Preference Enable Flags (all default to true)
+      prefsSidebarEnabled: true,
+      setPrefsSidebarEnabled: (value) => set({ prefsSidebarEnabled: value }),
+      prefsFilterOrderEnabled: true,
+      setPrefsFilterOrderEnabled: (value) => set({ prefsFilterOrderEnabled: value }),
+      prefsTriggersEnabled: true,
+      setPrefsTriggersEnabled: (value) => set({ prefsTriggersEnabled: value }),
+      prefsViewStateEnabled: true,
+      setPrefsViewStateEnabled: (value) => set({ prefsViewStateEnabled: value }),
+      prefsMarkerProgressEnabled: true,
+      setPrefsMarkerProgressEnabled: (value) => set({ prefsMarkerProgressEnabled: value }),
+      prefsAutoClusterEnabled: true,
+      setPrefsAutoClusterEnabled: (value) => set({ prefsAutoClusterEnabled: value }),
     }),
     {
       name: 'ui-prefs',
@@ -88,7 +121,45 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerBoundary: state.triggerBoundary,
         triggerlabelName: state.triggerlabelName,
         theme: state.theme,
+        // Settings flags
+        prefsSidebarEnabled: state.prefsSidebarEnabled,
+        prefsFilterOrderEnabled: state.prefsFilterOrderEnabled,
+        prefsTriggersEnabled: state.prefsTriggersEnabled,
+        prefsViewStateEnabled: state.prefsViewStateEnabled,
+        prefsMarkerProgressEnabled: state.prefsMarkerProgressEnabled,
+        prefsAutoClusterEnabled: state.prefsAutoClusterEnabled,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<IUiPrefsStore>;
+        const merged = { ...currentState };
+        
+        // Always restore preference flags
+        if (persisted.prefsSidebarEnabled !== undefined) merged.prefsSidebarEnabled = persisted.prefsSidebarEnabled;
+        if (persisted.prefsFilterOrderEnabled !== undefined) merged.prefsFilterOrderEnabled = persisted.prefsFilterOrderEnabled;
+        if (persisted.prefsTriggersEnabled !== undefined) merged.prefsTriggersEnabled = persisted.prefsTriggersEnabled;
+        if (persisted.prefsViewStateEnabled !== undefined) merged.prefsViewStateEnabled = persisted.prefsViewStateEnabled;
+        if (persisted.prefsMarkerProgressEnabled !== undefined) merged.prefsMarkerProgressEnabled = persisted.prefsMarkerProgressEnabled;
+        if (persisted.prefsAutoClusterEnabled !== undefined) merged.prefsAutoClusterEnabled = persisted.prefsAutoClusterEnabled;
+        if (persisted.theme !== undefined) merged.theme = persisted.theme;
+        
+        // Conditionally restore based on preference flags
+        if (persisted.prefsSidebarEnabled && persisted.sidebarOpen !== undefined) {
+          merged.sidebarOpen = persisted.sidebarOpen;
+        }
+        if (persisted.prefsSidebarEnabled && persisted.markFilterExpanded !== undefined) {
+          merged.markFilterExpanded = persisted.markFilterExpanded;
+        }
+        if (persisted.prefsFilterOrderEnabled && persisted.markFilterOrder !== undefined) {
+          merged.markFilterOrder = persisted.markFilterOrder;
+        }
+        if (persisted.prefsTriggersEnabled) {
+          if (persisted.triggerCluster !== undefined) merged.triggerCluster = persisted.triggerCluster;
+          if (persisted.triggerBoundary !== undefined) merged.triggerBoundary = persisted.triggerBoundary;
+          if (persisted.triggerlabelName !== undefined) merged.triggerlabelName = persisted.triggerlabelName;
+        }
+        
+        return merged;
+      },
     },
   ),
 );

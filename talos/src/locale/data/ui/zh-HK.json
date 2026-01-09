@@ -6,7 +6,8 @@
     "darkmode": "切換至深色模式",
     "lightmode": "切換至淺色模式",
     "language": "選擇語言",
-    "help": "取得協助"
+    "help": "取得協助",
+    "settings": "偏好設定"
   },
   "trigger": {
     "boundaryMode": "地區邊界顯示",
@@ -93,6 +94,7 @@
     "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
     "language": "切換<span class=\"keyword\">界面語言</span>。<br>目前<span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語以及韓語。<br>已<span class=\"keyword\">支持界面翻譯</span>的語言還包括法語，德語，意大利語，俄語，西班牙語，印度尼西亞語，葡萄牙語，阿拉伯語，泰語以及越南語。",
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
+    "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
     "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱亭地圖</span>（主區域）。",
     "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",
     "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
@@ -111,5 +113,26 @@
     "disable": "禁用",
     "expand": "展開",
     "collapse": "收起"
+  },
+  "settings": {
+    "title": "偏好設定",
+    "uiPrefs": {
+      "title": "介面偏好",
+      "sidebar": "側邊欄狀態",
+      "filterOrder": "篩選器排序",
+      "triggers": "底欄開關狀態"
+    },
+    "mapPrefs": {
+      "title": "地圖偏好",
+      "viewState": "地圖視角",
+      "markerProgress": "點位標記進度",
+      "autoCluster": "超千點自動聚合"
+    },
+    "theme": {
+      "title": "主題模式",
+      "light": "淺色",
+      "dark": "深色",
+      "auto": "自動"
+    }
   }
 }

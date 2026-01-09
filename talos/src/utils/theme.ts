@@ -1,4 +1,5 @@
 export type Theme = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'auto';
 
 interface ThemeManager {
     invertRef: { current: boolean };
@@ -10,6 +11,28 @@ const manager: ThemeManager = {
     invertRef: { current: false },
     switchingRef: { current: false },
     unsubRef: { current: null },
+};
+
+// Get stored theme preference from uiPrefs localStorage
+const getStoredThemePreference = (): ThemeMode => {
+    try {
+        const stored = localStorage.getItem('ui-prefs');
+        if (stored) {
+            const parsed: unknown = JSON.parse(stored);
+            if (parsed && typeof parsed === 'object' && 'state' in parsed) {
+                const state = (parsed as { state?: unknown }).state;
+                if (state && typeof state === 'object' && 'theme' in state) {
+                    const theme = (state as { theme?: unknown }).theme;
+                    if (theme === 'light' || theme === 'dark' || theme === 'auto') {
+                        return theme;
+                    }
+                }
+            }
+        }
+    } catch {
+        // ignore parse errors
+    }
+    return 'auto';
 };
 
 export const applyTheme = (mode: Theme, withTransition = true) => {
@@ -54,18 +77,35 @@ export const startSystemFollow = (immediate = true) => {
 
 export const toggleTheme = () => {
     if (manager.switchingRef.current) return; // debounce: prevent interrupting animation
-    localStorage.removeItem('theme');
-    if (!manager.unsubRef.current) startSystemFollow(false);
-    manager.invertRef.current = !manager.invertRef.current;
-    const sys = getSystemTheme();
-    applyTheme(manager.invertRef.current ? (sys === 'dark' ? 'light' : 'dark') : sys);
+    // Toggle between light and dark, update store preference
+    const current = document.documentElement.getAttribute('data-theme') as Theme;
+    const next: Theme = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    // Update uiPrefs store (will be persisted)
+    try {
+        const stored = localStorage.getItem('ui-prefs');
+        if (stored) {
+            const parsed: unknown = JSON.parse(stored);
+            if (parsed && typeof parsed === 'object' && 'state' in parsed) {
+                const state = (parsed as { state?: unknown }).state;
+                if (state && typeof state === 'object') {
+                    (state as { theme: ThemeMode }).theme = next;
+                    localStorage.setItem('ui-prefs', JSON.stringify(parsed));
+                }
+            }
+        }
+    } catch {
+        // ignore
+    }
 };
 
 export const initTheme = () => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'light' || saved === 'dark') {
-        applyTheme(saved, false);
+    const preference = getStoredThemePreference();
+    if (preference === 'light' || preference === 'dark') {
+        // User has a fixed preference, apply it directly
+        applyTheme(preference, false);
     } else {
+        // Auto mode: follow system
         startSystemFollow();
     }
 };

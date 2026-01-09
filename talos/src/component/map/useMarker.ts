@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 import { MapCore } from '../mapCore/map';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
+import { useUiPrefsStore } from '@/store/uiPrefs';
+
+const AUTO_CLUSTER_THRESHOLD = 1000;
 
 /**
  * Hook for managing marker layer logic
@@ -33,13 +36,30 @@ export function useMarker(
     useEffect(() => {
         const markerLayer = mapCore?.markerLayer;
         markerLayer?.filterMarker(filter);
-        useMarkerStore.setState({
-            points:
-                markerLayer
-                    ?.getCurrentPoints(currentRegion)
-                    .map((point) => point.id) ?? [],
-        });
+        const currentPoints = markerLayer
+            ?.getCurrentPoints(currentRegion)
+            .map((point) => point.id) ?? [];
+        
+        useMarkerStore.setState({ points: currentPoints });
     }, [filter, currentRegion, mapCore]);
+
+    // Auto-cluster logic: enable clustering if preference is on and visible markers > threshold
+    useEffect(() => {
+        const prefsAutoCluster = useUiPrefsStore.getState().prefsAutoClusterEnabled;
+        if (!prefsAutoCluster) return;
+
+        const markerLayer = mapCore?.markerLayer;
+        if (!markerLayer) return;
+
+        // Count visible markers after filtering
+        const visibleMarkerCount = markerLayer.getVisibleMarkerCount();
+        const triggerCluster = useUiPrefsStore.getState().triggerCluster;
+
+        // Auto-enable clustering only when visible markers exceed threshold
+        if (visibleMarkerCount > AUTO_CLUSTER_THRESHOLD && !triggerCluster) {
+            useUiPrefsStore.getState().setTriggerCluster(true);
+        }
+    }, [mapCore, filter]);
 
     // 更新已收集的点位
     useEffect(() => {

@@ -6,7 +6,8 @@
     "darkmode": "切换到深色模式",
     "lightmode": "切换到浅色模式",
     "language": "选择语言",
-    "help": "获取帮助"
+    "help": "获取帮助",
+    "settings": "偏好设置"
   },
   "trigger": {
     "boundaryMode": "地区边界显示",
@@ -93,6 +94,7 @@
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
     "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语以及韩语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，阿拉伯语，泰语以及越南语。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
+    "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存来记忆您的操作。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱亭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",
@@ -115,5 +117,26 @@
   "meta": {
     "title": "终末地地图集",
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
+  },
+  "settings": {
+    "title": "偏好设置",
+    "uiPrefs": {
+      "title": "界面偏好",
+      "sidebar": "侧边栏状态",
+      "filterOrder": "筛选器排序",
+      "triggers": "底栏开关状态"
+    },
+    "mapPrefs": {
+      "title": "地图偏好",
+      "viewState": "地图视角",
+      "markerProgress": "点位标记进度",
+      "autoCluster": "超千点自动聚合"
+    },
+    "theme": {
+      "title": "主题模式",
+      "light": "浅色",
+      "dark": "深色",
+      "auto": "自动"
+    }
   }
 }

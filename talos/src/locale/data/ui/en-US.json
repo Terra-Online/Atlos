@@ -6,7 +6,8 @@
     "darkmode": "Switch to dark mode",
     "lightmode": "Switch to light mode",
     "language": "Choose language",
-    "help": "Reach out for help"
+    "help": "Reach out for help",
+    "settings": "Preferences"
   },
   "trigger": {
     "boundaryMode": "Boundary Mode",
@@ -93,6 +94,7 @@
     "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",
     "language": "Switch <span class=\"keyword\">interface language</span>.<br>Currently, languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.<br>Languages with <span class=\"keyword\">interface translation support</span> also include French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Arabic, Thai, and Vietnamese.",
     "help": "Restart this <span class=\"keyword\">guide</span>.",
+    "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",
     "subregionSwitch": "<span class=\"keyword\">Hover over the main region icon</span> to show available sub-regions; clicking a sub-region icon will jump to that sub-region view.<br>Similarly, you can also select a layer for a region.",
     "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
@@ -115,5 +117,26 @@
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
+  },
+  "settings": {
+    "title": "Preferences",
+    "uiPrefs": {
+      "title": "UI Preferences",
+      "sidebar": "Sidebar state",
+      "filterOrder": "Filter order",
+      "triggers": "Trigger switches"
+    },
+    "mapPrefs": {
+      "title": "Map Preferences",
+      "viewState": "Map view",
+      "markerProgress": "Marker progress",
+      "autoCluster": "Auto-cluster (1000+ pts)"
+    },
+    "theme": {
+      "title": "Theme Mode",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    }
   }
 }

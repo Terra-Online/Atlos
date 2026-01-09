@@ -5,6 +5,7 @@ import styles from './UIOverlay.module.scss';
 import LanguageModal from '@/component/language/language';
 import GroupsModal from '@/component/group/group';
 import ToSModal from '@/component/tos/tos';
+import SettingsModal from '@/component/settings/settings';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
@@ -22,7 +23,7 @@ import Group from '../../assets/logos/group.svg?react';
 import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
-//import Settings from '../../assets/logos/settings.svg?react';
+import SettingsIcon from '../../assets/logos/settings.svg?react';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -36,6 +37,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [storageOpen, setStorageOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
 
@@ -56,6 +58,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleDarkMode = () => toggleTheme();
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => setIsUserGuideOpen(true);
+    const handleSettings = () => setSettingsOpen(true);
 
     return (
         <div
@@ -96,13 +99,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
                 />
-                {/*
                 <HeadItem
-                    icon={Settings}
-                    onClick={() => console.log('Open settings')}
+                    icon={SettingsIcon}
+                    onClick={handleSettings}
                     tooltip={t('headbar.settings')}
                 />
-                */}
             </HeadBar>
 
             {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}
@@ -139,6 +140,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 open={storageOpen}
                 onClose={() => setStorageOpen(false)}
                 onChange={(o) => setStorageOpen(o)}
+            />
+
+            {/* Settings Modal */}
+            <SettingsModal
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                onChange={(o) => setSettingsOpen(o)}
             />
         </div>
     );

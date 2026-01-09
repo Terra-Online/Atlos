@@ -6,7 +6,7 @@ $desktop-headbar-height: 5.5rem;
 $toggle-btn-size: 5.5rem;
 $transition-speed: 0.3s;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --sidebar-header: #{$white-1};
     --sidebar-bg: #{rgba($white-0, 0.5)};
     --sidebar-footer: #{rgba($white-0, 0.3)};

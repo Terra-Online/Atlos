@@ -6,7 +6,8 @@
     "darkmode": "ダークモードに切り替え",
     "lightmode": "ライトモードに切り替え",
     "language": "言語を選択",
-    "help": "ヘルプ"
+    "help": "ヘルプ",
+    "settings": "設定"
   },
   "trigger": {
     "boundaryMode": "バウンダリー モード",
@@ -93,6 +94,7 @@
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
     "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br>現在、<span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語です。<br><span class=\"keyword\">インターフェース翻訳をサポート</span>している言語には、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、アラビア語、タイ語、ベトナム語も含まれます。",
     "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
+    "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",
     "subregionSwitch": "マウスを<span class=\"keyword\">メインエリアアイコンにホバー</span>すると、利用可能なサブエリアが表示されます。サブエリアアイコンをクリックすると、そのサブエリアビューにジャンプします。<br>同様に、特定のエリアのレイヤーを選択することもできます。",
     "pointSelect": "ピンをクリックすると、ピンは<span class=\"keyword\">選択状態</span>になります。ピンの情報を確認できます。",
@@ -111,5 +113,26 @@
     "disable": "無効",
     "expand": "展開",
     "collapse": "折りたたむ"
+  },
+  "settings": {
+    "title": "設定",
+    "uiPrefs": {
+      "title": "UIの設定",
+      "sidebar": "サイドバー状態",
+      "filterOrder": "フィルター順序",
+      "triggers": "トリガースイッチ"
+    },
+    "mapPrefs": {
+      "title": "マップの設定",
+      "viewState": "マップビュー",
+      "markerProgress": "マーカー進捗",
+      "autoCluster": "1000点超で自動クラスター"
+    },
+    "theme": {
+      "title": "テーマモード",
+      "light": "ライト",
+      "dark": "ダーク",
+      "auto": "自動"
+    }
   }
 }

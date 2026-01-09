@@ -1,6 +1,87 @@
 // Generic web storage utilities: size calculation and tree map data generation
 // Supports: localStorage, sessionStorage, cookies, IndexedDB, Cache Storage
 
+import { StateStorage } from 'zustand/middleware';
+
+// ----- Zustand Storage Helpers -----
+
+// Prevent writing to storage if condition is not met
+export const createConditionalStorage = (
+    storage: StateStorage,
+    canWrite: () => boolean,
+): StateStorage => ({
+    getItem: (name) => storage.getItem(name),
+    setItem: async (name, value) => {
+        if (canWrite()) {
+            await storage.setItem(name, value);
+        }
+    },
+    removeItem: (name) => storage.removeItem(name),
+});
+
+// Preserve (do not overwrite) specific keys in storage if they are masked
+export const createPartialGuardStorage = (
+    storage: StateStorage,
+    getMaskedKeys: () => string[],
+): StateStorage => ({
+    getItem: (name) => storage.getItem(name),
+    removeItem: (name) => storage.removeItem(name),
+    setItem: async (name, value) => {
+        const maskedKeys = getMaskedKeys();
+        if (maskedKeys.length === 0) {
+            await storage.setItem(name, value);
+            return;
+        }
+
+        let oldValue = storage.getItem(name);
+        if (oldValue instanceof Promise) {
+            oldValue = await oldValue;
+        }
+
+        if (typeof oldValue !== 'string') {
+            await storage.setItem(name, value);
+            return;
+        }
+
+        try {
+            const oldObj = JSON.parse(oldValue) as unknown;
+            const newObj = JSON.parse(value) as unknown;
+
+            // Type check handling
+            if (
+                typeof oldObj !== 'object' ||
+                oldObj === null ||
+                typeof newObj !== 'object' ||
+                newObj === null
+            ) {
+                await storage.setItem(name, value);
+                return;
+            }
+
+            // Zustand persist wraps state in { state: ..., version: ... }
+            const oldPersisted = oldObj as { state?: Record<string, unknown> };
+            const newPersisted = newObj as { state?: Record<string, unknown> };
+
+            const oldState = oldPersisted.state || {};
+            const newState = newPersisted.state || {};
+
+            maskedKeys.forEach((key) => {
+                // If key exists in old storage, keep it (ignore new in-memory value)
+                if (Object.prototype.hasOwnProperty.call(oldState, key)) {
+                    newState[key] = oldState[key];
+                }
+            });
+
+            newPersisted.state = newState;
+            await storage.setItem(name, JSON.stringify(newPersisted));
+        } catch (e) {
+            console.error('Error merging persisted state inside storage', e);
+            await storage.setItem(name, value);
+        }
+    },
+});
+
+// ----- Original Exports -----
 export interface TreeMapNode {
   name: string;
   id?: string; // The actual key for deletion if different from name
