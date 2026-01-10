@@ -1,6 +1,7 @@
-/* global __ASSETS_HOST */
+/* global __ASSETS_HOST, __APP_VERSION__ */
 // Access global objects or environment variables to avoid direct references to potentially undefined variables
 const prefix:string = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+const version:string = (typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__) ? String(__APP_VERSION__) : '';
 
 // No runtime probing/cache needed under new layout
 
@@ -12,7 +13,7 @@ const prefix:string = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? 
  * @returns {string} - Assembled URL
  */
 export function getResourceUrl(property: string, key: string, ext: string = 'webp'): string {
-    if (property === 'tiles') return `${prefix}${key}`;
+    if (property === 'tiles') return `${prefix}${key}${version ? `?v=${version}` : ''}`;
 
     // Route per new convention:
     // - marker: all spot icons (地图点位底图) → /assets/images/marker

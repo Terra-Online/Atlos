@@ -1,6 +1,7 @@
 // 全局类型定义
 declare global {
     declare const __ASSETS_HOST: string;
+    declare const __APP_VERSION__: string;
 
     interface Window {
 

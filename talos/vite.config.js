@@ -114,6 +114,7 @@ export default defineConfig({
     base: assetsHost,
     define: {
         __ASSETS_HOST: JSON.stringify(assetsHost),
+        __APP_VERSION__: JSON.stringify(Date.now().toString()),
     },
     resolve: {
         alias: {
