@@ -19,6 +19,9 @@ span.keyword {
         content: '\2008'; /* PUNCTUATION SPACE */
     }
     transition: all 0.35s $adagio-curve;
+    &::selection {
+        color: #{$black-1};
+    }
 }
 span.keyboard {
     position: relative;
