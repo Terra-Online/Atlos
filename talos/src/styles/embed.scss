@@ -1,4 +1,5 @@
 @use './palette.scss' as *;
+@use './curves.scss' as *;
 
 :root, :root[data-theme='light'] {
     --embed-keyword-color: #{$primary-accent-6};
@@ -17,6 +18,7 @@ span.keyword {
     &::before, &::after {
         content: '\2008'; /* PUNCTUATION SPACE */
     }
+    transition: all 0.35s $adagio-curve;
 }
 span.keyboard {
     position: relative;

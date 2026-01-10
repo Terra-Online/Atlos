@@ -79,21 +79,24 @@
     "title": "偏好设置",
     "uiPrefs": {
       "title": "用户界面",
+      "hint": "选择您希望启用的界面偏好储存。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
       "sidebar": "保存侧边栏状态",
       "filterOrder": "保存筛选器排序",
       "triggers": "保存底栏状态"
     },
     "mapPrefs": {
       "title": "地图与点位",
+      "hint": "选择您希望启用的地图信息储存以及自动优化设置。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
       "viewState": "保存当前视图",
       "markerProgress": "保存点位与筛选器",
       "autoCluster": "点位自动聚合"
     },
     "theme": {
       "title": "主题",
-      "light": "浅色",
-      "dark": "深色",
-      "auto": "自动"
+      "hint": "选择您偏爱的的主题。自动模式下，主题将根据设备偏好设置切换。",
+      "light": "浅色模式",
+      "dark": "深色模式",
+      "auto": "跟随系统"
     }
   },
   "guide": {
@@ -115,7 +118,7 @@
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
     "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语以及韩语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，阿拉伯语，泰语以及越南语。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
-    "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存来记忆您的操作。",
+    "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱亭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",

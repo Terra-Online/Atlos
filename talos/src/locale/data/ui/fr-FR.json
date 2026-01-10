@@ -6,7 +6,8 @@
     "darkmode": "Passer en mode sombre",
     "lightmode": "Passer en mode clair",
     "language": "Choisir la langue",
-    "help": "Demander de l’aide"
+    "help": "Demander de l’aide",
+    "settings": "Paramètres"
   },
   "trigger": {
     "boundaryMode": "Mode des limites",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filtres & Données des marqueurs",
     "warning": "<p><strong>Attention :</strong> Si vous effacez les données stockées, vos informations de connexion automatique, vos préférences d'interface et la progression des marqueurs seront perdues ; et le chargement du site web pourrait prendre plus de temps que d'habitude la prochaine fois.</p><p>Si vous confirmez, veuillez cliquer à nouveau sur le bouton de suppression.</p>"
   },
+  "settings": {
+    "title": "Paramètres",
+    "uiPrefs": {
+      "title": "Préférences UI",
+      "hint": "Sélectionnez l’état de l’UI à conserver. Nous recommandons <span class=\"keyword\">de conserver toutes les options</span> pour une expérience plus cohérente.",
+      "sidebar": "Garder la barre",
+      "filterOrder": "Ordre des filtres",
+      "triggers": "État des triggers"
+    },
+    "mapPrefs": {
+      "title": "Préférences carte",
+      "hint": "Choisissez le stockage et l’optimisation automatique. Nous recommandons <span class=\"keyword\">d’activer toutes les options</span> pour une expérience plus cohérente.",
+      "viewState": "Vue de carte",
+      "markerProgress": "Marqueurs & progrès",
+      "autoCluster": "Auto-cluster"
+    },
+    "theme": {
+      "title": "Thème",
+      "hint": "Choisissez votre thème. En <span class=\"keyword\">AUTO</span>, il suit les préférences de l’appareil.",
+      "light": "Clair",
+      "dark": "Sombre",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Bienvenue sur <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>C'est votre première utilisation de cette carte. Nous vous proposons une brève visite guidée pour vous aider à comprendre rapidement les différentes fonctionnalités de la carte.</p><p>Vous pouvez cliquer sur le bouton '<span class=\"keyword\">Ignorer</span>' à tout moment pour terminer le guide, ou le redémarrer depuis le bouton d'aide dans la barre supérieure.",
     "sidebarToggle": "Cliquez pour développer la <span class=\"keyword\">barre latérale</span>.<br>La barre latérale comprend vos filtres de marqueurs les plus utilisés, ainsi que des commutateurs étroitement liés à l'affichage des marqueurs.",
@@ -91,8 +116,9 @@
     "hideUI": "<span class=\"keyword\">Masquer l'interface utilisateur</span> pour prendre des captures d'écran ou voir les marqueurs en bordure.",
     "group": "Voir les <span class=\"keyword\">groupes de discussion</span> et les <span class=\"keyword\">communautés</span> liés à ce projet.",
     "darkMode": "Basculer le <span class=\"keyword\">mode d'éclairage ambiant</span> actuel.",
-    "language": "Changer la <span class=\"keyword\">langue de l'interface</span>.<br>Actuellement, les langues avec <span class=\"keyword\">un support complet de traduction du contenu du jeu</span> incluent l'anglais, le chinois simplifié, le chinois traditionnel, le japonais et le coréen.<br>Les langues avec <span class=\"keyword\">un support de traduction de l'interface</span> incluent également le français, l'allemand, l'italien, le russe, l'espagnol, l'indonésien, le portugais, l'arabe, le thaï et le vietnamien.",
+    "language": "Changer la <span class=\"keyword\">langue de l'interface</span>.<br>Actualmente, les langues avec <span class=\"keyword\">un support complet de traduction du contenu du jeu</span> incluent l'anglais, le chinois simplifié, le chinois traditionnel, le japonais et le coréen.<br>Les langues avec <span class=\"keyword\">un support de traduction de l'interface</span> incluent également le français, l'allemand, l'italien, le russe, l'espagnol, l'indonésien, le portugais, l'arabe, le thaï et le vietnamien.",
     "help": "Redémarrer ce <span class=\"keyword\">guide</span>.",
+    "settings": "Ouvrez les <span class=\"keyword\">Paramètres</span> pour contrôler le stockage local que la carte utilise pour mémoriser vos actions.",
     "regionSwitch": "Cliquez pour basculer entre <span class=\"keyword\">différentes cartes bac à sable</span> (régions principales) dans le jeu.",
     "subregionSwitch": "<span class=\"keyword\">Survolez l'icône de la région principale</span> pour afficher les sous-régions disponibles ; cliquer sur une icône de sous-région vous fera passer à cette vue de sous-région.<br>De même, vous pouvez également sélectionner un calque pour une région.",
     "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",

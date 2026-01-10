@@ -6,7 +6,8 @@
     "darkmode": "Cambiar a modo oscuro",
     "lightmode": "Cambiar a modo claro",
     "language": "Seleccionar idioma",
-    "help": "Solicitar ayuda"
+    "help": "Solicitar ayuda",
+    "settings": "Ajustes"
   },
   "trigger": {
     "boundaryMode": "Modo de límites",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filtros y datos de marcadores",
     "warning": "<p><strong>Advertencia:</strong> Si elimina los datos almacenados, perderá sus inicios de sesión automáticos, preferencias de UI y el progreso de los marcadores; y la carga del sitio web puede tardar más de lo habitual la próxima vez.</p><p>Si está seguro, haga clic nuevamente en el botón Eliminar.</p>"
   },
+  "settings": {
+    "title": "Ajustes",
+    "uiPrefs": {
+      "title": "Preferencias UI",
+      "hint": "Seleccione el estado de la UI que desea conservar. Recomendamos <span class=\"keyword\">mantener todas las opciones</span> para una experiencia más consistente.",
+      "sidebar": "Mantener barra",
+      "filterOrder": "Orden de filtros",
+      "triggers": "Estado de triggers"
+    },
+    "mapPrefs": {
+      "title": "Preferencias de mapa",
+      "hint": "Seleccione el almacenamiento y la optimización automática. Recomendamos <span class=\"keyword\">activar todas las opciones</span> para una experiencia más consistente.",
+      "viewState": "Vista del mapa",
+      "markerProgress": "Marcadores & progreso",
+      "autoCluster": "Auto-cluster"
+    },
+    "theme": {
+      "title": "Tema",
+      "hint": "Elija su tema. En <span class=\"keyword\">AUTO</span>, cambia según el dispositivo.",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Bienvenido a <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Esta es su primera vez usando este mapa. Le proporcionaremos un breve recorrido guiado para ayudarle a comprender rápidamente las diversas funciones del mapa.</p><p>Puede hacer clic en el botón '<span class=\"keyword\">Saltar</span>' en cualquier momento para finalizar la guía, o reiniciarla desde el botón de ayuda en la barra superior.",
     "sidebarToggle": "Haga clic para expandir la <span class=\"keyword\">barra lateral</span>.<br>La barra lateral incluye sus filtros de marcadores más utilizados, así como interruptores estrechamente relacionados con la visualización de marcadores.",
@@ -98,7 +123,8 @@
     "pointSelect": "Haga clic en un marcador para ingresar al <span class=\"keyword\">estado seleccionado</span>. Podrá ver la información del marcador.",
     "pointMark": "Haga clic en el marcador nuevamente para marcarlo como completado.",
     "detail": "Puede ver información específica sobre el marcador seleccionado, incluido el número de marcadores de este tipo en <span class=\"keyword\">todas las regiones</span>, la <span class=\"keyword\">región principal</span> actual y la <span class=\"keyword\">subregión</span> actual.",
-    "pointIcon": "Hacer clic en el icono del marcador también puede marcarlo como completado."
+    "pointIcon": "Hacer clic en el icono del marcador también puede marcarlo como completado.",
+    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones."
   },
   "common": {
     "close": "Cerrar",
@@ -111,5 +137,9 @@
     "disable": "Deshabilitar",
     "expand": "Expandir",
     "collapse": "Contraer"
+  },
+  "meta": {
+    "title": "Mapa Open Endfield",
+    "description": "Open Endfield Map es un mapa en línea de código abierto para Arknights: Endfield, que proporciona mapas interactivos, recolección de artículos y herramientas de planificación estratégica."
   }
 }

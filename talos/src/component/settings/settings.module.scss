@@ -264,6 +264,7 @@
     text-transform: uppercase;
     padding-left: 6px;
     transform: translateY(-2px);
+    text-align: left;
 }
 .themeIndicator {
     grid-area: themeInd;
@@ -275,11 +276,11 @@
     border: 2px solid $primary-accent-4;
     background-color: $primary-accent-4;
     border-radius: 4px;
-    padding: 1.25px 5px 3px;
+    padding: 1.5px 5px 3px;
     margin-left: 6px;
     color: $grey-1;
-    font-size: .8rem;
-    font-family: 'Lang Origin','Novecento Bold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: .85rem;
+    font-family: 'Novecento Bold', 'Lang Origin', 'Novecento Cyrillic DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-weight: 900;
     text-transform: uppercase;
     height: 20px;

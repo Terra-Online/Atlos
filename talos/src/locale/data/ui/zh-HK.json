@@ -75,6 +75,30 @@
     "filtersAndMarkers": "篩選器與標記資料",
     "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>"
   },
+  "settings": {
+    "title": "偏好設定",
+    "uiPrefs": {
+      "title": "用戶介面",
+      "hint": "選擇您希望啟用的介面偏好儲存。<br>我們建議您<span class=\"keyword\">開啟所有選項以獲得更連貫的使用體驗</span>。",
+      "sidebar": "保存側邊欄狀態",
+      "filterOrder": "保存篩選器排序",
+      "triggers": "保存底欄狀態"
+    },
+    "mapPrefs": {
+      "title": "地圖與點位",
+      "hint": "選擇您希望啟用的地圖資訊儲存以及自動優化設定。<br>我們建議您<span class=\"keyword\">開啟所有選項以獲得更連貫的使用體驗</span>。",
+      "viewState": "保存當前視圖",
+      "markerProgress": "保存點位與篩選器",
+      "autoCluster": "點位自動聚合"
+    },
+    "theme": {
+      "title": "主題",
+      "hint": "選擇您偏愛的主題。自動模式下，主題將根據設備偏好設置切換。",
+      "light": "淺色模式",
+      "dark": "深色模式",
+      "auto": "跟隨系統"
+    }
+  },
   "guide": {
     "welcome": "歡迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>這是您第一次使用本地圖，我們將為您提供簡短的新手引導，幫助您快速了解地圖的各項功能。</p><p>您可以隨時點擊「<span class=\"keyword\">跳過</span>」按鈕結束引導，或在頂欄的幫助按鈕中重新啟動引導。",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
@@ -113,26 +137,5 @@
     "disable": "禁用",
     "expand": "展開",
     "collapse": "收起"
-  },
-  "settings": {
-    "title": "偏好設定",
-    "uiPrefs": {
-      "title": "介面偏好",
-      "sidebar": "側邊欄狀態",
-      "filterOrder": "篩選器排序",
-      "triggers": "底欄開關狀態"
-    },
-    "mapPrefs": {
-      "title": "地圖偏好",
-      "viewState": "地圖視角",
-      "markerProgress": "點位標記進度",
-      "autoCluster": "超千點自動聚合"
-    },
-    "theme": {
-      "title": "主題模式",
-      "light": "淺色",
-      "dark": "深色",
-      "auto": "自動"
-    }
   }
 }

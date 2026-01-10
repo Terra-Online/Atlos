@@ -75,6 +75,30 @@
     "filtersAndMarkers": "Filters & Marker Data",
     "warning": "<p><strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time.</p><p>If confirmed, please click the delete button again.</p>"
   },
+  "settings": {
+    "title": "Settings",
+    "uiPrefs": {
+      "title": "UI Preferences",
+      "hint": "Select the UI state you want to keep. We recommend <span class=\"keyword\">keeping all options</span> for a more consistent experience.",
+      "sidebar": "Keep sidebar state",
+      "filterOrder": "Keep filter order",
+      "triggers": "Keep trigger state"
+    },
+    "mapPrefs": {
+      "title": "Map Preferences",
+      "hint": "Select the map storage and automatic optimization you want to enable. We recommend <span class=\"keyword\">enabling all options</span> for a more consistent experience.",
+      "viewState": "Keep map view",
+      "markerProgress": "Keep marker & progress",
+      "autoCluster": "Auto cluster"
+    },
+    "theme": {
+      "title": "Theme Preferences",
+      "hint": "Choose your preferred theme. For <span class=\"keyword\">AUTO</span>, the theme will switch according to your device's preference.",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Welcome to <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>This is your first time using this map. We will provide you with a brief guided tour to help you quickly understand the various features of the map.</p><p>You can click the '<span class=\"keyword\">Skip</span>' button at any time to end the guide, or restart it from the help button in the top bar.",
     "sidebarToggle": "Click to expand the <span class=\"keyword\">sidebar</span>.<br>The sidebar includes your most frequently used marker filters and switches closely related to marker display.",
@@ -117,26 +141,5 @@
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
-  },
-  "settings": {
-    "title": "Settings",
-    "uiPrefs": {
-      "title": "UI Preferences",
-      "sidebar": "Keep sidebar state",
-      "filterOrder": "Keep filter order",
-      "triggers": "Keep trigger state"
-    },
-    "mapPrefs": {
-      "title": "Map Preferences",
-      "viewState": "Keep map view",
-      "markerProgress": "Keep marker & progress",
-      "autoCluster": "Auto cluster"
-    },
-    "theme": {
-      "title": "Theme Preferences",
-      "light": "Light",
-      "dark": "Dark",
-      "auto": "Auto"
-    }
   }
 }

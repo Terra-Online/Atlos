@@ -6,7 +6,8 @@
     "darkmode": "Beralih ke mode gelap",
     "lightmode": "Beralih ke mode terang",
     "language": "Pilih bahasa",
-    "help": "Minta bantuan"
+    "help": "Minta bantuan",
+    "settings": "Preferensi"
   },
   "trigger": {
     "boundaryMode": "Mode Batas",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filter & Data Titik",
     "warning": "<p><strong>Peringatan:</strong> Jika Anda menghapus data yang tersimpan, kredensial login otomatis, preferensi UI, dan progres penanda Anda akan hilang; dan pemuatan situs web berikutnya mungkin memakan waktu lebih lama dari biasanya.</p><p>Jika sudah yakin, silakan klik tombol Hapus sekali lagi.</p>"
   },
+  "settings": {
+    "title": "Pengaturan",
+    "uiPrefs": {
+      "title": "Preferensi UI",
+      "hint": "Pilih status UI yang ingin disimpan. Kami sarankan <span class=\"keyword\">menyimpan semua opsi</span> untuk pengalaman yang lebih konsisten.",
+      "sidebar": "Simpan sidebar",
+      "filterOrder": "Urutan filter",
+      "triggers": "Status trigger"
+    },
+    "mapPrefs": {
+      "title": "Preferensi peta",
+      "hint": "Pilih penyimpanan dan optimasi otomatis. Kami sarankan <span class=\"keyword\">mengaktifkan semua opsi</span> untuk pengalaman yang lebih konsisten.",
+      "viewState": "Tampilan peta",
+      "markerProgress": "Marker & progres",
+      "autoCluster": "Auto-cluster"
+    },
+    "theme": {
+      "title": "Tema",
+      "hint": "Pilih tema. Pada <span class=\"keyword\">AUTO</span>, tema mengikuti perangkat.",
+      "light": "Terang",
+      "dark": "Gelap",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Selamat datang di <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Kami akan memberikan tur panduan singkat untuk membantu Anda memahami berbagai fitur peta dengan cepat.</p><p>Anda dapat mengklik tombol '<span class=\"keyword\">Lewati</span>' kapan saja untuk mengakhiri panduan, atau memulai ulang dari tombol bantuan di bilah atas.",
     "sidebarToggle": "Klik untuk memperluas <span class=\"keyword\">bilah sisi</span>.<br>Bilah sisi mencakup filter penanda yang paling sering Anda gunakan, serta sakelar yang terkait erat dengan tampilan penanda.",
@@ -98,7 +123,8 @@
     "pointSelect": "Klik penanda untuk masuk ke <span class=\"keyword\">status terpilih</span>. Anda akan dapat melihat informasi penanda.",
     "pointMark": "Klik penanda lagi untuk menandainya sebagai selesai.",
     "detail": "Anda dapat melihat informasi spesifik tentang penanda yang dipilih, termasuk jumlah penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> saat ini, dan <span class=\"keyword\">sub-wilayah</span> saat ini.",
-    "pointIcon": "Mengklik ikon penanda juga dapat menandainya sebagai selesai."
+    "pointIcon": "Mengklik ikon penanda juga dapat menandainya sebagai selesai.",
+    "settings": "Buka <span class=\"keyword\">Preferensi</span> untuk mengontrol penyimpanan lokal yang digunakan peta untuk mengingat tindakan Anda."
   },
   "common": {
     "close": "Tutup",

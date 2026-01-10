@@ -5,6 +5,7 @@ import SettingsIcon from '../../assets/logos/settings.svg?react';
 import DarkModeIcon from '../../assets/logos/darkmode.svg?react';
 import styles from './settings.module.scss';
 import { useTranslateUI } from '@/locale';
+import parse from 'html-react-parser';
 import {
     useUiPrefsStore,
     useTheme,
@@ -56,7 +57,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     return (
         <Modal
             open={open}
-            size="m"
+            size="l"
             onClose={onClose}
             onChange={onChange}
             title={t('settings.title')}
@@ -67,6 +68,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                 <div className={styles.settingsSection}>
                     <div className={styles.sectionHeader}>
                         <span className={styles.sectionTitle}>{t('settings.uiPrefs.title')}</span>
+                        <span className={styles.sectionHint}>{parse(t('settings.uiPrefs.hint') || '')}</span>
                     </div>
                     <div className={styles.triggerGrid}>
                         <div className={styles.triggerRow}>
@@ -100,6 +102,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                 <div className={styles.settingsSection}>
                     <div className={styles.sectionHeader}>
                         <span className={styles.sectionTitle}>{t('settings.mapPrefs.title')}</span>
+                        <span className={styles.sectionHint}>{parse(t('settings.mapPrefs.hint') || '')}</span>
                     </div>
                     <div className={styles.triggerGrid}>
                         <div className={styles.triggerRow}>
@@ -133,6 +136,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                 <div className={styles.settingsSection}>
                     <div className={styles.sectionHeader}>
                         <span className={styles.sectionTitle}>{t('settings.theme.title')}</span>
+                        <span className={styles.sectionHint}>{parse(t('settings.theme.hint') || '')}</span>
                     </div>
                     <div className={styles.themeItems}>
                         <button
