@@ -2,6 +2,7 @@ import React, { useCallback, useId } from 'react';
 import Modal from '@/component/modal/modal';
 import { Trigger } from '@/component/trigger/trigger';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
+import DarkModeIcon from '../../assets/logos/darkmode.svg?react';
 import styles from './settings.module.scss';
 import { useTranslateUI } from '@/locale';
 import {
@@ -9,7 +10,7 @@ import {
     useTheme,
     useSetTheme,
 } from '@/store/uiPrefs';
-import { applyTheme, getSystemTheme, startSystemFollow } from '@/utils/theme';
+import { applyTheme, startSystemFollow } from '@/utils/theme';
 
 export interface SettingsProps {
     open: boolean;
@@ -51,9 +52,6 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             applyTheme(mode, true);
         }
     }, [setThemePreference]);
-
-    // Compute current effective theme for display
-    const effectiveTheme = themePreference === 'auto' ? getSystemTheme() : themePreference;
 
     return (
         <Modal
@@ -142,38 +140,33 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                             className={`${styles.themeItem} ${themePreference === 'light' ? styles.active : ''}`}
                             onClick={() => handleThemeChange('light')}
                             aria-pressed={themePreference === 'light'}
+                            data-pref="light"
                         >
                             <span className={styles.themeName}>{t('settings.theme.light')}</span>
-                            {themePreference === 'light' && (
-                                <span className={styles.currentIndicator}>{t('language.current')}</span>
-                            )}
+                            <span className={styles.themeIndicator}>{t('language.current')}</span>
+                            <DarkModeIcon className={styles.themeIcon} />
                         </button>
                         <button
                             type="button"
                             className={`${styles.themeItem} ${themePreference === 'dark' ? styles.active : ''}`}
                             onClick={() => handleThemeChange('dark')}
                             aria-pressed={themePreference === 'dark'}
+                            data-pref="dark"
                         >
                             <span className={styles.themeName}>{t('settings.theme.dark')}</span>
-                            {themePreference === 'dark' && (
-                                <span className={styles.currentIndicator}>{t('language.current')}</span>
-                            )}
+                            <span className={styles.themeIndicator}>{t('language.current')}</span>
+                            <DarkModeIcon className={styles.themeIcon} />
                         </button>
                         <button
                             type="button"
                             className={`${styles.themeItem} ${themePreference === 'auto' ? styles.active : ''}`}
                             onClick={() => handleThemeChange('auto')}
                             aria-pressed={themePreference === 'auto'}
+                            data-pref="auto"
                         >
                             <span className={styles.themeName}>{t('settings.theme.auto')}</span>
-                            {themePreference === 'auto' && (
-                                <span className={styles.themeHint}>
-                                    ({effectiveTheme === 'dark' ? t('settings.theme.dark') : t('settings.theme.light')})
-                                </span>
-                            )}
-                            {themePreference === 'auto' && (
-                                <span className={styles.currentIndicator}>{t('language.current')}</span>
-                            )}
+                            <span className={styles.themeIndicator}>{t('language.current')}</span>
+                            <DarkModeIcon className={styles.themeIcon} />
                         </button>
                     </div>
                 </div>

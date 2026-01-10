@@ -8,17 +8,30 @@
     --settings-trigger-border: #{rgba($grey-1, 0.75)};
     
     // Theme selector
-    --theme-bg: #{$white-1};
-    --theme-hover-bg: #{$white-3};
-    --theme-active-bg: #{$dim-1};
-    --theme-text: #{$grey-1};
-    --theme-active-text: #{$white-1};
-    --theme-bar: #{$grey-1};
     --theme-active-bar: #{$primary-accent-4};
-    --theme-hover-bar: #{$primary-accent-1};
-    --theme-tag: #{$dim-1};
-    --theme-active-tag: #{$primary-accent-4};
-    --theme-active-tag-text: #{$grey-1};
+    --theme-hover-bar: #{$primary-accent-3};
+    --theme-active-hover-bar: #{$primary-accent-5};
+
+    --theme-bg-light: #{$white-1};
+    --theme-hover-bg-light: #{$light-1};
+    --theme-active-bg-light: #{$white-1};
+    --theme-text-light: #{$grey-1};
+    --theme-active-text-light: #{$black-1};
+    --theme-bar-light: #{$grey-1};
+
+    --theme-bg-dark: #{$black-1};
+    --theme-hover-bg-dark: #{$grey-1};
+    --theme-active-bg-dark: #{$grey-1};
+    --theme-text-dark: #{$light-1};
+    --theme-active-text-dark: #{$light-2};
+    --theme-bar-dark: #{$white-1};
+
+    --theme-bg-auto: #{$grey-3};
+    --theme-hover-bg-auto: #{$grey-2};
+    --theme-active-bg-auto: #{$grey-3};
+    --theme-text-auto: #{$white-1};
+    --theme-active-text-auto: #{$white-0};
+    --theme-bar-auto: #{$light-1};
 }
 :root[data-theme='dark'] {
     --settings-section-border: #{rgba($light-1, 0.75)};
@@ -27,17 +40,21 @@
     --settings-trigger-border: #{rgba($light-1, 0.75)};
     
     // Theme selector
-    --theme-bg: #{$black-1};
-    --theme-hover-bg: #{$grey-2};
-    --theme-active-bg: #{$light-1};
-    --theme-text: #{$light-1};
-    --theme-active-text: #{$black-1};
-    --theme-bar: #{$light-1};
-    --theme-active-bar: #{$primary-accent-5};
-    --theme-hover-bar: #{$primary-accent-2};
-    --theme-tag: #{$dim-2};
-    --theme-active-tag: #{$primary-accent-4};
-    --theme-active-tag-text: #{$black-1};
+    --theme-hover-bg-light: #{$light-1};
+
+    --theme-bg-dark: #{$black-1};
+    --theme-hover-bg-dark: #{$grey-1};
+    --theme-active-bg-dark: #{$grey-1};
+    --theme-text-dark: #{$light-1};
+    --theme-active-text-dark: #{$light-2};
+    --theme-bar-dark: #{$white-1};
+
+    --theme-bg-auto: #{$grey-3};
+    --theme-hover-bg-auto: #{$grey-2};
+    --theme-active-bg-auto: #{$grey-3};
+    --theme-text-auto: #{$white-1};
+    --theme-active-text-auto: #{$white-0};
+    --theme-bar-auto: #{$light-1};
 }
 
 .settingsList {
@@ -124,10 +141,9 @@
 .themeItems {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: .6rem .75rem;
+    gap: .6rem;
     align-items: stretch;
 }
-
 @media (max-width: 576px) {
     .themeItems {
         grid-template-columns: 1fr;
@@ -139,21 +155,21 @@
         }
     }
 }
-
 .themeItem {
     position: relative;
     overflow: hidden;
     user-select: none;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas: 
+        "themeName themeIcon"
+        "themeInd themeIcon";
+    gap: 0;
     align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-
     border-radius: 3px;
     height: 3.6rem;
-    padding: .5rem .6rem;
-    padding-left: 1rem;
+    padding: .3rem .5rem;
     box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
     background-color: var(--theme-bg);
     color: var(--theme-text);
@@ -162,13 +178,12 @@
         background-color .2s ease-in,
         color .2s ease-in,
         box-shadow .4s $moderato-curve;
-
     &::before {
         content: "";
         position: absolute;
         left: 5px;
         top: 10%;
-        width: 3px;
+        width: 4px;
         height: 80%;
         background-color: var(--theme-bar);
         box-shadow: 0 0 0 0 transparent;
@@ -176,7 +191,6 @@
         pointer-events: none;
         transition: background-color .4s ease;
     }
-
     &:hover {
         background-color: var(--theme-hover-bg);
         box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
@@ -185,7 +199,6 @@
             transition: background-color .2s ease;
         }
     }
-
     &.active {
         background-color: var(--theme-active-bg);
         color: var(--theme-active-text);
@@ -194,53 +207,115 @@
             transition: background-color .4s ease-in, box-shadow .5s ease;
             box-shadow: 0 0 3px 0 $primary-accent-4;
         }
-        &:hover {
-            background-color: var(--theme-text);
+        &:hover::before {
+            background-color: var(--theme-active-hover-bar);
+        }
+    }
+    &[data-pref='light'] {
+        --theme-bg: var(--theme-bg-light);
+        --theme-hover-bg: var(--theme-hover-bg-light);
+        --theme-active-bg: var(--theme-active-bg-light);
+        --theme-text: var(--theme-text-light);
+        --theme-active-text: var(--theme-active-text-light);
+        --theme-bar: var(--theme-bar-light);
+    }
+    &[data-pref='dark'] {
+        --theme-bg: var(--theme-bg-dark);
+        --theme-hover-bg: var(--theme-hover-bg-dark);
+        --theme-active-bg: var(--theme-active-bg-dark);
+        --theme-text: var(--theme-text-dark);
+        --theme-active-text: var(--theme-active-text-dark);
+        --theme-bar: var(--theme-bar-dark);
+        > .themeIcon {
+            transform: rotate3d(2, 1, 0, 180deg);
+        }
+    }
+    &[data-pref='auto'] {
+        --theme-bg: var(--theme-bg-auto);
+        --theme-hover-bg: var(--theme-hover-bg-auto);
+        --theme-active-bg: var(--theme-active-bg-auto);
+        --theme-text: var(--theme-text-auto);
+        --theme-active-text: var(--theme-active-text-auto);
+        --theme-bar: var(--theme-bar-auto);
+        > .themeIcon {
+            animation: autoTheme 6.93s infinite $moderato-curve;
         }
     }
 }
-
+.themeIcon {
+    grid-area: themeIcon;
+    justify-self: center;
+    width: 2rem;
+    height: 2rem;
+    fill: currentColor;
+    opacity: 1;
+    transition: transform 0.45s $moderato-curve;
+    filter: drop-shadow(0 0 1.5px rgba($black-0, .3));
+}
 .themeName {
-    font-size: 1.1rem;
+    grid-area: themeName;
+    font-size: 1.15rem;
     font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
     font-weight: 700;
     letter-spacing: -.3px;
     line-height: 1;
+    display: flex;
+    align-self: center;
+    text-transform: uppercase;
+    padding-left: 6px;
+    transform: translateY(-2px);
 }
-
-.themeTag {
+.themeIndicator {
+    grid-area: themeInd;
+    align-self: center;
+    // Style from language module's currentTag
     display: inline-flex;
     align-items: center;
-    font-size: 0.75rem;
-    font-family: 'Novecento Medium', 'HMSans_EN', 'HMSans', sans-serif;
-    font-weight: 500;
+    justify-content: center;
+    border: 2px solid $primary-accent-4;
+    background-color: $primary-accent-4;
+    border-radius: 4px;
+    padding: 1.25px 5px 3px;
+    margin-left: 6px;
+    color: $grey-1;
+    font-size: .8rem;
+    font-family: 'Lang Origin','Novecento Bold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 900;
     text-transform: uppercase;
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
+    height: 20px;
+    width: fit-content;
+    line-height: 1;
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+        opacity .3s ease,
+        transform .3s ease,
 }
-
-.themeHint {
-    display: inline-flex;
-    font-size: 0.8rem;
-    font-family: 'HMSans_EN', 'HMSans', sans-serif;
-    font-weight: 500;
-    opacity: 0.7;
-    margin-left: 0.25rem;
-}
-
-.active .themeTag {
+.active .themeIndicator {
     opacity: 1;
+    transform: translateY(0);
 }
 
-.currentIndicator {
-    display: inline-flex;
-    align-items: center;
-    margin-left: auto;
-    padding: 2px 6px;
-    background-color: var(--theme-active-tag);
-    color: var(--theme-active-tag-text);
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
+@keyframes autoTheme {
+    0% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
+    10.82% {
+        transform: rotate3d(2, 1, 0, 180deg);
+    }
+    28.33% {
+        transform: rotate3d(2, 1, 0, 180deg);
+    }
+    39.15% {
+        transform:rotate3d(2, 1, 30, 180deg);
+    }
+    56.66% {
+        transform:rotate3d(2, 1, 30, 180deg);
+    }
+    67.48% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
+    100% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
 }

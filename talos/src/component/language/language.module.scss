@@ -12,7 +12,7 @@
     --lang-hover-bar: #{$primary-accent-1};
     --lang-tag: #{$dim-1};
     --lang-actived-tag: #{$primary-accent-4};
-    --lang--actived-tag-text: #{$grey-1};
+    --lang-actived-tag-text: #{$grey-1};
     --lang-section-border: #{rgba($grey-1, 0.75)};
     --lang-title-text: #{$black-1};
     --lang-section-text: #{$grey-1};
@@ -28,7 +28,7 @@
     --lang-hover-bar: #{$primary-accent-2};
     --lang-tag: #{$dim-2};
     --lang-actived-tag: #{$primary-accent-4};
-    --lang--actived-tag-text: #{$black-1};
+    --lang-actived-tag-text: #{$black-1};
     --lang-section-border: #{rgba($light-1, 0.75)};
     --lang-title-text: #{$light-2};
     --lang-section-text: #{$light-1};
@@ -199,8 +199,7 @@
     padding: 2.5px 6px 3px;
     color: var(--lang-tag);
     font-size: .9rem;
-    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai',
- sans-serif;
+    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     height: 22px;
     width: fit-content;
     line-height: 1;
@@ -220,9 +219,8 @@
     max-width: 0;
     white-space: nowrap;
     margin-left: 0;
-    color: var(--lang--actived-tag-text);
-    font-family: 'Novecento Bold', 'Lang Origin', 'Novecento Cyrillic DemiBold','Noto Sans Arabic', 'Noto Sans Thai',
-sans-serif;
+    color: var(--lang-actived-tag-text);
+    font-family: 'Novecento Bold', 'Lang Origin', 'Novecento Cyrillic DemiBold','Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-weight: 900;
     text-transform: uppercase;
     transition:
@@ -236,7 +234,7 @@ sans-serif;
 
 .active .langTag {
     background-color: var(--lang-actived-tag);
-    color: var(--lang--actived-tag-text);
+    color: var(--lang-actived-tag-text);
     border-color: var(--lang-actived-tag);
     font-family: 'Novecento Bold', 'UD_ShinGo Bold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     box-shadow: 0 1px 2px rgba($black-0, 0.2);
