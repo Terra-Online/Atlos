@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import styles from './sideBar.module.scss';
 import { useBoxSelection } from './useBoxSelection';
 
@@ -8,26 +8,39 @@ interface SelectionLayerProps {
 
 export const SelectionLayer = ({ containerRef }: SelectionLayerProps) => {
     const { isSelecting, selectionBox } = useBoxSelection(containerRef);
-    const [renderData, setRenderData] = useState<{ box: typeof selectionBox, isFading: boolean } | null>(null);
+    
+    const [fadingState, setFadingState] = useState<{ box: typeof selectionBox, active: boolean } | null>(null);
+    const lastBoxRef = useRef(selectionBox);
 
-    // Sync state to handle fade out
-    useEffect(() => {
-        if (isSelecting && selectionBox) {
-            setRenderData({ box: selectionBox, isFading: false });
-        } else if (!isSelecting && renderData?.box && !renderData.isFading) {
-            // Start fade out
-            setRenderData(prev => prev ? { ...prev, isFading: true } : null);
+    // Track the latest non-null box
+    if (selectionBox) {
+        lastBoxRef.current = selectionBox;
+    }
+
+    useLayoutEffect(() => {
+        let cleanup: (() => void) | undefined;
+
+        if (!isSelecting && lastBoxRef.current) {
+            // Ended selection, trigger fade out
+            setFadingState({ box: lastBoxRef.current, active: true });
+            
             const timer = setTimeout(() => {
-                setRenderData(null);
+                setFadingState(null);
+                lastBoxRef.current = null;
             }, 250);
-            return () => clearTimeout(timer);
+            cleanup = () => clearTimeout(timer);
+        } else if (isSelecting) {
+            // Started selection, clear fading
+            setFadingState(null);
         }
-    }, [isSelecting, selectionBox]); // Only depend on external props
+        
+        return cleanup;
+    }, [isSelecting]);
 
-    // Render nothing if no data or no box data
-    if (!renderData || !renderData.box) return null;
+    const box = isSelecting ? selectionBox : fadingState?.box;
+    const isFading = !isSelecting && fadingState?.active;
 
-    const { box, isFading } = renderData;
+    if (!box) return null;
 
     return (
         <div
