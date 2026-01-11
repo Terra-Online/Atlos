@@ -77,18 +77,16 @@ $indicator-height: 0.75rem;
         transform: translateY(8.5px);
         z-index: -1;
     }
-    &::after {
+    &::after, &.layerLabel::after {
         content: "RGN";
-
-    &.layerLabel::after {
-        content: "LYR";
-    }
         font-size: 0.88rem;
         color: var(--regswitch-selected);
         z-index: 1;
         text-shadow: 0 0 2px rgba($black-0, 0.6);
     }
-    
+    &.layerLabel::after {
+        content: "LYR";
+    }
 }
 .indicator {
     position: absolute;
