@@ -6,7 +6,8 @@
     "darkmode": "Switch to dark mode",
     "lightmode": "Switch to light mode",
     "language": "Choose language",
-    "help": "Reach out for help"
+    "help": "Reach out for help",
+    "settings": "Preferences"
   },
   "trigger": {
     "boundaryMode": "Boundary Mode",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "Filter Options",
     "emptyTitle": "No filter options match.",
-    "emptyDesc": "Please contact the administrator."
+    "emptyDesc": "If you confirm that any point info is missing or incorrect, please contact the administrators in the our community, or submit an <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Report location error'>Issue</a> on our GitHub repository."
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "supported by observator 6"
+      "supportedBy": "supported by Observator 6"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "Complete translations for both UI and in-game content.",
     "uiOnly": "UI-Only Languages",
     "uiOnlyHint": "UI translations only, in-game content will be displayed in English.",
-    "fyi": "If your language is not yet available on this website, you can contact the site administrator via email at translate@talos.wiki, or visit GitHub to participate in our open-source translation project. You can request translation entries for your language and assist with translating and localizing the WIKI section according to our guidelines. We sincerely appreciate and look forward to your contributions.\nYou can also click to view the list of translation contributors.",
+    "fyi": "If your language is not yet available on this website, you can contact the site administrator via email at <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, or visit GitHub to participate in our open-source translation project. You can request translation entries for your language and assist with translating and localizing the WIKI section according to our guidelines. We sincerely appreciate and look forward to your contributions.\nYou can also click to view the list of translation contributors.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filters & Marker Data",
     "warning": "<p><strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time.</p><p>If confirmed, please click the delete button again.</p>"
   },
+  "settings": {
+    "title": "Settings",
+    "uiPrefs": {
+      "title": "UI Preferences",
+      "hint": "Select the UI state you want to keep. We recommend <span class=\"keyword\">keeping all options</span> for a more consistent experience.",
+      "sidebar": "Keep sidebar state",
+      "filterOrder": "Keep filter order",
+      "triggers": "Keep trigger state"
+    },
+    "mapPrefs": {
+      "title": "Map Preferences",
+      "hint": "Select the map storage and automatic optimization you want to enable. We recommend <span class=\"keyword\">enabling all options</span> for a more consistent experience.",
+      "viewState": "Keep map view",
+      "markerProgress": "Keep marker & progress",
+      "autoCluster": "Auto cluster"
+    },
+    "theme": {
+      "title": "Theme Preferences",
+      "hint": "Choose your preferred theme. For <span class=\"keyword\">AUTO</span>, the theme will switch according to your device's preference.",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Welcome to <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>This is your first time using this map. We will provide you with a brief guided tour to help you quickly understand the various features of the map.</p><p>You can click the '<span class=\"keyword\">Skip</span>' button at any time to end the guide, or restart it from the help button in the top bar.",
     "sidebarToggle": "Click to expand the <span class=\"keyword\">sidebar</span>.<br>The sidebar includes your most frequently used marker filters and switches closely related to marker display.",
@@ -93,6 +118,7 @@
     "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",
     "language": "Switch <span class=\"keyword\">interface language</span>.<br>Currently, languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.<br>Languages with <span class=\"keyword\">interface translation support</span> also include French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Arabic, Thai, and Vietnamese.",
     "help": "Restart this <span class=\"keyword\">guide</span>.",
+    "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",
     "subregionSwitch": "<span class=\"keyword\">Hover over the main region icon</span> to show available sub-regions; clicking a sub-region icon will jump to that sub-region view.<br>Similarly, you can also select a layer for a region.",
     "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
@@ -108,6 +134,12 @@
     "selected": "Selected",
     "confirm": "Confirm",
     "enable": "Enable",
-    "disable": "Disable"
+    "disable": "Disable",
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "meta": {
+    "title": "Open Endfield Map",
+    "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
   }
 }

@@ -5,8 +5,8 @@ import path from "path";
 import https from "https";
 import http from "http";
 
-// 读取 R2 专用配置：config/config.r2.json
-// 结构示例：
+// Read R2 specific config: config/config.r2.json
+// sample expected config file:
 // {
 //   "web": {
 //     "build": {
@@ -30,14 +30,14 @@ const cdnPath = config.web.build.cdn + config.web.build.r2.prefix;
 const client = new S3Client({
   region: region || "auto",
   endpoint,
-  forcePathStyle: true, // R2 推荐 path-style 访问
+  forcePathStyle: true, // R2 recommends path-style access
   credentials: {
     accessKeyId,
     secretAccessKey: accessKeySecret,
   },
 });
 
-// 检查 CDN 资源是否存在（逻辑与 publish-oss.js 一致）
+// Check if CDN resource exists (logic consistent with publish-oss.js)
 const checkCDNResourceExists = async (relativePath) => {
   return new Promise((resolve) => {
     const cdnUrl = `${cdnPath}/${relativePath}`;
@@ -83,7 +83,7 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles("./dist");
 
-// 简单的 MIME 类型映射，避免引入额外依赖
+// a simple MIME type mapping function
 const getMimeType = (filePath) => {
   const ext = path.extname(filePath).toLowerCase();
   const mimeMap = {
@@ -114,7 +114,7 @@ const getMimeType = (filePath) => {
   return mimeMap[ext] || "application/octet-stream";
 };
 
-// 与 OSS 脚本保持一致的阈值和重试逻辑
+// Minimum threshold for R2 is 5MB
 const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB
 const MAX_RETRIES = 3;
 
@@ -125,15 +125,15 @@ const upload = async (relativePath, retryCount = 0) => {
   try {
     const stats = fs.statSync(localPath);
     const fileSize = stats.size;
-    const contentType = getMimeType(localPath); // 获取 MIME 类型
+    const contentType = getMimeType(localPath); // get MIME type
 
-    // 检查 CDN 是否已存在该资源
+    // check if CDN already has the resource
     const cdnCheck = await checkCDNResourceExists(relativePath);
 
-    // 如果 CDN 已存在该资源且文件较大（大于 5MB），则跳过上传
+    // If the resource already exists on the CDN and the file is large (greater than 5MB), skip uploading
     if (cdnCheck.exists && fileSize > MULTIPART_THRESHOLD) {
       console.log(
-        `跳过上传 ${relativePath} - CDN已存在该资源 (${(
+        `Skipping upload of ${relativePath} - resource already exists (${(
           fileSize /
           1024 /
           1024
@@ -143,14 +143,14 @@ const upload = async (relativePath, retryCount = 0) => {
     }
 
     if (fileSize > MULTIPART_THRESHOLD) {
-      // 使用 AWS SDK v3 的 Upload 进行上传（不再强制分片）
+      // Use AWS SDK v3's Upload for uploading (no longer forcing multipart)
       const upload = new Upload({
         client,
         params: {
           Bucket: bucket,
           Key: objectKey,
           Body: fs.createReadStream(localPath),
-          ContentType: contentType, // 指定 Content-Type
+          ContentType: contentType, // specify Content-Type
         },
         leavePartsOnError: false,
       });
@@ -164,12 +164,12 @@ const upload = async (relativePath, retryCount = 0) => {
         ).toFixed(2)}MB, ${contentType})`
       );
     } else {
-      // 小文件直接 PutObject
+      // Small files direct PutObject
       const command = new PutObjectCommand({
         Bucket: bucket,
         Key: objectKey,
         Body: fs.createReadStream(localPath),
-        ContentType: contentType, // 指定 Content-Type
+        ContentType: contentType, // specify Content-Type
       });
       await client.send(command);
       console.log(
@@ -179,7 +179,7 @@ const upload = async (relativePath, retryCount = 0) => {
       );
     }
   } catch (e) {
-    // 重试逻辑
+    // Retry logic
     if (retryCount < MAX_RETRIES) {
       const waitTime = 2000 * Math.pow(2, retryCount); // 2s, 4s, 8s
       console.warn(

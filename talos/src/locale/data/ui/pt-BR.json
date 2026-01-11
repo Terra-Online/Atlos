@@ -6,7 +6,8 @@
     "darkmode": "Mudar para modo escuro",
     "lightmode": "Mudar para modo claro",
     "language": "Escolher idioma",
-    "help": "Entre em contato para obter ajuda"
+    "help": "Entre em contato para obter ajuda",
+    "settings": "Preferências"
   },
   "trigger": {
     "boundaryMode": "Modo de Limite",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "Opções de Filtro",
     "emptyTitle": "Nenhuma opção de filtro correspondente.",
-    "emptyDesc": "Por favor, entre em contato com o administrador."
+    "emptyDesc": "Se você confirmar que alguma informação de ponto está faltando ou incorreta, entre em contato com os administradores em nossa comunidade ou envie um <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Report location error'>Issue</a> em nosso repositório do GitHub."
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "suportado pelo observador 6"
+      "supportedBy": "suportado pelo Observator 6"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "Traduções completas para a interface e conteúdo do jogo.",
     "uiOnly": "Idiomas Apenas da Interface",
     "uiOnlyHint": "Apenas traduções da interface, o conteúdo do jogo será exibido em inglês.",
-    "fyi": "Se o seu idioma ainda não está disponível neste site, você pode entrar em contato com o administrador do site por e-mail em translate@talos.wiki, ou visitar o GitHub para participar do nosso projeto de tradução de código aberto. Você pode solicitar entradas de tradução para o seu idioma e ajudar a traduzir e localizar a seção WIKI de acordo com nossas diretrizes. Agradecemos sinceramente e esperamos suas contribuições.\nVocê também pode clicar para ver a lista de colaboradores de tradução.",
+    "fyi": "Se o seu idioma ainda não está disponível neste site, você pode entrar em contato com o administrador do site por e-mail em <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, ou visitar o GitHub para participar do nosso projeto de tradução de código aberto. Você pode solicitar entradas de tradução para o seu idioma e ajudar a traduzir e localizar a seção WIKI de acordo com nossas diretrizes. Agradecemos sinceramente e esperamos suas contribuições.\nVocê também pode clicar para ver a lista de colaboradores de tradução.",
     "names": {
       "en-US": "Inglês",
       "zh-CN": "Chinês Simplificado",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filtros e Dados de Marcadores",
     "warning": "<p><strong>Aviso:</strong> Se você excluir os dados salvos, perderá as credenciais de login automático, as preferências de UI e o progresso dos marcadores; e o carregamento do site pode demorar mais do que o normal na próxima vez.</p><p>Se confirmar, clique novamente no botão Excluir.</p>"
   },
+  "settings": {
+    "title": "Configurações",
+    "uiPrefs": {
+      "title": "Preferências UI",
+      "hint": "Selecione o estado da UI que deseja manter. Recomendamos <span class=\"keyword\">manter todas as opções</span> para uma experiência mais consistente.",
+      "sidebar": "Manter barra",
+      "filterOrder": "Ordem de filtros",
+      "triggers": "Estado dos gatilhos"
+    },
+    "mapPrefs": {
+      "title": "Preferências do mapa",
+      "hint": "Selecione armazenamento e otimização automática. Recomendamos <span class=\"keyword\">ativar todas as opções</span> para uma experiência mais consistente.",
+      "viewState": "Vista do mapa",
+      "markerProgress": "Marcadores & progresso",
+      "autoCluster": "Auto-cluster"
+    },
+    "theme": {
+      "title": "Tema",
+      "hint": "Escolha o tema. Em <span class=\"keyword\">AUTO</span>, segue o dispositivo.",
+      "light": "Claro",
+      "dark": "Escuro",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Bem-vindo ao <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Esta é sua primeira vez usando este mapa. Forneceremos um breve tour guiado para ajudá-lo a entender rapidamente os diversos recursos do mapa.</p><p>Você pode clicar no botão '<span class=\"keyword\">Pular</span>' a qualquer momento para encerrar o guia, ou reiniciá-lo no botão de ajuda na barra superior.",
     "sidebarToggle": "Clique para expandir a <span class=\"keyword\">barra lateral</span>.<br>A barra lateral inclui seus filtros de marcadores mais usados, bem como interruptores intimamente relacionados à exibição de marcadores.",
@@ -98,7 +123,8 @@
     "pointSelect": "Clique em um marcador para entrar no <span class=\"keyword\">status selecionado</span>. Você poderá visualizar as informações do marcador.",
     "pointMark": "Clique no marcador novamente para marcá-lo como concluído.",
     "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
-    "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído."
+    "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído.",
+    "settings": "Abra as <span class=\"keyword\">Preferências</span> para controlar qual armazenamento local o mapa usa para lembrar suas ações."
   },
   "common": {
     "close": "Fechar",
@@ -108,6 +134,8 @@
     "selected": "Selecionado",
     "confirm": "Confirmar",
     "enable": "Ativar",
-    "disable": "Desativar"
+    "disable": "Desativar",
+    "expand": "Expandir",
+    "collapse": "Recolher"
   }
 }

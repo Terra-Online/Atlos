@@ -2,7 +2,7 @@
 @use '../../styles/curves.scss' as *;
 @use '../../styles/size.scss' as *;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --search-bg: #{$grey-1};
     --search-txt: #{rgba($white-0, 0.9)};
     --search-shadow-out: #{rgba($black-0, 0.15)};

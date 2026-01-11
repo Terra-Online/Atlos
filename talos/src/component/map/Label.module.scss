@@ -28,6 +28,7 @@
     user-select: none;
     text-shadow: 1px 1px 1px var(--label-shadow-1), 0 0 1px var(--label-shadow-2), -.5px -.5px 2px var(--label-shadow-2);
     font-family: 'HMSans_EN','HMSans';
+    animation: fadeIn 0.3s ease-in-out;
 }
 .innerSub {
     font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
@@ -36,4 +37,22 @@
     font-size: 18px;
     font-weight: 700;
     width: 9.6rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }

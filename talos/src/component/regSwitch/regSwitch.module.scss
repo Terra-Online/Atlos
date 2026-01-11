@@ -42,10 +42,18 @@ $indicator-height: 0.75rem;
     transform: translateY(-50%);
     transition: transform 0.3s ease-in-out,
                 background-color 0.35s $moderato-curve;
+
+    &.layerswitch {
+        top: 51%;
+        transform: none;
+    }
 }
 @media screen and (max-width: $mobile-bp) {
     .regswitch {
         top: 45%;
+        &.layerswitch {
+            top: 56%
+        }
     }
 }
 .regLabel {
@@ -69,14 +77,16 @@ $indicator-height: 0.75rem;
         transform: translateY(8.5px);
         z-index: -1;
     }
-    &::after {
+    &::after, &.layerLabel::after {
         content: "RGN";
         font-size: 0.88rem;
         color: var(--regswitch-selected);
         z-index: 1;
         text-shadow: 0 0 2px rgba($black-0, 0.6);
     }
-    
+    &.layerLabel::after {
+        content: "LYR";
+    }
 }
 .indicator {
     position: absolute;
@@ -184,7 +194,7 @@ $indicator-height: 0.75rem;
         border-radius: 3px;
         padding: 5px;
         box-shadow: 0 0 5px rgba($black-0, 0.6);
-        max-height: 300px;
+        max-height: 400px;
         overflow-y: auto;
         backdrop-filter: blur(8px);
     }

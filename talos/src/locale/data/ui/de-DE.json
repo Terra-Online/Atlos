@@ -6,7 +6,8 @@
     "darkmode": "In den Dunkelmodus wechseln",
     "lightmode": "In den Hellmodus wechseln",
     "language": "Sprache auswählen",
-    "help": "Hilfe anfordern"
+    "help": "Hilfe anfordern",
+    "settings": "Einstellungen"
   },
   "trigger": {
     "boundaryMode": "Grenzmodus",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "Filter",
     "emptyTitle": "Kein passender Filter",
-    "emptyDesc": "Bitte kontaktieren Sie den Administrator."
+    "emptyDesc": "Wenn Sie bestätigen, dass Punktinformationen fehlen oder falsch sind, wenden Sie sich bitte an die Administratoren in unserer Community oder senden Sie ein <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Fehler bei Standort melden'>Issue</a> in unserem GitHub-Repository."
   },
   "detail": {
     "stat": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "Vollständige Übersetzungen für Benutzeroberfläche und Spielinhalte.",
     "uiOnly": "Nur Benutzeroberfläche",
     "uiOnlyHint": "Nur UI-Übersetzungen, Spielinhalte werden auf Englisch angezeigt.",
-    "fyi": "Wenn Ihre Sprache auf dieser Website noch nicht verfügbar ist, können Sie den Site-Administrator per E-Mail unter translate@talos.wiki kontaktieren oder GitHub besuchen, um an unserem Open-Source-Übersetzungsprojekt teilzunehmen. Sie können Übersetzungseinträge für Ihre Sprache anfordern und gemäß unseren Richtlinien bei der Übersetzung und Lokalisierung des WIKI-Abschnitts helfen. Wir schätzen Ihre Beiträge aufrichtig und freuen uns darauf.\nSie können auch auf die Liste der Übersetzungsbeiträge klicken.",
+    "fyi": "Wenn Ihre Sprache auf dieser Website noch nicht verfügbar ist, können Sie den Site-Administrator per E-Mail unter <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> kontaktieren oder GitHub besuchen, um an unserem Open-Source-Übersetzungsprojekt teilzunehmen. Sie können Übersetzungseinträge für Ihre Sprache anfordern und gemäß unseren Richtlinien bei der Übersetzung und Lokalisierung des WIKI-Abschnitts helfen. Wir schätzen Ihre Beiträge aufrichtig und freuen uns darauf.\nSie können auch auf die Liste der Übersetzungsbeiträge klicken.",
     "names": {
       "en-US": "Englisch",
       "zh-CN": "Chinesisch (Vereinfacht)",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Filter & Markerdaten",
     "warning": "<p><strong>Warnung:</strong> Wenn Sie gespeicherte Daten löschen, gehen Ihre automatischen Anmeldeinformationen, UI-Einstellungen und der Marker-Fortschritt verloren; und das Laden der Website kann beim nächsten Mal länger dauern als gewöhnlich.</p><p>Wenn Sie sicher sind, klicken Sie bitte erneut auf die Löschen-Schaltfläche.</p>"
   },
+"settings": {
+    "title": "Einstellungen",
+    "uiPrefs": {
+      "title": "UI-Einstellungen",
+      "hint": "Wählen Sie den UI-Status, den Sie beibehalten möchten. Wir empfehlen <span class=\"keyword\">alle Optionen beizubehalten</span> für ein konsistenteres Erlebnis.",
+      "sidebar": "Sidebar behalten",
+      "filterOrder": "Filterreihenfolge",
+      "triggers": "Trigger behalten"
+    },
+    "mapPrefs": {
+      "title": "Kartenoptionen",
+      "hint": "Wählen Sie die Kartenspeicherung und automatische Optimierung. Wir empfehlen <span class=\"keyword\">alle Optionen zu aktivieren</span> für ein konsistenteres Erlebnis.",
+      "viewState": "Kartenansicht",
+      "markerProgress": "Marker & Fortschritt",
+      "autoCluster": "Auto-Clustering"
+    },
+    "theme": {
+      "title": "Design",
+      "hint": "Wählen Sie Ihr Design. Bei <span class=\"keyword\">AUTO</span> richtet es sich nach den Geräteeinstellungen.",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "auto": "Auto"
+    }
+  },
   "guide": {
     "welcome": "Willkommen bei <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Dies ist Ihre erste Verwendung dieser Karte. Wir bieten Ihnen eine kurze Führung an, um Ihnen zu helfen, die verschiedenen Funktionen der Karte schnell zu verstehen.</p><p>Sie können jederzeit auf die Schaltfläche '<span class=\"keyword\">Überspringen</span>' klicken, um die Anleitung zu beenden, oder sie über die Hilfeschaltfläche in der oberen Leiste neu starten.",
     "sidebarToggle": "Klicken Sie, um die <span class=\"keyword\">Seitenleiste</span> zu erweitern.<br>Die Seitenleiste enthält Ihre am häufigsten verwendeten Markierungsfilter sowie Schalter, die eng mit der Markierungsanzeige verbunden sind.",
@@ -93,6 +118,7 @@
     "darkMode": "Schalten Sie den aktuellen <span class=\"keyword\">Umgebungslichtmodus</span> um.",
     "language": "<span class=\"keyword\">Oberflächensprache</span> wechseln.<br>Derzeit umfassen Sprachen mit <span class=\"keyword\">vollständiger Unterstützung für die Übersetzung von Spielinhalten</span> Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch und Koreanisch.<br>Sprachen mit <span class=\"keyword\">Unterstützung für die Oberflächenübersetzung</span> umfassen auch Französisch, Deutsch, Italienisch, Russisch, Spanisch, Indonesisch, Portugiesisch, Arabisch, Thailändisch und Vietnamesisch.",
     "help": "Starten Sie diesen <span class=\"keyword\">Leitfaden</span> neu.",
+    "settings": "Öffnen Sie <span class=\"keyword\">Einstellungen</span>, um zu steuern, welchen lokalen Speicher die Karte verwendet, um sich Ihre Aktionen zu merken.",
     "regionSwitch": "Klicken Sie, um zwischen <span class=\"keyword\">verschiedenen Sandbox-Karten</span> (Hauptregionen) im Spiel zu wechseln.",
     "subregionSwitch": "<span class=\"keyword\">Fahren Sie mit der Maus über das Hauptregionssymbol</span>, um verfügbare Unterregionen anzuzeigen; durch Klicken auf ein Unterregionssymbol springen Sie zu dieser Unterregionsansicht.<br>Ebenso können Sie auch eine Ebene für eine Region auswählen.",
     "pointSelect": "Klicken Sie auf eine Markierung, um in den <span class=\"keyword\">ausgewählten Status</span> zu gelangen. Sie können die Informationen der Markierung anzeigen.",
@@ -108,6 +134,8 @@
     "selected": "Ausgewählt",
     "confirm": "Bestätigen",
     "enable": "Aktivieren",
-    "disable": "Deaktivieren"
+    "disable": "Deaktivieren",
+    "expand": "Erweitern",
+    "collapse": "Einklappen"
   }
 }

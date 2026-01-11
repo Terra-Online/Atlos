@@ -6,17 +6,23 @@ $desktop-headbar-height: 5.5rem;
 $toggle-btn-size: 5.5rem;
 $transition-speed: 0.3s;
 
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --sidebar-header: #{$white-1};
     --sidebar-bg: #{rgba($white-0, 0.5)};
     --sidebar-footer: #{rgba($white-0, 0.3)};
     --sidebar-footer-txt: #{$black-1};
+
+    --sidebar-box-sel-border: #{$primary-accent-5};
+    --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
 }
 :root[data-theme='dark'] {
     --sidebar-header: #{$black-1};
     --sidebar-bg: #{rgba($black-0, 0.6)};
     --sidebar-footer: #{rgba($black-1, 0.8)};
     --sidebar-footer-txt: #{$light-1};
+
+    --sidebar-box-sel-border: #{$primary-accent-4};
+    --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
 }
 
 .sidebarContainer {
@@ -76,7 +82,6 @@ $transition-speed: 0.3s;
             display: flex;
             justify-content: center;
             > img {
-                width: $desktop-headbar-height;
                 height: $desktop-headbar-height;
                 padding: 0.25rem;
             }
@@ -163,7 +168,19 @@ $transition-speed: 0.3s;
         }
     }
 }
-
+.selectionBox {
+    position: absolute;
+    border: 1px solid var(--sidebar-box-sel-border);
+    background-color: var(--sidebar-box-sel-bg);
+    pointer-events: none;
+    backdrop-filter: contrast(1.1) brightness(1.05);
+    z-index: 10000;
+    opacity: 1;
+    transition: opacity 0.25s ease-out;
+    &.fadeOut {
+        opacity: 0;
+    }
+}
 html:not(:lang(zh-CN), :lang(zh-HK)) {
     .sidebar > .copyright {
         transform: translateY(1.5rem);

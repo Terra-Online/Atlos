@@ -6,7 +6,8 @@
     "darkmode": "Passa alla modalità scura",
     "lightmode": "Passa alla modalità chiara",
     "language": "Scegli la lingua",
-    "help": "Richiedi aiuto"
+    "help": "Richiedi aiuto",
+    "settings": "Impostazioni"
   },
   "trigger": {
     "boundaryMode": "Modalità Confine",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "Opzioni Filtro",
     "emptyTitle": "Nessuna opzione di filtro corrisponde.",
-    "emptyDesc": "Contatta l'amministratore."
+    "emptyDesc": "Se confermi che alcune informazioni sui punti mancano o sono errate, contatta gli amministratori nella nostra comunità o invia un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Segnala errore di posizione'>Issue</a> nel nostro repository GitHub."
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "supportato da observator 6"
+      "supportedBy": "supportato da Observator 6"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "Traduzioni complete sia per l'interfaccia che per i contenuti di gioco.",
     "uiOnly": "Lingue Solo Interfaccia",
     "uiOnlyHint": "Solo traduzioni dell'interfaccia, i contenuti di gioco saranno visualizzati in inglese.",
-    "fyi": "Se la tua lingua non è ancora disponibile su questo sito web, puoi contattare l'amministratore del sito via email a translate@talos.wiki, o visitare GitHub per partecipare al nostro progetto di traduzione open-source. Puoi richiedere voci di traduzione per la tua lingua e aiutare a tradurre e localizzare la sezione WIKI secondo le nostre linee guida. Apprezziamo sinceramente e aspettiamo i tuoi contributi.\nPuoi anche cliccare per visualizzare l'elenco dei contributori alla traduzione.",
+    "fyi": "Se la tua lingua non è ancora disponibile su questo sito web, puoi contattare l'amministratore del sito via email a <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, o visitare GitHub per partecipare al nostro progetto di traduzione open-source. Puoi richiedere voci di traduzione per la tua lingua e aiutare a tradurre e localizzare la sezione WIKI secondo le nostre linee guida. Apprezziamo sinceramente e aspettiamo i tuoi contributi.\nPuoi anche cliccare per visualizzare l'elenco dei contributori alla traduzione.",
     "names": {
       "en-US": "Inglese",
       "zh-CN": "Cinese Semplificato",
@@ -70,9 +71,33 @@
   "tos": {
     "title": "Termini e Archiviazione",
     "calculating": "Calcolo utilizzo memoria...",
-    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcatori; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
+    "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcadores; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
     "filtersAndMarkers": "Filtri e Dati dei Marcatori",
     "warning": "<p><strong>Avviso:</strong> Se elimini i dati salvati, perderai le credenziali di accesso automatico, le preferenze dell'UI e i progressi dei segnalibri; e il caricamento del sito potrebbe richiedere più tempo del solito la prossima volta.</p><p>Se confermi, fai clic di nuovo sul pulsante Elimina.</p>"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "uiPrefs": {
+      "title": "Preferenze UI",
+      "hint": "Seleziona lo stato UI da mantenere. Consigliamo <span class=\"keyword\">di mantenere tutte le opzioni</span> per un'esperienza più coerente.",
+      "sidebar": "Mantieni sidebar",
+      "filterOrder": "Ordine filtri",
+      "triggers": "Stato trigger"
+    },
+    "mapPrefs": {
+      "title": "Preferenze mappa",
+      "hint": "Seleziona archiviazione e ottimizzazione automatica. Consigliamo <span class=\"keyword\">di abilitare tutte le opzioni</span> per un'esperienza più coerente.",
+      "viewState": "Vista mappa",
+      "markerProgress": "Marker & progresso",
+      "autoCluster": "Auto-cluster"
+    },
+    "theme": {
+      "title": "Tema",
+      "hint": "Scegli il tema. Con <span class=\"keyword\">AUTO</span>, segue le preferenze del dispositivo.",
+      "light": "Chiaro",
+      "dark": "Scuro",
+      "auto": "Auto"
+    }
   },
   "guide": {
     "welcome": "Benvenuto su <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Questa è la tua prima volta usando questa mappa. Ti forniremo un breve tour guidato per aiutarti a comprendere rapidamente le varie funzionalità della mappa.</p><p>Puoi fare clic sul pulsante '<span class=\"keyword\">Salta</span>' in qualsiasi momento per terminare la guida, o riavviarla dal pulsante di aiuto nella barra superiore.",
@@ -93,6 +118,7 @@
     "darkMode": "Attiva/disattiva la <span class=\"keyword\">modalità luce ambientale</span> corrente.",
     "language": "Cambia la <span class=\"keyword\">lingua dell'interfaccia</span>.<br>Attualmente, le lingue con <span class=\"keyword\">supporto completo per la traduzione dei contenuti del gioco</span> includono inglese, cinese semplificato, cinese tradizionale, giapponese e coreano.<br>Le lingue con <span class=\"keyword\">supporto per la traduzione dell'interfaccia</span> includono anche francese, tedesco, italiano, russo, spagnolo, indonesiano, portoghese, arabo, tailandese e vietnamita.",
     "help": "Riavvia questa <span class=\"keyword\">guida</span>.",
+    "settings": "Apri <span class=\"keyword\">Impostazioni</span> per controllare l'archivio locale utilizzato dalla mappa per ricordare le tue azioni.",
     "regionSwitch": "Clicca per passare tra <span class=\"keyword\">diverse mappe sandbox</span> (regioni principali) nel gioco.",
     "subregionSwitch": "<span class=\"keyword\">Passa il mouse sull'icona della regione principale</span> per mostrare le sottoregioni disponibili; cliccando su un'icona della sottoregione passerai a quella vista della sottoregione.<br>Allo stesso modo, puoi anche selezionare un livello per una regione.",
     "pointSelect": "Clicca su un marcatore per entrare nello <span class=\"keyword\">stato selezionato</span>. Potrai visualizzare le informazioni del marcatore.",
@@ -108,6 +134,12 @@
     "selected": "Selezionato",
     "confirm": "Conferma",
     "enable": "Abilita",
-    "disable": "Disabilita"
+    "disable": "Disabilita",
+    "expand": "Espandi",
+    "collapse": "Comprimi"
+  },
+  "meta": {
+    "title": "Mappa Open Endfield",
+    "description": "Open Endfield Map è una mappa online open source per Arknights: Endfield, che fornisce mappe interattive, raccolta di oggetti e strumenti di pianificazione strategica."
   }
 }

@@ -6,7 +6,8 @@
     "darkmode": "ダークモードに切り替え",
     "lightmode": "ライトモードに切り替え",
     "language": "言語を選択",
-    "help": "ヘルプ"
+    "help": "ヘルプ",
+    "settings": "設定"
   },
   "trigger": {
     "boundaryMode": "バウンダリー モード",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "フィルター項目",
     "emptyTitle": "条件に一致するフィルターはありません。",
-    "emptyDesc": "管理者に連絡してください。"
+    "emptyDesc": "位置情報に欠落や誤りがあることを確認した場合は、プロジェクトのコミュニティで管理者に連絡するか、本プロジェクトの GitHub リポジトリに <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='位置情報の誤りを報告'>Issue</a> を投稿してください。"
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "observator 6 によって提供"
+      "supportedBy": "Observator 6 によって提供"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "UIとゲーム内コンテンツの両方に完全な翻訳を提供。",
     "uiOnly": "UI対応のみの言語",
     "uiOnlyHint": "UI翻訳のみ、ゲーム内コンテンツは英語で表示されます。",
-    "fyi": "このウェブサイトでお使いの言語がまだ利用できない場合は、translate@talos.wiki までメールでサイト管理者にお問い合わせいただくか、GitHub にアクセスしてオープンソース翻訳プロジェクトにご参加ください。お使いの言語の翻訳項目をリクエストし、ガイドラインに従って WIKI セクションの翻訳とローカライズをサポートしていただけます。皆様のご貢献を心よりお待ちしております。\n翻訳貢献者リストもご覧いただけます。",
+    "fyi": "このウェブサイトでお使いの言語がまだ利用できない場合は、<a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> までメールでサイト管理者にお問い合わせいただくか、GitHub にアクセスしてオープンソース翻訳プロジェクトにご参加ください。お使いの言語の翻訳項目をリクエストし、ガイドラインに従って WIKI セクションの翻訳とローカライズをサポートしていただけます。皆様のご貢献を心よりお待ちしております。\n翻訳貢献者リストもご覧いただけます。",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡体字中国語",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "フィルターとマーカーデータ",
     "warning": "<p><strong>注意:</strong> 保存されたデータを削除すると、自動ログイン情報、UI 設定、マーカー進捗が失われます。次回のアクセス時、ウェブサイトの読み込みに通常より時間がかかる場合があります。</p><p>確認済みの場合は、もう一度削除ボタンをクリックしてください。</p>"
   },
+  "settings": {
+    "title": "設定",
+    "uiPrefs": {
+      "title": "UIの設定",
+      "hint": "有効にしたいUIの保存設定を選択してください。<br>より一貫した操作体験のため、<span class=\"keyword\">すべてのオプションを有効にすることをおすすめします</span>。",
+      "sidebar": "サイドバー状態を保存",
+      "filterOrder": "フィルター順を保存",
+      "triggers": "下部バー状態を保存"
+    },
+    "mapPrefs": {
+      "title": "マップの設定",
+      "hint": "有効にしたいマップ情報の保存および自動最適化設定を選択してください。<br>より一貫した操作体験のため、<span class=\"keyword\">すべてのオプションを有効にすることをおすすめします</span>。",
+      "viewState": "現在の表示を保存",
+      "markerProgress": "ポイントとフィルターを保存",
+      "autoCluster": "ポイントを自動クラスタリング"
+    },
+    "theme": {
+      "title": "テーマ",
+      "hint": "お好みのテーマを選択してください。自動モードでは、テーマはデバイスの設定に応じて切り替わります。",
+      "light": "ライト",
+      "dark": "ダーク",
+      "auto": "自動"
+    }
+  },
   "guide": {
     "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>へようこそ。<br>初めてのご利用ありがとうございます。マップの各機能を素早く理解していただけるよう、簡単なガイドツアーをご用意しました。</p><p>ガイドはいつでも「<span class=\"keyword\">スキップ</span>」ボタンで終了できます。また、トップバーのヘルプボタンから再度起動することもできます。",
     "sidebarToggle": "クリックして<span class=\"keyword\">サイドバー</span>を展開します。<br>サイドバーには、よく使うピンフィルターや、ピン表示に関連するスイッチが含まれています。",
@@ -93,6 +118,7 @@
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
     "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br>現在、<span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語です。<br><span class=\"keyword\">インターフェース翻訳をサポート</span>している言語には、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、アラビア語、タイ語、ベトナム語も含まれます。",
     "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
+    "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",
     "subregionSwitch": "マウスを<span class=\"keyword\">メインエリアアイコンにホバー</span>すると、利用可能なサブエリアが表示されます。サブエリアアイコンをクリックすると、そのサブエリアビューにジャンプします。<br>同様に、特定のエリアのレイヤーを選択することもできます。",
     "pointSelect": "ピンをクリックすると、ピンは<span class=\"keyword\">選択状態</span>になります。ピンの情報を確認できます。",
@@ -108,6 +134,8 @@
     "selected": "選択中",
     "confirm": "確認",
     "enable": "有効",
-    "disable": "無効"
+    "disable": "無効",
+    "expand": "展開",
+    "collapse": "折りたたむ"
   }
 }

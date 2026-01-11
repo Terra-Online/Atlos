@@ -6,7 +6,8 @@
     "darkmode": "Chuyển sang chế độ tối",
     "lightmode": "Chuyển sang chế độ sáng",
     "language": "Chọn ngôn ngữ",
-    "help": "Nhận trợ giúp"
+    "help": "Nhận trợ giúp",
+    "settings": "Cài đặt"
   },
   "trigger": {
     "boundaryMode": "Hiển thị ranh giới khu vực",
@@ -18,8 +19,8 @@
   },
   "markFilter": {
     "title": "Bộ lọc",
-    "emptyTitle": "Không có bộ lọc phù hợp",
-    "emptyDesc": "Vui lòng liên hệ quản trị viên"
+    "emptyTitle": "Không có bộ lọc phù hợp.",
+    "emptyDesc": "Nếu bạn xác nhận rằng thông tin điểm vị trí bị thiếu hoặc không chính xác, vui lòng liên hệ với quản trị viên trong cộng đồng của dự án; hoặc gửi <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Báo cáo lỗi vị trí'>Issue</a> tại GitHub Repo của dự án."
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "được hỗ trợ bởi observator 6"
+      "supportedBy": "được hỗ trợ bởi Observator 6"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "Cung cấp bản dịch đầy đủ cho UI và nội dung trong game.",
     "uiOnly": "Chỉ hỗ trợ UI",
     "uiOnlyHint": "Chỉ dịch UI, nội dung trong game sẽ hiển thị bằng tiếng Anh.",
-    "fyi": "Nếu ngôn ngữ của bạn chưa có trên website, bạn có thể liên hệ quản trị viên qua email translate@talos.wiki, hoặc truy cập GitHub để tham gia dự án dịch mã nguồn mở. Bạn có thể đề xuất mục dịch cho ngôn ngữ của mình và hỗ trợ dịch/bản địa hóa phần WIKI theo hướng dẫn của chúng tôi. Chúng tôi trân trọng và mong đợi đóng góp của bạn.\nBạn cũng có thể bấm để xem danh sách người đóng góp dịch.",
+    "fyi": "Nếu ngôn ngữ của bạn chưa có trên website, bạn có thể liên hệ quản trị viên qua email <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, hoặc truy cập GitHub để tham gia dự án dịch mã nguồn mở. Bạn có thể đề xuất mục dịch cho ngôn ngữ của mình và hỗ trợ dịch/bản địa hóa phần WIKI theo hướng dẫn của chúng tôi. Chúng tôi trân trọng và mong đợi đóng góp của bạn.\nBạn cũng có thể bấm để xem danh sách người đóng góp dịch.",
     "names": {
       "en-US": "Anh",
       "zh-CN": "Trung Giản thể",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "Bộ lọc & Dữ liệu điểm",
     "warning": "<p><strong>Chú ý:</strong> Nếu bạn xóa dữ liệu lưu trữ, thông tin đăng nhập tự động, tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn sẽ bị mất; lần truy cập tiếp theo có thể mất nhiều thời gian hơn bình thường để tải trang.</p><p>Nếu bạn đã chắc chắn, vui lòng nhấn lại nút «Xóa».</p>"
   },
+  "settings": {
+    "title": "Tùy chọn",
+    "uiPrefs": {
+      "title": "Giao diện",
+      "hint": "Chọn các tùy chọn lưu giao diện bạn muốn bật.<br>Chúng tôi khuyến nghị <span class=\"keyword\">bật tất cả tùy chọn để có trải nghiệm nhất quán hơn</span>.",
+      "sidebar": "Lưu trạng thái sidebar",
+      "filterOrder": "Lưu thứ tự lọc",
+      "triggers": "Lưu trạng thái thanh dưới"
+    },
+    "mapPrefs": {
+      "title": "Bản đồ & điểm",
+      "hint": "Chọn lưu trữ thông tin bản đồ và tối ưu tự động.<br>Chúng tôi khuyến nghị <span class=\"keyword\">bật tất cả tùy chọn để có trải nghiệm nhất quán hơn</span>.",
+      "viewState": "Lưu chế độ xem",
+      "markerProgress": "Lưu điểm & bộ lọc",
+      "autoCluster": "Tự động gom điểm"
+    },
+    "theme": {
+      "title": "Chủ đề",
+      "hint": "Chọn chủ đề bạn yêu thích. Ở chế độ tự động, chủ đề sẽ theo cài đặt thiết bị.",
+      "light": "Sáng",
+      "dark": "Tối",
+      "auto": "Theo hệ thống"
+    }
+  },
   "guide": {
     "welcome": "Chào mừng bạn đến với <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Đây là lần đầu tiên bạn sử dụng bản đồ này. Chúng tôi sẽ cung cấp một chặng đường hướng dẫn ngắn gọn để giúp bạn hiểu nhanh các tính năng khác nhau của bản đồ.</p><p>Bạn có thể nhấp vào nút '<span class=\"keyword\">Bỏ qua</span>' bất kỳ lúc nào để kết thúc hướng dẫn, hoặc khởi động lại từ nút trợ giúp trên thanh trên cùng.",
     "sidebarToggle": "Nhấp để mở rộng <span class=\"keyword\">thanh bên</span>.<br>Thanh bên bao gồm các bộ lọc điểm bạn thường dùng nhất, cũng như các công tắc liên quan chặt chẽ đến hiển thị điểm.",
@@ -98,7 +123,8 @@
     "pointSelect": "Nhấp vào một điểm để vào <span class=\"keyword\">trạng thái đã chọn</span>. Bạn sẽ có thể xem thông tin của điểm.",
     "pointMark": "Nhấp vào điểm một lần nữa để đánh dấu là hoàn thành.",
     "detail": "Bạn có thể xem thông tin cụ thể về điểm đã chọn, bao gồm số lượng điểm loại này trong <span class=\"keyword\">tất cả các khu vực</span>, <span class=\"keyword\">khu vực chính</span> hiện tại và <span class=\"keyword\">khu vực con</span> hiện tại.",
-    "pointIcon": "Nhấp vào biểu tượng điểm cũng có thể đánh dấu nó là hoàn thành."
+    "pointIcon": "Nhấp vào biểu tượng điểm cũng có thể đánh dấu nó là hoàn thành.",
+    "settings": "Mở <span class=\"keyword\">Cài đặt</span> để kiểm soát việc lưu trữ cục bộ mà bản đồ sử dụng để ghi nhớ các hành động của bạn."
   },
   "common": {
     "close": "Đóng",
@@ -108,6 +134,8 @@
     "selected": "Đã chọn",
     "confirm": "Xác nhận",
     "enable": "Bật",
-    "disable": "Tắt"
+    "disable": "Tắt",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn"
   }
 }

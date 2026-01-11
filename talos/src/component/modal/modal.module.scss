@@ -51,8 +51,8 @@
     transform: scale(.92) translateY(4px);
     opacity: 0;
     filter: blur(.25rem);
-    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve;
-    will-change: opacity, transform, filter;
+    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve, background-color .35s $adagio-curve, color .35s $adagio-curve;
+    will-change: opacity, transform, filter, background-color, color;
 
     min-width: 20rem;
     max-width: 92dvw; // default size = s
@@ -66,14 +66,19 @@
     }
     &[data-size="l"] {
         width: 36em;
-        max-width: 96dvw
+        max-width: 96dvw;
+        height: 50dvh;
+        > .modalContent {
+            max-height: none;
+            flex: 1;
+        }
     }
     &[data-state="open"] {
         opacity: 1;
         transform: scale(1) translateY(0);
         filter: blur(0);
-        transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve;
-        will-change: opacity, transform, filter;
+        transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve, background-color .35s $adagio-curve, color .35s $adagio-curve;
+        will-change: opacity, transform, filter, background-color, color;
     }
     &[data-size="full"] {
         width: 65%;
@@ -89,13 +94,13 @@
         transform: translateY(100%);
         opacity: 0;
         filter: blur(.5rem);
-        transition: transform 0.3s $standard-curve, filter 0.25s $standard-curve, opacity 0.25s $standard-curve;
+        transition: transform 0.3s $standard-curve, filter 0.25s $standard-curve, opacity 0.25s $standard-curve, background-color .35s $adagio-curve, color .35s $adagio-curve;
         &[data-state="open"] {
             transform: translateY(0);
             filter: blur(0);
             opacity: 1;
-            transition: transform 0.3s $standard-curve, filter 0.25s $standard-curve, opacity 0.25s $standard-curve;
-            will-change: opacity, transform, filter;
+            transition: transform 0.3s $standard-curve, filter 0.25s $standard-curve, opacity 0.25s $standard-curve, background-color .35s $adagio-curve, color .35s $adagio-curve;
+            will-change: opacity, transform, filter, background-color, color;
         }
     }
 
@@ -112,6 +117,7 @@
         position: sticky;
         user-select: none;
         font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular','Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        transition: background-color .35s $adagio-curve;
     }
 }
 .modalIcon {
@@ -123,7 +129,7 @@
     background-repeat: no-repeat;
     filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25));
     svg {
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, fill .35s $adagio-curve;
         fill: var(--modal-icon-fill);
             width: 1.5rem;
             height: 1.5rem;
@@ -140,6 +146,7 @@
     line-height: 1.5;
     text-transform: capitalize;
     text-shadow: 1px 2px 1px rgba($black-0, 0.25);
+    transition: color .35s $adagio-curve;
 }
 
 .modalContent {
@@ -147,6 +154,7 @@
     padding: 0.6rem;
     max-height: 45vh;
     background-color: var(--modal-bg);
+    transition: background-color .35s $adagio-curve;
     overflow: scroll;
     &::-webkit-scrollbar {
             width: 0;

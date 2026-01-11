@@ -90,10 +90,15 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
         if (!map) return;
         const initialZoom = map.getZoom();
         setZoomLevel(initialZoom);
-        setZoomBounds({
-            min: map.getMinZoom(),
-            max: map.getMaxZoom(),
-        });
+        
+        const updateBounds = () => {
+            setZoomBounds({
+                min: map.getMinZoom(),
+                max: map.getMaxZoom(),
+            });
+        }
+        updateBounds();
+
         targetZoomRef.current = initialZoom;
 
         const initialScale = calculateScale(
@@ -124,11 +129,22 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
             targetZoomRef.current = finalZoom;
             isZoomingRef.current = false;
         };
+
+        const handleRegionSwitched = () => {
+            updateBounds();
+            // Force update UI with new bounds
+            const z = map.getZoom();
+            setZoomLevel(z);
+            // bounds state update will trigger re-render of scaleRatio -> calls updateScalerUI via effect below
+        };
+
         // Listen & Release
         map.on('zoomstart', handleZoomStart);
         map.on('zoomanim', handleZoomAnim);
         map.on('zoomend', handleZoomEnd);
         map.on('zoom', handleZoomEnd);
+        map.on('talos:regionSwitched', handleRegionSwitched);
+
         return () => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
@@ -137,6 +153,7 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
             map.off('zoomanim', handleZoomAnim);
             map.off('zoomend', handleZoomEnd);
             map.off('zoom', handleZoomEnd);
+            map.off('talos:regionSwitched', handleRegionSwitched);
         };
     }, [map, updateScalerUI]);
     useEffect(() => {

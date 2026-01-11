@@ -1,8 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-:root,
-:root[data-theme='light'] {
+:root, :root[data-theme='light'] {
     --headbar-icon-fill: #{$white-1};
     --headbar-icon-active-fill: #{$primary-accent-4};
     --headbar-bg: #{rgba($white-0, 0.1)};

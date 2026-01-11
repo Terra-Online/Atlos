@@ -30,7 +30,9 @@
             "Repair Logic": {
                 "noFrame": true
             },
-            "Gather": {},
+            "Gather": {
+                "noFrame": true
+            },
             "Athletic Race": {
                 "noFrame": true
             },

@@ -94,7 +94,8 @@
         "category": {
             "main": "poi",
             "sub": "collection"
-        }
+        },
+        "noFrame": true
     },
     "athletic_race": {
         "key": "athletic_race",

@@ -6,10 +6,17 @@ import { getTileResourceUrl } from '@/utils/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/utils/boundary';
+import type { LayerType } from '@/store/layer';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
 }
+
+// Helper to convert layer type to tile suffix
+const getLayerTileSuffix = (layer: LayerType): string => {
+    if (layer === 'M') return '';
+    return `_${layer.toLowerCase()}`;
+};
 
 export class MapCore {
     markerLayer!: MarkerLayer;
@@ -18,6 +25,9 @@ export class MapCore {
     currentRegionId!: string;
     private boundaryLayer?: L.Rectangle;
     private boundaryManager!: SubregionBoundaryManager;
+    private mainTileLayer?: L.TileLayer;
+    private layerTileLayer?: L.TileLayer;
+    private currentLayer: LayerType = 'M';
 
     private transforming = false;
 
@@ -79,7 +89,8 @@ export class MapCore {
 
         // Keep Leaflet's zoom constraints in sync with region config.
         // Otherwise users can zoom beyond available tiles (blank map).
-        const maxZoom = config.maxZoom;
+        const maxNativeZoom = config.maxZoom;
+        const maxZoom = maxNativeZoom + 1;
         this.map.setMaxZoom(maxZoom);
 
         const view = useViewState.getState().getViewState(regionId);
@@ -145,7 +156,14 @@ export class MapCore {
             noWrap: true,
             bounds: mapBounds,
             pane: 'tilePane',
+            maxNativeZoom: config.maxZoom,
+            maxZoom: maxZoom,
         }).addTo(this.map);
+
+        // Store main tile layer reference
+        this.mainTileLayer = tileLayer;
+        this.layerTileLayer = undefined;
+        this.currentLayer = 'M';
 
         if (this.boundaryLayer) {
             this.map.removeLayer(this.boundaryLayer);
@@ -209,5 +227,70 @@ export class MapCore {
 
     disableMarkerClustering() {
         this.markerLayer.disableClustering();
+    }
+
+    async switchLayer(layer: LayerType): Promise<void> {
+        if (this.currentLayer === layer) return;
+
+        const config = REGION_DICT[this.currentRegionId];
+        if (!config) return;
+
+        // Remove existing layer tile layer if any
+        if (this.layerTileLayer) {
+            this.map.removeLayer(this.layerTileLayer);
+            this.layerTileLayer = undefined;
+        }
+
+        // Update main tile layer opacity
+        if (this.mainTileLayer) {
+            if (layer === 'M') {
+                // Main layer: restore full opacity
+                this.mainTileLayer.setOpacity(1);
+            } else {
+                // Other layer: dim the main layer
+                this.mainTileLayer.setOpacity(0.5);
+
+                // Add layer tile layer
+                const suffix = getLayerTileSuffix(layer);
+                const southWest = this.map.unproject(
+                    [0, config.dimensions[1]],
+                    config.maxZoom,
+                );
+                const northEast = this.map.unproject(
+                    [config.dimensions[0], 0],
+                    config.maxZoom,
+                );
+                const mapBounds = L.latLngBounds(southWest, northEast);
+                const maxZoom = config.maxZoom + 1;
+
+                this.layerTileLayer = L.tileLayer(
+                    getTileResourceUrl(`/clips/${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`),
+                    {
+                        tileSize: config.tileSize,
+                        noWrap: true,
+                        bounds: mapBounds,
+                        pane: 'tilePane',
+                        maxNativeZoom: config.maxZoom,
+                        maxZoom: maxZoom,
+                    }
+                ).addTo(this.map);
+
+                // Wait for layer tiles to load
+                await new Promise<void>((resolve) => {
+                    let resolved = false;
+                    const done = () => {
+                        if (resolved) return;
+                        resolved = true;
+                        this.layerTileLayer?.off('load', done);
+                        resolve();
+                    };
+                    this.layerTileLayer?.once('load', done);
+                    void Promise.resolve().then(done);
+                });
+            }
+        }
+
+        this.currentLayer = layer;
+        this.map.fire('talos:layerSwitched', { layer });
     }
 }

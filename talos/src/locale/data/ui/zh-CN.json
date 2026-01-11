@@ -6,7 +6,8 @@
     "darkmode": "切换到深色模式",
     "lightmode": "切换到浅色模式",
     "language": "选择语言",
-    "help": "获取帮助"
+    "help": "获取帮助",
+    "settings": "偏好设置"
   },
   "trigger": {
     "boundaryMode": "地区边界显示",
@@ -44,7 +45,7 @@
     "fullSupportHint": "网站界面及游戏内容均已提供完整翻译。",
     "uiOnly": "仅支持界面翻译的语言",
     "uiOnlyHint": "仅提供网站界面文字翻译，游戏内的用语及术语将以英文显示。",
-    "fyi": "如本网站暂未提供您所使用的语言，您可通过邮箱 translate@talos.wiki 联系本站管理员；或前往 GitHub 参与我们的开源翻译项目，为您的语言申请翻译条目，并依照我们的指引协助网站 WIKI 部分的翻译及本地化。我们衷心感谢并期待您的贡献。您亦可点击查看翻译贡献名单。",
+    "fyi": "如本网站暂未提供您所使用的语言，您可通过邮箱 <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> 联系本站管理员；或前往 GitHub 参与我们的开源翻译项目，为您的语言申请翻译条目，并依照我们的指引协助网站 WIKI 部分的翻译及本地化。我们衷心感谢并期待您的贡献。您亦可点击查看翻译贡献名单。",
     "names": {
       "en-US": "英语",
       "zh-CN": "简体中文",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "筛选器与点位数据",
     "warning": "<p><strong>注意：</strong>如果您清除储存数据，对应的自动登录信息、UI偏好设置、点位进度将会丢失；并且下次加载网站可能要花费比平常更多的时间。</p><p>如果确认，请再次点击删除按钮。</p>"
   },
+  "settings": {
+    "title": "偏好设置",
+    "uiPrefs": {
+      "title": "用户界面",
+      "hint": "选择您希望启用的界面偏好储存。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
+      "sidebar": "保存侧边栏状态",
+      "filterOrder": "保存筛选器排序",
+      "triggers": "保存底栏状态"
+    },
+    "mapPrefs": {
+      "title": "地图与点位",
+      "hint": "选择您希望启用的地图信息储存以及自动优化设置。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
+      "viewState": "保存当前视图",
+      "markerProgress": "保存点位与筛选器",
+      "autoCluster": "点位自动聚合"
+    },
+    "theme": {
+      "title": "主题",
+      "hint": "选择您偏爱的的主题。自动模式下，主题将根据设备偏好设置切换。",
+      "light": "浅色模式",
+      "dark": "深色模式",
+      "auto": "跟随系统"
+    }
+  },
   "guide": {
     "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
@@ -93,6 +118,7 @@
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
     "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语以及韩语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，阿拉伯语，泰语以及越南语。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
+    "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱亭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",
@@ -108,6 +134,12 @@
     "selected": "选中项",
     "confirm": "确认",
     "enable": "启用",
-    "disable": "禁用"
+    "disable": "禁用",
+    "expand": "展开",
+    "collapse": "收起"
+  },
+  "meta": {
+    "title": "终末地地图集",
+    "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   }
 }

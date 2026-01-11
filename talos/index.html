@@ -1,44 +1,46 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Basic SEO -->
     <meta
       name="description"
-      content="Open Endfield Map is an open-source online map for Arknights: Endfield."
+      content="<%= description %>"
     />
     <meta
       name="keywords"
-      content="Arknights: Endfield, Endfield, endfield, Arknights, Endfield Map, Atlos, online map, Hypergryph"
+      content="<%= keywords %>"
     />
     <meta name="author" content="cirisus" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Open Endfield Map" />
+    <meta property="og:title" content="<%= title %>" />
     <meta
       property="og:description"
-      content="Open Endfield Map is an open-source online map for Arknights: Endfield."
+      content="<%= description %>"
     />
-    <meta property="og:url" content="https://opendfieldmap.cn" />
+    <meta property="og:url" content="<%= ogUrl %>" />
+    <meta property="og:image" content="<%= ogUrl %>/og_preview.jpg" />
+    <meta name="twitter:image" content="<%= ogUrl %>/og_preview.jpg" />
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Open Endfield Map" />
+    <meta name="twitter:title" content="<%= title %>" />
     <meta
       name="twitter:description"
-      content="Open Endfield Map is an open-source online map for Arknights: Endfield."
+      content="<%= description %>"
     />
-    <link rel="canonical" href="https://opendfieldmap.cn/" />
+    <link rel="canonical" href="<%= ogUrl %>/" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "Open Endfield Map",
-        "url": "https://opendfieldmap.cn/",
-        "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players.",
-        "keywords": "Arknights: Endfield, Endfield, endfield, Arknights, Endfield Map, Atlos, online map, Hypergryph"
+        "url": "<%= ogUrl %>/",
+        "description": "<%= description %>",
+        "keywords": "<%= keywords %>"
       }
     </script>
     <!-- Font preconnects for faster handshake -->
@@ -56,7 +58,7 @@
       href="https://cdn.jsdelivr.net/npm/gotham-fonts@1.0/css/gotham-rounded.min.css"
     />
     <script async src="https://c.webfontfree.com/c.js?f=GothamMedium"></script>-->
-    <title>Open Endfield Map</title>
+    <title><%= title %></title>
   </head>
   <body>
     <div id="root"></div>

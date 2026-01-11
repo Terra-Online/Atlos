@@ -225,6 +225,21 @@ export class MarkerLayer {
     }
 
     /**
+     * 获取当前可见的marker数量（应用filter后的）
+     */
+    getVisibleMarkerCount(): number {
+        const clusterEnabled = this.clusterLayer.isEnabled();
+        
+        // 统计当前激活的filter对应的marker数量
+        const visibleMarkerIds = (clusterEnabled
+            ? this.activeFilterKeys.filter((key) => !this.clusterLayer.isTypeManaged(key))
+            : this.activeFilterKeys
+        ).flatMap((key) => this.markerTypeMap[key] || []);
+        
+        return visibleMarkerIds.length;
+    }
+
+    /**
      * 启用聚合模式
      */
     enableClustering() {

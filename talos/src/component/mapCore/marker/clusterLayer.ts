@@ -4,7 +4,20 @@ import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import styles from './marker.module.scss';
 
-const CLUSTER_MAIN_WHITELIST = new Set(['enemy', 'resource']); // manually maintained for now, may expand as a custom list determined by user settings
+// NOTE: whitelist is based on 2nd-level category (`category.sub`).
+// Currently includes ALL known sub categories (see src/data/marker/type.json),
+// so behavior is effectively "cluster everything in filter".
+// Keep this as an explicit allow-list so it's easy to restrict later.
+const CLUSTER_SUBCATEGORY_WHITELIST = new Set<string>([
+    'boss',
+    'collection',
+    'combat',
+    'facility',
+    'mob',
+    'natural',
+    'npc',
+    'valuable'
+]);
 
 interface ClusterLayerDeps {
     map: L.Map;
@@ -27,7 +40,7 @@ export class ClusterLayer {
     constructor(private readonly deps: ClusterLayerDeps) {}
 
     registerType(type: IMarkerType) {
-        if (!CLUSTER_MAIN_WHITELIST.has(type.category.main)) {
+        if (!CLUSTER_SUBCATEGORY_WHITELIST.has(type.category.sub)) {
             return;
         }
         if (this.clusterGroupsByType[type.key]) {

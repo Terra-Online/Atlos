@@ -159,6 +159,9 @@
             margin: 8px 0;
             font-family: 'Roboto Slab', serif;
             font-size: 0.85rem;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            unicode-bidi: plaintext;
             &:first-child {
                 margin-top: 0;
             }

@@ -12,6 +12,8 @@ interface IMarkerStore {
     filter: string[];
     points: string[];
     switchFilter: (typeKey: string) => void;
+    batchToggleFilter: (typeKeys: string[]) => void;
+    setFilter: (filter: string[]) => void;
 
     searchString: string;
     setSearchString: (string) => void;
@@ -39,6 +41,22 @@ export const useMarkerStore = create<IMarkerStore>()(
 
                     return { filter: newFilter };
                 });
+            },
+            batchToggleFilter: (typeKeys: string[]) => {
+                set((state) => {
+                    let newFilter = [...state.filter];
+                    typeKeys.forEach(key => {
+                        if (newFilter.includes(key)) {
+                            newFilter = newFilter.filter(k => k !== key);
+                        } else {
+                            newFilter.push(key);
+                        }
+                    });
+                    return { filter: newFilter };
+                });
+            },
+            setFilter: (newFilter: string[]) => {
+                set({ filter: newFilter });
             },
             searchString: '',
             setSearchString: (value: string) => {
@@ -79,6 +97,10 @@ export const usePoints = () => useMarkerStore((state) => state.points);
 export const useFilter = () => useMarkerStore((state) => state.filter);
 export const useSwitchFilter = () =>
     useMarkerStore((state) => state.switchFilter);
+export const useBatchToggleFilter = () =>
+    useMarkerStore((state) => state.batchToggleFilter);
+export const useSetFilter = () =>
+    useMarkerStore((state) => state.setFilter);
 
 export const useSearchString = () =>
     useMarkerStore((state) => state.searchString);

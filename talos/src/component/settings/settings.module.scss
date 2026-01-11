@@ -1,0 +1,322 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --settings-section-border: #{rgba($grey-1, 0.75)};
+    --settings-section-text: #{$grey-1};
+    --settings-title-text: #{$black-1};
+    --settings-trigger-border: #{rgba($grey-1, 0.75)};
+    
+    // Theme selector
+    --theme-active-bar: #{$primary-accent-4};
+    --theme-hover-bar: #{$primary-accent-3};
+    --theme-active-hover-bar: #{$primary-accent-5};
+
+    --theme-bg-light: #{$white-1};
+    --theme-hover-bg-light: #{$light-1};
+    --theme-active-bg-light: #{$white-1};
+    --theme-text-light: #{$grey-1};
+    --theme-active-text-light: #{$black-1};
+    --theme-bar-light: #{$grey-1};
+
+    --theme-bg-dark: #{$black-1};
+    --theme-hover-bg-dark: #{$grey-1};
+    --theme-active-bg-dark: #{$grey-1};
+    --theme-text-dark: #{$light-1};
+    --theme-active-text-dark: #{$light-2};
+    --theme-bar-dark: #{$white-1};
+
+    --theme-bg-auto: #{$grey-3};
+    --theme-hover-bg-auto: #{$grey-2};
+    --theme-active-bg-auto: #{$grey-3};
+    --theme-text-auto: #{$white-1};
+    --theme-active-text-auto: #{$white-0};
+    --theme-bar-auto: #{$light-1};
+}
+:root[data-theme='dark'] {
+    --settings-section-border: #{rgba($light-1, 0.75)};
+    --settings-section-text: #{$light-1};
+    --settings-title-text: #{$light-2};
+    --settings-trigger-border: #{rgba($light-1, 0.75)};
+    
+    // Theme selector
+    --theme-hover-bg-light: #{$light-1};
+
+    --theme-bg-dark: #{$black-1};
+    --theme-hover-bg-dark: #{$grey-1};
+    --theme-active-bg-dark: #{$grey-1};
+    --theme-text-dark: #{$light-1};
+    --theme-active-text-dark: #{$light-2};
+    --theme-bar-dark: #{$white-1};
+
+    --theme-bg-auto: #{$grey-3};
+    --theme-hover-bg-auto: #{$grey-2};
+    --theme-active-bg-auto: #{$grey-3};
+    --theme-text-auto: #{$white-1};
+    --theme-active-text-auto: #{$white-0};
+    --theme-bar-auto: #{$light-1};
+}
+
+.settingsList {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.settingsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.sectionHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.3px;
+    color: var(--settings-section-text);
+    unicode-bidi: plaintext;
+    transition: color .35s $adagio-curve;
+}
+.sectionHint {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.2px;
+    color: var(--settings-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+    transition: color .35s $adagio-curve;
+}
+
+.triggerGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 0.5rem;
+    position: relative;
+    &::before, &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 3px;
+        border-radius: 1px;
+        height: 99%;
+        background-color: var(--settings-trigger-border);
+        transition: background-color .35s $adagio-curve;
+    }
+    &::after {
+        left: calc(50% + 4px);
+    }
+    .triggerRow {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.2rem 0;
+        padding-left: 0.5rem;
+    }
+    .settingsTrigger {
+        gap: 0.4rem;
+        // Target the internal label of the Trigger component
+        // This relies on the internal structure of Trigger (label is the last div)
+        > div:last-child {
+            flex: 1 1 auto;
+            min-width: 0;
+            user-select: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--settings-section-text);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+    }
+}
+
+.themeItems {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .6rem;
+    align-items: stretch;
+}
+@media (max-width: 576px) {
+    .themeItems {
+        grid-template-columns: 1fr;
+    }
+    .triggerGrid {
+        grid-template-columns: 1fr;
+        &::after {
+            display: none;
+        }
+    }
+}
+.themeItem {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas: 
+        "themeName themeIcon"
+        "themeInd themeIcon";
+    gap: 0;
+    align-items: center;
+    border-radius: 3px;
+    height: 3.6rem;
+    padding: .3rem .5rem;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    cursor: pointer;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        box-shadow .4s $moderato-curve;
+    &::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 10%;
+        width: 4px;
+        height: 80%;
+        background-color: var(--theme-bar);
+        box-shadow: 0 0 0 0 transparent;
+        z-index: 0;
+        pointer-events: none;
+        transition: background-color .4s ease;
+    }
+    &:hover {
+        background-color: var(--theme-hover-bg);
+        box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
+        &::before {
+            background-color: var(--theme-hover-bar);
+            transition: background-color .2s ease;
+        }
+    }
+    &.active {
+        background-color: var(--theme-active-bg);
+        color: var(--theme-active-text);
+        &::before {
+            background-color: var(--theme-active-bar);
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
+        }
+        &:hover::before {
+            background-color: var(--theme-active-hover-bar);
+        }
+    }
+    &[data-pref='light'] {
+        --theme-bg: var(--theme-bg-light);
+        --theme-hover-bg: var(--theme-hover-bg-light);
+        --theme-active-bg: var(--theme-active-bg-light);
+        --theme-text: var(--theme-text-light);
+        --theme-active-text: var(--theme-active-text-light);
+        --theme-bar: var(--theme-bar-light);
+    }
+    &[data-pref='dark'] {
+        --theme-bg: var(--theme-bg-dark);
+        --theme-hover-bg: var(--theme-hover-bg-dark);
+        --theme-active-bg: var(--theme-active-bg-dark);
+        --theme-text: var(--theme-text-dark);
+        --theme-active-text: var(--theme-active-text-dark);
+        --theme-bar: var(--theme-bar-dark);
+        > .themeIcon {
+            transform: rotate3d(2, 1, 0, 180deg);
+        }
+    }
+    &[data-pref='auto'] {
+        --theme-bg: var(--theme-bg-auto);
+        --theme-hover-bg: var(--theme-hover-bg-auto);
+        --theme-active-bg: var(--theme-active-bg-auto);
+        --theme-text: var(--theme-text-auto);
+        --theme-active-text: var(--theme-active-text-auto);
+        --theme-bar: var(--theme-bar-auto);
+        > .themeIcon {
+            animation: autoTheme 6.93s infinite $moderato-curve 1.5s;
+        }
+    }
+}
+.themeIcon {
+    grid-area: themeIcon;
+    justify-self: center;
+    width: 2rem;
+    height: 2rem;
+    fill: currentColor;
+    opacity: 1;
+    transition: transform 0.45s $moderato-curve;
+    filter: drop-shadow(0 0 1.5px rgba($black-0, .3));
+}
+.themeName {
+    grid-area: themeName;
+    font-size: 1.15rem;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    line-height: 1;
+    display: flex;
+    align-self: center;
+    text-transform: uppercase;
+    padding-left: 6px;
+    transform: translateY(-2px);
+    text-align: left;
+}
+.themeIndicator {
+    grid-area: themeInd;
+    align-self: center;
+    // Style from language module's currentTag
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $primary-accent-4;
+    background-color: $primary-accent-4;
+    border-radius: 4px;
+    padding: 1.5px 5px 3px;
+    margin-left: 6px;
+    color: $grey-1;
+    font-size: .85rem;
+    font-family: 'Novecento Bold', 'Lang Origin', 'Novecento Cyrillic DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    height: 20px;
+    width: fit-content;
+    line-height: 1;
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+        opacity .3s ease,
+        transform .3s ease,
+}
+.active .themeIndicator {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes autoTheme {
+    0% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
+    10.82% {
+        transform: rotate3d(2, 1, 0, 180deg);
+    }
+    28.33% {
+        transform: rotate3d(2, 1, 0, 180deg);
+    }
+    39.15% {
+        transform:rotate3d(2, 1, 30, 180deg);
+    }
+    56.66% {
+        transform:rotate3d(2, 1, 30, 180deg);
+    }
+    67.48% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
+    100% {
+        transform: rotate3d(0, 0, 0, 0deg);
+    }
+}

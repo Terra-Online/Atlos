@@ -4,6 +4,7 @@ import I18nIcon from '../../assets/logos/i18n.svg?react';
 import styles from './language.module.scss';
 import { FULL_LANGS, UI_ONLY_LANGS, setLocale, useLocale } from '@/locale';
 import { useTranslateUI } from '@/locale';
+import parse from 'html-react-parser';
 
 export interface LanguageProps {
   open: boolean;
@@ -18,12 +19,12 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'zh-HK': '繁體中文',
   'ja-JP': '日本語',
   'ko-KR': '한국어',
+  'ru-RU': 'Русский',
+  'es-ES': 'Español',
 
   'fr-FR': 'Français',
   'de-DE': 'Deutsch',
   'it-IT': 'Italiano',
-  'es-ES': 'Español',
-  'ru-RU': 'Русский',
   'pt-BR': 'Português',
   'id-ID': 'Bahasa Indonesia',
   'ar-AE': 'العربية',
@@ -153,7 +154,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
           <div className={styles.sectionItems}>
             {uiOnlyItems.map(renderLanguageItem)}
           </div>
-          <span className={styles.sectionHint}>{t('language.fyi')}</span>
+          <span className={styles.sectionHint}>{parse(t('language.fyi'))}</span>
         </div>
       </div>
     </Modal>

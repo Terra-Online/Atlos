@@ -1,8 +1,10 @@
 // states store for map view states(continuously use)
 import { IMapView } from '@/component/mapCore/type';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import L from 'leaflet';
+import { useUiPrefsStore } from './uiPrefs';
+import { createConditionalStorage } from '@/utils/storage';
 
 interface IViewStateStore {
     viewStates: Record<string, IMapView>;
@@ -41,8 +43,27 @@ const useViewState = create<IViewStateStore>()(
         }),
         {
             name: 'map-view-states',
+            storage: createJSONStorage(() => createConditionalStorage(
+                localStorage,
+                () => useUiPrefsStore.getState().prefsViewStateEnabled,
+            )),
+            merge: (persistedState, currentState) => {
+                const persisted = persistedState as Partial<IViewStateStore>;
+                // Only restore if preference is enabled
+                if (useUiPrefsStore.getState().prefsViewStateEnabled && persisted.viewStates) {
+                    return { ...currentState, viewStates: persisted.viewStates };
+                }
+                return currentState;
+            },
         },
     ),
 );
+
+// Auto-restore when preference is enabled
+useUiPrefsStore.subscribe((state, prevState) => {
+    if (state.prefsViewStateEnabled && !prevState.prefsViewStateEnabled) {
+        void useViewState.persist.rehydrate();
+    }
+});
 
 export default useViewState;

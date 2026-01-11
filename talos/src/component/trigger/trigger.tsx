@@ -9,6 +9,7 @@ interface TriggerProps {
     onToggle?: (isActive: boolean) => void;
     label?: string;
     disabled?: boolean;
+    className?: string;
 }
 
 const Trigger = ({
@@ -16,6 +17,7 @@ const Trigger = ({
     onToggle,
     label = '',
     disabled = false,
+    className = '',
 }: TriggerProps) => {
     const handleClick = (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -28,11 +30,12 @@ const Trigger = ({
     };
 
     return (
-        <div className={`${styles.trigger} ${disabled ? styles.disabled : ''}`}>
+        <div className={`${styles.trigger} ${disabled ? styles.disabled : ''} ${className}`}>
             <button
                 className={`${styles.triggerButton} ${isActive ? styles.active : ''}`}
                 onClick={handleClick}
                 disabled={disabled}
+                aria-label={label}
             >
                 <div className={styles.triggerIcons}>
                     <span className={`${styles.triggerIcon} ${styles.off}`}>

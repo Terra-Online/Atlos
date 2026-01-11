@@ -6,7 +6,8 @@
     "darkmode": "어두운 모드로 전환",
     "lightmode": "밝은 모드로 전환",
     "language": "언어 선택",
-    "help": "도움말"
+    "help": "도움말",
+    "settings": "설정"
   },
   "trigger": {
     "boundaryMode": "경계 모드",
@@ -19,7 +20,7 @@
   "markFilter": {
     "title": "필터 항목",
     "emptyTitle": "조건에 맞는 필터가 없습니다.",
-    "emptyDesc": "관리자에게 문의하세요."
+    "emptyDesc": "위치 정보에 누락이나 오류가 있음을 확인하신 경우, 프로젝트 커뮤니티에서 관리자에게 문의하시거나 본 프로젝트의 GitHub 저장소에 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='위치 오류 신고'>Issue</a>를 등록해 주세요."
   },
   "detail": {
     "stat": {
@@ -33,7 +34,7 @@
   },
   "sidebar": {
     "alt": {
-      "supportedBy": "observator 6에서 제공"
+      "supportedBy": "Observator 6에서 제공"
     }
   },
   "language": {
@@ -44,7 +45,7 @@
     "fullSupportHint": "UI 및 게임 내 콘텐츠 모두 완전한 번역 제공.",
     "uiOnly": "UI 전용 언어",
     "uiOnlyHint": "UI 번역만 제공, 게임 내 콘텐츠는 영어로 표시됩니다.",
-    "fyi": "이 웹사이트에서 귀하의 언어를 아직 사용할 수 없는 경우, translate@talos.wiki로 사이트 관리자에게 이메일을 보내거나 GitHub를 방문하여 오픈 소스 번역 프로젝트에 참여하실 수 있습니다. 귀하의 언어에 대한 번역 항목을 요청하고 가이드라인에 따라 WIKI 섹션의 번역 및 현지화를 지원할 수 있습니다. 여러분의 기여를 진심으로 감사하며 기대합니다.\n번역 기여자 목록도 확인하실 수 있습니다.",
+    "fyi": "이 웹사이트에서 귀하의 언어를 아직 사용할 수 없는 경우, <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>로 사이트 관리자에게 이메일을 보내거나 GitHub를 방문하여 오픈 소스 번역 프로젝트에 참여하실 수 있습니다. 귀하의 언어에 대한 번역 항목을 요청하고 가이드라인에 따라 WIKI 섹션의 번역 및 현지화를 지원할 수 있습니다. 여러분의 기여를 진심으로 감사하며 기대합니다.\n번역 기여자 목록도 확인하실 수 있습니다.",
     "names": {
       "en-US": "영어",
       "zh-CN": "중국어 간체",
@@ -74,6 +75,30 @@
     "filtersAndMarkers": "필터 및 마커 데이터",
     "warning": "<p><strong>경고:</strong> 저장된 데이터를 삭제하면 자동 로그인 정보, UI 설정 및 마커 진행 상황이 손실됩니다. 다음 방문 시 웹사이트 로딩이 평소보다 오래 걸릴 수 있습니다.</p><p>확신하시는 경우 삭제 버튼을 한 번 더 클릭해 주세요.</p>"
   },
+  "settings": {
+    "title": "설정",
+    "uiPrefs": {
+      "title": "사용자 인터페이스",
+      "hint": "활성화할 UI 저장 옵션을 선택하세요.<br>더 일관된 사용 경험을 위해 <span class=\"keyword\">모든 옵션을 활성화하는 것을 권장합니다</span>.",
+      "sidebar": "사이드바 상태 저장",
+      "filterOrder": "필터 순서 저장",
+      "triggers": "하단 바 상태 저장"
+    },
+    "mapPrefs": {
+      "title": "지도 및 포인트",
+      "hint": "활성화할 지도 정보 저장 및 자동 최적화 옵션을 선택하세요.<br>더 일관된 사용 경험을 위해 <span class=\"keyword\">모든 옵션을 활성화하는 것을 권장합니다</span>.",
+      "viewState": "현재 보기 저장",
+      "markerProgress": "포인트 및 필터 저장",
+      "autoCluster": "포인트 자동 클러스터링"
+    },
+    "theme": {
+      "title": "테마",
+      "hint": "선호하는 테마를 선택하세요. 자동 모드에서는 테마가 기기 설정에 따라 전환됩니다.",
+      "light": "라이트 모드",
+      "dark": "다크 모드",
+      "auto": "시스템 따름"
+    }
+  },
   "guide": {
     "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>에 오신 것을 환영합니다.<br>이 지도를 처음 사용하시는군요. 지도의 다양한 기능을 빠르게 이해하실 수 있도록 간단한 가이드 투어를 제공합니다.</p><p>언제든지 '<span class=\"keyword\">건너뛰기</span>' 버튼을 클릭하여 가이드를 종료하거나 상단 바의 도움말 버튼에서 다시 시작할 수 있습니다.",
     "sidebarToggle": "클릭하여 <span class=\"keyword\">사이드바</span>를 펼칩니다.<br>사이드바에는 가장 자주 사용하는 마커 필터와 마커 표시와 밀접하게 관련된 스위치가 포함되어 있습니다.",
@@ -93,6 +118,7 @@
     "darkMode": "현재 <span class=\"keyword\">조명 모드</span>를 전환합니다.",
     "language": "<span class=\"keyword\">인터페이스 언어</span>를 전환합니다.<br>현재 <span class=\"keyword\">게임 콘텐츠 번역을 완벽하게 지원</span>하는 언어는 영어, 중국어 간체, 중국어 번체, 일본어 및 한국어입니다.<br><span class=\"keyword\">인터페이스 번역을 지원</span>하는 언어에는 프랑스어, 독일어, 이탈리아어, 러시아어, 스페인어, 인도네시아어, 포르투갈어, 아랍어, 태국어 및 베트남어도 포함됩니다.",
     "help": "이 <span class=\"keyword\">가이드</span>를 다시 시작합니다.",
+    "settings": "<span class=\"keyword\">설정</span>을 열어 지도가 작업을 기억하는 데 사용하는 로컬 저장소를 제어합니다.",
     "regionSwitch": "클릭하여 게임 내 <span class=\"keyword\">다른 샌드박스 지도</span>(주 구역)로 전환합니다.",
     "subregionSwitch": "마우스를 <span class=\"keyword\">주 구역 아이콘 위에 올리면</span> 사용 가능한 하위 구역이 표시되며, 하위 구역 아이콘을 클릭하면 해당 하위 구역 뷰로 이동합니다.<br>마찬가지로 특정 구역의 레이어를 선택할 수도 있습니다.",
     "pointSelect": "마커를 클릭하면 마커가 <span class=\"keyword\">선택 상태</span>가 됩니다. 마커의 정보를 확인할 수 있습니다.",
@@ -108,6 +134,8 @@
     "selected": "선택됨",
     "confirm": "확인",
     "enable": "활성화",
-    "disable": "비활성화"
+    "disable": "비활성화",
+    "expand": "펼치기",
+    "collapse": "접기"
   }
 }

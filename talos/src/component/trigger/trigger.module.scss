@@ -1,4 +1,5 @@
 @use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
     --trigger-bg: #{$grey-1};
@@ -155,6 +156,7 @@ $transition-speed: 0.3s; // import from global size.scss later
         line-height: 1.1;
         word-break: break-word;
         text-overflow: ellipsis;
+        transition: color .35s $adagio-curve, text-shadow .35s $adagio-curve;
     }
 }
 

@@ -379,4 +379,4 @@ export const Drawer: React.FC<DrawerProps> = ({
 	);
 };
 
-export default Drawer;
+export default React.memo(Drawer);

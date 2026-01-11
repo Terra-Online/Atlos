@@ -74,7 +74,7 @@ const RegionContainer: React.FC<{
                     ? region.subregions.indexOf(currentSubregionKey)
                     : -1;
                 return (
-                    <button
+                    <div
                         key={key}
                         className={classNames(
                             styles.regItem,
@@ -82,6 +82,15 @@ const RegionContainer: React.FC<{
                         )}
                         onClick={() => {
                             setCurrentRegion(key);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={tGame(`region.${regionCode}.main`)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setCurrentRegion(key);
+                            }
                         }}
                     >
                         <div className={styles.icon}>
@@ -106,33 +115,37 @@ const RegionContainer: React.FC<{
                                             subRegionIndex, false
                                         )}
                                     ></div>
-                                    {region.subregions.map((subregion) => (
-                                        <div
-                                            key={subregion}
-                                            className={classNames(
-                                                styles.subregItem,
-                                                currentSubregionKey ===
-                                                    subregion &&
-                                                    styles.selected,
-                                            )}
-                                            onClick={() => {
-                                                requestSubregionSwitch(subregion);
-                                            }}
-                                        >
-                                            <div className={styles.subregName}>
-                                                {(() => {
-                                                    const subKey = SUBREGION_DICT[subregion]?.name;
-                                                    if (!subKey) return subregion;
-                                                    const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
-                                                    return typeof v === 'string' && v.trim() ? v : subKey;
-                                                })()}
-                                            </div> 
-                                        </div>
-                                    ))}
+                                    {region.subregions.map((subregion) => {
+                                        const subKey = SUBREGION_DICT[subregion]?.name;
+                                        const ariaLabel = subKey ? tGame(`region.${regionCode}.sub.${subKey}.name`) : subregion;
+                                        return (
+                                            <button
+                                                key={subregion}
+                                                className={classNames(
+                                                    styles.subregItem,
+                                                    currentSubregionKey ===
+                                                        subregion &&
+                                                        styles.selected,
+                                                )}
+                                                onClick={() => {
+                                                    requestSubregionSwitch(subregion);
+                                                }}
+                                                aria-label={ariaLabel}
+                                            >
+                                                <div className={styles.subregName}>
+                                                    {(() => {
+                                                        if (!subKey) return subregion;
+                                                        const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
+                                                        return typeof v === 'string' && v.trim() ? v : subKey;
+                                                    })()}
+                                                </div> 
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
-                    </button>
+                    </div>
                 );
             })}
         </div>
