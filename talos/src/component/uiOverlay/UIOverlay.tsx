@@ -9,6 +9,7 @@ import SettingsModal from '@/component/settings/settings';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
+import { LayerSwitch } from '@/component/layerSwitch/layerSwitch';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
 import { useSetIsUserGuideOpen } from '@/store/uiPrefs';
@@ -108,6 +109,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
 
             {/* Region Switch: on mobile do not apply sidebar open offset to avoid push-out */}
             <RegionContainer isSidebarOpen={!isMobile && isSidebarOpen} />
+
+            {/* Layer Switch: positioned at bottom left */}
+            <LayerSwitch isSidebarOpen={!isMobile && isSidebarOpen} />
 
             {/* Detail Panel: hide on mobile (rendered inside SideBarMobile) */}
             {!isMobile && <Detail />}

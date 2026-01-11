@@ -6,6 +6,7 @@ import { createHighlight } from '@/utils/visual';
 import { useMarkerStore } from '@/store/marker';
 import { useMarker } from './useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
+import { useCurrentLayer } from '@/store/layer';
 import L from 'leaflet';
 
 // Hook for map initialization and region management
@@ -19,6 +20,7 @@ export function useMap(ele: HTMLDivElement | null) {
 
     const triggerBoundary = useTriggerBoundary();
     const triggerCluster = useTriggerCluster();
+    const currentLayer = useCurrentLayer();
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
     const [mapInitialized, setMapInitialized] = useState(false);
@@ -136,6 +138,12 @@ export function useMap(ele: HTMLDivElement | null) {
             mapRef.current.disableMarkerClustering();
         }
     }, [triggerCluster, mapInitialized]);
+
+    // 监听图层切换
+    useEffect(() => {
+        if (!mapRef.current || !mapInitialized) return;
+        void mapRef.current.switchLayer(currentLayer);
+    }, [currentLayer, mapInitialized]);
 
     return {
         map: LMap,
