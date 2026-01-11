@@ -25,6 +25,7 @@ import MarkSelector from '../markSelector/markSelector';
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDrawerSnapIndex } from '@/store/uiPrefs';
+import { SelectionLayer } from './selectionLayer';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -62,6 +63,9 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDrawerSnapIndex();
+
+    const sidebarRef = React.useRef<HTMLDivElement>(null);
+
     useMemo(() => {
         if (!currentRegion) return null;
         return {
@@ -92,7 +96,8 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                 <SidebarIcon />
             </button>
 
-            <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+            <div ref={sidebarRef} className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+                <SelectionLayer containerRef={sidebarRef} />
                 <div className={styles.headIcon}>
                     <img
                         src={Icon}
@@ -152,7 +157,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     contentClassName={drawerStyles.triggerDrawerContent}
                     backdropClassName={drawerStyles.triggerDrawerBackdrop}
                     style={{ bottom: 'var(--drawer-bottom)', left: 0, right: 0 }}
-                    debug={true}
+                    debug={false}
                 >
                     <TriggerBar>
                         <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />

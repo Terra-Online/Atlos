@@ -238,7 +238,7 @@
         --theme-active-text: var(--theme-active-text-auto);
         --theme-bar: var(--theme-bar-auto);
         > .themeIcon {
-            animation: autoTheme 6.93s infinite $moderato-curve;
+            animation: autoTheme 6.93s infinite $moderato-curve 1.5s;
         }
     }
 }
