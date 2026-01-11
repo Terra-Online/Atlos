@@ -248,7 +248,7 @@ export class MapCore {
                 this.mainTileLayer.setOpacity(1);
             } else {
                 // Other layer: dim the main layer
-                this.mainTileLayer.setOpacity(0.35);
+                this.mainTileLayer.setOpacity(0.5);
 
                 // Add layer tile layer
                 const suffix = getLayerTileSuffix(layer);
