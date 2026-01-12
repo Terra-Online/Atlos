@@ -105,7 +105,7 @@
     "search": "Vous pouvez rechercher des marqueurs à afficher en utilisant <span class=\"keyword\">les langues prises en charge par le jeu</span> et les sélectionner dans les résultats de recherche.",
     "filterContainer": "Les marqueurs du même type sont regroupés dans un <span class=\"keyword\">filtre</span>.<br>Cliquez pour développer la liste des marqueurs de ce type.",
     "filterSort": "Maintenez l'ICÔNE à gauche du filtre pour entrer en <span class=\"keyword\">mode glisser</span>.<br>Vous pouvez trier les filtres importants pour vous selon vos besoins.",
-    "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.",
+    "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.<br><br>Vous pouvez également <span class=\"keyword\">maintenir et faire glisser dans la zone vide</span> de la barre latérale pour effectuer une <span class=\"keyword\">sélection de boîte</span> sur plusieurs sélecteurs de marqueurs à la fois, vous permettant de basculer rapidement leur état de sélection par lots.",
     "selectorComplete": "Lorsque tous les marqueurs de ce type sont marqués comme terminés, le sélecteur passera à l'état <span class=\"keyword\">terminé</span> pour un jugement rapide de la progression du marquage.",
     "triggerHandle": "Les commutateurs liés à l'affichage de la carte sont situés au bas de la barre latérale.<br>Vous pouvez maintenir la souris pour <span class=\"keyword\">les faire glisser et les utiliser.</span>",
     "triggerSwitch": "Cliquez pour basculer l'état du commutateur.<br><ul><li><span class=\"keyword\">Le mode de regroupement des marqueurs</span> permet d'afficher les marqueurs denses fusionnés;</li><li><span class=\"keyword\">L'affichage des limites de région</span> met en évidence chaque sous-région et ses limites dans la zone actuelle.</li></ul>",
@@ -137,5 +137,9 @@
     "disable": "Désactiver",
     "expand": "Développer",
     "collapse": "Réduire"
-  }
+  },
+    "meta": {
+        "title": "Atlas d’Endfield",
+        "description": "Open Endfield Map est une carte en ligne open source pour Arknights : Endfield, offrant des cartes interactives, le suivi des objets et des outils de planification stratégique."
+    }
 }

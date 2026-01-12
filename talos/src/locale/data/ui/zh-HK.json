@@ -105,7 +105,7 @@
     "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並且在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位于同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
     "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可以根據自己的需要排序對您重要的篩選器。",
-    "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。",
+    "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。<br><br>您也可以在側邊欄的<span class=\"keyword\">空白區域按住並拖動</span>，對多個點位選擇器進行<span class=\"keyword\">框選</span>，從而快速批量切換它們的選擇狀態。",
     "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
     "triggerHandle": "與地圖顯示有關的開關位於側邊欄底部。<br>您可以按住鼠標將其<span class=\"keyword\">拖起並操作。</span>",
     "triggerSwitch": "單擊切換開關狀態。<br><ul><li><span class=\"keyword\">點位聚合模式</span>將允許將密集點位合併顯示；</li><li><span class=\"keyword\">地區邊界顯示</span>會高亮當前區域內每一個子區域以及其邊界。</li></ul>",
@@ -137,5 +137,9 @@
     "disable": "禁用",
     "expand": "展開",
     "collapse": "收起"
+  },
+  "meta": {
+      "title": "終末地地圖集",
+      "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
   }
 }

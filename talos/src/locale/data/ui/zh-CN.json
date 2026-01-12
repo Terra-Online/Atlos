@@ -105,7 +105,7 @@
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
     "filterContainer": "同类型的点位可用一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
     "filterSort": "按住筛选器左侧的ICON，其将进入<span class=\"keyword\">拖拽状态</span>。<br>您可以根据自己的需要排序对您重要的筛选器。",
-    "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。",
+    "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。<br><br>您也可以在侧边栏的<span class=\"keyword\">空白区域按住并拖动</span>，对多个点位选择器进行<span class=\"keyword\">框选</span>，从而快速批量切换它们的选择状态。",
     "selectorComplete": "当此类型所有点位都被标记为完成时，选择器将会变为<span class=\"keyword\">完成状态</span>，以便您快捷判断标记情况。",
     "triggerHandle": "与地图显示有关的开关位于侧边栏底部。<br>您可以按住鼠标将其<span class=\"keyword\">拖起并操作。</span>",
     "triggerSwitch": "单击切换开关状态。<br><ul><li><span class=\"keyword\">点位聚合模式</span>将允许将密集点位合并显示；</li><li><span class=\"keyword\">地区边界显示</span>会高亮当前区域内每一个子区域以及其边界。</li></ul>",

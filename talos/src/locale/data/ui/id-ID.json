@@ -105,7 +105,7 @@
     "search": "Anda dapat mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang didukung oleh game</span> dan memilihnya di hasil pencarian.",
     "filterContainer": "Penanda dengan jenis yang sama dikelompokkan dalam <span class=\"keyword\">filter</span>.<br>Klik untuk memperluas daftar penanda jenis itu.",
     "filterSort": "Tahan IKON di sebelah kiri filter untuk masuk ke <span class=\"keyword\">mode seret</span>.<br>Anda dapat mengurutkan filter yang penting bagi Anda sesuai dengan kebutuhan Anda.",
-    "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span> khusus. Klik untuk beralih status pemilihan; penanda yang dipilih akan muncul di peta.<br>Anda dapat melihat jumlah total penanda tersebut di area saat ini, serta jumlah yang telah Anda tandai.",
+    "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span> khusus. Klik untuk beralih status pemilihan; penanda yang dipilih akan muncul di peta.<br>Anda dapat melihat jumlah total penanda tersebut di area saat ini, serta jumlah yang telah Anda tandai.<br><br>Anda juga dapat <span class=\"keyword\">menahan dan menyeret di area kosong</span> bilah sisi untuk melakukan <span class=\"keyword\">pilihan kotak</span> pada beberapa pemilih penanda sekaligus, memungkinkan Anda dengan cepat beralih status pemilihan mereka secara massal.",
     "selectorComplete": "Ketika semua penanda jenis ini ditandai sebagai selesai, pemilih akan berubah menjadi <span class=\"keyword\">status selesai</span> untuk penilaian cepat kemajuan penandaan.",
     "triggerHandle": "Sakelar yang terkait dengan tampilan peta terletak di bagian bawah bilah sisi.<br>Anda dapat menahan mouse untuk <span class=\"keyword\">menyeret dan mengoperasikannya.</span>",
     "triggerSwitch": "Klik untuk beralih status sakelar.<br><ul><li><span class=\"keyword\">Mode Pengelompokan Penanda</span> memungkinkan penanda padat ditampilkan digabungkan;</li><li><span class=\"keyword\">Tampilan Batas Wilayah</span> menyoroti setiap sub-wilayah dan batasnya dalam area saat ini.</li></ul>",
@@ -137,5 +137,9 @@
     "disable": "Nonaktifkan",
     "expand": "Perluas",
     "collapse": "Lipat"
+  },
+  "meta": {
+      "title": "Atlas Endfield",
+      "description": "Open Endfield Map adalah peta daring sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perencanaan strategis."
   }
 }

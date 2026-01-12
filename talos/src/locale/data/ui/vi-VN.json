@@ -137,5 +137,9 @@
     "disable": "Tắt",
     "expand": "Mở rộng",
     "collapse": "Thu gọn"
+  },
+  "meta": {
+      "title": "Atlas Endfield",
+      "description": "Open Endfield Map là bản đồ trực tuyến mã nguồn mở cho Arknights: Endfield, cung cấp bản đồ tương tác, theo dõi thu thập vật phẩm và công cụ lập kế hoạch chiến lược."
   }
 }

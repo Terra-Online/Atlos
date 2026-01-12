@@ -105,7 +105,7 @@
     "search": "Você pode pesquisar marcadores para visualizar usando <span class=\"keyword\">idiomas suportados pelo jogo</span> e selecioná-los nos resultados da pesquisa.",
     "filterContainer": "Marcadores do mesmo tipo são agrupados em um <span class=\"keyword\">filtro</span>.<br>Clique para expandir a lista de marcadores desse tipo.",
     "filterSort": "Segure o ÍCONE à esquerda do filtro para entrar no <span class=\"keyword\">modo de arrastar</span>.<br>Você pode ordenar os filtros importantes para você de acordo com suas necessidades.",
-    "selectorSelect": "<span class=\"keyword\">Seletor de marcadores</span> específico. Clique para alternar o status de seleção; os marcadores selecionados aparecerão no mapa.<br>Você pode ver o número total desses marcadores na área atual, bem como o número que você marcou.",
+    "selectorSelect": "<span class=\"keyword\">Seletor de marcadores</span> específico. Clique para alternar o status de seleção; os marcadores selecionados aparecerão no mapa.<br>Você pode ver o número total desses marcadores na área atual, bem como o número que você marcou.<br><br>Você também pode <span class=\"keyword\">segurar e arrastar na área vazia</span> da barra lateral para realizar uma <span class=\"keyword\">seleção de caixa</span> em vários seletores de marcadores de uma vez, permitindo que você alterne rapidamente seu status de seleção em lotes.",
     "selectorComplete": "Quando todos os marcadores deste tipo forem marcados como concluídos, o seletor mudará para o <span class=\"keyword\">status concluído</span> para um julgamento rápido do progresso da marcação.",
     "triggerHandle": "Os interruptores relacionados à exibição do mapa estão localizados na parte inferior da barra lateral.<br>Você pode segurar o mouse para <span class=\"keyword\">arrastá-los e operá-los.</span>",
     "triggerSwitch": "Clique para alternar o estado do interruptor.<br><ul><li><span class=\"keyword\">O modo de agrupamento de marcadores</span> permite que marcadores densos sejam exibidos mesclados;</li><li><span class=\"keyword\">A exibição de limites de região</span> destaca cada sub-região e seus limites dentro da área atual.</li></ul>",
@@ -137,5 +137,9 @@
     "disable": "Desativar",
     "expand": "Expandir",
     "collapse": "Recolher"
+  },
+  "meta": {
+      "title": "Atlas de Endfield",
+      "description": "Open Endfield Map é um mapa online de código aberto para Arknights: Endfield, oferecendo mapas interativos, coleta de itens e ferramentas de planejamento estratégico."
   }
 }

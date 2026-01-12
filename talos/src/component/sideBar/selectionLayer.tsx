@@ -26,7 +26,6 @@ export const SelectionLayer = ({ containerRef }: SelectionLayerProps) => {
             
             const timer = setTimeout(() => {
                 setFadingState(null);
-                lastBoxRef.current = null;
             }, 250);
             cleanup = () => clearTimeout(timer);
         } else if (isSelecting) {

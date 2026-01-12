@@ -105,7 +105,7 @@
     "search": "<span class=\"keyword\">게임에서 지원하는 언어</span>로 검토할 마커를 검색하고 검색 결과에서 선택할 수 있습니다.",
     "filterContainer": "동일한 유형의 마커는 하나의 <span class=\"keyword\">필터</span>에 그룹화됩니다.<br>클릭하여 해당 유형의 마커 목록을 펼칩니다.",
     "filterSort": "필터 왼쪽의 아이콘을 길게 누르면 <span class=\"keyword\">드래그 상태</span>가 됩니다.<br>필요에 따라 중요한 필터를 정렬할 수 있습니다.",
-    "selectorSelect": "구체적인 <span class=\"keyword\">마커 선택기</span>입니다. 클릭하여 선택 상태를 전환하면 선택된 마커가 지도에 나타납니다.<br>현재 구역의 해당 마커 총수와 이미 표시한 수를 확인할 수 있습니다.",
+    "selectorSelect": "구체적인 <span class=\"keyword\">마커 선택기</span>입니다. 클릭하여 선택 상태를 전환하면 선택된 마커가 지도에 나타납니다.<br>현재 구역의 해당 마커 총수와 이미 표시한 수를 확인할 수 있습니다.<br><br>사이드바의 <span class=\"keyword\">빈 영역을 누르고 드래그</span>하여 여러 마커 선택기를 <span class=\"keyword\">박스 선택</span>하고 선택 상태를 일괄적으로 빠르게 전환할 수 있습니다.",
     "selectorComplete": "이 유형의 모든 마커가 완료로 표시되면 선택기는 <span class=\"keyword\">완료 상태</span>로 변경되어 표시 상황을 빠르게 판단할 수 있습니다.",
     "triggerHandle": "지도 표시와 관련된 스위치는 사이드바 하단에 있습니다.<br>마우스를 길게 눌러 <span class=\"keyword\">드래그하여 조작</span>할 수 있습니다.",
     "triggerSwitch": "클릭하여 스위치 상태를 전환합니다.<br><ul><li><span class=\"keyword\">마커 클러스터링 모드</span>는 밀집된 마커를 병합하여 표시할 수 있게 합니다.</li><li><span class=\"keyword\">지역 경계 표시</span>는 현재 구역 내의 각 하위 구역과 그 경계를 강조 표시합니다.</li></ul>",
@@ -137,5 +137,9 @@
     "disable": "비활성화",
     "expand": "펼치기",
     "collapse": "접기"
+  },
+  "meta": {
+      "title": "엔드필드 지도집",
+      "description": "Open Endfield Map는 명일방주: 엔드필드를 위한 오픈 소스 온라인 지도이며, 인터랙티브 지도, 아이템 수집, 전략 계획 도구를 제공합니다."
   }
 }
