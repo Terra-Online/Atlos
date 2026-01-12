@@ -241,14 +241,17 @@ export class MapCore {
             this.layerTileLayer = undefined;
         }
 
-        // Update main tile layer opacity
+        // Update main tile layer visual
         if (this.mainTileLayer) {
+            const container = this.mainTileLayer.getContainer();
             if (layer === 'M') {
-                // Main layer: restore full opacity
-                this.mainTileLayer.setOpacity(1);
+                if (container) {
+                     container.style.filter = 'brightness(1)';
+                }
             } else {
-                // Other layer: dim the main layer
-                this.mainTileLayer.setOpacity(0.5);
+                if (container) {
+                    container.style.filter = 'brightness(0.5)';
+                }
 
                 // Add layer tile layer
                 const suffix = getLayerTileSuffix(layer);

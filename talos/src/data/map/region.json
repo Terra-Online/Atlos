@@ -18,7 +18,8 @@
             "VL_5",
             "VL_6",
             "VL_7"
-        ]
+        ],
+        "layers": ["L1", "B1", "B2"]
     },
     "Wuling": {
         "dimensions": [
@@ -35,7 +36,8 @@
         "subregions": [
             "WL_1",
             "WL_2"
-        ]
+        ],
+        "layers": ["L3", "L2", "L1", "B1", "B2", "B3", "B4"]
     },
     "Dijiang": {
         "dimensions": [

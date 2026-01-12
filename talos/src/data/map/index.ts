@@ -13,6 +13,7 @@ export interface IMapRegion {
     };
     initialZoom: number;
     subregions: string[];
+    layers?: string[];
 }
 
 export interface IMapSubregionAreaData {

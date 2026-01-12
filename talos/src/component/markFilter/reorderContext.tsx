@@ -38,13 +38,7 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
   const unregister = useCallback((id: string) => {
     const m = registryRef.current;
     m.delete(id);
-    setOrder((prev) => {
-      const next = prev.filter((x) => x !== id);
-      orderRef.current = next;
-      setTimeout(() => setPersistedOrder(next), 0);
-      return next;
-    });
-  }, [setPersistedOrder]);
+  }, []);
 
   const orderOf = useCallback(
     (id: string) => {

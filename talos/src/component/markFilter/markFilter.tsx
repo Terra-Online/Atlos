@@ -140,6 +140,7 @@ const MarkFilter = ({
             >
                 <div 
                     className={styles.filterIcon}
+                    data-drag-handle="true"
                     onPointerDown={(e) => {
                         e.stopPropagation();
                         if (isMounted) dragControls.start(e);
