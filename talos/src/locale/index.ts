@@ -112,14 +112,17 @@ const deepGet = (obj: unknown, path: string): unknown =>
 
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
-const uiModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/ui/*.json');
-const gameModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/game/*.json');
-const regionModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/region/*.json');
+// Combine all locale files into one glob mapping to simplify logic and potential bundling
+const allLocales: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/**/*.json');
 
-function resolveLoader(map: Record<string, () => Promise<JsonModule>>, locale: string): (() => Promise<JsonModule>) | undefined {
+function resolveLoader(pathPattern: RegExp, locale: string): (() => Promise<JsonModule>) | undefined {
     const localeLower = locale.toLowerCase();
     const canonLower = toBCP47(locale as Lang).toLowerCase();
-    for (const [path, loader] of Object.entries(map)) {
+    
+    for (const [path, loader] of Object.entries(allLocales)) {
+        // Match path pattern (e.g. /ui/, /game/)
+        if (!pathPattern.test(path)) continue;
+
         const base = (path.split('/').pop() || '').replace(/\.json$/i, '');
         const baseLower = base.toLowerCase();
         if (baseLower === localeLower || baseLower === canonLower) return loader;
@@ -154,27 +157,32 @@ const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() =>
 
 // Load locale data on main thread (build-safe via glob)
 async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
-    const uiLoader = resolveLoader(uiModules, locale);
+    // Regex patterns for different categories
+    const uiPattern = /\/data\/ui\//;
+    const gamePattern = /\/data\/game\//;
+    const regionPattern = /\/data\/region\//;
+
+    const uiLoader = resolveLoader(uiPattern, locale);
 
     // For UI-only languages, fallback to English for game content
     const gameLocale = hasFullSupport(locale) ? locale : 'en-US';
-    let gameLoader = resolveLoader(gameModules, gameLocale);
+    let gameLoader = resolveLoader(gamePattern, gameLocale);
 
     // Region bundle follows the same fallback rule as game content
-    let regionLoader = resolveLoader(regionModules, gameLocale);
+    let regionLoader = resolveLoader(regionPattern, gameLocale);
 
     // Special alias: use zh-TW game content for zh-HK locale if direct match not found
     if (!gameLoader) {
         const lower = gameLocale.toLowerCase();
         if (lower === 'zh-hk') {
-            gameLoader = resolveLoader(gameModules, 'zh-TW');
+            gameLoader = resolveLoader(gamePattern, 'zh-TW');
         }
     }
 
     if (!regionLoader) {
         const lower = gameLocale.toLowerCase();
         if (lower === 'zh-hk') {
-            regionLoader = resolveLoader(regionModules, 'zh-TW');
+            regionLoader = resolveLoader(regionPattern, 'zh-TW');
         }
     }
 
@@ -187,6 +195,28 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
         ui: uiMod.default,
         game: { ...gameMod.default, region: regionMod.default },
     };
+}
+
+// Preload other common languages in background
+const PRELOAD_LANGS: Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'it-IT'];
+let preloadingStarted = false;
+
+async function preloadLanguages(current: Lang) {
+    if (preloadingStarted) return;
+    preloadingStarted = true;
+
+    // Delay to let main thread settle
+    await new Promise(r => setTimeout(r, 2000));
+
+    const toPreload = PRELOAD_LANGS.filter(l => l !== current);
+    for (const lang of toPreload) {
+        // Sequentially load to be gentle on network
+        try {
+            await loadLocaleOnMain(lang);
+        } catch {
+            // ignore
+        }
+    }
 }
 
 async function loadAndSet(locale: Lang) {
@@ -221,6 +251,9 @@ async function loadAndSet(locale: Lang) {
     } catch {
         // ignore envs without document
     }
+
+    // Trigger preload of other languages
+    void preloadLanguages(locale);
 }
 
 async function init() {

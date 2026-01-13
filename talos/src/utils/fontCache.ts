@@ -120,11 +120,11 @@ export async function preloadFonts(urls: string[]): Promise<void> {
 }
 
 /**
- * Get cached font blob if available
+ * Get cached font buffer if available
  * @param url Font file URL
- * @returns Blob if cached and valid, null otherwise
+ * @returns ArrayBuffer if cached and valid, null otherwise
  */
-export async function getCachedFontBlob(url: string): Promise<Blob | null> {
+export async function getCachedFontBuffer(url: string): Promise<ArrayBuffer | null> {
     if (!isCacheAvailable()) return null;
 
     try {
@@ -133,7 +133,7 @@ export async function getCachedFontBlob(url: string): Promise<Blob | null> {
 
         if (cachedResponse && !isCacheExpired(url)) {
             logger.debug(`Hit font cache: ${url}`);
-            return await cachedResponse.blob();
+            return await cachedResponse.arrayBuffer();
         }
         return null;
     } catch (error) {
