@@ -24,7 +24,7 @@ import FacilityIcon from '../../assets/images/category/facility.svg?react';
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
-import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName } from '@/store/uiPrefs';
+import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetDrawerSnapIndex } from '@/store/uiPrefs';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -61,6 +61,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const setTrigCluster = useSetTriggerCluster();
   const setTrigBoundary = useSetTriggerBoundary();
   const setTrigOptimal = useSetTriggerlabelName();
+  const setDrawerSnapIndex = useSetDrawerSnapIndex();
 
   useEffect(() => {
     const onResize = () => setVh(window.innerHeight);
@@ -124,6 +125,11 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     scroller.addEventListener('scroll', handleScroll, { passive: true });
     return () => scroller.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Sync currentSnap to store for UIOverlay to use
+  useEffect(() => {
+    setDrawerSnapIndex(currentSnap);
+  }, [currentSnap, setDrawerSnapIndex]);
 
   const snapsNormalized = snaps;
   const minSnap = snaps[0] ?? 0;

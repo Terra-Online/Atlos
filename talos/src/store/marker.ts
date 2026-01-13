@@ -29,6 +29,12 @@ export const useMarkerStore = create<IMarkerStore>()(
         (set, get) => ({
             currentActivePoint: null,
             setCurrentActivePoint: (point) => {
+                const prev = get().currentActivePoint;
+                // If user clicks the same point again, still emit an update so UI can re-open.
+                if (prev?.id === point.id) {
+                    set({ currentActivePoint: { ...point } });
+                    return;
+                }
                 set({ currentActivePoint: point });
             },
             filter: [],

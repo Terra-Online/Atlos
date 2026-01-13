@@ -1,8 +1,19 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import styles from './detail.module.scss';
-//import Button from '@/component/button/button';
+import Button from '@/component/button/button';
 
-import { getItemIconUrl, getCtgrIconUrl } from '@/utils/resource.ts';
+import { getItemIconUrl } from '@/utils/resource.ts';
+import { MARKER_TYPE_DICT } from '@/data/marker';
+
+// 导入所有 category SVG
+import BossIcon from '@/assets/images/category/boss.svg?react';
+import CollectionIcon from '@/assets/images/category/collection.svg?react';
+import CombatIcon from '@/assets/images/category/combat.svg?react';
+import FacilityIcon from '@/assets/images/category/facility.svg?react';
+import MobIcon from '@/assets/images/category/mob.svg?react';
+import NaturalIcon from '@/assets/images/category/natural.svg?react';
+import NpcIcon from '@/assets/images/category/npc.svg?react';
+import ValuableIcon from '@/assets/images/category/valuable.svg?react';
 import {
     useMarkerStore,
     useRegionMarkerCount,
@@ -14,10 +25,21 @@ import {
     useUserRecord,
 } from '@/store/userRecord.ts';
 import classNames from 'classnames';
-import { useClickAway } from 'ahooks';
 import { motion, AnimatePresence, usePresence } from 'motion/react';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useForceDetailOpen } from '@/store/uiPrefs';
+
+// Category icon 映射
+const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
+    boss: BossIcon,
+    collection: CollectionIcon,
+    combat: CombatIcon,
+    facility: FacilityIcon,
+    mob: MobIcon,
+    natural: NaturalIcon,
+    npc: NpcIcon,
+    valuable: ValuableIcon,
+};
 
 // const mockPoint = {
 //   id: "001",
@@ -102,29 +124,34 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         ? pointsRecord.includes(currentPoint.id)
         : false;
 
+    // 左上角用 category.sub 图标（第二级索引）
+    const categorySubKey = currentPoint ? MARKER_TYPE_DICT[currentPoint.type]?.category?.sub : undefined;
+    const CategoryIcon = categorySubKey ? CATEGORY_ICON_MAP[categorySubKey] : undefined;
+    
+    // 大图标用 item icon
     const iconKey = currentPoint ? currentPoint.type : 'UKN';
     const iconUrl = getItemIconUrl(iconKey);
 
-    const ctgyIconUrl = getCtgrIconUrl(
-        currentPoint ? currentPoint.type : 'UKN',
-    );
-
     const tGame = useTranslateGame();
     const tUI = useTranslateUI();
-    const pointName = tGame(`markerType.key.${currentPoint?.type}`);
+    const pointNameRaw = tGame(`markerType.key.${currentPoint?.type}`);
+    const pointName = typeof pointNameRaw === 'string' && pointNameRaw.trim()
+        ? pointNameRaw
+        : (currentPoint?.type ?? '');
 
     // const noteContent = currentPoint?.status?.user?.localNote;
 
     const [isVisible, setIsVisible] = useState(false);
     const forceDetailOpen = useForceDetailOpen();
-    const ref = useRef(null);
-    useClickAway(() => {
-        if (!forceDetailOpen) setIsVisible(false);
-    }, ref);
+    const ref = useRef<HTMLDivElement | null>(null);
+    
+    // 当 currentPoint 更新时，显示 detail
     useEffect(() => {
-        if (currentPoint) setIsVisible(true);
-        console.log(currentPoint);
-    }, [currentPoint]);
+        if (currentPoint) {
+            console.log('[Detail] currentPoint changed:', currentPoint, 'forceDetailOpen:', forceDetailOpen);
+            setIsVisible(true);
+        }
+    }, [currentPoint, forceDetailOpen]);
 
     // const handleNextPoint = () => addPoint(currentPoint.id);
 
@@ -155,13 +182,10 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                     {/* Head */}
                     <div className={styles.detailHeader}>
                         <div className={styles.pointInfo}>
-                            {ctgyIconUrl && (
-                                <span
-                                    className={styles.categoryIcon}
-                                    style={{
-                                        backgroundImage: `url(${ctgyIconUrl})`,
-                                    }}
-                                ></span>
+                            {CategoryIcon && (
+                                <span className={styles.categoryIcon}>
+                                    <CategoryIcon className={styles.icon} />
+                                </span>
                             )}
                             <AnimatePresence mode='wait'>
                                 <AnimatedText
@@ -173,18 +197,17 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 </AnimatedText>
                             </AnimatePresence>
                         </div>
-                        {/* actions                        <div className={styles.headerActions}>
-                            {!isCollected && (
-                                <Button
-                                    text={'Next'}
-                                    variant='next'
-                                    width='6rem'
-                                    height='1.5rem'
-                                    onClick={() => {}}
-                                />
-                            )}
+                        <div className={styles.headerActions}>
+                            <Button
+                                text={tUI('common.close')}
+                                aria-label={tUI('common.close') || 'Close'}
+                                buttonType='close'
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsVisible(false);
+                                }}
+                            />
                         </div>
-                         */}
                     </div>
                     {/* Content */}
                     <div className={styles.detailContent}>
