@@ -27,9 +27,7 @@ $item-gap: 0.6rem;
 $indicator-height: 0.75rem;
 
 .regswitch {
-    position: absolute;
-    left: 1rem;
-    top: 40%;
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: $item-gap;
@@ -39,13 +37,10 @@ $indicator-height: 0.75rem;
     padding: 5px;
     box-shadow: 0 0 5px rgba($black-0, 0.6);
     z-index: 900;
-    transform: translateY(-50%);
-    transition: transform 0.3s ease-in-out,
-                background-color 0.35s $moderato-curve;
+    transition: background-color 0.35s $moderato-curve;
 
     &.layerswitch {
-        top: 51%;
-        transform: none;
+        // No special positioning needed, handled by parent flex
     }
 }
 @media screen and (max-width: $mobile-bp) {

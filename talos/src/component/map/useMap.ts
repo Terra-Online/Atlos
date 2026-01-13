@@ -31,7 +31,7 @@ export function useMap(ele: HTMLDivElement | null) {
 
         mapRef.current = new MapCore(ele, {
             onSwitchCurrentMarker: (marker) => {
-                useMarkerStore.setState({ currentActivePoint: marker });
+                useMarkerStore.getState().setCurrentActivePoint(marker);
             },
         });
         setLMap(mapRef.current.map);

@@ -193,13 +193,14 @@ async function loadAndSet(locale: Lang) {
     let ui: Record<string, unknown> = {};
     let game: Record<string, unknown> = {};
 
-    // Preload fonts for this locale in parallel (with CDN URLs)
+    // Start font preloading in parallel (non-blocking)
     const fontRegion = localeToFontRegion(locale);
     const fontUrls = getFontUrlsForRegion(fontRegion).map(toCdnUrl);
     const safePreloadFonts = (urls: string[]): Promise<void> => {
         return (preloadFonts as unknown as (u: string[]) => Promise<void>)(urls);
     };
-    const fontPreloadPromise: Promise<void> = safePreloadFonts(fontUrls).catch((err: unknown) => {
+    // Fire and forget - don't block language switch
+    safePreloadFonts(fontUrls).catch((err: unknown) => {
         LOGGER.warn('Font preload failed:', err);
     });
 
@@ -208,10 +209,8 @@ async function loadAndSet(locale: Lang) {
     ui = data.ui;
     game = data.game;
 
+    // Update state immediately without waiting for fonts
     useI18nStore.setState({ locale, data: { game, ui } });
-    
-    // Wait for font preloading to complete before updating UI
-    await fontPreloadPromise;
     
     // Sync document language tag for :lang() or [lang] based styles/fonts switching
     try {

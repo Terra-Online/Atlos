@@ -7,7 +7,8 @@ import {
     useIsUserGuideOpen,
     useSetIsUserGuideOpen,
     useSetForceDetailOpen,
-    useSetForceSubregionOpen,
+    useSetForceRegionSubOpen,
+    useSetForceLayerSubOpen,
     useSetDrawerSnapIndex,
 } from '@/store/uiPrefs';
 import {
@@ -31,7 +32,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
-    const setForceSubregionOpen = useSetForceSubregionOpen();
+    const setForceRegionSubOpen = useSetForceRegionSubOpen();
+    const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
     const userGuideVersion = useUserGuideVersion();
     const setUserGuideVersion = useSetUserGuideVersion();
@@ -180,7 +182,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
                 
                 replaceUserGuideStepCompleted(buildAllStepsCompletionMap(true));
                 setForceDetailOpen(false);
-                setForceSubregionOpen(false);
+                setForceRegionSubOpen(false);
+                setForceLayerSubOpen(false);
                 setDrawerSnapIndex(null);
                 setIsUserGuideOpen(false);
                 setStepIndex(0);
@@ -240,7 +243,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
         [
             steps,
             setForceDetailOpen,
-            setForceSubregionOpen,
+            setForceRegionSubOpen,
+            setForceLayerSubOpen,
             setDrawerSnapIndex,
             setIsUserGuideOpen,
             setUserGuideStepCompleted,

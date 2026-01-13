@@ -105,7 +105,7 @@
     "search": "Vous pouvez rechercher des marqueurs à afficher en utilisant <span class=\"keyword\">les langues prises en charge par le jeu</span> et les sélectionner dans les résultats de recherche.",
     "filterContainer": "Les marqueurs du même type sont regroupés dans un <span class=\"keyword\">filtre</span>.<br>Cliquez pour développer la liste des marqueurs de ce type.",
     "filterSort": "Maintenez l'ICÔNE à gauche du filtre pour entrer en <span class=\"keyword\">mode glisser</span>.<br>Vous pouvez trier les filtres importants pour vous selon vos besoins.",
-    "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.",
+    "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.<br><br>Vous pouvez également <span class=\"keyword\">maintenir et faire glisser dans la zone vide</span> de la barre latérale pour effectuer une <span class=\"keyword\">sélection de boîte</span> sur plusieurs sélecteurs de marqueurs à la fois, vous permettant de basculer rapidement leur état de sélection par lots.",
     "selectorComplete": "Lorsque tous les marqueurs de ce type sont marqués comme terminés, le sélecteur passera à l'état <span class=\"keyword\">terminé</span> pour un jugement rapide de la progression du marquage.",
     "triggerHandle": "Les commutateurs liés à l'affichage de la carte sont situés au bas de la barre latérale.<br>Vous pouvez maintenir la souris pour <span class=\"keyword\">les faire glisser et les utiliser.</span>",
     "triggerSwitch": "Cliquez pour basculer l'état du commutateur.<br><ul><li><span class=\"keyword\">Le mode de regroupement des marqueurs</span> permet d'afficher les marqueurs denses fusionnés;</li><li><span class=\"keyword\">L'affichage des limites de région</span> met en évidence chaque sous-région et ses limites dans la zone actuelle.</li></ul>",
@@ -121,7 +121,8 @@
     "settings": "Ouvrez les <span class=\"keyword\">Paramètres</span> pour contrôler le stockage local que la carte utilise pour mémoriser vos actions.",
     "regionSwitch": "Cliquez pour basculer entre <span class=\"keyword\">différentes cartes bac à sable</span> (régions principales) dans le jeu.",
     "subregionSwitch": "<span class=\"keyword\">Survolez l'icône de la région principale</span> pour afficher les sous-régions disponibles ; cliquer sur une icône de sous-région vous fera passer à cette vue de sous-région.<br>De même, vous pouvez également sélectionner un calque pour une région.",
-    "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
+    "layerMain": "Cliquez sur l'<span class=\"keyword\">icône de calque</span> pour revenir au <span class=\"keyword\">calque principal (M)</span> à tout moment.",
+    "layerSwitch": "<span class=\"keyword\">Survolez l'icône de calque</span> pour afficher les calques disponibles pour la région actuelle ; cliquez sur un calque pour basculer vers cette vue.<br>Différents calques peuvent afficher <span class=\"keyword\">différents étages ou hauteurs</span> de la carte, vous aidant à explorer les zones à plusieurs niveaux.",    "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
     "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé."
@@ -137,5 +138,9 @@
     "disable": "Désactiver",
     "expand": "Développer",
     "collapse": "Réduire"
-  }
+  },
+    "meta": {
+        "title": "Atlas d’Endfield",
+        "description": "Open Endfield Map est une carte en ligne open source pour Arknights : Endfield, offrant des cartes interactives, le suivi des objets et des outils de planification stratégique."
+    }
 }

@@ -105,7 +105,7 @@
     "search": "Bạn có thể tìm kiếm các điểm cần xem bằng <span class=\"keyword\">ngôn ngữ được trò chơi hỗ trợ</span> và chọn chúng trong kết quả tìm kiếm.",
     "filterContainer": "Các điểm cùng loại được nhóm trong một <span class=\"keyword\">bộ lọc</span>.<br>Nhấp để mở rộng danh sách điểm thuộc loại đó.",
     "filterSort": "Giữ BIỂU TƯỢNG bên trái bộ lọc để vào <span class=\"keyword\">chế độ kéo</span>.<br>Bạn có thể sắp xếp các bộ lọc quan trọng với mình theo nhu cầu.",
-    "selectorSelect": "<span class=\"keyword\">Bộ chọn điểm</span> cụ thể. Nhấp để chuyển đổi trạng thái chọn; các điểm đã chọn sẽ xuất hiện trên bản đồ.<br>Bạn có thể thấy tổng số điểm loại này trong khu vực hiện tại, cũng như số lượng bạn đã đánh dấu.",
+    "selectorSelect": "<span class=\"keyword\">Bộ chọn điểm</span> cụ thể. Nhấp để chuyển đổi trạng thái chọn; các điểm đã chọn sẽ xuất hiện trên bản đồ.<br>Bạn có thể thấy tổng số điểm loại này trong khu vực hiện tại, cũng như số lượng bạn đã đánh dấu.<br><br>Bạn cũng có thể <span class=\"keyword\">giữ và kéo trong vùng trống</span> của thanh bên để thực hiện <span class=\"keyword\">chọn hộp</span> trên nhiều bộ chọn điểm cùng một lúc, cho phép bạn nhanh chóng chuyển đổi trạng thái chọn của chúng theo lô.",
     "selectorComplete": "Khi tất cả các điểm loại này được đánh dấu hoàn thành, bộ chọn sẽ chuyển sang <span class=\"keyword\">trạng thái hoàn thành</span> để bạn đánh giá nhanh tiến độ đánh dấu.",
     "triggerHandle": "Các công tắc liên quan đến hiển thị bản đồ nằm ở dưới cùng của thanh bên.<br>Bạn có thể giữ chuột để <span class=\"keyword\">kéo và thao tác chúng.</span>",
     "triggerSwitch": "Nhấp để chuyển đổi trạng thái công tắc.<br><ul><li><span class=\"keyword\">Chế độ Gộp Điểm</span> cho phép hiển thị các điểm dày đặc được gộp lại;</li><li><span class=\"keyword\">Hiển thị Ranh giới Khu vực</span> làm nổi bật từng khu vực con và ranh giới của nó trong khu vực hiện tại.</li></ul>",
@@ -120,6 +120,8 @@
     "help": "Khởi động lại <span class=\"keyword\">hướng dẫn</span> này.",
     "regionSwitch": "Nhấp để chuyển đổi giữa <span class=\"keyword\">các bản đồ sandbox khác nhau</span> (khu vực chính) trong trò chơi.",
     "subregionSwitch": "<span class=\"keyword\">Di chuột qua biểu tượng khu vực chính</span> để hiển thị các khu vực con có sẵn; nhấp vào biểu tượng khu vực con sẽ chuyển đến chế độ xem khu vực con đó.<br>Tương tự, bạn cũng có thể chọn một lớp cho một khu vực.",
+    "layerMain": "Nhấp vào <span class=\"keyword\">biểu tượng lớp</span> để quay lại <span class=\"keyword\">lớp chính (M)</span> bất kỳ lúc nào.",
+    "layerSwitch": "<span class=\"keyword\">Di chuột qua biểu tượng lớp</span> để hiển thị các lớp có sẵn cho khu vực hiện tại; nhấp vào lớp để chuyển sang chế độ xem đó.<br>Các lớp khác nhau có thể hiển thị <span class=\"keyword\">các tầng hoặc độ cao khác nhau</span> của bản đồ, giúp bạn khám phá các khu vực nhiều cấp độ.",
     "pointSelect": "Nhấp vào một điểm để vào <span class=\"keyword\">trạng thái đã chọn</span>. Bạn sẽ có thể xem thông tin của điểm.",
     "pointMark": "Nhấp vào điểm một lần nữa để đánh dấu là hoàn thành.",
     "detail": "Bạn có thể xem thông tin cụ thể về điểm đã chọn, bao gồm số lượng điểm loại này trong <span class=\"keyword\">tất cả các khu vực</span>, <span class=\"keyword\">khu vực chính</span> hiện tại và <span class=\"keyword\">khu vực con</span> hiện tại.",
@@ -137,5 +139,9 @@
     "disable": "Tắt",
     "expand": "Mở rộng",
     "collapse": "Thu gọn"
+  },
+  "meta": {
+      "title": "Atlas Endfield",
+      "description": "Open Endfield Map là bản đồ trực tuyến mã nguồn mở cho Arknights: Endfield, cung cấp bản đồ tương tác, theo dõi thu thập vật phẩm và công cụ lập kế hoạch chiến lược."
   }
 }

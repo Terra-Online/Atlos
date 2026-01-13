@@ -18,23 +18,28 @@ export const SelectionLayer = ({ containerRef }: SelectionLayerProps) => {
     }
 
     useLayoutEffect(() => {
-        let cleanup: (() => void) | undefined;
-
-        if (!isSelecting && lastBoxRef.current) {
-            // Ended selection, trigger fade out
-            setFadingState({ box: lastBoxRef.current, active: true });
-            
-            const timer = setTimeout(() => {
-                setFadingState(null);
-                lastBoxRef.current = null;
-            }, 250);
-            cleanup = () => clearTimeout(timer);
-        } else if (isSelecting) {
+        if (isSelecting) {
             // Started selection, clear fading
             setFadingState(null);
+            return;
         }
-        
-        return cleanup;
+
+        if (!lastBoxRef.current) return;
+
+        // Ended selection: render box at opacity 1 first, then fade out next frame.
+        setFadingState({ box: lastBoxRef.current, active: false });
+        const raf = requestAnimationFrame(() => {
+            setFadingState((prev) => (prev ? { ...prev, active: true } : prev));
+        });
+
+        const timer = setTimeout(() => {
+            setFadingState(null);
+        }, 300);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            clearTimeout(timer);
+        };
     }, [isSelecting]);
 
     const box = isSelecting ? selectionBox : fadingState?.box;

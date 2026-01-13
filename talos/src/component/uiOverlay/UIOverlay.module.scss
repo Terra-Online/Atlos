@@ -33,3 +33,32 @@
         pointer-events: none;
     }
 }
+
+/* Switch Area: contains both Region and Layer switches */
+.switchArea {
+    position: absolute;
+    top: 30%;
+    left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: auto;
+    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 500;
+    
+    /* Mobile drawer snap states */
+    /* Snap 0: initial position (bottom: 1rem) */
+    &[data-snap="0"] {
+        transform: translateY(0);
+    }
+    
+    /* Snap 1: pushed up by ~55vh drawer */
+    &[data-snap="1"] {
+        transform: translateY(-65%);
+    }
+    
+    /* Snap 2+: stays at same position as snap 1 (max 85vh drawer) */
+    &[data-snap="2"] {
+        transform: translateY(-65%);
+    }
+}

@@ -1,8 +1,9 @@
 // 全局类型定义
 declare global {
-    declare const __ASSETS_HOST: string;
-    declare const __APP_VERSION__: string;
+    const __ASSETS_HOST: string;
+    const __APP_VERSION__: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface Window {
 
     }
@@ -17,13 +18,13 @@ declare global {
 
 // 模块声明
 declare module '*.json' {
-    const value: any;
+    const value: unknown;
     export default value;
 }
 
 declare module '*.svg' {
-    import React = require('react');
-    export const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>;
+    import type React from 'react';
+    export const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
     const src: string;
     export default src;
 }

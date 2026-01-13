@@ -105,7 +105,7 @@
     "search": "<span class=\"keyword\">ゲーム内でサポートされている言語</span>で表示したいピンを検索し、検索結果から選択できます。",
     "filterContainer": "同じタイプのピンは1つの<span class=\"keyword\">フィルター</span>にまとめられています。<br>クリックして、そのタイプのピンリストを展開します。",
     "filterSort": "フィルターの左側にあるアイコンを長押しすると、<span class=\"keyword\">ドラッグ状態</span>になります。<br>必要に応じて、重要なフィルターを並べ替えることができます。",
-    "selectorSelect": "具体的な<span class=\"keyword\">ピンセレクター</span>です。クリックして選択状態を切り替えると、選択されたピンがマップ上に表示されます。<br>現在のエリアにあるこのタイプのピンの総数と、すでにマークした数を確認できます。",
+    "selectorSelect": "具体的な<span class=\"keyword\">ピンセレクター</span>です。クリックして選択状態を切り替えると、選択されたピンがマップ上に表示されます。<br>現在のエリアにあるこのタイプのピンの総数と、すでにマークした数を確認できます。<br><br>サイドバーの<span class=\"keyword\">空白エリアを押しながらドラッグ</span>することで、複数のピンセレクタに対して<span class=\"keyword\">ボックス選択</span>を行い、選択状態を一括で素早く切り替えることができます。",
     "selectorComplete": "このタイプのすべてのピンが完了としてマークされると、セレクターは<span class=\"keyword\">完了状態</span>になり、マーク状況をすばやく判断できます。",
     "triggerHandle": "マップ表示に関連するスイッチはサイドバーの下部にあります。<br>マウスを長押しして<span class=\"keyword\">ドラッグして操作</span>できます。",
     "triggerSwitch": "クリックしてスイッチの状態を切り替えます。<br><ul><li><span class=\"keyword\">ピン凝集モード</span>は、密集したピンをまとめて表示することを許可します。</li><li><span class=\"keyword\">地域境界表示</span>は、現在のエリア内の各サブエリアとその境界をハイライトします。</li></ul>",
@@ -121,6 +121,8 @@
     "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",
     "subregionSwitch": "マウスを<span class=\"keyword\">メインエリアアイコンにホバー</span>すると、利用可能なサブエリアが表示されます。サブエリアアイコンをクリックすると、そのサブエリアビューにジャンプします。<br>同様に、特定のエリアのレイヤーを選択することもできます。",
+    "layerMain": "<span class=\"keyword\">レイヤーアイコン</span>をクリックすると、いつでも<span class=\"keyword\">メインレイヤー(M)</span>に戻ることができます。",
+    "layerSwitch": "マウスを<span class=\"keyword\">レイヤーアイコンにホバー</span>すると、現在のエリアに利用可能なレイヤーが表示されます。レイヤーをクリックすると、そのビューに切り替わります。<br>異なるレイヤーは、マップの<span class=\"keyword\">異なる階層または高さ</span>を表示する場合があり、複数階層のエリアを探索するのに役立ちます。",
     "pointSelect": "ピンをクリックすると、ピンは<span class=\"keyword\">選択状態</span>になります。ピンの情報を確認できます。",
     "pointMark": "ピンをもう一度クリックすると、完了としてマークされます。",
     "detail": "選択したピンの具体的な情報を確認できます。これには、<span class=\"keyword\">すべてのエリア</span>、現在の<span class=\"keyword\">メインエリア</span>、および現在の<span class=\"keyword\">サブエリア</span>におけるそのタイプのピンの数が含まれます。",
@@ -137,5 +139,9 @@
     "disable": "無効",
     "expand": "展開",
     "collapse": "折りたたむ"
+  },
+  "meta": {
+      "title": "終末地マップ集",
+      "description": "Open Endfield Map は、『アークナイツ：エンドフィールド』向けのオープンソースのオンラインマップで、インタラクティブマップ、アイテム収集、戦略計画ツールを提供します。"
   }
 }
