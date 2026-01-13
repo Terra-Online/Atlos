@@ -8,7 +8,8 @@ import {
     useToggleMarkFilterExpanded,
     useUiPrefsStore,
     useSetDrawerSnapIndex,
-    useSetForceSubregionOpen,
+    useSetForceRegionSubOpen,
+    useSetForceLayerSubOpen,
     useSetForceDetailOpen,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
@@ -30,7 +31,8 @@ export const useGuideSteps = (map?: L.Map) => {
     const deletePoint = useDeletePoint();
     const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
-    const setForceSubregionOpen = useSetForceSubregionOpen();
+    const setForceRegionSubOpen = useSetForceRegionSubOpen() as (value: boolean) => void;
+    const setForceLayerSubOpen = useSetForceLayerSubOpen() as (value: boolean) => void;
     const setForceDetailOpen = useSetForceDetailOpen();
 
     const targetSubCategory = 'boss';
@@ -260,7 +262,10 @@ export const useGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.regionSwitch') || ''),
             placement: 'right',
             disableBeacon: true,
-            onNext: () => setForceSubregionOpen(true),
+            onNext: () => {
+                setForceLayerSubOpen(false);
+                setForceRegionSubOpen(true);
+            },
             delay: 300,
         },
         {
@@ -270,13 +275,35 @@ export const useGuideSteps = (map?: L.Map) => {
             placement: 'right',
             disableBeacon: true,
             onNext: () => {
-                setForceSubregionOpen(false);
+                setForceRegionSubOpen(false);
                 map?.setZoom(map.getMinZoom(), { animate: true });
             },
             delay: 300,
         },
         {
-            id: 'STEP-21_point-select',
+            id: 'STEP-21_layer-main',
+            target: '[class*="layerswitch"] > [class*="regItem"]',
+            content: parse(t('guide.layerMain') || ''),
+            placement: 'right',
+            disableBeacon: true,
+            onNext: () => {
+                setForceRegionSubOpen(false);
+                setForceLayerSubOpen(true);
+            },
+            delay: 200,
+        },
+        {
+            id: 'STEP-22_layer-switch',
+            target: '[class*="layerswitch"] [class*="subregionSwitch"]',
+            content: parse(t('guide.layerSwitch') || ''),
+            placement: 'right',
+            disableBeacon: true,
+            onNext: () => {
+                setForceLayerSubOpen(false);
+            },
+        },
+        {
+            id: 'STEP-23_point-select',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
@@ -288,7 +315,7 @@ export const useGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-22_point-check',
+            id: 'STEP-24_point-check',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',
@@ -298,14 +325,14 @@ export const useGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-23_detail-container',
+            id: 'STEP-25_detail-container',
             target: '[class*="detailContainer"]',
             content: parse(t('guide.detail') || ''),
             placement: 'top',
             disableBeacon: true,
         },
         {
-            id: 'STEP-24_point-icon',
+            id: 'STEP-26_point-icon',
             target: '[class*="pointIcon"]',
             content: parse(t('guide.pointIcon') || ''),
             placement: 'top',
@@ -320,10 +347,12 @@ export const useGuideSteps = (map?: L.Map) => {
         addPoint,
         deletePoint,
         setDrawerSnapIndex,
-        setForceSubregionOpen,
+        setForceRegionSubOpen,
+        setForceLayerSubOpen,
         setCurrentActivePoint,
         setForceDetailOpen,
         map,
+        firstSubCategory,
         firstType,
         targetPoint,
     ]);

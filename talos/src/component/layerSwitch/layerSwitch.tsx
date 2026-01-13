@@ -3,7 +3,7 @@ import styles from '../regSwitch/regSwitch.module.scss';
 import { useCurrentLayer, useSetCurrentLayer, type LayerType } from '@/store/layer';
 import classNames from 'classnames';
 import LayerIcon from '../../assets/images/UI/layer.svg?react';
-import { useForceSubregionOpen } from '@/store/uiPrefs';
+import { useForceLayerSubOpen } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
 
@@ -28,7 +28,7 @@ const LayerSwitch: React.FC<{
     const { currentRegionKey } = useRegion();
     const currentLayer = useCurrentLayer();
     const setCurrentLayer = useSetCurrentLayer();
-    const forceSubregionOpen = useForceSubregionOpen();
+    const forceLayerSubOpen = useForceLayerSubOpen();
 
     // Get available layers for current region
     const availableLayers = useMemo(() => {
@@ -85,7 +85,7 @@ const LayerSwitch: React.FC<{
                 </div>
                 <div
                     className={classNames(styles.subregionSwitchContainer, {
-                        [styles.forceOpen]: forceSubregionOpen,
+                        [styles.forceOpen]: forceLayerSubOpen,
                     })}
                     onClick={(e) => {
                         e.stopPropagation();

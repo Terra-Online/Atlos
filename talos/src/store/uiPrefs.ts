@@ -26,8 +26,10 @@ interface IUiPrefsStore {
   // User Guide States (Transient)
   drawerSnapIndex: number | null;
   setDrawerSnapIndex: (index: number | null) => void;
-  forceSubregionOpen: boolean;
-  setForceSubregionOpen: (value: boolean) => void;
+  forceRegionSubOpen: boolean;
+  setForceRegionSubOpen: (value: boolean) => void;
+  forceLayerSubOpen: boolean;
+  setForceLayerSubOpen: (value: boolean) => void;
   forceDetailOpen: boolean;
   setForceDetailOpen: (value: boolean) => void;
   isUserGuideOpen: boolean;
@@ -86,8 +88,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       // User Guide States
       drawerSnapIndex: null,
       setDrawerSnapIndex: (index) => set({ drawerSnapIndex: index }),
-      forceSubregionOpen: false,
-      setForceSubregionOpen: (value) => set({ forceSubregionOpen: value }),
+      forceRegionSubOpen: false,
+      setForceRegionSubOpen: (value) => set({ forceRegionSubOpen: value }),
+      forceLayerSubOpen: false,
+      setForceLayerSubOpen: (value) => set({ forceLayerSubOpen: value }),
       forceDetailOpen: false,
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
       isUserGuideOpen: false,
@@ -185,8 +189,10 @@ export const useSetTriggerlabelName = () => useUiPrefsStore((s) => s.setTriggerl
 // User Guide hooks
 export const useDrawerSnapIndex = () => useUiPrefsStore((s) => s.drawerSnapIndex);
 export const useSetDrawerSnapIndex = () => useUiPrefsStore((s) => s.setDrawerSnapIndex);
-export const useForceSubregionOpen = () => useUiPrefsStore((s) => s.forceSubregionOpen);
-export const useSetForceSubregionOpen = () => useUiPrefsStore((s) => s.setForceSubregionOpen);
+export const useForceRegionSubOpen = () => useUiPrefsStore((s) => s.forceRegionSubOpen);
+export const useSetForceRegionSubOpen = () => useUiPrefsStore((s) => s.setForceRegionSubOpen);
+export const useForceLayerSubOpen = () => useUiPrefsStore((s) => s.forceLayerSubOpen);
+export const useSetForceLayerSubOpen = () => useUiPrefsStore((s) => s.setForceLayerSubOpen);
 export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen);
 export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
 export const useIsUserGuideOpen = () => useUiPrefsStore((s) => s.isUserGuideOpen);

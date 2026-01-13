@@ -120,8 +120,8 @@
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
     "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
     "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱亭地圖</span>（主區域）。",
-    "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",
-    "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
+    "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",    "layerMain": "點擊<span class=\"keyword\">圖層圖標</span>可隨時返回<span class=\"keyword\">主圖層（M）</span>。當您需要快速回到預設地圖視圖時，這非常有用。",
+    "layerSwitch": "鼠標<span class=\"keyword\">懸浮於圖層圖標</span>可顯示當前區域的可用圖層，點擊圖層即可切換到該視圖。<br>不同的圖層可能顯示地圖的<span class=\"keyword\">不同樓層或高度</span>，幫助您探索多層次區域。",    "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
     "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
