@@ -120,7 +120,7 @@
     "help": "Reiniciar esta <span class=\"keyword\">guía</span>.",
     "regionSwitch": "Haga clic para cambiar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiones principales) en el juego.",
     "subregionSwitch": "<span class=\"keyword\">Pase el mouse sobre el icono de la región principal</span> para mostrar las subregiones disponibles; al hacer clic en un icono de subregión, saltará a esa vista de subregión.<br>Del mismo modo, también puede seleccionar una capa para una región.",
-    "layerMain": "Haga clic en el <span class=\"keyword\">icono de capa</span> para volver a la <span class=\"keyword\">capa principal (M)</span> en cualquier momento. Esto es útil cuando necesita volver rápidamente a la vista del mapa predeterminada.",
+    "layerMain": "Haga clic en el <span class=\"keyword\">icono de capa</span> para volver a la <span class=\"keyword\">capa principal (M)</span> en cualquier momento.",
     "layerSwitch": "<span class=\"keyword\">Pase el mouse sobre el icono de capa</span> para mostrar las capas disponibles para la región actual; haga clic en una capa para cambiar a esa vista.<br>Diferentes capas pueden mostrar <span class=\"keyword\">diferentes pisos o alturas</span> del mapa, ayudándole a explorar áreas de varios niveles.",
     "pointSelect": "Haga clic en un marcador para ingresar al <span class=\"keyword\">estado seleccionado</span>. Podrá ver la información del marcador.",
     "pointMark": "Haga clic en el marcador nuevamente para marcarlo como completado.",

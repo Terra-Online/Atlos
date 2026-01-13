@@ -32,8 +32,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
-    const setForceRegionSubOpen = useSetForceRegionSubOpen() as (value: boolean) => void;
-    const setForceLayerSubOpen = useSetForceLayerSubOpen() as (value: boolean) => void;
+    const setForceRegionSubOpen = useSetForceRegionSubOpen();
+    const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
     const userGuideVersion = useUserGuideVersion();
     const setUserGuideVersion = useSetUserGuideVersion();

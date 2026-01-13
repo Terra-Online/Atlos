@@ -121,7 +121,7 @@
     "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",
     "subregionSwitch": "<span class=\"keyword\">Hover over the main region icon</span> to show available sub-regions; clicking a sub-region icon will jump to that sub-region view.<br>Similarly, you can also select a layer for a region.",
-    "layerMain": "Click the <span class=\"keyword\">layer icon</span> to return to the <span class=\"keyword\">main layer (M)</span> at any time. This is useful when you need to quickly return to the default map view.",
+    "layerMain": "Click the <span class=\"keyword\">layer icon</span> to return to the <span class=\"keyword\">main layer (M)</span> at any time.",
     "layerSwitch": "<span class=\"keyword\">Hover over the layer icon</span> to display available layers for the current region; click a layer to switch to that view.<br>Different layers may show <span class=\"keyword\">different floors or heights</span> of the map, helping you explore multi-level areas.",
     "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
     "pointMark": "Click the marker again to mark it as complete.",

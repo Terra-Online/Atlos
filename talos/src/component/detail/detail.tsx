@@ -5,7 +5,6 @@ import Button from '@/component/button/button';
 import { getItemIconUrl } from '@/utils/resource.ts';
 import { MARKER_TYPE_DICT } from '@/data/marker';
 
-// 导入所有 category SVG
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
 import CombatIcon from '@/assets/images/category/combat.svg?react';
@@ -29,7 +28,7 @@ import { motion, AnimatePresence, usePresence } from 'motion/react';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useForceDetailOpen } from '@/store/uiPrefs';
 
-// Category icon 映射
+// Category icon mapping
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
     collection: CollectionIcon,
@@ -124,11 +123,9 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         ? pointsRecord.includes(currentPoint.id)
         : false;
 
-    // 左上角用 category.sub 图标（第二级索引）
     const categorySubKey = currentPoint ? MARKER_TYPE_DICT[currentPoint.type]?.category?.sub : undefined;
     const CategoryIcon = categorySubKey ? CATEGORY_ICON_MAP[categorySubKey] : undefined;
     
-    // 大图标用 item icon
     const iconKey = currentPoint ? currentPoint.type : 'UKN';
     const iconUrl = getItemIconUrl(iconKey);
 
@@ -140,7 +137,6 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         : (currentPoint?.type ?? '');
 
     // const noteContent = currentPoint?.status?.user?.localNote;
-
     const [isVisible, setIsVisible] = useState(false);
     const forceDetailOpen = useForceDetailOpen();
     const ref = useRef<HTMLDivElement | null>(null);

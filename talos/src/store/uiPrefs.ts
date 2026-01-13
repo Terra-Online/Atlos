@@ -187,16 +187,16 @@ export const useTriggerlabelName = () => useUiPrefsStore((s) => s.triggerlabelNa
 export const useSetTriggerlabelName = () => useUiPrefsStore((s) => s.setTriggerlabelName);
 
 // User Guide hooks
-export const useDrawerSnapIndex = () => useUiPrefsStore((s) => s.drawerSnapIndex);
-export const useSetDrawerSnapIndex = () => useUiPrefsStore((s) => s.setDrawerSnapIndex);
-export const useForceRegionSubOpen = () => useUiPrefsStore((s) => s.forceRegionSubOpen);
-export const useSetForceRegionSubOpen = () => useUiPrefsStore((s) => s.setForceRegionSubOpen);
-export const useForceLayerSubOpen = () => useUiPrefsStore((s) => s.forceLayerSubOpen);
-export const useSetForceLayerSubOpen = () => useUiPrefsStore((s) => s.setForceLayerSubOpen);
-export const useForceDetailOpen = () => useUiPrefsStore((s) => s.forceDetailOpen);
-export const useSetForceDetailOpen = () => useUiPrefsStore((s) => s.setForceDetailOpen);
-export const useIsUserGuideOpen = () => useUiPrefsStore((s) => s.isUserGuideOpen);
-export const useSetIsUserGuideOpen = () => useUiPrefsStore((s) => s.setIsUserGuideOpen);
+export const useDrawerSnapIndex = (): number | null => useUiPrefsStore((s) => s.drawerSnapIndex);
+export const useSetDrawerSnapIndex = (): ((index: number | null) => void) => useUiPrefsStore((s) => s.setDrawerSnapIndex);
+export const useForceRegionSubOpen = (): boolean => useUiPrefsStore((s) => s.forceRegionSubOpen);
+export const useSetForceRegionSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceRegionSubOpen);
+export const useForceLayerSubOpen = (): boolean => useUiPrefsStore((s) => s.forceLayerSubOpen);
+export const useSetForceLayerSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceLayerSubOpen);
+export const useForceDetailOpen = (): boolean => useUiPrefsStore((s) => s.forceDetailOpen);
+export const useSetForceDetailOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceDetailOpen);
+export const useIsUserGuideOpen = (): boolean => useUiPrefsStore((s) => s.isUserGuideOpen);
+export const useSetIsUserGuideOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setIsUserGuideOpen);
 
 // Theme hooks
 export const useTheme = () => useUiPrefsStore((s) => s.theme);

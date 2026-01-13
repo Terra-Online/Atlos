@@ -31,8 +31,8 @@ export const useGuideSteps = (map?: L.Map) => {
     const deletePoint = useDeletePoint();
     const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
     const setDrawerSnapIndex = useSetDrawerSnapIndex();
-    const setForceRegionSubOpen = useSetForceRegionSubOpen() as (value: boolean) => void;
-    const setForceLayerSubOpen = useSetForceLayerSubOpen() as (value: boolean) => void;
+    const setForceRegionSubOpen = useSetForceRegionSubOpen();
+    const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
 
     const targetSubCategory = 'boss';

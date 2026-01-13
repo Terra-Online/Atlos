@@ -62,9 +62,6 @@ const LayerSwitch: React.FC<{
             <div
                 className={styles.indicator}
                 style={getContainerStyle(0, true)}
-                onClick={() => {
-                    // Reset to M layer on indicator click? No, request is "Click Layer Main Button"
-                }}
             ></div>
             <div
                 className={classNames(
