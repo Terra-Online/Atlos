@@ -197,8 +197,7 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     };
 }
 
-// Preload other common languages in background
-const PRELOAD_LANGS: Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'it-IT'];
+// Preload all supported languages in background
 let preloadingStarted = false;
 
 async function preloadLanguages(current: Lang) {
@@ -208,14 +207,16 @@ async function preloadLanguages(current: Lang) {
     // Delay to let main thread settle
     await new Promise(r => setTimeout(r, 2000));
 
-    const toPreload = PRELOAD_LANGS.filter(l => l !== current);
-    for (const lang of toPreload) {
-        // Sequentially load to be gentle on network
-        try {
-            await loadLocaleOnMain(lang);
-        } catch {
-            // ignore
-        }
+    // Exclude current language
+    const toPreload = SUPPORTED_LANGS.filter(l => l !== current);
+    
+    // Load in small batches to avoid network congestion
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < toPreload.length; i += BATCH_SIZE) {
+        const batch = toPreload.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(batch.map(lang => loadLocaleOnMain(lang)));
+        // Small breathing room between batches
+        await new Promise(r => setTimeout(r, 200));
     }
 }
 

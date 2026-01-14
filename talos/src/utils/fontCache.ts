@@ -218,16 +218,18 @@ export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
 
     const candidates: string[] = [];
     for (const weight of weights) {
+        // Only preload woff2 to save bandwidth. 
+        // fallback formats are only loaded on demand if woff2 fails or is unsupported (which is rare in modern browsers)
         candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff2`);
-        candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff`);
+        // candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff`);
     }
 
     if (region === 'CN') {
         candidates.push('Harmony/HMSans_SC.woff2');
-        candidates.push('Harmony/HMSans_SC.woff');
+        // candidates.push('Harmony/HMSans_SC.woff');
     } else if (region === 'HK') {
         candidates.push('Harmony/HMSans_TC.woff2');
-        candidates.push('Harmony/HMSans_TC.woff');
+        // candidates.push('Harmony/HMSans_TC.woff');
     }
 
     return getFontAssetUrls(candidates);
