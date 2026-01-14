@@ -81,6 +81,7 @@ export default defineConfig({
                     description: metaInfo.description,
                     ogUrl: metaInfo.ogUrl,
                     keywords: metaInfo.keywords,
+                    cdnHost: config.web.build.cdn || '',
                 },
             },
         }),

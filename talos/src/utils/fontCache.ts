@@ -120,11 +120,11 @@ export async function preloadFonts(urls: string[]): Promise<void> {
 }
 
 /**
- * Get cached font blob if available
+ * Get cached font buffer if available
  * @param url Font file URL
- * @returns Blob if cached and valid, null otherwise
+ * @returns ArrayBuffer if cached and valid, null otherwise
  */
-export async function getCachedFontBlob(url: string): Promise<Blob | null> {
+export async function getCachedFontBuffer(url: string): Promise<ArrayBuffer | null> {
     if (!isCacheAvailable()) return null;
 
     try {
@@ -133,7 +133,7 @@ export async function getCachedFontBlob(url: string): Promise<Blob | null> {
 
         if (cachedResponse && !isCacheExpired(url)) {
             logger.debug(`Hit font cache: ${url}`);
-            return await cachedResponse.blob();
+            return await cachedResponse.arrayBuffer();
         }
         return null;
     } catch (error) {
@@ -218,16 +218,18 @@ export function getFontUrlsForRegion(region: 'CN' | 'HK' | 'JP'): string[] {
 
     const candidates: string[] = [];
     for (const weight of weights) {
+        // Only preload woff2 to save bandwidth. 
+        // fallback formats are only loaded on demand if woff2 fails or is unsupported (which is rare in modern browsers)
         candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff2`);
-        candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff`);
+        // candidates.push(`UD_ShinGo/UDShinGo_${regionPrefix}_${weight}.woff`);
     }
 
     if (region === 'CN') {
         candidates.push('Harmony/HMSans_SC.woff2');
-        candidates.push('Harmony/HMSans_SC.woff');
+        // candidates.push('Harmony/HMSans_SC.woff');
     } else if (region === 'HK') {
         candidates.push('Harmony/HMSans_TC.woff2');
-        candidates.push('Harmony/HMSans_TC.woff');
+        // candidates.push('Harmony/HMSans_TC.woff');
     }
 
     return getFontAssetUrls(candidates);
