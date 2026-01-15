@@ -20,16 +20,16 @@ const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 // Define meta info based on build target
 const metaInfo = buildTarget === 'r2' 
     ? {
-        title: "Open Endfield Map",
+        title: "Open Endfield Map - Arknights: Endfield Interactive Map",
         description: "Open Endfield Map is an open-source online map for Arknights: Endfield.",
-        ogUrl: "https://opendfieldmap.org", // Example URL for R2/Global
-        keywords: "Endfield Map, Arknights: Endfield, Endfield, endfield, Arknights, Atlos, online map"
+        ogUrl: "https://opendfieldmap.org",
+        keywords: "Endfield Map, Arknights: Endfield, Endfield, endfield, Arknights, Atlos, online map, interactive map, full-collection"
       }
     : {
-        title: "终末地地图集",
+        title: "终末地地图集 - 明日方舟：终末地交互式资源点位地图全集",
         description: "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。",
         ogUrl: "https://opendfieldmap.cn",
-        keywords: "终末地地图, 明日方舟：终末地, 终末地, 终末地WIKI, Arknights Endfield, Atlos, 在线地图"
+        keywords: "终末地地图, 明日方舟：终末地, 终末地, 全收集, 终末地WIKI, Arknights Endfield, Atlos, 在线地图, 交互式地图"
       };
 
 const isProd = process.env.NODE_ENV === 'production';
