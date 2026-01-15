@@ -69,7 +69,7 @@ const getMapClipTargets = () => {
 
 // https://vite.dev/config/
 export default defineConfig({
-    publicDir: false,
+    // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
         react(),
         svgr(),
