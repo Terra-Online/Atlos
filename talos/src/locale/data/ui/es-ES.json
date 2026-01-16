@@ -82,7 +82,8 @@
       "hint": "Seleccione el estado de la UI que desea conservar. Recomendamos <span class=\"keyword\">mantener todas las opciones</span> para una experiencia más consistente.",
       "sidebar": "Mantener barra",
       "filterOrder": "Orden de filtros",
-      "triggers": "Estado de triggers"
+      "triggers": "Estado de triggers",
+      "performanceMode": "Modo rendimiento"
     },
     "mapPrefs": {
       "title": "Preferencias de mapa",
@@ -108,7 +109,7 @@
     "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span> específico. Haga clic para alternar el estado de selección; los marcadores seleccionados aparecerán en el mapa.<br>Puede ver el número total de dichos marcadores en el área actual, así como el número que ha marcado.<br><br>También puede <span class=\"keyword\">mantener presionado y arrastrar en el área en blanco</span> de la barra lateral para realizar una <span class=\"keyword\">selección de cuadro</span> en múltiples selectores de marcadores a la vez, lo que le permite alternar rápidamente su estado de selección en lotes.",
     "selectorComplete": "Cuando todos los marcadores de este tipo se marquen como completados, el selector cambiará al <span class=\"keyword\">estado completado</span> para un juicio rápido del progreso del marcado.",
     "triggerHandle": "Los interruptores relacionados con la visualización del mapa se encuentran en la parte inferior de la barra lateral.<br>Puede mantener presionado el mouse para <span class=\"keyword\">arrastrarlos y operarlos.</span>",
-    "triggerSwitch": "Haga clic para alternar el estado del interruptor.<br><ul><li><span class=\"keyword\">El modo de agrupación de marcadores</span> permite mostrar marcadores densos fusionados;</li><li><span class=\"keyword\">La visualización de límites de región</span> resalta cada subregión y sus límites dentro del área actual.</li></ul>",
+    "triggerSwitch": "Haga clic para alternar el estado del interruptor.<br><ul><li><span class=\"keyword\">El modo de agrupación de marcadores</span> permite mostrar marcadores densos fusionados;</li><li><span class=\"keyword\">La visualización de límites de región</span> resalta cada subregión y sus límites dentro del área actual.</li><li><span class=\"keyword\">Nombres de región</span> muestra los nombres de las regiones en el juego.</li></ul>",
     "scale": "Use el <span class=\"keyword\">control de zoom</span> para ver y manipular el zoom del mapa.<br>La rueda de desplazamiento o el panel táctil se pueden usar para hacer zoom. También puede hacer zoom haciendo clic en los botones <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> o en cualquier lugar de la barra de zoom.",
     "filterList": "La <span class=\"keyword\">lista de marcadores</span> enumera los marcadores que ha seleccionado; haga clic en el icono para anular la selección.",
     "headbar": "Los interruptores relacionados con la configuración del mapa se encuentran en la <span class=\"keyword\">barra superior</span>.",

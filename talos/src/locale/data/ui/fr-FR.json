@@ -82,7 +82,8 @@
       "hint": "Sélectionnez l’état de l’UI à conserver. Nous recommandons <span class=\"keyword\">de conserver toutes les options</span> pour une expérience plus cohérente.",
       "sidebar": "Garder la barre",
       "filterOrder": "Ordre des filtres",
-      "triggers": "État des triggers"
+      "triggers": "État des triggers",
+      "performanceMode": "Mode performance"
     },
     "mapPrefs": {
       "title": "Préférences carte",
@@ -108,7 +109,7 @@
     "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueur</span> spécifique. Cliquez pour basculer l'état de sélection ; les marqueurs sélectionnés apparaîtront sur la carte.<br>Vous pouvez voir le nombre total de ces marqueurs dans la zone actuelle, ainsi que le nombre que vous avez marqué.<br><br>Vous pouvez également <span class=\"keyword\">maintenir et faire glisser dans la zone vide</span> de la barre latérale pour effectuer une <span class=\"keyword\">sélection de boîte</span> sur plusieurs sélecteurs de marqueurs à la fois, vous permettant de basculer rapidement leur état de sélection par lots.",
     "selectorComplete": "Lorsque tous les marqueurs de ce type sont marqués comme terminés, le sélecteur passera à l'état <span class=\"keyword\">terminé</span> pour un jugement rapide de la progression du marquage.",
     "triggerHandle": "Les commutateurs liés à l'affichage de la carte sont situés au bas de la barre latérale.<br>Vous pouvez maintenir la souris pour <span class=\"keyword\">les faire glisser et les utiliser.</span>",
-    "triggerSwitch": "Cliquez pour basculer l'état du commutateur.<br><ul><li><span class=\"keyword\">Le mode de regroupement des marqueurs</span> permet d'afficher les marqueurs denses fusionnés;</li><li><span class=\"keyword\">L'affichage des limites de région</span> met en évidence chaque sous-région et ses limites dans la zone actuelle.</li></ul>",
+    "triggerSwitch": "Cliquez pour basculer l'état du commutateur.<br><ul><li><span class=\"keyword\">Le mode de regroupement des marqueurs</span> permet d'afficher les marqueurs denses fusionnés;</li><li><span class=\"keyword\">L'affichage des limites de région</span> met en évidence chaque sous-région et ses limites dans la zone actuelle.</li><li><span class=\"keyword\">Noms de région</span> affiche les noms des régions du jeu.</li></ul>",
     "scale": "Utilisez le <span class=\"keyword\">contrôle de zoom</span> pour afficher et manipuler le zoom de la carte.<br>La molette ou le pavé tactile peuvent être utilisés pour zoomer. Vous pouvez également zoomer en cliquant sur les boutons <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ou n'importe où sur la barre de zoom.",
     "filterList": "La <span class=\"keyword\">liste des marqueurs</span> répertorie les marqueurs que vous avez sélectionnés ; cliquez sur l'icône pour désélectionner.",
     "headbar": "Les commutateurs liés aux paramètres de la carte sont situés dans la <span class=\"keyword\">barre supérieure</span>.",

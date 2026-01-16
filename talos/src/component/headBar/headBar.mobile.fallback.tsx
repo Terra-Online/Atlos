@@ -1,16 +1,12 @@
 import styles from './headbar.module.scss';
-import LiquidGlass from 'liquid-glass-react-positioning';
 import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '../../assets/logos/close.svg?react';
-import { usePerformanceMode } from '@/store/uiPrefs';
-import HeadBarMobileFallback from './headBar.mobile.fallback';
 
-interface HeadBarMobileProps {
+interface HeadBarMobileFallbackProps {
     children: React.ReactNode;
 }
 
-const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
-    const performanceMode = usePerformanceMode();
+const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const childrenArray = React.Children.toArray(children);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -39,32 +35,13 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
         };
     }, [isExpanded]);
 
-    // Use fallback component in performance mode
-    if (performanceMode) {
-        return <HeadBarMobileFallback>{children}</HeadBarMobileFallback>;
-    }
-
     return (
-        <LiquidGlass
-            displacementScale={20}
-            blurAmount={0}
-            saturation={20}
-            aberrationIntensity={2}
-            elasticity={0.1}
-            cornerRadius={36}
-            padding={isExpanded ? '12px' : '8px'}
-            mode='standard'
-            overLight={false}
-            positioning='top-right'
-            border1Transition='none'
-            border2Transition='none'
+        <div
+            className={styles.headbarFallback}
             style={{
                 position: 'fixed',
                 top: '1rem',
                 right: '1rem',
-                backgroundColor: 'var(--headbar-bg)',
-                borderRadius: '36px',
-                transition: 'padding 0.3s ease',
             }}
         >
             <div
@@ -81,8 +58,8 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
                     {childrenArray}
                 </div>
             </div>
-        </LiquidGlass>
+        </div>
     );
 };
 
-export default HeadBarMobile;
+export default HeadBarMobileFallback;

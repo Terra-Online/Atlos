@@ -1,12 +1,21 @@
 import styles from './headbar.module.scss';
 import LiquidGlass from 'liquid-glass-react-positioning';
 import React from 'react';
+import { usePerformanceMode } from '@/store/uiPrefs';
+import HeadBarDesktopFallback from './headBar.desktop.fallback';
 
 interface HeadBarDesktopProps {
     children: React.ReactNode;
 }
 
 const HeadBarDesktop: React.FC<HeadBarDesktopProps> = ({ children }) => {
+    const performanceMode = usePerformanceMode();
+
+    // Use fallback component in performance mode
+    if (performanceMode) {
+        return <HeadBarDesktopFallback>{children}</HeadBarDesktopFallback>;
+    }
+
     return (
         <LiquidGlass
             displacementScale={60}

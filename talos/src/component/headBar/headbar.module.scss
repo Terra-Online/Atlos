@@ -202,3 +202,24 @@
     justify-items: center;
     align-items: center;
 }
+// Fallback styles for performance mode
+.headbarFallback {
+    background: var(--headbar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 8px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+    // Mobile fallback specific styles
+    .headbarMobile {
+        &.collapsed {
+            padding: 8px;
+        }
+
+        &.expanded {
+            padding: 12px;
+        }
+    }
+}

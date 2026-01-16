@@ -82,7 +82,8 @@
       "hint": "Chọn các tùy chọn lưu giao diện bạn muốn bật.<br>Chúng tôi khuyến nghị <span class=\"keyword\">bật tất cả tùy chọn để có trải nghiệm nhất quán hơn</span>.",
       "sidebar": "Lưu trạng thái sidebar",
       "filterOrder": "Lưu thứ tự lọc",
-      "triggers": "Lưu trạng thái thanh dưới"
+      "triggers": "Lưu trạng thái thanh dưới",
+      "performanceMode": "Chế độ hiệu suất"
     },
     "mapPrefs": {
       "title": "Bản đồ & điểm",
@@ -108,7 +109,7 @@
     "selectorSelect": "<span class=\"keyword\">Bộ chọn điểm</span> cụ thể. Nhấp để chuyển đổi trạng thái chọn; các điểm đã chọn sẽ xuất hiện trên bản đồ.<br>Bạn có thể thấy tổng số điểm loại này trong khu vực hiện tại, cũng như số lượng bạn đã đánh dấu.<br><br>Bạn cũng có thể <span class=\"keyword\">giữ và kéo trong vùng trống</span> của thanh bên để thực hiện <span class=\"keyword\">chọn hộp</span> trên nhiều bộ chọn điểm cùng một lúc, cho phép bạn nhanh chóng chuyển đổi trạng thái chọn của chúng theo lô.",
     "selectorComplete": "Khi tất cả các điểm loại này được đánh dấu hoàn thành, bộ chọn sẽ chuyển sang <span class=\"keyword\">trạng thái hoàn thành</span> để bạn đánh giá nhanh tiến độ đánh dấu.",
     "triggerHandle": "Các công tắc liên quan đến hiển thị bản đồ nằm ở dưới cùng của thanh bên.<br>Bạn có thể giữ chuột để <span class=\"keyword\">kéo và thao tác chúng.</span>",
-    "triggerSwitch": "Nhấp để chuyển đổi trạng thái công tắc.<br><ul><li><span class=\"keyword\">Chế độ Gộp Điểm</span> cho phép hiển thị các điểm dày đặc được gộp lại;</li><li><span class=\"keyword\">Hiển thị Ranh giới Khu vực</span> làm nổi bật từng khu vực con và ranh giới của nó trong khu vực hiện tại.</li></ul>",
+    "triggerSwitch": "Nhấp để chuyển đổi trạng thái công tắc.<br><ul><li><span class=\"keyword\">Chế độ Gộp Điểm</span> cho phép hiển thị các điểm dày đặc được gộp lại;</li><li><span class=\"keyword\">Hiển thị Ranh giới Khu vực</span> làm nổi bật từng khu vực con và ranh giới của nó trong khu vực hiện tại.</li><li><span class=\"keyword\">Hiển thị Tên Khu Vực</span> sẽ hiển thị tên khu vực trong trò chơi.</li></ul>",
     "scale": "Sử dụng <span class=\"keyword\">Điều khiển Thu phóng</span> để xem và thao tác thu phóng bản đồ.<br>Có thể sử dụng con lăn chuột hoặc bàn di chuột để thu phóng. Bạn cũng có thể thu phóng bằng cách nhấp vào nút <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> hoặc bất kỳ đâu trên thanh thu phóng.",
     "filterList": "<span class=\"keyword\">Danh sách Điểm</span> liệt kê các điểm bạn đã chọn; nhấp vào biểu tượng để bỏ chọn.",
     "headbar": "Các công tắc liên quan đến cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên cùng</span>.",
