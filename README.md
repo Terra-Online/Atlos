@@ -13,7 +13,7 @@ PRs are warmly welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 [![License](https://img.shields.io/github/license/Terra-Online/Atlos?label=license)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Come and chat with us on **Discord**: https://discord.gg/2PMegCX4wJ
+Come and chat with us on **Discord**: [https://discord.gg/2PMegCX4wJ](https://discord.gg/BFMAKZSUG7)
 
 ## Highlights
 
