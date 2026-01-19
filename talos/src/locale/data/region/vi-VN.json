@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "Thung Lũng IV",
+    "sub": {
+      "PL": {
+        "name": "Cao Nguyên Năng Lượng",
+        "short": "PL",
+        "site": {
+          "old_dorms": "KTX Cũ",
+          "originium_power_plant": "Nhà Máy Năng Lượng Originium",
+          "power_plant_comm_station": "Trạm Liên Lạc Nhà Máy Năng Lượng",
+          "bridge_approach_camp": "Trại Đầu Cầu",
+          "united_parking_lot": "Bãi Đỗ Xe Công Đoàn",
+          "planned_construction_area": "Khu Vực Xây Dựng Dự Kiến",
+          "plateau_trunkway": "Đại Lộ Cao Nguyên",
+          "bonekrusher_warcamp": "Trại Chiến Tranh Bonekrusher",
+          "evacuation_zone": "Khu Vực Sơ Tán",
+          "shattered_fringe": "Vùng Rìa Vỡ Nát",
+          "Æther_test_site": "Khu Thử Nghiệm Æther"
+        }
+      },
+      "OL": {
+        "name": "Khởi Nguồn Lodespring",
+        "short": "OL",
+        "site": {
+          "originium_passage": "Lối Đi Originium",
+          "cradle_of_the_ages": "Chiếc Nôi Cổ Đại",
+          "mines_cable_car_station": "Trạm Cáp Treo Mỏ",
+          "logistices_area": "Khu Vực Vận Chuyển",
+          "containment_zone_intersection": "Giao Lộ Khu Cách Ly",
+          "old_mines": "Khu Mỏ Cũ",
+          "meteorological_station": "Trạm Khí Tượng",
+          "cliffside_mining_area": "Khu Khai Thác Vách Đá",
+          "temporary_stockpile": "Khu Tập Kết Tạm",
+          "blightcliff_ovservation_post": "Trạm Quan Sát Vách Nhiễm Khuẩn",
+          "mining_area_clinic": "Phòng Y Tế Khu Mỏ",
+          "mining_camp": "Trại Khai Thác",
+          "mountain_passage": "Lối Mòn Qua Núi",
+          "landbreaker_camp": "Doanh Trại Landbreaker"
+        }
+      },
+      "OP": {
+        "name": "Công Viên Khoa Học Originium",
+        "short": "OP",
+        "site": {
+          "control_center": "Trung Tâm Điều Khiển",
+          "route_5": "Tuyến 5",
+          "Transport_nexus": "Đầu Mối Vận Tải",
+          "the_depression": "Vùng Trũng",
+          "originium_science_park": "Công Viên Khoa Học Originium",
+          "research_center": "Trung Tâm Nghiên Cứu",
+          "cliffside_trail": "Đường Mòn Vách Đá",
+          "mountain_path_slope": "Dốc Đường Núi",
+          "kohl_plant": "Nhà Máy Rượu",
+          "eco_farm": "Nông Trại Sinh Thái",
+          "infra_station": "Trạm Hạ Tầng"
+        }
+      },
+      "AQ": {
+        "name": "Mỏ Đá Aburrey",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "Cổng Vào Mỏ Đá",
+          "refuse_stockpile": "Bãi Phế Liệu",
+          "loading_area": "Khu Vực Tải",
+          "stockpile_area": "Khu Dự Trữ",
+          "deep_management_post": "Chốt Điều Hành Lòng Đất",
+          "lifter_central": "Trung Khu Cẩu Nâng",
+          "listening_post": "Trạm Do Thám",
+          "transfer_area": "Khu Vực Chuyển Giao",
+          "quarry_site": "Khu Mỏ Đá",
+          "staff_lounge": "Phòng Nghỉ Nhân Viên"
+        }
+      },
+      "VP": {
+        "name": "Đèo Thung Lũng",
+        "short": "VP",
+        "site": {
+          "valley_fort": "Pháo Đài Thung Lũng",
+          "arsenal": "Kho Vũ Khí",
+          "valley_transfer": "Trạm Trung Chuyển Thung Lũng",
+          "temporary_shelter": "Hầm Trú Ẩn Tạm Thời",
+          "abandoned_trail": "Đường Mòn Bỏ Quên",
+          "passage_entrance": "Cổng Vào Đường Hầm"
+        }
+      },
+      "HB": {
+        "name": "Trung Tâm",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "Cảng Vận Chuyển",
+          "rockhill_passage": "Lối Đi Đồi Đá",
+          "bridge_approach": "Đầu Cầu",
+          "shorecove_camp": "Doanh Trại Ven Bờ",
+          "old_water_plant": "Nhà Máy Nước Cũ",
+          "hub_base_power_plant": "Nhà Máy Năng Lượng Trung Tâm",
+          "hub_west": "Khu Tây Trung Tâm",
+          "originium_byproduct_precessing_center": "Trung Tâm Xử Lý Sản Phẩm Phụ Của Originium",
+          "construction_site": "Công Trường Xây Dựng",
+          "hub_base": "Căn Cứ Trung Tâm",
+          "old_factory": "Nhà Máy Cũ",
+          "aic_research_center": "Trung Tâm Nghiên Cứu Khu Phức Hợp",
+          "southern_meadows": "Đồng Cỏ Phía Nam",
+          "worker_dorms": "KTX Công Nhân",
+          "mountain_side_trail": "Đường Mòn Sườn Núi",
+          "woodland_fringes": "Bìa Rừng",
+          "mountain_top": "Đỉnh Núi",
+          "eastern_passageway": "Lối Mòn Phía Đông",
+          "core_aic_area": "Khu Phức Hợp Trung Tâm"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Võ Lăng",
+    "sub": {
+      "WL": {
+        "name": "Thành Phố Võ Lăng",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Rừng Bất Quy",
+          "agricultural_test_site": "Khu Thử Nghiệm Nông Nghiệp",
+          "technological_production_office": "Phòng Sản Xuất Công Nghệ",
+          "core_aic_area": "Khu Phức Hợp Trung Tâm",
+          "chenshan_way": "Trầm Sơn Đạo",
+          "bureau_of_swordmancers": "Cục Kiếm Sĩ Hongshan",
+          "residential_area": "Khu Dân Cư",
+          "monitoring_center": "Trung Tâm Giám Sát",
+          "marker_stone_flats": "Bình Nguyên Đá Chỉ Dấu",
+          "xiranflow_channel": "Dòng Chảy Xiranflow",
+          "fangxing_avenue": "Đại Lộ Phương Hưng",
+          "tianshi_pillar_array": "Trận Cột Thiên Sư",
+          "maintenance_zone": "Khu Vực Bảo Trì",
+          "institute_of_materials_science": "Viện Khoa Học Vật Liệu",
+          "tianshi_bureau_academy": "Học Viện Cục Thiên Sư",
+          "citizen_square": "Quảng Trường Công Dân",
+          "restricted_area": "Khu Vực Hạn Chế",
+          "tianjing_courtyard": "Thiên Tỉnh Viện",
+          "riverbank_grotto": "Hang Động Bờ Sông",
+          "sanku_ridge": "Đỉnh Ba Hang",
+          "outskirt_barrens": "Vùng Hoang Ngoại Ô",
+          "lingshui_way": "Lăng Thủy Đạo",
+          "guhou_marsh": "Đầm Cô Hầu",
+          "field_logistics_depot": "Kho Hàng Vận Chuyển Chiến Trường",
+          "hulu_cave": "Động Hồ Lô"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Lối Mòn",
+          "ecological_research_station": "Trạm Nghiên Cứu Sinh Thái",
+          "qingbo bailey": "Sân Trong Trại Thanh Ba",
+          "treasure_grotto": "Hang Động Kho Báu",
+          "sky_king_flats": "Bình Nguyên Thiên Vương",
+          "stragglers_ford": "Bến Cho Kẻ Lạc",
+          "burdosnout_hill": "Đồi Burdosnout",
+          "stragglers_grove": "Rừng Mơ Hồ",
+          "zhailing_islet": "Cồn Hái Ấu",
+          "gloomvale": "Thung Lũng U Ám",
+          "south_hill": "Đồi Nam",
+          "sword_quenching_marsh": "Đầm Luyện Kiếm",
+          "everwater_brook": "Suối Vĩnh Cửu"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "Tàu Vũ Trụ Originium Dijiang",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Cầu Tàu",
+        "reception_room": "Phòng Tiếp Khách",
+        "kernel_sector": "Khu Lõi",
+        "central_ring": "Khoang Trung Tâm",
+        "working_sector": "Khu Làm Việc",
+        "living_sector": "Khu Vực Sinh Sống"
+      }
+    }
+  }
+}

@@ -60,6 +60,8 @@
       "pt-BR": "葡萄牙语",
       "id-ID": "印度尼西亚语",
       "ar-AE": "阿拉伯语",
+      "ms-MY": "马来语",
+      "pl-PL": "波兰语",
       "th-TH": "泰语",
       "vi-VN": "越南语"
     }
@@ -117,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">隐藏网站UI</span>以截图或查看边缘点位。",
     "group": "查看与本项目有关的<span class=\"keyword\">讨论群组</span>与<span class=\"keyword\">社区</span>。",
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
-    "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语以及韩语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，阿拉伯语，泰语以及越南语。",
+    "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语，韩语，法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，泰语，越南语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括阿拉伯语，马来语以及波兰语。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
     "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱庭地图</span>（主区域）。",

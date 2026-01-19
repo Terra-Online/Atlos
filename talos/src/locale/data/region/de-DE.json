@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "Tal IV",
+    "sub": {
+      "PL": {
+        "name": "Energieplateau",
+        "short": "PL",
+        "site": {
+          "old_dorms": "Alte Schlafsäle",
+          "originium_power_plant": "Originium-Kraftwerk",
+          "power_plant_comm_station": "Kraftwerk – Kommunikationsstation",
+          "bridge_approach_camp": "Brückenzugangscamp",
+          "united_parking_lot": "GBT-Parkplatz",
+          "planned_construction_area": "Geplante Baustelle",
+          "plateau_trunkway": "Plateau-Hauptstraße",
+          "bonekrusher_warcamp": "Knochenbrecher-Kriegscamp",
+          "evacuation_zone": "Evakuierungszone",
+          "shattered_fringe": "Zersplittertes Grenzgebiet",
+          "Æther_test_site": "Æther-Testgelände"
+        }
+      },
+      "OL": {
+        "name": "Mineralquell",
+        "short": "OL",
+        "site": {
+          "originium_passage": "Originium-Durchgang",
+          "cradle_of_the_ages": "Wiege der Generationen",
+          "mines_cable_car_station": "Minen-Seilbahnstation",
+          "logistices_area": "Logistikbereich",
+          "containment_zone_intersection": "Quarantänezone – Kreuzung",
+          "old_mines": "Alte Minen",
+          "meteorological_station": "Wetterstation",
+          "cliffside_mining_area": "Klippen-Abbaugebiet",
+          "temporary_stockpile": "Behelfslager",
+          "blightcliff_ovservation_post": "Verderbnisklippen-Wachposten",
+          "mining_area_clinic": "Bergbauklinik",
+          "mining_camp": "Bergbaucamp",
+          "mountain_passage": "Bergpass",
+          "landbreaker_camp": "Landbrecher-Camp"
+        }
+      },
+      "OP": {
+        "name": "Originium-Wissenschaftspark",
+        "short": "OP",
+        "site": {
+          "control_center": "Kontrollzentrum",
+          "route_5": "Strecke 5",
+          "Transport_nexus": "Transportnexus",
+          "the_depression": "Die Senke",
+          "originium_science_park": "Originium-Wissenschaftspark",
+          "research_center": "Forschungszentrum",
+          "cliffside_trail": "Klippenpfad",
+          "mountain_path_slope": "Bergpfad-Steilhang",
+          "kohl_plant": "Thanol-Kraftwerk",
+          "eco_farm": "Öko-Farm",
+          "infra_station": "Infra-Station"
+        }
+      },
+      "AQ": {
+        "name": "Aburrey-Steinbruch",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "Steinbruch-Eingang",
+          "refuse_stockpile": "Müllvorrat",
+          "loading_area": "Ladebereich",
+          "stockpile_area": "Lagerbereich",
+          "deep_management_post": "Tiefenverwaltungsposten",
+          "lifter_central": "Zentralaufzug",
+          "listening_post": "Kontaktposten",
+          "transfer_area": "Übertragungsbereich",
+          "quarry_site": "Steinbruch",
+          "staff_lounge": "Angestellten-Pausenraum"
+        }
+      },
+      "VP": {
+        "name": "Talpass",
+        "short": "VP",
+        "site": {
+          "valley_fort": "Talfort",
+          "arsenal": "Arsenal",
+          "valley_transfer": "Tal-Zwischenstation",
+          "temporary_shelter": "Behelfsunterkunft",
+          "abandoned_trail": "Vergessener Pfad",
+          "passage_entrance": "Eingang zum Durchgang"
+        }
+      },
+      "HB": {
+        "name": "Der Hub",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "Logistik-Plattform",
+          "rockhill_passage": "Felshügel-Durchgang",
+          "bridge_approach": "Brückenzugang",
+          "shorecove_camp": "Uferbucht-Camp",
+          "old_water_plant": "Altes Wasserkraftwerk",
+          "hub_base_power_plant": "Hub-Basis-Kraftwerk",
+          "hub_west": "West-Hub",
+          "originium_byproduct_precessing_center": "Verarbeitungsanlage für Originium-Nebenprodukte",
+          "construction_site": "Baustelle",
+          "hub_base": "Hub-Basis",
+          "old_factory": "Alte Fabrik",
+          "aic_research_center": "AIK-Forschungszentrum",
+          "southern_meadows": "Südliche Auen",
+          "worker_dorms": "Arbeiter-Schlafsäle",
+          "mountain_side_trail": "Bergpfad",
+          "woodland_fringes": "Waldrand",
+          "mountain_top": "Berggipfel",
+          "eastern_passageway": "Östlicher Durchgang",
+          "core_aic_area": "AIK-Kernbereich"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {
+      "WL": {
+        "name": "Wuling City",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Bugui-Hain",
+          "agricultural_test_site": "Landwirtschaftl. Testgelände",
+          "technological_production_office": "Abteilung für technologische Produktion",
+          "core_aic_area": "AIK-Kernbereich",
+          "chenshan_way": "Chenshan-Weg",
+          "bureau_of_swordmancers": "Schwertkämpfer-Behörde",
+          "residential_area": "Wohnbezirk",
+          "monitoring_center": "Überwachungszentrum",
+          "marker_stone_flats": "Grenzstein-Ebenen",
+          "xiranflow_channel": "Xiranfluss-Kanal",
+          "fangxing_avenue": "Fangxing-Straße",
+          "tianshi_pillar_array": "Tianshi-Säulenreihe",
+          "maintenance_zone": "Wartungszone",
+          "institute_of_materials_science": "Institut der Materialwissenschaften",
+          "tianshi_bureau_academy": "Akademie der Tianshi-Behörde",
+          "citizen_square": "Stadtplatz",
+          "restricted_area": "Verbotener Bereich",
+          "tianjing_courtyard": "Tianjing-Hof",
+          "riverbank_grotto": "Grotte am Flussufer",
+          "sanku_ridge": "Sanku-Kamm",
+          "outskirt_barrens": "Ödland der Außenbezirke",
+          "lingshui_way": "Lingshui-Weg",
+          "guhou_marsh": "Guhou-Sumpf",
+          "field_logistics_depot": "Depot für Feldlogistik",
+          "hulu_cave": "Hulu-Höhle"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Weg",
+          "ecological_research_station": "Ökologische Forschungsstation",
+          "qingbo bailey": "Qingbo-Außenhof",
+          "treasure_grotto": "Schatzgrotte",
+          "sky_king_flats": "Himmelskönigebenen",
+          "stragglers_ford": "Nachzüglerfurt",
+          "burdosnout_hill": "Bestienschnauz-Hügel",
+          "stragglers_grove": "Nachzüglerhain",
+          "zhailing_islet": "Zhailing-Insel",
+          "gloomvale": "Trübsaltal",
+          "south_hill": "Südhügel",
+          "sword_quenching_marsh": "Schwerttränkender Sumpf",
+          "everwater_brook": "Ewigwasserbach"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "OMV Dijiang",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Brücke",
+        "reception_room": "Empfang",
+        "kernel_sector": "Kornsektor",
+        "central_ring": "Zentralring",
+        "working_sector": "Arbeitssektor",
+        "living_sector": "Wohnsektor"
+      }
+    }
+  }
+}

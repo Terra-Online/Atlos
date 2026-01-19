@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "Lembah IV",
+    "sub": {
+      "PL": {
+        "name": "Dataran Tinggi Daya",
+        "short": "PL",
+        "site": {
+          "old_dorms": "Asrama Tua",
+          "originium_power_plant": "Pembangkit Listrik Originium",
+          "power_plant_comm_station": "Stasiun Komunikasi Pembangkit Listrik",
+          "bridge_approach_camp": "Kamp Transisi Jembatan",
+          "united_parking_lot": "Tempat Parkir Serikat",
+          "planned_construction_area": "Area Konstruksi yang Direncanakan",
+          "plateau_trunkway": "Jalan Raya Dataran Tinggi",
+          "bonekrusher_warcamp": "Kamp Perang Bonekrusher",
+          "evacuation_zone": "Zona Evakuasi",
+          "shattered_fringe": "Tepian Runtuh",
+          "Æther_test_site": "Lokasi Uji Coba Æther"
+        }
+      },
+      "OL": {
+        "name": "Lodespring Asal",
+        "short": "OL",
+        "site": {
+          "originium_passage": "Lintasan Originium",
+          "cradle_of_the_ages": "Buaian Zaman",
+          "mines_cable_car_station": "Stasiun Kereta Gantung Tambang",
+          "logistices_area": "Area Logistik",
+          "containment_zone_intersection": "Persimpangan Zona Penahanan",
+          "old_mines": "Tambang Tua",
+          "meteorological_station": "Stasiun Meteorologi",
+          "cliffside_mining_area": "Area Tambang Tebing",
+          "temporary_stockpile": "Persediaan Sementara",
+          "blightcliff_ovservation_post": "Pos Pengamatan Tebing Hawar",
+          "mining_area_clinic": "Klinik Area Tambang",
+          "mining_camp": "Kamp Tambang",
+          "mountain_passage": "Lintasan Gunung",
+          "landbreaker_camp": "Kamp Landbreaker"
+        }
+      },
+      "OP": {
+        "name": "Taman Sains Originium",
+        "short": "OP",
+        "site": {
+          "control_center": "Pusat Kontrol",
+          "route_5": "Rute 5",
+          "Transport_nexus": "Nexus Angkut",
+          "the_depression": "Depresi",
+          "originium_science_park": "Taman Sains Originium",
+          "research_center": "Pusat Penelitian",
+          "cliffside_trail": "Jalur Tepi Tebing",
+          "mountain_path_slope": "Lereng Jalan Gunung",
+          "kohl_plant": "Pabrik Kohl",
+          "eco_farm": "Ladang Ramah Lingkungan",
+          "infra_station": "Stasiun Infrastruktur"
+        }
+      },
+      "AQ": {
+        "name": "Tambang Batu Aburrey",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "Pintu Masuk Tambang Batu",
+          "refuse_stockpile": "Buangan Persediaan",
+          "loading_area": "Area Pemuatan",
+          "stockpile_area": "Area Persediaan",
+          "deep_management_post": "Pos Pengelolaan Tambang",
+          "lifter_central": "Pusat Pengangkat",
+          "listening_post": "Pos Dengar",
+          "transfer_area": "Area Transfer",
+          "quarry_site": "Lokasi Tambang Batu",
+          "staff_lounge": "Ruang Santai Staf"
+        }
+      },
+      "VP": {
+        "name": "Terusan Lembah",
+        "short": "VP",
+        "site": {
+          "valley_fort": "Benteng Lembah",
+          "arsenal": "Gudang Senjata",
+          "valley_transfer": "Transfer Lembah",
+          "temporary_shelter": "Selter Sementara",
+          "abandoned_trail": "Jalur Telantar",
+          "passage_entrance": "Pintu Masuk Jalan"
+        }
+      },
+      "HB": {
+        "name": "Hub",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "Platform Logistik",
+          "rockhill_passage": "Lintasan Bukit Batu",
+          "bridge_approach": "Transisi Jembatan",
+          "shorecove_camp": "Kamp Teluk Pantai",
+          "old_water_plant": "Pabrik Pasokan Air Tua",
+          "hub_base_power_plant": "Pembangkit Listrik Markas Hub",
+          "hub_west": "Hub Barat",
+          "originium_byproduct_precessing_center": "Pusat Pemrosesan Produk Sampingan Originium",
+          "construction_site": "Lokasi Konstruksi",
+          "hub_base": "Markas Hub",
+          "old_factory": "Pabrik Tua",
+          "aic_research_center": "Pusat Penelitian AIC",
+          "southern_meadows": "Padang Rumput Selatan",
+          "worker_dorms": "Asrama Pekerja",
+          "mountain_side_trail": "Jalur Lereng Gunung",
+          "woodland_fringes": "Tepian Hutan",
+          "mountain_top": "Puncak Gunung",
+          "eastern_passageway": "Jalan Lintas Timur",
+          "core_aic_area": "Area AIC Inti"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {
+      "WL": {
+        "name": "Kota Wuling",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Belukar Bugui",
+          "agricultural_test_site": "Lokasi Uji Agrikultur",
+          "technological_production_office": "Kantor Produksi Teknologi",
+          "core_aic_area": "Area AIC Inti",
+          "chenshan_way": "Jalan Chenshan",
+          "bureau_of_swordmancers": "Biro Swordmancer",
+          "residential_area": "Area Permukiman",
+          "monitoring_center": "Pusat Pantau",
+          "marker_stone_flats": "Dataran Batu Penanda",
+          "xiranflow_channel": "Kanal Xiranflow",
+          "fangxing_avenue": "Jalan Lebar Fangxing",
+          "tianshi_pillar_array": "Susunan Pilar Tianshi",
+          "maintenance_zone": "Zona Pemeliharaan",
+          "institute_of_materials_science": "Institut Ilmu Material",
+          "tianshi_bureau_academy": "Akademi Biro Tianshi",
+          "citizen_square": "Alun-alun Warga",
+          "restricted_area": "Area Terlarang",
+          "tianjing_courtyard": "Halaman Tianjing",
+          "riverbank_grotto": "Groto Tepi Sungai",
+          "sanku_ridge": "Punggungan Sanku",
+          "outskirt_barrens": "Dataran Tandus Pinggiran",
+          "lingshui_way": "Jalan Lingshui",
+          "guhou_marsh": "Paya Guhou",
+          "field_logistics_depot": "Depot Logistik Medan",
+          "hulu_cave": "Gua Hulu"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Jalur Jalan",
+          "ecological_research_station": "Stasiun Penelitian Ekologi",
+          "qingbo bailey": "Tembok Luar Qingbo",
+          "treasure_grotto": "Groto Harta Karun",
+          "sky_king_flats": "Dataran Raja Langit",
+          "stragglers_ford": "Arungan Terhuyung",
+          "burdosnout_hill": "Bukit Moncong Burdo",
+          "stragglers_grove": "Belukar Terhuyung",
+          "zhailing_islet": "Gili Zhailing",
+          "gloomvale": "Gloomvale",
+          "south_hill": "Bukit Selatan",
+          "sword_quenching_marsh": "Paya Penelan Pedang",
+          "everwater_brook": "Dermaga Sungai Abadi"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "PPO Dijiang",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Anjungan Komando",
+        "reception_room": "Ruang Resepsionis",
+        "kernel_sector": "Sektor Utama",
+        "central_ring": "Ring Pusat",
+        "working_sector": "Sektor Kerja",
+        "living_sector": "Sektor Hunian"
+      }
+    }
+  }
+}

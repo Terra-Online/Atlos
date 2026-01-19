@@ -44,16 +44,17 @@ export const SUPPORTED_LANGS = [
     'id-ID',
     'pt-BR',
     'ar-AE',
+    'ms-MY',
+    'pl-PL',
     'th-TH',
     'vi-VN'
 ] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 // Languages that have both game and UI translations (full support)
-export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES'] as const;
-
+export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'id-ID', 'pt-BR', 'th-TH', 'vi-VN'] as const;
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = ['fr-FR', 'de-DE', 'it-IT', 'id-ID', 'pt-BR', 'ar-AE', 'th-TH', 'vi-VN'] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL' ] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {

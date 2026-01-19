@@ -1,0 +1,150 @@
+{
+  "headbar": {
+    "tos": "Warunki korzystania",
+    "hideUI": "Ukryj interfejs",
+    "group": "Dołącz do powiązanej grupy",
+    "darkmode": "Przełącz na tryb ciemny",
+    "lightmode": "Przełącz na tryb jasny",
+    "language": "Wybierz język",
+    "help": "Uzyskaj pomoc",
+    "settings": "Preferencje"
+  },
+  "trigger": {
+    "boundaryMode": "Tryb granic",
+    "clusterMode": "Tryb klastrowania",
+    "labelName": "Nazwy regionów"
+  },
+  "search": {
+    "placeholder": "Wyszukiwanie globalne..."
+  },
+  "markFilter": {
+    "title": "Opcje filtrowania",
+    "emptyTitle": "Brak pasujących opcji filtrowania.",
+    "emptyDesc": "Jeśli potwierdzisz, że brakuje jakichkolwiek informacji o punktach lub są one nieprawidłowe, skontaktuj się z administratorami w naszej społeczności albo zgłoś <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Zgłoś błąd lokalizacji'>Issue</a> w naszym repozytorium na GitHubie."
+  },
+  "detail": {
+    "stat": {
+      "world": "Świat",
+      "main": "Główny"
+    },
+    "noInfo": "Brak informacji."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "wspierane przez Observator 6"
+    }
+  },
+  "language": {
+    "title": "Język",
+    "cancel": "Anuluj",
+    "current": "Teraz",
+    "fullSupport": "W pełni obsługiwane języki",
+    "fullSupportHint": "Pełne tłumaczenia interfejsu oraz treści w grze.",
+    "uiOnly": "Języki tylko dla UI",
+    "uiOnlyHint": "Tylko tłumaczenie interfejsu; treści w grze będą wyświetlane po angielsku.",
+    "fyi": "Jeśli Twojego języka nie ma jeszcze na tej stronie, możesz skontaktować się z administratorem przez e-mail <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> lub odwiedzić GitHub, aby wziąć udział w naszym otwartoźródłowym projekcie tłumaczeń. Możesz poprosić o dodanie wpisów tłumaczeń dla swojego języka i pomóc w tłumaczeniu oraz lokalizacji sekcji WIKI zgodnie z naszymi wytycznymi. Z góry dziękujemy i czekamy na Twoje wsparcie.\nMożesz też kliknąć, aby zobaczyć listę współtwórców tłumaczeń.",
+    "names": {
+      "en-US": "Angielski",
+      "zh-CN": "Chiński (uproszczony)",
+      "zh-HK": "Chiński (tradycyjny)",
+      "ja-JP": "Japoński",
+      "ko-KR": "Koreański",
+      "es-ES": "Hiszpański",
+      "fr-FR": "Francuski",
+      "de-DE": "Niemiecki",
+      "it-IT": "Włoski",
+      "ru-RU": "Rosyjski",
+      "pt-BR": "Portugalski",
+      "id-ID": "Indonezyjski",
+      "ar-AE": "Arabski",
+      "th-TH": "Tajski",
+      "vi-VN": "Wietnamski",
+      "ms-MY": "Malajski",
+      "pl-PL": "Polski"
+    }
+  },
+  "group": {
+    "title": "Społeczność i media",
+    "visit": "Odwiedź"
+  },
+  "tos": {
+    "title": "Warunki i pamięć",
+    "calculating": "Obliczanie użycia pamięci...",
+    "policy": "<p>Używamy Cookies do przechowywania informacji o automatycznym logowaniu; LocalStorage do przechowywania preferencji interfejsu i postępu znaczników; oraz CacheStorage do przechowywania danych czcionek i zasobów obrazów dla wybranego języka. Pliki te pozwalają szybciej korzystać ze strony w przyszłości oraz zapewniają jej dostępność w trybie offline.</p><p>Usunięcie lokalnych danych strony może zwolnić miejsce na urządzeniu. Jednak <span class=\"keyword\">przy ponownej wizycie ładowanie może potrwać dłużej</span>; jeśli wyłączysz przechowywanie danych przez stronę, <span class=\"keyword\">nie będzie ona mogła automatycznie zapisywać Twoich danych</span> na kolejne użycie.</p><p>Nie przesyłamy Twoich danych na serwer, więc nie musisz martwić się o prywatność.</p><p>Możesz zdecydować, czy chcesz włączyć lokalne przechowywanie danych.</p>",
+    "filtersAndMarkers": "Filtry i dane znaczników",
+    "warning": "<p><strong>Ostrzeżenie:</strong> Jeśli wyczyścisz zapisane dane, utracisz informacje o automatycznym logowaniu, preferencje UI i postęp znaczników; a przy następnym uruchomieniu strona może ładować się dłużej niż zwykle.</p><p>Jeśli potwierdzasz, kliknij przycisk usuwania ponownie.</p>"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "uiPrefs": {
+      "title": "Preferencje UI",
+      "hint": "Wybierz stan interfejsu, który chcesz zachować. Zalecamy <span class=\"keyword\">zachowanie wszystkich opcji</span>, aby korzystanie było bardziej spójne.",
+      "sidebar": "Zachowaj stan panelu bocznego",
+      "filterOrder": "Zachowaj kolejność filtrów",
+      "triggers": "Zachowaj stan przełączników",
+      "performanceMode": "Tryb wydajności"
+    },
+    "mapPrefs": {
+      "title": "Preferencje mapy",
+      "hint": "Wybierz, które opcje przechowywania mapy i automatycznej optymalizacji chcesz włączyć. Zalecamy <span class=\"keyword\">włączenie wszystkich opcji</span>, aby korzystanie było bardziej spójne.",
+      "viewState": "Zachowaj widok mapy",
+      "markerProgress": "Zachowaj znaczniki i postęp",
+      "autoCluster": "Automatyczne klastrowanie"
+    },
+    "theme": {
+      "title": "Preferencje motywu",
+      "hint": "Wybierz preferowany motyw. Dla <span class=\"keyword\">AUTO</span> motyw będzie przełączany zgodnie z ustawieniami urządzenia.",
+      "light": "Jasny",
+      "dark": "Ciemny",
+      "auto": "Auto"
+    }
+  },
+  "guide": {
+    "welcome": "Witaj w <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>To Twoja pierwsza wizyta na tej mapie. Przeprowadzimy Cię przez krótkie wprowadzenie, aby pomóc szybko zrozumieć jej funkcje.</p><p>W dowolnym momencie możesz kliknąć przycisk „<span class=\"keyword\">Pomiń</span>”, aby zakończyć samouczek, albo uruchomić go ponownie z poziomu przycisku pomocy na górnym pasku.",
+    "sidebarToggle": "Kliknij, aby rozwinąć <span class=\"keyword\">panel boczny</span>.<br>Panel boczny zawiera najczęściej używane filtry znaczników i przełączniki powiązane z ich wyświetlaniem.",
+    "search": "Możesz wyszukiwać znaczniki, używając <span class=\"keyword\">języków obsługiwanych przez grę</span>, a następnie wybierać je w wynikach wyszukiwania.",
+    "filterContainer": "Znaczniki tego samego typu są zgrupowane w <span class=\"keyword\">filtrze</span>.<br>Kliknij, aby rozwinąć listę znaczników tego typu.",
+    "filterSort": "Przytrzymaj ikonę po lewej stronie filtra, aby wejść w <span class=\"keyword\">tryb przeciągania</span>.<br>Możesz uporządkować filtry według swoich potrzeb.",
+    "selectorSelect": "Konkretny <span class=\"keyword\">selektor znaczników</span>. Kliknij, aby przełączyć wybór; wybrane znaczniki pojawią się na mapie.<br>Zobaczysz łączną liczbę takich znaczników w bieżącym obszarze oraz liczbę już oznaczonych.<br><br>Możesz także <span class=\"keyword\">przytrzymać i przeciągnąć w pustym miejscu</span> panelu bocznego, aby wykonać <span class=\"keyword\">zaznaczanie obszarem</span> wielu selektorów jednocześnie i szybko przełączać je hurtowo.",
+    "selectorComplete": "Gdy wszystkie znaczniki danego typu zostaną oznaczone jako ukończone, selektor zmieni się na <span class=\"keyword\">stan ukończony</span>, co ułatwia ocenę postępu.",
+    "triggerHandle": "Przełączniki związane z wyświetlaniem mapy znajdują się na dole panelu bocznego.<br>Możesz przytrzymać mysz, aby <span class=\"keyword\">przeciągnąć i obsługiwać je.</span>",
+    "triggerSwitch": "Kliknij, aby przełączyć stan.<br><ul><li><span class=\"keyword\">Tryb klastrowania znaczników</span> pozwala łączyć gęsto rozmieszczone znaczniki;</li><li><span class=\"keyword\">Wyświetlanie granic regionów</span> podświetla każdy podregion i jego granice w bieżącym obszarze.</li><li><span class=\"keyword\">Nazwy regionów</span> pokazują nazwy regionów w grze.</li></ul>",
+    "scale": "Użyj <span class=\"keyword\">kontrolki przybliżenia</span>, aby zmieniać poziom powiększenia mapy.<br>Możesz użyć kółka myszy lub gładzika. Możesz także przybliżać, klikając <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> lub dowolne miejsce na pasku powiększenia.",
+    "filterList": "<span class=\"keyword\">Lista znaczników</span> pokazuje wybrane przez Ciebie znaczniki; kliknij ikonę, aby je odznaczyć.",
+    "headbar": "Przełączniki związane z ustawieniami mapy znajdują się na <span class=\"keyword\">górnym pasku</span>.",
+    "tos": "<span class=\"keyword\">Warunki korzystania</span> i <span class=\"keyword\">zarządzanie danymi</span> strony.",
+    "hideUI": "<span class=\"keyword\">Ukryj interfejs strony</span>, aby robić zrzuty ekranu lub oglądać znaczniki na krawędziach.",
+    "group": "Zobacz <span class=\"keyword\">grupy dyskusyjne</span> i <span class=\"keyword\">społeczności</span> związane z tym projektem.",
+    "darkMode": "Przełącz bieżący <span class=\"keyword\">tryb oświetlenia otoczenia</span>.",
+    "language": "Zmień <span class=\"keyword\">język interfejsu</span>.<br>Obecnie języki z <span class=\"keyword\">pełnym wsparciem tłumaczenia treści w grze</span> to angielski, chiński uproszczony, chiński tradycyjny, japoński i koreański.<br>Języki z <span class=\"keyword\">tłumaczeniem interfejsu</span> obejmują także francuski, niemiecki, włoski, rosyjski, hiszpański, indonezyjski, portugalski, arabski, tajski, wietnamski, malajski i polski.",
+    "help": "Uruchom ponownie ten <span class=\"keyword\">samouczek</span>.",
+    "settings": "Otwórz <span class=\"keyword\">Preferencje</span>, aby kontrolować, jakiego lokalnego przechowywania danych mapa używa do zapamiętywania Twoich działań.",
+    "regionSwitch": "Kliknij, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span> (głównymi regionami) w grze.",
+    "subregionSwitch": "<span class=\"keyword\">Najedź курсorem na ikonę głównego regionu</span>, aby wyświetlić dostępne podregiony; kliknięcie ikony podregionu przeniesie widok do tego podregionu.<br>Podobnie możesz także wybrać warstwę dla regionu.",
+    "layerMain": "Kliknij <span class=\"keyword\">ikonę warstwy</span>, aby w dowolnym momencie wrócić do <span class=\"keyword\">warstwy głównej (M)</span>.",
+    "layerSwitch": "<span class=\"keyword\">Najedź na ikonę warstwy</span>, aby wyświetlić dostępne warstwy dla bieżącego regionu; kliknij warstwę, aby przełączyć widok.<br>Różne warstwy mogą pokazywać <span class=\"keyword\">różne poziomy lub wysokości</span> mapy, co ułatwia eksplorację wielopoziomowych obszarów.",
+    "pointSelect": "Kliknij znacznik, aby przejść do <span class=\"keyword\">stanu wybrania</span>. Będziesz mógł zobaczyć informacje o znaczniku.",
+    "pointMark": "Kliknij znacznik ponownie, aby oznaczyć go jako ukończony.",
+    "detail": "Możesz wyświetlić szczegółowe informacje o wybranym znaczniku, w tym liczbę znaczników tego typu we <span class=\"keyword\">wszystkich regionach</span>, w bieżącym <span class=\"keyword\">głównym regionie</span> oraz w bieżącym <span class=\"keyword\">podregionie</span>.",
+    "pointIcon": "Kliknięcie ikony znacznika również oznacza go jako ukończony."
+  },
+  "common": {
+    "close": "Zamknij",
+    "skip": "Pomiń",
+    "clear": "Wyczyść",
+    "all": "Wszystkie",
+    "selected": "Wybrane",
+    "confirm": "Potwierdź",
+    "enable": "Włącz",
+    "disable": "Wyłącz",
+    "expand": "Rozwiń",
+    "collapse": "Zwiń"
+  },
+  "meta": {
+    "title": "Open Endfield Map",
+    "description": "Open Endfield Map to otwartoźródłowa mapa online dla Arknights: Endfield, oferująca interaktywną mapę, zbieranie przedmiotów oraz narzędzia do planowania strategicznego dla graczy."
+  }
+}

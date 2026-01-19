@@ -167,7 +167,7 @@
     letter-spacing: -.5px;
     padding-left: 5px;
     text-align: left;
-    &[lang='id-ID'] {
+    &[lang='id-ID'], &[lang='ms-MY'] {
         line-height: 0.77;
     }
 }
@@ -246,7 +246,7 @@
     align-items: center;
     opacity: 1;
     max-width: 3rem;
-    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'], &[lang='it-IT'] {
+    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'], &[lang='it-IT'], &[lang='pl-PL'] {
         max-width: 4rem;
     }
     &[lang='ar-AE'], &[lang='vi-VN'], &[lang='th-TH'] {

@@ -28,6 +28,8 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'pt-BR': 'Português',
   'id-ID': 'Bahasa Indonesia',
   'ar-AE': 'العربية',
+  'ms-MY': 'Bahasa Melayu',
+  'pl-PL': 'Polski',
   'th-TH': 'ไทย',
   'vi-VN': 'Tiếng Việt',
 };

@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "Vallée-IV",
+    "sub": {
+      "PL": {
+        "name": "Plateau électrique",
+        "short": "PL",
+        "site": {
+          "old_dorms": "Vieux dortoirs",
+          "originium_power_plant": "Centrale électrique d'originium",
+          "power_plant_comm_station": "Station de communication de la centrale électrique",
+          "bridge_approach_camp": "Camp de la voie d'accès au pont",
+          "united_parking_lot": "Parking uni",
+          "planned_construction_area": "Zone de construction prévue",
+          "plateau_trunkway": "Route des plateaux",
+          "bonekrusher_warcamp": "Camp de guerre de Broyeurs d'os",
+          "evacuation_zone": "Zone d'évacuation",
+          "shattered_fringe": "Bordure dévastée",
+          "Æther_test_site": "Site d'essais æthériques"
+        }
+      },
+      "OL": {
+        "name": "Veine originelle",
+        "short": "OL",
+        "site": {
+          "originium_passage": "Passage d'originium",
+          "cradle_of_the_ages": "Berceau des millénaires",
+          "mines_cable_car_station": "Station de téléphérique des mines",
+          "logistices_area": "Zone logistique",
+          "containment_zone_intersection": "Intersection de la zone de confinement",
+          "old_mines": "Vieilles mines",
+          "meteorological_station": "Station météorologique",
+          "cliffside_mining_area": "Zone d'extraction de la falaise",
+          "temporary_stockpile": "Réserve temporaire",
+          "blightcliff_ovservation_post": "Poste d'observation de Rochegrène",
+          "mining_area_clinic": "Clinique de la zone d'extraction",
+          "mining_camp": "Camp minier",
+          "mountain_passage": "Col de montagne",
+          "landbreaker_camp": "Camp des Brise-Terres"
+        }
+      },
+      "OP": {
+        "name": "Parc des sciences de l'originium",
+        "short": "OP",
+        "site": {
+          "control_center": "Centre de contrôle",
+          "route_5": "Route 5",
+          "Transport_nexus": "Nœud de transport",
+          "the_depression": "La Dépression",
+          "originium_science_park": "Parc des sciences de l'originium",
+          "research_center": "Centre de recherche",
+          "cliffside_trail": "Sentier de la falaise",
+          "mountain_path_slope": "Sentier de montagne",
+          "kohl_plant": "Usine de cohl",
+          "eco_farm": "Écoferme",
+          "infra_station": "Infrastation"
+        }
+      },
+      "AQ": {
+        "name": "Carrière d'Aburrey",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "Entrée de la carrière",
+          "refuse_stockpile": "Pile de déchets",
+          "loading_area": "Zone de chargement",
+          "stockpile_area": "Réserves",
+          "deep_management_post": "Poste de gestion souterrain",
+          "lifter_central": "Élévateur central",
+          "listening_post": "Poste d'écoute",
+          "transfer_area": "Zone de transfert",
+          "quarry_site": "Site de la carrière",
+          "staff_lounge": "Salle du personnel"
+        }
+      },
+      "VP": {
+        "name": "Col de la Vallée",
+        "short": "VP",
+        "site": {
+          "valley_fort": "Forteresse de la Vallée",
+          "arsenal": "Arsenal",
+          "valley_transfer": "Transfert de la Vallée",
+          "temporary_shelter": "Abri temporaire",
+          "abandoned_trail": "Sentier abandonné",
+          "passage_entrance": "Entrée du passage"
+        }
+      },
+      "HB": {
+        "name": "Hub",
+        "short": "HB",
+        "site": {
+          "lohistics_platform": "Plateforme logistique",
+          "rockhill_passage": "Passage de Côtoroche",
+          "bridge_approach": "Voie d'accès au pont",
+          "shorecove_camp": "Camp de Criquerive",
+          "old_water_plant": "Ancienne station de distribution d'eau",
+          "hub_base_power_plant": "Centrale électrique de la base du Hub",
+          "hub_west": "Zone ouest du Hub",
+          "originium_byproduct_precessing_center": "Centre de traitement des dérivés d'originium",
+          "construction_site": "Chantier",
+          "hub_base": "Base du Hub",
+          "old_factory": "Ancienne usine",
+          "aic_research_center": "Centre de recherche du GIA",
+          "southern_meadows": "Prairies australes",
+          "worker_dorms": "Dortoirs des ouvriers",
+          "mountain_side_trail": "Sentier à flanc de montagne",
+          "woodland_fringes": "Orée du bois",
+          "mountain_top": "Cime de la montagne",
+          "eastern_passageway": "Passage oriental",
+          "core_aic_area": "Zone principale du GIA"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {
+      "WL": {
+        "name": "Ville de Wuling",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Bois de Bugui",
+          "agricultural_test_site": "Site d'essais agricoles",
+          "technological_production_office": "Bureau de production technologique",
+          "core_aic_area": "Zone principale du GIA",
+          "chenshan_way": "Allée Chenshan",
+          "bureau_of_swordmancers": "Bureau des spadamanciens",
+          "residential_area": "Zone résidentielle",
+          "monitoring_center": "Centre de surveillance",
+          "marker_stone_flats": "Résidence de la Pierre de marquage",
+          "xiranflow_channel": "Canal de Xiranflux",
+          "fangxing_avenue": "Avenue Fangxing",
+          "tianshi_pillar_array": "Matrice du pilier des Tianshi",
+          "maintenance_zone": "Zone de maintenance",
+          "institute_of_materials_science": "Institut des sciences des matériaux",
+          "tianshi_bureau_academy": "Académie des Tianshi",
+          "citizen_square": "Place citoyenne",
+          "restricted_area": "Zone interdite",
+          "tianjing_courtyard": "Cour de Tianjing",
+          "riverbank_grotto": "Grotte du rivage",
+          "sanku_ridge": "Arête de Sanku",
+          "outskirt_barrens": "Landes périphériques",
+          "lingshui_way": "Allée Lingshui",
+          "guhou_marsh": "Marais de Guhou",
+          "field_logistics_depot": "Entrepôt logistique",
+          "hulu_cave": "Grotte de Hulu"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Marchemin",
+          "ecological_research_station": "Station de recherche écologique",
+          "qingbo bailey": "Cour de Qingbo",
+          "treasure_grotto": "Grotte au trésor",
+          "sky_king_flats": "Plaines du Roi des cieux",
+          "stragglers_ford": "Gué des retardataires",
+          "burdosnout_hill": "Colline de Burdogroin",
+          "stragglers_grove": "Bosquet des retardataires",
+          "zhailing_islet": "Îlot de Zhailing",
+          "gloomvale": "Val morose",
+          "south_hill": "Colline australe",
+          "sword_quenching_marsh": "Marais de Trempépée",
+          "everwater_brook": "Ruisseau des eaux éternelles"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "VMO Dijiang",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Pont",
+        "reception_room": "Salle de réception",
+        "kernel_sector": "Secteur Kernel",
+        "central_ring": "Espace central",
+        "working_sector": "Zone de travail",
+        "living_sector": "Secteur d'habitations"
+      }
+    }
+  }
+}
