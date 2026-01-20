@@ -57,7 +57,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
                 break;
             case 'bottom':
                 popover.style.left = `${buttonRect.left + buttonRect.width / 2}px`;
-                popover.style.top = `${buttonRect.bottom + 8}px`;
+                popover.style.top = `${buttonRect.bottom + 12}px`;
                 popover.style.transform = 'translateX(-50%)';
                 break;
             case 'top':

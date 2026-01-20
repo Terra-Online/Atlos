@@ -2,30 +2,35 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --tooltip-bg: #{rgba($black-0, 0.92)};
+    --tooltip-bg: #{rgba($black-0, 0.3)};
     --tooltip-text: #{$white-1};
-    --tooltip-shadow: #{rgba($black-0, 0.4)};
+    --tooltip-border: #{rgba($white-1, 0.3)};
+    --tooltip-shadow: #{rgba($black-0, 0.8)};
+    --tooltip-shadow-2: #{rgba($black-0, 0.4)};
 }
 
 :root[data-theme='dark'] {
-    --tooltip-bg: #{rgba($light-1, 0.95)};
-    --tooltip-text: #{$black-1};
-    --tooltip-shadow: #{rgba($black-0, 0.5)};
+    --tooltip-bg: #{rgba($black-1, 0.2)};
+    --tooltip-text: #{$light-1};
+    --tooltip-border: #{rgba($light-1, 0.3)};
+    --tooltip-shadow: #{rgba($black-0, 0.8)};
+    --tooltip-shadow-2: #{rgba($black-0, 0.4)};
 }
 
 .popoverTooltip {
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 12px;
     background: var(--tooltip-bg);
     color: var(--tooltip-text);
     font-size: 13px;
     font-weight: 500;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.4;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     white-space: nowrap;
-    border: none;
-    box-shadow: 0 4px 12px var(--tooltip-shadow);
+    border: 1px solid  var(--tooltip-border);
+    text-shadow: 1px 1px 1px var(--tooltip-shadow), 0 0 1px var(--tooltip-shadow-2), -0.5px -0.5px 2px var(--tooltip-shadow-2);
+    box-shadow: 0 4px 12px var(--tooltip-shadow-2);
     margin: 0;
+    backdrop-filter: blur(6px) brightness(1.2);
     
     // Popover定位时的偏移
     inset: unset;
