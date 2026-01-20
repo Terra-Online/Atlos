@@ -1,6 +1,6 @@
 {
   "VL": {
-    "main": "Долина IV",
+    "main": "Долина IV",
     "sub": {
       "PL": {
         "name": "Плато Энергии",
@@ -95,7 +95,7 @@
           "old_water_plant": "Старая станция водоочистки",
           "hub_base_power_plant": "Электростанция базы Центра",
           "hub_west": "Западная часть Центра",
-          "originium_byproduct_precessing_center": "Центр обработки побочного продукта ориджиния",
+          "originium_byproduct_processing_center": "Центр обработки побочного продукта ориджиния",
           "construction_site": "Строительная площадка",
           "hub_base": "База Центра",
           "old_factory": "Старый завод",
@@ -119,7 +119,7 @@
         "short": "Ул",
         "site": {
           "bugui_grove": "Роща Бугуй",
-          "agricultural_test_site": "Сельскохозяйственная лаборатория",
+          "agricultural_test_site": "Сельхозлаборатория",
           "technological_production_office": "Отдел технологий и производства",
           "core_aic_area": "Ключевая область АПК",
           "chenshan_way": "Дорога Чэньшань",
@@ -146,7 +146,7 @@
         }
       },
       "JY": {
-        "name": "Долина Цзинъю",
+        "name": "Jingyu Valley",
         "short": "ДЦ",
         "site": {
           "treadway": "Протоптанный путь",
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "ОМК «Дицзян»",
     "sub": {
-      "name": "ОМК «Дицзян»",
+      "name": "OMV Dijiang",
       "site": {
         "bridge": "Мостик",
         "reception_room": "Приемная",

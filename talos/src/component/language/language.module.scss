@@ -202,6 +202,7 @@
     font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     height: 22px;
     width: fit-content;
+    min-width: 2rem;
     line-height: 1;
     transition:
         background-color .2s ease-in,

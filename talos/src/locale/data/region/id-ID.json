@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Dataran Tinggi Daya",
-        "short": "PL",
+        "short": "DT",
         "site": {
           "old_dorms": "Asrama Tua",
           "originium_power_plant": "Pembangkit Listrik Originium",
@@ -21,18 +21,18 @@
       },
       "OL": {
         "name": "Lodespring Asal",
-        "short": "OL",
+        "short": "LA",
         "site": {
           "originium_passage": "Lintasan Originium",
           "cradle_of_the_ages": "Buaian Zaman",
           "mines_cable_car_station": "Stasiun Kereta Gantung Tambang",
-          "logistices_area": "Area Logistik",
+          "logistics_area": "Area Logistik",
           "containment_zone_intersection": "Persimpangan Zona Penahanan",
           "old_mines": "Tambang Tua",
           "meteorological_station": "Stasiun Meteorologi",
           "cliffside_mining_area": "Area Tambang Tebing",
           "temporary_stockpile": "Persediaan Sementara",
-          "blightcliff_ovservation_post": "Pos Pengamatan Tebing Hawar",
+          "blightcliff_observation_post": "Pos Pengamatan Tebing Hawar",
           "mining_area_clinic": "Klinik Area Tambang",
           "mining_camp": "Kamp Tambang",
           "mountain_passage": "Lintasan Gunung",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Taman Sains Originium",
-        "short": "OP",
+        "short": "SO",
         "site": {
           "control_center": "Pusat Kontrol",
           "route_5": "Rute 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Tambang Batu Aburrey",
-        "short": "AQ",
+        "short": "TB",
         "site": {
           "quarry_entrance": "Pintu Masuk Tambang Batu",
           "refuse_stockpile": "Buangan Persediaan",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Terusan Lembah",
-        "short": "VP",
+        "short": "TL",
         "site": {
           "valley_fort": "Benteng Lembah",
           "arsenal": "Gudang Senjata",
@@ -88,14 +88,14 @@
         "name": "Hub",
         "short": "HB",
         "site": {
-          "lohistics_platform": "Platform Logistik",
+          "logistics_platform": "Platform Logistik",
           "rockhill_passage": "Lintasan Bukit Batu",
           "bridge_approach": "Transisi Jembatan",
           "shorecove_camp": "Kamp Teluk Pantai",
           "old_water_plant": "Pabrik Pasokan Air Tua",
           "hub_base_power_plant": "Pembangkit Listrik Markas Hub",
           "hub_west": "Hub Barat",
-          "originium_byproduct_precessing_center": "Pusat Pemrosesan Produk Sampingan Originium",
+          "originium_byproduct_processing_center": "Pusat Pemrosesan Produk Sampingan Originium",
           "construction_site": "Lokasi Konstruksi",
           "hub_base": "Markas Hub",
           "old_factory": "Pabrik Tua",
@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Jalur Jalan",
           "ecological_research_station": "Stasiun Penelitian Ekologi",
-          "qingbo bailey": "Tembok Luar Qingbo",
+          "qingbo_bailey": "Tembok Luar Qingbo",
           "treasure_grotto": "Groto Harta Karun",
           "sky_king_flats": "Dataran Raja Langit",
           "stragglers_ford": "Arungan Terhuyung",
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "PPO Dijiang",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "PPO Dijiang",
       "site": {
         "bridge": "Anjungan Komando",
         "reception_room": "Ruang Resepsionis",

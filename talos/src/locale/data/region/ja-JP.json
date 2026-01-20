@@ -40,7 +40,7 @@
         }
       },
       "OP": {
-        "name": "源石実験エリア",
+        "name": "源石研究パーク",
         "short": "実",
         "site": {
           "control_center": "管制センター",
@@ -95,7 +95,7 @@
           "old_water_plant": "旧水処理場",
           "hub_base_power_plant": "中枢基地発電所",
           "hub_west": "中枢西部",
-          "originium_byproduct_precessing_center": "源石副産物センター",
+          "originium_byproduct_processing_center": "源石副産物センター",
           "construction_site": "建設予定地",
           "hub_base": "中枢基地",
           "old_factory": "旧工場",
@@ -127,7 +127,7 @@
           "residential_area": "居住区",
           "monitoring_center": "観測所",
           "marker_stone_flats": "界石広場",
-          "xiranflow_channel": "息流道路",
+          "xiranflow_channel": "<p=\"そくりゅう\" padding=0>息流</p>道路",
           "fangxing_avenue": "方興街",
           "tianshi_pillar_array": "天師杭陣",
           "maintenance_zone": "修繕工事区",
@@ -146,7 +146,7 @@
         }
       },
       "JY": {
-        "name": "景玉谷",
+        "name": "Jingyu Valley",
         "short": "玉",
         "site": {
           "treadway": "ぬかるんだ道",
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "O.M.V.帝江号",
     "sub": {
-      "name": "O.M.V.帝江号",
+      "name": "OMV Dijiang",
       "site": {
         "bridge": "ブリッジ",
         "reception_room": "応接室",

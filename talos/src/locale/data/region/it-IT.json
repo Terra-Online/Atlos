@@ -3,8 +3,8 @@
     "main": "Valle IV",
     "sub": {
       "PL": {
-        "name": "Altopiano elettrico",
-        "short": "PL",
+        "name": "Altopiano Elettrico",
+        "short": "AE",
         "site": {
           "old_dorms": "Vecchi dormitori",
           "originium_power_plant": "Centrale elettrica a Originium",
@@ -20,19 +20,19 @@
         }
       },
       "OL": {
-        "name": "Giacimento originario",
-        "short": "OL",
+        "name": "Giacimento Originario",
+        "short": "GO",
         "site": {
           "originium_passage": "Passaggio di Originium",
           "cradle_of_the_ages": "Culla dei secoli",
           "mines_cable_car_station": "Stazione funivia delle miniere",
-          "logistices_area": "Area logistica",
+          "logistics_area": "Area logistica",
           "containment_zone_intersection": "Intersezione della zona di contenimento",
           "old_mines": "Vecchie miniere",
           "meteorological_station": "Stazione metereologica",
           "cliffside_mining_area": "Area mineraria del dirupo",
           "temporary_stockpile": "Stoccaggio temporaneo",
-          "blightcliff_ovservation_post": "Stazione di osservazione del dirupo contaminato",
+          "blightcliff_observation_post": "Stazione di osservazione del dirupo contaminato",
           "mining_area_clinic": "Ambulatorio della miniera",
           "mining_camp": "Accampamento della miniera",
           "mountain_passage": "Passaggio montano",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Parco scientifico dell'Originium",
-        "short": "OP",
+        "short": "PO",
         "site": {
           "control_center": "Centro di controllo",
           "route_5": "Percorso 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Cava di Aburrey",
-        "short": "AQ",
+        "short": "CA",
         "site": {
           "quarry_entrance": "Entrata della cava",
           "refuse_stockpile": "Deposito rifiuti",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Passo della Valle",
-        "short": "VP",
+        "short": "PV",
         "site": {
           "valley_fort": "Forte della Valle",
           "arsenal": "Arsenale",
@@ -86,16 +86,16 @@
       },
       "HB": {
         "name": "Polo centrale",
-        "short": "HB",
+        "short": "PC",
         "site": {
-          "lohistics_platform": "Piattaforma logistica",
+          "logistics_platform": "Piattaforma logistica",
           "rockhill_passage": "Passaggio del colle roccioso",
           "bridge_approach": "Avvicinamento al ponte",
           "shorecove_camp": "Accampamento della baia",
           "old_water_plant": "Vecchio impianto idrico",
           "hub_base_power_plant": "Centrale elettrica del Polo",
           "hub_west": "Polo ovest",
-          "originium_byproduct_precessing_center": "Centro di lavorazione dei sottoprodotti di Originium",
+          "originium_byproduct_processing_center": "Centro di lavorazione dei sottoprodotti di Originium",
           "construction_site": "Cantiere",
           "hub_base": "Base del Polo centrale",
           "old_factory": "Vecchia fabbrica",
@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Sentiero",
           "ecological_research_station": "Stazione di ricerca ecologica",
-          "qingbo bailey": "Qingbo Bailey",
+          "qingbo_bailey": "Qingbo Bailey",
           "treasure_grotto": "Grotta del tesoro",
           "sky_king_flats": "Pianure del Re celeste",
           "stragglers_ford": "Guado degli isolati",

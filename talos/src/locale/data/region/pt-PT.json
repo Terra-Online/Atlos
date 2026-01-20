@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Platô de Energia",
-        "short": "PL",
+        "short": "PE",
         "site": {
           "old_dorms": "Alojamentos Antigos",
           "originium_power_plant": "Usina de Energia de Originium",
@@ -21,18 +21,18 @@
       },
       "OL": {
         "name": "Veio de Origin",
-        "short": "OL",
+        "short": "VO",
         "site": {
           "originium_passage": "Passagem de Originium",
           "cradle_of_the_ages": "Berço das Eras",
           "mines_cable_car_station": "Estação de Teleférico das Minas",
-          "logistices_area": "Área de Logística",
+          "logistics_area": "Área de Logística",
           "containment_zone_intersection": "Interseção da Zona de Contenção",
           "old_mines": "Minas Antigas",
           "meteorological_station": "Estação Meteorológica",
           "cliffside_mining_area": "Área de Mineração do Penhasco",
           "temporary_stockpile": "Estoque Temporário",
-          "blightcliff_ovservation_post": "Posto de Observação do Penhasco da Praga",
+          "blightcliff_observation_post": "Posto de Observação do Penhasco da Praga",
           "mining_area_clinic": "Clínica da Área de Mineração",
           "mining_camp": "Acampamento de Mineração",
           "mountain_passage": "Passagem da Montanha",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Parque Científico de Originium",
-        "short": "OP",
+        "short": "PO",
         "site": {
           "control_center": "Centro de Controle",
           "route_5": "Rota 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Pedreira de Aburrey",
-        "short": "AQ",
+        "short": "PA",
         "site": {
           "quarry_entrance": "Entrada da Pedreira",
           "refuse_stockpile": "Pilha de Resíduos",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Garganta do Vale",
-        "short": "VP",
+        "short": "GA",
         "site": {
           "valley_fort": "Forte do Vale",
           "arsenal": "Arsenal",
@@ -86,16 +86,16 @@
       },
       "HB": {
         "name": "A Base",
-        "short": "HB",
+        "short": "AB",
         "site": {
-          "lohistics_platform": "Plataforma de Logística",
+          "logistics_platform": "Plataforma de Logística",
           "rockhill_passage": "Passagem da Montanha Rochosa",
           "bridge_approach": "Acesso à Ponte",
           "shorecove_camp": "Acampamento Shorecove",
           "old_water_plant": "Antiga Estação de Água",
           "hub_base_power_plant": "Usina de Energia da Base Central",
           "hub_west": "Base Oeste",
-          "originium_byproduct_precessing_center": "Centro de Processamento de Subprodutos de Originium",
+          "originium_byproduct_processing_center": "Centro de Processamento de Subprodutos de Originium",
           "construction_site": "Canteiro de Obras",
           "hub_base": "Base Central",
           "old_factory": "Fábrica Antiga",
@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Passagem",
           "ecological_research_station": "Estação de Pesquisa Ecológica",
-          "qingbo bailey": "Muralha de Qingbo",
+          "qingbo_bailey": "Muralha de Qingbo",
           "treasure_grotto": "Gruta do Tesouro",
           "sky_king_flats": "Planícies do Rei Celestial",
           "stragglers_ford": "Vau dos Desgarrados",

@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Cao Nguyên Năng Lượng",
-        "short": "PL",
+        "short": "NL",
         "site": {
           "old_dorms": "KTX Cũ",
           "originium_power_plant": "Nhà Máy Năng Lượng Originium",
@@ -21,18 +21,18 @@
       },
       "OL": {
         "name": "Khởi Nguồn Lodespring",
-        "short": "OL",
+        "short": "KN",
         "site": {
           "originium_passage": "Lối Đi Originium",
           "cradle_of_the_ages": "Chiếc Nôi Cổ Đại",
           "mines_cable_car_station": "Trạm Cáp Treo Mỏ",
-          "logistices_area": "Khu Vực Vận Chuyển",
+          "logistics_area": "Khu Vực Vận Chuyển",
           "containment_zone_intersection": "Giao Lộ Khu Cách Ly",
           "old_mines": "Khu Mỏ Cũ",
           "meteorological_station": "Trạm Khí Tượng",
           "cliffside_mining_area": "Khu Khai Thác Vách Đá",
           "temporary_stockpile": "Khu Tập Kết Tạm",
-          "blightcliff_ovservation_post": "Trạm Quan Sát Vách Nhiễm Khuẩn",
+          "blightcliff_observation_post": "Trạm Quan Sát Vách Nhiễm Khuẩn",
           "mining_area_clinic": "Phòng Y Tế Khu Mỏ",
           "mining_camp": "Trại Khai Thác",
           "mountain_passage": "Lối Mòn Qua Núi",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Công Viên Khoa Học Originium",
-        "short": "OP",
+        "short": "CV",
         "site": {
           "control_center": "Trung Tâm Điều Khiển",
           "route_5": "Tuyến 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Mỏ Đá Aburrey",
-        "short": "AQ",
+        "short": "MĐ",
         "site": {
           "quarry_entrance": "Cổng Vào Mỏ Đá",
           "refuse_stockpile": "Bãi Phế Liệu",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Đèo Thung Lũng",
-        "short": "VP",
+        "short": "ĐT",
         "site": {
           "valley_fort": "Pháo Đài Thung Lũng",
           "arsenal": "Kho Vũ Khí",
@@ -86,16 +86,16 @@
       },
       "HB": {
         "name": "Trung Tâm",
-        "short": "HB",
+        "short": "TT",
         "site": {
-          "lohistics_platform": "Cảng Vận Chuyển",
+          "logistics_platform": "Cảng Vận Chuyển",
           "rockhill_passage": "Lối Đi Đồi Đá",
           "bridge_approach": "Đầu Cầu",
           "shorecove_camp": "Doanh Trại Ven Bờ",
           "old_water_plant": "Nhà Máy Nước Cũ",
           "hub_base_power_plant": "Nhà Máy Năng Lượng Trung Tâm",
           "hub_west": "Khu Tây Trung Tâm",
-          "originium_byproduct_precessing_center": "Trung Tâm Xử Lý Sản Phẩm Phụ Của Originium",
+          "originium_byproduct_processing_center": "Trung Tâm Xử Lý Sản Phẩm Phụ Của Originium",
           "construction_site": "Công Trường Xây Dựng",
           "hub_base": "Căn Cứ Trung Tâm",
           "old_factory": "Nhà Máy Cũ",
@@ -116,7 +116,7 @@
     "sub": {
       "WL": {
         "name": "Thành Phố Võ Lăng",
-        "short": "WL",
+        "short": "VL",
         "site": {
           "bugui_grove": "Rừng Bất Quy",
           "agricultural_test_site": "Khu Thử Nghiệm Nông Nghiệp",
@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Lối Mòn",
           "ecological_research_station": "Trạm Nghiên Cứu Sinh Thái",
-          "qingbo bailey": "Sân Trong Trại Thanh Ba",
+          "qingbo_bailey": "Sân Trong Trại Thanh Ba",
           "treasure_grotto": "Hang Động Kho Báu",
           "sky_king_flats": "Bình Nguyên Thiên Vương",
           "stragglers_ford": "Bến Cho Kẻ Lạc",
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "Tàu Vũ Trụ Originium Dijiang",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "T.V.T Dijiang",
       "site": {
         "bridge": "Cầu Tàu",
         "reception_room": "Phòng Tiếp Khách",

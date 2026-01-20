@@ -2,7 +2,7 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --tooltip-bg: #{rgba($black-0, 0.3)};
+    --tooltip-bg: #{rgba($black-0, 0.4)};
     --tooltip-text: #{$white-1};
     --tooltip-border: #{rgba($white-1, 0.3)};
     --tooltip-shadow: #{rgba($black-0, 0.8)};

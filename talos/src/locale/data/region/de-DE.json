@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Energieplateau",
-        "short": "PL",
+        "short": "EP",
         "site": {
           "old_dorms": "Alte Schlafsäle",
           "originium_power_plant": "Originium-Kraftwerk",
@@ -21,18 +21,18 @@
       },
       "OL": {
         "name": "Mineralquell",
-        "short": "OL",
+        "short": "MQ",
         "site": {
           "originium_passage": "Originium-Durchgang",
           "cradle_of_the_ages": "Wiege der Generationen",
           "mines_cable_car_station": "Minen-Seilbahnstation",
-          "logistices_area": "Logistikbereich",
+          "logistics_area": "Logistikbereich",
           "containment_zone_intersection": "Quarantänezone – Kreuzung",
           "old_mines": "Alte Minen",
           "meteorological_station": "Wetterstation",
           "cliffside_mining_area": "Klippen-Abbaugebiet",
           "temporary_stockpile": "Behelfslager",
-          "blightcliff_ovservation_post": "Verderbnisklippen-Wachposten",
+          "blightcliff_observation_post": "Verderbnisklippen-Wachposten",
           "mining_area_clinic": "Bergbauklinik",
           "mining_camp": "Bergbaucamp",
           "mountain_passage": "Bergpass",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Originium-Wissenschaftspark",
-        "short": "OP",
+        "short": "OW",
         "site": {
           "control_center": "Kontrollzentrum",
           "route_5": "Strecke 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Aburrey-Steinbruch",
-        "short": "AQ",
+        "short": "AS",
         "site": {
           "quarry_entrance": "Steinbruch-Eingang",
           "refuse_stockpile": "Müllvorrat",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Talpass",
-        "short": "VP",
+        "short": "TP",
         "site": {
           "valley_fort": "Talfort",
           "arsenal": "Arsenal",
@@ -88,14 +88,14 @@
         "name": "Der Hub",
         "short": "HB",
         "site": {
-          "lohistics_platform": "Logistik-Plattform",
+          "logistics_platform": "Logistik-Plattform",
           "rockhill_passage": "Felshügel-Durchgang",
           "bridge_approach": "Brückenzugang",
           "shorecove_camp": "Uferbucht-Camp",
           "old_water_plant": "Altes Wasserkraftwerk",
           "hub_base_power_plant": "Hub-Basis-Kraftwerk",
           "hub_west": "West-Hub",
-          "originium_byproduct_precessing_center": "Verarbeitungsanlage für Originium-Nebenprodukte",
+          "originium_byproduct_processing_center": "Verarbeitungsanlage für Originium-Nebenprodukte",
           "construction_site": "Baustelle",
           "hub_base": "Hub-Basis",
           "old_factory": "Alte Fabrik",
@@ -146,12 +146,12 @@
         }
       },
       "JY": {
-        "name": "Jingyu Valley",
-        "short": "JY",
+        "name": "Jingyu-Tal",
+        "short": "JT",
         "site": {
           "treadway": "Weg",
           "ecological_research_station": "Ökologische Forschungsstation",
-          "qingbo bailey": "Qingbo-Außenhof",
+          "qingbo_bailey": "Qingbo-Außenhof",
           "treasure_grotto": "Schatzgrotte",
           "sky_king_flats": "Himmelskönigebenen",
           "stragglers_ford": "Nachzüglerfurt",
