@@ -119,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Hide Website UI</span> to take screenshots or view edge markers.",
     "group": "View <span class=\"keyword\">discussion groups</span> and <span class=\"keyword\">communities</span> related to this project.",
     "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",
-    "language": "Switch <span class=\"keyword\">interface language</span>.<br>Currently, languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Thai, and Vietnamese.<br>Languages with <span class=\"keyword\">interface translation support</span> also include Arabic, Malay, and Polish.",
+    "language": "Switch <span class=\"keyword\">interface language</span>.<br>Languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Thai, and Vietnamese.<br><span class=\"keyword\">UI-only languages</span> (interface translations only) include Arabic, Malay, and Polish.",
     "help": "Restart this <span class=\"keyword\">guide</span>.",
     "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",

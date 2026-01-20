@@ -119,7 +119,7 @@
     "hideUI": "スクリーンショットを撮ったり、端のピンを確認したりするために<span class=\"keyword\">ウェブサイトのUIを非表示</span>にします。",
     "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
-    "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br>現在、<span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語です。<br><span class=\"keyword\">インターフェース翻訳をサポート</span>している言語には、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、アラビア語、タイ語、ベトナム語も含まれます。",
+    "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br><span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、タイ語、ベトナム語です。<br><span class=\"keyword\">インターフェース翻訳のみサポート</span>している言語には、アラビア語、マレー語、ポーランド語が含まれます。",
     "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
     "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",

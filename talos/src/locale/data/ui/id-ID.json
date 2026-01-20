@@ -119,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Situs Web</span> untuk mengambil tangkapan layar atau melihat penanda tepi.",
     "group": "Lihat <span class=\"keyword\">grup diskusi</span> dan <span class=\"keyword\">komunitas</span> yang terkait dengan proyek ini.",
     "darkMode": "Beralih <span class=\"keyword\">mode cahaya sekitar</span> saat ini.",
-    "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, dan Korea.<br>Bahasa dengan <span class=\"keyword\">dukungan terjemahan antarmuka</span> juga mencakup Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Arab, Thailand, dan Vietnam.",
+    "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, Korea, Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Thailand, dan Vietnam.<br>Bahasa dengan <span class=\"keyword\">hanya dukungan terjemahan antarmuka</span> mencakup Arab, Melayu, dan Polandia.",
     "help": "Mulai ulang <span class=\"keyword\">panduan</span> ini.",
     "regionSwitch": "Klik untuk beralih antara <span class=\"keyword\">peta kotak pasir yang berbeda</span> (wilayah utama) dalam game.",
     "subregionSwitch": "<span class=\"keyword\">Arahkan kursor ke ikon wilayah utama</span> untuk menampilkan sub-wilayah yang tersedia; mengklik ikon sub-wilayah akan melompat ke tampilan sub-wilayah itu.<br>Demikian pula, Anda juga dapat memilih lapisan untuk suatu wilayah.",

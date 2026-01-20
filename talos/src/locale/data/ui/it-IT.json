@@ -119,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Nascondi l'interfaccia utente del sito web</span> per fare screenshot o visualizzare i marcatori ai bordi.",
     "group": "Visualizza <span class=\"keyword\">gruppi di discussione</span> e <span class=\"keyword\">comunità</span> relativi a questo progetto.",
     "darkMode": "Attiva/disattiva la <span class=\"keyword\">modalità luce ambientale</span> corrente.",
-    "language": "Cambia la <span class=\"keyword\">lingua dell'interfaccia</span>.<br>Attualmente, le lingue con <span class=\"keyword\">supporto completo per la traduzione dei contenuti del gioco</span> includono inglese, cinese semplificato, cinese tradizionale, giapponese e coreano.<br>Le lingue con <span class=\"keyword\">supporto per la traduzione dell'interfaccia</span> includono anche francese, tedesco, italiano, russo, spagnolo, indonesiano, portoghese, arabo, tailandese e vietnamita.",
+    "language": "Cambia la <span class=\"keyword\">lingua dell'interfaccia</span>.<br>Attualmente, le lingue con <span class=\"keyword\">supporto completo per la traduzione dei contenuti del gioco</span> includono inglese, cinese semplificato, cinese tradizionale, giapponese, coreano, francese, tedesco, italiano, russo, spagnolo, indonesiano, portoghese, tailandese e vietnamita.<br>Le lingue con <span class=\"keyword\">solo supporto per la traduzione dell'interfaccia</span> includono arabo, malese e polacco.",
     "help": "Riavvia questa <span class=\"keyword\">guida</span>.",
     "settings": "Apri <span class=\"keyword\">Impostazioni</span> per controllare l'archivio locale utilizzato dalla mappa per ricordare le tue azioni.",
     "regionSwitch": "Clicca per passare tra <span class=\"keyword\">diverse mappe sandbox</span> (regioni principali) nel gioco.",

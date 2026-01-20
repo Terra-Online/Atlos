@@ -119,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Ukryj interfejs strony</span>, aby robić zrzuty ekranu lub oglądać znaczniki na krawędziach.",
     "group": "Zobacz <span class=\"keyword\">grupy dyskusyjne</span> i <span class=\"keyword\">społeczności</span> związane z tym projektem.",
     "darkMode": "Przełącz bieżący <span class=\"keyword\">tryb oświetlenia otoczenia</span>.",
-    "language": "Zmień <span class=\"keyword\">język interfejsu</span>.<br>Obecnie języki z <span class=\"keyword\">pełnym wsparciem tłumaczenia treści w grze</span> to angielski, chiński uproszczony, chiński tradycyjny, japoński i koreański.<br>Języki z <span class=\"keyword\">tłumaczeniem interfejsu</span> obejmują także francuski, niemiecki, włoski, rosyjski, hiszpański, indonezyjski, portugalski, arabski, tajski, wietnamski, malajski i polski.",
+    "language": "Zmień <span class=\"keyword\">język interfejsu</span>.<br>Obecnie języki z <span class=\"keyword\">pełnym wsparciem tłumaczenia treści w grze</span> to angielski, chiński uproszczony, chiński tradycyjny, japoński, koreański, francuski, niemiecki, włoski, rosyjski, hiszpański, indonezyjski, portugalski, tajski i wietnamski.<br>Języki z <span class=\"keyword\">jedynie tłumaczeniem interfejsu</span> to arabski, malajski i polski.",
     "help": "Uruchom ponownie ten <span class=\"keyword\">samouczek</span>.",
     "settings": "Otwórz <span class=\"keyword\">Preferencje</span>, aby kontrolować, jakiego lokalnego przechowywania danych mapa używa do zapamiętywania Twoich działań.",
     "regionSwitch": "Kliknij, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span> (głównymi regionami) w grze.",

@@ -119,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">隱藏網站UI</span>以截圖或查看邊緣點位。",
     "group": "查看與本項目有關的<span class=\"keyword\">討論群組</span>與<span class=\"keyword\">社區</span>。",
     "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
-    "language": "切換<span class=\"keyword\">界面語言</span>。<br>目前<span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語以及韓語。<br>已<span class=\"keyword\">支持界面翻譯</span>的語言還包括法語，德語，意大利語，俄語，西班牙語，印度尼西亞語，葡萄牙語，阿拉伯語，泰語以及越南語。",
+    "language": "切換<span class=\"keyword\">界面語言</span>。<br><span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語，韓語，法語，德語，意大利語，俄語，西班牙語，印尼語，葡萄牙語，泰語和越南語。<br><span class=\"keyword\">僅支持界面翻譯</span>的語言包括阿拉伯語，馬來語和波蘭語。",
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
     "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
     "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱庭地圖</span>（主區域）。",

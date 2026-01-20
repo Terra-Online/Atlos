@@ -119,7 +119,7 @@
     "hideUI": "스크린샷을 찍거나 가장자리 마커를 확인하기 위해 <span class=\"keyword\">웹사이트 UI 숨기기</span>.",
     "group": "이 프로젝트와 관련된 <span class=\"keyword\">토론 그룹</span> 및 <span class=\"keyword\">커뮤니티</span>를 확인합니다.",
     "darkMode": "현재 <span class=\"keyword\">조명 모드</span>를 전환합니다.",
-    "language": "<span class=\"keyword\">인터페이스 언어</span>를 전환합니다.<br>현재 <span class=\"keyword\">게임 콘텐츠 번역을 완벽하게 지원</span>하는 언어는 영어, 중국어 간체, 중국어 번체, 일본어 및 한국어입니다.<br><span class=\"keyword\">인터페이스 번역을 지원</span>하는 언어에는 프랑스어, 독일어, 이탈리아어, 러시아어, 스페인어, 인도네시아어, 포르투갈어, 아랍어, 태국어 및 베트남어도 포함됩니다.",
+    "language": "<span class=\"keyword\">인터페이스 언어</span>를 전환합니다.<br><span class=\"keyword\">게임 콘텐츠 번역을 완벽하게 지원</span>하는 언어는 영어, 중국어 간체, 중국어 번체, 일본어, 한국어, 프랑스어, 독일어, 이탈리아어, 러시아어, 스페인어, 인도네시아어, 포르투갈어, 타이어, 베트남어입니다.<br><span class=\"keyword\">인터페이스 번역만 지원</span>하는 언어에는 아랍어, 말레이어, 폴란드어가 포함됩니다.",
     "help": "이 <span class=\"keyword\">가이드</span>를 다시 시작합니다.",
     "settings": "<span class=\"keyword\">설정</span>을 열어 지도가 작업을 기억하는 데 사용하는 로컬 저장소를 제어합니다.",
     "regionSwitch": "클릭하여 게임 내 <span class=\"keyword\">다른 샌드박스 지도</span>(주 구역)로 전환합니다.",

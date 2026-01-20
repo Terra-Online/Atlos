@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDevice } from '@/utils/device';
+import PopoverTooltip from '@/component/popover/popover';
 
 import HeadBarDesktop from './headBar.desktop';
 import HeadBarMobile from './headBar.mobile';
@@ -30,16 +31,25 @@ const HeadItem = ({
         }
     };
 
-    return (
+    const button = (
         <button
             className={`${styles.headbarItem} ${active ? styles.active : ''} ${disabled ? styles.disabled : ''}`}
             onClick={handleClick}
             disabled={disabled}
-            title={tooltip}
             aria-label={tooltip}
         >
             <div className={styles.headbarIcon}>{Icon && <Icon />}</div>
         </button>
+    );
+
+    if (!tooltip) {
+        return button;
+    }
+
+    return (
+        <PopoverTooltip content={tooltip} placement="bottom">
+            {button}
+        </PopoverTooltip>
     );
 };
 

@@ -3,6 +3,7 @@ import styles from './regSwitch.module.scss';
 import useRegion from '@/store/region';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import classNames from 'classnames';
+import PopoverTooltip from '@/component/popover/popover';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Wuling from '../../assets/logos/_Wuling.svg?react';
@@ -117,29 +118,34 @@ const RegionContainer: React.FC<{
                                     ></div>
                                     {region.subregions.map((subregion) => {
                                         const subKey = SUBREGION_DICT[subregion]?.name;
-                                        const ariaLabel = subKey ? tGame(`region.${regionCode}.sub.${subKey}.name`) : subregion;
+                                        const fullName = subKey ? tGame(`region.${regionCode}.sub.${subKey}.name`) : subregion;
                                         return (
-                                            <button
+                                            <PopoverTooltip
                                                 key={subregion}
-                                                className={classNames(
-                                                    styles.subregItem,
-                                                    currentSubregionKey ===
-                                                        subregion &&
-                                                        styles.selected,
-                                                )}
-                                                onClick={() => {
-                                                    requestSubregionSwitch(subregion);
-                                                }}
-                                                aria-label={ariaLabel}
+                                                content={fullName}
+                                                placement="right"
                                             >
-                                                <div className={styles.subregName}>
-                                                    {(() => {
-                                                        if (!subKey) return subregion;
-                                                        const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
-                                                        return typeof v === 'string' && v.trim() ? v : subKey;
-                                                    })()}
-                                                </div> 
-                                            </button>
+                                                <button
+                                                    className={classNames(
+                                                        styles.subregItem,
+                                                        currentSubregionKey ===
+                                                            subregion &&
+                                                            styles.selected,
+                                                    )}
+                                                    onClick={() => {
+                                                        requestSubregionSwitch(subregion);
+                                                    }}
+                                                    aria-label={fullName}
+                                                >
+                                                    <div className={styles.subregName}>
+                                                        {(() => {
+                                                            if (!subKey) return subregion;
+                                                            const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
+                                                            return typeof v === 'string' && v.trim() ? v : subKey;
+                                                        })()}
+                                                    </div>
+                                                </button>
+                                            </PopoverTooltip>
                                         );
                                     })}
                                 </div>
