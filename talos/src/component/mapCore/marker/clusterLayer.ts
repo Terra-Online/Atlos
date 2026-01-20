@@ -11,11 +11,8 @@ import styles from './marker.module.scss';
 const CLUSTER_SUBCATEGORY_WHITELIST = new Set<string>([
     'boss',
     'collection',
-    'combat',
-    'facility',
     'mob',
     'natural',
-    'npc',
     'valuable'
 ]);
 

@@ -12,7 +12,7 @@
   "trigger": {
     "boundaryMode": "地区边界显示",
     "clusterMode": "点位聚合",
-    "labelName": "地区名称"
+    "labelName": "地区名称显示"
   },
   "search": {
     "placeholder": "全局搜索…"
@@ -60,6 +60,8 @@
       "pt-BR": "葡萄牙语",
       "id-ID": "印度尼西亚语",
       "ar-AE": "阿拉伯语",
+      "ms-MY": "马来语",
+      "pl-PL": "波兰语",
       "th-TH": "泰语",
       "vi-VN": "越南语"
     }
@@ -82,7 +84,8 @@
       "hint": "选择您希望启用的界面偏好储存。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
       "sidebar": "保存侧边栏状态",
       "filterOrder": "保存筛选器排序",
-      "triggers": "保存底栏状态"
+      "triggers": "保存底栏状态",
+      "performanceMode": "性能模式"
     },
     "mapPrefs": {
       "title": "地图与点位",
@@ -108,7 +111,7 @@
     "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。<br><br>您也可以在侧边栏的<span class=\"keyword\">空白区域按住并拖动</span>，对多个点位选择器进行<span class=\"keyword\">框选</span>，从而快速批量切换它们的选择状态。",
     "selectorComplete": "当此类型所有点位都被标记为完成时，选择器将会变为<span class=\"keyword\">完成状态</span>，以便您快捷判断标记情况。",
     "triggerHandle": "与地图显示有关的开关位于侧边栏底部。<br>您可以按住鼠标将其<span class=\"keyword\">拖起并操作。</span>",
-    "triggerSwitch": "单击切换开关状态。<br><ul><li><span class=\"keyword\">点位聚合模式</span>将允许将密集点位合并显示；</li><li><span class=\"keyword\">地区边界显示</span>会高亮当前区域内每一个子区域以及其边界。</li></ul>",
+    "triggerSwitch": "单击切换开关状态。<br><ul><li><span class=\"keyword\">点位聚合模式</span>允许将密集点位合并显示；</li><li><span class=\"keyword\">地区边界显示</span>会高亮当前区域内每一个子区域以及其边界。</li><li><span class=\"keyword\">地区名称显示</span>会显示游戏内的地区名称。</li></ul>",
     "scale": "使用<span class=\"keyword\">缩放器</span>查看与操纵地图缩放。<br>滚轮或者触控板可用于缩放。您也可以通过点击<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>按钮或者缩放条的任意位置缩放。",
     "filterList": "<span class=\"keyword\">点位列表</span>列出了您已经选择的点位，单击图标即可取消选择。",
     "headbar": "与地图设置有关的开关位于<span class=\"keyword\">顶栏</span>。",
@@ -116,12 +119,12 @@
     "hideUI": "<span class=\"keyword\">隐藏网站UI</span>以截图或查看边缘点位。",
     "group": "查看与本项目有关的<span class=\"keyword\">讨论群组</span>与<span class=\"keyword\">社区</span>。",
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
-    "language": "切换<span class=\"keyword\">界面语言</span>。<br>目前<span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语以及韩语。<br>已<span class=\"keyword\">支持界面翻译</span>的语言还包括法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，阿拉伯语，泰语以及越南语。",
+    "language": "切换<span class=\"keyword\">界面语言</span>。<br><span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语，韩语，法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，泰语和越南语。<br><span class=\"keyword\">仅支持界面翻译</span>的语言包括阿拉伯语，马来语和波兰语。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
     "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
-    "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱亭地图</span>（主区域）。",
+    "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱庭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
-    "layerMain": "点击<span class=\"keyword\">图层图标</span>可随时返回<span class=\"keyword\">主图层（M）</span>。",
+    "layerMain": "点击<span class=\"keyword\">图层图标</span>可随时返回<span class=\"keyword\">主图层 [M]</span>。",
     "layerSwitch": "鼠标<span class=\"keyword\">悬浮于图层图标</span>可显示当前区域的可用图层，点击图层即可切换到该视图。<br>不同的图层可能显示地图的<span class=\"keyword\">不同楼层或高度</span>，帮助您探索多层次区域。",
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",
     "pointMark": "再次单击点位，点位将被标记为完成。",

@@ -1,0 +1,150 @@
+{
+  "headbar": {
+    "tos": "Terma Perkhidmatan",
+    "hideUI": "Sembunyikan UI",
+    "group": "Sertai kumpulan berkaitan",
+    "darkmode": "Tukar ke mod gelap",
+    "lightmode": "Tukar ke mod cerah",
+    "language": "Pilih bahasa",
+    "help": "Dapatkan bantuan",
+    "settings": "Keutamaan"
+  },
+  "trigger": {
+    "boundaryMode": "Mod Sempadan",
+    "clusterMode": "Mod Pengelompokan",
+    "labelName": "Nama Wilayah"
+  },
+  "search": {
+    "placeholder": "Carian global..."
+  },
+  "markFilter": {
+    "title": "Pilihan Tapis",
+    "emptyTitle": "Tiada pilihan tapis yang sepadan.",
+    "emptyDesc": "Jika anda mengesahkan bahawa sebarang maklumat lokasi hilang atau tidak tepat, sila hubungi pentadbir dalam komuniti kami, atau hantar sebuah <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Laporkan ralat lokasi'>Issue</a> di repositori GitHub kami."
+  },
+  "detail": {
+    "stat": {
+      "world": "Dunia",
+      "main": "Utama"
+    },
+    "noInfo": "Tiada maklumat."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "disokong oleh Observator 6"
+    }
+  },
+  "language": {
+    "title": "Bahasa",
+    "cancel": "Batal",
+    "current": "Kini",
+    "fullSupport": "Bahasa Disokong Sepenuhnya",
+    "fullSupportHint": "Terjemahan lengkap untuk kedua-dua UI dan kandungan dalam permainan.",
+    "uiOnly": "Bahasa UI Sahaja",
+    "uiOnlyHint": "Terjemahan UI sahaja, kandungan dalam permainan akan dipaparkan dalam bahasa Inggeris.",
+    "fyi": "Jika bahasa anda belum tersedia di laman web ini, anda boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, atau melawat GitHub untuk menyertai projek terjemahan sumber terbuka kami. Anda boleh memohon entri terjemahan untuk bahasa anda dan membantu menterjemah serta melokalkan bahagian WIKI mengikut garis panduan kami. Kami amat menghargai dan menantikan sumbangan anda.\nAnda juga boleh klik untuk melihat senarai penyumbang terjemahan.",
+    "names": {
+      "en-US": "English",
+      "zh-CN": "Simplified Chinese",
+      "zh-HK": "Traditional Chinese",
+      "ja-JP": "Japanese",
+      "ko-KR": "Korean",
+      "es-ES": "Spanish",
+      "fr-FR": "French",
+      "de-DE": "German",
+      "it-IT": "Italian",
+      "ru-RU": "Russian",
+      "pt-BR": "Portuguese",
+      "id-ID": "Indonesian",
+      "ar-AE": "Arabic",
+      "th-TH": "Thai",
+      "vi-VN": "Vietnamese",
+      "ms-MY": "Melayu",
+      "pl-PL": "Polski"
+    }
+  },
+  "group": {
+    "title": "Komuniti & Media",
+    "visit": "Lawati"
+  },
+  "tos": {
+    "title": "Terma & Storan",
+    "calculating": "Mengira penggunaan storan...",
+    "policy": "<p>Kami menggunakan Cookies untuk menyimpan maklumat log masuk automatik anda; LocalStorage untuk menyimpan keutamaan UI dan kemajuan penanda anda; serta CacheStorage untuk menyimpan data fon dan sumber imej bagi bahasa anda. Fail-fail ini membolehkan anda mengakses laman web dengan lebih cepat pada masa hadapan dan memastikan ketersediaan laman web ketika luar talian.</p><p>Memadam storan setempat laman web boleh menjimatkan ruang pada peranti anda. Namun, <span class=\"keyword\">ia mungkin mengambil masa lebih lama untuk memuatkan fail-fail ini</span> apabila anda melawat semula; jika anda mematikan storan laman web, laman web <span class=\"keyword\">tidak akan dapat merekod data anda secara automatik</span> untuk kegunaan seterusnya.</p><p>Kami tidak melaporkan data anda ke pelayan, jadi anda tidak perlu risau tentang isu privasi.</p><p>Anda boleh memutuskan sama ada mahu mengaktifkan storan setempat.</p>",
+    "filtersAndMarkers": "Penapis & Data Penanda",
+    "warning": "<p><strong>Amaran:</strong> Jika anda mengosongkan data yang disimpan, maklumat log masuk automatik, keutamaan UI, dan kemajuan penanda anda akan hilang; dan mungkin mengambil masa lebih lama daripada biasa untuk memuatkan laman web pada lawatan seterusnya.</p><p>Jika disahkan, sila klik butang padam sekali lagi.</p>"
+  },
+  "settings": {
+    "title": "Tetapan",
+    "uiPrefs": {
+      "title": "Keutamaan UI",
+      "hint": "Pilih keadaan UI yang anda mahu kekalkan. Kami mengesyorkan <span class=\"keyword\">mengekalkan semua pilihan</span> untuk pengalaman yang lebih konsisten.",
+      "sidebar": "Kekalkan keadaan bar sisi",
+      "filterOrder": "Kekalkan susunan penapis",
+      "triggers": "Kekalkan keadaan suis",
+      "performanceMode": "Mod prestasi"
+    },
+    "mapPrefs": {
+      "title": "Keutamaan Peta",
+      "hint": "Pilih storan peta dan pengoptimuman automatik yang anda mahu aktifkan. Kami mengesyorkan <span class=\"keyword\">mengaktifkan semua pilihan</span> untuk pengalaman yang lebih konsisten.",
+      "viewState": "Kekalkan paparan peta",
+      "markerProgress": "Kekalkan penanda & kemajuan",
+      "autoCluster": "Pengelompokan automatik"
+    },
+    "theme": {
+      "title": "Keutamaan Tema",
+      "hint": "Pilih tema pilihan anda. Untuk <span class=\"keyword\">AUTO</span>, tema akan bertukar mengikut keutamaan peranti anda.",
+      "light": "Cerah",
+      "dark": "Gelap",
+      "auto": "Auto"
+    }
+  },
+  "guide": {
+    "welcome": "Selamat datang ke <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini kali pertama anda menggunakan peta ini. Kami akan memberikan anda panduan ringkas untuk membantu anda memahami pelbagai fungsi peta dengan cepat.</p><p>Anda boleh klik butang '<span class=\"keyword\">Langkau</span>' pada bila-bila masa untuk menamatkan panduan, atau mulakan semula melalui butang bantuan di bar atas.",
+    "sidebarToggle": "Klik untuk mengembangkan <span class=\"keyword\">bar sisi</span>.<br>Bar sisi mengandungi penapis penanda yang paling kerap anda gunakan serta suis yang berkait rapat dengan paparan penanda.",
+    "search": "Anda boleh mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang disokong oleh permainan</span> dan memilihnya dalam hasil carian.",
+    "filterContainer": "Penanda jenis yang sama dikumpulkan dalam satu <span class=\"keyword\">penapis</span>.<br>Klik untuk mengembangkan senarai penanda bagi jenis tersebut.",
+    "filterSort": "Tahan ikon di sebelah kiri penapis untuk memasuki <span class=\"keyword\">mod seret</span>.<br>Anda boleh menyusun penapis mengikut keperluan anda.",
+    "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span> tertentu. Klik untuk menukar status pilihan; penanda yang dipilih akan muncul pada peta.<br>Anda boleh melihat jumlah penanda jenis ini di kawasan semasa, serta jumlah yang telah anda tandakan.<br><br>Anda juga boleh <span class=\"keyword\">tahan dan seret pada kawasan kosong</span> di bar sisi untuk melakukan <span class=\"keyword\">pemilihan kotak</span> ke atas beberapa pemilih penanda serentak, supaya anda boleh menukar status pilihan secara berkelompok dengan cepat.",
+    "selectorComplete": "Apabila semua penanda jenis ini ditandakan selesai, pemilih akan berubah kepada <span class=\"keyword\">status selesai</span> untuk memudahkan penilaian kemajuan.",
+    "triggerHandle": "Suis berkaitan paparan peta berada di bahagian bawah bar sisi.<br>Anda boleh menahan tetikus untuk <span class=\"keyword\">menyeret dan mengendalikannya.</span>",
+    "triggerSwitch": "Klik untuk menukar status suis.<br><ul><li><span class=\"keyword\">Mod Pengelompokan Penanda</span> membolehkan penanda yang padat dipaparkan secara digabungkan;</li><li><span class=\"keyword\">Paparan Sempadan Wilayah</span> menyerlahkan setiap sub-wilayah dan sempadannya dalam kawasan semasa.</li><li><span class=\"keyword\">Nama Wilayah</span> memaparkan nama wilayah dalam permainan.</li></ul>",
+    "scale": "Gunakan <span class=\"keyword\">Kawalan Zum</span> untuk melihat dan mengawal zum peta.<br>Roda tatal atau trackpad boleh digunakan untuk zum. Anda juga boleh zum dengan mengklik butang <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> atau mana-mana tempat pada palang zum.",
+    "filterList": "<span class=\"keyword\">Senarai Penanda</span> menyenaraikan penanda yang anda pilih; klik ikon untuk nyahpilih.",
+    "headbar": "Suis berkaitan tetapan peta berada di <span class=\"keyword\">bar kepala</span>.",
+    "tos": "<span class=\"keyword\">Terma Perkhidmatan</span> dan <span class=\"keyword\">Pengurusan Data</span> laman web.",
+    "hideUI": "<span class=\"keyword\">Sembunyikan UI Laman Web</span> untuk mengambil tangkapan skrin atau melihat penanda di tepi.",
+    "group": "Lihat <span class=\"keyword\">kumpulan perbincangan</span> dan <span class=\"keyword\">komuniti</span> yang berkaitan dengan projek ini.",
+    "darkMode": "Togol <span class=\"keyword\">mod cahaya persekitaran</span> semasa.",
+    "language": "Tukar <span class=\"keyword\">bahasa antara muka</span>.<br>Pada masa ini, bahasa dengan <span class=\"keyword\">sokongan terjemahan kandungan permainan sepenuhnya</span> termasuk Inggeris, Cina Ringkas, Cina Tradisional, Jepun, Korea, Perancis, Jerman, Itali, Rusia, Sepanyol, Indonesia, Portugis, Thai dan Vietnam.<br>Bahasa dengan <span class=\"keyword\">hanya sokongan terjemahan antara muka</span> termasuk Arab, Melayu dan Poland.",
+    "help": "Mulakan semula <span class=\"keyword\">panduan</span> ini.",
+    "settings": "Buka <span class=\"keyword\">Keutamaan</span> untuk mengawal storan setempat yang digunakan peta bagi mengingati tindakan anda.",
+    "regionSwitch": "Klik untuk bertukar antara <span class=\"keyword\">peta sandbox yang berbeza</span> (wilayah utama) dalam permainan.",
+    "subregionSwitch": "<span class=\"keyword\">Layang kursor pada ikon wilayah utama</span> untuk memaparkan sub-wilayah yang tersedia; klik ikon sub-wilayah untuk melompat ke paparan sub-wilayah tersebut.<br>Begitu juga, anda boleh memilih lapisan untuk sesuatu wilayah.",
+    "layerMain": "Klik <span class=\"keyword\">ikon lapisan</span> untuk kembali ke <span class=\"keyword\">lapisan utama (M)</span> pada bila-bila masa.",
+    "layerSwitch": "<span class=\"keyword\">Layang kursor pada ikon lapisan</span> untuk memaparkan lapisan yang tersedia bagi wilayah semasa; klik lapisan untuk bertukar ke paparan tersebut.<br>Lapisan yang berbeza mungkin menunjukkan <span class=\"keyword\">tingkat atau ketinggian</span> peta yang berbeza, membantu anda meneroka kawasan berbilang aras.",
+    "pointSelect": "Klik penanda untuk memasuki <span class=\"keyword\">status dipilih</span>. Anda akan dapat melihat maklumat penanda.",
+    "pointMark": "Klik penanda sekali lagi untuk menandainya sebagai selesai.",
+    "detail": "Anda boleh melihat maklumat khusus tentang penanda yang dipilih, termasuk bilangan penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> semasa, dan <span class=\"keyword\">sub-wilayah</span> semasa.",
+    "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai."
+  },
+  "common": {
+    "close": "Tutup",
+    "skip": "Langkau",
+    "clear": "Kosongkan",
+    "all": "Semua",
+    "selected": "Dipilih",
+    "confirm": "Sahkan",
+    "enable": "Dayakan",
+    "disable": "Nyahdayakan",
+    "expand": "Kembangkan",
+    "collapse": "Runtuhkan"
+  },
+  "meta": {
+    "title": "Open Endfield Map",
+    "description": "Open Endfield Map ialah peta dalam talian sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perancangan strategik untuk pemain."
+  }
+}

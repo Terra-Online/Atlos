@@ -60,6 +60,8 @@
       "pt-BR": "Portuguese",
       "id-ID": "Indonesian",
       "ar-AE": "Arabic",
+      "ms-MY": "Malay",
+      "pl-PL": "Polish",
       "th-TH": "Thai",
       "vi-VN": "Vietnamese"
     }
@@ -82,7 +84,8 @@
       "hint": "Select the UI state you want to keep. We recommend <span class=\"keyword\">keeping all options</span> for a more consistent experience.",
       "sidebar": "Keep sidebar state",
       "filterOrder": "Keep filter order",
-      "triggers": "Keep trigger state"
+      "triggers": "Keep trigger state",
+      "performanceMode": "Performance mode"
     },
     "mapPrefs": {
       "title": "Map Preferences",
@@ -108,7 +111,7 @@
     "selectorSelect": "Specific <span class=\"keyword\">marker selector</span>. Click to toggle selection status; selected markers will appear on the map.<br>You can see the total number of such markers in the current area, as well as the number you have marked.<br><br>You can also <span class=\"keyword\">hold and drag in the blank area</span> of the sidebar to perform <span class=\"keyword\">box selection</span> on multiple marker selectors at once, allowing you to quickly toggle their selection status in batches.",
     "selectorComplete": "When all markers of this type are marked as complete, the selector will change to <span class=\"keyword\">completed status</span> for quick judgment of marking progress.",
     "triggerHandle": "Switches related to map display are located at the bottom of the sidebar.<br>You can hold the mouse to <span class=\"keyword\">drag and operate them.</span>",
-    "triggerSwitch": "Click to toggle switch status.<br><ul><li><span class=\"keyword\">Marker Clustering Mode</span> allows dense markers to be displayed merged;</li><li><span class=\"keyword\">Region Boundary Display</span> highlights every sub-region and its boundaries within the current area.</li></ul>",
+    "triggerSwitch": "Click to toggle switch status.<br><ul><li><span class=\"keyword\">Marker Clustering Mode</span> allows dense markers to be displayed merged;</li><li><span class=\"keyword\">Region Boundary Display</span> highlights every sub-region and its boundaries within the current area.</li><li><span class=\"keyword\">Region Name</span> shows in-game region names.</li></ul>",
     "scale": "Use the <span class=\"keyword\">Zoom Control</span> to view and manipulate map zoom.<br>Scroll wheel or trackpad can be used to zoom. You can also zoom by clicking the <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> buttons or anywhere on the zoom bar.",
     "filterList": "The <span class=\"keyword\">Marker List</span> lists the markers you have selected; click the icon to deselect.",
     "headbar": "Switches related to map settings are located in the <span class=\"keyword\">header bar</span>.",
@@ -116,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Hide Website UI</span> to take screenshots or view edge markers.",
     "group": "View <span class=\"keyword\">discussion groups</span> and <span class=\"keyword\">communities</span> related to this project.",
     "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",
-    "language": "Switch <span class=\"keyword\">interface language</span>.<br>Currently, languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, and Korean.<br>Languages with <span class=\"keyword\">interface translation support</span> also include French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Arabic, Thai, and Vietnamese.",
+    "language": "Switch <span class=\"keyword\">interface language</span>.<br>Languages with <span class=\"keyword\">full game content translation support</span> include English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Italian, Russian, Spanish, Indonesian, Portuguese, Thai, and Vietnamese.<br><span class=\"keyword\">UI-only languages</span> (interface translations only) include Arabic, Malay, and Polish.",
     "help": "Restart this <span class=\"keyword\">guide</span>.",
     "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",

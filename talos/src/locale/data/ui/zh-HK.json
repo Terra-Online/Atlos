@@ -60,6 +60,8 @@
       "pt-BR": "葡萄牙語",
       "id-ID": "印尼語",
       "ar-AE": "阿拉伯語",
+      "ms-MY": "馬來語",
+      "pl-PL": "波蘭語",
       "th-TH": "泰語",
       "vi-VN": "越南語"
     }
@@ -82,7 +84,8 @@
       "hint": "選擇您希望啟用的介面偏好儲存。<br>我們建議您<span class=\"keyword\">開啟所有選項以獲得更連貫的使用體驗</span>。",
       "sidebar": "保存側邊欄狀態",
       "filterOrder": "保存篩選器排序",
-      "triggers": "保存底欄狀態"
+      "triggers": "保存底欄狀態",
+      "performanceMode": "效能模式"
     },
     "mapPrefs": {
       "title": "地圖與點位",
@@ -108,7 +111,7 @@
     "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。<br><br>您也可以在側邊欄的<span class=\"keyword\">空白區域按住並拖動</span>，對多個點位選擇器進行<span class=\"keyword\">框選</span>，從而快速批量切換它們的選擇狀態。",
     "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
     "triggerHandle": "與地圖顯示有關的開關位於側邊欄底部。<br>您可以按住鼠標將其<span class=\"keyword\">拖起並操作。</span>",
-    "triggerSwitch": "單擊切換開關狀態。<br><ul><li><span class=\"keyword\">點位聚合模式</span>將允許將密集點位合併顯示；</li><li><span class=\"keyword\">地區邊界顯示</span>會高亮當前區域內每一個子區域以及其邊界。</li></ul>",
+    "triggerSwitch": "單擊切換開關狀態。<br><ul><li><span class=\"keyword\">點位聚合模式</span>將允許將密集點位合併顯示；</li><li><span class=\"keyword\">地區邊界顯示</span>會高亮當前區域內每一個子區域以及其邊界。</li><li><span class=\"keyword\">地區名稱顯示</span>會顯示遊戲內的地區名稱。</li></ul>",
     "scale": "使用<span class=\"keyword\">縮放器</span>查看與操縱地圖縮放。<br>滾輪或者觸控板可用於縮放。您也可以通過點擊<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>按鈕或者縮放條的任意位置縮放。",
     "filterList": "<span class=\"keyword\">點位列表</span>列出了您已經選擇的點位，單擊圖標即可取消選擇。",
     "headbar": "與地圖設置有關的開關位於<span class=\"keyword\">頂欄</span>。",
@@ -116,10 +119,10 @@
     "hideUI": "<span class=\"keyword\">隱藏網站UI</span>以截圖或查看邊緣點位。",
     "group": "查看與本項目有關的<span class=\"keyword\">討論群組</span>與<span class=\"keyword\">社區</span>。",
     "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
-    "language": "切換<span class=\"keyword\">界面語言</span>。<br>目前<span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語以及韓語。<br>已<span class=\"keyword\">支持界面翻譯</span>的語言還包括法語，德語，意大利語，俄語，西班牙語，印度尼西亞語，葡萄牙語，阿拉伯語，泰語以及越南語。",
+    "language": "切換<span class=\"keyword\">界面語言</span>。<br><span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語，韓語，法語，德語，意大利語，俄語，西班牙語，印尼語，葡萄牙語，泰語和越南語。<br><span class=\"keyword\">僅支持界面翻譯</span>的語言包括阿拉伯語，馬來語和波蘭語。",
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
     "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
-    "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱亭地圖</span>（主區域）。",
+    "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱庭地圖</span>（主區域）。",
     "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",
     "layerMain": "點擊<span class=\"keyword\">圖層圖標</span>可隨時返回<span class=\"keyword\">主圖層（M）</span>。",
     "layerSwitch": "鼠標<span class=\"keyword\">懸浮於圖層圖標</span>可顯示當前區域的可用圖層，點擊圖層即可切換到該視圖。<br>不同的圖層可能顯示地圖的<span class=\"keyword\">不同樓層或高度</span>，幫助您探索多層次區域。",

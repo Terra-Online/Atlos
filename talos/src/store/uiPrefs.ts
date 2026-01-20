@@ -55,6 +55,10 @@ interface IUiPrefsStore {
   setPrefsMarkerProgressEnabled: (value: boolean) => void;
   prefsAutoClusterEnabled: boolean;
   setPrefsAutoClusterEnabled: (value: boolean) => void;
+
+  // Performance Mode
+  prefsPerformanceModeEnabled: boolean;
+  setPrefsPerformanceModeEnabled: (value: boolean) => void;
 }
 
 export const useUiPrefsStore = create<IUiPrefsStore>()(
@@ -77,7 +81,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setMarkFilterOrder: (order) => set({ markFilterOrder: order }),
 
       // triggers (default off)
-      triggerCluster: false,
+      triggerCluster: true,
       triggerBoundary: false,
       // Repurposed: controls region/place name labels visibility
       triggerlabelName: true,
@@ -86,7 +90,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setTriggerlabelName: (value: boolean) => set({ triggerlabelName: value }),
 
       // User Guide States
-      drawerSnapIndex: null,
+      drawerSnapIndex: 1,
       setDrawerSnapIndex: (index) => set({ drawerSnapIndex: index }),
       forceRegionSubOpen: false,
       setForceRegionSubOpen: (value) => set({ forceRegionSubOpen: value }),
@@ -114,6 +118,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setPrefsMarkerProgressEnabled: (value) => set({ prefsMarkerProgressEnabled: value }),
       prefsAutoClusterEnabled: true,
       setPrefsAutoClusterEnabled: (value) => set({ prefsAutoClusterEnabled: value }),
+
+      // Performance Mode (default: true - performance mode enabled)
+      prefsPerformanceModeEnabled: true,
+      setPrefsPerformanceModeEnabled: (value) => set({ prefsPerformanceModeEnabled: value }),
     }),
     {
       name: 'ui-prefs',
@@ -124,6 +132,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerCluster: state.triggerCluster,
         triggerBoundary: state.triggerBoundary,
         triggerlabelName: state.triggerlabelName,
+        drawerSnapIndex: state.drawerSnapIndex,
         theme: state.theme,
         // Settings flags
         prefsSidebarEnabled: state.prefsSidebarEnabled,
@@ -132,6 +141,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         prefsViewStateEnabled: state.prefsViewStateEnabled,
         prefsMarkerProgressEnabled: state.prefsMarkerProgressEnabled,
         prefsAutoClusterEnabled: state.prefsAutoClusterEnabled,
+        prefsPerformanceModeEnabled: state.prefsPerformanceModeEnabled,
       }),
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<IUiPrefsStore>;
@@ -144,6 +154,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         if (persisted.prefsViewStateEnabled !== undefined) merged.prefsViewStateEnabled = persisted.prefsViewStateEnabled;
         if (persisted.prefsMarkerProgressEnabled !== undefined) merged.prefsMarkerProgressEnabled = persisted.prefsMarkerProgressEnabled;
         if (persisted.prefsAutoClusterEnabled !== undefined) merged.prefsAutoClusterEnabled = persisted.prefsAutoClusterEnabled;
+        if (persisted.prefsPerformanceModeEnabled !== undefined) merged.prefsPerformanceModeEnabled = persisted.prefsPerformanceModeEnabled;
         if (persisted.theme !== undefined) merged.theme = persisted.theme;
         
         // Conditionally restore based on preference flags
@@ -160,6 +171,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
           if (persisted.triggerCluster !== undefined) merged.triggerCluster = persisted.triggerCluster;
           if (persisted.triggerBoundary !== undefined) merged.triggerBoundary = persisted.triggerBoundary;
           if (persisted.triggerlabelName !== undefined) merged.triggerlabelName = persisted.triggerlabelName;
+          if (persisted.drawerSnapIndex !== undefined) merged.drawerSnapIndex = persisted.drawerSnapIndex;
         }
         
         return merged;
@@ -201,3 +213,7 @@ export const useSetIsUserGuideOpen = (): ((value: boolean) => void) => useUiPref
 // Theme hooks
 export const useTheme = () => useUiPrefsStore((s) => s.theme);
 export const useSetTheme = () => useUiPrefsStore((s) => s.setTheme);
+
+// Performance Mode hooks
+export const usePerformanceMode = (): boolean => useUiPrefsStore((s) => s.prefsPerformanceModeEnabled);
+export const useSetPerformanceMode = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setPrefsPerformanceModeEnabled);

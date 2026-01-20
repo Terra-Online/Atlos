@@ -2,12 +2,15 @@ import styles from './headbar.module.scss';
 import LiquidGlass from 'liquid-glass-react-positioning';
 import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '../../assets/logos/close.svg?react';
+import { usePerformanceMode } from '@/store/uiPrefs';
+import HeadBarMobileFallback from './headBar.mobile.fallback';
 
 interface HeadBarMobileProps {
     children: React.ReactNode;
 }
 
 const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
+    const performanceMode = usePerformanceMode();
     const [isExpanded, setIsExpanded] = useState(false);
     const childrenArray = React.Children.toArray(children);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +38,11 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
             document.removeEventListener('touchstart', handleClickOutside);
         };
     }, [isExpanded]);
+
+    // Use fallback component in performance mode
+    if (performanceMode) {
+        return <HeadBarMobileFallback>{children}</HeadBarMobileFallback>;
+    }
 
     return (
         <LiquidGlass

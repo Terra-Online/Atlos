@@ -78,7 +78,6 @@
     }
 }
 
-
 // Mobile collapsible headbar
 .headbarMobile {
     position: relative;
@@ -201,4 +200,18 @@
     grid-auto-flow: dense;
     justify-items: center;
     align-items: center;
+}
+// Fallback styles for performance mode
+.headbarFallback {
+    background: var(--headbar-bg);
+    backdrop-filter: blur(9px);
+    border-radius: 36px;
+    border: 1.5px solid var(--headbar-bg);
+    box-sizing: content-box;
+    padding: 7px;
+    box-shadow: 0 3px 12px rgba($black-1, 0.3);
+    transition: all .2s ease;
+    &:has(.headbarMobile.expanded) {
+        padding: 12px
+    }
 }

@@ -60,6 +60,8 @@
       "pt-BR": "Portugis",
       "id-ID": "Indonesia",
       "ar-AE": "Arab",
+      "ms-MY": "Melayu",
+      "pl-PL": "Polandia",
       "th-TH": "Thailand",
       "vi-VN": "Vietnam"
     }
@@ -82,7 +84,8 @@
       "hint": "Pilih status UI yang ingin disimpan. Kami sarankan <span class=\"keyword\">menyimpan semua opsi</span> untuk pengalaman yang lebih konsisten.",
       "sidebar": "Simpan sidebar",
       "filterOrder": "Urutan filter",
-      "triggers": "Status trigger"
+      "triggers": "Status trigger",
+      "performanceMode": "Mode performa"
     },
     "mapPrefs": {
       "title": "Preferensi peta",
@@ -108,7 +111,7 @@
     "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span> khusus. Klik untuk beralih status pemilihan; penanda yang dipilih akan muncul di peta.<br>Anda dapat melihat jumlah total penanda tersebut di area saat ini, serta jumlah yang telah Anda tandai.<br><br>Anda juga dapat <span class=\"keyword\">menahan dan menyeret di area kosong</span> bilah sisi untuk melakukan <span class=\"keyword\">pilihan kotak</span> pada beberapa pemilih penanda sekaligus, memungkinkan Anda dengan cepat beralih status pemilihan mereka secara massal.",
     "selectorComplete": "Ketika semua penanda jenis ini ditandai sebagai selesai, pemilih akan berubah menjadi <span class=\"keyword\">status selesai</span> untuk penilaian cepat kemajuan penandaan.",
     "triggerHandle": "Sakelar yang terkait dengan tampilan peta terletak di bagian bawah bilah sisi.<br>Anda dapat menahan mouse untuk <span class=\"keyword\">menyeret dan mengoperasikannya.</span>",
-    "triggerSwitch": "Klik untuk beralih status sakelar.<br><ul><li><span class=\"keyword\">Mode Pengelompokan Penanda</span> memungkinkan penanda padat ditampilkan digabungkan;</li><li><span class=\"keyword\">Tampilan Batas Wilayah</span> menyoroti setiap sub-wilayah dan batasnya dalam area saat ini.</li></ul>",
+    "triggerSwitch": "Klik untuk beralih status sakelar.<br><ul><li><span class=\"keyword\">Mode Pengelompokan Penanda</span> memungkinkan penanda padat ditampilkan digabungkan;</li><li><span class=\"keyword\">Tampilan Batas Wilayah</span> menyoroti setiap sub-wilayah dan batasnya dalam area saat ini.</li><li><span class=\"keyword\">Nama Wilayah</span> menampilkan nama wilayah dalam game.</li></ul>",
     "scale": "Gunakan <span class=\"keyword\">Kontrol Zoom</span> untuk melihat dan memanipulasi zoom peta.<br>Roda gulir atau trackpad dapat digunakan untuk memperbesar. Anda juga dapat memperbesar dengan mengklik tombol <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> atau di mana saja pada bilah zoom.",
     "filterList": "<span class=\"keyword\">Daftar Penanda</span> mencantumkan penanda yang telah Anda pilih; klik ikon untuk membatalkan pilihan.",
     "headbar": "Sakelar yang terkait dengan pengaturan peta terletak di <span class=\"keyword\">bilah atas</span>.",
@@ -116,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Situs Web</span> untuk mengambil tangkapan layar atau melihat penanda tepi.",
     "group": "Lihat <span class=\"keyword\">grup diskusi</span> dan <span class=\"keyword\">komunitas</span> yang terkait dengan proyek ini.",
     "darkMode": "Beralih <span class=\"keyword\">mode cahaya sekitar</span> saat ini.",
-    "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, dan Korea.<br>Bahasa dengan <span class=\"keyword\">dukungan terjemahan antarmuka</span> juga mencakup Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Arab, Thailand, dan Vietnam.",
+    "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, Korea, Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Thailand, dan Vietnam.<br>Bahasa dengan <span class=\"keyword\">hanya dukungan terjemahan antarmuka</span> mencakup Arab, Melayu, dan Polandia.",
     "help": "Mulai ulang <span class=\"keyword\">panduan</span> ini.",
     "regionSwitch": "Klik untuk beralih antara <span class=\"keyword\">peta kotak pasir yang berbeda</span> (wilayah utama) dalam game.",
     "subregionSwitch": "<span class=\"keyword\">Arahkan kursor ke ikon wilayah utama</span> untuk menampilkan sub-wilayah yang tersedia; mengklik ikon sub-wilayah akan melompat ke tampilan sub-wilayah itu.<br>Demikian pula, Anda juga dapat memilih lapisan untuk suatu wilayah.",

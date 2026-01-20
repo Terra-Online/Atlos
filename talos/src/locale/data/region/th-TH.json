@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "หุบเขา​ IV",
+    "sub": {
+      "PL": {
+        "name": "ที่ราบสูง​พลังงาน",
+        "short": "PL",
+        "site": {
+          "old_dorms": "หอพัก​เก่า",
+          "originium_power_plant": "โรงไฟฟ้า​ออ​ริ​จิ​เนียม",
+          "power_plant_comm_station": "สถานี​สื่อสาร​โรงไฟฟ้า",
+          "bridge_approach_camp": "ค่าย​เส้นทาง​ผ่าน​สะพาน",
+          "united_parking_lot": "ลานจอดรถ​รวม",
+          "planned_construction_area": "พื้นที่​ก่อสร้าง​ตาม​แผน",
+          "plateau_trunkway": "ถนน​ที่ราบสูง",
+          "bonekrusher_warcamp": "ค่าย​ศึก​โบน​ค​รัช​เชอร์",
+          "evacuation_zone": "เขต​อพยพ",
+          "shattered_fringe": "ชายขอบ​ที่​แตกสลาย",
+          "Æther_test_site": "พื้นที่​ทดสอบ​เอ​เทอร์"
+        }
+      },
+      "OL": {
+        "name": "ต้นสาย​กำเนิด​แร่",
+        "short": "OL",
+        "site": {
+          "originium_passage": "ถนน​ออ​ริ​จิ​เนียม",
+          "cradle_of_the_ages": "จุดกำเนิด​แห่ง​ยุคสมัย",
+          "mines_cable_car_station": "สถานี​กระเช้า​ลอยฟ้า​เหมือง",
+          "logistics_area": "พื้นที่​โลจิสติกส์",
+          "containment_zone_intersection": "ทางแยก​โซน​กักกัน",
+          "old_mines": "เหมือง​เก่า",
+          "meteorological_station": "สถานี​อุตุนิยมวิทยา",
+          "cliffside_mining_area": "พื้นที่​ขุด​เหมือง​ริม​ผา",
+          "temporary_stockpile": "พื้นที่​จัดเก็บ​ชั่วคราว",
+          "blightcliff_observation_post": "จุด​ตรวจการณ์​หน้าผา​เสื่อมสลาย",
+          "mining_area_clinic": "คลินิก​พื้นที่​ขุด​เหมือง",
+          "mining_camp": "ค่าย​ขุด​เหมือง",
+          "mountain_passage": "ช่องทาง​ขุนเขา",
+          "landbreaker_camp": "ค่าย​แลนด์​เบรก​เกอร์"
+        }
+      },
+      "OP": {
+        "name": "สวน​วิทยาศาสตร์​ออ​ริ​จิ​เนียม",
+        "short": "OP",
+        "site": {
+          "control_center": "ศูนย์​ควบคุม",
+          "route_5": "ถนน​หมายเลข​ 5",
+          "Transport_nexus": "เ​น็​ก​ซัส​ขนส่ง",
+          "the_depression": "แอ่ง​ลึก",
+          "originium_science_park": "สวน​วิทยาศาสตร์​ออ​ริ​จิ​เนียม",
+          "research_center": "ศูนย์​วิจัย",
+          "cliffside_trail": "เส้นทาง​ริม​ผา",
+          "mountain_path_slope": "เส้นทาง​ลาดเอียง​ภูเขา",
+          "kohl_plant": "โรงงาน​โคห์ล",
+          "eco_farm": "ฟาร์ม​อี​โ​ค่",
+          "infra_station": "สถานี​อิน​ฟรา"
+        }
+      },
+      "AQ": {
+        "name": "เหมือง​หิน​อ​เบอร์​เรย์",
+        "short": "AQ",
+        "site": {
+          "quarry_entrance": "ทางเข้า​เหมือง​หิน",
+          "refuse_stockpile": "กอง​ขยะ",
+          "loading_area": "พื้นที่​โหลด",
+          "stockpile_area": "พื้นที่​จัดเก็บ​สิ่งของ",
+          "deep_management_post": "สถานี​บริหาร​ส่วนลึก",
+          "lifter_central": "ลิฟต์​กลาง",
+          "listening_post": "สถานี​ฟัง",
+          "transfer_area": "พื้นที่​ขนถ่าย",
+          "quarry_site": "ไซต์​เหมือง​หิน",
+          "staff_lounge": "ห้องพัก​บุคลากร"
+        }
+      },
+      "VP": {
+        "name": "ทางผ่าน​หุบเขา",
+        "short": "VP",
+        "site": {
+          "valley_fort": "ป้อม​หุบเขา",
+          "arsenal": "คลังแสง",
+          "valley_transfer": "จุด​ส่งต่อ​หุบเขา",
+          "temporary_shelter": "ที่พัก​ชั่วคราว",
+          "abandoned_trail": "เส้นทาง​รกร้าง",
+          "passage_entrance": "ประตู​ทางผ่าน"
+        }
+      },
+      "HB": {
+        "name": "ศูนย์​ส่วนกลาง",
+        "short": "HB",
+        "site": {
+          "logistics_platform": "แพลตฟอร์ม​โลจิสติกส์",
+          "rockhill_passage": "เส้นทาง​หุบเขา​หิน",
+          "bridge_approach": "เส้นทาง​ผ่าน​สะพาน",
+          "shorecove_camp": "ค่าย​ถ้ำ​ริมหาด",
+          "old_water_plant": "โรงงาน​ผลิต​น้ำ​เก่า",
+          "hub_base_power_plant": "ฐาน​กลาง​โรงไฟฟ้า",
+          "hub_west": "ศูนย์กลาง​ตะวันตก",
+          "originium_byproduct_processing_center": "ศูนย์​แปรรูป​ผลพลอยได้​ออ​ริ​จิ​เนียม",
+          "construction_site": "พื้นที่​ก่อสร้าง",
+          "hub_base": "ฐาน​ฮับ",
+          "old_factory": "โรงงาน​เก่า",
+          "aic_research_center": "ศูนย์​วิจัย​ AIC",
+          "southern_meadows": "ทุ่งหญ้า​ทางใต้",
+          "worker_dorms": "หอพัก​คนงาน",
+          "mountain_side_trail": "เส้นทาง​ด้าน​ข้าง​ภูเขา",
+          "woodland_fringes": "ชายป่า",
+          "mountain_top": "ยอดเขา",
+          "eastern_passageway": "ทางเดิน​ฝั่ง​ตะวันออก",
+          "core_aic_area": "พื้นที่​ AIC ​แกน​หลัก"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "อู่​หลิง",
+    "sub": {
+      "WL": {
+        "name": "เมือง​อู่​หลิง",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "ป่า​ปู้​กุ้​ย",
+          "agricultural_test_site": "พื้นที่​ทดสอบ​การเกษตร",
+          "technological_production_office": "สำนักงาน​การผลิต​เทคโนโลยี",
+          "core_aic_area": "พื้นที่​ AIC ​แกน​หลัก",
+          "chenshan_way": "เส้นทาง​เฉินซาน",
+          "bureau_of_swordmancers": "สำนัก​นัก​ดาบ​เวท",
+          "residential_area": "พื้นที่​พักอาศัย",
+          "monitoring_center": "ศูนย์​เฝ้า​ระวัง",
+          "marker_stone_flats": "ที่ราบ​หิน​นำทาง",
+          "xiranflow_channel": "ช่อง​การ​ไหล​ของ​ซี​เรน​โฟลว์",
+          "fangxing_avenue": "ถนน​ฟาง​ซิง",
+          "tianshi_pillar_array": "แนว​เสา​เทียน​ซือ",
+          "maintenance_zone": "โซน​การ​ซ่อมบำรุง",
+          "institute_of_materials_science": "สถาบัน​วัสดุ​ศาสตร์",
+          "tianshi_bureau_academy": "สถาบัน​สำนัก​เทียน​ซือ",
+          "citizen_square": "จัตุรัส​พลเมือง",
+          "restricted_area": "พื้นที่​หวงห้าม",
+          "tianjing_courtyard": "ลาน​เทียน​จิง",
+          "riverbank_grotto": "ถ้ำ​ริมฝั่ง​แม่น้ำ",
+          "sanku_ridge": "สันเขา​ซาน​กู๋",
+          "outskirt_barrens": "ดินแดน​ร้าง​รอบนอก",
+          "lingshui_way": "เส้นทาง​หลิง​ชุ่ย",
+          "guhou_marsh": "บึง​กู​โหว",
+          "field_logistics_depot": "คลัง​โลจิสติกส์​ภาค​สนาม",
+          "hulu_cave": "ถ้ำ​หู​ลู่"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "ทางเดิน",
+          "ecological_research_station": "สถานี​วิจัย​นิเวศวิทยา",
+          "qingbo_bailey": "กำแพง​ค่าย​ชิง​ป๋อ",
+          "treasure_grotto": "ถ้ำ​สมบัติ",
+          "sky_king_flats": "ที่ราบ​ราชัน​แห่ง​ท้องฟ้า",
+          "stragglers_ford": "ท่าน้ำ​ผู้​ตกค้าง",
+          "burdosnout_hill": "เนินเขา​เบอร์​โดส​เนา​ท์",
+          "stragglers_grove": "ร่มไม้​แห่ง​ผู้​พเนจร",
+          "zhailing_islet": "เกาะ​จ้าย​หลิง",
+          "gloomvale": "หุบเขา​มืด​หม่น",
+          "south_hill": "เนินเขา​ทางใต้",
+          "sword_quenching_marsh": "บึง​ชุบ​ดาบ",
+          "everwater_brook": "ลำธาร​นิรันดร์"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "OMV ​ตี้​เจียง",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "สะพาน",
+        "reception_room": "ห้อง​รับรอง​แขก",
+        "kernel_sector": "เซ็ก​เตอร์​เคอร์​เนล",
+        "central_ring": "วงแหวน​ส่วนกลาง",
+        "working_sector": "ภาค​ส่วน​การทำงาน",
+        "living_sector": "ภาค​ส่วน​การอยู่อาศัย"
+      }
+    }
+  }
+}

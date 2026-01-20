@@ -40,12 +40,12 @@
         }
       },
       "OP": {
-        "name": "오리지늄 실험 구역",
+        "name": "오리지늄 연구 구역",
         "short": "OP",
         "site": {
           "control_center": "제어실",
           "route_5": "5번 국도",
-          "Transport_nexus": "환승 거점",
+          "Transport_nexus": "수송 거점",
           "the_depression": "침강 지대",
           "originium_science_park": "오리지늄 실험 구역",
           "research_center": "연구소",
@@ -95,9 +95,9 @@
           "old_water_plant": "오래된 급수 설비",
           "hub_base_power_plant": "거점 기지 발전소",
           "hub_west": "거점 지역 서부",
-          "originium_byproduct_precessing_center": "오리지늄 부산물 센터",
+          "originium_byproduct_processing_center": "오리지늄 부산물 센터",
           "construction_site": "건설대기 구역",
-          "hub_base": "거점 지역 기지",
+          "hub_base": "거점 기지 구역",
           "old_factory": "옛 공장 구역",
           "aic_research_center": "통합 공업 연구소",
           "southern_meadows": "남쪽 초원",
@@ -123,14 +123,14 @@
           "technological_production_office": "기술 생산 사무소",
           "core_aic_area": "통합 핵심 구역",
           "chenshan_way": "침산길",
-          "bureau_of_swordmancers": "무기 대장간",
+          "bureau_of_swordmancers": "선검국",
           "residential_area": "거주 구역",
           "monitoring_center": "관측소",
           "marker_stone_flats": "경계석 평원",
           "xiranflow_channel": "식류 통로",
           "fangxing_avenue": "방흥거리",
           "tianshi_pillar_array": "천사장 배열",
-          "maintenance_zone": "보수 예정 구역",
+          "maintenance_zone": "보수 대기 구역",
           "institute_of_materials_science": "재료 연구소",
           "tianshi_bureau_academy": "천사부 학원",
           "citizen_square": "시민 광장",
@@ -146,10 +146,10 @@
         }
       },
       "JY": {
-        "name": "경옥 골짜기",
+        "name": "Jingyu Valley",
         "short": "JY",
         "site": {
-          "treadway": "채길",
+          "treadway": "오솔길",
           "ecological_research_station": "생태 실험실",
           "qingbo_bailey": "청파채 외곽",
           "treasure_grotto": "보물의 심장부",
@@ -160,7 +160,7 @@
           "zhailing_islet": "적릉서",
           "gloomvale": "깊은 골짜기",
           "south_hill": "남산",
-          "sword_quenching_marsh": "쉬검탕",
+          "sword_quenching_marsh": "쉬검 호수",
           "everwater_brook": "수택 계곡"
         }
       }
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "O.M.V. 제강호",
     "sub": {
-      "name": "O.M.V. 제강호",
+      "name": "OMV Dijiang",
       "site": {
         "bridge": "갑판",
         "reception_room": "응접실",

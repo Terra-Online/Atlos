@@ -10,6 +10,8 @@ import {
     useUiPrefsStore,
     useTheme,
     useSetTheme,
+    usePerformanceMode,
+    useSetPerformanceMode,
 } from '@/store/uiPrefs';
 import { applyTheme, startSystemFollow } from '@/utils/theme';
 
@@ -32,6 +34,8 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     const setPrefsFilterOrder = useUiPrefsStore((s) => s.setPrefsFilterOrderEnabled);
     const prefsTriggers = useUiPrefsStore((s) => s.prefsTriggersEnabled);
     const setPrefsTriggers = useUiPrefsStore((s) => s.setPrefsTriggersEnabled);
+    const prefsPerformanceMode = usePerformanceMode();
+    const setPrefsPerformanceMode = useSetPerformanceMode();
 
     // Map Preferences
     const prefsViewState = useUiPrefsStore((s) => s.prefsViewStateEnabled);
@@ -92,6 +96,14 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                 isActive={prefsTriggers}
                                 onToggle={setPrefsTriggers}
                                 label={t('settings.uiPrefs.triggers')}
+                                className={styles.settingsTrigger}
+                            />
+                        </div>
+                        <div className={styles.triggerRow}>
+                            <Trigger
+                                isActive={prefsPerformanceMode}
+                                onToggle={setPrefsPerformanceMode}
+                                label={t('settings.uiPrefs.performanceMode')}
                                 className={styles.settingsTrigger}
                             />
                         </div>

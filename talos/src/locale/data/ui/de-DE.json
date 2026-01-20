@@ -60,6 +60,8 @@
       "pt-BR": "Portugiesisch",
       "id-ID": "Indonesisch",
       "ar-AE": "Arabisch",
+      "ms-MY": "Malaiisch",
+      "pl-PL": "Polnisch",
       "th-TH": "Thailändisch",
       "vi-VN": "Vietnamesisch"
     }
@@ -82,7 +84,8 @@
       "hint": "Wählen Sie den UI-Status, den Sie beibehalten möchten. Wir empfehlen <span class=\"keyword\">alle Optionen beizubehalten</span> für ein konsistenteres Erlebnis.",
       "sidebar": "Sidebar behalten",
       "filterOrder": "Filterreihenfolge",
-      "triggers": "Trigger behalten"
+      "triggers": "Trigger behalten",
+      "performanceMode": "Leistungsmodus"
     },
     "mapPrefs": {
       "title": "Kartenoptionen",
@@ -108,7 +111,7 @@
     "selectorSelect": "Spezifischer <span class=\"keyword\">Markierungswähler</span>. Klicken Sie, um den Auswahlstatus umzuschalten; ausgewählte Markierungen erscheinen auf der Karte.<br>Sie können die Gesamtzahl solcher Markierungen im aktuellen Bereich sowie die Anzahl der von Ihnen markierten sehen.<br><br>Sie können auch <span class=\"keyword\">im leeren Bereich halten und ziehen</span> der Seitenleiste, um eine <span class=\"keyword\">Rahmenauswahl</span> für mehrere Markierungswähler gleichzeitig durchzuführen, sodass Sie deren Auswahlstatus schnell in Stapeln umschalten können.",
     "selectorComplete": "Wenn alle Markierungen dieses Typs als erledigt markiert sind, wechselt der Wähler in den <span class=\"keyword\">Erledigt-Status</span>, damit Sie den Markierungsfortschritt schnell beurteilen können.",
     "triggerHandle": "Schalter, die sich auf die Kartenanzeige beziehen, befinden sich unten in der Seitenleiste.<br>Sie können die Maus gedrückt halten, um sie <span class=\"keyword\">zu ziehen und zu bedienen.</span>",
-    "triggerSwitch": "Klicken Sie, um den Schalterstatus umzuschalten.<br><ul><li><span class=\"keyword\">Markierungs-Cluster-Modus</span> ermöglicht die zusammengefasste Anzeige dichter Markierungen;</li><li><span class=\"keyword\">Regionsgrenzenanzeige</span> hebt jede Unterregion und ihre Grenzen im aktuellen Bereich hervor.</li></ul>",
+    "triggerSwitch": "Klicken Sie, um den Schalterstatus umzuschalten.<br><ul><li><span class=\"keyword\">Markierungs-Cluster-Modus</span> ermöglicht die zusammengefasste Anzeige dichter Markierungen;</li><li><span class=\"keyword\">Regionsgrenzenanzeige</span> hebt jede Unterregion und ihre Grenzen im aktuellen Bereich hervor.</li><li><span class=\"keyword\">Regionsname</span> zeigt die In-Game-Regionsnamen an.</li></ul>",
     "scale": "Verwenden Sie die <span class=\"keyword\">Zoomsteuerung</span>, um den Kartenzoom anzuzeigen und zu manipulieren.<br>Mausrad oder Trackpad können zum Zoomen verwendet werden. Sie können auch zoomen, indem Sie auf die Tasten <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> oder irgendwo auf die Zoomleiste klicken.",
     "filterList": "Die <span class=\"keyword\">Markierungsliste</span> listet die von Ihnen ausgewählten Markierungen auf; klicken Sie auf das Symbol, um die Auswahl aufzuheben.",
     "headbar": "Schalter, die sich auf die Karteneinstellungen beziehen, befinden sich in der <span class=\"keyword\">Kopfleiste</span>.",
@@ -116,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Website-UI ausblenden</span>, um Screenshots zu machen oder Randmarkierungen anzuzeigen.",
     "group": "Sehen Sie sich <span class=\"keyword\">Diskussionsgruppen</span> und <span class=\"keyword\">Communitys</span> zu diesem Projekt an.",
     "darkMode": "Schalten Sie den aktuellen <span class=\"keyword\">Umgebungslichtmodus</span> um.",
-    "language": "<span class=\"keyword\">Oberflächensprache</span> wechseln.<br>Derzeit umfassen Sprachen mit <span class=\"keyword\">vollständiger Unterstützung für die Übersetzung von Spielinhalten</span> Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch und Koreanisch.<br>Sprachen mit <span class=\"keyword\">Unterstützung für die Oberflächenübersetzung</span> umfassen auch Französisch, Deutsch, Italienisch, Russisch, Spanisch, Indonesisch, Portugiesisch, Arabisch, Thailändisch und Vietnamesisch.",
+    "language": "<span class=\"keyword\">Oberflächensprache</span> wechseln.<br>Derzeit umfassen Sprachen mit <span class=\"keyword\">vollständiger Unterstützung für die Übersetzung von Spielinhalten</span> Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Italienisch, Russisch, Spanisch, Indonesisch, Portugiesisch, Thailändisch und Vietnamesisch.<br>Sprachen mit <span class=\"keyword\">nur Oberflächenübersetzung</span> umfassen Arabisch, Malaiisch und Polnisch.",
     "help": "Starten Sie diesen <span class=\"keyword\">Leitfaden</span> neu.",
     "settings": "Öffnen Sie <span class=\"keyword\">Einstellungen</span>, um zu steuern, welchen lokalen Speicher die Karte verwendet, um sich Ihre Aktionen zu merken.",
     "regionSwitch": "Klicken Sie, um zwischen <span class=\"keyword\">verschiedenen Sandbox-Karten</span> (Hauptregionen) im Spiel zu wechseln.",

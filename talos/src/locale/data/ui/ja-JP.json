@@ -60,6 +60,8 @@
       "pt-BR": "ポルトガル語",
       "id-ID": "インドネシア語",
       "ar-AE": "アラビア語",
+      "ms-MY": "マレー語",
+      "pl-PL": "ポーランド語",
       "th-TH": "タイ語",
       "vi-VN": "ベトナム語"
     }
@@ -82,7 +84,8 @@
       "hint": "有効にしたいUIの保存設定を選択してください。<br>より一貫した操作体験のため、<span class=\"keyword\">すべてのオプションを有効にすることをおすすめします</span>。",
       "sidebar": "サイドバー状態を保存",
       "filterOrder": "フィルター順を保存",
-      "triggers": "下部バー状態を保存"
+      "triggers": "下部バー状態を保存",
+      "performanceMode": "パフォーマンスモード"
     },
     "mapPrefs": {
       "title": "マップの設定",
@@ -108,7 +111,7 @@
     "selectorSelect": "具体的な<span class=\"keyword\">ピンセレクター</span>です。クリックして選択状態を切り替えると、選択されたピンがマップ上に表示されます。<br>現在のエリアにあるこのタイプのピンの総数と、すでにマークした数を確認できます。<br><br>サイドバーの<span class=\"keyword\">空白エリアを押しながらドラッグ</span>することで、複数のピンセレクタに対して<span class=\"keyword\">ボックス選択</span>を行い、選択状態を一括で素早く切り替えることができます。",
     "selectorComplete": "このタイプのすべてのピンが完了としてマークされると、セレクターは<span class=\"keyword\">完了状態</span>になり、マーク状況をすばやく判断できます。",
     "triggerHandle": "マップ表示に関連するスイッチはサイドバーの下部にあります。<br>マウスを長押しして<span class=\"keyword\">ドラッグして操作</span>できます。",
-    "triggerSwitch": "クリックしてスイッチの状態を切り替えます。<br><ul><li><span class=\"keyword\">ピン凝集モード</span>は、密集したピンをまとめて表示することを許可します。</li><li><span class=\"keyword\">地域境界表示</span>は、現在のエリア内の各サブエリアとその境界をハイライトします。</li></ul>",
+    "triggerSwitch": "クリックしてスイッチの状態を切り替えます。<br><ul><li><span class=\"keyword\">ピン凝集モード</span>は、密集したピンをまとめて表示することを許可します。</li><li><span class=\"keyword\">地域境界表示</span>は、現在のエリア内の各サブエリアとその境界をハイライトします。</li><li><span class=\"keyword\">地域名表示</span>は、ゲーム内の地域名を表示します。</li></ul>",
     "scale": "<span class=\"keyword\">ズームコントロール</span>を使用して、マップのズームを確認および操作します。<br>ホイールまたはトラックパッドを使用してズームできます。<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>ボタンまたはズームバーの任意の場所をクリックしてズームすることもできます。",
     "filterList": "<span class=\"keyword\">ピンリスト</span>には、選択したピンがリストされています。アイコンをクリックすると選択を解除できます。",
     "headbar": "マップ設定に関連するスイッチは<span class=\"keyword\">トップバー</span>にあります。",
@@ -116,7 +119,7 @@
     "hideUI": "スクリーンショットを撮ったり、端のピンを確認したりするために<span class=\"keyword\">ウェブサイトのUIを非表示</span>にします。",
     "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
-    "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br>現在、<span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語です。<br><span class=\"keyword\">インターフェース翻訳をサポート</span>している言語には、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、アラビア語、タイ語、ベトナム語も含まれます。",
+    "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br><span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、タイ語、ベトナム語です。<br><span class=\"keyword\">インターフェース翻訳のみサポート</span>している言語には、アラビア語、マレー語、ポーランド語が含まれます。",
     "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
     "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",

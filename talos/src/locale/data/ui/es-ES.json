@@ -60,6 +60,8 @@
       "pt-BR": "Portugués",
       "id-ID": "Indonesio",
       "ar-AE": "Árabe",
+      "ms-MY": "Malayo",
+      "pl-PL": "Polaco",
       "th-TH": "Tailandés",
       "vi-VN": "Vietnamita"
     }
@@ -82,7 +84,8 @@
       "hint": "Seleccione el estado de la UI que desea conservar. Recomendamos <span class=\"keyword\">mantener todas las opciones</span> para una experiencia más consistente.",
       "sidebar": "Mantener barra",
       "filterOrder": "Orden de filtros",
-      "triggers": "Estado de triggers"
+      "triggers": "Estado de triggers",
+      "performanceMode": "Modo rendimiento"
     },
     "mapPrefs": {
       "title": "Preferencias de mapa",
@@ -108,7 +111,7 @@
     "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span> específico. Haga clic para alternar el estado de selección; los marcadores seleccionados aparecerán en el mapa.<br>Puede ver el número total de dichos marcadores en el área actual, así como el número que ha marcado.<br><br>También puede <span class=\"keyword\">mantener presionado y arrastrar en el área en blanco</span> de la barra lateral para realizar una <span class=\"keyword\">selección de cuadro</span> en múltiples selectores de marcadores a la vez, lo que le permite alternar rápidamente su estado de selección en lotes.",
     "selectorComplete": "Cuando todos los marcadores de este tipo se marquen como completados, el selector cambiará al <span class=\"keyword\">estado completado</span> para un juicio rápido del progreso del marcado.",
     "triggerHandle": "Los interruptores relacionados con la visualización del mapa se encuentran en la parte inferior de la barra lateral.<br>Puede mantener presionado el mouse para <span class=\"keyword\">arrastrarlos y operarlos.</span>",
-    "triggerSwitch": "Haga clic para alternar el estado del interruptor.<br><ul><li><span class=\"keyword\">El modo de agrupación de marcadores</span> permite mostrar marcadores densos fusionados;</li><li><span class=\"keyword\">La visualización de límites de región</span> resalta cada subregión y sus límites dentro del área actual.</li></ul>",
+    "triggerSwitch": "Haga clic para alternar el estado del interruptor.<br><ul><li><span class=\"keyword\">El modo de agrupación de marcadores</span> permite mostrar marcadores densos fusionados;</li><li><span class=\"keyword\">La visualización de límites de región</span> resalta cada subregión y sus límites dentro del área actual.</li><li><span class=\"keyword\">Nombres de región</span> muestra los nombres de las regiones en el juego.</li></ul>",
     "scale": "Use el <span class=\"keyword\">control de zoom</span> para ver y manipular el zoom del mapa.<br>La rueda de desplazamiento o el panel táctil se pueden usar para hacer zoom. También puede hacer zoom haciendo clic en los botones <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> o en cualquier lugar de la barra de zoom.",
     "filterList": "La <span class=\"keyword\">lista de marcadores</span> enumera los marcadores que ha seleccionado; haga clic en el icono para anular la selección.",
     "headbar": "Los interruptores relacionados con la configuración del mapa se encuentran en la <span class=\"keyword\">barra superior</span>.",
@@ -116,7 +119,7 @@
     "hideUI": "<span class=\"keyword\">Ocultar la interfaz de usuario del sitio web</span> para tomar capturas de pantalla o ver marcadores de borde.",
     "group": "Ver <span class=\"keyword\">grupos de discusión</span> y <span class=\"keyword\">comunidades</span> relacionados con este proyecto.",
     "darkMode": "Alternar el <span class=\"keyword\">modo de luz ambiental</span> actual.",
-    "language": "Cambiar el <span class=\"keyword\">idioma de la interfaz</span>.<br>Actualmente, los idiomas con <span class=\"keyword\">soporte completo de traducción de contenido del juego</span> incluyen inglés, chino simplificado, chino tradicional, japonés y coreano.<br>Los idiomas con <span class=\"keyword\">soporte de traducción de interfaz</span> también incluyen francés, alemán, italiano, ruso, español, indonesio, portugués, árabe, tailandés y vietnamita.",
+    "language": "Cambiar el <span class=\"keyword\">idioma de la interfaz</span>.<br>Actualmente, los idiomas con <span class=\"keyword\">soporte completo de traducción de contenido del juego</span> incluyen inglés, chino simplificado, chino tradicional, japonés, coreano, francés, alemán, italiano, ruso, español, indonesio, portugués, tailandés y vietnamita.<br>Los idiomas con <span class=\"keyword\">solo soporte de traducción de interfaz</span> incluyen árabe, malayo y polaco.",
     "help": "Reiniciar esta <span class=\"keyword\">guía</span>.",
     "regionSwitch": "Haga clic para cambiar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiones principales) en el juego.",
     "subregionSwitch": "<span class=\"keyword\">Pase el mouse sobre el icono de la región principal</span> para mostrar las subregiones disponibles; al hacer clic en un icono de subregión, saltará a esa vista de subregión.<br>Del mismo modo, también puede seleccionar una capa para una región.",

@@ -4,7 +4,8 @@ import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 
-const AUTO_CLUSTER_THRESHOLD = 1000;
+const AUTO_CLUSTER_THRESHOLD = 300;
+const AUTO_CLUSTER_FILTER_COUNT = 6;
 
 /**
  * Hook for managing marker layer logic
@@ -55,8 +56,11 @@ export function useMarker(
         const visibleMarkerCount = markerLayer.getVisibleMarkerCount();
         const triggerCluster = useUiPrefsStore.getState().triggerCluster;
 
-        // Auto-enable clustering only when visible markers exceed threshold
-        if (visibleMarkerCount > AUTO_CLUSTER_THRESHOLD && !triggerCluster) {
+        // Auto-enable clustering only when visible markers exceed threshold or multiple filters active
+        const shouldAutoCluster =
+            visibleMarkerCount > AUTO_CLUSTER_THRESHOLD || filter.length > AUTO_CLUSTER_FILTER_COUNT;
+
+        if (shouldAutoCluster && !triggerCluster) {
             useUiPrefsStore.getState().setTriggerCluster(true);
         }
     }, [mapCore, filter]);

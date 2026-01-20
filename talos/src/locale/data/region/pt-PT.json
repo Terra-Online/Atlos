@@ -1,0 +1,183 @@
+{
+  "VL": {
+    "main": "Vale IV",
+    "sub": {
+      "PL": {
+        "name": "Platô de Energia",
+        "short": "PE",
+        "site": {
+          "old_dorms": "Alojamentos Antigos",
+          "originium_power_plant": "Usina de Energia de Originium",
+          "power_plant_comm_station": "Estação de Comunicação da Usina de Energia",
+          "bridge_approach_camp": "Acampamento de Acesso à Ponte",
+          "united_parking_lot": "Estacionamento do Sindicato",
+          "planned_construction_area": "Área de Construção Planejada",
+          "plateau_trunkway": "Caminho Principal do Platô",
+          "bonekrusher_warcamp": "Acampamento de Guerra dos Quebra-Ossos",
+          "evacuation_zone": "Zona de Evacuação",
+          "shattered_fringe": "Fronteira Fragmentada",
+          "Æther_test_site": "Local de Teste do Æther"
+        }
+      },
+      "OL": {
+        "name": "Veio de Origin",
+        "short": "VO",
+        "site": {
+          "originium_passage": "Passagem de Originium",
+          "cradle_of_the_ages": "Berço das Eras",
+          "mines_cable_car_station": "Estação de Teleférico das Minas",
+          "logistics_area": "Área de Logística",
+          "containment_zone_intersection": "Interseção da Zona de Contenção",
+          "old_mines": "Minas Antigas",
+          "meteorological_station": "Estação Meteorológica",
+          "cliffside_mining_area": "Área de Mineração do Penhasco",
+          "temporary_stockpile": "Estoque Temporário",
+          "blightcliff_observation_post": "Posto de Observação do Penhasco da Praga",
+          "mining_area_clinic": "Clínica da Área de Mineração",
+          "mining_camp": "Acampamento de Mineração",
+          "mountain_passage": "Passagem da Montanha",
+          "landbreaker_camp": "Acampamento dos Invasores de Terras"
+        }
+      },
+      "OP": {
+        "name": "Parque Científico de Originium",
+        "short": "PO",
+        "site": {
+          "control_center": "Centro de Controle",
+          "route_5": "Rota 5",
+          "Transport_nexus": "Nexus de Transporte",
+          "the_depression": "A Depressão",
+          "originium_science_park": "Parque Científico de Originium",
+          "research_center": "Centro de Pesquisa",
+          "cliffside_trail": "Trilha do Penhasco",
+          "mountain_path_slope": "Encosta do Caminho das Montanhas",
+          "kohl_plant": "Planta de Kohl",
+          "eco_farm": "Fazenda Ecológica",
+          "infra_station": "Estação Infra"
+        }
+      },
+      "AQ": {
+        "name": "Pedreira de Aburrey",
+        "short": "PA",
+        "site": {
+          "quarry_entrance": "Entrada da Pedreira",
+          "refuse_stockpile": "Pilha de Resíduos",
+          "loading_area": "Área de Carregamento",
+          "stockpile_area": "Área de Estoque",
+          "deep_management_post": "Posto de Gerenciamento Subterrâneo",
+          "lifter_central": "Central de Elevação",
+          "listening_post": "Posto de Escuta",
+          "transfer_area": "Área de Transferência",
+          "quarry_site": "Local da Pedreira",
+          "staff_lounge": "Lounge da Equipe"
+        }
+      },
+      "VP": {
+        "name": "Garganta do Vale",
+        "short": "GA",
+        "site": {
+          "valley_fort": "Forte do Vale",
+          "arsenal": "Arsenal",
+          "valley_transfer": "Transferência do Vale",
+          "temporary_shelter": "Abrigo Temporário",
+          "abandoned_trail": "Trilha Abandonada",
+          "passage_entrance": "Entrada da Passagem"
+        }
+      },
+      "HB": {
+        "name": "A Base",
+        "short": "AB",
+        "site": {
+          "logistics_platform": "Plataforma de Logística",
+          "rockhill_passage": "Passagem da Montanha Rochosa",
+          "bridge_approach": "Acesso à Ponte",
+          "shorecove_camp": "Acampamento Shorecove",
+          "old_water_plant": "Antiga Estação de Água",
+          "hub_base_power_plant": "Usina de Energia da Base Central",
+          "hub_west": "Base Oeste",
+          "originium_byproduct_processing_center": "Centro de Processamento de Subprodutos de Originium",
+          "construction_site": "Canteiro de Obras",
+          "hub_base": "Base Central",
+          "old_factory": "Fábrica Antiga",
+          "aic_research_center": "Centro de Pesquisa do CAI",
+          "southern_meadows": "Prados do Sul",
+          "worker_dorms": "Alojamento",
+          "mountain_side_trail": "Trilha do Lado da Montanha",
+          "woodland_fringes": "Fronteiras da Floresta",
+          "mountain_top": "Topo da Montanha",
+          "eastern_passageway": "Passagem Leste",
+          "core_aic_area": "Área Central do CAI"
+        }
+      }
+    }
+  },
+  "WL": {
+    "main": "Wuling",
+    "sub": {
+      "WL": {
+        "name": "Cidade de Wuling",
+        "short": "WL",
+        "site": {
+          "bugui_grove": "Bosque de Bugui",
+          "agricultural_test_site": "Local de Teste Agrícola",
+          "technological_production_office": "Escritório de Produção Tecnológica",
+          "core_aic_area": "Área Central do CAI",
+          "chenshan_way": "Caminho de Chenshan",
+          "bureau_of_swordmancers": "Bureau dos Espadeiros",
+          "residential_area": "Área Residencial",
+          "monitoring_center": "Centro de Monitoramento",
+          "marker_stone_flats": "Planícies de Pedra de Marcação",
+          "xiranflow_channel": "Canal de Fluxo de Xiranita",
+          "fangxing_avenue": "Avenida Fangxing",
+          "tianshi_pillar_array": "Conjunto de Pilares de Tianshi",
+          "maintenance_zone": "Zona de Manutenção",
+          "institute_of_materials_science": "Instituto de Ciência de Materiais",
+          "tianshi_bureau_academy": "Academia do Escritório Tianshi",
+          "citizen_square": "Praça Cívica",
+          "restricted_area": "Área Restrita",
+          "tianjing_courtyard": "Jardim de Tianjing",
+          "riverbank_grotto": "Gruta da Margem do Rio",
+          "sanku_ridge": "Cordilheira de Sanku",
+          "outskirt_barrens": "Desertos Exteriores",
+          "lingshui_way": "Caminho de Lingshui",
+          "guhou_marsh": "Pântano de Guhou",
+          "field_logistics_depot": "Depósito de Logística de Campo",
+          "hulu_cave": "Caverna de Hulu"
+        }
+      },
+      "JY": {
+        "name": "Jingyu Valley",
+        "short": "JY",
+        "site": {
+          "treadway": "Passagem",
+          "ecological_research_station": "Estação de Pesquisa Ecológica",
+          "qingbo_bailey": "Muralha de Qingbo",
+          "treasure_grotto": "Gruta do Tesouro",
+          "sky_king_flats": "Planícies do Rei Celestial",
+          "stragglers_ford": "Vau dos Desgarrados",
+          "burdosnout_hill": "Colina Foscínia",
+          "stragglers_grove": "Bosque dos Desgarrados",
+          "zhailing_islet": "Ilhota Zhailing",
+          "gloomvale": "Vale Sombrio",
+          "south_hill": "Colina Sul",
+          "sword_quenching_marsh": "Pântano da Têmpera de Espadas",
+          "everwater_brook": "Riacho Everwater"
+        }
+      }
+    }
+  },
+  "DJ": {
+    "main": "NMO Dijiang",
+    "sub": {
+      "name": "OMV Dijiang",
+      "site": {
+        "bridge": "Ponte",
+        "reception_room": "Sala da Recepção",
+        "kernel_sector": "Setor do Núcleo",
+        "central_ring": "Anel Central",
+        "working_sector": "Setor de Trabalho",
+        "living_sector": "Setor Residencial"
+      }
+    }
+  }
+}

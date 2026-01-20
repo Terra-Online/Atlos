@@ -5,12 +5,14 @@ interface ThemeManager {
     invertRef: { current: boolean };
     switchingRef: { current: boolean };
     unsubRef: { current: (() => void) | null };
+    faviconUnsubRef: { current: (() => void) | null };
 }
 
 const manager: ThemeManager = {
     invertRef: { current: false },
     switchingRef: { current: false },
     unsubRef: { current: null },
+    faviconUnsubRef: { current: null },
 };
 
 // Get stored theme preference from uiPrefs localStorage
@@ -33,6 +35,57 @@ const getStoredThemePreference = (): ThemeMode => {
         // ignore parse errors
     }
     return 'auto';
+};
+
+const updateFavicons = (mode: Theme) => {
+    const selectors = ['link[rel="icon"]', 'link[rel="apple-touch-icon"]'];
+    
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach((el) => {
+            const link = el as HTMLLinkElement;
+            const originalHref = link.getAttribute('href');
+            if (!originalHref) return;
+
+            // Remove _dark if present to get base name (e.g., favicon_dark.svg -> favicon.svg)
+            let newHref = originalHref.replace(/_dark(\.[a-z0-9]+)$/i, '$1');
+            
+            if (mode === 'dark') {
+                // Add _dark suffix (e.g., favicon.svg -> favicon_dark.svg)
+                newHref = newHref.replace(/(\.[a-z0-9]+)$/i, '_dark$1');
+            }
+            
+            // Only update if changed to avoid flickering
+            if (newHref !== link.getAttribute('href')) {
+                link.href = newHref;
+            }
+        });
+    });
+};
+
+// Favicons should ALWAYS follow browser/system preference (prefers-color-scheme),
+// independent from in-app theme switching (data-theme).
+const startFaviconSystemFollow = () => {
+    manager.faviconUnsubRef.current?.();
+
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = (isDark: boolean) => updateFavicons(isDark ? 'dark' : 'light');
+
+    // Apply once immediately
+    apply(mql.matches);
+
+    const listener = (e: MediaQueryListEvent) => {
+        apply(e.matches);
+    };
+
+    if (mql.addEventListener) {
+        mql.addEventListener('change', listener);
+        manager.faviconUnsubRef.current = () => mql.removeEventListener('change', listener);
+    } else if ('onchange' in mql) {
+        mql.onchange = listener;
+        manager.faviconUnsubRef.current = () => {
+            mql.onchange = null;
+        };
+    }
 };
 
 export const applyTheme = (mode: Theme, withTransition = true) => {
@@ -100,6 +153,10 @@ export const toggleTheme = () => {
 };
 
 export const initTheme = () => {
+    // Always keep favicons synced to browser/system preference.
+    // This is intentionally independent from in-app theme mode.
+    startFaviconSystemFollow();
+
     const preference = getStoredThemePreference();
     if (preference === 'light' || preference === 'dark') {
         // User has a fixed preference, apply it directly
@@ -112,4 +169,5 @@ export const initTheme = () => {
 
 export const cleanupTheme = () => {
     manager.unsubRef.current?.();
+    manager.faviconUnsubRef.current?.();
 };
