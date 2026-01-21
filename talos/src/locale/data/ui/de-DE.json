@@ -116,6 +116,13 @@
     "filterList": "Die <span class=\"keyword\">Markierungsliste</span> listet die von Ihnen ausgewählten Markierungen auf; klicken Sie auf das Symbol, um die Auswahl aufzuheben.",
     "headbar": "Schalter, die sich auf die Karteneinstellungen beziehen, befinden sich in der <span class=\"keyword\">Kopfleiste</span>.",
     "tos": "Die <span class=\"keyword\">Nutzungsbedingungen</span> und das <span class=\"keyword\">Datenmanagement</span> der Website.",
+    "mobile": {
+      "headbar": "Die Karteneinstellungen findest du in der <span class=\"keyword\">Kopfleiste oben rechts</span>. Tippe rechts oben auf das Symbol, um mehr Optionen einzublenden.",
+      "regionLayerSwitch": "Tippe auf Regionssymbole, um zwischen <span class=\"keyword\">verschiedenen Sandbox-Karten</span> zu wechseln. Halte ein Regionssymbol gedrückt, um <span class=\"keyword\">Unterregionen und Ebenen</span> anzuzeigen, und wähle dann eine Ansicht aus.",
+      "divider": "Dies ist ein ziehbarer <span class=\"keyword\">Teiler</span>. Ziehe ihn nach links oder rechts, um das Verhältnis zwischen Suche und Marker-Liste anzupassen.",
+      "drawer": "<span class=\"keyword\">Wische vom unteren Bildschirmrand nach oben</span>, um die Schublade zu öffnen und die Marker-Filter zu sehen.",
+      "selectorSelect": "<span class=\"keyword\">Marker-Auswahl</span>. Tippe zum Umschalten; ausgewählte Marker erscheinen auf der Karte. Du siehst die Gesamtzahl und wie viele du im aktuellen Gebiet markiert hast."
+    },
     "hideUI": "<span class=\"keyword\">Website-UI ausblenden</span>, um Screenshots zu machen oder Randmarkierungen anzuzeigen.",
     "group": "Sehen Sie sich <span class=\"keyword\">Diskussionsgruppen</span> und <span class=\"keyword\">Communitys</span> zu diesem Projekt an.",
     "darkMode": "Schalten Sie den aktuellen <span class=\"keyword\">Umgebungslichtmodus</span> um.",
@@ -130,6 +137,9 @@
     "pointMark": "Klicken Sie erneut auf die Markierung, um sie als erledigt zu markieren.",
     "detail": "Sie können spezifische Informationen zur ausgewählten Markierung anzeigen, einschließlich der Anzahl der Markierungen dieses Typs in <span class=\"keyword\">allen Regionen</span>, der aktuellen <span class=\"keyword\">Hauptregion</span> und der aktuellen <span class=\"keyword\">Unterregion</span>.",
     "pointIcon": "Das Klicken auf das Markierungssymbol kann es auch als erledigt markieren."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Hinweis:</span> Wenn die Spielversion <span class=\"keyword\">1.0.13</span> ist, ist die Kartendatenversion <span class=\"keyword\">0.8.25</span>. Wir benötigen Zeit, um die Daten zu aktualisieren; das Update kann später als das Spiel-Update erscheinen. Vielen Dank für Ihre Geduld. Um unsere Updates zu verfolgen, treten Sie bitte unserem <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discord beitreten'>Discord-Server</a> bei.<br><br>Wir empfehlen auch die folgenden Tools:<ul><li><span class=\"keyword\">Spiel-Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Spiel-Wiki besuchen'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pioneers besuchen'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Schließen",

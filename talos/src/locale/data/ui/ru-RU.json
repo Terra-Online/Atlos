@@ -116,6 +116,13 @@
     "filterList": "<span class=\"keyword\">Список меток</span> перечисляет выбранные вами метки; нажмите значок, чтобы отменить выбор.",
     "headbar": "Переключатели, связанные с настройками карты, расположены в <span class=\"keyword\">верхней панели</span>.",
     "tos": "<span class=\"keyword\">Условия обслуживания</span> и <span class=\"keyword\">Управление данными</span> веб-сайта.",
+    "mobile": {
+      "headbar": "Настройки карты находятся в <span class=\"keyword\">правой верхней панели</span>. Нажмите на значок в правом верхнем углу, чтобы развернуть и увидеть больше опций.",
+      "regionLayerSwitch": "Нажимайте на значки регионов, чтобы переключаться между <span class=\"keyword\">разными картами песочницы</span>. Удерживайте значок региона, чтобы показать <span class=\"keyword\">подрегионы и слои</span>, затем выберите нужный вид.",
+      "divider": "Это перетаскиваемый <span class=\"keyword\">разделитель</span>. Перетащите влево/вправо, чтобы настроить ширину между поиском и списком маркеров.",
+      "drawer": "<span class=\"keyword\">Проведите вверх от нижней части экрана</span>, чтобы открыть выдвижную панель и увидеть фильтры маркеров.",
+      "selectorSelect": "<span class=\"keyword\">Селектор маркеров</span>. Нажмите для переключения; выбранные маркеры появятся на карте. Вы увидите общее количество и сколько отмечено в текущей области."
+    },
     "hideUI": "<span class=\"keyword\">Скрыть интерфейс веб-сайта</span>, чтобы сделать скриншоты или просмотреть метки по краям.",
     "group": "Просмотр <span class=\"keyword\">дискуссионных групп</span> и <span class=\"keyword\">сообществ</span>, связанных с этим проектом.",
     "darkMode": "Переключить текущий <span class=\"keyword\">режим окружающего освещения</span>.",
@@ -130,6 +137,9 @@
     "pointMark": "Нажмите на метку еще раз, чтобы отметить ее как выполненную.",
     "detail": "Вы можете просмотреть конкретную информацию о выбранной метке, включая количество меток этого типа во <span class=\"keyword\">всех регионах</span>, текущем <span class=\"keyword\">основном регионе</span> и текущем <span class=\"keyword\">подрегионе</span>.",
     "pointIcon": "Нажатие на значок метки также может отметить ее как выполненную."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Примечание:</span> Версия игры: <span class=\"keyword\">1.0.13</span>, версия данных карты: <span class=\"keyword\">0.8.25</span>. Нам нужно время для обновления данных, поэтому они могут появиться позже обновления игры. Спасибо за ожидание. Чтобы следить за обновлениями, присоединяйтесь к нашему <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Присоединиться к Discord'>серверу Discord</a>.<br><br>Также рекомендуем следующие ресурсы:<ul><li><span class=\"keyword\">Вики игры: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Посетить Вики'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Чертежи:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Посетить Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Закрыть",

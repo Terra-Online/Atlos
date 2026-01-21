@@ -21,6 +21,7 @@ import { Trigger, TriggerBar } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
+import Notice from '../notice/notice';
 
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
@@ -138,6 +139,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                 })}
                         </MarkFilterDragProvider>
                     </div>
+                    <Notice />
                 </div>
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>

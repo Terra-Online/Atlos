@@ -116,6 +116,13 @@
     "filterList": "L'<span class=\"keyword\">elenco dei marcatori</span> elenca i marcatori che hai selezionato; clicca sull'icona per deselezionare.",
     "headbar": "Gli interruttori relativi alle impostazioni della mappa si trovano nella <span class=\"keyword\">barra superiore</span>.",
     "tos": "I <span class=\"keyword\">Termini di servizio</span> e la <span class=\"keyword\">Gestione dei dati</span> del sito web.",
+    "mobile": {
+      "headbar": "Le impostazioni della mappa sono nella <span class=\"keyword\">barra in alto a destra</span>. Tocca l'icona in alto a destra per espandere e vedere altre opzioni.",
+      "regionLayerSwitch": "Tocca le icone delle regioni per passare tra <span class=\"keyword\">diverse mappe sandbox</span>. Tieni premuta un'icona di regione per mostrare <span class=\"keyword\">sottoregioni e livelli</span>, quindi scegli la vista.",
+      "divider": "Questo è un <span class=\"keyword\">divisore</span> trascinabile. Trascinalo a sinistra o a destra per regolare la larghezza tra ricerca e elenco dei marker.",
+      "drawer": "<span class=\"keyword\">Scorri verso l'alto dal basso</span> per aprire il cassetto e vedere i filtri dei marker.",
+      "selectorSelect": "<span class=\"keyword\">Selettore di marker</span>. Tocca per attivare/disattivare; i marker selezionati appaiono sulla mappa. Puoi vedere il totale e quanti ne hai segnati nell'area attuale."
+    },
     "hideUI": "<span class=\"keyword\">Nascondi l'interfaccia utente del sito web</span> per fare screenshot o visualizzare i marcatori ai bordi.",
     "group": "Visualizza <span class=\"keyword\">gruppi di discussione</span> e <span class=\"keyword\">comunità</span> relativi a questo progetto.",
     "darkMode": "Attiva/disattiva la <span class=\"keyword\">modalità luce ambientale</span> corrente.",
@@ -130,6 +137,9 @@
     "pointMark": "Clicca di nuovo sul marcatore per contrassegnarlo come completato.",
     "detail": "Puoi visualizzare informazioni specifiche sul marcatore selezionato, incluso il numero di marcatori di questo tipo in <span class=\"keyword\">tutte le regioni</span>, la <span class=\"keyword\">regione principale</span> corrente e la <span class=\"keyword\">sottoregione</span> corrente.",
     "pointIcon": "Cliccare sull'icona del marcatore può anche contrassegnarlo come completato."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Nota:</span> Quando la versione del gioco è <span class=\"keyword\">1.0.13</span>, la versione dei dati della mappa è <span class=\"keyword\">0.8.25</span>. Abbiamo bisogno di tempo per aggiornare i dati, quindi l'aggiornamento potrebbe arrivare dopo la patch del gioco. Grazie per la pazienza. Per seguire i nostri aggiornamenti, unisciti al nostro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Unisciti a Discord'>server Discord</a>.<br><br>Consigliamo anche i seguenti strumenti:<ul><li><span class=\"keyword\">Wiki del gioco: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visita la Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Progetti (Blueprint):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visita Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Chiudi",

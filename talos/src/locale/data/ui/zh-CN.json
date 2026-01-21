@@ -138,6 +138,9 @@
       "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。"
     }
   },
+  "notice": {
+    "legacy": "<span class=\"keyword\">注意：</span>当游戏版本为<span class=\"keyword\">1.0.13</span>，地图的数据集版本为<span class=\"keyword\">0.8.25</span>。我们需要时间来更新数据，更新时间可能晚于游戏版本更新，有劳管理员等待。如您希望及时追踪我们的更新，请加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问Talos Pionneers'>https://talospioneers.com</a></li></ul>"
+  },
   "common": {
     "close": "关闭",
     "skip": "跳过",

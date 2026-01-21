@@ -32,6 +32,8 @@ interface IUiPrefsStore {
   setForceLayerSubOpen: (value: boolean) => void;
   forceDetailOpen: boolean;
   setForceDetailOpen: (value: boolean) => void;
+  forceHeadbarExpanded: boolean | null;
+  setForceHeadbarExpanded: (value: boolean | null) => void;
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
 
@@ -98,6 +100,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceLayerSubOpen: (value) => set({ forceLayerSubOpen: value }),
       forceDetailOpen: false,
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
+      forceHeadbarExpanded: null,
+      setForceHeadbarExpanded: (value) => set({ forceHeadbarExpanded: value }),
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
 
@@ -207,6 +211,8 @@ export const useForceLayerSubOpen = (): boolean => useUiPrefsStore((s) => s.forc
 export const useSetForceLayerSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceLayerSubOpen);
 export const useForceDetailOpen = (): boolean => useUiPrefsStore((s) => s.forceDetailOpen);
 export const useSetForceDetailOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceDetailOpen);
+export const useForceHeadbarExpanded = (): boolean | null => useUiPrefsStore((s) => s.forceHeadbarExpanded);
+export const useSetForceHeadbarExpanded = (): ((value: boolean | null) => void) => useUiPrefsStore((s) => s.setForceHeadbarExpanded);
 export const useIsUserGuideOpen = (): boolean => useUiPrefsStore((s) => s.isUserGuideOpen);
 export const useSetIsUserGuideOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setIsUserGuideOpen);
 

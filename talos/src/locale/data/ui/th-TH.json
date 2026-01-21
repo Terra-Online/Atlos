@@ -116,6 +116,13 @@
     "filterList": "<span class=\"keyword\">รายการจุด</span> แสดงรายการจุดที่คุณเลือก คลิกไอคอนเพื่อยกเลิกการเลือก",
     "headbar": "สวิตช์ที่เกี่ยวข้องกับการตั้งค่าแผนที่อยู่ที่ <span class=\"keyword\">แถบด้านบน</span>",
     "tos": "<span class=\"keyword\">ข้อกำหนดการให้บริการ</span> และ <span class=\"keyword\">การจัดการข้อมูล</span> ของเว็บไซต์",
+    "mobile": {
+      "headbar": "การตั้งค่าแผนที่อยู่ที่ <span class=\"keyword\">แถบด้านบนขวา</span> แตะไอคอนด้านบนขวาเพื่อขยายและดูตัวเลือกเพิ่มเติม.",
+      "regionLayerSwitch": "แตะไอคอนภูมิภาคเพื่อสลับระหว่าง <span class=\"keyword\">แผนที่ sandbox</span> กดค้างที่ไอคอนภูมิภาคเพื่อแสดง <span class=\"keyword\">ภูมิภาคย่อยและเลเยอร์</span> แล้วเลือกมุมมอง.",
+      "divider": "นี่คือ <span class=\"keyword\">ตัวแบ่ง</span> ที่สามารถลากได้ ลากไปซ้าย/ขวาเพื่อปรับความกว้างระหว่างการค้นหาและรายการมาร์กเกอร์.",
+      "drawer": "<span class=\"keyword\">ปัดขึ้นจากด้านล่างของหน้าจอ</span> เพื่อเปิดลิ้นชักและดูตัวกรองมาร์กเกอร์.",
+      "selectorSelect": "<span class=\"keyword\">ตัวเลือกมาร์กเกอร์</span> แตะเพื่อสลับสถานะ มาร์กเกอร์ที่เลือกจะปรากฏบนแผนที่ คุณสามารถดูจำนวนทั้งหมดและจำนวนที่ทำเครื่องหมายในพื้นที่นี้."
+    },
     "hideUI": "<span class=\"keyword\">ซ่อน UI เว็บไซต์</span> เพื่อถ่ายภาพหน้าจอหรือดูจุดที่ขอบ",
     "group": "ดู <span class=\"keyword\">กลุ่มสนทนา</span> และ <span class=\"keyword\">ชุมชน</span> ที่เกี่ยวข้องกับโครงการนี้",
     "darkMode": "สลับ <span class=\"keyword\">โหมดแสงสว่าง</span> ปัจจุบัน",
@@ -130,6 +137,9 @@
     "detail": "คุณสามารถดูข้อมูลเฉพาะเกี่ยวกับจุดที่เลือก รวมถึงจำนวนจุดประเภทนี้ใน <span class=\"keyword\">ทุกภูมิภาค</span> <span class=\"keyword\">ภูมิภาคหลัก</span> ปัจจุบัน และ <span class=\"keyword\">ภูมิภาคย่อย</span> ปัจจุบัน",
     "pointIcon": "การคลิกที่ไอคอนจุดก็สามารถทำเครื่องหมายว่าเสร็จสมบูรณ์ได้เช่นกัน",
     "settings": "เปิด <span class=\"keyword\">การตั้งค่า</span> เพื่อควบคุมการจัดเก็บข้อมูลในเครื่องที่แผนที่ใช้เพื่อจดจำการกระทำของคุณ"
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">หมายเหตุ:</span> เมื่อเวอร์ชันเกมคือ <span class=\"keyword\">1.0.13</span> เวอร์ชันข้อมูลแผนที่จะเป็น <span class=\"keyword\">0.8.25</span> เราต้องใช้เวลาในการอัปเดตข้อมูล ซึ่งอาจล่าช้ากว่าการอัปเดตตัวเกม ขอขอบคุณที่รอคอย หากต้องการติดตามการอัปเดต โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "ปิด",

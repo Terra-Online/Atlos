@@ -4,10 +4,12 @@ import CloseIcon from '../../assets/logos/close.svg?react';
 
 interface HeadBarMobileFallbackProps {
     children: React.ReactNode;
+    forceExpanded?: boolean | null;
 }
 
-const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children }) => {
+const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children, forceExpanded = null }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const actualExpanded = forceExpanded !== null ? forceExpanded : isExpanded;
     const childrenArray = React.Children.toArray(children);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -15,9 +17,9 @@ const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children 
         setIsExpanded(!isExpanded);
     };
 
-    // Auto-collapse when clicking outside
+    // Auto-collapse when clicking outside (only if not force-controlled)
     useEffect(() => {
-        if (!isExpanded) return;
+        if (!actualExpanded || forceExpanded !== null) return;
 
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -33,7 +35,7 @@ const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children 
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [isExpanded]);
+    }, [actualExpanded, forceExpanded]);
 
     return (
         <div
@@ -46,12 +48,13 @@ const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children 
         >
             <div
                 ref={containerRef}
-                className={`${styles.headbarMobile} ${isExpanded ? styles.expanded : styles.collapsed}`}
+                className={`${styles.headbarMobile} ${actualExpanded ? styles.expanded : styles.collapsed}`}
             >
                 <div className={styles.headbarGrid}>
                     <button
                         className={styles.toggleIcon}
                         onClick={toggleExpand}
+                        disabled={forceExpanded !== null}
                     >
                         <CloseIcon />
                     </button>

@@ -117,6 +117,13 @@
     "headbar": "マップ設定に関連するスイッチは<span class=\"keyword\">トップバー</span>にあります。",
     "tos": "ウェブサイトの<span class=\"keyword\">利用規約</span>と<span class=\"keyword\">データ管理</span>。",
     "hideUI": "スクリーンショットを撮ったり、端のピンを確認したりするために<span class=\"keyword\">ウェブサイトのUIを非表示</span>にします。",
+    "mobile": {
+      "headbar": "マップ設定は<span class=\"keyword\">右上のヘッダー</span>にあります。右上のアイコンをタップして展開し、さらにオプションを表示します。",
+      "regionLayerSwitch": "地域アイコンをタップして<span class=\"keyword\">異なるサンドボックスマップ</span>に切り替えます。地域アイコンを長押しすると<span class=\"keyword\">サブ地域とレイヤー</span>が表示され、選んでそのビューへ移動できます。",
+      "divider": "これはドラッグ可能な<span class=\"keyword\">仕切り</span>です。検索とマーカーリストの幅の比率を左右にドラッグして調整します。",
+      "drawer": "画面下から<span class=\"keyword\">上方向にスワイプ</span>してドロワーを開き、マーカーフィルターを表示します。",
+      "selectorSelect": "<span class=\"keyword\">マーカーセレクター</span>です。タップで選択を切り替え、選択したマーカーがマップに表示されます。現在のエリアでの総数と、完了済みの数を確認できます。"
+    },
     "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
     "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br><span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、タイ語、ベトナム語です。<br><span class=\"keyword\">インターフェース翻訳のみサポート</span>している言語には、アラビア語、マレー語、ポーランド語が含まれます。",
@@ -130,6 +137,9 @@
     "pointMark": "ピンをもう一度クリックすると、完了としてマークされます。",
     "detail": "選択したピンの具体的な情報を確認できます。これには、<span class=\"keyword\">すべてのエリア</span>、現在の<span class=\"keyword\">メインエリア</span>、および現在の<span class=\"keyword\">サブエリア</span>におけるそのタイプのピンの数が含まれます。",
     "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。"
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pionneersにアクセス'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "閉じる",

@@ -18,6 +18,7 @@ import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
     id: string;
+    onBefore?: () => void | Promise<void>;
     onNext?: () => void | Promise<void>;
     delay?: number;
 };

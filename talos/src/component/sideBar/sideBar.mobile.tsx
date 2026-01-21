@@ -9,6 +9,7 @@ import { Trigger } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
+import Notice from '../notice/notice';
 import Detail from '../detail/detail';
 
 // Category icons
@@ -24,7 +25,7 @@ import FacilityIcon from '../../assets/images/category/facility.svg?react';
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
-import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetDrawerSnapIndex } from '@/store/uiPrefs';
+import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetDrawerSnapIndex, useDrawerSnapIndex } from '@/store/uiPrefs';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -54,7 +55,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
   const currentPoint = useMarkerStore((s) => s.currentActivePoint);
-  const [snapToIndex, setSnapToIndex] = useState<number | null>(null);
+  const drawerSnapIndex = useDrawerSnapIndex();
   const trigCluster = useTriggerCluster();
   const trigBoundary = useTriggerBoundary();
   const trigOptimal = useTriggerlabelName();
@@ -139,9 +140,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   // When a point is activated, snap to middle (index 1)
   useEffect(() => {
     if (currentPoint) {
-      setSnapToIndex(1);
+      setDrawerSnapIndex(1);
     }
-  }, [currentPoint]);
+  }, [currentPoint, setDrawerSnapIndex]);
 
   const [leftRatio, setLeftRatio] = useState(0.6); // Search pane width ratio in TopRow
   const [atLeftEdge, setAtLeftEdge] = useState(false);
@@ -262,7 +263,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         backdropClassName={mobileStyles.mobileDrawerBackdrop}
         onProgressChange={handleProgress}
         style={{ bottom: 0 }}
-        snapToIndex={snapToIndex}
+        snapToIndex={drawerSnapIndex}
       >
         <div className={mobileStyles.contentWrapper} ref={contentRef}>
           <div className={mobileStyles.sidebarContent}>
@@ -323,6 +324,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                   })}
               </MarkFilterDragProvider>
             </div>
+            <Notice />
           </div>
           <div className={mobileStyles.mobileTriggerBar}>
             <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />

@@ -1,0 +1,39 @@
+@use '../../styles/palette.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --notice-bg: #{$white-1};
+    --notice-text: #{$grey-1};
+    --notice-icon: #{$grey-1};
+    --notice-icon-hover: #{$primary-accent-5};
+}
+:root[data-theme='dark'] {
+    --notice-bg: #{$grey-1};
+    --notice-text: #{$light-1};
+    --notice-icon: #{$light-1};
+    --notice-icon-hover: #{$primary-accent-4};
+}
+
+.noticeModule {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-top: .3rem;
+    padding: 0 0.75rem;
+    background: var(--notice-bg);
+    border-radius: 3px;
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 0.25)
+}
+
+.noticeBody {
+    min-height: 0.5rem; // reserved space for future content
+    color: var(--notice-text);
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+    padding: 0.75rem 0 1rem;
+}
