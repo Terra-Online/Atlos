@@ -129,7 +129,14 @@
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",
     "pointMark": "再次单击点位，点位将被标记为完成。",
     "detail": "您可以查看选择点位的具体信息，包括该类型点位在<span class=\"keyword\">所有区域</span>的数量、当前<span class=\"keyword\">主区域</span>以及当前<span class=\"keyword\">子区域</span>的数量。",
-    "pointIcon": "单击点位图标也可以将其标记为完成状态。"
+    "pointIcon": "单击点位图标也可以将其标记为完成状态。",
+    "mobile": {
+      "headbar": "与地图设置有关的开关位于<span class=\"keyword\">右上角的顶栏</span>。点击右上角图标展开查看更多选项。",
+      "regionLayerSwitch": "点击区域图标可以切换<span class=\"keyword\">不同的箱庭地图</span>（主区域）。<br>点击并按住主区域图标可显示可用的<span class=\"keyword\">子区域和图层</span>，选择子区域或图层跳转到对应视图。",
+      "divider": "这是可拖动的<span class=\"keyword\">分割线</span>。<br>您可以向左或向右拖动分割线，来调节搜索栏和点位列表的宽度比例，以适应您的使用习惯。",
+      "drawer": "从屏幕底部<span class=\"keyword\">向上拉起抽屉</span>，可以查看和管理点位筛选器。<br>您可以在这里选择您想要在地图上显示的点位类型。",
+      "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。"
+    }
   },
   "common": {
     "close": "关闭",

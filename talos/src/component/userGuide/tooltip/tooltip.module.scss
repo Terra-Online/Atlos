@@ -34,6 +34,7 @@
 .container {  
   position: relative;
   width: 24rem;
+  max-width: calc(100vw - 2rem);
   padding: 0 .75rem;
   border-radius: 6px;
   display: flex;
@@ -50,6 +51,12 @@
       opacity: .4;
       filter: invert(var(--invert-bg));
       transition: filter .3s $adagio-curve;
+    }
+
+    @media (max-width: 768px) {
+      width: 20rem;
+      max-width: calc(100vw - 1.5rem);
+      padding: 0 .5rem;
     }
 }
 
@@ -108,6 +115,11 @@
   -webkit-hyphens: auto;
   hyphens: auto;
   unicode-bidi: plaintext;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
 }
 
 .indicatorContainer {

@@ -20,7 +20,9 @@ import {
     useReplaceUserGuideStepCompleted,
 } from '@/store/userGuide';
 import { GuideSpotlight } from './spotlight/spotlight';
-import { useGuideSteps, type GuideStep } from './procedure/steps';
+import { useDesktopGuideSteps } from './procedure/steps.desktop';
+import { useMobileGuideSteps } from './procedure/steps.mobile';
+import { useDevice } from '@/utils/device';
 
 const CURRENT_GUIDE_VERSION = '1.0.0';
 
@@ -29,6 +31,7 @@ interface UserGuideProps {
 }
 
 const UserGuide = ({ map }: UserGuideProps) => {
+    const { isMobile } = useDevice();
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
@@ -42,7 +45,10 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const setUserGuideStepCompletedBulk = useSetUserGuideStepCompletedBulk();
     const replaceUserGuideStepCompleted = useReplaceUserGuideStepCompleted();
 
-    const steps: GuideStep[] = useGuideSteps(map);
+    // Load steps based on device type
+    const desktopSteps = useDesktopGuideSteps(map);
+    const mobileSteps = useMobileGuideSteps(map);
+    const steps = isMobile ? mobileSteps : desktopSteps;
     const helpersRef = useRef<StoreHelpers | null>(null);
 
     // Track i18n loading status
