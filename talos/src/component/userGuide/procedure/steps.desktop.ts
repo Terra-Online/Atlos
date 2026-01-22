@@ -7,7 +7,7 @@ import {
     useSetSidebarOpen,
     useToggleMarkFilterExpanded,
     useUiPrefsStore,
-    useSetDrawerSnapIndex,
+    useSetDesktopDrawerSnapIndex,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
     useSetForceDetailOpen,
@@ -21,6 +21,7 @@ export type GuideStep = Step & {
     onBefore?: () => void | Promise<void>;
     onNext?: () => void | Promise<void>;
     delay?: number;
+    disableAutoScroll?: boolean;
 };
 
 export const useDesktopGuideSteps = (map?: L.Map) => {
@@ -31,7 +32,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
     const addPoint = useAddPoint();
     const deletePoint = useDeletePoint();
     const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
-    const setDrawerSnapIndex = useSetDrawerSnapIndex();
+    const setDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
@@ -145,6 +146,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.selectorSelect') || ''),
             placement: 'right',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 const currentFilter = useMarkerStore.getState().filter;
                 if (!currentFilter.includes(firstType)) {
@@ -158,6 +160,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.selectorComplete') || ''),
             placement: 'right',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 const points = WORLD_MARKS.filter(
                     (m) => m.type === firstType,
@@ -171,6 +174,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.triggerHandle') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 setDrawerSnapIndex(1);
                 const points = WORLD_MARKS.filter(
@@ -193,6 +197,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.scale') || ''),
             placement: 'left',
             disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             id: 'STEP-10_filter-list',
@@ -217,42 +222,42 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         },
         {
             id: 'STEP-13_hide-ui',
-            target: '[class*="headbarItem"]:nth-child(2)',
+            target: '[class*="headbarItem"]:nth-child(3)',
             content: parse(t('guide.hideUI') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-14_group',
-            target: '[class*="headbarItem"]:nth-child(3)',
+            target: '[class*="headbarItem"]:nth-child(5)',
             content: parse(t('guide.group') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-15_dark-mode',
-            target: '[class*="headbarItem"]:nth-child(4)',
+            target: '[class*="headbarItem"]:nth-child(7)',
             content: parse(t('guide.darkMode') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-16_language',
-            target: '[class*="headbarItem"]:nth-child(5)',
+            target: '[class*="headbarItem"]:nth-child(9)',
             content: parse(t('guide.language') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-17_help',
-            target: '[class*="headbarItem"]:nth-child(6)',
+            target: '[class*="headbarItem"]:nth-child(11)',
             content: parse(t('guide.help') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-18_settings',
-            target: '[class*="headbarItem"]:nth-child(7)',
+            target: '[class*="headbarItem"]:nth-child(13)',
             content: parse(t('guide.settings') || ''),
             placement: 'bottom',
             disableBeacon: true,
@@ -331,6 +336,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.detail') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             id: 'STEP-26_point-icon',
@@ -338,6 +344,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.pointIcon') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => setForceDetailOpen(false),
         },
     ], [

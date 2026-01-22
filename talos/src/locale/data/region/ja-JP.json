@@ -127,7 +127,7 @@
           "residential_area": "居住区",
           "monitoring_center": "観測所",
           "marker_stone_flats": "界石広場",
-          "xiranflow_channel": "<p=\"そくりゅう\" padding=0>息流</p>道路",
+          "xiranflow_channel": "息流道路",
           "fangxing_avenue": "方興街",
           "tianshi_pillar_array": "天師杭陣",
           "maintenance_zone": "修繕工事区",
@@ -146,7 +146,7 @@
         }
       },
       "JY": {
-        "name": "Jingyu Valley",
+        "name": "景玉谷",
         "short": "玉",
         "site": {
           "treadway": "ぬかるんだ道",

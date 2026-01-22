@@ -146,7 +146,7 @@
         }
       },
       "JY": {
-        "name": "Jingyu Valley",
+        "name": "Долина Цзинъю",
         "short": "ДЦ",
         "site": {
           "treadway": "Протоптанный путь",
@@ -169,7 +169,7 @@
   "DJ": {
     "main": "ОМК «Дицзян»",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "ОМК «Дицзян»",
       "site": {
         "bridge": "Мостик",
         "reception_room": "Приемная",

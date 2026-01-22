@@ -12,7 +12,7 @@ import { RegionContainer } from '@/component/regSwitch/regSwitch';
 import { LayerSwitch } from '@/component/layerSwitch/layerSwitch';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
-import { useSetIsUserGuideOpen, useDrawerSnapIndex } from '@/store/uiPrefs';
+import { useSetIsUserGuideOpen, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
 
 import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
@@ -41,7 +41,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [settingsOpen, setSettingsOpen] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
-    const drawerSnapIndex = useDrawerSnapIndex();
+    const drawerSnapIndex = useDesktopDrawerSnapIndex();
 
     const handleReset = () => {
         setStorageOpen(true);

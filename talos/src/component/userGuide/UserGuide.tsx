@@ -9,7 +9,8 @@ import {
     useSetForceDetailOpen,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
-    useSetDrawerSnapIndex,
+    useSetDesktopDrawerSnapIndex,
+    useSetMobileDrawerSnapIndex,
 } from '@/store/uiPrefs';
 import {
     useUserGuideVersion,
@@ -37,7 +38,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const setForceDetailOpen = useSetForceDetailOpen();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
-    const setDrawerSnapIndex = useSetDrawerSnapIndex();
+    const setDesktopDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
+    const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
     const userGuideVersion = useUserGuideVersion();
     const setUserGuideVersion = useSetUserGuideVersion();
     const stepCompleted = useUserGuideStepCompleted();
@@ -249,14 +251,20 @@ const UserGuide = ({ map }: UserGuideProps) => {
             }
 
             // Joyride has disableScrolling=true; manually try to reveal the target.
-            if (el instanceof HTMLElement) {
-                requestAnimationFrame(() => {
-                    try {
-                        el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
-                    } catch {
-                        // no-op
-                    }
-                });
+            // Skip auto-scroll if the step has disableAutoScroll set, or if element is already in viewport
+            const stepWithOptions = step as unknown as { disableAutoScroll?: boolean };
+            if (el instanceof HTMLElement && !stepWithOptions.disableAutoScroll) {
+                const view = isElementInViewport(el);
+                // Only scroll if element is not fully in viewport
+                if (!view.inView) {
+                    requestAnimationFrame(() => {
+                        try {
+                            el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+                        } catch {
+                            // no-op
+                        }
+                    });
+                }
             }
         };
 
@@ -304,7 +312,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
                 setForceDetailOpen(false);
                 setForceRegionSubOpen(false);
                 setForceLayerSubOpen(false);
-                setDrawerSnapIndex(null);
+                setDesktopDrawerSnapIndex(null);
+                setMobileDrawerSnapIndex(null);
                 setIsUserGuideOpen(false);
                 setStepIndex(0);
                 
@@ -426,7 +435,8 @@ const UserGuide = ({ map }: UserGuideProps) => {
             setForceDetailOpen,
             setForceRegionSubOpen,
             setForceLayerSubOpen,
-            setDrawerSnapIndex,
+            setDesktopDrawerSnapIndex,
+            setMobileDrawerSnapIndex,
             setIsUserGuideOpen,
             setUserGuideStepCompleted,
             replaceUserGuideStepCompleted,

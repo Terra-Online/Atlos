@@ -6,7 +6,7 @@ import L from 'leaflet';
 import {
     useToggleMarkFilterExpanded,
     useUiPrefsStore,
-    useSetDrawerSnapIndex,
+    useSetMobileDrawerSnapIndex,
     useSetForceDetailOpen,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
@@ -21,6 +21,7 @@ export type GuideStep = Step & {
     onBefore?: () => void | Promise<void>;
     onNext?: () => void | Promise<void>;
     delay?: number;
+    disableAutoScroll?: boolean;
 };
 
 export const useMobileGuideSteps = (map?: L.Map) => {
@@ -30,7 +31,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
     const addPoint = useAddPoint();
     const deletePoint = useDeletePoint();
     const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
-    const setDrawerSnapIndex = useSetDrawerSnapIndex();
+    const setDrawerSnapIndex = useSetMobileDrawerSnapIndex();
     const setForceDetailOpen = useSetForceDetailOpen();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
@@ -186,6 +187,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.layerSwitch') || ''),
             placement: 'right',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 setForceLayerSubOpen(false);
             },
@@ -196,6 +198,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.search') || ''),
             placement: 'bottom',
             disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             id: 'MSTEP-14_divider',
@@ -203,6 +206,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.mobile.divider') || ''),
             placement: 'left',
             disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             id: 'MSTEP-15_filter-list',
@@ -210,6 +214,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.filterList') || ''),
             placement: 'bottom',
             disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             id: 'MSTEP-16_drawer',
@@ -217,6 +222,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.mobile.drawer') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 // Pull up drawer to snap index 1 (55% height)
                 setDrawerSnapIndex(1);
@@ -317,6 +323,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.triggerSwitch') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 // Pull down drawer to snap index 0
                 setDrawerSnapIndex(0);
@@ -331,6 +338,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 if (targetPoint) {
                     setCurrentActivePoint(targetPoint);
@@ -345,6 +353,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',
             disableBeacon: true,
+            disableAutoScroll: true,
             onNext: () => {
                 setForceDetailOpen(false);
             },

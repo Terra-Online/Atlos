@@ -1,0 +1,133 @@
+$avatar-default: url('../../../assets/end2.webp');
+$cardbak: url('../../../assets/logo.webp');
+$contour: url('../../../assets/contour.webp');
+$qrcode: url('../../../assets/qrcode.png');
+$primary-accent: #ecdb09;
+.id-card {
+    height: 8rem;
+    width: 19rem;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    background-color: #333;
+    border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
+    position: relative;
+    &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
+        transform: translate(-2px, -2px);
+        background: radial-gradient(circle at 100% 100%, #0000 0, #0000 2px, transparent 2px) 0% 0%/8px 8px no-repeat,
+            radial-gradient(circle at 0 100%, #0000 0, #0000 2px, transparent 2px) 100% 0%/8px 8px no-repeat,
+            radial-gradient(circle at 100% 0, #0000 0, #0000 2px, transparent 2px) 0% 100%/8px 8px no-repeat,
+            radial-gradient(circle at 0 0, #0000 0, #0000 2px, transparent 2px) 100% 100%/8px 8px no-repeat,
+            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 12px) calc(100% - 16px) no-repeat,
+            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 16px) calc(100% - 12px) no-repeat,
+            linear-gradient(90deg, transparent 0%, #f9f429 100%);
+        border-radius: 6.5% 6.5% 6.5% 6.5% / 12.5% 12.5% 12.5% 12.5% ;
+        padding: 6px;
+        box-sizing: border-box;
+        z-index: -1;
+    }
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        height: 100%;
+        border-radius: 0.8rem;
+        background-image: $contour;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px #666);
+        mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
+    }
+}
+.id-card {
+    display: grid;
+    align-items: end;
+    justify-content: start;
+    grid-template-columns: 0.6fr repeat(3, 0.4fr);
+    grid-template-rows: 0.3fr 0.4fr 0.3fr;
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "avatar . . ."
+      "avatar usrname . ."
+      "avatar usrid usrid .";
+    > .avatar-container {
+        grid-area: avatar;
+        width: 5rem;
+        height: 5rem;
+        box-sizing: border-box;
+        border: 4px solid #ffffff;
+        background-color: #a3a3a3;
+        box-shadow: inset 0 0 3px 0px #ffffff;
+        outline: 1px solid transparent;
+        outline-offset: 3px;
+        transition: all .1s linear;
+        &:hover {
+            border-color: $primary-accent;
+            outline: 3px solid $primary-accent;
+
+        }
+        > .avatar {
+            width: calc(5rem + 25.5px);
+            height: calc(5rem + 26px);
+            transform: translate(-18.5px, -30px);
+            object-fit: cover;
+            background-image: $avatar-default;
+            background-position: center top;
+            background-size: cover;
+            box-sizing: border-box;
+            filter: drop-shadow(1px 2px 3px #333);
+        }
+    }
+    > .usrname {
+        grid-area: usrname;
+        color: #fafafa;
+        font-size: 130%;
+        transform: translate(6px, 6px);
+        font-variation-settings: "wght" 600;
+        white-space: nowrap;
+        letter-spacing: -1px;
+    }
+    > .usrid {
+        grid-area: usrid;
+        color: #d6d6d6;
+        font-family: 'Novecento Normal';
+        white-space: nowrap;
+        transform: translate(8px, 0px);
+        letter-spacing: -1px;
+    }
+    > .bakpic {
+        grid-area: 1 / 3 / 3 / 5;
+        height: 100%;
+        width: 100%;
+        background-image: $cardbak;
+        background-size: 90%;
+        background-position-y: 5%;
+        filter: contrast(0) brightness(0.75);
+        mask: linear-gradient(transparent, transparent 10%, white calc(80%), transparent 92%);
+        transform: translateX(12px);
+        position: relative;
+    }
+    > .idcode {
+        grid-area: 1 / 4 / 1 / 4;
+        position: absolute;
+        right: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        background-image: $qrcode;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        filter: contrast(0) brightness(1.2) drop-shadow(0 0 4px black) blur(.2px);
+    }
+}
