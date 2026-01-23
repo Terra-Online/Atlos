@@ -139,7 +139,12 @@
     }
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "Map data is up to date."
+  },
+  "links": {
+    "enka": "Enka Network",
+    "talospioneers": "Talos Pioneers"
   },
   "common": {
     "close": "Close",

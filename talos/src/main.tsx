@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import { fontLoader } from './utils/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
-import { loadLabelTool } from '@/devtools/loadDevTool';
+import { loadLabelTool, loadLinkTool } from '@/devtools/loadDevTool';
 
 async function bootstrap(){
     await i18nInitPromise;
@@ -14,6 +14,7 @@ async function bootstrap(){
     createRoot(document.getElementById('root')).render(<App />);
 
     void loadLabelTool();
+    void loadLinkTool();
 
     /*
      **Lazyapp now temporarily disabled due to actually it's unnecessary for current resource scale.

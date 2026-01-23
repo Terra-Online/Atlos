@@ -4,6 +4,7 @@ declare global {
     interface Window {
         __TALOS_DEV__?: {
             map?: L.Map;
+            mapCore?: unknown;
         };
     }
 }
@@ -13,6 +14,16 @@ const hasLabelToolFlag = (): boolean => {
         if (typeof window === 'undefined') return false;
         const url = new URL(window.location.href);
         return url.searchParams.get('labelTool') === '1';
+    } catch {
+        return false;
+    }
+};
+
+const hasLinkToolFlag = (): boolean => {
+    try {
+        if (typeof window === 'undefined') return false;
+        const url = new URL(window.location.href);
+        return url.searchParams.get('linkTool') === '1';
     } catch {
         return false;
     }
@@ -43,5 +54,21 @@ export const loadLabelTool = async (): Promise<void> => {
         if (typeof bootstrap === 'function') bootstrap(map);
     } catch {
         // Tool is optional and local-only.
+    }
+};
+
+export const loadLinkTool = async (): Promise<void> => {
+    if (!import.meta.env.DEV) return;
+    if (!hasLinkToolFlag()) return;
+
+    const map = await waitForMap();
+    if (!map) return;
+
+    try {
+        const mod = await import('./linkTool/bootstrap');
+        const bootstrap = mod.bootstrapLinkTool;
+        if (typeof bootstrap === 'function') bootstrap(map);
+    } catch (e) {
+        console.error('[LinkTool] Failed to load:', e);
     }
 };

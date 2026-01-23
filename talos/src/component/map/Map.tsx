@@ -4,6 +4,7 @@ import styles from './Map.module.scss';
 import { useMap } from './useMap';
 import L from 'leaflet';
 import { useLabel } from './useLabel';
+import { useLink } from './useLink';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 
 interface MapProps {
@@ -26,6 +27,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
 
     const maxZoom = (currentRegion ? REGION_DICT[currentRegion]?.maxZoom : undefined) ?? REGION_DICT[DEFAULT_REGION].maxZoom;
     useLabel(map, currentRegion, maxZoom);
+    const { linkTooltipElement } = useLink(map, currentRegion, maxZoom);
 
     useEffect(() => {
         if (!map) return;
@@ -82,11 +84,14 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
     }, [map]);
 
     return (
-        <div
-            ref={mapElementRef}
-            className={`${styles.mapContainer} ${isOverdrag ? styles.overdrag : ''}`}
-            id='map'
-        ></div>
+        <>
+            <div
+                ref={mapElementRef}
+                className={`${styles.mapContainer} ${isOverdrag ? styles.overdrag : ''}`}
+                id='map'
+            ></div>
+            {linkTooltipElement}
+        </>
     );
 };
 

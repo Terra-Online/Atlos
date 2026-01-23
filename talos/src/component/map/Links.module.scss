@@ -1,0 +1,92 @@
+@use '@/styles/palette' as *;
+@use '@/styles/curves' as *;
+
+// ============================================
+// Link Tooltip - Using native popover API styling
+// ============================================
+
+// Tooltip popover container
+.linkTooltipPopover {
+    padding: 0;
+    border: none;
+    background: transparent;
+    margin: 0;
+    overflow: visible;
+    
+    // Popover positioning
+    inset: unset;
+    
+    // Smooth fade-in animation
+    &:popover-open {
+        opacity: 1;
+        transition: opacity 120ms $moderato-curve, 
+                    overlay 120ms $moderato-curve allow-discrete, 
+                    display 120ms $moderato-curve allow-discrete;
+    }
+    
+    @starting-style {
+        &:popover-open {
+            opacity: 0;
+        }
+    }
+    
+    // Fade-out animation
+    &.popoverClose {
+        opacity: 0;
+        transition: opacity 120ms $moderato-curve;
+    }
+}
+
+// Container for tooltip links
+.tooltipContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+// Individual link button styling
+.linkTooltip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: var(--tooltip-bg, #{rgba($black-0, 0.4)});
+    color: var(--tooltip-text, #{$white-1});
+    border: 1px solid var(--tooltip-border, #{rgba($white-1, 0.3)});
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    text-decoration: none;
+    white-space: nowrap;
+    text-shadow: 1px 1px 1px var(--tooltip-shadow, #{rgba($black-0, 0.8)}), 
+                 0 0 1px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)}), 
+                 -0.5px -0.5px 2px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)});
+    box-shadow: 0 4px 12px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)});
+    backdrop-filter: blur(6px) brightness(1.2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: var(--tooltip-bg-hover, #{rgba($black-0, 0.6)});
+        border-color: var(--tooltip-border-hover, #{rgba($white-1, 0.5)});
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px var(--tooltip-shadow, #{rgba($black-0, 0.6)});
+    }
+}
+
+.tooltipText {
+    color: inherit;
+}
+
+.tooltipArrow {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    transition: transform 0.15s ease;
+
+    .linkTooltip:hover & {
+        transform: translate(2px, -2px);
+        color: rgba(255, 255, 255, 0.9);
+    }
+}
