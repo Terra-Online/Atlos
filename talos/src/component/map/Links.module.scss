@@ -1,51 +1,40 @@
 @use '@/styles/palette' as *;
 @use '@/styles/curves' as *;
 
-// ============================================
-// Link Tooltip - Using native popover API styling
-// ============================================
-
-// Tooltip popover container
 .linkTooltipPopover {
     padding: 0;
     border: none;
     background: transparent;
     margin: 0;
     overflow: visible;
-    
-    // Popover positioning
     inset: unset;
     
     // Smooth fade-in animation
     &:popover-open {
         opacity: 1;
-        transition: opacity 120ms $moderato-curve, 
-                    overlay 120ms $moderato-curve allow-discrete, 
-                    display 120ms $moderato-curve allow-discrete;
+        transition: opacity .15s $moderato-curve, 
+                    overlay .15s $moderato-curve allow-discrete, 
+                    display .15s $moderato-curve allow-discrete;
     }
-    
     @starting-style {
         &:popover-open {
             opacity: 0;
         }
     }
-    
     // Fade-out animation
     &.popoverClose {
         opacity: 0;
-        transition: opacity 120ms $moderato-curve;
+        transition: opacity .15s $moderato-curve;
     }
 }
 
-// Container for tooltip links
 .tooltipContainer {
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: .45rem;
     pointer-events: auto;
 }
 
-// Individual link button styling
 .linkTooltip {
     display: flex;
     align-items: center;
@@ -67,7 +56,6 @@
     backdrop-filter: blur(6px) brightness(1.2);
     cursor: pointer;
     transition: all 0.15s ease;
-
     &:hover {
         background: var(--tooltip-bg-hover, #{rgba($black-0, 0.6)});
         border-color: var(--tooltip-border-hover, #{rgba($white-1, 0.5)});
@@ -79,14 +67,26 @@
 .tooltipText {
     color: inherit;
 }
-
 .tooltipArrow {
-    color: rgba(255, 255, 255, 0.6);
+    color: inherit;
     font-size: 12px;
     transition: transform 0.15s ease;
 
     .linkTooltip:hover & {
         transform: translate(2px, -2px);
-        color: rgba(255, 255, 255, 0.9);
+        color: inherit;
+    }
+}
+:global {
+    path.link-hit-area {
+        outline: 2px solid transparent;
+        outline-offset: 8px;
+        transition: outline-color 0.2s ease, outline-offset 0.3s $standard-curve;
+    }
+
+    path.link-hit-area:hover {
+        outline-color: $light-1;
+        outline-offset: 0px;
+        transition: outline-color 0.15s ease, outline-offset 0.25s $standard-curve;
     }
 }

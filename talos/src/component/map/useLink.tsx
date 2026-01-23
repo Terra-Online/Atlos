@@ -7,9 +7,9 @@ import { useTranslateUI } from '@/locale';
 import styles from './Links.module.scss';
 
 // Import link images - these need to be imported for Vite to process them
-import linkVl0 from '@/assets/images/UI/link_vl_0.webp';
-import linkVl1 from '@/assets/images/UI/link_vl_1.webp';
-import linkWl0 from '@/assets/images/UI/link_wl_0.webp';
+import linkVl0 from '@/assets/images/UI/links/link_vl_0.webp';
+import linkVl1 from '@/assets/images/UI/links/link_vl_1.webp';
+import linkWl0 from '@/assets/images/UI/links/link_wl_0.webp';
 
 // Map link IDs to their image URLs
 const LINK_IMAGES: Record<string, string> = {
@@ -203,7 +203,8 @@ export const useLink = (
                 stroke: false,
                 fill: true,
                 fillOpacity: 0,
-                className: 'link-hit-area',
+                // Use unique className with link ID to prevent duplicate paths
+                className: `link-hit-area link-hit-area-${link.id.replace(/\//g, '-')}`,
             });
 
             hitArea.on('mouseover', () => {
