@@ -63,7 +63,22 @@
         box-shadow: 0 6px 16px var(--tooltip-shadow, #{rgba($black-0, 0.6)});
     }
 }
-
+.tooltipIcon{
+    display: flex;
+    filter: drop-shadow(0 1px 2px $black-1);
+    > svg {
+        color: inherit;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: fill 0.25s ease;
+    }
+    .linkTooltip:hover & {
+        > svg {
+            fill: $primary-accent-3;
+        }
+    }
+}
 .tooltipText {
     color: inherit;
 }

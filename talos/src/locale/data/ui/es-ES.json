@@ -141,6 +141,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Cuando la versión del juego es <span class=\"keyword\">1.0.13</span>, la versión de los datos del mapa es <span class=\"keyword\">0.8.25</span>. Necesitamos tiempo para actualizar los datos, por lo que puede tardar más que la actualización del juego. Gracias por su paciencia. Para seguir nuestras actualizaciones, únete a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "Cerrar",
     "skip": "Omitir",

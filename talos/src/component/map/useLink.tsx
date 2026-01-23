@@ -10,6 +10,8 @@ import styles from './Links.module.scss';
 import linkVl0 from '@/assets/images/UI/links/link_vl_0.webp';
 import linkVl1 from '@/assets/images/UI/links/link_vl_1.webp';
 import linkWl0 from '@/assets/images/UI/links/link_wl_0.webp';
+import RightIcon from '@/assets/images/UI/links/T2P.svg?react';
+import LeftIcon from '@/assets/images/UI/links/enka.svg?react';
 
 // Map link IDs to their image URLs
 const LINK_IMAGES: Record<string, string> = {
@@ -174,7 +176,14 @@ export const useLink = (
         // Don't render if no links
         if (links.length === 0) return;
 
+        // Track which links we're adding to avoid duplicates
+        const processedLinkIds = new Set<string>();
+
         for (const link of links) {
+            // Skip if this link has already been processed (prevent duplicates)
+            if (processedLinkIds.has(link.id)) continue;
+            processedLinkIds.add(link.id);
+
             const [[x1, y1], [x2, y2]] = link.bounds;
 
             // Convert pixel coordinates to lat/lng
@@ -285,12 +294,20 @@ export const useLink = (
     }, []);
 
     // Build the tooltip element
-    // titleKey is like "links.enka", tUI adds "ui." prefix automatically
+    // Helper to safely extract string from translation result
+    const getTranslatedString = (key: string): string => {
+        const result = tUI(key);
+        if (result === null || result === undefined) return '';
+        if (typeof result === 'string') return result;
+        // If result is an object (nested i18n structure), return the key as fallback
+        return key;
+    };
+
     const leftTitle = globalConfig?.leftLink?.titleKey
-        ? tUI(globalConfig.leftLink.titleKey)
+        ? getTranslatedString(globalConfig.leftLink.titleKey)
         : '';
     const rightTitle = globalConfig?.rightLink?.titleKey
-        ? tUI(globalConfig.rightLink.titleKey)
+        ? getTranslatedString(globalConfig.rightLink.titleKey)
         : '';
 
     const handleLinkClick = (url: string | undefined) => {
@@ -313,6 +330,7 @@ export const useLink = (
                         className={styles.linkTooltip}
                         onClick={() => handleLinkClick(globalConfig.leftLink.url)}
                     >
+                        <span className={styles.tooltipIcon}><LeftIcon /></span>
                         <span className={styles.tooltipText}>{leftTitle}</span>
                         <span className={styles.tooltipArrow}>↗</span>
                     </button>
@@ -322,6 +340,7 @@ export const useLink = (
                         className={styles.linkTooltip}
                         onClick={() => handleLinkClick(globalConfig.rightLink.url)}
                     >
+                        <span className={styles.tooltipIcon}><RightIcon /></span>
                         <span className={styles.tooltipText}>{rightTitle}</span>
                         <span className={styles.tooltipArrow}>↗</span>
                     </button>

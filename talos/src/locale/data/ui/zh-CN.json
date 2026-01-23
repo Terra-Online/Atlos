@@ -143,8 +143,14 @@
     "uptodate": "当前数据集版本与游戏版本一致。"
   },
   "links": {
-    "enka": "Enka Network",
-    "talospioneers": "Talos Pioneers"
+    "enka": {
+      "name": "蓝图编辑器",
+      "desc": "蓝图编辑器"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "蓝图分享社区"
+    }
   },
   "common": {
     "close": "关闭",

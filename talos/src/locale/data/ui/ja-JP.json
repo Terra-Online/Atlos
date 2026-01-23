@@ -141,6 +141,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pioneersにアクセス'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "閉じる",
     "skip": "スキップ",

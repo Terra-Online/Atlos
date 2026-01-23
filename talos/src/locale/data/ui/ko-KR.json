@@ -141,6 +141,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">주의:</span> 게임 버전이 <span class=\"keyword\">1.0.13</span>일 때, 지도 데이터 버전은 <span class=\"keyword\">0.8.25</span>입니다. 데이터를 업데이트하는 데 시간이 필요하므로 게임 업데이트보다 늦어질 수 있습니다. 기다려 주셔서 감사합니다. 업데이트 소식을 받으려면 <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discord 참여'>Discord 서버</a>에 가입하세요.<br><br>다음 관련 도구 사이트도 추천합니다:<ul><li><span class=\"keyword\">게임 위키: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='게임 위키 방문'>https://warfarin.wiki</a></li><li><span class=\"keyword\">블루프린트 공유:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pioneers 방문'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "닫기",
     "skip": "건너뛰기",

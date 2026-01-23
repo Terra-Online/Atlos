@@ -2,11 +2,11 @@
   "version": 1,
   "config": {
     "leftLink": {
-      "titleKey": "links.enka",
+      "titleKey": "links.enka.name",
       "url": "https://enka.network/endfield/aic/"
     },
     "rightLink": {
-      "titleKey": "links.talospioneers",
+      "titleKey": "links.talospioneers.name",
       "url": "https://talospioneers.com/"
     }
   },

@@ -153,6 +153,16 @@
     "expand": "Kembangkan",
     "collapse": "Runtuhkan"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map ialah peta dalam talian sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perancangan strategik untuk pemain."

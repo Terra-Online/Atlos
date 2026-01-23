@@ -143,8 +143,14 @@
     "uptodate": "Map data is up to date."
   },
   "links": {
-    "enka": "Enka Network",
-    "talospioneers": "Talos Pioneers"
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
   },
   "common": {
     "close": "Close",
