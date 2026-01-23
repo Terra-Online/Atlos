@@ -22,7 +22,6 @@ interface TooltipHeaderInterface {
     onClickBack?: MouseEventHandler<HTMLElement>;
     onClickNext?: MouseEventHandler<HTMLElement>;
     onClickSkip?: MouseEventHandler<HTMLElement>;
-    onComplete?: MouseEventHandler<HTMLElement>;
     index: number;
     size: number;
 }
@@ -70,11 +69,7 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
                     text=''
                     buttonType='next'
                     buttonStyle='icon'
-                    onClick={
-                        prop.index !== prop.size - 1
-                            ? prop.onClickNext
-                            : prop.onComplete
-                    }
+                    onClick={prop.onClickNext}
                     size={'1.5rem'}
                     schema={buttonSchema}
                 />
@@ -88,7 +83,6 @@ export const GuideTooltip = ({
     index,
     step,
     backProps,
-    closeProps,
     primaryProps,
     skipProps,
     size,
@@ -100,7 +94,6 @@ export const GuideTooltip = ({
                     onClickBack={backProps.onClick}
                     onClickNext={primaryProps.onClick}
                     onClickSkip={skipProps.onClick}
-                    onComplete={closeProps.onClick}
                     index={index}
                     size={size}
                 />
