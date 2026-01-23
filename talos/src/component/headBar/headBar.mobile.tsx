@@ -7,11 +7,15 @@ import HeadBarMobileFallback from './headBar.mobile.fallback';
 
 interface HeadBarMobileProps {
     children: React.ReactNode;
+    forceExpanded?: boolean | null;
 }
 
-const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
+const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children, forceExpanded = null }) => {
     const performanceMode = usePerformanceMode();
     const [isExpanded, setIsExpanded] = useState(false);
+    
+    // When forceExpanded is set, override internal state
+    const actualExpanded = forceExpanded !== null ? forceExpanded : isExpanded;
     const childrenArray = React.Children.toArray(children);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -19,9 +23,9 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
         setIsExpanded(!isExpanded);
     };
 
-    // Auto-collapse when clicking outside
+    // Auto-collapse when clicking outside (only if not force-controlled)
     useEffect(() => {
-        if (!isExpanded) return;
+        if (!actualExpanded || forceExpanded !== null) return;
 
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -37,11 +41,11 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [isExpanded]);
+    }, [actualExpanded, forceExpanded]);
 
     // Use fallback component in performance mode
     if (performanceMode) {
-        return <HeadBarMobileFallback>{children}</HeadBarMobileFallback>;
+        return <HeadBarMobileFallback forceExpanded={forceExpanded}>{children}</HeadBarMobileFallback>;
     }
 
     return (
@@ -52,7 +56,7 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
             aberrationIntensity={2}
             elasticity={0.1}
             cornerRadius={36}
-            padding={isExpanded ? '12px' : '8px'}
+            padding={actualExpanded ? '12px' : '8px'}
             mode='standard'
             overLight={false}
             positioning='top-right'
@@ -69,12 +73,13 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children }) => {
         >
             <div
                 ref={containerRef}
-                className={`${styles.headbarMobile} ${isExpanded ? styles.expanded : styles.collapsed}`}
+                className={`${styles.headbarMobile} ${actualExpanded ? styles.expanded : styles.collapsed}`}
             >
                 <div className={styles.headbarGrid}>
                     <button
                         className={styles.toggleIcon}
                         onClick={toggleExpand}
+                        disabled={forceExpanded !== null}
                     >
                         <CloseIcon />
                     </button>

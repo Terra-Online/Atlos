@@ -129,7 +129,17 @@
     "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
     "pointMark": "Click the marker again to mark it as complete.",
     "detail": "You can view specific information about the selected marker, including the number of markers of this type in <span class=\"keyword\">all regions</span>, the current <span class=\"keyword\">main region</span>, and the current <span class=\"keyword\">sub-region</span>.",
-    "pointIcon": "Clicking the marker icon can also mark it as complete."
+    "pointIcon": "Clicking the marker icon can also mark it as complete.",
+    "mobile": {
+      "headbar": "Switches related to map settings are located in the <span class=\"keyword\">top-right corner header bar</span>. Click the top-right icon to expand and see more options.",
+      "regionLayerSwitch": "Click region icons to switch between <span class=\"keyword\">different sandbox maps</span> (main regions).<br>Tap and hold a main region icon to display available <span class=\"keyword\">sub-regions and layers</span>, then select a sub-region or layer to jump to that view.",
+      "divider": "This is a draggable <span class=\"keyword\">divider</span>.<br>You can drag the divider left or right to adjust the width ratio between the search bar and marker list, adapting to your usage preferences.",
+      "drawer": "<span class=\"keyword\">Swipe up from the bottom of the screen</span> to open the drawer and view marker filters.<br>Here you can select which marker types you want to display on the map.",
+      "selectorSelect": "Specific <span class=\"keyword\">marker selector</span>. Tap to toggle selection status; selected markers will appear on the map.<br>You can see the total number of such markers in the current area, as well as the number you have marked."
+    }
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Close",

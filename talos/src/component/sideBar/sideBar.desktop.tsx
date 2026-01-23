@@ -21,10 +21,11 @@ import { Trigger, TriggerBar } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
+import Notice from '../notice/notice';
 
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDrawerSnapIndex } from '@/store/uiPrefs';
+import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
 import { SelectionLayer } from './selectionLayer';
 
 console.log('[MARKER]', MARKER_TYPE_TREE);
@@ -62,7 +63,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigCluster = useSetTriggerCluster();
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
-    const drawerSnapIndex = useDrawerSnapIndex();
+    const drawerSnapIndex = useDesktopDrawerSnapIndex();
 
     const sidebarRef = React.useRef<HTMLDivElement>(null);
 
@@ -138,6 +139,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                 })}
                         </MarkFilterDragProvider>
                     </div>
+                    <Notice />
                 </div>
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>

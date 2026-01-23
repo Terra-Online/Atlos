@@ -116,6 +116,13 @@
     "filterList": "<span class=\"keyword\">Lista znaczników</span> pokazuje wybrane przez Ciebie znaczniki; kliknij ikonę, aby je odznaczyć.",
     "headbar": "Przełączniki związane z ustawieniami mapy znajdują się na <span class=\"keyword\">górnym pasku</span>.",
     "tos": "<span class=\"keyword\">Warunki korzystania</span> i <span class=\"keyword\">zarządzanie danymi</span> strony.",
+    "mobile": {
+      "headbar": "Ustawienia mapy są w <span class=\"keyword\">prawym górnym pasku</span>. Stuknij ikonę w prawym górnym rogu, aby rozwinąć i zobaczyć więcej opcji.",
+      "regionLayerSwitch": "Stuknij ikony regionów, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span>. Przytrzymaj ikonę regionu, aby pokazać <span class=\"keyword\">podregiony i warstwy</span>, a następnie wybierz widok.",
+      "divider": "To jest <span class=\"keyword\">separator</span>, który można przeciągać. Przeciągnij w lewo/prawo, aby dopasować szerokość między wyszukiwaniem a listą znaczników.",
+      "drawer": "<span class=\"keyword\">Przesuń palcem w górę od dołu</span>, aby otworzyć szufladę i zobaczyć filtry znaczników.",
+      "selectorSelect": "<span class=\"keyword\">Selektor znaczników</span>. Stuknij, aby przełączać; wybrane znaczniki pojawią się na mapie. Widzisz łączną liczbę i ile oznaczyłeś w bieżącym obszarze."
+    },
     "hideUI": "<span class=\"keyword\">Ukryj interfejs strony</span>, aby robić zrzuty ekranu lub oglądać znaczniki na krawędziach.",
     "group": "Zobacz <span class=\"keyword\">grupy dyskusyjne</span> i <span class=\"keyword\">społeczności</span> związane z tym projektem.",
     "darkMode": "Przełącz bieżący <span class=\"keyword\">tryb oświetlenia otoczenia</span>.",
@@ -130,6 +137,9 @@
     "pointMark": "Kliknij znacznik ponownie, aby oznaczyć go jako ukończony.",
     "detail": "Możesz wyświetlić szczegółowe informacje o wybranym znaczniku, w tym liczbę znaczników tego typu we <span class=\"keyword\">wszystkich regionach</span>, w bieżącym <span class=\"keyword\">głównym regionie</span> oraz w bieżącym <span class=\"keyword\">podregionie</span>.",
     "pointIcon": "Kliknięcie ikony znacznika również oznacza go jako ukończony."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Uwaga:</span> Gdy wersja gry to <span class=\"keyword\">1.0.13</span>, wersja danych mapy to <span class=\"keyword\">0.8.25</span>. Potrzebujemy czasu na aktualizację danych, więc może się ona pojawić później niż aktualizacja gry. Dziękujemy za cierpliwość. Aby śledzić nasze aktualizacje, dołącz do naszego <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Dołącz do Discorda'>serwera Discord</a>.<br><br>Polecamy również następujące narzędzia:<ul><li><span class=\"keyword\">Wiki gry: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Odwiedź Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Schematy (Blueprints):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Odwiedź Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Zamknij",

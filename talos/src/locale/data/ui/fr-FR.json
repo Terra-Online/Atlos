@@ -116,6 +116,13 @@
     "filterList": "La <span class=\"keyword\">liste des marqueurs</span> répertorie les marqueurs que vous avez sélectionnés ; cliquez sur l'icône pour désélectionner.",
     "headbar": "Les commutateurs liés aux paramètres de la carte sont situés dans la <span class=\"keyword\">barre supérieure</span>.",
     "tos": "Les <span class=\"keyword\">Conditions d'utilisation</span> et la <span class=\"keyword\">Gestion des données</span> du site Web.",
+    "mobile": {
+      "headbar": "Les réglages de la carte sont dans la <span class=\"keyword\">barre en haut à droite</span>. Touchez l'icône en haut à droite pour dérouler et voir plus d'options.",
+      "regionLayerSwitch": "Touchez les icônes de région pour passer entre <span class=\"keyword\">différentes cartes sandbox</span>. Maintenez une icône de région pour afficher les <span class=\"keyword\">sous-régions et couches</span>, puis choisissez la vue souhaitée.",
+      "divider": "Ceci est un <span class=\"keyword\">séparateur</span> à faire glisser. Faites-le glisser à gauche ou à droite pour ajuster la largeur entre recherche et liste des marqueurs.",
+      "drawer": "<span class=\"keyword\">Faites glisser depuis le bas</span> pour ouvrir le tiroir et voir les filtres de marqueurs.",
+      "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueurs</span>. Touchez pour basculer ; les marqueurs sélectionnés apparaissent sur la carte. Vous voyez le total et combien vous avez marqués dans la zone actuelle."
+    },
     "hideUI": "<span class=\"keyword\">Masquer l'interface utilisateur</span> pour prendre des captures d'écran ou voir les marqueurs en bordure.",
     "group": "Voir les <span class=\"keyword\">groupes de discussion</span> et les <span class=\"keyword\">communautés</span> liés à ce projet.",
     "darkMode": "Basculer le <span class=\"keyword\">mode d'éclairage ambiant</span> actuel.",
@@ -129,6 +136,9 @@
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
     "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Note :</span> Lorsque la version du jeu est <span class=\"keyword\">1.0.13</span>, la version des données de la carte est <span class=\"keyword\">0.8.25</span>. Nous avons besoin de temps pour mettre à jour les données, cela peut donc arriver après la mise à jour du jeu. Merci de votre patience. Pour suivre nos mises à jour, veuillez rejoindre notre <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Rejoindre Discord'>serveur Discord</a>.<br><br>Nous recommandons également les outils suivants :<ul><li><span class=\"keyword\">Wiki du jeu : </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visiter le Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Partage de plans:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visiter Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Fermer",

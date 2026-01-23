@@ -116,6 +116,13 @@
     "filterList": "<span class=\"keyword\">Senarai Penanda</span> menyenaraikan penanda yang anda pilih; klik ikon untuk nyahpilih.",
     "headbar": "Suis berkaitan tetapan peta berada di <span class=\"keyword\">bar kepala</span>.",
     "tos": "<span class=\"keyword\">Terma Perkhidmatan</span> dan <span class=\"keyword\">Pengurusan Data</span> laman web.",
+    "mobile": {
+      "headbar": "Tetapan peta berada di <span class=\"keyword\">bar kanan atas</span>. Ketik ikon kanan atas untuk kembangkan dan lihat lebih banyak pilihan.",
+      "regionLayerSwitch": "Ketik ikon wilayah untuk tukar antara <span class=\"keyword\">peta sandbox</span>. Tekan lama ikon wilayah untuk paparkan <span class=\"keyword\">sub-wilayah dan lapisan</span>, kemudian pilih pandangan.",
+      "divider": "Ini ialah <span class=\"keyword\">pembahagi</span> boleh seret. Seret ke kiri/kanan untuk laras lebar antara carian dan senarai penanda.",
+      "drawer": "<span class=\"keyword\">Leret ke atas dari bawah</span> untuk buka laci dan lihat penapis penanda.",
+      "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span>. Ketik untuk tukar; penanda terpilih muncul di peta. Anda boleh lihat jumlah dan berapa yang telah ditanda di kawasan ini."
+    },
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Laman Web</span> untuk mengambil tangkapan skrin atau melihat penanda di tepi.",
     "group": "Lihat <span class=\"keyword\">kumpulan perbincangan</span> dan <span class=\"keyword\">komuniti</span> yang berkaitan dengan projek ini.",
     "darkMode": "Togol <span class=\"keyword\">mod cahaya persekitaran</span> semasa.",
@@ -130,6 +137,9 @@
     "pointMark": "Klik penanda sekali lagi untuk menandainya sebagai selesai.",
     "detail": "Anda boleh melihat maklumat khusus tentang penanda yang dipilih, termasuk bilangan penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> semasa, dan <span class=\"keyword\">sub-wilayah</span> semasa.",
     "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Nota:</span> Apabila versi permainan ialah <span class=\"keyword\">1.0.13</span>, versi data peta ialah <span class=\"keyword\">0.8.25</span>. Kami memerlukan masa untuk mengemas kini data, jadi ia mungkin lewat daripada kemas kini permainan. Terima kasih atas kesabaran anda. Untuk menjejaki kemas kini kami, sila sertai <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Sertai Discord'>Pelayan Discord</a> kami.<br><br>Kami juga mengesyorkan alat berikut:<ul><li><span class=\"keyword\">Wiki Permainan: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Lawati Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprint:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Lawati Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Tutup",

@@ -116,6 +116,13 @@
     "filterList": "تسرد <span class=\"keyword\">قائمة العلامات</span> العلامات التي حددتها؛ انقر فوق الرمز لإلغاء التحديد.",
     "headbar": "توجد المفاتيح المتعلقة بإعدادات الخريطة في <span class=\"keyword\">الشريط العلوي</span>.",
     "tos": "<span class=\"keyword\">شروط الخدمة</span> و <span class=\"keyword\">إدارة البيانات</span> للموقع.",
+    "mobile": {
+      "headbar": "إعدادات الخريطة في <span class=\"keyword\">الشريط العلوي الأيمن</span>. اضغط على الأيقونة في الأعلى لعرض مزيد من الخيارات.",
+      "regionLayerSwitch": "اضغط على أيقونات المناطق للتبديل بين <span class=\"keyword\">خرائط الساندبوكس</span>. اضغط مطولًا على أيقونة المنطقة لإظهار <span class=\"keyword\">المناطق الفرعية والطبقات</span> ثم اختر العرض المطلوب.",
+      "divider": "هذا <span class=\"keyword\">فاصل</span> قابل للسحب. اسحبه يمينًا أو يسارًا لضبط عرض البحث وقائمة العلامات.",
+      "drawer": "<span class=\"keyword\">اسحب للأعلى من أسفل الشاشة</span> لفتح الدرج ورؤية مرشحات العلامات.",
+      "selectorSelect": "<span class=\"keyword\">محدد العلامات</span>. اضغط للتبديل؛ العلامات المختارة تظهر على الخريطة. يمكنك رؤية الإجمالي وعدد ما أنهيته في المنطقة الحالية."
+    },
     "hideUI": "<span class=\"keyword\">إخفاء واجهة مستخدم الموقع</span> لالتقاط لقطات شاشة أو عرض علامات الحافة.",
     "group": "عرض <span class=\"keyword\">مجموعات المناقشة</span> و <span class=\"keyword\">المجتمعات</span> المتعلقة بهذا المشروع.",
     "darkMode": "تبديل <span class=\"keyword\">وضع الإضاءة المحيطة</span> الحالي.",
@@ -130,6 +137,9 @@
     "detail": "يمكنك عرض معلومات محددة حول العلامة المحددة، بما في ذلك عدد العلامات من هذا النوع في <span class=\"keyword\">جميع المناطق</span>، و<span class=\"keyword\">المنطقة الرئيسية</span> الحالية، و<span class=\"keyword\">المنطقة الفرعية</span> الحالية.",
     "pointIcon": "يمكن أن يؤدي النقر فوق رمز العلامة أيضًا إلى تمييزها كمكتملة.",
     "settings": "افتح <span class=\"keyword\">التفضيلات</span> للتحكم في التخزين المحلي الذي يستخدمه الخريطة لتذكر أفعالك."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">ملاحظة:</span> عندما يكون إصدار اللعبة <span class=\"keyword\">1.0.13</span>، فإن إصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج إلى وقت لتحديث البيانات، لذا قد يتأخر التحديث عن اللعبة. شكراً لصبركم. لمتابعة تحديثاتنا، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "إغلاق",

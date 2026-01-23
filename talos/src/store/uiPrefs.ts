@@ -24,14 +24,18 @@ interface IUiPrefsStore {
   setTriggerlabelName: (value: boolean) => void;
 
   // User Guide States (Transient)
-  drawerSnapIndex: number | null;
-  setDrawerSnapIndex: (index: number | null) => void;
+  desktopDrawerSnapIndex: number | null;
+  setDesktopDrawerSnapIndex: (index: number | null) => void;
+  mobileDrawerSnapIndex: number | null;
+  setMobileDrawerSnapIndex: (index: number | null) => void;
   forceRegionSubOpen: boolean;
   setForceRegionSubOpen: (value: boolean) => void;
   forceLayerSubOpen: boolean;
   setForceLayerSubOpen: (value: boolean) => void;
   forceDetailOpen: boolean;
   setForceDetailOpen: (value: boolean) => void;
+  forceHeadbarExpanded: boolean | null;
+  setForceHeadbarExpanded: (value: boolean | null) => void;
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
 
@@ -90,14 +94,18 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setTriggerlabelName: (value: boolean) => set({ triggerlabelName: value }),
 
       // User Guide States
-      drawerSnapIndex: 1,
-      setDrawerSnapIndex: (index) => set({ drawerSnapIndex: index }),
+      desktopDrawerSnapIndex: 1,
+      setDesktopDrawerSnapIndex: (index) => set({ desktopDrawerSnapIndex: index }),
+      mobileDrawerSnapIndex: 0,
+      setMobileDrawerSnapIndex: (index) => set({ mobileDrawerSnapIndex: index }),
       forceRegionSubOpen: false,
       setForceRegionSubOpen: (value) => set({ forceRegionSubOpen: value }),
       forceLayerSubOpen: false,
       setForceLayerSubOpen: (value) => set({ forceLayerSubOpen: value }),
       forceDetailOpen: false,
       setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
+      forceHeadbarExpanded: null,
+      setForceHeadbarExpanded: (value) => set({ forceHeadbarExpanded: value }),
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
 
@@ -132,7 +140,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerCluster: state.triggerCluster,
         triggerBoundary: state.triggerBoundary,
         triggerlabelName: state.triggerlabelName,
-        drawerSnapIndex: state.drawerSnapIndex,
+        desktopDrawerSnapIndex: state.desktopDrawerSnapIndex,
+        // mobileDrawerSnapIndex removed - always reset to 0
         theme: state.theme,
         // Settings flags
         prefsSidebarEnabled: state.prefsSidebarEnabled,
@@ -171,8 +180,13 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
           if (persisted.triggerCluster !== undefined) merged.triggerCluster = persisted.triggerCluster;
           if (persisted.triggerBoundary !== undefined) merged.triggerBoundary = persisted.triggerBoundary;
           if (persisted.triggerlabelName !== undefined) merged.triggerlabelName = persisted.triggerlabelName;
-          if (persisted.drawerSnapIndex !== undefined) merged.drawerSnapIndex = persisted.drawerSnapIndex;
         }
+        
+        // Desktop drawer snap: always restore user's last state
+        if (persisted.desktopDrawerSnapIndex !== undefined) {
+          merged.desktopDrawerSnapIndex = persisted.desktopDrawerSnapIndex;
+        }
+        // Mobile drawer snap: not persisted, always reset to 0
         
         return merged;
       },
@@ -199,14 +213,18 @@ export const useTriggerlabelName = () => useUiPrefsStore((s) => s.triggerlabelNa
 export const useSetTriggerlabelName = () => useUiPrefsStore((s) => s.setTriggerlabelName);
 
 // User Guide hooks
-export const useDrawerSnapIndex = (): number | null => useUiPrefsStore((s) => s.drawerSnapIndex);
-export const useSetDrawerSnapIndex = (): ((index: number | null) => void) => useUiPrefsStore((s) => s.setDrawerSnapIndex);
+export const useDesktopDrawerSnapIndex = (): number | null => useUiPrefsStore((s) => s.desktopDrawerSnapIndex);
+export const useSetDesktopDrawerSnapIndex = (): ((index: number | null) => void) => useUiPrefsStore((s) => s.setDesktopDrawerSnapIndex);
+export const useMobileDrawerSnapIndex = (): number | null => useUiPrefsStore((s) => s.mobileDrawerSnapIndex);
+export const useSetMobileDrawerSnapIndex = (): ((index: number | null) => void) => useUiPrefsStore((s) => s.setMobileDrawerSnapIndex);
 export const useForceRegionSubOpen = (): boolean => useUiPrefsStore((s) => s.forceRegionSubOpen);
 export const useSetForceRegionSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceRegionSubOpen);
 export const useForceLayerSubOpen = (): boolean => useUiPrefsStore((s) => s.forceLayerSubOpen);
 export const useSetForceLayerSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceLayerSubOpen);
 export const useForceDetailOpen = (): boolean => useUiPrefsStore((s) => s.forceDetailOpen);
 export const useSetForceDetailOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceDetailOpen);
+export const useForceHeadbarExpanded = (): boolean | null => useUiPrefsStore((s) => s.forceHeadbarExpanded);
+export const useSetForceHeadbarExpanded = (): ((value: boolean | null) => void) => useUiPrefsStore((s) => s.setForceHeadbarExpanded);
 export const useIsUserGuideOpen = (): boolean => useUiPrefsStore((s) => s.isUserGuideOpen);
 export const useSetIsUserGuideOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setIsUserGuideOpen);
 

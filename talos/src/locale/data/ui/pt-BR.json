@@ -116,6 +116,13 @@
     "filterList": "A <span class=\"keyword\">lista de marcadores</span> lista os marcadores que você selecionou; clique no ícone para desmarcar.",
     "headbar": "Os interruptores relacionados às configurações do mapa estão localizados na <span class=\"keyword\">barra superior</span>.",
     "tos": "Os <span class=\"keyword\">Termos de Serviço</span> e o <span class=\"keyword\">Gerenciamento de Dados</span> do site.",
+    "mobile": {
+      "headbar": "As configurações do mapa ficam na <span class=\"keyword\">barra superior direita</span>. Toque no ícone no canto superior direito para expandir e ver mais opções.",
+      "regionLayerSwitch": "Toque nos ícones de região para alternar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Toque e segure um ícone de região para mostrar <span class=\"keyword\">sub-regiões e camadas</span>, e então escolha a vista.",
+      "divider": "Este é um <span class=\"keyword\">divisor</span> arrastável. Arraste para esquerda/direita para ajustar a largura entre busca e lista de marcadores.",
+      "drawer": "<span class=\"keyword\">Deslize de baixo para cima</span> para abrir a gaveta e ver os filtros de marcadores.",
+      "selectorSelect": "<span class=\"keyword\">Seletor de marcador</span>. Toque para alternar; os marcadores selecionados aparecem no mapa. Você vê o total e quantos marcou na área atual."
+    },
     "hideUI": "<span class=\"keyword\">Ocultar a interface do usuário do site</span> para tirar capturas de tela ou visualizar marcadores de borda.",
     "group": "Veja <span class=\"keyword\">grupos de discussão</span> e <span class=\"keyword\">comunidades</span> relacionados a este projeto.",
     "darkMode": "Alternar o <span class=\"keyword\">modo de luz ambiente</span> atual.",
@@ -129,6 +136,9 @@
     "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
     "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído.",
     "settings": "Abra as <span class=\"keyword\">Preferências</span> para controlar qual armazenamento local o mapa usa para lembrar suas ações."
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Nota:</span> Quando a versão do jogo é <span class=\"keyword\">1.0.13</span>, a versão dos dados do mapa é <span class=\"keyword\">0.8.25</span>. Precisamos de tempo para atualizar os dados, o que pode ocorrer após a atualização do jogo. Agradecemos sua paciência. Para acompanhar nossas atualizações, entre em nosso <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Entrar no Discord'>servidor do Discord</a>.<br><br>Também recomendamos as seguintes ferramentas:<ul><li><span class=\"keyword\">Wiki do Jogo: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "common": {
     "close": "Fechar",

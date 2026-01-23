@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDevice } from '@/utils/device';
+import { useForceHeadbarExpanded } from '@/store/uiPrefs';
 import PopoverTooltip from '@/component/popover/popover';
 
 import HeadBarDesktop from './headBar.desktop';
@@ -56,8 +57,10 @@ const HeadItem = ({
 // Main HeadBar component with responsive detection
 const HeadBar = ({ children }: { children: React.ReactNode }) => {
     const { isMobile } = useDevice();
+    const forceHeadbarExpanded = useForceHeadbarExpanded();
+    
     return isMobile ? (
-        <HeadBarMobile>{children}</HeadBarMobile>
+        <HeadBarMobile forceExpanded={forceHeadbarExpanded}>{children}</HeadBarMobile>
     ) : (
         <HeadBarDesktop>{children}</HeadBarDesktop>
     );
