@@ -141,7 +141,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         triggerBoundary: state.triggerBoundary,
         triggerlabelName: state.triggerlabelName,
         desktopDrawerSnapIndex: state.desktopDrawerSnapIndex,
-        mobileDrawerSnapIndex: state.mobileDrawerSnapIndex,
+        // mobileDrawerSnapIndex removed - always reset to 0
         theme: state.theme,
         // Settings flags
         prefsSidebarEnabled: state.prefsSidebarEnabled,
@@ -180,9 +180,13 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
           if (persisted.triggerCluster !== undefined) merged.triggerCluster = persisted.triggerCluster;
           if (persisted.triggerBoundary !== undefined) merged.triggerBoundary = persisted.triggerBoundary;
           if (persisted.triggerlabelName !== undefined) merged.triggerlabelName = persisted.triggerlabelName;
-          if (persisted.desktopDrawerSnapIndex !== undefined) merged.desktopDrawerSnapIndex = persisted.desktopDrawerSnapIndex;
-          if (persisted.mobileDrawerSnapIndex !== undefined) merged.mobileDrawerSnapIndex = persisted.mobileDrawerSnapIndex;
         }
+        
+        // Desktop drawer snap: always restore user's last state
+        if (persisted.desktopDrawerSnapIndex !== undefined) {
+          merged.desktopDrawerSnapIndex = persisted.desktopDrawerSnapIndex;
+        }
+        // Mobile drawer snap: not persisted, always reset to 0
         
         return merged;
       },
