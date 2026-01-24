@@ -354,7 +354,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               aria-label="GitHub"
             >
               <GithubIcon />
-              <span className={mobileStyles.socialLabel}>GitHub</span>
             </a>
             <a
               href="https://discord.gg/SJCEjH9hmr"
@@ -365,7 +364,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               aria-label="Discord"
             >
               <DiscordIcon />
-              <span className={mobileStyles.socialLabel}>Discord</span>
             </a>
             <a
               href="https://qm.qq.com/q/BVsCJgzBL2"
@@ -376,7 +374,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               aria-label="QQ"
             >
               <QQIcon />
-              <span className={mobileStyles.socialLabel}>QQ</span>
             </a>
             <button className={mobileStyles.supportBtn} type="button" onClick={() => setSupportOpen(true)}>
               {t('support.title')}

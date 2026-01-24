@@ -39,6 +39,10 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
             itemsRects = [];
             const elements = container.querySelectorAll('[data-key]');
             elements.forEach(el => {
+                // Use checkVisibility to respect visibility: hidden (which we use for collapsed groups)
+                // checkVisibility is a modern DOM API - type assertion needed for compatibility
+                const element = el as HTMLElement & { checkVisibility?: () => boolean };
+                if (element.checkVisibility && !element.checkVisibility()) return;
                 const key = el.getAttribute('data-key');
                 if (key) {
                     itemsRects.push({
@@ -47,6 +51,9 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
                     });
                 }
             });
+
+            // Disable user-select during selection to enforce box selection
+            document.body.style.userSelect = 'none';
 
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mouseup', onMouseUp);
@@ -106,6 +113,7 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
         const onMouseUp = () => {
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
+            document.body.style.userSelect = '';
             startPoint = null;
             isDragging = false;
             setIsSelecting(false);
