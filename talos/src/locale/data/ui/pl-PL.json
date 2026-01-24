@@ -171,6 +171,10 @@
     "description": "Open Endfield Map to otwartoźródłowa mapa online dla Arknights: Endfield, oferująca interaktywną mapę, zbieranie przedmiotów oraz narzędzia do planowania strategicznego dla graczy."
   },
   "support": {
-    "title": "Wesprzyj nas"
+    "title": "Wesprzyj nas",
+    "content": "W ciągu ostatnich trzech dni Open Endfield Map przetworzyła średnio prawie <span class=\"highlight\">10 milionów</span> żądań HTTPS dziennie (około <span class=\"highlight\">115 żądań na sekundę</span>), zużywając ponad <span class=\"highlight\">450 GB</span> przepustowości. Nasza baza aktywnych użytkowników rośnie w tempie około <span class=\"highlight\">7 000 użytkowników dziennie</span>. Chociaż Cloudflare obsługuje większość naszego ruchu (dziękujemy, Cloudflare!), nasz serwer w Singapurze nadal pracuje na pełnych obrotach. Dziękujemy za Wasz entuzjazm!<br><br>OEM jest rozwijany od lutego 2025 roku i zawsze był open source i darmowy. Przez większość czasu i obecnie strona jest <span class=\"highlight\">utrzymywana wyłącznie przeze mnie (Jacy Chan/Cirisus)</span>. W obliczu masowych żądań od użytkowników z całego świata i presji aktualizacji danych i funkcji, czuję się przytłoczony. Jeśli uważasz, że ta strona jest pomocna, rozważ wsparcie jej za pomocą poniższych opcji. Twoje wsparcie zostanie wykorzystane na pokrycie kosztów serwera i przepustowości, a także na rozwój przyszłych funkcji (takich jak system użytkowników i przesyłanie znaczników z trzeciej osoby).<br><br>Jeśli zauważysz problemy z danymi, interfejsem lub tłumaczeniami, prosimy o przesłanie opinii. Postaram się je naprawić jak najszybciej. Dziękujemy za wsparcie i zrozumienie.",
+    "kofi": "Wesprzyj przez Ko-fi",
+    "afdian": "Wesprzyj przez Afdian",
+    "hint": "Użytkownikom międzynarodowym zalecamy Ko-fi; użytkownikom w Chinach kontynentalnych zalecamy Afdian."
   }
 }

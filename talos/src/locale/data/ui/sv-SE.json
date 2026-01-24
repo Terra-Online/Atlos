@@ -172,6 +172,10 @@
     "description": "Endfield Kartsamling är en onlinekarta med öppen källkod för Arknights: Endfield, som tillhandahåller interaktiva kartor, föremålssamling och strategiska planeringsverktyg för spelare."
   },
   "support": {
-    "title": "Stöd oss"
+    "title": "Stöd oss",
+    "content": "Under de senaste tre dagarna har Open Endfield Map behandlat i genomsnitt nästan <span class=\"highlight\">10 miljoner</span> HTTPS-förfrågningar per dag (ungefär <span class=\"highlight\">115 förfrågningar per sekund</span>), och förbrukat över <span class=\"highlight\">450 GB</span> bandbredd. Vår aktiva användarbas växer med ungefär <span class=\"highlight\">7 000 användare per dag</span>. Även om Cloudflare hanterar det mesta av vår trafik (tack, Cloudflare!), körs vår server i Singapore fortfarande på full kapacitet. Tack för ert engagemang!<br><br>OEM har utvecklats sedan februari 2025 och har alltid varit öppen källkod och gratis. Största delen av tiden och för närvarande underhålls den <span class=\"highlight\">enbart av mig (Jacy Chan/Cirisus)</span>. Inför de massiva förfrågningarna från användare runt om i världen och trycket att uppdatera data och funktioner känner jag mig överväldigad. Om du tycker att denna webbplats är hjälpsam, överväg att stödja den genom följande alternativ. Ditt stöd kommer att användas för att täcka server- och bandbreddskostnader, samt framtida funktionsutveckling (som användarsystem och markörupladdningar från tredje person).<br><br>Om du upptäcker problem med data, gränssnitt eller översättningar, tveka inte att ge feedback. Jag kommer att arbeta på dem så snart som möjligt. Tack för ditt stöd och förståelse.",
+    "kofi": "Stöd via Ko-fi",
+    "afdian": "Stöd via Afdian",
+    "hint": "Internationella användare rekommenderas använda Ko-fi; användare i Fastlandskina rekommenderas använda Afdian."
   }
 }

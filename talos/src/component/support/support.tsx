@@ -2,7 +2,8 @@ import React from 'react';
 import Modal from '@/component/modal/modal';
 import { useTranslateUI } from '@/locale';
 import styles from './support.module.scss';
-
+import parse from 'html-react-parser';
+import Button from '@/component/button/button';
 import Support from '@/assets/images/UI/support.svg?react'
 
 export interface SupportProps {
@@ -17,7 +18,7 @@ const SupportModal: React.FC<SupportProps> = ({ open, onClose, onChange }) => {
   return (
     <Modal
       open={open}
-      size="m"
+      size="l"
       onClose={onClose}
       onChange={onChange}
       title={t('support.title')}
@@ -25,8 +26,26 @@ const SupportModal: React.FC<SupportProps> = ({ open, onClose, onChange }) => {
       iconScale={0.75}
     >
       <div className={styles.supportContainer}>
-        呜呜，我想吃麦当劳。
-        TAT
+        <div className={styles.beforeYouSupport}>{parse(t('support.content'))}</div>
+        <div className={styles.supportLinks}>
+          <Button
+            text={t('support.kofi')}
+            buttonStyle="square"
+            width="12rem"
+            height="3rem"
+            schema="light"
+            onClick={() => window.open('https://ko-fi.com/cirisus', '_blank')}
+          />
+          <Button
+            text={t('support.afdian')}
+            buttonStyle="square"
+            width="12rem"
+            height="3rem"
+            schema="light"
+            onClick={() => window.open('https://afdian.com/a/cirisus', '_blank')}
+          />
+        </div>
+        <div className={styles.afterYouSupport}>{parse(t('support.hint'))}</div>
       </div>
     </Modal>
   );

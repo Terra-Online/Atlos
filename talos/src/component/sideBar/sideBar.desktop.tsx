@@ -34,7 +34,7 @@ import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
 import { SelectionLayer } from './selectionLayer';
 
-console.log('[MARKER]', MARKER_TYPE_TREE);
+//console.log('[MARKER]', MARKER_TYPE_TREE);
 
 const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
 const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
@@ -185,6 +185,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     >
                         <QQIcon />
                     </a>
+                    <span className={styles.divide}></span>
                     <button className={styles.supportBtn} type="button" onClick={() => setSupportOpen(true)}>
                         {t('support.title')}
                     </button>

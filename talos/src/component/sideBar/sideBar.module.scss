@@ -151,6 +151,14 @@ $transition-speed: 0.3s;
             height: 1.75rem;
             max-height: 1.75rem;
             z-index: 101;
+            > .divide {
+                display: flex;
+                width: 2px;
+                height: 1rem;
+                border-radius: 1px;
+                background-color: var(--sidebar-footer-txt);
+                margin-right: .5rem;
+            }
             
             .socialLink {
                 position: relative;
@@ -210,6 +218,7 @@ $transition-speed: 0.3s;
                 }
                 &[data-platform="qq"] {
                     transform: translateX(-2px);
+                    margin-right: 2px;
                     > svg {
                         width: 1.15rem;
                         height: 1.15rem;

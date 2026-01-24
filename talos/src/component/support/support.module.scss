@@ -5,5 +5,40 @@
     display: flex;
     flex-direction: column;
     min-height: 200px;
-    padding: 1rem;
+    gap: 1.25rem;
+}
+.beforeYouSupport, .afterYouSupport {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.2px;
+    color: var(--lang-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+}
+.afterYouSupport {
+    text-align: center;
+}
+
+.supportLinks {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.supportLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
 }
