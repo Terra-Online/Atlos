@@ -30,6 +30,7 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'ar-AE': 'العربية',
   'ms-MY': 'Bahasa Melayu',
   'pl-PL': 'Polski',
+  'sv-SE': 'Svenska',
   'th-TH': 'ไทย',
   'vi-VN': 'Tiếng Việt',
 };

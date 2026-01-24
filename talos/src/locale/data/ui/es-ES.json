@@ -62,6 +62,7 @@
       "ar-AE": "Árabe",
       "ms-MY": "Malayo",
       "pl-PL": "Polaco",
+      "sv-SE": "Sueco",
       "th-TH": "Tailandés",
       "vi-VN": "Vietnamita"
     }
@@ -75,7 +76,9 @@
     "calculating": "Calculando uso de almacenamiento...",
     "policy": "<p>Usamos cookies para guardar su inicio de sesión automático; LocalStorage para guardar sus preferencias de interfaz de usuario y el progreso de los marcadores; y CacheStorage para almacenar datos de fuentes y recursos de imágenes para su idioma. Estos archivos le permiten acceder al sitio web más rápidamente en el futuro y garantizan su disponibilidad en modo sin conexión.</p><p>Eliminar el almacenamiento local del sitio web puede ahorrar espacio en su dispositivo. Sin embargo, <span class=\"keyword\">la carga de estos archivos puede tardar más</span> cuando vuelva a visitar el sitio web; si deshabilita el almacenamiento del sitio web, el sitio web <span class=\"keyword\">no podrá registrar sus datos automáticamente para su uso posterior</span>.</p><p>No informamos sus datos al servidor, por lo que no necesita preocuparse por problemas de privacidad.</p><p>Puede decidir si desea habilitar el almacenamiento local por usted mismo.</p>",
     "filtersAndMarkers": "Filtros y datos de marcadores",
-    "warning": "<p><strong>Advertencia:</strong> Si elimina los datos almacenados, perderá sus inicios de sesión automáticos, preferencias de UI y el progreso de los marcadores; y la carga del sitio web puede tardar más de lo habitual la próxima vez.</p><p>Si está seguro, haga clic nuevamente en el botón Eliminar.</p>"
+    "warning": "<p><strong>Advertencia:</strong> Si elimina los datos almacenados, perderá sus inicios de sesión automáticos, preferencias de UI y el progreso de los marcadores; y la carga del sitio web puede tardar más de lo habitual la próxima vez.</p><p>Si está seguro, haga clic nuevamente en el botón Eliminar.</p>",
+    "export": "Exportar datos",
+    "import": "Importar datos"
   },
   "settings": {
     "title": "Ajustes",
@@ -166,5 +169,8 @@
   "meta": {
     "title": "Mapa Open Endfield",
     "description": "Open Endfield Map es un mapa en línea de código abierto para Arknights: Endfield, que proporciona mapas interactivos, recolección de artículos y herramientas de planificación estratégica."
+  },
+  "support": {
+    "title": "Apóyanos"
   }
 }

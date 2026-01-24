@@ -1,0 +1,9 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+.supportContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    padding: 1rem;
+}

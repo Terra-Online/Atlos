@@ -62,6 +62,7 @@
       "ar-AE": "阿拉伯語",
       "ms-MY": "馬來語",
       "pl-PL": "波蘭語",
+      "sv-SE": "瑞典語",
       "th-TH": "泰語",
       "vi-VN": "越南語"
     }
@@ -75,7 +76,9 @@
     "calculating": "正在計算儲存占用…",
     "policy": "<p>我們使用 Cookies 儲存您的自動登入資訊；使用 LocalStorage 儲存您的介面偏好設定與標記進度；使用 CacheStorage 儲存您語言使用的字型資料以及圖片資源。這些檔案允許您日後更快速地存取網站，並保障網站離線時的可用性；刪除網站的本機儲存空間可以節省您的裝置空間。但是您再次存取時<span class=\"keyword\">可能需要更長的時間載入</span>這些檔案；如果您停用網站儲存，那麼網站<span class=\"keyword\">將無法自動記錄您的資料</span>供您下次使用。</p><p>我們不會向伺服器回報您的資料，您不需要擔心隱私問題。</p><p>您可以自行決定是否啟用本機儲存。</p>",
     "filtersAndMarkers": "篩選器與標記資料",
-    "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>"
+    "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>",
+    "export": "匯出資料",
+    "import": "匯入資料"
   },
   "settings": {
     "title": "偏好設定",
@@ -132,7 +135,7 @@
     "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">注意：</span>當前遊戲版本為<span class=\"keyword\">1.0.13</span>，地圖的資料集版本為<span class=\"keyword\">0.8.25</span>。我們需要時間來更新資料，更新時間可能晚於遊戲版本更新，有勞管理員等待。如您希望及時追蹤我們的更新，請加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord伺服器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群組1075906513</a>。<br><br>也推薦您使用如下相關的工具網站：<ul><li><span class=\"keyword\">遊戲Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='訪問遊戲Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">藍圖分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='訪問Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">注意：</span>當前遊戲版本為<span class=\"keyword\">1.0.13</span>，地圖的資料集版本為<span class=\"keyword\">0.8.25</span>。我們需要時間來更新資料，更新時間可能晚於遊戲版本更新，有勞管理員等待。如你想及時追蹤我們的更新，請加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord伺服器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群組1075906513</a>。<br><br>亦都推薦您使用如下相關的工具網站：<ul><li><span class=\"keyword\">遊戲Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='訪問遊戲Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">藍圖分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='訪問Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -159,5 +162,8 @@
   "meta": {
       "title": "終末地地圖集",
       "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
+  },
+  "support": {
+    "title": "支持我哋"
   }
 }

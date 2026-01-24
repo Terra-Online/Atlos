@@ -6,8 +6,10 @@ import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import TreeMap from './treeMap/treeMap';
 import Button from '../button/button';
-import { clearAllStorage, clearStorageItem } from '@/utils/storage';
+import { clearAllStorage, clearStorageItem, exportMarkerData, importMarkerData } from '@/utils/storage';
 import { useDevice } from '@/utils/device';
+import { useUserRecordStore } from '@/store/userRecord';
+import { useMarkerStore } from '@/store/marker';
 
 export interface ToSProps {
   open: boolean;
@@ -120,6 +122,44 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
     };
   }, []);
 
+  // Import/Export functionality
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = useCallback(() => {
+    const activePoints = useUserRecordStore.getState().activePoints;
+    const markerState = useMarkerStore.getState();
+    exportMarkerData(activePoints, markerState.filter, markerState.selectedPoints);
+  }, []);
+
+  const handleImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      const success = importMarkerData(content, {
+        clearPoints: () => useUserRecordStore.getState().clearPoints(),
+        addPoint: (id: string) => useUserRecordStore.getState().addPoint(id),
+        setFilter: (filter: string[]) => useMarkerStore.getState().setFilter(filter),
+        getSelectedPoints: () => useMarkerStore.getState().selectedPoints,
+        setSelected: (id: string, value: boolean) => useMarkerStore.getState().setSelected(id, value),
+      });
+
+      if (success && typeof window !== 'undefined') {
+        window.location.reload();
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset input to allow importing the same file again
+    e.target.value = '';
+  }, []);
+
   return (
     <Modal
       open={open}
@@ -165,6 +205,29 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
               </div>
             </div>
           </div>
+        </div>
+        <div className={styles.dataTransfer} data-device={deviceType}>
+          <Button
+            text={t('tos.export')}
+            onClick={handleExport}
+            buttonStyle="square"
+            schema="light"
+            width="100%"
+          />
+          <Button
+            text={t('tos.import')}
+            onClick={handleImport}
+            buttonStyle="square"
+            schema="light"
+            width="100%"
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
         </div>
     </Modal>
   );

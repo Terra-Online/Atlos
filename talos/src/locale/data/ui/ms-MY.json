@@ -63,7 +63,8 @@
       "th-TH": "Thai",
       "vi-VN": "Vietnamese",
       "ms-MY": "Melayu",
-      "pl-PL": "Polski"
+      "pl-PL": "Polski",
+      "sv-SE": "Svenska"
     }
   },
   "group": {
@@ -75,7 +76,9 @@
     "calculating": "Mengira penggunaan storan...",
     "policy": "<p>Kami menggunakan Cookies untuk menyimpan maklumat log masuk automatik anda; LocalStorage untuk menyimpan keutamaan UI dan kemajuan penanda anda; serta CacheStorage untuk menyimpan data fon dan sumber imej bagi bahasa anda. Fail-fail ini membolehkan anda mengakses laman web dengan lebih cepat pada masa hadapan dan memastikan ketersediaan laman web ketika luar talian.</p><p>Memadam storan setempat laman web boleh menjimatkan ruang pada peranti anda. Namun, <span class=\"keyword\">ia mungkin mengambil masa lebih lama untuk memuatkan fail-fail ini</span> apabila anda melawat semula; jika anda mematikan storan laman web, laman web <span class=\"keyword\">tidak akan dapat merekod data anda secara automatik</span> untuk kegunaan seterusnya.</p><p>Kami tidak melaporkan data anda ke pelayan, jadi anda tidak perlu risau tentang isu privasi.</p><p>Anda boleh memutuskan sama ada mahu mengaktifkan storan setempat.</p>",
     "filtersAndMarkers": "Penapis & Data Penanda",
-    "warning": "<p><strong>Amaran:</strong> Jika anda mengosongkan data yang disimpan, maklumat log masuk automatik, keutamaan UI, dan kemajuan penanda anda akan hilang; dan mungkin mengambil masa lebih lama daripada biasa untuk memuatkan laman web pada lawatan seterusnya.</p><p>Jika disahkan, sila klik butang padam sekali lagi.</p>"
+    "warning": "<p><strong>Amaran:</strong> Jika anda mengosongkan data yang disimpan, maklumat log masuk automatik, keutamaan UI, dan kemajuan penanda anda akan hilang; dan mungkin mengambil masa lebih lama daripada biasa untuk memuatkan laman web pada lawatan seterusnya.</p><p>Jika disahkan, sila klik butang padam sekali lagi.</p>",
+    "export": "Eksport Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Tetapan",
@@ -166,5 +169,8 @@
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map ialah peta dalam talian sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perancangan strategik untuk pemain."
+  },
+  "support": {
+    "title": "Sokong Kami"
   }
 }

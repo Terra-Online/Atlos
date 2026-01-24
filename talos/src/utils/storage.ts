@@ -343,3 +343,102 @@ export const getStorageTreeMapData = async (): Promise<TreeMapNode[]> => {
     cacheStorageTree
   ];
 };
+
+// ----- Marker Data Export/Import -----
+
+// Type definition for exported marker data
+export interface MarkerExportData {
+  version: number;
+  timestamp: number;
+  activePoints: string[];
+  filter: string[];
+  selectedPoints: string[];
+}
+
+const formatDateTime = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+};
+
+export const isValidMarkerExportData = (data: unknown): data is MarkerExportData => {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return (
+    typeof obj.version === 'number' &&
+    Array.isArray(obj.activePoints) &&
+    Array.isArray(obj.filter) &&
+    Array.isArray(obj.selectedPoints)
+  );
+};
+
+export const exportMarkerData = (
+  activePoints: string[],
+  filter: string[],
+  selectedPoints: string[]
+): void => {
+  const exportData: MarkerExportData = {
+    version: 1,
+    timestamp: Date.now(),
+    activePoints,
+    filter,
+    selectedPoints,
+  };
+
+  const json = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `oem-marker-data-${formatDateTime()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+export const importMarkerData = (
+  content: string,
+  callbacks: {
+    clearPoints: () => void;
+    addPoint: (id: string) => void;
+    setFilter: (filter: string[]) => void;
+    getSelectedPoints: () => string[];
+    setSelected: (id: string, value: boolean) => void;
+  }
+): boolean => {
+  try {
+    const data: unknown = JSON.parse(content);
+    
+    if (!isValidMarkerExportData(data)) {
+      console.error('Invalid import file format');
+      return false;
+    }
+
+    // Import active points
+    callbacks.clearPoints();
+    data.activePoints.forEach((id: string) => {
+      callbacks.addPoint(id);
+    });
+
+    // Import filter
+    callbacks.setFilter(data.filter);
+    
+    // Clear existing selections
+    callbacks.getSelectedPoints().forEach((id: string) => {
+      callbacks.setSelected(id, false);
+    });
+    // Add imported selections
+    data.selectedPoints.forEach((id: string) => {
+      callbacks.setSelected(id, true);
+    });
+
+    return true;
+  } catch (err) {
+    console.error('Failed to import data:', err);
+    return false;
+  }
+};

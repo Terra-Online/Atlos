@@ -11,6 +11,8 @@ $transition-speed: 0.3s;
     --sidebar-bg: #{rgba($white-0, 0.5)};
     --sidebar-footer: #{rgba($white-0, 0.3)};
     --sidebar-footer-txt: #{$black-1};
+    --sidebar-social-icon: #{$black-1};
+    --sidebar-social-icon-hover: #{$primary-accent-5};
 
     --sidebar-box-sel-border: #{$primary-accent-5};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
@@ -20,6 +22,8 @@ $transition-speed: 0.3s;
     --sidebar-bg: #{rgba($black-0, 0.6)};
     --sidebar-footer: #{rgba($black-1, 0.8)};
     --sidebar-footer-txt: #{$light-1};
+    --sidebar-social-icon: #{$light-1};
+    --sidebar-social-icon-hover: #{$primary-accent-4};
 
     --sidebar-box-sel-border: #{$primary-accent-4};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
@@ -59,7 +63,7 @@ $transition-speed: 0.3s;
     }
 
     .sidebar {
-        --drawer-bottom: 1.5rem;
+        --drawer-bottom: 3.25rem; // copyright (1.5rem) + socialBar (1.75rem)
         position: relative;
         overflow: hidden;
         height: 100%;
@@ -89,7 +93,7 @@ $transition-speed: 0.3s;
         .sidebarContent {
             height: 100%;
             padding: 15px;
-            padding-bottom: calc(3rem + 15px); // drawer + copyright + origin padding
+            padding-bottom: calc(3rem + 15px + 20vh); // bottom UI + origin padding + extra scroll space
             flex: 1;
             overflow-y: auto;
             > .filters {
@@ -100,14 +104,103 @@ $transition-speed: 0.3s;
                 gap: 0.3rem;
             }
         }
-        .copyright {
+        .socialBar {
             position: absolute;
             z-index: 100;
+            width: 100%;
+            bottom: 1.5rem;
+            background-color: var(--sidebar-footer);
+            box-shadow: 0 -2px 3px rgba($black-0, 0.35);
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve;
+            
+            &::after {
+                content: '';
+                position: absolute;
+                backdrop-filter: blur(0.5rem);
+                width: 100%;
+                height: inherit;
+                z-index: -1;
+            }
+            
+            .socialLink {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 1rem;
+                height: 1rem;
+                transition: transform 0.2s ease;
+                
+                &:hover {
+                    transform: scale(1.15);
+                }
+                
+                svg {
+                    width: 100%;
+                    height: 100%;
+                    fill: var(--sidebar-social-icon);
+                    transition: fill 0.2s ease;
+                }
+
+                .socialLabel {
+                    position: absolute;
+                    left: calc(100% + 0.5rem);
+                    top: 50%;
+                    transform: translateY(-50%) translateX(-0.25rem);
+                    opacity: 0;
+                    pointer-events: none;
+                    white-space: nowrap;
+                    font-size: 0.75rem;
+                    font-family: 'HMSans_EN', 'HMSans', sans-serif;
+                    font-weight: 600;
+                    color: var(--sidebar-footer-txt);
+                    transition: opacity 0.18s ease, transform 0.18s ease;
+                }
+
+                &:hover .socialLabel,
+                &:focus-visible .socialLabel {
+                    opacity: 1;
+                    transform: translateY(-50%) translateX(0);
+                }
+                
+                &[data-platform="github"]:hover svg {
+                    fill: #24292f;
+                }
+                &[data-platform="discord"]:hover svg {
+                    fill: #5865f2;
+                }
+                &[data-platform="qq"]:hover svg {
+                    fill: #4397F7;
+                }
+            }
+            
+            .supportBtn {
+                appearance: none;
+                border: none;
+                background: transparent;
+                padding: 0;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-family: 'HMSans_EN', 'HMSans', sans-serif;
+                font-weight: 550;
+                letter-spacing: -0.5px;
+                color: var(--sidebar-footer-txt);
+            }
+        }
+        .copyright {
+            position: absolute;
+            z-index: 101;
             width: 100%;
             bottom: 0;
             background-color: var(--sidebar-footer);
             box-shadow: 0 -2px 3px rgba($black-0, 0.35);
             height: 1.5rem;
+            max-height: 1.5rem;
             font-size: 0.875rem;
             font-family: 'HMSans_EN', 'HMSans', sans-serif;
             font-weight: 550;
@@ -116,7 +209,7 @@ $transition-speed: 0.3s;
             align-items: center;
             justify-content: center;
             transform: translateY(0);
-            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve;
+            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve, opacity 0.35s $moderato-curve, max-height 0.35s $moderato-curve;
             a {
                 color: var(--sidebar-footer-txt);
                 text-decoration: none;
@@ -184,11 +277,23 @@ $transition-speed: 0.3s;
 html:not(:lang(zh-CN), :lang(zh-HK)) {
     .sidebar > .copyright {
         transform: translateY(1.5rem);
+        opacity: 0;
+        max-height: 0;
+        pointer-events: none;
+    }
+    .sidebar > .socialBar {
+        transform: translateY(1.5rem);
     }
     .sidebarContent {
-        padding-bottom: calc(1.5rem + 15px);
+        padding-bottom: calc(1.5rem + 15px + 40vh);
     }
-     .sidebar {
-        --drawer-bottom: 0;
+    .sidebar {
+        --drawer-bottom: 1.75rem;
+    }
+}
+
+html:not(:lang(zh-CN), :lang(zh-HK)) {
+    .sidebar .socialLink[data-platform="qq"] {
+        display: none;
     }
 }

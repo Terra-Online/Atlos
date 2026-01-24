@@ -62,6 +62,7 @@
       "ar-AE": "Arabo",
       "ms-MY": "Malese",
       "pl-PL": "Polacco",
+      "sv-SE": "Svedese",
       "th-TH": "Tailandese",
       "vi-VN": "Vietnamita"
     }
@@ -75,7 +76,9 @@
     "calculating": "Calcolo utilizzo memoria...",
     "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcadores; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
     "filtersAndMarkers": "Filtri e Dati dei Marcatori",
-    "warning": "<p><strong>Avviso:</strong> Se elimini i dati salvati, perderai le credenziali di accesso automatico, le preferenze dell'UI e i progressi dei segnalibri; e il caricamento del sito potrebbe richiedere più tempo del solito la prossima volta.</p><p>Se confermi, fai clic di nuovo sul pulsante Elimina.</p>"
+    "warning": "<p><strong>Avviso:</strong> Se elimini i dati salvati, perderai le credenziali di accesso automatico, le preferenze dell'UI e i progressi dei segnalibri; e il caricamento del sito potrebbe richiedere più tempo del solito la prossima volta.</p><p>Se confermi, fai clic di nuovo sul pulsante Elimina.</p>",
+    "export": "Esporta dati",
+    "import": "Importa dati"
   },
   "settings": {
     "title": "Impostazioni",
@@ -166,5 +169,8 @@
   "meta": {
     "title": "Mappa Open Endfield",
     "description": "Open Endfield Map è una mappa online open source per Arknights: Endfield, che fornisce mappe interattive, raccolta di oggetti e strumenti di pianificazione strategica."
+  },
+  "support": {
+    "title": "Supportaci"
   }
 }
