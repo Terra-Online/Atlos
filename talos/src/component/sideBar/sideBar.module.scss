@@ -11,22 +11,28 @@ $transition-speed: 0.3s;
     --sidebar-bg: #{rgba($white-0, 0.5)};
     --sidebar-footer: #{rgba($white-0, 0.3)};
     --sidebar-footer-txt: #{$black-1};
-    --sidebar-social-icon: #{$black-1};
-    --sidebar-social-icon-hover: #{$primary-accent-5};
 
     --sidebar-box-sel-border: #{$primary-accent-5};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
+
+    --discord: #5865F2;
+    --github: #24292f;
+    --qq: #4397F7;
+    --support: #{$primary-accent-6};
 }
 :root[data-theme='dark'] {
     --sidebar-header: #{$black-1};
     --sidebar-bg: #{rgba($black-0, 0.6)};
     --sidebar-footer: #{rgba($black-1, 0.8)};
     --sidebar-footer-txt: #{$light-1};
-    --sidebar-social-icon: #{$light-1};
-    --sidebar-social-icon-hover: #{$primary-accent-4};
 
     --sidebar-box-sel-border: #{$primary-accent-4};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
+
+    --discord: #E0E3FF;
+    --github: #{$primary-accent-4};
+    --qq: #8ab8ec;
+    --support: #{$primary-accent-5};
 }
 
 .sidebarContainer {
@@ -104,101 +110,13 @@ $transition-speed: 0.3s;
                 gap: 0.3rem;
             }
         }
-        .socialBar {
+        .copyright, .socialBar {
             position: absolute;
             z-index: 100;
             width: 100%;
-            bottom: 1.5rem;
-            background-color: var(--sidebar-footer);
-            box-shadow: 0 -2px 3px rgba($black-0, 0.35);
-            height: 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve;
-            
-            &::after {
-                content: '';
-                position: absolute;
-                backdrop-filter: blur(0.5rem);
-                width: 100%;
-                height: inherit;
-                z-index: -1;
-            }
-            
-            .socialLink {
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 1rem;
-                height: 1rem;
-                transition: transform 0.2s ease;
-                
-                &:hover {
-                    transform: scale(1.15);
-                }
-                
-                svg {
-                    width: 100%;
-                    height: 100%;
-                    fill: var(--sidebar-social-icon);
-                    transition: fill 0.2s ease;
-                }
-
-                .socialLabel {
-                    position: absolute;
-                    left: calc(100% + 0.5rem);
-                    top: 50%;
-                    transform: translateY(-50%) translateX(-0.25rem);
-                    opacity: 0;
-                    pointer-events: none;
-                    white-space: nowrap;
-                    font-size: 0.75rem;
-                    font-family: 'HMSans_EN', 'HMSans', sans-serif;
-                    font-weight: 600;
-                    color: var(--sidebar-footer-txt);
-                    transition: opacity 0.18s ease, transform 0.18s ease;
-                }
-
-                &:hover .socialLabel,
-                &:focus-visible .socialLabel {
-                    opacity: 1;
-                    transform: translateY(-50%) translateX(0);
-                }
-                
-                &[data-platform="github"]:hover svg {
-                    fill: #24292f;
-                }
-                &[data-platform="discord"]:hover svg {
-                    fill: #5865f2;
-                }
-                &[data-platform="qq"]:hover svg {
-                    fill: #4397F7;
-                }
-            }
-            
-            .supportBtn {
-                appearance: none;
-                border: none;
-                background: transparent;
-                padding: 0;
-                cursor: pointer;
-                font-size: 0.875rem;
-                font-family: 'HMSans_EN', 'HMSans', sans-serif;
-                font-weight: 550;
-                letter-spacing: -0.5px;
-                color: var(--sidebar-footer-txt);
-            }
-        }
-        .copyright {
-            position: absolute;
-            z-index: 101;
-            width: 100%;
             bottom: 0;
             background-color: var(--sidebar-footer);
-            box-shadow: 0 -2px 3px rgba($black-0, 0.35);
+            box-shadow: 0 -2px 3px rgba($black-0, 0.25);
             height: 1.5rem;
             max-height: 1.5rem;
             font-size: 0.875rem;
@@ -226,6 +144,107 @@ $transition-speed: 0.3s;
                 width: 100%;
                 height: inherit;
                 z-index: -1;
+            }
+        }
+        .socialBar {
+            bottom: 1.5rem;
+            height: 1.75rem;
+            max-height: 1.75rem;
+            z-index: 101;
+            
+            .socialLink {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                margin-right: .7rem;
+                transition: all .35s ease;
+                max-width: 4.2rem;
+                overflow: hidden;
+                cursor: pointer;
+                svg {
+                    fill: var(--sidebar-footer-txt);
+                    transition: fill 0.2s ease;
+                    flex-shrink: 0;
+                }
+                &::after {
+                    max-width: 0;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    color: var(--sidebar-footer-txt);
+                    transition: max-width .35s $standard-curve, color .35s $standard-curve;
+                }
+                &:hover::after {
+                    max-width: 47px;
+                    transition: max-width .45s ease, color .45s ease;
+                }
+                &[data-platform="github"] {
+                    > svg {
+                        width: 1.05rem;
+                        height: 1.05rem;
+                    }
+                    &::after {
+                        content: "GitHub";
+                    }
+                    &:hover svg {
+                        fill: var(--github);
+                    }
+                }
+                &[data-platform="discord"] {
+                    > svg {
+                        width: 1.13rem;
+                        height: 1.13rem;
+                    }
+                    &::after {
+                        content: "Discord";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--discord);
+                        }
+                        &::after {
+                            color: var(--discord)
+                        }
+                    }
+                }
+                &[data-platform="qq"] {
+                    transform: translateX(-2px);
+                    > svg {
+                        width: 1.15rem;
+                        height: 1.15rem;
+                        position: right
+                    }
+                    &::after {
+                        content: "QQ群";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--qq);
+                        }
+                        &::after {
+                            color: var(--qq)
+                        }
+                    }
+                }
+            }
+            .supportBtn {
+                appearance: none;
+                border: none;
+                background: transparent;
+                padding: 0;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-family: 'HMSans_EN', 'HMSans', sans-serif;
+                font-weight: 500;
+                letter-spacing: -0.5px;
+                color: var(--sidebar-footer-txt);
+                transition: all .5s ease;
+                &:hover {
+                    color: var(--support);
+                    font-weight: 900;
+                    transition: all .25s ease;
+                }
             }
         }
     }
@@ -283,17 +302,15 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
     }
     .sidebar > .socialBar {
         transform: translateY(1.5rem);
+        > .socialLink[data-platform="qq"] {
+            max-width: 0%;
+            margin-right: 0;
+        }
     }
     .sidebarContent {
         padding-bottom: calc(1.5rem + 15px + 40vh);
     }
     .sidebar {
         --drawer-bottom: 1.75rem;
-    }
-}
-
-html:not(:lang(zh-CN), :lang(zh-HK)) {
-    .sidebar .socialLink[data-platform="qq"] {
-        display: none;
     }
 }
