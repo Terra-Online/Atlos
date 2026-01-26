@@ -148,6 +148,8 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
         setFilter: (filter: string[]) => useMarkerStore.getState().setFilter(filter),
         getSelectedPoints: () => useMarkerStore.getState().selectedPoints,
         setSelected: (id: string, value: boolean) => useMarkerStore.getState().setSelected(id, value),
+        getActivePoints: () => useUserRecordStore.getState().activePoints,
+        getFilter: () => useMarkerStore.getState().filter,
       });
 
       if (success && typeof window !== 'undefined') {
