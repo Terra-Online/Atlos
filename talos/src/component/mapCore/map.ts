@@ -158,6 +158,8 @@ export class MapCore {
             pane: 'tilePane',
             maxNativeZoom: config.maxZoom,
             maxZoom: maxZoom,
+            // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
+            errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
         }).addTo(this.map);
 
         // Store main tile layer reference
@@ -275,6 +277,8 @@ export class MapCore {
                         pane: 'tilePane',
                         maxNativeZoom: config.maxZoom,
                         maxZoom: maxZoom,
+                        // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
+                        errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
                     }
                 ).addTo(this.map);
 

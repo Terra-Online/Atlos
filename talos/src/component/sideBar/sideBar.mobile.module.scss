@@ -33,7 +33,7 @@
             gap: 0.3rem;
         }
     }
-    .copyright {
+    .copyright, .socialBar {
         position: relative;
         width: 100%;
         bottom: 0;
@@ -61,8 +61,110 @@
             }
         }
     }
+        .socialBar {
+            bottom: 0;
+            z-index: 101;       
+            .socialLink {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                margin-right: .7rem;
+                transition: all .35s ease;
+                max-width: 4.2rem;
+                overflow: hidden;
+                cursor: pointer;
+                svg {
+                    fill: var(--sidebar-footer-txt);
+                    transition: fill 0.2s ease;
+                    flex-shrink: 0;
+                }
+                &::after {
+                    max-width: 0;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    color: var(--sidebar-footer-txt);
+                    transition: max-width .35s $standard-curve, color .35s $standard-curve;
+                }
+                &:hover::after {
+                    max-width: 47px;
+                    transition: max-width .45s ease, color .45s ease;
+                }
+                &[data-platform="github"] {
+                    > svg {
+                        width: 1.05rem;
+                        height: 1.05rem;
+                    }
+                    &::after {
+                        content: "GitHub";
+                    }
+                    &:hover svg {
+                        fill: var(--github);
+                    }
+                }
+                &[data-platform="discord"] {
+                    > svg {
+                        width: 1.13rem;
+                        height: 1.13rem;
+                    }
+                    &::after {
+                        content: "Discord";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--discord);
+                        }
+                        &::after {
+                            color: var(--discord)
+                        }
+                    }
+                }
+                &[data-platform="qq"] {
+                    transform: translateX(-2px);
+                    > svg {
+                        width: 1.15rem;
+                        height: 1.15rem;
+                        position: right
+                    }
+                    &::after {
+                        content: "QQ群";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--qq);
+                        }
+                        &::after {
+                            color: var(--qq)
+                        }
+                    }
+                }
+            }
+            .supportBtn {
+                appearance: none;
+                border: none;
+                background: transparent;
+                padding: 0;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-family: 'HMSans_EN', 'HMSans', sans-serif;
+                font-weight: 500;
+                letter-spacing: -0.5px;
+                color: var(--sidebar-footer-txt);
+                transition: all .5s ease;
+                &:hover {
+                    color: var(--support);
+                    font-weight: 900;
+                    transition: all .25s ease;
+                }
+            }
+        }
 }
+
 html:not(:lang(zh-CN), :lang(zh-HK)) {
+    .socialLink[data-platform="qq"] {
+        display: none;
+    }
     .contentWrapper > .copyright {
         transform: translateY(2rem);
         filter: blur(1rem);

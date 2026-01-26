@@ -62,6 +62,7 @@
       "ar-AE": "Arabic",
       "ms-MY": "Malay",
       "pl-PL": "Polish",
+      "sv-SE": "Swedish",
       "th-TH": "Thai",
       "vi-VN": "Vietnamese"
     }
@@ -75,7 +76,9 @@
     "calculating": "Calculating storage usage...",
     "policy": "<p>We use Cookies to store your auto-login information; LocalStorage to store your UI preferences and marker progress; and CacheStorage to store font data and image resources for your language. These files allow you to access the website more quickly in the future and ensure the website's availability when offline.</p><p>Deleting the website's local storage can save space on your device. However, <span class=\"keyword\">it may take longer to load these files</span> when you visit again; if you disable website storage, the website <span class=\"keyword\">will not be able to automatically record your data</span> for your next use.</p><p>We do not report your data to the server, so you do not need to worry about privacy issues.</p><p>You can decide whether to enable local storage.</p>",
     "filtersAndMarkers": "Filters & Marker Data",
-    "warning": "<p><strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time.</p><p>If confirmed, please click the delete button again.</p>"
+    "warning": "<p><strong>Warning:</strong> If you clear stored data, your auto-login information, UI preferences, and marker progress will be lost; and it may take longer than usual to load the website next time.</p><p>If confirmed, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Settings",
@@ -139,7 +142,18 @@
     }
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "Map data is up to date."
+  },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
   },
   "common": {
     "close": "Close",
@@ -156,5 +170,12 @@
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map is an open-source online map for Arknights: Endfield, providing interactive maps, item collection, and strategic planning tools for players."
+  },
+  "support": {
+    "title": "Support Us",
+    "content": "In just the past three days, Open Endfield Map has processed over <span class=\"highlight\">10 MILLION</span> HTTPS requests daily (approx. <span class=\"highlight\">115 requests/sec</span>), consuming <span class=\"highlight\">450GB+</span> of bandwidth. We are seeing about <span class=\"highlight\">7,000 new active users</span> every day. While Cloudflare absorbs most of the load (huge thanks to them!), our origin server in Singapore is running at full capacity. Thank you for your incredible enthusiasm!<br><br>OEM has been open-source and free since February 2025. It is <span class=\"highlight\">developed and maintained solely by me (Jacy Chan/Cirisus)</span> in most of the time (and for now!) With the massive surge in traffic and the constant need for updates, managing this alone is becoming a challenge. If this site helps your exploration, please consider supporting the project. Funds go directly to server costs and future features (like user accounts and community marker uploads).<br><br>If you spot any data, UI, or translation errors, please send feedback—I'll fix them ASAP. Thank you for your understanding and support!",
+    "kofi": "Support via Ko-fi",
+    "afdian": "Support via Afdian",
+    "hint": "We recommend Ko-fi for global users, and Afdian for users in mainland China."
   }
 }

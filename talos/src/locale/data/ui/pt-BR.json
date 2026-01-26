@@ -62,6 +62,7 @@
       "ar-AE": "Árabe",
       "ms-MY": "Malaio",
       "pl-PL": "Polonês",
+      "sv-SE": "Sueco",
       "th-TH": "Tailandês",
       "vi-VN": "Vietnamita"
     }
@@ -75,7 +76,9 @@
     "calculating": "Calculando uso de armazenamento...",
     "policy": "<p>Usamos Cookies para armazenar suas informações de login automático; LocalStorage para salvar suas preferências de interface e progresso dos marcadores; e CacheStorage para armazenar dados de fonte e recursos de imagem para seu idioma. Esses arquivos permitem que você acesse o site mais rapidamente no futuro e garantem a disponibilidade do site offline.</p><p>Excluir o armazenamento local do site pode economizar espaço no seu dispositivo. No entanto, <span class=\"keyword\">pode levar mais tempo para carregar esses arquivos</span> quando você visitar novamente; se você desativar o armazenamento do site, o site <span class=\"keyword\">não poderá registrar automaticamente seus dados</span> para seu próximo uso.</p><p>Não relatamos seus dados ao servidor, então você não precisa se preocupar com problemas de privacidade.</p><p>Você pode decidir por si mesmo se deseja ativar o armazenamento local.</p>",
     "filtersAndMarkers": "Filtros e Dados de Marcadores",
-    "warning": "<p><strong>Aviso:</strong> Se você excluir os dados salvos, perderá as credenciais de login automático, as preferências de UI e o progresso dos marcadores; e o carregamento do site pode demorar mais do que o normal na próxima vez.</p><p>Se confirmar, clique novamente no botão Excluir.</p>"
+    "warning": "<p><strong>Aviso:</strong> Se você excluir os dados salvos, perderá as credenciais de login automático, as preferências de UI e o progresso dos marcadores; e o carregamento do site pode demorar mais do que o normal na próxima vez.</p><p>Se confirmar, clique novamente no botão Excluir.</p>",
+    "export": "Exportar dados",
+    "import": "Importar dados"
   },
   "settings": {
     "title": "Configurações",
@@ -140,6 +143,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Quando a versão do jogo é <span class=\"keyword\">1.0.13</span>, a versão dos dados do mapa é <span class=\"keyword\">0.8.25</span>. Precisamos de tempo para atualizar os dados, o que pode ocorrer após a atualização do jogo. Agradecemos sua paciência. Para acompanhar nossas atualizações, entre em nosso <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Entrar no Discord'>servidor do Discord</a>.<br><br>Também recomendamos as seguintes ferramentas:<ul><li><span class=\"keyword\">Wiki do Jogo: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "Fechar",
     "skip": "Pular",
@@ -155,5 +168,12 @@
   "meta": {
       "title": "Atlas de Endfield",
       "description": "Open Endfield Map é um mapa online de código aberto para Arknights: Endfield, oferecendo mapas interativos, coleta de itens e ferramentas de planejamento estratégico."
+  },
+  "support": {
+    "title": "Apoie-nos",
+    "content": "Nos últimos três dias, o Open Endfield Map processou uma média de quase <span class=\"highlight\">10 milhões</span> de requisições HTTPS por dia (aproximadamente <span class=\"highlight\">115 requisições por segundo</span>), consumindo mais de <span class=\"highlight\">450 GB</span> de largura de banda. Nossa base de usuários ativos está crescendo a uma taxa de cerca de <span class=\"highlight\">7.000 usuários por dia</span>. Embora o Cloudflare lide com a maior parte do nosso tráfego (obrigado, Cloudflare!), nosso servidor em Singapura ainda está funcionando a toda capacidade. Obrigado pelo entusiasmo de vocês!<br><br>O OEM está em desenvolvimento desde fevereiro de 2025 e sempre foi de código aberto e gratuito. Na maior parte do tempo e atualmente, é <span class=\"highlight\">mantido exclusivamente por mim (Jacy Chan/Cirisus)</span>. Enfrentando as solicitações massivas de usuários de todo o mundo e a pressão para atualizar dados e recursos, me sinto sobrecarregado. Se você acha este site útil, considere apoiá-lo através das seguintes opções. Seu apoio será usado para cobrir custos de servidor e largura de banda, bem como desenvolvimento de recursos futuros (como sistema de usuários e uploads de marcadores em terceira pessoa).<br><br>Se você notar problemas com dados, interface ou traduções, sinta-se à vontade para nos enviar feedback. Trabalharei neles o mais rápido possível. Obrigado pelo seu apoio e compreensão.",
+    "kofi": "Apoiar via Ko-fi",
+    "afdian": "Apoiar via Afdian",
+    "hint": "Para usuários internacionais recomendamos Ko-fi; para usuários na China continental recomendamos Afdian."
   }
 }

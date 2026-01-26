@@ -36,4 +36,7 @@
     hyphens: auto;
     unicode-bidi: plaintext;
     padding: 0.75rem 0 1rem;
+    > .keyword {
+        font-size: 1rem !important
+    }
 }

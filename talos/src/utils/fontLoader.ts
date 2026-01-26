@@ -258,7 +258,7 @@ export function fontLoader(): void {
     // set up observer for future changes
     setupLanguageObserver();
     
-    console.log(`Font loader initialized for region: ${region}`);
+    //console.log(`Font loader initialized for region: ${region}`);
 }
 
 /* EXTERNAL API */

@@ -66,6 +66,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             onChange={onChange}
             title={t('settings.title')}
             icon={<SettingsIcon aria-hidden="true" />}
+            iconScale={0.8}
         >
             <div className={styles.settingsList} id={groupId}>
                 {/* UI Preferences Section */}

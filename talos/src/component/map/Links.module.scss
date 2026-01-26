@@ -1,0 +1,107 @@
+@use '@/styles/palette' as *;
+@use '@/styles/curves' as *;
+
+.linkTooltipPopover {
+    padding: 0;
+    border: none;
+    background: transparent;
+    margin: 0;
+    overflow: visible;
+    inset: unset;
+    
+    // Smooth fade-in animation
+    &:popover-open {
+        opacity: 1;
+        transition: opacity .15s $moderato-curve, 
+                    overlay .15s $moderato-curve allow-discrete, 
+                    display .15s $moderato-curve allow-discrete;
+    }
+    @starting-style {
+        &:popover-open {
+            opacity: 0;
+        }
+    }
+    // Fade-out animation
+    &.popoverClose {
+        opacity: 0;
+        transition: opacity .15s $moderato-curve;
+    }
+}
+
+.tooltipContainer {
+    display: flex;
+    flex-direction: row;
+    gap: .45rem;
+    pointer-events: auto;
+}
+
+.linkTooltip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: var(--tooltip-bg, #{rgba($black-0, 0.4)});
+    color: var(--tooltip-text, #{$white-1});
+    border: 1px solid var(--tooltip-border, #{rgba($white-1, 0.3)});
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    text-decoration: none;
+    white-space: nowrap;
+    text-shadow: 1px 1px 1px var(--tooltip-shadow, #{rgba($black-0, 0.8)}), 
+                 0 0 1px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)}), 
+                 -0.5px -0.5px 2px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)});
+    box-shadow: 0 4px 12px var(--tooltip-shadow-2, #{rgba($black-0, 0.4)});
+    backdrop-filter: blur(6px) brightness(1.2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    &:hover {
+        background: var(--tooltip-bg-hover, #{rgba($black-0, 0.6)});
+        border-color: var(--tooltip-border-hover, #{rgba($white-1, 0.5)});
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px var(--tooltip-shadow, #{rgba($black-0, 0.6)});
+    }
+}
+.tooltipIcon{
+    display: flex;
+    filter: drop-shadow(0 1px 2px $black-1);
+    > svg {
+        color: inherit;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: fill 0.25s ease;
+    }
+    .linkTooltip:hover & {
+        > svg {
+            fill: $primary-accent-3;
+        }
+    }
+}
+.tooltipText {
+    color: inherit;
+}
+.tooltipArrow {
+    color: inherit;
+    font-size: 12px;
+    transition: transform 0.15s ease;
+
+    .linkTooltip:hover & {
+        transform: translate(2px, -2px);
+        color: inherit;
+    }
+}
+:global {
+    path.link-hit-area {
+        outline: 2px solid transparent;
+        outline-offset: 8px;
+        transition: outline-color 0.2s ease, outline-offset 0.3s $standard-curve;
+    }
+
+    path.link-hit-area:hover {
+        outline-color: $light-1;
+        outline-offset: 0px;
+        transition: outline-color 0.15s ease, outline-offset 0.25s $standard-curve;
+    }
+}

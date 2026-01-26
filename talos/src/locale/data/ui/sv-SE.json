@@ -1,0 +1,181 @@
+{
+  "headbar": {
+    "tos": "Användarvillkor",
+    "hideUI": "Dölj UI",
+    "group": "Gå med i relaterad grupp",
+    "darkmode": "Växla till mörkt läge",
+    "lightmode": "Växla till ljust läge",
+    "language": "Välj språk",
+    "help": "Hjälp",
+    "settings": "Inställningar"
+  },
+  "trigger": {
+    "boundaryMode": "Gränsläge",
+    "clusterMode": "Klusterläge",
+    "labelName": "Regionnamn"
+  },
+  "search": {
+    "placeholder": "Sök..."
+  },
+  "markFilter": {
+    "title": "Filteralternativ",
+    "emptyTitle": "Inga filteralternativ matchar.",
+    "emptyDesc": "Om du bekräftar att information om en punkt saknas eller är felaktig, vänligen kontakta administratörerna i vår community eller skicka in ett <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Rapportera platsfel'>Ärende (Issue)</a> på vårt GitHub-arkiv."
+  },
+  "detail": {
+    "stat": {
+      "world": "Världen",
+      "main": "Huvudregion"
+    },
+    "noInfo": "Ingen info."
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "stöds av Observator 6"
+    }
+  },
+  "language": {
+    "title": "Språk",
+    "cancel": "Avbryt",
+    "current": "Vald",
+    "fullSupport": "Fullt stödda språk",
+    "fullSupportHint": "Fullständiga översättningar för både UI och innehåll i spelet.",
+    "uiOnly": "Endast UI-språk",
+    "uiOnlyHint": "Endast UI-översättningar, innehåll i spelet visas på engelska.",
+    "fyi": "Om ditt språk inte är tillgängligt på denna webbplats än kan du kontakta webbplatsadministratören via e-post på <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, eller besöka GitHub för att delta i vårt översättningsprojekt med öppen källkod. Du kan begära översättningsposter för ditt språk och hjälpa till med att översätta och lokalisera WIKI-sektionen enligt våra riktlinjer. Vi uppskattar verkligen och ser fram emot dina bidrag.\nDu kan också klicka för att se listan över översättningsbidragsgivare.",
+    "names": {
+      "en-US": "Engelska",
+      "zh-CN": "Förenklad kinesiska",
+      "zh-HK": "Traditionell kinesiska",
+      "ja-JP": "Japanska",
+      "ko-KR": "Koreanska",
+      "es-ES": "Spanska",
+      "fr-FR": "Franska",
+      "de-DE": "Tyska",
+      "it-IT": "Italienska",
+      "ru-RU": "Ryska",
+      "pt-BR": "Portugisiska",
+      "id-ID": "Indonesiska",
+      "ar-AE": "Arabiska",
+      "ms-MY": "Malaysiska",
+      "pl-PL": "Polska",
+      "sv-SE": "Svenska",
+      "th-TH": "Thailändska",
+      "vi-VN": "Vietnamesiska"
+    }
+  },
+  "group": {
+    "title": "Community & Media",
+    "visit": "Besök"
+  },
+  "tos": {
+    "title": "Villkor & Lagring",
+    "calculating": "Beräknar lagringsanvändning...",
+    "policy": "<p>Vi använder Cookies för att lagra din inloggningsinformation; LocalStorage för att lagra dina UI-preferenser och markörframsteg; samt CacheStorage för att lagra typsnittsdata och bildresurser för ditt språk. Dessa filer gör att du kan komma åt webbplatsen snabbare i framtiden och säkerställer webbplatsens tillgänglighet när du är offline.</p><p>Att radera webbplatsens lokala lagring kan spara utrymme på din enhet. Dock <span class=\"keyword\">kan det ta längre tid att ladda dessa filer</span> nästa gång du besöker sidan; om du inaktiverar webbplatslagring kommer webbplatsen <span class=\"keyword\">inte automatiskt att kunna spara dina data</span> för din nästa användning.</p><p>Vi rapporterar inte dina data till servern, så du behöver inte oroa dig för integritetsfrågor.</p><p>Du kan själv bestämma om du vill aktivera lokal lagring.</p>",
+    "filtersAndMarkers": "Filter & Markördata",
+    "warning": "<p><strong>Varning:</strong> Om du rensar lagrad data kommer din automatiska inloggningsinformation, UI-preferenser och markörframsteg att gå förlorade; och det kan ta längre tid än vanligt att ladda webbplatsen nästa gång.</p><p>Om du bekräftar, vänligen klicka på radera-knappen igen.</p>",
+    "export": "Exportera data",
+    "import": "Importera data"
+  },
+  "settings": {
+    "title": "Inställningar",
+    "uiPrefs": {
+      "title": "UI-preferenser",
+      "hint": "Välj det UI-tillstånd du vill behålla. Vi rekommenderar att <span class=\"keyword\">behålla alla alternativ</span> för en mer konsekvent upplevelse.",
+      "sidebar": "Behåll sidofältets status",
+      "filterOrder": "Behåll filterordning",
+      "triggers": "Behåll status för triggers",
+      "performanceMode": "Prestandaläge"
+    },
+    "mapPrefs": {
+      "title": "Kartpreferenser",
+      "hint": "Välj vilken kartlagring och automatisk optimering du vill aktivera. Vi rekommenderar att <span class=\"keyword\">aktivera alla alternativ</span> för en mer konsekvent upplevelse.",
+      "viewState": "Behåll kartvy",
+      "markerProgress": "Behåll markörer & framsteg",
+      "autoCluster": "Auto-klustring"
+    },
+    "theme": {
+      "title": "Temapreferenser",
+      "hint": "Välj ditt föredragna tema. För <span class=\"keyword\">AUTO</span> kommer temat att växla beroende på din enhets inställning.",
+      "light": "Ljust",
+      "dark": "Mörkt",
+      "auto": "Auto"
+    }
+  },
+  "guide": {
+    "welcome": "Välkommen till <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Detta är första gången du använder denna karta. Vi kommer att ge dig en kort guidad tur för att hjälpa dig att snabbt förstå kartans olika funktioner.</p><p>Du kan klicka på knappen '<span class=\"keyword\">Hoppa över</span>' när som helst för att avsluta guiden, eller starta om den från hjälpknappen i toppmenyn.",
+    "sidebarToggle": "Klicka för att expandera <span class=\"keyword\">sidofältet</span>.<br>Sidofältet innehåller dina mest använda markörfilter och reglage som är nära relaterade till markörvisning.",
+    "search": "Du kan söka efter markörer att visa med hjälp av <span class=\"keyword\">språk som stöds av spelet</span> och välja dem i sökresultaten.",
+    "filterContainer": "Markörer av samma typ grupperas i ett <span class=\"keyword\">filter</span>.<br>Klicka för att expandera listan över markörer av den typen.",
+    "filterSort": "Håll ner IKONEN till vänster om filtret för att gå in i <span class=\"keyword\">dragläge</span>.<br>Du kan sortera filtren som är viktiga för dig enligt dina behov.",
+    "selectorSelect": "Specifik <span class=\"keyword\">markörväljare</span>. Klicka för att växla valstatus; valda markörer kommer att visas på kartan.<br>Du kan se det totala antalet sådana markörer i det aktuella området, samt antalet du har markerat.<br><br>Du kan också <span class=\"keyword\">hålla och dra i det tomma området</span> av sidofältet för att utföra <span class=\"keyword\">box-val</span> på flera markörväljare samtidigt, vilket låter dig snabbt växla deras valstatus i grupp.",
+    "selectorComplete": "När alla markörer av denna typ är markerade som klara, kommer väljaren att ändras till <span class=\"keyword\">färdig status</span> för snabb bedömning av markeringsframsteg.",
+    "triggerHandle": "Reglage relaterade till kartvisning finns längst ner i sidofältet.<br>Du kan hålla ner musen för att <span class=\"keyword\">dra och hantera dem.</span>",
+    "triggerSwitch": "Klicka för att växla status.<br><ul><li><span class=\"keyword\">Markörklusterläge</span> tillåter att täta markörer visas sammanslagna;</li><li><span class=\"keyword\">Regiongränsvisning</span> markerar varje underregion och dess gränser inom det aktuella området.</li><li><span class=\"keyword\">Regionnamn</span> visar regionnamn från spelet.</li></ul>",
+    "scale": "Använd <span class=\"keyword\">Zoomkontrollen</span> för att se och hantera kartzoom.<br>Scrollhjul eller pekplatta kan användas för att zooma. Du kan också zooma genom att klicka på <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> knapparna eller var som helst på zoomfältet.",
+    "filterList": "<span class=\"keyword\">Markörlistan</span> listar de markörer du har valt; klicka på ikonen för att avmarkera.",
+    "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn</span>.",
+    "tos": "Webbplatsens <span class=\"keyword\">Användarvillkor</span> och <span class=\"keyword\">Datahantering</span>.",
+    "hideUI": "<span class=\"keyword\">Dölj Webbplatsens UI</span> för att ta skärmdumpar eller se kantmarkörer.",
+    "group": "Visa <span class=\"keyword\">diskussionsgrupper</span> och <span class=\"keyword\">communities</span> relaterade till detta projekt.",
+    "darkMode": "Växla det nuvarande <span class=\"keyword\">omgivande ljusläget</span>.",
+    "language": "Byt <span class=\"keyword\">gränssnittsspråk</span>.<br>Språk med <span class=\"keyword\">fullt stöd för översättning av spelinnehåll</span> inkluderar engelska, förenklad kinesiska, traditionell kinesiska, japanska, koreanska, franska, tyska, italienska, ryska, spanska, indonesiska, portugisiska, thailändska och vietnamesiska.<br><span class=\"keyword\">Endast UI-språk</span> (endast gränssnittsöversättningar) inkluderar arabiska, malaysiska, polska och svenska.",
+    "help": "Starta om denna <span class=\"keyword\">guide</span>.",
+    "settings": "Öppna <span class=\"keyword\">Inställningar</span> för att kontrollera vilken lokal lagring kartan använder för att komma ihåg dina handlingar.",
+    "regionSwitch": "Klicka för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner) i spelet.",
+    "subregionSwitch": "<span class=\"keyword\">Hovra över huvudregionsikonen</span> för att visa tillgängliga underregioner; klick på en underregionsikon hoppar till den vyn.<br>På samma sätt kan du också välja ett lager för en region.",
+    "layerMain": "Klicka på <span class=\"keyword\">lagerikonen</span> för att återgå till <span class=\"keyword\">huvudlagret (M)</span> när som helst.",
+    "layerSwitch": "<span class=\"keyword\">Hovra över lagerikonen</span> för att visa tillgängliga lager för den aktuella regionen; klicka på ett lager för att byta till den vyn.<br>Olika lager kan visa <span class=\"keyword\">olika våningar eller höjder</span> av kartan, vilket hjälper dig att utforska flernivåområden.",
+    "pointSelect": "Klicka på en markör för att gå in i <span class=\"keyword\">valt läge</span>. Du kommer att kunna se markörens information.",
+    "pointMark": "Klicka på markören igen för att markera den som klar.",
+    "detail": "Du kan se specifik information om den valda markören, inklusive antalet markörer av denna typ i <span class=\"keyword\">alla regioner</span>, den nuvarande <span class=\"keyword\">huvudregionen</span> och den nuvarande <span class=\"keyword\">underregionen</span>.",
+    "pointIcon": "Att klicka på markörikonen kan också markera den som klar.",
+    "mobile": {
+      "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn i övre högra hörnet</span>. Klicka på ikonen uppe till höger för att expandera och se fler alternativ.",
+      "regionLayerSwitch": "Klicka på regionikoner för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner).<br>Tryck och håll på en huvudregionsikon för att visa tillgängliga <span class=\"keyword\">underregioner och lager</span>, välj sedan en underregion eller ett lager för att hoppa till den vyn.",
+      "divider": "Detta är en dragbar <span class=\"keyword\">avdelare</span>.<br>Du kan dra avdelaren åt vänster eller höger för att justera breddförhållandet mellan sökfältet och markörlistan, anpassat efter dina preferenser.",
+      "drawer": "<span class=\"keyword\">Svep uppåt från skärmens botten</span> för att öppna lådan och se markörfilter.<br>Här kan du välja vilka markörtyper du vill visa på kartan.",
+      "selectorSelect": "Specifik <span class=\"keyword\">markörväljare</span>. Tryck för att växla valstatus; valda markörer kommer att visas på kartan.<br>Du kan se det totala antalet sådana markörer i det aktuella området, samt antalet du har markerat."
+    }
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">Obs:</span> När spelversionen är <span class=\"keyword\">1.0.13</span>, är kartdataversionen <span class=\"keyword\">0.8.25</span>. Vi behöver tid för att uppdatera datan, så uppdateringar kan komma senare än spelets patch. Tack för ditt tålamod. För att spåra våra uppdateringar, vänligen gå med i vår <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Gå med i Discord'>Discord-server</a>.<br><br>Vi rekommenderar också följande verktyg:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Ritningar:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "Kartdata är uppdaterad."
+  },
+  "links": {
+    "enka": {
+      "name": "Fabriksplanerare",
+      "desc": "Ritningsredigerare"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Community för ritningsdelning"
+    }
+  },
+  "common": {
+    "close": "Stäng",
+    "skip": "Hoppa över",
+    "clear": "Rensa",
+    "all": "Alla",
+    "selected": "Valda",
+    "confirm": "Bekräfta",
+    "enable": "Aktivera",
+    "disable": "Inaktivera",
+    "expand": "Expandera",
+    "collapse": "Komprimera"
+  },
+  "meta": {
+    "title": "Endfield Kartsamling",
+    "description": "Endfield Kartsamling är en onlinekarta med öppen källkod för Arknights: Endfield, som tillhandahåller interaktiva kartor, föremålssamling och strategiska planeringsverktyg för spelare."
+  },
+  "support": {
+    "title": "Stöd oss",
+    "content": "Under de senaste tre dagarna har Open Endfield Map behandlat i genomsnitt nästan <span class=\"highlight\">10 miljoner</span> HTTPS-förfrågningar per dag (ungefär <span class=\"highlight\">115 förfrågningar per sekund</span>), och förbrukat över <span class=\"highlight\">450 GB</span> bandbredd. Vår aktiva användarbas växer med ungefär <span class=\"highlight\">7 000 användare per dag</span>. Även om Cloudflare hanterar det mesta av vår trafik (tack, Cloudflare!), körs vår server i Singapore fortfarande på full kapacitet. Tack för ert engagemang!<br><br>OEM har utvecklats sedan februari 2025 och har alltid varit öppen källkod och gratis. Största delen av tiden och för närvarande underhålls den <span class=\"highlight\">enbart av mig (Jacy Chan/Cirisus)</span>. Inför de massiva förfrågningarna från användare runt om i världen och trycket att uppdatera data och funktioner känner jag mig överväldigad. Om du tycker att denna webbplats är hjälpsam, överväg att stödja den genom följande alternativ. Ditt stöd kommer att användas för att täcka server- och bandbreddskostnader, samt framtida funktionsutveckling (som användarsystem och markörupladdningar från tredje person).<br><br>Om du upptäcker problem med data, gränssnitt eller översättningar, tveka inte att ge feedback. Jag kommer att arbeta på dem så snart som möjligt. Tack för ditt stöd och förståelse.",
+    "kofi": "Stöd via Ko-fi",
+    "afdian": "Stöd via Afdian",
+    "hint": "Internationella användare rekommenderas använda Ko-fi; användare i Fastlandskina rekommenderas använda Afdian."
+  }
+}

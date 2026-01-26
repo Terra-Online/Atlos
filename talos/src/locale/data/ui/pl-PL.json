@@ -63,7 +63,8 @@
       "th-TH": "Tajski",
       "vi-VN": "Wietnamski",
       "ms-MY": "Malajski",
-      "pl-PL": "Polski"
+      "pl-PL": "Polski",
+      "sv-SE": "Szwedzki"
     }
   },
   "group": {
@@ -75,7 +76,9 @@
     "calculating": "Obliczanie użycia pamięci...",
     "policy": "<p>Używamy Cookies do przechowywania informacji o automatycznym logowaniu; LocalStorage do przechowywania preferencji interfejsu i postępu znaczników; oraz CacheStorage do przechowywania danych czcionek i zasobów obrazów dla wybranego języka. Pliki te pozwalają szybciej korzystać ze strony w przyszłości oraz zapewniają jej dostępność w trybie offline.</p><p>Usunięcie lokalnych danych strony może zwolnić miejsce na urządzeniu. Jednak <span class=\"keyword\">przy ponownej wizycie ładowanie może potrwać dłużej</span>; jeśli wyłączysz przechowywanie danych przez stronę, <span class=\"keyword\">nie będzie ona mogła automatycznie zapisywać Twoich danych</span> na kolejne użycie.</p><p>Nie przesyłamy Twoich danych na serwer, więc nie musisz martwić się o prywatność.</p><p>Możesz zdecydować, czy chcesz włączyć lokalne przechowywanie danych.</p>",
     "filtersAndMarkers": "Filtry i dane znaczników",
-    "warning": "<p><strong>Ostrzeżenie:</strong> Jeśli wyczyścisz zapisane dane, utracisz informacje o automatycznym logowaniu, preferencje UI i postęp znaczników; a przy następnym uruchomieniu strona może ładować się dłużej niż zwykle.</p><p>Jeśli potwierdzasz, kliknij przycisk usuwania ponownie.</p>"
+    "warning": "<p><strong>Ostrzeżenie:</strong> Jeśli wyczyścisz zapisane dane, utracisz informacje o automatycznym logowaniu, preferencje UI i postęp znaczników; a przy następnym uruchomieniu strona może ładować się dłużej niż zwykle.</p><p>Jeśli potwierdzasz, kliknij przycisk usuwania ponownie.</p>",
+    "export": "Eksportuj dane",
+    "import": "Importuj dane"
   },
   "settings": {
     "title": "Ustawienia",
@@ -141,6 +144,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">Uwaga:</span> Gdy wersja gry to <span class=\"keyword\">1.0.13</span>, wersja danych mapy to <span class=\"keyword\">0.8.25</span>. Potrzebujemy czasu na aktualizację danych, więc może się ona pojawić później niż aktualizacja gry. Dziękujemy za cierpliwość. Aby śledzić nasze aktualizacje, dołącz do naszego <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Dołącz do Discorda'>serwera Discord</a>.<br><br>Polecamy również następujące narzędzia:<ul><li><span class=\"keyword\">Wiki gry: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Odwiedź Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Schematy (Blueprints):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Odwiedź Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "Zamknij",
     "skip": "Pomiń",
@@ -156,5 +169,12 @@
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map to otwartoźródłowa mapa online dla Arknights: Endfield, oferująca interaktywną mapę, zbieranie przedmiotów oraz narzędzia do planowania strategicznego dla graczy."
+  },
+  "support": {
+    "title": "Wesprzyj nas",
+    "content": "W ciągu ostatnich trzech dni Open Endfield Map przetworzyła średnio prawie <span class=\"highlight\">10 milionów</span> żądań HTTPS dziennie (około <span class=\"highlight\">115 żądań na sekundę</span>), zużywając ponad <span class=\"highlight\">450 GB</span> przepustowości. Nasza baza aktywnych użytkowników rośnie w tempie około <span class=\"highlight\">7 000 użytkowników dziennie</span>. Chociaż Cloudflare obsługuje większość naszego ruchu (dziękujemy, Cloudflare!), nasz serwer w Singapurze nadal pracuje na pełnych obrotach. Dziękujemy za Wasz entuzjazm!<br><br>OEM jest rozwijany od lutego 2025 roku i zawsze był open source i darmowy. Przez większość czasu i obecnie strona jest <span class=\"highlight\">utrzymywana wyłącznie przeze mnie (Jacy Chan/Cirisus)</span>. W obliczu masowych żądań od użytkowników z całego świata i presji aktualizacji danych i funkcji, czuję się przytłoczony. Jeśli uważasz, że ta strona jest pomocna, rozważ wsparcie jej za pomocą poniższych opcji. Twoje wsparcie zostanie wykorzystane na pokrycie kosztów serwera i przepustowości, a także na rozwój przyszłych funkcji (takich jak system użytkowników i przesyłanie znaczników z trzeciej osoby).<br><br>Jeśli zauważysz problemy z danymi, interfejsem lub tłumaczeniami, prosimy o przesłanie opinii. Postaram się je naprawić jak najszybciej. Dziękujemy za wsparcie i zrozumienie.",
+    "kofi": "Wesprzyj przez Ko-fi",
+    "afdian": "Wesprzyj przez Afdian",
+    "hint": "Użytkownikom międzynarodowym zalecamy Ko-fi; użytkownikom w Chinach kontynentalnych zalecamy Afdian."
   }
 }

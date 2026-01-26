@@ -62,6 +62,7 @@
       "ar-AE": "Ả Rập",
       "ms-MY": "Mã Lai",
       "pl-PL": "Ba Lan",
+      "sv-SE": "Thụy Điển",
       "th-TH": "Thái",
       "vi-VN": "Việt"
     }
@@ -75,7 +76,9 @@
     "calculating": "Đang tính toán dung lượng lưu trữ...",
     "policy": "<p>Chúng tôi sử dụng Cookies để lưu trữ thông tin đăng nhập tự động của bạn; LocalStorage để lưu tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn; và CacheStorage để lưu trữ dữ liệu phông chữ và tài nguyên hình ảnh cho ngôn ngữ của bạn. Những tệp này cho phép bạn truy cập trang web nhanh hơn trong tương lai và đảm bảo tính khả dụng của trang web khi ngoại tuyến.</p><p>Xóa bộ nhớ cục bộ của trang web có thể tiết kiệm dung lượng trên thiết bị của bạn. Tuy nhiên, có thể mất nhiều thời gian hơn để tải các tệp này khi bạn truy cập lại; nếu bạn tắt bộ nhớ trang web, trang web sẽ không thể tự động ghi lại dữ liệu của bạn cho lần sử dụng tiếp theo.</p><p>Chúng tôi không báo cáo dữ liệu của bạn cho máy chủ, vì vậy bạn không cần lo lắng về các vấn đề quyền riêng tư.</p><p>Bạn có thể tự quyết định xem có bật bộ nhớ cục bộ hay không.</p>",
     "filtersAndMarkers": "Bộ lọc & Dữ liệu điểm",
-    "warning": "<p><strong>Chú ý:</strong> Nếu bạn xóa dữ liệu lưu trữ, thông tin đăng nhập tự động, tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn sẽ bị mất; lần truy cập tiếp theo có thể mất nhiều thời gian hơn bình thường để tải trang.</p><p>Nếu bạn đã chắc chắn, vui lòng nhấn lại nút «Xóa».</p>"
+    "warning": "<p><strong>Chú ý:</strong> Nếu bạn xóa dữ liệu lưu trữ, thông tin đăng nhập tự động, tùy chọn giao diện người dùng và tiến trình đánh dấu của bạn sẽ bị mất; lần truy cập tiếp theo có thể mất nhiều thời gian hơn bình thường để tải trang.</p><p>Nếu bạn đã chắc chắn, vui lòng nhấn lại nút «Xóa».</p>",
+    "export": "Xuất dữ liệu",
+    "import": "Nhập dữ liệu"
   },
   "settings": {
     "title": "Tùy chọn",
@@ -141,6 +144,16 @@
   "notice": {
     "legacy": "<span class=\"keyword\">Lưu ý:</span> Khi phiên bản trò chơi là <span class=\"keyword\">1.0.13</span>, phiên bản dữ liệu bản đồ là <span class=\"keyword\">0.8.25</span>. Chúng tôi cần thời gian để cập nhật dữ liệu, nên có thể chậm hơn cập nhật game. Cảm ơn bạn đã kiên nhẫn. Để theo dõi cập nhật, vui lòng tham gia <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Tham gia Discord'>Máy chủ Discord</a> của chúng tôi.<br><br>Chúng tôi cũng đề xuất các công cụ sau:<ul><li><span class=\"keyword\">Wiki Trò chơi: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Truy cập Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Chia sẻ Bản thiết kế:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Truy cập Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "common": {
     "close": "Đóng",
     "skip": "Bỏ qua",
@@ -156,5 +169,12 @@
   "meta": {
       "title": "Atlas Endfield",
       "description": "Open Endfield Map là bản đồ trực tuyến mã nguồn mở cho Arknights: Endfield, cung cấp bản đồ tương tác, theo dõi thu thập vật phẩm và công cụ lập kế hoạch chiến lược."
+  },
+  "support": {
+    "title": "Ủng hộ chúng tôi",
+    "content": "Trong ba ngày qua, Open Endfield Map đã xử lý trung bình gần <span class=\"highlight\">10 triệu</span> yêu cầu HTTPS mỗi ngày (khoảng <span class=\"highlight\">115 yêu cầu mỗi giây</span>), tiêu thụ hơn <span class=\"highlight\">450 GB</span> băng thông. Cơ sở người dùng hoạt động của chúng tôi đang tăng với tốc độ khoảng <span class=\"highlight\">7.000 người dùng mỗi ngày</span>. Mặc dù Cloudflare xử lý phần lớn lưu lượng của chúng tôi (cảm ơn Cloudflare!), máy chủ của chúng tôi ở Singapore vẫn hoạt động hết công suất. Cảm ơn sự nhiệt tình của các bạn!<br><br>OEM đã được phát triển từ tháng 2 năm 2025 và luôn là mã nguồn mở và miễn phí. Phần lớn thời gian và hiện tại, trang web này <span class=\"highlight\">được duy trì hoàn toàn bởi tôi (Jacy Chan/Cirisus)</span>. Đối mặt với lượng yêu cầu khổng lồ từ người dùng trên toàn thế giới và áp lực cập nhật dữ liệu và tính năng, tôi cảm thấy quá tải. Nếu bạn thấy trang web này hữu ích, xin hãy cân nhắc hỗ trợ thông qua các tùy chọn sau. Sự hỗ trợ của bạn sẽ được sử dụng để trang trải chi phí máy chủ và băng thông, cũng như phát triển các tính năng trong tương lai (như hệ thống người dùng và tải lên điểm đánh dấu góc nhìn thứ ba).<br><br>Nếu bạn nhận thấy vấn đề với dữ liệu, giao diện hoặc bản dịch, vui lòng gửi phản hồi. Tôi sẽ xử lý chúng nhanh nhất có thể. Cảm ơn sự hỗ trợ và thông cảm của bạn.",
+    "kofi": "Ủng hộ qua Ko-fi",
+    "afdian": "Ủng hộ qua Afdian",
+    "hint": "Người dùng quốc tế nên sử dụng Ko-fi; người dùng ở Trung Quốc đại lục nên sử dụng Afdian."
   }
 }

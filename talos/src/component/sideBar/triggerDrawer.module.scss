@@ -17,6 +17,7 @@
 .triggerDrawer {
     border-radius: calc(var(--drawer-progress) * 1.5rem) calc(var(--drawer-progress) * 1.5rem) 0 0;
     box-shadow: 0 -2px 4px rgba($black-1, 0.35);
+    z-index: 99;
 }
 .triggerDrawerHandle {
     background: transparent;

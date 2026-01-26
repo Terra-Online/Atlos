@@ -118,7 +118,7 @@ const MarkFilter = ({
             data-category={dataCategory} // Added data-category attribute for UserGuide selection
             className={`${styles.markFilterContainer} ${isSelfDragging ? styles.dragging : ''}`}
             layout
-            style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1 }}
+            style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: orderIndex + 1, touchAction: 'pan-y' }}
             drag={isMounted ? "y" : false}
             dragControls={isMounted ? dragControls : undefined}
             dragListener={false}

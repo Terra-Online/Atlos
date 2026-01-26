@@ -63,7 +63,8 @@
       "th-TH": "Thai",
       "vi-VN": "Vietnamese",
       "ms-MY": "Melayu",
-      "pl-PL": "Polski"
+      "pl-PL": "Polski",
+      "sv-SE": "Svenska"
     }
   },
   "group": {
@@ -75,7 +76,9 @@
     "calculating": "Mengira penggunaan storan...",
     "policy": "<p>Kami menggunakan Cookies untuk menyimpan maklumat log masuk automatik anda; LocalStorage untuk menyimpan keutamaan UI dan kemajuan penanda anda; serta CacheStorage untuk menyimpan data fon dan sumber imej bagi bahasa anda. Fail-fail ini membolehkan anda mengakses laman web dengan lebih cepat pada masa hadapan dan memastikan ketersediaan laman web ketika luar talian.</p><p>Memadam storan setempat laman web boleh menjimatkan ruang pada peranti anda. Namun, <span class=\"keyword\">ia mungkin mengambil masa lebih lama untuk memuatkan fail-fail ini</span> apabila anda melawat semula; jika anda mematikan storan laman web, laman web <span class=\"keyword\">tidak akan dapat merekod data anda secara automatik</span> untuk kegunaan seterusnya.</p><p>Kami tidak melaporkan data anda ke pelayan, jadi anda tidak perlu risau tentang isu privasi.</p><p>Anda boleh memutuskan sama ada mahu mengaktifkan storan setempat.</p>",
     "filtersAndMarkers": "Penapis & Data Penanda",
-    "warning": "<p><strong>Amaran:</strong> Jika anda mengosongkan data yang disimpan, maklumat log masuk automatik, keutamaan UI, dan kemajuan penanda anda akan hilang; dan mungkin mengambil masa lebih lama daripada biasa untuk memuatkan laman web pada lawatan seterusnya.</p><p>Jika disahkan, sila klik butang padam sekali lagi.</p>"
+    "warning": "<p><strong>Amaran:</strong> Jika anda mengosongkan data yang disimpan, maklumat log masuk automatik, keutamaan UI, dan kemajuan penanda anda akan hilang; dan mungkin mengambil masa lebih lama daripada biasa untuk memuatkan laman web pada lawatan seterusnya.</p><p>Jika disahkan, sila klik butang padam sekali lagi.</p>",
+    "export": "Eksport Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Tetapan",
@@ -153,8 +156,25 @@
     "expand": "Kembangkan",
     "collapse": "Runtuhkan"
   },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
+  },
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map ialah peta dalam talian sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perancangan strategik untuk pemain."
+  },
+  "support": {
+    "title": "Sokong Kami",
+    "content": "Dalam tiga hari yang lalu, Open Endfield Map memproses purata hampir <span class=\"highlight\">10 juta</span> permintaan HTTPS setiap hari (kira-kira <span class=\"highlight\">115 permintaan sesaat</span>), menggunakan lebih <span class=\"highlight\">450 GB</span> lebar jalur. Asas pengguna aktif kami berkembang pada kadar kira-kira <span class=\"highlight\">7,000 pengguna sehari</span>. Walaupun Cloudflare mengendalikan kebanyakan trafik kami (terima kasih, Cloudflare!), pelayan kami di Singapura masih beroperasi pada kapasiti penuh. Terima kasih atas semangat anda!<br><br>OEM telah dibangunkan sejak Februari 2025 dan sentiasa bersifat sumber terbuka dan percuma. Kebanyakan masa dan kini, laman ini <span class=\"highlight\">dikendalikan sendiri oleh saya (Jacy Chan/Cirisus)</span>. Menghadapi permintaan besar-besaran daripada pengguna di seluruh dunia dan tekanan untuk mengemas kini data dan ciri, saya berasa terbeban. Jika anda mendapati laman ini berguna, sila pertimbangkan untuk menyokongnya melalui pilihan berikut. Sokongan anda akan digunakan untuk menampung kos pelayan dan lebar jalur, serta pembangunan ciri masa depan (seperti sistem pengguna dan muat naik penanda sudut pandangan ketiga).<br><br>Jika anda melihat sebarang masalah dengan data, UI, atau terjemahan, sila berikan maklum balas. Saya akan mengerjakannya secepat mungkin. Terima kasih atas sokongan dan pemahaman anda.",
+    "kofi": "Sokong melalui Ko-fi",
+    "afdian": "Sokong melalui Afdian",
+    "hint": "Pengguna antarabangsa disyorkan menggunakan Ko-fi; pengguna di tanah besar China disyorkan menggunakan Afdian."
   }
 }

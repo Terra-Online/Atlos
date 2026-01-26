@@ -11,6 +11,7 @@ export interface ModalProps {
   title?: React.ReactNode;
   /** image slot before title */
   icon?: React.ReactNode;
+  iconScale?: number; // scale for the icon, use when you need visual optimization
   children?: React.ReactNode;
   onClose?: () => void; // close callback
   onChange?: (open: boolean) => void; // switch state change callback
@@ -38,6 +39,7 @@ const Modal: React.FC<ModalProps> = ({
   open,
   title,
   icon,
+  iconScale = 1,
   children,
   onClose,
   onChange,
@@ -221,7 +223,7 @@ const Modal: React.FC<ModalProps> = ({
       >
         {(title || icon || showClose) && (
           <div className={styles.modalHeader}>
-            {icon && <span className={styles.modalIcon}>{icon}</span>}
+            {icon && <span className={styles.modalIcon} style={{ transform: `scale(${iconScale})` }}>{icon}</span>}
             {title && <div id={titleId} className={styles.modalTitle}>{title}</div>}
             {showClose && (
               <Button

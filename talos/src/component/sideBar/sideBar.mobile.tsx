@@ -11,6 +11,12 @@ import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
 import Detail from '../detail/detail';
+import SupportModal from '../support/support';
+
+// Social media icons
+import GithubIcon from '../../assets/images/UI/media/ghicon.svg?react';
+import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
+import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
 
 // Category icons
 import BossIcon from '../../assets/images/category/boss.svg?react';
@@ -52,6 +58,8 @@ const SNAP0 = 64; // px
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
   const t = useTranslateUI();
   const tGame = useTranslateGame();
+
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
   const currentPoint = useMarkerStore((s) => s.currentActivePoint);
@@ -336,6 +344,48 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                 {t('footer.icp')}
             </a>
           </div>
+          <div className={mobileStyles.socialBar}>
+            <a
+              href="https://github.com/Terra-Online/Atlos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mobileStyles.socialLink}
+              data-platform="github"
+              aria-label="GitHub"
+            >
+              <GithubIcon />
+            </a>
+            <a
+              href="https://discord.gg/SJCEjH9hmr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mobileStyles.socialLink}
+              data-platform="discord"
+              aria-label="Discord"
+            >
+              <DiscordIcon />
+            </a>
+            <a
+              href="https://qm.qq.com/q/BVsCJgzBL2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mobileStyles.socialLink}
+              data-platform="qq"
+              aria-label="QQ"
+            >
+              <QQIcon />
+            </a>
+            <span className='divide'></span>
+            <button className={mobileStyles.supportBtn} type="button" onClick={() => setSupportOpen(true)}>
+              {t('support.title')}
+            </button>
+          </div>
+
+          <SupportModal
+            open={supportOpen}
+            onClose={() => setSupportOpen(false)}
+            onChange={(open) => setSupportOpen(open)}
+          />
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}

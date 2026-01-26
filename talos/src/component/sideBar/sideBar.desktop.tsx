@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import styles from './sideBar.module.scss';
 import drawerStyles from './triggerDrawer.module.scss';
 
@@ -22,13 +22,19 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
+import SupportModal from '../support/support';
+
+// Social media icons
+import GithubIcon from '../../assets/images/UI/media/ghicon.svg?react';
+import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
+import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
 
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
 import { SelectionLayer } from './selectionLayer';
 
-console.log('[MARKER]', MARKER_TYPE_TREE);
+//console.log('[MARKER]', MARKER_TYPE_TREE);
 
 const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
 const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
@@ -64,6 +70,8 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDesktopDrawerSnapIndex();
+
+    const [supportOpen, setSupportOpen] = useState(false);
 
     const sidebarRef = React.useRef<HTMLDivElement>(null);
 
@@ -146,7 +154,49 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         {t('footer.icp')}
                     </a>
                 </div>
-                {/* Drawer placed above copyright */}
+                <div className={styles.socialBar}>
+                    <a
+                        href="https://github.com/Terra-Online/Atlos"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                        data-platform="github"
+                        aria-label="GitHub"
+                    >
+                        <GithubIcon />
+                    </a>
+                    <a
+                        href="https://discord.gg/SJCEjH9hmr"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                        data-platform="discord"
+                        aria-label="Discord"
+                    >
+                        <DiscordIcon />
+                    </a>
+                    <a
+                        href="https://qm.qq.com/q/BVsCJgzBL2"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                        data-platform="qq"
+                        aria-label="QQ"
+                    >
+                        <QQIcon />
+                    </a>
+                    <span className={styles.divide}></span>
+                    <button className={styles.supportBtn} type="button" onClick={() => setSupportOpen(true)}>
+                        {t('support.title')}
+                    </button>
+                </div>
+
+                <SupportModal
+                    open={supportOpen}
+                    onClose={() => setSupportOpen(false)}
+                    onChange={(open) => setSupportOpen(open)}
+                />
+                {/* Drawer placed above footer */}
                 <Drawer
                     side='bottom'
                     initialSize={0}

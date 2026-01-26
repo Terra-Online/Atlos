@@ -13,6 +13,7 @@ declare global {
     interface Window {
         __TALOS_DEV__?: {
             map?: L.Map;
+            mapCore?: unknown;
         };
     }
 }

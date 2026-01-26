@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "config": {
+    "leftLink": {
+      "titleKey": "links.enka.name",
+      "url": "https://enka.network/endfield/aic/"
+    },
+    "rightLink": {
+      "titleKey": "links.talospioneers.name",
+      "url": "https://talospioneers.com/"
+    }
+  },
+  "regions": {
+    "VL": {
+      "links": {
+        "VL/link_0": {
+          "id": "VL/link_0",
+          "region": "VL",
+          "bounds": [[2557.203, 4298.502], [2800.850, 4542.149]]
+        },
+        "VL/link_1": {
+          "id": "VL/link_1",
+          "region": "VL",
+          "bounds": [[1428.238, 3011.072], [1569.159, 3151.993]]
+        },
+        "VL/link_2": {
+          "id": "VL/link_2",
+          "region": "VL",
+          "bounds": [[6907.123, 5022.674], [7049.235, 5164.786]]
+        },
+        "VL/link_3": {
+          "id": "VL/link_3",
+          "region": "VL",
+          "bounds": [[2838.000, 2168.000], [2985.500, 2315.500]]
+        }
+      }
+    },
+    "WL": {
+      "links": {
+        "WL/link_0": {
+          "id": "WL/link_0",
+          "region": "WL",
+          "bounds": [[3535.497, 997.899], [3800.690, 1263.092]]
+        },
+        "WL/link_1": {
+          "id": "WL/link_1",
+          "region": "WL",
+          "bounds": [[4944.500, 5513.000], [5095.500, 5664.000]]
+        }
+      }
+    }
+  }
+}

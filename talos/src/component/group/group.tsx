@@ -69,6 +69,7 @@ const GroupsModal: React.FC<GroupsProps> = ({ open, onClose, onChange, onSelecte
       onChange={onChange}
       title={t('group.title')}
       icon={<GroupIcon aria-hidden="true" />}
+      iconScale={0.9}
     >
       <div className={styles.groupList}>
         {SOCIAL_LINKS.map((link) => {

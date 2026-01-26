@@ -62,6 +62,7 @@
       "ar-AE": "アラビア語",
       "ms-MY": "マレー語",
       "pl-PL": "ポーランド語",
+      "sv-SE": "スウェーデン語",
       "th-TH": "タイ語",
       "vi-VN": "ベトナム語"
     }
@@ -75,7 +76,9 @@
     "calculating": "ストレージ使用量を計算中…",
     "policy": "<p>自動ログイン情報の保存には Cookie、UI 設定やマーカー進捗の保存には LocalStorage、言語ごとのフォントデータや画像リソースの保存には CacheStorage を使用しています。これらのファイルにより、次回以降のウェブサイトへのアクセスが高速になり、オフラインモードでも利用可能になります。</p><p>ウェブサイトのローカルストレージを削除すると、端末の空き容量を増やすことができます。ただし、再訪時には<span class=\"keyword\">これらのファイルの読み込みに時間がかかる場合があります</span>。ウェブサイトのストレージを無効化した場合、ウェブサイトは<span class=\"keyword\">次回の利用に向けてデータを自動記録できません</span>。</p><p>当サイトはあなたのデータをサーバーへ送信しないため、プライバシーの心配は不要です。</p><p>ローカルストレージの有効化はご自身で選択できます。</p>",
     "filtersAndMarkers": "フィルターとマーカーデータ",
-    "warning": "<p><strong>注意:</strong> 保存されたデータを削除すると、自動ログイン情報、UI 設定、マーカー進捗が失われます。次回のアクセス時、ウェブサイトの読み込みに通常より時間がかかる場合があります。</p><p>確認済みの場合は、もう一度削除ボタンをクリックしてください。</p>"
+    "warning": "<p><strong>注意:</strong> 保存されたデータを削除すると、自動ログイン情報、UI 設定、マーカー進捗が失われます。次回のアクセス時、ウェブサイトの読み込みに通常より時間がかかる場合があります。</p><p>確認済みの場合は、もう一度削除ボタンをクリックしてください。</p>",
+    "export": "データをエクスポート",
+    "import": "データをインポート"
   },
   "settings": {
     "title": "設定",
@@ -139,7 +142,17 @@
     "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。"
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pionneersにアクセス'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Talos Pioneersにアクセス'>https://talospioneers.com</a></li></ul>"
+  },
+  "links": {
+    "enka": {
+      "name": "Factory Planner",
+      "desc": "Blueprint Editor"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "Blueprint Sharing Community"
+    }
   },
   "common": {
     "close": "閉じる",
@@ -156,5 +169,12 @@
   "meta": {
       "title": "終末地マップ集",
       "description": "Open Endfield Map は、『アークナイツ：エンドフィールド』向けのオープンソースのオンラインマップで、インタラクティブマップ、アイテム収集、戦略計画ツールを提供します。"
+  },
+  "support": {
+    "title": "ご支援のお願い",
+    "content": "この数日間、Open Endfield Mapは1日あたり平均<span class=\"highlight\">1,000万件</span>（<span class=\"highlight\">毎秒約115件</span>）ものHTTPSリクエストを処理し、総計<span class=\"highlight\">450GB以上</span>の通信量を記録いたしました。また、アクティブユーザー数も<span class=\"highlight\">1日約7,000人</span>のペースで増加しております。トラフィックの大半を処理するCloudflareの多大なる支援に助けられてはおりますが、シンガポールのサーバーは現在、フル稼働の状態です。皆様の熱心なご愛顧に、心より感謝申し上げます！<br><br>OEMは2025年2月に始動して以来、オープンソースかつ完全無料での提供を続けております。プロジェクトの大部分は、<span class=\"highlight\">私（Jacy Chan/Cirisus）個人の手によって開発・運営</span>されてきました。現在、世界中のユーザー様からの圧倒的なリクエスト数と、データ更新や機能改善のプレッシャーに対し、個人運営ゆえにリソースが追いつかない場面も増えております。<br><br>もし当サイトが皆様の冒険の一助となっておりましたら、以下の方法にて温かいご支援をいただけますと幸いです。いただいたご支援は、サーバー維持費や帯域幅のコスト、そして将来的な機能実装（ユーザーシステムや三人称視点でのマーカー投稿機能など）に大切に使わせていただきます。<br><br>データ、UI、翻訳等に不備がございましたら、お気兼ねなくフィードバックをお寄せください。可能な限り迅速に対応いたします。改めまして、皆様のご理解とご支援に深く感謝いたします。",
+    "kofi": "Ko-fiで支援する",
+    "afdian": "愛発電（Afdian）で支援する",
+    "hint": "日本を含むその他の地域の方には「Ko-fi」を、中国本土の方には「愛発電」のご利用をお勧めします。"
   }
 }

@@ -46,6 +46,7 @@ export const SUPPORTED_LANGS = [
     'ar-AE',
     'ms-MY',
     'pl-PL',
+    'sv-SE',
     'th-TH',
     'vi-VN'
 ] as const;
@@ -54,7 +55,7 @@ type Lang = (typeof SUPPORTED_LANGS)[number];
 // Languages that have both game and UI translations (full support)
 export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'id-ID', 'pt-BR', 'th-TH', 'vi-VN'] as const;
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL' ] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL', 'sv-SE' ] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {
@@ -111,6 +112,22 @@ const deepGet = (obj: unknown, path: string): unknown =>
         return undefined;
     }, obj);
 
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+    typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const deepMergeObjects = (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> => {
+    const out: Record<string, unknown> = { ...base };
+    for (const [key, value] of Object.entries(override)) {
+        const baseValue = base[key];
+        if (isPlainObject(baseValue) && isPlainObject(value)) {
+            out[key] = deepMergeObjects(baseValue, value);
+        } else {
+            out[key] = value;
+        }
+    }
+    return out;
+};
+
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
 // Combine all locale files into one glob mapping to simplify logic and potential bundling
@@ -164,6 +181,7 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     const regionPattern = /\/data\/region\//;
 
     const uiLoader = resolveLoader(uiPattern, locale);
+    const fallbackUiLoader = locale === 'en-US' ? undefined : resolveLoader(uiPattern, 'en-US');
 
     // For UI-only languages, fallback to English for game content
     const gameLocale = hasFullSupport(locale) ? locale : 'en-US';
@@ -187,13 +205,18 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
         }
     }
 
-    const [uiMod, gameMod, regionMod] = await Promise.all([
+    const [uiMod, fallbackUiMod, gameMod, regionMod] = await Promise.all([
         uiLoader ? uiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
+        fallbackUiLoader ? fallbackUiLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
         gameLoader ? gameLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
         regionLoader ? regionLoader() : Promise.resolve({ default: {} as Record<string, unknown> }),
     ]);
+
+    const mergedUi = fallbackUiLoader
+        ? deepMergeObjects(fallbackUiMod.default, uiMod.default)
+        : uiMod.default;
     return {
-        ui: uiMod.default,
+        ui: mergedUi,
         game: { ...gameMod.default, region: regionMod.default },
     };
 }

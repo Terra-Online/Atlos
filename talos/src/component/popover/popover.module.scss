@@ -32,10 +32,8 @@
     margin: 0;
     backdrop-filter: blur(6px) brightness(1.2);
     
-    // Popover定位时的偏移
     inset: unset;
     
-    // 平滑的显示动画（fade-in）
     &:popover-open {
         opacity: 1;
         transition: opacity 120ms $moderato-curve, 
@@ -43,14 +41,12 @@
                     display 120ms $moderato-curve allow-discrete;
     }
     
-    // 起始状态（fade-in from 0）
     @starting-style {
         &:popover-open {
             opacity: 0;
         }
     }
     
-    // fade-out动画（通过添加类触发）
     &.popoverClose {
         opacity: 0;
         transition: opacity 120ms $moderato-curve;
