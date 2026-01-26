@@ -43,6 +43,12 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
                 // checkVisibility is a modern DOM API - type assertion needed for compatibility
                 const element = el as HTMLElement & { checkVisibility?: () => boolean };
                 if (element.checkVisibility && !element.checkVisibility()) return;
+                
+                // Also check if element is inside a collapsed filterContent
+                // (grid-template-rows: 0fr doesn't trigger checkVisibility)
+                const filterContent = el.closest('[class*="filterContent"]');
+                if (filterContent && !filterContent.classList.toString().includes('expanded')) return;
+                
                 const key = el.getAttribute('data-key');
                 if (key) {
                     itemsRects.push({

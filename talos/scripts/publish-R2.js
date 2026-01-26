@@ -119,7 +119,11 @@ const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB
 const MAX_RETRIES = 3;
 
 const upload = async (relativePath, retryCount = 0) => {
-  const objectKey = `${prefix}/${relativePath}`;
+  // Normalize path separators to forward slashes
+  const normalizedPath = relativePath.replace(/\\/g, '/');
+  // Remove leading slash from prefix to avoid double slashes
+  const cleanPrefix = prefix.replace(/^\/+/, '');
+  const objectKey = `${cleanPrefix}/${normalizedPath}`;
   const localPath = `./dist/${relativePath}`;
 
   try {
