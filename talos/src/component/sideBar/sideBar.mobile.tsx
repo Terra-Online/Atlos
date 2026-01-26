@@ -375,7 +375,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
             >
               <QQIcon />
             </a>
-            <span className='divide'></span>
+            <span className={mobileStyles.divide}></span>
             <button className={mobileStyles.supportBtn} type="button" onClick={() => setSupportOpen(true)}>
               {t('support.title')}
             </button>
