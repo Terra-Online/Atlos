@@ -3,13 +3,13 @@
   "short_name": "OEM",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192_dark",
+      "src": "web-app-manifest-192x192_dark.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/web-app-manifest-512x512_dark",
+      "src": "web-app-manifest-512x512_dark.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -18,5 +18,6 @@
   "theme_color": "#111111",
   "background_color": "#ffc428",
   "display": "standalone",
-  "start_url": "/"
+  "start_url": ".",
+  "scope": "."
 }
