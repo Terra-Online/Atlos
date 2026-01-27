@@ -136,11 +136,61 @@
     }
 }
 .markerInner.appearing,
-.noFrameInner.appearing,
+.noFrameInner.appearing {
+    animation: markerFadeIn 0.15s ease-out forwards;
+}
+
+@keyframes markerFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.markerInner.checked.appearing,
+.noFrameInner.checked.appearing {
+    animation: markerFadeInChecked 0.15s ease-out forwards;
+}
+
+@keyframes markerFadeInChecked {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.3;
+    }
+}
+
 .markerInner.disappearing,
 .noFrameInner.disappearing {
-    opacity: 0;
+    animation: markerFadeOut 0.15s ease-in forwards;
 }
+
+@keyframes markerFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.markerInner.checked.disappearing,
+.noFrameInner.checked.disappearing {
+    animation: markerFadeOutChecked 0.15s ease-in forwards;
+}
+
+@keyframes markerFadeOutChecked {
+    from {
+        opacity: 0.3;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
 .FrameMarkerIcon {
     background-color: transparent;
 

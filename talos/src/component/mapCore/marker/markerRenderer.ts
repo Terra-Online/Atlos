@@ -7,6 +7,7 @@ import LOGGER from '@/utils/log';
 import styles from './marker.module.scss';
 import { useMarkerStore } from '@/store/marker';
 import { getActivePoints, useUserRecordStore } from '@/store/userRecord';
+import { useUiPrefsStore } from '@/store/uiPrefs';
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
@@ -60,10 +61,12 @@ const RENDERER_DICT: Record<
             if (isSelected) inner.classList.add(styles.selected);
             const collected = getActivePoints();
             if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
-            // next frame remove to trigger transition to final opacity (1 or 0.3 when checked)
-            requestAnimationFrame(() => {
+            // 等待动画完成后移除 appearing class
+            const onAnimationEnd = () => {
                 inner.classList.remove(styles.appearing);
-            });
+                inner.removeEventListener('animationend', onAnimationEnd);
+            };
+            inner.addEventListener('animationend', onAnimationEnd);
         });
         
         layer.addEventListener('click', (e) => {
@@ -84,6 +87,11 @@ const RENDERER_DICT: Record<
                 } else if (selectedNow && !checkedNow) {
                     // selected -> selected+checked
                     useUserRecordStore.getState().addPoint(markerData.id);
+                    // 如果开启了隐藏已完成点位，立即开始淡出动画
+                    const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+                    if (shouldHideCompleted) {
+                        inner.classList.add(styles.disappearing);
+                    }
                 } else {
                     // selected+checked 或日后其他组合 -> none
                     useUserRecordStore.getState().deletePoint(markerData.id);
@@ -142,9 +150,12 @@ const RENDERER_DICT: Record<
             if (isSelected) inner.classList.add(styles.selected);
             const collected = getActivePoints();
             if (collected.includes(markerData.id)) inner.classList.add(styles.checked);
-            requestAnimationFrame(() => {
+            // 等待动画完成后移除 appearing class
+            const onAnimationEnd = () => {
                 inner.classList.remove(styles.appearing);
-            });
+                inner.removeEventListener('animationend', onAnimationEnd);
+            };
+            inner.addEventListener('animationend', onAnimationEnd);
         });
             
         layer.addEventListener('click', (e) => {
@@ -161,6 +172,11 @@ const RENDERER_DICT: Record<
                     useMarkerStore.getState().setSelected(markerData.id, true);
                 } else if (selectedNow && !checkedNow) {
                     useUserRecordStore.getState().addPoint(markerData.id);
+                    // 如果开启了隐藏已完成点位，立即开始淡出动画
+                    const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+                    if (shouldHideCompleted) {
+                        inner.classList.add(styles.disappearing);
+                    }
                 } else {
                     useUserRecordStore.getState().deletePoint(markerData.id);
                     useMarkerStore.getState().setSelected(markerData.id, false);

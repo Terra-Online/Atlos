@@ -102,6 +102,10 @@ export class MarkerLayer {
 
         this.collectedPoints = collectedPoints;
 
+        // 获取是否隐藏已完成点位的设置
+        const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+        const clusterEnabled = this.clusterLayer.isEnabled();
+
         // 更新所有 marker 的 checked 类
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
@@ -115,6 +119,35 @@ export class MarkerLayer {
             if (wasCollected !== isCollected) {
                 if (isCollected) {
                     inner.classList.add(styles.checked);
+
+                    // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
+                    if (shouldHideCompleted) {
+                        const markerData = this.markerDataDict[id];
+                        if (!markerData) return;
+
+                        // 如果是聚合管理的类型，通知聚合层刷新
+                        if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
+                            this.clusterLayer.applyFilter(this.activeFilterKeys);
+                            return;
+                        }
+
+                        const parent = this.layerSubregionDict[markerData.subregionId];
+                        if (!parent?.hasLayer(layer)) return;
+
+                        // 添加淡出动画类
+                        inner.classList.add(styles.disappearing);
+
+                        // 取消之前的延迟移除定时器
+                        if (this.pendingRemovalTimers[id] !== undefined) {
+                            clearTimeout(this.pendingRemovalTimers[id]);
+                        }
+                        // 延迟移除，等待淡出动画完成
+                        this.pendingRemovalTimers[id] = window.setTimeout(() => {
+                            // @ts-expect-error leaflet官方文档支持从layerGroup中移除
+                            layer.remove(parent);
+                            delete this.pendingRemovalTimers[id];
+                        }, 160);
+                    }
                 } else {
                     inner.classList.remove(styles.checked);
                 }
