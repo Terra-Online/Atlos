@@ -95,7 +95,8 @@
       "hint": "Chọn lưu trữ thông tin bản đồ và tối ưu tự động.<br>Chúng tôi khuyến nghị <span class=\"keyword\">bật tất cả tùy chọn để có trải nghiệm nhất quán hơn</span>.",
       "viewState": "Lưu chế độ xem",
       "markerProgress": "Lưu điểm & bộ lọc",
-      "autoCluster": "Tự động gom điểm"
+      "autoCluster": "Tự động gom điểm",
+      "hideCompleted": "Ẩn điểm đã hoàn thành"
     },
     "theme": {
       "title": "Chủ đề",

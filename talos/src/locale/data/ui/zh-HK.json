@@ -95,7 +95,8 @@
       "hint": "選擇您希望啟用的地圖資訊儲存以及自動優化設定。<br>我們建議您<span class=\"keyword\">開啟所有選項以獲得更連貫的使用體驗</span>。",
       "viewState": "保存當前視圖",
       "markerProgress": "保存點位與篩選器",
-      "autoCluster": "點位自動聚合"
+      "autoCluster": "點位自動聚合",
+      "hideCompleted": "隱藏已完成標點"
     },
     "theme": {
       "title": "主題",

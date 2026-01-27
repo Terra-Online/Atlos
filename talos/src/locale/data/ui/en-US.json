@@ -95,7 +95,8 @@
       "hint": "Select the map storage and automatic optimization you want to enable. We recommend <span class=\"keyword\">enabling all options</span> for a more consistent experience.",
       "viewState": "Keep map view",
       "markerProgress": "Keep marker & progress",
-      "autoCluster": "Auto cluster"
+      "autoCluster": "Auto cluster",
+      "hideCompleted": "Hide checked markers"
     },
     "theme": {
       "title": "Theme Preferences",

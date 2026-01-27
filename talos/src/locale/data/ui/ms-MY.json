@@ -95,7 +95,8 @@
       "hint": "Pilih storan peta dan pengoptimuman automatik yang anda mahu aktifkan. Kami mengesyorkan <span class=\"keyword\">mengaktifkan semua pilihan</span> untuk pengalaman yang lebih konsisten.",
       "viewState": "Kekalkan paparan peta",
       "markerProgress": "Kekalkan penanda & kemajuan",
-      "autoCluster": "Pengelompokan automatik"
+      "autoCluster": "Pengelompokan automatik",
+      "hideCompleted": "Sembunyikan titik selesai"
     },
     "theme": {
       "title": "Keutamaan Tema",

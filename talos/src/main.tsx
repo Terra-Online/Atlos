@@ -4,9 +4,13 @@ import App from './App.tsx';
 import { fontLoader } from './utils/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
 import { loadLabelTool, loadLinkTool } from '@/devtools/loadDevTool';
+import { applyUrlParams } from '@/utils/urlState';
 
 async function bootstrap(){
     await i18nInitPromise;
+
+    // 應用URL參數（語言、篩選器、區域）
+    await applyUrlParams();
 
     fontLoader();
 

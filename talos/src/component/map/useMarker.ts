@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { MapCore } from '../mapCore/map';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
-import { useUiPrefsStore } from '@/store/uiPrefs';
+import { useUiPrefsStore, useHideCompletedMarkers } from '@/store/uiPrefs';
 
 const AUTO_CLUSTER_THRESHOLD = 300;
 const AUTO_CLUSTER_FILTER_COUNT = 6;
@@ -18,6 +18,7 @@ export function useMarker(
 ) {
     const { filter } = useMarkerStore();
     const collectedPoints = useUserRecord();
+    const prefsHideCompletedMarkers = useHideCompletedMarkers();
     const initialFilterApplied = useRef(false);
 
     // 第一次初始化时应用已保存的 filter
@@ -42,7 +43,7 @@ export function useMarker(
             .map((point) => point.id) ?? [];
         
         useMarkerStore.setState({ points: currentPoints });
-    }, [filter, currentRegion, mapCore]);
+    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints]);
 
     // Auto-cluster logic: enable clustering if preference is on and visible markers > threshold
     useEffect(() => {
@@ -65,7 +66,6 @@ export function useMarker(
         }
     }, [mapCore, filter]);
 
-    // 更新已收集的点位
     useEffect(() => {
         const markerLayer = mapCore?.markerLayer;
         if (markerLayer) {

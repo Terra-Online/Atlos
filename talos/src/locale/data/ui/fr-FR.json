@@ -95,7 +95,8 @@
       "hint": "Choisissez le stockage et l’optimisation automatique. Nous recommandons <span class=\"keyword\">d’activer toutes les options</span> pour une expérience plus cohérente.",
       "viewState": "Vue de carte",
       "markerProgress": "Marqueurs & progrès",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Masquer les points terminés"
     },
     "theme": {
       "title": "Thème",

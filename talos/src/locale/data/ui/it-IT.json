@@ -95,7 +95,8 @@
       "hint": "Seleziona archiviazione e ottimizzazione automatica. Consigliamo <span class=\"keyword\">di abilitare tutte le opzioni</span> per un'esperienza più coerente.",
       "viewState": "Vista mappa",
       "markerProgress": "Marker & progresso",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Nascondi punti completati"
     },
     "theme": {
       "title": "Tema",

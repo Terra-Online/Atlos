@@ -95,7 +95,8 @@
       "hint": "Wybierz, które opcje przechowywania mapy i automatycznej optymalizacji chcesz włączyć. Zalecamy <span class=\"keyword\">włączenie wszystkich opcji</span>, aby korzystanie było bardziej spójne.",
       "viewState": "Zachowaj widok mapy",
       "markerProgress": "Zachowaj znaczniki i postęp",
-      "autoCluster": "Automatyczne klastrowanie"
+      "autoCluster": "Automatyczne grupowanie",
+      "hideCompleted": "Ukryj ukończone znaczniki"
     },
     "theme": {
       "title": "Preferencje motywu",

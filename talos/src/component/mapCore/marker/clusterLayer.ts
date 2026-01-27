@@ -3,6 +3,8 @@ import 'leaflet.markercluster';
 import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import styles from './marker.module.scss';
+import { useUiPrefsStore } from '@/store/uiPrefs';
+import { getActivePoints } from '@/store/userRecord';
 
 // NOTE: whitelist is based on 2nd-level category (`category.sub`).
 // Currently includes ALL known sub categories (see src/data/marker/type.json),
@@ -132,6 +134,10 @@ export class ClusterLayer {
         const markerDataDict = this.deps.getMarkerDataDict();
         const layerSubregionDict = this.deps.getLayerSubregionDict();
 
+        // Get hide completed markers preference
+        const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+
         // 仅对当前过滤的、受管理的类型进行增量添加，避免整组重算造成闪烁
         const activeManagedTypes = this.filterKeys.filter((k) => this.clusterGroupsByType[k]);
 
@@ -144,6 +150,7 @@ export class ClusterLayer {
                 if (!data) return;
                 if (data.type !== typeKey) return; // 只处理对应类型
                 if (!this.activeSubregions.has(data.subregionId)) return; // 只处理当前活跃子区域
+                if (completedMarkerIds.has(id)) return; // 排除已完成的標點
 
                 const layer = markerDict[id];
                 if (!layer) return;
@@ -185,17 +192,21 @@ export class ClusterLayer {
         const markerTypeMap = this.deps.getMarkerTypeMap();
         const layerSubregionDict = this.deps.getLayerSubregionDict();
 
+        // Get hide completed markers preference
+        const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+
         const activeManagedTypes = this.filterKeys.filter((key) => this.clusterGroupsByType[key]);
 
         // 为每个受管理类型做增量 diff
         Object.entries(this.clusterGroupsByType).forEach(([typeKey, clusterGroup]) => {
             const shouldBeActive = activeManagedTypes.includes(typeKey);
 
-            // 目标集合（需要在聚合中的点位）
+            // 目标集合（需要在聚合中的点位）- 排除已完成的點位
             const desiredIds = shouldBeActive
                 ? (markerTypeMap[typeKey] ?? []).filter((id) => {
                       const d = markerDataDict[id];
-                      return d && this.activeSubregions.has(d.subregionId);
+                      return d && this.activeSubregions.has(d.subregionId) && !completedMarkerIds.has(id);
                   })
                 : [];
             const desiredSet = new Set(desiredIds);

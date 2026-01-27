@@ -5,6 +5,8 @@ import L from 'leaflet';
 import { getMarkerLayer } from './markerRenderer';
 import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
+import { useUiPrefsStore } from '@/store/uiPrefs';
+import { getActivePoints } from '@/store/userRecord';
 
 // leaflet renderer
 export class MarkerLayer {
@@ -170,6 +172,10 @@ export class MarkerLayer {
             ).flatMap((key) => this.markerTypeMap[key] || []),
         );
 
+        // Get hide completed markers preference
+        const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
+        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const markerData = this.markerDataDict[id];
             const parent = this.layerSubregionDict[markerData.subregionId];
@@ -181,7 +187,8 @@ export class MarkerLayer {
                 return;
             }
 
-            const shouldShow = markerIdsSet.has(id);
+            // Check if marker should be shown: must be in filter AND not completed (if hiding completed is enabled)
+            const shouldShow = markerIdsSet.has(id) && !completedMarkerIds.has(id);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 

@@ -10,6 +10,7 @@
 span.highlight, span.keyword {
     color: var(--embed-keyword-color);
     font-weight: 700;
+    transition: color .35s $adagio-curve;
     &::before, &::after {
         content: '\2008'; /* PUNCTUATION SPACE */
     }

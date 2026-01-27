@@ -95,7 +95,8 @@
       "hint": "Pilih penyimpanan dan optimasi otomatis. Kami sarankan <span class=\"keyword\">mengaktifkan semua opsi</span> untuk pengalaman yang lebih konsisten.",
       "viewState": "Tampilan peta",
       "markerProgress": "Marker & progres",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Sembunyikan titik selesai"
     },
     "theme": {
       "title": "Tema",
