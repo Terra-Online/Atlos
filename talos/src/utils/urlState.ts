@@ -68,7 +68,7 @@ const getCurrentLocale = (): string | null => {
 };
 
 /**
- * 為 type key 計算穩定的哈希值（0-2047範圍）
+ * 為 type key 計算穩定的哈希值（0-65536範圍）
  * 使用簡單的字符串哈希算法，確保同一個key永遠得到相同的值
  */
 const hashTypeKey = (key: string): number => {
@@ -270,59 +270,85 @@ export const copyShareUrl = async (): Promise<boolean> => {
 /**
  * 從當前URL讀取參數並應用到stores
  * 應在應用初始化時調用一次
+ * 
+ * 合并策略：
+ * - 篩選器（filter）：合并模式，URL中的类型添加到用户当前选中的类型中
+ * - 語言和區域：以用户本地设置优先，只有本地无设置时才应用URL参数
  */
 export const applyUrlParams = async (): Promise<void> => {
     if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams(window.location.search);
 
-    // 應用語言參數
+    // 應用語言參數（以用户本地优先）
     const langParam = params.get(PARAM_LANG);
     if (langParam) {
-        // 嘗試從短代碼還原完整locale
-        const fullLocale = LANG_CODE_REVERSE[langParam] || langParam;
-        if ((SUPPORTED_LANGS as readonly string[]).includes(fullLocale)) {
-            await setLocale(fullLocale as Lang);
+        const currentLocale = getCurrentLocale();
+        // 只有当本地没有设置语言时，才应用 URL 参数
+        if (!currentLocale) {
+            const fullLocale = LANG_CODE_REVERSE[langParam] || langParam;
+            if ((SUPPORTED_LANGS as readonly string[]).includes(fullLocale)) {
+                await setLocale(fullLocale as Lang);
+            }
         }
     }
 
-    // 應用篩選器參數（支持壓縮和原始格式）
+    // 應用篩選器參數（合并模式）
     const filterParam = params.get(PARAM_FILTER);
     if (filterParam) {
         let keys: string[] = [];
         
-        // 嘗試解壓（base64格式）
-        if (!filterParam.includes(',')) {
-            keys = decompressFilter(filterParam);
-        }
+        // 優先嘗試原始格式（逗號分隔或單個key）
+        // 如果包含逗號或者是有效的type key，當作原始格式處理
+        const rawKeys = filterParam
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
         
-        // 如果解壓失敗或包含逗號，當作原始格式處理（兼容wiki/蓝图站）
-        if (keys.length === 0) {
-            keys = filterParam
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
+        // 檢查是否為原始格式：包含逗號 或 第一個值是有效的type key
+        const isRawFormat = filterParam.includes(',') || 
+                           (rawKeys.length > 0 && MARKER_TYPE_DICT[rawKeys[0]]);
+        
+        if (isRawFormat) {
+            // 使用原始格式（兼容wiki/蓝图站）
+            keys = rawKeys;
+        } else {
+            // 嘗試解壓base64格式
+            keys = decompressFilter(filterParam);
         }
         
         // 驗證key有效性
         const validKeys = keys.filter(key => MARKER_TYPE_DICT[key]);
         
         if (validKeys.length > 0) {
-            useMarkerStore.getState().setFilter(validKeys);
+            // 合并模式：获取当前已选中的类型
+            const currentFilter = useMarkerStore.getState().filter;
+            // 合并两个数组并去重
+            const mergedFilter = Array.from(new Set([...currentFilter, ...validKeys]));
+            useMarkerStore.getState().setFilter(mergedFilter);
         }
     }
 
-    // 應用區域參數（從縮寫還原）
+    // 應用區域參數（以用户本地优先）
     const regionParam = params.get(PARAM_REGION);
     if (regionParam) {
-        const fullRegion = REGION_CODE_REVERSE[regionParam] || regionParam;
-        useRegion.getState().setCurrentRegion(fullRegion);
+        const { currentRegionKey } = useRegion.getState();
+        // 检查是否为默认区域（Valley_4），如果是默认值则可以被URL参数覆盖
+        const isDefaultRegion = !currentRegionKey || currentRegionKey === 'Valley_4';
+        if (isDefaultRegion) {
+            const fullRegion = REGION_CODE_REVERSE[regionParam] || regionParam;
+            useRegion.getState().setCurrentRegion(fullRegion);
+        }
     }
 
-    // 應用子區域參數
+    // 應用子區域參數（以用户本地优先）
     const subregionParam = params.get(PARAM_SUBREGION);
     if (subregionParam) {
-        useRegion.getState().setCurrentSubregion(subregionParam);
+        const { currentSubregionKey } = useRegion.getState();
+        // 只有当本地没有设置子区域时，才应用 URL 参数
+        if (!currentSubregionKey) {
+            useRegion.getState().setCurrentSubregion(subregionParam);
+        }
     }
 
     // 清除URL參數，保持地址欄乾淨

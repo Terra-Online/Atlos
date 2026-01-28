@@ -25,8 +25,8 @@
   "detail": {
     "stat": {
       "world": "Världen",
-      "main": "Huvudregion",
-      "sub": "Sub"
+      "main": "Område",
+      "sub": "Zon"
     },
     "noInfo": "Ingen info."
   },

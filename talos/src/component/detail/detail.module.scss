@@ -194,14 +194,14 @@
                 background-repeat: no-repeat;
                 background-position: left center, right center;
                 height: 3.75rem;
-                padding: 0 1.15rem 0 1.1rem;
+                padding: 0 1.1rem 0 1rem;
                 display: flex;
 
                 .statsTxt {
                     flex: 0.55;
                     display: flex;
                     flex-direction: column;
-                    justify-content: space-evenly;
+                    justify-content: center;
                     padding-right: 2px;
                 }
 
@@ -222,7 +222,8 @@
                     align-items: center;
                     justify-content: flex-start;
                     font-size: 0.875rem;
-                    text-shadow: 0 1px 1px rgba($black-0, 0.25); /* THEME-NOTE: keep shadow */
+                    text-shadow: 0 1px 1px rgba($black-0, 0.25);
+                    max-height: 1.35rem;
 
                     &:first-of-type {
                         transform: translateY(3px);
@@ -239,6 +240,8 @@
                     .statLabel {
                         color: $grey-1;
                         margin-right: 2.5px;
+                        text-transform: uppercase;
+                        white-space: nowrap;
                     }
 
                     .statValue {
