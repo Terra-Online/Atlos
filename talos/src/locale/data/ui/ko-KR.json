@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "월드",
-      "main": "지역"
+      "main": "지역",
+      "sub": "서브"
     },
     "noInfo": "정보 없음"
   },

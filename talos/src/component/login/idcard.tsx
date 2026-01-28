@@ -1,14 +1,15 @@
-import './idcard.scss'
-const IDCard = ({ username, id }) => {
+import styles from './idcard.module.scss';
+
+const IDCard = ({ username, id }: { username?: string; id?: string }) => {
   return (
-    <div className="id-card">
-      <div className="avatar-container">
-        <div className="avatar"></div>
+    <div className={styles.idCard}>
+      <div className={styles.avatarContainer}>
+        <div className={styles.avatar}></div>
       </div>
-      <div className="bakpic"></div>
-      <div className="idcode"></div>
-        <span className="usrname">{username}</span>
-        <span className="usrid">UID: {id}</span>
+      <div className={styles.bakPic}></div>
+      <div className={styles.idCode}></div>
+        <span className={styles.usrName}>{username || '陳嘉辭'}</span>
+        <span className={styles.usrId}>UID: {id || '100002CI'}</span>
     </div>
   );
 };

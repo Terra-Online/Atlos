@@ -10,6 +10,7 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
+//import IDCard from '../login/idcard';
 import Detail from '../detail/detail';
 import SupportModal from '../support/support';
 
@@ -333,6 +334,11 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               </MarkFilterDragProvider>
             </div>
             <Notice />
+            {/* 
+            <div className={styles.idCardContainer}>
+                <IDCard />
+            </div>
+            */}
           </div>
           <div className={mobileStyles.mobileTriggerBar}>
             <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />

@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Världen",
-      "main": "Huvudregion"
+      "main": "Huvudregion",
+      "sub": "Sub"
     },
     "noInfo": "Ingen info."
   },

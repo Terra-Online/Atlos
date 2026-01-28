@@ -7,7 +7,7 @@ const Notice: React.FC = () => {
     const t = useTranslateUI();
     
     return (
-        <div className={styles.noticeModule}>
+        <div className={styles.noticeContainer}>
             <div className={styles.noticeBody}>
                 {parse(t('notice.legacy'))}
             </div>

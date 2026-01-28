@@ -1,4 +1,5 @@
 import markerTypeDict from './type.json';
+import { REGION_DICT } from '@/data/map';
 
 export interface IMarkerData {
     id: string;
@@ -41,6 +42,42 @@ export const WORLD_MARKS = Object.values(SUBREGION_MARKS_MAP).reduce(
 );
 
 export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
+
+/**
+ * 预计算每个子区域中各类型的数量
+ * 格式: { subregionId: { type: count } }
+ */
+export const SUBREGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Object.entries(SUBREGION_MARKS_MAP).reduce(
+    (acc, [subregionId, markers]) => {
+        const typeCounts: Record<string, number> = {};
+        markers.forEach((marker) => {
+            typeCounts[marker.type] = (typeCounts[marker.type] || 0) + 1;
+        });
+        acc[subregionId] = typeCounts;
+        return acc;
+    },
+    {} as Record<string, Record<string, number>>,
+);
+
+/**
+ * 预计算每个大区域中各类型的数量
+ * 格式: { regionKey: { type: count } }
+ */
+export const REGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Object.entries(REGION_DICT).reduce(
+    (acc, [regionKey, regionConfig]) => {
+        const typeCounts: Record<string, number> = {};
+        const subregions = regionConfig.subregions ?? [];
+        subregions.forEach((subregionId) => {
+            const subregionTypeCounts = SUBREGION_TYPE_COUNT_MAP[subregionId] ?? {};
+            Object.entries(subregionTypeCounts).forEach(([type, count]) => {
+                typeCounts[type] = (typeCounts[type] || 0) + count;
+            });
+        });
+        acc[regionKey] = typeCounts;
+        return acc;
+    },
+    {} as Record<string, Record<string, number>>,
+);
 
 export const DEFAULT_SUBCATEGORY_ORDER = [
     'collection',

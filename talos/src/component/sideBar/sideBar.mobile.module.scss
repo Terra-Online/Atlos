@@ -158,6 +158,16 @@
                 }
             }
         }
+        
+        .idCardContainer {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+        }
 }
 
 html:not(:lang(zh-CN), :lang(zh-HK)) {

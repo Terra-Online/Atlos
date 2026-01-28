@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Mondo",
-      "main": "Principale"
+      "main": "Principale",
+      "sub": "Sotto"
     },
     "noInfo": "Nessuna informazione."
   },

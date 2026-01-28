@@ -128,7 +128,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setPrefsMarkerProgressEnabled: (value) => set({ prefsMarkerProgressEnabled: value }),
       prefsAutoClusterEnabled: true,
       setPrefsAutoClusterEnabled: (value) => set({ prefsAutoClusterEnabled: value }),
-      prefsHideCompletedMarkers: true,
+      prefsHideCompletedMarkers: false,
       setPrefsHideCompletedMarkers: (value) => set({ prefsHideCompletedMarkers: value }),
 
       // Performance Mode (default: true - performance mode enabled)

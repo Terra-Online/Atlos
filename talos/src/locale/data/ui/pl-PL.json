@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Świat",
-      "main": "Główny"
+      "main": "Główny",
+      "sub": "Podreg"
     },
     "noInfo": "Brak informacji."
   },

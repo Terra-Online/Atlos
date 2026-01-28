@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "世界",
-      "main": "区域"
+      "main": "主区域",
+      "sub": "子区域"
     },
     "noInfo": "暂无信息"
   },

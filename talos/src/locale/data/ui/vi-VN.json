@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Thế giới",
-      "main": "Khu vực"
+      "main": "Khu vực",
+      "sub": "Phụ"
     },
     "noInfo": "Chưa có thông tin"
   },

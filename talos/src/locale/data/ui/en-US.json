@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "World",
-      "main": "Main"
+      "main": "Main",
+      "sub": "Sub"
     },
     "noInfo": "No info."
   },
