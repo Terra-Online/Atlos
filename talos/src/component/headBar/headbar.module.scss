@@ -204,7 +204,7 @@
 // Fallback styles for performance mode
 .headbarFallback {
     background: var(--headbar-bg);
-    backdrop-filter: blur(9px);
+    backdrop-filter: blur(4px);
     border-radius: 36px;
     border: 1.5px solid var(--headbar-bg);
     box-sizing: content-box;
