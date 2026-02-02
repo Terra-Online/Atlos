@@ -17,6 +17,7 @@ import {
     useMarkerStore,
     useRegionMarkerCount,
     useWorldMarkerCount,
+    useSubregionMarkerCount,
 } from '@/store/marker.ts';
 import {
     useAddPoint,
@@ -154,13 +155,15 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     // marks
     const worldCnt = useWorldMarkerCount(currentPoint?.type);
     const regionCnt = useRegionMarkerCount(currentPoint?.type);
+    const subCnt = useSubregionMarkerCount(currentPoint?.type, currentPoint?.subregionId);
 
     const statItems = useMemo(
         () => [
             { label: tUI('detail.stat.world'), data: worldCnt, index: 0 },
             { label: tUI('detail.stat.main'), data: regionCnt, index: 1 },
+            { label: tUI('detail.stat.sub'), data: subCnt, index: 2 },
         ],
-        [worldCnt, regionCnt, tUI],
+        [worldCnt, regionCnt, subCnt, tUI],
     );
 
     return (

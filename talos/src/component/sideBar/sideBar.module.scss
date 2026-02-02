@@ -110,6 +110,15 @@ $transition-speed: 0.3s;
                 gap: 0.3rem;
             }
         }
+        .idCardContainer {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+        }
         .copyright, .socialBar {
             position: absolute;
             z-index: 100;
@@ -222,7 +231,6 @@ $transition-speed: 0.3s;
                     > svg {
                         width: 1.15rem;
                         height: 1.15rem;
-                        position: right
                     }
                     &::after {
                         content: "QQ群";

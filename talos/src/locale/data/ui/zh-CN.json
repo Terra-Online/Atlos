@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "服务条款",
+    "tos": "服务条款与储存",
     "hideUI": "隐藏界面",
     "group": "加入相关群组",
     "darkmode": "切换到深色模式",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "世界",
-      "main": "区域"
+      "main": "主区域",
+      "sub": "子区域"
     },
     "noInfo": "暂无信息"
   },
@@ -95,7 +96,8 @@
       "hint": "选择您希望启用的地图信息储存以及自动优化设置。<br>我们建议您<span class=\"keyword\">开启所有选项以获得更连贯的使用体验</span>。",
       "viewState": "保存当前视图",
       "markerProgress": "保存点位与筛选器",
-      "autoCluster": "点位自动聚合"
+      "autoCluster": "点位自动聚合",
+      "hideCompleted": "隐藏已完成标点"
     },
     "theme": {
       "title": "主题",

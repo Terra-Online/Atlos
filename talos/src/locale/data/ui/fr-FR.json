@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Conditions d’utilisation",
+    "tos": "Conditions et stockage",
     "hideUI": "Masquer l’interface utilisateur",
     "group": "Rejoindre les groupes associés",
     "darkmode": "Passer en mode sombre",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Monde",
-      "main": "Principal"
+      "main": "Principal",
+      "sub": "Sous"
     },
     "noInfo": "Aucune information."
   },
@@ -95,7 +96,8 @@
       "hint": "Choisissez le stockage et l’optimisation automatique. Nous recommandons <span class=\"keyword\">d’activer toutes les options</span> pour une expérience plus cohérente.",
       "viewState": "Vue de carte",
       "markerProgress": "Marqueurs & progrès",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Masquer les points terminés"
     },
     "theme": {
       "title": "Thème",

@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Condiciones de uso",
+    "tos": "Condiciones y almacenamiento",
     "hideUI": "Ocultar la interfaz de usuario",
     "group": "Unirse a grupos relacionados",
     "darkmode": "Cambiar a modo oscuro",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Mundo",
-      "main": "Región"
+      "main": "Región",
+      "sub": "Sub"
     },
     "noInfo": "No hay información."
   },
@@ -95,7 +96,8 @@
       "hint": "Seleccione el almacenamiento y la optimización automática. Recomendamos <span class=\"keyword\">activar todas las opciones</span> para una experiencia más consistente.",
       "viewState": "Vista del mapa",
       "markerProgress": "Marcadores & progreso",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Ocultar puntos completados"
     },
     "theme": {
       "title": "Tema",

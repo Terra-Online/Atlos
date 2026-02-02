@@ -34,7 +34,7 @@ const SupportModal: React.FC<SupportProps> = ({ open, onClose, onChange }) => {
             width="12rem"
             height="3rem"
             schema="light"
-            onClick={() => window.open('https://ko-fi.com/cirisus', '_blank')}
+            onClick={() => window.open('https://ko-fi.com/cirisus', '_blank', 'noopener,noreferrer')}
           />
           <Button
             text={t('support.afdian')}
@@ -42,7 +42,7 @@ const SupportModal: React.FC<SupportProps> = ({ open, onClose, onChange }) => {
             width="12rem"
             height="3rem"
             schema="light"
-            onClick={() => window.open('https://afdian.com/a/cirisus', '_blank')}
+            onClick={() => window.open('https://afdian.com/a/cirisus', '_blank', 'noopener,noreferrer')}
           />
         </div>
         <div className={styles.afterYouSupport}>{parse(t('support.hint'))}</div>

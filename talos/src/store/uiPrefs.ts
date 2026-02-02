@@ -59,6 +59,8 @@ interface IUiPrefsStore {
   setPrefsMarkerProgressEnabled: (value: boolean) => void;
   prefsAutoClusterEnabled: boolean;
   setPrefsAutoClusterEnabled: (value: boolean) => void;
+  prefsHideCompletedMarkers: boolean;
+  setPrefsHideCompletedMarkers: (value: boolean) => void;
 
   // Performance Mode
   prefsPerformanceModeEnabled: boolean;
@@ -126,6 +128,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setPrefsMarkerProgressEnabled: (value) => set({ prefsMarkerProgressEnabled: value }),
       prefsAutoClusterEnabled: true,
       setPrefsAutoClusterEnabled: (value) => set({ prefsAutoClusterEnabled: value }),
+      prefsHideCompletedMarkers: false,
+      setPrefsHideCompletedMarkers: (value) => set({ prefsHideCompletedMarkers: value }),
 
       // Performance Mode (default: true - performance mode enabled)
       prefsPerformanceModeEnabled: true,
@@ -150,6 +154,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         prefsViewStateEnabled: state.prefsViewStateEnabled,
         prefsMarkerProgressEnabled: state.prefsMarkerProgressEnabled,
         prefsAutoClusterEnabled: state.prefsAutoClusterEnabled,
+        prefsHideCompletedMarkers: state.prefsHideCompletedMarkers,
         prefsPerformanceModeEnabled: state.prefsPerformanceModeEnabled,
       }),
       merge: (persistedState, currentState) => {
@@ -163,6 +168,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         if (persisted.prefsViewStateEnabled !== undefined) merged.prefsViewStateEnabled = persisted.prefsViewStateEnabled;
         if (persisted.prefsMarkerProgressEnabled !== undefined) merged.prefsMarkerProgressEnabled = persisted.prefsMarkerProgressEnabled;
         if (persisted.prefsAutoClusterEnabled !== undefined) merged.prefsAutoClusterEnabled = persisted.prefsAutoClusterEnabled;
+        if (persisted.prefsHideCompletedMarkers !== undefined) merged.prefsHideCompletedMarkers = persisted.prefsHideCompletedMarkers;
         if (persisted.prefsPerformanceModeEnabled !== undefined) merged.prefsPerformanceModeEnabled = persisted.prefsPerformanceModeEnabled;
         if (persisted.theme !== undefined) merged.theme = persisted.theme;
         
@@ -235,3 +241,7 @@ export const useSetTheme = () => useUiPrefsStore((s) => s.setTheme);
 // Performance Mode hooks
 export const usePerformanceMode = (): boolean => useUiPrefsStore((s) => s.prefsPerformanceModeEnabled);
 export const useSetPerformanceMode = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setPrefsPerformanceModeEnabled);
+
+// Hide Completed Markers hooks
+export const useHideCompletedMarkers = (): boolean => useUiPrefsStore((s) => s.prefsHideCompletedMarkers);
+export const useSetHideCompletedMarkers = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setPrefsHideCompletedMarkers);

@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Ketentuan Layanan",
+    "tos": "Ketentuan & Penyimpanan",
     "hideUI": "Sembunyikan UI",
     "group": "Bergabung dengan grup terkait",
     "darkmode": "Beralih ke mode gelap",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Dunia",
-      "main": "Utama"
+      "main": "Utama",
+      "sub": "Sub"
     },
     "noInfo": "Tidak ada informasi."
   },
@@ -95,7 +96,8 @@
       "hint": "Pilih penyimpanan dan optimasi otomatis. Kami sarankan <span class=\"keyword\">mengaktifkan semua opsi</span> untuk pengalaman yang lebih konsisten.",
       "viewState": "Tampilan peta",
       "markerProgress": "Marker & progres",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Sembunyikan titik selesai"
     },
     "theme": {
       "title": "Tema",

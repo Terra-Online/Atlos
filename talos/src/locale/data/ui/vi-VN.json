@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Điều khoản dịch vụ",
+    "tos": "Điều khoản & Lưu trữ",
     "hideUI": "Ẩn giao diện",
     "group": "Tham gia nhóm liên quan",
     "darkmode": "Chuyển sang chế độ tối",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Thế giới",
-      "main": "Khu vực"
+      "main": "Khu vực",
+      "sub": "Phụ"
     },
     "noInfo": "Chưa có thông tin"
   },
@@ -95,7 +96,8 @@
       "hint": "Chọn lưu trữ thông tin bản đồ và tối ưu tự động.<br>Chúng tôi khuyến nghị <span class=\"keyword\">bật tất cả tùy chọn để có trải nghiệm nhất quán hơn</span>.",
       "viewState": "Lưu chế độ xem",
       "markerProgress": "Lưu điểm & bộ lọc",
-      "autoCluster": "Tự động gom điểm"
+      "autoCluster": "Tự động gom điểm",
+      "hideCompleted": "Ẩn điểm đã hoàn thành"
     },
     "theme": {
       "title": "Chủ đề",

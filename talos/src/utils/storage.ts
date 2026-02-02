@@ -408,6 +408,8 @@ export const importMarkerData = (
     setFilter: (filter: string[]) => void;
     getSelectedPoints: () => string[];
     setSelected: (id: string, value: boolean) => void;
+    getActivePoints?: () => string[];
+    getFilter?: () => string[];
   }
 ): boolean => {
   try {
@@ -418,20 +420,22 @@ export const importMarkerData = (
       return false;
     }
 
-    // Import active points
-    callbacks.clearPoints();
+    // Merge active points (add new ones, keep existing)
     data.activePoints.forEach((id: string) => {
       callbacks.addPoint(id);
     });
 
-    // Import filter
-    callbacks.setFilter(data.filter);
+    // Merge filter (combine and deduplicate)
+    if (callbacks.getFilter) {
+      const existingFilter = callbacks.getFilter();
+      const mergedFilter = Array.from(new Set([...existingFilter, ...data.filter]));
+      callbacks.setFilter(mergedFilter);
+    } else {
+      // Fallback: replace if getter not provided
+      callbacks.setFilter(data.filter);
+    }
     
-    // Clear existing selections
-    callbacks.getSelectedPoints().forEach((id: string) => {
-      callbacks.setSelected(id, false);
-    });
-    // Add imported selections
+    // Merge selections (add imported ones, keep existing)
     data.selectedPoints.forEach((id: string) => {
       callbacks.setSelected(id, true);
     });

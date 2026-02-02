@@ -1,6 +1,6 @@
 # talos
 
-Copy `config/config.template.json` to `config/config.json` and configure your settings.
+Copy `config/config.template.json` and `config/config.r2.template.json` to `config/config.json` and `config/config.r2.json` and configure your settings. By doing this you can build this project in your local env.
 
 Generally you need `config.json` only, to enable local build. R2 version is used for CloudFlare CDN.
 

@@ -44,6 +44,8 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     const setPrefsMarkerProgress = useUiPrefsStore((s) => s.setPrefsMarkerProgressEnabled);
     const prefsAutoCluster = useUiPrefsStore((s) => s.prefsAutoClusterEnabled);
     const setPrefsAutoCluster = useUiPrefsStore((s) => s.setPrefsAutoClusterEnabled);
+    const prefsHideCompleted = useUiPrefsStore((s) => s.prefsHideCompletedMarkers);
+    const setPrefsHideCompleted = useUiPrefsStore((s) => s.setPrefsHideCompletedMarkers);
 
     // Theme
     const themePreference = useTheme();
@@ -139,6 +141,14 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                 isActive={prefsAutoCluster}
                                 onToggle={setPrefsAutoCluster}
                                 label={t('settings.mapPrefs.autoCluster')}
+                                className={styles.settingsTrigger}
+                            />
+                        </div>
+                        <div className={styles.triggerRow}>
+                            <Trigger
+                                isActive={prefsHideCompleted}
+                                onToggle={setPrefsHideCompleted}
+                                label={t('settings.mapPrefs.hideCompleted')}
                                 className={styles.settingsTrigger}
                             />
                         </div>

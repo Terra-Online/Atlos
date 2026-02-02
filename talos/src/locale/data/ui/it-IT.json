@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Termini di Servizio",
+    "tos": "Termini e Archiviazione",
     "hideUI": "Nascondi Interfaccia",
     "group": "Unisciti al gruppo correlato",
     "darkmode": "Passa alla modalità scura",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Mondo",
-      "main": "Principale"
+      "main": "Principale",
+      "sub": "Sotto"
     },
     "noInfo": "Nessuna informazione."
   },
@@ -95,7 +96,8 @@
       "hint": "Seleziona archiviazione e ottimizzazione automatica. Consigliamo <span class=\"keyword\">di abilitare tutte le opzioni</span> per un'esperienza più coerente.",
       "viewState": "Vista mappa",
       "markerProgress": "Marker & progresso",
-      "autoCluster": "Auto-cluster"
+      "autoCluster": "Auto-cluster",
+      "hideCompleted": "Nascondi punti completati"
     },
     "theme": {
       "title": "Tema",

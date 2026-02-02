@@ -1,12 +1,15 @@
-$avatar-default: url('../../../assets/end2.webp');
-$cardbak: url('../../../assets/logo.webp');
-$contour: url('../../../assets/contour.webp');
-$qrcode: url('../../../assets/qrcode.png');
+$avatar-default: url('@/assets/images/UI/avt/bg/end2.webp');
+$cardbak: url('@/assets/images/UI/avt/bg/logo.webp');
+$contour: url('@/assets/images/UI/avt/bg/contour.webp');
+$qrcode: url('@/assets/images/UI/avt/bg/qrcode.webp');
 $primary-accent: #ecdb09;
-.id-card {
-    height: 8rem;
+
+$border-width: 3px;
+.idCard {
+    height: 7rem;
     width: 19rem;
-    padding: 1.5rem;
+    max-width: 95%;
+    padding: 1rem;
     box-sizing: border-box;
     background-color: #333;
     border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
@@ -16,9 +19,9 @@ $primary-accent: #ecdb09;
         position: absolute;
         top: 0;
         left: 0;
-        width: calc(100% + 4px);
-        height: calc(100% + 4px);
-        transform: translate(-2px, -2px);
+        width: calc(100% + $border-width * 2);
+        height: calc(100% + $border-width * 2);
+        transform: translate(-#{$border-width}, -#{$border-width});
         background: radial-gradient(circle at 100% 100%, #0000 0, #0000 2px, transparent 2px) 0% 0%/8px 8px no-repeat,
             radial-gradient(circle at 0 100%, #0000 0, #0000 2px, transparent 2px) 100% 0%/8px 8px no-repeat,
             radial-gradient(circle at 100% 0, #0000 0, #0000 2px, transparent 2px) 0% 100%/8px 8px no-repeat,
@@ -47,7 +50,7 @@ $primary-accent: #ecdb09;
         mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
     }
 }
-.id-card {
+.idCard {
     display: grid;
     align-items: end;
     justify-content: start;
@@ -61,7 +64,7 @@ $primary-accent: #ecdb09;
       "avatar . . ."
       "avatar usrname . ."
       "avatar usrid usrid .";
-    > .avatar-container {
+    > .avatarContainer {
         grid-area: avatar;
         width: 5rem;
         height: 5rem;
@@ -89,24 +92,26 @@ $primary-accent: #ecdb09;
             filter: drop-shadow(1px 2px 3px #333);
         }
     }
-    > .usrname {
+    > .usrName {
         grid-area: usrname;
         color: #fafafa;
         font-size: 130%;
         transform: translate(6px, 6px);
-        font-variation-settings: "wght" 600;
+        font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-weight: 600;
+        line-height: 1.2;
         white-space: nowrap;
         letter-spacing: -1px;
     }
-    > .usrid {
+    > .usrId {
         grid-area: usrid;
         color: #d6d6d6;
-        font-family: 'Novecento Normal';
+        font-family: "Novecento Medium", sans-serif;
         white-space: nowrap;
-        transform: translate(8px, 0px);
+        transform: translate(6px, 3px);
         letter-spacing: -1px;
     }
-    > .bakpic {
+    > .bakPic {
         grid-area: 1 / 3 / 3 / 5;
         height: 100%;
         width: 100%;
@@ -118,7 +123,7 @@ $primary-accent: #ecdb09;
         transform: translateX(12px);
         position: relative;
     }
-    > .idcode {
+    > .idCode {
         grid-area: 1 / 4 / 1 / 4;
         position: absolute;
         right: 0;

@@ -31,7 +31,9 @@ const ensurePane = (map: L.Map): string => {
     const existing = map.getPane(paneName);
     if (existing) return paneName;
     const pane = map.createPane(paneName);
-    pane.style.zIndex = '640'; // Below labels (650), above tiles
+    // Keep links under markers so they don't visually/interaction-block POI markers.
+    // Leaflet defaults: overlayPane 400, markerPane 600, tooltipPane 650.
+    pane.style.zIndex = '450';
     pane.style.pointerEvents = 'auto';
     return paneName;
 };

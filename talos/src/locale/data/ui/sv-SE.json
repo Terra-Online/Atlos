@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Användarvillkor",
+    "tos": "Villkor & Lagring",
     "hideUI": "Dölj UI",
     "group": "Gå med i relaterad grupp",
     "darkmode": "Växla till mörkt läge",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Världen",
-      "main": "Huvudregion"
+      "main": "Område",
+      "sub": "Zon"
     },
     "noInfo": "Ingen info."
   },
@@ -95,7 +96,8 @@
       "hint": "Välj vilken kartlagring och automatisk optimering du vill aktivera. Vi rekommenderar att <span class=\"keyword\">aktivera alla alternativ</span> för en mer konsekvent upplevelse.",
       "viewState": "Behåll kartvy",
       "markerProgress": "Behåll markörer & framsteg",
-      "autoCluster": "Auto-klustring"
+      "autoCluster": "Auto-klustring",
+      "hideCompleted": "Dölj slutförda punkter"
     },
     "theme": {
       "title": "Temapreferenser",

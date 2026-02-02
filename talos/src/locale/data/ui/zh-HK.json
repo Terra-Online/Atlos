@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "服務條款",
+    "tos": "服務條款與存儲",
     "hideUI": "隱藏介面",
     "group": "加入相關群組",
     "darkmode": "切換至深色模式",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "世界",
-      "main": "區域"
+      "main": "主區域",
+      "sub": "子區域"
     },
     "noInfo": "暫無資料"
   },
@@ -95,7 +96,8 @@
       "hint": "選擇您希望啟用的地圖資訊儲存以及自動優化設定。<br>我們建議您<span class=\"keyword\">開啟所有選項以獲得更連貫的使用體驗</span>。",
       "viewState": "保存當前視圖",
       "markerProgress": "保存點位與篩選器",
-      "autoCluster": "點位自動聚合"
+      "autoCluster": "點位自動聚合",
+      "hideCompleted": "隱藏已完成標點"
     },
     "theme": {
       "title": "主題",

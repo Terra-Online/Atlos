@@ -1,6 +1,6 @@
 {
   "headbar": {
-    "tos": "Nutzungsbedingungen",
+    "tos": "Nutzungsbedingungen & Speicher",
     "hideUI": "Benutzeroberfläche ausblenden",
     "group": "Gruppen beitreten",
     "darkmode": "In den Dunkelmodus wechseln",
@@ -25,7 +25,8 @@
   "detail": {
     "stat": {
       "world": "Welt",
-      "main": "Haupt"
+      "main": "Haupt",
+      "sub": "Unter"
     },
     "noInfo": "Keine Informationen."
   },
@@ -95,7 +96,8 @@
       "hint": "Wählen Sie die Kartenspeicherung und automatische Optimierung. Wir empfehlen <span class=\"keyword\">alle Optionen zu aktivieren</span> für ein konsistenteres Erlebnis.",
       "viewState": "Kartenansicht",
       "markerProgress": "Marker & Fortschritt",
-      "autoCluster": "Auto-Clustering"
+      "autoCluster": "Auto-Clustering",
+      "hideCompleted": "Abgeschlossene Punkte ausblenden"
     },
     "theme": {
       "title": "Design",

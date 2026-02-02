@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { useUserRecord } from './userRecord';
 import useRegion from './region';
 import { useMemo } from 'react';
-import { IMarkerData, SUBREGION_MARKS_MAP, WORLD_MARKS } from '@/data/marker';
+import { IMarkerData, SUBREGION_MARKS_MAP, WORLD_MARKS, SUBREGION_TYPE_COUNT_MAP, REGION_TYPE_COUNT_MAP } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 
 interface IMarkerStore {
@@ -116,11 +116,12 @@ export const useSelectedPoints = () =>
 export const useToggleSelected = () =>
     useMarkerStore((state) => state.toggleSelected);
 
-export const useWorldMarkerCount = (type) => {
+export const useWorldMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
     return useMemo(() => {
         const ret = { total: 0, collected: 0 };
         if (!type) return ret;
+        // 使用预计算的总数，只需计算已收集数量
         const worldTotal = WORLD_MARKS.filter((m) => m.type === type);
         ret.total = worldTotal.length;
         ret.collected = worldTotal.filter((m) =>
@@ -130,23 +131,44 @@ export const useWorldMarkerCount = (type) => {
     }, [pointsRecord, type]);
 };
 
-export const useRegionMarkerCount = (type) => {
+export const useRegionMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
     return useMemo(() => {
         const ret = { total: 0, collected: 0 };
-        if (!type) return ret;
-        // 兼容老的 region key（例如 Jinlong 已重命名为 Wuling）
+        if (!type || !currentRegion) return ret;
+        // 使用预计算的区域类型统计
+        const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
+        ret.total = regionTypeCounts?.[type] ?? 0;
+        // 计算已收集数量
         const regionConfig = REGION_DICT[currentRegion];
         const subRegions = regionConfig?.subregions ?? [];
-        const regionTotal = subRegions
+        const regionMarkers = subRegions
             .map((sr) => SUBREGION_MARKS_MAP[sr])
             .flat()
             .filter((m) => m.type === type);
-        ret.total = regionTotal.length;
-        ret.collected = regionTotal.filter((m) =>
+        ret.collected = regionMarkers.filter((m) =>
             pointsRecord.includes(m.id),
         ).length;
         return ret;
     }, [pointsRecord, currentRegion, type]);
+};
+
+// Get the marker count for a specific subregion (based on current active point)
+export const useSubregionMarkerCount = (type?: string, subregionId?: string) => {
+    const pointsRecord = useUserRecord();
+    return useMemo(() => {
+        const ret = { total: 0, collected: 0 };
+        if (!type || !subregionId) return ret;
+        // 使用预计算的子区域类型统计
+        const subregionTypeCounts = SUBREGION_TYPE_COUNT_MAP[subregionId];
+        ret.total = subregionTypeCounts?.[type] ?? 0;
+        // 计算已收集数量
+        const subregionMarks = SUBREGION_MARKS_MAP[subregionId] ?? [];
+        const subregionMarkers = subregionMarks.filter((m) => m.type === type);
+        ret.collected = subregionMarkers.filter((m) =>
+            pointsRecord.includes(m.id),
+        ).length;
+        return ret;
+    }, [pointsRecord, subregionId, type]);
 };
