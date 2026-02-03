@@ -17,6 +17,9 @@
             "Crate(Locked)": {
                 "noFrame": true
             },
+            "Guiding Butterflies": {
+                "noFrame": true
+            },
             "Delta Bot": {
                 "noFrame": true
             },
@@ -26,7 +29,6 @@
             "Protocol DL II": {
                 "noFrame": true
             },
-
             "Gear Template": {
                 "noFrame": true
             },
@@ -219,6 +221,9 @@
             "TP Point": {
                 "noFrame": true
             },
+            "TP Platform": {
+                "noFrame": true
+            },
             "Stock Redistrib.": {
                 "noFrame": true
             },
@@ -241,6 +246,9 @@
             "Control Nexus": {
                 "noFrame": true
             },
+            "Reception Room": {
+                "noFrame": true
+            },
             "Etchspace Salvage": {
                 "noFrame": true
             },
@@ -251,9 +259,6 @@
                 "noFrame": true
             },
             "Operator Contact Panel": {
-                "noFrame": true
-            },
-            "TP Platform": {
                 "noFrame": true
             },
             "Tower of Trails": {
