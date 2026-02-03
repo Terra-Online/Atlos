@@ -9,7 +9,7 @@ const Notice: React.FC = () => {
     return (
         <div className={styles.noticeContainer}>
             <div className={styles.noticeBody}>
-                {parse(t('notice.legacy'))}
+                {parse(t('notice.uptodate'))}
             </div>
         </div>
     );

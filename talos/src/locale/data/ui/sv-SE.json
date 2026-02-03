@@ -145,7 +145,7 @@
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Obs:</span> När spelversionen är <span class=\"keyword\">1.0.13</span>, är kartdataversionen <span class=\"keyword\">0.8.25</span>. Vi behöver tid för att uppdatera datan, så uppdateringar kan komma senare än spelets patch. Tack för ditt tålamod. För att spåra våra uppdateringar, vänligen gå med i vår <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Gå med i Discord'>Discord-server</a>.<br><br>Vi rekommenderar också följande verktyg:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Ritningar:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "Kartdata är uppdaterad."
+    "uptodate": "Den aktuella datasetet är uppdaterad.<br><br>Om du behöver rapportera problem, vänligen gå med i vår <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Gå med i Discord'>Discord-server</a>.<br><br>Vi rekommenderar också följande verktyg:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Ritningar:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Besök Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {

@@ -3,6 +3,7 @@ import type { UseBoundStore, StoreApi } from 'zustand';
 import LOGGER from '@/utils/log';
 import ALP from 'accept-language-parser';
 import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
+import { runStorageMigration } from '@/utils/fallback';
 
 // Build CDN URL for fonts (same logic as fontLoader)
 const toCdnUrl = (p: string): string => {
@@ -282,6 +283,9 @@ async function loadAndSet(locale: Lang) {
 }
 
 async function init() {
+    // Run storage migration before loading language data
+    runStorageMigration();
+    
     const locale = getLanguage();
     await loadAndSet(locale);
 }
