@@ -34,6 +34,15 @@
         },
         "noFrame": true
     },
+    "cratesurprise": {
+        "key": "cratesurprise",
+        "name": "Crate(Surprise)",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
     "cratelocked": {
         "key": "cratelocked",
         "name": "Crate(Locked)",

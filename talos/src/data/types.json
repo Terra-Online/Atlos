@@ -11,6 +11,9 @@
             "Crate III": {
                 "noFrame": true
             },
+            "Crate(Surprise)": {
+                "noFrame": true
+            },
             "Crate(Locked)": {
                 "noFrame": true
             },
@@ -162,22 +165,32 @@
                 "subIcon": "plant_spot",
                 "tier": "5"
             },
+            "Cosmagaric Spot": {
+                "subIcon": "plant_spot",
+                "tier": "5"
+            },
+
             "Kalkodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Chrysodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Vitrodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Blighted Jadeleaf Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "5"
             },
+            "False Aggela Spot": {
+                "subIcon": "plant_spot",
+                "tier": "5"
+            },
+
             "Kalkonyx Spot": {
                 "subIcon": "mine_spot",
                 "tier": "4"
@@ -191,6 +204,10 @@
                 "tier": "4"
             },
             "Igneosite Spot": {
+                "subIcon": "mine_spot",
+                "tier": "5"
+            },
+            "Wulingstone Spot": {
                 "subIcon": "mine_spot",
                 "tier": "5"
             }
