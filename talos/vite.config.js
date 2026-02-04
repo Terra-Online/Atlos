@@ -147,4 +147,13 @@ export default defineConfig({
             plugins: [autoprefixer()],
         },
     },
+    build: {
+        rollupOptions: {
+            external: [
+                // Exclude test/legacy data folders from bundle
+                /src\/data\/marker\/data\/20260110/,
+                /src\/data\/marker\/data\/20260204/,
+            ],
+        },
+    },
 });

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useUiPrefsStore } from './uiPrefs';
 import { createConditionalStorage } from '@/utils/storage';
+import { DATASET_VERSION } from '@/data/migration/version';
 
 interface IUserRecordStore {
     activePoints: string[];
@@ -40,6 +41,11 @@ export const useUserRecordStore = create<IUserRecordStore>()(
         }),
         {
             name: 'points-storage',
+            version: DATASET_VERSION,
+            migrate: (persistedState, _version) => {
+                // Keep persisted shape as-is; ID remapping is handled separately by fallback.
+                return persistedState as Partial<IUserRecordStore>;
+            },
             storage: createJSONStorage(() => createConditionalStorage(
                 localStorage,
                 () => useUiPrefsStore.getState().prefsMarkerProgressEnabled,

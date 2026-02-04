@@ -5,6 +5,13 @@ import ALP from 'accept-language-parser';
 import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
 import { runStorageMigration } from '@/utils/fallback';
 
+/**
+ * Testing switch: force migration to run on every reload
+ * - false (default): migration runs only once per DATASET_VERSION
+ * - true: clears version field before each migration check (for testing)
+ */
+const FORCE_MIGRATION_EVERY_TIME = true;
+
 // Build CDN URL for fonts (same logic as fontLoader)
 const toCdnUrl = (p: string): string => {
     const str = String(p);
@@ -283,8 +290,27 @@ async function loadAndSet(locale: Lang) {
 }
 
 async function init() {
-    // Run storage migration before loading language data
-    runStorageMigration();
+    // Run storage migration before loading language data (async, non-blocking)
+    if (FORCE_MIGRATION_EVERY_TIME) {
+        // Testing mode: clear version field to force migration on every reload
+        try {
+            const raw = localStorage.getItem('points-storage');
+            if (raw) {
+                const data = JSON.parse(raw) as Record<string, unknown>;
+                delete data.version;
+                localStorage.setItem('points-storage', JSON.stringify(data));
+            }
+        } catch {
+            // ignore localStorage errors
+        }
+    }
+    
+    const safeRunStorageMigration = (): Promise<boolean> => {
+        return (runStorageMigration as unknown as () => Promise<boolean>)();
+    };
+    safeRunStorageMigration().catch((err: unknown) => {
+        console.error('[Migration] Migration error:', err);
+    });
     
     const locale = getLanguage();
     await loadAndSet(locale);
