@@ -3537,6 +3537,15 @@
     "type": "bonekrusher_ambusher"
   },
   {
+    "id": 3500021716,
+    "position": [
+      -387.3172,
+      753.4869
+    ],
+    "subregionId": "VL_6",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 3500021717,
     "position": [
       -413.0302,
@@ -3672,6 +3681,15 @@
     "type": "ram"
   },
   {
+    "id": 3500022140,
+    "position": [
+      -438.8194,
+      770.7809
+    ],
+    "subregionId": "VL_6",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 3500022143,
     "position": [
       -421.4253,
@@ -3751,6 +3769,15 @@
     ],
     "subregionId": "VL_6",
     "type": "heavy_ram"
+  },
+  {
+    "id": 3500022228,
+    "position": [
+      -403.0692,
+      786.9913
+    ],
+    "subregionId": "VL_6",
+    "type": "tunneling_nidwyrm"
   },
   {
     "id": 3500022235,

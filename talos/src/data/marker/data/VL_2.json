@@ -1197,6 +1197,15 @@
     "type": "bonekrusher_ambusher"
   },
   {
+    "id": 200001544,
+    "position": [
+      -390.4115,
+      141.4872
+    ],
+    "subregionId": "VL_2",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 200001554,
     "position": [
       -473.6851,

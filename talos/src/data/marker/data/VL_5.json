@@ -2502,6 +2502,24 @@
     "type": "hazefyre_claw"
   },
   {
+    "id": 3400021168,
+    "position": [
+      -658.9075,
+      729.9011
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 3400021169,
+    "position": [
+      -609.8199,
+      700.5151
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 3400021182,
     "position": [
       -520.1054,
@@ -2590,6 +2608,15 @@
     ],
     "subregionId": "VL_5",
     "type": "elite_executioner"
+  },
+  {
+    "id": 3400021354,
+    "position": [
+      -612.3089,
+      701.6026
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
   },
   {
     "id": 3400021355,
@@ -3301,6 +3328,15 @@
     ],
     "subregionId": "VL_5",
     "type": "aurylene"
+  },
+  {
+    "id": 3400021131,
+    "position": [
+      -543.628,
+      777.021
+    ],
+    "subregionId": "VL_5",
+    "type": "repair_logic"
   },
   {
     "id": 3400021132,

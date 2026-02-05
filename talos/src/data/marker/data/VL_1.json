@@ -909,6 +909,15 @@
     "type": "bonekrusher_ambusher"
   },
   {
+    "id": 2100420371,
+    "position": [
+      -712.2607,
+      258.2156
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 2100420387,
     "position": [
       -643.3134,
@@ -4275,6 +4284,24 @@
     "type": "delta_bot"
   },
   {
+    "id": 2100010291,
+    "position": [
+      -516.8996,
+      370.6866
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 2100010292,
+    "position": [
+      -550.0006,
+      418.1782
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 2100010470,
     "position": [
       -520.979,
@@ -5013,6 +5040,15 @@
     "type": "bonekrusher_raider"
   },
   {
+    "id": 2100020989,
+    "position": [
+      -692.4357,
+      312.0955
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 2100021124,
     "position": [
       -543.0747,
@@ -5083,6 +5119,33 @@
     ],
     "subregionId": "VL_1",
     "type": "ram"
+  },
+  {
+    "id": 2100021211,
+    "position": [
+      -751.0071,
+      464.183
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 2100021212,
+    "position": [
+      -746.5642,
+      463.5738
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 2100021213,
+    "position": [
+      -748.7617,
+      460.116
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
   },
   {
     "id": 2100020042,
@@ -7405,6 +7468,15 @@
     ],
     "subregionId": "VL_1",
     "type": "acid_originium_slug"
+  },
+  {
+    "id": 2100430142,
+    "position": [
+      -701.8446,
+      481.2671
+    ],
+    "subregionId": "VL_1",
+    "type": "tunneling_nidwyrm"
   },
   {
     "id": 2100430153,

@@ -142,6 +142,15 @@
         },
         "noFrame": true
     },
+    "energy_alluvium": {
+        "key": "energy_alluvium",
+        "name": "Energy Alluvium",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        },
+        "noFrame": true
+    },
     "re_crisis": {
         "key": "re_crisis",
         "name": "RE-Crisis",
@@ -163,15 +172,6 @@
     "exploration_level": {
         "key": "exploration_level",
         "name": "Exploration Level",
-        "category": {
-            "main": "poi",
-            "sub": "combat"
-        },
-        "noFrame": true
-    },
-    "energy_alluvium": {
-        "key": "energy_alluvium",
-        "name": "Energy Alluvium",
         "category": {
             "main": "poi",
             "sub": "combat"

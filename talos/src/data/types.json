@@ -49,6 +49,9 @@
             "Temporary Energy Alluvium": {
                 "noFrame": true
             },
+            "Energy Alluvium": {
+                "noFrame": true
+            },
             "RE-Crisis": {
                 "noFrame": true
             },
@@ -56,9 +59,6 @@
                 "noFrame": true
             },
             "Exploration Level": {
-                "noFrame": true
-            },
-            "Energy Alluvium": {
                 "noFrame": true
             },
             "EW Terminal": {

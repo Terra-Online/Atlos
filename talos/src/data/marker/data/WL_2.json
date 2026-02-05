@@ -11052,6 +11052,15 @@
     "type": "mudflow"
   },
   {
+    "id": 22800580318,
+    "position": [
+      -276.5081,
+      643.7199
+    ],
+    "subregionId": "WL_2",
+    "type": "tunneling_nidwyrm"
+  },
+  {
     "id": 22800580001,
     "position": [
       -295.2904,
