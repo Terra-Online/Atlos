@@ -9,6 +9,14 @@ export interface IMarkerData {
     // meta?: Record<string, any>
 }
 
+// Raw marker data from JSON (id may be number or string)
+interface IRawMarkerData {
+    id: string | number;
+    position: [number, number];
+    subregionId: string;
+    type: string;
+}
+
 export interface IMarkerType {
     key: string;
     noFrame?: boolean;
@@ -18,18 +26,31 @@ export interface IMarkerType {
         sub: string;
     };
 }
+
+/**
+ * Convert raw marker data to normalized format with string IDs
+ * This ensures numeric IDs are converted to strings to avoid precision issues
+ */
+const normalizeMarker = (raw: IRawMarkerData): IMarkerData => ({
+    ...raw,
+    id: String(raw.id),
+});
+
 // TODO 当前实现并不能实现懒加载内容
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 const modules = import.meta.glob('./data/*.json', { eager: true }) as Record<
     string,
-    { default: IMarkerData[] }
+    { default: IRawMarkerData[] }
 >;
 /**
  * 子区域到markerData列表的数据映射
+ * All marker IDs are normalized to strings
  */
 export const SUBREGION_MARKS_MAP = Object.keys(modules).reduce((acc, key) => {
     const subregionId = key.replace('./data/', '').replace('.json', '');
-    acc[subregionId] = modules[key].default || modules[key];
+    const rawMarkers = modules[key].default || modules[key];
+    // Normalize all markers to ensure string IDs
+    acc[subregionId] = rawMarkers.map(normalizeMarker);
     return acc;
 }, {}) as Record<string, IMarkerData[]>;
 

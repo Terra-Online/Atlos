@@ -346,13 +346,26 @@ export const getStorageTreeMapData = async (): Promise<TreeMapNode[]> => {
 
 // ----- Marker Data Export/Import -----
 
+import { DATASET_VERSION } from '@/data/migration/version';
+import { migrateImportedIds } from '@/utils/fallback';
+
 // Type definition for exported marker data
 export interface MarkerExportData {
-  version: number;
+  version: number;           // Export format version (1 = legacy, 2 = with dataset version)
+  datasetVersion?: number;   // Dataset version the IDs are from (new in v2)
   timestamp: number;
   activePoints: string[];
   filter: string[];
   selectedPoints: string[];
+}
+
+// Legacy export data (no datasetVersion field)
+interface LegacyMarkerExportData {
+  version: number;
+  timestamp: number;
+  activePoints: (string | number)[];  // May contain numbers in old exports
+  filter: string[];
+  selectedPoints: (string | number)[];
 }
 
 const formatDateTime = (): string => {
@@ -366,7 +379,7 @@ const formatDateTime = (): string => {
   return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 };
 
-export const isValidMarkerExportData = (data: unknown): data is MarkerExportData => {
+export const isValidMarkerExportData = (data: unknown): data is MarkerExportData | LegacyMarkerExportData => {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
   return (
@@ -383,11 +396,13 @@ export const exportMarkerData = (
   selectedPoints: string[]
 ): void => {
   const exportData: MarkerExportData = {
-    version: 1,
+    version: 2,                        // New format version
+    datasetVersion: DATASET_VERSION,   // Include dataset version for migration
     timestamp: Date.now(),
-    activePoints,
+    // Ensure all IDs are strings
+    activePoints: activePoints.map(id => String(id)),
     filter,
-    selectedPoints,
+    selectedPoints: selectedPoints.map(id => String(id)),
   };
 
   const json = JSON.stringify(exportData, null, 2);
@@ -400,7 +415,7 @@ export const exportMarkerData = (
   URL.revokeObjectURL(url);
 };
 
-export const importMarkerData = (
+export const importMarkerData = async (
   content: string,
   callbacks: {
     clearPoints: () => void;
@@ -411,7 +426,7 @@ export const importMarkerData = (
     getActivePoints?: () => string[];
     getFilter?: () => string[];
   }
-): boolean => {
+): Promise<boolean> => {
   try {
     const data: unknown = JSON.parse(content);
     
@@ -420,8 +435,27 @@ export const importMarkerData = (
       return false;
     }
 
+    // Determine source dataset version
+    // version 2+ has datasetVersion field
+    // version 1 or missing datasetVersion means legacy data
+    const sourceDatasetVersion = (data as MarkerExportData).datasetVersion ?? null;
+    
+    // Convert all IDs to strings to avoid precision issues
+    const rawActivePoints = data.activePoints.map(id => String(id));
+    const rawSelectedPoints = data.selectedPoints.map(id => String(id));
+    
+    // Migrate IDs if from older dataset version
+    let activePoints = rawActivePoints;
+    let selectedPoints = rawSelectedPoints;
+    
+    if (sourceDatasetVersion !== DATASET_VERSION) {
+      console.log(`[Import] Migrating from dataset version ${sourceDatasetVersion ?? 'legacy'} to ${DATASET_VERSION}`);
+      activePoints = await migrateImportedIds(rawActivePoints, sourceDatasetVersion);
+      selectedPoints = await migrateImportedIds(rawSelectedPoints, sourceDatasetVersion);
+    }
+
     // Merge active points (add new ones, keep existing)
-    data.activePoints.forEach((id: string) => {
+    activePoints.forEach((id: string) => {
       callbacks.addPoint(id);
     });
 
@@ -435,9 +469,23 @@ export const importMarkerData = (
       callbacks.setFilter(data.filter);
     }
     
-    // Merge selections (add imported ones, keep existing)
-    data.selectedPoints.forEach((id: string) => {
+    // Get current active points for checked/selected consistency
+    const currentActivePoints = new Set(callbacks.getActivePoints?.() ?? []);
+    
+    // Merge selections with checked/selected consistency fix:
+    // - If a point is "checked" (in activePoints), it must also be "selected"
+    // - A point can be "selected" without being "checked"
+    selectedPoints.forEach((id: string) => {
       callbacks.setSelected(id, true);
+    });
+    
+    // Ensure all checked (activePoints) are also selected
+    // This fixes the issue where only checked flag was set without selected
+    activePoints.forEach((id: string) => {
+      // If this point is now in activePoints, ensure it's also selected
+      if (currentActivePoints.has(id) || activePoints.includes(id)) {
+        callbacks.setSelected(id, true);
+      }
     });
 
     return true;
