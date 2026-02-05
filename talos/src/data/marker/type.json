@@ -451,6 +451,15 @@
         },
         "tier": "3"
     },
+    "wild_tuskbeast": {
+        "key": "wild_tuskbeast",
+        "name": "Wild Tuskbeast",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "3"
+    },
     "pink_bolete_spot": {
         "key": "pink_bolete_spot",
         "name": "Pink Bolete Spot",

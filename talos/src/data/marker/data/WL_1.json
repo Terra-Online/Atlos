@@ -1,4583 +1,4601 @@
 [
   {
-    "id": "int_campfire_v2_001",
-    "type": "tp_point",
+    "id": 10100030017,
     "position": [
       -694.7379,
       545.1245
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_002",
-    "type": "tp_point",
+    "id": 10100030018,
     "position": [
       -624.9139,
       644.7748
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_003",
-    "type": "tp_point",
+    "id": 10100030027,
     "position": [
       -592.6816,
       557.6807
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_trchest_common_001",
-    "type": "crate_i",
+    "id": 10100030036,
     "position": [
       -754.8904,
       634.6719
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_trchest_common_gorgeous_001",
-    "type": "cratesurprise",
+    "id": 10100030041,
     "position": [
       -697.4639,
       670.2614
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratesurprise"
   },
   {
-    "id": "int_trchest_common_002",
-    "type": "crate_i",
+    "id": 10100030046,
     "position": [
       -600.2209,
       563.3604
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_campfire_v2_004",
-    "type": "tp_point",
+    "id": 10100030048,
     "position": [
       -711.8814,
       651.5
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_trchest_common_003",
-    "type": "crate_i",
+    "id": 10100030138,
     "position": [
       -724.8867,
       521.1833
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_campfire_v2_005",
-    "type": "tp_point",
+    "id": 10100030146,
     "position": [
       -749.9697,
       640.0771
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_trchest_common_normal_001",
-    "type": "crate_ii",
+    "id": 10100030151,
     "position": [
       -586.3967,
       661.4189
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_system_dungeon_entry_red03_001",
-    "type": "exploration_level",
+    "id": 10100030162,
     "position": [
       -673.0581,
       639.5568
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "exploration_level"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_001",
-    "type": "aurylene",
+    "id": 10100030166,
     "position": [
       -701.3444,
       671.1522
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_002",
-    "type": "aurylene",
+    "id": 10100030170,
     "position": [
       -574.4484,
       659.1481
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_trchest_common_004",
-    "type": "crate_i",
+    "id": 10100030171,
     "position": [
       -540.3391,
       669.1382
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_003",
-    "type": "aurylene",
+    "id": 10100030172,
     "position": [
       -642.8062,
       648.6725
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_trchest_common_005",
-    "type": "crate_i",
+    "id": 10100030174,
     "position": [
       -592.5125,
       544.0403
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_common_001",
-    "type": "gather",
+    "id": 10100030176,
     "position": [
       -576.3341,
       591.817
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_campfire_v2_006",
-    "type": "tp_point",
+    "id": 10100030179,
     "position": [
       -742.7453,
       517.5454
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_collection_piece_001",
-    "type": "repair_logic",
+    "id": 10100030181,
     "position": [
       -643.8314,
       552.129
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "repair_logic"
   },
   {
-    "id": "int_fixable_robot_001",
-    "type": "delta_bot",
+    "id": 10100030183,
     "position": [
       -636.6392,
       566.3574
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_fixable_robot_002",
-    "type": "delta_bot",
+    "id": 10100030184,
     "position": [
       -597.3293,
       583.525
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_004",
-    "type": "aurylene",
+    "id": 10100030185,
     "position": [
       -679.1733,
       491.3365
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_005",
-    "type": "aurylene",
+    "id": 10100030186,
     "position": [
       -746.329,
       646.8966
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_common_002",
-    "type": "gather",
+    "id": 10100030191,
     "position": [
       -689.7685,
       678.0811
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_006",
-    "type": "aurylene",
+    "id": 10100030192,
     "position": [
       -550.7365,
       668.6262
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_common_003",
-    "type": "gather",
+    "id": 10100030193,
     "position": [
       -706.4379,
       576.5387
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_004",
-    "type": "gather",
+    "id": 10100030195,
     "position": [
       -629.7079,
       566.1762
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_006",
-    "type": "crate_i",
+    "id": 10100030196,
     "position": [
       -600.2083,
       590.0083
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_common_005",
-    "type": "gather",
+    "id": 10100030197,
     "position": [
       -579.9025,
       562.1804
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_006",
-    "type": "gather",
+    "id": 10100030198,
     "position": [
       -607.5026,
       578.2354
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_007",
-    "type": "gather",
+    "id": 10100030199,
     "position": [
       -597.5125,
       579.6808
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_008",
-    "type": "gather",
+    "id": 10100030200,
     "position": [
       -625.3993,
       606.2236
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_009",
-    "type": "gather",
+    "id": 10100030201,
     "position": [
       -690.3814,
       661.3189
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_010",
-    "type": "gather",
+    "id": 10100030204,
     "position": [
       -669.92,
       506.0215
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_011",
-    "type": "gather",
+    "id": 10100030205,
     "position": [
       -693.6257,
       513.8903
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_012",
-    "type": "gather",
+    "id": 10100030210,
     "position": [
       -638.1651,
       646.4495
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_013",
-    "type": "gather",
+    "id": 10100030211,
     "position": [
       -630.8413,
       647.1574
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_014",
-    "type": "gather",
+    "id": 10100030212,
     "position": [
       -713.9279,
       524.4107
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_015",
-    "type": "gather",
+    "id": 10100030213,
     "position": [
       -707.5083,
       507.6713
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_016",
-    "type": "gather",
+    "id": 10100030223,
     "position": [
       -544.1529,
       646.3439
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_017",
-    "type": "gather",
+    "id": 10100030225,
     "position": [
       -659.2103,
       582.1738
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_018",
-    "type": "gather",
+    "id": 10100033001,
     "position": [
       -577.6497,
       591.2043
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_019",
-    "type": "gather",
+    "id": 10100033005,
     "position": [
       -678.0142,
       629.933
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_007",
-    "type": "aurylene",
+    "id": 10100033006,
     "position": [
       -720.818,
       510.3588
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_common_020",
-    "type": "gather",
+    "id": 10100033013,
     "position": [
       -621.8836,
       572.6884
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_002",
-    "type": "crate_ii",
+    "id": 10100033014,
     "position": [
       -733.7861,
       502.6875
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_normal_003",
-    "type": "crate_ii",
+    "id": 10100033015,
     "position": [
       -642.6668,
       555.3899
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_007",
-    "type": "crate_i",
+    "id": 10100033020,
     "position": [
       -729.3716,
       494.6645
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_trchest_common_normal_004",
-    "type": "crate_ii",
+    "id": 10100033021,
     "position": [
       -654.2698,
       578.7942
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_collection_common_021",
-    "type": "gather",
+    "id": 10100033022,
     "position": [
       -706.5367,
       602.0249
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_022",
-    "type": "gather",
+    "id": 10100033023,
     "position": [
       -711.9092,
       552.1875
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_005",
-    "type": "crate_ii",
+    "id": 10100033024,
     "position": [
       -713.9055,
       667.0295
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_collection_common_023",
-    "type": "gather",
+    "id": 10100033026,
     "position": [
       -645.7981,
       617.3211
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_024",
-    "type": "gather",
+    "id": 10100033030,
     "position": [
       -703.3113,
       666.4971
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_doodad_core_plant_rabbithole_001",
-    "type": "rare_gathering_site",
+    "id": 10100010001,
     "position": [
       -644.8335,
       597.327
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "rare_gathering_site"
   },
   {
-    "id": "int_doodad_mushroom_1_3_001",
-    "type": "ruby_bolete_spot",
+    "id": 10100010002,
     "position": [
       -641.418,
       598.8214
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_002",
-    "type": "ruby_bolete_spot",
+    "id": 10100010003,
     "position": [
       -649.398,
       596.8682
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_003",
-    "type": "ruby_bolete_spot",
+    "id": 10100010004,
     "position": [
       -640.8376,
       597.7
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_004",
-    "type": "ruby_bolete_spot",
+    "id": 10100010005,
     "position": [
       -647.4888,
       596.9128
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_005",
-    "type": "ruby_bolete_spot",
+    "id": 10100010006,
     "position": [
       -647.3467,
       595.5542
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_006",
-    "type": "ruby_bolete_spot",
+    "id": 10100010007,
     "position": [
       -647.2379,
       598.2914
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_007",
-    "type": "ruby_bolete_spot",
+    "id": 10100010008,
     "position": [
       -645.8732,
       599.2415
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_008",
-    "type": "ruby_bolete_spot",
+    "id": 10100010009,
     "position": [
       -648.6934,
       597.7755
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_009",
-    "type": "ruby_bolete_spot",
+    "id": 10100010010,
     "position": [
       -642.348,
       596.7971
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_010",
-    "type": "ruby_bolete_spot",
+    "id": 10100010011,
     "position": [
       -642.7256,
       595.8227
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_core_plant_rabbithole_002",
-    "type": "rare_gathering_site",
+    "id": 10100010012,
     "position": [
       -645.0274,
       628.1848
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "rare_gathering_site"
   },
   {
-    "id": "int_doodad_mushroom_1_3_011",
-    "type": "ruby_bolete_spot",
+    "id": 10100010013,
     "position": [
       -641.6169,
       628.8229
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_012",
-    "type": "ruby_bolete_spot",
+    "id": 10100010014,
     "position": [
       -642.9797,
       630.6913
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_013",
-    "type": "ruby_bolete_spot",
+    "id": 10100010015,
     "position": [
       -646.3003,
       625.8712
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_014",
-    "type": "ruby_bolete_spot",
+    "id": 10100010016,
     "position": [
       -645.1225,
       630.9431
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_015",
-    "type": "ruby_bolete_spot",
+    "id": 10100010017,
     "position": [
       -640.7749,
       628.1955
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_016",
-    "type": "ruby_bolete_spot",
+    "id": 10100010018,
     "position": [
       -642.7627,
       625.2004
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_017",
-    "type": "ruby_bolete_spot",
+    "id": 10100010019,
     "position": [
       -647.1509,
       628.1272
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_018",
-    "type": "ruby_bolete_spot",
+    "id": 10100010020,
     "position": [
       -645.4016,
       632.0825
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_019",
-    "type": "ruby_bolete_spot",
+    "id": 10100010021,
     "position": [
       -642.719,
       627.8862
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_mushroom_1_3_020",
-    "type": "ruby_bolete_spot",
+    "id": 10100010022,
     "position": [
       -640.5546,
       626.87
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ruby_bolete_spot"
   },
   {
-    "id": "int_doodad_core_spcstone_001",
-    "type": "rare_mining_site",
+    "id": 10100010023,
     "position": [
       -692.9852,
       498.4735
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "rare_mining_site"
   },
   {
-    "id": "int_doodad_spcstone_1_3_001",
-    "type": "umbronyx_spot",
+    "id": 10100010024,
     "position": [
       -692.4169,
       495.7722
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_002",
-    "type": "umbronyx_spot",
+    "id": 10100010025,
     "position": [
       -691.6271,
       495.6101
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_003",
-    "type": "umbronyx_spot",
+    "id": 10100010026,
     "position": [
       -694.0743,
       493.1665
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_004",
-    "type": "umbronyx_spot",
+    "id": 10100010027,
     "position": [
       -695.0286,
       495.5595
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_005",
-    "type": "umbronyx_spot",
+    "id": 10100010028,
     "position": [
       -694.516,
       494.3844
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_006",
-    "type": "umbronyx_spot",
+    "id": 10100010029,
     "position": [
       -693.455,
       492.0664
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_007",
-    "type": "umbronyx_spot",
+    "id": 10100010030,
     "position": [
       -692.799,
       493.596
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_008",
-    "type": "umbronyx_spot",
+    "id": 10100010031,
     "position": [
       -692.8495,
       494.6875
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_009",
-    "type": "umbronyx_spot",
+    "id": 10100010032,
     "position": [
       -696.8731,
       495.1997
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_010",
-    "type": "umbronyx_spot",
+    "id": 10100010033,
     "position": [
       -695.349,
       496.3638
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_001",
-    "type": "originium_spot",
+    "id": 10100010034,
     "position": [
       -656.4508,
       520.17
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_002",
-    "type": "originium_spot",
+    "id": 10100010041,
     "position": [
       -656.8632,
       516.0302
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_003",
-    "type": "originium_spot",
+    "id": 10100010048,
     "position": [
       -656.8632,
       523.8958
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_004",
-    "type": "originium_spot",
+    "id": 10100010055,
     "position": [
       -660.5748,
       516.4442
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_005",
-    "type": "originium_spot",
+    "id": 10100010062,
     "position": [
       -660.5748,
       522.6539
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_006",
-    "type": "originium_spot",
+    "id": 10100010069,
     "position": [
       -679.1328,
       590.1321
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_007",
-    "type": "originium_spot",
+    "id": 10100010076,
     "position": [
       -683.2568,
       585.5783
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_008",
-    "type": "originium_spot",
+    "id": 10100010083,
     "position": [
       -744.2918,
       576.0569
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_009",
-    "type": "originium_spot",
+    "id": 10100010097,
     "position": [
       -745.529,
       578.5407
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_010",
-    "type": "originium_spot",
+    "id": 10100010110,
     "position": [
       -746.3538,
       581.0246
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_011",
-    "type": "originium_spot",
+    "id": 10100010111,
     "position": [
       -749.2406,
       581.0246
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_012",
-    "type": "originium_spot",
+    "id": 10100010124,
     "position": [
       -751.715,
       580.1966
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_grass_1_001",
-    "type": "jincao",
+    "id": 10100010125,
     "position": [
       -842.9593,
       576.651
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_002",
-    "type": "jincao",
+    "id": 10100010126,
     "position": [
       -845.9981,
       577.3819
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_001",
-    "type": "fluffed_jincao",
+    "id": 10100010131,
     "position": [
       -843.8637,
       577.2942
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_insect_1_001",
-    "type": "glowbug",
+    "id": 10100010132,
     "position": [
       -948.8973,
       495.5239
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_002",
-    "type": "glowbug",
+    "id": 10100010133,
     "position": [
       -947.9203,
       494.8131
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_003",
-    "type": "glowbug",
+    "id": 10100010134,
     "position": [
       -951.4763,
       505.8465
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_004",
-    "type": "glowbug",
+    "id": 10100010135,
     "position": [
       -948.8844,
       505.6962
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_grass_2_001",
-    "type": "yazhen",
+    "id": 10100010136,
     "position": [
       -837.2367,
       541.193
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_1_003",
-    "type": "jincao",
+    "id": 10100010137,
     "position": [
       -830.3927,
       530.1461
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_2_002",
-    "type": "yazhen",
+    "id": 10100010138,
     "position": [
       -834.3429,
       534.447
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_003",
-    "type": "yazhen",
+    "id": 10100010139,
     "position": [
       -843.7005,
       537.3766
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_1_004",
-    "type": "jincao",
+    "id": 10100010140,
     "position": [
       -838.2844,
       538.1306
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_002",
-    "type": "fluffed_jincao",
+    "id": 10100010141,
     "position": [
       -832.785,
       543.9092
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_1_005",
-    "type": "jincao",
+    "id": 10100010142,
     "position": [
       -831.361,
       596.3883
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_006",
-    "type": "jincao",
+    "id": 10100010143,
     "position": [
       -834.1131,
       595.6612
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_007",
-    "type": "jincao",
+    "id": 10100010144,
     "position": [
       -832.5434,
       594.1711
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_008",
-    "type": "jincao",
+    "id": 10100010145,
     "position": [
       -833.9795,
       529.9469
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_009",
-    "type": "jincao",
+    "id": 10100010146,
     "position": [
       -840.5339,
       539.9113
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_010",
-    "type": "jincao",
+    "id": 10100010147,
     "position": [
       -844.5844,
       541.9286
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_011",
-    "type": "jincao",
+    "id": 10100010148,
     "position": [
       -844.6419,
       541.401
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_003",
-    "type": "fluffed_jincao",
+    "id": 10100010149,
     "position": [
       -848.5854,
       541.5346
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_insect_1_005",
-    "type": "glowbug",
+    "id": 10100010150,
     "position": [
       -871.186,
       587.518
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_006",
-    "type": "glowbug",
+    "id": 10100010151,
     "position": [
       -858.8664,
       587.0398
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_007",
-    "type": "glowbug",
+    "id": 10100010152,
     "position": [
       -856.4106,
       582.1034
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_2_001",
-    "type": "scorchbug",
+    "id": 10100010153,
     "position": [
       -847.0043,
       601.7943
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_002",
-    "type": "scorchbug",
+    "id": 10100010154,
     "position": [
       -844.2646,
       599.9196
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_003",
-    "type": "scorchbug",
+    "id": 10100010155,
     "position": [
       -838.4604,
       598.9042
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_004",
-    "type": "scorchbug",
+    "id": 10100010156,
     "position": [
       -832.7558,
       593.3421
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_005",
-    "type": "scorchbug",
+    "id": 10100010157,
     "position": [
       -848.6928,
       602.0112
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_crylplant_1_3_001",
-    "type": "vitrodendra_spot",
+    "id": 10100010159,
     "position": [
       -805.446,
       576.7541
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_002",
-    "type": "vitrodendra_spot",
+    "id": 10100010160,
     "position": [
       -804.2849,
       576.0511
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_003",
-    "type": "vitrodendra_spot",
+    "id": 10100010161,
     "position": [
       -803.5144,
       577.0552
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_004",
-    "type": "vitrodendra_spot",
+    "id": 10100010162,
     "position": [
       -802.8937,
       577.028
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_005",
-    "type": "vitrodendra_spot",
+    "id": 10100010163,
     "position": [
       -799.9191,
       574.1349
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_006",
-    "type": "vitrodendra_spot",
+    "id": 10100010164,
     "position": [
       -800.739,
       574.5865
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_007",
-    "type": "vitrodendra_spot",
+    "id": 10100010165,
     "position": [
       -799.5965,
       575.15
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_008",
-    "type": "vitrodendra_spot",
+    "id": 10100010166,
     "position": [
       -803.1777,
       575.1615
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_009",
-    "type": "vitrodendra_spot",
+    "id": 10100010167,
     "position": [
       -805.0188,
       577.0143
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_crylplant_1_3_010",
-    "type": "vitrodendra_spot",
+    "id": 10100010168,
     "position": [
       -799.3131,
       573.9997
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "vitrodendra_spot"
   },
   {
-    "id": "int_doodad_core_plant_rabbithole_003",
-    "type": "rare_gathering_site",
+    "id": 10100010169,
     "position": [
       -800.9678,
       576.4833
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "rare_gathering_site"
   },
   {
-    "id": "int_doodad_spcstone_1_3_011",
-    "type": "umbronyx_spot",
+    "id": 10100010170,
     "position": [
       -821.0524,
       511.2205
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_012",
-    "type": "umbronyx_spot",
+    "id": 10100010171,
     "position": [
       -824.1745,
       505.8733
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_013",
-    "type": "umbronyx_spot",
+    "id": 10100010172,
     "position": [
       -821.8621,
       507.9708
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_014",
-    "type": "umbronyx_spot",
+    "id": 10100010173,
     "position": [
       -824.0331,
       503.8257
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_015",
-    "type": "umbronyx_spot",
+    "id": 10100010174,
     "position": [
       -821.0198,
       507.1742
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_016",
-    "type": "umbronyx_spot",
+    "id": 10100010175,
     "position": [
       -826.5044,
       506.8751
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_017",
-    "type": "umbronyx_spot",
+    "id": 10100010176,
     "position": [
       -825.5764,
       505.7751
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_018",
-    "type": "umbronyx_spot",
+    "id": 10100010177,
     "position": [
       -826.067,
       505.7171
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_019",
-    "type": "umbronyx_spot",
+    "id": 10100010178,
     "position": [
       -820.935,
       508.6262
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_spcstone_1_3_020",
-    "type": "umbronyx_spot",
+    "id": 10100010179,
     "position": [
       -822.3552,
       506.5139
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "umbronyx_spot"
   },
   {
-    "id": "int_doodad_core_spcstone_002",
-    "type": "rare_mining_site",
+    "id": 10100010180,
     "position": [
       -823.9301,
       509.2617
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "rare_mining_site"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_001",
-    "type": "protocol_dl",
+    "id": 10100010181,
     "position": [
       -677.1124,
       616.8216
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_002",
-    "type": "protocol_dl",
+    "id": 10100010182,
     "position": [
       -580.0423,
       565.6338
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_003",
-    "type": "protocol_dl",
+    "id": 10100010185,
     "position": [
       -620.6764,
       626.5356
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_004",
-    "type": "protocol_dl",
+    "id": 10100010186,
     "position": [
       -949.3571,
       509.7378
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_005",
-    "type": "protocol_dl",
+    "id": 10100010187,
     "position": [
       -777.0482,
       548.3982
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_doodad_insect_2_006",
-    "type": "scorchbug",
+    "id": 10100010188,
     "position": [
       -680.5428,
       590.5353
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_1_008",
-    "type": "glowbug",
+    "id": 10100010194,
     "position": [
       -627.0112,
       649.7537
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_grass_1_012",
-    "type": "jincao",
+    "id": 10100010222,
     "position": [
       -694.8757,
       657.5078
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_004",
-    "type": "fluffed_jincao",
+    "id": 10100010223,
     "position": [
       -638.7218,
       623.8422
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_2_004",
-    "type": "yazhen",
+    "id": 10100010224,
     "position": [
       -705.3002,
       572.9798
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_001",
-    "type": "thorny_yazhen",
+    "id": 10100010225,
     "position": [
       -702.7835,
       575.7055
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_005",
-    "type": "yazhen",
+    "id": 10100010226,
     "position": [
       -708.9285,
       573.4261
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_006",
-    "type": "yazhen",
+    "id": 10100010227,
     "position": [
       -705.2787,
       576.2381
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_007",
-    "type": "yazhen",
+    "id": 10100010228,
     "position": [
       -706.3675,
       572.4135
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_1_013",
-    "type": "jincao",
+    "id": 10100010229,
     "position": [
       -695.448,
       657.0489
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_014",
-    "type": "jincao",
+    "id": 10100010230,
     "position": [
       -720.6401,
       654.415
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_015",
-    "type": "jincao",
+    "id": 10100010231,
     "position": [
       -719.9801,
       654.7744
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_016",
-    "type": "jincao",
+    "id": 10100010232,
     "position": [
       -639.7377,
       623.9618
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_017",
-    "type": "jincao",
+    "id": 10100010233,
     "position": [
       -637.7723,
       622.5558
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_018",
-    "type": "jincao",
+    "id": 10100010234,
     "position": [
       -637.6093,
       623.9126
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_019",
-    "type": "jincao",
+    "id": 10100010235,
     "position": [
       -639.9293,
       622.3877
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_insect_2_007",
-    "type": "scorchbug",
+    "id": 10100010236,
     "position": [
       -679.3014,
       591.0946
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_008",
-    "type": "scorchbug",
+    "id": 10100010237,
     "position": [
       -677.8319,
       582.2714
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_009",
-    "type": "scorchbug",
+    "id": 10100010238,
     "position": [
       -675.7032,
       582.0619
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_1_009",
-    "type": "glowbug",
+    "id": 10100010239,
     "position": [
       -626.787,
       650.1337
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_010",
-    "type": "glowbug",
+    "id": 10100010240,
     "position": [
       -631.3671,
       652.2013
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_corp_4_001",
-    "type": "amber_rice",
+    "id": 10100010241,
     "position": [
       -679.9779,
       634.5384
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "amber_rice"
   },
   {
-    "id": "int_doodad_corp_4_002",
-    "type": "amber_rice",
+    "id": 10100010242,
     "position": [
       -679.8242,
       635.2303
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "amber_rice"
   },
   {
-    "id": "int_doodad_corp_3_001",
-    "type": "redjade_ginseng",
+    "id": 10100010243,
     "position": [
       -729.7951,
       501.928
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "redjade_ginseng"
   },
   {
-    "id": "int_doodad_corp_3_002",
-    "type": "redjade_ginseng",
+    "id": 10100010244,
     "position": [
       -728.5502,
       501.2433
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "redjade_ginseng"
   },
   {
-    "id": "int_doodad_grass_1_020",
-    "type": "jincao",
+    "id": 10100010245,
     "position": [
       -843.0577,
       576.4134
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_insect_1_011",
-    "type": "glowbug",
+    "id": 10100010246,
     "position": [
       -727.1979,
       581.9256
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_012",
-    "type": "glowbug",
+    "id": 10100010247,
     "position": [
       -727.4912,
       582.8064
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_013",
-    "type": "glowbug",
+    "id": 10100010248,
     "position": [
       -727.2048,
       585.185
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_grass_1_021",
-    "type": "jincao",
+    "id": 10100010249,
     "position": [
       -720.295,
       655.545
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_022",
-    "type": "jincao",
+    "id": 10100010250,
     "position": [
       -846.1912,
       572.355
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_blackbox_entry_wuling_1_006",
-    "type": "protocol_dl",
+    "id": 10100010251,
     "position": [
       -803.0091,
       489.0224
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "protocol_dl"
   },
   {
-    "id": "int_doodad_core_mine_originium_013",
-    "type": "originium_spot",
+    "id": 10100010258,
     "position": [
       -752.9521,
       626.1481
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_core_mine_originium_014",
-    "type": "originium_spot",
+    "id": 10100010265,
     "position": [
       -755.0141,
       628.2179
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "originium_spot"
   },
   {
-    "id": "int_doodad_bbflower_1_001",
-    "type": "aketine",
+    "id": 10100010266,
     "position": [
       -905.92,
       555.7562
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_bbflower_1_002",
-    "type": "aketine",
+    "id": 10100010267,
     "position": [
       -934.9056,
       564.0241
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_bbflower_1_003",
-    "type": "aketine",
+    "id": 10100010268,
     "position": [
       -938.923,
       554.1678
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_bbflower_1_004",
-    "type": "aketine",
+    "id": 10100010269,
     "position": [
       -931.0932,
       559.3724
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_bbflower_1_005",
-    "type": "aketine",
+    "id": 10100010270,
     "position": [
       -932.6166,
       571.4666
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_bbflower_1_006",
-    "type": "aketine",
+    "id": 10100010271,
     "position": [
       -905.5804,
       555.9204
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aketine"
   },
   {
-    "id": "int_doodad_grass_1_023",
-    "type": "jincao",
+    "id": 10100010272,
     "position": [
       -885.505,
       599.4275
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_024",
-    "type": "jincao",
+    "id": 10100010273,
     "position": [
       -881.0749,
       601.3447
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_025",
-    "type": "jincao",
+    "id": 10100010274,
     "position": [
       -881.0749,
       601.0826
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_005",
-    "type": "fluffed_jincao",
+    "id": 10100010275,
     "position": [
       -884.072,
       598.2481
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_1_026",
-    "type": "jincao",
+    "id": 10100010276,
     "position": [
       -874.3364,
       598.7076
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_027",
-    "type": "jincao",
+    "id": 10100010277,
     "position": [
       -869.9687,
       601.4604
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_028",
-    "type": "jincao",
+    "id": 10100010278,
     "position": [
       -874.3385,
       598.4148
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_029",
-    "type": "jincao",
+    "id": 10100010279,
     "position": [
       -816.8853,
       640.6617
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_030",
-    "type": "jincao",
+    "id": 10100010280,
     "position": [
       -830.4707,
       639.979
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_031",
-    "type": "jincao",
+    "id": 10100010281,
     "position": [
       -818.4818,
       653.5255
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_spc_1_006",
-    "type": "fluffed_jincao",
+    "id": 10100010282,
     "position": [
       -826.5598,
       639.5584
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_1_032",
-    "type": "jincao",
+    "id": 10100010283,
     "position": [
       -830.0287,
       641.974
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_033",
-    "type": "jincao",
+    "id": 10100010284,
     "position": [
       -814.2626,
       646.8644
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_1_034",
-    "type": "jincao",
+    "id": 10100010285,
     "position": [
       -814.7561,
       647.0736
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_2_008",
-    "type": "yazhen",
+    "id": 10100010286,
     "position": [
       -805.8471,
       513.4553
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_002",
-    "type": "thorny_yazhen",
+    "id": 10100010287,
     "position": [
       -799.0602,
       506.329
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_009",
-    "type": "yazhen",
+    "id": 10100010288,
     "position": [
       -804.8287,
       514.3386
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_010",
-    "type": "yazhen",
+    "id": 10100010289,
     "position": [
       -804.6752,
       514.0142
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_011",
-    "type": "yazhen",
+    "id": 10100010290,
     "position": [
       -800.4523,
       505.7181
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_012",
-    "type": "yazhen",
+    "id": 10100010291,
     "position": [
       -800.6832,
       505.9333
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_013",
-    "type": "yazhen",
+    "id": 10100010292,
     "position": [
       -842.6104,
       504.9009
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_003",
-    "type": "thorny_yazhen",
+    "id": 10100010293,
     "position": [
       -843.9067,
       504.0587
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_014",
-    "type": "yazhen",
+    "id": 10100010294,
     "position": [
       -843.0448,
       504.8534
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_015",
-    "type": "yazhen",
+    "id": 10100010295,
     "position": [
       -846.3481,
       503.6109
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_016",
-    "type": "yazhen",
+    "id": 10100010296,
     "position": [
       -847.808,
       503.8221
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_017",
-    "type": "yazhen",
+    "id": 10100010298,
     "position": [
       -788.4124,
       531.7043
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_004",
-    "type": "thorny_yazhen",
+    "id": 10100010299,
     "position": [
       -784.1759,
       530.2519
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_018",
-    "type": "yazhen",
+    "id": 10100010300,
     "position": [
       -785.3082,
       529.4384
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_019",
-    "type": "yazhen",
+    "id": 10100010301,
     "position": [
       -784.3719,
       530.1262
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_020",
-    "type": "yazhen",
+    "id": 10100010302,
     "position": [
       -789.0294,
       531.3135
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_021",
-    "type": "yazhen",
+    "id": 10100010303,
     "position": [
       -784.8177,
       531.8087
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_022",
-    "type": "yazhen",
+    "id": 10100010304,
     "position": [
       -893.3053,
       558.8957
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_005",
-    "type": "thorny_yazhen",
+    "id": 10100010305,
     "position": [
       -885.7574,
       556.7531
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_023",
-    "type": "yazhen",
+    "id": 10100010306,
     "position": [
       -890.2624,
       559.0927
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_024",
-    "type": "yazhen",
+    "id": 10100010307,
     "position": [
       -890.6208,
       559.1611
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_025",
-    "type": "yazhen",
+    "id": 10100010308,
     "position": [
       -893.8891,
       558.2702
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_026",
-    "type": "yazhen",
+    "id": 10100010309,
     "position": [
       -884.9261,
       558.4744
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_insect_1_014",
-    "type": "glowbug",
+    "id": 10100010310,
     "position": [
       -804.8847,
       538.2855
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_015",
-    "type": "glowbug",
+    "id": 10100010311,
     "position": [
       -806.9404,
       534.3409
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_016",
-    "type": "glowbug",
+    "id": 10100010312,
     "position": [
       -811.7655,
       535.3118
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_017",
-    "type": "glowbug",
+    "id": 10100010313,
     "position": [
       -808.0094,
       532.1458
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_2_010",
-    "type": "scorchbug",
+    "id": 10100010314,
     "position": [
       -824.5671,
       622.2451
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_011",
-    "type": "scorchbug",
+    "id": 10100010315,
     "position": [
       -829.3714,
       621.8232
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_012",
-    "type": "scorchbug",
+    "id": 10100010316,
     "position": [
       -828.309,
       623.1643
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_core_recycle_001",
-    "type": "recycling_stn",
+    "id": 10100010317,
     "position": [
       -641.8148,
       577.6921
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "recycling_stn"
   },
   {
-    "id": "int_doodad_core_recycle_002",
-    "type": "recycling_stn",
+    "id": 10100010318,
     "position": [
       -747.5868,
       631.8775
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "recycling_stn"
   },
   {
-    "id": "int_system_domain_shop_001",
-    "type": "stock_redistrib",
+    "id": 10100010319,
     "position": [
       -692.511,
       666.1548
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "stock_redistrib"
   },
   {
-    "id": "int_doodad_grade_001",
-    "type": null,
+    "id": 10100010320,
     "position": [
       -714.6883,
       661.3899
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_002",
-    "type": null,
+    "id": 10100010321,
     "position": [
       -713.8906,
       662.3015
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_003",
-    "type": null,
+    "id": 10100010322,
     "position": [
       -600.2841,
       653.9685
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_004",
-    "type": null,
+    "id": 10100010324,
     "position": [
       -598.9138,
       654.4782
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_005",
-    "type": null,
+    "id": 10100010325,
     "position": [
       -567.6929,
       657.3949
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_006",
-    "type": null,
+    "id": 10100010326,
     "position": [
       -568.2099,
       657.78
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_core_recycle_003",
-    "type": "recycling_stn",
+    "id": 10100010327,
     "position": [
       -802.4804,
       515.8936
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "recycling_stn"
   },
   {
-    "id": "int_doodad_grass_spc_1_007",
-    "type": "fluffed_jincao",
+    "id": 10100010329,
     "position": [
       -819.736,
       529.883
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_1_035",
-    "type": "jincao",
+    "id": 10100010330,
     "position": [
       -818.6356,
       534.479
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "jincao"
   },
   {
-    "id": "int_doodad_grass_2_027",
-    "type": "yazhen",
+    "id": 10100010331,
     "position": [
       -861.7925,
       592.7412
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_028",
-    "type": "yazhen",
+    "id": 10100010332,
     "position": [
       -862.0729,
       592.7412
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_029",
-    "type": "yazhen",
+    "id": 10100010333,
     "position": [
       -867.9248,
       597.1324
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_030",
-    "type": "yazhen",
+    "id": 10100010334,
     "position": [
       -874.0773,
       593.0264
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_031",
-    "type": "yazhen",
+    "id": 10100010335,
     "position": [
       -873.6518,
       593.1417
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_006",
-    "type": "thorny_yazhen",
+    "id": 10100010336,
     "position": [
       -875.3615,
       588.5854
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_insect_1_018",
-    "type": "glowbug",
+    "id": 10100010337,
     "position": [
       -862.2049,
       590.8938
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_019",
-    "type": "glowbug",
+    "id": 10100010338,
     "position": [
       -861.063,
       588.8644
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_2_013",
-    "type": "scorchbug",
+    "id": 10100010342,
     "position": [
       -676.5722,
       546.123
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_014",
-    "type": "scorchbug",
+    "id": 10100010343,
     "position": [
       -682.679,
       545.8697
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_1_020",
-    "type": "glowbug",
+    "id": 10100010344,
     "position": [
       -679.6009,
       548.1087
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_system_fac_region_upgrade_001",
-    "type": "int_system_fac_region_upgrade",
+    "id": 10100010345,
     "position": [
       -710.607,
       628.5491
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aic_steward"
   },
   {
-    "id": "int_doodad_grade_007",
-    "type": null,
+    "id": 10100010346,
     "position": [
       -595.82,
       578.8222
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_008",
-    "type": null,
+    "id": 10100010347,
     "position": [
       -596.3399,
       581.3889
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_009",
-    "type": null,
+    "id": 10100010348,
     "position": [
       -595.7045,
       579.3894
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_010",
-    "type": null,
+    "id": 10100010349,
     "position": [
       -609.6518,
       548.0182
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_011",
-    "type": null,
+    "id": 10100010350,
     "position": [
       -610.3659,
       547.981
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_insect_1_021",
-    "type": "glowbug",
+    "id": 10100010351,
     "position": [
       -626.1484,
       649.0601
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_022",
-    "type": "glowbug",
+    "id": 10100010352,
     "position": [
       -687.8967,
       565.1454
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_023",
-    "type": "glowbug",
+    "id": 10100010354,
     "position": [
       -684.6252,
       559.3994
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_024",
-    "type": "glowbug",
+    "id": 10100010355,
     "position": [
       -685.3125,
       560.4325
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_2_015",
-    "type": "scorchbug",
+    "id": 10100010356,
     "position": [
       -685.8364,
       561.696
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_2_016",
-    "type": "scorchbug",
+    "id": 10100010357,
     "position": [
       -686.1445,
       563.5325
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_1_025",
-    "type": "glowbug",
+    "id": 10100010358,
     "position": [
       -676.8643,
       634.1875
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_026",
-    "type": "glowbug",
+    "id": 10100010359,
     "position": [
       -676.4078,
       634.6107
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_027",
-    "type": "glowbug",
+    "id": 10100010360,
     "position": [
       -746.3094,
       634.2831
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_028",
-    "type": "glowbug",
+    "id": 10100010361,
     "position": [
       -745.4714,
       635.0556
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_029",
-    "type": "glowbug",
+    "id": 10100010362,
     "position": [
       -751.3643,
       636.7145
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_030",
-    "type": "glowbug",
+    "id": 10100010363,
     "position": [
       -751.6313,
       635.6816
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_031",
-    "type": "glowbug",
+    "id": 10100010364,
     "position": [
       -835.3344,
       538.4864
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_032",
-    "type": "glowbug",
+    "id": 10100010365,
     "position": [
       -846.8955,
       550.2491
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_033",
-    "type": "glowbug",
+    "id": 10100010366,
     "position": [
       -841.042,
       540.0741
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_034",
-    "type": "glowbug",
+    "id": 10100010367,
     "position": [
       -844.5986,
       546.0453
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_035",
-    "type": "glowbug",
+    "id": 10100010368,
     "position": [
       -829.9471,
       532.9973
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_036",
-    "type": "glowbug",
+    "id": 10100010369,
     "position": [
       -858.1871,
       530.3443
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_037",
-    "type": "glowbug",
+    "id": 10100010370,
     "position": [
       -853.0359,
       528.9973
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_038",
-    "type": "glowbug",
+    "id": 10100010371,
     "position": [
       -857.1978,
       526.9127
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_039",
-    "type": "glowbug",
+    "id": 10100010372,
     "position": [
       -853.9248,
       594.8014
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_040",
-    "type": "glowbug",
+    "id": 10100010373,
     "position": [
       -856.0579,
       583.2886
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_041",
-    "type": "glowbug",
+    "id": 10100010374,
     "position": [
       -846.7959,
       590.9746
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_042",
-    "type": "glowbug",
+    "id": 10100010375,
     "position": [
       -842.9605,
       583.6351
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_043",
-    "type": "glowbug",
+    "id": 10100010376,
     "position": [
       -847.7882,
       585.881
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_044",
-    "type": "glowbug",
+    "id": 10100010377,
     "position": [
       -832.2029,
       589.5093
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_045",
-    "type": "glowbug",
+    "id": 10100010378,
     "position": [
       -834.0421,
       589.3327
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_046",
-    "type": "glowbug",
+    "id": 10100010379,
     "position": [
       -815.3233,
       639.2504
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_047",
-    "type": "glowbug",
+    "id": 10100010380,
     "position": [
       -813.7647,
       634.2827
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_048",
-    "type": "glowbug",
+    "id": 10100010381,
     "position": [
       -813.2862,
       636.7253
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_049",
-    "type": "glowbug",
+    "id": 10100010382,
     "position": [
       -806.0129,
       639.6877
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_050",
-    "type": "glowbug",
+    "id": 10100010383,
     "position": [
       -810.6226,
       633.3008
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_051",
-    "type": "glowbug",
+    "id": 10100010384,
     "position": [
       -808.8851,
       638.2548
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_052",
-    "type": "glowbug",
+    "id": 10100010385,
     "position": [
       -883.7238,
       602.5584
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_053",
-    "type": "glowbug",
+    "id": 10100010386,
     "position": [
       -885.7715,
       605.3127
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_054",
-    "type": "glowbug",
+    "id": 10100010387,
     "position": [
       -882.7717,
       603.982
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_055",
-    "type": "glowbug",
+    "id": 10100010388,
     "position": [
       -884.8538,
       605.5486
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_056",
-    "type": "glowbug",
+    "id": 10100010389,
     "position": [
       -886.4562,
       605.5941
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_057",
-    "type": "glowbug",
+    "id": 10100010390,
     "position": [
       -830.6633,
       533.3543
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_058",
-    "type": "glowbug",
+    "id": 10100010391,
     "position": [
       -843.0177,
       534.308
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_059",
-    "type": "glowbug",
+    "id": 10100010392,
     "position": [
       -807.1784,
       540.1871
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_060",
-    "type": "glowbug",
+    "id": 10100010393,
     "position": [
       -801.3638,
       541.3457
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_061",
-    "type": "glowbug",
+    "id": 10100010394,
     "position": [
       -651.7536,
       566.9968
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_1_062",
-    "type": "glowbug",
+    "id": 10100010395,
     "position": [
       -653.8486,
       567.387
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_insect_2_017",
-    "type": "scorchbug",
+    "id": 10100010396,
     "position": [
       -655.6137,
       566.0221
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "scorchbug"
   },
   {
-    "id": "int_doodad_insect_1_063",
-    "type": "glowbug",
+    "id": 10100010397,
     "position": [
       -658.3843,
       564.6145
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "glowbug"
   },
   {
-    "id": "int_doodad_grass_2_032",
-    "type": "yazhen",
+    "id": 10100010398,
     "position": [
       -661.1791,
       577.4131
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_033",
-    "type": "yazhen",
+    "id": 10100010399,
     "position": [
       -661.1027,
       578.4182
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_034",
-    "type": "yazhen",
+    "id": 10100010400,
     "position": [
       -646.269,
       631.377
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_035",
-    "type": "yazhen",
+    "id": 10100010401,
     "position": [
       -646.6682,
       630.5018
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_007",
-    "type": "thorny_yazhen",
+    "id": 10100010402,
     "position": [
       -646.7196,
       632.1398
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_036",
-    "type": "yazhen",
+    "id": 10100010403,
     "position": [
       -673.9201,
       605.8782
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_037",
-    "type": "yazhen",
+    "id": 10100010404,
     "position": [
       -674.4815,
       604.8606
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_038",
-    "type": "yazhen",
+    "id": 10100010405,
     "position": [
       -703.2948,
       668.1065
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_039",
-    "type": "yazhen",
+    "id": 10100010406,
     "position": [
       -703.4474,
       667.1415
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_2_008",
-    "type": "thorny_yazhen",
+    "id": 10100010407,
     "position": [
       -702.4272,
       668.306
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_2_040",
-    "type": "yazhen",
+    "id": 10100010408,
     "position": [
       -689.1008,
       557.2189
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grass_2_041",
-    "type": "yazhen",
+    "id": 10100010409,
     "position": [
       -690.2718,
       558.1325
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "yazhen"
   },
   {
-    "id": "int_doodad_grade_012",
-    "type": null,
+    "id": 10100010410,
     "position": [
       -707.2378,
       660.1852
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_doodad_grade_013",
-    "type": null,
+    "id": 10100010411,
     "position": [
       -706.5061,
       660.4394
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": null
   },
   {
-    "id": "int_trchest_common_high_001",
-    "type": "crate_iii",
+    "id": 10100500001,
     "position": [
       -779.6632,
       582.5936
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_trchest_common_high_002",
-    "type": "crate_iii",
+    "id": 10100500002,
     "position": [
       -777.7111,
       662.4378
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "eny_0092_slbomb_001",
-    "type": "firemist_originium_slug",
+    "id": 10100500003,
+    "position": [
+      -777.7111,
+      662.4378
+    ],
+    "subregionId": "WL_1",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 10100500004,
+    "position": [
+      -779.6632,
+      582.5936
+    ],
+    "subregionId": "WL_1",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 10100360038,
     "position": [
       -680.6659,
       588.0302
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_002",
-    "type": "firemist_originium_slug",
+    "id": 10100360039,
     "position": [
       -680.4779,
       586.443
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0109_hshog2_001",
-    "type": "imbued_quillbeast",
+    "id": 10100360044,
     "position": [
       -639.3987,
       590.6584
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "imbued_quillbeast"
   },
   {
-    "id": "eny_0107_wgshoal2_001",
-    "type": "tidewalker_d",
+    "id": 10100360045,
     "position": [
       -713.6134,
       492.0485
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tidewalker_d"
   },
   {
-    "id": "eny_0092_slbomb_003",
-    "type": "firemist_originium_slug",
+    "id": 10100360047,
     "position": [
       -654.9786,
       579.1203
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0094_hsfly_001",
-    "type": "waterlamp",
+    "id": 10100360048,
     "position": [
       -652.9702,
       579.5798
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_002",
-    "type": "waterlamp",
+    "id": 10100360049,
     "position": [
       -653.1558,
       578.4538
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0092_slbomb_004",
-    "type": "firemist_originium_slug",
+    "id": 10100360050,
     "position": [
       -654.6652,
       580.0807
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0094_hsfly_003",
-    "type": "waterlamp",
+    "id": 10100360054,
     "position": [
       -674.6848,
       642.9666
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_004",
-    "type": "waterlamp",
+    "id": 10100360055,
     "position": [
       -673.6057,
       642.6185
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0092_slbomb_005",
-    "type": "firemist_originium_slug",
+    "id": 10100360056,
     "position": [
       -636.5921,
       618.9498
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_006",
-    "type": "firemist_originium_slug",
+    "id": 10100360057,
     "position": [
       -635.52,
       616.3613
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_007",
-    "type": "firemist_originium_slug",
+    "id": 10100360058,
     "position": [
       -674.7386,
       626.7407
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_008",
-    "type": "firemist_originium_slug",
+    "id": 10100360059,
     "position": [
       -671.868,
       627.8451
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0087_wgslime_001",
-    "type": "mudflow",
+    "id": 10100360060,
     "position": [
       -735.8459,
       520.7951
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0108_slbomb2_001",
-    "type": "blazemist_originium_slug",
+    "id": 10100360062,
     "position": [
       -636.2488,
       617.8092
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "blazemist_originium_slug"
   },
   {
-    "id": "eny_0087_wgslime_002",
-    "type": "mudflow",
+    "id": 10100360063,
     "position": [
       -725.804,
       486.4392
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_003",
-    "type": "mudflow",
+    "id": 10100360064,
     "position": [
       -734.6334,
       520.6626
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_004",
-    "type": "mudflow",
+    "id": 10100360065,
     "position": [
       -720.5999,
       484.1242
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_005",
-    "type": "mudflow",
+    "id": 10100360066,
     "position": [
       -735.3916,
       519.8285
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0093_hshog_001",
-    "type": "quillbeast",
+    "id": 10100360067,
     "position": [
       -668.229,
       610.0733
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "quillbeast"
   },
   {
-    "id": "eny_0087_wgslime_006",
-    "type": "mudflow",
+    "id": 10100360068,
     "position": [
       -667.5264,
       649.2141
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0092_slbomb_009",
-    "type": "firemist_originium_slug",
+    "id": 10100360070,
     "position": [
       -629.204,
       589.7
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0087_wgslime_007",
-    "type": "mudflow",
+    "id": 10100360086,
     "position": [
       -670.5485,
       594.8808
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0093_hshog_002",
-    "type": "quillbeast",
+    "id": 10100360093,
     "position": [
       -640.3472,
       592.1042
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "quillbeast"
   },
   {
-    "id": "eny_0108_slbomb2_002",
-    "type": "blazemist_originium_slug",
+    "id": 10100360094,
     "position": [
       -635.2764,
       588.9611
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "blazemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_010",
-    "type": "firemist_originium_slug",
+    "id": 10100360095,
     "position": [
       -632.9685,
       592.1269
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "int_trchest_lock_001",
-    "type": "cratelocked",
+    "id": 10100360007,
     "position": [
       -576.0636,
       576.1724
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratelocked"
   },
   {
-    "id": "int_trchest_lock_002",
-    "type": "cratelocked",
+    "id": 10100360008,
     "position": [
       -712.2849,
       483.6141
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratelocked"
   },
   {
-    "id": "int_trchest_lock_003",
-    "type": "cratelocked",
+    "id": 10100360013,
     "position": [
       -625.4188,
       631.1932
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratelocked"
   },
   {
-    "id": "int_trchest_common_normal_006",
-    "type": "crate_ii",
+    "id": 10100360018,
     "position": [
       -609.4504,
       567.3438
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_normal_007",
-    "type": "crate_ii",
+    "id": 10100360026,
     "position": [
       -666.9402,
       552.527
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_normal_008",
-    "type": "crate_ii",
+    "id": 10100360030,
     "position": [
       -689.2613,
       662.5904
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_normal_009",
-    "type": "crate_ii",
+    "id": 10100360035,
     "position": [
       -676.6955,
       586.7043
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_equip_001",
-    "type": "gear_template",
+    "id": 10100360036,
     "position": [
       -553.7503,
       574.6671
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gear_template"
   },
   {
-    "id": "int_trchest_equip_002",
-    "type": "gear_template",
+    "id": 10100360037,
     "position": [
       -669.0661,
       628.1351
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gear_template"
   },
   {
-    "id": "int_trchest_common_normal_010",
-    "type": "crate_ii",
+    "id": 10100360043,
     "position": [
       -739.7634,
       562.7014
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_high_003",
-    "type": "crate_iii",
+    "id": 10100360084,
     "position": [
       -642.228,
       586.5123
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_trchest_common_high_004",
-    "type": "crate_iii",
+    "id": 10100360085,
     "position": [
       -704.2685,
       495.6957
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_doodad_grass_spc_once_1_001",
-    "type": "fluffed_jincao",
+    "id": 10100450001,
     "position": [
       -631.3275,
       594.512
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_spc_once_1_002",
-    "type": "fluffed_jincao",
+    "id": 10100450002,
     "position": [
       -637.9341,
       583.1524
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_spc_once_1_003",
-    "type": "fluffed_jincao",
+    "id": 10100450003,
     "position": [
       -648.8338,
       586.7333
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_spc_once_1_004",
-    "type": "fluffed_jincao",
+    "id": 10100450004,
     "position": [
       -640.3095,
       592.6366
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_doodad_grass_spc_once_1_005",
-    "type": "fluffed_jincao",
+    "id": 10100450005,
     "position": [
       -640.2023,
       577.837
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "fluffed_jincao"
   },
   {
-    "id": "int_warning_terminal_001",
-    "type": "ew_terminal",
+    "id": 10100050001,
     "position": [
       -713.6423,
       597.4181
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "ew_terminal"
   },
   {
-    "id": "int_doodad_grass_spc_once_2_001",
-    "type": "thorny_yazhen",
+    "id": 10100440001,
     "position": [
       -955.708,
       475.6716
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_once_2_002",
-    "type": "thorny_yazhen",
+    "id": 10100440002,
     "position": [
       -959.6547,
       467.272
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_once_2_003",
-    "type": "thorny_yazhen",
+    "id": 10100440003,
     "position": [
       -955.2593,
       466.8461
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_once_2_004",
-    "type": "thorny_yazhen",
+    "id": 10100440004,
     "position": [
       -951.5139,
       472.4012
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_doodad_grass_spc_once_2_005",
-    "type": "thorny_yazhen",
+    "id": 10100440005,
     "position": [
       -954.1203,
       476.276
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "thorny_yazhen"
   },
   {
-    "id": "int_fixable_robot_003",
-    "type": "delta_bot",
+    "id": 10100490001,
     "position": [
       -808.4486,
       485.5988
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_fixable_robot_004",
-    "type": "delta_bot",
+    "id": 10100480001,
     "position": [
       -835.968,
       603.6898
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "eny_0094_hsfly_005",
-    "type": "waterlamp",
+    "id": 10100023002,
     "position": [
       -785.7177,
       646.3358
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_006",
-    "type": "waterlamp",
+    "id": 10100023003,
     "position": [
       -783.3176,
       645.6445
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_007",
-    "type": "waterlamp",
+    "id": 10100023004,
     "position": [
       -784.6043,
       643.7958
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_008",
-    "type": "waterlamp",
+    "id": 10100023011,
     "position": [
       -821.217,
       674.0806
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_009",
-    "type": "waterlamp",
+    "id": 10100023012,
     "position": [
       -828.236,
       673.8032
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_010",
-    "type": "waterlamp",
+    "id": 10100023013,
     "position": [
       -823.0102,
       673.5145
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_011",
-    "type": "waterlamp",
+    "id": 10100023014,
     "position": [
       -827.8053,
       674.5047
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_012",
-    "type": "waterlamp",
+    "id": 10100023018,
     "position": [
       -856.271,
       604.7918
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_013",
-    "type": "waterlamp",
+    "id": 10100023019,
     "position": [
       -856.5843,
       602.7565
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_014",
-    "type": "waterlamp",
+    "id": 10100023020,
     "position": [
       -857.8387,
       606.1546
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0093_hshog_003",
-    "type": "quillbeast",
+    "id": 10100023048,
     "position": [
       -888.97,
       556.7554
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "quillbeast"
   },
   {
-    "id": "eny_0094_hsfly_015",
-    "type": "waterlamp",
+    "id": 10100023066,
     "position": [
       -808.7774,
       674.0074
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_016",
-    "type": "waterlamp",
+    "id": 10100023067,
     "position": [
       -820.2437,
       667.455
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_017",
-    "type": "waterlamp",
+    "id": 10100023068,
     "position": [
       -809.9123,
       671.7915
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_018",
-    "type": "waterlamp",
+    "id": 10100023071,
     "position": [
       -828.0216,
       660.9865
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_019",
-    "type": "waterlamp",
+    "id": 10100023072,
     "position": [
       -828.1082,
       658.9042
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_020",
-    "type": "waterlamp",
+    "id": 10100023073,
     "position": [
       -826.8257,
       660.1585
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0093_hshog_004",
-    "type": "quillbeast",
+    "id": 10100023074,
     "position": [
       -815.842,
       628.6597
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "quillbeast"
   },
   {
-    "id": "eny_0088_wgthorns_001",
-    "type": "hedron",
+    "id": 10100023082,
     "position": [
       -783.0,
       563.5488
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "hedron"
   },
   {
-    "id": "eny_0087_wgslime_008",
-    "type": "mudflow",
+    "id": 10100023083,
     "position": [
       -784.3751,
       563.5472
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_009",
-    "type": "mudflow",
+    "id": 10100023084,
     "position": [
       -781.7293,
       564.2026
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_010",
-    "type": "mudflow",
+    "id": 10100023085,
     "position": [
       -782.7104,
       553.4261
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_011",
-    "type": "mudflow",
+    "id": 10100023086,
     "position": [
       -790.3338,
       570.2435
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0094_hsfly_021",
-    "type": "waterlamp",
+    "id": 10100023126,
     "position": [
       -938.59,
       555.1384
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_022",
-    "type": "waterlamp",
+    "id": 10100023127,
     "position": [
       -931.7107,
       555.5196
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_023",
-    "type": "waterlamp",
+    "id": 10100023128,
     "position": [
       -931.9797,
       556.1924
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0087_wgslime_012",
-    "type": "mudflow",
+    "id": 10100023245,
     "position": [
       -778.9648,
       546.1059
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_013",
-    "type": "mudflow",
+    "id": 10100023246,
     "position": [
       -789.2646,
       581.9472
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_014",
-    "type": "mudflow",
+    "id": 10100023247,
     "position": [
       -782.8136,
       589.5582
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_015",
-    "type": "mudflow",
+    "id": 10100023248,
     "position": [
       -769.8888,
       583.6724
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0094_hsfly_024",
-    "type": "waterlamp",
+    "id": 10100023252,
     "position": [
       -860.5269,
       485.4728
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_025",
-    "type": "waterlamp",
+    "id": 10100023253,
     "position": [
       -860.6547,
       489.9934
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_026",
-    "type": "waterlamp",
+    "id": 10100023254,
     "position": [
       -864.8612,
       489.5297
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0094_hsfly_027",
-    "type": "waterlamp",
+    "id": 10100023255,
     "position": [
       -864.8323,
       485.3858
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "waterlamp"
   },
   {
-    "id": "eny_0092_slbomb_011",
-    "type": "firemist_originium_slug",
+    "id": 10100023256,
     "position": [
       -806.348,
       484.7365
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_012",
-    "type": "firemist_originium_slug",
+    "id": 10100023257,
     "position": [
       -803.4509,
       486.2179
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_013",
-    "type": "firemist_originium_slug",
+    "id": 10100023258,
     "position": [
       -803.3214,
       486.785
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_014",
-    "type": "firemist_originium_slug",
+    "id": 10100023262,
     "position": [
       -873.0679,
       598.0165
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0092_slbomb_015",
-    "type": "firemist_originium_slug",
+    "id": 10100023263,
     "position": [
       -870.9394,
       599.4225
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "firemist_originium_slug"
   },
   {
-    "id": "eny_0087_wgslime_016",
-    "type": "mudflow",
+    "id": 10100023264,
     "position": [
       -777.1728,
       538.5653
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_017",
-    "type": "mudflow",
+    "id": 10100023265,
     "position": [
       -777.2264,
       536.6196
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0088_wgthorns_002",
-    "type": "hedron",
+    "id": 10100023266,
     "position": [
       -776.7027,
       537.7828
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "hedron"
   },
   {
-    "id": "eny_0093_hshog_005",
-    "type": "quillbeast",
+    "id": 10100023275,
     "position": [
       -824.2482,
       578.8866
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "quillbeast"
   },
   {
-    "id": "eny_0088_wgthorns_003",
-    "type": "hedron",
+    "id": 10100023325,
     "position": [
       -849.7509,
       453.9774
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "hedron"
   },
   {
-    "id": "eny_0087_wgslime_018",
-    "type": "mudflow",
+    "id": 10100023332,
     "position": [
       -853.0088,
       450.2433
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_019",
-    "type": "mudflow",
+    "id": 10100023333,
     "position": [
       -849.7797,
       459.1314
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_020",
-    "type": "mudflow",
+    "id": 10100023334,
     "position": [
       -851.8005,
       449.109
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_021",
-    "type": "mudflow",
+    "id": 10100023335,
     "position": [
       -842.6287,
       454.1388
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0087_wgslime_022",
-    "type": "mudflow",
+    "id": 10100023336,
     "position": [
       -841.7285,
       450.5264
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "mudflow"
   },
   {
-    "id": "eny_0088_wgthorns_004",
-    "type": "hedron",
+    "id": 10100023337,
     "position": [
       -848.0642,
       454.913
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "hedron"
   },
   {
-    "id": "eny_0089_wgreflec_001",
-    "type": "prism",
+    "id": 10100023338,
     "position": [
       -848.5049,
       453.8302
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "prism"
   },
   {
-    "id": "int_campfire_v2_007",
-    "type": "tp_point",
+    "id": 10100020314,
     "position": [
       -875.8841,
       489.0307
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_008",
-    "type": "tp_point",
+    "id": 10100020315,
     "position": [
       -971.625,
       441.0741
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_009",
-    "type": "tp_point",
+    "id": 10100020319,
     "position": [
       -941.3401,
       557.5521
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_010",
-    "type": "tp_point",
+    "id": 10100020350,
     "position": [
       -843.6964,
       524.1814
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_campfire_v2_011",
-    "type": "tp_point",
+    "id": 10100020646,
     "position": [
       -792.3362,
       647.2857
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "tp_point"
   },
   {
-    "id": "int_trchest_lock_004",
-    "type": "cratelocked",
+    "id": 10100020731,
     "position": [
       -815.7849,
       678.0296
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratelocked"
   },
   {
-    "id": "int_trchest_common_normal_011",
-    "type": "crate_ii",
+    "id": 10100020762,
     "position": [
       -919.4582,
       588.7519
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_008",
-    "type": "crate_i",
+    "id": 10100020770,
     "position": [
       -785.6966,
       644.3465
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_fixable_robot_005",
-    "type": "delta_bot",
+    "id": 10100023016,
     "position": [
       -813.9459,
       631.7616
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_trchest_common_009",
-    "type": "crate_i",
+    "id": 10100023036,
     "position": [
       -889.9551,
       500.9697
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_fixable_robot_006",
-    "type": "delta_bot",
+    "id": 10100023044,
     "position": [
       -791.4331,
       564.8505
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_trchest_common_high_005",
-    "type": "crate_iii",
+    "id": 10100023047,
     "position": [
       -831.4275,
       458.9635
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_trchest_common_010",
-    "type": "crate_i",
+    "id": 10100023055,
     "position": [
       -871.568,
       597.4231
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_trchest_common_high_006",
-    "type": "crate_iii",
+    "id": 10100023101,
     "position": [
       -793.5033,
       660.7317
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_collection_common_025",
-    "type": "gather",
+    "id": 10100023120,
     "position": [
       -853.4681,
       449.0419
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_026",
-    "type": "gather",
+    "id": 10100023123,
     "position": [
       -842.8321,
       461.2613
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_027",
-    "type": "gather",
+    "id": 10100023125,
     "position": [
       -882.2845,
       496.4375
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_028",
-    "type": "gather",
+    "id": 10100023131,
     "position": [
       -848.5007,
       459.47
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_lock_005",
-    "type": "cratelocked",
+    "id": 10100023134,
     "position": [
       -871.5292,
       587.5375
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratelocked"
   },
   {
-    "id": "int_collection_common_029",
-    "type": "gather",
+    "id": 10100023136,
     "position": [
       -875.4311,
       568.2938
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_030",
-    "type": "gather",
+    "id": 10100023138,
     "position": [
       -877.1626,
       568.4703
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_031",
-    "type": "gather",
+    "id": 10100023139,
     "position": [
       -877.438,
       569.6024
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_012",
-    "type": "crate_ii",
+    "id": 10100023143,
     "position": [
       -910.2205,
       564.3938
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_high_007",
-    "type": "crate_iii",
+    "id": 10100023144,
     "position": [
       -804.2835,
       594.1891
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_iii"
   },
   {
-    "id": "int_fixable_robot_007",
-    "type": "delta_bot",
+    "id": 10100023146,
     "position": [
       -868.4568,
       449.5373
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_fixable_robot_008",
-    "type": "delta_bot",
+    "id": 10100023147,
     "position": [
       -900.8144,
       600.4571
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_fixable_robot_009",
-    "type": "delta_bot",
+    "id": 10100023148,
     "position": [
       -859.7291,
       589.7932
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "delta_bot"
   },
   {
-    "id": "int_collection_common_032",
-    "type": "gather",
+    "id": 10100023150,
     "position": [
       -931.2513,
       550.7174
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_033",
-    "type": "gather",
+    "id": 10100023151,
     "position": [
       -930.5074,
       553.7604
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_034",
-    "type": "gather",
+    "id": 10100023152,
     "position": [
       -931.9836,
       550.9926
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_035",
-    "type": "gather",
+    "id": 10100023153,
     "position": [
       -800.3595,
       666.0741
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_036",
-    "type": "gather",
+    "id": 10100023154,
     "position": [
       -778.7403,
       640.1811
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_037",
-    "type": "gather",
+    "id": 10100023155,
     "position": [
       -830.4708,
       640.3806
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_038",
-    "type": "gather",
+    "id": 10100023156,
     "position": [
       -866.766,
       483.8668
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_039",
-    "type": "gather",
+    "id": 10100023157,
     "position": [
       -878.2813,
       501.4653
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_040",
-    "type": "gather",
+    "id": 10100023158,
     "position": [
       -877.3032,
       502.5378
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_041",
-    "type": "gather",
+    "id": 10100023159,
     "position": [
       -803.8358,
       482.5194
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_042",
-    "type": "gather",
+    "id": 10100023160,
     "position": [
       -802.5106,
       498.8905
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_043",
-    "type": "gather",
+    "id": 10100023161,
     "position": [
       -803.6236,
       499.3711
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_044",
-    "type": "gather",
+    "id": 10100023162,
     "position": [
       -878.1656,
       499.3304
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_045",
-    "type": "gather",
+    "id": 10100023164,
     "position": [
       -869.5906,
       599.5289
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_046",
-    "type": "gather",
+    "id": 10100023165,
     "position": [
       -873.7901,
       597.5831
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_047",
-    "type": "gather",
+    "id": 10100023166,
     "position": [
       -895.755,
       595.1975
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_048",
-    "type": "gather",
+    "id": 10100023167,
     "position": [
       -894.6705,
       586.3326
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_008",
-    "type": "aurylene",
+    "id": 10100023179,
     "position": [
       -812.7087,
       635.8875
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_009",
-    "type": "aurylene",
+    "id": 10100023180,
     "position": [
       -863.8132,
       609.9781
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_010",
-    "type": "aurylene",
+    "id": 10100023181,
     "position": [
       -797.6355,
       666.8792
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_static_001",
-    "type": "aurylene",
+    "id": 10100023182,
     "position": [
       -847.5152,
       452.3411
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_011",
-    "type": "aurylene",
+    "id": 10100023183,
     "position": [
       -868.4445,
       590.012
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_012",
-    "type": "aurylene",
+    "id": 10100023184,
     "position": [
       -873.598,
       583.8189
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_static_002",
-    "type": "aurylene",
+    "id": 10100023185,
     "position": [
       -918.7806,
       575.9176
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_trchest_common_011",
-    "type": "crate_i",
+    "id": 10100023190,
     "position": [
       -832.6144,
       654.154
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_common_049",
-    "type": "gather",
+    "id": 10100023191,
     "position": [
       -813.1508,
       670.459
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_013",
-    "type": "crate_ii",
+    "id": 10100023194,
     "position": [
       -874.2914,
       455.6625
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_equip_003",
-    "type": "gear_template",
+    "id": 10100023213,
     "position": [
       -769.6749,
       571.1802
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gear_template"
   },
   {
-    "id": "int_trchest_equip_004",
-    "type": "gear_template",
+    "id": 10100023214,
     "position": [
       -851.685,
       545.2425
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gear_template"
   },
   {
-    "id": "int_collection_coin_hongshan_static_003",
-    "type": "aurylene",
+    "id": 10100023240,
     "position": [
       -887.3657,
       485.1397
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_trchest_common_012",
-    "type": "crate_i",
+    "id": 10100023268,
     "position": [
       -941.2406,
       562.0806
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_trchest_common_013",
-    "type": "crate_i",
+    "id": 10100023269,
     "position": [
       -786.4274,
       543.9008
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_common_050",
-    "type": "gather",
+    "id": 10100023270,
     "position": [
       -823.7545,
       531.7207
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_013",
-    "type": "aurylene",
+    "id": 10100023271,
     "position": [
       -793.7204,
       557.7983
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_common_051",
-    "type": "gather",
+    "id": 10100023272,
     "position": [
       -792.9312,
       556.9002
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_gorgeous_002",
-    "type": "cratesurprise",
+    "id": 10100023279,
     "position": [
       -887.8449,
       559.0979
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "cratesurprise"
   },
   {
-    "id": "int_collection_coin_hongshan_static_004",
-    "type": "aurylene",
+    "id": 10100023280,
     "position": [
       -895.4299,
       606.9271
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_trchest_common_014",
-    "type": "crate_i",
+    "id": 10100023282,
     "position": [
       -791.7506,
       596.942
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_i"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_014",
-    "type": "aurylene",
+    "id": 10100023283,
     "position": [
       -788.1545,
       547.0081
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_common_052",
-    "type": "gather",
+    "id": 10100023286,
     "position": [
       -909.733,
       578.6215
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_053",
-    "type": "gather",
+    "id": 10100023287,
     "position": [
       -795.3279,
       538.7646
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_054",
-    "type": "gather",
+    "id": 10100023288,
     "position": [
       -834.6944,
       479.7534
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_014",
-    "type": "crate_ii",
+    "id": 10100023301,
     "position": [
       -821.2865,
       499.5175
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_trchest_common_normal_015",
-    "type": "crate_ii",
+    "id": 10100023318,
     "position": [
       -834.8752,
       473.9122
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_collection_common_055",
-    "type": "gather",
+    "id": 10100023321,
     "position": [
       -874.7823,
       537.7199
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_collection_common_056",
-    "type": "gather",
+    "id": 10100023322,
     "position": [
       -876.221,
       538.5357
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "gather"
   },
   {
-    "id": "int_trchest_common_normal_016",
-    "type": "crate_ii",
+    "id": 10100023323,
     "position": [
       -922.7739,
       553.6607
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "crate_ii"
   },
   {
-    "id": "int_collection_coin_hongshan_dynamic_015",
-    "type": "aurylene",
+    "id": 10100023339,
     "position": [
       -859.439,
       507.6969
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   },
   {
-    "id": "int_collection_coin_hongshan_static_005",
-    "type": "aurylene",
+    "id": 10100023343,
     "position": [
       -828.6768,
       498.7218
     ],
-    "subregionId": "WL_1"
+    "subregionId": "WL_1",
+    "type": "aurylene"
   }
 ]
