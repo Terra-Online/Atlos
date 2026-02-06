@@ -435,24 +435,13 @@ export const importMarkerData = async (
       return false;
     }
 
-    // Determine source dataset version
-    // version 2+ has datasetVersion field
-    // version 1 or missing datasetVersion means legacy data
-    const sourceDatasetVersion = (data as MarkerExportData).datasetVersion ?? null;
-    
     // Convert all IDs to strings to avoid precision issues
     const rawActivePoints = data.activePoints.map(id => String(id));
     const rawSelectedPoints = data.selectedPoints.map(id => String(id));
     
-    // Migrate IDs if from older dataset version
-    let activePoints = rawActivePoints;
-    let selectedPoints = rawSelectedPoints;
-    
-    if (sourceDatasetVersion !== DATASET_VERSION) {
-      console.log(`[Import] Migrating from dataset version ${sourceDatasetVersion ?? 'legacy'} to ${DATASET_VERSION}`);
-      activePoints = await migrateImportedIds(rawActivePoints, sourceDatasetVersion);
-      selectedPoints = await migrateImportedIds(rawSelectedPoints, sourceDatasetVersion);
-    }
+    // Always run migration — it's idempotent (returns immediately if all IDs are already numeric)
+    const activePoints = await migrateImportedIds(rawActivePoints);
+    const selectedPoints = await migrateImportedIds(rawSelectedPoints);
 
     // Merge active points (add new ones, keep existing)
     activePoints.forEach((id: string) => {

@@ -108,7 +108,6 @@
         transform: translateY(-1px);
     }
     &.completed {
-        box-shadow: 0 3px 6px rgba($black-0, 0.3);
         &::after {
             background-color: var(--mark-completed-bg);
         }

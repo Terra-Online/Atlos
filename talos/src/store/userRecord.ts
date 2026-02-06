@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useUiPrefsStore } from './uiPrefs';
 import { createConditionalStorage } from '@/utils/storage';
-import { DATASET_VERSION } from '@/data/migration/version';
 
 interface IUserRecordStore {
     activePoints: string[];
@@ -41,11 +40,9 @@ export const useUserRecordStore = create<IUserRecordStore>()(
         }),
         {
             name: 'points-storage',
-            version: DATASET_VERSION,
-            migrate: (persistedState, _version) => {
-                // Keep persisted shape as-is; ID remapping is handled separately by fallback.
-                return persistedState as Partial<IUserRecordStore>;
-            },
+            // No `version` field — migration is handled by fallback.ts which
+            // runs before stores hydrate. Omitting `version` avoids Zustand's
+            // built-in version-mismatch behaviour that can discard persisted data.
             storage: createJSONStorage(() => createConditionalStorage(
                 localStorage,
                 () => useUiPrefsStore.getState().prefsMarkerProgressEnabled,
@@ -55,8 +52,13 @@ export const useUserRecordStore = create<IUserRecordStore>()(
             }),
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as Partial<IUserRecordStore>;
-                // Only restore if preference is enabled
-                if (useUiPrefsStore.getState().prefsMarkerProgressEnabled && persisted.activePoints) {
+                // Always restore persisted activePoints when they exist,
+                // regardless of the current preference toggle. The preference
+                // only controls whether *new* writes go to localStorage (via
+                // createConditionalStorage).  We must never discard data from
+                // localStorage during hydration — that would wipe the user's
+                // progress silently if they toggle the setting off and on.
+                if (persisted.activePoints && persisted.activePoints.length > 0) {
                     return { ...currentState, activePoints: persisted.activePoints };
                 }
                 return currentState;
