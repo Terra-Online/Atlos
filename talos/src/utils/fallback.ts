@@ -99,10 +99,70 @@ const getStoredVersion = (): number | null => {
 };
 
 /**
- * Determine which migration maps are needed based on stored version
+ * Check if an ID is in the new numeric format (pure digits)
+ */
+const isNumericId = (id: string): boolean => {
+  return /^\d+$/.test(id);
+};
+
+/**
+ * Check if there are any non-numeric IDs in stored data
+ * This helps detect incomplete migrations
+ */
+const hasNonNumericIds = (): boolean => {
+  const pointsKey = 'points-storage';
+  const filterKey = 'marker-filter';
+  
+  try {
+    // Check points-storage
+    const pointsRaw = localStorage.getItem(pointsKey);
+    if (pointsRaw) {
+      const pointsData = JSON.parse(pointsRaw) as { state?: { activePoints?: string[] } };
+      const activePoints = pointsData.state?.activePoints;
+      if (activePoints && Array.isArray(activePoints)) {
+        const hasOldFormat = activePoints.some(id => !isNumericId(String(id)));
+        if (hasOldFormat) {
+          console.log('[Migration] Detected non-numeric IDs in activePoints');
+          return true;
+        }
+      }
+    }
+    
+    // Check marker-filter
+    const filterRaw = localStorage.getItem(filterKey);
+    if (filterRaw) {
+      const filterData = JSON.parse(filterRaw) as { state?: { selectedPoints?: string[] } };
+      const selectedPoints = filterData.state?.selectedPoints;
+      if (selectedPoints && Array.isArray(selectedPoints)) {
+        const hasOldFormat = selectedPoints.some(id => !isNumericId(String(id)));
+        if (hasOldFormat) {
+          console.log('[Migration] Detected non-numeric IDs in selectedPoints');
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (e) {
+    console.error('[Migration] Error checking for non-numeric IDs:', e);
+    return false;
+  }
+};
+
+/**
+ * Determine which migration maps are needed based on stored version.
+ * Also considers whether non-numeric IDs exist in the data.
  */
 const getMigrationPath = (storedVersion: number | null): ('0110_0204' | '0204_0206')[] => {
+  // If we have non-numeric IDs, we need to figure out the appropriate migration path
+  const hasOldIds = hasNonNumericIds();
+  
   if (storedVersion === VERSION_0206 || storedVersion === DATASET_VERSION) {
+    // If version says 0206 but we have old IDs, need to re-run 0204->0206
+    if (hasOldIds) {
+      console.log('[Migration] Data at version 0206 but has non-numeric IDs - will run 0204->0206 migration');
+      return ['0204_0206'];
+    }
     return []; // Already up to date
   }
   
@@ -151,13 +211,18 @@ const migratePointsStorage = (maps: Record<string, string>[]): boolean => {
     
     if (!activePoints || !Array.isArray(activePoints)) return false;
 
+    console.log(`[Migration] Found ${activePoints.length} points in activePoints`);
+    
     // Ensure all IDs are strings before migration
     const stringIds = activePoints.map(id => String(id));
     const migratedPoints = migrateIdsThroughMaps(stringIds, maps);
     
     // Check if any changes occurred
     const hasChanges = migratedPoints.some((id, i) => id !== stringIds[i]);
-    if (!hasChanges) return false;
+    if (!hasChanges) {
+      console.log('[Migration] No changes needed for activePoints');
+      return false;
+    }
     
     // Remove duplicates
     const uniquePoints = [...new Set(migratedPoints)];
@@ -195,6 +260,7 @@ const migrateMarkerFilter = (maps: Record<string, string>[]): boolean => {
     // Migrate selectedPoints
     const selectedPoints = data.state?.selectedPoints;
     if (selectedPoints && Array.isArray(selectedPoints)) {
+      console.log(`[Migration] Found ${selectedPoints.length} points in selectedPoints`);
       const stringIds = selectedPoints.map(id => String(id));
       const migratedSelected = migrateIdsThroughMaps(stringIds, maps);
       const hasChanges = migratedSelected.some((id, i) => id !== stringIds[i]);
@@ -204,6 +270,8 @@ const migrateMarkerFilter = (maps: Record<string, string>[]): boolean => {
         changed = true;
         const changeCount = migratedSelected.filter((id, i) => id !== stringIds[i]).length;
         console.log(`[Migration] Selected: ${changeCount} migrated`);
+      } else {
+        console.log('[Migration] No changes needed for selectedPoints');
       }
     }
     
@@ -221,9 +289,28 @@ const migrateMarkerFilter = (maps: Record<string, string>[]): boolean => {
 /**
  * Check if migration has already been applied.
  */
+/**
+ * Check if migration has already been applied.
+ * Now also checks for actual data state (non-numeric IDs) to detect incomplete migrations.
+ */
 const isMigrationApplied = (): boolean => {
   const storedVersion = getStoredVersion();
-  return storedVersion === DATASET_VERSION;
+  
+  // If version matches AND no non-numeric IDs exist, migration is complete
+  if (storedVersion === DATASET_VERSION && !hasNonNumericIds()) {
+    console.log(`[Migration] Already on version ${DATASET_VERSION} with all numeric IDs`);
+    return true;
+  }
+  
+  // If version matches but non-numeric IDs exist, need to re-migrate
+  if (storedVersion === DATASET_VERSION && hasNonNumericIds()) {
+    console.warn(`[Migration] Version is ${DATASET_VERSION} but non-numeric IDs detected - will re-run migration`);
+    return false;
+  }
+  
+  // If version doesn't match, need to migrate
+  console.log(`[Migration] Version mismatch: stored=${storedVersion}, target=${DATASET_VERSION}`);
+  return false;
 };
 
 /**
@@ -285,6 +372,15 @@ export const runStorageMigration = async (): Promise<boolean> => {
     
     if (migrated) {
       console.log('[Migration] ✓ Migration completed successfully');
+      
+      // Verify migration - check if any non-numeric IDs remain
+      const stillHasOldIds = hasNonNumericIds();
+      if (stillHasOldIds) {
+        console.warn('[Migration] ⚠ Warning: Some non-numeric IDs still remain after migration');
+        console.warn('[Migration] This may indicate unmapped IDs in the migration tables');
+      } else {
+        console.log('[Migration] ✓ All IDs successfully migrated to numeric format');
+      }
     } else {
       console.log('[Migration] No data needed migration');
     }

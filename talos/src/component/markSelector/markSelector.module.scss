@@ -6,20 +6,24 @@
     --mark-text: #{$grey-1};
     --mark-active-bg: #{$white-3};
     --mark-stats-text: #{$dim-1};
+    --mark-stats-completed-text: #{$grey-1};
     --mark-active-fg: #{rgba($black-0, 1)};
-    --mark-completed-bg: #{$primary-accent-2};
+    --mark-completed-bg: #{$primary-accent-4};
     --mark-progress-bg: #{rgba($primary-accent-3, 1)};
     --mark-separator: #{$grey-1};
+    --mark-completed-separator: #{$primary-accent-5};
 }
 :root[data-theme='dark'] {
     --mark-bg: #{$grey-1};
     --mark-text: #{$white-1};
     --mark-active-bg: #{$grey-2};
     --mark-stats-text: #{$light-1};
+    --mark-stats-completed-text: #{$white-1};
     --mark-active-fg: #{$white-1};
-    --mark-completed-bg: #{$primary-accent-4};
+    --mark-completed-bg: #{rgba($primary-accent-5, 0.7)};
     --mark-progress-bg: #{rgba($primary-accent-4, 0.8)};
     --mark-separator: #{$white-2};
+    --mark-completed-separator: #{$primary-accent-4};
 }
 
 /* Skeleton layer: participates ONLY in grid layout, occupies space and fixes collapsed height, no animation */
@@ -72,10 +76,6 @@
             );
         }
     }
-    &.completed {
-        background-color: var(--mark-completed-bg);
-        box-shadow: 0 3px 6px rgba($black-0, 0.3);
-    }
     &::after {
         content: '';
         position: absolute;
@@ -106,6 +106,15 @@
     &:hover {
         box-shadow: 1px 3px 5px rgba($black-0, 0.2);
         transform: translateY(-1px);
+    }
+    &.completed {
+        box-shadow: 0 3px 6px rgba($black-0, 0.3);
+        &::after {
+            background-color: var(--mark-completed-bg);
+        }
+        &::before {
+            background-color: var(--mark-completed-separator);
+        }
     }
     /* Name layer: expanded state */
     .markNameExpanded {
@@ -204,6 +213,12 @@
         z-index: 2;
         line-height: 1;
         margin: auto 0;
+        transition: color .3s ease;
+    }
+    &.completed {
+        .markStat {
+            color: var(--mark-stats-completed-text);
+        }
     }
 
     /* name cell wraps the main ellipsized name and an absolute expanded panel */
