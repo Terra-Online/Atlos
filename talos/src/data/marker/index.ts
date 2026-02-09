@@ -102,6 +102,7 @@ export const REGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Obj
 
 export const DEFAULT_SUBCATEGORY_ORDER = [
     'collection',
+    'exploration',
     'natural',
     'valuable',
     'combat',

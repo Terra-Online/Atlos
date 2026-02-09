@@ -9,6 +9,7 @@ import SidebarIcon from '../../assets/logos/sideCollap.svg?react';
 import BossIcon from '../../assets/images/category/boss.svg?react';
 import MobIcon from '../../assets/images/category/mob.svg?react';
 import NaturalIcon from '../../assets/images/category/natural.svg?react';
+import ExplorationIcon from '@/assets/images/category/exploration.svg?react';
 import ValuableIcon from '../../assets/images/category/valuable.svg?react';
 import CollectionIcon from '../../assets/images/category/collection.svg?react';
 import CombatIcon from '../../assets/images/category/combat.svg?react';
@@ -49,6 +50,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     combat: CombatIcon,
     npc: NpcIcon,
     facility: FacilityIcon,
+    exploration: ExplorationIcon,
 };
 
 interface SideBarProps {

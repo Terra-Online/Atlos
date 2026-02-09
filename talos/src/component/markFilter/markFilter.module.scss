@@ -73,6 +73,9 @@
             &[data-ctgr='natural'] {
                 scale: 1 // use round shape as baseline
             }
+            &[data-ctgr='exploration'] {
+                scale: 1.1
+            }
             &[data-ctgr='valuable'] {
                 scale: 1.08
             }

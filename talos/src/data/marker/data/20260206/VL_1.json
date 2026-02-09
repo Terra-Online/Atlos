@@ -7101,15 +7101,6 @@
     "type": "delta_bot"
   },
   {
-    "id": 2100210140,
-    "position": [
-      -511.8999,
-      421.67
-    ],
-    "subregionId": "VL_1",
-    "type": "racing_npc"
-  },
-  {
     "id": 2100320000,
     "position": [
       -599.9547,

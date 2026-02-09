@@ -17,9 +17,6 @@
             "Crate(Locked)": {
                 "noFrame": true
             },
-            "Guiding Butterflies": {
-                "noFrame": true
-            },
             "Delta Bot": {
                 "noFrame": true
             },
@@ -44,6 +41,12 @@
             "Mission": {
                 "noFrame": true
             }
+        },
+        "exploration": {
+            "Guiding Butterflies": {
+                "noFrame": true
+            },
+            "Pressure Plate": {}
         },
         "combat": {
             "Temporary Energy Alluvium": {
@@ -101,6 +104,9 @@
             "Clean Water": {
                 "tier": "1"
             },
+            "Aketine": {
+                "tier": "1"
+            },
             "Buckflower": {
                 "tier": "1"
             },
@@ -112,9 +118,6 @@
             },
             "Umbraline": {
                 "tier": "2"
-            },
-            "Aketine": {
-                "tier": "1"
             },
             "Sandleaf": {
                 "tier": "1"

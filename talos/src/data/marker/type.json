@@ -52,15 +52,6 @@
         },
         "noFrame": true
     },
-    "guiding_butterflies": {
-        "key": "guiding_butterflies",
-        "name": "Guiding Butterflies",
-        "category": {
-            "main": "poi",
-            "sub": "collection"
-        },
-        "noFrame": true
-    },
     "delta_bot": {
         "key": "delta_bot",
         "name": "Delta Bot",
@@ -132,6 +123,23 @@
             "sub": "collection"
         },
         "noFrame": true
+    },
+    "guiding_butterflies": {
+        "key": "guiding_butterflies",
+        "name": "Guiding Butterflies",
+        "category": {
+            "main": "poi",
+            "sub": "exploration"
+        },
+        "noFrame": true
+    },
+    "pressure_plate": {
+        "key": "pressure_plate",
+        "name": "Pressure Plate",
+        "category": {
+            "main": "poi",
+            "sub": "exploration"
+        }
     },
     "temporary_energy_alluvium": {
         "key": "temporary_energy_alluvium",
@@ -307,6 +315,15 @@
         },
         "tier": "1"
     },
+    "aketine": {
+        "key": "aketine",
+        "name": "Aketine",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "1"
+    },
     "buckflower": {
         "key": "buckflower",
         "name": "Buckflower",
@@ -342,15 +359,6 @@
             "sub": "natural"
         },
         "tier": "2"
-    },
-    "aketine": {
-        "key": "aketine",
-        "name": "Aketine",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "tier": "1"
     },
     "sandleaf": {
         "key": "sandleaf",

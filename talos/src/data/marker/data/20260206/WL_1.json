@@ -486,15 +486,6 @@
     "type": "gather"
   },
   {
-    "id": 10100033033,
-    "position": [
-      -740.8266,
-      507.0436
-    ],
-    "subregionId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
     "id": 10100010001,
     "position": [
       -644.8335,
@@ -3267,15 +3258,6 @@
     "type": "cratelocked"
   },
   {
-    "id": 10100360017,
-    "position": [
-      -632.8497,
-      578.7342
-    ],
-    "subregionId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
     "id": 10100360018,
     "position": [
       -609.4504,
@@ -3283,15 +3265,6 @@
     ],
     "subregionId": "WL_1",
     "type": "crate_ii"
-  },
-  {
-    "id": 10100360024,
-    "position": [
-      -671.5777,
-      506.755
-    ],
-    "subregionId": "WL_1",
-    "type": "guiding_butterflies"
   },
   {
     "id": 10100360026,
@@ -3303,15 +3276,6 @@
     "type": "crate_ii"
   },
   {
-    "id": 10100360029,
-    "position": [
-      -708.4321,
-      653.5643
-    ],
-    "subregionId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
     "id": 10100360030,
     "position": [
       -689.2613,
@@ -3319,33 +3283,6 @@
     ],
     "subregionId": "WL_1",
     "type": "crate_ii"
-  },
-  {
-    "id": 10100360032,
-    "position": [
-      -677.7316,
-      587.6116
-    ],
-    "subregionId": "WL_1",
-    "type": "pressure_plate"
-  },
-  {
-    "id": 10100360033,
-    "position": [
-      -676.5264,
-      588.9854
-    ],
-    "subregionId": "WL_1",
-    "type": "pressure_plate"
-  },
-  {
-    "id": 10100360034,
-    "position": [
-      -679.0049,
-      586.1869
-    ],
-    "subregionId": "WL_1",
-    "type": "pressure_plate"
   },
   {
     "id": 10100360035,
@@ -4192,15 +4129,6 @@
     ],
     "subregionId": "WL_1",
     "type": "crate_iii"
-  },
-  {
-    "id": 10100023145,
-    "position": [
-      -820.2635,
-      607.1941
-    ],
-    "subregionId": "WL_1",
-    "type": "guiding_butterflies"
   },
   {
     "id": 10100023146,
