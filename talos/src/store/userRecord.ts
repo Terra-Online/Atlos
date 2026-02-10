@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useUiPrefsStore } from './uiPrefs';
 import { createConditionalStorage } from '@/utils/storage';
+import { DATASET_VERSION } from '@/data/migration/version';
 
 interface IUserRecordStore {
     activePoints: string[];
+    datasetVersion: number;
     addPoint: (id: string) => void;
     deletePoint: (id: string) => void;
     clearPoints: () => void;
@@ -14,12 +16,14 @@ export const useUserRecordStore = create<IUserRecordStore>()(
     persist<IUserRecordStore, [], [], Partial<IUserRecordStore>>(
         (set, get) => ({
             activePoints: [],
+            datasetVersion: DATASET_VERSION,
             addPoint: (id) => {
                 if (get().activePoints.includes(id)) {
                     return;
                 } else {
                     set((state) => ({
                         activePoints: [...state.activePoints, id],
+                        datasetVersion: DATASET_VERSION,
                     }));
                 }
             },
@@ -31,24 +35,23 @@ export const useUserRecordStore = create<IUserRecordStore>()(
                         activePoints: state.activePoints.filter(
                             (point) => point !== id,
                         ),
+                        datasetVersion: DATASET_VERSION,
                     }));
                 }
             },
             clearPoints: () => {
-                set({ activePoints: [] });
+                set({ activePoints: [], datasetVersion: DATASET_VERSION });
             },
         }),
         {
             name: 'points-storage',
-            // No `version` field — migration is handled by fallback.ts which
-            // runs before stores hydrate. Omitting `version` avoids Zustand's
-            // built-in version-mismatch behaviour that can discard persisted data.
             storage: createJSONStorage(() => createConditionalStorage(
                 localStorage,
                 () => useUiPrefsStore.getState().prefsMarkerProgressEnabled,
             )),
             partialize: (state) => ({
                 activePoints: state.activePoints,
+                datasetVersion: state.datasetVersion,
             }),
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as Partial<IUserRecordStore>;

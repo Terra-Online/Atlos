@@ -15,7 +15,8 @@ const CLUSTER_SUBCATEGORY_WHITELIST = new Set<string>([
     'collection',
     'mob',
     'natural',
-    'valuable'
+    'valuable',
+    'exploration'
 ]);
 
 interface ClusterLayerDeps {

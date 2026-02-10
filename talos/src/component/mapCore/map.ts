@@ -18,6 +18,13 @@ const getLayerTileSuffix = (layer: LayerType): string => {
     return `_${layer.toLowerCase()}`;
 };
 
+const getMaxZoomOffset = (regionId: string): number => {
+    if (regionId === 'Valley_4' || regionId === 'Wuling') {
+        return 1.5;
+    }
+    return 1;
+};
+
 export class MapCore {
     markerLayer!: MarkerLayer;
     map!: L.Map;
@@ -90,7 +97,7 @@ export class MapCore {
         // Keep Leaflet's zoom constraints in sync with region config.
         // Otherwise users can zoom beyond available tiles (blank map).
         const maxNativeZoom = config.maxZoom;
-        const maxZoom = maxNativeZoom + 1;
+        const maxZoom = maxNativeZoom + getMaxZoomOffset(regionId);
         this.map.setMaxZoom(maxZoom);
 
         const view = useViewState.getState().getViewState(regionId);
@@ -266,7 +273,7 @@ export class MapCore {
                     config.maxZoom,
                 );
                 const mapBounds = L.latLngBounds(southWest, northEast);
-                const maxZoom = config.maxZoom + 1;
+                const maxZoom = config.maxZoom + getMaxZoomOffset(this.currentRegionId);
 
                 this.layerTileLayer = L.tileLayer(
                     getTileResourceUrl(`/clips/${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`),

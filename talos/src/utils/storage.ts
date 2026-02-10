@@ -438,13 +438,31 @@ export const importMarkerData = async (
     // Convert all IDs to strings to avoid precision issues
     const rawActivePoints = data.activePoints.map(id => String(id));
     const rawSelectedPoints = data.selectedPoints.map(id => String(id));
-    
-    // Always run migration — it's idempotent (returns immediately if all IDs are already numeric)
-    const activePoints = await migrateImportedIds(rawActivePoints);
-    const selectedPoints = await migrateImportedIds(rawSelectedPoints);
+
+    // Determine datasetVersion for migration:
+    // - version 2 files have datasetVersion
+    // - version 1 / legacy files (no datasetVersion) are 0110 data
+    const exportData = data as MarkerExportData;
+    const datasetVersion = exportData.datasetVersion; // undefined for legacy
+
+    console.log(`[Import] version=${exportData.version}, datasetVersion=${datasetVersion ?? 'none (legacy)'}, activePoints=${rawActivePoints.length}, selectedPoints=${rawSelectedPoints.length}`);
+
+    // Run version-aware migration
+    const activePoints = await migrateImportedIds(rawActivePoints, datasetVersion);
+    const selectedPoints = await migrateImportedIds(rawSelectedPoints, datasetVersion);
+
+    // Recovery: if activePoints is disproportionately small compared to
+    // selectedPoints (< 30%), it indicates data loss from a prior broken
+    // migration. Merge selectedPoints into activePoints to recover.
+    let effectiveActivePoints = activePoints;
+    if (selectedPoints.length > 0 && activePoints.length < selectedPoints.length * 0.3) {
+      const mergedSet = new Set([...activePoints, ...selectedPoints]);
+      effectiveActivePoints = [...mergedSet];
+      console.warn(`[Import] activePoints (${activePoints.length}) < 30% of selectedPoints (${selectedPoints.length}) — recovered to ${effectiveActivePoints.length} entries by merging`);
+    }
 
     // Merge active points (add new ones, keep existing)
-    activePoints.forEach((id: string) => {
+    effectiveActivePoints.forEach((id: string) => {
       callbacks.addPoint(id);
     });
 
@@ -458,23 +476,14 @@ export const importMarkerData = async (
       callbacks.setFilter(data.filter);
     }
     
-    // Get current active points for checked/selected consistency
-    const currentActivePoints = new Set(callbacks.getActivePoints?.() ?? []);
-    
-    // Merge selections with checked/selected consistency fix:
-    // - If a point is "checked" (in activePoints), it must also be "selected"
-    // - A point can be "selected" without being "checked"
+    // Merge selections: all selectedPoints should be marked as selected
     selectedPoints.forEach((id: string) => {
       callbacks.setSelected(id, true);
     });
     
-    // Ensure all checked (activePoints) are also selected
-    // This fixes the issue where only checked flag was set without selected
-    activePoints.forEach((id: string) => {
-      // If this point is now in activePoints, ensure it's also selected
-      if (currentActivePoints.has(id) || activePoints.includes(id)) {
-        callbacks.setSelected(id, true);
-      }
+    // Ensure all active points are also selected (consistency)
+    effectiveActivePoints.forEach((id: string) => {
+      callbacks.setSelected(id, true);
     });
 
     return true;
