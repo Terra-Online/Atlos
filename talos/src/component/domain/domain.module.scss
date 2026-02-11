@@ -1,0 +1,130 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --domain-glow-bg: #{$light-2};
+    --domain-text: #{$black-1};
+
+    --domain-bar: #{$grey-1};
+    --domain-bar-active: #{$primary-accent-6};
+
+    --invert-bg: 1;
+}
+
+:root[data-theme='dark'] {
+    --domain-glow-bg: #{$black-1};
+    --domain-text: #{$light-1};
+
+    --domain-bar: #{$light-2};
+    --domain-bar-active: #{$primary-accent-4};   
+
+    --invert-bg: 0;
+}
+$banner-desktop-width: 42vw;
+$banner-mobile-width: 80vw;
+
+.bannerContainer {
+    position: fixed;
+    top: 1.5rem;
+    width: $banner-desktop-width;
+    left: calc(50% - calc($banner-desktop-width / 2));
+    z-index: 9999;
+    color: var(--domain-text);
+    transition: all .35s $adagio-curve;
+    animation: slideDown 0.3s ease-out;
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -.25rem;
+        background: var(--domain-glow-bg);
+        filter: blur(3px);
+        z-index: -1;
+        border-radius: .5rem;
+        transition: inherit;
+    }
+    &::after {
+        content: "";
+        background-image: url('@/assets/images/UI/domain.webp');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center left;
+        position: absolute;
+        inset: 0.1rem;
+        z-index: -1;
+        opacity: .4;
+        filter: invert(var(--invert-bg));
+        transition: filter .3s $adagio-curve;
+    }
+}
+.bannerWrap {
+    --edge: 3px;
+    padding: .25rem 1rem; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    &::before, &::after {
+        position: absolute;
+        content: "";
+        width: 2.5px;
+        height: 85%;
+        left: var(--edge);
+        background: var(--domain-bar);
+        transition: all .25s ease;
+    }
+    &::after {
+        left: auto;
+        right: var(--edge);
+    }
+    &:hover::before, &:hover::after {
+        --edge: 6px;
+        height: 70%;
+        background: var(--domain-bar-active);
+    }
+}
+.bannerContent {
+    flex: 1;
+    user-select: none;
+    & + button {
+        margin: .5rem;
+    }
+}
+.bannerText {
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    font-weight: 560;
+    letter-spacing: -0.2px;
+    line-height: 1.02;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    unicode-bidi: plaintext;
+}
+@media screen and (max-width: 768px) {
+    .bannerContainer {
+        padding: 0.6rem 0.75rem;
+        width: $banner-mobile-width;
+        left: calc(50% - calc($banner-mobile-width / 2));
+        &::before {
+            inset: 0;
+        }
+    }
+    .bannerText {
+        font-size: 0.85rem;
+    }
+}
+@supports (corner-shape: superellipse(3)) {
+    .bannerContainer::before {
+        border-radius: 2.5rem;
+        corner-shape: superellipse(3);
+    }
+}
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

@@ -352,8 +352,28 @@ export const applyUrlParams = async (): Promise<void> => {
     }
 
     // 清除URL參數，保持地址欄乾淨
+    // 但保留用于测试的 domain 参数（仅在 localhost 开发环境下）
     if (params.toString()) {
-        window.history.replaceState({}, '', window.location.pathname);
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+        
+        if (isLocalhost) {
+            // 开发环境：只清除已处理的参数，保留 domain 参数
+            const newParams = new URLSearchParams(window.location.search);
+            newParams.delete(PARAM_LANG);
+            newParams.delete(PARAM_FILTER);
+            newParams.delete(PARAM_REGION);
+            newParams.delete(PARAM_SUBREGION);
+            
+            const queryString = newParams.toString();
+            const newUrl = queryString ? 
+                `${window.location.pathname}?${queryString}` : 
+                window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        } else {
+            // 生产环境：清除所有参数
+            window.history.replaceState({}, '', window.location.pathname);
+        }
     }
 };
 

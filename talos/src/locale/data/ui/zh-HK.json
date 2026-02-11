@@ -166,9 +166,13 @@
       "title": "終末地地圖集",
       "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
   },
+  "domain": {
+    "cn": "<span class=\"keyword\">國內用戶</span>推薦使用大陸鏡像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a>，訪問更快捷穩定。",
+    "org": "<span class=\"keyword\">海外用戶</span>推薦使用全球鏡像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>)，訪問更快捷穩定。"
+  },
   "support": {
     "title": "支持我們",
-    "content": "在過去三天裡，Open Endfield Map 平均每天處理接近<span class=\"highlight\">1000萬次</span>HTTPS 請求（也就是平均<span class=\"highlight\">每秒約115次</span>），累計消耗了<span class=\"highlight\">超過450GB</span>的頻寬。網站的活躍用戶正在以<span class=\"highlight\">每天7000人左右</span>的速度增長。儘管 Cloudflare 為我們分發了絕大部分流量（感謝 Cloudflare），我們位於新加坡的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並且始終開源免費，在絕大部分時間裡和現在<span class=\"highlight\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。面對來自全球用戶的海量請求和數據與功能更新壓力，我感到力不從心。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上傳）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
+    "content": "在過去兩週裡，Open Endfield Map 共計處理了<span class=\"highlight\">1.8億次</span>HTTPS 請求（也就是平均<span class=\"highlight\">每日約1285萬次</span>），累計消耗了<span class=\"highlight\">超過2.5TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"highlight\">66000人</span>並且仍在增長。儘管 Cloudflare 為我們分發了絕大部分流量（感謝 Cloudflare），我們位於新加坡和杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並且始終開源免費，在絕大部分時間裡（以及現在）<span class=\"highlight\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。面對來自全球用戶的海量請求和數據與功能更新壓力，我感到力不從心。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上傳）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
     "kofi": "買一杯咖啡（Ko-fi）",
     "afdian": "買一份流量包（愛發電）",
     "hint": "國際用戶推薦使用 Ko-fi，中國大陸用戶推薦使用愛發電。"

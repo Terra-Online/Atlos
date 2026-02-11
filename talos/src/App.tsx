@@ -8,6 +8,7 @@ import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
 import UserGuide from '@/component/userGuide/UserGuide.tsx';
 import { MetaHelper } from './component/MetaHelper';
+import DomainBanner from './component/domain/domain';
 
 declare global {
     interface Window {
@@ -84,6 +85,7 @@ function App() {
     return (
         <StrictMode>
             <MetaHelper />
+            <DomainBanner />
             <div className='app theme-transition-scope'>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}

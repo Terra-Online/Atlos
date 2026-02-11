@@ -17,6 +17,8 @@
   --btn-square-deco-1: #{$grey-3};
   --btn-square-deco-2: #{$grey-2};
   --btn-square-deco-3: #{$grey-1};
+
+  --btn-bg-hover: #{$primary-accent-4};
 }
 
 :root[data-schema='dark'] {
@@ -35,6 +37,8 @@
   --btn-square-deco-1: #{$grey-3};
   --btn-square-deco-2: #{$grey-2};
   --btn-square-deco-3: #{$grey-1};
+
+  --btn-bg-hover: #{$primary-accent-4};
 }
 
 .button {
@@ -342,25 +346,23 @@
         transform: translate(-50%, -50%);
         mask-size: contain;
         mask-position: center;
+        transition: all 0.3s ease;
     }
     &::after {
         display: none;
     }
-
     &:hover {
-        filter: invert(1);
+        filter: invert(0);
         box-shadow: none;
-        outline-color: var(--btn-deco);
+        
     }
     &[data-schema='dark']:hover {
-        background: radial-gradient(circle, var(--btn-bg-light) 60%, transparent 60%); // avoiding edge rag
+        --icon-fill: var(--btn-bg-hover);
+        background: radial-gradient(circle, var(--btn-deco-light) 60%, transparent 60%); // avoiding edge rag
     }
     &[data-schema='light']:hover {
-        background: radial-gradient(circle, var(--btn-bg-dark) 60%, transparent 60%); // avoiding edge rag
+        --icon-fill: var(--btn-bg-hover);
+        background: radial-gradient(circle, var(--btn-deco-light) 60%, transparent 60%); // avoiding edge rag
 
-    }
-
-    &:focus {
-        outline-color: var(--btn-deco);
     }
 }
