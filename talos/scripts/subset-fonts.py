@@ -12,6 +12,7 @@ Requirements:
 import json
 import os
 import shutil
+import unicodedata
 from pathlib import Path
 from typing import Set
 from fontTools import subset
@@ -56,7 +57,8 @@ def collect_characters_from_json(json_path: Path) -> Set[str]:
         
         def extract_chars(obj):
             if isinstance(obj, str):
-                chars.update(obj)
+                normalized = unicodedata.normalize('NFC', obj)
+                chars.update(normalized)
             elif isinstance(obj, dict):
                 for value in obj.values():
                     extract_chars(value)
@@ -133,6 +135,7 @@ def convert_to_woff(input_path: Path, output_path: Path, characters: Set[str]) -
     """Convert and subset font to WOFF format."""
     options = subset.Options()
     options.flavor = 'woff'
+    options.desubroutinize = True
     options.layout_features = ['*']
     options.name_IDs = ['*']
     options.name_legacy = True
@@ -148,10 +151,10 @@ def convert_to_woff(input_path: Path, output_path: Path, characters: Set[str]) -
     unicodes = [ord(c) for c in characters]
     
     font = TTFont(str(input_path))
-    font.flavor = 'woff'
     subsetter = subset.Subsetter(options=options)
     subsetter.populate(unicodes=unicodes)
     subsetter.subset(font)
+    font.flavor = 'woff'
     font.save(str(output_path))
     font.close()
 
@@ -160,6 +163,7 @@ def convert_to_woff2(input_path: Path, output_path: Path, characters: Set[str]) 
     """Convert and subset font to WOFF2 format."""
     options = subset.Options()
     options.flavor = 'woff2'
+    options.desubroutinize = True
     options.layout_features = ['*']
     options.name_IDs = ['*']
     options.name_legacy = True
@@ -175,10 +179,10 @@ def convert_to_woff2(input_path: Path, output_path: Path, characters: Set[str]) 
     unicodes = [ord(c) for c in characters]
     
     font = TTFont(str(input_path))
-    font.flavor = 'woff2'
     subsetter = subset.Subsetter(options=options)
     subsetter.populate(unicodes=unicodes)
     subsetter.subset(font)
+    font.flavor = 'woff2'
     font.save(str(output_path))
     font.close()
 

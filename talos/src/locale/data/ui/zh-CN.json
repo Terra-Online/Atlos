@@ -173,7 +173,7 @@
     "title": "终末地地图集",
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   },
-    "domain": {
+  "domain": {
       "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
       "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
   },
