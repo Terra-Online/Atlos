@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 :root, :root[data-theme='light'] {
     --trigger-bg: #{$grey-1};
@@ -160,7 +161,7 @@ $transition-speed: 0.3s; // import from global size.scss later
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: $mobile-bp) {
     .trigger > .triggerLabel {
         font-size: 1rem;
         text-shadow: none;

@@ -36,7 +36,6 @@ $indicator-height: 0.75rem;
     padding: 5px;
     box-shadow: 0 0 5px rgba($black-0, 0.6);
     z-index: 900;
-    transition: background-color 0.35s $moderato-curve;
     &::before {
         content: '';
         position: absolute;
@@ -46,13 +45,11 @@ $indicator-height: 0.75rem;
         border-radius: 3px;
         z-index: 0;
         pointer-events: none;
+        transition: background-color 0.35s $moderato-curve;
     }
     > * {
         position: relative;
         z-index: 1;
-    }
-    &.layerswitch {
-        // No special positioning needed, handled by parent flex
     }
 }
 @media screen and (max-width: $mobile-bp) {
