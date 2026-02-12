@@ -2,7 +2,7 @@ import useRegion from '@/store/region';
 import { MapCore } from '../mapCore/map';
 import { DEFAULT_REGION, REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { useEffect, useRef, useState } from 'react';
-import { createHighlight } from '@/utils/visual';
+import { createHighlight } from './visual';
 import { useMarkerStore } from '@/store/marker';
 import { useMarker } from './useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';

@@ -42,6 +42,10 @@ $banner-mobile-width: 80vw;
         border-radius: .5rem;
         transition: inherit;
     }
+    :has(.bannerWrap:hover) &::before {
+        filter: blur(5px);
+        transition: all .25s ease;
+    }
     &::after {
         content: "";
         background-image: url('@/assets/images/UI/domain.webp');

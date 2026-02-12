@@ -5,7 +5,7 @@ import { IMapView } from './type';
 import { getTileResourceUrl } from '@/utils/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
-import { SubregionBoundaryManager } from '@/utils/boundary';
+import { SubregionBoundaryManager } from '@/component/map/boundary';
 import type { LayerType } from '@/store/layer';
 
 export interface IMapOptions {

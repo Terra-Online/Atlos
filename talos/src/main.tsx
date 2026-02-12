@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 //import LazyApp from '@/LazyApp.tsx';
 import App from './App.tsx';
-import { fontLoader } from './utils/fontLoader.ts';
+import { fontLoader } from './locale/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
 import { loadLabelTool, loadLinkTool } from '@/devtools/loadDevTool';
 import { applyUrlParams } from '@/utils/urlState';

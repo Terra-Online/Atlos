@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { UseBoundStore, StoreApi } from 'zustand';
 import LOGGER from '@/utils/log';
 import ALP from 'accept-language-parser';
-import { preloadFonts, getFontUrlsForRegion } from '@/utils/fontCache';
+import { preloadFonts, getFontUrlsForRegion } from '@/locale/fontCache';
 import { runStorageMigration } from '@/utils/fallback';
 
 // Build CDN URL for fonts (same logic as fontLoader)
