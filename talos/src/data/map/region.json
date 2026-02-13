@@ -54,5 +54,22 @@
         "subregions": [
             "DJ_1"
         ]
+    },
+    "Weekraid_1": {
+        "dimensions": [
+            4000,
+            4000
+        ],
+        "maxZoom": 2,
+        "tileSize": 200,
+        "initialOffset": {
+            "x": 2000,
+            "y": -100
+        },
+        "initialZoom": 0,
+        "subregions": [
+            "ES_1"
+        ],
+        "layers": ["L1", "B1", "B2"]
     }
 }

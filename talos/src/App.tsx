@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, StrictMode } from 'react';
+import L from 'leaflet';
+
 import './styles/global.scss';
 
 import Map from './component/map/Map';
 import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
-import L from 'leaflet';
-import { useSidebarOpen } from '@/store/uiPrefs';
-import UserGuide from '@/component/userGuide/UserGuide.tsx';
-import { MetaHelper } from './component/MetaHelper';
+import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
+import { MetaHelper } from './component/MetaHelper';
+
+import { useSidebarOpen } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
 
 declare global {

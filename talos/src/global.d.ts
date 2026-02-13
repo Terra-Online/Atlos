@@ -1,4 +1,4 @@
-// 全局类型定义
+// Global type declarations
 declare global {
     const __ASSETS_HOST: string;
     const __APP_VERSION__: string;
@@ -16,7 +16,7 @@ declare global {
     }
 }
 
-// 模块声明
+// Module declarations
 declare module '*.json' {
     const value: unknown;
     export default value;

@@ -16,7 +16,7 @@ const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
     Wuling: Wuling,
     Dijiang: Dijiang,
-    Æther: Æther,
+    Weekraid_1: Æther,
 };
 
 // i18n region code mapping (locale/data/region/*.json)
@@ -24,6 +24,7 @@ const REGION_I18N_CODE: Record<string, string> = {
     Valley_4: 'VL',
     Wuling: 'WL',
     Dijiang: 'DJ',
+    Weekraid_1: 'ES',
 };
 
 const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {

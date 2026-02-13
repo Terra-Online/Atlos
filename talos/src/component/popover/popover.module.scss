@@ -37,9 +37,9 @@
     
     &:popover-open {
         opacity: 1;
-        transition: opacity 120ms $moderato-curve, 
-                    overlay 120ms $moderato-curve allow-discrete, 
-                    display 120ms $moderato-curve allow-discrete;
+        transition: opacity .12s $moderato-curve, 
+                    overlay .12s $moderato-curve allow-discrete, 
+                    display .12s $moderato-curve allow-discrete;
     }
     
     @starting-style {
@@ -50,6 +50,6 @@
     
     &.popoverClose {
         opacity: 0;
-        transition: opacity 120ms $moderato-curve;
+        transition: opacity .12s $moderato-curve;
     }
 }

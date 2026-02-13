@@ -46,6 +46,7 @@ export const mapRegionKeyToLinkCode = (regionKey: string | null | undefined): st
         Valley_4: 'VL',
         Wuling: 'WL',
         Dijiang: 'DJ',
+        Weekraid_1: 'ES',
         Jinlong: 'JL',
     };
     return mapping[regionKey] ?? null;
