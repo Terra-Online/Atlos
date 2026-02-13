@@ -164,7 +164,10 @@ export class MapCore {
             bounds: mapBounds,
             pane: 'tilePane',
             maxNativeZoom: config.maxZoom,
-            maxZoom: maxZoom,
+            // Use Math.ceil so that Leaflet's internal Math.round(zoom) never
+            // exceeds the tile layer's maxZoom (which would set _tileZoom to
+            // undefined and silently skip tile loading at fractional max zoom).
+            maxZoom: Math.ceil(maxZoom),
             // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
             errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
         }).addTo(this.map);
@@ -283,7 +286,7 @@ export class MapCore {
                         bounds: mapBounds,
                         pane: 'tilePane',
                         maxNativeZoom: config.maxZoom,
-                        maxZoom: maxZoom,
+                        maxZoom: Math.ceil(maxZoom),
                         // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
                         errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
                     }

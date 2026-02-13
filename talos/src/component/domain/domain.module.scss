@@ -117,10 +117,10 @@ $banner-mobile-width: 80vw;
         font-size: 0.85rem;
     }
 }
-@supports (corner-shape: superellipse(3)) {
+@supports (corner-shape: superellipse(2.5)) {
     .bannerContainer::before {
         border-radius: 2.5rem;
-        corner-shape: superellipse(3);
+        corner-shape: superellipse(2.5);
     }
 }
 @keyframes slideDown {

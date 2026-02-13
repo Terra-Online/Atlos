@@ -47,6 +47,7 @@
     font-size: 13px;
     font-weight: 500;
     font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    user-select: none;
     text-decoration: none;
     white-space: nowrap;
     text-shadow: 1px 1px 1px var(--tooltip-shadow, #{rgba($black-0, 0.8)}), 
