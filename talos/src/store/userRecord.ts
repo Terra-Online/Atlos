@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useUiPrefsStore } from './uiPrefs';
 import { createConditionalStorage } from '@/utils/storage';
+import { DATASET_VERSION } from '@/data/migration/version';
 
 interface IUserRecordStore {
     activePoints: string[];
+    datasetVersion: number;
     addPoint: (id: string) => void;
     deletePoint: (id: string) => void;
     clearPoints: () => void;
@@ -14,12 +16,14 @@ export const useUserRecordStore = create<IUserRecordStore>()(
     persist<IUserRecordStore, [], [], Partial<IUserRecordStore>>(
         (set, get) => ({
             activePoints: [],
+            datasetVersion: DATASET_VERSION,
             addPoint: (id) => {
                 if (get().activePoints.includes(id)) {
                     return;
                 } else {
                     set((state) => ({
                         activePoints: [...state.activePoints, id],
+                        datasetVersion: DATASET_VERSION,
                     }));
                 }
             },
@@ -31,11 +35,12 @@ export const useUserRecordStore = create<IUserRecordStore>()(
                         activePoints: state.activePoints.filter(
                             (point) => point !== id,
                         ),
+                        datasetVersion: DATASET_VERSION,
                     }));
                 }
             },
             clearPoints: () => {
-                set({ activePoints: [] });
+                set({ activePoints: [], datasetVersion: DATASET_VERSION });
             },
         }),
         {
@@ -46,11 +51,17 @@ export const useUserRecordStore = create<IUserRecordStore>()(
             )),
             partialize: (state) => ({
                 activePoints: state.activePoints,
+                datasetVersion: state.datasetVersion,
             }),
             merge: (persistedState, currentState) => {
                 const persisted = persistedState as Partial<IUserRecordStore>;
-                // Only restore if preference is enabled
-                if (useUiPrefsStore.getState().prefsMarkerProgressEnabled && persisted.activePoints) {
+                // Always restore persisted activePoints when they exist,
+                // regardless of the current preference toggle. The preference
+                // only controls whether *new* writes go to localStorage (via
+                // createConditionalStorage).  We must never discard data from
+                // localStorage during hydration — that would wipe the user's
+                // progress silently if they toggle the setting off and on.
+                if (persisted.activePoints && persisted.activePoints.length > 0) {
                     return { ...currentState, activePoints: persisted.activePoints };
                 }
                 return currentState;

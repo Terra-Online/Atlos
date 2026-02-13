@@ -7,6 +7,7 @@ import { MARKER_TYPE_DICT } from '@/data/marker';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
+import ExplorationIcon from '@/assets/images/category/exploration.svg?react';
 import CombatIcon from '@/assets/images/category/combat.svg?react';
 import FacilityIcon from '@/assets/images/category/facility.svg?react';
 import MobIcon from '@/assets/images/category/mob.svg?react';
@@ -39,6 +40,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     natural: NaturalIcon,
     npc: NpcIcon,
     valuable: ValuableIcon,
+    exploration: ExplorationIcon,
 };
 
 // const mockPoint = {

@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 :root, :root[data-theme='light'] {
     --lang-bg: #{$white-1};
@@ -87,7 +88,7 @@
     align-items: stretch;
 }
 
-@media (max-width:576px) {
+@media (max-width:$smallmobile-bp) {
     .sectionItems {
         grid-template-columns: 1fr
     }

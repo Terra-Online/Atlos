@@ -25,6 +25,7 @@
     font-size: 13px;
     font-weight: 500;
     font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    user-select: none;
     white-space: nowrap;
     border: 1px solid  var(--tooltip-border);
     text-shadow: 1px 1px 1px var(--tooltip-shadow), 0 0 1px var(--tooltip-shadow-2), -0.5px -0.5px 2px var(--tooltip-shadow-2);

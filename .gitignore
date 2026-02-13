@@ -41,6 +41,7 @@ talos/src/locale/data/ui/reports
 
 # Local-only map label placement tool (UI should not be merged)
 talos/src/devtools/labelTool
+talos/test
 
 /output
 .history

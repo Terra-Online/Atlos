@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 :root, :root[data-theme='light'] {
     --modal-header-bg: #{$grey-1};
@@ -82,7 +83,7 @@
     }
     &[data-size="full"] {
         width: 65%;
-        @media (max-width: 768px) {
+        @media (max-width: $mobile-bp) {
             width: 100%;
         }
         height: 90dvh;

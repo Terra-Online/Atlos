@@ -1,0 +1,3845 @@
+[
+  {
+    "id": 3400290000,
+    "position": [
+      -542.6799,
+      849.9574
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400170069,
+    "position": [
+      -564.9169,
+      881.7434
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400170070,
+    "position": [
+      -569.0888,
+      882.1278
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400170072,
+    "position": [
+      -569.9926,
+      881.027
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400170073,
+    "position": [
+      -564.8137,
+      880.4262
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400170074,
+    "position": [
+      -566.8012,
+      881.1528
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 3400280015,
+    "position": [
+      -701.6354,
+      875.3556
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400280017,
+    "position": [
+      -702.2424,
+      876.8265
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400280018,
+    "position": [
+      -698.6448,
+      878.7479
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400280020,
+    "position": [
+      -701.401,
+      873.4557
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 3400280005,
+    "position": [
+      -619.8721,
+      909.8965
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400280012,
+    "position": [
+      -620.3724,
+      909.8149
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400280013,
+    "position": [
+      -619.3117,
+      909.0877
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400030063,
+    "position": [
+      -570.95,
+      694.0812
+    ],
+    "subregionId": "VL_5",
+    "type": "ram"
+  },
+  {
+    "id": 3400030064,
+    "position": [
+      -572.1274,
+      693.1914
+    ],
+    "subregionId": "VL_5",
+    "type": "ram"
+  },
+  {
+    "id": 3400030065,
+    "position": [
+      -571.6919,
+      695.5548
+    ],
+    "subregionId": "VL_5",
+    "type": "ram"
+  },
+  {
+    "id": 3400030066,
+    "position": [
+      -592.005,
+      737.1307
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400030067,
+    "position": [
+      -593.032,
+      736.4088
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400270004,
+    "position": [
+      -544.1947,
+      841.2436
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400270005,
+    "position": [
+      -568.7291,
+      811.9982
+    ],
+    "subregionId": "VL_5",
+    "type": "energy_alluvium"
+  },
+  {
+    "id": 3400270006,
+    "position": [
+      -558.8713,
+      833.9639
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400270007,
+    "position": [
+      -699.5716,
+      876.2593
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400270008,
+    "position": [
+      -610.4645,
+      703.0018
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400270009,
+    "position": [
+      -544.1947,
+      841.2436
+    ],
+    "subregionId": "VL_5",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 3400270010,
+    "position": [
+      -558.8713,
+      833.9639
+    ],
+    "subregionId": "VL_5",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 3400270011,
+    "position": [
+      -699.5716,
+      876.2593
+    ],
+    "subregionId": "VL_5",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 3400270012,
+    "position": [
+      -610.489,
+      703.0203
+    ],
+    "subregionId": "VL_5",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 3400080069,
+    "position": [
+      -545.6427,
+      913.7033
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080070,
+    "position": [
+      -507.9041,
+      870.836
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080071,
+    "position": [
+      -549.2914,
+      914.0735
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080072,
+    "position": [
+      -532.7122,
+      908.6492
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080073,
+    "position": [
+      -531.1493,
+      910.9
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080074,
+    "position": [
+      -533.2494,
+      908.5516
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080075,
+    "position": [
+      -528.6131,
+      888.1535
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080076,
+    "position": [
+      -542.1289,
+      916.173
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080078,
+    "position": [
+      -529.0972,
+      888.3336
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080184,
+    "position": [
+      -569.3404,
+      643.2319
+    ],
+    "subregionId": "VL_5",
+    "type": "recycling_stn"
+  },
+  {
+    "id": 3400080185,
+    "position": [
+      -604.6542,
+      828.6717
+    ],
+    "subregionId": "VL_5",
+    "type": "recycling_stn"
+  },
+  {
+    "id": 3400080186,
+    "position": [
+      -573.1213,
+      727.609
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080187,
+    "position": [
+      -573.2245,
+      725.8746
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080188,
+    "position": [
+      -573.9501,
+      726.3405
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080189,
+    "position": [
+      -573.629,
+      726.9583
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080190,
+    "position": [
+      -578.8026,
+      731.4668
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080191,
+    "position": [
+      -602.3872,
+      777.9852
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080192,
+    "position": [
+      -601.6067,
+      778.4043
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080193,
+    "position": [
+      -602.3881,
+      779.6892
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080194,
+    "position": [
+      -602.3722,
+      778.6729
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080195,
+    "position": [
+      -601.13,
+      779.1079
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080196,
+    "position": [
+      -547.6497,
+      770.4509
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080197,
+    "position": [
+      -546.7169,
+      769.5415
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080198,
+    "position": [
+      -540.843,
+      770.906
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080199,
+    "position": [
+      -540.1447,
+      770.8325
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080200,
+    "position": [
+      -540.1447,
+      768.6059
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080203,
+    "position": [
+      -511.505,
+      906.3509
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080204,
+    "position": [
+      -513.237,
+      904.492
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080205,
+    "position": [
+      -511.9439,
+      906.8783
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080206,
+    "position": [
+      -512.5805,
+      904.2548
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080217,
+    "position": [
+      -661.0965,
+      736.1965
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 3400080218,
+    "position": [
+      -662.1368,
+      734.9172
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080219,
+    "position": [
+      -662.7381,
+      735.4902
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080220,
+    "position": [
+      -658.9679,
+      735.2463
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080221,
+    "position": [
+      -659.6836,
+      734.0859
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080222,
+    "position": [
+      -660.8709,
+      734.222
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080223,
+    "position": [
+      -661.2758,
+      734.5151
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080224,
+    "position": [
+      -658.7891,
+      736.0151
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080225,
+    "position": [
+      -658.435,
+      735.6425
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080241,
+    "position": [
+      -507.7071,
+      899.0547
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 3400080242,
+    "position": [
+      -506.1227,
+      900.5951
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080243,
+    "position": [
+      -507.1258,
+      900.6498
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080244,
+    "position": [
+      -505.3588,
+      899.55
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080245,
+    "position": [
+      -503.7301,
+      900.4033
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080246,
+    "position": [
+      -505.3067,
+      899.0925
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080247,
+    "position": [
+      -507.012,
+      901.9715
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080248,
+    "position": [
+      -504.0824,
+      899.9449
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080249,
+    "position": [
+      -509.1613,
+      901.1842
+    ],
+    "subregionId": "VL_5",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 3400080250,
+    "position": [
+      -528.3509,
+      832.778
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_mining_site"
+  },
+  {
+    "id": 3400080251,
+    "position": [
+      -532.679,
+      835.333
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080252,
+    "position": [
+      -531.1743,
+      832.2042
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080253,
+    "position": [
+      -533.9756,
+      835.4006
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080254,
+    "position": [
+      -530.8328,
+      834.6729
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080255,
+    "position": [
+      -527.3888,
+      836.6431
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080256,
+    "position": [
+      -530.5167,
+      835.5906
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080257,
+    "position": [
+      -531.6776,
+      833.0442
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080258,
+    "position": [
+      -532.1761,
+      837.0865
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080261,
+    "position": [
+      -612.2199,
+      791.6451
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 3400080262,
+    "position": [
+      -611.6944,
+      794.0747
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080263,
+    "position": [
+      -614.7415,
+      791.1989
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080264,
+    "position": [
+      -614.0203,
+      791.156
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080265,
+    "position": [
+      -613.2712,
+      789.2885
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080266,
+    "position": [
+      -610.9971,
+      793.9549
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080267,
+    "position": [
+      -612.5359,
+      789.5798
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080268,
+    "position": [
+      -612.1776,
+      789.2316
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080269,
+    "position": [
+      -612.8364,
+      793.9473
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 3400080309,
+    "position": [
+      -546.6243,
+      917.5137
+    ],
+    "subregionId": "VL_5",
+    "type": "reed_rye"
+  },
+  {
+    "id": 3400080310,
+    "position": [
+      -532.7343,
+      888.1165
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080311,
+    "position": [
+      -534.2071,
+      887.6627
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080312,
+    "position": [
+      -523.4346,
+      890.882
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080313,
+    "position": [
+      -524.374,
+      889.6173
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080314,
+    "position": [
+      -532.9414,
+      888.6483
+    ],
+    "subregionId": "VL_5",
+    "type": "firebuckle"
+  },
+  {
+    "id": 3400080315,
+    "position": [
+      -530.9913,
+      909.8835
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080316,
+    "position": [
+      -530.3014,
+      908.4854
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080317,
+    "position": [
+      -531.3855,
+      909.3695
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080318,
+    "position": [
+      -531.1663,
+      908.1834
+    ],
+    "subregionId": "VL_5",
+    "type": "umbraline"
+  },
+  {
+    "id": 3400080319,
+    "position": [
+      -509.0124,
+      869.5754
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080320,
+    "position": [
+      -511.3665,
+      870.3372
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080321,
+    "position": [
+      -514.0812,
+      869.1265
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080322,
+    "position": [
+      -517.4514,
+      873.0271
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080323,
+    "position": [
+      -505.8621,
+      872.4083
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080324,
+    "position": [
+      -508.3394,
+      871.3009
+    ],
+    "subregionId": "VL_5",
+    "type": "aketine"
+  },
+  {
+    "id": 3400080325,
+    "position": [
+      -506.2947,
+      870.2995
+    ],
+    "subregionId": "VL_5",
+    "type": "aketine"
+  },
+  {
+    "id": 3400080326,
+    "position": [
+      -517.5962,
+      874.0477
+    ],
+    "subregionId": "VL_5",
+    "type": "aketine"
+  },
+  {
+    "id": 3400080327,
+    "position": [
+      -556.5735,
+      685.9058
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080328,
+    "position": [
+      -603.4784,
+      686.9587
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080329,
+    "position": [
+      -592.4217,
+      793.072
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080330,
+    "position": [
+      -591.0395,
+      791.236
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080331,
+    "position": [
+      -593.0134,
+      793.1088
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080332,
+    "position": [
+      -589.6729,
+      791.4294
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080333,
+    "position": [
+      -591.4243,
+      793.5072
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080334,
+    "position": [
+      -597.5361,
+      784.4848
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080336,
+    "position": [
+      -692.545,
+      785.2138
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_mining_site"
+  },
+  {
+    "id": 3400080337,
+    "position": [
+      -688.9572,
+      782.2692
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080338,
+    "position": [
+      -692.9821,
+      789.561
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080339,
+    "position": [
+      -687.8798,
+      784.059
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080340,
+    "position": [
+      -693.4038,
+      787.7392
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080341,
+    "position": [
+      -690.7477,
+      788.7286
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080342,
+    "position": [
+      -691.4709,
+      788.898
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080344,
+    "position": [
+      -689.5057,
+      785.499
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080345,
+    "position": [
+      -687.1611,
+      783.8651
+    ],
+    "subregionId": "VL_5",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 3400080349,
+    "position": [
+      -549.4278,
+      913.7974
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400080350,
+    "position": [
+      -536.7818,
+      917.9848
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080351,
+    "position": [
+      -517.9966,
+      923.5113
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080352,
+    "position": [
+      -520.2526,
+      926.6485
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080353,
+    "position": [
+      -512.6149,
+      915.0578
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080355,
+    "position": [
+      -546.1009,
+      917.5179
+    ],
+    "subregionId": "VL_5",
+    "type": "reed_rye"
+  },
+  {
+    "id": 3400080356,
+    "position": [
+      -544.6422,
+      915.6058
+    ],
+    "subregionId": "VL_5",
+    "type": "reed_rye"
+  },
+  {
+    "id": 3400080357,
+    "position": [
+      -543.7292,
+      915.5572
+    ],
+    "subregionId": "VL_5",
+    "type": "reed_rye"
+  },
+  {
+    "id": 3400080358,
+    "position": [
+      -607.5984,
+      765.0617
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080359,
+    "position": [
+      -607.5978,
+      764.406
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080360,
+    "position": [
+      -607.6167,
+      757.8856
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080361,
+    "position": [
+      -607.673,
+      758.6215
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080362,
+    "position": [
+      -609.3853,
+      765.0997
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080363,
+    "position": [
+      -607.3913,
+      786.2019
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080364,
+    "position": [
+      -608.078,
+      786.5825
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080365,
+    "position": [
+      -608.1412,
+      785.8278
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080387,
+    "position": [
+      -511.8336,
+      881.7887
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080388,
+    "position": [
+      -512.0479,
+      881.2093
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080389,
+    "position": [
+      -512.2329,
+      881.9597
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080390,
+    "position": [
+      -511.6217,
+      883.0529
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080400,
+    "position": [
+      -623.4652,
+      863.3218
+    ],
+    "subregionId": "VL_5",
+    "type": "protocol_dl"
+  },
+  {
+    "id": 3400080404,
+    "position": [
+      -562.9475,
+      677.7657
+    ],
+    "subregionId": "VL_5",
+    "type": "protocol_dl"
+  },
+  {
+    "id": 3400080405,
+    "position": [
+      -505.9258,
+      921.6532
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080412,
+    "position": [
+      -508.2696,
+      918.8407
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080419,
+    "position": [
+      -509.6759,
+      924.9344
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080426,
+    "position": [
+      -501.7071,
+      922.1219
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080433,
+    "position": [
+      -503.1133,
+      926.3407
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080447,
+    "position": [
+      -615.6136,
+      829.3092
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080454,
+    "position": [
+      -619.8324,
+      827.9029
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080461,
+    "position": [
+      -613.7386,
+      825.5592
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080468,
+    "position": [
+      -621.7074,
+      824.1529
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080475,
+    "position": [
+      -617.4886,
+      824.6217
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080482,
+    "position": [
+      -618.8949,
+      820.4029
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080489,
+    "position": [
+      -557.0197,
+      678.8401
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080496,
+    "position": [
+      -554.2072,
+      681.6526
+    ],
+    "subregionId": "VL_5",
+    "type": "ferrium_spot"
+  },
+  {
+    "id": 3400080510,
+    "position": [
+      -617.9574,
+      871.4968
+    ],
+    "subregionId": "VL_5",
+    "type": "originium_spot"
+  },
+  {
+    "id": 3400080517,
+    "position": [
+      -620.7699,
+      869.6218
+    ],
+    "subregionId": "VL_5",
+    "type": "originium_spot"
+  },
+  {
+    "id": 3400080524,
+    "position": [
+      -679.3638,
+      791.3404
+    ],
+    "subregionId": "VL_5",
+    "type": "originium_spot"
+  },
+  {
+    "id": 3400080531,
+    "position": [
+      -681.7075,
+      790.8716
+    ],
+    "subregionId": "VL_5",
+    "type": "originium_spot"
+  },
+  {
+    "id": 3400080538,
+    "position": [
+      -563.0939,
+      648.9323
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080539,
+    "position": [
+      -563.0743,
+      649.5712
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080540,
+    "position": [
+      -581.5663,
+      660.9029
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080541,
+    "position": [
+      -562.6635,
+      650.1244
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080542,
+    "position": [
+      -595.4058,
+      651.7931
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080543,
+    "position": [
+      -596.0434,
+      651.5475
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080544,
+    "position": [
+      -595.5136,
+      650.9513
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080545,
+    "position": [
+      -582.0802,
+      660.0792
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080546,
+    "position": [
+      -596.6773,
+      652.0359
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080547,
+    "position": [
+      -594.8688,
+      651.4616
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080549,
+    "position": [
+      -560.4261,
+      683.7315
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080557,
+    "position": [
+      -654.804,
+      731.7096
+    ],
+    "subregionId": "VL_5",
+    "type": "protocol_dl_ii"
+  },
+  {
+    "id": 3400080558,
+    "position": [
+      -617.0949,
+      836.2936
+    ],
+    "subregionId": "VL_5",
+    "type": "protocol_dl_ii"
+  },
+  {
+    "id": 3400080559,
+    "position": [
+      -561.1143,
+      683.7713
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080560,
+    "position": [
+      -560.4627,
+      683.0822
+    ],
+    "subregionId": "VL_5",
+    "type": null
+  },
+  {
+    "id": 3400080561,
+    "position": [
+      -617.5763,
+      908.3248
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080562,
+    "position": [
+      -618.8134,
+      908.1262
+    ],
+    "subregionId": "VL_5",
+    "type": "tartpepper"
+  },
+  {
+    "id": 3400080563,
+    "position": [
+      -615.9833,
+      906.4717
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080564,
+    "position": [
+      -617.2303,
+      907.6745
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080565,
+    "position": [
+      -618.5143,
+      909.0777
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400080566,
+    "position": [
+      -616.4845,
+      907.7416
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080567,
+    "position": [
+      -614.9011,
+      905.6406
+    ],
+    "subregionId": "VL_5",
+    "type": "scorchbug"
+  },
+  {
+    "id": 3400080568,
+    "position": [
+      -633.0699,
+      883.5953
+    ],
+    "subregionId": "VL_5",
+    "type": "aic_steward"
+  },
+  {
+    "id": 3400080569,
+    "position": [
+      -596.3901,
+      735.3415
+    ],
+    "subregionId": "VL_5",
+    "type": "depot_node"
+  },
+  {
+    "id": 3400080570,
+    "position": [
+      -577.1001,
+      903.1042
+    ],
+    "subregionId": "VL_5",
+    "type": "stock_redistrib"
+  },
+  {
+    "id": 3400080572,
+    "position": [
+      -576.7916,
+      801.6487
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080573,
+    "position": [
+      -559.8294,
+      800.9807
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080574,
+    "position": [
+      -626.2238,
+      731.8061
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080575,
+    "position": [
+      -639.8105,
+      799.9269
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400080576,
+    "position": [
+      -648.1684,
+      712.3886
+    ],
+    "subregionId": "VL_5",
+    "type": "glowbug"
+  },
+  {
+    "id": 3400010091,
+    "position": [
+      -568.8089,
+      855.4194
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010092,
+    "position": [
+      -564.9813,
+      861.1707
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010093,
+    "position": [
+      -568.6344,
+      858.7905
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010095,
+    "position": [
+      -566.3225,
+      855.4834
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010096,
+    "position": [
+      -566.0511,
+      859.304
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010108,
+    "position": [
+      -580.8324,
+      831.0997
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010114,
+    "position": [
+      -580.6779,
+      832.4447
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010118,
+    "position": [
+      -571.1076,
+      826.8917
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010130,
+    "position": [
+      -597.2892,
+      845.1848
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400010133,
+    "position": [
+      -597.1073,
+      843.6342
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400010151,
+    "position": [
+      -569.1979,
+      827.8233
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010160,
+    "position": [
+      -577.7057,
+      831.6482
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010161,
+    "position": [
+      -577.2619,
+      830.6544
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010163,
+    "position": [
+      -578.2527,
+      830.9732
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400010165,
+    "position": [
+      -566.4276,
+      827.0545
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010168,
+    "position": [
+      -568.4432,
+      858.5686
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010169,
+    "position": [
+      -567.9939,
+      854.4294
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010170,
+    "position": [
+      -565.3851,
+      855.9277
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010172,
+    "position": [
+      -569.1926,
+      854.5179
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010173,
+    "position": [
+      -564.6904,
+      856.5371
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010185,
+    "position": [
+      -568.4619,
+      825.8404
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400010215,
+    "position": [
+      -568.6723,
+      844.0631
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 3400010216,
+    "position": [
+      -571.1572,
+      840.4308
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 3400010217,
+    "position": [
+      -575.5691,
+      841.7967
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 3400010218,
+    "position": [
+      -572.3864,
+      840.3461
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 3400010581,
+    "position": [
+      -595.1151,
+      843.2405
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 3400010137,
+    "position": [
+      -568.9176,
+      823.7714
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400010139,
+    "position": [
+      -580.9972,
+      849.5852
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010140,
+    "position": [
+      -575.1323,
+      851.2552
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010141,
+    "position": [
+      -554.9683,
+      850.5974
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010142,
+    "position": [
+      -563.911,
+      848.5469
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010143,
+    "position": [
+      -574.8712,
+      858.3108
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400010144,
+    "position": [
+      -576.6088,
+      838.1814
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010175,
+    "position": [
+      -558.8839,
+      827.4965
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400010187,
+    "position": [
+      -583.874,
+      848.4844
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400010188,
+    "position": [
+      -554.6187,
+      841.1402
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010189,
+    "position": [
+      -504.7005,
+      855.286
+    ],
+    "subregionId": "VL_5",
+    "type": "tp_point"
+  },
+  {
+    "id": 3400010191,
+    "position": [
+      -529.3822,
+      891.7093
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400010213,
+    "position": [
+      -573.853,
+      860.55
+    ],
+    "subregionId": "VL_5",
+    "type": "cratesurprise"
+  },
+  {
+    "id": 3400010220,
+    "position": [
+      -576.0543,
+      844.7494
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010221,
+    "position": [
+      -574.0499,
+      834.1477
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010222,
+    "position": [
+      -550.4394,
+      831.6731
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010223,
+    "position": [
+      -552.5403,
+      750.2403
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010224,
+    "position": [
+      -601.9275,
+      777.9538
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010225,
+    "position": [
+      -583.515,
+      794.1669
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010226,
+    "position": [
+      -612.0806,
+      768.3172
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400010235,
+    "position": [
+      -673.6846,
+      720.3578
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400190000,
+    "position": [
+      -642.3966,
+      894.4795
+    ],
+    "subregionId": "VL_5",
+    "type": "ew_terminal"
+  },
+  {
+    "id": 3400020079,
+    "position": [
+      -567.9091,
+      714.3874
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400020098,
+    "position": [
+      -616.2042,
+      814.7264
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400020099,
+    "position": [
+      -614.6109,
+      814.874
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 3400020201,
+    "position": [
+      -586.176,
+      758.4504
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400020202,
+    "position": [
+      -586.7924,
+      759.0218
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400020203,
+    "position": [
+      -586.8651,
+      757.8621
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400020332,
+    "position": [
+      -567.6651,
+      783.9622
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400020373,
+    "position": [
+      -618.5386,
+      811.0373
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400020376,
+    "position": [
+      -547.7906,
+      762.3153
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_raider"
+  },
+  {
+    "id": 3400020379,
+    "position": [
+      -568.9685,
+      785.2681
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 3400020642,
+    "position": [
+      -589.2014,
+      793.1932
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400020669,
+    "position": [
+      -578.0245,
+      727.5574
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_raider"
+  },
+  {
+    "id": 3400020671,
+    "position": [
+      -561.2619,
+      721.7542
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400020672,
+    "position": [
+      -560.4557,
+      722.598
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400020673,
+    "position": [
+      -560.0385,
+      721.4917
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_raider"
+  },
+  {
+    "id": 3400020725,
+    "position": [
+      -515.6239,
+      884.109
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 3400020726,
+    "position": [
+      -514.2415,
+      882.6531
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 3400020820,
+    "position": [
+      -587.9422,
+      792.9925
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400020821,
+    "position": [
+      -589.0044,
+      791.9334
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400020907,
+    "position": [
+      -602.2542,
+      707.7855
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400020908,
+    "position": [
+      -599.2073,
+      709.8948
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400020909,
+    "position": [
+      -602.0198,
+      708.4886
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 3400020928,
+    "position": [
+      -548.9986,
+      762.8403
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400020929,
+    "position": [
+      -550.1523,
+      762.1512
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400020948,
+    "position": [
+      -599.3245,
+      709.0745
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400020954,
+    "position": [
+      -577.012,
+      726.7839
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 3400020956,
+    "position": [
+      -581.7838,
+      729.7371
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 3400021097,
+    "position": [
+      -513.7727,
+      883.8109
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400021098,
+    "position": [
+      -525.6295,
+      891.7276
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400021102,
+    "position": [
+      -527.554,
+      892.8812
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400021104,
+    "position": [
+      -568.6023,
+      715.3323
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400021105,
+    "position": [
+      -569.3153,
+      714.4023
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400021166,
+    "position": [
+      -523.7431,
+      893.4156
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400021168,
+    "position": [
+      -658.9075,
+      729.9011
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 3400021169,
+    "position": [
+      -609.8199,
+      700.5151
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 3400021182,
+    "position": [
+      -520.1054,
+      865.29
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 3400021183,
+    "position": [
+      -516.7866,
+      865.9978
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400021184,
+    "position": [
+      -519.7679,
+      864.2634
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400021235,
+    "position": [
+      -569.9807,
+      783.9856
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400021236,
+    "position": [
+      -578.0245,
+      726.1511
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400021258,
+    "position": [
+      -552.3135,
+      703.2198
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400021259,
+    "position": [
+      -553.7197,
+      705.2214
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 3400021260,
+    "position": [
+      -553.3119,
+      705.8592
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400021261,
+    "position": [
+      -550.2836,
+      763.0137
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 3400021353,
+    "position": [
+      -673.0591,
+      721.2668
+    ],
+    "subregionId": "VL_5",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 3400021354,
+    "position": [
+      -612.3089,
+      701.6026
+    ],
+    "subregionId": "VL_5",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 3400021355,
+    "position": [
+      -607.223,
+      743.8418
+    ],
+    "subregionId": "VL_5",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 3400021359,
+    "position": [
+      -605.7464,
+      741.8918
+    ],
+    "subregionId": "VL_5",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 3400021360,
+    "position": [
+      -609.9886,
+      740.2559
+    ],
+    "subregionId": "VL_5",
+    "type": "brutal_pincerbeast"
+  },
+  {
+    "id": 3400021361,
+    "position": [
+      -617.8196,
+      745.0859
+    ],
+    "subregionId": "VL_5",
+    "type": "acid_originium_sluga"
+  },
+  {
+    "id": 3400021362,
+    "position": [
+      -527.3196,
+      890.7671
+    ],
+    "subregionId": "VL_5",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 3400021363,
+    "position": [
+      -538.4103,
+      860.2327
+    ],
+    "subregionId": "VL_5",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 3400021364,
+    "position": [
+      -539.3712,
+      861.1561
+    ],
+    "subregionId": "VL_5",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 3400021367,
+    "position": [
+      -617.5852,
+      745.9219
+    ],
+    "subregionId": "VL_5",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 3400021368,
+    "position": [
+      -698.2826,
+      875.1296
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_siegeknuckles"
+  },
+  {
+    "id": 3400021370,
+    "position": [
+      -539.0337,
+      859.089
+    ],
+    "subregionId": "VL_5",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 3400021371,
+    "position": [
+      -540.7728,
+      860.9921
+    ],
+    "subregionId": "VL_5",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 3400020028,
+    "position": [
+      -573.0777,
+      726.6705
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400020085,
+    "position": [
+      -559.7853,
+      748.3981
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400020119,
+    "position": [
+      -548.1055,
+      794.3404
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400020501,
+    "position": [
+      -514.6962,
+      905.0453
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400020530,
+    "position": [
+      -563.7322,
+      645.9525
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400020602,
+    "position": [
+      -536.6665,
+      703.5948
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400020604,
+    "position": [
+      -595.7981,
+      652.538
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400020637,
+    "position": [
+      -563.8757,
+      755.3403
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400020638,
+    "position": [
+      -548.2456,
+      769.8603
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400020639,
+    "position": [
+      -544.8702,
+      774.9809
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400020691,
+    "position": [
+      -551.6619,
+      742.1309
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400020692,
+    "position": [
+      -546.2384,
+      722.9027
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400020709,
+    "position": [
+      -608.46,
+      683.0124
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020710,
+    "position": [
+      -551.432,
+      678.9434
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020711,
+    "position": [
+      -571.8229,
+      723.048
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020712,
+    "position": [
+      -535.9144,
+      766.3339
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020713,
+    "position": [
+      -617.2151,
+      794.9864
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020715,
+    "position": [
+      -572.0151,
+      691.0839
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400020742,
+    "position": [
+      -598.3636,
+      785.3919
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400020743,
+    "position": [
+      -569.7416,
+      904.0
+    ],
+    "subregionId": "VL_5",
+    "type": "tp_point"
+  },
+  {
+    "id": 3400020746,
+    "position": [
+      -613.4602,
+      679.1512
+    ],
+    "subregionId": "VL_5",
+    "type": "tp_point"
+  },
+  {
+    "id": 3400020747,
+    "position": [
+      -551.6853,
+      804.9388
+    ],
+    "subregionId": "VL_5",
+    "type": "tp_point"
+  },
+  {
+    "id": 3400020779,
+    "position": [
+      -596.3948,
+      712.9417
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020780,
+    "position": [
+      -556.2123,
+      709.3802
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020801,
+    "position": [
+      -518.3086,
+      892.3694
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020802,
+    "position": [
+      -529.797,
+      912.0035
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020829,
+    "position": [
+      -532.7384,
+      760.4872
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020883,
+    "position": [
+      -563.1088,
+      728.448
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020884,
+    "position": [
+      -569.4651,
+      800.9591
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020885,
+    "position": [
+      -623.1157,
+      819.4978
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020886,
+    "position": [
+      -627.684,
+      799.4497
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020892,
+    "position": [
+      -596.9831,
+      776.7477
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020893,
+    "position": [
+      -588.6885,
+      660.7322
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020894,
+    "position": [
+      -613.3683,
+      721.1542
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020910,
+    "position": [
+      -601.4405,
+      708.4737
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400020925,
+    "position": [
+      -627.075,
+      701.78
+    ],
+    "subregionId": "VL_5",
+    "type": "rare_fungus"
+  },
+  {
+    "id": 3400020945,
+    "position": [
+      -640.6918,
+      710.3636
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400020947,
+    "position": [
+      -557.4632,
+      758.292
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021010,
+    "position": [
+      -554.6103,
+      717.1042
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021011,
+    "position": [
+      -586.04,
+      861.0252
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021012,
+    "position": [
+      -611.3386,
+      700.2198
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021013,
+    "position": [
+      -596.564,
+      738.7887
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021014,
+    "position": [
+      -537.0492,
+      765.7682
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021015,
+    "position": [
+      -664.6994,
+      791.1111
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021016,
+    "position": [
+      -524.8306,
+      889.975
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021017,
+    "position": [
+      -579.852,
+      849.2092
+    ],
+    "subregionId": "VL_5",
+    "type": "delta_bot"
+  },
+  {
+    "id": 3400021018,
+    "position": [
+      -538.4352,
+      752.7147
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021019,
+    "position": [
+      -546.4213,
+      752.7903
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021020,
+    "position": [
+      -593.1403,
+      844.2777
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021021,
+    "position": [
+      -593.8468,
+      729.8926
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021022,
+    "position": [
+      -600.3361,
+      827.9208
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021026,
+    "position": [
+      -583.2698,
+      717.4277
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021027,
+    "position": [
+      -564.6593,
+      679.7171
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021028,
+    "position": [
+      -589.7104,
+      749.3266
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021029,
+    "position": [
+      -539.8809,
+      741.0092
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021030,
+    "position": [
+      -556.5927,
+      792.7832
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021031,
+    "position": [
+      -603.3532,
+      817.8577
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021032,
+    "position": [
+      -607.0224,
+      818.8897
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021043,
+    "position": [
+      -623.9527,
+      832.853
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400021044,
+    "position": [
+      -606.3839,
+      784.3747
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021045,
+    "position": [
+      -617.6996,
+      741.8207
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021046,
+    "position": [
+      -632.169,
+      736.9619
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021048,
+    "position": [
+      -639.4684,
+      810.8404
+    ],
+    "subregionId": "VL_5",
+    "type": "tp_point"
+  },
+  {
+    "id": 3400021054,
+    "position": [
+      -601.3608,
+      764.7022
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400021071,
+    "position": [
+      -619.533,
+      737.8405
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021078,
+    "position": [
+      -506.0224,
+      869.949
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400021096,
+    "position": [
+      -594.1556,
+      779.8202
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400021107,
+    "position": [
+      -671.77,
+      715.4392
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021131,
+    "position": [
+      -543.628,
+      777.021
+    ],
+    "subregionId": "VL_5",
+    "type": "repair_logic"
+  },
+  {
+    "id": 3400021132,
+    "position": [
+      -652.0708,
+      735.4821
+    ],
+    "subregionId": "VL_5",
+    "type": "citrome"
+  },
+  {
+    "id": 3400021133,
+    "position": [
+      -650.3493,
+      711.2719
+    ],
+    "subregionId": "VL_5",
+    "type": "buckflower"
+  },
+  {
+    "id": 3400021153,
+    "position": [
+      -591.4867,
+      649.8573
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021154,
+    "position": [
+      -558.1245,
+      644.0861
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021159,
+    "position": [
+      -566.5252,
+      640.4832
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021160,
+    "position": [
+      -568.101,
+      659.7764
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021177,
+    "position": [
+      -539.1416,
+      866.1343
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021178,
+    "position": [
+      -535.7947,
+      848.7248
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021180,
+    "position": [
+      -546.8713,
+      857.8655
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021186,
+    "position": [
+      -534.3725,
+      886.0848
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021204,
+    "position": [
+      -576.7073,
+      652.1541
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021214,
+    "position": [
+      -596.8734,
+      833.0475
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021244,
+    "position": [
+      -624.6089,
+      680.2416
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021245,
+    "position": [
+      -612.9086,
+      789.6134
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021247,
+    "position": [
+      -610.088,
+      822.9281
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021249,
+    "position": [
+      -495.843,
+      870.3957
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021251,
+    "position": [
+      -542.0009,
+      856.635
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021254,
+    "position": [
+      -607.2745,
+      753.0387
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021255,
+    "position": [
+      -608.1242,
+      721.4571
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021262,
+    "position": [
+      -576.9041,
+      868.3421
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021267,
+    "position": [
+      -568.7858,
+      709.2395
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021268,
+    "position": [
+      -575.8974,
+      846.4498
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021269,
+    "position": [
+      -580.007,
+      833.1206
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021270,
+    "position": [
+      -556.0653,
+      836.8242
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021271,
+    "position": [
+      -573.276,
+      701.2558
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021272,
+    "position": [
+      -606.2761,
+      918.8407
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021276,
+    "position": [
+      -678.0883,
+      867.8738
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021277,
+    "position": [
+      -523.5931,
+      864.8124
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021278,
+    "position": [
+      -587.9332,
+      843.4986
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021279,
+    "position": [
+      -575.2865,
+      854.1919
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021280,
+    "position": [
+      -670.6966,
+      716.9495
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021281,
+    "position": [
+      -630.623,
+      712.0464
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021285,
+    "position": [
+      -528.0331,
+      748.8059
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_iii"
+  },
+  {
+    "id": 3400021286,
+    "position": [
+      -525.7456,
+      746.8512
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021291,
+    "position": [
+      -533.104,
+      750.5684
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400021292,
+    "position": [
+      -530.6478,
+      732.9251
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_ii"
+  },
+  {
+    "id": 3400021301,
+    "position": [
+      -524.0876,
+      736.2171
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400021321,
+    "position": [
+      -580.4324,
+      650.4806
+    ],
+    "subregionId": "VL_5",
+    "type": "cratelocked"
+  },
+  {
+    "id": 3400021323,
+    "position": [
+      -569.0244,
+      787.5294
+    ],
+    "subregionId": "VL_5",
+    "type": "cratelocked"
+  },
+  {
+    "id": 3400090041,
+    "position": [
+      -534.4634,
+      740.2793
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 3400090042,
+    "position": [
+      -535.5087,
+      742.2199
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 3400090043,
+    "position": [
+      -536.6197,
+      739.9993
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400090060,
+    "position": [
+      -542.6056,
+      728.5277
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400090062,
+    "position": [
+      -542.6056,
+      726.4183
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 3400090064,
+    "position": [
+      -544.1291,
+      727.473
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 3400090508,
+    "position": [
+      -543.5431,
+      728.1761
+    ],
+    "subregionId": "VL_5",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 3400090174,
+    "position": [
+      -662.2698,
+      784.7736
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400090241,
+    "position": [
+      -644.4807,
+      786.7316
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400090436,
+    "position": [
+      -656.2835,
+      796.2863
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400090460,
+    "position": [
+      -683.033,
+      810.8291
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400090491,
+    "position": [
+      -687.0379,
+      819.0406
+    ],
+    "subregionId": "VL_5",
+    "type": "crate_i"
+  },
+  {
+    "id": 3400090571,
+    "position": [
+      -671.0303,
+      822.8653
+    ],
+    "subregionId": "VL_5",
+    "type": "cratesurprise"
+  },
+  {
+    "id": 3400090581,
+    "position": [
+      -694.1341,
+      810.2451
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400090594,
+    "position": [
+      -645.5153,
+      782.375
+    ],
+    "subregionId": "VL_5",
+    "type": "gather"
+  },
+  {
+    "id": 3400090602,
+    "position": [
+      -657.6934,
+      784.895
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  },
+  {
+    "id": 3400090617,
+    "position": [
+      -684.7361,
+      814.4442
+    ],
+    "subregionId": "VL_5",
+    "type": "aurylene"
+  }
+]

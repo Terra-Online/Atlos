@@ -346,13 +346,26 @@ export const getStorageTreeMapData = async (): Promise<TreeMapNode[]> => {
 
 // ----- Marker Data Export/Import -----
 
+import { DATASET_VERSION } from '@/data/migration/version';
+import { migrateImportedIds } from '@/utils/fallback';
+
 // Type definition for exported marker data
 export interface MarkerExportData {
-  version: number;
+  version: number;           // Export format version (1 = legacy, 2 = with dataset version)
+  datasetVersion?: number;   // Dataset version the IDs are from (new in v2)
   timestamp: number;
   activePoints: string[];
   filter: string[];
   selectedPoints: string[];
+}
+
+// Legacy export data (no datasetVersion field)
+interface LegacyMarkerExportData {
+  version: number;
+  timestamp: number;
+  activePoints: (string | number)[];  // May contain numbers in old exports
+  filter: string[];
+  selectedPoints: (string | number)[];
 }
 
 const formatDateTime = (): string => {
@@ -366,7 +379,7 @@ const formatDateTime = (): string => {
   return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
 };
 
-export const isValidMarkerExportData = (data: unknown): data is MarkerExportData => {
+export const isValidMarkerExportData = (data: unknown): data is MarkerExportData | LegacyMarkerExportData => {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
   return (
@@ -383,11 +396,13 @@ export const exportMarkerData = (
   selectedPoints: string[]
 ): void => {
   const exportData: MarkerExportData = {
-    version: 1,
+    version: 2,                        // New format version
+    datasetVersion: DATASET_VERSION,   // Include dataset version for migration
     timestamp: Date.now(),
-    activePoints,
+    // Ensure all IDs are strings
+    activePoints: activePoints.map(id => String(id)),
     filter,
-    selectedPoints,
+    selectedPoints: selectedPoints.map(id => String(id)),
   };
 
   const json = JSON.stringify(exportData, null, 2);
@@ -400,7 +415,7 @@ export const exportMarkerData = (
   URL.revokeObjectURL(url);
 };
 
-export const importMarkerData = (
+export const importMarkerData = async (
   content: string,
   callbacks: {
     clearPoints: () => void;
@@ -411,7 +426,7 @@ export const importMarkerData = (
     getActivePoints?: () => string[];
     getFilter?: () => string[];
   }
-): boolean => {
+): Promise<boolean> => {
   try {
     const data: unknown = JSON.parse(content);
     
@@ -420,8 +435,34 @@ export const importMarkerData = (
       return false;
     }
 
+    // Convert all IDs to strings to avoid precision issues
+    const rawActivePoints = data.activePoints.map(id => String(id));
+    const rawSelectedPoints = data.selectedPoints.map(id => String(id));
+
+    // Determine datasetVersion for migration:
+    // - version 2 files have datasetVersion
+    // - version 1 / legacy files (no datasetVersion) are 0110 data
+    const exportData = data as MarkerExportData;
+    const datasetVersion = exportData.datasetVersion; // undefined for legacy
+
+    console.log(`[Import] version=${exportData.version}, datasetVersion=${datasetVersion ?? 'none (legacy)'}, activePoints=${rawActivePoints.length}, selectedPoints=${rawSelectedPoints.length}`);
+
+    // Run version-aware migration
+    const activePoints = await migrateImportedIds(rawActivePoints, datasetVersion);
+    const selectedPoints = await migrateImportedIds(rawSelectedPoints, datasetVersion);
+
+    // Recovery: if activePoints is disproportionately small compared to
+    // selectedPoints (< 30%), it indicates data loss from a prior broken
+    // migration. Merge selectedPoints into activePoints to recover.
+    let effectiveActivePoints = activePoints;
+    if (selectedPoints.length > 0 && activePoints.length < selectedPoints.length * 0.3) {
+      const mergedSet = new Set([...activePoints, ...selectedPoints]);
+      effectiveActivePoints = [...mergedSet];
+      console.warn(`[Import] activePoints (${activePoints.length}) < 30% of selectedPoints (${selectedPoints.length}) — recovered to ${effectiveActivePoints.length} entries by merging`);
+    }
+
     // Merge active points (add new ones, keep existing)
-    data.activePoints.forEach((id: string) => {
+    effectiveActivePoints.forEach((id: string) => {
       callbacks.addPoint(id);
     });
 
@@ -435,8 +476,13 @@ export const importMarkerData = (
       callbacks.setFilter(data.filter);
     }
     
-    // Merge selections (add imported ones, keep existing)
-    data.selectedPoints.forEach((id: string) => {
+    // Merge selections: all selectedPoints should be marked as selected
+    selectedPoints.forEach((id: string) => {
+      callbacks.setSelected(id, true);
+    });
+    
+    // Ensure all active points are also selected (consistency)
+    effectiveActivePoints.forEach((id: string) => {
       callbacks.setSelected(id, true);
     });
 

@@ -1,6 +1,6 @@
 import { ComponentType, useEffect, useState } from 'react';
 import Loading from '@/component/loading/Loading.tsx';
-import { fontLoader } from '@/utils/fontLoader.ts';
+import { fontLoader } from '@/locale/fontLoader.ts';
 
 export default function LazyApp() {
     const [App, setApp] = useState<ComponentType | null>(null);

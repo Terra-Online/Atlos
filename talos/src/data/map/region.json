@@ -19,7 +19,7 @@
             "VL_6",
             "VL_7"
         ],
-        "layers": ["L1", "B1", "B2"]
+        "layers": ["L2", "L1", "B1", "B2"]
     },
     "Wuling": {
         "dimensions": [

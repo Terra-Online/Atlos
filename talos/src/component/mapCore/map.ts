@@ -5,7 +5,7 @@ import { IMapView } from './type';
 import { getTileResourceUrl } from '@/utils/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
-import { SubregionBoundaryManager } from '@/utils/boundary';
+import { SubregionBoundaryManager } from '@/component/map/boundary';
 import type { LayerType } from '@/store/layer';
 
 export interface IMapOptions {
@@ -16,6 +16,13 @@ export interface IMapOptions {
 const getLayerTileSuffix = (layer: LayerType): string => {
     if (layer === 'M') return '';
     return `_${layer.toLowerCase()}`;
+};
+
+const getMaxZoomOffset = (regionId: string): number => {
+    if (regionId === 'Valley_4' || regionId === 'Wuling') {
+        return 1.5;
+    }
+    return 1;
 };
 
 export class MapCore {
@@ -90,7 +97,7 @@ export class MapCore {
         // Keep Leaflet's zoom constraints in sync with region config.
         // Otherwise users can zoom beyond available tiles (blank map).
         const maxNativeZoom = config.maxZoom;
-        const maxZoom = maxNativeZoom + 1;
+        const maxZoom = maxNativeZoom + getMaxZoomOffset(regionId);
         this.map.setMaxZoom(maxZoom);
 
         const view = useViewState.getState().getViewState(regionId);
@@ -157,7 +164,10 @@ export class MapCore {
             bounds: mapBounds,
             pane: 'tilePane',
             maxNativeZoom: config.maxZoom,
-            maxZoom: maxZoom,
+            // Use Math.ceil so that Leaflet's internal Math.round(zoom) never
+            // exceeds the tile layer's maxZoom (which would set _tileZoom to
+            // undefined and silently skip tile loading at fractional max zoom).
+            maxZoom: Math.ceil(maxZoom),
             // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
             errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
         }).addTo(this.map);
@@ -266,7 +276,7 @@ export class MapCore {
                     config.maxZoom,
                 );
                 const mapBounds = L.latLngBounds(southWest, northEast);
-                const maxZoom = config.maxZoom + 1;
+                const maxZoom = config.maxZoom + getMaxZoomOffset(this.currentRegionId);
 
                 this.layerTileLayer = L.tileLayer(
                     getTileResourceUrl(`/clips/${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`),
@@ -276,7 +286,7 @@ export class MapCore {
                         bounds: mapBounds,
                         pane: 'tilePane',
                         maxNativeZoom: config.maxZoom,
-                        maxZoom: maxZoom,
+                        maxZoom: Math.ceil(maxZoom),
                         // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
                         errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
                     }

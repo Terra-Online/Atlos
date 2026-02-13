@@ -34,6 +34,15 @@
         },
         "noFrame": true
     },
+    "cratesurprise": {
+        "key": "cratesurprise",
+        "name": "Crate(Surprise)",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        },
+        "noFrame": true
+    },
     "cratelocked": {
         "key": "cratelocked",
         "name": "Crate(Locked)",
@@ -115,9 +124,35 @@
         },
         "noFrame": true
     },
+    "guiding_butterflies": {
+        "key": "guiding_butterflies",
+        "name": "Guiding Butterflies",
+        "category": {
+            "main": "poi",
+            "sub": "exploration"
+        },
+        "noFrame": true
+    },
+    "pressure_plate": {
+        "key": "pressure_plate",
+        "name": "Pressure Plate",
+        "category": {
+            "main": "poi",
+            "sub": "exploration"
+        }
+    },
     "temporary_energy_alluvium": {
         "key": "temporary_energy_alluvium",
         "name": "Temporary Energy Alluvium",
+        "category": {
+            "main": "poi",
+            "sub": "combat"
+        },
+        "noFrame": true
+    },
+    "energy_alluvium": {
+        "key": "energy_alluvium",
+        "name": "Energy Alluvium",
         "category": {
             "main": "poi",
             "sub": "combat"
@@ -145,15 +180,6 @@
     "exploration_level": {
         "key": "exploration_level",
         "name": "Exploration Level",
-        "category": {
-            "main": "poi",
-            "sub": "combat"
-        },
-        "noFrame": true
-    },
-    "energy_alluvium": {
-        "key": "energy_alluvium",
-        "name": "Energy Alluvium",
         "category": {
             "main": "poi",
             "sub": "combat"
@@ -289,6 +315,15 @@
         },
         "tier": "1"
     },
+    "aketine": {
+        "key": "aketine",
+        "name": "Aketine",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "1"
+    },
     "buckflower": {
         "key": "buckflower",
         "name": "Buckflower",
@@ -324,15 +359,6 @@
             "sub": "natural"
         },
         "tier": "2"
-    },
-    "aketine": {
-        "key": "aketine",
-        "name": "Aketine",
-        "category": {
-            "main": "resource",
-            "sub": "natural"
-        },
-        "tier": "1"
     },
     "sandleaf": {
         "key": "sandleaf",
@@ -433,6 +459,15 @@
         },
         "tier": "3"
     },
+    "wild_tuskbeast": {
+        "key": "wild_tuskbeast",
+        "name": "Wild Tuskbeast",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "3"
+    },
     "pink_bolete_spot": {
         "key": "pink_bolete_spot",
         "name": "Pink Bolete Spot",
@@ -473,6 +508,16 @@
         "subIcon": "plant_spot",
         "tier": "5"
     },
+    "cosmagaric_spot": {
+        "key": "cosmagaric_spot",
+        "name": "Cosmagaric Spot",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        },
+        "subIcon": "plant_spot",
+        "tier": "5"
+    },
     "kalkodendra_spot": {
         "key": "kalkodendra_spot",
         "name": "Kalkodendra Spot",
@@ -480,7 +525,7 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "subIcon": "mine_spot",
+        "subIcon": "plant_spot",
         "tier": "4"
     },
     "chrysodendra_spot": {
@@ -490,7 +535,7 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "subIcon": "mine_spot",
+        "subIcon": "plant_spot",
         "tier": "4"
     },
     "vitrodendra_spot": {
@@ -500,7 +545,7 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "subIcon": "mine_spot",
+        "subIcon": "plant_spot",
         "tier": "4"
     },
     "blighted_jadeleaf_spot": {
@@ -510,7 +555,17 @@
             "main": "resource",
             "sub": "valuable"
         },
-        "subIcon": "mine_spot",
+        "subIcon": "plant_spot",
+        "tier": "5"
+    },
+    "false_aggela_spot": {
+        "key": "false_aggela_spot",
+        "name": "False Aggela Spot",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        },
+        "subIcon": "plant_spot",
         "tier": "5"
     },
     "kalkonyx_spot": {
@@ -553,9 +608,28 @@
         "subIcon": "mine_spot",
         "tier": "5"
     },
+    "wulingstone_spot": {
+        "key": "wulingstone_spot",
+        "name": "Wulingstone Spot",
+        "category": {
+            "main": "resource",
+            "sub": "valuable"
+        },
+        "subIcon": "mine_spot",
+        "tier": "5"
+    },
     "tp_point": {
         "key": "tp_point",
         "name": "TP Point",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "tp_platform": {
+        "key": "tp_platform",
+        "name": "TP Platform",
         "category": {
             "main": "general",
             "sub": "facility"
@@ -625,6 +699,15 @@
         },
         "noFrame": true
     },
+    "reception_room": {
+        "key": "reception_room",
+        "name": "Reception Room",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
     "etchspace_salvage": {
         "key": "etchspace_salvage",
         "name": "Etchspace Salvage",
@@ -655,15 +738,6 @@
     "operator_contact_panel": {
         "key": "operator_contact_panel",
         "name": "Operator Contact Panel",
-        "category": {
-            "main": "general",
-            "sub": "facility"
-        },
-        "noFrame": true
-    },
-    "tp_platform": {
-        "key": "tp_platform",
-        "name": "TP Platform",
         "category": {
             "main": "general",
             "sub": "facility"

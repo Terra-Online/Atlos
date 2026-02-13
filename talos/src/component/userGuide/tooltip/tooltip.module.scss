@@ -1,5 +1,6 @@
 @use '../../../styles/palette.scss' as *;
 @use '../../../styles/curves.scss' as *;
+@use '../../../styles/size.scss' as *;
 
 :root, :root[data-theme='light'] {
   --ug-wrapper-glow-bg: #{$light-1};
@@ -53,7 +54,7 @@
       transition: filter .3s $adagio-curve;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: $mobile-bp) {
       width: 20rem;
       max-width: calc(100vw - 1.5rem);
       padding: 0 .5rem;
@@ -116,7 +117,7 @@
   hyphens: auto;
   unicode-bidi: plaintext;
 
-  @media (max-width: 768px) {
+  @media (max-width: $mobile-bp) {
     font-size: 0.9rem;
     line-height: 1.4;
   }

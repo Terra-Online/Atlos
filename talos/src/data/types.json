@@ -11,6 +11,9 @@
             "Crate III": {
                 "noFrame": true
             },
+            "Crate(Surprise)": {
+                "noFrame": true
+            },
             "Crate(Locked)": {
                 "noFrame": true
             },
@@ -23,7 +26,6 @@
             "Protocol DL II": {
                 "noFrame": true
             },
-
             "Gear Template": {
                 "noFrame": true
             },
@@ -40,8 +42,17 @@
                 "noFrame": true
             }
         },
+        "exploration": {
+            "Guiding Butterflies": {
+                "noFrame": true
+            },
+            "Pressure Plate": {}
+        },
         "combat": {
             "Temporary Energy Alluvium": {
+                "noFrame": true
+            },
+            "Energy Alluvium": {
                 "noFrame": true
             },
             "RE-Crisis": {
@@ -51,9 +62,6 @@
                 "noFrame": true
             },
             "Exploration Level": {
-                "noFrame": true
-            },
-            "Energy Alluvium": {
                 "noFrame": true
             },
             "EW Terminal": {
@@ -96,6 +104,9 @@
             "Clean Water": {
                 "tier": "1"
             },
+            "Aketine": {
+                "tier": "1"
+            },
             "Buckflower": {
                 "tier": "1"
             },
@@ -107,9 +118,6 @@
             },
             "Umbraline": {
                 "tier": "2"
-            },
-            "Aketine": {
-                "tier": "1"
             },
             "Sandleaf": {
                 "tier": "1"
@@ -143,6 +151,9 @@
             },
             "Scorchbug": {
                 "tier": "3"
+            },
+            "Wild Tuskbeast": {
+                "tier": "3"
             }
         },
         "valuable": {
@@ -162,22 +173,32 @@
                 "subIcon": "plant_spot",
                 "tier": "5"
             },
+            "Cosmagaric Spot": {
+                "subIcon": "plant_spot",
+                "tier": "5"
+            },
+
             "Kalkodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Chrysodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Vitrodendra Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "4"
             },
             "Blighted Jadeleaf Spot": {
-                "subIcon": "mine_spot",
+                "subIcon": "plant_spot",
                 "tier": "5"
             },
+            "False Aggela Spot": {
+                "subIcon": "plant_spot",
+                "tier": "5"
+            },
+
             "Kalkonyx Spot": {
                 "subIcon": "mine_spot",
                 "tier": "4"
@@ -193,6 +214,10 @@
             "Igneosite Spot": {
                 "subIcon": "mine_spot",
                 "tier": "5"
+            },
+            "Wulingstone Spot": {
+                "subIcon": "mine_spot",
+                "tier": "5"
             }
         }
     },
@@ -200,6 +225,9 @@
     "general": {
         "facility": {
             "TP Point": {
+                "noFrame": true
+            },
+            "TP Platform": {
                 "noFrame": true
             },
             "Stock Redistrib.": {
@@ -224,6 +252,9 @@
             "Control Nexus": {
                 "noFrame": true
             },
+            "Reception Room": {
+                "noFrame": true
+            },
             "Etchspace Salvage": {
                 "noFrame": true
             },
@@ -234,9 +265,6 @@
                 "noFrame": true
             },
             "Operator Contact Panel": {
-                "noFrame": true
-            },
-            "TP Platform": {
                 "noFrame": true
             },
             "Tower of Trails": {

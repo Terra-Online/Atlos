@@ -73,6 +73,9 @@
             &[data-ctgr='natural'] {
                 scale: 1 // use round shape as baseline
             }
+            &[data-ctgr='exploration'] {
+                scale: 1.1
+            }
             &[data-ctgr='valuable'] {
                 scale: 1.08
             }
@@ -180,11 +183,3 @@
     text-align: left;
     padding: 0 0 1rem 0;
 }
-/*
-@media (max-width: 576px) {
-    //adjust later
-    .filterContent .contentInner {
-        grid-template-columns: 1fr;
-    }
-}
-*/

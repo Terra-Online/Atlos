@@ -145,7 +145,7 @@
   },
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>当前游戏版本为<span class=\"keyword\">1.0.13</span>，地图的数据集版本为<span class=\"keyword\">0.8.25</span>。我们需要时间来更新数据，更新时间可能晚于游戏版本更新，有劳管理员等待。如您希望及时追踪我们的更新，请加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "当前数据集版本与游戏版本一致。"
+    "uptodate": "当前地图数据已经是最新版本。<br><br>如需反馈问题，您可以加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -173,9 +173,13 @@
     "title": "终末地地图集",
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   },
+  "domain": {
+      "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
+      "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
+  },
   "support": {
     "title": "支持我们",
-    "content": "在过去三天里，Open Endfield Map 平均每天处理接近<span class=\"highlight\">1000万次</span>HTTPS 请求（也就是平均<span class=\"highlight\">每秒约115次</span>），累计消耗了<span class=\"highlight\">超过450GB</span>的带宽。网站的活跃用户正在以<span class=\"highlight\">每天7000人左右</span>的速度增长。尽管 Cloudflare 为我们分发了绝大部分流量（感谢 Cloudflare），我们位于新加坡的服务器仍然全功率运转中。感谢各位的热情！<br><br>OEM从2025年2月开始开发，并且始终开源免费，在绝大部分时间里（以及现在）<span class=\"highlight\">仅由我（Jacy Chan/Cirisus）独自维护</span>。面对来自全球用户的海量请求和数据与功能更新压力，我感到力不从心。如果您觉得本站对您有所帮助，欢迎通过以下方式支持本站，帮助站点继续为各位提供服务。您的支持将用于维持服务器和带宽费用，以及未来功能（例如用户系统和点位第三视角上传）开发的投入。<br><br>站点的数据、UI、翻译各方面不尽善之处请随时反馈，我会加紧处理，感谢您的支持与理解。",
+    "content": "在过去两周里，Open Endfield Map 共计处理了<span class=\"highlight\">1.8亿次</span>HTTPS 请求（也就是平均<span class=\"highlight\">每日约1285万次</span>），累计消耗了<span class=\"highlight\">超过2.5TB</span>的带宽。网站的活跃用户已经超过<span class=\"highlight\">66000人</span>并且仍在增长。尽管 Cloudflare 为我们分发了绝大部分流量（感谢 Cloudflare），我们位于新加坡和杭州的服务器仍然全功率运转中。感谢各位的热情！<br><br>OEM从2025年2月开始开发，并且始终开源免费，在绝大部分时间里（以及现在）<span class=\"highlight\">仅由我（Jacy Chan/Cirisus）独自维护</span>。面对来自全球用户的海量请求和数据与功能更新压力，我感到力不从心。如果您觉得本站对您有所帮助，欢迎通过以下方式支持本站，帮助站点继续为各位提供服务。您的支持将用于维持服务器和带宽费用，以及未来功能（例如用户系统和点位第三视角上传）开发的投入。<br><br>站点的数据、UI、翻译各方面不尽善之处请随时反馈，我会加紧处理，感谢您的支持与理解。",
     "kofi": "买一杯咖啡（Ko-fi）",
     "afdian": "买一份流量包（爱发电）",
     "hint": "国际用户推荐使用 Ko-fi，中国大陆用户推荐使用爱发电。"

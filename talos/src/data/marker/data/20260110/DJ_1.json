@@ -1,0 +1,101 @@
+[
+  {
+    "id": "int_spacestation_center_controller_001",
+    "type": "control_nexus",
+    "position": [
+      -528.1763,
+      217.0
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_shit_training_cabin_001",
+    "type": "tactical_training_cabin",
+    "position": [
+      -681.713,
+      641.5384
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_gender_change_001",
+    "type": "protocol_singularity",
+    "position": [
+      -363.6323,
+      732.5
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_spaceship_showcase_001",
+    "type": "tower_of_trails",
+    "position": [
+      -549.9359,
+      516.7937
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_week_raid_entry_001",
+    "type": "etchspace_salvage",
+    "position": [
+      -456.6638,
+      595.5124
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_spaceship_summon_001",
+    "type": "operator_contact_panel",
+    "position": [
+      -459.3992,
+      445.1289
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_spaceship_visit_portal_001",
+    "type": "tp_platform",
+    "position": [
+      -337.3024,
+      482.1717
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_spaceship_guest_terminal_001",
+    "type": "guest_terminal",
+    "position": [
+      -336.7945,
+      437.2388
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_system_spaceship_credit_shop_001",
+    "type": "stock_redistribution_terminal",
+    "position": [
+      -295.25,
+      459.7672
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_campfire_v2_036",
+    "type": "tp_point",
+    "position": [
+      -528.2047,
+      340.2204
+    ],
+    "subregionId": "DJ_1"
+  },
+  {
+    "id": "int_campfire_v2_smaller_001",
+    "type": "tp_point",
+    "position": [
+      -528.2047,
+      642.037
+    ],
+    "subregionId": "DJ_1"
+  }
+]

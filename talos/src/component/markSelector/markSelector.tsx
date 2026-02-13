@@ -42,6 +42,11 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     const switchFilter = useSwitchFilter();
     const cnt = useRegionMarkerCount(typeInfo?.key);
     const searchString = useSearchString();
+    
+    // Check if collection is complete (100% progress)
+    const isComplete = useMemo(() => {
+        return cnt.total > 0 && cnt.collected >= cnt.total;
+    }, [cnt.total, cnt.collected]);
     const nameRef = useRef<HTMLSpanElement | null>(null);
     const expandedRef = useRef<HTMLSpanElement | null>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -107,7 +112,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     return (
         <div className={styles.markSkeleton}>
             <div
-                className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''}`}
+                className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''} ${isComplete ? styles.completed : ''}`}
                 data-key={typeInfo.key}
                 onClick={() => switchFilter(typeInfo.key)}
                 style={((): StyleVars => {

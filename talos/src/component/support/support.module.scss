@@ -1,5 +1,6 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 .supportContainer {
     display: flex;
@@ -29,7 +30,7 @@
     justify-content: center;
     flex-wrap: wrap;
 
-    @media (max-width: 600px) {
+    @media (max-width: $smallmobile-bp) {
         flex-direction: column;
         align-items: center;
     }

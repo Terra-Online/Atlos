@@ -1,0 +1,110 @@
+[
+  {
+    "id": 9800000001,
+    "position": [
+      -528.2047,
+      340.2204
+    ],
+    "subregionId": "DJ_1",
+    "type": "tp_point"
+  },
+  {
+    "id": 9800000002,
+    "position": [
+      -528.2047,
+      642.037
+    ],
+    "subregionId": "DJ_1",
+    "type": "tp_point"
+  },
+  {
+    "id": 9800000003,
+    "position": [
+      -528.1763,
+      217.0
+    ],
+    "subregionId": "DJ_1",
+    "type": "control_nexus"
+  },
+  {
+    "id": 9800000012,
+    "position": [
+      -363.6323,
+      732.5
+    ],
+    "subregionId": "DJ_1",
+    "type": "protocol_singularity"
+  },
+  {
+    "id": 9800000013,
+    "position": [
+      -549.9359,
+      516.7937
+    ],
+    "subregionId": "DJ_1",
+    "type": "tower_of_trails"
+  },
+  {
+    "id": 9800000027,
+    "position": [
+      -337.1634,
+      600.6421
+    ],
+    "subregionId": "DJ_1",
+    "type": "cv_wall"
+  },
+  {
+    "id": 9800000029,
+    "position": [
+      -456.6638,
+      595.5124
+    ],
+    "subregionId": "DJ_1",
+    "type": "etchspace_salvage"
+  },
+  {
+    "id": 9800000030,
+    "position": [
+      -459.3992,
+      445.1289
+    ],
+    "subregionId": "DJ_1",
+    "type": "operator_contact_panel"
+  },
+  {
+    "id": 9800000031,
+    "position": [
+      -337.3024,
+      482.1717
+    ],
+    "subregionId": "DJ_1",
+    "type": "tp_platform"
+  },
+  {
+    "id": 9800000032,
+    "position": [
+      -336.7945,
+      437.2388
+    ],
+    "subregionId": "DJ_1",
+    "type": "guest_terminal"
+  },
+  {
+    "id": 9800000033,
+    "position": [
+      -295.25,
+      459.7672
+    ],
+    "subregionId": "DJ_1",
+    "type": "stock_redistribution_terminal"
+  },
+  {
+    "id": 9800000035,
+    "position": [
+      -306.9213,
+      431.8328
+    ],
+    "subregionId": "DJ_1",
+    "type": "reception_room"
+  }
+]

@@ -1,4 +1,4 @@
-import { useState, useEffect, StrictMode } from 'react';
+import { useState, useEffect, useRef, StrictMode } from 'react';
 import './styles/global.scss';
 
 import Map from './component/map/Map';
@@ -8,6 +8,8 @@ import L from 'leaflet';
 import { useSidebarOpen } from '@/store/uiPrefs';
 import UserGuide from '@/component/userGuide/UserGuide.tsx';
 import { MetaHelper } from './component/MetaHelper';
+import DomainBanner from './component/domain/domain';
+import { useDevice } from '@/utils/device';
 
 declare global {
     interface Window {
@@ -21,10 +23,48 @@ declare global {
 function App() {
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
+    const { isDesktop } = useDevice();
     const [mapInstance, setMapInstance] = useState<L.Map | undefined>(
         undefined,
     );
     const [uiVisible, setUiVisible] = useState(true);
+
+    // Track previous sidebar state to detect actual toggles
+    const prevSidebarOpenRef = useRef(isSidebarOpen);
+
+    // Desktop: pan map when sidebar toggles to keep visible center stable
+    const SIDEBAR_WIDTH = 300;
+    useEffect(() => {
+        if (!mapInstance || !isDesktop) return;
+        const prevOpen = prevSidebarOpenRef.current;
+        prevSidebarOpenRef.current = isSidebarOpen;
+        if (prevOpen === isSidebarOpen) return; // no actual toggle
+
+        // Only pan when zoomed in beyond 1.5; at wide views it's unnecessary
+        const currentZoom = mapInstance.getZoom();
+        if (currentZoom <= 1.5) return;
+
+        const opening = isSidebarOpen;
+        // Shift map center by half the sidebar width so the center of the
+        // remaining visible area stays unchanged.
+        const dx = opening ? -SIDEBAR_WIDTH / 2 : SIDEBAR_WIDTH / 2;
+
+        // Temporarily remove maxBounds so the pan is not clipped.
+        // Passing invalid bounds to setMaxBounds removes the constraint and
+        // de-registers the internal _panInsideMaxBounds handler.
+        const savedBounds = mapInstance.options.maxBounds as L.LatLngBounds | undefined;
+        if (savedBounds) {
+            mapInstance.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
+        }
+
+        mapInstance.panBy([dx, 0], { animate: true, duration: 0.3 });
+
+        if (savedBounds) {
+            mapInstance.once('moveend', () => {
+                mapInstance.setMaxBounds(savedBounds);
+            });
+        }
+    }, [isSidebarOpen, mapInstance, isDesktop]);
 
     // onToggle is retained for potential side effects/analytics
     const handleSidebarToggle = (_isOpen: boolean) => {
@@ -84,6 +124,7 @@ function App() {
     return (
         <StrictMode>
             <MetaHelper />
+            <DomainBanner />
             <div className='app theme-transition-scope'>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}
