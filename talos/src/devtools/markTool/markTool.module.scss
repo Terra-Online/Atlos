@@ -1,0 +1,123 @@
+@use '@/styles/palette.scss' as *;
+
+.root {
+    position: fixed;
+    top: 80px;
+    right: 0;
+    width: 340px;
+    max-height: 85vh;
+    z-index: 10000;
+    background: rgba($black-0, 0.92);
+    border: 1px solid rgba($white-0, 0.16);
+    border-radius: 8px;
+    color: $white-0;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.collapsed {
+    width: 44px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba($white-0, 0.16);
+}
+
+.title {
+    font-weight: 600;
+}
+
+.region {
+    color: $white-2;
+    font-size: 11px;
+}
+
+.body {
+    padding: 10px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.label {
+    color: $white-2;
+}
+
+.select,
+.input,
+.textarea {
+    width: 100%;
+    border: 1px solid rgba($white-0, 0.2);
+    background: rgba($black-0, 0.3);
+    color: inherit;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+.textarea {
+    min-height: 140px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 11px;
+}
+
+.previewWrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: rgba($white-0, 0.08);
+}
+
+.toolbar {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 6px 10px;
+    border: 1px solid rgba($white-0, 0.25);
+    background: transparent;
+    color: inherit;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.hint {
+    color: $white-2;
+    font-size: 11px;
+}
+
+.collapseBtn {
+    margin-left: auto;
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgba($white-0, 0.25);
+    background: transparent;
+    color: inherit;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1;
+    font-size: 12px;
+}
