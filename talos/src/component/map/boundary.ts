@@ -48,16 +48,17 @@ export class SubregionBoundaryManager {
     hideBoundaries() {
         if (!this.boundariesLayer) return;
         
+        const boundariesLayerToBeRemoved = this.boundariesLayer;
+        
         const layers: L.Layer[] = [];
         this.boundariesLayer.eachLayer(layer => layers.push(layer));
         
         this.toggleBoundaryVisibility(layers, true);
         
         setTimeout(() => {
-            if (this.boundariesLayer) {
-                this.map.removeLayer(this.boundariesLayer);
+            this.map.removeLayer(boundariesLayerToBeRemoved);
+            if (this.boundariesLayer === boundariesLayerToBeRemoved) 
                 this.boundariesLayer = undefined;
-            }
         }, 300); // equal to the CSS transition duration
     }
 

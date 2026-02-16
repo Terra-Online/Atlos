@@ -78,9 +78,6 @@ export class MapCore {
     async switchRegion(regionId: string): Promise<void> {
         this.currentRegionId = regionId;
 
-        // 清理子地区边界层
-        this.boundaryManager.hideBoundaries();
-
         this.map.eachLayer((layer) => this.map.removeLayer(layer));
 
         const config = REGION_DICT[regionId];
