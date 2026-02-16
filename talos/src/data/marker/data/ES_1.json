@@ -1224,15 +1224,6 @@
     "type": "zipline_pylon"
   },
   {
-    "id": 26800001086,
-    "position": [
-      -52.1565,
-      784.1028
-    ],
-    "subregionId": "ES_1",
-    "type": "zipline_pylon"
-  },
-  {
     "id": 26800001146,
     "position": [
       -280.8909,
@@ -1476,24 +1467,6 @@
     "type": "crate_i"
   },
   {
-    "id": 26800001606,
-    "position": [
-      351.8632,
-      682.9355
-    ],
-    "subregionId": "ES_1",
-    "type": "rope"
-  },
-  {
-    "id": 26800001608,
-    "position": [
-      310.0578,
-      507.1839
-    ],
-    "subregionId": "ES_1",
-    "type": "rope"
-  },
-  {
     "id": 26800001626,
     "position": [
       -603.2499,
@@ -1681,15 +1654,6 @@
     ],
     "subregionId": "ES_1",
     "type": "zipline_pylon"
-  },
-  {
-    "id": 26800001904,
-    "position": [
-      152.6123,
-      1068.03
-    ],
-    "subregionId": "ES_1",
-    "type": "rope"
   },
   {
     "id": 26800004161,

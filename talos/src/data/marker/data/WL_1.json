@@ -3402,51 +3402,6 @@
     "type": "crate_iii"
   },
   {
-    "id": 10100450001,
-    "position": [
-      -631.3275,
-      594.512
-    ],
-    "subregionId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100450002,
-    "position": [
-      -637.9341,
-      583.1524
-    ],
-    "subregionId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100450003,
-    "position": [
-      -648.8338,
-      586.7333
-    ],
-    "subregionId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100450004,
-    "position": [
-      -640.3095,
-      592.6366
-    ],
-    "subregionId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100450005,
-    "position": [
-      -640.2023,
-      577.837
-    ],
-    "subregionId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
     "id": 10100050001,
     "position": [
       -713.6423,
@@ -3454,51 +3409,6 @@
     ],
     "subregionId": "WL_1",
     "type": "ew_terminal"
-  },
-  {
-    "id": 10100440001,
-    "position": [
-      -955.708,
-      475.6716
-    ],
-    "subregionId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100440002,
-    "position": [
-      -959.6547,
-      467.272
-    ],
-    "subregionId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100440003,
-    "position": [
-      -955.2593,
-      466.8461
-    ],
-    "subregionId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100440004,
-    "position": [
-      -951.5139,
-      472.4012
-    ],
-    "subregionId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100440005,
-    "position": [
-      -954.1203,
-      476.276
-    ],
-    "subregionId": "WL_1",
-    "type": "thorny_yazhen"
   },
   {
     "id": 10100490001,

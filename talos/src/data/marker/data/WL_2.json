@@ -450,6 +450,15 @@
     "type": "aurylene"
   },
   {
+    "id": 22800530023,
+    "position": [
+      -322.5975,
+      572.2276
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
     "id": 22800530030,
     "position": [
       -334.8969,
@@ -2412,51 +2421,6 @@
     "type": "guiding_butterflies"
   },
   {
-    "id": 22800590001,
-    "position": [
-      -237.2681,
-      560.4926
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800590002,
-    "position": [
-      -252.5186,
-      553.1971
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800590003,
-    "position": [
-      -246.3037,
-      559.7213
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800590004,
-    "position": [
-      -258.0695,
-      564.0226
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800590005,
-    "position": [
-      -254.8651,
-      574.6659
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
     "id": 22800030004,
     "position": [
       -276.4109,
@@ -2509,6 +2473,33 @@
     ],
     "subregionId": "WL_2",
     "type": "tp_point"
+  },
+  {
+    "id": 22800030019,
+    "position": [
+      -80.3132,
+      448.4858
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800030021,
+    "position": [
+      -78.9423,
+      461.8953
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800030023,
+    "position": [
+      -113.4302,
+      578.8459
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
   },
   {
     "id": 22800030030,
@@ -4815,6 +4806,60 @@
     "type": "cratelocked"
   },
   {
+    "id": 22800063034,
+    "position": [
+      -168.1087,
+      620.7372
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800063035,
+    "position": [
+      -157.4442,
+      614.2711
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800063037,
+    "position": [
+      -165.955,
+      646.9993
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800063038,
+    "position": [
+      -143.9472,
+      642.0328
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800063039,
+    "position": [
+      -215.2973,
+      627.5089
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
+    "id": 22800063040,
+    "position": [
+      -489.9564,
+      583.7648
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
+  },
+  {
     "id": 22800063041,
     "position": [
       -428.1951,
@@ -5083,6 +5128,15 @@
     ],
     "subregionId": "WL_2",
     "type": "crate_ii"
+  },
+  {
+    "id": 22800063180,
+    "position": [
+      -154.1438,
+      649.7043
+    ],
+    "subregionId": "WL_2",
+    "type": "blight_core"
   },
   {
     "id": 22800063184,
@@ -10080,51 +10134,6 @@
     "type": "delta_bot"
   },
   {
-    "id": 22800600001,
-    "position": [
-      -451.336,
-      598.3454
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800600002,
-    "position": [
-      -448.6637,
-      613.9896
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800600003,
-    "position": [
-      -466.3845,
-      621.2342
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800600004,
-    "position": [
-      -467.8279,
-      613.8157
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 22800600005,
-    "position": [
-      -453.0145,
-      627.3486
-    ],
-    "subregionId": "WL_2",
-    "type": "fluffed_jincao"
-  },
-  {
     "id": 22800010003,
     "position": [
       -389.739,
@@ -10726,51 +10735,6 @@
     ],
     "subregionId": "WL_2",
     "type": "aurylene"
-  },
-  {
-    "id": 22800610002,
-    "position": [
-      -375.6774,
-      627.0133
-    ],
-    "subregionId": "WL_2",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 22800610003,
-    "position": [
-      -378.6384,
-      616.8129
-    ],
-    "subregionId": "WL_2",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 22800610004,
-    "position": [
-      -371.6812,
-      617.2517
-    ],
-    "subregionId": "WL_2",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 22800610005,
-    "position": [
-      -367.9861,
-      615.0825
-    ],
-    "subregionId": "WL_2",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 22800610006,
-    "position": [
-      -364.489,
-      623.6766
-    ],
-    "subregionId": "WL_2",
-    "type": "thorny_yazhen"
   },
   {
     "id": 22800580020,
