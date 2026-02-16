@@ -81,7 +81,7 @@
     "export": "Daten exportieren",
     "import": "Daten importieren"
   },
-"settings": {
+  "settings": {
     "title": "Einstellungen",
     "uiPrefs": {
       "title": "UI-Einstellungen",
@@ -169,19 +169,20 @@
     "expand": "Erweitern",
     "collapse": "Einklappen"
   },
-    "meta": {
-        "title": "Endfield-Atlas",
-        "description": "Open Endfield Map ist eine Open-Source-Onlinekarte für Arknights: Endfield und bietet interaktive Karten, Item-Sammlung sowie Werkzeuge zur strategischen Planung."
-    },
+  "meta": {
+    "title": "Endfield-Atlas",
+    "description": "Open Endfield Map ist eine Open-Source-Onlinekarte für Arknights: Endfield und bietet interaktive Karten, Item-Sammlung sowie Werkzeuge zur strategischen Planung."
+  },
   "domain": {
     "cn": "<span class=\"keyword\">Nutzer aus Festlandchina</span> empfehlen wir den Festland-Spiegel<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> für schnelleren und stabileren Zugriff.",
     "org": "<span class=\"keyword\">Nutzer außerhalb Chinas</span> empfehlen wir den globalen Spiegel(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) für schnelleren und stabileren Zugriff."
   },
   "support": {
-    "title": "Unterstützen",
-    "content": "In den letzten zwei Wochen hat Open Endfield Map insgesamt <span class=\"highlight\">180 Millionen</span> HTTPS-Anfragen verarbeitet (rund <span class=\"highlight\">12,85 Millionen pro Tag</span>) und dabei über <span class=\"highlight\">2,5 TB</span> Bandbreite verbraucht. Die Zahl der aktiven Nutzer hat <span class=\"highlight\">66.000</span> überschritten und wächst weiter. Obwohl Cloudflare den Großteil des Traffics übernimmt (vielen Dank!), laufen unsere Server in Singapur und Hangzhou weiterhin auf Hochtouren. Danke für eure Begeisterung!<br><br>OEM wird seit Februar 2025 entwickelt und war immer Open Source und kostenlos. Die meiste Zeit (und auch jetzt) wird es <span class=\"highlight\">ausschließlich von mir (Jacy Chan/Cirisus) betreut</span>. Bei massivem globalem Traffic und ständigem Druck durch Daten- und Funktionsupdates wird es allein immer schwieriger. Wenn euch die Seite hilft, unterstützt sie bitte. Die Mittel gehen direkt in Server- und Bandbreitenkosten sowie in zukünftige Funktionen (z. B. Nutzerkonten und Community-Marker-Uploads).<br><br>Wenn euch Probleme bei Daten, UI oder Übersetzungen auffallen, gebt bitte Feedback — ich behebe sie so schnell wie möglich. Danke für eure Unterstützung und euer Verständnis.",
-    "kofi": "Über Ko-fi unterstützen",
-    "afdian": "Über Afdian unterstützen",
-    "hint": "Internationale Nutzer können Ko-fi verwenden; Nutzer in Festlandchina können Afdian nutzen."
+    "title": "Unterstützen Sie uns",
+    "content": "In den letzten drei Wochen hat Open Endfield Map über <span class=\"hl\">200 MILLIONEN</span> HTTPS-Anfragen verarbeitet (d.h. <span class=\"hl\">8,34 Mio. pro Tag</span>) und mehr als <span class=\"hl\">2,8 TB</span> Bandbreite verbraucht. Die Zahl der aktiven Nutzer hat <span class=\"hl\">70.000</span> überschritten und wächst weiter.<br><br>OEM ist seit Februar 2025 Open-Source und kostenlos und wird immer noch <span class=\"hl\">die meiste Zeit allein von mir (Jacy Chan/Cirisus) gewartet</span>. Allein im letzten Monat erreichte die <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>Rechnung für CDN-Bandbreite und Argo-Routing</a> <span class=\"hl\">USD 266,07 (≈ 240 €)</span>. Wenn diese Seite Ihnen bei der Erkundung hilft, erwägen Sie bitte, das Projekt zu unterstützen. Die Gelder fließen direkt in Server- und Bandbreitenkosten sowie in zukünftige Funktionen (wie Benutzerkonten und Community-Marker-Uploads).<br><br>Wenn Sie Daten-, UI- oder Übersetzungsfehler entdecken, senden Sie bitte Feedback – ich werde sie so schnell wie möglich beheben. Vielen Dank für Ihr Verständnis und Ihre Unterstützung!",
+    "patreon": "Unterstützung via Patreon",
+    "kofi": "Unterstützung via Ko-fi",
+    "afdian": "Unterstützung via Afdian",
+    "hint": "Wir empfehlen Patreon oder Ko-fi für weltweite Nutzer und Afdian für Nutzer in Festlandchina."
   }
 }

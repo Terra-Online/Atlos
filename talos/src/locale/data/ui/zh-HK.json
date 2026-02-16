@@ -172,7 +172,8 @@
   },
   "support": {
     "title": "支持我們",
-    "content": "在過去兩週裡，Open Endfield Map 共計處理了<span class=\"highlight\">1.8億次</span>HTTPS 請求（也就是平均<span class=\"highlight\">每日約1285萬次</span>），累計消耗了<span class=\"highlight\">超過2.5TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"highlight\">66000人</span>並且仍在增長。儘管 Cloudflare 為我們分發了絕大部分流量（感謝 Cloudflare），我們位於新加坡和杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並且始終開源免費，在絕大部分時間裡（以及現在）<span class=\"highlight\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。面對來自全球用戶的海量請求和數據與功能更新壓力，我感到力不從心。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上傳）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
+    "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並且仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並且始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上傳）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
+    "patreon": "買一份日誌（Patreon）",
     "kofi": "買一杯咖啡（Ko-fi）",
     "afdian": "買一份流量包（愛發電）",
     "hint": "國際用戶推薦使用 Ko-fi，中國大陸用戶推薦使用愛發電。"

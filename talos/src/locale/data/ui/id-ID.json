@@ -170,8 +170,8 @@
     "collapse": "Lipat"
   },
   "meta": {
-      "title": "Atlas Endfield",
-      "description": "Open Endfield Map adalah peta daring sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perencanaan strategis."
+    "title": "Atlas Endfield",
+    "description": "Open Endfield Map adalah peta daring sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perencanaan strategis."
   },
   "domain": {
     "cn": "<span class=\"keyword\">Pengguna di China daratan</span> disarankan menggunakan mirror daratan<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> untuk akses lebih cepat dan stabil.",
@@ -179,9 +179,10 @@
   },
   "support": {
     "title": "Dukung Kami",
-    "content": "Dalam dua minggu terakhir, Open Endfield Map memproses total <span class=\"highlight\">180 juta</span> permintaan HTTPS (sekitar <span class=\"highlight\">12,85 juta per hari</span>), mengonsumsi lebih dari <span class=\"highlight\">2,5 TB</span> bandwidth. Pengguna aktif telah melampaui <span class=\"highlight\">66.000</span> dan terus bertambah. Meskipun Cloudflare menangani sebagian besar trafik (terima kasih!), server kami di Singapura dan Hangzhou masih berjalan pada kapasitas penuh. Terima kasih atas antusiasme kalian!<br><br>OEM dikembangkan sejak Februari 2025 dan selalu bersifat open source dan gratis. Sebagian besar waktu (dan saat ini) situs ini <span class=\"highlight\">dikelola sendiri oleh saya (Jacy Chan/Cirisus)</span>. Dengan trafik global yang masif dan tekanan pembaruan data serta fitur, mengelolanya sendirian semakin sulit. Jika situs ini membantu Anda, mohon pertimbangkan untuk mendukungnya. Dukungan Anda digunakan untuk biaya server dan bandwidth, serta pengembangan fitur mendatang (seperti sistem pengguna dan unggahan penanda komunitas).<br><br>Jika Anda melihat masalah pada data, UI, atau terjemahan, silakan kirimkan masukan—saya akan memperbaikinya secepat mungkin. Terima kasih atas dukungan dan pengertian Anda.",
+    "content": "Dalam tiga minggu terakhir, Open Endfield Map telah memproses lebih dari <span class=\"hl\">200 JUTA</span> permintaan HTTPS (yaitu <span class=\"hl\">8,34 juta per hari</span>) dan menghabiskan lebih dari <span class=\"hl\">2,8 TB</span> bandwidth. Pengguna aktif telah melampaui <span class=\"hl\">70.000</span> dan masih terus bertambah.<br><br>OEM tetap open-source dan gratis sejak Februari 2025, dan masih <span class=\"hl\">dikelola sendiri oleh saya (Jacy Chan/Cirisus)</span> hampir sepanjang waktu. Bulan lalu saja, <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>tagihan bandwidth CDN dan routing Argo</a> mencapai <span class=\"hl\">USD 266,07 (≈ Rp 4.479.000)</span>. Jika situs ini membantu penjelajahan Anda, mohon pertimbangkan untuk mendukung proyek ini. Dana langsung digunakan untuk biaya server dan bandwidth, serta fitur masa depan (seperti akun pengguna dan unggahan penanda komunitas).<br><br>Jika Anda menemukan kesalahan data, UI, atau terjemahan, silakan kirim masukan—saya akan memperbaikinya sesegera mungkin. Terima kasih atas pengertian dan dukungan Anda!",
+    "patreon": "Dukung via Patreon",
     "kofi": "Dukung via Ko-fi",
     "afdian": "Dukung via Afdian",
-    "hint": "Pengguna internasional disarankan menggunakan Ko-fi; pengguna di Tiongkok daratan disarankan menggunakan Afdian."
+    "hint": "Kami merekomendasikan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di Tiongkok daratan."
   }
 }
