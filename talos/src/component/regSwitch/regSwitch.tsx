@@ -8,7 +8,7 @@ import PopoverTooltip from '@/component/popover/popover';
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Wuling from '../../assets/logos/_Wuling.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
-import Æther from '../../assets/logos/Æther.svg?react';
+import Weekraid1 from '../../assets/logos/_Weekraid_1.svg?react';
 import { useForceRegionSubOpen } from '@/store/uiPrefs';
 import { useTranslateGame } from '@/locale';
 
@@ -16,7 +16,7 @@ const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
     Wuling: Wuling,
     Dijiang: Dijiang,
-    Weekraid_1: Æther,
+    Weekraid_1: Weekraid1,
 };
 
 // i18n region code mapping (locale/data/region/*.json)

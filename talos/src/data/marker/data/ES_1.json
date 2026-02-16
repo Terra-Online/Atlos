@@ -2,8 +2,8 @@
   {
     "id": 26800001153,
     "position": [
-      -499.9633,
-      529.4725
+      -404.6667,
+      653.8694
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -11,8 +11,8 @@
   {
     "id": 26800001155,
     "position": [
-      -468.7586,
-      515.6772
+      -262.6265,
+      591.477
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -20,8 +20,8 @@
   {
     "id": 26800001156,
     "position": [
-      -498.2149,
-      528.5491
+      -396.708,
+      649.693
     ],
     "subregionId": "ES_1",
     "type": "elite_raider"
@@ -29,8 +29,8 @@
   {
     "id": 26800001157,
     "position": [
-      -498.4211,
-      530.6303
+      -397.6468,
+      659.1059
     ],
     "subregionId": "ES_1",
     "type": "elite_ambusher"
@@ -38,8 +38,8 @@
   {
     "id": 26800001158,
     "position": [
-      -501.5342,
-      518.5982
+      -411.8169,
+      604.688
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -47,8 +47,8 @@
   {
     "id": 26800001159,
     "position": [
-      -500.5586,
-      518.5928
+      -407.3765,
+      604.6636
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_raider"
@@ -56,8 +56,8 @@
   {
     "id": 26800001216,
     "position": [
-      -488.1883,
-      533.1147
+      -351.0682,
+      670.3421
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -65,8 +65,8 @@
   {
     "id": 26800001217,
     "position": [
-      -490.1005,
-      533.771
+      -359.7721,
+      673.3104
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -74,8 +74,8 @@
   {
     "id": 26800001221,
     "position": [
-      -469.5179,
-      514.9834
+      -266.0831,
+      588.3393
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -83,8 +83,8 @@
   {
     "id": 26800001222,
     "position": [
-      -469.6398,
-      515.9209
+      -266.6378,
+      592.5794
     ],
     "subregionId": "ES_1",
     "type": "elite_ambusher"
@@ -92,8 +92,8 @@
   {
     "id": 26800001223,
     "position": [
-      -477.643,
-      522.5019
+      -303.0674,
+      622.3433
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_executioner"
@@ -101,8 +101,8 @@
   {
     "id": 26800001224,
     "position": [
-      -476.6652,
-      521.1234
+      -298.6164,
+      616.1087
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -110,8 +110,8 @@
   {
     "id": 26800001225,
     "position": [
-      -478.5394,
-      521.0691
+      -307.1476,
+      615.863
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -119,8 +119,8 @@
   {
     "id": 26800001237,
     "position": [
-      -480.1378,
-      549.2746
+      -314.4234,
+      743.4285
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -128,8 +128,8 @@
   {
     "id": 26800001238,
     "position": [
-      -476.9979,
-      549.4433
+      -300.1308,
+      744.1916
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -137,8 +137,8 @@
   {
     "id": 26800001239,
     "position": [
-      -477.9568,
-      549.9272
+      -304.4956,
+      746.38
     ],
     "subregionId": "ES_1",
     "type": "elite_ambusher"
@@ -146,8 +146,8 @@
   {
     "id": 26800001295,
     "position": [
-      -481.6211,
-      531.3288
+      -321.1751,
+      662.2647
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -155,8 +155,8 @@
   {
     "id": 26800001296,
     "position": [
-      -480.5477,
-      533.0632
+      -316.289,
+      670.1089
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -164,8 +164,8 @@
   {
     "id": 26800001297,
     "position": [
-      -479.3711,
-      530.8225
+      -310.9334,
+      659.9751
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -173,8 +173,8 @@
   {
     "id": 26800001300,
     "position": [
-      -497.9336,
-      569.9961
+      -395.4278,
+      837.146
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -182,8 +182,8 @@
   {
     "id": 26800001301,
     "position": [
-      -497.0102,
-      570.7742
+      -391.2244,
+      840.6652
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -191,8 +191,8 @@
   {
     "id": 26800001302,
     "position": [
-      -497.8967,
-      571.0211
+      -395.2596,
+      841.7821
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -200,8 +200,8 @@
   {
     "id": 26800001303,
     "position": [
-      -497.7836,
-      568.3226
+      -394.745,
+      829.5775
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -209,8 +209,8 @@
   {
     "id": 26800001310,
     "position": [
-      -508.6165,
-      543.0944
+      -444.0547,
+      715.4775
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_arsonist"
@@ -218,8 +218,8 @@
   {
     "id": 26800001311,
     "position": [
-      -509.7837,
-      542.6726
+      -449.3676,
+      713.5695
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -227,8 +227,8 @@
   {
     "id": 26800001312,
     "position": [
-      -508.8649,
-      541.8851
+      -445.1856,
+      710.0078
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -236,8 +236,8 @@
   {
     "id": 26800001313,
     "position": [
-      -474.9648,
-      549.2773
+      -290.8766,
+      743.4407
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -245,8 +245,8 @@
   {
     "id": 26800001314,
     "position": [
-      -475.6305,
-      549.8304
+      -293.9065,
+      745.9423
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -254,8 +254,8 @@
   {
     "id": 26800001315,
     "position": [
-      -456.1445,
-      548.8665
+      -205.2089,
+      741.583
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_arsonist"
@@ -263,8 +263,8 @@
   {
     "id": 26800001316,
     "position": [
-      -453.857,
-      548.4757
+      -194.7963,
+      739.8154
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -272,8 +272,8 @@
   {
     "id": 26800001374,
     "position": [
-      -480.8336,
-      480.6521
+      -317.5905,
+      433.0684
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -281,8 +281,8 @@
   {
     "id": 26800001375,
     "position": [
-      -478.9633,
-      481.8896
+      -309.0771,
+      438.6653
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -290,8 +290,8 @@
   {
     "id": 26800001376,
     "position": [
-      -496.7477,
-      469.8849
+      -390.0295,
+      384.3713
     ],
     "subregionId": "ES_1",
     "type": "heavy_ram"
@@ -299,8 +299,8 @@
   {
     "id": 26800001377,
     "position": [
-      -496.954,
-      467.5693
+      -390.9684,
+      373.8984
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -308,8 +308,8 @@
   {
     "id": 26800001378,
     "position": [
-      -467.8351,
-      438.8536
+      -258.4231,
+      244.0254
     ],
     "subregionId": "ES_1",
     "type": "heavy_sting"
@@ -317,8 +317,8 @@
   {
     "id": 26800001381,
     "position": [
-      -479.5914,
-      480.7693
+      -311.9362,
+      433.5984
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -326,8 +326,8 @@
   {
     "id": 26800001385,
     "position": [
-      -483.1117,
-      427.1582
+      -327.9603,
+      191.1306
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -335,8 +335,8 @@
   {
     "id": 26800001386,
     "position": [
-      -481.6961,
-      427.1723
+      -321.5165,
+      191.1942
     ],
     "subregionId": "ES_1",
     "type": "sting_a"
@@ -344,8 +344,8 @@
   {
     "id": 26800001387,
     "position": [
-      -470.2691,
-      436.8811
+      -269.5021,
+      235.1044
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -353,8 +353,8 @@
   {
     "id": 26800001388,
     "position": [
-      -469.9211,
-      435.3754
+      -267.9181,
+      228.2948
     ],
     "subregionId": "ES_1",
     "type": "sting_a"
@@ -362,8 +362,8 @@
   {
     "id": 26800001389,
     "position": [
-      -467.3978,
-      442.5041
+      -256.4325,
+      260.5359
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -371,8 +371,8 @@
   {
     "id": 26800001390,
     "position": [
-      -473.8049,
-      442.118
+      -285.5968,
+      258.7897
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -380,8 +380,8 @@
   {
     "id": 26800001391,
     "position": [
-      -472.612,
-      441.2051
+      -280.167,
+      254.6607
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -389,8 +389,8 @@
   {
     "id": 26800001392,
     "position": [
-      -466.3258,
-      441.7223
+      -251.5526,
+      256.9999
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -398,8 +398,8 @@
   {
     "id": 26800001393,
     "position": [
-      -470.4976,
-      434.2786
+      -270.5425,
+      223.3339
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -407,8 +407,8 @@
   {
     "id": 26800001443,
     "position": [
-      -545.9103,
-      465.3239
+      -613.8117,
+      363.7434
     ],
     "subregionId": "ES_1",
     "type": "indigenous_pincerbeast"
@@ -416,8 +416,8 @@
   {
     "id": 26800001444,
     "position": [
-      -545.6619,
-      462.3474
+      -612.6808,
+      350.2812
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -425,8 +425,8 @@
   {
     "id": 26800001445,
     "position": [
-      -576.1911,
-      447.9366
+      -751.6461,
+      285.1056
     ],
     "subregionId": "ES_1",
     "type": "brutal_pincerbeast"
@@ -434,8 +434,8 @@
   {
     "id": 26800001446,
     "position": [
-      -577.983,
-      446.091
+      -759.8024,
+      276.758
     ],
     "subregionId": "ES_1",
     "type": "indigenous_pincerbeast"
@@ -443,8 +443,8 @@
   {
     "id": 26800001447,
     "position": [
-      -573.1401,
-      446.2668
+      -737.7581,
+      277.5534
     ],
     "subregionId": "ES_1",
     "type": "indigenous_pincerbeast"
@@ -452,8 +452,8 @@
   {
     "id": 26800001448,
     "position": [
-      -575.3857,
-      445.7832
+      -747.9801,
+      275.366
     ],
     "subregionId": "ES_1",
     "type": "tunneling_nidwyrm"
@@ -461,8 +461,8 @@
   {
     "id": 26800001449,
     "position": [
-      -583.7459,
-      427.3613
+      -786.0345,
+      192.049
     ],
     "subregionId": "ES_1",
     "type": "tunneling_nidwyrm"
@@ -470,8 +470,8 @@
   {
     "id": 26800001450,
     "position": [
-      -584.9897,
-      429.0787
+      -791.6963,
+      199.8165
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -479,8 +479,8 @@
   {
     "id": 26800001451,
     "position": [
-      -582.4126,
-      428.062
+      -779.9654,
+      195.2182
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -488,8 +488,8 @@
   {
     "id": 26800001460,
     "position": [
-      -532.5322,
-      495.6053
+      -552.916,
+      500.6973
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_arsonist"
@@ -497,8 +497,8 @@
   {
     "id": 26800001504,
     "position": [
-      -574.4533,
-      482.7417
+      -743.7358,
+      442.5191
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -506,8 +506,8 @@
   {
     "id": 26800001505,
     "position": [
-      -574.1948,
-      481.0177
+      -742.559,
+      434.722
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -515,8 +515,8 @@
   {
     "id": 26800001506,
     "position": [
-      -576.7588,
-      481.974
+      -754.2303,
+      439.0469
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -524,8 +524,8 @@
   {
     "id": 26800001507,
     "position": [
-      -576.1635,
-      479.9677
+      -751.5205,
+      429.9731
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -533,8 +533,8 @@
   {
     "id": 26800001532,
     "position": [
-      -507.2998,
-      500.112
+      -438.0613,
+      521.0799
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -542,8 +542,8 @@
   {
     "id": 26800001533,
     "position": [
-      -508.1196,
-      500.0959
+      -441.793,
+      521.0072
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -551,8 +551,8 @@
   {
     "id": 26800001534,
     "position": [
-      -474.0508,
-      523.5381
+      -286.7159,
+      627.0299
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -560,8 +560,8 @@
   {
     "id": 26800001535,
     "position": [
-      -472.6438,
-      522.2097
+      -280.3115,
+      621.0215
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -569,8 +569,8 @@
   {
     "id": 26800001536,
     "position": [
-      -476.6711,
-      513.3428
+      -298.6433,
+      580.9192
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -578,8 +578,8 @@
   {
     "id": 26800001537,
     "position": [
-      -477.243,
-      514.2194
+      -301.2464,
+      584.8837
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -587,8 +587,8 @@
   {
     "id": 26800001553,
     "position": [
-      -458.732,
-      533.5694
+      -216.9867,
+      672.3985
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -596,8 +596,8 @@
   {
     "id": 26800001554,
     "position": [
-      -459.7867,
-      532.1585
+      -221.7875,
+      666.0172
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -605,8 +605,8 @@
   {
     "id": 26800001555,
     "position": [
-      -457.8085,
-      533.5929
+      -212.7833,
+      672.5045
     ],
     "subregionId": "ES_1",
     "type": "elite_raider"
@@ -614,8 +614,8 @@
   {
     "id": 26800001559,
     "position": [
-      -512.2352,
-      507.5631
+      -460.5269,
+      554.7793
     ],
     "subregionId": "ES_1",
     "type": "elite_executioner"
@@ -623,8 +623,8 @@
   {
     "id": 26800001560,
     "position": [
-      -511.1477,
-      506.4287
+      -455.5767,
+      549.6488
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -632,8 +632,8 @@
   {
     "id": 26800001561,
     "position": [
-      -512.9524,
-      506.5928
+      -463.7914,
+      550.3908
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -641,8 +641,8 @@
   {
     "id": 26800001573,
     "position": [
-      -501.243,
-      479.888
+      -410.4917,
+      429.6127
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -650,8 +650,8 @@
   {
     "id": 26800001574,
     "position": [
-      -501.5508,
-      478.9279
+      -411.8926,
+      425.2704
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -659,8 +659,8 @@
   {
     "id": 26800001577,
     "position": [
-      -496.2743,
-      480.5255
+      -387.8745,
+      432.496
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_infiltrator"
@@ -668,8 +668,8 @@
   {
     "id": 26800001601,
     "position": [
-      -456.0132,
-      511.5475
+      -204.6113,
+      572.7995
     ],
     "subregionId": "ES_1",
     "type": "heavy_sting_a"
@@ -677,8 +677,8 @@
   {
     "id": 26800001637,
     "position": [
-      -515.7415,
-      520.8006
+      -476.4869,
+      614.6489
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_arsonist"
@@ -686,8 +686,8 @@
   {
     "id": 26800001649,
     "position": [
-      -490.6024,
-      521.6256
+      -362.0568,
+      618.3801
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -695,8 +695,8 @@
   {
     "id": 26800001650,
     "position": [
-      -490.6164,
-      520.3506
+      -362.1208,
+      612.6137
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_raider"
@@ -704,8 +704,8 @@
   {
     "id": 26800001654,
     "position": [
-      -594.4167,
-      425.377
+      -834.6066,
+      183.0745
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -713,8 +713,8 @@
   {
     "id": 26800001655,
     "position": [
-      -592.9307,
-      426.1973
+      -827.8428,
+      186.7846
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -722,8 +722,8 @@
   {
     "id": 26800001674,
     "position": [
-      -475.4383,
-      487.824
+      -293.0317,
+      465.5048
     ],
     "subregionId": "ES_1",
     "type": "heavy_ram"
@@ -731,8 +731,8 @@
   {
     "id": 26800001675,
     "position": [
-      -472.8742,
-      489.249
+      -281.3603,
+      471.9497
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -740,8 +740,8 @@
   {
     "id": 26800001676,
     "position": [
-      -473.4053,
-      486.797
+      -283.7778,
+      460.8598
     ],
     "subregionId": "ES_1",
     "type": "sting"
@@ -749,8 +749,8 @@
   {
     "id": 26800001677,
     "position": [
-      -471.9364,
-      481.8671
+      -277.0917,
+      438.5633
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -758,8 +758,8 @@
   {
     "id": 26800001678,
     "position": [
-      -470.2304,
-      483.0146
+      -269.3263,
+      443.7533
     ],
     "subregionId": "ES_1",
     "type": "ram"
@@ -767,8 +767,8 @@
   {
     "id": 26800001685,
     "position": [
-      -498.7868,
-      535.6555
+      -399.3112,
+      681.8334
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -776,8 +776,8 @@
   {
     "id": 26800001686,
     "position": [
-      -498.093,
-      534.6663
+      -396.1532,
+      677.3594
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -785,8 +785,8 @@
   {
     "id": 26800001690,
     "position": [
-      -452.5919,
-      536.1974
+      -189.0377,
+      684.284
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -794,8 +794,8 @@
   {
     "id": 26800001691,
     "position": [
-      -454.0023,
-      534.5022
+      -195.4577,
+      676.6173
     ],
     "subregionId": "ES_1",
     "type": "elite_executioner"
@@ -803,8 +803,8 @@
   {
     "id": 26800001696,
     "position": [
-      -477.5782,
-      504.3516
+      -302.7723,
+      540.2546
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_executioner"
@@ -812,8 +812,8 @@
   {
     "id": 26800001697,
     "position": [
-      -478.9756,
-      503.401
+      -309.1333,
+      535.9554
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -821,8 +821,8 @@
   {
     "id": 26800001698,
     "position": [
-      -478.9931,
-      505.276
+      -309.2129,
+      544.4351
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -830,8 +830,8 @@
   {
     "id": 26800001753,
     "position": [
-      -502.4509,
-      494.6041
+      -415.9899,
+      496.1693
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -839,8 +839,8 @@
   {
     "id": 26800001754,
     "position": [
-      -503.4072,
-      493.9267
+      -420.3425,
+      493.1055
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -848,8 +848,8 @@
   {
     "id": 26800001755,
     "position": [
-      -503.369,
-      495.3324
+      -420.1689,
+      499.4632
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ripptusk"
@@ -857,8 +857,8 @@
   {
     "id": 26800001759,
     "position": [
-      -506.9805,
-      520.0319
+      -436.6081,
+      611.172
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -866,8 +866,8 @@
   {
     "id": 26800001760,
     "position": [
-      -506.5821,
-      519.2069
+      -434.7945,
+      607.4408
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -875,8 +875,8 @@
   {
     "id": 26800001761,
     "position": [
-      -507.7399,
-      519.3756
+      -440.0647,
+      608.204
     ],
     "subregionId": "ES_1",
     "type": "elite_ripptusk"
@@ -884,8 +884,8 @@
   {
     "id": 26800001772,
     "position": [
-      -509.4433,
-      534.2863
+      -447.8184,
+      675.6407
     ],
     "subregionId": "ES_1",
     "type": "elite_executioner"
@@ -893,8 +893,8 @@
   {
     "id": 26800001777,
     "position": [
-      -452.4866,
-      524.5081
+      -188.5584,
+      631.4166
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -902,8 +902,8 @@
   {
     "id": 26800001778,
     "position": [
-      -451.7195,
-      524.8835
+      -185.0666,
+      633.1143
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_pyromancer"
@@ -911,8 +911,8 @@
   {
     "id": 26800001780,
     "position": [
-      -470.8211,
-      494.0162
+      -272.0148,
+      493.5104
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -920,8 +920,8 @@
   {
     "id": 26800001781,
     "position": [
-      -470.2433,
-      494.6011
+      -269.3848,
+      496.1559
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_ambusher"
@@ -929,8 +929,8 @@
   {
     "id": 26800001782,
     "position": [
-      -470.1883,
-      493.6553
+      -269.1343,
+      491.878
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -938,8 +938,8 @@
   {
     "id": 26800004006,
     "position": [
-      -546.1025,
-      463.5849
+      -614.6865,
+      355.8781
     ],
     "subregionId": "ES_1",
     "type": "tunneling_nidwyrm"
@@ -947,8 +947,8 @@
   {
     "id": 26800004011,
     "position": [
-      -555.0369,
-      430.0645
+      -655.3548,
+      204.2748
     ],
     "subregionId": "ES_1",
     "type": "tunneling_nidwyrm"
@@ -956,8 +956,8 @@
   {
     "id": 26800004012,
     "position": [
-      -578.0291,
-      493.5756
+      -760.0126,
+      491.5176
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_arsonist"
@@ -965,8 +965,8 @@
   {
     "id": 26800004013,
     "position": [
-      -578.6479,
-      492.5115
+      -762.8291,
+      486.7051
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_tuskbeast"
@@ -974,8 +974,8 @@
   {
     "id": 26800004014,
     "position": [
-      -577.2932,
-      492.2303
+      -756.6627,
+      485.4331
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_tuskbeast"
@@ -983,8 +983,8 @@
   {
     "id": 26800004020,
     "position": [
-      -558.1364,
-      469.2652
+      -669.4633,
+      381.5688
     ],
     "subregionId": "ES_1",
     "type": "acid_originium_slug"
@@ -992,8 +992,8 @@
   {
     "id": 26800004021,
     "position": [
-      -559.2411,
-      469.6158
+      -674.4919,
+      383.1544
     ],
     "subregionId": "ES_1",
     "type": "indigenous_pincerbeast"
@@ -1001,8 +1001,8 @@
   {
     "id": 26800004032,
     "position": [
-      -558.9097,
-      468.5841
+      -672.9834,
+      378.4882
     ],
     "subregionId": "ES_1",
     "type": "tunneling_nidwyrm"
@@ -1010,8 +1010,8 @@
   {
     "id": 26800004034,
     "position": [
-      -575.1985,
-      481.4283
+      -747.1276,
+      436.5788
     ],
     "subregionId": "ES_1",
     "type": "elite_executioner"
@@ -1019,8 +1019,8 @@
   {
     "id": 26800004044,
     "position": [
-      -582.1095,
-      473.9714
+      -778.586,
+      402.8534
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -1028,8 +1028,8 @@
   {
     "id": 26800004045,
     "position": [
-      -583.8747,
-      473.1238
+      -786.621,
+      399.02
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -1037,8 +1037,8 @@
   {
     "id": 26800004046,
     "position": [
-      -583.2414,
-      474.34
+      -783.738,
+      404.5203
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_executioner"
@@ -1046,8 +1046,8 @@
   {
     "id": 26800004048,
     "position": [
-      -586.1151,
-      472.613
+      -796.8189,
+      396.7099
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -1055,8 +1055,8 @@
   {
     "id": 26800004049,
     "position": [
-      -584.8917,
-      472.5943
+      -791.2499,
+      396.6251
     ],
     "subregionId": "ES_1",
     "type": "hazefyre_claw"
@@ -1064,8 +1064,8 @@
   {
     "id": 26800004202,
     "position": [
-      -531.6978,
-      494.6021
+      -549.118,
+      496.1605
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -1073,17 +1073,197 @@
   {
     "id": 26800004203,
     "position": [
-      -533.5587,
-      494.8928
+      -557.5888,
+      497.4749
     ],
     "subregionId": "ES_1",
     "type": "bonekrusher_vanguard"
   },
   {
+    "id": 26800000045,
+    "position": [
+      -341.4453,
+      570.4166
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000050,
+    "position": [
+      -237.7689,
+      644.1385
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000053,
+    "position": [
+      -223.3665,
+      591.0783
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000061,
+    "position": [
+      -229.8316,
+      461.2436
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000064,
+    "position": [
+      -399.2258,
+      381.9121
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000074,
+    "position": [
+      -204.4619,
+      283.8819
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000075,
+    "position": [
+      -215.9412,
+      441.9513
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000076,
+    "position": [
+      -332.7184,
+      514.6047
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000082,
+    "position": [
+      -309.2476,
+      575.1951
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000124,
+    "position": [
+      -738.211,
+      360.8623
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000242,
+    "position": [
+      -401.4448,
+      547.8044
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000453,
+    "position": [
+      -292.7543,
+      527.4945
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000454,
+    "position": [
+      -544.6457,
+      474.5574
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000918,
+    "position": [
+      -288.7003,
+      389.0778
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000954,
+    "position": [
+      -519.4127,
+      741.2994
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000979,
+    "position": [
+      -546.8136,
+      314.3043
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001086,
+    "position": [
+      -52.1565,
+      784.1028
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001146,
+    "position": [
+      -280.8909,
+      519.2688
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001148,
+    "position": [
+      -313.2805,
+      764.641
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001161,
+    "position": [
+      -722.0382,
+      219.3795
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
     "id": 26800001214,
     "position": [
-      -511.6212,
-      526.7585
+      -457.7317,
+      641.5945
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1091,8 +1271,8 @@
   {
     "id": 26800001215,
     "position": [
-      -507.3293,
-      532.9005
+      -438.1956,
+      669.3732
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1100,8 +1280,8 @@
   {
     "id": 26800001218,
     "position": [
-      -485.7283,
-      532.855
+      -339.8706,
+      669.1676
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1109,8 +1289,8 @@
   {
     "id": 26800001227,
     "position": [
-      -501.1713,
-      541.0629
+      -410.1652,
+      706.2893
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1118,8 +1298,8 @@
   {
     "id": 26800001232,
     "position": [
-      -504.2313,
-      533.1574
+      -424.094,
+      670.535
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1127,8 +1307,8 @@
   {
     "id": 26800001243,
     "position": [
-      -490.2508,
-      557.1992
+      -360.4565,
+      779.2692
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1136,8 +1316,8 @@
   {
     "id": 26800001254,
     "position": [
-      -461.5914,
-      531.3757
+      -230.0023,
+      662.4767
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1145,8 +1325,8 @@
   {
     "id": 26800001292,
     "position": [
-      -451.6445,
-      531.8069
+      -184.7252,
+      664.4272
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1154,8 +1334,8 @@
   {
     "id": 26800001293,
     "position": [
-      -506.0627,
-      552.4399
+      -432.4304,
+      757.7445
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1163,8 +1343,8 @@
   {
     "id": 26800001329,
     "position": [
-      -503.2338,
-      552.5942
+      -419.5535,
+      758.442
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1172,8 +1352,8 @@
   {
     "id": 26800001363,
     "position": [
-      -502.9915,
-      543.0944
+      -418.4504,
+      715.4775
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1181,8 +1361,8 @@
   {
     "id": 26800001365,
     "position": [
-      -484.6535,
-      542.689
+      -334.978,
+      713.6437
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1190,8 +1370,8 @@
   {
     "id": 26800001366,
     "position": [
-      -474.9719,
-      556.9582
+      -290.9086,
+      778.1795
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1199,8 +1379,8 @@
   {
     "id": 26800001367,
     "position": [
-      -477.3883,
-      579.7789
+      -301.9078,
+      881.391
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1208,8 +1388,8 @@
   {
     "id": 26800001516,
     "position": [
-      -473.4648,
-      464.543
+      -284.0488,
+      360.2115
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1217,8 +1397,8 @@
   {
     "id": 26800001517,
     "position": [
-      -477.4806,
-      421.3256
+      -302.3282,
+      164.7511
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1226,8 +1406,8 @@
   {
     "id": 26800001518,
     "position": [
-      -441.9605,
-      434.7642
+      -140.6452,
+      225.5302
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1235,8 +1415,8 @@
   {
     "id": 26800001519,
     "position": [
-      -471.8148,
-      455.0114
+      -276.5382,
+      317.1028
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1244,8 +1424,8 @@
   {
     "id": 26800001524,
     "position": [
-      -495.7633,
-      463.988
+      -385.5488,
+      357.7013
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1253,8 +1433,8 @@
   {
     "id": 26800001525,
     "position": [
-      -526.8982,
-      547.2593
+      -527.2711,
+      734.3139
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1262,8 +1442,8 @@
   {
     "id": 26800001569,
     "position": [
-      -508.4993,
-      490.3553
+      -443.5213,
+      476.953
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1271,8 +1451,8 @@
   {
     "id": 26800001579,
     "position": [
-      -501.161,
-      488.9768
+      -410.1184,
+      470.7184
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1280,8 +1460,8 @@
   {
     "id": 26800001589,
     "position": [
-      -475.2231,
-      583.9349
+      -292.0523,
+      900.1871
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1289,26 +1469,98 @@
   {
     "id": 26800001598,
     "position": [
-      -502.1702,
-      503.4831
+      -414.7121,
+      536.3265
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
   },
   {
+    "id": 26800001606,
+    "position": [
+      351.8632,
+      682.9355
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001608,
+    "position": [
+      310.0578,
+      507.1839
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001626,
+    "position": [
+      -603.2499,
+      635.3616
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001627,
+    "position": [
+      -435.0484,
+      866.7119
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001639,
+    "position": [
+      -263.3946,
+      607.7587
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
     "id": 26800001643,
     "position": [
-      -457.846,
-      511.9553
+      -212.954,
+      574.6439
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
   },
   {
+    "id": 26800001645,
+    "position": [
+      -365.2146,
+      748.3742
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001647,
+    "position": [
+      -340.9332,
+      282.5039
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001648,
+    "position": [
+      -346.7368,
+      717.3007
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
     "id": 26800001657,
     "position": [
-      -597.5475,
-      425.6685
+      -848.8576,
+      184.3932
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1316,8 +1568,8 @@
   {
     "id": 26800001658,
     "position": [
-      -514.3446,
-      470.5458
+      -470.1285,
+      387.3606
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1325,8 +1577,8 @@
   {
     "id": 26800001673,
     "position": [
-      -467.8304,
-      488.1376
+      -258.4018,
+      466.9231
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1334,8 +1586,8 @@
   {
     "id": 26800001684,
     "position": [
-      -483.1708,
-      525.7136
+      -328.2291,
+      636.8689
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1343,8 +1595,8 @@
   {
     "id": 26800001692,
     "position": [
-      -451.5723,
-      534.3808
+      -184.3966,
+      676.0683
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1352,8 +1604,8 @@
   {
     "id": 26800001693,
     "position": [
-      -451.5723,
-      533.0491
+      -184.3966,
+      670.0453
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1361,8 +1613,8 @@
   {
     "id": 26800001694,
     "position": [
-      -451.5976,
-      535.735
+      -184.5118,
+      682.193
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1370,8 +1622,8 @@
   {
     "id": 26800001718,
     "position": [
-      -496.9024,
-      510.7037
+      -390.7337,
+      568.9835
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1379,8 +1631,8 @@
   {
     "id": 26800001726,
     "position": [
-      -457.1195,
-      540.7788
+      -209.6468,
+      705.0045
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1388,8 +1640,8 @@
   {
     "id": 26800001727,
     "position": [
-      -459.0554,
-      538.6601
+      -218.459,
+      695.422
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1397,8 +1649,8 @@
   {
     "id": 26800001775,
     "position": [
-      -476.1892,
-      509.0575
+      -296.4499,
+      561.5379
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1406,8 +1658,8 @@
   {
     "id": 26800001779,
     "position": [
-      -465.8101,
-      538.6694
+      -249.2055,
+      695.4644
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1415,17 +1667,44 @@
   {
     "id": 26800001898,
     "position": [
-      -470.732,
-      532.1772
+      -271.6094,
+      666.102
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
   },
   {
+    "id": 26800001901,
+    "position": [
+      -446.9779,
+      508.8806
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001902,
+    "position": [
+      -777.8119,
+      333.1938
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001904,
+    "position": [
+      152.6123,
+      1068.03
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
     "id": 26800004161,
     "position": [
-      -587.7885,
-      469.1396
+      -804.4362,
+      381.0005
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1433,8 +1712,8 @@
   {
     "id": 26800004162,
     "position": [
-      -556.851,
-      424.252
+      -663.6122,
+      177.9865
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1442,8 +1721,8 @@
   {
     "id": 26800004163,
     "position": [
-      -553.3072,
-      475.0037
+      -647.4814,
+      407.522
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1451,8 +1730,8 @@
   {
     "id": 26800004164,
     "position": [
-      -548.0009,
-      487.1349
+      -623.328,
+      462.3884
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
@@ -1460,8 +1739,8 @@
   {
     "id": 26800004165,
     "position": [
-      -576.7629,
-      457.1216
+      -754.2486,
+      326.6465
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1469,8 +1748,8 @@
   {
     "id": 26800004166,
     "position": [
-      -562.415,
-      500.6256
+      -688.9391,
+      523.4028
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1478,8 +1757,8 @@
   {
     "id": 26800004167,
     "position": [
-      -512.6238,
-      497.0561
+      -462.2957,
+      507.2588
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1487,8 +1766,8 @@
   {
     "id": 26800004168,
     "position": [
-      -471.4389,
-      452.6691
+      -274.827,
+      306.509
     ],
     "subregionId": "ES_1",
     "type": "crate_i"
@@ -1496,8 +1775,8 @@
   {
     "id": 26800004169,
     "position": [
-      -466.1781,
-      471.3272
+      -250.8805,
+      390.8946
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
@@ -1505,19 +1784,46 @@
   {
     "id": 26800004170,
     "position": [
-      -438.0413,
-      441.0801
+      -122.8053,
+      254.0955
     ],
     "subregionId": "ES_1",
     "type": "crate_iii"
   },
   {
+    "id": 26800004176,
+    "position": [
+      -278.9919,
+      844.2481
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
     "id": 26800004243,
     "position": [
-      -571.1793,
-      490.4588
+      -728.8329,
+      477.4215
     ],
     "subregionId": "ES_1",
     "type": "crate_ii"
+  },
+  {
+    "id": 26800004244,
+    "position": [
+      -719.707,
+      471.1653
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800004246,
+    "position": [
+      -560.0212,
+      382.2089
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
   }
 ]

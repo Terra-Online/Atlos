@@ -272,9 +272,14 @@
             },
             "Stock Redistribution Terminal": {
                 "noFrame": true
-            },
-            
+            },    
             "Tactical Training Cabin": {
+                "noFrame": true
+            },
+            "Zipline Pylon": {
+                "noFrame": true
+            },
+            "Rope": {
                 "noFrame": true
             }
         }
