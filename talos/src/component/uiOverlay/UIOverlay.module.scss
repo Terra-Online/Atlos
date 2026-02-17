@@ -1,3 +1,5 @@
+@use '../../styles/size.scss' as *;
+
 .uiOverlay {
     position: absolute;
     top: 0;
@@ -51,14 +53,17 @@
     &[data-snap="0"] {
         transform: translateY(0);
     }
-    
     /* Snap 1: pushed up by ~55vh drawer */
     &[data-snap="1"] {
         transform: translateY(-65%);
-    }
-    
+    } 
     /* Snap 2+: stays at same position as snap 1 (max 85vh drawer) */
     &[data-snap="2"] {
         transform: translateY(-65%);
     }
+}
+@media screen and (max-width: $mobile-bp) {
+   .switchArea {
+        top: 25%
+   } 
 }

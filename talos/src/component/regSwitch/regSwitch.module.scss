@@ -22,9 +22,14 @@
 }
 
 $transition-speed: 0.3s;
+
 $item-height: 2.5rem;
 $item-gap: 0.6rem;
 $indicator-height: 0.75rem;
+
+$mobile-item-height: 2.25rem;
+$mobile-item-gap: 0.4rem;
+$mobile-indicator-height: 0.48rem;
 
 .regswitch {
     position: relative;
@@ -50,14 +55,6 @@ $indicator-height: 0.75rem;
     > * {
         position: relative;
         z-index: 1;
-    }
-}
-@media screen and (max-width: $mobile-bp) {
-    .regswitch {
-        top: 45%;
-        &.layerswitch {
-            top: 56%
-        }
     }
 }
 .regLabel {
@@ -240,5 +237,35 @@ $indicator-height: 0.75rem;
             height: 1.5rem;
             border-radius: 3px;
         }
+    }
+}
+
+@media screen and (max-width: $mobile-bp) {
+    .regswitch {
+        gap: $mobile-item-gap;
+    }
+    .regLabel {
+        width: $mobile-item-height;
+        height: $mobile-item-height / 2.25;
+        &::before {
+            transform: translateY(7.5px);
+            border-width: 8px 8px 0 8px;
+        }
+        &::after, &.layerLabel::after {
+            font-size: 0.78rem;
+        }
+    }
+    .indicator {
+        left: 2.5px;
+        border-top-width: 5px;
+        border-bottom-width: 5px;
+        border-left-width: 6px;
+    }
+    .regItem, .subregItem {
+        width: $mobile-item-height;
+        height: $mobile-item-height;
+    }
+    .subregionSwitchContainer > .subregionSwitch {
+        gap: $mobile-item-gap;
     }
 }

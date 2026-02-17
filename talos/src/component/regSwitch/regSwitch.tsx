@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
-import styles from './regSwitch.module.scss';
-import useRegion from '@/store/region';
-import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import classNames from 'classnames';
+
+import styles from './regSwitch.module.scss';
+
 import PopoverTooltip from '@/component/popover/popover';
+import useRegion from '@/store/region';
+import { useTranslateGame } from '@/locale';
+import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
+import { useForceRegionSubOpen } from '@/store/uiPrefs';
+import { useDevice } from '@/utils/device';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Wuling from '../../assets/logos/_Wuling.svg?react';
 import Dijiang from '../../assets/logos/_Dijiang.svg?react';
 import Weekraid1 from '../../assets/logos/_Weekraid_1.svg?react';
-import { useForceRegionSubOpen } from '@/store/uiPrefs';
-import { useTranslateGame } from '@/locale';
 
 const REGION_ICON_DICT: Record<string, React.FC> = {
     Valley_4: Valley4,
@@ -26,15 +29,19 @@ const REGION_I18N_CODE: Record<string, string> = {
     Dijiang: 'DJ',
     Weekraid_1: 'ES',
 };
-
-const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
+const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile) => {
     if (selectedIndex < 0) return {};
 
     const itemHeight = 2.5; // rem
     const itemGap = 0.6; // rem
     const labelHeight = itemHeight / 2.25; // rem
 
-    const top = selectedIndex * (itemHeight + itemGap) + (hasLabel ? itemHeight / 2 + labelHeight + itemGap : itemHeight / 2);
+    const mobileItemHeight = 2.25; // rem
+    const mobileItemGap = 0.4;
+    const mobileLabelHeight = mobileItemHeight / 2.25; // rem
+
+
+    const top = isMobile ? selectedIndex * (mobileItemHeight + mobileItemGap) + (hasLabel ? mobileItemHeight / 2 + mobileLabelHeight + mobileItemGap : mobileItemHeight / 2) : selectedIndex * (itemHeight + itemGap) + (hasLabel ? itemHeight / 2 + labelHeight + itemGap : itemHeight / 2);
     return {
         transform: `translateY(calc(${top}rem - 50%))`,
     };
@@ -44,6 +51,7 @@ const RegionContainer: React.FC<{
     isSidebarOpen: boolean;
 }> = ({ isSidebarOpen }) => {
     const tGame = useTranslateGame();
+    const { isMobile } = useDevice();
     const {
         currentRegionKey,
         currentSubregionKey,
@@ -67,7 +75,7 @@ const RegionContainer: React.FC<{
             ></div>
             <div
                 className={styles.indicator}
-                style={getContainerStyle(regionIndex, true)}
+                style={getContainerStyle(regionIndex, true, isMobile)}
             ></div>
             {Object.entries(REGION_DICT).map(([key, region]) => {
                 const Icon: React.FC = REGION_ICON_DICT[key];
@@ -114,7 +122,7 @@ const RegionContainer: React.FC<{
                                             subRegionIndex < 0 && styles.hidden,
                                         )}
                                         style={getContainerStyle(
-                                            subRegionIndex, false
+                                            subRegionIndex, false, isMobile
                                         )}
                                     ></div>
                                     {region.subregions.map((subregion) => {

@@ -8,7 +8,7 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
-import SupportAutoPopup from '@/component/support/SupportAutoPopup';
+// import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
 import { useSidebarOpen } from '@/store/uiPrefs';
@@ -128,7 +128,7 @@ function App() {
         <StrictMode>
             <MetaHelper />
             <DomainBanner />
-            <SupportAutoPopup />
+            {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope'>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}
