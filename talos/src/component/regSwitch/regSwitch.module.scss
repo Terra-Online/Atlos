@@ -62,7 +62,7 @@ $mobile-indicator-height: 0.48rem;
     align-items: center;
     justify-content: center;
     width: $item-height;
-    height: $item-height / 2.25;
+    height: calc($item-height / 2.25);
     border-radius: 2px;
     background-color: var(--regswitch-item);
     filter: drop-shadow(0 0 2px rgba($black-0, 0.6));
@@ -246,7 +246,7 @@ $mobile-indicator-height: 0.48rem;
     }
     .regLabel {
         width: $mobile-item-height;
-        height: $mobile-item-height / 2.25;
+        height: calc($mobile-item-height / 2.25);
         &::before {
             transform: translateY(7.5px);
             border-width: 8px 8px 0 8px;
