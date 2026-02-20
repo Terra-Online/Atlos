@@ -8,5 +8,6 @@ export const mapRegionKeyToLocaleCode = (mapRegionKey: string | null | undefined
     if (mapRegionKey === 'Valley_4') return 'VL';
     if (mapRegionKey === 'Wuling') return 'WL';
     if (mapRegionKey === 'Dijiang') return 'DJ';
+    if (mapRegionKey === 'Weekraid_1') return 'ES';
     return null;
 };

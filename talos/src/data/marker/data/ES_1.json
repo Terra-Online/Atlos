@@ -1,0 +1,1784 @@
+[
+  {
+    "id": 26800001153,
+    "position": [
+      -404.6667,
+      653.8694
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001155,
+    "position": [
+      -262.6265,
+      591.477
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001156,
+    "position": [
+      -396.708,
+      649.693
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_raider"
+  },
+  {
+    "id": 26800001157,
+    "position": [
+      -397.6468,
+      659.1059
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 26800001158,
+    "position": [
+      -411.8169,
+      604.688
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001159,
+    "position": [
+      -407.3765,
+      604.6636
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800001216,
+    "position": [
+      -351.0682,
+      670.3421
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001217,
+    "position": [
+      -359.7721,
+      673.3104
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001221,
+    "position": [
+      -266.0831,
+      588.3393
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001222,
+    "position": [
+      -266.6378,
+      592.5794
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 26800001223,
+    "position": [
+      -303.0674,
+      622.3433
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800001224,
+    "position": [
+      -298.6164,
+      616.1087
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001225,
+    "position": [
+      -307.1476,
+      615.863
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001237,
+    "position": [
+      -314.4234,
+      743.4285
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001238,
+    "position": [
+      -300.1308,
+      744.1916
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001239,
+    "position": [
+      -304.4956,
+      746.38
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ambusher"
+  },
+  {
+    "id": 26800001295,
+    "position": [
+      -321.1751,
+      662.2647
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001296,
+    "position": [
+      -316.289,
+      670.1089
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001297,
+    "position": [
+      -310.9334,
+      659.9751
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001300,
+    "position": [
+      -395.4278,
+      837.146
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001301,
+    "position": [
+      -391.2244,
+      840.6652
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001302,
+    "position": [
+      -395.2596,
+      841.7821
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001303,
+    "position": [
+      -394.745,
+      829.5775
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001310,
+    "position": [
+      -444.0547,
+      715.4775
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800001311,
+    "position": [
+      -449.3676,
+      713.5695
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001312,
+    "position": [
+      -445.1856,
+      710.0078
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001313,
+    "position": [
+      -290.8766,
+      743.4407
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001314,
+    "position": [
+      -293.9065,
+      745.9423
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001315,
+    "position": [
+      -205.2089,
+      741.583
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800001316,
+    "position": [
+      -194.7963,
+      739.8154
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001374,
+    "position": [
+      -317.5905,
+      433.0684
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001375,
+    "position": [
+      -309.0771,
+      438.6653
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001376,
+    "position": [
+      -390.0295,
+      384.3713
+    ],
+    "subregionId": "ES_1",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 26800001377,
+    "position": [
+      -390.9684,
+      373.8984
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001378,
+    "position": [
+      -258.4231,
+      244.0254
+    ],
+    "subregionId": "ES_1",
+    "type": "heavy_sting"
+  },
+  {
+    "id": 26800001381,
+    "position": [
+      -311.9362,
+      433.5984
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001385,
+    "position": [
+      -327.9603,
+      191.1306
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001386,
+    "position": [
+      -321.5165,
+      191.1942
+    ],
+    "subregionId": "ES_1",
+    "type": "sting_a"
+  },
+  {
+    "id": 26800001387,
+    "position": [
+      -269.5021,
+      235.1044
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001388,
+    "position": [
+      -267.9181,
+      228.2948
+    ],
+    "subregionId": "ES_1",
+    "type": "sting_a"
+  },
+  {
+    "id": 26800001389,
+    "position": [
+      -256.4325,
+      260.5359
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001390,
+    "position": [
+      -285.5968,
+      258.7897
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001391,
+    "position": [
+      -280.167,
+      254.6607
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001392,
+    "position": [
+      -251.5526,
+      256.9999
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001393,
+    "position": [
+      -270.5425,
+      223.3339
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001443,
+    "position": [
+      -613.8117,
+      363.7434
+    ],
+    "subregionId": "ES_1",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 26800001444,
+    "position": [
+      -612.6808,
+      350.2812
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800001445,
+    "position": [
+      -751.6461,
+      285.1056
+    ],
+    "subregionId": "ES_1",
+    "type": "brutal_pincerbeast"
+  },
+  {
+    "id": 26800001446,
+    "position": [
+      -759.8024,
+      276.758
+    ],
+    "subregionId": "ES_1",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 26800001447,
+    "position": [
+      -737.7581,
+      277.5534
+    ],
+    "subregionId": "ES_1",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 26800001448,
+    "position": [
+      -747.9801,
+      275.366
+    ],
+    "subregionId": "ES_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 26800001449,
+    "position": [
+      -786.0345,
+      192.049
+    ],
+    "subregionId": "ES_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 26800001450,
+    "position": [
+      -791.6963,
+      199.8165
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800001451,
+    "position": [
+      -779.9654,
+      195.2182
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800001460,
+    "position": [
+      -552.916,
+      500.6973
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800001504,
+    "position": [
+      -743.7358,
+      442.5191
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800001505,
+    "position": [
+      -742.559,
+      434.722
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800001506,
+    "position": [
+      -754.2303,
+      439.0469
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800001507,
+    "position": [
+      -751.5205,
+      429.9731
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800001532,
+    "position": [
+      -438.0613,
+      521.0799
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001533,
+    "position": [
+      -441.793,
+      521.0072
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001534,
+    "position": [
+      -286.7159,
+      627.0299
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001535,
+    "position": [
+      -280.3115,
+      621.0215
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001536,
+    "position": [
+      -298.6433,
+      580.9192
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001537,
+    "position": [
+      -301.2464,
+      584.8837
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001553,
+    "position": [
+      -216.9867,
+      672.3985
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001554,
+    "position": [
+      -221.7875,
+      666.0172
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001555,
+    "position": [
+      -212.7833,
+      672.5045
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_raider"
+  },
+  {
+    "id": 26800001559,
+    "position": [
+      -460.5269,
+      554.7793
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 26800001560,
+    "position": [
+      -455.5767,
+      549.6488
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001561,
+    "position": [
+      -463.7914,
+      550.3908
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001573,
+    "position": [
+      -410.4917,
+      429.6127
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001574,
+    "position": [
+      -411.8926,
+      425.2704
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001577,
+    "position": [
+      -387.8745,
+      432.496
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800001601,
+    "position": [
+      -204.6113,
+      572.7995
+    ],
+    "subregionId": "ES_1",
+    "type": "heavy_sting_a"
+  },
+  {
+    "id": 26800001637,
+    "position": [
+      -476.4869,
+      614.6489
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800001649,
+    "position": [
+      -362.0568,
+      618.3801
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001650,
+    "position": [
+      -362.1208,
+      612.6137
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800001654,
+    "position": [
+      -834.6066,
+      183.0745
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800001655,
+    "position": [
+      -827.8428,
+      186.7846
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800001674,
+    "position": [
+      -293.0317,
+      465.5048
+    ],
+    "subregionId": "ES_1",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 26800001675,
+    "position": [
+      -281.3603,
+      471.9497
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001676,
+    "position": [
+      -283.7778,
+      460.8598
+    ],
+    "subregionId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800001677,
+    "position": [
+      -277.0917,
+      438.5633
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001678,
+    "position": [
+      -269.3263,
+      443.7533
+    ],
+    "subregionId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800001685,
+    "position": [
+      -399.3112,
+      681.8334
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001686,
+    "position": [
+      -396.1532,
+      677.3594
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001690,
+    "position": [
+      -189.0377,
+      684.284
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001691,
+    "position": [
+      -195.4577,
+      676.6173
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 26800001696,
+    "position": [
+      -302.7723,
+      540.2546
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800001697,
+    "position": [
+      -309.1333,
+      535.9554
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001698,
+    "position": [
+      -309.2129,
+      544.4351
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001753,
+    "position": [
+      -415.9899,
+      496.1693
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001754,
+    "position": [
+      -420.3425,
+      493.1055
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001755,
+    "position": [
+      -420.1689,
+      499.4632
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800001759,
+    "position": [
+      -436.6081,
+      611.172
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001760,
+    "position": [
+      -434.7945,
+      607.4408
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001761,
+    "position": [
+      -440.0647,
+      608.204
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800001772,
+    "position": [
+      -447.8184,
+      675.6407
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 26800001777,
+    "position": [
+      -188.5584,
+      631.4166
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800001778,
+    "position": [
+      -185.0666,
+      633.1143
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800001780,
+    "position": [
+      -272.0148,
+      493.5104
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001781,
+    "position": [
+      -269.3848,
+      496.1559
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800001782,
+    "position": [
+      -269.1343,
+      491.878
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800004006,
+    "position": [
+      -614.6865,
+      355.8781
+    ],
+    "subregionId": "ES_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 26800004011,
+    "position": [
+      -655.3548,
+      204.2748
+    ],
+    "subregionId": "ES_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 26800004012,
+    "position": [
+      -760.0126,
+      491.5176
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800004013,
+    "position": [
+      -762.8291,
+      486.7051
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 26800004014,
+    "position": [
+      -756.6627,
+      485.4331
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_tuskbeast"
+  },
+  {
+    "id": 26800004020,
+    "position": [
+      -669.4633,
+      381.5688
+    ],
+    "subregionId": "ES_1",
+    "type": "acid_originium_slug"
+  },
+  {
+    "id": 26800004021,
+    "position": [
+      -674.4919,
+      383.1544
+    ],
+    "subregionId": "ES_1",
+    "type": "indigenous_pincerbeast"
+  },
+  {
+    "id": 26800004032,
+    "position": [
+      -672.9834,
+      378.4882
+    ],
+    "subregionId": "ES_1",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 26800004034,
+    "position": [
+      -747.1276,
+      436.5788
+    ],
+    "subregionId": "ES_1",
+    "type": "elite_executioner"
+  },
+  {
+    "id": 26800004044,
+    "position": [
+      -778.586,
+      402.8534
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800004045,
+    "position": [
+      -786.621,
+      399.02
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800004046,
+    "position": [
+      -783.738,
+      404.5203
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800004048,
+    "position": [
+      -796.8189,
+      396.7099
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800004049,
+    "position": [
+      -791.2499,
+      396.6251
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800004202,
+    "position": [
+      -549.118,
+      496.1605
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800004203,
+    "position": [
+      -557.5888,
+      497.4749
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800000045,
+    "position": [
+      -341.4453,
+      570.4166
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000050,
+    "position": [
+      -237.7689,
+      644.1385
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000053,
+    "position": [
+      -223.3665,
+      591.0783
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000061,
+    "position": [
+      -229.8316,
+      461.2436
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000064,
+    "position": [
+      -399.2258,
+      381.9121
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000074,
+    "position": [
+      -204.4619,
+      283.8819
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000075,
+    "position": [
+      -215.9412,
+      441.9513
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000076,
+    "position": [
+      -332.7184,
+      514.6047
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000082,
+    "position": [
+      -309.2476,
+      575.1951
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000124,
+    "position": [
+      -738.211,
+      360.8623
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000242,
+    "position": [
+      -401.4448,
+      547.8044
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000453,
+    "position": [
+      -292.7543,
+      527.4945
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000454,
+    "position": [
+      -544.6457,
+      474.5574
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800000918,
+    "position": [
+      -288.7003,
+      389.0778
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000954,
+    "position": [
+      -519.4127,
+      741.2994
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800000979,
+    "position": [
+      -546.8136,
+      314.3043
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001146,
+    "position": [
+      -280.8909,
+      519.2688
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001148,
+    "position": [
+      -313.2805,
+      764.641
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001161,
+    "position": [
+      -722.0382,
+      219.3795
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001214,
+    "position": [
+      -457.7317,
+      641.5945
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001215,
+    "position": [
+      -438.1956,
+      669.3732
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001218,
+    "position": [
+      -339.8706,
+      669.1676
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001227,
+    "position": [
+      -410.1652,
+      706.2893
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001232,
+    "position": [
+      -424.094,
+      670.535
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001243,
+    "position": [
+      -360.4565,
+      779.2692
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001254,
+    "position": [
+      -230.0023,
+      662.4767
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001292,
+    "position": [
+      -184.7252,
+      664.4272
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001293,
+    "position": [
+      -432.4304,
+      757.7445
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001329,
+    "position": [
+      -419.5535,
+      758.442
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001363,
+    "position": [
+      -418.4504,
+      715.4775
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001365,
+    "position": [
+      -334.978,
+      713.6437
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001366,
+    "position": [
+      -290.9086,
+      778.1795
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001367,
+    "position": [
+      -301.9078,
+      881.391
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001516,
+    "position": [
+      -284.0488,
+      360.2115
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001517,
+    "position": [
+      -302.3282,
+      164.7511
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001518,
+    "position": [
+      -140.6452,
+      225.5302
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001519,
+    "position": [
+      -276.5382,
+      317.1028
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001524,
+    "position": [
+      -385.5488,
+      357.7013
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001525,
+    "position": [
+      -527.2711,
+      734.3139
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001569,
+    "position": [
+      -443.5213,
+      476.953
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001579,
+    "position": [
+      -410.1184,
+      470.7184
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001589,
+    "position": [
+      -292.0523,
+      900.1871
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001598,
+    "position": [
+      -414.7121,
+      536.3265
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001626,
+    "position": [
+      -603.2499,
+      635.3616
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001639,
+    "position": [
+      -263.3946,
+      607.7587
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001643,
+    "position": [
+      -212.954,
+      574.6439
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001645,
+    "position": [
+      -365.2146,
+      748.3742
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001647,
+    "position": [
+      -340.9332,
+      282.5039
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001648,
+    "position": [
+      -346.7368,
+      717.3007
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001657,
+    "position": [
+      -848.8576,
+      184.3932
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001658,
+    "position": [
+      -470.1285,
+      387.3606
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001673,
+    "position": [
+      -258.4018,
+      466.9231
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001684,
+    "position": [
+      -328.2291,
+      636.8689
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001692,
+    "position": [
+      -184.3966,
+      676.0683
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001693,
+    "position": [
+      -184.3966,
+      670.0453
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001694,
+    "position": [
+      -184.5118,
+      682.193
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001718,
+    "position": [
+      -390.7337,
+      568.9835
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001726,
+    "position": [
+      -209.6468,
+      705.0045
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001727,
+    "position": [
+      -218.459,
+      695.422
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001775,
+    "position": [
+      -296.4499,
+      561.5379
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800001779,
+    "position": [
+      -249.2055,
+      695.4644
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800001898,
+    "position": [
+      -271.6094,
+      666.102
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800001901,
+    "position": [
+      -446.9779,
+      508.8806
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001902,
+    "position": [
+      -777.8119,
+      333.1938
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800004161,
+    "position": [
+      -804.4362,
+      381.0005
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800004162,
+    "position": [
+      -663.6122,
+      177.9865
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800004163,
+    "position": [
+      -647.4814,
+      407.522
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800004164,
+    "position": [
+      -623.328,
+      462.3884
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800004165,
+    "position": [
+      -754.2486,
+      326.6465
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800004166,
+    "position": [
+      -688.9391,
+      523.4028
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800004167,
+    "position": [
+      -462.2957,
+      507.2588
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800004168,
+    "position": [
+      -274.827,
+      306.509
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800004169,
+    "position": [
+      -250.8805,
+      390.8946
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800004170,
+    "position": [
+      -122.8053,
+      254.0955
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800004176,
+    "position": [
+      -278.9919,
+      844.2481
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800004243,
+    "position": [
+      -728.8329,
+      477.4215
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800004244,
+    "position": [
+      -719.707,
+      471.1653
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800004246,
+    "position": [
+      -560.0212,
+      382.2089
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  }
+]

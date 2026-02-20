@@ -6,6 +6,7 @@ import DarkModeIcon from '../../assets/logos/darkmode.svg?react';
 import styles from './settings.module.scss';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
+import { useShallow } from 'zustand/shallow';
 import {
     useUiPrefsStore,
     useTheme,
@@ -14,6 +15,8 @@ import {
     useSetPerformanceMode,
 } from '@/store/uiPrefs';
 import { applyTheme, startSystemFollow } from '@/utils/theme';
+import { isMac } from '@/utils/platform';
+import { getShortcutConfig, type ShortcutEntry, type KeyChip } from './shortcuts';
 
 export interface SettingsProps {
     open: boolean;
@@ -23,29 +26,86 @@ export interface SettingsProps {
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
+const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
+
+interface SectionProps {
+    titleKey: string;
+    hintKey: string;
+    children: React.ReactNode;
+}
+
+const SettingsSection: React.FC<SectionProps> = ({ titleKey, hintKey, children }) => {
+    const t = useTranslateUI();
+    return (
+        <div className={styles.settingsSection}>
+            <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>{t(titleKey)}</span>
+                <span className={styles.sectionHint}>{parse(t(hintKey) || '')}</span>
+            </div>
+            {children}
+        </div>
+    );
+};
+
+/** Renders a single key cap chip — resolves `variant:'mod'` to the platform-correct width */
+const KeyCap: React.FC<{ chip: KeyChip }> = ({ chip }) => {
+    const size = chip.variant === 'mod'
+        ? (isMac() ? '1u' : '2u')
+        : (chip.size ?? '1u');
+    return (
+        <span className={styles.keyCap} data-ch={size}>
+            {chip.label}
+        </span>
+    );
+};
+
+/** Renders one shortcut row: label on left, key caps on right */
+const ShortcutRow: React.FC<{ entry: ShortcutEntry }> = ({ entry }) => {
+    const t = useTranslateUI();
+    return (
+        <div className={styles.shortcutRow}>
+            <span className={styles.shortcutLabel}>
+                {t(`settings.shortcuts.${entry.id}`)}
+            </span>
+            <span className={styles.shortcutKeys}>
+                {entry.keys.map((chip, i) => (
+                    <KeyCap key={i} chip={chip} />
+                ))}
+            </span>
+        </div>
+    );
+};
+
 const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => {
     const t = useTranslateUI();
     const groupId = useId();
 
-    // UI Preferences
-    const prefsSidebar = useUiPrefsStore((s) => s.prefsSidebarEnabled);
-    const setPrefsSidebar = useUiPrefsStore((s) => s.setPrefsSidebarEnabled);
-    const prefsFilterOrder = useUiPrefsStore((s) => s.prefsFilterOrderEnabled);
-    const setPrefsFilterOrder = useUiPrefsStore((s) => s.setPrefsFilterOrderEnabled);
-    const prefsTriggers = useUiPrefsStore((s) => s.prefsTriggersEnabled);
-    const setPrefsTriggers = useUiPrefsStore((s) => s.setPrefsTriggersEnabled);
+    const {
+        prefsSidebar, setPrefsSidebar,
+        prefsFilterOrder, setPrefsFilterOrder,
+        prefsTriggers, setPrefsTriggers,
+        prefsViewState, setPrefsViewState,
+        prefsMarkerProgress, setPrefsMarkerProgress,
+        prefsAutoCluster, setPrefsAutoCluster,
+        prefsHideCompleted, setPrefsHideCompleted,
+    } = useUiPrefsStore(useShallow((s) => ({
+        prefsSidebar: s.prefsSidebarEnabled,
+        setPrefsSidebar: s.setPrefsSidebarEnabled,
+        prefsFilterOrder: s.prefsFilterOrderEnabled,
+        setPrefsFilterOrder: s.setPrefsFilterOrderEnabled,
+        prefsTriggers: s.prefsTriggersEnabled,
+        setPrefsTriggers: s.setPrefsTriggersEnabled,
+        prefsViewState: s.prefsViewStateEnabled,
+        setPrefsViewState: s.setPrefsViewStateEnabled,
+        prefsMarkerProgress: s.prefsMarkerProgressEnabled,
+        setPrefsMarkerProgress: s.setPrefsMarkerProgressEnabled,
+        prefsAutoCluster: s.prefsAutoClusterEnabled,
+        setPrefsAutoCluster: s.setPrefsAutoClusterEnabled,
+        prefsHideCompleted: s.prefsHideCompletedMarkers,
+        setPrefsHideCompleted: s.setPrefsHideCompletedMarkers,
+    })));
     const prefsPerformanceMode = usePerformanceMode();
     const setPrefsPerformanceMode = useSetPerformanceMode();
-
-    // Map Preferences
-    const prefsViewState = useUiPrefsStore((s) => s.prefsViewStateEnabled);
-    const setPrefsViewState = useUiPrefsStore((s) => s.setPrefsViewStateEnabled);
-    const prefsMarkerProgress = useUiPrefsStore((s) => s.prefsMarkerProgressEnabled);
-    const setPrefsMarkerProgress = useUiPrefsStore((s) => s.setPrefsMarkerProgressEnabled);
-    const prefsAutoCluster = useUiPrefsStore((s) => s.prefsAutoClusterEnabled);
-    const setPrefsAutoCluster = useUiPrefsStore((s) => s.setPrefsAutoClusterEnabled);
-    const prefsHideCompleted = useUiPrefsStore((s) => s.prefsHideCompletedMarkers);
-    const setPrefsHideCompleted = useUiPrefsStore((s) => s.setPrefsHideCompletedMarkers);
 
     // Theme
     const themePreference = useTheme();
@@ -60,6 +120,20 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         }
     }, [setThemePreference]);
 
+    const uiPrefItems = [
+        { isActive: prefsSidebar,        onToggle: setPrefsSidebar,        label: t('settings.uiPrefs.sidebar') },
+        { isActive: prefsFilterOrder,    onToggle: setPrefsFilterOrder,    label: t('settings.uiPrefs.filterOrder') },
+        { isActive: prefsTriggers,       onToggle: setPrefsTriggers,       label: t('settings.uiPrefs.triggers') },
+        { isActive: prefsPerformanceMode, onToggle: setPrefsPerformanceMode, label: t('settings.uiPrefs.performanceMode') },
+    ];
+
+    const mapPrefItems = [
+        { isActive: prefsViewState,      onToggle: setPrefsViewState,      label: t('settings.mapPrefs.viewState') },
+        { isActive: prefsMarkerProgress, onToggle: setPrefsMarkerProgress, label: t('settings.mapPrefs.markerProgress') },
+        { isActive: prefsAutoCluster,    onToggle: setPrefsAutoCluster,    label: t('settings.mapPrefs.autoCluster') },
+        { isActive: prefsHideCompleted,  onToggle: setPrefsHideCompleted,  label: t('settings.mapPrefs.hideCompleted') },
+    ];
+
     return (
         <Modal
             open={open}
@@ -71,132 +145,52 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             iconScale={0.8}
         >
             <div className={styles.settingsList} id={groupId}>
-                {/* UI Preferences Section */}
-                <div className={styles.settingsSection}>
-                    <div className={styles.sectionHeader}>
-                        <span className={styles.sectionTitle}>{t('settings.uiPrefs.title')}</span>
-                        <span className={styles.sectionHint}>{parse(t('settings.uiPrefs.hint') || '')}</span>
-                    </div>
+                <SettingsSection titleKey="settings.uiPrefs.title" hintKey="settings.uiPrefs.hint">
                     <div className={styles.triggerGrid}>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsSidebar}
-                                onToggle={setPrefsSidebar}
-                                label={t('settings.uiPrefs.sidebar')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsFilterOrder}
-                                onToggle={setPrefsFilterOrder}
-                                label={t('settings.uiPrefs.filterOrder')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsTriggers}
-                                onToggle={setPrefsTriggers}
-                                label={t('settings.uiPrefs.triggers')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsPerformanceMode}
-                                onToggle={setPrefsPerformanceMode}
-                                label={t('settings.uiPrefs.performanceMode')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
+                        {uiPrefItems.map(({ isActive, onToggle, label }) => (
+                            <div key={label} className={styles.triggerRow}>
+                                <Trigger isActive={isActive} onToggle={onToggle} label={label} className={styles.settingsTrigger} />
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </SettingsSection>
 
-                {/* Map Preferences Section */}
-                <div className={styles.settingsSection}>
-                    <div className={styles.sectionHeader}>
-                        <span className={styles.sectionTitle}>{t('settings.mapPrefs.title')}</span>
-                        <span className={styles.sectionHint}>{parse(t('settings.mapPrefs.hint') || '')}</span>
-                    </div>
+                <SettingsSection titleKey="settings.mapPrefs.title" hintKey="settings.mapPrefs.hint">
                     <div className={styles.triggerGrid}>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsViewState}
-                                onToggle={setPrefsViewState}
-                                label={t('settings.mapPrefs.viewState')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsMarkerProgress}
-                                onToggle={setPrefsMarkerProgress}
-                                label={t('settings.mapPrefs.markerProgress')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsAutoCluster}
-                                onToggle={setPrefsAutoCluster}
-                                label={t('settings.mapPrefs.autoCluster')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
-                        <div className={styles.triggerRow}>
-                            <Trigger
-                                isActive={prefsHideCompleted}
-                                onToggle={setPrefsHideCompleted}
-                                label={t('settings.mapPrefs.hideCompleted')}
-                                className={styles.settingsTrigger}
-                            />
-                        </div>
+                        {mapPrefItems.map(({ isActive, onToggle, label }) => (
+                            <div key={label} className={styles.triggerRow}>
+                                <Trigger isActive={isActive} onToggle={onToggle} label={label} className={styles.settingsTrigger} />
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </SettingsSection>
 
-                {/* Theme Section */}
-                <div className={styles.settingsSection}>
-                    <div className={styles.sectionHeader}>
-                        <span className={styles.sectionTitle}>{t('settings.theme.title')}</span>
-                        <span className={styles.sectionHint}>{parse(t('settings.theme.hint') || '')}</span>
-                    </div>
+                <SettingsSection titleKey="settings.theme.title" hintKey="settings.theme.hint">
                     <div className={styles.themeItems}>
-                        <button
-                            type="button"
-                            className={`${styles.themeItem} ${themePreference === 'light' ? styles.active : ''}`}
-                            onClick={() => handleThemeChange('light')}
-                            aria-pressed={themePreference === 'light'}
-                            data-pref="light"
-                        >
-                            <span className={styles.themeName}>{t('settings.theme.light')}</span>
-                            <span className={styles.themeIndicator}>{t('language.current')}</span>
-                            <DarkModeIcon className={styles.themeIcon} />
-                        </button>
-                        <button
-                            type="button"
-                            className={`${styles.themeItem} ${themePreference === 'dark' ? styles.active : ''}`}
-                            onClick={() => handleThemeChange('dark')}
-                            aria-pressed={themePreference === 'dark'}
-                            data-pref="dark"
-                        >
-                            <span className={styles.themeName}>{t('settings.theme.dark')}</span>
-                            <span className={styles.themeIndicator}>{t('language.current')}</span>
-                            <DarkModeIcon className={styles.themeIcon} />
-                        </button>
-                        <button
-                            type="button"
-                            className={`${styles.themeItem} ${themePreference === 'auto' ? styles.active : ''}`}
-                            onClick={() => handleThemeChange('auto')}
-                            aria-pressed={themePreference === 'auto'}
-                            data-pref="auto"
-                        >
-                            <span className={styles.themeName}>{t('settings.theme.auto')}</span>
-                            <span className={styles.themeIndicator}>{t('language.current')}</span>
-                            <DarkModeIcon className={styles.themeIcon} />
-                        </button>
+                        {THEME_MODES.map((mode) => (
+                            <button
+                                key={mode}
+                                type="button"
+                                className={`${styles.themeItem} ${themePreference === mode ? styles.active : ''}`}
+                                onClick={() => handleThemeChange(mode)}
+                                aria-pressed={themePreference === mode}
+                                data-pref={mode}
+                            >
+                                <span className={styles.themeName}>{t(`settings.theme.${mode}`)}</span>
+                                <span className={styles.themeIndicator}>{t('language.current')}</span>
+                                <DarkModeIcon className={styles.themeIcon} />
+                            </button>
+                        ))}
                     </div>
-                </div>
+                </SettingsSection>
+
+                <SettingsSection titleKey="settings.shortcuts.title" hintKey="settings.shortcuts.hint">
+                    <div className={styles.shortcutGrid}>
+                        {getShortcutConfig().map((entry) => (
+                            <ShortcutRow key={entry.id} entry={entry} />
+                        ))}
+                    </div>
+                </SettingsSection>
             </div>
         </Modal>
     );

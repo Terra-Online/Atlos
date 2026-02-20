@@ -7,7 +7,7 @@
 :root[data-theme='dark'] {
     --embed-keyword-color: #{$primary-accent-4};
 }
-span.highlight, span.keyword {
+span.hl, span.keyword {
     color: var(--embed-keyword-color);
     font-weight: 700;
     transition: color .35s $adagio-curve;

@@ -2007,6 +2007,51 @@
     "type": "elite_ambusher"
   },
   {
+    "id": 3400010026,
+    "position": [
+      -570.812,
+      816.7569
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400010036,
+    "position": [
+      -574.7135,
+      846.3185
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400010041,
+    "position": [
+      -576.201,
+      842.153
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400010045,
+    "position": [
+      -571.0752,
+      850.171
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400010099,
+    "position": [
+      -590.28,
+      833.9733
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
     "id": 3400010137,
     "position": [
       -568.9176,
@@ -3042,13 +3087,103 @@
     "type": "gather"
   },
   {
-    "id": 3400020925,
+    "id": 3400020932,
     "position": [
-      -627.075,
-      701.78
+      -539.6122,
+      707.1504
     ],
     "subregionId": "VL_5",
-    "type": "rare_fungus"
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020933,
+    "position": [
+      -526.6259,
+      916.1172
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020934,
+    "position": [
+      -568.8716,
+      801.2507
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020936,
+    "position": [
+      -533.9103,
+      681.6338
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020937,
+    "position": [
+      -572.3807,
+      783.2258
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020938,
+    "position": [
+      -566.368,
+      777.3739
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020939,
+    "position": [
+      -577.6045,
+      784.1652
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020940,
+    "position": [
+      -551.795,
+      809.4852
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020941,
+    "position": [
+      -559.34,
+      787.2482
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020942,
+    "position": [
+      -553.476,
+      757.1178
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
+  },
+  {
+    "id": 3400020943,
+    "position": [
+      -585.3979,
+      809.6404
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
   },
   {
     "id": 3400020945,
@@ -3067,6 +3202,15 @@
     ],
     "subregionId": "VL_5",
     "type": "gather"
+  },
+  {
+    "id": 3400020970,
+    "position": [
+      -591.5245,
+      646.4681
+    ],
+    "subregionId": "VL_5",
+    "type": "blight_core"
   },
   {
     "id": 3400021010,
@@ -3346,24 +3490,6 @@
     ],
     "subregionId": "VL_5",
     "type": "repair_logic"
-  },
-  {
-    "id": 3400021132,
-    "position": [
-      -652.0708,
-      735.4821
-    ],
-    "subregionId": "VL_5",
-    "type": "citrome"
-  },
-  {
-    "id": 3400021133,
-    "position": [
-      -650.3493,
-      711.2719
-    ],
-    "subregionId": "VL_5",
-    "type": "buckflower"
   },
   {
     "id": 3400021153,

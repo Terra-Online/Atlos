@@ -86,6 +86,8 @@
             "tower_of_trails": "Torre de senderos",
             "stock_redistribution_terminal": "Terminal de redistribución de existencias",
             "tactical_training_cabin": "Cabina de entrenamiento táctico",
+            "zipline_pylon": "Atalaya de tirolesa",
+            "rope": "Cuerda",
             "triaggelos": "Triaggelos",
             "marble_aggelomoirai": "Aggelomoirai de mármol",
             "rhodagn": "Rhodagn",
@@ -146,7 +148,7 @@
         },
         "category": {
             "collection": "colección",
-            "exploration": "Exploración",
+            "exploration": "exploración",
             "combat": "combate",
             "npc": "NPC",
             "natural": "recurso natural",

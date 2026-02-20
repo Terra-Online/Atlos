@@ -7,6 +7,7 @@ import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
+import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
 
 // leaflet renderer
 export class MarkerLayer {
@@ -47,6 +48,9 @@ export class MarkerLayer {
      * 延迟移除的定时器，避免直接移除导致无法看到淡出动画
      */
     private pendingRemovalTimers: Record<string, number> = {};
+
+    /** Teardown function returned by registerLassoHandler — removes map listeners. */
+    private _destroyLasso?: () => void;
 
     constructor(
         map: L.Map,
@@ -91,6 +95,31 @@ export class MarkerLayer {
 
         // 导入全图marker
         this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat());
+
+        // Register lasso selection handler for Cmd/Ctrl+drag multi-select
+        this._destroyLasso = registerLassoHandler(this.map, {
+            markerDataDict: this.markerDataDict,
+            markerDict: this.markerDict,
+            innerSelector: `.${styles.markerInner}, .${styles.noFrameInner}`,
+            selectedClassName: styles.selected,
+            stateClassNames: [
+                styles.selected,
+                styles.checked,
+                styles.appearing,
+                styles.disappearing,
+            ],
+            getActiveFilterKeys: () => this.activeFilterKeys,
+            isSubregionVisible: (subregionId) =>
+                this.map.hasLayer(this.layerSubregionDict[subregionId]),
+        });
+    }
+
+    /**
+     * Remove all map-level listeners set up by this MarkerLayer.
+     * Call this when the layer is being permanently torn down.
+     */
+    destroy() {
+        this._destroyLasso?.();
     }
 
     /**

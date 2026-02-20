@@ -8,6 +8,8 @@ import styles from './marker.module.scss';
 import { useMarkerStore } from '@/store/marker';
 import { getActivePoints, useUserRecordStore } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
+import { useHistoryStore } from '@/store/history';
+import { batchCheckSelectedPoints } from '@/component/settings/useMapMultiSelect';
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
@@ -84,9 +86,27 @@ const RENDERER_DICT: Record<
                 if (!selectedNow && !checkedNow) {
                     // none -> selected
                     useMarkerStore.getState().setSelected(markerData.id, true);
+                    const id = markerData.id;
+                    useHistoryStore.getState().push({
+                        label: `Select ${id}`,
+                        undo: () => useMarkerStore.getState().setSelected(id, false),
+                        redo: () => useMarkerStore.getState().setSelected(id, true),
+                    });
                 } else if (selectedNow && !checkedNow) {
-                    // selected -> selected+checked
-                    useUserRecordStore.getState().addPoint(markerData.id);
+                    // If this marker is part of a lasso selection, batch-check all
+                    const allSelected = useMarkerStore.getState().selectedPoints;
+                    if (allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
+                        // batch check handled — no individual action needed
+                    } else {
+                        // selected -> selected+checked
+                        useUserRecordStore.getState().addPoint(markerData.id);
+                        const id = markerData.id;
+                        useHistoryStore.getState().push({
+                            label: `Check ${id}`,
+                            undo: () => useUserRecordStore.getState().deletePoint(id),
+                            redo: () => useUserRecordStore.getState().addPoint(id),
+                        });
+                    }
                     // 如果开启了隐藏已完成点位，立即开始淡出动画
                     const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
                     if (shouldHideCompleted) {
@@ -94,8 +114,22 @@ const RENDERER_DICT: Record<
                     }
                 } else {
                     // selected+checked 或日后其他组合 -> none
-                    useUserRecordStore.getState().deletePoint(markerData.id);
-                    useMarkerStore.getState().setSelected(markerData.id, false);
+                    // Capture selected state BEFORE mutation so undo restores it correctly.
+                    const wasSelected = selectedNow;
+                    const id = markerData.id;
+                    useUserRecordStore.getState().deletePoint(id);
+                    useMarkerStore.getState().setSelected(id, false);
+                    useHistoryStore.getState().push({
+                        label: `Uncheck ${id}`,
+                        undo: () => {
+                            useUserRecordStore.getState().addPoint(id);
+                            useMarkerStore.getState().setSelected(id, wasSelected);
+                        },
+                        redo: () => {
+                            useUserRecordStore.getState().deletePoint(id);
+                            useMarkerStore.getState().setSelected(id, false);
+                        },
+                    });
                 }
                 
                 // 同步类名
@@ -170,16 +204,47 @@ const RENDERER_DICT: Record<
                 
                 if (!selectedNow && !checkedNow) {
                     useMarkerStore.getState().setSelected(markerData.id, true);
+                    const id = markerData.id;
+                    useHistoryStore.getState().push({
+                        label: `Select ${id}`,
+                        undo: () => useMarkerStore.getState().setSelected(id, false),
+                        redo: () => useMarkerStore.getState().setSelected(id, true),
+                    });
                 } else if (selectedNow && !checkedNow) {
-                    useUserRecordStore.getState().addPoint(markerData.id);
+                    const allSelected = useMarkerStore.getState().selectedPoints;
+                    if (allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
+                        // batch check handled
+                    } else {
+                        useUserRecordStore.getState().addPoint(markerData.id);
+                        const id = markerData.id;
+                        useHistoryStore.getState().push({
+                            label: `Check ${id}`,
+                            undo: () => useUserRecordStore.getState().deletePoint(id),
+                            redo: () => useUserRecordStore.getState().addPoint(id),
+                        });
+                    }
                     // 如果开启了隐藏已完成点位，立即开始淡出动画
                     const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
                     if (shouldHideCompleted) {
                         inner.classList.add(styles.disappearing);
                     }
                 } else {
-                    useUserRecordStore.getState().deletePoint(markerData.id);
-                    useMarkerStore.getState().setSelected(markerData.id, false);
+                    // Capture selected state BEFORE mutation so undo restores it correctly.
+                    const wasSelected = selectedNow;
+                    const id = markerData.id;
+                    useUserRecordStore.getState().deletePoint(id);
+                    useMarkerStore.getState().setSelected(id, false);
+                    useHistoryStore.getState().push({
+                        label: `Uncheck ${id}`,
+                        undo: () => {
+                            useUserRecordStore.getState().addPoint(id);
+                            useMarkerStore.getState().setSelected(id, wasSelected);
+                        },
+                        redo: () => {
+                            useUserRecordStore.getState().deletePoint(id);
+                            useMarkerStore.getState().setSelected(id, false);
+                        },
+                    });
                 }
                 const selectedAfter = useMarkerStore.getState().selectedPoints.includes(markerData.id);
                 const checkedAfter = getActivePoints().includes(markerData.id);

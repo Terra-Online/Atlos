@@ -16,6 +16,7 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+.venv
 .DS_Store
 *.suo
 *.ntvs*
@@ -40,7 +41,6 @@ talos/src/locale/data/ui/*.fixed.json
 talos/src/locale/data/ui/reports
 
 # Local-only map label placement tool (UI should not be merged)
-talos/src/devtools/labelTool
 talos/test
 
 /output

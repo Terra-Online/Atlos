@@ -771,6 +771,24 @@
         },
         "noFrame": true
     },
+    "zipline_pylon": {
+        "key": "zipline_pylon",
+        "name": "Zipline Pylon",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
+    "rope": {
+        "key": "rope",
+        "name": "Rope",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        },
+        "noFrame": true
+    },
     "triaggelos": {
         "key": "triaggelos",
         "name": "Triaggelos",

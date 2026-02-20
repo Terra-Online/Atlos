@@ -1026,6 +1026,78 @@
     "type": "aurylene"
   },
   {
+    "id": 3500031084,
+    "position": [
+      -309.679,
+      701.8483
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031085,
+    "position": [
+      -286.5855,
+      679.5526
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031086,
+    "position": [
+      -284.1353,
+      653.8462
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031087,
+    "position": [
+      -234.1003,
+      651.4233
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031088,
+    "position": [
+      -232.5314,
+      676.3557
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031089,
+    "position": [
+      -330.6561,
+      673.9557
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031093,
+    "position": [
+      -340.6695,
+      672.7505
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500031094,
+    "position": [
+      -336.1873,
+      663.8424
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
     "id": 3500031110,
     "position": [
       -356.8255,
@@ -1197,6 +1269,15 @@
     "type": "crate_ii"
   },
   {
+    "id": 3500031268,
+    "position": [
+      -404.0203,
+      806.7281
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
     "id": 3500031269,
     "position": [
       -385.4099,
@@ -1249,96 +1330,6 @@
     ],
     "subregionId": "VL_6",
     "type": "aurylene"
-  },
-  {
-    "id": 3500210000,
-    "position": [
-      -412.1818,
-      796.1317
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210001,
-    "position": [
-      -410.6237,
-      803.5463
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210002,
-    "position": [
-      -411.7389,
-      807.2868
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210003,
-    "position": [
-      -404.2141,
-      803.7338
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210004,
-    "position": [
-      -407.2232,
-      805.6307
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210005,
-    "position": [
-      -317.4779,
-      694.119
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210006,
-    "position": [
-      -318.7676,
-      694.8011
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210007,
-    "position": [
-      -319.8645,
-      695.2182
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210008,
-    "position": [
-      -318.3691,
-      696.0104
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
-  },
-  {
-    "id": 3500210009,
-    "position": [
-      -319.7426,
-      696.7183
-    ],
-    "subregionId": "VL_6",
-    "type": "umbraline"
   },
   {
     "id": 3500070331,
@@ -3798,6 +3789,42 @@
     "type": "ram"
   },
   {
+    "id": 3500021615,
+    "position": [
+      -381.8334,
+      734.3965
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500021629,
+    "position": [
+      -374.4154,
+      712.8672
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500021679,
+    "position": [
+      -293.2314,
+      766.339
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500021684,
+    "position": [
+      -447.1187,
+      748.804
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
     "id": 3500021685,
     "position": [
       -402.062,
@@ -3805,6 +3832,33 @@
     ],
     "subregionId": "VL_6",
     "type": "aurylene"
+  },
+  {
+    "id": 3500021695,
+    "position": [
+      -402.0736,
+      752.5709
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500021747,
+    "position": [
+      -408.7251,
+      732.9064
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
+  },
+  {
+    "id": 3500021754,
+    "position": [
+      -425.2786,
+      721.3328
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
   },
   {
     "id": 3500021849,
@@ -3823,6 +3877,15 @@
     ],
     "subregionId": "VL_6",
     "type": "aurylene"
+  },
+  {
+    "id": 3500021860,
+    "position": [
+      -449.1479,
+      757.8157
+    ],
+    "subregionId": "VL_6",
+    "type": "blight_core"
   },
   {
     "id": 3500021863,

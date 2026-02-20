@@ -86,6 +86,8 @@
             "tower_of_trails": "Tower of Trails",
             "stock_redistribution_terminal": "Stock Redistribution Terminal",
             "tactical_training_cabin": "Tactical Training Cabin",
+            "zipline_pylon": "Zipline Pylon",
+            "rope": "Rope",
             "triaggelos": "Triaggelos",
             "marble_aggelomoirai": "Marble Aggelomoirai",
             "rhodagn": "Rhodagn",
@@ -146,7 +148,7 @@
         },
         "category": {
             "collection": "Collection",
-            "exploration": "Exploration",
+            "exploration": "exploration",
             "combat": "Combat",
             "npc": "NPC",
             "natural": "Natural",

@@ -105,6 +105,18 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "hint": "Available shortcuts for quick actions.",
+      "exportData": "Export Data",
+      "importData": "Import Data",
+      "undo": "Undo",
+      "redo": "Redo",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "multiSelect": "Multi Select",
+      "multiDeselect": "Multi Deselect"
     }
   },
   "guide": {
@@ -179,9 +191,10 @@
   },
   "support": {
     "title": "Support Us",
-    "content": "In the past two weeks, Open Endfield Map has processed a total of <span class=\"highlight\">180 MILLION</span> HTTPS requests (about <span class=\"highlight\">12.85 million per day</span>), consuming over <span class=\"highlight\">2.5TB</span> of bandwidth. Active users have exceeded <span class=\"highlight\">66,000</span> and are still growing. While Cloudflare absorbs most of the traffic (huge thanks to them!), our servers in Singapore and Hangzhou are still running at full capacity. Thank you for your incredible enthusiasm!<br><br>OEM has been open-source and free since February 2025. It is <span class=\"highlight\">developed and maintained solely by me (Jacy Chan/Cirisus)</span> for most of the time (and right now). With the massive global traffic and the constant pressure of data and feature updates, it's hard to keep up. If this site helps your exploration, please consider supporting the project. Funds go directly to server and bandwidth costs, and to future features (like user accounts and community marker uploads).<br><br>If you spot any data, UI, or translation errors, please send feedback—I'll fix them ASAP. Thank you for your understanding and support!",
+    "content": "In the past three weeks, Open Endfield Map has processed over <span class=\"hl\">200 MILLION</span> HTTPS requests (A.K.A. <span class=\"hl\">8.34M per day</span>) and consumed more than <span class=\"hl\">2.8TB</span> of bandwidth. Active users<span class=\"hl\"> have exceeded 70,000</span> and are still growing.<br><br>OEM has remained open-source and free since February 2025, and is <span class=\"hl\">solely maintained by me (Jacy Chan/Cirisus)</span> for most time. In the last month alone, the <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN bandwidth and Argo routing bill</a> reached <span class=\"hl\">USD 266.07</span>. If this site helps your exploration, please consider supporting the project. Funds go directly to server and bandwidth costs, and to future features (like user accounts and community marker uploads).<br><br>If you spot any data, UI, or translation errors, please send feedback—I'll fix them ASAP. Thank you for your understanding and support!",
+    "patreon": "Support via Patreon",
     "kofi": "Support via Ko-fi",
     "afdian": "Support via Afdian",
-    "hint": "We recommend Ko-fi for global users, and Afdian for users in mainland China."
+    "hint": "We recommend Patreon or Ko-fi for global users, and Afdian for users in mainland China."
   }
 }

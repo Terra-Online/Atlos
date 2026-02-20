@@ -105,6 +105,18 @@
       "light": "Claro",
       "dark": "Escuro",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Atalhos de Teclado",
+      "hint": "Atalhos disponíveis para ações rápidas.",
+      "exportData": "Exportar Dados",
+      "importData": "Importar Dados",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "multiSelect": "Seleção Múltipla",
+      "multiDeselect": "Desmarcar Múltiplos"
     }
   },
   "guide": {
@@ -136,7 +148,8 @@
     "regionSwitch": "Clique para alternar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiões principais) no jogo.",
     "subregionSwitch": "<span class=\"keyword\">Passe o mouse sobre o ícone da região principal</span> para mostrar as sub-regiões disponíveis; clicar em um ícone de sub-região o levará a essa visualização de sub-região.<br>Da mesma forma, você também pode selecionar uma camada para uma região.",
     "layerMain": "Clique no <span class=\"keyword\">ícone de camada</span> para retornar à <span class=\"keyword\">camada principal (M)</span> a qualquer momento.",
-    "layerSwitch": "<span class=\"keyword\">Passe o mouse sobre o ícone de camada</span> para exibir as camadas disponíveis para a região atual; clique em uma camada para mudar para essa visualização.<br>Diferentes camadas podem mostrar <span class=\"keyword\">andares ou alturas diferentes</span> do mapa, ajudando você a explorar áreas de vários níveis.",    "pointSelect": "Clique em um marcador para entrar no <span class=\"keyword\">status selecionado</span>. Você poderá visualizar as informações do marcador.",
+    "layerSwitch": "<span class=\"keyword\">Passe o mouse sobre o ícone de camada</span> para exibir as camadas disponíveis para a região atual; clique em uma camada para mudar para essa visualização.<br>Diferentes camadas podem mostrar <span class=\"keyword\">andares ou alturas diferentes</span> do mapa, ajudando você a explorar áreas de vários níveis.",
+    "pointSelect": "Clique em um marcador para entrar no <span class=\"keyword\">status selecionado</span>. Você poderá visualizar as informações do marcador.",
     "pointMark": "Clique no marcador novamente para marcá-lo como concluído.",
     "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
     "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído.",
@@ -169,8 +182,8 @@
     "collapse": "Recolher"
   },
   "meta": {
-      "title": "Atlas de Endfield",
-      "description": "Open Endfield Map é um mapa online de código aberto para Arknights: Endfield, oferecendo mapas interativos, coleta de itens e ferramentas de planejamento estratégico."
+    "title": "Atlas de Endfield",
+    "description": "Open Endfield Map é um mapa online de código aberto para Arknights: Endfield, oferecendo mapas interativos, coleta de itens e ferramentas de planejamento estratégico."
   },
   "domain": {
     "cn": "<span class=\"keyword\">Usuários da China continental</span> recomendamos usar o espelho continental<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> para acesso mais rápido e estável.",
@@ -178,9 +191,10 @@
   },
   "support": {
     "title": "Apoie-nos",
-    "content": "Nas últimas duas semanas, o Open Endfield Map processou um total de <span class=\"highlight\">180 milhões</span> de requisições HTTPS (cerca de <span class=\"highlight\">12,85 milhões por dia</span>), consumindo mais de <span class=\"highlight\">2,5 TB</span> de largura de banda. Os usuários ativos já ultrapassaram <span class=\"highlight\">66.000</span> e continuam crescendo. Embora o Cloudflare cuide da maior parte do tráfego (obrigado!), nossos servidores em Singapura e Hangzhou ainda estão operando a plena capacidade. Obrigado pelo entusiasmo de vocês!<br><br>O OEM é desenvolvido desde fevereiro de 2025 e sempre foi de código aberto e gratuito. Na maior parte do tempo (e agora), é <span class=\"highlight\">mantido exclusivamente por mim (Jacy Chan/Cirisus)</span>. Com o enorme tráfego global e a pressão constante por atualizar dados e recursos, fica difícil manter tudo sozinho. Se este site ajuda você, considere apoiá-lo. Os fundos vão para custos de servidor e banda, além de futuras funções (como contas de usuário e uploads de marcadores da comunidade).<br><br>Se você notar problemas com dados, interface ou traduções, envie feedback — vou corrigir o mais rápido possível. Obrigado pelo seu apoio e compreensão.",
-    "kofi": "Apoiar via Ko-fi",
-    "afdian": "Apoiar via Afdian",
-    "hint": "Para usuários internacionais recomendamos Ko-fi; para usuários na China continental recomendamos Afdian."
+    "content": "Nas últimas três semanas, o Open Endfield Map processou mais de <span class=\"hl\">200 MILHÕES</span> de solicitações HTTPS (ou seja, <span class=\"hl\">8,34 mi por dia</span>) e consumiu mais de <span class=\"hl\">2,8 TB</span> de largura de banda. Os usuários ativos ultrapassaram <span class=\"hl\">70.000</span> e continuam crescendo.<br><br>O OEM permaneceu de código aberto e gratuito desde fevereiro de 2025, e ainda é <span class=\"hl\">mantido exclusivamente por mim (Jacy Chan/Cirisus)</span> na maior parte do tempo. Só no último mês, a <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>conta de largura de banda CDN e roteamento Argo</a> atingiu <span class=\"hl\">USD 266,07 (≈ R$ 1.380)</span>. Se este site ajuda na sua exploração, por favor, considere apoiar o projeto. Os fundos vão diretamente para custos de servidor e largura de banda, e para recursos futuros (como contas de usuário e uploads de marcadores da comunidade).<br><br>Se você encontrar qualquer erro de dados, interface ou tradução, envie feedback — eu corrigirei o mais rápido possível. Obrigado pela sua compreensão e apoio!",
+    "patreon": "Apoie via Patreon",
+    "kofi": "Apoie via Ko-fi",
+    "afdian": "Apoie via Afdian",
+    "hint": "Recomendamos Patreon ou Ko-fi para usuários globais e Afdian para usuários na China continental."
   }
 }

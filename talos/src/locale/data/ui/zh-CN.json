@@ -105,6 +105,18 @@
       "light": "浅色模式",
       "dark": "深色模式",
       "auto": "跟随系统"
+    },
+    "shortcuts": {
+      "title": "快捷键",
+      "hint": "可用的键盘快捷操作。",
+      "exportData": "导出数据",
+      "importData": "导入数据",
+      "undo": "撤销",
+      "redo": "重做",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "multiSelect": "框选点位",
+      "multiDeselect": "反选点位"
     }
   },
   "guide": {
@@ -179,9 +191,10 @@
   },
   "support": {
     "title": "支持我们",
-    "content": "在过去两周里，Open Endfield Map 共计处理了<span class=\"highlight\">1.8亿次</span>HTTPS 请求（也就是平均<span class=\"highlight\">每日约1285万次</span>），累计消耗了<span class=\"highlight\">超过2.5TB</span>的带宽。网站的活跃用户已经超过<span class=\"highlight\">66000人</span>并且仍在增长。尽管 Cloudflare 为我们分发了绝大部分流量（感谢 Cloudflare），我们位于新加坡和杭州的服务器仍然全功率运转中。感谢各位的热情！<br><br>OEM从2025年2月开始开发，并且始终开源免费，在绝大部分时间里（以及现在）<span class=\"highlight\">仅由我（Jacy Chan/Cirisus）独自维护</span>。面对来自全球用户的海量请求和数据与功能更新压力，我感到力不从心。如果您觉得本站对您有所帮助，欢迎通过以下方式支持本站，帮助站点继续为各位提供服务。您的支持将用于维持服务器和带宽费用，以及未来功能（例如用户系统和点位第三视角上传）开发的投入。<br><br>站点的数据、UI、翻译各方面不尽善之处请随时反馈，我会加紧处理，感谢您的支持与理解。",
+    "content": "在过去近一个月里，Open Endfield Map 共计处理了超过<span class=\"hl\">2亿次</span>HTTPS 请求（也就是平均<span class=\"hl\">每日约834万次</span>），累计消耗了<span class=\"hl\">超过2.8TB</span>的带宽。网站的活跃用户已经超过<span class=\"hl\">70000人</span>并且仍在增长。本站位于新加坡和杭州的服务器正在全功率运转中，感谢各位的热情！<br><br>OEM从2025年2月开始开发，并且始终开源免费，在绝大部分时间里（以及现在）<span class=\"hl\">仅由我（Jacy Chan/Cirisus）独自维护</span>。然而，在过去的一个月里，仅<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN带宽和Argo路由产生的账单</a>费用就达到了<span class=\"hl\">266.07美元（约1850人民币）</span>。如果您觉得本站对您有所帮助，欢迎通过以下方式支持本站，帮助站点继续为各位提供服务。您的支持将用于维持服务器和带宽费用，以及未来功能（例如用户系统和点位第三视角上传）开发的投入。<br><br>站点的数据、UI、翻译各方面不尽善之处请随时反馈，我会加紧处理，感谢您的支持与理解。",
+    "patreon": "买一份日志（Patreon）",
     "kofi": "买一杯咖啡（Ko-fi）",
     "afdian": "买一份流量包（爱发电）",
-    "hint": "国际用户推荐使用 Ko-fi，中国大陆用户推荐使用爱发电。"
+    "hint": "国际用户推荐使用 Patreon 或 Ko-fi，中国大陆用户推荐使用爱发电。"
   }
 }

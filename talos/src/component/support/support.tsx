@@ -29,6 +29,14 @@ const SupportModal: React.FC<SupportProps> = ({ open, onClose, onChange }) => {
         <div className={styles.beforeYouSupport}>{parse(t('support.content'))}</div>
         <div className={styles.supportLinks}>
           <Button
+            text={t('support.patreon')}
+            buttonStyle="square"
+            width="12rem"
+            height="3rem"
+            schema="light"
+            onClick={() => window.open('https://www.patreon.com/cirisus/', '_blank', 'noopener,noreferrer')}
+          />
+          <Button
             text={t('support.kofi')}
             buttonStyle="square"
             width="12rem"

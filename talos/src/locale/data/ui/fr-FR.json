@@ -105,6 +105,18 @@
       "light": "Clair",
       "dark": "Sombre",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Raccourcis clavier",
+      "hint": "Raccourcis disponibles pour les actions rapides.",
+      "exportData": "Exporter les données",
+      "importData": "Importer les données",
+      "undo": "Annuler",
+      "redo": "Rétablir",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "multiSelect": "Sélection multiple",
+      "multiDeselect": "Désélection multiple"
     }
   },
   "guide": {
@@ -137,7 +149,8 @@
     "regionSwitch": "Cliquez pour basculer entre <span class=\"keyword\">différentes cartes bac à sable</span> (régions principales) dans le jeu.",
     "subregionSwitch": "<span class=\"keyword\">Survolez l'icône de la région principale</span> pour afficher les sous-régions disponibles ; cliquer sur une icône de sous-région vous fera passer à cette vue de sous-région.<br>De même, vous pouvez également sélectionner un calque pour une région.",
     "layerMain": "Cliquez sur l'<span class=\"keyword\">icône de calque</span> pour revenir au <span class=\"keyword\">calque principal (M)</span> à tout moment.",
-    "layerSwitch": "<span class=\"keyword\">Survolez l'icône de calque</span> pour afficher les calques disponibles pour la région actuelle ; cliquez sur un calque pour basculer vers cette vue.<br>Différents calques peuvent afficher <span class=\"keyword\">différents étages ou hauteurs</span> de la carte, vous aidant à explorer les zones à plusieurs niveaux.",    "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
+    "layerSwitch": "<span class=\"keyword\">Survolez l'icône de calque</span> pour afficher les calques disponibles pour la région actuelle ; cliquez sur un calque pour basculer vers cette vue.<br>Différents calques peuvent afficher <span class=\"keyword\">différents étages ou hauteurs</span> de la carte, vous aidant à explorer les zones à plusieurs niveaux.",
+    "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
     "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé."
@@ -168,19 +181,20 @@
     "expand": "Développer",
     "collapse": "Réduire"
   },
-    "meta": {
-        "title": "Atlas d’Endfield",
-        "description": "Open Endfield Map est une carte en ligne open source pour Arknights : Endfield, offrant des cartes interactives, le suivi des objets et des outils de planification stratégique."
-    },
+  "meta": {
+    "title": "Atlas d’Endfield",
+    "description": "Open Endfield Map est une carte en ligne open source pour Arknights : Endfield, offrant des cartes interactives, le suivi des objets et des outils de planification stratégique."
+  },
   "domain": {
     "cn": "<span class=\"keyword\">Utilisateurs de Chine continentale</span> recommandons le miroir continental<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> pour un accès plus rapide et stable.",
     "org": "<span class=\"keyword\">Utilisateurs à l'étranger</span> recommandons le miroir global(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) pour un accès plus rapide et stable."
   },
   "support": {
-    "title": "Nous soutenir",
-    "content": "Au cours des deux dernières semaines, Open Endfield Map a traité un total de <span class=\"highlight\">180 millions</span> de requêtes HTTPS (environ <span class=\"highlight\">12,85 millions par jour</span>), consommant plus de <span class=\"highlight\">2,5 To</span> de bande passante. Le nombre d'utilisateurs actifs a dépassé <span class=\"highlight\">66 000</span> et continue de croître. Bien que Cloudflare gère la majeure partie du trafic (merci !), nos serveurs à Singapour et à Hangzhou fonctionnent toujours à pleine capacité. Merci pour votre enthousiasme !<br><br>OEM est développé depuis février 2025 et a toujours été open source et gratuit. La plupart du temps (et aujourd'hui encore), il est <span class=\"highlight\">maintenu uniquement par moi (Jacy Chan/Cirisus)</span>. Avec l'énorme trafic mondial et la pression constante des mises à jour de données et de fonctionnalités, il devient difficile de tout gérer seul. Si ce site vous aide, merci d'envisager de le soutenir. Les fonds servent aux coûts de serveurs et de bande passante, ainsi qu'aux futures fonctionnalités (comptes utilisateur, envois de marqueurs par la communauté).<br><br>Si vous repérez des problèmes de données, d'interface ou de traduction, n'hésitez pas à envoyer vos retours ; je les corrigerai au plus vite. Merci pour votre soutien et votre compréhension.",
+    "title": "Soutenez-nous",
+    "content": "Au cours des trois dernières semaines, Open Endfield Map a traité plus de <span class=\"hl\">200 MILLIONS</span> de requêtes HTTPS (soit <span class=\"hl\">8,34 M par jour</span>) et consommé plus de <span class=\"hl\">2,8 TB</span> de bande passante. Les utilisateurs actifs ont dépassé les <span class=\"hl\">70 000</span> et le nombre continue de croître.<br><br>OEM est resté open-source et gratuit depuis février 2025, et est toujours <span class=\"hl\">maintenu uniquement par moi (Jacy Chan/Cirisus)</span> la plupart du temps. Rien que le mois dernier, la <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>facture de bande passante CDN et de routage Argo</a> a atteint <span class=\"hl\">USD 266,07 (≈ 240 €)</span>. Si ce site vous aide dans votre exploration, merci d'envisager de soutenir le projet. Les fonds vont directement aux coûts de serveur et de bande passante, ainsi qu'aux futures fonctionnalités (comme les comptes utilisateurs et les ajouts de marqueurs par la communauté).<br><br>Si vous repérez des erreurs de données, d'interface ou de traduction, merci d'envoyer vos retours — je les corrigerai dès que possible. Merci de votre compréhension et de votre soutien !",
+    "patreon": "Soutenir via Patreon",
     "kofi": "Soutenir via Ko-fi",
     "afdian": "Soutenir via Afdian",
-    "hint": "Ko-fi est recommandé pour les utilisateurs internationaux ; Afdian est recommandé pour les utilisateurs en Chine continentale."
+    "hint": "Nous recommandons Patreon ou Ko-fi pour les utilisateurs internationaux, et Afdian pour les utilisateurs en Chine continentale."
   }
 }

@@ -105,6 +105,18 @@
       "light": "Cerah",
       "dark": "Gelap",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Pintasan Papan Kekunci",
+      "hint": "Pintasan tersedia untuk tindakan pantas.",
+      "exportData": "Eksport Data",
+      "importData": "Import Data",
+      "undo": "Buat Asal",
+      "redo": "Buat Semula",
+      "zoomIn": "Zum Masuk",
+      "zoomOut": "Zum Keluar",
+      "multiSelect": "Pilih Berbilang",
+      "multiDeselect": "Nyahpilih Berbilang"
     }
   },
   "guide": {
@@ -179,9 +191,10 @@
   },
   "support": {
     "title": "Sokong Kami",
-    "content": "Dalam dua minggu kebelakangan ini, Open Endfield Map memproses sejumlah <span class=\"highlight\">180 juta</span> permintaan HTTPS (sekitar <span class=\"highlight\">12.85 juta sehari</span>), menggunakan lebih <span class=\"highlight\">2.5 TB</span> lebar jalur. Pengguna aktif telah melebihi <span class=\"highlight\">66,000</span> dan masih meningkat. Walaupun Cloudflare mengendalikan sebahagian besar trafik (terima kasih!), pelayan kami di Singapura dan Hangzhou masih beroperasi pada kapasiti penuh. Terima kasih atas semangat anda!<br><br>OEM dibangunkan sejak Februari 2025 dan sentiasa bersifat sumber terbuka dan percuma. Kebanyakan masa (dan sekarang), laman ini <span class=\"highlight\">dikendalikan sepenuhnya oleh saya (Jacy Chan/Cirisus)</span>. Dengan trafik global yang besar dan tekanan berterusan untuk mengemas kini data dan ciri, sukar untuk menguruskannya seorang diri. Jika laman ini membantu anda, sila pertimbangkan untuk menyokongnya. Sokongan anda digunakan untuk kos pelayan dan lebar jalur serta pembangunan ciri masa depan (seperti sistem pengguna dan muat naik penanda komuniti).<br><br>Jika anda menemui masalah pada data, UI, atau terjemahan, sila berikan maklum balas — saya akan membaikinya secepat mungkin. Terima kasih atas sokongan dan pemahaman anda.",
+    "content": "Dalam tiga minggu yang lalu, Open Endfield Map telah memproses lebih <span class=\"hl\">200 JUTA</span> permintaan HTTPS (iaitu <span class=\"hl\">8.34J sehari</span>) dan menggunakan lebih <span class=\"hl\">2.8TB</span> lebar jalur. Pengguna aktif telah melebihi <span class=\"hl\">70,000</span> dan masih berkembang.<br><br>OEM kekal sumber terbuka dan percuma sejak Februari 2025, dan masih <span class=\"hl\">diselenggarakan sepenuhnya oleh saya (Jacy Chan/Cirisus)</span> pada kebanyakan masa. Pada bulan lalu sahaja, <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>bil lebar jalur CDN dan penghalaan Argo</a> mencapai <span class=\"hl\">USD 266.07 (≈ RM 1,000)</span>. Jika laman ini membantu penerokaan anda, sila pertimbangkan untuk menyokong projek ini. Dana disalurkan terus kepada kos pelayan dan lebar jalur, serta ciri masa hadapan (seperti akaun pengguna dan muat naik penanda komuniti).<br><br>Jika anda menemui sebarang ralat data, UI, atau terjemahan, sila hantar maklum balas—saya akan membetulkannya secepat mungkin. Terima kasih atas pemahaman dan sokongan anda!",
+    "patreon": "Sokong melalui Patreon",
     "kofi": "Sokong melalui Ko-fi",
     "afdian": "Sokong melalui Afdian",
-    "hint": "Pengguna antarabangsa disyorkan menggunakan Ko-fi; pengguna di tanah besar China disyorkan menggunakan Afdian."
+    "hint": "Kami mengesyorkan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di tanah besar China."
   }
 }

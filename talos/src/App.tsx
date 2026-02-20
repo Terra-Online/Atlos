@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef, StrictMode } from 'react';
+import L from 'leaflet';
+
 import './styles/global.scss';
 
 import Map from './component/map/Map';
 import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
-import L from 'leaflet';
-import { useSidebarOpen } from '@/store/uiPrefs';
-import UserGuide from '@/component/userGuide/UserGuide.tsx';
-import { MetaHelper } from './component/MetaHelper';
+import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
+// import SupportAutoPopup from '@/component/support/SupportAutoPopup';
+import { MetaHelper } from './component/MetaHelper';
+
+import { useSidebarOpen } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
+import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
+import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
 
 declare global {
     interface Window {
@@ -28,6 +33,10 @@ function App() {
         undefined,
     );
     const [uiVisible, setUiVisible] = useState(true);
+
+    // Keyboard shortcuts & map multi-select
+    useKeyboardShortcuts(mapInstance);
+    useMapMultiSelect(mapInstance);
 
     // Track previous sidebar state to detect actual toggles
     const prevSidebarOpenRef = useRef(isSidebarOpen);
@@ -125,6 +134,7 @@ function App() {
         <StrictMode>
             <MetaHelper />
             <DomainBanner />
+            {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope'>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}

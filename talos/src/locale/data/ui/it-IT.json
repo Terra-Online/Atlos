@@ -105,6 +105,18 @@
       "light": "Chiaro",
       "dark": "Scuro",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Scorciatoie da tastiera",
+      "hint": "Scorciatoie disponibili per azioni rapide.",
+      "exportData": "Esporta dati",
+      "importData": "Importa dati",
+      "undo": "Annulla",
+      "redo": "Ripeti",
+      "zoomIn": "Zoom avanti",
+      "zoomOut": "Zoom indietro",
+      "multiSelect": "Selezione multipla",
+      "multiDeselect": "Deseleziona più elementi"
     }
   },
   "guide": {
@@ -178,10 +190,11 @@
     "org": "<span class=\"keyword\">Utenti all'estero</span> consigliamo il mirror globale(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) per un accesso più rapido e stabile."
   },
   "support": {
-    "title": "Supportaci",
-    "content": "Negli ultimi due settimane, Open Endfield Map ha elaborato in totale <span class=\"highlight\">180 milioni</span> di richieste HTTPS (circa <span class=\"highlight\">12,85 milioni al giorno</span>), consumando oltre <span class=\"highlight\">2,5 TB</span> di banda. Gli utenti attivi hanno superato <span class=\"highlight\">66.000</span> e sono ancora in crescita. Anche se Cloudflare gestisce la maggior parte del traffico (grazie!), i nostri server a Singapore e Hangzhou sono ancora a pieno regime. Grazie per il vostro entusiasmo!<br><br>OEM è in sviluppo da febbraio 2025 ed è sempre stato open source e gratuito. Per la maggior parte del tempo (e ancora oggi) è <span class=\"highlight\">gestito esclusivamente da me (Jacy Chan/Cirisus)</span>. Con l'enorme traffico globale e la pressione costante per aggiornare dati e funzionalità, gestirlo da solo è difficile. Se trovate utile questo sito, considerate di supportarlo. I fondi vanno ai costi di server e banda e alle funzionalità future (come account utente e caricamenti di marcatori della community).<br><br>Se notate problemi con dati, interfaccia o traduzioni, inviate feedback: li risolverò il prima possibile. Grazie per il vostro supporto e comprensione.",
-    "kofi": "Supporta tramite Ko-fi",
-    "afdian": "Supporta tramite Afdian",
-    "hint": "Si consiglia Ko-fi per gli utenti internazionali; Afdian per gli utenti in Cina continentale."
+    "title": "Sostienici",
+    "content": "Nelle ultime tre settimane, Open Endfield Map ha elaborato oltre <span class=\"hl\">200 MILIONI</span> di richieste HTTPS (ovvero <span class=\"hl\">8,34 M al giorno</span>) e consumato più di <span class=\"hl\">2,8 TB</span> di larghezza di banda. Gli utenti attivi hanno superato i <span class=\"hl\">70.000</span> e sono ancora in crescita.<br><br>OEM è rimasto open-source e gratuito dal febbraio 2025, ed è ancora <span class=\"hl\">mantenuto esclusivamente da me (Jacy Chan/Cirisus)</span> per la maggior parte del tempo. Solo nell'ultimo mese, la <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>bolletta per la larghezza di banda CDN e il routing Argo</a> ha raggiunto <span class=\"hl\">USD 266,07 (≈ 240 €)</span>. Se questo sito ti aiuta nella tua esplorazione, ti preghiamo di considerare di sostenere il progetto. I fondi vanno direttamente ai costi dei server e della larghezza di banda, e alle funzionalità future (come account utente e caricamento di marcatori della community).<br><br>Se noti errori nei dati, nell'interfaccia utente o nella traduzione, invia un feedback: li correggerò il prima possibile. Grazie per la vostra comprensione e supporto!",
+    "patreon": "Sostieni via Patreon",
+    "kofi": "Sostieni via Ko-fi",
+    "afdian": "Sostieni via Afdian",
+    "hint": "Consigliamo Patreon o Ko-fi per gli utenti globali e Afdian per gli utenti nella Cina continentale."
   }
 }

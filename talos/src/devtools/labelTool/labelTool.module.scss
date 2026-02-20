@@ -1,0 +1,159 @@
+@use '@/styles/palette.scss' as *;
+
+.root {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 340px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    background: rgba($black-0, 0.85);
+    color: $white-0;
+    font-size: 12px;
+}
+
+.collapsed {
+    width: 44px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid rgba($white-0, 0.12);
+}
+
+.title {
+    font-weight: 600;
+}
+
+.btn {
+    padding: 4px 8px;
+    border: 1px solid rgba($white-0, 0.25);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.body {
+    flex: 1;
+    overflow: auto;
+    padding: 8px;
+}
+
+.section {
+    margin-bottom: 12px;
+}
+
+.sectionTitle {
+    margin-bottom: 6px;
+    color: $white-2;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.item {
+    padding: 6px 8px;
+    border: 1px solid rgba($white-0, 0.18);
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+}
+
+.item:active {
+    cursor: grabbing;
+}
+
+.small {
+    color: $white-2;
+    margin-top: 4px;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border: 1px solid rgba($white-0, 0.18);
+    background: rgba($black-0, 0.35);
+    color: inherit;
+    padding: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 11px;
+}
+
+.ghost {
+    position: fixed;
+    z-index: 10000;
+    transform: translate(10px, 10px);
+    pointer-events: none;
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: $white-0;
+    text-shadow:
+        0 0 2px rgba($black-0, 0.9),
+        0 0 6px rgba($black-0, 0.75),
+        0 2px 6px rgba($black-0, 0.85);
+}
+
+.mapLabel {
+    color: $white-0;
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+    // Anchor the label center at the marker position.
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    text-shadow:
+        0 0 2px rgba($black-0, 0.9),
+        0 0 6px rgba($black-0, 0.75),
+        0 2px 6px rgba($black-0, 0.85);
+}
+
+.mapLabelSite {
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    text-shadow: 1px 1px 1px hsl(0deg 0% 0% / 80%), 0 0 1px #333;
+    font-family: 'HMSans';
+}
+
+.assignedRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba($white-0, 0.18);
+    border-radius: 4px;
+}
+
+.assignedName {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

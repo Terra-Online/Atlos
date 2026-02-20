@@ -1,9 +1,10 @@
 import { createRoot } from 'react-dom/client';
 //import LazyApp from '@/LazyApp.tsx';
 import App from './App.tsx';
+
 import { fontLoader } from './locale/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
-import { loadLabelTool, loadLinkTool } from '@/devtools/loadDevTool';
+import { loadDevTools } from '@/devtools/loadDevTool';
 import { applyUrlParams } from '@/utils/urlState';
 import { useUserRecordStore } from '@/store/userRecord';
 import { useMarkerStore } from '@/store/marker';
@@ -18,7 +19,7 @@ async function bootstrap(){
     await useUserRecordStore.persist.rehydrate();
     await useMarkerStore.persist.rehydrate();
 
-    // 應用URL參數（語言、篩選器、區域）
+    // Apply URL parameters to set initial state
     await applyUrlParams();
 
     fontLoader();
@@ -26,8 +27,7 @@ async function bootstrap(){
 // @ts-expect-error root must be found otherwise it will definitely cannot show anything
     createRoot(document.getElementById('root')).render(<App />);
 
-    void loadLabelTool();
-    void loadLinkTool();
+    loadDevTools();
 
     /*
      **Lazyapp now temporarily disabled due to actually it's unnecessary for current resource scale.

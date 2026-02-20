@@ -49,6 +49,7 @@ const REGION_CODE_MAP: Record<string, string> = {
     'Valley_4': 'VL',
     'Wuling': 'WL',
     'Dijiang': 'DJ',
+    'Weekraid_1': 'ES',
 };
 
 const REGION_CODE_REVERSE: Record<string, string> = Object.fromEntries(

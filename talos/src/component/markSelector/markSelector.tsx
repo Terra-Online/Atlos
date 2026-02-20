@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './markSelector.module.scss';
 import { getItemIconUrl } from '@/utils/resource.ts';
@@ -8,8 +8,8 @@ import {
     useFilter,
     useRegionMarkerCount,
     useSearchString,
-    useSwitchFilter,
 } from '@/store/marker.ts';
+import { trackedSwitchFilter } from '@/store/trackedActions';
 
 interface MarkSelectorProps {
     typeInfo: { key: string; main?: string; sub?: string };
@@ -39,7 +39,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
 
     // stores
     const filter = useFilter();
-    const switchFilter = useSwitchFilter();
+    const handleSwitchFilter = useCallback(() => trackedSwitchFilter(typeInfo.key), [typeInfo.key]);
     const cnt = useRegionMarkerCount(typeInfo?.key);
     const searchString = useSearchString();
     
@@ -114,7 +114,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
             <div
                 className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''} ${isComplete ? styles.completed : ''}`}
                 data-key={typeInfo.key}
-                onClick={() => switchFilter(typeInfo.key)}
+                onClick={handleSwitchFilter}
                 style={((): StyleVars => {
                     const styleObj: StyleVars = {
                         '--progress-percentage': `${cnt.total > 0 ? Math.round((cnt.collected / cnt.total) * 100) : 0}%`,

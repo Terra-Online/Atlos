@@ -105,6 +105,18 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Theo hệ thống"
+    },
+    "shortcuts": {
+      "title": "Phím tắt bàn phím",
+      "hint": "Các phím tắt có sẵn cho thao tác nhanh.",
+      "exportData": "Xuất dữ liệu",
+      "importData": "Nhập dữ liệu",
+      "undo": "Hoàn tác",
+      "redo": "Làm lại",
+      "zoomIn": "Phóng to",
+      "zoomOut": "Thu nhỏ",
+      "multiSelect": "Chọn nhiều",
+      "multiDeselect": "Bỏ chọn nhiều"
     }
   },
   "guide": {
@@ -170,18 +182,19 @@
     "collapse": "Thu gọn"
   },
   "meta": {
-      "title": "Atlas Endfield",
-      "description": "Open Endfield Map là bản đồ trực tuyến mã nguồn mở cho Arknights: Endfield, cung cấp bản đồ tương tác, theo dõi thu thập vật phẩm và công cụ lập kế hoạch chiến lược."
+    "title": "Atlas Endfield",
+    "description": "Open Endfield Map là bản đồ trực tuyến mã nguồn mở cho Arknights: Endfield, cung cấp bản đồ tương tác, theo dõi thu thập vật phẩm và công cụ lập kế hoạch chiến lược."
   },
   "domain": {
     "cn": "<span class=\"keyword\">Người dùng Trung Quốc đại lục</span> nên dùng máy chủ nhân bản lục địa<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> để truy cập nhanh và ổn định hơn.",
     "org": "<span class=\"keyword\">Người dùng ở nước ngoài</span> nên dùng máy chủ nhân bản toàn cầu(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) để truy cập nhanh và ổn định hơn."
   },
   "support": {
-    "title": "Ủng hộ chúng tôi",
-    "content": "Trong hai tuần qua, Open Endfield Map đã xử lý tổng cộng <span class=\"highlight\">180 triệu</span> yêu cầu HTTPS (khoảng <span class=\"highlight\">12,85 triệu mỗi ngày</span>), tiêu thụ hơn <span class=\"highlight\">2,5 TB</span> băng thông. Người dùng hoạt động đã vượt <span class=\"highlight\">66.000</span> và vẫn đang tăng. Mặc dù Cloudflare xử lý phần lớn lưu lượng (cảm ơn!), các máy chủ của chúng tôi ở Singapore và Hàng Châu vẫn hoạt động hết công suất. Cảm ơn sự nhiệt tình của các bạn!<br><br>OEM được phát triển từ tháng 2 năm 2025 và luôn là mã nguồn mở và miễn phí. Phần lớn thời gian (và hiện tại), trang web này <span class=\"highlight\">được duy trì hoàn toàn bởi tôi (Jacy Chan/Cirisus)</span>. Với lượng truy cập toàn cầu lớn và áp lực cập nhật dữ liệu và tính năng liên tục, việc vận hành một mình ngày càng khó khăn. Nếu bạn thấy trang web này hữu ích, hãy cân nhắc hỗ trợ. Sự hỗ trợ sẽ được dùng cho chi phí máy chủ và băng thông, cũng như các tính năng tương lai (như tài khoản người dùng và tải lên điểm đánh dấu của cộng đồng).<br><br>Nếu bạn nhận thấy vấn đề về dữ liệu, UI hoặc bản dịch, vui lòng gửi phản hồi — tôi sẽ xử lý sớm nhất có thể. Cảm ơn sự hỗ trợ và thông cảm của bạn.",
-    "kofi": "Ủng hộ qua Ko-fi",
-    "afdian": "Ủng hộ qua Afdian",
-    "hint": "Người dùng quốc tế nên sử dụng Ko-fi; người dùng ở Trung Quốc đại lục nên sử dụng Afdian."
+    "title": "Hỗ trợ chúng tôi",
+    "content": "Trong ba tuần qua, Open Endfield Map đã xử lý hơn <span class=\"hl\">200 TRIỆU</span> yêu cầu HTTPS (tức là <span class=\"hl\">8,34 triệu mỗi ngày</span>) và tiêu thụ hơn <span class=\"hl\">2,8TB</span> băng thông. Người dùng hoạt động đã vượt quá <span class=\"hl\">70.000</span> và vẫn đang tăng.<br><br>OEM vẫn là mã nguồn mở và miễn phí kể từ tháng 2 năm 2025, và vẫn <span class=\"hl\">do một mình tôi (Jacy Chan/Cirisus) duy trì</span> trong phần lớn thời gian. Chỉ trong tháng trước, <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>hóa đơn băng thông CDN và định tuyến Argo</a> đã đạt tới <span class=\"hl\">USD 266,07 (≈ 6.896.000 ₫)</span>. Nếu trang web này giúp ích cho việc khám phá của bạn, vui lòng cân nhắc hỗ trợ dự án. Tiền quỹ sẽ được chuyển trực tiếp vào chi phí máy chủ và băng thông, và cho các tính năng trong tương lai (như tài khoản người dùng và tải lên điểm đánh dấu cộng đồng).<br><br>Nếu bạn phát hiện bất kỳ lỗi dữ liệu, giao diện người dùng hoặc dịch thuật nào, vui lòng gửi phản hồi—tôi sẽ khắc phục chúng sớm nhất có thể. Cảm ơn sự thông cảm và hỗ trợ của bạn!",
+    "patreon": "Hỗ trợ qua Patreon",
+    "kofi": "Hỗ trợ qua Ko-fi",
+    "afdian": "Hỗ trợ qua Afdian",
+    "hint": "Chúng tôi khuyên dùng Patreon hoặc Ko-fi cho người dùng toàn cầu và Afdian cho người dùng ở Trung Quốc đại lục."
   }
 }
