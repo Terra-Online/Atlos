@@ -101,8 +101,10 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         lassoActive = true;
     };
 
+    // ── Event handlers (named so they can be removed on teardown) ──
+
     // ── talos:lassoHighlight — live visual feedback during drag ──
-    map.on('talos:lassoHighlight' as string, (evt: unknown) => {
+    const onLassoHighlight = (evt: unknown) => {
         const { bounds, deselect } = evt as { bounds: L.LatLngBounds; deselect: boolean };
         ensureLassoStarted();
 
@@ -158,10 +160,10 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         }
 
         currentHighlighted = newHighlighted;
-    });
+    };
 
     // ── talos:lassoSelect — final selection on pointer-up ──
-    map.on('talos:lassoSelect' as string, (evt: unknown) => {
+    const onLassoSelect = (evt: unknown) => {
         const { bounds, collected, deselect } = evt as {
             bounds: L.LatLngBounds;
             collected: string[];
@@ -174,10 +176,10 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         lassoActive = false;
         // The `deselect` flag is forwarded so the hook knows the mode
         (evt as Record<string, unknown>).deselect = deselect;
-    });
+    };
 
     // ── talos:lassoClear — cancel / abort ──
-    map.on('talos:lassoClear' as string, () => {
+    const onLassoClear = () => {
         // Revert all highlighted markers to their store-truth state
         const selectedSet = new Set(useMarkerStore.getState().selectedPoints);
         for (const id of currentHighlighted) {
@@ -185,7 +187,18 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         }
         currentHighlighted = new Set();
         lassoActive = false;
-    });
+    };
+
+    map.on('talos:lassoHighlight' as string, onLassoHighlight);
+    map.on('talos:lassoSelect' as string, onLassoSelect);
+    map.on('talos:lassoClear' as string, onLassoClear);
+
+    /** Call this to remove all listeners (e.g. when MarkerLayer is destroyed). */
+    return () => {
+        map.off('talos:lassoHighlight' as string, onLassoHighlight);
+        map.off('talos:lassoSelect' as string, onLassoSelect);
+        map.off('talos:lassoClear' as string, onLassoClear);
+    };
 }
 
 // ─── Hook ────────────────────────────────────────────────────

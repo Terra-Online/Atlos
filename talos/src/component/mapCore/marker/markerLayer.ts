@@ -49,6 +49,9 @@ export class MarkerLayer {
      */
     private pendingRemovalTimers: Record<string, number> = {};
 
+    /** Teardown function returned by registerLassoHandler — removes map listeners. */
+    private _destroyLasso?: () => void;
+
     constructor(
         map: L.Map,
         onSwitchCurrentMarker?: (marker: IMarkerData) => void,
@@ -94,7 +97,7 @@ export class MarkerLayer {
         this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat());
 
         // Register lasso selection handler for Cmd/Ctrl+drag multi-select
-        registerLassoHandler(this.map, {
+        this._destroyLasso = registerLassoHandler(this.map, {
             markerDataDict: this.markerDataDict,
             markerDict: this.markerDict,
             innerSelector: `.${styles.markerInner}, .${styles.noFrameInner}`,
@@ -109,6 +112,14 @@ export class MarkerLayer {
             isSubregionVisible: (subregionId) =>
                 this.map.hasLayer(this.layerSubregionDict[subregionId]),
         });
+    }
+
+    /**
+     * Remove all map-level listeners set up by this MarkerLayer.
+     * Call this when the layer is being permanently torn down.
+     */
+    destroy() {
+        this._destroyLasso?.();
     }
 
     /**

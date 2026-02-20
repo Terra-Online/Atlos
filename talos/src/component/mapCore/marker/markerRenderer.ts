@@ -114,6 +114,8 @@ const RENDERER_DICT: Record<
                     }
                 } else {
                     // selected+checked 或日后其他组合 -> none
+                    // Capture selected state BEFORE mutation so undo restores it correctly.
+                    const wasSelected = selectedNow;
                     const id = markerData.id;
                     useUserRecordStore.getState().deletePoint(id);
                     useMarkerStore.getState().setSelected(id, false);
@@ -121,7 +123,7 @@ const RENDERER_DICT: Record<
                         label: `Uncheck ${id}`,
                         undo: () => {
                             useUserRecordStore.getState().addPoint(id);
-                            useMarkerStore.getState().setSelected(id, true);
+                            useMarkerStore.getState().setSelected(id, wasSelected);
                         },
                         redo: () => {
                             useUserRecordStore.getState().deletePoint(id);
@@ -227,6 +229,8 @@ const RENDERER_DICT: Record<
                         inner.classList.add(styles.disappearing);
                     }
                 } else {
+                    // Capture selected state BEFORE mutation so undo restores it correctly.
+                    const wasSelected = selectedNow;
                     const id = markerData.id;
                     useUserRecordStore.getState().deletePoint(id);
                     useMarkerStore.getState().setSelected(id, false);
@@ -234,7 +238,7 @@ const RENDERER_DICT: Record<
                         label: `Uncheck ${id}`,
                         undo: () => {
                             useUserRecordStore.getState().addPoint(id);
-                            useMarkerStore.getState().setSelected(id, true);
+                            useMarkerStore.getState().setSelected(id, wasSelected);
                         },
                         redo: () => {
                             useUserRecordStore.getState().deletePoint(id);

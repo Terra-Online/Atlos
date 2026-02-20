@@ -45,20 +45,35 @@ const _isIOS = ((): boolean => {
     const isMacLike = platform === 'macOS' || /Mac/i.test(ua);
     return isMacLike && navigator.maxTouchPoints > 1;
 })();
+
 const _isMac = ((): boolean => {
     if (!isBrowser) return false;
-    
     const platform = getPlatformData();
-    if (platform === 'macOS' || platform === 'iOS') return true;
-    // fallback to userAgent check for older browsers or if userAgentData is unavailable
-    return /Mac|iPod|iPhone|iPad/i.test(getUserAgent());
+    if (platform === 'macOS') return !_isIOS;  // iPadOS reports macOS but has touch
+    if (platform === 'iOS') return false;
+    // Fallback: UA contains Mac but NOT a mobile iOS token
+    return /Mac/i.test(getUserAgent()) && !/iPod|iPhone|iPad/i.test(getUserAgent());
 })();
+
+// True on any Apple platform that uses the Meta (⌘ / Command) modifier key.
+// Use this instead of isMac() when deciding keyboard modifier behaviour.
+const _isApplePlatform = _isMac || _isIOS;
 
 const _isTouchDevice = ((): boolean => {
     if (!isBrowser) return false;    
     return ( navigator.maxTouchPoints > 0 );
 })();
 
+/** True when running on macOS desktop (not iOS / iPadOS). */
 export const isMac = (): boolean => _isMac;
+
+/** True when running on iOS (iPhone / iPad / iPod). */
 export const isIOS = (): boolean => _isIOS;
+
+/**
+ * True on any Apple platform (macOS or iOS) that uses the Meta (⌘) modifier key.
+ * Prefer this over `isMac()` when choosing between Meta and Ctrl for keyboard shortcuts.
+ */
+export const isApplePlatform = (): boolean => _isApplePlatform;
+
 export const isTouchDevice = (): boolean => _isTouchDevice;

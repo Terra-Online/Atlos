@@ -10,23 +10,18 @@
  */
 
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { getShortcutConfig } from './shortcuts';
 import { useHistoryStore } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecordStore } from '@/store/userRecord';
 import { exportMarkerData, importMarkerData } from '@/utils/storage';
 import L from 'leaflet';
-
-// ─── Helpers ─────────────────────────────────────────────────
-
 /** Build a map of id → hotkey string from config (only entries with a hotkey) */
 function hotkeyFor(id: string): string {
     const cfg = getShortcutConfig().find((s) => s.id === id);
     return cfg?.hotkey ?? '';
 }
-
-// ─── Hook ────────────────────────────────────────────────────
 
 export function useKeyboardShortcuts(mapInstance: L.Map | undefined) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -60,23 +55,29 @@ export function useKeyboardShortcuts(mapInstance: L.Map | undefined) {
         }
     }, []);
 
+    // Create the hidden file input once and clean it up on unmount.
+    useEffect(() => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.style.display = 'none';
+        input.addEventListener('change', () => {
+            const file = input.files?.[0];
+            if (file) void handleImportFile(file);
+            input.value = '';
+        });
+        document.body.appendChild(input);
+        fileInputRef.current = input;
+
+        return () => {
+            input.remove();
+            fileInputRef.current = null;
+        };
+    }, [handleImportFile]);
+
     useHotkeys(hotkeyFor('importData'), (e) => {
         e.preventDefault();
-        // Create or re-use hidden file input
-        if (!fileInputRef.current) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.style.display = 'none';
-            input.addEventListener('change', () => {
-                const file = input.files?.[0];
-                if (file) void handleImportFile(file);
-                input.value = '';
-            });
-            document.body.appendChild(input);
-            fileInputRef.current = input;
-        }
-        fileInputRef.current.click();
+        fileInputRef.current?.click();
     }, { enableOnFormTags: false });
 
     // ── Undo / Redo ──

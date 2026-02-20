@@ -11,19 +11,19 @@
  * the logic layer reads it to bind handlers via react-hotkeys-hook.
  */
 
-import { isMac } from '@/utils/platform';
+import { isApplePlatform } from '@/utils/platform';
 
 // ─── Keyboard modifier helpers ───────────────────────────────
 
-/** Modifier key symbol for the current platform (⌘ on Mac, Ctrl on others) */
-export const modKey = (): string => (isMac() ? '⌘' : 'Ctrl');
+/** Modifier key symbol for the current platform (⌘ on Apple, Ctrl on others) */
+export const modKey = (): string => (isApplePlatform() ? '⌘' : 'Ctrl');
 
-/** react-hotkeys-hook modifier prefix (meta on Mac, ctrl on others) */
-export const modPrefix = (): string => (isMac() ? 'meta' : 'ctrl');
+/** react-hotkeys-hook modifier prefix (meta on Apple, ctrl on others) */
+export const modPrefix = (): string => (isApplePlatform() ? 'meta' : 'ctrl');
 
 /** Whether the platform modifier key (Cmd / Ctrl) is currently pressed */
 export const isModKeyPressed = (e: MouseEvent | KeyboardEvent): boolean =>
-    isMac() ? e.metaKey : e.ctrlKey;
+    isApplePlatform() ? e.metaKey : e.ctrlKey;
 
 // ─── Key display types ───────────────────────────────────────
 
