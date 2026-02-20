@@ -105,6 +105,18 @@
       "light": "Chiaro",
       "dark": "Scuro",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Scorciatoie da tastiera",
+      "hint": "Scorciatoie disponibili per azioni rapide.",
+      "exportData": "Esporta dati",
+      "importData": "Importa dati",
+      "undo": "Annulla",
+      "redo": "Ripeti",
+      "zoomIn": "Zoom avanti",
+      "zoomOut": "Zoom indietro",
+      "multiSelect": "Selezione multipla",
+      "multiDeselect": "Deseleziona più elementi"
     }
   },
   "guide": {

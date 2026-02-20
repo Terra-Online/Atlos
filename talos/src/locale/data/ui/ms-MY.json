@@ -105,6 +105,18 @@
       "light": "Cerah",
       "dark": "Gelap",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Pintasan Papan Kekunci",
+      "hint": "Pintasan tersedia untuk tindakan pantas.",
+      "exportData": "Eksport Data",
+      "importData": "Import Data",
+      "undo": "Buat Asal",
+      "redo": "Buat Semula",
+      "zoomIn": "Zum Masuk",
+      "zoomOut": "Zum Keluar",
+      "multiSelect": "Pilih Berbilang",
+      "multiDeselect": "Nyahpilih Berbilang"
     }
   },
   "guide": {

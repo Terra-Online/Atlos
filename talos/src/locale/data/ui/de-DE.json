@@ -105,6 +105,18 @@
       "light": "Hell",
       "dark": "Dunkel",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Tastenkürzel",
+      "hint": "Verfügbare Tastenkürzel für schnelle Aktionen.",
+      "exportData": "Daten exportieren",
+      "importData": "Daten importieren",
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "multiSelect": "Mehrfachauswahl",
+      "multiDeselect": "Auswahl aufheben"
     }
   },
   "guide": {

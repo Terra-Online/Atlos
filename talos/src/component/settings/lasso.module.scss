@@ -1,0 +1,37 @@
+@use '../../styles/palette.scss' as *;
+
+// ─── Theme variables ─────────────────────────────────────────
+
+:root, :root[data-theme='light'] {
+    --lasso-select-border: #{$primary-accent-5};
+    --lasso-select-bg: #{rgba($primary-accent-5, .2)};
+    --lasso-deselect-border: #{$secondary-accent-1};
+    --lasso-deselect-bg: #{rgba($secondary-accent-1, .2)};
+}
+:root[data-theme='dark'] {
+    --lasso-select-border: #{$primary-accent-4};
+    --lasso-select-bg: #{rgba($primary-accent-5, .2)};
+    --lasso-deselect-border: #{$secondary-accent-1};
+    --lasso-deselect-bg: #{rgba($secondary-accent-1, .2)};
+}
+
+.lassoOverlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 1;
+    transition: opacity 0.25s ease-out;
+    &.selectMode {
+        border: 2px solid var(--lasso-select-border);
+        background-color: var(--lasso-select-bg);
+        backdrop-filter: contrast(1.1) brightness(1.05);
+    }
+    &.deselectMode {
+        border: 2px dashed var(--lasso-deselect-border);
+        background-color: var(--lasso-deselect-bg);
+        backdrop-filter: grayscale(0.8);
+    }
+    &.fadeOut {
+        opacity: 0;
+    }
+}

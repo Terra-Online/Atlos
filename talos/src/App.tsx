@@ -13,6 +13,8 @@ import { MetaHelper } from './component/MetaHelper';
 
 import { useSidebarOpen } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
+import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
+import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
 
 declare global {
     interface Window {
@@ -31,6 +33,10 @@ function App() {
         undefined,
     );
     const [uiVisible, setUiVisible] = useState(true);
+
+    // Keyboard shortcuts & map multi-select
+    useKeyboardShortcuts(mapInstance);
+    useMapMultiSelect(mapInstance);
 
     // Track previous sidebar state to detect actual toggles
     const prevSidebarOpenRef = useRef(isSidebarOpen);

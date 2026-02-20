@@ -105,6 +105,18 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "hint": "Available shortcuts for quick actions.",
+      "exportData": "Export Data",
+      "importData": "Import Data",
+      "undo": "Undo",
+      "redo": "Redo",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "multiSelect": "Multi Select",
+      "multiDeselect": "Multi Deselect"
     }
   },
   "guide": {

@@ -105,6 +105,18 @@
       "light": "라이트 모드",
       "dark": "다크 모드",
       "auto": "시스템 따름"
+    },
+    "shortcuts": {
+      "title": "키보드 단축키",
+      "hint": "빠른 작업을 위한 사용 가능한 단축키입니다.",
+      "exportData": "데이터 내보내기",
+      "importData": "데이터 가져오기",
+      "undo": "실행 취소",
+      "redo": "다시 실행",
+      "zoomIn": "확대",
+      "zoomOut": "축소",
+      "multiSelect": "다중 선택",
+      "multiDeselect": "다중 선택 해제"
     }
   },
   "guide": {

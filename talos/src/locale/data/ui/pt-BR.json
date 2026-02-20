@@ -105,6 +105,18 @@
       "light": "Claro",
       "dark": "Escuro",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Atalhos de Teclado",
+      "hint": "Atalhos disponíveis para ações rápidas.",
+      "exportData": "Exportar Dados",
+      "importData": "Importar Dados",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar",
+      "multiSelect": "Seleção Múltipla",
+      "multiDeselect": "Desmarcar Múltiplos"
     }
   },
   "guide": {

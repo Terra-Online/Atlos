@@ -105,6 +105,18 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Theo hệ thống"
+    },
+    "shortcuts": {
+      "title": "Phím tắt bàn phím",
+      "hint": "Các phím tắt có sẵn cho thao tác nhanh.",
+      "exportData": "Xuất dữ liệu",
+      "importData": "Nhập dữ liệu",
+      "undo": "Hoàn tác",
+      "redo": "Làm lại",
+      "zoomIn": "Phóng to",
+      "zoomOut": "Thu nhỏ",
+      "multiSelect": "Chọn nhiều",
+      "multiDeselect": "Bỏ chọn nhiều"
     }
   },
   "guide": {

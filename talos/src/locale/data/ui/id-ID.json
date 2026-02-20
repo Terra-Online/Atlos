@@ -105,6 +105,18 @@
       "light": "Terang",
       "dark": "Gelap",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Pintasan Keyboard",
+      "hint": "Pintasan yang tersedia untuk tindakan cepat.",
+      "exportData": "Ekspor Data",
+      "importData": "Impor Data",
+      "undo": "Batalkan",
+      "redo": "Ulangi",
+      "zoomIn": "Perbesar",
+      "zoomOut": "Perkecil",
+      "multiSelect": "Pilih Banyak",
+      "multiDeselect": "Batalkan Pilihan Banyak"
     }
   },
   "guide": {

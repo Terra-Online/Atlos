@@ -105,6 +105,18 @@
       "light": "ライト",
       "dark": "ダーク",
       "auto": "自動"
+    },
+    "shortcuts": {
+      "title": "キーボードショートカット",
+      "hint": "クイックアクション用の利用可能なショートカット。",
+      "exportData": "データをエクスポート",
+      "importData": "データをインポート",
+      "undo": "元に戻す",
+      "redo": "やり直し",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "multiSelect": "複数選択",
+      "multiDeselect": "複数選択解除"
     }
   },
   "guide": {

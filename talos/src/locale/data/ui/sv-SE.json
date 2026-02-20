@@ -105,6 +105,18 @@
       "light": "Ljust",
       "dark": "Mörkt",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Tangentbordsgenvägar",
+      "hint": "Tillgängliga genvägar för snabba åtgärder.",
+      "exportData": "Exportera data",
+      "importData": "Importera data",
+      "undo": "Ångra",
+      "redo": "Gör om",
+      "zoomIn": "Zooma in",
+      "zoomOut": "Zooma ut",
+      "multiSelect": "Flerval",
+      "multiDeselect": "Avmarkera flera"
     }
   },
   "guide": {

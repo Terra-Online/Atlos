@@ -105,6 +105,18 @@
       "light": "Jasny",
       "dark": "Ciemny",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Skróty klawiszowe",
+      "hint": "Dostępne skróty do szybkich akcji.",
+      "exportData": "Eksportuj dane",
+      "importData": "Importuj dane",
+      "undo": "Cofnij",
+      "redo": "Ponów",
+      "zoomIn": "Przybliż",
+      "zoomOut": "Oddal",
+      "multiSelect": "Zaznacz wiele",
+      "multiDeselect": "Odznacz wiele"
     }
   },
   "guide": {

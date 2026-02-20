@@ -105,6 +105,18 @@
       "light": "Clair",
       "dark": "Sombre",
       "auto": "Auto"
+    },
+    "shortcuts": {
+      "title": "Raccourcis clavier",
+      "hint": "Raccourcis disponibles pour les actions rapides.",
+      "exportData": "Exporter les données",
+      "importData": "Importer les données",
+      "undo": "Annuler",
+      "redo": "Rétablir",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "multiSelect": "Sélection multiple",
+      "multiDeselect": "Désélection multiple"
     }
   },
   "guide": {

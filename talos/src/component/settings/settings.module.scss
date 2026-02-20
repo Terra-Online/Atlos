@@ -321,3 +321,127 @@
         transform: rotate3d(0, 0, 0, 0deg);
     }
 }
+
+/* ─── Keyboard Shortcuts Section ────────────────────────────── */
+
+.shortcutGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 0.5rem;
+    position: relative;
+    &::before, &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 3px;
+        border-radius: 1px;
+        height: 99%;
+        background-color: var(--settings-trigger-border);
+        transition: background-color .35s $adagio-curve;
+    }
+    &::after {
+        left: calc(50% + 4px);
+    }
+}
+@media (max-width: $smallmobile-bp) {
+    .shortcutGrid {
+        grid-template-columns: 1fr;
+        &::after {
+            display: none;
+        }
+    }
+}
+
+.shortcutRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    padding-left: 0.5rem;
+    gap: 0.5rem;
+}
+
+.shortcutLabel {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--settings-section-text);
+    line-height: 1.2;
+    word-break: break-word;
+    user-select: none;
+    transition: color .35s $adagio-curve;
+}
+
+.shortcutKeys {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Key cap styling — inspired by embed.scss span.keyboard */
+
+$keyCap-unit: 1.25rem; // Base size for a single key unit
+.keyCap {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1px;
+    background-color: $grey-1;
+    box-shadow: 0 0 2px 1px rgba($black-0, 0.4);
+    text-align: center;
+    font-family: 'Novecento Medium', system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: $white-1;
+    user-select: none;
+    transition: all 0.2s ease;
+
+    /* narrow = 1 unit (default) */
+    &[data-ch='1u'], &:not([data-ch]) {
+        height: calc(#{$keyCap-unit} + 1px);
+        width: calc(#{$keyCap-unit} + 1px);
+    }
+
+    /* wide = 2 units */
+    &[data-ch='2u'] {
+        height: calc(#{$keyCap-unit} + 1px);
+        width: calc(2 * #{$keyCap-unit} + 5px);
+        letter-spacing: -.5px;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid $white-1;
+        border-radius: 4px;
+        box-shadow:
+            0 0 2px 1px rgba($black-0, 0.4),
+            inset 0 0 2px rgba($black-0, 0.2);
+        z-index: -1;
+    }
+
+    &[data-ch='1u']::before, &:not([data-ch])::before {
+        width: calc($keyCap-unit + 4px);
+        height: calc($keyCap-unit + 4px);
+    }
+
+    &[data-ch='2u']::before {
+        width: calc(2 * #{$keyCap-unit} + 8px);
+        height: calc($keyCap-unit + 4px);
+    }
+
+    &[data-ch='3u']::before {
+        width: calc(3 * #{$keyCap-unit} + 12px);
+        height: calc($keyCap-unit + 4px);
+    }
+}

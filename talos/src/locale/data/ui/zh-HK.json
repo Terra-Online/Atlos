@@ -105,6 +105,18 @@
       "light": "淺色模式",
       "dark": "深色模式",
       "auto": "跟隨系統"
+    },
+    "shortcuts": {
+      "title": "快捷鍵",
+      "hint": "可用的鍵盤快捷操作。",
+      "exportData": "匯出資料",
+      "importData": "匯入資料",
+      "undo": "復原",
+      "redo": "重做",
+      "zoomIn": "放大",
+      "zoomOut": "縮小",
+      "multiSelect": "框選點位",
+      "multiDeselect": "反選點位"
     }
   },
   "guide": {
