@@ -9,7 +9,7 @@ import { useMarkerStore } from '@/store/marker';
 import { getActivePoints, useUserRecordStore } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useHistoryStore } from '@/store/history';
-import { batchCheckSelectedPoints } from '@/component/settings/useMapMultiSelect';
+import { batchCheckSelectedPoints, isLassoSelected } from '@/component/settings/useMapMultiSelect';
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
@@ -93,9 +93,9 @@ const RENDERER_DICT: Record<
                         redo: () => useMarkerStore.getState().setSelected(id, true),
                     });
                 } else if (selectedNow && !checkedNow) {
-                    // If this marker is part of a lasso selection, batch-check all
+                    // Only batch-check if THIS marker was lasso-selected
                     const allSelected = useMarkerStore.getState().selectedPoints;
-                    if (allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
+                    if (isLassoSelected(markerData.id) && allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
                         // batch check handled — no individual action needed
                     } else {
                         // selected -> selected+checked
@@ -212,7 +212,7 @@ const RENDERER_DICT: Record<
                     });
                 } else if (selectedNow && !checkedNow) {
                     const allSelected = useMarkerStore.getState().selectedPoints;
-                    if (allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
+                    if (isLassoSelected(markerData.id) && allSelected.length > 1 && batchCheckSelectedPoints(allSelected)) {
                         // batch check handled
                     } else {
                         useUserRecordStore.getState().addPoint(markerData.id);

@@ -23,6 +23,17 @@ import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import lassoStyles from './lasso.module.scss';
 
+// ─── Lasso-selected ID tracking ──────────────────────────────
+// Module-level set that records which marker IDs were added to
+// selectedPoints via lasso (not via manual click). Only these
+// markers participate in batch-check when one of them is clicked.
+const _lassoSelectedIds = new Set<string>();
+
+/** Returns true if the given marker was selected via lasso multi-select. */
+export function isLassoSelected(id: string): boolean {
+    return _lassoSelectedIds.has(id);
+}
+
 // ─── Lasso context for marker-side handler ───────────────────
 
 export interface LassoContext {
@@ -350,7 +361,10 @@ export function useMapMultiSelect(map: L.Map | undefined) {
 
                 if (toRemoveSelected.length === 0 && toRemoveChecked.length === 0) return;
 
-                toRemoveSelected.forEach((id) => markerState.setSelected(id, false));
+                toRemoveSelected.forEach((id) => {
+                    markerState.setSelected(id, false);
+                    _lassoSelectedIds.delete(id);
+                });
                 toRemoveChecked.forEach((id) => userRecord.deletePoint(id));
 
                 useHistoryStore.getState().push({
@@ -381,20 +395,25 @@ export function useMapMultiSelect(map: L.Map | undefined) {
                     (id) => !prevSelected.has(id) && !checkedIds.has(id),
                 );
 
-                normalIds.forEach((id) => markerState.setSelected(id, true));
+                normalIds.forEach((id) => {
+                    markerState.setSelected(id, true);
+                    _lassoSelectedIds.add(id);
+                });
 
                 if (normalIds.length > 0) {
                     useHistoryStore.getState().push({
                         label: `Multi-select ${normalIds.length} markers`,
                         undo: () => {
-                            normalIds.forEach((id) =>
-                                useMarkerStore.getState().setSelected(id, false),
-                            );
+                            normalIds.forEach((id) => {
+                                useMarkerStore.getState().setSelected(id, false);
+                                _lassoSelectedIds.delete(id);
+                            });
                         },
                         redo: () => {
-                            normalIds.forEach((id) =>
-                                useMarkerStore.getState().setSelected(id, true),
-                            );
+                            normalIds.forEach((id) => {
+                                useMarkerStore.getState().setSelected(id, true);
+                                _lassoSelectedIds.add(id);
+                            });
                         },
                     });
                 }
@@ -440,10 +459,14 @@ export function useMapMultiSelect(map: L.Map | undefined) {
  * marker is in the current lasso selection.
  */
 export function batchCheckSelectedPoints(selectedIds: string[]) {
+    // Only batch-check markers that were selected via lasso, not manual clicks
+    const lassoIds = selectedIds.filter((id) => _lassoSelectedIds.has(id));
+    if (lassoIds.length === 0) return false;
+
     const userRecord = useUserRecordStore.getState();
 
-    // Find ids that are selected but not yet checked
-    const unchecked = selectedIds.filter(
+    // Find ids that are lasso-selected but not yet checked
+    const unchecked = lassoIds.filter(
         (id) => !userRecord.activePoints.includes(id),
     );
 
@@ -452,14 +475,20 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
     // Mark all as checked
     unchecked.forEach((id) => userRecord.addPoint(id));
 
+    // Clear lasso tracking — they are now checked, batch-select lifecycle ends
+    lassoIds.forEach((id) => _lassoSelectedIds.delete(id));
+
     // Push as single undo step
     useHistoryStore.getState().push({
         label: `Batch check ${unchecked.length} markers`,
         undo: () => {
             unchecked.forEach((id) => useUserRecordStore.getState().deletePoint(id));
+            // Restore lasso tracking so re-clicking can re-trigger batch check
+            lassoIds.forEach((id) => _lassoSelectedIds.add(id));
         },
         redo: () => {
             unchecked.forEach((id) => useUserRecordStore.getState().addPoint(id));
+            lassoIds.forEach((id) => _lassoSelectedIds.delete(id));
         },
     });
 
