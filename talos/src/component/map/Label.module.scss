@@ -27,11 +27,11 @@
     transform: translate(-50%, -50%);
     user-select: none;
     text-shadow: 1px 1px 1px var(--label-shadow-1), 0 0 1px var(--label-shadow-2), -.5px -.5px 2px var(--label-shadow-2);
-    font-family: 'HMSans_EN','HMSans';
+    font-family: 'HMSans_EN','HMSans', 'Noto Sans Thai', sans-serif;
     animation: fadeIn 0.3s ease-in-out;
 }
 .innerSub {
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     text-transform: capitalize;
     letter-spacing: -0.2px;
     font-size: 18px;

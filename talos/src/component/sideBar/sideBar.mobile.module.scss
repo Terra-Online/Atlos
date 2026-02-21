@@ -40,7 +40,7 @@
         height: 1.5rem;
         max-height: 1.5rem;
         font-size: 0.875rem;
-        font-family: 'HMSans_EN', 'HMSans', sans-serif;
+        font-family: 'HMSans_EN', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
         font-weight: 550;
         letter-spacing: -0.5px;
         display: flex;
@@ -146,7 +146,7 @@
                 padding: 0;
                 cursor: pointer;
                 font-size: 0.875rem;
-                font-family: 'HMSans_EN', 'HMSans', sans-serif;
+                font-family: inherit;
                 font-weight: 500;
                 letter-spacing: -0.5px;
                 color: var(--sidebar-footer-txt);
