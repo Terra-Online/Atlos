@@ -18,8 +18,10 @@ export function useMarker(
 ) {
     const { filter } = useMarkerStore();
     const collectedPoints = useUserRecord();
+    const selectedPoints = useMarkerStore.getState().selectedPoints;
     const prefsHideCompletedMarkers = useHideCompletedMarkers();
     const initialFilterApplied = useRef(false);
+    const prevSelectedRef = useRef<Set<string>>(new Set());
 
     // 第一次初始化时应用已保存的 filter
     useEffect(() => {
@@ -41,7 +43,7 @@ export function useMarker(
         const currentPoints = markerLayer
             ?.getCurrentPoints(currentRegion)
             .map((point) => point.id) ?? [];
-        
+
         useMarkerStore.setState({ points: currentPoints });
     }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints]);
 
@@ -72,4 +74,30 @@ export function useMarker(
             markerLayer.updateCollectedPoints(collectedPoints);
         }
     }, [collectedPoints, mapCore]);
+
+    // Update marker selected style based on selectedPoints changes
+    useEffect(() => {
+        const markerLayer = mapCore?.markerLayer;
+        if (!markerLayer) return;
+
+        const current = new Set(selectedPoints);
+
+        const added = [...current].filter((id) => !prevSelectedRef.current.has(id));
+        const removed = [...prevSelectedRef.current].filter((id) => !current.has(id));
+
+        const changedSelectedPoints: { id: string; selected: boolean }[] = [];
+        added.forEach((id) => {
+            changedSelectedPoints.push({ id, selected: true });
+        });
+        removed.forEach((id) => {
+            changedSelectedPoints.push({ id, selected: false });
+        });
+
+        if (changedSelectedPoints.length > 0) {
+            markerLayer.updateSelectedMarkers(changedSelectedPoints);
+        }
+
+        // Update ref for next comparison
+        prevSelectedRef.current = current;
+    }, [selectedPoints, mapCore]);
 }

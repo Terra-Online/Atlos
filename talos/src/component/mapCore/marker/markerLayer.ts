@@ -62,8 +62,8 @@ export class MarkerLayer {
         // 初始化markerType到markerId列表的映射
         this.markerTypeMap = Object.values(MARKER_TYPE_DICT).reduce(
             (acc, type) => {
-                acc[type.key] = [];
-                return acc;
+            acc[type.key] = [];
+            return acc;
             },
             {},
         );
@@ -71,12 +71,12 @@ export class MarkerLayer {
         // 为每个subregion生成LayerGroup
         this.layerSubregionDict = Object.values(REGION_DICT).reduce(
             (acc, region) => {
-                region.subregions.forEach((subregion) => {
-                    acc[subregion] = new L.LayerGroup([], {
-                        pane: 'markerPane',
-                    });
+            region.subregions.forEach((subregion) => {
+                acc[subregion] = new L.LayerGroup([], {
+                    pane: 'markerPane',
                 });
-                return acc;
+            });
+            return acc;
             },
             {},
         );
@@ -184,6 +184,20 @@ export class MarkerLayer {
         });
     }
 
+    // update changed selected points' visual state 
+    updateSelectedMarkers(changedSelectedPoints: {id: string, selected: boolean}[]) {
+        changedSelectedPoints.forEach(({id, selected}) => {
+            const layer = this.markerDict[id];
+            if (!layer) return;
+            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
+            if (!markerRoot) return;
+            const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
+            if (!inner) return;
+
+            inner.classList.toggle(styles.selected, selected);
+        });
+    }
+
     /**
      * 导入marker列表
      */
@@ -210,7 +224,7 @@ export class MarkerLayer {
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
         });
-        
+
         const subregions = REGION_DICT[regionId].subregions;
         subregions.forEach((subregion) => {
             this.layerSubregionDict[subregion].addTo(this.map);
@@ -298,13 +312,13 @@ export class MarkerLayer {
      */
     getVisibleMarkerCount(): number {
         const clusterEnabled = this.clusterLayer.isEnabled();
-        
+
         // 统计当前激活的filter对应的marker数量
         const visibleMarkerIds = (clusterEnabled
             ? this.activeFilterKeys.filter((key) => !this.clusterLayer.isTypeManaged(key))
             : this.activeFilterKeys
         ).flatMap((key) => this.markerTypeMap[key] || []);
-        
+
         return visibleMarkerIds.length;
     }
 
