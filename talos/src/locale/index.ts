@@ -38,7 +38,6 @@ export const SUPPORTED_LANGS = [
     'ko-KR',
     'ru-RU',
     'es-ES',
-
     'fr-FR',
     'de-DE',
     'it-IT',
