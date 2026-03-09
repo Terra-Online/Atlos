@@ -20,7 +20,7 @@
   "markFilter": {
     "title": "خيارات التصفية",
     "emptyTitle": "لا توجد خيارات تصفية مطابقة.",
-    "emptyDesc": "إذا كنت تؤكد أن أي معلومات نقطة مفقودة أو غير صحيحة، يرجى الاتصال بالمسؤولين في مجتمعنا، أو تقديم <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='الإبلاغ عن خطأ في الموقع'>Issue</a> في مستودع GitHub الخاص بنا."
+    "emptyDesc": "إذا كنت تؤكد أن أي معلومات نقطة مفقودة أو غير صحيحة، يرجى الاتصال بالمسؤولين في مجتمعنا، أو تقديم <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='الإبلاغ عن خطأ في الموقع'>Issue</a> في مستودع GitHub الخاص بنا."
   },
   "detail": {
     "stat": {
@@ -156,8 +156,8 @@
     "settings": "افتح <span class=\"keyword\">التفضيلات</span> للتحكم في التخزين المحلي الذي يستخدمه الخريطة لتذكر أفعالك."
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">ملاحظة:</span> عندما يكون إصدار اللعبة <span class=\"keyword\">1.0.13</span>، فإن إصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج إلى وقت لتحديث البيانات، لذا قد يتأخر التحديث عن اللعبة. شكراً لصبركم. لمتابعة تحديثاتنا، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "مجموعة البيانات الحالية محدثة.<br><br>إذا كنت بحاجة إلى الإبلاغ عن مشاكل، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">ملاحظة:</span> عندما يكون إصدار اللعبة <span class=\"keyword\">1.0.13</span>، فإن إصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج إلى وقت لتحديث البيانات، لذا قد يتأخر التحديث عن اللعبة. شكراً لصبركم. لمتابعة تحديثاتنا، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "مجموعة البيانات الحالية محدثة.<br><br>إذا كنت بحاجة إلى الإبلاغ عن مشاكل، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -186,8 +186,8 @@
     "description": "Open Endfield Map هي خريطة عبر الإنترنت مفتوحة المصدر للعبة Arknights: Endfield، توفر خرائط تفاعلية وتتبع جمع العناصر وأدوات التخطيط الاستراتيجي."
   },
   "domain": {
-    "cn": "<span class=\"keyword\">لمستخدمي الصين القارية</span> نوصي باستخدام المرآة القارية<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> لوصول أسرع وأكثر استقرارًا.",
-    "org": "<span class=\"keyword\">للمستخدمين في الخارج</span> نوصي باستخدام المرآة العالمية(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) لوصول أسرع وأكثر استقرارًا."
+    "cn": "<span class=\"keyword\">لمستخدمي الصين القارية</span> نوصي باستخدام المرآة القارية<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a> لوصول أسرع وأكثر استقرارًا.",
+    "org": "<span class=\"keyword\">للمستخدمين في الخارج</span> نوصي باستخدام المرآة العالمية(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>) لوصول أسرع وأكثر استقرارًا."
   },
   "support": {
     "title": "ادعمنا",

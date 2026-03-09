@@ -20,7 +20,7 @@
   "markFilter": {
     "title": "筛选项",
     "emptyTitle": "无满足条件的筛选项。",
-    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='报告点位错误'>Issue</a>。"
+    "emptyDesc": "如果您确认点位信息缺失或有误，请于项目的社群中联系管理员；或到本项目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='报告点位错误'>Issue</a>。"
   },
   "detail": {
     "stat": {
@@ -156,8 +156,8 @@
     }
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">注意：</span>当前游戏版本为<span class=\"keyword\">1.0.13</span>，地图的数据集版本为<span class=\"keyword\">0.8.25</span>。我们需要时间来更新数据，更新时间可能晚于游戏版本更新，有劳管理员等待。如您希望及时追踪我们的更新，请加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "当前地图数据已经是最新版本。<br><br>如需反馈问题，您可以加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener noreferrer' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">注意：</span>当前游戏版本为<span class=\"keyword\">1.0.13</span>，地图的数据集版本为<span class=\"keyword\">0.8.25</span>。我们需要时间来更新数据，更新时间可能晚于游戏版本更新，有劳管理员等待。如您希望及时追踪我们的更新，请加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "当前地图数据已经是最新版本。<br><br>如需反馈问题，您可以加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='加入Discord'>Discord服务器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener' aria-label='加入QQ'>QQ群组1075906513</a>。<br><br>也推荐您使用如下相关的工具网站：<ul><li><span class=\"keyword\">游戏Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='访问游戏Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">蓝图分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='访问Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -186,8 +186,8 @@
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   },
   "domain": {
-      "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
-      "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
+      "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
+      "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
   },
   "support": {
     "title": "支持我们",

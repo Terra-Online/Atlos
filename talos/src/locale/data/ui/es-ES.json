@@ -20,7 +20,7 @@
   "markFilter": {
     "title": "Filtros",
     "emptyTitle": "Ningún filtro apropiado.",
-    "emptyDesc": "Si confirma que falta información de algún punto o es incorrecta, por favor contacte a los administradores en nuestra comunidad, o envíe un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Report location error'>Issue</a> en nuestro repositorio de GitHub."
+    "emptyDesc": "Si confirma que falta información de algún punto o es incorrecta, por favor contacte a los administradores en nuestra comunidad, o envíe un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Issue</a> en nuestro repositorio de GitHub."
   },
   "detail": {
     "stat": {
@@ -156,8 +156,8 @@
     "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones."
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">Nota:</span> Cuando la versión del juego es <span class=\"keyword\">1.0.13</span>, la versión de los datos del mapa es <span class=\"keyword\">0.8.25</span>. Necesitamos tiempo para actualizar los datos, por lo que puede tardar más que la actualización del juego. Gracias por su paciencia. Para seguir nuestras actualizaciones, únete a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "El conjunto de datos actual está actualizado.<br><br>Si necesita informar problemas, únase a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">Nota:</span> Cuando la versión del juego es <span class=\"keyword\">1.0.13</span>, la versión de los datos del mapa es <span class=\"keyword\">0.8.25</span>. Necesitamos tiempo para actualizar los datos, por lo que puede tardar más que la actualización del juego. Gracias por su paciencia. Para seguir nuestras actualizaciones, únete a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "El conjunto de datos actual está actualizado.<br><br>Si necesita informar problemas, únase a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -186,8 +186,8 @@
     "description": "Open Endfield Map es un mapa en línea de código abierto para Arknights: Endfield, que proporciona mapas interactivos, recolección de artículos y herramientas de planificación estratégica."
   },
   "domain": {
-    "cn": "<span class=\"keyword\">Usuarios de China continental</span> recomendamos usar el espejo continental<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a> para un acceso más rápido y estable.",
-    "org": "<span class=\"keyword\">Usuarios internacionales</span> recomendamos usar el espejo global(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>) para un acceso más rápido y estable."
+    "cn": "<span class=\"keyword\">Usuarios de China continental</span> recomendamos usar el espejo continental<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a> para un acceso más rápido y estable.",
+    "org": "<span class=\"keyword\">Usuarios internacionales</span> recomendamos usar el espejo global(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>) para un acceso más rápido y estable."
   },
   "support": {
     "title": "Apóyanos",

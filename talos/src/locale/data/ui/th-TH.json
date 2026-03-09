@@ -20,7 +20,7 @@
   "markFilter": {
     "title": "ตัวกรอง",
     "emptyTitle": "ไม่มีตัวกรองที่ตรงกัน",
-    "emptyDesc": "โปรดติดต่อผู้ดูแลระบบหากคุณยืนยันว่ามีข้อมูลจุดใดที่ขาดหายไปหรือไม่ถูกต้อง กรุณาติดต่อผู้ดูแลในชุมชนของเรา หรือส่ง <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener noreferrer' aria-label='รายงานข้อผิดพลาดตำแหน่ง'>Issue</a> ในที่เก็บ GitHub ของเรา"
+    "emptyDesc": "โปรดติดต่อผู้ดูแลระบบหากคุณยืนยันว่ามีข้อมูลจุดใดที่ขาดหายไปหรือไม่ถูกต้อง กรุณาติดต่อผู้ดูแลในชุมชนของเรา หรือส่ง <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='รายงานข้อผิดพลาดตำแหน่ง'>Issue</a> ในที่เก็บ GitHub ของเรา"
   },
   "detail": {
     "stat": {
@@ -156,8 +156,8 @@
     "settings": "เปิด <span class=\"keyword\">การตั้งค่า</span> เพื่อควบคุมการจัดเก็บข้อมูลในเครื่องที่แผนที่ใช้เพื่อจดจำการกระทำของคุณ"
   },
   "notice": {
-    "legacy": "<span class=\"keyword\">หมายเหตุ:</span> เมื่อเวอร์ชันเกมคือ <span class=\"keyword\">1.0.13</span> เวอร์ชันข้อมูลแผนที่จะเป็น <span class=\"keyword\">0.8.25</span> เราต้องใช้เวลาในการอัปเดตข้อมูล ซึ่งอาจล่าช้ากว่าการอัปเดตตัวเกม ขอขอบคุณที่รอคอย หากต้องการติดตามการอัปเดต โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>",
-    "uptodate": "ชุดข้อมูลปัจจุบันเป็นเวอร์ชันล่าสุด<br><br>หากคุณต้องการรายงานปัญหา โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener noreferrer' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener noreferrer' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+    "legacy": "<span class=\"keyword\">หมายเหตุ:</span> เมื่อเวอร์ชันเกมคือ <span class=\"keyword\">1.0.13</span> เวอร์ชันข้อมูลแผนที่จะเป็น <span class=\"keyword\">0.8.25</span> เราต้องใช้เวลาในการอัปเดตข้อมูล ซึ่งอาจล่าช้ากว่าการอัปเดตตัวเกม ขอขอบคุณที่รอคอย หากต้องการติดตามการอัปเดต โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "ชุดข้อมูลปัจจุบันเป็นเวอร์ชันล่าสุด<br><br>หากคุณต้องการรายงานปัญหา โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "links": {
     "enka": {
@@ -186,8 +186,8 @@
     "description": "Open Endfield Map เป็นแผนที่ออนไลน์แบบโอเพนซอร์สสำหรับ Arknights: Endfield ให้บริการแผนที่แบบโต้ตอบ การเก็บไอเท็ม และเครื่องมือวางแผนเชิงกลยุทธ์"
   },
   "domain": {
-    "cn": "<span class=\"keyword\">ผู้ใช้ในจีนแผ่นดินใหญ่</span>แนะนำให้ใช้มิเรอร์ทวีป<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener noreferrer'>(https://opendfieldmap.cn)</a>เพื่อการเข้าถึงที่เร็วและเสถียรกว่า.",
-    "org": "<span class=\"keyword\">ผู้ใช้ต่างประเทศ</span>แนะนำให้ใช้มิเรอร์ทั่วโลก(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener noreferrer'>https://opendfieldmap.org</a>)เพื่อการเข้าถึงที่เร็วและเสถียรกว่า."
+    "cn": "<span class=\"keyword\">ผู้ใช้ในจีนแผ่นดินใหญ่</span>แนะนำให้ใช้มิเรอร์ทวีป<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>เพื่อการเข้าถึงที่เร็วและเสถียรกว่า.",
+    "org": "<span class=\"keyword\">ผู้ใช้ต่างประเทศ</span>แนะนำให้ใช้มิเรอร์ทั่วโลก(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)เพื่อการเข้าถึงที่เร็วและเสถียรกว่า."
   },
   "support": {
     "title": "สนับสนุนเรา",
