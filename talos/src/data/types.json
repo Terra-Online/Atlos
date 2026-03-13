@@ -101,6 +101,12 @@
             "Ferrium Spot": {
                 "subIcon": "ore_spot"
             },
+            "Cuprium Ore": {
+                "tier": "1"
+            },
+            "Cuprium Spot": {
+                "subIcon": "ore_spot"
+            },
             "Clean Water": {
                 "tier": "1"
             },
@@ -294,6 +300,9 @@
             },
             "Rhodagn": {
                 "faction": "Landbreakers"
+            },
+            "Ruanyi": {
+                "faction": "Cangzei"
             }
         },
         "mob": {
@@ -305,7 +314,34 @@
                 "tier": "common",
                 "faction": "Cangzei"
             },
-
+            "Hill Smasher": {
+                "tier": "elite",
+                "faction": "Cangzei"
+            },
+            "Cloud Stalker": {
+                "tier": "advanced",
+                "faction": "Cangzei"
+            },
+            "Nimbus Razor": {
+                "tier": "advanced",
+                "faction": "Cangzei"
+            },
+            "Highway Reaver": {
+                "tier": "common",
+                "faction": "Cangzei"
+            },
+            "Sweeping Wind": {
+                "tier": "common",
+                "faction": "Cangzei"
+            },
+             "Cloud Obliterator": {
+                "tier": "elite",
+                "faction": "Cangzei"
+            },
+             "Breaking Gust": {
+                "tier": "elite",
+                "faction": "Cangzei"
+            },
             "Ram": {
                 "tier": "common",
                 "faction": "Aggeloi"

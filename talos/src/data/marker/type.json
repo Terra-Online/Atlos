@@ -306,6 +306,24 @@
         },
         "subIcon": "ore_spot"
     },
+    "cuprium_ore": {
+        "key": "cuprium_ore",
+        "name": "Cuprium Ore",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "tier": "1"
+    },
+    "cuprium_spot": {
+        "key": "cuprium_spot",
+        "name": "Cuprium Spot",
+        "category": {
+            "main": "resource",
+            "sub": "natural"
+        },
+        "subIcon": "ore_spot"
+    },
     "clean_water": {
         "key": "clean_water",
         "name": "Clean Water",
@@ -816,6 +834,15 @@
         },
         "faction": "Landbreakers"
     },
+    "ruanyi": {
+        "key": "ruanyi",
+        "name": "Ruanyi",
+        "category": {
+            "main": "enemy",
+            "sub": "boss"
+        },
+        "faction": "Cangzei"
+    },
     "grove_archer": {
         "key": "grove_archer",
         "name": "Grove Archer",
@@ -834,6 +861,76 @@
             "sub": "mob"
         },
         "tier": "common",
+        "faction": "Cangzei"
+    },
+    "hill_smasher": {
+        "key": "hill_smasher",
+        "name": "Hill Smasher",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Cangzei"
+    },
+    "cloud_stalker": {
+        "key": "cloud_stalker",
+        "name": "Cloud Stalker",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Cangzei"
+    },
+    "nimbus_razor": {
+        "key": "nimbus_razor",
+        "name": "Nimbus Razor",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "advanced",
+        "faction": "Cangzei"
+    },
+    "highway_reaver": {
+        "key": "highway_reaver",
+        "name": "Highway Reaver",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Cangzei"
+    },
+    "sweeping_wind": {
+        "key": "sweeping_wind",
+        "name": "Sweeping Wind",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "common",
+        "faction": "Cangzei"
+    },
+    "cloud_obliterator": {
+        "key": "cloud_obliterator",
+        "name": "Cloud Obliterator",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
+        "faction": "Cangzei"
+    },
+    "breaking_gust": {
+        "key": "breaking_gust",
+        "name": "Breaking Gust",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "elite",
         "faction": "Cangzei"
     },
     "ram": {

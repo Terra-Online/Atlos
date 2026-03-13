@@ -35,7 +35,8 @@
         "initialZoom": 2,
         "subregions": [
             "WL_1",
-            "WL_2"
+            "WL_2",
+            "WL_3"
         ],
         "layers": ["L3", "L2", "L1", "B1", "B2", "B3", "B4"]
     },
