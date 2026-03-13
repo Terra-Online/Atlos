@@ -32,7 +32,7 @@
           "meteorological_station": "Stazione metereologica",
           "cliffside_mining_area": "Area mineraria del dirupo",
           "temporary_stockpile": "Stoccaggio temporaneo",
-          "blightcliff_observation_post": "Stazione di osservazione del dirupo contaminato",
+          "blightcliff_observation_post": "Punto di osservazione del dirupo contaminato",
           "mining_area_clinic": "Ambulatorio della miniera",
           "mining_camp": "Accampamento della miniera",
           "mountain_passage": "Passaggio montano",
@@ -52,7 +52,7 @@
           "cliffside_trail": "Sentiero del dirupo",
           "mountain_path_slope": "Sentiero di montagna in pendenza",
           "kohl_plant": "Impianto Kohl",
-          "eco_farm": "Tenuta eco",
+          "eco_farm": "Ecofattoria",
           "infra_station": "Infra-Stazione"
         }
       },
@@ -65,7 +65,7 @@
           "loading_area": "Area di carico",
           "stockpile_area": "Area di stoccaggio",
           "deep_management_post": "Stazione di gestione avanzata",
-          "lifter_central": "Centro sollevatori",
+          "lifter_central": "Centrale di sollevamento",
           "listening_post": "Stazione di ascolto",
           "transfer_area": "Area di trasporto",
           "quarry_site": "Sito della cava",
@@ -162,6 +162,17 @@
           "south_hill": "Collina Sud",
           "sword_quenching_marsh": "Palude Tempraspade",
           "everwater_brook": "Ruscello Acquaeterna"
+        }
+      },
+      "QB": {
+        "name": "Palizzata di Qingbo",
+        "short": "PQ",
+        "site": {
+          "skyhold_ridge": "Crinale del forte celeste",
+          "ancestral_spring": "Fonte ancestrale",
+          "causeway_trail": "Sentiero rialzato",
+          "main_fort": "Forte principale",
+          "bladewoods": "Boschi taglienti"
         }
       }
     }

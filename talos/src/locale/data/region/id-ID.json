@@ -92,7 +92,7 @@
           "rockhill_passage": "Lintasan Bukit Batu",
           "bridge_approach": "Transisi Jembatan",
           "shorecove_camp": "Kamp Teluk Pantai",
-          "old_water_plant": "Pabrik Pasokan Air Tua",
+          "old_water_plant": "Pabrik Pengolahan Air Tua",
           "hub_base_power_plant": "Pembangkit Listrik Markas Hub",
           "hub_west": "Hub Barat",
           "originium_byproduct_processing_center": "Pusat Pemrosesan Produk Sampingan Originium",
@@ -147,7 +147,7 @@
       },
       "JY": {
         "name": "Lembah Jingyu",
-        "short": "JY",
+        "short": "LJ",
         "site": {
           "treadway": "Jalur Jalan",
           "ecological_research_station": "Stasiun Penelitian Ekologi",
@@ -162,6 +162,17 @@
           "south_hill": "Bukit Selatan",
           "sword_quenching_marsh": "Paya Penelan Pedang",
           "everwater_brook": "Dermaga Sungai Abadi"
+        }
+      },
+      "QB": {
+        "name": "Kampung Bengteng Qingbo",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "Punggungan Topang Langit",
+          "ancestral_spring": "Mata Air Leluhur",
+          "causeway_trail": "Jalur Jalan Landasan",
+          "main_fort": "Benteng Utama",
+          "bladewoods": "Hutan Pedang"
         }
       }
     }

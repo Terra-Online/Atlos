@@ -32,7 +32,7 @@
           "meteorological_station": "สถานี​อุตุนิยมวิทยา",
           "cliffside_mining_area": "พื้นที่​ขุด​เหมือง​ริม​ผา",
           "temporary_stockpile": "พื้นที่​จัดเก็บ​ชั่วคราว",
-          "blightcliff_observation_post": "จุด​ตรวจการณ์​หน้าผา​เสื่อมสลาย",
+          "blightcliff_observation_post": "จุด​ตรวจการณ์​หน้าผา​ไบ​ล​ท์",
           "mining_area_clinic": "คลินิก​พื้นที่​ขุด​เหมือง",
           "mining_camp": "ค่าย​ขุด​เหมือง",
           "mountain_passage": "ช่องทาง​ขุนเขา",
@@ -106,7 +106,7 @@
           "woodland_fringes": "ชายป่า",
           "mountain_top": "ยอดเขา",
           "eastern_passageway": "ทางเดิน​ฝั่ง​ตะวันออก",
-          "core_aic_area": "พื้นที่​ AIC ​แกน​หลัก"
+          "core_aic_area": "พื้นที่​ AIC แกน​หลัก"
         }
       }
     }
@@ -121,8 +121,8 @@
           "bugui_grove": "ป่า​ปู้​กุ้​ย",
           "agricultural_test_site": "พื้นที่​ทดสอบ​การเกษตร",
           "technological_production_office": "สำนักงาน​การผลิต​เทคโนโลยี",
-          "core_aic_area": "พื้นที่​ AIC ​แกน​หลัก",
-          "chenshan_way": "เส้นทาง​เฉินซาน",
+          "core_aic_area": "พื้นที่​ AIC แกน​หลัก",
+          "chenshan_way": "เส้นทาง​เฉิน​ชาน",
           "bureau_of_swordmancers": "สำนัก​นัก​ดาบ​เวท",
           "residential_area": "พื้นที่​พักอาศัย",
           "monitoring_center": "ศูนย์​เฝ้า​ระวัง",
@@ -163,13 +163,24 @@
           "sword_quenching_marsh": "บึง​ชุบ​ดาบ",
           "everwater_brook": "ลำธาร​นิรันดร์"
         }
+      },
+      "QB": {
+        "name": "ค่าย​ชิง​ป๋อ",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "สันเขา​ครอง​นภา",
+          "ancestral_spring": "น้ำพุ​แห่ง​บรรพบุรุษ",
+          "causeway_trail": "เส้นทาง​ยกระดับ",
+          "main_fort": "ป้อมปราการ​หลัก",
+          "bladewoods": "เบล​ด​วู้ด​ส์"
+        }
       }
     }
   },
   "DJ": {
-    "main": "OMV ​ตี้​เจียง",
+    "main": "OMV ตี้​เจียง",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "OMV ตี้​เจียง",
       "site": {
         "bridge": "สะพาน",
         "reception_room": "ห้อง​รับรอง​แขก",

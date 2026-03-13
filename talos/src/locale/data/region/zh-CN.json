@@ -163,6 +163,17 @@
           "sword_quenching_marsh": "淬剑荡",
           "everwater_brook": "水泽涧"
         }
+      },
+      "QB": {
+        "name": "清波寨",
+        "short": "清",
+        "site": {
+          "skyhold_ridge": "顶天梁",
+          "ancestral_spring": "祖泉",
+          "causeway_trail": "栈桥道",
+          "main_fort": "主寨",
+          "bladewoods": "青子林"
+        }
       }
     }
   },

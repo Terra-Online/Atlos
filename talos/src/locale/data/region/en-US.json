@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Treadway",
           "ecological_research_station": "Ecological Research Station",
-          "qingbo_bailey": "qingbo_bailey",
+          "qingbo_bailey": "Qingbo Bailey",
           "treasure_grotto": "Treasure Grotto",
           "sky_king_flats": "Sky King Flats",
           "stragglers_ford": "Stragglers Ford",
@@ -162,6 +162,17 @@
           "south_hill": "South Hill",
           "sword_quenching_marsh": "Sword Quenching Marsh",
           "everwater_brook": "Everwater Brook"
+        }
+      },
+      "QB": {
+        "name": "Qingbo Stockade",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "Skyhold Ridge",
+          "ancestral_spring": "Ancestral Spring",
+          "causeway_trail": "Causeway Trail",
+          "main_fort": "Main Fort",
+          "bladewoods": "Bladewoods"
         }
       }
     }

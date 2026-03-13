@@ -40,7 +40,7 @@
         }
       },
       "OP": {
-        "name": "源石研究パーク",
+        "name": "源石実験エリア",
         "short": "実",
         "site": {
           "control_center": "管制センター",
@@ -163,13 +163,24 @@
           "sword_quenching_marsh": "淬剣湖",
           "everwater_brook": "水沢谷"
         }
+      },
+      "QB": {
+        "name": "清波砦",
+        "short": "清",
+        "site": {
+          "skyhold_ridge": "頂天梁",
+          "ancestral_spring": "祖泉",
+          "causeway_trail": "陸橋道",
+          "main_fort": "主郭",
+          "bladewoods": "青鋒林"
+        }
       }
     }
   },
   "DJ": {
     "main": "O.M.V.帝江号",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "O.M.V.帝江号",
       "site": {
         "bridge": "ブリッジ",
         "reception_room": "応接室",

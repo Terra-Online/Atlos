@@ -25,7 +25,7 @@
         "site": {
           "originium_passage": "Pasaje de originio",
           "cradle_of_the_ages": "Cuna de las eras",
-          "mines_cable_car_station": "Estación de tranvías de las minas",
+          "mines_cable_car_station": "Estación de teleférico de las minas",
           "logistics_area": "Área de logística",
           "containment_zone_intersection": "Cruce de la zona de contención",
           "old_mines": "Minas antiguas",
@@ -36,11 +36,11 @@
           "mining_area_clinic": "Clínica de la zona minera",
           "mining_camp": "Campamento minero",
           "mountain_passage": "Paso montañoso",
-          "landbreaker_camp": "Campamento Rompesuelo"
+          "landbreaker_camp": "Campamento rompesuelos"
         }
       },
       "OP": {
-        "name": "Parque científico de Originio",
+        "name": "Parque científico de originio",
         "short": "CO",
         "site": {
           "control_center": "Centro de control",
@@ -50,7 +50,7 @@
           "originium_science_park": "Parque científico de Originio",
           "research_center": "Centro de investigación",
           "cliffside_trail": "Sendero del acantilado",
-          "mountain_path_slope": "Cuesta del camino de la montaña",
+          "mountain_path_slope": "Cuesta del sendero de la montaña",
           "kohl_plant": "Planta de Kohl",
           "eco_farm": "Granja ecológica",
           "infra_station": "Infraestación"
@@ -68,12 +68,12 @@
           "lifter_central": "Central de elevadores",
           "listening_post": "Puesto de escucha",
           "transfer_area": "Área de transferencia",
-          "quarry_site": "Cantera",
+          "quarry_site": "Sitio de la cantera",
           "staff_lounge": "Sala del personal"
         }
       },
       "VP": {
-        "name": "Senda del Valle",
+        "name": "Senda del valle",
         "short": "SV",
         "site": {
           "valley_fort": "Fuerte del valle",
@@ -102,7 +102,7 @@
           "aic_research_center": "Centro de investigación del CAI",
           "southern_meadows": "Prados del sur",
           "worker_dorms": "Dormitorios de trabajadores",
-          "mountain_side_trail": "Sendero de la ladera de la montaña",
+          "mountain_side_trail": "Sendero por la ladera de la montaña",
           "woodland_fringes": "Linderos del bosque",
           "mountain_top": "Cima de la montaña",
           "eastern_passageway": "Pasillo del Este",
@@ -131,7 +131,7 @@
           "fangxing_avenue": "Avenida Fangxing",
           "tianshi_pillar_array": "Conjunto de pilares de Tianshi",
           "maintenance_zone": "Zona de mantenimiento",
-          "institute_of_materials_science": "Instituto de ciencia de materiales",
+          "institute_of_materials_science": "Instituto de ciencia de los materiales",
           "tianshi_bureau_academy": "Academia de la Oficina de Tianshi",
           "citizen_square": "Plaza Ciudadana",
           "restricted_area": "Área restringida",
@@ -162,6 +162,17 @@
           "south_hill": "Colina Sur",
           "sword_quenching_marsh": "Pantano de forja de espadas",
           "everwater_brook": "Arroyo de Aguas Eternas"
+        }
+      },
+      "QB": {
+        "name": "Empalizada Qingbo",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "Cresta de Bastión Celestial",
+          "ancestral_spring": "Manantial ancestral",
+          "causeway_trail": "Sendero de la Calzada",
+          "main_fort": "Fuerte principal",
+          "bladewoods": "Bosque de Espadas"
         }
       }
     }

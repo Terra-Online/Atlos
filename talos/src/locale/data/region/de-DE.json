@@ -102,7 +102,7 @@
           "aic_research_center": "AIK-Forschungszentrum",
           "southern_meadows": "Südliche Auen",
           "worker_dorms": "Arbeiter-Schlafsäle",
-          "mountain_side_trail": "Bergpfad",
+          "mountain_side_trail": "Gebirgspfad",
           "woodland_fringes": "Waldrand",
           "mountain_top": "Berggipfel",
           "eastern_passageway": "Östlicher Durchgang",
@@ -131,7 +131,7 @@
           "fangxing_avenue": "Fangxing-Straße",
           "tianshi_pillar_array": "Tianshi-Säulenreihe",
           "maintenance_zone": "Wartungszone",
-          "institute_of_materials_science": "Institut der Materialwissenschaften",
+          "institute_of_materials_science": "Institut der Material-wissenschaften",
           "tianshi_bureau_academy": "Akademie der Tianshi-Behörde",
           "citizen_square": "Stadtplatz",
           "restricted_area": "Verbotener Bereich",
@@ -162,6 +162,17 @@
           "south_hill": "Südhügel",
           "sword_quenching_marsh": "Schwerttränkender Sumpf",
           "everwater_brook": "Ewigwasserbach"
+        }
+      },
+      "QB": {
+        "name": "Qingbo-Palisade",
+        "short": "QP",
+        "site": {
+          "skyhold_ridge": "Himmelsfestungs-kamm",
+          "ancestral_spring": "Ahnenquelle",
+          "causeway_trail": "Dammpfad",
+          "main_fort": "Hauptfort",
+          "bladewoods": "Klingenwald"
         }
       }
     }

@@ -126,7 +126,7 @@
           "bureau_of_swordmancers": "Bureau des spadamanciens",
           "residential_area": "Zone résidentielle",
           "monitoring_center": "Centre de surveillance",
-          "marker_stone_flats": "Résidence de la Pierre de marquage",
+          "marker_stone_flats": "Plaine de la pierre de marquage",
           "xiranflow_channel": "Canal de Xiranflux",
           "fangxing_avenue": "Avenue Fangxing",
           "tianshi_pillar_array": "Matrice du pilier des Tianshi",
@@ -162,6 +162,17 @@
           "south_hill": "Colline australe",
           "sword_quenching_marsh": "Marais de Trempépée",
           "everwater_brook": "Ruisseau des eaux éternelles"
+        }
+      },
+      "QB": {
+        "name": "Palanque de Qingbo",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "Crête céleste",
+          "ancestral_spring": "Source ancestrale",
+          "causeway_trail": "Chemin surélevé",
+          "main_fort": "Fort principal",
+          "bladewoods": "Bois des lames"
         }
       }
     }

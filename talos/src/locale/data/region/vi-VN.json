@@ -61,7 +61,7 @@
         "short": "MĐ",
         "site": {
           "quarry_entrance": "Cổng Vào Mỏ Đá",
-          "refuse_stockpile": "Bãi Phế Liệu",
+          "refuse_stockpile": "Khu Xử Lý Phế Liệu",
           "loading_area": "Khu Vực Tải",
           "stockpile_area": "Khu Dự Trữ",
           "deep_management_post": "Chốt Điều Hành Lòng Đất",
@@ -126,7 +126,7 @@
           "bureau_of_swordmancers": "Cục Kiếm Sĩ Hongshan",
           "residential_area": "Khu Dân Cư",
           "monitoring_center": "Trung Tâm Giám Sát",
-          "marker_stone_flats": "Bình Nguyên Đá Chỉ Dấu",
+          "marker_stone_flats": "Bãi Đá Ranh Giới",
           "xiranflow_channel": "Dòng Chảy Xiranflow",
           "fangxing_avenue": "Đại Lộ Phương Hưng",
           "tianshi_pillar_array": "Trận Cột Thiên Sư",
@@ -151,7 +151,7 @@
         "site": {
           "treadway": "Lối Mòn",
           "ecological_research_station": "Trạm Nghiên Cứu Sinh Thái",
-          "qingbo_bailey": "Sân Trong Trại Thanh Ba",
+          "qingbo_bailey": "Ngoại Thành Thanh Ba",
           "treasure_grotto": "Hang Động Kho Báu",
           "sky_king_flats": "Bình Nguyên Thiên Vương",
           "stragglers_ford": "Bến Cho Kẻ Lạc",
@@ -160,8 +160,19 @@
           "zhailing_islet": "Cồn Hái Ấu",
           "gloomvale": "Thung Lũng U Ám",
           "south_hill": "Đồi Nam",
-          "sword_quenching_marsh": "Đầm Luyện Kiếm",
+          "sword_quenching_marsh": "Đầm Rèn Kiếm",
           "everwater_brook": "Suối Vĩnh Cửu"
+        }
+      },
+      "QB": {
+        "name": "Trại Thanh Ba",
+        "short": "TB",
+        "site": {
+          "skyhold_ridge": "Xà Chống Trời",
+          "ancestral_spring": "Suối Tiền Nhân",
+          "causeway_trail": "Lối Mòn Đê Đá",
+          "main_fort": "Pháo Đài Chính",
+          "bladewoods": "Rừng Gươm"
         }
       }
     }

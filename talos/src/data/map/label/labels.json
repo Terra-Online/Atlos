@@ -148,8 +148,8 @@
             4982
           ]
         },
-        "WL/JY/qingbo bailey": {
-          "id": "WL/JY/qingbo bailey",
+        "WL/JY/qingbo_bailey": {
+          "id": "WL/JY/qingbo_bailey",
           "type": "site",
           "region": "WL",
           "sub": "JY",
@@ -509,6 +509,71 @@
           "point": [
             3745,
             2845
+          ]
+        },
+        "WL/QB/ancestral_spring": {
+          "id": "WL/QB/ancestral_spring",
+          "type": "site",
+          "region": "WL",
+          "sub": "QB",
+          "site": "ancestral_spring",
+          "point": [
+            6909,
+            4610.5
+          ]
+        },
+        "WL/QB/main_fort": {
+          "id": "WL/QB/main_fort",
+          "type": "site",
+          "region": "WL",
+          "sub": "QB",
+          "site": "main_fort",
+          "point": [
+            6857.168010556544,
+            5585.0829112019455
+          ]
+        },
+        "WL/QB/bladewoods": {
+          "id": "WL/QB/bladewoods",
+          "type": "site",
+          "region": "WL",
+          "sub": "QB",
+          "site": "bladewoods",
+          "point": [
+            6281.229537280101,
+            6098.795987733972
+          ]
+        },
+        "WL/QB/causeway_trail": {
+          "id": "WL/QB/causeway_trail",
+          "type": "site",
+          "region": "WL",
+          "sub": "QB",
+          "site": "causeway_trail",
+          "point": [
+            6250.82394568908,
+            5353.505440363351
+          ]
+        },
+        "WL/QB/skyhold_ridge": {
+          "id": "WL/QB/skyhold_ridge",
+          "type": "site",
+          "region": "WL",
+          "sub": "QB",
+          "site": "skyhold_ridge",
+          "point": [
+            6048.567914919969,
+            4841.040662615635
+          ]
+        },
+        "WL/QB": {
+          "id": "WL/QB",
+          "type": "sub",
+          "region": "WL",
+          "sub": "QB",
+          "point": [
+            6624,
+            5416
           ]
         }
       }

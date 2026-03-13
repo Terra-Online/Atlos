@@ -96,7 +96,7 @@
           "hub_base_power_plant": "Usina de Energia da Base Central",
           "hub_west": "Base Oeste",
           "originium_byproduct_processing_center": "Centro de Processamento de Subprodutos de Originium",
-          "construction_site": "Canteiro de Obras",
+          "construction_site": "Local de Construção",
           "hub_base": "Base Central",
           "old_factory": "Fábrica Antiga",
           "aic_research_center": "Centro de Pesquisa do CAI",
@@ -162,6 +162,17 @@
           "south_hill": "Colina Sul",
           "sword_quenching_marsh": "Pântano da Têmpera de Espadas",
           "everwater_brook": "Riacho Everwater"
+        }
+      },
+      "QB": {
+        "name": "Paliçada de Qingbo",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "Cume das Nuvens",
+          "ancestral_spring": "Fonte Ancestral",
+          "causeway_trail": "Trilha da Calçada",
+          "main_fort": "Forte Principal",
+          "bladewoods": "Bladewoods"
         }
       }
     }

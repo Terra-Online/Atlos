@@ -1,5 +1,599 @@
 [
   {
+    "id": 26800020600,
+    "position": [
+      -570.6822,
+      893.2846
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800020601,
+    "position": [
+      -566.977,
+      881.8574
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800020605,
+    "position": [
+      -581.7849,
+      889.0867
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020606,
+    "position": [
+      -582.0409,
+      896.2312
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020607,
+    "position": [
+      -587.4605,
+      893.0511
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020610,
+    "position": [
+      -625.1688,
+      886.4956
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800020614,
+    "position": [
+      -582.101,
+      905.7237
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800020619,
+    "position": [
+      -565.2311,
+      699.8443
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020620,
+    "position": [
+      -551.5371,
+      697.6929
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020621,
+    "position": [
+      -556.8837,
+      701.7036
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020622,
+    "position": [
+      -555.0283,
+      691.3303
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800020632,
+    "position": [
+      -563.5335,
+      692.4932
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800020641,
+    "position": [
+      -656.6822,
+      774.9244
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800020642,
+    "position": [
+      -679.1312,
+      731.8634
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800020643,
+    "position": [
+      -663.143,
+      780.5836
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020644,
+    "position": [
+      -667.7798,
+      771.2415
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020645,
+    "position": [
+      -682.474,
+      733.8157
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020646,
+    "position": [
+      -662.6307,
+      767.4912
+    ],
+    "subregionId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800020920,
+    "position": [
+      -548.6929,
+      882.0752
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800020922,
+    "position": [
+      -565.6397,
+      873.196
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800020974,
+    "position": [
+      -552.9373,
+      887.3271
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020975,
+    "position": [
+      -556.6926,
+      880.5854
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020976,
+    "position": [
+      -551.7211,
+      882.1754
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020977,
+    "position": [
+      -625.1338,
+      878.3305
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800020980,
+    "position": [
+      -583.9613,
+      874.9885
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_raider"
+  },
+  {
+    "id": 26800020981,
+    "position": [
+      -582.0386,
+      880.5894
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800020982,
+    "position": [
+      -576.6154,
+      878.3944
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800021234,
+    "position": [
+      -633.5997,
+      892.6134
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021235,
+    "position": [
+      -634.9326,
+      872.1875
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021237,
+    "position": [
+      -580.0044,
+      859.6506
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021238,
+    "position": [
+      -588.5977,
+      911.6305
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021239,
+    "position": [
+      -588.5794,
+      899.1711
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021261,
+    "position": [
+      -559.0629,
+      873.0355
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021262,
+    "position": [
+      -562.5601,
+      878.6536
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021296,
+    "position": [
+      -684.2237,
+      891.3127
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021298,
+    "position": [
+      -699.979,
+      890.7615
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021299,
+    "position": [
+      -707.3743,
+      901.1497
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021300,
+    "position": [
+      -709.2093,
+      878.7621
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021301,
+    "position": [
+      -693.6119,
+      901.2769
+    ],
+    "subregionId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800020709,
+    "position": [
+      -562.0909,
+      829.7259
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020711,
+    "position": [
+      -677.5025,
+      799.4942
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020712,
+    "position": [
+      -628.3639,
+      698.4957
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020743,
+    "position": [
+      -568.812,
+      848.7425
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020744,
+    "position": [
+      -516.4724,
+      874.6281
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020755,
+    "position": [
+      -640.1628,
+      901.2133
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020781,
+    "position": [
+      -622.9866,
+      847.5129
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020788,
+    "position": [
+      -590.0209,
+      824.4682
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020826,
+    "position": [
+      -629.3529,
+      923.247
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020852,
+    "position": [
+      -580.462,
+      926.1872
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020876,
+    "position": [
+      -496.1353,
+      938.353
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800020891,
+    "position": [
+      -591.9199,
+      712.6366
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020892,
+    "position": [
+      -611.2176,
+      927.2472
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020893,
+    "position": [
+      -593.8787,
+      906.0257
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800020895,
+    "position": [
+      -609.0493,
+      784.1452
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800020916,
+    "position": [
+      -508.995,
+      821.6724
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800020918,
+    "position": [
+      -525.8778,
+      873.2289
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800020948,
+    "position": [
+      -555.7111,
+      831.2947
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020949,
+    "position": [
+      -514.5734,
+      852.2618
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020954,
+    "position": [
+      -541.4345,
+      918.9897
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021231,
+    "position": [
+      -534.7652,
+      773.7825
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021257,
+    "position": [
+      -563.073,
+      836.1802
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021260,
+    "position": [
+      -555.3371,
+      916.6377
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021316,
+    "position": [
+      -703.9177,
+      890.7191
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021323,
+    "position": [
+      -521.4172,
+      880.7963
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800021348,
+    "position": [
+      -488.8266,
+      867.2747
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021472,
+    "position": [
+      -586.622,
+      700.4422
+    ],
+    "subregionId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
     "id": 26800001153,
     "position": [
       -404.6667,
@@ -1224,6 +1818,15 @@
     "type": "zipline_pylon"
   },
   {
+    "id": 26800001086,
+    "position": [
+      -52.1565,
+      784.1028
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
     "id": 26800001146,
     "position": [
       -280.8909,
@@ -1467,10 +2070,37 @@
     "type": "crate_i"
   },
   {
+    "id": 26800001606,
+    "position": [
+      351.8632,
+      682.9355
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800001608,
+    "position": [
+      310.0578,
+      507.1839
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
+  },
+  {
     "id": 26800001626,
     "position": [
       -603.2499,
       635.3616
+    ],
+    "subregionId": "ES_1",
+    "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001627,
+    "position": [
+      -435.0484,
+      866.7119
     ],
     "subregionId": "ES_1",
     "type": "zipline_pylon"
@@ -1654,6 +2284,15 @@
     ],
     "subregionId": "ES_1",
     "type": "zipline_pylon"
+  },
+  {
+    "id": 26800001904,
+    "position": [
+      152.6123,
+      1068.03
+    ],
+    "subregionId": "ES_1",
+    "type": "rope"
   },
   {
     "id": 26800004161,

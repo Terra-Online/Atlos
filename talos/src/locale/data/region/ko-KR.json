@@ -40,7 +40,7 @@
         }
       },
       "OP": {
-        "name": "오리지늄 연구 구역",
+        "name": "오리지늄 실험 구역",
         "short": "OP",
         "site": {
           "control_center": "제어실",
@@ -163,13 +163,24 @@
           "sword_quenching_marsh": "쉬검 호수",
           "everwater_brook": "수택 계곡"
         }
+      },
+      "QB": {
+        "name": "청파채",
+        "short": "QB",
+        "site": {
+          "skyhold_ridge": "정천 다리",
+          "ancestral_spring": "선조의 샘",
+          "causeway_trail": "잔교길",
+          "main_fort": "주채",
+          "bladewoods": "청자숲"
+        }
       }
     }
   },
   "DJ": {
     "main": "O.M.V. 제강호",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "O.M.V. 제강호",
       "site": {
         "bridge": "갑판",
         "reception_room": "응접실",
