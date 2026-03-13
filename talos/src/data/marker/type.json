@@ -834,9 +834,9 @@
         },
         "faction": "Landbreakers"
     },
-    "ruanyi": {
-        "key": "ruanyi",
-        "name": "Ruanyi",
+    "ruan_yi": {
+        "key": "ruan_yi",
+        "name": "Ruan Yi",
         "category": {
             "main": "enemy",
             "sub": "boss"
@@ -1383,8 +1383,8 @@
         "tier": "common",
         "faction": "Wildlife"
     },
-    "acid_originium_sluga": {
-        "key": "acid_originium_sluga",
+    "acid_originium_slug_a": {
+        "key": "acid_originium_slug_a",
         "name": "Acid Originium Slug·α",
         "category": {
             "main": "enemy",
