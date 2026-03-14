@@ -155,8 +155,8 @@
   {
     "id": 3500030895,
     "position": [
-      -302.9136,
-      710.9698
+      -276.2037,
+      701.8802
     ],
     "subregionId": "VL_6",
     "type": "heavy_ram"
@@ -164,8 +164,8 @@
   {
     "id": 3500030896,
     "position": [
-      -303.0377,
-      713.4556
+      -275.9217,
+      702.9591
     ],
     "subregionId": "VL_6",
     "type": "sting_a"
@@ -173,8 +173,8 @@
   {
     "id": 3500030897,
     "position": [
-      -304.8128,
-      710.5645
+      -277.6711,
+      701.4512
     ],
     "subregionId": "VL_6",
     "type": "sting_a"
@@ -236,8 +236,8 @@
   {
     "id": 3500030910,
     "position": [
-      -288.5755,
-      785.4653
+      -293.7244,
+      776.3967
     ],
     "subregionId": "VL_6",
     "type": "heavy_ram"
@@ -245,8 +245,8 @@
   {
     "id": 3500030911,
     "position": [
-      -286.507,
-      786.0926
+      -292.7294,
+      775.0956
     ],
     "subregionId": "VL_6",
     "type": "sting"
@@ -254,8 +254,8 @@
   {
     "id": 3500030912,
     "position": [
-      -288.355,
-      787.7919
+      -294.906,
+      775.6029
     ],
     "subregionId": "VL_6",
     "type": "sting"
@@ -326,8 +326,8 @@
   {
     "id": 3500030925,
     "position": [
-      -280.1836,
-      777.8215
+      -300.6826,
+      831.5748
     ],
     "subregionId": "VL_6",
     "type": "ram"
@@ -335,8 +335,8 @@
   {
     "id": 3500030926,
     "position": [
-      -283.373,
-      775.8856
+      -299.3539,
+      829.5447
     ],
     "subregionId": "VL_6",
     "type": "ram"
@@ -344,8 +344,8 @@
   {
     "id": 3500030927,
     "position": [
-      -280.7546,
-      775.1881
+      -300.4766,
+      830.3214
     ],
     "subregionId": "VL_6",
     "type": "heavy_sting"
@@ -3312,6 +3312,24 @@
     "type": "auronyx_spot"
   },
   {
+    "id": 3500170001,
+    "position": [
+      -376.5182,
+      725.3803
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 3500170004,
+    "position": [
+      -370.333,
+      721.7327
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene"
+  },
+  {
     "id": 3500160000,
     "position": [
       -180.4719,
@@ -3454,6 +3472,240 @@
     ],
     "subregionId": "VL_6",
     "type": "delta_bot"
+  },
+  {
+    "id": 3500090001,
+    "position": [
+      -361.3072,
+      829.9645
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090002,
+    "position": [
+      -347.0994,
+      831.7795
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090003,
+    "position": [
+      -348.6777,
+      832.5291
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090005,
+    "position": [
+      -355.1347,
+      821.789
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090007,
+    "position": [
+      -369.9228,
+      787.7474
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090009,
+    "position": [
+      -346.3611,
+      803.8246
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090013,
+    "position": [
+      -345.5361,
+      722.5943
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 3500090016,
+    "position": [
+      -337.9681,
+      661.8431
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090019,
+    "position": [
+      -457.8738,
+      840.1285
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 3500090022,
+    "position": [
+      -365.904,
+      844.8548
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 3500090023,
+    "position": [
+      -379.3107,
+      797.2708
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090024,
+    "position": [
+      -342.4597,
+      835.0129
+    ],
+    "subregionId": "VL_6",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 3500090025,
+    "position": [
+      -223.4752,
+      813.7317
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 3500090031,
+    "position": [
+      -374.9108,
+      726.753
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090032,
+    "position": [
+      -423.7216,
+      700.4137
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_audiotape"
+  },
+  {
+    "id": 3500090033,
+    "position": [
+      -388.2534,
+      695.8145
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 3500090035,
+    "position": [
+      -359.9484,
+      675.5358
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_audiotape"
+  },
+  {
+    "id": 3500090040,
+    "position": [
+      -284.6875,
+      722.5703
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090042,
+    "position": [
+      -344.8157,
+      845.3034
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 3500090047,
+    "position": [
+      -347.8775,
+      829.8754
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 3500090049,
+    "position": [
+      -343.1046,
+      810.9022
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 3500090051,
+    "position": [
+      -339.5862,
+      810.8915
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene_book"
+  },
+  {
+    "id": 3500090053,
+    "position": [
+      -215.3297,
+      615.1738
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 3500090054,
+    "position": [
+      -343.8172,
+      666.1918
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 3500090055,
+    "position": [
+      -361.3358,
+      676.5924
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 3500090056,
+    "position": [
+      -374.8063,
+      800.1932
+    ],
+    "subregionId": "VL_6",
+    "type": "int_narrative_scene"
   },
   {
     "id": 3500021701,

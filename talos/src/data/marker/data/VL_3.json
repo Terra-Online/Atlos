@@ -1404,6 +1404,15 @@
     "type": "glowbug"
   },
   {
+    "id": 300010278,
+    "position": [
+      -833.3401,
+      699.2064
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
     "id": 300140001,
     "position": [
       -800.9408,
@@ -1438,6 +1447,204 @@
     ],
     "subregionId": "VL_3",
     "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 300030037,
+    "position": [
+      -765.9544,
+      683.939
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 300030040,
+    "position": [
+      -789.4359,
+      672.5565
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 300030041,
+    "position": [
+      -797.0405,
+      688.2253
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 300030050,
+    "position": [
+      -841.3521,
+      686.665
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 300030054,
+    "position": [
+      -769.5899,
+      726.2421
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 300030064,
+    "position": [
+      -776.7459,
+      591.4208
+    ],
+    "subregionId": "VL_3",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 300030065,
+    "position": [
+      -758.7848,
+      726.8266
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_common_audiotape"
+  },
+  {
+    "id": 300030066,
+    "position": [
+      -818.6761,
+      661.8361
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 300030067,
+    "position": [
+      -824.3185,
+      701.0087
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_notebook"
+  },
+  {
+    "id": 300030068,
+    "position": [
+      -835.9034,
+      697.5948
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_pad"
+  },
+  {
+    "id": 300030069,
+    "position": [
+      -847.1977,
+      694.1636
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_notebook"
+  },
+  {
+    "id": 300030070,
+    "position": [
+      -854.305,
+      685.9323
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 300030071,
+    "position": [
+      -888.9299,
+      611.0472
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_expensiveBook"
+  },
+  {
+    "id": 300030072,
+    "position": [
+      -892.6751,
+      639.8755
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_pad"
+  },
+  {
+    "id": 300030073,
+    "position": [
+      -758.6755,
+      733.1688
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 300030074,
+    "position": [
+      -755.7627,
+      728.261
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_document"
+  },
+  {
+    "id": 300030075,
+    "position": [
+      -763.878,
+      661.2143
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_document"
+  },
+  {
+    "id": 300030076,
+    "position": [
+      -864.3259,
+      646.5127
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 300030077,
+    "position": [
+      -903.5923,
+      658.9163
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 300030078,
+    "position": [
+      -758.1796,
+      683.4709
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 300030079,
+    "position": [
+      -857.636,
+      688.3422
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_expensiveBook"
+  },
+  {
+    "id": 300030080,
+    "position": [
+      -882.6427,
+      678.0601
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_pad"
   },
   {
     "id": 300001737,
@@ -2180,8 +2387,8 @@
   {
     "id": 300002340,
     "position": [
-      -775.0968,
-      595.1774
+      -775.0593,
+      595.2936
     ],
     "subregionId": "VL_3",
     "type": "crate_ii"
@@ -2189,8 +2396,8 @@
   {
     "id": 300002341,
     "position": [
-      -774.2155,
-      595.8102
+      -774.2521,
+      595.8641
     ],
     "subregionId": "VL_3",
     "type": "crate_iii"
@@ -2198,8 +2405,8 @@
   {
     "id": 300002342,
     "position": [
-      -773.3896,
-      596.413
+      -773.4313,
+      596.4069
     ],
     "subregionId": "VL_3",
     "type": "crate_ii"
@@ -2513,8 +2720,8 @@
   {
     "id": 300002599,
     "position": [
-      -853.5245,
-      701.7892
+      -853.6108,
+      701.7606
     ],
     "subregionId": "VL_3",
     "type": "crate_ii"
@@ -2576,8 +2783,8 @@
   {
     "id": 300002606,
     "position": [
-      -834.7027,
-      604.379
+      -834.7079,
+      604.3508
     ],
     "subregionId": "VL_3",
     "type": "crate_ii"
@@ -2610,6 +2817,15 @@
     "type": "gather"
   },
   {
+    "id": 300002655,
+    "position": [
+      -829.7804,
+      652.6828
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_common_pad"
+  },
+  {
     "id": 300002664,
     "position": [
       -769.3095,
@@ -2626,6 +2842,24 @@
     ],
     "subregionId": "VL_3",
     "type": "tp_point"
+  },
+  {
+    "id": 300002671,
+    "position": [
+      -830.611,
+      657.676
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 300002672,
+    "position": [
+      -829.2001,
+      659.858
+    ],
+    "subregionId": "VL_3",
+    "type": "int_narrative_scene_empty"
   },
   {
     "id": 300002673,

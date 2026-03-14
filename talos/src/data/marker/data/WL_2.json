@@ -27,51 +27,6 @@
     "type": "exploration_level"
   },
   {
-    "id": 22800530079,
-    "position": [
-      -207.3842,
-      554.9191
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800530102,
-    "position": [
-      -209.3785,
-      554.6945
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800530103,
-    "position": [
-      -207.5018,
-      557.9255
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800530107,
-    "position": [
-      -230.3475,
-      569.7463
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800530108,
-    "position": [
-      -229.9404,
-      568.6161
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
     "id": 22800530110,
     "position": [
       -243.1489,
@@ -99,15 +54,6 @@
     "type": "road_plunderer"
   },
   {
-    "id": 22800530159,
-    "position": [
-      -226.6582,
-      569.4611
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
     "id": 22800530160,
     "position": [
       -211.6373,
@@ -130,24 +76,6 @@
     "position": [
       -209.3498,
       539.419
-    ],
-    "subregionId": "WL_2",
-    "type": "grove_archer"
-  },
-  {
-    "id": 22800530163,
-    "position": [
-      -208.5728,
-      556.856
-    ],
-    "subregionId": "WL_2",
-    "type": "grove_archer"
-  },
-  {
-    "id": 22800530164,
-    "position": [
-      -210.1415,
-      556.075
     ],
     "subregionId": "WL_2",
     "type": "grove_archer"
@@ -207,40 +135,13 @@
     "type": "grove_archer"
   },
   {
-    "id": 22800530229,
-    "position": [
-      -254.6085,
-      577.0898
-    ],
-    "subregionId": "WL_2",
-    "type": "grove_archer"
-  },
-  {
     "id": 22800530276,
     "position": [
-      -245.158,
-      557.6219
+      -209.8362,
+      554.9289
     ],
     "subregionId": "WL_2",
     "type": "tidewalker_d"
-  },
-  {
-    "id": 22800530277,
-    "position": [
-      -243.3956,
-      558.4241
-    ],
-    "subregionId": "WL_2",
-    "type": "hedron_d"
-  },
-  {
-    "id": 22800530278,
-    "position": [
-      -243.6755,
-      556.3734
-    ],
-    "subregionId": "WL_2",
-    "type": "hedron_d"
   },
   {
     "id": 22800530282,
@@ -340,6 +241,15 @@
     ],
     "subregionId": "WL_2",
     "type": "grove_archer"
+  },
+  {
+    "id": 22800530334,
+    "position": [
+      -209.8362,
+      554.9288
+    ],
+    "subregionId": "WL_2",
+    "type": "tidewalker_d"
   },
   {
     "id": 22800530008,
@@ -1276,33 +1186,6 @@
     ],
     "subregionId": "WL_2",
     "type": "waterlamp"
-  },
-  {
-    "id": 22800540031,
-    "position": [
-      -433.0668,
-      475.0051
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800540032,
-    "position": [
-      -433.8106,
-      476.3693
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 22800540033,
-    "position": [
-      -433.6424,
-      478.0656
-    ],
-    "subregionId": "WL_2",
-    "type": "road_plunderer"
   },
   {
     "id": 22800540040,
@@ -2563,6 +2446,15 @@
     ],
     "subregionId": "WL_2",
     "type": "delta_bot"
+  },
+  {
+    "id": 22800031002,
+    "position": [
+      -493.9451,
+      645.2117
+    ],
+    "subregionId": "WL_2",
+    "type": "tp_point"
   },
   {
     "id": 22800410012,
@@ -4023,6 +3915,96 @@
     "type": "cratelocked"
   },
   {
+    "id": 22800620002,
+    "position": [
+      -445.0779,
+      343.2417
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800620003,
+    "position": [
+      -415.2949,
+      326.0364
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800620004,
+    "position": [
+      -418.678,
+      348.3442
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800180033,
+    "position": [
+      -497.8423,
+      642.4057
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800180034,
+    "position": [
+      -501.558,
+      672.53
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800720003,
+    "position": [
+      -217.576,
+      437.503
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_appliance"
+  },
+  {
+    "id": 22800720004,
+    "position": [
+      -240.6456,
+      439.043
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_bag"
+  },
+  {
+    "id": 22800630004,
+    "position": [
+      -492.2476,
+      605.7266
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800630005,
+    "position": [
+      -470.3517,
+      592.8395
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800630006,
+    "position": [
+      -467.1268,
+      611.6713
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
     "id": 22800050035,
     "position": [
       -237.8537,
@@ -5335,6 +5317,672 @@
     ],
     "subregionId": "WL_2",
     "type": "gather"
+  },
+  {
+    "id": 22800420001,
+    "position": [
+      -279.8357,
+      557.2045
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420002,
+    "position": [
+      -228.2653,
+      506.3193
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420003,
+    "position": [
+      -370.8889,
+      500.4123
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420004,
+    "position": [
+      -371.5542,
+      437.7484
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 22800420005,
+    "position": [
+      -307.1076,
+      491.5737
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_audiotape"
+  },
+  {
+    "id": 22800420006,
+    "position": [
+      -285.3064,
+      490.345
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_screen"
+  },
+  {
+    "id": 22800420007,
+    "position": [
+      -289.9232,
+      483.621
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420008,
+    "position": [
+      -287.8281,
+      464.9831
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420009,
+    "position": [
+      -299.2449,
+      477.7975
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420010,
+    "position": [
+      -287.2516,
+      452.7473
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420011,
+    "position": [
+      -260.5254,
+      496.2819
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420012,
+    "position": [
+      -226.581,
+      465.9556
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420013,
+    "position": [
+      -229.3237,
+      472.3916
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420014,
+    "position": [
+      -235.3227,
+      482.7544
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420015,
+    "position": [
+      -187.4161,
+      494.8719
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_document"
+  },
+  {
+    "id": 22800420016,
+    "position": [
+      -359.2749,
+      468.301
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420017,
+    "position": [
+      -362.6091,
+      445.1087
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420018,
+    "position": [
+      -284.5472,
+      416.6543
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 22800420019,
+    "position": [
+      -304.7919,
+      410.8104
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_bag"
+  },
+  {
+    "id": 22800420020,
+    "position": [
+      -326.4809,
+      408.8653
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420021,
+    "position": [
+      -344.5011,
+      416.9381
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420022,
+    "position": [
+      -381.494,
+      412.1428
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420023,
+    "position": [
+      -394.3418,
+      409.7049
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 22800420024,
+    "position": [
+      -351.11,
+      417.6735
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420025,
+    "position": [
+      -407.9903,
+      376.627
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420026,
+    "position": [
+      -392.1361,
+      370.8258
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420027,
+    "position": [
+      -362.2937,
+      354.1318
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420028,
+    "position": [
+      -354.6171,
+      361.4217
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420029,
+    "position": [
+      -350.0289,
+      355.56
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420030,
+    "position": [
+      -374.5227,
+      351.2592
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420031,
+    "position": [
+      -372.4725,
+      348.1519
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420032,
+    "position": [
+      -363.9281,
+      363.3957
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420033,
+    "position": [
+      -373.0887,
+      347.716
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420034,
+    "position": [
+      -350.9025,
+      350.8873
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420035,
+    "position": [
+      -437.6048,
+      327.3589
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 22800420036,
+    "position": [
+      -338.2819,
+      349.2845
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 22800420037,
+    "position": [
+      -272.315,
+      352.1006
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420038,
+    "position": [
+      -265.8564,
+      484.4577
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420039,
+    "position": [
+      -250.3513,
+      409.7068
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420040,
+    "position": [
+      -243.3331,
+      387.0098
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420041,
+    "position": [
+      -232.1889,
+      425.6378
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420042,
+    "position": [
+      -215.0421,
+      399.7338
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420043,
+    "position": [
+      -173.6898,
+      407.8167
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420044,
+    "position": [
+      -137.9469,
+      404.0569
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 22800420045,
+    "position": [
+      -113.386,
+      401.9568
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420046,
+    "position": [
+      -129.4109,
+      425.9691
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_news"
+  },
+  {
+    "id": 22800420047,
+    "position": [
+      -81.9388,
+      403.4543
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_notebook"
+  },
+  {
+    "id": 22800420048,
+    "position": [
+      -69.0808,
+      428.6981
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 22800420049,
+    "position": [
+      -94.9054,
+      426.3993
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 22800420050,
+    "position": [
+      -109.2076,
+      441.4118
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420051,
+    "position": [
+      -96.0284,
+      462.4741
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420052,
+    "position": [
+      -127.8596,
+      568.9062
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420053,
+    "position": [
+      -161.8498,
+      611.8787
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_document"
+  },
+  {
+    "id": 22800420054,
+    "position": [
+      -161.4781,
+      655.6084
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_audiotape"
+  },
+  {
+    "id": 22800420055,
+    "position": [
+      -190.1846,
+      608.6519
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420056,
+    "position": [
+      -257.2288,
+      593.3351
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420057,
+    "position": [
+      -330.0537,
+      580.1808
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800420058,
+    "position": [
+      -465.9391,
+      377.3354
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_expensivebook"
+  },
+  {
+    "id": 22800420059,
+    "position": [
+      -394.9222,
+      684.4584
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 22800420060,
+    "position": [
+      -480.3949,
+      639.9631
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420063,
+    "position": [
+      -434.8335,
+      634.3373
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 22800420064,
+    "position": [
+      -436.503,
+      600.7159
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420066,
+    "position": [
+      -486.6249,
+      605.6006
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420067,
+    "position": [
+      -491.7656,
+      616.6332
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 22800420071,
+    "position": [
+      -483.1786,
+      634.8859
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 22800420072,
+    "position": [
+      -356.36,
+      449.8272
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420073,
+    "position": [
+      -337.4626,
+      387.1464
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420074,
+    "position": [
+      -333.065,
+      400.4328
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420075,
+    "position": [
+      -355.0814,
+      432.6752
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 22800420076,
+    "position": [
+      -372.8304,
+      358.5429
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420077,
+    "position": [
+      -129.4978,
+      426.2543
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 22800420078,
+    "position": [
+      -69.9686,
+      449.7526
+    ],
+    "subregionId": "WL_2",
+    "type": "int_trigger_dnarrative_letter"
+  },
+  {
+    "id": 22800420081,
+    "position": [
+      -261.2779,
+      421.391
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 22800420082,
+    "position": [
+      -369.3388,
+      427.5924
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_pad"
   },
   {
     "id": 22800170001,
@@ -10125,6 +10773,33 @@
     "type": "glowbug"
   },
   {
+    "id": 22800640001,
+    "position": [
+      -363.8992,
+      493.2449
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800640002,
+    "position": [
+      -353.7914,
+      468.7582
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
+    "id": 22800640003,
+    "position": [
+      -358.2395,
+      473.4337
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
+  },
+  {
     "id": 22800670001,
     "position": [
       -188.0854,
@@ -10132,6 +10807,24 @@
     ],
     "subregionId": "WL_2",
     "type": "delta_bot"
+  },
+  {
+    "id": 22800070004,
+    "position": [
+      -393.1282,
+      375.2579
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_book"
+  },
+  {
+    "id": 22800070005,
+    "position": [
+      -392.8762,
+      373.4733
+    ],
+    "subregionId": "WL_2",
+    "type": "int_narrative_common_empty"
   },
   {
     "id": 22800010003,
@@ -11072,8 +11765,8 @@
   {
     "id": 22800580189,
     "position": [
-      -397.2086,
-      637.3146
+      -399.4141,
+      640.7038
     ],
     "subregionId": "WL_2",
     "type": "road_plunderer"
@@ -11081,8 +11774,8 @@
   {
     "id": 22800580190,
     "position": [
-      -397.927,
-      636.3035
+      -400.4108,
+      639.968
     ],
     "subregionId": "WL_2",
     "type": "road_plunderer"
@@ -11117,8 +11810,8 @@
   {
     "id": 22800580198,
     "position": [
-      -396.8963,
-      636.3283
+      -399.4294,
+      639.6764
     ],
     "subregionId": "WL_2",
     "type": "grove_archer"

@@ -2405,8 +2405,8 @@
   {
     "id": 2800060328,
     "position": [
-      -166.4999,
-      487.1068
+      -166.4971,
+      487.4827
     ],
     "subregionId": "VL_7",
     "type": null
@@ -2415,7 +2415,7 @@
     "id": 2800060329,
     "position": [
       -165.9711,
-      486.5537
+      486.8157
     ],
     "subregionId": "VL_7",
     "type": null
@@ -3519,6 +3519,15 @@
     "type": "gather"
   },
   {
+    "id": 2800020045,
+    "position": [
+      -211.9898,
+      341.4161
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_empty"
+  },
+  {
     "id": 2800190000,
     "position": [
       -279.701,
@@ -3787,5 +3796,257 @@
     ],
     "subregionId": "VL_7",
     "type": "delta_bot"
+  },
+  {
+    "id": 2800140003,
+    "position": [
+      -203.4202,
+      477.2162
+    ],
+    "subregionId": "VL_7",
+    "type": "int_trigger_dnarrative_notebook"
+  },
+  {
+    "id": 2800140004,
+    "position": [
+      -147.952,
+      484.7709
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_newspapaer"
+  },
+  {
+    "id": 2800140005,
+    "position": [
+      -178.7792,
+      492.0558
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140006,
+    "position": [
+      -145.378,
+      450.0073
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140009,
+    "position": [
+      -337.2286,
+      448.1654
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140010,
+    "position": [
+      -329.7092,
+      458.5683
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140011,
+    "position": [
+      -236.9654,
+      481.4054
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140012,
+    "position": [
+      -253.1776,
+      470.5027
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140013,
+    "position": [
+      -208.9664,
+      529.9718
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140015,
+    "position": [
+      -260.642,
+      514.5353
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 2800140018,
+    "position": [
+      -191.3394,
+      341.5984
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140019,
+    "position": [
+      -192.8104,
+      348.0194
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140020,
+    "position": [
+      -197.0384,
+      342.9621
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140022,
+    "position": [
+      -270.724,
+      421.4526
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140036,
+    "position": [
+      -226.3289,
+      343.9821
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140040,
+    "position": [
+      -171.6341,
+      484.0735
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 2800140041,
+    "position": [
+      -140.2747,
+      463.5535
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140042,
+    "position": [
+      -163.1879,
+      475.7718
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140048,
+    "position": [
+      -218.9252,
+      433.3669
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
+  },
+  {
+    "id": 2800140050,
+    "position": [
+      -234.5879,
+      411.4582
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140052,
+    "position": [
+      -147.127,
+      475.0972
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene"
+  },
+  {
+    "id": 2800140061,
+    "position": [
+      -151.9133,
+      491.9884
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 2800140062,
+    "position": [
+      -297.5411,
+      434.0353
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_scene_empty"
+  },
+  {
+    "id": 2800140063,
+    "position": [
+      -281.2089,
+      491.6935
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140064,
+    "position": [
+      -267.5509,
+      462.21
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140065,
+    "position": [
+      -269.6453,
+      458.3161
+    ],
+    "subregionId": "VL_7",
+    "type": "int_trigger_dnarrative_appliance"
+  },
+  {
+    "id": 2800140066,
+    "position": [
+      -283.8076,
+      414.2193
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common_pad"
+  },
+  {
+    "id": 2800140067,
+    "position": [
+      -281.7554,
+      491.411
+    ],
+    "subregionId": "VL_7",
+    "type": "int_narrative_common"
   }
 ]
