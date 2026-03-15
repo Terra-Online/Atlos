@@ -124,6 +124,270 @@
         },
         "noFrame": true
     },
+    "white_package": {
+        "key": "white_package",
+        "name": "White Package",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "green_package": {
+        "key": "green_package",
+        "name": "Green Package",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "yellow_package": {
+        "key": "yellow_package",
+        "name": "Yellow Package",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "red_package": {
+        "key": "red_package",
+        "name": "Red Package",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "white_instrument_safe": {
+        "key": "white_instrument_safe",
+        "name": "White Instrument Safe",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "green_instrument_safe": {
+        "key": "green_instrument_safe",
+        "name": "Green Instrument Safe",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "yellow_instrument_safe": {
+        "key": "yellow_instrument_safe",
+        "name": "Yellow Instrument Safe",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "red_instrument_safe": {
+        "key": "red_instrument_safe",
+        "name": "Red Instrument Safe",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "white_auto_vender": {
+        "key": "white_auto_vender",
+        "name": "White Auto-Vender",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "green_auto_vender": {
+        "key": "green_auto_vender",
+        "name": "Green Auto-Vender",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "yellow_auto_vender": {
+        "key": "yellow_auto_vender",
+        "name": "Yellow Auto-Vender",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "red_auto_vender": {
+        "key": "red_auto_vender",
+        "name": "Red Auto-Vender",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "malformed_nodule_s": {
+        "key": "malformed_nodule_s",
+        "name": "Malformed Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "malformed_nodule_m": {
+        "key": "malformed_nodule_m",
+        "name": "Malformed Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "malformed_nodule_l": {
+        "key": "malformed_nodule_l",
+        "name": "Malformed Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "rough_nodule_s": {
+        "key": "rough_nodule_s",
+        "name": "Rough Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "rough_nodule_m": {
+        "key": "rough_nodule_m",
+        "name": "Rough Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "rough_nodule_l": {
+        "key": "rough_nodule_l",
+        "name": "Rough Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "common_nodule_s": {
+        "key": "common_nodule_s",
+        "name": "Common Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "common_nodule_m": {
+        "key": "common_nodule_m",
+        "name": "Common Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "common_nodule_l": {
+        "key": "common_nodule_l",
+        "name": "Common Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "fine_nodule_s": {
+        "key": "fine_nodule_s",
+        "name": "Fine Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "fine_nodule_m": {
+        "key": "fine_nodule_m",
+        "name": "Fine Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "fine_nodule_l": {
+        "key": "fine_nodule_l",
+        "name": "Fine Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pure_nodule_s": {
+        "key": "pure_nodule_s",
+        "name": "Pure Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pure_nodule_m": {
+        "key": "pure_nodule_m",
+        "name": "Pure Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pure_nodule_l": {
+        "key": "pure_nodule_l",
+        "name": "Pure Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pristine_nodule_s": {
+        "key": "pristine_nodule_s",
+        "name": "Pristine Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pristine_nodule_m": {
+        "key": "pristine_nodule_m",
+        "name": "Pristine Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "pristine_nodule_l": {
+        "key": "pristine_nodule_l",
+        "name": "Pristine Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "sparkling_nodule_s": {
+        "key": "sparkling_nodule_s",
+        "name": "Sparkling Nodule S",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "sparkling_nodule_m": {
+        "key": "sparkling_nodule_m",
+        "name": "Sparkling Nodule M",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
+    "sparkling_nodule_l": {
+        "key": "sparkling_nodule_l",
+        "name": "Sparkling Nodule L",
+        "category": {
+            "main": "poi",
+            "sub": "collection"
+        }
+    },
     "guiding_butterflies": {
         "key": "guiding_butterflies",
         "name": "Guiding Butterflies",

@@ -40,7 +40,44 @@
             },
             "Mission": {
                 "noFrame": true
-            }
+            },
+
+            "White Package": {},
+            "Green Package": {},
+            "Yellow Package": {},
+            "Red Package": {},
+
+            "White Instrument Safe": {},
+            "Green Instrument Safe": {},
+            "Yellow Instrument Safe": {},
+            "Red Instrument Safe": {},
+
+            "White Auto-Vender": {},
+            "Green Auto-Vender": {},
+            "Yellow Auto-Vender": {},
+            "Red Auto-Vender": {},
+
+            "Malformed Nodule S": {},
+            "Malformed Nodule M": {},
+            "Malformed Nodule L": {},
+            "Rough Nodule S": {},
+            "Rough Nodule M": {},
+            "Rough Nodule L": {},
+            "Common Nodule S": {},
+            "Common Nodule M": {},
+            "Common Nodule L": {},
+            "Fine Nodule S": {},
+            "Fine Nodule M": {},
+            "Fine Nodule L": {},
+            "Pure Nodule S": {},
+            "Pure Nodule M": {},
+            "Pure Nodule L": {},
+            "Pristine Nodule S": {},
+            "Pristine Nodule M": {},
+            "Pristine Nodule L": {},
+            "Sparkling Nodule S": {},
+            "Sparkling Nodule M": {},
+            "Sparkling Nodule L": {}
         },
         "exploration": {
             "Guiding Butterflies": {
