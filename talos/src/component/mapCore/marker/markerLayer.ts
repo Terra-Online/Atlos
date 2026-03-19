@@ -160,7 +160,7 @@ export class MarkerLayer {
                             return;
                         }
 
-                        const parent = this.layerSubregionDict[markerData.subregionId];
+                        const parent = this.layerSubregionDict[markerData.subregId];
                         if (!parent?.hasLayer(layer)) return;
 
                         // 添加淡出动画类
@@ -254,7 +254,7 @@ export class MarkerLayer {
 
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const markerData = this.markerDataDict[id];
-            const parent = this.layerSubregionDict[markerData.subregionId];
+            const parent = this.layerSubregionDict[markerData.subregId];
 
             if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
                 if (parent?.hasLayer(layer)) {
@@ -304,7 +304,7 @@ export class MarkerLayer {
     getCurrentPoints(regionId: string) {
         const subregions = REGION_DICT[regionId].subregions;
         const points = Object.values(this.markerDataDict);
-        return points.filter((point) => subregions.includes(point.subregionId));
+        return points.filter((point) => subregions.includes(point.subregId));
     }
 
     /**

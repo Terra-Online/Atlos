@@ -46,7 +46,7 @@ const RENDERER_DICT: Record<
     ) => L.Marker
 > = {
     __DEFAULT: (markerData, onClick) => {
-        const layer = new L.Marker(markerData.position, {
+        const layer = new L.Marker(markerData.pos, {
             icon: MARKER_ICON_DICT[markerData.type],
             alt: markerData.type,
         });
@@ -168,7 +168,7 @@ const RENDERER_DICT: Record<
                    </div>`,
         });
         
-        const layer = new L.Marker(markerData.position, {
+        const layer = new L.Marker(markerData.pos, {
             icon: markerIcon,
             alt: markerData.type,
         });

@@ -95,10 +95,10 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
 
         for (const [id, data] of Object.entries(ctx.markerDataDict)) {
             if (!activeKeys.has(data.type)) continue;
-            if (!ctx.isSubregionVisible(data.subregionId)) continue;
+            if (!ctx.isSubregionVisible(data.subregId)) continue;
             if (completedIds.has(id)) continue;
 
-            const latLng = L.latLng(data.position[0], data.position[1]);
+            const latLng = L.latLng(data.pos[0], data.pos[1]);
             if (bounds.contains(latLng)) result.push(id);
         }
         return result;

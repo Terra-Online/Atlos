@@ -150,12 +150,12 @@ export class ClusterLayer {
                 const data = markerDataDict[id];
                 if (!data) return;
                 if (data.type !== typeKey) return; // 只处理对应类型
-                if (!this.activeSubregions.has(data.subregionId)) return; // 只处理当前活跃子区域
+                if (!this.activeSubregions.has(data.subregId)) return; // 只处理当前活跃子区域
                 if (completedMarkerIds.has(id)) return; // 排除已完成的標點
 
                 const layer = markerDict[id];
                 if (!layer) return;
-                const parentGroup = layerSubregionDict[data.subregionId];
+                const parentGroup = layerSubregionDict[data.subregId];
                 // 如果原来在父 LayerGroup 中，移除以避免与聚合重复显示
                 if (parentGroup?.hasLayer(layer)) {
                     parentGroup.removeLayer(layer);
@@ -207,7 +207,7 @@ export class ClusterLayer {
             const desiredIds = shouldBeActive
                 ? (markerTypeMap[typeKey] ?? []).filter((id) => {
                       const d = markerDataDict[id];
-                      return d && this.activeSubregions.has(d.subregionId) && !completedMarkerIds.has(id);
+                                            return d && this.activeSubregions.has(d.subregId) && !completedMarkerIds.has(id);
                   })
                 : [];
             const desiredSet = new Set(desiredIds);
@@ -236,7 +236,7 @@ export class ClusterLayer {
                 const layer = markerDict[id];
                 const data = markerDataDict[id];
                 if (!layer || !data) return;
-                const parentGroup = layerSubregionDict[data.subregionId];
+                const parentGroup = layerSubregionDict[data.subregId];
                 if (parentGroup?.hasLayer(layer)) {
                     parentGroup.removeLayer(layer);
                 }

@@ -45,7 +45,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
 
 // const mockPoint = {
 //   id: "001",
-//   position: [-656.19, 645.58],
+//   pos: [-656.19, 645.58],
 //   region: {
 //     main: "Valley_4",
 //     sub: "pane_1"
@@ -157,7 +157,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     // marks
     const worldCnt = useWorldMarkerCount(currentPoint?.type);
     const regionCnt = useRegionMarkerCount(currentPoint?.type);
-    const subCnt = useSubregionMarkerCount(currentPoint?.type, currentPoint?.subregionId);
+    const subCnt = useSubregionMarkerCount(currentPoint?.type, currentPoint?.subregId);
 
     const statItems = useMemo(
         () => [
