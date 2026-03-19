@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Nódulo Brilhante P",
             "sparkling_nodule_m": "Nódulo Brilhante M",
             "sparkling_nodule_l": "Nódulo Brilhante G",
-            "rune_1st": "Chave I",
-            "rune_2nd": "Chave II",
-            "rune_3rd": "Chave III",
-            "rune_4th": "Chave IV",
-            "rune_5th": "Chave V",
             "guiding_butterflies": "Borboletas-Guia",
             "pressure_plate": "Placa de Pressão",
             "temporary_energy_alluvium": "Aluvião de Energia Temporário",
@@ -210,6 +205,47 @@
             "resource": "Recurso",
             "general": "Geral",
             "enemy": "Inimigo"
+        },
+        "tier": {
+            "elite": "Elite",
+            "common": "Comum",
+            "advanced": "Avançado",
+            "alpha": "Alfa"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Invasores de Terras",
+            "cangzei_pirates": "Piratas Cangzei",
+            "wildlife": "Vida Selvagem"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Broto de Bambu Jovem",
+            "qingbo_bamboo_chimes": "Sinos de Bambu de Qingbo",
+            "grovenymph_pupa": "Pupa de Ninfa do Bosque",
+            "hard_aggagrit": "Agagrito Duro",
+            "energized_aggagrit": "Agagrito Energizado",
+            "conductive_effigy_stone": "Pedra Efígie Condutora",
+            "hollow_aggagrit": "Agagrito Oco",
+            "natural_chrysopolis_ingot": "Lingote de Crisópolis Natural",
+            "resilient_water": "Água Resiliente",
+            "natural_sparkling_water": "Água com Gás Natural",
+            "black_treacle": "Melaço Preto",
+            "instant_vintage": "Vintage Instantâneo",
+            "powdered_grass_seed": "Semente de Grama em Pó",
+            "shattered_axe_blade": "Lâmina de Machado Fragmentada",
+            "cartilage_bit": "Pedaço de Cartilagem",
+            "chromatic_lipids": "Lipídios Cromáticos",
+            "haze_soaked_ballista": "Balista Imersa em Névoa",
+            "pungent_jerky": "Carne-Seca Picante",
+            "fillet": "Filé",
+            "bitter_flour": "Farinha Amarga",
+            "siegeknuckles_gauntlets": "Manoplas de Socador",
+            "nidwyrm_whiskers": "Bigodes de Verminídeos",
+            "waterlamp_glowblub": "Bulbo de Lamparina",
+            "axehorn": "Chifre de Machado",
+            "slug_meat": "Carne de Lesma",
+            "quillbeast_liver": "Fígado de Penoso",
+            "rakerbeast_longfur": "Pelo Longo de Rastejante"
         }
     }
 }

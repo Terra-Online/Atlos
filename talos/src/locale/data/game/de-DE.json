@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Funkelnder Nodulus S",
             "sparkling_nodule_m": "Funkelnder Nodulus M",
             "sparkling_nodule_l": "Funkelnder Nodulus L",
-            "rune_1st": "Schlüssel I",
-            "rune_2nd": "Schlüssel II",
-            "rune_3rd": "Schlüssel III",
-            "rune_4th": "Schlüssel IV",
-            "rune_5th": "Schlüssel V",
             "guiding_butterflies": "Leitschmetterlinge",
             "pressure_plate": "Druckplatte",
             "temporary_energy_alluvium": "Temporäres Energie-Alluvium",
@@ -210,6 +205,47 @@
             "resource": "Ressource",
             "general": "Allgemein",
             "enemy": "Gegner"
+        },
+        "tier": {
+            "elite": "Elite",
+            "common": "Gewöhnlich",
+            "advanced": "Fortgeschritten",
+            "alpha": "Alpha"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Landbrecher",
+            "cangzei_pirates": "Cangzei-Piraten",
+            "wildlife": "Fauna"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Junge Bambussprosse",
+            "qingbo_bamboo_chimes": "Qingbo-Bambuswindspiel",
+            "grovenymph_pupa": "Baumnymphen-Puppe",
+            "hard_aggagrit": "Hartes Aggagrit",
+            "energized_aggagrit": "Energiegeladenes Aggagrit",
+            "conductive_effigy_stone": "Leitfähiger Golemstein",
+            "hollow_aggagrit": "Hohles Aggagrit",
+            "natural_chrysopolis_ingot": "Natürlicher Chrysopolis-Barren",
+            "resilient_water": "Widerstandsfähiges Wasser",
+            "natural_sparkling_water": "Natürliches Sprudelwasser",
+            "black_treacle": "Schwarzer Sirup",
+            "instant_vintage": "Tafelfertige Weinlese",
+            "powdered_grass_seed": "Pulverisierte Grassamen",
+            "shattered_axe_blade": "Zerschmetterte Axtklinge",
+            "cartilage_bit": "Knorpelkonserve",
+            "chromatic_lipids": "Chromatische Lipide",
+            "haze_soaked_ballista": "Nebeldurchtränkte Knochenbrecher-Balliste",
+            "pungent_jerky": "Penetrantes Trockenfleisch",
+            "fillet": "Filet",
+            "bitter_flour": "Bitteres Mehl",
+            "siegeknuckles_gauntlets": "Belagerungsfaust-Fingerhandschuhe",
+            "nidwyrm_whiskers": "Nidwurm-Schnurrhaare",
+            "waterlamp_glowblub": "Wasserlampen-Glühbirne",
+            "axehorn": "Axthorn",
+            "slug_meat": "Schneckenfilet",
+            "quillbeast_liver": "Federbiestleber",
+            "rakerbeast_longfur": "Langfell der Wüstlingsbestie"
         }
     }
 }

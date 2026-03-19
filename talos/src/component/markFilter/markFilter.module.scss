@@ -158,6 +158,12 @@
             filter: blur(0);
             overflow: visible;
         }
+        &.tripleColumn {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        &.binderLayout {
+            display: block;
+        }
     }
     .placeholderContent {
         p {

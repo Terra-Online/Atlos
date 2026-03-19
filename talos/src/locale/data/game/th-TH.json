@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "ก้อน​ผลึก​ประกาย​ S",
             "sparkling_nodule_m": "ก้อน​ผลึก​ประกาย​ M",
             "sparkling_nodule_l": "ก้อน​ผลึก​ประกาย​ L",
-            "rune_1st": "กุญแจ I",
-            "rune_2nd": "กุญแจ II",
-            "rune_3rd": "กุญแจ III",
-            "rune_4th": "กุญแจ IV",
-            "rune_5th": "กุญแจ V",
             "guiding_butterflies": "ผีเสื้อ​นำทาง",
             "pressure_plate": "แผ่น​กด",
             "temporary_energy_alluvium": "อัล​ลู​เวีย​ม​พลังงาน​ชั่วคราว",
@@ -210,6 +205,47 @@
             "resource": "ทรัพยากร",
             "general": "ทั่วไป",
             "enemy": "ศัตรู"
+        },
+        "tier": {
+            "elite": "ระดับสูง",
+            "common": "ทั่วไป",
+            "advanced": "ชั้นสูง",
+            "alpha": "อัล​ฟ่า"
+        },
+        "faction": {
+            "aggeloi": "แอง​เกลอ​ย",
+            "landbreakers": "แลนด์​เบรก​เกอร์",
+            "cangzei_pirates": "โจรสลัด​คัง​เซย",
+            "wildlife": "สัตว์ป่า"
+        },
+        "drop": {
+            "young_bamboo_sprout": "หน่อไม้​อ่อน",
+            "qingbo_bamboo_chimes": "กระดิ่ง​ไผ่​ชิง​ป๋อ",
+            "grovenymph_pupa": "ดักแด้​/​ตัวอ่อน​โกรฟ​นิม​ฟ์",
+            "hard_aggagrit": "แอก​กาก​ริต​แข็ง",
+            "energized_aggagrit": "แอก​กาก​ริต​ที่​ถูก​กระตุ้น",
+            "conductive_effigy_stone": "ศิลา​เอฟ​ฟิ​จี​สื่อ​นำ",
+            "hollow_aggagrit": "แอก​กาก​ริต​กลวง",
+            "natural_chrysopolis_ingot": "แท่ง​คริ​โซ​โป​ลิส​ธรรมชาติ",
+            "resilient_water": "น้ำ​ฟื้นฟู",
+            "natural_sparkling_water": "น้ำแร่​ธรรมชาติ",
+            "black_treacle": "น้ำเชื่อม​สีนิล",
+            "instant_vintage": "ไวน์​วิน​เท​จ​สำเร็จรูป",
+            "powdered_grass_seed": "ผง​เมล็ด​หญ้า",
+            "shattered_axe_blade": "ใบ​ขวาน​ที่​แตกสลาย",
+            "cartilage_bit": "เศษ​กระดูกอ่อน",
+            "chromatic_lipids": "ลิ​พิด​สีฉูดฉาด",
+            "haze_soaked_ballista": "บัล​ลิส​ตา​ที่​ดูดซับ​หมอก​มัว",
+            "pungent_jerky": "เนื้อ​แห้ง​กลิ่น​แรง",
+            "fillet": "เนื้อ​แล่",
+            "bitter_flour": "แป้ง​รส​ขม",
+            "siegeknuckles_gauntlets": "ถุงมือ​เกราะ​หมัด​แห่ง​ป้อมปราการ",
+            "nidwyrm_whiskers": "นิด​เ​วิ​ร์​ม​ วิส​เกอร์",
+            "waterlamp_glowblub": "โคมไฟ​น้ำ​เรืองแสง",
+            "axehorn": "ขวาน​เขา",
+            "slug_meat": "เนื้อ​ทาก",
+            "quillbeast_liver": "ตับ​ของ​ควิ​ล​ล์​บี​ส​ต์",
+            "rakerbeast_longfur": "ขน​ยาว​เร​เกอร์​บี​ส​ต์"
         }
     }
 }

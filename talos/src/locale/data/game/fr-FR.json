@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Nodule scintillant P",
             "sparkling_nodule_m": "Nodule scintillant M",
             "sparkling_nodule_l": "Nodule scintillant G",
-            "rune_1st": "Clé I",
-            "rune_2nd": "Clé II",
-            "rune_3rd": "Clé III",
-            "rune_4th": "Clé IV",
-            "rune_5th": "Clé V",
             "guiding_butterflies": "Papillons directeurs",
             "pressure_plate": "Plaque de pression",
             "temporary_energy_alluvium": "Alluvion d'énergie temporaire",
@@ -210,6 +205,47 @@
             "resource": "Ressource",
             "general": "Général",
             "enemy": "Ennemi"
+        },
+        "tier": {
+            "elite": "Élite",
+            "common": "Ordinaire",
+            "advanced": "Avancé",
+            "alpha": "Alpha"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Brise-Terres",
+            "cangzei_pirates": "Pirates cangzei",
+            "wildlife": "Faune"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Jeune pousse de bambou",
+            "qingbo_bamboo_chimes": "Carillons en bambou de Qingbo",
+            "grovenymph_pupa": "Chrysalide de nymphe sylvestre",
+            "hard_aggagrit": "Aggagrit solidifié",
+            "energized_aggagrit": "Aggagrit stimulant",
+            "conductive_effigy_stone": "Pierre d'effigie conductrice",
+            "hollow_aggagrit": "Aggagrit creux",
+            "natural_chrysopolis_ingot": "Lingot de chrysopolis naturel",
+            "resilient_water": "Eau élastique",
+            "natural_sparkling_water": "Eau pétillante naturelle",
+            "black_treacle": "Mélasse noire",
+            "instant_vintage": "Millésime instantané",
+            "powdered_grass_seed": "Graine d'herbe en poudre",
+            "shattered_axe_blade": "Lame de hache brisée",
+            "cartilage_bit": "Morceau de cartilage",
+            "chromatic_lipids": "Lipides chromatiques",
+            "haze_soaked_ballista": "Baliste imbibée d'ignibrume",
+            "pungent_jerky": "Viande séchée odorante",
+            "fillet": "Filet",
+            "bitter_flour": "Farine amère",
+            "siegeknuckles_gauntlets": "Gantelets de phalange de siège",
+            "nidwyrm_whiskers": "Moustaches de nidwyrm",
+            "waterlamp_glowblub": "Lumibulbe d'aqualampe",
+            "axehorn": "Corne de brute",
+            "slug_meat": "Viande de limace",
+            "quillbeast_liver": "Foie de bêtaplume",
+            "rakerbeast_longfur": "Poil long de ratisseur"
         }
     }
 }

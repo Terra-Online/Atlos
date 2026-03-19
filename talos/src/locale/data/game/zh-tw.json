@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "璀璨的小結核",
             "sparkling_nodule_m": "璀璨的中結核",
             "sparkling_nodule_l": "璀璨的大結核",
-            "rune_1st": "鑰匙·一",
-            "rune_2nd": "鑰匙·二",
-            "rune_3rd": "鑰匙·三",
-            "rune_4th": "鑰匙·四",
-            "rune_5th": "鑰匙·五",
             "guiding_butterflies": "引路蝴蝶",
             "pressure_plate": "壓力板",
             "temporary_energy_alluvium": "暫存能量淤積點",
@@ -210,6 +205,47 @@
             "resource": "資源",
             "general": "通用",
             "enemy": "敵人"
+        },
+        "tier": {
+            "elite": "精英敵人",
+            "common": "普通敵人",
+            "advanced": "進階敵人",
+            "alpha": "頭目敵人"
+        },
+        "faction": {
+            "aggeloi": "天使",
+            "landbreakers": "裂地者",
+            "cangzei_pirates": "滄賊",
+            "wildlife": "野外生物"
+        },
+        "drop": {
+            "young_bamboo_sprout": "新筍",
+            "qingbo_bamboo_chimes": "清波竹鈴",
+            "grovenymph_pupa": "竹林蟲蛹",
+            "hard_aggagrit": "堅硬異香石",
+            "energized_aggagrit": "高能異香石",
+            "conductive_effigy_stone": "導能肖像石",
+            "hollow_aggagrit": "中空異香石",
+            "natural_chrysopolis_ingot": "天然晶城錠",
+            "resilient_water": "堅韌的水",
+            "natural_sparkling_water": "天然氣泡水",
+            "black_treacle": "甜膩黑水",
+            "instant_vintage": "速成陳釀",
+            "powdered_grass_seed": "草籽乾粉",
+            "shattered_axe_blade": "崩碎斧刃",
+            "cartilage_bit": "軟骨碎屑",
+            "chromatic_lipids": "異色油脂",
+            "haze_soaked_ballista": "浸霧大弩",
+            "pungent_jerky": "刺鼻乾肉",
+            "fillet": "獸肉",
+            "bitter_flour": "苦澀麥粉",
+            "siegeknuckles_gauntlets": "破城者拳甲",
+            "nidwyrm_whiskers": "虯獸的鬚",
+            "waterlamp_glowblub": "水燈蟲的燈墜",
+            "axehorn": "大斧角",
+            "slug_meat": "蟲肉",
+            "quillbeast_liver": "球刺獸的肝臟",
+            "rakerbeast_longfur": "彪獸的長絨"
         }
     }
 }

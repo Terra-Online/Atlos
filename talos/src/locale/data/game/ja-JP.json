@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "まばゆい小晶核",
             "sparkling_nodule_m": "まばゆい中晶核",
             "sparkling_nodule_l": "まばゆい大晶核",
-            "rune_1st": "鍵·一",
-            "rune_2nd": "鍵·二",
-            "rune_3rd": "鍵·三",
-            "rune_4th": "鍵·四",
-            "rune_5th": "鍵·五",
             "guiding_butterflies": "案内蝶",
             "pressure_plate": "感圧板",
             "temporary_energy_alluvium": "臨時超域活性点",
@@ -210,6 +205,47 @@
             "resource": "資源",
             "general": "一般",
             "enemy": "敵"
+        },
+        "tier": {
+            "elite": "精鋭クラス",
+            "common": "通常の敵",
+            "advanced": "上級クラス",
+            "alpha": "幹部クラス"
+        },
+        "faction": {
+            "aggeloi": "アンゲロス",
+            "landbreakers": "ランドブレーカー",
+            "cangzei_pirates": "滄賊",
+            "wildlife": "野生の生物"
+        },
+        "drop": {
+            "young_bamboo_sprout": "新筍",
+            "qingbo_bamboo_chimes": "清波竹鈴",
+            "grovenymph_pupa": "竹林虫のさなぎ",
+            "hard_aggagrit": "硬質異香石",
+            "energized_aggagrit": "高能異香石",
+            "conductive_effigy_stone": "熱伝導擬態石",
+            "hollow_aggagrit": "中空異香石",
+            "natural_chrysopolis_ingot": "天然晶城塊",
+            "resilient_water": "剛水",
+            "natural_sparkling_water": "天然炭酸水",
+            "black_treacle": "甘ったるい黒水",
+            "instant_vintage": "即席熟成酒",
+            "powdered_grass_seed": "種子の粉末",
+            "shattered_axe_blade": "崩砕の斧",
+            "cartilage_bit": "軟骨の粉屑",
+            "chromatic_lipids": "変わった色の油",
+            "haze_soaked_ballista": "浸霧のクロスボウ",
+            "pungent_jerky": "異臭を放つ干し肉",
+            "fillet": "獣肉",
+            "bitter_flour": "苦味の強い麦粉",
+            "siegeknuckles_gauntlets": "攻城者のガントレット",
+            "nidwyrm_whiskers": "蛟獣のひげ",
+            "waterlamp_glowblub": "水灯虫の発光器",
+            "axehorn": "斧甲獣の角",
+            "slug_meat": "虫肉",
+            "quillbeast_liver": "球刺獣の肝臓",
+            "rakerbeast_longfur": "彪獣の長毛"
         }
     }
 }

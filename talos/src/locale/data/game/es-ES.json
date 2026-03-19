@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Nódulo brillante P",
             "sparkling_nodule_m": "Nódulo brillante M",
             "sparkling_nodule_l": "Nódulo brillante G",
-            "rune_1st": "Llave I",
-            "rune_2nd": "Llave II",
-            "rune_3rd": "Llave III",
-            "rune_4th": "Llave IV",
-            "rune_5th": "Llave V",
             "guiding_butterflies": "Mariposas guía",
             "pressure_plate": "Placa de presión",
             "temporary_energy_alluvium": "Aluvión energético temporal",
@@ -210,6 +205,47 @@
             "resource": "recurso",
             "general": "general",
             "enemy": "enemigo"
+        },
+        "tier": {
+            "elite": "Élite",
+            "common": "Común",
+            "advanced": "Avanzado",
+            "alpha": "Alfa"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Rompesuelos",
+            "cangzei_pirates": "Piratas Cangzei",
+            "wildlife": "Vida silvestre"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Brote de bambú joven",
+            "qingbo_bamboo_chimes": "Campanas de bambú Qingbo",
+            "grovenymph_pupa": "Pupa de Ninfa de Arboleda",
+            "hard_aggagrit": "Aggagrit duro",
+            "energized_aggagrit": "Aggagrit energizado",
+            "conductive_effigy_stone": "Piedra efigie conductora",
+            "hollow_aggagrit": "Aggagrit hueco",
+            "natural_chrysopolis_ingot": "Lingote de Crisópolis natural",
+            "resilient_water": "Agua resiliente",
+            "natural_sparkling_water": "Agua gasificada natural",
+            "black_treacle": "Melaza negra",
+            "instant_vintage": "Clásico instantáneo",
+            "powdered_grass_seed": "Semilla de césped en polvo",
+            "shattered_axe_blade": "Hoja de hacha destrozada",
+            "cartilage_bit": "Fragmento de cartílago",
+            "chromatic_lipids": "Lípidos cromáticos",
+            "haze_soaked_ballista": "Balista empapada de niebla",
+            "pungent_jerky": "Carne seca intensa",
+            "fillet": "Filete",
+            "bitter_flour": "Harina amarga",
+            "siegeknuckles_gauntlets": "Guanteletes rompeasedios",
+            "nidwyrm_whiskers": "Bigotes de Nidwyrm",
+            "waterlamp_glowblub": "Bulbo luminoso de Lámpara de agua",
+            "axehorn": "Cuerno de hacha",
+            "slug_meat": "Carne de babosa",
+            "quillbeast_liver": "Hígado de Bestia pluma",
+            "rakerbeast_longfur": "Pelaje largo de Bestia Rastrera"
         }
     }
 }

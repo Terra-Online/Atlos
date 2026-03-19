@@ -10,6 +10,7 @@ import {
     useSearchString,
 } from '@/store/marker.ts';
 import { trackedSwitchFilter } from '@/store/trackedActions';
+import { useLayoutVersion } from '@/store/uiPrefs';
 
 interface MarkSelectorProps {
     typeInfo: { key: string; main?: string; sub?: string };
@@ -54,6 +55,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     const [zIndex, setZIndex] = useState<number>(1);
     const elevateTimer = useRef<number | null>(null);
     const [expandedHeightPx, setExpandedHeightPx] = useState<number | null>(null);
+    const layoutVersion = useLayoutVersion();
 
     // visibility in current search/filter
     const showFilter = useMemo<boolean>(
@@ -98,7 +100,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
             if (raf1) window.cancelAnimationFrame(raf1);
             if (raf2) window.cancelAnimationFrame(raf2);
         };
-    }, [displayName]);
+    }, [displayName, layoutVersion]);
 
     // clean elevate fallback timer, avoid setState after unmount
     useEffect(() => () => {

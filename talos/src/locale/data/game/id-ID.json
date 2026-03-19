@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Nodul Gemerlap S",
             "sparkling_nodule_m": "Nodul Gemerlap M",
             "sparkling_nodule_l": "Nodul Gemerlap L",
-            "rune_1st": "Kunci I",
-            "rune_2nd": "Kunci II",
-            "rune_3rd": "Kunci III",
-            "rune_4th": "Kunci IV",
-            "rune_5th": "Kunci V",
             "guiding_butterflies": "Kupu-Kupu Pemandu",
             "pressure_plate": "Pelat Tekanan",
             "temporary_energy_alluvium": "Aluvium Energi Sementara",
@@ -210,6 +205,47 @@
             "resource": "Sumber Daya",
             "general": "Umum",
             "enemy": "Musuh"
+        },
+        "tier": {
+            "elite": "Elite",
+            "common": "Biasa",
+            "advanced": "Tingkat Lanjut",
+            "alpha": "Alfa"
+        },
+        "faction": {
+            "aggeloi": "Aggelos",
+            "landbreakers": "Landbreaker",
+            "cangzei_pirates": "Perompak Cangzei",
+            "wildlife": "Margasatwa"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Rebung Muda",
+            "qingbo_bamboo_chimes": "Lonceng Bambu Qingbo",
+            "grovenymph_pupa": "Pupa Grovenymph",
+            "hard_aggagrit": "Aggagrit Keras",
+            "energized_aggagrit": "Aggagrit Berenergi",
+            "conductive_effigy_stone": "Batu Effigy Konduktans",
+            "hollow_aggagrit": "Aggagrit Berongga",
+            "natural_chrysopolis_ingot": "Batangan Chrysopolis Alami",
+            "resilient_water": "Air Tangguh",
+            "natural_sparkling_water": "Air Berkarbonasi Alami",
+            "black_treacle": "Sirop Kental Hitam",
+            "instant_vintage": "Vintage Instan",
+            "powdered_grass_seed": "Bubuk Benih Rumput",
+            "shattered_axe_blade": "Bilah Kapak Pecah",
+            "cartilage_bit": "Serpihan Tulang Rawan",
+            "chromatic_lipids": "Lipid Kromatik",
+            "haze_soaked_ballista": "Ballista Berbalut Kabut",
+            "pungent_jerky": "Dendeng Menyengat",
+            "fillet": "Filet",
+            "bitter_flour": "Tepung Pahit",
+            "siegeknuckles_gauntlets": "Gauntlet Siegeknuckle",
+            "nidwyrm_whiskers": "Kumis Nidwyrm",
+            "waterlamp_glowblub": "Bola Pijar Waterlamp",
+            "axehorn": "Tanduk Kapak",
+            "slug_meat": "Daging Siput",
+            "quillbeast_liver": "Hati Quillbeast",
+            "rakerbeast_longfur": "Bulu Panjang Rakerbeast"
         }
     }
 }

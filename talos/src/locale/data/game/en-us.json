@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Sparkling Nodule S",
             "sparkling_nodule_m": "Sparkling Nodule M",
             "sparkling_nodule_l": "Sparkling Nodule L",
-            "rune_1st": "Key I",
-            "rune_2nd": "Key II",
-            "rune_3rd": "Key III",
-            "rune_4th": "Key IV",
-            "rune_5th": "Key V",
             "guiding_butterflies": "Guiding Butterflies",
             "pressure_plate": "Pressure Plate",
             "temporary_energy_alluvium": "Temporary Energy Alluvium",
@@ -210,6 +205,47 @@
             "resource": "Resource",
             "general": "General",
             "enemy": "Enemy"
+        },
+        "tier": {
+            "elite": "Elite",
+            "common": "Common",
+            "advanced": "Advanced",
+            "alpha": "Alpha"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Landbreakers",
+            "cangzei_pirates": "Cangzei Pirates",
+            "wildlife": "Wildlife"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Young Bamboo Sprout",
+            "qingbo_bamboo_chimes": "Qingbo Bamboo Chimes",
+            "grovenymph_pupa": "Grovenymph Pupa",
+            "hard_aggagrit": "Hard Aggagrit",
+            "energized_aggagrit": "Energized Aggagrit",
+            "conductive_effigy_stone": "Conductive Effigy Stone",
+            "hollow_aggagrit": "Hollow Aggagrit",
+            "natural_chrysopolis_ingot": "Natural Chrysopolis Ingot",
+            "resilient_water": "Resilient Water",
+            "natural_sparkling_water": "Natural Sparkling Water",
+            "black_treacle": "Black Treacle",
+            "instant_vintage": "Instant Vintage",
+            "powdered_grass_seed": "Powdered Grass Seed",
+            "shattered_axe_blade": "Shattered Axe Blade",
+            "cartilage_bit": "Cartilage Bit",
+            "chromatic_lipids": "Chromatic Lipids",
+            "haze_soaked_ballista": "Haze-Soaked Ballista",
+            "pungent_jerky": "Pungent Jerky",
+            "fillet": "Fillet",
+            "bitter_flour": "Bitter Flour",
+            "siegeknuckles_gauntlets": "Siegeknuckles Gauntlets",
+            "nidwyrm_whiskers": "Nidwyrm Whiskers",
+            "waterlamp_glowblub": "Waterlamp Glowbulb",
+            "axehorn": "Axehorn",
+            "slug_meat": "Slug Meat",
+            "quillbeast_liver": "Quillbeast Liver",
+            "rakerbeast_longfur": "Rakerbeast Longfur"
         }
     }
 }

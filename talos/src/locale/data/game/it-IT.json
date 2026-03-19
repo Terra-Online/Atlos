@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Nodulo scintillante S",
             "sparkling_nodule_m": "Nodulo scintillante M",
             "sparkling_nodule_l": "Nodulo scintillante L",
-            "rune_1st": "Chiave I",
-            "rune_2nd": "Chiave II",
-            "rune_3rd": "Chiave III",
-            "rune_4th": "Chiave IV",
-            "rune_5th": "Chiave V",
             "guiding_butterflies": "Farfalle guida",
             "pressure_plate": "Piastra a pressione",
             "temporary_energy_alluvium": "Sedimento energetico temporaneo",
@@ -210,6 +205,47 @@
             "resource": "Risorsa",
             "general": "Generale",
             "enemy": "Nemico"
+        },
+        "tier": {
+            "elite": "Élite",
+            "common": "Comune",
+            "advanced": "Avanzato",
+            "alpha": "Alfa"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Fenditerra",
+            "cangzei_pirates": "Pirati di Cangzei",
+            "wildlife": "Fauna"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Germoglio giovane di bambù",
+            "qingbo_bamboo_chimes": "Campanelli di bambù di Qingbo",
+            "grovenymph_pupa": "Pupa di ninfa boschiva",
+            "hard_aggagrit": "Aggagrit duro",
+            "energized_aggagrit": "Aggagrit energizzato",
+            "conductive_effigy_stone": "Pietra effigie conduttiva",
+            "hollow_aggagrit": "Aggagrit vuoto",
+            "natural_chrysopolis_ingot": "Lingotto di chrysopolis naturale",
+            "resilient_water": "Acqua resiliente",
+            "natural_sparkling_water": "Acqua frizzante naturale",
+            "black_treacle": "Melassa nera",
+            "instant_vintage": "Spirito istantaneo",
+            "powdered_grass_seed": "Seme d'erba in polvere",
+            "shattered_axe_blade": "Lama d'ascia infranta",
+            "cartilage_bit": "Pezzo di cartilagine",
+            "chromatic_lipids": "Lipidi cromatici",
+            "haze_soaked_ballista": "Balestra infusa di foschia",
+            "pungent_jerky": "Carne secca acre",
+            "fillet": "Filetto",
+            "bitter_flour": "Farina amara",
+            "siegeknuckles_gauntlets": "Coprimani di noccassalto",
+            "nidwyrm_whiskers": "Vibrisse di drago delle sabbie",
+            "waterlamp_glowblub": "Bulbo di idrolampa",
+            "axehorn": "Cornoscure",
+            "slug_meat": "Carne di lumaca",
+            "quillbeast_liver": "Fegato di bestiaspina",
+            "rakerbeast_longfur": "Lungomanto di rastrobestia"
         }
     }
 }

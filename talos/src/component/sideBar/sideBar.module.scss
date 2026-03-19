@@ -18,6 +18,7 @@ $transition-speed: 0.3s;
     --discord: #5865F2;
     --github: #24292f;
     --qq: #4397F7;
+    --bsky: #007fff;
     --support: #{$primary-accent-6};
 }
 :root[data-theme='dark'] {
@@ -40,7 +41,7 @@ $transition-speed: 0.3s;
     top: 0;
     left: 0;
     height: 100%;
-    width: 300px;
+    width: var(--sidebar-width, 300px);
     z-index: 1000;
     pointer-events: none;
     opacity: 1;
@@ -48,12 +49,12 @@ $transition-speed: 0.3s;
         transform $transition-speed ease-in-out,
         opacity 0.2s ease-out;
 
-    transform: translateX(-300px);
+    transform: translateX(calc(-1 * var(--sidebar-width, 300px)));
 
     &.open {
         transform: translateX(0);
         > .sidebarToggle {
-            right: 225px;
+            right: calc(var(--sidebar-width, 300px) - 75px);
             transition: 0.3s ease-in-out;
         }
     }
@@ -193,7 +194,7 @@ $transition-speed: 0.3s;
                     transition: max-width .35s $standard-curve, color .35s $standard-curve;
                 }
                 &:hover::after {
-                    max-width: 47px;
+                    max-width: 49px;
                     transition: max-width .45s ease, color .45s ease;
                 }
                 &[data-platform="github"] {
@@ -222,6 +223,23 @@ $transition-speed: 0.3s;
                         }
                         &::after {
                             color: var(--discord)
+                        }
+                    }
+                }
+                &[data-platform="bluesky"] {
+                    > svg {
+                        width: 1.06rem;
+                        height: 1.06rem;
+                    }
+                    &::after {
+                        content: "Bluesky";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--bsky);
+                        }
+                        &::after {
+                            color: var(--bsky)
                         }
                     }
                 }
@@ -266,6 +284,32 @@ $transition-speed: 0.3s;
         }
     }
 
+    .resizeHandle {
+        position: absolute;
+        top: 0;
+        right: -3px;
+        width: 6px;
+        height: 100%;
+        cursor: ew-resize;
+        z-index: 1002;
+        pointer-events: auto;
+        touch-action: none;
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            width: 2px;
+            height: 100%;
+            background-color: transparent;
+            transition: background-color 0.2s ease;
+        }
+        &:hover::after,
+        &.dragging::after {
+            background-color: var(--markfilter-accent, #{$primary-accent-5});
+        }
+    }
+
     .sidebarToggle {
         position: absolute;
         top: 0;
@@ -297,6 +341,22 @@ $transition-speed: 0.3s;
         }
     }
 }
+.binderSection {
+    column-count: 2;
+    column-gap: 0.75rem;
+    width: 100%;
+    > * {
+        break-inside: avoid;
+        margin-bottom: 0.75rem;
+    }
+}
+.remainingSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0 0.75rem;
+    width: 100%;
+}
+
 .selectionBox {
     position: absolute;
     border: 1px solid var(--sidebar-box-sel-border);

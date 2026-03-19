@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Сверкающее отложение мал.",
             "sparkling_nodule_m": "Сверкающее отложение ср.",
             "sparkling_nodule_l": "Сверкающее отложение бол.",
-            "rune_1st": "Ключ I",
-            "rune_2nd": "Ключ II",
-            "rune_3rd": "Ключ III",
-            "rune_4th": "Ключ IV",
-            "rune_5th": "Ключ V",
             "guiding_butterflies": "Бабочки-проводники",
             "pressure_plate": "Плитка",
             "temporary_energy_alluvium": "Временный аллювий энергии",
@@ -210,6 +205,47 @@
             "resource": "ресурс",
             "general": "общий",
             "enemy": "враг"
+        },
+        "tier": {
+            "elite": "Элит.",
+            "common": "Обычн.",
+            "advanced": "Улучш.",
+            "alpha": "Альфа"
+        },
+        "faction": {
+            "aggeloi": "Аггелы",
+            "landbreakers": "Землекрушители",
+            "cangzei_pirates": "Разбойники-цанцзэй",
+            "wildlife": "Дикая фауна"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Побег молодого бамбука",
+            "qingbo_bamboo_chimes": "Бамбуковая подвеска из Циньбо",
+            "grovenymph_pupa": "Куколка нимфы рощи",
+            "hard_aggagrit": "Твердый аггагрит",
+            "energized_aggagrit": "Заряженный аггагрит",
+            "conductive_effigy_stone": "Проводящий камень пугала",
+            "hollow_aggagrit": "Полый аггагрит",
+            "natural_chrysopolis_ingot": "Слиток натурального хризополиса",
+            "resilient_water": "Упругая вода",
+            "natural_sparkling_water": "Натуральная газированная вода",
+            "black_treacle": "Черная патока",
+            "instant_vintage": "Скороброженка",
+            "powdered_grass_seed": "Молотое семя травы",
+            "shattered_axe_blade": "Расколотое лезвие топора",
+            "cartilage_bit": "Кусочки хряща",
+            "chromatic_lipids": "Цветные липиды",
+            "haze_soaked_ballista": "Тенепламенная баллиста",
+            "pungent_jerky": "Пахучее сушеное мясо",
+            "fillet": "Стейк",
+            "bitter_flour": "Горькая мука",
+            "siegeknuckles_gauntlets": "Рукавицы осадного кастетчика",
+            "nidwyrm_whiskers": "Усики нидвурма",
+            "waterlamp_glowblub": "Светошар плавучего фонаря",
+            "axehorn": "Рог-секира",
+            "slug_meat": "Мясо слизня",
+            "quillbeast_liver": "Печень колючего зверя",
+            "rakerbeast_longfur": "Шерсть хитрого зверя"
         }
     }
 }

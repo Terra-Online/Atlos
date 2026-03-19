@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "찬란 소결핵",
             "sparkling_nodule_m": "찬란 중결핵",
             "sparkling_nodule_l": "찬란 대결핵",
-            "rune_1st": "열쇠 I",
-            "rune_2nd": "열쇠 II",
-            "rune_3rd": "열쇠 III",
-            "rune_4th": "열쇠 IV",
-            "rune_5th": "열쇠 V",
             "guiding_butterflies": "길잡이 나비",
             "pressure_plate": "압력판",
             "temporary_energy_alluvium": "임시 에너지 응집점",
@@ -210,6 +205,47 @@
             "resource": "자원",
             "general": "일반",
             "enemy": "적"
+        },
+        "tier": {
+            "elite": "정예",
+            "common": "일반",
+            "advanced": "강화",
+            "alpha": "두목"
+        },
+        "faction": {
+            "aggeloi": "아겔로스",
+            "landbreakers": "랜드브레이커",
+            "cangzei_pirates": "창적",
+            "wildlife": "야외 생물"
+        },
+        "drop": {
+            "young_bamboo_sprout": "파릇파릇한 죽순",
+            "qingbo_bamboo_chimes": "청파죽령",
+            "grovenymph_pupa": "죽림충 번데기",
+            "hard_aggagrit": "굳은 상태의 이향석",
+            "energized_aggagrit": "활성 상태의 이향석",
+            "conductive_effigy_stone": "전도 초상석",
+            "hollow_aggagrit": "구멍이 뚫린 이향석",
+            "natural_chrysopolis_ingot": "천연 결정 덩어리",
+            "resilient_water": "진득한 물",
+            "natural_sparkling_water": "천연 탄산수",
+            "black_treacle": "검고 달콤한 물",
+            "instant_vintage": "속성 발효주",
+            "powdered_grass_seed": "풀 씨앗 가루",
+            "shattered_axe_blade": "산산조각 난 도끼날",
+            "cartilage_bit": "연골 분말",
+            "chromatic_lipids": "특수 기름",
+            "haze_soaked_ballista": "대형 안개의 쇠뇌",
+            "pungent_jerky": "향이 강한 육포",
+            "fillet": "비스트의 고기",
+            "bitter_flour": "쓴맛 나는 밀가루",
+            "siegeknuckles_gauntlets": "파괴자의 권갑",
+            "nidwyrm_whiskers": "니드웜의 수염",
+            "waterlamp_glowblub": "수등충 등추",
+            "axehorn": "큰 도끼뿔",
+            "slug_meat": "벌레의 고기",
+            "quillbeast_liver": "프릭비스트의 내장",
+            "rakerbeast_longfur": "레이커비스트의 긴 털"
         }
     }
 }

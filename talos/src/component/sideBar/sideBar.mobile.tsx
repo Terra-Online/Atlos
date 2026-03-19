@@ -18,6 +18,7 @@ import SupportModal from '../support/support';
 import GithubIcon from '../../assets/images/UI/media/ghicon.svg?react';
 import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
 import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
+import BskyIcon from '../../assets/images/UI/media/bluesky.svg?react';
 
 // Category icons
 import BossIcon from '../../assets/images/category/boss.svg?react';
@@ -372,6 +373,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               aria-label="Discord"
             >
               <DiscordIcon />
+            </a>
+            <a
+              href="https://bsky.app/profile/opendfieldmap.bsky.social"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mobileStyles.socialLink}
+              data-platform="bluesky"
+              aria-label="Bluesky"
+            >
+              <BskyIcon />
             </a>
             <a
               href="https://qm.qq.com/q/BVsCJgzBL2"

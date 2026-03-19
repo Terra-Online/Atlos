@@ -14,6 +14,7 @@ interface IMarkerStore {
     points: string[];
     switchFilter: (typeKey: string) => void;
     batchToggleFilter: (typeKeys: string[]) => void;
+    setFilterKeys: (typeKeys: string[], active: boolean) => void;
     setFilter: (filter: string[]) => void;
 
     searchString: string;
@@ -63,6 +64,17 @@ export const useMarkerStore = create<IMarkerStore>()(
                         }
                     });
                     return { filter: newFilter };
+                });
+            },
+            setFilterKeys: (typeKeys: string[], active: boolean) => {
+                set((state) => {
+                    if (active) {
+                        const extra = typeKeys.filter((k) => !state.filter.includes(k));
+                        return extra.length ? { filter: [...state.filter, ...extra] } : {};
+                    } else {
+                        const next = state.filter.filter((k) => !typeKeys.includes(k));
+                        return next.length !== state.filter.length ? { filter: next } : {};
+                    }
                 });
             },
             setFilter: (newFilter: string[]) => {
@@ -159,6 +171,26 @@ export const useRegionMarkerCount = (type: string | undefined) => {
         ).length;
         return ret;
     }, [pointsRecord, currentRegion, type]);
+};
+
+export const useMultiRegionMarkerCount = (types: string[]) => {
+    const pointsRecord = useUserRecord();
+    const currentRegion = useRegion((state) => state.currentRegionKey);
+    return useMemo(() => {
+        if (!currentRegion) return types.map(() => ({ total: 0, collected: 0 }));
+        const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
+        const regionConfig = REGION_DICT[currentRegion];
+        const subRegions = regionConfig?.subregions ?? [];
+        const allMarkers = subRegions.flatMap((sr) => SUBREGION_MARKS_MAP[sr] ?? []);
+        return types.map((type) => {
+            const total = regionTypeCounts?.[type] ?? 0;
+            const collected = allMarkers.filter(
+                (m) => m.type === type && pointsRecord.includes(m.id),
+            ).length;
+            return { total, collected };
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pointsRecord, currentRegion, types.join(',')]);
 };
 
 // Get the marker count for a specific subregion (based on current active point)

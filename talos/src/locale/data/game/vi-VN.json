@@ -48,11 +48,6 @@
             "sparkling_nodule_s": "Hạch Lấp Lánh Nhỏ",
             "sparkling_nodule_m": "Hạch Lấp Lánh Trung",
             "sparkling_nodule_l": "Hạch Lấp Lánh Lớn",
-            "rune_1st": "Chìa khóa I",
-            "rune_2nd": "Chìa khóa II",
-            "rune_3rd": "Chìa khóa III",
-            "rune_4th": "Chìa khóa IV",
-            "rune_5th": "Chìa khóa V",
             "guiding_butterflies": "Bướm Dẫn Đường",
             "pressure_plate": "Bàn Đạp Áp Suất",
             "temporary_energy_alluvium": "Năng Lượng Bồi Tích Tạm Thời",
@@ -210,6 +205,47 @@
             "resource": "Tài Nguyên",
             "general": "Tổng Quan",
             "enemy": "Kẻ Địch"
+        },
+        "tier": {
+            "elite": "Tinh Anh",
+            "common": "Thường",
+            "advanced": "Cao cấp",
+            "alpha": "Bản Alpha"
+        },
+        "faction": {
+            "aggeloi": "Aggeloi",
+            "landbreakers": "Landbreaker",
+            "cangzei_pirates": "Hải Tặc Cangzei",
+            "wildlife": "Động Vật Hoang Dã"
+        },
+        "drop": {
+            "young_bamboo_sprout": "Mầm Tre Non",
+            "qingbo_bamboo_chimes": "Chuông Gió Trại Thanh Ba",
+            "grovenymph_pupa": "Nhộng Grovenymph",
+            "hard_aggagrit": "Aggagrit Cứng",
+            "energized_aggagrit": "Aggagrit Năng Lượng",
+            "conductive_effigy_stone": "Đá Điêu Khắc Quái Tượng",
+            "hollow_aggagrit": "Aggagrit Rỗng",
+            "natural_chrysopolis_ingot": "Thỏi Chrysopolis Tự Nhiên",
+            "resilient_water": "Nước Đàn Hồi",
+            "natural_sparkling_water": "Nước Có Ga Tự Nhiên",
+            "black_treacle": "Mật Mía Đen",
+            "instant_vintage": "Rượu Cổ Điển Tức Thời",
+            "powdered_grass_seed": "Bột Hạt Cỏ",
+            "shattered_axe_blade": "Lưỡi Rìu Vỡ Nát",
+            "cartilage_bit": "Mảnh Sụn",
+            "chromatic_lipids": "Lipid Sắc Tố",
+            "haze_soaked_ballista": "Nỏ Bắn Đá Tẩm Sương Mù",
+            "pungent_jerky": "Thịt Khô Cay Nồng",
+            "fillet": "Phi Lê",
+            "bitter_flour": "Bột Đắng",
+            "siegeknuckles_gauntlets": "Giáp Tay Công Thành",
+            "nidwyrm_whiskers": "Râu Nidwyrm",
+            "waterlamp_glowblub": "Bóng Đèn Đèn Nước",
+            "axehorn": "Sừng Rìu",
+            "slug_meat": "Thịt Sên",
+            "quillbeast_liver": "Gan Quái Lông Nhọn",
+            "rakerbeast_longfur": "Lông Dài Quái Cào"
         }
     }
 }

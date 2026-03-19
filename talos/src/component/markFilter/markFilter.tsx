@@ -17,6 +17,8 @@ interface MarkFilterProps {
     idKey: string;
     // optional data attribute for visual styling
     dataCategory?: string;
+    wide?: boolean;
+    binderMode?: boolean;
 }
 
 const MarkFilter = ({
@@ -26,6 +28,8 @@ const MarkFilter = ({
     empty,
     idKey,
     dataCategory,
+    wide = false,
+    binderMode = false,
 }: MarkFilterProps) => {
     const t = useTranslateUI();
     const isExpanded = useMarkFilterExpanded(idKey);
@@ -172,7 +176,7 @@ const MarkFilter = ({
             </div>
 
             <div className={`${styles.filterContent} ${isExpanded ? styles.expanded : ''}`}>
-                <div className={`${styles.contentInner} ${isExpanded ? styles.visible : ''}`}>
+                <div className={`${styles.contentInner} ${isExpanded ? styles.visible : ''} ${wide && !binderMode ? styles.tripleColumn : ''} ${binderMode ? styles.binderLayout : ''}`}>
                     {hasEverExpanded && (
                         <>
                             {children}
