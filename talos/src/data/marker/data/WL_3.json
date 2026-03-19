@@ -1,284 +1,5 @@
 [
   {
-    "id": 23300200001,
-    "position": [
-      -624.4755,
-      749.2966
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200002,
-    "position": [
-      -659.0836,
-      765.6438
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
-    "id": 23300200003,
-    "position": [
-      -660.9089,
-      730.4537
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200004,
-    "position": [
-      -666.5171,
-      768.4662
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200005,
-    "position": [
-      -761.6917,
-      786.119
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200006,
-    "position": [
-      -723.8368,
-      762.8994
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200007,
-    "position": [
-      -706.4521,
-      848.5993
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200008,
-    "position": [
-      -750.2448,
-      841.464
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200009,
-    "position": [
-      -627.1767,
-      849.6442
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200010,
-    "position": [
-      -641.329,
-      778.0482
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 23300200011,
-    "position": [
-      -650.3057,
-      749.7537
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200012,
-    "position": [
-      -745.8568,
-      723.0468
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200013,
-    "position": [
-      -733.9554,
-      774.4991
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200014,
-    "position": [
-      -712.5688,
-      836.262
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200016,
-    "position": [
-      -803.2669,
-      851.2492
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200017,
-    "position": [
-      -691.68,
-      864.7001
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200018,
-    "position": [
-      -590.7639,
-      779.7914
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200019,
-    "position": [
-      -636.242,
-      907.7492
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200020,
-    "position": [
-      -632.6884,
-      887.0946
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200022,
-    "position": [
-      -601.7072,
-      745.4915
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 23300200023,
-    "position": [
-      -624.4755,
-      749.2966
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200024,
-    "position": [
-      -613.535,
-      754.5045
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200025,
-    "position": [
-      -655.1287,
-      765.587
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200026,
-    "position": [
-      -671.5145,
-      771.4324
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200027,
-    "position": [
-      -673.7856,
-      796.6742
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200028,
-    "position": [
-      -728.1311,
-      772.1712
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200029,
-    "position": [
-      -750.7643,
-      848.1558
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200033,
-    "position": [
-      -629.1505,
-      841.5824
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200035,
-    "position": [
-      -547.9244,
-      829.9087
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300200038,
-    "position": [
-      -707.6089,
-      863.57
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 23300200039,
-    "position": [
-      -650.7643,
-      864.3213
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
     "id": 23300120000,
     "position": [
       -694.8575,
@@ -524,8 +245,8 @@
   {
     "id": 23300120075,
     "position": [
-      -559.5655,
-      826.3745
+      -559.5654,
+      826.3746
     ],
     "subregionId": "WL_3",
     "type": "false_aggela_spot"
@@ -551,7 +272,7 @@
   {
     "id": 23300120078,
     "position": [
-      -560.9671,
+      -560.9672,
       822.6373
     ],
     "subregionId": "WL_3",
@@ -659,7 +380,7 @@
   {
     "id": 23300120091,
     "position": [
-      -631.7317,
+      -631.7316,
       790.2692
     ],
     "subregionId": "WL_3",
@@ -705,7 +426,7 @@
     "id": 23300120096,
     "position": [
       -676.8114,
-      750.0107
+      750.0108
     ],
     "subregionId": "WL_3",
     "type": "jincao"
@@ -732,7 +453,7 @@
     "id": 23300120099,
     "position": [
       -676.2171,
-      750.6061
+      750.606
     ],
     "subregionId": "WL_3",
     "type": "yazhen"
@@ -758,7 +479,7 @@
   {
     "id": 23300120102,
     "position": [
-      -632.5234,
+      -632.5235,
       790.708
     ],
     "subregionId": "WL_3",
@@ -849,7 +570,7 @@
     "id": 23300120118,
     "position": [
       -786.3235,
-      862.3135
+      862.3136
     ],
     "subregionId": "WL_3",
     "type": "jincao"
@@ -884,7 +605,7 @@
   {
     "id": 23300120122,
     "position": [
-      -668.229,
+      -668.2289,
       874.7453
     ],
     "subregionId": "WL_3",
@@ -1082,7 +803,7 @@
   {
     "id": 23300120144,
     "position": [
-      -654.2528,
+      -654.2527,
       722.1658
     ],
     "subregionId": "WL_3",
@@ -1253,7 +974,7 @@
   {
     "id": 23300120164,
     "position": [
-      -805.298,
+      -805.2979,
       818.403
     ],
     "subregionId": "WL_3",
@@ -1370,7 +1091,7 @@
   {
     "id": 23300050045,
     "position": [
-      -797.2231,
+      -797.2232,
       831.0914
     ],
     "subregionId": "WL_3",
@@ -1452,7 +1173,7 @@
     "id": 23300050063,
     "position": [
       -627.6651,
-      731.1519
+      731.152
     ],
     "subregionId": "WL_3",
     "type": "gather"
@@ -1470,7 +1191,7 @@
     "id": 23300050065,
     "position": [
       -675.6147,
-      768.8229
+      768.8228
     ],
     "subregionId": "WL_3",
     "type": "gather"
@@ -1537,60 +1258,6 @@
     ],
     "subregionId": "WL_3",
     "type": "energy_alluvium"
-  },
-  {
-    "id": 23300130002,
-    "position": [
-      -619.2438,
-      854.2274
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300130004,
-    "position": [
-      -619.2438,
-      854.2274
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 23300060004,
-    "position": [
-      -623.9048,
-      868.3119
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 23300060006,
-    "position": [
-      -622.1772,
-      865.3247
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 23300060007,
-    "position": [
-      -622.1772,
-      865.3247
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 23300060008,
-    "position": [
-      -623.9048,
-      868.3119
-    ],
-    "subregionId": "WL_3",
-    "type": "int_narrative_common_empty"
   },
   {
     "id": 23300000058,
@@ -1856,7 +1523,7 @@
   {
     "id": 23300000205,
     "position": [
-      -630.8206,
+      -630.8207,
       837.855
     ],
     "subregionId": "WL_3",
@@ -1946,7 +1613,7 @@
   {
     "id": 23300000253,
     "position": [
-      -633.571,
+      -633.5709,
       753.9261
     ],
     "subregionId": "WL_3",
@@ -1955,7 +1622,7 @@
   {
     "id": 23300000254,
     "position": [
-      -624.7168,
+      -624.7167,
       750.2749
     ],
     "subregionId": "WL_3",
@@ -1982,7 +1649,7 @@
   {
     "id": 23300000260,
     "position": [
-      -631.7383,
+      -631.7382,
       766.9631
     ],
     "subregionId": "WL_3",
@@ -2180,7 +1847,7 @@
   {
     "id": 23300000391,
     "position": [
-      -670.4972,
+      -670.4971,
       807.8094
     ],
     "subregionId": "WL_3",
@@ -2207,7 +1874,7 @@
   {
     "id": 23300000046,
     "position": [
-      -751.7146,
+      -751.7145,
       846.9546
     ],
     "subregionId": "WL_3",
@@ -2243,7 +1910,7 @@
   {
     "id": 23300000052,
     "position": [
-      -706.4335,
+      -706.4336,
       847.5594
     ],
     "subregionId": "WL_3",
@@ -2297,7 +1964,7 @@
   {
     "id": 23300000097,
     "position": [
-      -672.1013,
+      -672.1014,
       755.0149
     ],
     "subregionId": "WL_3",
@@ -2369,8 +2036,8 @@
   {
     "id": 23300000192,
     "position": [
-      -694.7215,
-      859.4405
+      -694.7214,
+      859.4406
     ],
     "subregionId": "WL_3",
     "type": "aurylene"
@@ -2378,7 +2045,7 @@
   {
     "id": 23300000196,
     "position": [
-      -772.6895,
+      -772.6896,
       763.2034
     ],
     "subregionId": "WL_3",
@@ -2468,7 +2135,7 @@
   {
     "id": 23300000247,
     "position": [
-      -708.5751,
+      -708.5752,
       751.2005
     ],
     "subregionId": "WL_3",
@@ -2477,7 +2144,7 @@
   {
     "id": 23300000255,
     "position": [
-      -670.7335,
+      -670.7334,
       746.5474
     ],
     "subregionId": "WL_3",
@@ -2504,8 +2171,8 @@
   {
     "id": 23300000276,
     "position": [
-      -713.3248,
-      875.2214
+      -713.3247,
+      875.2213
     ],
     "subregionId": "WL_3",
     "type": "gather"
@@ -2532,7 +2199,7 @@
     "id": 23300000285,
     "position": [
       -706.4961,
-      751.1511
+      751.151
     ],
     "subregionId": "WL_3",
     "type": "delta_bot"
@@ -2567,7 +2234,7 @@
   {
     "id": 23300000296,
     "position": [
-      -774.4789,
+      -774.479,
       799.5162
     ],
     "subregionId": "WL_3",
@@ -2585,7 +2252,7 @@
   {
     "id": 23300000301,
     "position": [
-      -638.234,
+      -638.2339,
       751.2619
     ],
     "subregionId": "WL_3",
@@ -2630,7 +2297,7 @@
   {
     "id": 23300000325,
     "position": [
-      -703.2165,
+      -703.2164,
       857.4286
     ],
     "subregionId": "WL_3",
@@ -2684,7 +2351,7 @@
   {
     "id": 23300000339,
     "position": [
-      -654.3228,
+      -654.3229,
       854.3486
     ],
     "subregionId": "WL_3",
@@ -2738,7 +2405,7 @@
   {
     "id": 23300000349,
     "position": [
-      -709.2635,
+      -709.2634,
       865.521
     ],
     "subregionId": "WL_3",
@@ -2819,7 +2486,7 @@
   {
     "id": 23300000397,
     "position": [
-      -634.6251,
+      -634.625,
       761.2585
     ],
     "subregionId": "WL_3",
@@ -2972,19 +2639,10 @@
   {
     "id": 23300000414,
     "position": [
-      -791.462,
+      -791.4619,
       804.1395
     ],
     "subregionId": "WL_3",
     "type": "crate_i"
-  },
-  {
-    "id": 23300000261,
-    "position": [
-      -584.5202,
-      866.5982
-    ],
-    "subregionId": "WL_3",
-    "type": "ruan_yi"
   }
 ]

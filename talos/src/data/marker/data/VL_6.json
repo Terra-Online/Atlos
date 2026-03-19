@@ -633,7 +633,7 @@
     "id": 3500030756,
     "position": [
       -358.8108,
-      800.0573
+      800.0572
     ],
     "subregionId": "VL_6",
     "type": "aurylene"
@@ -741,7 +741,7 @@
     "id": 3500030848,
     "position": [
       -345.538,
-      769.684
+      769.6841
     ],
     "subregionId": "VL_6",
     "type": "aurylene"
@@ -831,7 +831,7 @@
     "id": 3500030879,
     "position": [
       -357.3458,
-      836.9451
+      836.9452
     ],
     "subregionId": "VL_6",
     "type": "crate_iii"
@@ -867,7 +867,7 @@
     "id": 3500030884,
     "position": [
       -343.9213,
-      804.0765
+      804.0766
     ],
     "subregionId": "VL_6",
     "type": "gather"
@@ -1110,7 +1110,7 @@
     "id": 3500031153,
     "position": [
       -280.4021,
-      820.4026
+      820.4025
     ],
     "subregionId": "VL_6",
     "type": "delta_bot"
@@ -1173,7 +1173,7 @@
     "id": 3500031182,
     "position": [
       -286.5644,
-      768.9716
+      768.9715
     ],
     "subregionId": "VL_6",
     "type": "crate_ii"
@@ -1199,7 +1199,7 @@
   {
     "id": 3500031193,
     "position": [
-      -218.1549,
+      -218.1548,
       614.8415
     ],
     "subregionId": "VL_6",
@@ -1262,7 +1262,7 @@
   {
     "id": 3500031259,
     "position": [
-      -331.5035,
+      -331.5036,
       813.3248
     ],
     "subregionId": "VL_6",
@@ -1272,7 +1272,7 @@
     "id": 3500031268,
     "position": [
       -404.0203,
-      806.7281
+      806.728
     ],
     "subregionId": "VL_6",
     "type": "blight_core"
@@ -1317,7 +1317,7 @@
     "id": 3500031335,
     "position": [
       -435.4404,
-      784.3755
+      784.3756
     ],
     "subregionId": "VL_6",
     "type": "exploration_level"
@@ -1380,7 +1380,7 @@
     "id": 3500070337,
     "position": [
       -354.9955,
-      812.2228
+      812.2227
     ],
     "subregionId": "VL_6",
     "type": "buckflower"
@@ -1425,7 +1425,7 @@
     "id": 3500070355,
     "position": [
       -471.5095,
-      838.5695
+      838.5696
     ],
     "subregionId": "VL_6",
     "type": "citrome"
@@ -1443,7 +1443,7 @@
     "id": 3500070358,
     "position": [
       -459.7557,
-      850.7443
+      850.7442
     ],
     "subregionId": "VL_6",
     "type": "citrome"
@@ -1461,7 +1461,7 @@
     "id": 3500070366,
     "position": [
       -375.9927,
-      842.9873
+      842.9874
     ],
     "subregionId": "VL_6",
     "type": "citrome"
@@ -1524,7 +1524,7 @@
     "id": 3500070377,
     "position": [
       -399.6412,
-      758.5747
+      758.5746
     ],
     "subregionId": "VL_6",
     "type": null
@@ -1713,7 +1713,7 @@
     "id": 3500070443,
     "position": [
       -359.2583,
-      761.4669
+      761.4668
     ],
     "subregionId": "VL_6",
     "type": null
@@ -1902,7 +1902,7 @@
     "id": 3500070573,
     "position": [
       -444.1951,
-      710.0696
+      710.0695
     ],
     "subregionId": "VL_6",
     "type": "red_bolete_spot"
@@ -1992,7 +1992,7 @@
     "id": 3500070583,
     "position": [
       -378.8802,
-      732.2555
+      732.2554
     ],
     "subregionId": "VL_6",
     "type": "chrysodendra_spot"
@@ -2108,7 +2108,7 @@
   {
     "id": 3500070596,
     "position": [
-      -357.981,
+      -357.9809,
       667.3798
     ],
     "subregionId": "VL_6",
@@ -2540,7 +2540,7 @@
   {
     "id": 3500071023,
     "position": [
-      -246.8575,
+      -246.8576,
       718.6328
     ],
     "subregionId": "VL_6",
@@ -2972,7 +2972,7 @@
   {
     "id": 3500071262,
     "position": [
-      -222.6173,
+      -222.6174,
       815.3685
     ],
     "subregionId": "VL_6",
@@ -3000,7 +3000,7 @@
     "id": 3500071266,
     "position": [
       -395.7637,
-      810.3201
+      810.32
     ],
     "subregionId": "VL_6",
     "type": "citrome"
@@ -3312,24 +3312,6 @@
     "type": "auronyx_spot"
   },
   {
-    "id": 3500170001,
-    "position": [
-      -376.5182,
-      725.3803
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 3500170004,
-    "position": [
-      -370.333,
-      721.7327
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene"
-  },
-  {
     "id": 3500160000,
     "position": [
       -180.4719,
@@ -3472,240 +3454,6 @@
     ],
     "subregionId": "VL_6",
     "type": "delta_bot"
-  },
-  {
-    "id": 3500090001,
-    "position": [
-      -361.3072,
-      829.9645
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090002,
-    "position": [
-      -347.0994,
-      831.7795
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090003,
-    "position": [
-      -348.6777,
-      832.5291
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090005,
-    "position": [
-      -355.1347,
-      821.789
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090007,
-    "position": [
-      -369.9228,
-      787.7474
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090009,
-    "position": [
-      -346.3611,
-      803.8246
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090013,
-    "position": [
-      -345.5361,
-      722.5943
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 3500090016,
-    "position": [
-      -337.9681,
-      661.8431
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090019,
-    "position": [
-      -457.8738,
-      840.1285
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 3500090022,
-    "position": [
-      -365.904,
-      844.8548
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 3500090023,
-    "position": [
-      -379.3107,
-      797.2708
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090024,
-    "position": [
-      -342.4597,
-      835.0129
-    ],
-    "subregionId": "VL_6",
-    "type": "int_trigger_dnarrative_notebook"
-  },
-  {
-    "id": 3500090025,
-    "position": [
-      -223.4752,
-      813.7317
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 3500090031,
-    "position": [
-      -374.9108,
-      726.753
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090032,
-    "position": [
-      -423.7216,
-      700.4137
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
-    "id": 3500090033,
-    "position": [
-      -388.2534,
-      695.8145
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 3500090035,
-    "position": [
-      -359.9484,
-      675.5358
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
-    "id": 3500090040,
-    "position": [
-      -284.6875,
-      722.5703
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090042,
-    "position": [
-      -344.8157,
-      845.3034
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 3500090047,
-    "position": [
-      -347.8775,
-      829.8754
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 3500090049,
-    "position": [
-      -343.1046,
-      810.9022
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 3500090051,
-    "position": [
-      -339.5862,
-      810.8915
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene_book"
-  },
-  {
-    "id": 3500090053,
-    "position": [
-      -215.3297,
-      615.1738
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 3500090054,
-    "position": [
-      -343.8172,
-      666.1918
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 3500090055,
-    "position": [
-      -361.3358,
-      676.5924
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 3500090056,
-    "position": [
-      -374.8063,
-      800.1932
-    ],
-    "subregionId": "VL_6",
-    "type": "int_narrative_scene"
   },
   {
     "id": 3500021701,
@@ -3864,7 +3612,7 @@
     "id": 3500021741,
     "position": [
       -384.2542,
-      710.5646
+      710.5645
     ],
     "subregionId": "VL_6",
     "type": "bonekrusher_raider"
@@ -4169,7 +3917,7 @@
   {
     "id": 3500021871,
     "position": [
-      -369.6875,
+      -369.6876,
       721.5663
     ],
     "subregionId": "VL_6",
@@ -4296,7 +4044,7 @@
     "id": 3500021892,
     "position": [
       -412.4002,
-      735.3148
+      735.3147
     ],
     "subregionId": "VL_6",
     "type": "crate_ii"
@@ -4467,7 +4215,7 @@
     "id": 3500022165,
     "position": [
       -413.6401,
-      811.1966
+      811.1967
     ],
     "subregionId": "VL_6",
     "type": "gather"

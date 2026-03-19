@@ -1,311 +1,5 @@
 [
   {
-    "id": 2100330002,
-    "position": [
-      -739.3726,
-      504.8967
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
-    "id": 2100330003,
-    "position": [
-      -722.6673,
-      510.6568
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 2100330006,
-    "position": [
-      -715.4876,
-      504.3605
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 2100330007,
-    "position": [
-      -664.2254,
-      518.0409
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330016,
-    "position": [
-      -632.3609,
-      540.1699
-    ],
-    "subregionId": "VL_1",
-    "type": "int_trigger_dnarrative_document"
-  },
-  {
-    "id": 2100330017,
-    "position": [
-      -661.0914,
-      545.3214
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330019,
-    "position": [
-      -633.3281,
-      520.963
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 2100330020,
-    "position": [
-      -646.1797,
-      521.1865
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330026,
-    "position": [
-      -743.4034,
-      510.4097
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_news"
-  },
-  {
-    "id": 2100330027,
-    "position": [
-      -729.2282,
-      497.2898
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 2100330032,
-    "position": [
-      -630.5578,
-      536.9504
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330042,
-    "position": [
-      -572.3693,
-      408.2309
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 2100330075,
-    "position": [
-      -758.5164,
-      289.9134
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330077,
-    "position": [
-      -756.8252,
-      309.706
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330078,
-    "position": [
-      -649.6677,
-      237.8342
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330079,
-    "position": [
-      -636.1029,
-      229.5002
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330080,
-    "position": [
-      -640.1858,
-      244.5097
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330081,
-    "position": [
-      -645.6139,
-      244.085
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330082,
-    "position": [
-      -644.2689,
-      241.3396
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330083,
-    "position": [
-      -753.8103,
-      290.5172
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330123,
-    "position": [
-      -624.1795,
-      472.085
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330126,
-    "position": [
-      -481.1898,
-      431.5453
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330133,
-    "position": [
-      -650.8913,
-      516.284
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330156,
-    "position": [
-      -747.3528,
-      512.8928
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 2100330157,
-    "position": [
-      -747.3528,
-      512.8928
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330162,
-    "position": [
-      -624.1795,
-      472.085
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100330180,
-    "position": [
-      -647.6741,
-      515.9037
-    ],
-    "subregionId": "VL_1",
-    "type": "int_trigger_dnarrative_letter"
-  },
-  {
-    "id": 2100330182,
-    "position": [
-      -753.2767,
-      280.244
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 2100330183,
-    "position": [
-      -746.8895,
-      280.6166
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_pad"
-  },
-  {
-    "id": 2100330185,
-    "position": [
-      -750.8021,
-      269.8704
-    ],
-    "subregionId": "VL_1",
-    "type": "int_trigger_dnarrative_document"
-  },
-  {
-    "id": 2100330187,
-    "position": [
-      -756.5671,
-      276.4506
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100330193,
-    "position": [
-      -661.3374,
-      505.9611
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 2100330194,
-    "position": [
-      -607.2232,
-      340.3528
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_notebook"
-  },
-  {
-    "id": 2100330195,
-    "position": [
-      -715.4876,
-      504.3605
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
     "id": 2100420000,
     "position": [
       -642.3133,
@@ -624,7 +318,7 @@
     "id": 2100420093,
     "position": [
       -621.0366,
-      215.4023
+      215.4022
     ],
     "subregionId": "VL_1",
     "type": "bonekrusher_raider"
@@ -660,7 +354,7 @@
     "id": 2100420098,
     "position": [
       -636.9469,
-      233.2294
+      233.2295
     ],
     "subregionId": "VL_1",
     "type": "bonekrusher_raider"
@@ -759,7 +453,7 @@
     "id": 2100420137,
     "position": [
       -618.0148,
-      264.0235
+      264.0236
     ],
     "subregionId": "VL_1",
     "type": "elite_raider"
@@ -1002,7 +696,7 @@
     "id": 2100420227,
     "position": [
       -643.1223,
-      197.5584
+      197.5583
     ],
     "subregionId": "VL_1",
     "type": "bonekrusher_raider"
@@ -1236,7 +930,7 @@
     "id": 2100420435,
     "position": [
       -670.9091,
-      300.6851
+      300.685
     ],
     "subregionId": "VL_1",
     "type": "bonekrusher_raider"
@@ -1560,7 +1254,7 @@
     "id": 2100420169,
     "position": [
       -637.8773,
-      314.3752
+      314.3753
     ],
     "subregionId": "VL_1",
     "type": "buckflower"
@@ -1749,7 +1443,7 @@
     "id": 2100420271,
     "position": [
       -669.0503,
-      213.4602
+      213.4603
     ],
     "subregionId": "VL_1",
     "type": "citrome"
@@ -1802,7 +1496,7 @@
   {
     "id": 2100420277,
     "position": [
-      -691.8204,
+      -691.8205,
       221.677
     ],
     "subregionId": "VL_1",
@@ -1856,7 +1550,7 @@
   {
     "id": 2100420283,
     "position": [
-      -671.0665,
+      -671.0664,
       238.3498
     ],
     "subregionId": "VL_1",
@@ -1874,7 +1568,7 @@
   {
     "id": 2100420285,
     "position": [
-      -671.8734,
+      -671.8735,
       237.4748
     ],
     "subregionId": "VL_1",
@@ -2198,7 +1892,7 @@
   {
     "id": 2100420322,
     "position": [
-      -633.8959,
+      -633.8958,
       207.2944
     ],
     "subregionId": "VL_1",
@@ -2361,7 +2055,7 @@
     "id": 2100420341,
     "position": [
       -728.6047,
-      268.0498
+      268.0497
     ],
     "subregionId": "VL_1",
     "type": "buckflower"
@@ -2424,7 +2118,7 @@
     "id": 2100420356,
     "position": [
       -697.0859,
-      255.5386
+      255.5385
     ],
     "subregionId": "VL_1",
     "type": "citrome"
@@ -2442,7 +2136,7 @@
     "id": 2100420358,
     "position": [
       -693.9332,
-      279.7293
+      279.7292
     ],
     "subregionId": "VL_1",
     "type": "citrome"
@@ -2621,8 +2315,8 @@
   {
     "id": 2100420400,
     "position": [
-      -720.6893,
-      266.456
+      -720.6892,
+      266.4559
     ],
     "subregionId": "VL_1",
     "type": "firebuckle"
@@ -2667,7 +2361,7 @@
     "id": 2100420405,
     "position": [
       -694.4726,
-      279.466
+      279.4659
     ],
     "subregionId": "VL_1",
     "type": "umbraline"
@@ -3117,7 +2811,7 @@
     "id": 2100390339,
     "position": [
       -610.3624,
-      269.2429
+      269.243
     ],
     "subregionId": "VL_1",
     "type": "elite_executioner"
@@ -3261,7 +2955,7 @@
     "id": 2100390376,
     "position": [
       -525.8955,
-      316.0277
+      316.0276
     ],
     "subregionId": "VL_1",
     "type": "wild_tuskbeast"
@@ -3449,7 +3143,7 @@
   {
     "id": 2100390883,
     "position": [
-      -631.7716,
+      -631.7717,
       384.596
     ],
     "subregionId": "VL_1",
@@ -3485,7 +3179,7 @@
   {
     "id": 2100390943,
     "position": [
-      -555.8479,
+      -555.8478,
       269.2313
     ],
     "subregionId": "VL_1",
@@ -3728,7 +3422,7 @@
   {
     "id": 2100391031,
     "position": [
-      -760.37,
+      -760.3701,
       415.4638
     ],
     "subregionId": "VL_1",
@@ -4581,33 +4275,6 @@
     "type": "delta_bot"
   },
   {
-    "id": 2100280046,
-    "position": [
-      -726.7718,
-      511.2556
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene_empty"
-  },
-  {
-    "id": 2100230001,
-    "position": [
-      -602.3518,
-      333.3856
-    ],
-    "subregionId": "VL_1",
-    "type": "int_trigger_dnarrative_document"
-  },
-  {
-    "id": 2100480010,
-    "position": [
-      -583.8904,
-      485.1076
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
     "id": 2100010291,
     "position": [
       -516.8996,
@@ -4773,7 +4440,7 @@
     "id": 2100010193,
     "position": [
       -535.8893,
-      400.2004
+      400.2003
     ],
     "subregionId": "VL_1",
     "type": null
@@ -5175,24 +4842,6 @@
     "type": "aketine"
   },
   {
-    "id": 2100050112,
-    "position": [
-      -640.7985,
-      578.1234
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
-    "id": 2100050113,
-    "position": [
-      -635.7927,
-      574.2374
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_audiotape"
-  },
-  {
     "id": 2100180001,
     "position": [
       -646.0281,
@@ -5238,60 +4887,6 @@
     "type": "bonekrusher_raider"
   },
   {
-    "id": 2100180021,
-    "position": [
-      -650.1784,
-      230.8558
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common"
-  },
-  {
-    "id": 2100180034,
-    "position": [
-      -644.0767,
-      204.935
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_scene"
-  },
-  {
-    "id": 2100180035,
-    "position": [
-      -646.5627,
-      211.5215
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty_withoutVfx"
-  },
-  {
-    "id": 2100180036,
-    "position": [
-      -637.3802,
-      229.4651
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 2100180048,
-    "position": [
-      -646.5627,
-      211.5215
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty_withoutVfx"
-  },
-  {
-    "id": 2100180049,
-    "position": [
-      -644.6916,
-      243.7631
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
     "id": 2100450001,
     "position": [
       -700.6207,
@@ -5308,24 +4903,6 @@
     ],
     "subregionId": "VL_1",
     "type": "delta_bot"
-  },
-  {
-    "id": 2100070023,
-    "position": [
-      -642.0559,
-      228.6474
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty"
-  },
-  {
-    "id": 2100070058,
-    "position": [
-      -651.2207,
-      238.3782
-    ],
-    "subregionId": "VL_1",
-    "type": "int_narrative_common_empty_withoutVfx"
   },
   {
     "id": 2100020060,
@@ -6483,7 +6060,7 @@
     "id": 2100020548,
     "position": [
       -576.787,
-      338.269
+      338.2689
     ],
     "subregionId": "VL_1",
     "type": "crate_i"
@@ -7085,7 +6662,7 @@
   {
     "id": 2100021070,
     "position": [
-      -757.2546,
+      -757.2545,
       475.5163
     ],
     "subregionId": "VL_1",
@@ -7112,7 +6689,7 @@
   {
     "id": 2100021073,
     "position": [
-      -743.0754,
+      -743.0753,
       486.0458
     ],
     "subregionId": "VL_1",
@@ -7626,7 +7203,7 @@
     "id": 2100460006,
     "position": [
       -685.7997,
-      348.4784
+      348.4783
     ],
     "subregionId": "VL_1",
     "type": "energy_alluvium"
@@ -7670,7 +7247,7 @@
   {
     "id": 2100460012,
     "position": [
-      -736.3874,
+      -736.3873,
       435.1082
     ],
     "subregionId": "VL_1",
@@ -8219,7 +7796,7 @@
   {
     "id": 2100430293,
     "position": [
-      -731.7206,
+      -731.7205,
       399.2609
     ],
     "subregionId": "VL_1",
@@ -8345,7 +7922,7 @@
   {
     "id": 2100430046,
     "position": [
-      -709.1342,
+      -709.1341,
       477.4833
     ],
     "subregionId": "VL_1",
@@ -8373,7 +7950,7 @@
     "id": 2100430054,
     "position": [
       -707.4326,
-      419.278
+      419.2781
     ],
     "subregionId": "VL_1",
     "type": "gather"
@@ -8435,7 +8012,7 @@
   {
     "id": 2100430075,
     "position": [
-      -773.1942,
+      -773.1941,
       390.5019
     ],
     "subregionId": "VL_1",
@@ -8462,7 +8039,7 @@
   {
     "id": 2100430109,
     "position": [
-      -779.1125,
+      -779.1126,
       405.339
     ],
     "subregionId": "VL_1",
@@ -8526,7 +8103,7 @@
     "id": 2100430130,
     "position": [
       -760.7563,
-      441.0918
+      441.0919
     ],
     "subregionId": "VL_1",
     "type": "crate_ii"
@@ -8643,7 +8220,7 @@
     "id": 2100430167,
     "position": [
       -678.7682,
-      377.4385
+      377.4384
     ],
     "subregionId": "VL_1",
     "type": "aurylene"
@@ -8741,7 +8318,7 @@
   {
     "id": 2100430209,
     "position": [
-      -762.9609,
+      -762.9608,
       501.7506
     ],
     "subregionId": "VL_1",
@@ -9228,7 +8805,7 @@
     "id": 2100030408,
     "position": [
       -549.9644,
-      422.345
+      422.3449
     ],
     "subregionId": "VL_1",
     "type": "pink_bolete_spot"
@@ -9416,7 +8993,7 @@
   {
     "id": 2100030485,
     "position": [
-      -726.2415,
+      -726.2416,
       259.2868
     ],
     "subregionId": "VL_1",
@@ -9425,7 +9002,7 @@
   {
     "id": 2100030486,
     "position": [
-      -727.5321,
+      -727.5322,
       258.2508
     ],
     "subregionId": "VL_1",
