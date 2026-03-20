@@ -39,6 +39,7 @@ import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useSidebarWidth, useSetSidebarWidth, useIncrementLayoutVersion, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
 import { useMultiRegionMarkerCount } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
+import { computeBinderColumns } from './binderMasonry';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -213,26 +214,9 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                     const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
                                     const binderData = BINDER_GROUPS_BY_SUB[subCategory];
                                     const showBinder = isWide && binderData;
-                                    const orderedBinderGroups = binderData
-                                        ? binderData.groups
-                                            .map((group, index) => ({ group, index }))
-                                            .sort((a, b) => {
-                                                const aRenderableCount = a.group.types.reduce(
-                                                    (sum, typeInfo) => sum + ((binderTypeCountMap.get(typeInfo.key)?.total ?? 0) > 0 ? 1 : 0),
-                                                    0,
-                                                );
-                                                const bRenderableCount = b.group.types.reduce(
-                                                    (sum, typeInfo) => sum + ((binderTypeCountMap.get(typeInfo.key)?.total ?? 0) > 0 ? 1 : 0),
-                                                    0,
-                                                );
-
-                                                const aPriority = aRenderableCount > 1 ? 0 : 1;
-                                                const bPriority = bRenderableCount > 1 ? 0 : 1;
-                                                if (aPriority !== bPriority) return aPriority - bPriority;
-                                                return a.index - b.index;
-                                            })
-                                            .map((item) => item.group)
-                                        : [];
+                                    const binderColumns = binderData
+                                        ? computeBinderColumns(binderData.groups, binderTypeCountMap)
+                                        : { left: [], right: [] };
                                     return (
                                         <MarkFilter
                                             idKey={subCategory}
@@ -246,9 +230,16 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                             {showBinder && binderData ? (
                                                 <>
                                                     <div className={styles.binderSection}>
-                                                        {orderedBinderGroups.map((group) => (
-                                                            <MarkBinder key={group.dropKey} group={group} />
-                                                        ))}
+                                                        <div className={styles.binderColumn}>
+                                                            {binderColumns.left.map((group) => (
+                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                            ))}
+                                                        </div>
+                                                        <div className={styles.binderColumn}>
+                                                            {binderColumns.right.map((group) => (
+                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                     {binderData.remaining.length > 0 && (
                                                         <div className={styles.remainingSection}>

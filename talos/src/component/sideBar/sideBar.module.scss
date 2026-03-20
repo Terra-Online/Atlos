@@ -342,15 +342,16 @@ $transition-speed: 0.3s;
     }
 }
 .binderSection {
-    column-count: 2;
-    column-gap: 0.6rem;
+    display: flex;
+    gap: 0.6rem;
     padding-top: 1px;
     padding-bottom: 0.75rem;
     width: 100%;
-    > * {
-        break-inside: avoid;
-        margin-bottom: 0.75rem;
-    }
+    align-items: flex-start;
+}
+.binderColumn {
+    flex: 1;
+    min-width: 0;
 }
 .remainingSection {
     display: grid;
