@@ -82,7 +82,10 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
             onClick={handleToggleAll}
         >
             {/* Header: layout only, click bubbles up to wrap */}
-            <div className={styles.binderItem}>
+            <div
+                className={styles.binderItem}
+                data-binder-keys={typeKeys.join(',')}
+            >
                 <span className={styles.binderIcon}>
                     <img
                         src={iconUrl}

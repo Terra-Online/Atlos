@@ -17,7 +17,8 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
         let startPoint: { x: number, y: number } | null = null;
         let isDragging = false;
         let initialFilter: string[] = [];
-        let itemsRects: { key: string, rect: DOMRect }[] = [];
+        let selectorRects: { key: string, rect: DOMRect }[] = [];
+        let binderRects: { keys: string[], rect: DOMRect }[] = [];
 
         const onMouseDown = (e: MouseEvent) => {
             if (e.button !== 0 || e.defaultPrevented) return;
@@ -34,10 +35,11 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
             };
             initialFilter = currentFilterRef.current;
             
-            // Gather all selectable items and their rects
-            // Handle non-null assertion by filtering
-            itemsRects = [];
-            const elements = container.querySelectorAll('[data-key]');
+            // Gather all selectable selectors and binder headers.
+            selectorRects = [];
+            binderRects = [];
+
+            const elements = container.querySelectorAll('[data-key], [data-binder-keys]');
             elements.forEach(el => {
                 // Use checkVisibility to respect visibility: hidden (which we use for collapsed groups)
                 // checkVisibility is a modern DOM API - type assertion needed for compatibility
@@ -51,10 +53,25 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
                 
                 const key = el.getAttribute('data-key');
                 if (key) {
-                    itemsRects.push({
+                    selectorRects.push({
                         key,
                         rect: el.getBoundingClientRect()
                     });
+                }
+
+                const binderKeysAttr = el.getAttribute('data-binder-keys');
+                if (binderKeysAttr) {
+                    const keys = binderKeysAttr
+                        .split(',')
+                        .map(k => k.trim())
+                        .filter(Boolean);
+
+                    if (keys.length > 0) {
+                        binderRects.push({
+                            keys,
+                            rect: el.getBoundingClientRect()
+                        });
+                    }
                 }
             });
 
@@ -99,8 +116,25 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
                 const boxBottom = Math.max(absStartY, e.clientY);
 
                 const nextSet = new Set(initialFilter);
+                const binderHandledKeys = new Set<string>();
+
+                binderRects.forEach(it => {
+                    const intersect = !(it.rect.left > boxRight || it.rect.right < boxLeft ||
+                                      it.rect.top > boxBottom || it.rect.bottom < boxTop);
+
+                    if (!intersect) return;
+
+                    it.keys.forEach(key => {
+                        if (nextSet.has(key)) nextSet.delete(key);
+                        else nextSet.add(key);
+                        binderHandledKeys.add(key);
+                    });
+                });
                 
-                itemsRects.forEach(it => {
+                selectorRects.forEach(it => {
+                    // If this key has been handled by a binder hit, skip to avoid double-toggle.
+                    if (binderHandledKeys.has(it.key)) return;
+
                     // Check intersection
                     const intersect = !(it.rect.left > boxRight || it.rect.right < boxLeft || 
                                       it.rect.top > boxBottom || it.rect.bottom < boxTop);
@@ -124,7 +158,8 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
             isDragging = false;
             setIsSelecting(false);
             setSelectionBox(null);
-            itemsRects = [];
+            selectorRects = [];
+            binderRects = [];
         };
 
         container.addEventListener('mousedown', onMouseDown);
