@@ -344,6 +344,7 @@ $transition-speed: 0.3s;
 .binderSection {
     column-count: 2;
     column-gap: 0.6rem;
+    padding-top: 1px;
     padding-bottom: 0.75rem;
     width: 100%;
     > * {
