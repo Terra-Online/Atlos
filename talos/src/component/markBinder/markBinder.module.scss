@@ -2,17 +2,23 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --mark-binder-margin-bottom: 0.75rem;
+    --binder-active-bg: #{$white-1};
+
+    --binder-completed-bg: #{rgba($primary-accent-4, 0.8)};
+    --binder-progress-bg: #{rgba($primary-accent-4, 0.6)};
 }
 :root[data-theme='dark'] {
-    --mark-binder-margin-bottom: 0.75rem;
+    --binder-active-bg: #{$black-1};
+
+    --binder-completed-bg: #{rgba($primary-accent-5, 0.6)};
+    --binder-progress-bg: #{rgba($primary-accent-4, 0.6)};
 }
 
 .binderWrap {
     break-inside: avoid;
     overflow: visible;
     margin-bottom: .625rem;
-    padding: 6px 12px 2px 12px;
+    padding: 6px 12px 4px 12px;
     position: relative;
     will-change: box-shadow, transform, background-color;
     border-radius: 0 0 2px 2px;
@@ -39,7 +45,6 @@
             clip-path 0.3s $standard-curve,
             background-color 0.35s $moderato-curve;
     }
-
     &::after {
         content: '';
         position: absolute;
@@ -47,7 +52,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: var(--mark-progress-bg);
+        background-color: var(--binder-progress-bg);
         /* default: 0-height strip at top edge — start of top-to-bottom animation */
         clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
         transition:
@@ -55,14 +60,12 @@
             background-color 0.35s $moderato-curve;
         z-index: -1;
     }
-
     &:hover {
         box-shadow: 1px 3px 5px rgba($black-0, 0.2);
         transform: translateY(-1px);
     }
-
     &.active {
-        background-color: var(--mark-active-bg);
+        background-color: var(--binder-active-bg);
         color: var(--mark-active-fg);
         box-shadow: 0 3px 4px rgba($black-0, 0.4);
         transition: all 0.2s ease;
@@ -87,7 +90,7 @@
             background-color: var(--mark-completed-separator);
         }
         &::after {
-            background-color: var(--mark-completed-bg);
+            background-color: var(--binder-completed-bg);
         }
     }
 }
@@ -183,10 +186,16 @@
     z-index: 1;
     cursor: default;
     padding: 0.2rem 0 0.1rem;
+    mix-blend-mode: luminosity;
+    backdrop-filter: blur(8px);
     > * {
         margin-bottom: 0;
     }
     > :last-child {
         margin-bottom: 0;
     }
+}
+
+.binderChildren :global([data-mark-selector-item='true'][data-active='true'])::after {
+    filter: invert(.2);
 }

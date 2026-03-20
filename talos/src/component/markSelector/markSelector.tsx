@@ -66,6 +66,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
                 displayName.includes(searchString)),
         [cnt.total, searchString, displayName, typeInfo.key],
     );
+    const isActive = filter.includes(typeInfo.key);
 
     // Visibility reporting to parent context (stable id = key)
     const ctx = useContext(MarkVisibilityContext);
@@ -114,8 +115,10 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     return (
         <div className={styles.markSkeleton}>
             <div
-                className={`${styles.markItem} ${filter.includes(typeInfo.key) ? styles.active : ''} ${isComplete ? styles.completed : ''}`}
+                className={`${styles.markItem} ${isActive ? styles.active : ''} ${isComplete ? styles.completed : ''}`}
                 data-key={typeInfo.key}
+                data-mark-selector-item="true"
+                data-active={isActive ? 'true' : 'false'}
                 onClick={handleSwitchFilter}
                 style={((): StyleVars => {
                     const styleObj: StyleVars = {
