@@ -38,7 +38,19 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     const totalCollected = counts.reduce((a, c) => a + c.collected, 0);
     const totalTotal = counts.reduce((a, c) => a + c.total, 0);
 
-    const is1to1 = group.types.length === 1;
+    const renderedTypes = useMemo(
+        () => group.types.filter((typeInfo, index) => {
+            const count = counts[index];
+            if (!count || count.total <= 0) return false;
+            if (searchString === '') return true;
+
+            const typeDisplayName = String(tGame(`markerType.key.${typeInfo.key}`) ?? '');
+            return typeInfo.key.includes(searchString) || typeDisplayName.includes(searchString);
+        }),
+        [group.types, counts, searchString, tGame],
+    );
+
+    const is1to1 = renderedTypes.length <= 1;
 
     const showFilter = useMemo(() => {
         if (!totalTotal) return false;
@@ -46,9 +58,9 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         return (
             group.dropKey.includes(searchString) ||
             displayName.toLowerCase().includes(searchString.toLowerCase()) ||
-            group.types.some((t) => t.key.includes(searchString))
+            renderedTypes.length > 0
         );
-    }, [totalTotal, searchString, group.dropKey, displayName, group.types]);
+    }, [totalTotal, searchString, group.dropKey, displayName, renderedTypes.length]);
 
     const ctx = useContext(MarkVisibilityContext);
     const idRef = useRef<string>(group.dropKey);
@@ -105,7 +117,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
                     className={styles.binderChildren}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {group.types.map((typeInfo) => (
+                    {renderedTypes.map((typeInfo) => (
                         <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
                     ))}
                 </div>
