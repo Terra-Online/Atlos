@@ -343,7 +343,8 @@ $transition-speed: 0.3s;
 }
 .binderSection {
     column-count: 2;
-    column-gap: 0.75rem;
+    column-gap: 0.6rem;
+    padding-bottom: 0.75rem;
     width: 100%;
     > * {
         break-inside: avoid;

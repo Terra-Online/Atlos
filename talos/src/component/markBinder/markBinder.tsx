@@ -4,7 +4,7 @@ import styles from './markBinder.module.scss';
 import type { BinderGroup } from '@/data/marker/binder';
 import { getItemIconUrl } from '@/utils/resource';
 import { useTranslateGame } from '@/locale';
-import { useMultiRegionMarkerCount, useFilter, useSearchString } from '@/store/marker';
+import { useMultiRegionMarkerCount, useFilter, useSearchString, useMarkerStore } from '@/store/marker';
 import MarkSelector from '../markSelector/markSelector';
 import { trackedSetFilterKeys } from '@/store/trackedActions';
 import { MarkVisibilityContext } from '../markFilter/visibilityContext';
@@ -58,20 +58,17 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         return () => ctx?.report(stableId, false);
     }, [ctx, showFilter]);
 
-    const allActive = useMemo(
-        () => typeKeys.length > 0 && typeKeys.every((k) => filter.includes(k)),
-        [typeKeys, filter],
-    );
+    // Direct computation — no useMemo, always reflects the latest filter in the same render pass
+    const allActive = typeKeys.length > 0 && typeKeys.every((k) => filter.includes(k));
+    const isComplete = totalTotal > 0 && totalCollected >= totalTotal;
 
-    const isComplete = useMemo(
-        () => totalTotal > 0 && totalCollected >= totalTotal,
-        [totalTotal, totalCollected],
-    );
-
-    // allActive → deselect all; otherwise → select all (never toggle-each)
+    // Read allActive from the store imperatively so the callback is never stale
     const handleToggleAll = useCallback(() => {
-        trackedSetFilterKeys(typeKeys, !allActive);
-    }, [typeKeys, allActive]);
+        const currentFilter = useMarkerStore.getState().filter;
+        const currentlyAllActive =
+            typeKeys.length > 0 && typeKeys.every((k) => currentFilter.includes(k));
+        trackedSetFilterKeys(typeKeys, !currentlyAllActive);
+    }, [typeKeys]);
 
     if (!showFilter) return null;
 

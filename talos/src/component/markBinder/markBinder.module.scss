@@ -8,17 +8,11 @@
     --mark-binder-margin-bottom: 0.75rem;
 }
 
-/* MarkBinder reuses MarkSelector's CSS variables directly */
-
-/* ─── Wrap: all visual effects live here ─────────────────────────────────── */
 .binderWrap {
     break-inside: avoid;
     overflow: visible;
-    margin-bottom: .75rem;
-    padding: .5rem;
-    padding-bottom: .25rem;
-
-    /* Stacking context so ::after z-index:-1 paints above our bg, below content */
+    margin-bottom: .625rem;
+    padding: 6px 12px 2px 12px;
     position: relative;
     will-change: box-shadow, transform, background-color;
     border-radius: 0 0 2px 2px;
@@ -31,7 +25,6 @@
         transform 0.2s ease,
         background-color 0.3s ease;
 
-    /* ::before — horizontal accent bar at TOP of entire wrap */
     &::before {
         content: '';
         position: absolute;
@@ -47,16 +40,16 @@
             background-color 0.35s $moderato-curve;
     }
 
-    /* ::after — progress fill across entire wrap (same as MarkSelector) */
     &::after {
         content: '';
         position: absolute;
         left: 0;
-        bottom: 0;
+        top: 0;
         width: 100%;
         height: 100%;
         background-color: var(--mark-progress-bg);
-        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        /* default: 0-height strip at top edge — start of top-to-bottom animation */
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
         transition:
             clip-path 0.3s ease,
             background-color 0.35s $moderato-curve;
@@ -79,11 +72,12 @@
         }
 
         &::after {
+            /* fill grows downward from top by progress percentage */
             clip-path: polygon(
                 0 0,
-                var(--progress-percentage, 0%) 0,
-                var(--progress-percentage, 0%) 100%,
-                0 100%
+                100% 0,
+                100% var(--progress-percentage, 0%),
+                0 var(--progress-percentage, 0%)
             );
         }
     }
@@ -98,26 +92,21 @@
     }
 }
 
-/* ─── Item: header layout only, no decorative effects ────────────────────── */
 .binderItem {
     user-select: none;
     touch-action: pan-y;
     overscroll-behavior: auto;
-    padding: 0.3rem 0.4rem 0.3rem 0.3rem;
     min-height: 2.5rem;
 
     display: grid;
     grid-template-columns: 2.75rem 1fr auto;
     grid-template-areas: 'icon name stat';
     align-items: center;
-    gap: 0 6px;
-
-    /* Push content above the ::after progress layer */
     position: relative;
     z-index: 1;
+    transform: translateX(-5px);
 }
 
-/* ─── Icon ────────────────────────────────────────────────────────────────── */
 .binderIcon {
     grid-area: icon;
     display: flex;
@@ -156,7 +145,6 @@
     }
 }
 
-/* ─── Name ────────────────────────────────────────────────────────────────── */
 .binderName {
     grid-area: name;
     font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Thai', sans-serif;
@@ -170,8 +158,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-/* ─── Stat ────────────────────────────────────────────────────────────────── */
 .binderStat {
     grid-area: stat;
     font-size: 0.8rem;
@@ -182,6 +168,7 @@
     white-space: nowrap;
     line-height: 1;
     transition: color 0.3s ease;
+    padding-left: 6px;
 
     .active & {
         color: var(--mark-stats-completed-text);
@@ -191,24 +178,13 @@
     }
 }
 
-/* ─── Children: always visible for n:1 groups ────────────────────────────── */
 .binderChildren {
-    /* Keep content above the ::after progress layer */
     position: relative;
     z-index: 1;
     cursor: default;
     padding: 0.2rem 0 0.1rem;
-
-    :root[data-theme='dark'] & {
-        border-top-color: rgba($white-0, 0.08);
-    }
-
-    /*
-     * Reduce the default 0.75rem margin-bottom on each .markSkeleton child.
-     * Using > * gives specificity 0-1-1 which beats .markSkeleton's 0-1-0.
-     */
     > * {
-        margin-bottom: 5px;
+        margin-bottom: 0;
     }
     > :last-child {
         margin-bottom: 0;

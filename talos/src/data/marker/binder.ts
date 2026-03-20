@@ -37,11 +37,14 @@ function computeBinderData(_subCategory: string, types: IMarkerType[], sharedKey
         }
     }
 
-    const groups: BinderGroup[] = Array.from(grouped.entries()).map(([dropKey, { dropName, types }]) => ({
-        dropKey,
-        dropName,
-        types,
-    }));
+    const groups: BinderGroup[] = Array.from(grouped.entries())
+        .map(([dropKey, { dropName, types }]) => ({ dropKey, dropName, types }))
+        // Non-1:1 (multi-type) groups first so masonry tall cards lead; 1:1 groups fill trailing space
+        .sort((a, b) => {
+            const aMulti = a.types.length > 1 ? 0 : 1;
+            const bMulti = b.types.length > 1 ? 0 : 1;
+            return aMulti - bMulti;
+        });
 
     return { sharedKey, groups, remaining };
 }
