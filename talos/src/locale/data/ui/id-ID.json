@@ -28,7 +28,8 @@
       "main": "Utama",
       "sub": "Sub"
     },
-    "noInfo": "Tidak ada informasi."
+    "noInfo": "Tidak ada informasi.",
+    "readFullText": "Klik untuk membaca teks lengkap."
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

@@ -83,6 +83,21 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const allFiles = getAllFiles("./dist");
 
+/**
+ * Cache-Control strategy:
+ * - assets/**  (hashed filenames)  → immutable, 1 year
+ * - files/**   (archive HTML)      → public, 1 week (can be purged/revalidated)
+ * - *.html     (app shell)         → no-store, always revalidate
+ * - everything else                → public, 1 hour
+ */
+const getCacheControl = (relativePath) => {
+  const p = relativePath.replace(/\\/g, '/');
+  if (p.startsWith('assets/')) return 'public, max-age=31536000, immutable';
+  if (p.startsWith('files/'))  return 'public, max-age=604800';
+  if (p.endsWith('.html'))     return 'no-cache, no-store, must-revalidate';
+  return 'public, max-age=3600';
+};
+
 // a simple MIME type mapping function
 const getMimeType = (filePath) => {
   const ext = path.extname(filePath).toLowerCase();
@@ -146,6 +161,8 @@ const upload = async (relativePath, retryCount = 0) => {
       return;
     }
 
+    const cacheControl = getCacheControl(relativePath);
+
     if (fileSize > MULTIPART_THRESHOLD) {
       // Use AWS SDK v3's Upload for uploading (no longer forcing multipart)
       const upload = new Upload({
@@ -154,7 +171,8 @@ const upload = async (relativePath, retryCount = 0) => {
           Bucket: bucket,
           Key: objectKey,
           Body: fs.createReadStream(localPath),
-          ContentType: contentType, // specify Content-Type
+          ContentType: contentType,
+          CacheControl: cacheControl,
         },
         leavePartsOnError: false,
       });
@@ -173,7 +191,8 @@ const upload = async (relativePath, retryCount = 0) => {
         Bucket: bucket,
         Key: objectKey,
         Body: fs.createReadStream(localPath),
-        ContentType: contentType, // specify Content-Type
+        ContentType: contentType,
+        CacheControl: cacheControl,
       });
       await client.send(command);
       console.log(

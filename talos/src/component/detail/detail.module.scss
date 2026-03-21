@@ -330,20 +330,17 @@
             }
         }
     }
-
     // note
     .detailNotes {
         position: relative;
-        font-size: 0.875rem;
+        font-size: 1rem;
         font-family:
-            HMSans,
-            'HMSans_TC',
-            'HMSans_SC',
-            sans-serif;
+            'HMSans_EN', 'HMSans_TC', 'HMSans_SC', sans-serif;
         font-weight: 400;
-    border-left: 4px solid var(--detail-text);
-        padding-top: 2px;
+        border-left: 4px solid var(--detail-text);
         padding-left: 0.25rem;
+        padding-top: 0.3rem;
+        margin-top: 1.5rem;
 
         &::before {
             position: absolute;
@@ -354,6 +351,8 @@
             padding: 3px 3px 2px 4px;
             left: -4px;
             top: -1rem;
+            font-size: 0.875rem;
+            letter-spacing: -0.5px;
         }
 
         .noteText {
@@ -364,6 +363,19 @@
         .noNote {
             color: var(--detail-placeholder);
             font-style: italic;
+        }
+
+        > a {
+            display: inline-block;
+           transition: color 0.3s ease;
+           font-size: 0.875rem;
+           font-weight: 600;
+           cursor: pointer;
+           text-decoration: underline;
+           text-underline-offset: 2px;
+           line-height: 1.5;
+
+           &:hover { color: $primary-accent-6; }
         }
     }
 
@@ -390,6 +402,37 @@
             left: 0;
             top: 0;
         }
+    }
+}
+
+// Content inside the full-text modal (paragraph rhythm matches .storageContainer in tos)
+.fullTextContent {
+    display: flex;
+    flex-direction: column;
+    font-size: .925rem;
+    color: var(--tos-text);
+    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    letter-spacing: -0.2px;
+    font-weight: 600;
+    line-height: 1.25;
+    p {
+        margin-bottom: 0.8em;
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+    del {
+        text-decoration: line-through;
+    }
+    i,
+    em {
+        font-style: italic;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        box-shadow: 0 0 4px rgba($black-0, 0.75);
     }
 }
 

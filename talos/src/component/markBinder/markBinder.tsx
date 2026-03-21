@@ -129,10 +129,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
             </div>
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
             {!is1to1 && (
-                <div
-                    className={styles.binderChildren}
-                    onClick={(e) => e.stopPropagation()}
-                >
+                <div className={styles.binderChildren} onClick={(e) => e.stopPropagation()}>
                     {sortedRenderedTypes.map((typeInfo) => (
                         <motion.div
                             key={typeInfo.key}

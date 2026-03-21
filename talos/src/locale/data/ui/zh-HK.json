@@ -28,7 +28,8 @@
       "main": "主區域",
       "sub": "子區域"
     },
-    "noInfo": "暫無資料"
+    "noInfo": "暫無資料",
+    "readFullText": "點此查看全文。"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

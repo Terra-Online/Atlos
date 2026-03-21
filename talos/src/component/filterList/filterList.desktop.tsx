@@ -3,11 +3,16 @@ import { getItemIconUrl } from '@/utils/resource.ts';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
 import { MARKER_TYPE_DICT } from '@/data/marker';
 import styles from './filterList.module.scss';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useMotionValue } from 'motion/react';
 
 const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const filterList = useFilter();
+    // Files-type markers don't show icons in FilterList and shouldn't count toward container sizing
+    const displayList = useMemo(
+        () => filterList.filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files'),
+        [filterList],
+    );
     const containerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [showLeftMask, setShowLeftMask] = useState(false);
@@ -16,10 +21,10 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
     const x = useMotionValue(0);
 
     const maxDisplayItems = 8;
-    const shouldShowEighthHalf = filterList.length >= maxDisplayItems;
+    const shouldShowEighthHalf = displayList.length >= maxDisplayItems;
 
     const getContainerWidth = () => {
-        const itemCount = Math.min(filterList.length, maxDisplayItems);
+        const itemCount = Math.min(displayList.length, maxDisplayItems);
         if (itemCount === 0) return 0;
         if (itemCount <= 7) {
             return itemCount * 44 + 16; // 每个item约44px（包含gap），加上padding
@@ -62,7 +67,7 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
             });
         }
         return () => ro.disconnect();
-    }, [filterList, x]);
+    }, [displayList, x]);
 
     useEffect(() => {
         const unsub = x.on('change', (v) => {
@@ -130,9 +135,8 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                     dragTransition={{ power: 0.2, bounceStiffness: 320, bounceDamping: 22 }}
                 >
                     <AnimatePresence>
-                        {[...filterList]
+                        {[...displayList]
                             .reverse()
-                            .filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files')
                             .map((item, index) => (
                             <motion.span
                                 key={item}

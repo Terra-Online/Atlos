@@ -15,6 +15,7 @@ import CollectionIcon from '../../assets/images/category/collection.svg?react';
 import CombatIcon from '../../assets/images/category/combat.svg?react';
 import NpcIcon from '../../assets/images/category/npc.svg?react';
 import FacilityIcon from '../../assets/images/category/facility.svg?react';
+import ArchivesIcon from '../../assets/images/category/archives.svg?react';
 
 import Search from '../search/search';
 import Drawer from '../drawer/drawer';
@@ -53,11 +54,11 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     natural: NaturalIcon,
     valuable: ValuableIcon,
     collection: CollectionIcon,
-    archives: CollectionIcon,
+    archives: ArchivesIcon,
     combat: CombatIcon,
     npc: NpcIcon,
     facility: FacilityIcon,
-    exploration: ExplorationIcon,
+    exploration: ExplorationIcon
 };
 
 interface SideBarProps {

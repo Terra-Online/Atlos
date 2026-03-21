@@ -28,7 +28,8 @@
       "main": "Område",
       "sub": "Zon"
     },
-    "noInfo": "Ingen info."
+    "noInfo": "Ingen info.",
+    "readFullText": "Klicka för att läsa hela texten."
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

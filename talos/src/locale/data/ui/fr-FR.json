@@ -28,7 +28,8 @@
       "main": "Principal",
       "sub": "Sous"
     },
-    "noInfo": "Aucune information."
+    "noInfo": "Aucune information.",
+    "readFullText": "Cliquez pour lire le texte complet."
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

@@ -45,6 +45,21 @@ const checkCDNResourceExists = async (relativePath) => {
   });
 };
 
+/**
+ * Cache-Control strategy:
+ * - assets/**  (hashed filenames)  → immutable, 1 year
+ * - files/**   (archive HTML)      → public, 1 week
+ * - *.html     (app shell)         → no-store, always revalidate
+ * - everything else                → public, 1 hour
+ */
+const getCacheControl = (relativePath) => {
+  const p = relativePath.replace(/\\/g, '/');
+  if (p.startsWith('assets/')) return 'public, max-age=31536000, immutable';
+  if (p.startsWith('files/'))  return 'public, max-age=604800';
+  if (p.endsWith('.html'))     return 'no-cache, no-store, must-revalidate';
+  return 'public, max-age=3600';
+};
+
 function getAllFiles(dirPath, arrayOfFiles) {
   const files = fs.readdirSync(dirPath);
 
@@ -73,12 +88,10 @@ const upload = async (relativePath, retryCount = 0) => {
   const localPath = `./dist/${relativePath}`;
   
   const headers = {
-    // 指定Object的存储类型。
     'x-oss-storage-class': 'Standard',
-    // 指定Object的访问权限。
     'x-oss-object-acl': 'default',
-    // 指定PutObject操作时是否覆盖同名目标Object。
     'x-oss-forbid-overwrite': 'false',
+    'Cache-Control': getCacheControl(relativePath),
   };
 
   try {

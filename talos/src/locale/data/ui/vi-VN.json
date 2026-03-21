@@ -28,7 +28,8 @@
       "main": "Khu vực",
       "sub": "Phụ"
     },
-    "noInfo": "Chưa có thông tin"
+    "noInfo": "Chưa có thông tin",
+    "readFullText": "Nhấn để đọc văn bản đầy đủ."
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
