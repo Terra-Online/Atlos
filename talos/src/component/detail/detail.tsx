@@ -34,6 +34,7 @@ import { useForceDetailOpen } from '@/store/uiPrefs';
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
     collection: CollectionIcon,
+    archives: CollectionIcon,
     combat: CombatIcon,
     facility: FacilityIcon,
     mob: MobIcon,
@@ -129,7 +130,8 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const categorySubKey = currentPoint ? MARKER_TYPE_DICT[currentPoint.type]?.category?.sub : undefined;
     const CategoryIcon = categorySubKey ? CATEGORY_ICON_MAP[categorySubKey] : undefined;
     
-    const iconKey = currentPoint ? currentPoint.type : 'UKN';
+    const typeEntry = currentPoint ? MARKER_TYPE_DICT[currentPoint.type] : undefined;
+    const iconKey = typeEntry?.icon ?? (currentPoint ? currentPoint.type : 'UKN');
     const iconUrl = getItemIconUrl(iconKey);
 
     const tGame = useTranslateGame();

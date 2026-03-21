@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useContext, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
+import { motion } from 'motion/react';
 import styles from './markBinder.module.scss';
 import type { BinderGroup } from '@/data/marker/binder';
 import { getItemIconUrl } from '@/utils/resource';
@@ -27,9 +28,10 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         [group.dropKey],
     );
 
+    const titleKey = `${group.titleKeyPrefix ?? 'markerType.drop'}.${group.dropKey}`;
     const displayName = String(
-        tGame(`markerType.drop.${group.dropKey}`) !== `markerType.drop.${group.dropKey}`
-            ? tGame(`markerType.drop.${group.dropKey}`)
+        tGame(titleKey) !== titleKey
+            ? tGame(titleKey)
             : group.dropName,
     );
 
@@ -49,6 +51,20 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         }),
         [group.types, counts, searchString, tGame],
     );
+
+    // Completed selectors float to the top; order is stable within each tier
+    const sortedRenderedTypes = useMemo(() => {
+        return [...renderedTypes].sort((a, b) => {
+            const aIdx = group.types.indexOf(a);
+            const bIdx = group.types.indexOf(b);
+            const aC = counts[aIdx];
+            const bC = counts[bIdx];
+            const aComplete = Boolean(aC && aC.total > 0 && aC.collected >= aC.total);
+            const bComplete = Boolean(bC && bC.total > 0 && bC.collected >= bC.total);
+            if (aComplete === bComplete) return 0;
+            return aComplete ? -1 : 1;
+        });
+    }, [renderedTypes, group.types, counts]);
 
     const is1to1 = renderedTypes.length <= 1;
 
@@ -117,8 +133,14 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
                     className={styles.binderChildren}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {renderedTypes.map((typeInfo) => (
-                        <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
+                    {sortedRenderedTypes.map((typeInfo) => (
+                        <motion.div
+                            key={typeInfo.key}
+                            layout
+                            transition={{ type: 'spring', stiffness: 400, damping: 38 }}
+                        >
+                            <MarkSelector typeInfo={typeInfo} />
+                        </motion.div>
                     ))}
                 </div>
             )}

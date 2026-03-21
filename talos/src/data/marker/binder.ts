@@ -4,6 +4,7 @@ export interface BinderGroup {
     dropKey: string;
     dropName: string;
     types: IMarkerType[];
+    titleKeyPrefix?: string;
 }
 
 export interface BinderData {
@@ -12,15 +13,21 @@ export interface BinderData {
     remaining: IMarkerType[];
 }
 
-const BINDER_KEY_CONFIG: Record<string, string> = {
-    mob: 'drop',
+interface BinderKeyConfig {
+    sharedKey: string;
+    titleKeyPrefix?: string;
+}
+
+const BINDER_KEY_CONFIG: Record<string, BinderKeyConfig> = {
+    mob: { sharedKey: 'drop' },
+    archives: { sharedKey: 'ctgr', titleKeyPrefix: 'markerType.fileCtgr' },
 };
 
 function nameToKey(name: string): string {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
 }
 
-function computeBinderData(_subCategory: string, types: IMarkerType[], sharedKey: string): BinderData {
+function computeBinderData(_subCategory: string, types: IMarkerType[], sharedKey: string, titleKeyPrefix?: string): BinderData {
     const grouped = new Map<string, { dropName: string; types: IMarkerType[] }>();
     const remaining: IMarkerType[] = [];
 
@@ -38,7 +45,7 @@ function computeBinderData(_subCategory: string, types: IMarkerType[], sharedKey
     }
 
     const groups: BinderGroup[] = Array.from(grouped.entries())
-        .map(([dropKey, { dropName, types }]) => ({ dropKey, dropName, types }))
+        .map(([dropKey, { dropName, types }]) => ({ dropKey, dropName, types, titleKeyPrefix }))
         // Non-1:1 (multi-type) groups first so masonry tall cards lead; 1:1 groups fill trailing space
         .sort((a, b) => {
             const aMulti = a.types.length > 1 ? 0 : 1;
@@ -50,10 +57,10 @@ function computeBinderData(_subCategory: string, types: IMarkerType[], sharedKey
 }
 
 export const BINDER_GROUPS_BY_SUB: Record<string, BinderData> = Object.entries(BINDER_KEY_CONFIG).reduce(
-    (acc, [sub, key]) => {
+    (acc, [sub, config]) => {
         const types = MARKER_TYPE_TREE[sub];
         if (types) {
-            acc[sub] = computeBinderData(sub, types, key);
+            acc[sub] = computeBinderData(sub, types, config.sharedKey, config.titleKeyPrefix);
         }
         return acc;
     },

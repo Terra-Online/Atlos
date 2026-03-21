@@ -223,6 +223,17 @@
         }
     }
 
+    &[data-type='files'] {
+        grid-template-rows: auto;
+        grid-template-areas: 'icon Name';
+        .markStat {
+            display: none;
+        }
+        .nameCell {
+            align-self: center;
+        }
+    }
+
     /* name cell wraps the main ellipsized name and an absolute expanded panel */
     .nameCell {
         overscroll-behavior: auto;

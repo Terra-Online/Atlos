@@ -32,7 +32,8 @@ import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
 import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
 import BskyIcon from '../../assets/images/UI/media/bluesky.svg?react';
 
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
+import useRegion from '@/store/region';
 import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
 import MarkBinder from '../markBinder/markBinder';
 import { useTranslateGame, useTranslateUI } from '@/locale';
@@ -52,6 +53,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     natural: NaturalIcon,
     valuable: ValuableIcon,
     collection: CollectionIcon,
+    archives: CollectionIcon,
     combat: CombatIcon,
     npc: NpcIcon,
     facility: FacilityIcon,
@@ -147,6 +149,18 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
         return map;
     }, [binderTypeKeys, binderTypeCounts]);
 
+    const currentRegionKey = useRegion((s) => s.currentRegionKey);
+    const emptyCategories = useMemo(() => {
+        const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegionKey] ?? {};
+        return new Set(
+            Object.keys(MARKER_TYPE_TREE).filter((subCat) =>
+                MARKER_TYPE_TREE[subCat].every(
+                    (typeInfo) => (regionTypeCounts[typeInfo.key] ?? 0) === 0,
+                ),
+            ),
+        );
+    }, [currentRegionKey]);
+
     useMemo(() => {
         if (!currentRegion) return null;
         return {
@@ -218,15 +232,16 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                         ? computeBinderColumns(binderData.groups, binderTypeCountMap)
                                         : { left: [], right: [] };
                                     return (
-                                        <MarkFilter
-                                            idKey={subCategory}
-                                            title={String(tGame(`markerType.category.${subCategory}`))}
-                                            icon={CategoryIcon}
-                                            dataCategory={subCategory}
-                                            key={subCategory}
-                                            wide={isWide}
-                                            binderMode={!!showBinder}
-                                        >
+                        <MarkFilter
+                            idKey={subCategory}
+                            title={String(tGame(`markerType.category.${subCategory}`))}
+                            icon={CategoryIcon}
+                            dataCategory={subCategory}
+                            key={subCategory}
+                            wide={isWide}
+                            binderMode={!!showBinder}
+                            initialEmpty={emptyCategories.has(subCategory)}
+                        >
                                             {showBinder && binderData ? (
                                                 <>
                                                     <div className={styles.binderSection}>

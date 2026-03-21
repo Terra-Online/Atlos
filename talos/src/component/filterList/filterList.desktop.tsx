@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { getItemIconUrl } from '@/utils/resource.ts';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
+import { MARKER_TYPE_DICT } from '@/data/marker';
 import styles from './filterList.module.scss';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useMotionValue } from 'motion/react';
@@ -129,7 +130,10 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                     dragTransition={{ power: 0.2, bounceStiffness: 320, bounceDamping: 22 }}
                 >
                     <AnimatePresence>
-                        {[...filterList].reverse().map((item, index) => (
+                        {[...filterList]
+                            .reverse()
+                            .filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files')
+                            .map((item, index) => (
                             <motion.span
                                 key={item}
                                 className={classNames(

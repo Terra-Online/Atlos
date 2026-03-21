@@ -21,6 +21,8 @@ export interface IMarkerType {
     key: string;
     noFrame?: boolean;
     subIcon?: string;
+    icon?: string;
+    ctgr?: string;
     category: {
         main: string;
         sub: string;
@@ -102,6 +104,7 @@ export const REGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Obj
 
 export const DEFAULT_SUBCATEGORY_ORDER = [
     'collection',
+    'archives',
     'exploration',
     'natural',
     'valuable',

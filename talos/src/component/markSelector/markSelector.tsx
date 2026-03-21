@@ -13,7 +13,7 @@ import { trackedSwitchFilter } from '@/store/trackedActions';
 import { useLayoutVersion } from '@/store/uiPrefs';
 
 interface MarkSelectorProps {
-    typeInfo: { key: string; main?: string; sub?: string };
+    typeInfo: { key: string; icon?: string; category?: { main?: string; sub?: string }; main?: string; sub?: string };
 }
 
 let zCounter = 80;
@@ -30,10 +30,11 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     const ELEVATE_FALLBACK_MS = 500; // equal to the CSS transition duration
     const tGame = useTranslateGame();
 
-    // icon url (no extra key munging)
+    // icon url: prefer explicit icon field (files dataset uses icon name, not type key)
     const iconUrl = useMemo<string | null>(() => {
-        return typeInfo?.key ? String(getItemIconUrl(typeInfo.key, 'webp')) : null;
-    }, [typeInfo?.key]);
+        const iconKey = typeInfo?.icon ?? typeInfo?.key;
+        return iconKey ? String(getItemIconUrl(iconKey, 'webp')) : null;
+    }, [typeInfo?.key, typeInfo?.icon]);
 
     // i18n display name
     const displayName: string = String(tGame(`markerType.key.${typeInfo.key}`) ?? '');
@@ -119,6 +120,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
                 data-key={typeInfo.key}
                 data-mark-selector-item="true"
                 data-active={isActive ? 'true' : 'false'}
+                data-type={typeInfo.category?.main}
                 onClick={handleSwitchFilter}
                 style={((): StyleVars => {
                     const styleObj: StyleVars = {

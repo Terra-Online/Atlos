@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getItemIconUrl } from '@/utils/resource.ts';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
+import { MARKER_TYPE_DICT } from '@/data/marker';
 import styles from './filterList.module.scss';
 
 interface FilterListMobileProps {
@@ -54,14 +55,18 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
         style={{ overflowX: 'auto' }}
       >
         <div ref={innerRef} className={styles.innerContainer} >
-          {[...filterList].reverse().map((item) => (
-            <span
-              key={item}
-              className={styles.mainFilterContentItem}
-              style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
-              onClick={() => switchFilter(item)}
-            />)
-          )}
+          {[...filterList]
+            .reverse()
+            .filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files')
+            .map((item) => (
+              <span
+                key={item}
+                className={styles.mainFilterContentItem}
+                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
+                onClick={() => switchFilter(item)}
+              />
+            ))
+          }
         </div>
       </div>
     </div>
