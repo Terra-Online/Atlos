@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --mode dev",
     "build": "cross-env NODE_ENV=production vite build",
+    "build:search-index": "node ./scripts/build-search-index.mjs",
     "build:check": "tsc --noEmit",
     "lint:js": "eslint \"**/*.{js,ts,tsx,jsx,html,md}\"",
     "lint:css": "stylelint \"**/*.{css,scss}\"",
@@ -24,6 +25,8 @@
     "defaults"
   ],
   "dependencies": {
+    "@orama/orama": "^3.1.18",
+    "@orama/tokenizers": "^3.1.18",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -38,7 +41,6 @@
     "leaflet.markercluster": "^1.5.3",
     "liquid-glass-react-positioning": "^1.1.1",
     "motion": "^12.9.4",
-    "orama": "^2.0.6",
     "progressive-blur": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -52,6 +54,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
+    "@aws-sdk/lib-storage": "^3.1014.0",
     "@eslint/js": "^9.22.0",
     "@svgr/webpack": "^5.5.0",
     "@types/accept-language-parser": "^1.5.8",

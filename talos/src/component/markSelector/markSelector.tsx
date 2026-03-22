@@ -44,6 +44,7 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     const handleSwitchFilter = useCallback(() => trackedSwitchFilter(typeInfo.key), [typeInfo.key]);
     const cnt = useRegionMarkerCount(typeInfo?.key);
     const searchString = useSearchString();
+    const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
     
     // Check if collection is complete (100% progress)
     const isComplete = useMemo(() => {
@@ -62,10 +63,10 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
     const showFilter = useMemo<boolean>(
         () =>
             Boolean(cnt.total) &&
-            (searchString === '' ||
-                typeInfo.key.includes(searchString) ||
-                displayName.includes(searchString)),
-        [cnt.total, searchString, displayName, typeInfo.key],
+            (!normalizedSearch ||
+                typeInfo.key.toLowerCase().includes(normalizedSearch) ||
+                displayName.toLowerCase().includes(normalizedSearch)),
+        [cnt.total, normalizedSearch, displayName, typeInfo.key],
     );
     const isActive = filter.includes(typeInfo.key);
 

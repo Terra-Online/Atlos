@@ -22,6 +22,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     const tGame = useTranslateGame();
     const filter = useFilter();
     const searchString = useSearchString();
+    const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
 
     const iconUrl = useMemo(
         () => getItemIconUrl(group.dropKey, 'webp'),
@@ -44,12 +45,12 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         () => group.types.filter((typeInfo, index) => {
             const count = counts[index];
             if (!count || count.total <= 0) return false;
-            if (searchString === '') return true;
+            if (!normalizedSearch) return true;
 
-            const typeDisplayName = String(tGame(`markerType.key.${typeInfo.key}`) ?? '');
-            return typeInfo.key.includes(searchString) || typeDisplayName.includes(searchString);
+            const typeDisplayName = String(tGame(`markerType.key.${typeInfo.key}`) ?? '').toLowerCase();
+            return typeInfo.key.toLowerCase().includes(normalizedSearch) || typeDisplayName.includes(normalizedSearch);
         }),
-        [group.types, counts, searchString, tGame],
+        [group.types, counts, normalizedSearch, tGame],
     );
 
     // Completed selectors float to the top; order is stable within each tier
@@ -71,13 +72,13 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
 
     const showFilter = useMemo(() => {
         if (!totalTotal) return false;
-        if (searchString === '') return true;
+        if (!normalizedSearch) return true;
         return (
-            group.dropKey.includes(searchString) ||
-            displayName.toLowerCase().includes(searchString.toLowerCase()) ||
+            group.dropKey.toLowerCase().includes(normalizedSearch) ||
+            displayName.toLowerCase().includes(normalizedSearch) ||
             renderedTypes.length > 0
         );
-    }, [totalTotal, searchString, group.dropKey, displayName, renderedTypes.length]);
+    }, [totalTotal, normalizedSearch, group.dropKey, displayName, renderedTypes.length]);
 
     const ctx = useContext(MarkVisibilityContext);
     const idRef = useRef<string>(group.dropKey);

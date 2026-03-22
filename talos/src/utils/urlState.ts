@@ -9,7 +9,7 @@ import { useMarkerStore } from '@/store/marker';
 import useRegion from '@/store/region';
 import { setLocale, SUPPORTED_LANGS } from '@/locale';
 import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
-import { navigateToSharedPoint } from '@/utils/sharedPointNavigation';
+import { navigateToSharedPoint } from '@/utils/navigation';
 
 type Lang = (typeof SUPPORTED_LANGS)[number];
 

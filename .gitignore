@@ -30,6 +30,7 @@ dist-ssr
 
 talos/public/clips
 talos/public/files
+talos/public/search
 talos/originData
 talos/src/assets/fonts/UD_ShinGo
 talos/src/assets/fonts/Harmony
