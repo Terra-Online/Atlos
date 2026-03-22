@@ -89,6 +89,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
             onChange={onChange}
             title={t('announcement.title')}
             icon={<AnnouncementIcon aria-hidden="true" />}
+            iconScale={0.8}
             size='full'
             keepMounted={true}
         >
