@@ -6,6 +6,7 @@ import LanguageModal from '@/component/language/language';
 import GroupsModal from '@/component/group/group';
 import ToSModal from '@/component/tos/tos';
 import SettingsModal from '@/component/settings/settings';
+import AnnouncementModal from '@/component/announcement/announcement';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
@@ -25,6 +26,7 @@ import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
+import AnnouncementIcon from '../../assets/logos/announcement.svg?react';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -39,6 +41,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [groupOpen, setGroupOpen] = useState(false);
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [announcementOpen, setAnnouncementOpen] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
@@ -61,6 +64,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
+    const handleAnnouncement = () => setAnnouncementOpen(true);
 
     return (
         <div
@@ -100,6 +104,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={Guide}
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
+                />
+                <HeadItem
+                    icon={AnnouncementIcon}
+                    onClick={handleAnnouncement}
+                    tooltip={t('headbar.announcement')}
                 />
                 <HeadItem
                     icon={SettingsIcon}
@@ -160,6 +169,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 open={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 onChange={(o) => setSettingsOpen(o)}
+            />
+
+            {/* Announcement Modal */}
+            <AnnouncementModal
+                open={announcementOpen}
+                onClose={() => setAnnouncementOpen(false)}
+                onChange={(o) => setAnnouncementOpen(o)}
             />
         </div>
     );

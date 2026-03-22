@@ -7,7 +7,8 @@
     "lightmode": "التبديل إلى الوضع الفاتح",
     "language": "اختيار اللغة",
     "help": "الحصول على المساعدة",
-    "settings": "التفضيلات"
+    "settings": "التفضيلات",
+    "announcement": "الإعلانات"
   },
   "trigger": {
     "boundaryMode": "عرض حدود المنطقة",
@@ -196,5 +197,8 @@
     "kofi": "ادعم عبر Ko-fi",
     "afdian": "ادعم عبر Afdian",
     "hint": "نوصي بـ Patreon أو Ko-fi للمستخدمين العالميين، و Afdian للمستخدمين في الصين القارية."
+  },
+  "announcement": {
+    "title": "إشعار الموقع"
   }
 }

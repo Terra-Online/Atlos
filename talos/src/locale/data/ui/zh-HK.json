@@ -7,6 +7,7 @@
     "lightmode": "切換至淺色模式",
     "language": "選擇語言",
     "help": "取得協助",
+    "announcement": "公告",
     "settings": "偏好設定"
   },
   "trigger": {
@@ -173,6 +174,9 @@
     "disable": "禁用",
     "expand": "展開",
     "collapse": "收起"
+  },
+  "announcement": {
+    "title": "網站公告"
   },
   "meta": {
       "title": "終末地地圖集",

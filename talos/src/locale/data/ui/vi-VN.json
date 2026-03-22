@@ -7,7 +7,8 @@
     "lightmode": "Chuyển sang chế độ sáng",
     "language": "Chọn ngôn ngữ",
     "help": "Nhận trợ giúp",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "announcement": "Thông báo"
   },
   "trigger": {
     "boundaryMode": "Hiển thị ranh giới khu vực",
@@ -196,5 +197,8 @@
     "kofi": "Hỗ trợ qua Ko-fi",
     "afdian": "Hỗ trợ qua Afdian",
     "hint": "Chúng tôi khuyên dùng Patreon hoặc Ko-fi cho người dùng toàn cầu và Afdian cho người dùng ở Trung Quốc đại lục."
+  },
+  "announcement": {
+    "title": "Thông báo trang web"
   }
 }

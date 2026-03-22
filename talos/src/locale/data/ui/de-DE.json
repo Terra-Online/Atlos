@@ -7,7 +7,8 @@
     "lightmode": "In den Hellmodus wechseln",
     "language": "Sprache auswählen",
     "help": "Hilfe anfordern",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "announcement": "Ankündigungen"
   },
   "trigger": {
     "boundaryMode": "Grenzmodus",
@@ -196,5 +197,8 @@
     "kofi": "Unterstützung via Ko-fi",
     "afdian": "Unterstützung via Afdian",
     "hint": "Wir empfehlen Patreon oder Ko-fi für weltweite Nutzer und Afdian für Nutzer in Festlandchina."
+  },
+  "announcement": {
+    "title": "Website-Mitteilung"
   }
 }

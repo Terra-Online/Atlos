@@ -1,0 +1,277 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root,
+:root[data-theme='light'] {
+    --ann-header-bg: #{$grey-1};
+    --ann-header-text: #{$white-1};
+    --ann-header-icon: #{$white-1};
+    --ann-tab-active-bg: #{$primary-accent-3};
+    --ann-tab-active-text: #{$grey-1};
+    --ann-tab-inactive-bg: #{$grey-2};
+    --ann-tab-inactive-text: #{$light-1};
+    --ann-tab-hover-bg: #{$grey-1};
+    --ann-desc-bg: #{$grey-1};
+    --ann-desc-text: #{$light-1};
+    --ann-content-bg: #{$light-1};
+    --ann-content-text: #{$grey-1};
+    --ann-content-heading: #{$black-1};
+    --ann-border: #{$white-3};
+}
+
+:root[data-theme='dark'] {
+    --ann-header-bg: #{$black-1};
+    --ann-header-text: #{$light-1};
+    --ann-header-icon: #{$light-1};
+    --ann-tab-active-bg: #{$primary-accent-4};
+    --ann-tab-active-text: #{$black-1};
+    --ann-tab-inactive-bg: #{$grey-1};
+    --ann-tab-inactive-text: #{$light-1};
+    --ann-tab-hover-bg: #{$grey-2};
+    --ann-desc-bg: #{$black-1};
+    --ann-desc-text: #{$light-1};
+    --ann-content-bg: #{$grey-1};
+    --ann-content-text: #{$light-1};
+    --ann-content-heading: #{$white-1};
+    --ann-border: #{$grey-2};
+}
+
+.mask {
+    position: fixed;
+    inset: 0;
+    background: rgba($black-0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    backdrop-filter: blur(0);
+    transition:
+        opacity 0.3s $adagio-curve,
+        backdrop-filter 0.3s $adagio-curve;
+
+    &[data-state='open'] {
+        opacity: 1;
+        backdrop-filter: blur(4px);
+    }
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    width: 680px;
+    height: 560px;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba($black-0, 0.35);
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+    filter: blur(0.25rem);
+    transition:
+        opacity 0.2s $adagio-curve,
+        transform 0.25s $adagio-curve,
+        filter 0.25s $standard-curve;
+
+    &[data-state='open'] {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+    }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0 0.5rem;
+    background-color: var(--ann-header-bg);
+    color: var(--ann-header-text);
+    flex-shrink: 0;
+    user-select: none;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold',
+        'HMSans_EN', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 900;
+    gap: 0.4rem;
+    box-shadow: 0 2px 3px rgba($black-0, 0.25);
+    transition: background-color 0.35s $adagio-curve;
+
+    .headerIcon {
+        display: inline-flex;
+        align-items: center;
+        width: 1.4rem;
+        height: 1.4rem;
+        flex-shrink: 0;
+
+        svg {
+            fill: var(--ann-header-icon);
+            width: 1.4rem;
+            height: 1.4rem;
+            filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25));
+        }
+    }
+
+    .headerTitle {
+        flex: 1;
+        font-size: 1rem;
+        text-shadow: 1px 2px 1px rgba($black-0, 0.25);
+        transition: color 0.35s $adagio-curve;
+    }
+}
+
+.tabBarWrapper {
+    flex-shrink: 0;
+    position: relative;
+}
+
+.tabBar {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    background: var(--ann-tab-inactive-bg);
+
+    &::-webkit-scrollbar {
+        height: 0;
+    }
+}
+
+.tabIndicator {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%) translateY(100%);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 6px solid var(--ann-tab-active-bg);
+    pointer-events: none;
+    z-index: 2;
+    transition: left 0.15s ease;
+}
+
+.tab {
+    flex-shrink: 0;
+    padding: 0.45rem 1rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
+    font-weight: 900;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    background-color: var(--ann-tab-inactive-bg);
+    color: var(--ann-tab-inactive-text);
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+
+    &:not(.activeTab):hover {
+        background-color: var(--ann-tab-hover-bg);
+    }
+
+    &.activeTab {
+        background-color: var(--ann-tab-active-bg);
+        color: var(--ann-tab-active-text);
+    }
+}
+
+.description {
+    background: var(--ann-desc-bg);
+    color: var(--ann-desc-text);
+    padding: 0.5rem 0.75rem;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    flex-shrink: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transition:
+        background-color 0.35s $adagio-curve,
+        color 0.35s $adagio-curve;
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--ann-content-bg);
+    color: var(--ann-content-text);
+    padding: 1rem 1.2rem 1.5rem;
+    font-family: 'HMSans_EN', 'HMSans', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    transition: background-color 0.35s $adagio-curve;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--ann-border);
+        border-radius: 2px;
+    }
+
+    h1 {
+        font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--ann-content-heading);
+        margin-bottom: 0.4rem;
+        margin-top: 0;
+        line-height: 1.2;
+    }
+
+    h2 {
+        font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--ann-content-heading);
+        margin-top: 1.2rem;
+        margin-bottom: 0.4rem;
+    }
+
+    h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ann-content-heading);
+        margin-top: 0.8rem;
+        margin-bottom: 0.3rem;
+    }
+
+    p {
+        margin-bottom: 0.8em;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    ul,
+    ol {
+        padding-left: 1.4em;
+        margin-bottom: 0.8em;
+
+        li {
+            margin-bottom: 0.3em;
+        }
+    }
+
+    strong {
+        font-weight: 700;
+        color: var(--ann-content-heading);
+    }
+
+    img {
+        max-width: 100%;
+        border-radius: 4px;
+        margin: 0.5rem 0;
+        display: block;
+    }
+
+    a {
+        color: $primary-accent-5;
+        text-decoration: underline;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid var(--ann-border);
+        margin: 1rem 0;
+    }
+}

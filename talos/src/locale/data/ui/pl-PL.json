@@ -7,7 +7,8 @@
     "lightmode": "Przełącz na tryb jasny",
     "language": "Wybierz język",
     "help": "Uzyskaj pomoc",
-    "settings": "Preferencje"
+    "settings": "Preferencje",
+    "announcement": "Ogłoszenia"
   },
   "trigger": {
     "boundaryMode": "Tryb granic",
@@ -196,5 +197,8 @@
     "kofi": "Wesprzyj przez Ko-fi",
     "afdian": "Wesprzyj przez Afdian",
     "hint": "Użytkownikom globalnym polecamy Patreon lub Ko-fi, a użytkownikom w Chinach kontynentalnych Afdian."
+  },
+  "announcement": {
+    "title": "Powiadomienie strony"
   }
 }

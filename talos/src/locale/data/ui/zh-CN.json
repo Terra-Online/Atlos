@@ -7,6 +7,7 @@
     "lightmode": "切换到浅色模式",
     "language": "选择语言",
     "help": "获取帮助",
+    "announcement": "公告",
     "settings": "偏好设置"
   },
   "trigger": {
@@ -180,6 +181,9 @@
     "disable": "禁用",
     "expand": "展开",
     "collapse": "收起"
+  },
+  "announcement": {
+    "title": "网站公告"
   },
   "meta": {
     "title": "终末地地图集",

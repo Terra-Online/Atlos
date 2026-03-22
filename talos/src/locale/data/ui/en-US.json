@@ -7,6 +7,7 @@
     "lightmode": "Switch to light mode",
     "language": "Choose language",
     "help": "Reach out for help",
+    "announcement": "Announcements",
     "settings": "Preferences"
   },
   "trigger": {
@@ -180,6 +181,9 @@
     "disable": "Disable",
     "expand": "Expand",
     "collapse": "Collapse"
+  },
+  "announcement": {
+    "title": "Website Notice"
   },
   "meta": {
     "title": "Open Endfield Map",

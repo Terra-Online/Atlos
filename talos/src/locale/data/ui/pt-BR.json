@@ -7,7 +7,8 @@
     "lightmode": "Mudar para modo claro",
     "language": "Escolher idioma",
     "help": "Entre em contato para obter ajuda",
-    "settings": "Preferências"
+    "settings": "Preferências",
+    "announcement": "Anúncios"
   },
   "trigger": {
     "boundaryMode": "Modo de Limite",
@@ -196,5 +197,8 @@
     "kofi": "Apoie via Ko-fi",
     "afdian": "Apoie via Afdian",
     "hint": "Recomendamos Patreon ou Ko-fi para usuários globais e Afdian para usuários na China continental."
+  },
+  "announcement": {
+    "title": "Aviso do site"
   }
 }

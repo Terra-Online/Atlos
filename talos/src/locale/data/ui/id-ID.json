@@ -7,7 +7,8 @@
     "lightmode": "Beralih ke mode terang",
     "language": "Pilih bahasa",
     "help": "Minta bantuan",
-    "settings": "Preferensi"
+    "settings": "Preferensi",
+    "announcement": "Pengumuman"
   },
   "trigger": {
     "boundaryMode": "Mode Batas",
@@ -196,5 +197,8 @@
     "kofi": "Dukung via Ko-fi",
     "afdian": "Dukung via Afdian",
     "hint": "Kami merekomendasikan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di Tiongkok daratan."
+  },
+  "announcement": {
+    "title": "Pemberitahuan Situs"
   }
 }
