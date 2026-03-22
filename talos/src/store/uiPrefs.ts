@@ -38,6 +38,10 @@ interface IUiPrefsStore {
   setForceHeadbarExpanded: (value: boolean | null) => void;
   isUserGuideOpen: boolean;
   setIsUserGuideOpen: (value: boolean) => void;
+  isAnnouncementOpen: boolean;
+  setIsAnnouncementOpen: (value: boolean) => void;
+  announcementFlowReady: boolean;
+  setAnnouncementFlowReady: (value: boolean) => void;
 
   // Theme (now supports 'auto')
   theme: ThemeMode;
@@ -110,6 +114,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceHeadbarExpanded: (value) => set({ forceHeadbarExpanded: value }),
       isUserGuideOpen: false,
       setIsUserGuideOpen: (value) => set({ isUserGuideOpen: value }),
+      isAnnouncementOpen: false,
+      setIsAnnouncementOpen: (value) => set({ isAnnouncementOpen: value }),
+      announcementFlowReady: false,
+      setAnnouncementFlowReady: (value) => set({ announcementFlowReady: value }),
 
       // Theme (supports 'auto')
       theme: 'auto',
@@ -233,6 +241,10 @@ export const useForceHeadbarExpanded = (): boolean | null => useUiPrefsStore((s)
 export const useSetForceHeadbarExpanded = (): ((value: boolean | null) => void) => useUiPrefsStore((s) => s.setForceHeadbarExpanded);
 export const useIsUserGuideOpen = (): boolean => useUiPrefsStore((s) => s.isUserGuideOpen);
 export const useSetIsUserGuideOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setIsUserGuideOpen);
+export const useIsAnnouncementOpen = (): boolean => useUiPrefsStore((s) => s.isAnnouncementOpen);
+export const useSetIsAnnouncementOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setIsAnnouncementOpen);
+export const useAnnouncementFlowReady = (): boolean => useUiPrefsStore((s) => s.announcementFlowReady);
+export const useSetAnnouncementFlowReady = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setAnnouncementFlowReady);
 
 // Theme hooks
 export const useTheme = () => useUiPrefsStore((s) => s.theme);

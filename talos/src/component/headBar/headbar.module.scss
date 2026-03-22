@@ -6,6 +6,8 @@
     --headbar-icon-active-fill: #{$primary-accent-4};
     --headbar-bg: #{rgba($white-0, 0.1)};
     --darkmode-rotate: rotate3d(0, 0, 0, 0deg);
+
+    --badge-bg: #{$primary-accent-6};
 }
 
 :root[data-theme='dark'] {
@@ -13,6 +15,8 @@
     --headbar-icon-active-fill: #{$primary-accent-4};
     --headbar-bg: #{rgba($black-1, 0.15)}; // no direct use
     --darkmode-rotate: rotate3d(2, 1, 0, 180deg);
+
+    --badge-bg: #{$primary-accent-4};
 }
 
 .headbar {
@@ -53,11 +57,35 @@
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 8px;
-    height: 8px;
-    background-color: #ff4444;
-    border-radius: 50%;
-    border: 1.5px solid rgba(0, 0, 0, 0.3);
+    width: 10px;
+    height: 10px;
+    background-color: var(--badge-bg, $primary-accent-6);
+    border-radius: 2px;
+    transform: rotate(45deg);
+    transform-origin: center;
+    box-shadow: 0 0 0 1px rgba($black-0, 0.15);
+    
+
+    &::after {
+        content: '';
+        position: relative;
+        display: block;
+        outline: 2px solid var(--badge-bg);
+        width: 100%;
+        height: 100%;
+        animation: badgePulse 1s ease infinite;
+    }
+}
+
+@keyframes badgePulse {
+    0% {
+        outline-offset: 2px;
+        outline-color: var(--badge-bg);
+    }
+    100% {
+        outline-offset: 8px;
+        outline-color: rgba($primary-accent-6, 0);
+    }
 }
 
 // noinspection Stylelint

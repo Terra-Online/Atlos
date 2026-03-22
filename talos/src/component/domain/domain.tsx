@@ -4,7 +4,7 @@ import { useTranslateUI } from '@/locale';
 import LOGGER from '@/utils/log';
 import parse from 'html-react-parser';
 import Button from '@/component/button/button';
-import { useIsUserGuideOpen } from '@/store/uiPrefs';
+import { useAnnouncementFlowReady, useIsAnnouncementOpen, useIsUserGuideOpen } from '@/store/uiPrefs';
 
 const STORAGE_KEY = 'domain-prefs';
 const DISMISS_DURATION_DAYS = 30;
@@ -25,6 +25,8 @@ const DomainBanner: React.FC = () => {
     const [shouldShow, setShouldShow] = useState(false);
     const [targetDomain, setTargetDomain] = useState<'cn' | 'org' | null>(null);
     const isUserGuideOpen = useIsUserGuideOpen();
+    const isAnnouncementOpen = useIsAnnouncementOpen();
+    const announcementFlowReady = useAnnouncementFlowReady();
     const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
     const getStoredPrefs = (): DomainPrefs | null => {
@@ -81,7 +83,7 @@ const DomainBanner: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (isUserGuideOpen) return;
+        if (isUserGuideOpen || !announcementFlowReady || isAnnouncementOpen) return;
         const checkAndShowBanner = async () => {
             // Check if already dismissed
             const prefs = getStoredPrefs();
@@ -135,7 +137,7 @@ const DomainBanner: React.FC = () => {
         };
 
         void checkAndShowBanner();
-    }, [isUserGuideOpen]);
+    }, [isUserGuideOpen, announcementFlowReady, isAnnouncementOpen]);
 
     const handleClose = () => {
         setShouldShow(false);
@@ -143,7 +145,7 @@ const DomainBanner: React.FC = () => {
         setStoredPrefs({ dismissed: true, expiresAt });
     };
 
-    if (isUserGuideOpen || !shouldShow || !targetDomain) {
+    if (isUserGuideOpen || isAnnouncementOpen || !announcementFlowReady || !shouldShow || !targetDomain) {
         return null;
     }
 

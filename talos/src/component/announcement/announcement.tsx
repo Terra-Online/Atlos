@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
-import Button from '@/component/button/button';
+import Modal from '@/component/modal/modal';
+import { fetchAnnouncements } from '@/utils/announcement';
 
 export interface AnnouncementItem {
     id: string;
@@ -21,33 +21,20 @@ export interface AnnouncementModalProps {
     onHasUnread?: (hasUnread: boolean) => void;
 }
 
-type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
-
-const EXIT_DURATION = 300;
-
 const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, onChange, onHasUnread }) => {
     const t = useTranslateUI();
-    const [phase, setPhase] = useState<Phase>(() => (open ? 'entering' : 'unmounted'));
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
     const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
-    const panelRef = useRef<HTMLDivElement | null>(null);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
-    const prevActiveRef = useRef<HTMLElement | null>(null);
     const activeItem = announcements[activeIndex] ?? announcements[0];
 
     // Fetch announcements
     useEffect(() => {
-        const fetchAnnouncements = async () => {
+        const loadAnnouncements = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/announcements');
-                if (!response.ok) {
-                    setAnnouncements([]);
-                    return;
-                }
-
-                const data = await response.json() as AnnouncementItem[];
+                const data = (await fetchAnnouncements()) as AnnouncementItem[];
                 setAnnouncements(data);
 
                 // Check for unread
@@ -60,8 +47,14 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
                 setAnnouncements([]);
             }
         };
-        void fetchAnnouncements();
+        void loadAnnouncements();
     }, [onHasUnread]);
+
+    useEffect(() => {
+        if (activeIndex >= announcements.length) {
+            setActiveIndex(0);
+        }
+    }, [activeIndex, announcements.length]);
 
     // Mark as read when opened
     useEffect(() => {
@@ -74,75 +67,6 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
         }
     }, [open, announcements, onHasUnread]);
 
-    // Phase lifecycle: unmounted → entering → open → exiting → unmounted
-    useEffect(() => {
-        if (open) {
-            if (phase === 'unmounted' || phase === 'exiting') {
-                setPhase('entering');
-            }
-        } else {
-            if (phase === 'open') {
-                setPhase('exiting');
-            } else if (phase === 'entering') {
-                setPhase('unmounted');
-            }
-        }
-    }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // entering → open on next frame
-    useEffect(() => {
-        if (phase === 'entering') {
-            const raf = requestAnimationFrame(() => setPhase('open'));
-            return () => cancelAnimationFrame(raf);
-        }
-        return undefined;
-    }, [phase]);
-
-    // exiting → unmounted after CSS animation completes
-    useEffect(() => {
-        if (phase === 'exiting') {
-            const timer = window.setTimeout(() => setPhase('unmounted'), EXIT_DURATION);
-            return () => clearTimeout(timer);
-        }
-        return undefined;
-    }, [phase]);
-
-    useEffect(() => {
-        onChange?.(open);
-    }, [open, onChange]);
-
-    // Focus management
-    useEffect(() => {
-        if (open) {
-            prevActiveRef.current = document.activeElement as HTMLElement | null;
-            requestAnimationFrame(() => panelRef.current?.focus());
-        } else if (prevActiveRef.current) {
-            prevActiveRef.current.focus?.();
-        }
-    }, [open]);
-
-    // ESC key to close
-    useEffect(() => {
-        if (!open) return undefined;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                onClose?.();
-                onChange?.(false);
-            }
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [open, onClose, onChange]);
-
-    const handleClose = useCallback(() => {
-        onClose?.();
-        onChange?.(false);
-    }, [onClose, onChange]);
-
-    const handleMaskClick = useCallback(() => {
-        handleClose();
-    }, [handleClose]);
-
     // Update triangle indicator position when active tab changes
     useEffect(() => {
         const activeBtn = tabRefs.current.get(activeIndex);
@@ -151,90 +75,65 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
         const btnRect = activeBtn.getBoundingClientRect();
         const barRect = bar.getBoundingClientRect();
         setIndicatorLeft(btnRect.left - barRect.left + btnRect.width / 2);
-    }, [activeIndex, phase]);
+    }, [activeIndex, open, announcements.length]);
 
-    if (typeof document === 'undefined' || phase === 'unmounted') return null;
+    const handleClose = () => {
+        onClose?.();
+        onChange?.(false);
+    };
 
-    const state = phase === 'open' ? 'open' : 'closed';
-
-    return ReactDOM.createPortal(
-        <div
-            className={styles.mask}
-            data-state={state}
-            onClick={handleMaskClick}
+    return (
+        <Modal
+            open={open}
+            onClose={handleClose}
+            onChange={onChange}
+            title={t('announcement.title')}
+            icon={<AnnouncementIcon aria-hidden="true" />}
+            size='full'
+            keepMounted={true}
         >
-            <div
-                className={styles.panel}
-                data-state={state}
-                role="dialog"
-                aria-modal="true"
-                aria-label={t('announcement.title')}
-                tabIndex={-1}
-                ref={panelRef}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className={styles.header}>
-                    <span className={styles.headerIcon}>
-                        <AnnouncementIcon aria-hidden="true" />
-                    </span>
-                    <span className={styles.headerTitle}>{t('announcement.title')}</span>
-                    <Button
-                        text={t('common.close')}
-                        aria-label={t('common.close') || 'Close'}
-                        buttonType="close"
-                        onClick={handleClose}
-                    />
-                </div>
-
-                {/* Tab Bar + Description + Content — inset body */}
-                <div className={styles.body}>
-                    {announcements.length === 0 ? (
-                        <div className={styles.emptyState}>
-                            <p>{t('announcement.empty') || 'No announcements available'}</p>
+            <div className={styles.body}>
+                {announcements.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <p>{t('announcement.empty') || 'No announcements available'}</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className={styles.tabBarWrapper}>
+                            <div className={styles.tabBar} role='tablist' ref={tabBarRef}>
+                                {announcements.map((item, index) => (
+                                    <button
+                                        key={item.id}
+                                        role='tab'
+                                        aria-selected={activeIndex === index}
+                                        ref={(el) => {
+                                            if (el) tabRefs.current.set(index, el);
+                                            else tabRefs.current.delete(index);
+                                        }}
+                                        className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
+                                        onClick={() => setActiveIndex(index)}
+                                    >
+                                        {item.title}
+                                    </button>
+                                ))}
+                            </div>
+                            {announcements.length > 1 && indicatorLeft !== null && (
+                                <div
+                                    className={styles.tabIndicator}
+                                    style={{ left: `${indicatorLeft}px` }}
+                                />
+                            )}
                         </div>
-                    ) : (
-                        <>
-                            {/* Tab Bar */}
-                            <div className={styles.tabBarWrapper}>
-                                <div className={styles.tabBar} role="tablist" ref={tabBarRef}>
-                                    {announcements.map((item, index) => (
-                                        <button
-                                            key={item.id}
-                                            role="tab"
-                                            aria-selected={activeIndex === index}
-                                            ref={(el) => {
-                                                if (el) tabRefs.current.set(index, el);
-                                                else tabRefs.current.delete(index);
-                                            }}
-                                            className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
-                                            onClick={() => setActiveIndex(index)}
-                                        >
-                                            {item.title}
-                                        </button>
-                                    ))}
-                                </div>
-                                {indicatorLeft !== null && (
-                                    <div
-                                        className={styles.tabIndicator}
-                                        style={{ left: `${indicatorLeft}px` }}
-                                    />
-                                )}
-                            </div>
 
-                            {/* Description Bar */}
-                            <div className={styles.description}>{activeItem?.description}</div>
+                        <div className={styles.description}>{activeItem?.description}</div>
 
-                            {/* Markdown Content */}
-                            <div className={styles.content} role="tabpanel">
-                                <ReactMarkdown>{activeItem?.content || ''}</ReactMarkdown>
-                            </div>
-                        </>
-                    )}
-                </div>
+                        <div className={styles.content} role='tabpanel'>
+                            <ReactMarkdown>{activeItem?.content || ''}</ReactMarkdown>
+                        </div>
+                    </>
+                )}
             </div>
-        </div>,
-        document.body,
+        </Modal>
     );
 };
 

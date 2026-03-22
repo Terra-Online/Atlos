@@ -5,13 +5,10 @@
 :root,
 :root[data-theme='light'] {
     --ann-panel-bg: #{$light-1};
-    --ann-header-bg: #{$grey-1};
-    --ann-header-text: #{$white-1};
-    --ann-header-icon: #{$white-1};
-    --ann-tab-active-bg: #{$primary-accent-3};
-    --ann-tab-active-text: #{$grey-1};
-    --ann-tab-inactive-bg: #{$grey-2};
-    --ann-tab-inactive-text: #{$light-1};
+    --ann-tab-active-bg: #{$primary-accent-4};
+    --ann-tab-active-text: #{$black-1};
+    --ann-tab-inactive-bg: transparent;
+    --ann-tab-inactive-text: #{$grey-1};
     --ann-tab-hover-bg: #{$grey-1};
     --ann-desc-bg: #{$grey-1};
     --ann-desc-text: #{$light-1};
@@ -23,124 +20,17 @@
 
 :root[data-theme='dark'] {
     --ann-panel-bg: #{$black-1};
-    --ann-header-bg: #{$black-1};
-    --ann-header-text: #{$light-1};
-    --ann-header-icon: #{$light-1};
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
-    --ann-tab-inactive-bg: #{$grey-1};
+    --ann-tab-inactive-bg: transparent;
     --ann-tab-inactive-text: #{$light-1};
-    --ann-tab-hover-bg: #{$grey-2};
+    --ann-tab-hover-bg: #{rgba($grey-2, 0.55)};
     --ann-desc-bg: #{$black-1};
     --ann-desc-text: #{$light-1};
     --ann-content-bg: #{$grey-1};
     --ann-content-text: #{$light-1};
     --ann-content-heading: #{$white-1};
     --ann-border: #{$grey-2};
-}
-
-.mask {
-    position: fixed;
-    inset: 0;
-    background: rgba($black-0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    backdrop-filter: blur(0);
-    transition:
-        opacity 0.3s $adagio-curve,
-        backdrop-filter 0.3s $adagio-curve;
-
-    &[data-state='open'] {
-        opacity: 1;
-        backdrop-filter: blur(4px);
-    }
-}
-
-.panel {
-    display: flex;
-    flex-direction: column;
-    width: 680px;
-    height: 560px;
-    max-width: 90dvw;
-    max-height: 88dvh;
-    background-color: var(--ann-panel-bg);
-    border-radius: 5px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba($black-0, 0.35);
-    opacity: 0;
-    transform: scale(0.92) translateY(6px);
-    filter: blur(0.25rem);
-    transition:
-        opacity 0.2s $adagio-curve,
-        transform 0.25s $adagio-curve,
-        filter 0.25s $standard-curve;
-
-    &[data-state='open'] {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: blur(0);
-    }
-
-    @media (max-width: $mobile-bp) {
-        width: 92dvw;
-        height: 90dvh;
-        border-radius: 5px 5px 0 0;
-        transform: translateY(100%);
-        opacity: 0;
-        filter: blur(0.25rem);
-        transition:
-            transform 0.3s $standard-curve,
-            opacity 0.25s $standard-curve,
-            filter 0.25s $standard-curve;
-
-        &[data-state='open'] {
-            transform: translateY(0);
-            opacity: 1;
-            filter: blur(0);
-        }
-    }
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    height: 2.5rem;
-    padding: 0 0.5rem;
-    background-color: var(--ann-header-bg);
-    color: var(--ann-header-text);
-    flex-shrink: 0;
-    user-select: none;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold',
-        'HMSans_EN', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-weight: 900;
-    gap: 0.4rem;
-    box-shadow: 0 2px 3px rgba($black-0, 0.25);
-    transition: background-color 0.35s $adagio-curve;
-
-    .headerIcon {
-        display: inline-flex;
-        align-items: center;
-        width: 1.4rem;
-        height: 1.4rem;
-        flex-shrink: 0;
-
-        svg {
-            fill: var(--ann-header-icon);
-            width: 1.4rem;
-            height: 1.4rem;
-            filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25));
-        }
-    }
-
-    .headerTitle {
-        flex: 1;
-        font-size: 1rem;
-        text-shadow: 1px 2px 1px rgba($black-0, 0.25);
-        transition: color 0.35s $adagio-curve;
-    }
 }
 
 .body {
@@ -163,7 +53,7 @@
     display: flex;
     flex-direction: row;
     overflow-x: auto;
-    background: var(--ann-tab-inactive-bg);
+    background: transparent;
 
     &::-webkit-scrollbar {
         height: 0;
@@ -198,7 +88,7 @@
         color 0.15s ease;
 
     &:not(.activeTab):hover {
-        background-color: var(--ann-tab-hover-bg);
+            background-color: var(--ann-tab-hover-bg);
     }
 
     &.activeTab {

@@ -13,7 +13,13 @@ import { RegionContainer } from '@/component/regSwitch/regSwitch';
 import { LayerSwitch } from '@/component/layerSwitch/layerSwitch';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
-import { useSetIsUserGuideOpen, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
+import {
+    useSetIsUserGuideOpen,
+    useMobileDrawerSnapIndex,
+    useIsUserGuideOpen,
+    useSetIsAnnouncementOpen,
+    useSetAnnouncementFlowReady,
+} from '@/store/uiPrefs';
 
 import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
@@ -27,6 +33,7 @@ import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
+import { fetchAnnouncements } from '@/utils/announcement';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -45,25 +52,45 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
+    const isUserGuideOpen = useIsUserGuideOpen();
+    const setIsAnnouncementOpen = useSetIsAnnouncementOpen();
+    const setAnnouncementFlowReady = useSetAnnouncementFlowReady();
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
+    const [announcementChecked, setAnnouncementChecked] = useState(false);
+    const [autoOpenedOnce, setAutoOpenedOnce] = useState(false);
 
     // Check for unread announcements on mount
     useEffect(() => {
+        setAnnouncementFlowReady(false);
         const checkUnread = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/announcements');
-                if (!response.ok) return;
-                const data = await response.json() as Array<{ date?: string }>;
+                const data = await fetchAnnouncements();
                 const lastRead = localStorage.getItem('announcement_last_read');
                 const latestDate = data[0]?.date;
-                const hasUnread = !lastRead || (latestDate && new Date(latestDate) > new Date(lastRead));
+                const hasUnread = !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
                 setHasUnreadAnnouncement(hasUnread);
             } catch (error) {
                 console.error('Failed to check announcements:', error);
+            } finally {
+                setAnnouncementChecked(true);
             }
         };
         void checkUnread();
-    }, []);
+    }, [setAnnouncementFlowReady]);
+
+    useEffect(() => {
+        if (!announcementChecked) return;
+        if (isUserGuideOpen) return;
+
+        if (hasUnreadAnnouncement && !autoOpenedOnce) {
+            setAnnouncementOpen(true);
+            setIsAnnouncementOpen(true);
+            setAutoOpenedOnce(true);
+            return;
+        }
+
+        setAnnouncementFlowReady(true);
+    }, [announcementChecked, isUserGuideOpen, hasUnreadAnnouncement, autoOpenedOnce, setAnnouncementFlowReady, setIsAnnouncementOpen]);
 
     const handleReset = () => {
         setStorageOpen(true);
@@ -84,6 +111,13 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
     const handleAnnouncement = () => setAnnouncementOpen(true);
+
+    useEffect(() => {
+        setIsAnnouncementOpen(announcementOpen);
+        if (!announcementOpen && announcementChecked) {
+            setAnnouncementFlowReady(true);
+        }
+    }, [announcementOpen, announcementChecked, setIsAnnouncementOpen, setAnnouncementFlowReady]);
 
     return (
         <div
