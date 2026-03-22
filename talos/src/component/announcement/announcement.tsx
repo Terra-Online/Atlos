@@ -3,32 +3,76 @@ import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
-import { MOCK_ANNOUNCEMENTS } from './mockData';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Button from '@/component/button/button';
+
+export interface AnnouncementItem {
+    id: string;
+    title: string;
+    description: string;
+    content: string;
+    date?: string;
+}
 
 export interface AnnouncementModalProps {
     open: boolean;
     onClose?: () => void;
     onChange?: (open: boolean) => void;
+    onHasUnread?: (hasUnread: boolean) => void;
 }
 
 type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
 
 const EXIT_DURATION = 300;
 
-const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, onChange }) => {
+const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, onChange, onHasUnread }) => {
     const t = useTranslateUI();
     const [phase, setPhase] = useState<Phase>(() => (open ? 'entering' : 'unmounted'));
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
+    const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
     const panelRef = useRef<HTMLDivElement | null>(null);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
     const prevActiveRef = useRef<HTMLElement | null>(null);
-    // TODO: use request
-    const announcements = MOCK_ANNOUNCEMENTS;
     const activeItem = announcements[activeIndex] ?? announcements[0];
+
+    // Fetch announcements
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/announcements');
+                if (!response.ok) {
+                    setAnnouncements([]);
+                    return;
+                }
+
+                const data = await response.json() as AnnouncementItem[];
+                setAnnouncements(data);
+
+                // Check for unread
+                const lastRead = localStorage.getItem('announcement_last_read');
+                const latestDate = data[0]?.date;
+                const hasUnread = !lastRead || (latestDate && new Date(latestDate) > new Date(lastRead));
+                onHasUnread?.(typeof hasUnread === 'boolean' ? hasUnread : true);
+            } catch (error) {
+                console.error('Failed to fetch announcements:', error);
+                setAnnouncements([]);
+            }
+        };
+        void fetchAnnouncements();
+    }, [onHasUnread]);
+
+    // Mark as read when opened
+    useEffect(() => {
+        if (open && announcements.length > 0) {
+            const latestDate = announcements[0]?.date;
+            if (latestDate) {
+                localStorage.setItem('announcement_last_read', latestDate);
+                onHasUnread?.(false);
+            }
+        }
+    }, [open, announcements, onHasUnread]);
 
     // Phase lifecycle: unmounted → entering → open → exiting → unmounted
     useEffect(() => {
@@ -145,40 +189,48 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
 
                 {/* Tab Bar + Description + Content — inset body */}
                 <div className={styles.body}>
-                    {/* Tab Bar */}
-                    <div className={styles.tabBarWrapper}>
-                        <div className={styles.tabBar} role="tablist" ref={tabBarRef}>
-                            {announcements.map((item, index) => (
-                                <button
-                                    key={item.id}
-                                    role="tab"
-                                    aria-selected={activeIndex === index}
-                                    ref={(el) => {
-                                        if (el) tabRefs.current.set(index, el);
-                                        else tabRefs.current.delete(index);
-                                    }}
-                                    className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
-                                    onClick={() => setActiveIndex(index)}
-                                >
-                                    {item.title}
-                                </button>
-                            ))}
+                    {announcements.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <p>{t('announcement.empty') || 'No announcements available'}</p>
                         </div>
-                        {indicatorLeft !== null && (
-                            <div
-                                className={styles.tabIndicator}
-                                style={{ left: `${indicatorLeft}px` }}
-                            />
-                        )}
-                    </div>
+                    ) : (
+                        <>
+                            {/* Tab Bar */}
+                            <div className={styles.tabBarWrapper}>
+                                <div className={styles.tabBar} role="tablist" ref={tabBarRef}>
+                                    {announcements.map((item, index) => (
+                                        <button
+                                            key={item.id}
+                                            role="tab"
+                                            aria-selected={activeIndex === index}
+                                            ref={(el) => {
+                                                if (el) tabRefs.current.set(index, el);
+                                                else tabRefs.current.delete(index);
+                                            }}
+                                            className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
+                                            onClick={() => setActiveIndex(index)}
+                                        >
+                                            {item.title}
+                                        </button>
+                                    ))}
+                                </div>
+                                {indicatorLeft !== null && (
+                                    <div
+                                        className={styles.tabIndicator}
+                                        style={{ left: `${indicatorLeft}px` }}
+                                    />
+                                )}
+                            </div>
 
-                    {/* Description Bar */}
-                    <div className={styles.description}>{activeItem.description}</div>
+                            {/* Description Bar */}
+                            <div className={styles.description}>{activeItem?.description}</div>
 
-                    {/* Markdown Content */}
-                    <div className={styles.content} role="tabpanel">
-                        <ReactMarkdown>{activeItem.content}</ReactMarkdown>
-                    </div>
+                            {/* Markdown Content */}
+                            <div className={styles.content} role="tabpanel">
+                                <ReactMarkdown>{activeItem?.content || ''}</ReactMarkdown>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>,

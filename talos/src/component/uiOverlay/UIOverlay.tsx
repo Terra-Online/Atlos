@@ -42,9 +42,28 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
+    const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
+
+    // Check for unread announcements on mount
+    useEffect(() => {
+        const checkUnread = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/announcements');
+                if (!response.ok) return;
+                const data = await response.json() as Array<{ date?: string }>;
+                const lastRead = localStorage.getItem('announcement_last_read');
+                const latestDate = data[0]?.date;
+                const hasUnread = !lastRead || (latestDate && new Date(latestDate) > new Date(lastRead));
+                setHasUnreadAnnouncement(hasUnread);
+            } catch (error) {
+                console.error('Failed to check announcements:', error);
+            }
+        };
+        void checkUnread();
+    }, []);
 
     const handleReset = () => {
         setStorageOpen(true);
@@ -109,6 +128,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={AnnouncementIcon}
                     onClick={handleAnnouncement}
                     tooltip={t('headbar.announcement')}
+                    badge={hasUnreadAnnouncement}
                 />
                 <HeadItem
                     icon={SettingsIcon}
@@ -176,6 +196,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 open={announcementOpen}
                 onClose={() => setAnnouncementOpen(false)}
                 onChange={(o) => setAnnouncementOpen(o)}
+                onHasUnread={setHasUnreadAnnouncement}
             />
         </div>
     );

@@ -199,6 +199,7 @@
     "hint": "Wir empfehlen Patreon oder Ko-fi für weltweite Nutzer und Afdian für Nutzer in Festlandchina."
   },
   "announcement": {
-    "title": "Website-Mitteilung"
+    "title": "Website-Mitteilung",
+    "empty": "Keine Ankündigungen verfügbar"
   }
 }

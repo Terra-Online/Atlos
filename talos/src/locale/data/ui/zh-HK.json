@@ -176,7 +176,8 @@
     "collapse": "收起"
   },
   "announcement": {
-    "title": "網站公告"
+    "title": "網站公告",
+    "empty": "暫無公告"
   },
   "meta": {
       "title": "終末地地圖集",

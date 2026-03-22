@@ -183,7 +183,8 @@
     "collapse": "Collapse"
   },
   "announcement": {
-    "title": "Website Notice"
+    "title": "Website Notice",
+    "empty": "No announcements available"
   },
   "meta": {
     "title": "Open Endfield Map",

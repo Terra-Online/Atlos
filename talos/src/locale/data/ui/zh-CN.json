@@ -183,7 +183,8 @@
     "collapse": "收起"
   },
   "announcement": {
-    "title": "网站公告"
+    "title": "网站公告",
+    "empty": "暂无公告"
   },
   "meta": {
     "title": "终末地地图集",

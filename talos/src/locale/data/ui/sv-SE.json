@@ -199,6 +199,7 @@
     "hint": "Vi rekommenderar Patreon eller Ko-fi för globala användare, och Afdian för användare i Kina."
   },
   "announcement": {
-    "title": "Webbplatsmeddelande"
+    "title": "Webbplatsmeddelande",
+    "empty": "Inga meddelanden tillgängliga"
   }
 }

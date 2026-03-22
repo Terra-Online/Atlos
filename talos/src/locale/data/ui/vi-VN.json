@@ -199,6 +199,7 @@
     "hint": "Chúng tôi khuyên dùng Patreon hoặc Ko-fi cho người dùng toàn cầu và Afdian cho người dùng ở Trung Quốc đại lục."
   },
   "announcement": {
-    "title": "Thông báo trang web"
+    "title": "Thông báo trang web",
+    "empty": "Không có thông báo nào"
   }
 }

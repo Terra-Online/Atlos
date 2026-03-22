@@ -199,6 +199,7 @@
     "hint": "Kami merekomendasikan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di Tiongkok daratan."
   },
   "announcement": {
-    "title": "Pemberitahuan Situs"
+    "title": "Pemberitahuan Situs",
+    "empty": "Tidak ada pengumuman tersedia"
   }
 }

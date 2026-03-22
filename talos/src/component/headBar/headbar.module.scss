@@ -49,6 +49,17 @@
     }
 }
 
+.badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: #ff4444;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0, 0, 0, 0.3);
+}
+
 // noinspection Stylelint
 .headbarIcon,
 .toggleIcon {

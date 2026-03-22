@@ -199,6 +199,7 @@
     "hint": "Kami mengesyorkan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di tanah besar China."
   },
   "announcement": {
-    "title": "Notis Laman Web"
+    "title": "Notis Laman Web",
+    "empty": "Tiada pengumuman tersedia"
   }
 }

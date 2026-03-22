@@ -199,6 +199,7 @@
     "hint": "グローバルユーザーにはPatreonまたはKo-fiを、中国本土のユーザーにはAfdianをお勧めします。"
   },
   "announcement": {
-    "title": "サイトのお知らせ"
+    "title": "サイトのお知らせ",
+    "empty": "お知らせはありません"
   }
 }
