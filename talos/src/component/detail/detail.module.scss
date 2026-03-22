@@ -331,7 +331,7 @@
         }
     }
     // note
-    .detailNotes {
+    .detailNotes, .detailUrl {
         position: relative;
         font-size: 1rem;
         font-family:
@@ -341,7 +341,6 @@
         padding-left: 0.25rem;
         padding-top: 0.3rem;
         margin-top: 1.5rem;
-
         &::before {
             position: absolute;
             content: 'NOTE';
@@ -354,18 +353,15 @@
             font-size: 0.875rem;
             letter-spacing: -0.5px;
         }
-
         .noteText {
             margin: 0;
             white-space: pre-line;
         }
-
         .noNote {
             color: var(--detail-placeholder);
             font-style: italic;
         }
-
-        > a {
+        > a, > * > a {
             display: inline-block;
            transition: color 0.3s ease;
            font-size: 0.875rem;
@@ -374,8 +370,13 @@
            text-decoration: underline;
            text-underline-offset: 2px;
            line-height: 1.5;
-
            &:hover { color: $primary-accent-6; }
+        }
+    }
+    .detailUrl {
+        margin-top: 1.5rem;
+        &::before {
+            content: 'URL';
         }
     }
 
@@ -405,7 +406,6 @@
     }
 }
 
-// Content inside the full-text modal (paragraph rhythm matches .storageContainer in tos)
 .fullTextContent {
     display: flex;
     flex-direction: column;
@@ -436,7 +436,6 @@
     }
 }
 
-/* Inline variant for mobile sidebar: render in normal flow */
 .inline {
     position: static;
     right: auto;

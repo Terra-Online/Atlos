@@ -48,6 +48,7 @@ export class MarkerLayer {
      * 延迟移除的定时器，避免直接移除导致无法看到淡出动画
      */
     private pendingRemovalTimers: Record<string, number> = {};
+    private pulseCleanupDict: Record<string, () => void> = {};
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
     private _destroyLasso?: () => void;
@@ -120,6 +121,60 @@ export class MarkerLayer {
      */
     destroy() {
         this._destroyLasso?.();
+        Object.values(this.pulseCleanupDict).forEach((cleanup) => cleanup());
+        this.pulseCleanupDict = {};
+    }
+
+    private getMarkerInnerElement(id: string): HTMLElement | null {
+        const layer = this.markerDict[id];
+        if (!(layer instanceof L.Marker)) return null;
+        const markerRoot = layer.getElement();
+        if (!markerRoot) return null;
+        return markerRoot.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
+    }
+
+    stopMarkerPulse(id: string) {
+        const cleanup = this.pulseCleanupDict[id];
+        if (!cleanup) return;
+        cleanup();
+        delete this.pulseCleanupDict[id];
+    }
+
+    startMarkerPulse(id: string): boolean {
+        this.stopMarkerPulse(id);
+        const inner = this.getMarkerInnerElement(id);
+        if (!inner) return false;
+
+        const classSignature = () =>
+            Array.from(inner.classList)
+                .filter((cls) => cls !== styles.pulsing)
+                .sort()
+                .join(' ');
+
+        const initialSignature = classSignature();
+        inner.classList.add(styles.pulsing);
+
+        const observer = new MutationObserver(() => {
+            if (!inner.isConnected) {
+                this.stopMarkerPulse(id);
+                return;
+            }
+            if (classSignature() !== initialSignature) {
+                this.stopMarkerPulse(id);
+            }
+        });
+
+        observer.observe(inner, {
+            attributes: true,
+            attributeFilter: ['class'],
+        });
+
+        this.pulseCleanupDict[id] = () => {
+            observer.disconnect();
+            inner.classList.remove(styles.pulsing);
+        };
+
+        return true;
     }
 
     /**
@@ -276,6 +331,7 @@ export class MarkerLayer {
                 if (inner) inner.classList.remove(styles.disappearing);
                 layer.addTo(parent);
             } else {
+                this.stopMarkerPulse(id);
                 if (!parent.hasLayer(layer)) return;
                 if (inner) {
                     inner.classList.add(styles.disappearing);

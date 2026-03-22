@@ -8,15 +8,17 @@
 import { useMarkerStore } from '@/store/marker';
 import useRegion from '@/store/region';
 import { setLocale, SUPPORTED_LANGS } from '@/locale';
-import { MARKER_TYPE_DICT } from '@/data/marker';
+import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
+import { navigateToSharedPoint } from '@/utils/sharedPointNavigation';
 
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
-// URL 參數名稱（簡短版）
+// URL 參數名稱
 const PARAM_LANG = 'l';
 const PARAM_FILTER = 'f';
 const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
+const PARAM_POINT = 'p';
 
 // 語言代碼映射（雙向）
 const LANG_CODE_MAP: Record<string, string> = {
@@ -211,6 +213,13 @@ const bitsToNumber = (bits: number[]): number => {
     return num;
 };
 
+const getFilterParamValue = (keys: string[]): string => {
+    if (keys.length === 0) return '';
+    const validKeys = keys.filter((key) => MARKER_TYPE_DICT[key]);
+    if (validKeys.length === 0) return '';
+    return compressFilter(validKeys);
+};
+
 /**
  * 生成分享鏈接
  * @returns 完整的分享URL
@@ -228,15 +237,9 @@ export const generateShareUrl = (): string => {
 
     // 篩選器（壓縮後使用base64）
     const filter = useMarkerStore.getState().filter;
-    if (filter.length > 0) {
-        // 驗證所有key都存在於MARKER_TYPE_DICT中
-        const validKeys = filter.filter(key => MARKER_TYPE_DICT[key]);
-        if (validKeys.length > 0) {
-            const compressed = compressFilter(validKeys);
-            if (compressed) {
-                params.set(PARAM_FILTER, compressed);
-            }
-        }
+    const filterParam = getFilterParamValue(filter);
+    if (filterParam) {
+        params.set(PARAM_FILTER, filterParam);
     }
 
     // 區域（使用縮寫）
@@ -250,6 +253,39 @@ export const generateShareUrl = (): string => {
     }
 
     const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+};
+
+/**
+ * 生成指定點位的分享鏈接。
+ * 必含 p/f/r/s 參數，不包含 l。
+ */
+const buildPointShareParams = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): URLSearchParams => {
+    const params = new URLSearchParams();
+
+    const pointFilter = getFilterParamValue([point.type]);
+    if (pointFilter) {
+        params.set(PARAM_FILTER, pointFilter);
+    }
+
+    const { currentRegionKey } = useRegion.getState();
+    const shortRegion = REGION_CODE_MAP[currentRegionKey] || currentRegionKey;
+    params.set(PARAM_REGION, shortRegion);
+    params.set(PARAM_SUBREGION, point.subregId);
+    params.set(PARAM_POINT, String(point.id));
+
+    return params;
+};
+
+export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const queryString = buildPointShareParams(point).toString();
+    return queryString ? `?${queryString}` : '';
+};
+
+export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const queryString = buildPointShareParams(point).toString();
+
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 };
 
@@ -332,13 +368,13 @@ export const applyUrlParams = async (): Promise<void> => {
 
     // 應用區域參數（以用户本地优先）
     const regionParam = params.get(PARAM_REGION);
+    const navRegion = regionParam ? (REGION_CODE_REVERSE[regionParam] || regionParam) : null;
     if (regionParam) {
         const { currentRegionKey } = useRegion.getState();
         // 检查是否为默认区域（Valley_4），如果是默认值则可以被URL参数覆盖
         const isDefaultRegion = !currentRegionKey || currentRegionKey === 'Valley_4';
         if (isDefaultRegion) {
-            const fullRegion = REGION_CODE_REVERSE[regionParam] || regionParam;
-            useRegion.getState().setCurrentRegion(fullRegion);
+            useRegion.getState().setCurrentRegion(navRegion || regionParam);
         }
     }
 
@@ -350,6 +386,16 @@ export const applyUrlParams = async (): Promise<void> => {
         if (!currentSubregionKey) {
             useRegion.getState().setCurrentSubregion(subregionParam);
         }
+    }
+
+    const pointParam = params.get(PARAM_POINT);
+    if (pointParam && filterParam) {
+        const fallbackRegion = useRegion.getState().currentRegionKey;
+        navigateToSharedPoint({
+            regionKey: navRegion || fallbackRegion,
+            subregionKey: subregionParam || undefined,
+            pointId: pointParam,
+        });
     }
 
     // 清除URL參數，保持地址欄乾淨
@@ -365,6 +411,7 @@ export const applyUrlParams = async (): Promise<void> => {
             newParams.delete(PARAM_FILTER);
             newParams.delete(PARAM_REGION);
             newParams.delete(PARAM_SUBREGION);
+            newParams.delete(PARAM_POINT);
             
             const queryString = newParams.toString();
             const newUrl = queryString ? 
@@ -380,5 +427,5 @@ export const applyUrlParams = async (): Promise<void> => {
 
 // React hook: 獲取生成分享鏈接的函數
 export const useShareUrl = () => {
-    return { generateShareUrl, copyShareUrl };
+    return { generateShareUrl, generatePointShareShortUrl, generatePointShareUrl, copyShareUrl };
 };

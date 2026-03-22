@@ -29,7 +29,9 @@
       "sub": "Unter"
     },
     "noInfo": "Keine Informationen.",
-    "readFullText": "Klicken Sie, um den vollständigen Text zu lesen."
+    "readFullText": "Klicken Sie, um den vollständigen Text zu lesen.",
+    "share": "Kopieren Sie den freigegebenen Link für diese Marke.",
+    "copied": "Link kopiert"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

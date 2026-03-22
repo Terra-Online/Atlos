@@ -29,7 +29,9 @@
       "sub": "Sub"
     },
     "noInfo": "No info.",
-    "readFullText": "Click to read full text."
+    "readFullText": "Click to read full text.",
+    "share": "Copy shareable link for this marker.",
+    "copied": "Link copied"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

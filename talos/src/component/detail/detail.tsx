@@ -2,11 +2,13 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import styles from './detail.module.scss';
 import Button from '@/component/button/button';
 import Modal from '@/component/modal/modal';
+import PopoverTooltip from '@/component/popover/popover';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
 import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { MARKER_TYPE_DICT } from '@/data/marker';
+import { generatePointShareShortUrl } from '@/utils/urlState';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -147,6 +149,40 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const pointName = typeof pointNameRaw === 'string' && pointNameRaw.trim()
         ? pointNameRaw
         : (currentPoint?.type ?? '');
+    const pointShareShortUrl = useMemo(
+        () => (currentPoint ? generatePointShareShortUrl(currentPoint) : ''),
+        [currentPoint],
+    );
+    const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
+    const copyPopupTimerRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (copyPopupTimerRef.current !== null) {
+                window.clearTimeout(copyPopupTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handleCopyPointShareUrl = useCallback(async () => {
+        if (!pointShareShortUrl || typeof window === 'undefined') return;
+        try {
+            const fullUrl = `${window.location.origin}${window.location.pathname}${pointShareShortUrl}`;
+            await navigator.clipboard.writeText(fullUrl);
+            setCopiedPopupVisible(false);
+            requestAnimationFrame(() => {
+                setCopiedPopupVisible(true);
+            });
+            if (copyPopupTimerRef.current !== null) {
+                window.clearTimeout(copyPopupTimerRef.current);
+            }
+            copyPopupTimerRef.current = window.setTimeout(() => {
+                setCopiedPopupVisible(false);
+            }, 1500);
+        } catch {
+            // ignore clipboard errors
+        }
+    }, [pointShareShortUrl]);
 
     // Archive full-text state — content may be plain text and/or HTML (<i>, <del>, <img>, …)
     const [hasFullText, setHasFullText] = useState(false);
@@ -362,6 +398,8 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                         {/* <div className="point-image">
             <div className="no-image">No info.</div>
           </div> */}
+
+
                         {/* Note — shown when an archive full-text file is available */}
                         {hasFullText && (
                             <div className={styles.detailNotes}>
@@ -374,6 +412,23 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 </a>
                             </div>
                         )}
+                        <div className={styles.detailUrl}>
+                            <PopoverTooltip
+                                content={String(tUI('detail.copied'))}
+                                placement="top"
+                                gap={4}
+                                visible={copiedPopupVisible}
+                                disabled={false}
+                            >
+                                <a
+                                    className={styles.pointShareLink}
+                                    onClick={() => void handleCopyPointShareUrl()}
+                                    role="button"
+                                >
+                                    {String(tUI('detail.share'))}
+                                </a>
+                            </PopoverTooltip>
+                        </div>
                     </div>
                     {/* Meta
       <div className="detail-meta">

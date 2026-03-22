@@ -29,7 +29,9 @@
       "sub": "Podreg"
     },
     "noInfo": "Brak informacji.",
-    "readFullText": "Kliknij, aby przeczytać pełny tekst."
+    "readFullText": "Kliknij, aby przeczytać pełny tekst.",
+    "share": "Skopiuj link do udostępnienia dla tego znacznika.",
+    "copied": "Link skopiowany"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

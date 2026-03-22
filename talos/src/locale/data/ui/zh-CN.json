@@ -29,7 +29,9 @@
       "sub": "子区域"
     },
     "noInfo": "暂无信息",
-    "readFullText": "点此查看全文。"
+    "readFullText": "点此查看全文。",
+    "share": "复制此点位的分享链接。",
+    "copied": "链接已复制"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

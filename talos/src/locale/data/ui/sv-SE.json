@@ -29,7 +29,9 @@
       "sub": "Zon"
     },
     "noInfo": "Ingen info.",
-    "readFullText": "Klicka för att läsa hela texten."
+    "readFullText": "Klicka för att läsa hela texten.",
+    "share": "Kopiera delningslänken för denna markör.",
+    "copied": "Länk kopierad"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

@@ -29,7 +29,9 @@
       "sub": "Sub"
     },
     "noInfo": "Tiada maklumat.",
-    "readFullText": "Klik untuk membaca teks lengkap."
+    "readFullText": "Klik untuk membaca teks lengkap.",
+    "share": "Salin tautan yang dapat dibagikan untuk penanda ini.",
+    "copied": "Tautan disalin"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
