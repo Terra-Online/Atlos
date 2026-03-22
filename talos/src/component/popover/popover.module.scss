@@ -17,6 +17,11 @@
     --tooltip-shadow-2: #{rgba($black-0, 0.4)};
 }
 
+.popoverAnchor {
+    display: inline-flex;
+    align-items: center;
+}
+
 .popoverTooltip {
     padding: 6px 12px;
     border-radius: 12px;

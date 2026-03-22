@@ -15,7 +15,10 @@
     "labelName": "지역명"
   },
   "search": {
-    "placeholder": "전체 검색…"
+    "placeholder": "전체 검색…",
+    "results": "{count} 건의 결과",
+    "locatedAt": "위치",
+    "distributeAt": "분포"
   },
   "markFilter": {
     "title": "필터 항목",
@@ -28,7 +31,10 @@
       "main": "지역",
       "sub": "서브"
     },
-    "noInfo": "정보 없음"
+    "noInfo": "정보 없음",
+    "readFullText": "전체 텍스트를 읽으려면 클릭하세요.",
+    "share": "이 마커의 공유 링크를 복사하세요.",
+    "copied": "링크 복사됨"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

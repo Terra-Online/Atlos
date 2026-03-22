@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getItemIconUrl } from '@/utils/resource.ts';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
+import { MARKER_TYPE_DICT } from '@/data/marker';
 import styles from './filterList.module.scss';
 
 interface FilterListMobileProps {
@@ -10,6 +11,11 @@ interface FilterListMobileProps {
 
 const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onContentWidthChange }) => {
   const filterList = useFilter();
+  // Files-type markers don't show icons in FilterList and shouldn't count toward container sizing
+  const displayList = useMemo(
+    () => filterList.filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files'),
+    [filterList],
+  );
   const switchFilter = useSwitchFilter();
   const containerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -27,7 +33,7 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
     onScroll();
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [filterList.length]);
+  }, [displayList.length]);
 
   // Report content width upwards for layout clamping
   useEffect(() => {
@@ -40,7 +46,7 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
     // initial
     onContentWidthChange?.(el.scrollWidth || el.clientWidth || 0);
     return () => ro.disconnect();
-  }, [onContentWidthChange, filterList.length]);
+  }, [onContentWidthChange, displayList.length]);
 
   return (
     <div className={styles.mainFilterList} style={{ width }}>
@@ -54,14 +60,17 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
         style={{ overflowX: 'auto' }}
       >
         <div ref={innerRef} className={styles.innerContainer} >
-          {[...filterList].reverse().map((item) => (
-            <span
-              key={item}
-              className={styles.mainFilterContentItem}
-              style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
-              onClick={() => switchFilter(item)}
-            />)
-          )}
+          {[...displayList]
+            .reverse()
+            .map((item) => (
+              <span
+                key={item}
+                className={styles.mainFilterContentItem}
+                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
+                onClick={() => switchFilter(item)}
+              />
+            ))
+          }
         </div>
       </div>
     </div>

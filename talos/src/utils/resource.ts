@@ -1,6 +1,9 @@
 /* global __ASSETS_HOST, __APP_VERSION__ */
 // Access global objects or environment variables to avoid direct references to potentially undefined variables
-const prefix:string = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+const prefix: string = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
+
+/** CDN / static path prefix (empty in local dev). Exposed for non-resource URL composition (e.g. Detail HTML). */
+export const getAssetsHostPrefix = (): string => prefix;
 const version:string = (typeof __APP_VERSION__ !== 'undefined' && __APP_VERSION__) ? String(__APP_VERSION__) : '';
 
 // No runtime probing/cache needed under new layout
@@ -44,3 +47,21 @@ export const getCtgrIconUrl = (key:string, ext = 'svg') =>
     getResourceUrl('category', key, ext);
 export const getMarkerSubIconUrl = (key:string | undefined, ext = 'webp') =>
     getResourceUrl('marker/sub', `${key}`, ext);
+
+const FILE_CONTENT_LOCALE_FALLBACK: Record<string, string> = {
+    'zh-HK': 'zh-TW',
+};
+
+export const resolveFileContentLocale = (locale: string): string =>
+    FILE_CONTENT_LOCALE_FALLBACK[locale] ?? locale;
+
+export const getFileContentUrl = (locale: string, prtsId: string): string =>
+    `${prefix}/files/text/${resolveFileContentLocale(locale)}/${prtsId}.json`;
+
+export function fetchArchiveFile(url: string, signal?: AbortSignal): Promise<Response> {
+    return fetch(url, {
+        method: 'GET',
+        signal,
+        headers: { Accept: 'application/json' },
+    });
+}

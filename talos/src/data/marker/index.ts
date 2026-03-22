@@ -3,8 +3,8 @@ import { REGION_DICT } from '@/data/map';
 
 export interface IMarkerData {
     id: string;
-    position: [number, number];
-    subregionId: string;
+    pos: [number, number];
+    subregId: string;
     type: string;
     // meta?: Record<string, any>
 }
@@ -12,8 +12,8 @@ export interface IMarkerData {
 // Raw marker data from JSON (id may be number or string)
 interface IRawMarkerData {
     id: string | number;
-    position: [number, number];
-    subregionId: string;
+    pos: [number, number];
+    subregId: string;
     type: string;
 }
 
@@ -21,6 +21,8 @@ export interface IMarkerType {
     key: string;
     noFrame?: boolean;
     subIcon?: string;
+    icon?: string;
+    ctgr?: string;
     category: {
         main: string;
         sub: string;
@@ -66,7 +68,7 @@ export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
 
 /**
  * 预计算每个子区域中各类型的数量
- * 格式: { subregionId: { type: count } }
+ * 格式: { subregId: { type: count } }
  */
 export const SUBREGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Object.entries(SUBREGION_MARKS_MAP).reduce(
     (acc, [subregionId, markers]) => {
@@ -102,6 +104,7 @@ export const REGION_TYPE_COUNT_MAP: Record<string, Record<string, number>> = Obj
 
 export const DEFAULT_SUBCATEGORY_ORDER = [
     'collection',
+    'archives',
     'exploration',
     'natural',
     'valuable',

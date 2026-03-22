@@ -15,8 +15,8 @@
 
     /* Sidebar open state */
     &.sidebarOpen {
-        left: 300px;
-        width: calc(100% - 300px);
+        left: var(--sidebar-width, 300px);
+        width: calc(100% - var(--sidebar-width, 300px));
     }
 
     /* Hidden state */

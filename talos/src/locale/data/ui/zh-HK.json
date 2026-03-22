@@ -15,7 +15,10 @@
     "labelName": "地區名稱"
   },
   "search": {
-    "placeholder": "全域搜尋…"
+    "placeholder": "全域搜尋…",
+    "results": "{count} 個結果",
+    "locatedAt": "位於",
+    "distributeAt": "分佈於"
   },
   "markFilter": {
     "title": "篩選項目",
@@ -28,7 +31,10 @@
       "main": "主區域",
       "sub": "子區域"
     },
-    "noInfo": "暫無資料"
+    "noInfo": "暫無資料",
+    "readFullText": "點此查看全文。",
+    "share": "複製此點位之分享連結。",
+    "copied": "連結已複製"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

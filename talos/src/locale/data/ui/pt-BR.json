@@ -15,7 +15,10 @@
     "labelName": "Nomes de região"
   },
   "search": {
-    "placeholder": "Busca geral..."
+    "placeholder": "Busca geral...",
+    "results": "{count} resultado(s)",
+    "locatedAt": "Localizado em",
+    "distributeAt": "Distribuído em"
   },
   "markFilter": {
     "title": "Opções de Filtro",
@@ -28,7 +31,10 @@
       "main": "Principal",
       "sub": "Sub"
     },
-    "noInfo": "Sem informações."
+    "noInfo": "Sem informações.",
+    "readFullText": "Clique para ler o texto completo.",
+    "share": "Copie o link compartilhável para este marcador.",
+    "copied": "Link copiado"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

@@ -1,2648 +1,2918 @@
 [
   {
+    "id": 23300200002,
+    "pos": [
+      -659.0836,
+      765.6438
+    ],
+    "subregId": "WL_3",
+    "type": "nar_media_map02_71_1"
+  },
+  {
+    "id": 23300200004,
+    "pos": [
+      -666.5171,
+      768.4663
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_74_1"
+  },
+  {
+    "id": 23300200005,
+    "pos": [
+      -761.6917,
+      786.119
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_79_1"
+  },
+  {
+    "id": 23300200006,
+    "pos": [
+      -723.8368,
+      762.8994
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_80_1"
+  },
+  {
+    "id": 23300200008,
+    "pos": [
+      -750.2448,
+      841.464
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_83_1"
+  },
+  {
+    "id": 23300200009,
+    "pos": [
+      -627.1767,
+      849.6442
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_92_1"
+  },
+  {
+    "id": 23300200011,
+    "pos": [
+      -650.3057,
+      749.7537
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_75_1"
+  },
+  {
+    "id": 23300200012,
+    "pos": [
+      -745.8568,
+      723.0468
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_81_1"
+  },
+  {
+    "id": 23300200013,
+    "pos": [
+      -733.9554,
+      774.4991
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_84_1"
+  },
+  {
+    "id": 23300200014,
+    "pos": [
+      -712.5688,
+      836.262
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_85_1"
+  },
+  {
+    "id": 23300200017,
+    "pos": [
+      -691.68,
+      864.7001
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_86_1"
+  },
+  {
+    "id": 23300200018,
+    "pos": [
+      -590.764,
+      779.7914
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_88_1"
+  },
+  {
+    "id": 23300200022,
+    "pos": [
+      -599.7043,
+      744.5732
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_72_1"
+  },
+  {
+    "id": 23300200024,
+    "pos": [
+      -613.535,
+      754.5045
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_73_1"
+  },
+  {
+    "id": 23300200025,
+    "pos": [
+      -655.1287,
+      765.587
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_76_1"
+  },
+  {
+    "id": 23300200026,
+    "pos": [
+      -671.5145,
+      771.4324
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_77_1"
+  },
+  {
+    "id": 23300200027,
+    "pos": [
+      -673.7856,
+      796.6742
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_78_1"
+  },
+  {
+    "id": 23300200028,
+    "pos": [
+      -728.1311,
+      772.1712
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_82_1"
+  },
+  {
+    "id": 23300200029,
+    "pos": [
+      -750.6122,
+      847.9825
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_89_1"
+  },
+  {
+    "id": 23300200031,
+    "pos": [
+      -722.4491,
+      843.5149
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_123_1"
+  },
+  {
+    "id": 23300200033,
+    "pos": [
+      -629.1504,
+      841.5824
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_92_2"
+  },
+  {
+    "id": 23300200035,
+    "pos": [
+      -547.9244,
+      829.9087
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_87_1"
+  },
+  {
+    "id": 23300200039,
+    "pos": [
+      -650.7643,
+      864.3213
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_90_1"
+  },
+  {
+    "id": 23300130002,
+    "pos": [
+      -619.2438,
+      854.2274
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_94_1"
+  },
+  {
+    "id": 23300130003,
+    "pos": [
+      -605.2231,
+      858.5795
+    ],
+    "subregId": "WL_3",
+    "type": "nar_collection_map02_95_1"
+  },
+  {
+    "id": 23300130004,
+    "pos": [
+      -619.2438,
+      854.2274
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_94_1"
+  },
+  {
+    "id": 23300060004,
+    "pos": [
+      -623.9047,
+      868.3119
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_93_2"
+  },
+  {
+    "id": 23300060006,
+    "pos": [
+      -622.1772,
+      865.3247
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_93_1"
+  },
+  {
+    "id": 23300060007,
+    "pos": [
+      -622.1772,
+      865.3247
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_93_1"
+  },
+  {
+    "id": 23300060008,
+    "pos": [
+      -623.9047,
+      868.3119
+    ],
+    "subregId": "WL_3",
+    "type": "nar_paper_map02_93_2"
+  },
+  {
     "id": 23300120000,
-    "position": [
+    "pos": [
       -694.8575,
       860.8978
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": null
   },
   {
     "id": 23300120001,
-    "position": [
+    "pos": [
       -694.1894,
       860.9433
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": null
   },
   {
     "id": 23300120002,
-    "position": [
+    "pos": [
       -693.4636,
       862.326
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": null
   },
   {
     "id": 23300120003,
-    "position": [
+    "pos": [
       -696.3545,
       862.0569
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": null
   },
   {
     "id": 23300120004,
-    "position": [
+    "pos": [
       -694.8534,
       861.5601
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": null
   },
   {
     "id": 23300120005,
-    "position": [
+    "pos": [
       -628.0654,
       711.8371
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "recycling_stn"
   },
   {
     "id": 23300120006,
-    "position": [
+    "pos": [
       -651.502,
       804.5721
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120019,
-    "position": [
+    "pos": [
       -648.6153,
       803.7441
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120020,
-    "position": [
+    "pos": [
       -645.7285,
       801.6742
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120033,
-    "position": [
+    "pos": [
       -645.7285,
       799.1904
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120034,
-    "position": [
+    "pos": [
       -642.4293,
       799.1904
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120047,
-    "position": [
+    "pos": [
       -649.8525,
       801.6742
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120048,
-    "position": [
+    "pos": [
       -740.1678,
       746.6153
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120061,
-    "position": [
+    "pos": [
       -743.467,
       747.0293
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cuprium_spot"
   },
   {
     "id": 23300120062,
-    "position": [
+    "pos": [
       -703.8437,
       839.9671
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "rare_gathering_site"
   },
   {
     "id": 23300120063,
-    "position": [
+    "pos": [
       -702.5029,
       841.1644
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120064,
-    "position": [
+    "pos": [
       -703.53,
       841.9794
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120065,
-    "position": [
+    "pos": [
       -704.8867,
       841.7967
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120066,
-    "position": [
+    "pos": [
       -705.5859,
       838.3226
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120067,
-    "position": [
+    "pos": [
       -702.1122,
       838.2484
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120068,
-    "position": [
+    "pos": [
       -703.9597,
       837.6619
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120069,
-    "position": [
+    "pos": [
       -705.8627,
       839.701
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120070,
-    "position": [
+    "pos": [
       -706.6088,
       841.5108
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120071,
-    "position": [
+    "pos": [
       -701.5124,
       840.6322
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120072,
-    "position": [
+    "pos": [
       -702.6443,
       837.1985
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blighted_jadeleaf_spot"
   },
   {
     "id": 23300120073,
-    "position": [
+    "pos": [
       -561.129,
       825.0763
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "rare_gathering_site"
   },
   {
     "id": 23300120074,
-    "position": [
+    "pos": [
       -559.3344,
       825.0809
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120075,
-    "position": [
+    "pos": [
       -559.5654,
       826.3746
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120076,
-    "position": [
+    "pos": [
       -560.702,
       827.1403
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120077,
-    "position": [
+    "pos": [
       -563.5193,
       825.004
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120078,
-    "position": [
+    "pos": [
       -560.9672,
       822.6373
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120079,
-    "position": [
+    "pos": [
       -562.7378,
       823.4273
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120080,
-    "position": [
+    "pos": [
       -562.8165,
       826.2203
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120081,
-    "position": [
+    "pos": [
       -562.1803,
       828.0719
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120082,
-    "position": [
+    "pos": [
       -559.4971,
       823.5139
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120083,
-    "position": [
+    "pos": [
       -562.0588,
       822.2051
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "false_aggela_spot"
   },
   {
     "id": 23300120084,
-    "position": [
+    "pos": [
       -593.9951,
       833.7806
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "protocol_dl"
   },
   {
     "id": 23300120085,
-    "position": [
+    "pos": [
       -707.9883,
       726.525
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "protocol_dl"
   },
   {
     "id": 23300120086,
-    "position": [
+    "pos": [
       -813.6447,
       833.3419
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "protocol_dl_ii"
   },
   {
     "id": 23300120087,
-    "position": [
+    "pos": [
       -645.6118,
       858.849
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "protocol_dl_ii"
   },
   {
     "id": 23300120089,
-    "position": [
+    "pos": [
       -621.8544,
       727.4956
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120090,
-    "position": [
+    "pos": [
       -622.0221,
       727.0777
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120091,
-    "position": [
+    "pos": [
       -631.7316,
       790.2692
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120092,
-    "position": [
+    "pos": [
       -631.2863,
       790.1822
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120093,
-    "position": [
+    "pos": [
       -631.7234,
       789.7724
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120094,
-    "position": [
+    "pos": [
       -672.9014,
       748.4782
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120095,
-    "position": [
+    "pos": [
       -675.6645,
       749.153
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120096,
-    "position": [
+    "pos": [
       -676.8114,
       750.0108
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120097,
-    "position": [
+    "pos": [
       -676.6611,
       750.5095
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120098,
-    "position": [
+    "pos": [
       -676.1264,
       750.0027
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120099,
-    "position": [
+    "pos": [
       -676.2171,
       750.606
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120100,
-    "position": [
+    "pos": [
       -672.8354,
       747.9024
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120101,
-    "position": [
+    "pos": [
       -632.5193,
       790.1864
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120102,
-    "position": [
+    "pos": [
       -632.5235,
       790.708
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120104,
-    "position": [
+    "pos": [
       -726.1194,
       727.2954
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120106,
-    "position": [
+    "pos": [
       -724.8266,
       726.9638
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120107,
-    "position": [
+    "pos": [
       -724.707,
       726.2145
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120108,
-    "position": [
+    "pos": [
       -725.9771,
       726.02
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120112,
-    "position": [
+    "pos": [
       -726.5875,
       726.5747
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120114,
-    "position": [
+    "pos": [
       -782.9671,
       858.771
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120115,
-    "position": [
+    "pos": [
       -783.5604,
       860.1609
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120116,
-    "position": [
+    "pos": [
       -786.0925,
       862.0238
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120117,
-    "position": [
+    "pos": [
       -786.1614,
       862.8273
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120118,
-    "position": [
+    "pos": [
       -786.3235,
       862.3136
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120119,
-    "position": [
+    "pos": [
       -667.6227,
       874.203
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120120,
-    "position": [
+    "pos": [
       -667.8289,
       875.0392
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120121,
-    "position": [
+    "pos": [
       -668.2413,
       874.2112
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120122,
-    "position": [
+    "pos": [
       -668.2289,
       874.7453
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120123,
-    "position": [
+    "pos": [
       -667.1031,
       874.6708
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120124,
-    "position": [
+    "pos": [
       -638.2414,
       855.8704
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120125,
-    "position": [
+    "pos": [
       -638.7571,
       855.979
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120126,
-    "position": [
+    "pos": [
       -638.3715,
       856.5485
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120127,
-    "position": [
+    "pos": [
       -786.3853,
       860.7404
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120128,
-    "position": [
+    "pos": [
       -621.8753,
       728.3548
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120129,
-    "position": [
+    "pos": [
       -619.5205,
       728.5701
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120130,
-    "position": [
+    "pos": [
       -635.2535,
       790.3934
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120131,
-    "position": [
+    "pos": [
       -633.6699,
       789.2384
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120132,
-    "position": [
+    "pos": [
       -657.3086,
       809.5274
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120133,
-    "position": [
+    "pos": [
       -652.9119,
       796.5951
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120134,
-    "position": [
+    "pos": [
       -642.5984,
       787.8847
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120135,
-    "position": [
+    "pos": [
       -646.6564,
       788.3069
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120136,
-    "position": [
+    "pos": [
       -749.5664,
       878.0281
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "protocol_dl"
   },
   {
     "id": 23300120137,
-    "position": [
+    "pos": [
       -630.1769,
       744.8807
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120138,
-    "position": [
+    "pos": [
       -666.3616,
       726.6008
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120139,
-    "position": [
+    "pos": [
       -673.2717,
       728.0164
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120140,
-    "position": [
+    "pos": [
       -681.4092,
       730.2549
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120141,
-    "position": [
+    "pos": [
       -666.8474,
       724.6207
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120142,
-    "position": [
+    "pos": [
       -664.8143,
       723.5485
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120143,
-    "position": [
+    "pos": [
       -644.1861,
       789.7476
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120144,
-    "position": [
+    "pos": [
       -654.2527,
       722.1658
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120145,
-    "position": [
+    "pos": [
       -784.205,
       858.8403
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "amber_rice"
   },
   {
     "id": 23300120146,
-    "position": [
+    "pos": [
       -789.4989,
       826.4665
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "redjade_ginseng"
   },
   {
     "id": 23300120147,
-    "position": [
+    "pos": [
       -623.7897,
       896.6374
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "redjade_ginseng"
   },
   {
     "id": 23300120148,
-    "position": [
+    "pos": [
       -648.5282,
       851.1299
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120149,
-    "position": [
+    "pos": [
       -646.8873,
       848.7393
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120150,
-    "position": [
+    "pos": [
       -647.6296,
       845.8042
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120152,
-    "position": [
+    "pos": [
       -750.2536,
       885.7925
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120153,
-    "position": [
+    "pos": [
       -750.3608,
       881.1642
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "glowbug"
   },
   {
     "id": 23300120154,
-    "position": [
+    "pos": [
       -757.0788,
       874.1059
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "scorchbug"
   },
   {
     "id": 23300120155,
-    "position": [
+    "pos": [
       -785.0072,
       827.5689
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120156,
-    "position": [
+    "pos": [
       -785.9391,
       826.9691
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120157,
-    "position": [
+    "pos": [
       -786.5853,
       827.883
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120158,
-    "position": [
+    "pos": [
       -785.7651,
       824.9919
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120159,
-    "position": [
+    "pos": [
       -787.0893,
       824.9247
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120160,
-    "position": [
+    "pos": [
       -799.314,
       804.3071
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120161,
-    "position": [
+    "pos": [
       -798.8197,
       803.604
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "jincao"
   },
   {
     "id": 23300120162,
-    "position": [
+    "pos": [
       -798.0315,
       803.4709
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120163,
-    "position": [
+    "pos": [
       -804.2628,
       818.0387
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120164,
-    "position": [
+    "pos": [
       -805.2979,
       818.403
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300120165,
-    "position": [
+    "pos": [
       -804.9106,
       817.1329
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "yazhen"
   },
   {
     "id": 23300050020,
-    "position": [
+    "pos": [
       -698.8707,
       864.1231
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050021,
-    "position": [
+    "pos": [
       -679.5108,
       775.6468
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050022,
-    "position": [
+    "pos": [
       -724.8669,
       769.1534
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050023,
-    "position": [
+    "pos": [
       -746.072,
       884.5226
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050025,
-    "position": [
+    "pos": [
       -711.6292,
       861.0799
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300050028,
-    "position": [
+    "pos": [
       -691.6697,
       862.2804
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050030,
-    "position": [
+    "pos": [
       -707.0109,
       855.4084
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050037,
-    "position": [
+    "pos": [
       -778.6327,
       825.8184
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300050038,
-    "position": [
+    "pos": [
       -742.5973,
       767.1703
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300050039,
-    "position": [
+    "pos": [
       -720.7863,
       767.1858
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300050042,
-    "position": [
+    "pos": [
       -737.1944,
       800.9332
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300050045,
-    "position": [
+    "pos": [
       -797.2232,
       831.0914
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "guiding_butterflies"
   },
   {
     "id": 23300050046,
-    "position": [
+    "pos": [
       -816.6824,
       836.9088
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300050055,
-    "position": [
+    "pos": [
       -613.4696,
       730.9804
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050056,
-    "position": [
+    "pos": [
       -618.757,
       710.4622
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050057,
-    "position": [
+    "pos": [
       -633.5753,
       705.4802
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050058,
-    "position": [
+    "pos": [
       -738.1532,
       805.1574
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050059,
-    "position": [
+    "pos": [
       -772.071,
       789.1245
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050060,
-    "position": [
+    "pos": [
       -691.0263,
       820.8165
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050062,
-    "position": [
+    "pos": [
       -618.1746,
       718.1389
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050063,
-    "position": [
+    "pos": [
       -627.6651,
       731.152
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050064,
-    "position": [
+    "pos": [
       -620.1513,
       696.4053
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050065,
-    "position": [
+    "pos": [
       -675.6147,
       768.8228
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050066,
-    "position": [
+    "pos": [
       -723.2842,
       843.8585
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300050067,
-    "position": [
+    "pos": [
       -753.2491,
       846.4789
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300220003,
-    "position": [
+    "pos": [
       -714.2342,
       726.105
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_iii"
   },
   {
     "id": 23300220004,
-    "position": [
+    "pos": [
       -714.2342,
       726.105
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "temporary_energy_alluvium"
   },
   {
     "id": 23300220005,
-    "position": [
+    "pos": [
       -751.9981,
       816.5755
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_iii"
   },
   {
     "id": 23300220006,
-    "position": [
+    "pos": [
       -751.9981,
       816.5755
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "temporary_energy_alluvium"
   },
   {
     "id": 23300220007,
-    "position": [
+    "pos": [
       -728.4887,
       797.7953
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "energy_alluvium"
   },
   {
     "id": 23300000058,
-    "position": [
+    "pos": [
       -620.1886,
       755.0108
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000059,
-    "position": [
+    "pos": [
       -618.8112,
       757.8258
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000064,
-    "position": [
+    "pos": [
       -619.8917,
       760.3511
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000066,
-    "position": [
+    "pos": [
       -630.9741,
       775.2269
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000067,
-    "position": [
+    "pos": [
       -626.6591,
       755.2674
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000068,
-    "position": [
+    "pos": [
       -628.4737,
       755.4868
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000069,
-    "position": [
+    "pos": [
       -631.0471,
       753.5536
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000071,
-    "position": [
+    "pos": [
       -634.0741,
       781.7454
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000072,
-    "position": [
+    "pos": [
       -588.8298,
       757.7803
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000073,
-    "position": [
+    "pos": [
       -723.9204,
       767.7119
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000074,
-    "position": [
+    "pos": [
       -729.532,
       768.8748
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000075,
-    "position": [
+    "pos": [
       -730.2331,
       770.1251
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000078,
-    "position": [
+    "pos": [
       -766.7345,
       785.169
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000080,
-    "position": [
+    "pos": [
       -747.3724,
       765.8694
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000083,
-    "position": [
+    "pos": [
       -681.3927,
       845.2743
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000084,
-    "position": [
+    "pos": [
       -681.3886,
       843.0926
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000085,
-    "position": [
+    "pos": [
       -726.1297,
       841.2558
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000086,
-    "position": [
+    "pos": [
       -785.3897,
       854.0225
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000087,
-    "position": [
+    "pos": [
       -785.6059,
       851.2273
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000089,
-    "position": [
+    "pos": [
       -626.09,
       843.7715
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000090,
-    "position": [
+    "pos": [
       -625.29,
       844.2766
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000093,
-    "position": [
+    "pos": [
       -708.941,
       885.5666
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000137,
-    "position": [
+    "pos": [
       -708.31,
       884.5193
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000139,
-    "position": [
+    "pos": [
       -627.1004,
       757.1055
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000157,
-    "position": [
+    "pos": [
       -765.8891,
       783.1902
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000172,
-    "position": [
+    "pos": [
       -650.5453,
       750.9455
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000200,
-    "position": [
+    "pos": [
       -750.185,
       840.5549
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000201,
-    "position": [
+    "pos": [
       -726.8589,
       841.2354
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000202,
-    "position": [
+    "pos": [
       -749.1045,
       840.7702
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000205,
-    "position": [
+    "pos": [
       -630.8207,
       837.855
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000216,
-    "position": [
+    "pos": [
       -747.6858,
       838.9156
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000221,
-    "position": [
+    "pos": [
       -784.3563,
       852.4982
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "spotted_rakerbeast"
   },
   {
     "id": 23300000228,
-    "position": [
+    "pos": [
       -728.6082,
       755.7021
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000231,
-    "position": [
+    "pos": [
       -701.7528,
       776.136
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000232,
-    "position": [
+    "pos": [
       -698.099,
       775.809
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000234,
-    "position": [
+    "pos": [
       -763.6011,
       785.318
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000250,
-    "position": [
+    "pos": [
       -626.6319,
       773.9708
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000251,
-    "position": [
+    "pos": [
       -629.6428,
       767.1084
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000252,
-    "position": [
+    "pos": [
       -628.8902,
       759.4734
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000253,
-    "position": [
+    "pos": [
       -633.5709,
       753.9261
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000254,
-    "position": [
+    "pos": [
       -624.7167,
       750.2749
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000258,
-    "position": [
+    "pos": [
       -773.799,
       763.9165
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000259,
-    "position": [
+    "pos": [
       -637.1827,
       751.4576
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000260,
-    "position": [
+    "pos": [
       -631.7382,
       766.9631
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000264,
-    "position": [
+    "pos": [
       -730.2661,
       774.447
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000267,
-    "position": [
+    "pos": [
       -635.1793,
       783.7283
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000268,
-    "position": [
+    "pos": [
       -732.5673,
       766.9954
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000279,
-    "position": [
+    "pos": [
       -763.0477,
       774.8071
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000280,
-    "position": [
+    "pos": [
       -762.5322,
       774.062
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000282,
-    "position": [
+    "pos": [
       -744.5268,
       767.7074
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000283,
-    "position": [
+    "pos": [
       -710.4256,
       882.7102
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000288,
-    "position": [
+    "pos": [
       -727.5443,
       755.7435
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000302,
-    "position": [
+    "pos": [
       -634.9195,
       779.8452
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000303,
-    "position": [
+    "pos": [
       -773.1423,
       764.7593
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000330,
-    "position": [
+    "pos": [
       -630.9382,
       761.8103
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000343,
-    "position": [
+    "pos": [
       -634.5937,
       778.6488
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "road_plunderer"
   },
   {
     "id": 23300000344,
-    "position": [
+    "pos": [
       -633.9895,
       779.9763
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "grove_archer"
   },
   {
     "id": 23300000348,
-    "position": [
+    "pos": [
       -701.2662,
       862.7979
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000351,
-    "position": [
+    "pos": [
       -705.9591,
       849.1724
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000379,
-    "position": [
+    "pos": [
       -703.3612,
       863.4644
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "highway_reaver"
   },
   {
     "id": 23300000380,
-    "position": [
+    "pos": [
       -729.0619,
       730.8676
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_obliterator"
   },
   {
     "id": 23300000385,
-    "position": [
+    "pos": [
       -774.7268,
       764.3087
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_stalker"
   },
   {
     "id": 23300000386,
-    "position": [
+    "pos": [
       -773.1556,
       764.5529
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000388,
-    "position": [
+    "pos": [
       -725.4905,
       730.3295
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cloud_obliterator"
   },
   {
     "id": 23300000390,
-    "position": [
+    "pos": [
       -707.1397,
       886.6225
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "nimbus_razor"
   },
   {
     "id": 23300000391,
-    "position": [
+    "pos": [
       -670.4971,
       807.8094
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "breaking_gust"
   },
   {
     "id": 23300000044,
-    "position": [
+    "pos": [
       -674.9428,
       797.7042
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000045,
-    "position": [
+    "pos": [
       -649.5877,
       751.0026
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000046,
-    "position": [
+    "pos": [
       -751.7145,
       846.9546
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000049,
-    "position": [
+    "pos": [
       -739.2019,
       858.192
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cratesurprise"
   },
   {
     "id": 23300000050,
-    "position": [
+    "pos": [
       -705.5098,
       848.5488
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000051,
-    "position": [
+    "pos": [
       -747.3394,
       763.4849
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000052,
-    "position": [
+    "pos": [
       -706.4336,
       847.5594
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000055,
-    "position": [
+    "pos": [
       -639.4753,
       793.5412
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000065,
-    "position": [
+    "pos": [
       -615.8007,
       753.9551
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000091,
-    "position": [
+    "pos": [
       -785.841,
       866.7555
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000095,
-    "position": [
+    "pos": [
       -758.7835,
       880.2594
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "tp_point"
   },
   {
     "id": 23300000096,
-    "position": [
+    "pos": [
       -713.8526,
       801.9889
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "tp_point"
   },
   {
     "id": 23300000097,
-    "position": [
+    "pos": [
       -672.1014,
       755.0149
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "tp_point"
   },
   {
     "id": 23300000098,
-    "position": [
+    "pos": [
       -591.7991,
       734.4692
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "tp_point"
   },
   {
     "id": 23300000099,
-    "position": [
+    "pos": [
       -621.3363,
       838.9731
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000102,
-    "position": [
+    "pos": [
       -619.1576,
       860.4175
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "tp_point"
   },
   {
     "id": 23300000174,
-    "position": [
+    "pos": [
       -739.9946,
       848.4246
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000175,
-    "position": [
+    "pos": [
       -720.0304,
       897.9611
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000178,
-    "position": [
+    "pos": [
       -704.4458,
       845.1459
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000189,
-    "position": [
+    "pos": [
       -620.7412,
       764.2631
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000192,
-    "position": [
+    "pos": [
       -694.7214,
       859.4406
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000196,
-    "position": [
+    "pos": [
       -772.6896,
       763.2034
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000197,
-    "position": [
+    "pos": [
       -730.53,
       773.855
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000199,
-    "position": [
+    "pos": [
       -605.8371,
       890.7993
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000204,
-    "position": [
+    "pos": [
       -700.7878,
       865.5881
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000206,
-    "position": [
+    "pos": [
       -779.1436,
       811.3116
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000222,
-    "position": [
+    "pos": [
       -718.4834,
       894.0204
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000223,
-    "position": [
+    "pos": [
       -745.4812,
       733.2048
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000224,
-    "position": [
+    "pos": [
       -711.893,
       757.5288
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000229,
-    "position": [
+    "pos": [
       -700.561,
       828.9553
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cratelocked"
   },
   {
     "id": 23300000246,
-    "position": [
+    "pos": [
       -727.07,
       737.6523
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000247,
-    "position": [
+    "pos": [
       -708.5752,
       751.2005
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000255,
-    "position": [
+    "pos": [
       -670.7334,
       746.5474
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000256,
-    "position": [
+    "pos": [
       -683.2041,
       734.3552
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000257,
-    "position": [
+    "pos": [
       -733.6783,
       770.2232
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000276,
-    "position": [
+    "pos": [
       -713.3247,
       875.2213
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000278,
-    "position": [
+    "pos": [
       -588.0091,
       758.0121
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000281,
-    "position": [
+    "pos": [
       -611.5241,
       723.917
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000285,
-    "position": [
+    "pos": [
       -706.4961,
       751.151
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "delta_bot"
   },
   {
     "id": 23300000286,
-    "position": [
+    "pos": [
       -700.6347,
       863.2908
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "delta_bot"
   },
   {
     "id": 23300000287,
-    "position": [
+    "pos": [
       -767.5423,
       834.1426
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "delta_bot"
   },
   {
     "id": 23300000295,
-    "position": [
+    "pos": [
       -708.9987,
       865.6792
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gear_template"
   },
   {
     "id": 23300000296,
-    "position": [
+    "pos": [
       -774.479,
       799.5162
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gear_template"
   },
   {
     "id": 23300000297,
-    "position": [
+    "pos": [
       -743.9297,
       740.0095
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gear_template"
   },
   {
     "id": 23300000301,
-    "position": [
+    "pos": [
       -638.2339,
       751.2619
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000305,
-    "position": [
+    "pos": [
       -768.5198,
       794.1585
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blight_core"
   },
   {
     "id": 23300000307,
-    "position": [
+    "pos": [
       -753.7407,
       796.5558
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blight_core"
   },
   {
     "id": 23300000308,
-    "position": [
+    "pos": [
       -730.3106,
       803.1877
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000323,
-    "position": [
+    "pos": [
       -706.3633,
       867.1231
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "cratelocked"
   },
   {
     "id": 23300000325,
-    "position": [
+    "pos": [
       -703.2164,
       857.4286
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000327,
-    "position": [
+    "pos": [
       -770.2366,
       773.2203
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000328,
-    "position": [
+    "pos": [
       -792.1939,
       807.203
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000329,
-    "position": [
+    "pos": [
       -781.6188,
       787.9123
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "guiding_butterflies"
   },
   {
     "id": 23300000337,
-    "position": [
+    "pos": [
       -790.3268,
       838.5582
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000338,
-    "position": [
+    "pos": [
       -712.8014,
       837.0779
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000339,
-    "position": [
+    "pos": [
       -654.3229,
       854.3486
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000340,
-    "position": [
+    "pos": [
       -697.9031,
       854.2431
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "aurylene"
   },
   {
     "id": 23300000341,
-    "position": [
+    "pos": [
       -726.9518,
       723.4562
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_iii"
   },
   {
     "id": 23300000342,
-    "position": [
+    "pos": [
       -741.6292,
       738.1828
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "guiding_butterflies"
   },
   {
     "id": 23300000345,
-    "position": [
+    "pos": [
       -641.9908,
       790.6036
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000346,
-    "position": [
+    "pos": [
       -635.9321,
       767.3894
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000349,
-    "position": [
+    "pos": [
       -709.2634,
       865.521
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000350,
-    "position": [
+    "pos": [
       -709.2991,
       856.6674
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000359,
-    "position": [
+    "pos": [
       -744.2588,
       725.3907
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000360,
-    "position": [
+    "pos": [
       -747.793,
       767.1486
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "blight_core"
   },
   {
     "id": 23300000362,
-    "position": [
+    "pos": [
       -798.0748,
       822.003
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000374,
-    "position": [
+    "pos": [
       -749.7849,
       774.4139
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000389,
-    "position": [
+    "pos": [
       -586.4255,
       865.5922
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "re_crisis"
   },
   {
     "id": 23300000395,
-    "position": [
+    "pos": [
       -624.16,
       751.1484
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000396,
-    "position": [
+    "pos": [
       -620.9904,
       787.3602
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000397,
-    "position": [
+    "pos": [
       -634.625,
       761.2585
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000398,
-    "position": [
+    "pos": [
       -674.6949,
       801.3633
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000399,
-    "position": [
+    "pos": [
       -671.7932,
       769.8699
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000400,
-    "position": [
+    "pos": [
       -682.3907,
       786.0135
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000401,
-    "position": [
+    "pos": [
       -758.1888,
       781.3314
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000402,
-    "position": [
+    "pos": [
       -699.9847,
       831.6259
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000403,
-    "position": [
+    "pos": [
       -727.5076,
       790.0361
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000404,
-    "position": [
+    "pos": [
       -614.2447,
       858.2537
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000405,
-    "position": [
+    "pos": [
       -696.1937,
       853.8726
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000406,
-    "position": [
+    "pos": [
       -723.8987,
       860.6038
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_iii"
   },
   {
     "id": 23300000407,
-    "position": [
+    "pos": [
       -721.9344,
       764.5865
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000408,
-    "position": [
+    "pos": [
       -729.2351,
       787.9633
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000409,
-    "position": [
+    "pos": [
       -734.8388,
       781.1174
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "gather"
   },
   {
     "id": 23300000410,
-    "position": [
+    "pos": [
       -789.9608,
       836.291
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000411,
-    "position": [
+    "pos": [
       -667.1278,
       769.798
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   },
   {
     "id": 23300000412,
-    "position": [
+    "pos": [
       -692.7873,
       855.3587
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000413,
-    "position": [
+    "pos": [
       -621.0711,
       694.4998
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_ii"
   },
   {
     "id": 23300000414,
-    "position": [
+    "pos": [
       -791.4619,
       804.1395
     ],
-    "subregionId": "WL_3",
+    "subregId": "WL_3",
     "type": "crate_i"
   }
 ]

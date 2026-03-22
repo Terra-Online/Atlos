@@ -339,194 +339,239 @@
                 "faction": "Landbreakers"
             },
             "Ruan Yi": {
-                "faction": "Cangzei"
+                "faction": "Cangzei Pirates"
             }
         },
         "mob": {
             "Grove Archer": {
-                "tier": "elite",
-                "faction": "Cangzei"
+                "tier": "Elite",
+                "faction": "Cangzei Pirates",
+                "drop": "Young Bamboo Sprout"
             },
             "Road Plunderer": {
-                "tier": "common",
-                "faction": "Cangzei"
+                "tier": "Common",
+                "faction": "Cangzei Pirates",
+                "drop": "Young Bamboo Sprout"
             },
             "Hill Smasher": {
-                "tier": "elite",
-                "faction": "Cangzei"
+                "tier": "Elite",
+                "faction": "Cangzei Pirates",
+                "drop": "Qingbo Bamboo Chimes"
             },
             "Cloud Stalker": {
-                "tier": "advanced",
-                "faction": "Cangzei"
+                "tier": "Advanced",
+                "faction": "Cangzei Pirates",
+                "drop": "Grovenymph Pupa"
             },
             "Nimbus Razor": {
-                "tier": "advanced",
-                "faction": "Cangzei"
+                "tier": "Advanced",
+                "faction": "Cangzei Pirates",
+                "drop": "Grovenymph Pupa"
             },
             "Highway Reaver": {
-                "tier": "common",
-                "faction": "Cangzei"
+                "tier": "Common",
+                "faction": "Cangzei Pirates",
+                "drop": "Young Bamboo Sprout"
             },
             "Sweeping Wind": {
-                "tier": "common",
-                "faction": "Cangzei"
+                "tier": "Common",
+                "faction": "Cangzei Pirates",
+                "drop": "Young Bamboo Sprout"
             },
              "Cloud Obliterator": {
-                "tier": "elite",
-                "faction": "Cangzei"
+                "tier": "Elite",
+                "faction": "Cangzei Pirates",
+                "drop": "Qingbo Bamboo Chimes"
             },
              "Breaking Gust": {
-                "tier": "elite",
-                "faction": "Cangzei"
+                "tier": "Elite",
+                "faction": "Cangzei Pirates",
+                "drop": "Grovenymph Pupa"
             },
             "Ram": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Hard Aggagrit"
             },
             "Heavy Ram": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
+                "tier": "Advanced",
+                "faction": "Aggeloi",
+                "drop": "Hard Aggagrit"
             },
             "Sting": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Energized Aggagrit"
             },
             "Heavy Sting": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
+                "tier": "Advanced",
+                "faction": "Aggeloi",
+                "drop": "Energized Aggagrit"
             },
             "Ram α": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Hard Aggagrit"
             },
             "Sting α": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Energized Aggagrit"
             },
             "Heavy Ram α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
+                "tier": "Advanced",
+                "faction": "Aggeloi",
+                "drop": "Hard Aggagrit"
             },
             "Heavy Sting α": {
-                "tier": "advanced",
-                "faction": "Aggeloi"
+                "tier": "Advanced",
+                "faction": "Aggeloi",
+                "drop": "Energized Aggagrit"
             },
             "Effigy": {
-                "tier": "elite",
-                "faction": "Aggeloi"
+                "tier": "Elite",
+                "faction": "Aggeloi",
+                "drop": "Conductive Effigy Stone"
             },
             "Falsewings": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Hollow Aggagrit"
             },
             "Falsewings α": {
-                "tier": "elite",
-                "faction": "Aggeloi"
+                "tier": "Elite",
+                "faction": "Aggeloi",
+                "drop": "Hollow Aggagrit"
             },
             "Walking Chrysopolis": {
                 "tier": "Alpha",
-                "faction": "Aggeloi"
+                "faction": "Aggeloi",
+                "drop": "Natural Chrysopolis Ingot"
             },
             "Mudflow": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Resilient Water"
             },
             "Hedron": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Natural Sparkling Water"
             },
             "Prism": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Natural Sparkling Water"
             },
             "Tidewalker": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Black Treacle"
             },
             "Mudflow δ": {
-                "tier": "elite",
-                "faction": "Aggeloi"
+                "tier": "Elite",
+                "faction": "Aggeloi",
+                "drop": "Resilient Water"
             },
             "Hedron δ": {
-                "tier": "elite",
-                "faction": "Aggeloi"
+                "tier": "Elite",
+                "faction": "Aggeloi",
+                "drop": "Natural Sparkling Water"
             },
              "Tidewalker δ": {
-                "tier": "elite",
-                "faction": "Aggeloi"
+                "tier": "Elite",
+                "faction": "Aggeloi",
+                "drop": "Black Treacle"
             },
             "Sentinel": {
-                "tier": "common",
+                "tier": "Common",
                 "faction": "Aggeloi"
             },
             "Tidalklast": {
-                "tier": "common",
-                "faction": "Aggeloi"
+                "tier": "Common",
+                "faction": "Aggeloi",
+                "drop": "Instant Vintage"
             },
 
             "Bonekrusher Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Powdered Grass Seed"
             },
             "Bonekrusher Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Powdered Grass Seed"
             },
             "Bonekrusher Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
+                "tier": "Elite",
+                "faction": "Landbreakers",
+                "drop": "Shattered Axe Blade"
             },
             "Bonekrusher Pyromancer": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
+                "tier": "Advanced",
+                "faction": "Landbreakers",
+                "drop": "Cartilage Bit"
             },
             "Bonekrusher Arsonist": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
+                "tier": "Advanced",
+                "faction": "Landbreakers",
+                "drop": "Chromatic Lipids"
             },
             "Bonekrusher Ballista": {
-                "tier": "elite",
-                "faction": "Landbreakers"
+                "tier": "Elite",
+                "faction": "Landbreakers",
+                "drop": "Haze-Soaked Ballista"
             },
             "Elite Executioner": {
-                "tier": "elite",
-                "faction": "Landbreakers"
+                "tier": "Elite",
+                "faction": "Landbreakers",
+                "drop": "Shattered Axe Blade"
             },
             "Bonekrusher Infiltrator": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Powdered Grass Seed"
             },
             "Hazefyre Claw": {
-                "tier": "advanced",
-                "faction": "Landbreakers"
+                "tier": "Advanced",
+                "faction": "Landbreakers",
+                "drop": "Pungent Jerky"
             },
             "Bonekrusher Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Fillet"
             },
             "Hazefyre Tuskbeast": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Pungent Jerky"
             },
             "Bonekrusher Vanguard": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Bitter Flour"
             },
             "Bonekrusher Siegeknuckles": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Siegeknuckles Gauntlets"
             },
             "Elite Raider": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Powdered Grass Seed"
             }, 
             "Elite Ambusher": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Powdered Grass Seed"
             }, 
             "Elite Ripptusk": {
-                "tier": "common",
-                "faction": "Landbreakers"
+                "tier": "Common",
+                "faction": "Landbreakers",
+                "drop": "Fillet"
             },
             "Ereignis": {
                 "tier": "unknown",
@@ -534,60 +579,74 @@
             },
 
             "Tunneling Nidwyrm": {
-                "tier": "advanced",
-                "faction": "Wildlife"
+                "tier": "Advanced",
+                "faction": "Wildlife",
+                "drop": "Nidwyrm Whiskers"
             },
             "Waterlamp": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Waterlamp Glowbulb"
             },
             "Axe Armorbeast": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Axehorn"
             },
             "Hazefyre Axe Armorbeast": {
-                "tier": "elite",
-                "faction": "Wildlife"
+                "tier": "Elite",
+                "faction": "Wildlife",
+                "drop": "Axehorn"
             },
             "Indigenous Pincerbeast": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Brutal Pincerbeast": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Acid Originium Slug": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Acid Originium Slug α": {
-                "tier": "elite",
-                "faction": "Wildlife"
+                "tier": "Elite",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Firemist Originium Slug": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Blazemist Originium Slug": {
-                "tier": "elite",
-                "faction": "Wildlife"
+                "tier": "Elite",
+                "faction": "Wildlife",
+                "drop": "Slug Meat"
             },
             "Quillbeast": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Quillbeast Liver"
             },
             "Imbued Quillbeast": {
-                "tier": "advanced",
-                "faction": "Wildlife"
+                "tier": "Advanced",
+                "faction": "Wildlife",
+                "drop": "Quillbeast Liver"
             },
             "Spotted Rakerbeast": {
-                "tier": "common",
-                "faction": "Wildlife"
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Rakerbeast Longfur"
             },
             "Glaring Rakerbeast": {
-                "tier": "elite",
-                "faction": "Wildlife"
+                "tier": "Elite",
+                "faction": "Wildlife",
+                "drop": "Rakerbeast Longfur"
             }
         }
     }

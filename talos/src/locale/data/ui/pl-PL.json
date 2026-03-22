@@ -15,7 +15,10 @@
     "labelName": "Nazwy regionów"
   },
   "search": {
-    "placeholder": "Wyszukiwanie globalne..."
+    "placeholder": "Wyszukiwanie globalne...",
+    "results": "{count} wynik(ów)",
+    "locatedAt": "Znaleziono w",
+    "distributeAt": "Rozprowadzane w"
   },
   "markFilter": {
     "title": "Opcje filtrowania",
@@ -28,7 +31,10 @@
       "main": "Główny",
       "sub": "Podreg"
     },
-    "noInfo": "Brak informacji."
+    "noInfo": "Brak informacji.",
+    "readFullText": "Kliknij, aby przeczytać pełny tekst.",
+    "share": "Skopiuj link do udostępnienia dla tego znacznika.",
+    "copied": "Link skopiowany"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

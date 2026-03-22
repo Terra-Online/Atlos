@@ -88,7 +88,7 @@
                     transition: max-width .35s $standard-curve, color .35s $standard-curve;
                 }
                 &:hover::after {
-                    max-width: 47px;
+                    max-width: 49px;
                     transition: max-width .45s ease, color .45s ease;
                 }
                 &[data-platform="github"] {
@@ -117,6 +117,23 @@
                         }
                         &::after {
                             color: var(--discord)
+                        }
+                    }
+                }
+                &[data-platform="bluesky"] {
+                    > svg {
+                        width: 1.06rem;
+                        height: 1.06rem;
+                    }
+                    &::after {
+                        content: "Bluesky";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--bsky);
+                        }
+                        &::after {
+                            color: var(--bsky)
                         }
                     }
                 }

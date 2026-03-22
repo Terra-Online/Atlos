@@ -145,6 +145,7 @@
         max-height: 1.2em; /* single line height for smooth collapse */
     }
     .markIcon {
+        overscroll-behavior: auto;
         grid-area: icon;
         display: flex;
         align-items: center;
@@ -182,6 +183,7 @@
         }
     }
     .markName, .markNameExpanded {
+        overscroll-behavior: auto;
         grid-area: unset;
         font-weight: 800;
         line-height: 1.2;
@@ -221,8 +223,20 @@
         }
     }
 
+    &[data-type='files'] {
+        grid-template-rows: auto;
+        grid-template-areas: 'icon Name';
+        .markStat {
+            display: none;
+        }
+        .nameCell {
+            align-self: center;
+        }
+    }
+
     /* name cell wraps the main ellipsized name and an absolute expanded panel */
     .nameCell {
+        overscroll-behavior: auto;
         grid-area: Name;
         position: relative;
         display: block;

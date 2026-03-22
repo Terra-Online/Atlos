@@ -1,9 +1,14 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
 import Button from '@/component/button/button';
+import Modal from '@/component/modal/modal';
+import PopoverTooltip from '@/component/popover/popover';
 
-import { getItemIconUrl } from '@/utils/resource.ts';
+import parse from 'html-react-parser';
+import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
+import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { MARKER_TYPE_DICT } from '@/data/marker';
+import { generatePointShareShortUrl } from '@/utils/urlState';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -14,6 +19,8 @@ import MobIcon from '@/assets/images/category/mob.svg?react';
 import NaturalIcon from '@/assets/images/category/natural.svg?react';
 import NpcIcon from '@/assets/images/category/npc.svg?react';
 import ValuableIcon from '@/assets/images/category/valuable.svg?react';
+import ArchivesIcon from '@/assets/images/category/archives.svg?react';
+
 import {
     useMarkerStore,
     useRegionMarkerCount,
@@ -27,13 +34,14 @@ import {
 } from '@/store/userRecord.ts';
 import classNames from 'classnames';
 import { motion, AnimatePresence, usePresence } from 'motion/react';
-import { useTranslateGame, useTranslateUI } from '@/locale';
+import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
 import { useForceDetailOpen } from '@/store/uiPrefs';
 
 // Category icon mapping
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
     collection: CollectionIcon,
+    archives: ArchivesIcon,
     combat: CombatIcon,
     facility: FacilityIcon,
     mob: MobIcon,
@@ -45,7 +53,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
 
 // const mockPoint = {
 //   id: "001",
-//   position: [-656.19, 645.58],
+//   pos: [-656.19, 645.58],
 //   region: {
 //     main: "Valley_4",
 //     sub: "pane_1"
@@ -129,15 +137,109 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const categorySubKey = currentPoint ? MARKER_TYPE_DICT[currentPoint.type]?.category?.sub : undefined;
     const CategoryIcon = categorySubKey ? CATEGORY_ICON_MAP[categorySubKey] : undefined;
     
-    const iconKey = currentPoint ? currentPoint.type : 'UKN';
+    const typeEntry = currentPoint ? MARKER_TYPE_DICT[currentPoint.type] : undefined;
+    const iconKey = typeEntry?.icon ?? (currentPoint ? currentPoint.type : 'UKN');
     const iconUrl = getItemIconUrl(iconKey);
+    const isFilesType = typeEntry?.category?.main === 'files';
 
     const tGame = useTranslateGame();
     const tUI = useTranslateUI();
+    const locale = useLocale();
     const pointNameRaw = tGame(`markerType.key.${currentPoint?.type}`);
     const pointName = typeof pointNameRaw === 'string' && pointNameRaw.trim()
         ? pointNameRaw
         : (currentPoint?.type ?? '');
+    const pointShareShortUrl = useMemo(
+        () => (currentPoint ? generatePointShareShortUrl(currentPoint) : ''),
+        [currentPoint],
+    );
+    const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
+    const copyPopupTimerRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (copyPopupTimerRef.current !== null) {
+                window.clearTimeout(copyPopupTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handleCopyPointShareUrl = useCallback(async () => {
+        if (!pointShareShortUrl || typeof window === 'undefined') return;
+        try {
+            const fullUrl = `${window.location.origin}${window.location.pathname}${pointShareShortUrl}`;
+            await navigator.clipboard.writeText(fullUrl);
+            setCopiedPopupVisible(false);
+            requestAnimationFrame(() => {
+                setCopiedPopupVisible(true);
+            });
+            if (copyPopupTimerRef.current !== null) {
+                window.clearTimeout(copyPopupTimerRef.current);
+            }
+            copyPopupTimerRef.current = window.setTimeout(() => {
+                setCopiedPopupVisible(false);
+            }, 1500);
+        } catch {
+            // ignore clipboard errors
+        }
+    }, [pointShareShortUrl]);
+
+    // Archive full-text state — content may be plain text and/or HTML (<i>, <del>, <img>, …)
+    const [hasFullText, setHasFullText] = useState(false);
+    const [textModalOpen, setTextModalOpen] = useState(false);
+    const [fullTextContent, setFullTextContent] = useState<string | null>(null);
+    const [isLoadingFullText, setIsLoadingFullText] = useState(false);
+
+    // GET + validate JSON (HEAD is unreliable: Vite may return 200 + index.html for missing paths)
+    useEffect(() => {
+        setHasFullText(false);
+        setFullTextContent(null);
+        setTextModalOpen(false);
+        if (!isFilesType || !currentPoint) return;
+        const url = getFileContentUrl(locale, currentPoint.type);
+        const controller = new AbortController();
+        fetchArchiveFile(url, controller.signal)
+            .then((res) => parseArchiveJsonResponse(res))
+            .then((content) => {
+                if (controller.signal.aborted) return;
+                if (content !== null) {
+                    setHasFullText(true);
+                    setFullTextContent(content);
+                }
+            })
+            .catch(() => { /* network / abort */ });
+        return () => controller.abort();
+    }, [isFilesType, currentPoint, locale]);
+
+    const handleOpenFullText = useCallback(async () => {
+        if (!currentPoint) return;
+        setTextModalOpen(true);
+        if (fullTextContent !== null) return; // already loaded by effect
+        setIsLoadingFullText(true);
+        try {
+            const url = getFileContentUrl(locale, currentPoint.type);
+            const res = await fetchArchiveFile(url);
+            const content = await parseArchiveJsonResponse(res);
+            if (content !== null) setFullTextContent(content);
+        } catch { /* ignore */ } finally {
+            setIsLoadingFullText(false);
+        }
+    }, [currentPoint, locale, fullTextContent]);
+
+    const archiveJsonUrl = useMemo(
+        () => (isFilesType && currentPoint ? getFileContentUrl(locale, currentPoint.type) : ''),
+        [isFilesType, currentPoint, locale],
+    );
+
+    const fullTextDom = useMemo(() => {
+        if (fullTextContent == null) return null;
+        const options = createArchiveHtmlParserOptions(archiveJsonUrl);
+        return fullTextContent.split(/\r?\n/).map((line, i) => (
+            <p key={i}>
+                {line.trim() ? parse(line, options) : null}
+            </p>
+        ));
+    }, [fullTextContent, archiveJsonUrl]);
 
     // const noteContent = currentPoint?.status?.user?.localNote;
     const [isVisible, setIsVisible] = useState(false);
@@ -157,7 +259,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     // marks
     const worldCnt = useWorldMarkerCount(currentPoint?.type);
     const regionCnt = useRegionMarkerCount(currentPoint?.type);
-    const subCnt = useSubregionMarkerCount(currentPoint?.type, currentPoint?.subregionId);
+    const subCnt = useSubregionMarkerCount(currentPoint?.type, currentPoint?.subregId);
 
     const statItems = useMemo(
         () => [
@@ -169,6 +271,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     );
 
     return (
+        <>
         <AnimatePresence mode='wait'>
             {isVisible && currentPoint && (
                 <motion.div
@@ -295,18 +398,37 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                         {/* <div className="point-image">
             <div className="no-image">No info.</div>
           </div> */}
-                        {/* Note */}
-                        {/* <div className="detail-notes">
-            {noteContent ? (
-              <p className="note-text">{noteContent}</p>
-            ) : (
-              <p className="no-note">No info.</p>
-            )}
-          </div> */}
-                        {/* Wiki */}
-                        {/* <div className="detail-wiki">
-            No info.
-          </div> */}
+
+
+                        {/* Note — shown when an archive full-text file is available */}
+                        {hasFullText && (
+                            <div className={styles.detailNotes}>
+                                <a
+                                    className={styles.readFullText}
+                                    onClick={() => void handleOpenFullText()}
+                                    role="button"
+                                >
+                                    {String(tUI('detail.readFullText'))}
+                                </a>
+                            </div>
+                        )}
+                        <div className={styles.detailUrl}>
+                            <PopoverTooltip
+                                content={String(tUI('detail.copied'))}
+                                placement="top"
+                                gap={4}
+                                visible={copiedPopupVisible}
+                                disabled={false}
+                            >
+                                <a
+                                    className={styles.pointShareLink}
+                                    onClick={() => void handleCopyPointShareUrl()}
+                                    role="button"
+                                >
+                                    {String(tUI('detail.share'))}
+                                </a>
+                            </PopoverTooltip>
+                        </div>
                     </div>
                     {/* Meta
       <div className="detail-meta">
@@ -318,6 +440,20 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                 </motion.div>
             )}
         </AnimatePresence>
+        {/* Full-text modal — rendered as a portal, independent of detail visibility */}
+        <Modal
+            open={textModalOpen}
+            title={pointName}
+            size="m"
+            icon={CategoryIcon ? <CategoryIcon /> : undefined}
+            onClose={() => setTextModalOpen(false)}
+            iconScale={0.8}
+        >
+            <div className={styles.fullTextContent}>
+                {isLoadingFullText ? null : fullTextDom}
+            </div>
+        </Modal>
+        </>
     );
 };
 

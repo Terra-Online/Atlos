@@ -15,7 +15,10 @@
     "labelName": "Nomi delle regioni"
   },
   "search": {
-    "placeholder": "Ricerca globale..."
+    "placeholder": "Ricerca globale...",
+    "results": "{count} risultato(i)",
+    "locatedAt": "Trovato in",
+    "distributeAt": "Distribuito in"
   },
   "markFilter": {
     "title": "Opzioni Filtro",
@@ -28,7 +31,10 @@
       "main": "Principale",
       "sub": "Sotto"
     },
-    "noInfo": "Nessuna informazione."
+    "noInfo": "Nessuna informazione.",
+    "readFullText": "Clicca per leggere il testo completo.",
+    "share": "Copia il link condivisibile per questo marker.",
+    "copied": "Link copiato"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

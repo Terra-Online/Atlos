@@ -15,7 +15,10 @@
     "labelName": "Tên khu vực"
   },
   "search": {
-    "placeholder": "Tìm kiếm toàn cục…"
+    "placeholder": "Tìm kiếm toàn cục…",
+    "results": "{count} kết quả",
+    "locatedAt": "Tìm thấy tại",
+    "distributeAt": "Phân phối tại"
   },
   "markFilter": {
     "title": "Bộ lọc",
@@ -28,7 +31,10 @@
       "main": "Khu vực",
       "sub": "Phụ"
     },
-    "noInfo": "Chưa có thông tin"
+    "noInfo": "Chưa có thông tin",
+    "readFullText": "Nhấn để đọc văn bản đầy đủ.",
+    "share": "Sao chép liên kết chia sẻ cho điểm này.",
+    "copied": "Liên kết đã được sao chép"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

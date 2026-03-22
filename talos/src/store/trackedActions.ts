@@ -37,3 +37,20 @@ export function trackedBatchToggleFilter(typeKeys: string[]) {
         redo: () => useMarkerStore.getState().batchToggleFilter(typeKeys),
     });
 }
+
+/**
+ * Explicitly select or deselect a set of filter keys as one undo step.
+ * active=true  → ensure all keys are in the filter
+ * active=false → remove all keys from the filter
+ */
+export function trackedSetFilterKeys(typeKeys: string[], active: boolean) {
+    const prevFilter = [...useMarkerStore.getState().filter];
+    useMarkerStore.getState().setFilterKeys(typeKeys, active);
+    const nextFilter = [...useMarkerStore.getState().filter];
+
+    useHistoryStore.getState().push({
+        label: active ? `Select ${typeKeys.length} filters` : `Deselect ${typeKeys.length} filters`,
+        undo: () => useMarkerStore.getState().setFilter(prevFilter),
+        redo: () => useMarkerStore.getState().setFilter(nextFilter),
+    });
+}

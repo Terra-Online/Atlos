@@ -7,6 +7,12 @@ interface IUiPrefsStore {
   sidebarOpen: boolean;
   setSidebarOpen: (value: boolean) => void;
 
+  sidebarWidth: number;
+  setSidebarWidth: (value: number) => void;
+
+  layoutVersion: number;
+  incrementLayoutVersion: () => void;
+
   markFilterExpanded: Record<string, boolean>;
   setMarkFilterExpanded: (key: string, value: boolean) => void;
   toggleMarkFilterExpanded: (key: string) => void;
@@ -72,6 +78,12 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
     (set, get) => ({
       sidebarOpen: false,
       setSidebarOpen: (value) => set({ sidebarOpen: value }),
+
+      sidebarWidth: 300,
+      setSidebarWidth: (value) => set({ sidebarWidth: Math.round(Math.max(300, Math.min(500, value))) }),
+
+      layoutVersion: 0,
+      incrementLayoutVersion: () => set((s) => ({ layoutVersion: s.layoutVersion + 1 })),
 
       markFilterExpanded: {},
       setMarkFilterExpanded: (key, value) =>
@@ -139,6 +151,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       name: 'ui-prefs',
       partialize: (state) => ({
         sidebarOpen: state.sidebarOpen,
+        sidebarWidth: state.sidebarWidth,
         markFilterExpanded: state.markFilterExpanded,
         markFilterOrder: state.markFilterOrder,
         triggerCluster: state.triggerCluster,
@@ -176,6 +189,9 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         if (persisted.prefsSidebarEnabled && persisted.sidebarOpen !== undefined) {
           merged.sidebarOpen = persisted.sidebarOpen;
         }
+        if (persisted.prefsSidebarEnabled && persisted.sidebarWidth !== undefined) {
+          merged.sidebarWidth = persisted.sidebarWidth;
+        }
         if (persisted.prefsSidebarEnabled && persisted.markFilterExpanded !== undefined) {
           merged.markFilterExpanded = persisted.markFilterExpanded;
         }
@@ -202,6 +218,10 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
 
 export const useSidebarOpen = () => useUiPrefsStore((s) => s.sidebarOpen);
 export const useSetSidebarOpen = () => useUiPrefsStore((s) => s.setSidebarOpen);
+export const useSidebarWidth = () => useUiPrefsStore((s) => s.sidebarWidth);
+export const useSetSidebarWidth = () => useUiPrefsStore((s) => s.setSidebarWidth);
+export const useLayoutVersion = () => useUiPrefsStore((s) => s.layoutVersion);
+export const useIncrementLayoutVersion = () => useUiPrefsStore((s) => s.incrementLayoutVersion);
 export const useMarkFilterExpanded = (key: string) =>
   useUiPrefsStore((s) => s.markFilterExpanded[key] ?? false);
 export const useToggleMarkFilterExpanded = () =>

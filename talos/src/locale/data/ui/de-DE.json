@@ -15,7 +15,10 @@
     "labelName": "Regionsnamen"
   },
   "search": {
-    "placeholder": "Allgemeine Suche..."
+    "placeholder": "Allgemeine Suche...",
+    "results": "{count} Ergebnis(se)",
+    "locatedAt": "Gefunden in",
+    "distributeAt": "Verteilt in"
   },
   "markFilter": {
     "title": "Filter",
@@ -28,7 +31,10 @@
       "main": "Haupt",
       "sub": "Unter"
     },
-    "noInfo": "Keine Informationen."
+    "noInfo": "Keine Informationen.",
+    "readFullText": "Klicken Sie, um den vollständigen Text zu lesen.",
+    "share": "Kopieren Sie den freigegebenen Link für diese Marke.",
+    "copied": "Link kopiert"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

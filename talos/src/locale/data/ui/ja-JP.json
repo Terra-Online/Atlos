@@ -15,7 +15,10 @@
     "labelName": "地区名"
   },
   "search": {
-    "placeholder": "全体検索…"
+    "placeholder": "全体検索…",
+    "results": "{count} 件の結果",
+    "locatedAt": "所在地",
+    "distributeAt": "分布地"
   },
   "markFilter": {
     "title": "フィルター項目",
@@ -28,7 +31,10 @@
       "main": "地域",
       "sub": "サブ"
     },
-    "noInfo": "情報がありません"
+    "noInfo": "情報がありません",
+    "readFullText": "全文を読むにはクリックしてください。",
+    "share": "この場所のリンクをコピーして共有します。",
+    "copied": "リンクをコピーしました"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

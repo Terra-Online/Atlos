@@ -18,6 +18,7 @@ import SupportModal from '../support/support';
 import GithubIcon from '../../assets/images/UI/media/ghicon.svg?react';
 import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
 import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
+import BskyIcon from '../../assets/images/UI/media/bluesky.svg?react';
 
 // Category icons
 import BossIcon from '../../assets/images/category/boss.svg?react';
@@ -30,7 +31,8 @@ import CombatIcon from '../../assets/images/category/combat.svg?react';
 import NpcIcon from '../../assets/images/category/npc.svg?react';
 import FacilityIcon from '../../assets/images/category/facility.svg?react';
 
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
+import useRegion from '@/store/region';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
@@ -41,6 +43,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     natural: NaturalIcon,
     valuable: ValuableIcon,
     collection: CollectionIcon,
+    archives: CollectionIcon,
     combat: CombatIcon,
     npc: NpcIcon,
     facility: FacilityIcon,
@@ -66,6 +69,17 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
   const currentPoint = useMarkerStore((s) => s.currentActivePoint);
+  const currentRegion = useRegion((s) => s.currentRegionKey);
+  const emptyCategories = useMemo(() => {
+    const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion] ?? {};
+    return new Set(
+      Object.keys(MARKER_TYPE_TREE).filter((subCat) =>
+        MARKER_TYPE_TREE[subCat].every(
+          (typeInfo) => (regionTypeCounts[typeInfo.key] ?? 0) === 0,
+        ),
+      ),
+    );
+  }, [currentRegion]);
   const drawerSnapIndex = useMobileDrawerSnapIndex();
   const trigCluster = useTriggerCluster();
   const trigBoundary = useTriggerBoundary();
@@ -326,6 +340,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                         icon={CategoryIcon}
                         dataCategory={subCategory}
                         key={subCategory}
+                        initialEmpty={emptyCategories.has(subCategory)}
                       >
                         {types.map((typeInfo) => (
                           <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
@@ -372,6 +387,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               aria-label="Discord"
             >
               <DiscordIcon />
+            </a>
+            <a
+              href="https://bsky.app/profile/opendfieldmap.bsky.social"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mobileStyles.socialLink}
+              data-platform="bluesky"
+              aria-label="Bluesky"
+            >
+              <BskyIcon />
             </a>
             <a
               href="https://qm.qq.com/q/BVsCJgzBL2"

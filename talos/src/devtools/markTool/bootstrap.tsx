@@ -16,8 +16,8 @@ interface MarkerTypeOption {
 }
 
 interface DraftMarker {
-    position: [number, number];
-    subregionId: string;
+    pos: [number, number];
+    subregId: string;
     type: string;
 }
 
@@ -96,7 +96,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
         currentMarkers.forEach((marker, index) => {
             const typeInfo = MARKER_TYPE_DICT[marker.type] as MarkerTypeOption | undefined;
             const icon = createMarkerIcon(marker.type, typeInfo?.noFrame);
-            const leafletMarker = L.marker([marker.position[0], marker.position[1]], {
+            const leafletMarker = L.marker([marker.pos[0], marker.pos[1]], {
                 icon,
                 alt: marker.type,
             });
@@ -125,7 +125,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
             setMarkersByRegion((prev) => {
                 const regionMarkers = prev[currentRegion] ?? [];
                 const hitIndex = regionMarkers.findIndex((item) => {
-                    const markerPoint = map.latLngToContainerPoint(L.latLng(item.position[0], item.position[1]));
+                    const markerPoint = map.latLngToContainerPoint(L.latLng(item.pos[0], item.pos[1]));
                     return markerPoint.distanceTo(clickPoint) <= 10;
                 });
 
@@ -141,8 +141,8 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
                     [currentRegion]: [
                         ...regionMarkers,
                         {
-                            position: [round(e.latlng.lat), round(e.latlng.lng)],
-                            subregionId: trimmedSubregion,
+                            pos: [round(e.latlng.lat), round(e.latlng.lng)],
+                            subregId: trimmedSubregion,
                             type: selectedType,
                         },
                     ],
@@ -156,10 +156,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
         };
     }, [map, selectedType, subregionId, currentRegion]);
 
-    const exportData = useMemo(
-        () => currentMarkers.map((item) => ({ position: item.position, subregionId: item.subregionId, type: item.type })),
-        [currentMarkers],
-    );
+    const exportData = useMemo(() => currentMarkers.map((item) => ({ pos: item.pos, subregId: item.subregId, type: item.type })), [currentMarkers]);
 
     const exportText = useMemo(() => JSON.stringify(exportData, null, 2), [exportData]);
 
@@ -169,7 +166,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const handleExportByRegion = () => {
         const entries = Object.entries(markersByRegion).filter(([, list]) => list.length > 0);
         entries.forEach(([region, list], idx) => {
-            const payload = list.map((item) => ({ position: item.position, subregionId: item.subregionId, type: item.type }));
+            const payload = list.map((item) => ({ pos: item.pos, subregId: item.subregId, type: item.type }));
             const text = JSON.stringify(payload, null, 2);
             const blob = new Blob([text], { type: 'application/json' });
             const url = URL.createObjectURL(blob);

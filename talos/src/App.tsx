@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, StrictMode } from 'react';
+import { useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
 import L from 'leaflet';
 
 import './styles/global.scss';
@@ -11,7 +11,7 @@ import DomainBanner from './component/domain/domain';
 // import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
-import { useSidebarOpen } from '@/store/uiPrefs';
+import { useSidebarOpen, useSidebarWidth } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
 import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
 import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
@@ -28,6 +28,7 @@ declare global {
 function App() {
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
+    const sidebarWidth = useSidebarWidth();
     const { isDesktop } = useDevice();
     const [mapInstance, setMapInstance] = useState<L.Map | undefined>(
         undefined,
@@ -42,7 +43,6 @@ function App() {
     const prevSidebarOpenRef = useRef(isSidebarOpen);
 
     // Desktop: pan map when sidebar toggles to keep visible center stable
-    const SIDEBAR_WIDTH = 300;
     useEffect(() => {
         if (!mapInstance || !isDesktop) return;
         const prevOpen = prevSidebarOpenRef.current;
@@ -54,9 +54,7 @@ function App() {
         if (currentZoom <= 1.5) return;
 
         const opening = isSidebarOpen;
-        // Shift map center by half the sidebar width so the center of the
-        // remaining visible area stays unchanged.
-        const dx = opening ? -SIDEBAR_WIDTH / 2 : SIDEBAR_WIDTH / 2;
+        const dx = opening ? -sidebarWidth / 2 : sidebarWidth / 2;
 
         // Temporarily remove maxBounds so the pan is not clipped.
         // Passing invalid bounds to setMaxBounds removes the constraint and
@@ -73,7 +71,7 @@ function App() {
                 mapInstance.setMaxBounds(savedBounds);
             });
         }
-    }, [isSidebarOpen, mapInstance, isDesktop]);
+    }, [isSidebarOpen, sidebarWidth, mapInstance, isDesktop]);
 
     // onToggle is retained for potential side effects/analytics
     const handleSidebarToggle = (_isOpen: boolean) => {
@@ -135,7 +133,7 @@ function App() {
             <MetaHelper />
             <DomainBanner />
             {/*<SupportAutoPopup />*/}
-            <div className='app theme-transition-scope'>
+            <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
                 <UserGuide map={mapInstance} />
                 {/* Map layer - always fill the entire window */}
                 <Map onMapReady={handleMapReady} />

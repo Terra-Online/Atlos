@@ -7,6 +7,7 @@ import { useMarkerStore } from '@/store/marker';
 import { useMarker } from './useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
 import { useCurrentLayer } from '@/store/layer';
+import { registerSharedPointMapCore } from '@/utils/navigation';
 import L from 'leaflet';
 
 // Hook for map initialization and region management
@@ -34,6 +35,7 @@ export function useMap(ele: HTMLDivElement | null) {
                 useMarkerStore.getState().setCurrentActivePoint(marker);
             },
         });
+        registerSharedPointMapCore(mapRef.current);
         setLMap(mapRef.current.map);
         setMapInitialized(true);
     }, [ele]);

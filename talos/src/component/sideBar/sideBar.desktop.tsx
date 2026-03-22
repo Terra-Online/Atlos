@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef as useReactRef, useState } from 'react';
 import styles from './sideBar.module.scss';
 import drawerStyles from './triggerDrawer.module.scss';
 
@@ -15,6 +15,7 @@ import CollectionIcon from '../../assets/images/category/collection.svg?react';
 import CombatIcon from '../../assets/images/category/combat.svg?react';
 import NpcIcon from '../../assets/images/category/npc.svg?react';
 import FacilityIcon from '../../assets/images/category/facility.svg?react';
+import ArchivesIcon from '../../assets/images/category/archives.svg?react';
 
 import Search from '../search/search';
 import Drawer from '../drawer/drawer';
@@ -30,11 +31,17 @@ import SupportModal from '../support/support';
 import GithubIcon from '../../assets/images/UI/media/ghicon.svg?react';
 import DiscordIcon from '../../assets/images/UI/media/discordicon.svg?react';
 import QQIcon from '../../assets/images/UI/media/qqicon.svg?react';
+import BskyIcon from '../../assets/images/UI/media/bluesky.svg?react';
 
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
+import useRegion from '@/store/region';
+import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
+import MarkBinder from '../markBinder/markBinder';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useSetSidebarOpen, useSidebarOpen, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
+import { useSetSidebarOpen, useSidebarOpen, useSidebarWidth, useSetSidebarWidth, useIncrementLayoutVersion, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
+import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
+import { computeBinderColumns } from './binderMasonry';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -47,10 +54,11 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     natural: NaturalIcon,
     valuable: ValuableIcon,
     collection: CollectionIcon,
+    archives: ArchivesIcon,
     combat: CombatIcon,
     npc: NpcIcon,
     facility: FacilityIcon,
-    exploration: ExplorationIcon,
+    exploration: ExplorationIcon
 };
 
 interface SideBarProps {
@@ -60,11 +68,19 @@ interface SideBarProps {
     visible?: boolean;
 }
 
+const MIN_WIDTH = 300;
+const MAX_WIDTH = 500;
+const WIDE_THRESHOLD = 450;
+
 const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
     const tGame = useTranslateGame();
+    const searchString = useSearchString();
     const isOpen = useSidebarOpen();
     const setIsOpen = useSetSidebarOpen();
+    const sidebarWidth = useSidebarWidth();
+    const setSidebarWidth = useSetSidebarWidth();
+    const incrementLayoutVersion = useIncrementLayoutVersion();
     // Persistent trigger states
     const trigCluster = useTriggerCluster();
     const trigBoundary = useTriggerBoundary();
@@ -75,8 +91,84 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const drawerSnapIndex = useDesktopDrawerSnapIndex();
 
     const [supportOpen, setSupportOpen] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
 
     const sidebarRef = React.useRef<HTMLDivElement>(null);
+    const resizeStartX = useReactRef(0);
+    const resizeStartW = useReactRef(MIN_WIDTH);
+
+    const clampWidth = (startW: number, dx: number) =>
+        Math.round(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + dx)));
+
+    const setAppCssVar = (w: number) => {
+        const el = document.querySelector<HTMLElement>('.app');
+        el?.style.setProperty('--sidebar-width', `${w}px`);
+    };
+
+    const onResizeStart = useCallback((e: React.PointerEvent) => {
+        if (!isOpen) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setIsResizing(true);
+        resizeStartX.current = e.clientX;
+        resizeStartW.current = sidebarWidth;
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, sidebarWidth]);
+
+    const onResizeMove = useCallback((e: React.PointerEvent) => {
+        if (!isResizing) return;
+        const newW = clampWidth(resizeStartW.current, e.clientX - resizeStartX.current);
+        setAppCssVar(newW);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isResizing]);
+
+    const onResizeEnd = useCallback((e: React.PointerEvent) => {
+        if (!isResizing) return;
+        setIsResizing(false);
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        const newW = clampWidth(resizeStartW.current, e.clientX - resizeStartX.current);
+        setSidebarWidth(newW);
+        requestAnimationFrame(() => incrementLayoutVersion());
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isResizing, setSidebarWidth, incrementLayoutVersion]);
+
+    const isWide = sidebarWidth >= WIDE_THRESHOLD;
+
+    const binderTypeKeys = useMemo(
+        () => Object.values(BINDER_GROUPS_BY_SUB)
+            .flatMap((binderData) => binderData.groups)
+            .flatMap((group) => group.types.map((typeInfo) => typeInfo.key)),
+        [],
+    );
+    const binderTypeCounts = useMultiRegionMarkerCount(binderTypeKeys);
+    const binderTypeCountMap = useMemo(() => {
+        const map = new Map<string, { collected: number; total: number }>();
+        binderTypeKeys.forEach((key, index) => {
+            const count = binderTypeCounts[index];
+            if (count) map.set(key, count);
+        });
+        return map;
+    }, [binderTypeKeys, binderTypeCounts]);
+
+    const currentRegionKey = useRegion((s) => s.currentRegionKey);
+    const lowerSearch = searchString.toLowerCase();
+    const isTypeVisibleInSearch = useCallback((typeKey: string) => {
+        if (!lowerSearch) return true;
+        const typeDisplayName = String(tGame(`markerType.key.${typeKey}`) ?? '').toLowerCase();
+        return typeKey.toLowerCase().includes(lowerSearch) || typeDisplayName.includes(lowerSearch);
+    }, [lowerSearch, tGame]);
+
+    const emptyCategories = useMemo(() => {
+        const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegionKey] ?? {};
+        return new Set(
+            Object.keys(MARKER_TYPE_TREE).filter((subCat) =>
+                MARKER_TYPE_TREE[subCat].every(
+                    (typeInfo) => (regionTypeCounts[typeInfo.key] ?? 0) === 0,
+                ),
+            ),
+        );
+    }, [currentRegionKey]);
 
     useMemo(() => {
         if (!currentRegion) return null;
@@ -109,6 +201,15 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
             </button>
 
             <div ref={sidebarRef} className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+                {isOpen && (
+                    <div
+                        className={`${styles.resizeHandle} ${isResizing ? styles.dragging : ''}`}
+                        onPointerDown={onResizeStart}
+                        onPointerMove={onResizeMove}
+                        onPointerUp={onResizeEnd}
+                        onPointerCancel={onResizeEnd}
+                    />
+                )}
                 <SelectionLayer containerRef={sidebarRef} />
                 <div className={styles.headIcon}>
                     <img
@@ -134,17 +235,53 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                 .map((subCategory) => {
                                     const types: IMarkerType[] = MARKER_TYPE_TREE[subCategory] ?? [];
                                     const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                                    const binderData = BINDER_GROUPS_BY_SUB[subCategory];
+                                    const showBinder = isWide && binderData;
+                                    const binderColumns = binderData
+                                        ? computeBinderColumns(
+                                            binderData.groups,
+                                            binderTypeCountMap,
+                                            isTypeVisibleInSearch,
+                                        )
+                                        : { left: [], right: [] };
                                     return (
-                                        <MarkFilter
-                                            idKey={subCategory}
-                                            title={String(tGame(`markerType.category.${subCategory}`))}
-                                            icon={CategoryIcon}
-                                            dataCategory={subCategory}
-                                            key={subCategory}
-                                        >
-                                            {types.map((typeInfo) => (
-                                                <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                                            ))}
+                        <MarkFilter
+                            idKey={subCategory}
+                            title={String(tGame(`markerType.category.${subCategory}`))}
+                            icon={CategoryIcon}
+                            dataCategory={subCategory}
+                            key={subCategory}
+                            wide={isWide}
+                            binderMode={!!showBinder}
+                            initialEmpty={emptyCategories.has(subCategory)}
+                        >
+                                            {showBinder && binderData ? (
+                                                <>
+                                                    <div className={styles.binderSection}>
+                                                        <div className={styles.binderColumn}>
+                                                            {binderColumns.left.map((group) => (
+                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                            ))}
+                                                        </div>
+                                                        <div className={styles.binderColumn}>
+                                                            {binderColumns.right.map((group) => (
+                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    {binderData.remaining.length > 0 && (
+                                                        <div className={styles.remainingSection}>
+                                                            {binderData.remaining.map((typeInfo) => (
+                                                                <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                types.map((typeInfo) => (
+                                                    <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
+                                                ))
+                                            )}
                                         </MarkFilter>
                                     );
                                 })}
@@ -182,6 +319,16 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         aria-label="Discord"
                     >
                         <DiscordIcon />
+                    </a>
+                    <a
+                        href="https://bsky.app/profile/opendfieldmap.bsky.social"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.socialLink}
+                        data-platform="bluesky"
+                        aria-label="Bluesky"
+                    >
+                    <BskyIcon />
                     </a>
                     <a
                         href="https://qm.qq.com/q/BVsCJgzBL2"

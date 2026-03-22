@@ -14,8 +14,8 @@ import { batchCheckSelectedPoints, isLassoSelected } from '@/component/settings/
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     Record<string, L.Icon | L.DivIcon>
 >((acc, typeInfo: IMarkerType) => {
-    // Now, getItemIconUrl will return marker icon if key ends with _spot automatically
-    const iconUrl = getItemIconUrl(typeInfo.key, 'webp');
+    // Prefer explicit icon field (files dataset maps icon names, not type keys)
+    const iconUrl = getItemIconUrl(typeInfo.icon ?? typeInfo.key, 'webp');
     if (typeInfo.noFrame) {
         acc[typeInfo.key] = divIcon({
             iconSize: [50, 50],
@@ -46,7 +46,7 @@ const RENDERER_DICT: Record<
     ) => L.Marker
 > = {
     __DEFAULT: (markerData, onClick) => {
-        const layer = new L.Marker(markerData.position, {
+        const layer = new L.Marker(markerData.pos, {
             icon: MARKER_ICON_DICT[markerData.type],
             alt: markerData.type,
         });
@@ -168,7 +168,7 @@ const RENDERER_DICT: Record<
                    </div>`,
         });
         
-        const layer = new L.Marker(markerData.position, {
+        const layer = new L.Marker(markerData.pos, {
             icon: markerIcon,
             alt: markerData.type,
         });

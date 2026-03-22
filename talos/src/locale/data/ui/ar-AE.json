@@ -15,7 +15,10 @@
     "labelName": "أسماء المناطق"
   },
   "search": {
-    "placeholder": "البحث الشامل…"
+    "placeholder": "البحث الشامل…",
+    "results": "{count} نتيجة(ة)",
+    "locatedAt": "موجود في",
+    "distributeAt": "موزع في"
   },
   "markFilter": {
     "title": "خيارات التصفية",
@@ -28,7 +31,10 @@
       "main": "الرئيسية",
       "sub": "فرعي"
     },
-    "noInfo": "لا توجد معلومات"
+    "noInfo": "لا توجد معلومات",
+    "readFullText": "انقر لقراءة النص الكامل.",
+    "share": "انسخ رابط العلامة هذا وشاركه.",
+    "copied": "رابط منسوخ"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

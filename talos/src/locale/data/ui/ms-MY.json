@@ -15,7 +15,10 @@
     "labelName": "Nama Wilayah"
   },
   "search": {
-    "placeholder": "Carian global..."
+    "placeholder": "Carian global...",
+    "results": "{count} hasil(s)",
+    "locatedAt": "Ditemukan di",
+    "distributeAt": "Didistribusikan di"
   },
   "markFilter": {
     "title": "Pilihan Tapis",
@@ -28,7 +31,10 @@
       "main": "Utama",
       "sub": "Sub"
     },
-    "noInfo": "Tiada maklumat."
+    "noInfo": "Tiada maklumat.",
+    "readFullText": "Klik untuk membaca teks lengkap.",
+    "share": "Salin tautan yang dapat dibagikan untuk penanda ini.",
+    "copied": "Tautan disalin"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

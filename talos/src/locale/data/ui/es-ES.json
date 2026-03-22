@@ -15,7 +15,10 @@
     "labelName": "Nombres de región"
   },
   "search": {
-    "placeholder": "Búsqueda general..."
+    "placeholder": "Búsqueda general...",
+    "results": "{count} resultado(s)",
+    "locatedAt": "Localizado en",
+    "distributeAt": "Distribuido en"
   },
   "markFilter": {
     "title": "Filtros",
@@ -28,7 +31,10 @@
       "main": "Región",
       "sub": "Sub"
     },
-    "noInfo": "No hay información."
+    "noInfo": "No hay información.",
+    "readFullText": "Haga clic para leer el texto completo.",
+    "share": "Copie el enlace compartible para esta marca.",
+    "copied": "Enlace copiado"
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"

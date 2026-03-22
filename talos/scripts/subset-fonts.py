@@ -22,6 +22,7 @@ from fontTools.ttLib import TTFont
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 LOCALE_DATA_DIR = PROJECT_ROOT / "src" / "locale" / "data"
+PUBLIC_FILES_DIR = PROJECT_ROOT / "public" / "files"
 FONTS_DIR = PROJECT_ROOT / "src" / "assets" / "fonts"
 ORIGINAL_FONTS_DIR = PROJECT_ROOT / "src" / "assets" / "fonts_original"
 
@@ -73,11 +74,11 @@ def collect_characters_from_json(json_path: Path) -> Set[str]:
     return chars
 
 
-def collect_all_characters() -> Set[str]:
-    """Collect all characters from locale JSON files."""
+def collect_locale_characters() -> Set[str]:
+    """Collect all characters from locale JSON files (used for UD_ShinGo + base set)."""
     print("📖 Collecting characters from locale files...")
     all_chars = set()
-    
+
     # Walk through all JSON files in locale/data
     for root, dirs, files in os.walk(LOCALE_DATA_DIR):
         for file in files:
@@ -87,14 +88,41 @@ def collect_all_characters() -> Set[str]:
                 print(f"  Reading: {rel_path}")
                 chars = collect_characters_from_json(json_path)
                 all_chars.update(chars)
-    
+
     # Add basic ASCII and common punctuation to ensure proper rendering
     basic_chars = set(' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~0123456789')
     basic_chars.update('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
     all_chars.update(basic_chars)
-    
-    print(f"\n✅ Collected {len(all_chars)} unique characters")
+
+    print(f"\n✅ Collected {len(all_chars)} unique locale characters")
     return all_chars
+
+
+def collect_public_files_characters() -> Set[str]:
+    """
+    Collect characters from public/files (archive JSON/HTML, etc.).
+    Used only for HMSans subsetting — not merged into UD_ShinGo.
+    """
+    chars: Set[str] = set()
+    if not PUBLIC_FILES_DIR.is_dir():
+        print("📂 public/files not found — skipping extra HMSans character scan")
+        return chars
+
+    print("📖 Collecting characters from public/files (HMSans only)...")
+    for root, dirs, files in os.walk(PUBLIC_FILES_DIR):
+        for file in files:
+            if not file.endswith('.json'):
+                continue
+            json_path = Path(root) / file
+            try:
+                rel = json_path.relative_to(PROJECT_ROOT)
+            except ValueError:
+                rel = json_path
+            print(f"  Reading: {rel}")
+            chars.update(collect_characters_from_json(json_path))
+
+    print(f"✅ Collected {len(chars)} unique characters from public/files")
+    return chars
 
 
 def subset_font(input_path: Path, output_path: Path, characters: Set[str]) -> None:
@@ -283,31 +311,34 @@ def main():
     print("Font Subsetting Script for Atlos Project")
     print("=" * 70)
     
-    # Collect characters from locale files
-    characters = collect_all_characters()
-    
+    # Locale-only subset for UD_ShinGo; locale + public/files for HMSans
+    locale_chars = collect_locale_characters()
+    files_chars = collect_public_files_characters()
+    harmony_chars = set(locale_chars)
+    harmony_chars.update(files_chars)
+
     # Create original fonts directory
     ORIGINAL_FONTS_DIR.mkdir(parents=True, exist_ok=True)
-    
-    # Process UD_ShinGo fonts
+
+    # Process UD_ShinGo fonts (locale data only)
     print("\n" + "=" * 70)
     print("Processing UD_ShinGo Fonts")
     print("=" * 70)
     for font_path in UDSHINGO_FONTS:
-        process_font(font_path, characters)
-    
-    # Process Harmony fonts
+        process_font(font_path, locale_chars)
+
+    # Process Harmony / HMSans (locale + public/files text)
     print("\n" + "=" * 70)
-    print("Processing Harmony Fonts")
+    print("Processing Harmony Fonts (HMSans — includes public/files)")
     print("=" * 70)
     for font_path in HARMONY_FONTS:
-        process_font(font_path, characters)
+        process_font(font_path, harmony_chars)
     
     print("\n" + "=" * 70)
     print("✨ Font subsetting completed successfully!")
     print("=" * 70)
     print(f"Original fonts backed up to: {ORIGINAL_FONTS_DIR.relative_to(PROJECT_ROOT)}")
-    print(f"Total characters in subset: {len(characters)}")
+    print(f"UD_ShinGo subset size: {len(locale_chars)} | HMSans subset size: {len(harmony_chars)}")
 
 
 if __name__ == "__main__":

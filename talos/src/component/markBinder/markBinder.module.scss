@@ -1,0 +1,206 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --binder-active-bg: #{$white-1};
+
+    --binder-completed-bg: #{rgba($primary-accent-4, 0.8)};
+    --binder-progress-bg: #{rgba($primary-accent-4, 0.6)};
+}
+:root[data-theme='dark'] {
+    --binder-active-bg: #{$black-1};
+
+    --binder-completed-bg: #{rgba($primary-accent-5, 0.6)};
+    --binder-progress-bg: #{rgba($primary-accent-4, 0.6)};
+}
+
+.binderWrap {
+    break-inside: avoid;
+    overflow: visible;
+    margin-bottom: .625rem;
+    padding: 6px 12px 4px 12px;
+    position: relative;
+    will-change: box-shadow, transform, background-color;
+    border-radius: 0 0 2px 2px;
+    color: var(--mark-text);
+    background-color: var(--mark-bg);
+    cursor: pointer;
+    box-shadow: 0 0 3px 1px rgba($black-0, 0);
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease,
+        background-color 0.3s ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 4px;
+        background-color: var(--mark-separator);
+        z-index: 3;
+        clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+        transition:
+            clip-path 0.3s $standard-curve,
+            background-color 0.35s $moderato-curve;
+    }
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--binder-progress-bg);
+        /* default: 0-height strip at top edge — start of top-to-bottom animation */
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+        transition:
+            clip-path 0.3s ease,
+            background-color 0.35s $moderato-curve;
+        z-index: -1;
+    }
+    &:hover {
+        box-shadow: 1px 3px 5px rgba($black-0, 0.2);
+        transform: translateY(-1px);
+    }
+    &.active {
+        background-color: var(--binder-active-bg);
+        color: var(--mark-active-fg);
+        box-shadow: 0 3px 4px rgba($black-0, 0.4);
+        transition: all 0.2s ease;
+
+        &::before {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        &::after {
+            /* fill grows downward from top by progress percentage */
+            clip-path: polygon(
+                0 0,
+                100% 0,
+                100% var(--progress-percentage, 0%),
+                0 var(--progress-percentage, 0%)
+            );
+        }
+    }
+
+    &.completed {
+        &::before {
+            background-color: var(--mark-completed-separator);
+        }
+        &::after {
+            background-color: var(--binder-completed-bg);
+        }
+    }
+}
+
+.binderItem {
+    user-select: none;
+    touch-action: pan-y;
+    overscroll-behavior: auto;
+    min-height: 2.5rem;
+
+    display: grid;
+    grid-template-columns: 2.75rem 1fr auto;
+    grid-template-areas: 'icon name stat';
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    transform: translateX(-5px);
+}
+
+.binderIcon {
+    grid-area: icon;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    position: relative;
+
+    --icon-feather-width: 10%;
+    --icon-feather-start: 4%;
+    mask-image:
+        linear-gradient(
+            to right,
+            transparent 0%,
+            transparent var(--icon-feather-start),
+            black var(--icon-feather-width),
+            black calc(100% - var(--icon-feather-width)),
+            transparent calc(100% - var(--icon-feather-start)),
+            transparent 100%
+        ),
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            transparent var(--icon-feather-start),
+            black var(--icon-feather-width),
+            black calc(100% - var(--icon-feather-width)),
+            transparent calc(100% - var(--icon-feather-start)),
+            transparent 100%
+        );
+    mask-composite: intersect;
+
+    img {
+        width: 2.5rem;
+        height: 2.5rem;
+        object-fit: contain;
+    }
+}
+
+.binderName {
+    grid-area: name;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Thai', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+    color: inherit;
+    z-index: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+.binderStat {
+    grid-area: stat;
+    font-size: 0.8rem;
+    font-family: 'Novecento Medium', sans-serif;
+    font-weight: 600;
+    color: var(--mark-stats-text);
+    z-index: 2;
+    white-space: nowrap;
+    line-height: 1;
+    transition: color 0.3s ease;
+    padding-left: 6px;
+
+    .active & {
+        color: var(--mark-stats-completed-text);
+    }
+    .completed & {
+        color: var(--mark-stats-completed-text);
+    }
+}
+
+.binderChildren {
+    position: relative;
+    z-index: 1;
+    cursor: default;
+    padding: 0.2rem 0 0.1rem;
+    mix-blend-mode: luminosity;
+    backdrop-filter: blur(8px);
+    > * {
+        margin-bottom: 0;
+    }
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+
+.binderChildren :global([data-mark-selector-item='true'][data-active='true'])::after {
+    filter: invert(.2);
+}
+
+.binderChildren > div > * {
+    margin-bottom: 0;
+}
