@@ -15,7 +15,10 @@
     "labelName": "Regionnamn"
   },
   "search": {
-    "placeholder": "Sök..."
+    "placeholder": "Sök...",
+    "results": "{count} resultat",
+    "locatedAt": "Hittat i",
+    "distributeAt": "Distribuerat i"
   },
   "markFilter": {
     "title": "Filteralternativ",

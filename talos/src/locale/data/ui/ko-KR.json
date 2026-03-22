@@ -15,7 +15,10 @@
     "labelName": "지역명"
   },
   "search": {
-    "placeholder": "전체 검색…"
+    "placeholder": "전체 검색…",
+    "results": "{count} 건의 결과",
+    "locatedAt": "위치",
+    "distributeAt": "분포"
   },
   "markFilter": {
     "title": "필터 항목",

@@ -15,7 +15,10 @@
     "labelName": "Nomes de região"
   },
   "search": {
-    "placeholder": "Busca geral..."
+    "placeholder": "Busca geral...",
+    "results": "{count} resultado(s)",
+    "locatedAt": "Localizado em",
+    "distributeAt": "Distribuído em"
   },
   "markFilter": {
     "title": "Opções de Filtro",

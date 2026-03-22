@@ -15,7 +15,10 @@
     "labelName": "Nama Wilayah"
   },
   "search": {
-    "placeholder": "Carian global..."
+    "placeholder": "Carian global...",
+    "results": "{count} hasil(s)",
+    "locatedAt": "Ditemukan di",
+    "distributeAt": "Didistribusikan di"
   },
   "markFilter": {
     "title": "Pilihan Tapis",

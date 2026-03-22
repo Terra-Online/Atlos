@@ -15,7 +15,10 @@
     "labelName": "地區名稱"
   },
   "search": {
-    "placeholder": "全域搜尋…"
+    "placeholder": "全域搜尋…",
+    "results": "{count} 個結果",
+    "locatedAt": "位於",
+    "distributeAt": "分佈於"
   },
   "markFilter": {
     "title": "篩選項目",

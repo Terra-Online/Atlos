@@ -15,7 +15,10 @@
     "labelName": "Tên khu vực"
   },
   "search": {
-    "placeholder": "Tìm kiếm toàn cục…"
+    "placeholder": "Tìm kiếm toàn cục…",
+    "results": "{count} kết quả",
+    "locatedAt": "Tìm thấy tại",
+    "distributeAt": "Phân phối tại"
   },
   "markFilter": {
     "title": "Bộ lọc",

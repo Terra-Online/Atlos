@@ -15,7 +15,10 @@
     "labelName": "Названия регионов"
   },
   "search": {
-    "placeholder": "Общий поиск..."
+    "placeholder": "Общий поиск...",
+    "results": "{count} результат(ов)",
+    "locatedAt": "Найден в",
+    "distributeAt": "Распределен в"
   },
   "markFilter": {
     "title": "Фильтры",

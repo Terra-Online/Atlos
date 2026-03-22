@@ -15,7 +15,10 @@
     "labelName": "Nama wilayah"
   },
   "search": {
-    "placeholder": "Pencarian keseluruhan..."
+    "placeholder": "Pencarian keseluruhan...",
+    "results": "{count} hasil(s)",
+    "locatedAt": "Ditemukan di",
+    "distributeAt": "Didistribusikan di"
   },
   "markFilter": {
     "title": "Opsi Filter",

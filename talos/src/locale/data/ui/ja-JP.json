@@ -15,7 +15,10 @@
     "labelName": "地区名"
   },
   "search": {
-    "placeholder": "全体検索…"
+    "placeholder": "全体検索…",
+    "results": "{count} 件の結果",
+    "locatedAt": "所在地",
+    "distributeAt": "分布地"
   },
   "markFilter": {
     "title": "フィルター項目",

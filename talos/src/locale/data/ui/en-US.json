@@ -15,7 +15,10 @@
     "labelName": "Region Names"
   },
   "search": {
-    "placeholder": "Overall search..."
+    "placeholder": "Overall search...",
+    "results": "{count} result(s)",
+    "locatedAt": "Located at",
+    "distributeAt": "Distributed at"
   },
   "markFilter": {
     "title": "Filter Options",

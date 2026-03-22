@@ -15,7 +15,10 @@
     "labelName": "أسماء المناطق"
   },
   "search": {
-    "placeholder": "البحث الشامل…"
+    "placeholder": "البحث الشامل…",
+    "results": "{count} نتيجة(ة)",
+    "locatedAt": "موجود في",
+    "distributeAt": "موزع في"
   },
   "markFilter": {
     "title": "خيارات التصفية",

@@ -103,6 +103,7 @@ export interface SearchResultGroup {
     uniquePoint: SearchHitDoc | null;
     regions: string[];
     subregionNames: string[];
+    subregionNamesByRegion: Record<string, string[]>;
     snippet: string;
     snippetMatched: boolean;
     topScore: number;
@@ -356,6 +357,20 @@ const buildSnippet = (text: string, query: string): string => {
     return `${prefix}${targetParagraph.slice(start, end)}${suffix}`;
 };
 
+const stripTitlePrefixFromBody = (body: string, title: string): string => {
+    const bodyTrimmed = body.trim();
+    if (!bodyTrimmed) return '';
+
+    const titleTrimmed = title.trim();
+    if (!titleTrimmed) return bodyTrimmed;
+
+    const lowerBody = bodyTrimmed.toLowerCase();
+    const lowerTitle = titleTrimmed.toLowerCase();
+    if (!lowerBody.startsWith(lowerTitle)) return bodyTrimmed;
+
+    return bodyTrimmed.slice(titleTrimmed.length).replace(/^[\s\n:：\-—]+/, '').trim();
+};
+
 const getSubregionDisplayName = (
     subregionId: string,
     regionKey: string,
@@ -419,6 +434,16 @@ const toGroups = (
 
             const regions = Array.from(new Set(group.docs.map((d) => d.regionKey)));
             const shownRegions = regions.filter((regionKey) => regionKey !== 'Weekraid_1');
+            const subregionNameSetByRegion = new Map<string, Set<string>>();
+            group.docs.forEach((doc) => {
+                const nextName = getSubregionDisplayName(doc.subregionId, doc.regionKey, tGame);
+                const currentSet = subregionNameSetByRegion.get(doc.regionKey) ?? new Set<string>();
+                currentSet.add(nextName);
+                subregionNameSetByRegion.set(doc.regionKey, currentSet);
+            });
+            const subregionNamesByRegion = Object.fromEntries(
+                Array.from(subregionNameSetByRegion.entries()).map(([regionKey, nameSet]) => [regionKey, Array.from(nameSet)]),
+            ) as Record<string, string[]>;
             const subregionNames = Array.from(
                 new Set(
                     group.docs.map((doc) =>
@@ -428,11 +453,14 @@ const toGroups = (
             );
 
             const bestDoc = uniquePoint ?? group.docs[0];
-            const snippetDoc = group.docs.find((doc) =>
-                normalizeText(doc.body).includes(normalizeText(queryForMatch)),
+            const snippetDoc = group.docs.find((doc) => {
+                const bodyWithoutTitle = stripTitlePrefixFromBody(doc.body, doc.title);
+                return normalizeText(bodyWithoutTitle).includes(normalizeText(queryForMatch));
+            }
             ) ?? bestDoc;
-            const snippet = buildSnippet(snippetDoc?.body ?? '', queryForMatch);
-            const snippetMatched = !!snippetDoc?.body && normalizeText(snippetDoc.body).includes(normalizeText(queryForMatch));
+            const snippetSource = snippetDoc ? stripTitlePrefixFromBody(snippetDoc.body, snippetDoc.title) : '';
+            const snippet = buildSnippet(snippetSource, queryForMatch);
+            const snippetMatched = !!snippetSource && normalizeText(snippetSource).includes(normalizeText(queryForMatch));
 
             const isSelector = !uniquePoint;
             const sortRank =
@@ -452,6 +480,7 @@ const toGroups = (
                     uniquePoint,
                     regions: shownRegions,
                     subregionNames,
+                    subregionNamesByRegion,
                     snippet,
                     snippetMatched,
                     topScore: group.topScore,

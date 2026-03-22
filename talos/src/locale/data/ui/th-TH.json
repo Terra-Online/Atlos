@@ -15,7 +15,10 @@
     "labelName": "ชื่อพื้นที่"
   },
   "search": {
-    "placeholder": "ค้นหาทั่วทั้งระบบ…"
+    "placeholder": "ค้นหาทั่วทั้งระบบ…",
+    "results": "{count} ผลลัพธ์",
+    "locatedAt": "พบใน",
+    "distributeAt": "กระจายใน"
   },
   "markFilter": {
     "title": "ตัวกรอง",

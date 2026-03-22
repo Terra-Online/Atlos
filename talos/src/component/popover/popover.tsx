@@ -2,13 +2,18 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import styles from './popover.module.scss';
 
 interface PopoverTooltipProps {
-    content: string;
+    content: React.ReactNode;
     children: React.ReactElement;
     placement?: 'top' | 'bottom' | 'left' | 'right';
     disabled?: boolean;
     visible?: boolean;
     gap?: number;
 }
+
+const hasRenderableContent = (content: React.ReactNode): boolean => {
+    if (typeof content === 'string') return content.trim().length > 0;
+    return content !== null && content !== undefined;
+};
 
 /**
  * Using native Popover API to avoid overflow issues
@@ -87,7 +92,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
 
     const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
         if (visible !== undefined) return;
-        if (disabled || !content) return;
+        if (disabled || !hasRenderableContent(content)) return;
 
         if (hoverTimeoutRef.current) {
             clearTimeout(hoverTimeoutRef.current);
@@ -108,7 +113,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
 
     const handleMouseLeave = () => {
         if (visible !== undefined) return;
-        if (disabled || !content) return;
+        if (disabled || !hasRenderableContent(content)) return;
 
         const popover = document.getElementById(popoverIdRef.current) as HTMLElement & { hidePopover?: () => void };
         if (popover) {
@@ -130,7 +135,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     };
 
     useEffect(() => {
-        if (visible === undefined || !content) return;
+        if (visible === undefined || !hasRenderableContent(content)) return;
 
         const popover = document.getElementById(popoverIdRef.current) as HTMLElement & {
             showPopover?: () => void;
@@ -166,7 +171,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         }, 120);
     }, [visible, content, positionPopover]);
 
-    if (!content) {
+    if (!hasRenderableContent(content)) {
         return children;
     }
 

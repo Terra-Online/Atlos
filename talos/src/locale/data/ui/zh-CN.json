@@ -15,7 +15,10 @@
     "labelName": "地区名称显示"
   },
   "search": {
-    "placeholder": "全局搜索…"
+    "placeholder": "全局搜索…",
+    "results": "{count} 个结果",
+    "locatedAt": "位于",
+    "distributeAt": "分布于"
   },
   "markFilter": {
     "title": "筛选项",

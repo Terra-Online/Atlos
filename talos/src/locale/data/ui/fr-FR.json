@@ -15,7 +15,10 @@
     "labelName": "Noms de région"
   },
   "search": {
-    "placeholder": "Recherche générale..."
+    "placeholder": "Recherche générale...",
+    "results": "{count} résultat(s)",
+    "locatedAt": "Trouvé dans",
+    "distributeAt": "Distribué dans"
   },
   "markFilter": {
     "title": "Filtres",

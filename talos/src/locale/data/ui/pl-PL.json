@@ -15,7 +15,10 @@
     "labelName": "Nazwy regionów"
   },
   "search": {
-    "placeholder": "Wyszukiwanie globalne..."
+    "placeholder": "Wyszukiwanie globalne...",
+    "results": "{count} wynik(ów)",
+    "locatedAt": "Znaleziono w",
+    "distributeAt": "Rozprowadzane w"
   },
   "markFilter": {
     "title": "Opcje filtrowania",
