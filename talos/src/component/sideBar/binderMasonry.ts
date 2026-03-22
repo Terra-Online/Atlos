@@ -13,10 +13,16 @@ import type { BinderGroup } from '@/data/marker/binder';
 export function computeBinderColumns(
     groups: BinderGroup[],
     binderTypeCountMap: Map<string, { collected: number; total: number }>,
+    typeVisiblePredicate?: (typeKey: string) => boolean,
 ): { left: BinderGroup[]; right: BinderGroup[] } {
+    const isTypeVisible = typeVisiblePredicate ?? (() => true);
+
     const withMeta = groups.map((group) => {
         const renderableCount = group.types.reduce(
-            (sum, typeInfo) => sum + ((binderTypeCountMap.get(typeInfo.key)?.total ?? 0) > 0 ? 1 : 0),
+            (sum, typeInfo) => {
+                const hasTotal = (binderTypeCountMap.get(typeInfo.key)?.total ?? 0) > 0;
+                return sum + (hasTotal && isTypeVisible(typeInfo.key) ? 1 : 0);
+            },
             0,
         );
         // height = 0 for invisible, 1 for 1:1 header-only, 1+n for multi-type
@@ -50,6 +56,11 @@ export function computeBinderColumns(
             right.push(item.group);
             rightHeight += item.estimatedHeight;
         }
+    }
+
+    // Keep left column height >= right column height when both layouts are close.
+    if (leftHeight < rightHeight) {
+        return { left: right, right: left };
     }
 
     return { left, right };

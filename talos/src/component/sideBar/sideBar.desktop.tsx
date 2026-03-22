@@ -39,7 +39,7 @@ import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
 import MarkBinder from '../markBinder/markBinder';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useSetSidebarOpen, useSidebarOpen, useSidebarWidth, useSetSidebarWidth, useIncrementLayoutVersion, useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useDesktopDrawerSnapIndex } from '@/store/uiPrefs';
-import { useMultiRegionMarkerCount } from '@/store/marker';
+import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
 import { computeBinderColumns } from './binderMasonry';
 
@@ -75,6 +75,7 @@ const WIDE_THRESHOLD = 450;
 const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
     const tGame = useTranslateGame();
+    const searchString = useSearchString();
     const isOpen = useSidebarOpen();
     const setIsOpen = useSetSidebarOpen();
     const sidebarWidth = useSidebarWidth();
@@ -151,6 +152,13 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     }, [binderTypeKeys, binderTypeCounts]);
 
     const currentRegionKey = useRegion((s) => s.currentRegionKey);
+    const lowerSearch = searchString.toLowerCase();
+    const isTypeVisibleInSearch = useCallback((typeKey: string) => {
+        if (!lowerSearch) return true;
+        const typeDisplayName = String(tGame(`markerType.key.${typeKey}`) ?? '').toLowerCase();
+        return typeKey.toLowerCase().includes(lowerSearch) || typeDisplayName.includes(lowerSearch);
+    }, [lowerSearch, tGame]);
+
     const emptyCategories = useMemo(() => {
         const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegionKey] ?? {};
         return new Set(
@@ -230,7 +238,11 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                     const binderData = BINDER_GROUPS_BY_SUB[subCategory];
                                     const showBinder = isWide && binderData;
                                     const binderColumns = binderData
-                                        ? computeBinderColumns(binderData.groups, binderTypeCountMap)
+                                        ? computeBinderColumns(
+                                            binderData.groups,
+                                            binderTypeCountMap,
+                                            isTypeVisibleInSearch,
+                                        )
                                         : { left: [], right: [] };
                                     return (
                         <MarkFilter

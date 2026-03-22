@@ -121,6 +121,8 @@ const MarkFilter = ({
         }
     }, [effectiveExpanded, hasEverExpanded]);
 
+    const shouldRenderChildren = hasEverExpanded || binderMode;
+
     // register for reorder measurements
     useEffect(() => {
         const getLayout = () => {
@@ -218,7 +220,7 @@ const MarkFilter = ({
 
             <div className={`${styles.filterContent} ${effectiveExpanded ? styles.expanded : ''}`}>
                 <div className={`${styles.contentInner} ${effectiveExpanded ? styles.visible : ''} ${wide && !binderMode ? styles.tripleColumn : ''} ${binderMode ? styles.binderLayout : ''}`}>
-                    {hasEverExpanded && (
+                    {shouldRenderChildren && (
                         <>
                             {children}
                             {isEmpty && (

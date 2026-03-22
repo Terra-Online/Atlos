@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useContext, useEffect, useRef } from 'react';
+import { useMemo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from './markBinder.module.scss';
@@ -66,7 +66,8 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
         });
     }, [renderedTypes, group.types, counts]);
 
-    const is1to1 = renderedTypes.length <= 1;
+    // During search we still render a single matching selector instead of collapsing.
+    const shouldCollapseChildren = searchString === '' && renderedTypes.length <= 1;
 
     const showFilter = useMemo(() => {
         if (!totalTotal) return false;
@@ -80,6 +81,20 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
 
     const ctx = useContext(MarkVisibilityContext);
     const idRef = useRef<string>(group.dropKey);
+    const [layoutAnimReady, setLayoutAnimReady] = useState(false);
+
+    useEffect(() => {
+        let raf1 = 0;
+        let raf2 = 0;
+        raf1 = requestAnimationFrame(() => {
+            raf2 = requestAnimationFrame(() => setLayoutAnimReady(true));
+        });
+        return () => {
+            cancelAnimationFrame(raf1);
+            cancelAnimationFrame(raf2);
+        };
+    }, []);
+
     useEffect(() => {
         const stableId = idRef.current;
         ctx?.report(stableId, showFilter);
@@ -128,12 +143,12 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
                 <span className={styles.binderStat}>{totalCollected}/{totalTotal}</span>
             </div>
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
-            {!is1to1 && (
+            {!shouldCollapseChildren && (
                 <div className={styles.binderChildren} onClick={(e) => e.stopPropagation()}>
                     {sortedRenderedTypes.map((typeInfo) => (
                         <motion.div
                             key={typeInfo.key}
-                            layout
+                            layout={layoutAnimReady}
                             transition={{ type: 'spring', stiffness: 400, damping: 38 }}
                         >
                             <MarkSelector typeInfo={typeInfo} />
