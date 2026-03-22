@@ -29,6 +29,8 @@ dist-ssr
 **/config/config.r2.json
 
 talos/public/clips
+talos/public/files
+talos/public/search
 talos/originData
 talos/src/assets/fonts/UD_ShinGo
 talos/src/assets/fonts/Harmony
