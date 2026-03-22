@@ -26,7 +26,7 @@ import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
-import AnnouncementIcon from '../../assets/logos/announcement.svg?react';
+import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 
 interface UIOverlayProps {
     map?: L.Map;

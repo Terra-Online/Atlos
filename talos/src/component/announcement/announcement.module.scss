@@ -1,8 +1,10 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
 
 :root,
 :root[data-theme='light'] {
+    --ann-panel-bg: #{$light-1};
     --ann-header-bg: #{$grey-1};
     --ann-header-text: #{$white-1};
     --ann-header-icon: #{$white-1};
@@ -20,6 +22,7 @@
 }
 
 :root[data-theme='dark'] {
+    --ann-panel-bg: #{$black-1};
     --ann-header-bg: #{$black-1};
     --ann-header-text: #{$light-1};
     --ann-header-icon: #{$light-1};
@@ -61,6 +64,9 @@
     flex-direction: column;
     width: 680px;
     height: 560px;
+    max-width: 90dvw;
+    max-height: 88dvh;
+    background-color: var(--ann-panel-bg);
     border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 4px 20px rgba($black-0, 0.35);
@@ -76,6 +82,25 @@
         opacity: 1;
         transform: scale(1) translateY(0);
         filter: blur(0);
+    }
+
+    @media (max-width: $mobile-bp) {
+        width: 92dvw;
+        height: 90dvh;
+        border-radius: 5px 5px 0 0;
+        transform: translateY(100%);
+        opacity: 0;
+        filter: blur(0.25rem);
+        transition:
+            transform 0.3s $standard-curve,
+            opacity 0.25s $standard-curve,
+            filter 0.25s $standard-curve;
+
+        &[data-state='open'] {
+            transform: translateY(0);
+            opacity: 1;
+            filter: blur(0);
+        }
     }
 }
 
@@ -116,6 +141,17 @@
         text-shadow: 1px 2px 1px rgba($black-0, 0.25);
         transition: color 0.35s $adagio-curve;
     }
+}
+
+.body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 1.5rem;
+    border-radius: 3px;
+    overflow: hidden;
+    min-height: 0;
+    transition: background-color 0.35s $adagio-curve;
 }
 
 .tabBarWrapper {

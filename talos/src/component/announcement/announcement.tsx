@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
 import { MOCK_ANNOUNCEMENTS } from './mockData';
-import AnnouncementIcon from '../../assets/logos/announcement.svg?react';
+import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Button from '@/component/button/button';
 
 export interface AnnouncementModalProps {
@@ -143,39 +143,42 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
                     />
                 </div>
 
-                {/* Tab Bar */}
-                <div className={styles.tabBarWrapper}>
-                    <div className={styles.tabBar} role="tablist" ref={tabBarRef}>
-                        {announcements.map((item, index) => (
-                            <button
-                                key={item.id}
-                                role="tab"
-                                aria-selected={activeIndex === index}
-                                ref={(el) => {
-                                    if (el) tabRefs.current.set(index, el);
-                                    else tabRefs.current.delete(index);
-                                }}
-                                className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
-                                onClick={() => setActiveIndex(index)}
-                            >
-                                {item.title}
-                            </button>
-                        ))}
+                {/* Tab Bar + Description + Content — inset body */}
+                <div className={styles.body}>
+                    {/* Tab Bar */}
+                    <div className={styles.tabBarWrapper}>
+                        <div className={styles.tabBar} role="tablist" ref={tabBarRef}>
+                            {announcements.map((item, index) => (
+                                <button
+                                    key={item.id}
+                                    role="tab"
+                                    aria-selected={activeIndex === index}
+                                    ref={(el) => {
+                                        if (el) tabRefs.current.set(index, el);
+                                        else tabRefs.current.delete(index);
+                                    }}
+                                    className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
+                                    onClick={() => setActiveIndex(index)}
+                                >
+                                    {item.title}
+                                </button>
+                            ))}
+                        </div>
+                        {indicatorLeft !== null && (
+                            <div
+                                className={styles.tabIndicator}
+                                style={{ left: `${indicatorLeft}px` }}
+                            />
+                        )}
                     </div>
-                    {indicatorLeft !== null && (
-                        <div
-                            className={styles.tabIndicator}
-                            style={{ left: `${indicatorLeft}px` }}
-                        />
-                    )}
-                </div>
 
-                {/* Description Bar */}
-                <div className={styles.description}>{activeItem.description}</div>
+                    {/* Description Bar */}
+                    <div className={styles.description}>{activeItem.description}</div>
 
-                {/* Markdown Content */}
-                <div className={styles.content} role="tabpanel">
-                    <ReactMarkdown>{activeItem.content}</ReactMarkdown>
+                    {/* Markdown Content */}
+                    <div className={styles.content} role="tabpanel">
+                        <ReactMarkdown>{activeItem.content}</ReactMarkdown>
+                    </div>
                 </div>
             </div>
         </div>,
