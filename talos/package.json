@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode dev",
+    "subset:fonts": "python3 ./scripts/subset-fonts.py",
+    "worker:type-check": "pnpm --dir ./oem-search type-check",
+    "worker:deploy": "pnpm --dir ./oem-search deploy",
+    "build:prepare": "node ./scripts/build-prepare.mjs",
+    "prebuild": "pnpm run build:prepare",
     "build": "cross-env NODE_ENV=production vite build",
+    "prebuild:r2": "pnpm run build:prepare",
     "build:search-index": "node ./scripts/build-search-index.mjs",
     "build:check": "tsc --noEmit",
     "lint:js": "eslint \"**/*.{js,ts,tsx,jsx,html,md}\"",
