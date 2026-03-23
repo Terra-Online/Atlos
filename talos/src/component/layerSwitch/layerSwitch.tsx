@@ -68,6 +68,7 @@ const LayerSwitch: React.FC<{
                     styles.regItem,
                     styles.selected,
                 )}
+                data-guide='layer-main-toggle'
                 role="button"
                 tabIndex={0}
                 aria-label="Layer switcher"
@@ -104,6 +105,7 @@ const LayerSwitch: React.FC<{
                                         styles.subregItem,
                                         currentLayer === layer && styles.selected,
                                     )}
+                                    data-guide='layer-switch-item'
                                     onClick={() => {
                                         setCurrentLayer(layer);
                                     }}

@@ -14,6 +14,7 @@ import {
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { useAddPoint, useDeletePoint } from '@/store/userRecord';
+import useRegion from '@/store/region';
 import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
@@ -36,6 +37,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceHeadbarExpanded = useSetForceHeadbarExpanded();
+    const setCurrentRegion = useRegion((s) => s.setCurrentRegion);
 
     const targetSubCategory = 'boss';
     const firstSubCategory = MARKER_TYPE_TREE[targetSubCategory]?.length 
@@ -93,49 +95,56 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         },
         {
             id: 'MSTEP-2_tos',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(2)',
+            target: '[data-guide="headbar-tos"]',
             content: parse(t('guide.tos') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'MSTEP-3_hide-ui',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(4)',
+            target: '[data-guide="headbar-hide-ui"]',
             content: parse(t('guide.hideUI') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'MSTEP-4_group',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(6)',
+            target: '[data-guide="headbar-group"]',
             content: parse(t('guide.group') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'MSTEP-5_dark-mode',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(8)',
+            target: '[data-guide="headbar-dark-mode"]',
             content: parse(t('guide.darkMode') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'MSTEP-6_language',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(10)',
+            target: '[data-guide="headbar-language"]',
             content: parse(t('guide.language') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'MSTEP-7_help',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(12)',
+            target: '[data-guide="headbar-help"]',
             content: parse(t('guide.help') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
+            id: 'MSTEP-7_announcement',
+            target: '[data-guide="headbar-announcement"]',
+            content: parse(t('guide.announcement') || ''),
+            placement: 'bottom',
+            disableBeacon: true,
+        },
+        {
             id: 'MSTEP-8_settings',
-            target: '[class*="headbarGrid"] > button[class*="headbarItem"]:nth-child(14)',
+            target: '[data-guide="headbar-settings"]',
             content: parse(t('guide.settings') || ''),
             placement: 'bottom',
             disableBeacon: true,
@@ -165,13 +174,15 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             disableBeacon: true,
             onNext: () => {
                 setForceRegionSubOpen(false);
+                // Ensure next layer steps always have a layer switch rendered.
+                setCurrentRegion('Valley_4');
                 map?.setZoom(map.getMinZoom(), { animate: true });
             },
-            delay: 300,
+            delay: 420,
         },
         {
             id: 'MSTEP-11_layer-main',
-            target: '[class*="layerswitch"] > [class*="regItem"]',
+            target: '[data-guide="layer-main-toggle"]',
             content: parse(t('guide.layerMain') || ''),
             placement: 'right',
             disableBeacon: true,
@@ -179,11 +190,11 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 setForceRegionSubOpen(false);
                 setForceLayerSubOpen(true);
             },
-            delay: 200,
+            delay: 260,
         },
         {
             id: 'MSTEP-12_layer-switch',
-            target: '[class*="layerswitch"] [class*="subregionSwitch"]',
+            target: '[data-guide="layer-switch-item"]',
             content: parse(t('guide.layerSwitch') || ''),
             placement: 'right',
             disableBeacon: true,
@@ -371,6 +382,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         setForceRegionSubOpen,
         setForceLayerSubOpen,
         setForceHeadbarExpanded,
+        setCurrentRegion,
         firstSubCategory,
         firstType,
         targetPoint,

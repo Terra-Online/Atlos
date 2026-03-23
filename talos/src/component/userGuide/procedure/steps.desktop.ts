@@ -14,6 +14,7 @@ import {
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { useAddPoint, useDeletePoint } from '@/store/userRecord';
+import useRegion from '@/store/region';
 import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
@@ -36,6 +37,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
+    const setCurrentRegion = useRegion((s) => s.setCurrentRegion);
 
     const targetSubCategory = 'boss';
     // Fallback to first available if boss is missing/empty, though unlikely
@@ -215,49 +217,56 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         },
         {
             id: 'STEP-12_tos',
-            target: '[class*="headbarItem"]:nth-child(1)',
+            target: '[data-guide="headbar-tos"]',
             content: parse(t('guide.tos') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-13_hide-ui',
-            target: '[class*="headbarItem"]:nth-child(3)',
+            target: '[data-guide="headbar-hide-ui"]',
             content: parse(t('guide.hideUI') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-14_group',
-            target: '[class*="headbarItem"]:nth-child(5)',
+            target: '[data-guide="headbar-group"]',
             content: parse(t('guide.group') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-15_dark-mode',
-            target: '[class*="headbarItem"]:nth-child(7)',
+            target: '[data-guide="headbar-dark-mode"]',
             content: parse(t('guide.darkMode') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-16_language',
-            target: '[class*="headbarItem"]:nth-child(9)',
+            target: '[data-guide="headbar-language"]',
             content: parse(t('guide.language') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
             id: 'STEP-17_help',
-            target: '[class*="headbarItem"]:nth-child(11)',
+            target: '[data-guide="headbar-help"]',
             content: parse(t('guide.help') || ''),
             placement: 'bottom',
             disableBeacon: true,
         },
         {
+            id: 'STEP-17_announcement',
+            target: '[data-guide="headbar-announcement"]',
+            content: parse(t('guide.announcement') || ''),
+            placement: 'bottom',
+            disableBeacon: true,
+        },
+        {
             id: 'STEP-18_settings',
-            target: '[class*="headbarItem"]:nth-child(13)',
+            target: '[data-guide="headbar-settings"]',
             content: parse(t('guide.settings') || ''),
             placement: 'bottom',
             disableBeacon: true,
@@ -282,13 +291,15 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableBeacon: true,
             onNext: () => {
                 setForceRegionSubOpen(false);
+                // Ensure next layer steps always have a layer switch rendered.
+                setCurrentRegion('Valley_4');
                 map?.setZoom(map.getMinZoom(), { animate: true });
             },
-            delay: 300,
+            delay: 420,
         },
         {
             id: 'STEP-21_layer-main',
-            target: '[class*="layerswitch"] > [class*="regItem"]',
+            target: '[data-guide="layer-main-toggle"]',
             content: parse(t('guide.layerMain') || ''),
             placement: 'right',
             disableBeacon: true,
@@ -296,11 +307,11 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
                 setForceRegionSubOpen(false);
                 setForceLayerSubOpen(true);
             },
-            delay: 200,
+            delay: 260,
         },
         {
             id: 'STEP-22_layer-switch',
-            target: '[class*="layerswitch"] [class*="subregionSwitch"]',
+            target: '[data-guide="layer-switch-item"]',
             content: parse(t('guide.layerSwitch') || ''),
             placement: 'right',
             disableBeacon: true,
@@ -359,6 +370,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         setForceLayerSubOpen,
         setCurrentActivePoint,
         setForceDetailOpen,
+        setCurrentRegion,
         map,
         firstSubCategory,
         firstType,

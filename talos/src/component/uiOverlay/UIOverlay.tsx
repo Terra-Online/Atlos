@@ -17,8 +17,7 @@ import {
     useSetIsUserGuideOpen,
     useMobileDrawerSnapIndex,
     useIsUserGuideOpen,
-    useSetIsAnnouncementOpen,
-    useSetAnnouncementFlowReady,
+    useUiPrefsStore,
 } from '@/store/uiPrefs';
 
 import { useLocale, useTranslateUI } from '@/locale';
@@ -54,8 +53,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const isUserGuideOpen = useIsUserGuideOpen();
-    const setIsAnnouncementOpen = useSetIsAnnouncementOpen();
-    const setAnnouncementFlowReady = useSetAnnouncementFlowReady();
+    const setIsAnnouncementOpen = useUiPrefsStore((s) => s.setIsAnnouncementOpen);
+    const setAnnouncementFlowReady = useUiPrefsStore((s) => s.setAnnouncementFlowReady);
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
     const [announcementChecked, setAnnouncementChecked] = useState(false);
     const [autoOpenedOnce, setAutoOpenedOnce] = useState(false);
@@ -140,42 +139,50 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={ToS}
                     onClick={handleReset}
                     tooltip={t('headbar.tos')}
+                    guideKey='headbar-tos'
                 />
                 <HeadItem
                     icon={hideUI}
                     onClick={handleHideUI}
                     tooltip={t('headbar.hideUI')}
+                    guideKey='headbar-hide-ui'
                 />
                 <HeadItem
                     icon={Group}
                     onClick={handleGroup}
                     tooltip={t('headbar.group')}
+                    guideKey='headbar-group'
                 />
                 <HeadItem
                     icon={Darkmode}
                     onClick={handleDarkMode}
                     tooltip={t('headbar.darkmode')}
+                    guideKey='headbar-dark-mode'
                 />
                 <HeadItem
                     icon={i18n}
                     onClick={handleLanguage}
                     tooltip={t('headbar.language')}
+                    guideKey='headbar-language'
                 />
                 <HeadItem
                     icon={Guide}
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
+                    guideKey='headbar-help'
                 />
                 <HeadItem
                     icon={AnnouncementIcon}
                     onClick={handleAnnouncement}
                     tooltip={t('headbar.announcement')}
                     badge={hasUnreadAnnouncement}
+                    guideKey='headbar-announcement'
                 />
                 <HeadItem
                     icon={SettingsIcon}
                     onClick={handleSettings}
                     tooltip={t('headbar.settings')}
+                    guideKey='headbar-settings'
                 />
             </HeadBar>
 

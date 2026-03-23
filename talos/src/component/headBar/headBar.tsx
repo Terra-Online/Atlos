@@ -15,6 +15,7 @@ interface HeadItemProps {
     active?: boolean;
     disabled?: boolean;
     badge?: boolean;
+    guideKey?: string;
 }
 
 const HeadItem = ({
@@ -24,6 +25,7 @@ const HeadItem = ({
     active = false,
     disabled = false,
     badge = false,
+    guideKey,
 }: HeadItemProps) => {
     const handleClick = (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -40,6 +42,7 @@ const HeadItem = ({
             onClick={handleClick}
             disabled={disabled}
             aria-label={tooltip}
+            data-guide={guideKey}
         >
             <div className={styles.headbarIcon}>{Icon && <Icon />}</div>
             {badge && <span className={styles.badge} />}

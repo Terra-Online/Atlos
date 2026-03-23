@@ -144,6 +144,7 @@
     "group": "Visa <span class=\"keyword\">diskussionsgrupper</span> och <span class=\"keyword\">communities</span> relaterade till detta projekt.",
     "darkMode": "Växla det nuvarande <span class=\"keyword\">omgivande ljusläget</span>.",
     "language": "Byt <span class=\"keyword\">gränssnittsspråk</span>.<br>Språk med <span class=\"keyword\">fullt stöd för översättning av spelinnehåll</span> inkluderar engelska, förenklad kinesiska, traditionell kinesiska, japanska, koreanska, franska, tyska, italienska, ryska, spanska, indonesiska, portugisiska, thailändska och vietnamesiska.<br><span class=\"keyword\">Endast UI-språk</span> (endast gränssnittsöversättningar) inkluderar arabiska, malaysiska, polska och svenska.",
+    "announcement": "Visa <span class=\"keyword\">webbplatsmeddelanden</span>. Uppdateringar av användarvillkor och sekretesspolicy kommer också att publiceras här.",
     "help": "Starta om denna <span class=\"keyword\">guide</span>.",
     "settings": "Öppna <span class=\"keyword\">Inställningar</span> för att kontrollera vilken lokal lagring kartan använder för att komma ihåg dina handlingar.",
     "regionSwitch": "Klicka för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner) i spelet.",
