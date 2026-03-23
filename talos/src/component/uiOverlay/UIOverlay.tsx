@@ -6,15 +6,22 @@ import LanguageModal from '@/component/language/language';
 import GroupsModal from '@/component/group/group';
 import ToSModal from '@/component/tos/tos';
 import SettingsModal from '@/component/settings/settings';
+import AnnouncementModal from '@/component/announcement/announcement';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
 import { LayerSwitch } from '@/component/layerSwitch/layerSwitch';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
-import { useSetIsUserGuideOpen, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
+import {
+    useSetIsUserGuideOpen,
+    useMobileDrawerSnapIndex,
+    useIsUserGuideOpen,
+    useSetIsAnnouncementOpen,
+    useSetAnnouncementFlowReady,
+} from '@/store/uiPrefs';
 
-import { useTranslateUI } from '@/locale';
+import { useLocale, useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
 import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
 
@@ -25,6 +32,8 @@ import Darkmode from '../../assets/logos/darkmode.svg?react';
 import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
+import AnnouncementIcon from '../../assets/logos/announce.svg?react';
+import { fetchAnnouncements, getAnnouncementDebugMode } from '@/utils/announcement';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -35,13 +44,61 @@ interface UIOverlayProps {
 
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = true, onHideUI }) => {
     const t = useTranslateUI();
+    const locale = useLocale();
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [announcementOpen, setAnnouncementOpen] = useState(false);
+    const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
+    const isUserGuideOpen = useIsUserGuideOpen();
+    const setIsAnnouncementOpen = useSetIsAnnouncementOpen();
+    const setAnnouncementFlowReady = useSetAnnouncementFlowReady();
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
+    const [announcementChecked, setAnnouncementChecked] = useState(false);
+    const [autoOpenedOnce, setAutoOpenedOnce] = useState(false);
+
+    // Check for unread announcements on mount
+    useEffect(() => {
+        setAnnouncementFlowReady(false);
+        const checkUnread = async () => {
+            const debugMode = getAnnouncementDebugMode();
+            if (debugMode === 'force-unread') {
+                setHasUnreadAnnouncement(true);
+                setAnnouncementChecked(true);
+                return;
+            }
+
+            try {
+                const data = await fetchAnnouncements(locale);
+                const lastRead = localStorage.getItem('announcement_last_read');
+                const latestDate = data[0]?.date;
+                const hasUnread = !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
+                setHasUnreadAnnouncement(hasUnread);
+            } catch (error) {
+                console.error('Failed to check announcements:', error);
+            } finally {
+                setAnnouncementChecked(true);
+            }
+        };
+        void checkUnread();
+    }, [locale, setAnnouncementFlowReady]);
+
+    useEffect(() => {
+        if (!announcementChecked) return;
+        if (isUserGuideOpen) return;
+
+        if (hasUnreadAnnouncement && !autoOpenedOnce) {
+            setAnnouncementOpen(true);
+            setIsAnnouncementOpen(true);
+            setAutoOpenedOnce(true);
+            return;
+        }
+
+        setAnnouncementFlowReady(true);
+    }, [announcementChecked, isUserGuideOpen, hasUnreadAnnouncement, autoOpenedOnce, setAnnouncementFlowReady, setIsAnnouncementOpen]);
 
     const handleReset = () => {
         setStorageOpen(true);
@@ -61,6 +118,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
+    const handleAnnouncement = () => setAnnouncementOpen(true);
+
+    useEffect(() => {
+        setIsAnnouncementOpen(announcementOpen);
+        if (!announcementOpen && announcementChecked) {
+            setAnnouncementFlowReady(true);
+        }
+    }, [announcementOpen, announcementChecked, setIsAnnouncementOpen, setAnnouncementFlowReady]);
 
     return (
         <div
@@ -100,6 +165,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={Guide}
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
+                />
+                <HeadItem
+                    icon={AnnouncementIcon}
+                    onClick={handleAnnouncement}
+                    tooltip={t('headbar.announcement')}
+                    badge={hasUnreadAnnouncement}
                 />
                 <HeadItem
                     icon={SettingsIcon}
@@ -160,6 +231,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 open={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 onChange={(o) => setSettingsOpen(o)}
+            />
+
+            {/* Announcement Modal */}
+            <AnnouncementModal
+                open={announcementOpen}
+                onClose={() => setAnnouncementOpen(false)}
+                onChange={(o) => setAnnouncementOpen(o)}
+                onHasUnread={setHasUnreadAnnouncement}
             />
         </div>
     );

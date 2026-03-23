@@ -7,7 +7,8 @@
     "lightmode": "Tukar ke mod cerah",
     "language": "Pilih bahasa",
     "help": "Dapatkan bantuan",
-    "settings": "Keutamaan"
+    "settings": "Keutamaan",
+    "announcement": "Pengumuman"
   },
   "trigger": {
     "boundaryMode": "Mod Sempadan",
@@ -202,5 +203,9 @@
     "kofi": "Sokong melalui Ko-fi",
     "afdian": "Sokong melalui Afdian",
     "hint": "Kami mengesyorkan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di tanah besar China."
+  },
+  "announcement": {
+    "title": "Notis Laman Web",
+    "empty": "Tiada pengumuman tersedia"
   }
 }

@@ -7,7 +7,8 @@
     "lightmode": "밝은 모드로 전환",
     "language": "언어 선택",
     "help": "도움말",
-    "settings": "설정"
+    "settings": "설정",
+    "announcement": "공지사항"
   },
   "trigger": {
     "boundaryMode": "경계 모드",
@@ -202,5 +203,9 @@
     "kofi": "Ko-fi로 후원",
     "afdian": "Afdian으로 후원",
     "hint": "전 세계 사용자에게는 Patreon 또는 Ko-fi를, 중국 본토 사용자에게는 Afdian을 권장합니다."
+  },
+  "announcement": {
+    "title": "사이트 공지",
+    "empty": "공지사항이 없습니다"
   }
 }

@@ -7,7 +7,8 @@
     "lightmode": "ライトモードに切り替え",
     "language": "言語を選択",
     "help": "ヘルプ",
-    "settings": "設定"
+    "settings": "設定",
+    "announcement": "お知らせ"
   },
   "trigger": {
     "boundaryMode": "バウンダリー モード",
@@ -202,5 +203,9 @@
     "kofi": "Ko-fiで支援",
     "afdian": "Afdianで支援",
     "hint": "グローバルユーザーにはPatreonまたはKo-fiを、中国本土のユーザーにはAfdianをお勧めします。"
+  },
+  "announcement": {
+    "title": "サイトのお知らせ",
+    "empty": "お知らせはありません"
   }
 }

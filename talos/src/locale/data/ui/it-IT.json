@@ -7,7 +7,8 @@
     "lightmode": "Passa alla modalità chiara",
     "language": "Scegli la lingua",
     "help": "Richiedi aiuto",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "announcement": "Annunci"
   },
   "trigger": {
     "boundaryMode": "Modalità Confine",
@@ -202,5 +203,9 @@
     "kofi": "Sostieni via Ko-fi",
     "afdian": "Sostieni via Afdian",
     "hint": "Consigliamo Patreon o Ko-fi per gli utenti globali e Afdian per gli utenti nella Cina continentale."
+  },
+  "announcement": {
+    "title": "Avviso del sito",
+    "empty": "Nessun annuncio disponibile"
   }
 }

@@ -7,7 +7,8 @@
     "lightmode": "Växla till ljust läge",
     "language": "Välj språk",
     "help": "Hjälp",
-    "settings": "Inställningar"
+    "settings": "Inställningar",
+    "announcement": "Meddelanden"
   },
   "trigger": {
     "boundaryMode": "Gränsläge",
@@ -202,5 +203,9 @@
     "kofi": "Stöd via Ko-fi",
     "afdian": "Stöd via Afdian",
     "hint": "Vi rekommenderar Patreon eller Ko-fi för globala användare, och Afdian för användare i Kina."
+  },
+  "announcement": {
+    "title": "Webbplatsmeddelande",
+    "empty": "Inga meddelanden tillgängliga"
   }
 }
