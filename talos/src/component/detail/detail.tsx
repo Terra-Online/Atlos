@@ -33,7 +33,7 @@ import {
     useUserRecord,
 } from '@/store/userRecord.ts';
 import classNames from 'classnames';
-import { motion, AnimatePresence, usePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
 import { useForceDetailOpen } from '@/store/uiPrefs';
 
@@ -74,52 +74,6 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
 //     addedAt: "2025-03-09T15:30:00Z"
 //   }
 // };
-
-const TEXT_DURATION = 30;
-const AnimatedText = (props:{text:string} & React.ComponentProps<typeof motion.span>) => {
-    const {
-        text,
-        ...rest
-    } = props;
-    const [isPresent, safeToRemove] = usePresence();
-    // text should not be changed
-    const [textToRender, setTextToRender] = useState('');
-    useEffect(() => {
-        if (isPresent) {
-            let index = 0;
-            const interval = setInterval(() => {
-                setTextToRender(text.slice(0, index));
-                index++;
-                if (index > text.length) {
-                    clearInterval(interval);
-                }
-            }, TEXT_DURATION);
-            return () => clearInterval(interval);
-        } else {
-            let index = text.length;
-            const interval = setInterval(() => {
-                setTextToRender(text.slice(0, index));
-                index--;
-                if (index < 0) {
-                    clearInterval(interval);
-                    safeToRemove();
-                }
-            }, TEXT_DURATION);
-            return () => clearInterval(interval);
-        }
-    }, [isPresent, safeToRemove, text]);
-    return (
-        <motion.span
-            {...rest}
-            initial='initial'
-            animate={isPresent ? 'animate' : 'exit'}
-        >
-            {textToRender
-                ?.split('')
-                .map((c, index) => <span key={index}>{c}</span>) ?? ''}
-        </motion.span>
-    );
-};
 
 export const Detail = ({ inline = false }: { inline?: boolean }) => {
     /**
@@ -291,15 +245,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                     <CategoryIcon className={styles.icon} />
                                 </span>
                             )}
-                            <AnimatePresence mode='wait'>
-                                <AnimatedText
-                                    text={pointName}
-                                    key={currentPoint?.id ?? 'null'}
-                                    className={styles.pointName}
-                                >
-                                    {pointName}
-                                </AnimatedText>
-                            </AnimatePresence>
+                            <span className={styles.pointName}>{pointName}</span>
                         </div>
                         <div className={styles.headerActions}>
                             <Button
