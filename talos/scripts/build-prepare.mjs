@@ -8,8 +8,15 @@ const run = (cmd) => {
 const argDeploy = process.argv.includes('--deploy');
 const envDeploy = process.env.npm_config_deploy;
 const shouldDeploy = argDeploy || (typeof envDeploy === 'string' && envDeploy !== 'false' && envDeploy !== '0');
+const isCi = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+const envSkipSubset = process.env.SKIP_SUBSET_FONTS;
+const shouldSkipSubset = isCi || (typeof envSkipSubset === 'string' && envSkipSubset !== 'false' && envSkipSubset !== '0');
 
-run('pnpm run subset:fonts');
+if (shouldSkipSubset) {
+  console.log('\nSkipping font subsetting in CI environment.');
+} else {
+  run('pnpm run subset:fonts');
+}
 run('pnpm run build:search-index');
 
 if (shouldDeploy) {
