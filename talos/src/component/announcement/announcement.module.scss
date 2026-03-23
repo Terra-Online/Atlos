@@ -7,38 +7,41 @@
     --ann-panel-bg: #{$light-1};
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
-    --ann-tab-inactive-bg: transparent;
-    --ann-tab-inactive-text: #{$grey-1};
+    --ann-tab-inactive-bg: #{dim-1};
+    --ann-tab-inactive-text: #{$light-1};
     --ann-tab-hover-bg: #{$grey-1};
     --ann-desc-bg: #{$grey-1};
     --ann-desc-text: #{$light-1};
-    --ann-content-bg: #{$light-1};
     --ann-content-text: #{$grey-1};
     --ann-content-heading: #{$black-1};
-    --ann-border: #{$white-3};
+    --ann-border: #{$mid};
+
+    --ann-link: #{$primary-accent-6};
 }
 
 :root[data-theme='dark'] {
     --ann-panel-bg: #{$black-1};
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
-    --ann-tab-inactive-bg: transparent;
+    --ann-tab-inactive-bg: #{mid};
     --ann-tab-inactive-text: #{$light-1};
-    --ann-tab-hover-bg: #{rgba($grey-2, 0.55)};
+    --ann-tab-hover-bg: #{$grey-1};
     --ann-desc-bg: #{$black-1};
     --ann-desc-text: #{$light-1};
-    --ann-content-bg: #{$grey-1};
+
     --ann-content-text: #{$light-1};
     --ann-content-heading: #{$white-1};
-    --ann-border: #{$grey-2};
+    --ann-border: #{$mid};
+
+    --ann-link: #{$primary-accent-4};
 }
 
 .body {
     flex: 1;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    margin: 1.5rem;
-    border-radius: 3px;
+    margin: 0.5rem;
     overflow: hidden;
     min-height: 0;
     transition: background-color 0.35s $adagio-curve;
@@ -47,13 +50,17 @@
 .tabBarWrapper {
     flex-shrink: 0;
     position: relative;
+    z-index: 1;
 }
 
 .tabBar {
+    position: relative;
     display: flex;
     flex-direction: row;
     overflow-x: auto;
     background: transparent;
+    padding-bottom: 4px;
+    transform: translateY(4px);
 
     &::-webkit-scrollbar {
         height: 0;
@@ -64,8 +71,8 @@
     position: absolute;
     bottom: 0;
     transform: translateX(-50%) translateY(100%);
-    border-left: 7px solid transparent;
-    border-right: 7px solid transparent;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
     border-top: 6px solid var(--ann-tab-active-bg);
     pointer-events: none;
     z-index: 2;
@@ -74,40 +81,47 @@
 
 .tab {
     flex-shrink: 0;
-    padding: 0.45rem 1rem;
+    padding: 0.325rem .625rem;
     border: none;
     cursor: pointer;
-    font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
-    font-weight: 900;
-    font-size: 0.875rem;
-    letter-spacing: 0.02em;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', 'UD_ShinGo DemiBold', sans-serif;
+    line-height: 1.25;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: -.2px;
     background-color: var(--ann-tab-inactive-bg);
     color: var(--ann-tab-inactive-text);
+    box-shadow: 0 1px 2px rgba($black-0, 0.25);
+    z-index: 1;
     transition:
         background-color 0.15s ease,
         color 0.15s ease;
 
     &:not(.activeTab):hover {
-            background-color: var(--ann-tab-hover-bg);
+        background-color: var(--ann-tab-hover-bg);
     }
 
     &.activeTab {
         background-color: var(--ann-tab-active-bg);
         color: var(--ann-tab-active-text);
     }
+
 }
 
 .description {
     background: var(--ann-desc-bg);
     color: var(--ann-desc-text);
-    padding: 0.5rem 0.75rem;
-    font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
-    font-size: 1rem;
+    padding: 0.375rem 0.75rem;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', 'UD_ShinGo DemiBold', sans-serif;
+    font-size: 1.125rem;
     font-weight: 900;
+    line-height: 1.5;
+    text-transform: uppercase;
     flex-shrink: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    z-index: 0;
     transition:
         background-color 0.35s $adagio-curve,
         color 0.35s $adagio-curve;
@@ -115,13 +129,15 @@
 
 .content {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    background-color: var(--ann-content-bg);
     color: var(--ann-content-text);
-    padding: 1rem 1.2rem 1.5rem;
+    padding: .5rem .5rem 30%;
     font-family: 'HMSans_EN', 'HMSans', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 0.9rem;
-    line-height: 1.6;
+    letter-spacing: -0.2px;
+    font-weight: 600;
+    line-height: 1.25;
+    font-size: 0.925rem;
     transition: background-color 0.35s $adagio-curve;
 
     &::-webkit-scrollbar {
@@ -134,7 +150,7 @@
     }
 
     h1 {
-        font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
+        font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
         font-size: 1.6rem;
         font-weight: 900;
         color: var(--ann-content-heading);
@@ -144,11 +160,11 @@
     }
 
     h2 {
-        font-family: 'Novecento DemiBold', 'HMSans_EN', sans-serif;
-        font-size: 1.1rem;
+        font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+        font-size: 18px;
         font-weight: 900;
         color: var(--ann-content-heading);
-        margin-top: 1.2rem;
+        margin-top: 1rem;
         margin-bottom: 0.4rem;
     }
 
@@ -165,6 +181,10 @@
 
         &:last-child {
             margin-bottom: 0;
+        }
+        &:has(img) > em {
+            display: flex;
+            justify-content: center;
         }
     }
 
@@ -184,20 +204,33 @@
     }
 
     img {
-        max-width: 100%;
-        border-radius: 4px;
-        margin: 0.5rem 0;
+        max-width: 60%;
+        margin: 0.5rem auto;
         display: block;
+        border: 2px solid var(--detail-image-border);
+        box-shadow:
+                0 0 4px 0.5px rgba($black-0, 0.6),
+                0 0 4px 2px rgba($light-2, 0.6) inset;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
     }
 
     a {
-        color: $primary-accent-5;
+        color: var(--ann-link);
         text-decoration: underline;
+        text-underline-offset: 2px;
+        transition: all .3s ease;
+        &:hover {
+            opacity: 0.8;
+        }
     }
 
     hr {
         border: none;
-        border-top: 1px solid var(--ann-border);
-        margin: 1rem 0;
+        border-top: 2px solid var(--ann-border);
+        margin: .8rem 0;
     }
 }

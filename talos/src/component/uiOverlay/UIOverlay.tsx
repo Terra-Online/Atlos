@@ -21,7 +21,7 @@ import {
     useSetAnnouncementFlowReady,
 } from '@/store/uiPrefs';
 
-import { useTranslateUI } from '@/locale';
+import { useLocale, useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
 import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
 
@@ -33,7 +33,7 @@ import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
-import { fetchAnnouncements } from '@/utils/announcement';
+import { fetchAnnouncements, getAnnouncementDebugMode } from '@/utils/announcement';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -44,6 +44,7 @@ interface UIOverlayProps {
 
 const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = true, onHideUI }) => {
     const t = useTranslateUI();
+    const locale = useLocale();
     const [langOpen, setLangOpen] = useState(false);
     const [groupOpen, setGroupOpen] = useState(false);
     const [storageOpen, setStorageOpen] = useState(false);
@@ -63,8 +64,15 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     useEffect(() => {
         setAnnouncementFlowReady(false);
         const checkUnread = async () => {
+            const debugMode = getAnnouncementDebugMode();
+            if (debugMode === 'force-unread') {
+                setHasUnreadAnnouncement(true);
+                setAnnouncementChecked(true);
+                return;
+            }
+
             try {
-                const data = await fetchAnnouncements();
+                const data = await fetchAnnouncements(locale);
                 const lastRead = localStorage.getItem('announcement_last_read');
                 const latestDate = data[0]?.date;
                 const hasUnread = !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
@@ -76,7 +84,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
             }
         };
         void checkUnread();
-    }, [setAnnouncementFlowReady]);
+    }, [locale, setAnnouncementFlowReady]);
 
     useEffect(() => {
         if (!announcementChecked) return;

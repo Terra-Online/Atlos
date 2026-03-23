@@ -55,8 +55,8 @@
 
 .badge {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 2px;
+    right: 4px;
     width: 10px;
     height: 10px;
     background-color: var(--badge-bg, $primary-accent-6);
@@ -71,20 +71,23 @@
         position: relative;
         display: block;
         outline: 2px solid var(--badge-bg);
-        width: 100%;
-        height: 100%;
-        animation: badgePulse 1s ease infinite;
+        border-radius: 1px;
+        width: 200%;
+        height: 200%;
+        left: -50%;
+        top: -50%; //Scale the element so the border-radius remains visually correct; otherwise the offset will exaggerate the corner radius.
+        animation: badgePulse 1s cubic-bezier(0, 0, 0.2, 1) infinite;
     }
 }
 
 @keyframes badgePulse {
     0% {
-        outline-offset: 2px;
+        outline-offset: -5px;
         outline-color: var(--badge-bg);
     }
     100% {
-        outline-offset: 8px;
-        outline-color: rgba($primary-accent-6, 0);
+        outline-offset: 4px;
+        outline-color: transparent;
     }
 }
 

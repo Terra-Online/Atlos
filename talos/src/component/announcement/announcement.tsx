@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
-import { useTranslateUI } from '@/locale';
+import { useLocale, useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Modal from '@/component/modal/modal';
-import { fetchAnnouncements } from '@/utils/announcement';
+import { fetchAnnouncements, getAnnouncementDebugMode } from '@/utils/announcement';
 
-export interface AnnouncementItem {
+export interface AnnItem {
     id: string;
     title: string;
     description: string;
@@ -14,33 +14,50 @@ export interface AnnouncementItem {
     date?: string;
 }
 
-export interface AnnouncementModalProps {
+export interface AnnModalProps {
     open: boolean;
     onClose?: () => void;
     onChange?: (open: boolean) => void;
     onHasUnread?: (hasUnread: boolean) => void;
 }
 
-const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, onChange, onHasUnread }) => {
+const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnread }) => {
     const t = useTranslateUI();
+    const locale = useLocale();
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
-    const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+    const [announcements, setAnnouncements] = useState<AnnItem[]>([]);
+    const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
     const activeItem = announcements[activeIndex] ?? announcements[0];
+    const isForceUnreadDebug = getAnnouncementDebugMode() === 'force-unread';
+
+    const updateIndicator = useCallback(() => {
+        const activeTab = tabRefs.current.get(activeIndex);
+        const wrapper = tabBarWrapperRef.current;
+        if (!activeTab || !wrapper) {
+            setIndicatorLeft(null);
+            return;
+        }
+
+        const tabRect = activeTab.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const centerX = tabRect.left - wrapperRect.left + tabRect.width / 2;
+        setIndicatorLeft(centerX);
+    }, [activeIndex]);
 
     // Fetch announcements
     useEffect(() => {
         const loadAnnouncements = async () => {
             try {
-                const data = (await fetchAnnouncements()) as AnnouncementItem[];
+                const data = (await fetchAnnouncements(locale)) as AnnItem[];
                 setAnnouncements(data);
 
                 // Check for unread
                 const lastRead = localStorage.getItem('announcement_last_read');
                 const latestDate = data[0]?.date;
-                const hasUnread = !lastRead || (latestDate && new Date(latestDate) > new Date(lastRead));
+                const hasUnread = isForceUnreadDebug || !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
                 onHasUnread?.(typeof hasUnread === 'boolean' ? hasUnread : true);
             } catch (error) {
                 console.error('Failed to fetch announcements:', error);
@@ -48,7 +65,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
             }
         };
         void loadAnnouncements();
-    }, [onHasUnread]);
+    }, [locale, onHasUnread, isForceUnreadDebug]);
 
     useEffect(() => {
         if (activeIndex >= announcements.length) {
@@ -56,26 +73,48 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
         }
     }, [activeIndex, announcements.length]);
 
+    useEffect(() => {
+        if (!open || announcements.length === 0) {
+            setIndicatorLeft(null);
+            return;
+        }
+
+        const tabBar = tabBarRef.current;
+        if (!tabBar) return;
+
+        const rafId = requestAnimationFrame(updateIndicator);
+        const handleResize = () => updateIndicator();
+        const handleScroll = () => updateIndicator();
+
+        window.addEventListener('resize', handleResize);
+        tabBar.addEventListener('scroll', handleScroll, { passive: true });
+
+        const resizeObserver = new ResizeObserver(() => updateIndicator());
+        resizeObserver.observe(tabBar);
+
+        const activeTab = tabRefs.current.get(activeIndex);
+        if (activeTab) {
+            resizeObserver.observe(activeTab);
+        }
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            window.removeEventListener('resize', handleResize);
+            tabBar.removeEventListener('scroll', handleScroll);
+            resizeObserver.disconnect();
+        };
+    }, [activeIndex, announcements.length, open, updateIndicator]);
+
     // Mark as read when opened
     useEffect(() => {
-        if (open && announcements.length > 0) {
+        if (open && announcements.length > 0 && !isForceUnreadDebug) {
             const latestDate = announcements[0]?.date;
             if (latestDate) {
                 localStorage.setItem('announcement_last_read', latestDate);
                 onHasUnread?.(false);
             }
         }
-    }, [open, announcements, onHasUnread]);
-
-    // Update triangle indicator position when active tab changes
-    useEffect(() => {
-        const activeBtn = tabRefs.current.get(activeIndex);
-        const bar = tabBarRef.current;
-        if (!activeBtn || !bar) return;
-        const btnRect = activeBtn.getBoundingClientRect();
-        const barRect = bar.getBoundingClientRect();
-        setIndicatorLeft(btnRect.left - barRect.left + btnRect.width / 2);
-    }, [activeIndex, open, announcements.length]);
+    }, [open, announcements, onHasUnread, isForceUnreadDebug]);
 
     const handleClose = () => {
         onClose?.();
@@ -100,7 +139,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
                     </div>
                 ) : (
                     <>
-                        <div className={styles.tabBarWrapper}>
+                        <div className={styles.tabBarWrapper} ref={tabBarWrapperRef}>
                             <div className={styles.tabBar} role='tablist' ref={tabBarRef}>
                                 {announcements.map((item, index) => (
                                     <button
@@ -118,7 +157,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
                                     </button>
                                 ))}
                             </div>
-                            {announcements.length > 1 && indicatorLeft !== null && (
+                            {indicatorLeft !== null && (
                                 <div
                                     className={styles.tabIndicator}
                                     style={{ left: `${indicatorLeft}px` }}
@@ -138,4 +177,4 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ open, onClose, on
     );
 };
 
-export default React.memo(AnnouncementModal);
+export default React.memo(AnnModal);
