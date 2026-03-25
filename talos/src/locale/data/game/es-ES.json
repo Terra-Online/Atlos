@@ -468,11 +468,19 @@
             "quillbeast_liver": "Hígado de Bestia pluma",
             "rakerbeast_longfur": "Pelaje largo de Bestia Rastrera"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manuscritos",
             "digital": "Archivos E",
             "collection": "Informes",
             "media": "Multimedia"
+        },
+        "researchId": {
+            "research_007": "Orígenes de la Zona de pruebas de éter",
+            "research_006": "Pesadillas del pasado",
+            "research_002": "El Clan de los Rompehuesos",
+            "research_003prts": "Empalizada de Qingbo",
+            "research_001": "Transporte en el Valle de Jingyu",
+            "research_wulingbussiness": "Avenida Fangxing"
         }
     }
 }

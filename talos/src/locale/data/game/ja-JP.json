@@ -52,7 +52,7 @@
             "pressure_plate": "感圧板",
             "temporary_energy_alluvium": "臨時超域活性点",
             "energy_alluvium": "超域活性点",
-            "re_crisis": "危境再現",
+            "re_crisis": "<p=\"ききょうさいげん\" padding=0>危境再現</p>",
             "protocol_space": "協約空間",
             "exploration_level": "探索レベル",
             "ew_terminal": "襲撃警備端末",
@@ -468,11 +468,19 @@
             "quillbeast_liver": "球刺獣の肝臓",
             "rakerbeast_longfur": "彪獣の長毛"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "紙の資料",
             "digital": "デジタルファイル",
             "collection": "調査報告",
             "media": "マルチメディア"
+        },
+        "researchId": {
+            "research_007": "超域実験場設立の経緯",
+            "research_006": "旧き悪夢",
+            "research_002": "ボーンクラッシャー",
+            "research_003prts": "清波砦",
+            "research_001": "景玉谷の交通",
+            "research_wulingbussiness": "方興街"
         }
     }
 }

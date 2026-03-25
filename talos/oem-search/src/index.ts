@@ -12,6 +12,8 @@ interface SearchDoc {
   typeMain: string;
   title: string;
   aliases: string;
+  binderTokens: string;
+  binderDisplay: string;
   regionKey: string;
   subregionId: string;
   body: string;
@@ -23,6 +25,8 @@ interface SearchHit {
   typeKey: string;
   typeMain: string;
   title: string;
+  binderTokens: string;
+  binderDisplay: string;
   regionKey: string;
   subregionId: string;
   body: string;
@@ -58,6 +62,8 @@ type CreateFn = (args: {
     typeMain: 'string';
     title: 'string';
     aliases: 'string';
+    binderTokens: 'string';
+    binderDisplay: 'string';
     regionKey: 'string';
     subregionId: 'string';
     body: 'string';
@@ -121,7 +127,7 @@ const json = (data: unknown, status = 200, origin = '*'): Response =>
     },
   });
 
-const isSearchDocArray = (value: unknown): value is SearchDoc[] => {
+const isSearchDocBaseArray = (value: unknown): value is Array<Omit<SearchDoc, 'binderTokens' | 'binderDisplay'> & Partial<Pick<SearchDoc, 'binderTokens' | 'binderDisplay'>>> => {
   if (!Array.isArray(value)) return false;
   return value.every((item) => {
     if (!item || typeof item !== 'object') return false;
@@ -143,6 +149,7 @@ const isSearchDocArray = (value: unknown): value is SearchDoc[] => {
 
 const normalizeDocsLocale = (locale: string | null): string => {
   if (!locale) return 'en-US';
+  if (locale === 'zh-HK') return 'zh-TW';
   if (FULL_LANGS.has(locale)) return locale;
   if (UI_ONLY_LANGS.has(locale)) return 'en-US';
   return 'en-US';
@@ -178,8 +185,12 @@ const loadDocsFromLocale = async (env: Env, locale: string): Promise<SearchDoc[]
   if (!res.ok) return null;
 
   const data = (await res.json()) as unknown;
-  if (!isSearchDocArray(data) || data.length === 0) return null;
-  return data;
+  if (!isSearchDocBaseArray(data) || data.length === 0) return null;
+  return data.map((row) => ({
+    ...row,
+    binderTokens: typeof row.binderTokens === 'string' ? row.binderTokens : '',
+    binderDisplay: typeof row.binderDisplay === 'string' ? row.binderDisplay : '',
+  }));
 };
 
 const loadDocs = async (env: Env, locale: string): Promise<SearchDoc[]> => {
@@ -204,7 +215,7 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
 
   return docs
     .filter((doc) => {
-      const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.body}`.toLowerCase();
+      const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`.toLowerCase();
       return haystack.includes(q);
     })
     .slice(0, limit)
@@ -213,10 +224,48 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
       typeKey: doc.typeKey,
       typeMain: doc.typeMain,
       title: doc.title,
+      binderTokens: doc.binderTokens,
+      binderDisplay: doc.binderDisplay,
       regionKey: doc.regionKey,
       subregionId: doc.subregionId,
       body: doc.body,
       score: 0,
+    }));
+};
+
+const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHit[] => {
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return [];
+
+  return docs
+    .filter((doc) => {
+      const binderHaystack = `${doc.binderTokens}\n${doc.aliases}`.toLowerCase();
+      return binderHaystack.includes(q);
+    })
+    .sort((a, b) => {
+      const aFile = a.typeMain === 'files' ? 0 : 1;
+      const bFile = b.typeMain === 'files' ? 0 : 1;
+      if (aFile !== bFile) return aFile - bFile;
+
+      const aText = `${a.binderTokens}\n${a.aliases}`.toLowerCase();
+      const bText = `${b.binderTokens}\n${b.aliases}`.toLowerCase();
+      const aIdx = aText.indexOf(q);
+      const bIdx = bText.indexOf(q);
+      if (aIdx !== bIdx) return aIdx - bIdx;
+      return 0;
+    })
+    .slice(0, limit)
+    .map((doc) => ({
+      pointId: doc.pointId,
+      typeKey: doc.typeKey,
+      typeMain: doc.typeMain,
+      title: doc.title,
+      binderTokens: doc.binderTokens,
+      binderDisplay: doc.binderDisplay,
+      regionKey: doc.regionKey,
+      subregionId: doc.subregionId,
+      body: doc.body,
+      score: doc.typeMain === 'files' ? 1_000_000 : 500_000,
     }));
 };
 
@@ -235,6 +284,8 @@ const getDb = async (env: Env, docsLocale: string): Promise<SearchDb> => {
         typeMain: 'string',
         title: 'string',
         aliases: 'string',
+        binderTokens: 'string',
+        binderDisplay: 'string',
         regionKey: 'string',
         subregionId: 'string',
         body: 'string',
@@ -264,6 +315,8 @@ const getLegacySingleDb = async (env: Env): Promise<SearchDb> => {
         typeMain: 'string',
         title: 'string',
         aliases: 'string',
+        binderTokens: 'string',
+        binderDisplay: 'string',
         regionKey: 'string',
         subregionId: 'string',
         body: 'string',
@@ -290,11 +343,36 @@ const asHit = (row: { document: SearchDoc; score: number }): SearchHit => ({
   typeKey: row.document.typeKey,
   typeMain: row.document.typeMain,
   title: row.document.title,
+  binderTokens: row.document.binderTokens,
+  binderDisplay: row.document.binderDisplay,
   regionKey: row.document.regionKey,
   subregionId: row.document.subregionId,
   body: row.document.body,
   score: row.score,
 });
+
+const normalizeText = (value: string): string => value.trim().toLowerCase();
+
+const matchTier = (hit: SearchHit, q: string): number => {
+  const nq = normalizeText(q);
+  if (!nq) return 0;
+  if (normalizeText(hit.binderTokens).includes(nq)) return 4;
+
+  const titleMatched = normalizeText(hit.title).includes(nq);
+  const bodyMatched = normalizeText(hit.body).includes(nq);
+  if (titleMatched && bodyMatched) return 3;
+  if (titleMatched) return 2;
+  if (bodyMatched) return 1;
+  return 0;
+};
+
+const rankHits = (hits: SearchHit[], q: string): SearchHit[] => {
+  return [...hits].sort((a, b) => {
+    const tierDiff = matchTier(b, q) - matchTier(a, q);
+    if (tierDiff !== 0) return tierDiff;
+    return b.score - a.score;
+  });
+};
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -329,33 +407,40 @@ export default {
       const db = useLegacySingle ? await getLegacySingleDb(env) : await getDb(env, docsLocale);
       const cjkMode = hasCjk(q);
       const term = q;
+      const candidateLimit = Math.min(1200, Math.max(limit * 8, limit));
       const result = await searchDocs(db, {
         term,
-        properties: ['typeKey', 'title', 'aliases', 'body', 'cjk'],
-        limit,
+        properties: ['typeKey', 'title', 'aliases', 'binderTokens', 'body', 'cjk'],
+        limit: candidateLimit,
         tolerance: cjkMode ? 0 : 1,
       });
 
       const filtered = cjkMode
         ? result.hits.filter((row) => {
-            const haystack = `${row.document.title}\n${row.document.aliases}\n${row.document.body}`;
+            const haystack = `${row.document.title}\n${row.document.aliases}\n${row.document.binderTokens}\n${row.document.body}`;
             return haystack.includes(q);
           })
         : result.hits;
 
       const hits = filtered.map(asHit);
+      const docsForSupplement = docsByLocale.get(docsLocale) ?? docsByLocale.get('en-US') ?? [];
+      const binderSupplement = binderFocusedSupplementSearch(docsForSupplement, qRaw, limit);
       if (hits.length > 0) {
         if (!cjkMode) {
-          return json({ hits }, 200, origin);
+          const merged = mergeHits(rankHits(binderSupplement, qRaw), rankHits(hits, qRaw), limit);
+          return json({ hits: rankHits(merged, qRaw) }, 200, origin);
         }
 
-        const docsForSupplement = docsByLocale.get(docsLocale) ?? docsByLocale.get('en-US') ?? [];
         const supplement = fallbackSubstringSearch(docsForSupplement, qRaw, limit);
-        return json({ hits: mergeHits(hits, supplement, limit) }, 200, origin);
+        const mergedPrimary = mergeHits(rankHits(binderSupplement, qRaw), rankHits(hits, qRaw), limit);
+        const merged = mergeHits(mergedPrimary, supplement, limit);
+        return json({ hits: rankHits(merged, qRaw) }, 200, origin);
       }
 
       const fallbackDocs = docsByLocale.get(docsLocale) ?? docsByLocale.get('en-US') ?? [];
-      return json({ hits: fallbackSubstringSearch(fallbackDocs, qRaw, limit) }, 200, origin);
+      const fallback = fallbackSubstringSearch(fallbackDocs, qRaw, limit);
+      const merged = mergeHits(rankHits(binderSupplement, qRaw), fallback, limit);
+      return json({ hits: rankHits(merged, qRaw) }, 200, origin);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'search failed';
       return json({ error: message }, 500, origin);

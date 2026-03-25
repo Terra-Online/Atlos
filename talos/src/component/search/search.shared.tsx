@@ -177,8 +177,11 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%' }) => {
                                 {clickableResults.map((group) => {
                                         const iconUrl = getItemIconUrl(group.iconKey, 'webp');
                                         const showFileSnippet = group.typeMain === 'files';
-                                        const titleMatched = group.displayName.toLowerCase().includes(normalizedQuery);
+                                    const showBinderTitle = group.typeMain === 'files' && group.binderMatched && !!group.binderName;
+                                    const titleMatched = group.displayName.toLowerCase().includes(normalizedQuery);
                                         const keyMatched = group.typeKey.toLowerCase().includes(normalizedQuery);
+                                    const binderMatched = showBinderTitle && group.binderName.toLowerCase().includes(normalizedQuery);
+                                    const selectorMatched = showBinderTitle && group.selectorName.toLowerCase().includes(normalizedQuery);
 
                                         return (
                                             <button
@@ -193,7 +196,20 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%' }) => {
                                                 </span>
                                                 <span className={styles.resultMain}>
                                                     <span className={styles.resultTitle}>
-                                                        {titleMatched || keyMatched ? (
+                                                        {showBinderTitle ? (
+                                                            <>
+                                                                <span className={styles.resultBinder}>
+                                                                    {binderMatched
+                                                                        ? <HighlightText text={group.binderName} keyword={normalizedQuery} />
+                                                                        : group.binderName}
+                                                                </span>
+                                                                <span className={styles.resultSelector}>
+                                                                    {selectorMatched
+                                                                        ? <HighlightText text={group.selectorName} keyword={normalizedQuery} />
+                                                                        : group.selectorName}
+                                                                </span>
+                                                            </>
+                                                        ) : titleMatched || keyMatched ? (
                                                             <HighlightText text={group.displayName} keyword={normalizedQuery} />
                                                         ) : (
                                                             group.displayName
@@ -201,7 +217,9 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%' }) => {
                                                     </span>
                                                     <span className={styles.resultSub} data-kind={showFileSnippet ? 'snippet' : 'count'}>
                                                         {showFileSnippet ? (
-                                                            group.snippet ? <HighlightText text={group.snippet} keyword={normalizedQuery} /> : group.displayName
+                                                            group.snippet
+                                                                ? <HighlightText text={group.snippet} keyword={normalizedQuery} />
+                                                                : group.selectorName
                                                         ) : (
                                                             <span className={styles.resultCount}>
                                                                 <span className={styles.resultCountNumber}>{group.worldTotal}</span>

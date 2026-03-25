@@ -51,11 +51,13 @@
             },
             "nar_digital_map01_26_1": {
                 "icon": "pad",
-                "ctgr": "digital"
+                "ctgr": "digital",
+                "rsch": "research_007"
             },
             "nar_digital_map01_29_1": {
                 "icon": "docs",
-                "ctgr": "digital"
+                "ctgr": "digital",
+                "rsch": "research_006"
             },
             "nar_digital_map01_29_2": {
                 "icon": "docs",
@@ -79,7 +81,8 @@
             },
             "nar_digital_map01_35_1": {
                 "icon": "pad",
-                "ctgr": "digital"
+                "ctgr": "digital",
+                "rsch": "research_006"
             },
             "nar_digital_map01_36_1": {
                 "icon": "pad",
@@ -107,7 +110,8 @@
             },
             "nar_digital_map01_64_1": {
                 "icon": "pad",
-                "ctgr": "digital"
+                "ctgr": "digital",
+                "rsch": "research_007"
             },
             "nar_digital_map01_76_1": {
                 "icon": "pad",
@@ -319,7 +323,8 @@
             },
             "nar_paper_map01_28_1": {
                 "icon": "ntbook",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_006"
             },
             "nar_paper_map01_2_1": {
                 "icon": "note",
@@ -327,7 +332,8 @@
             },
             "nar_paper_map01_37_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_006"
             },
             "nar_paper_map01_39_1": {
                 "icon": "note",
@@ -343,15 +349,18 @@
             },
             "nar_paper_map01_47_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_002"
             },
             "nar_paper_map01_48_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_002"
             },
             "nar_paper_map01_49_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_002"
             },
             "nar_paper_map01_50_1": {
                 "icon": "note",
@@ -367,7 +376,8 @@
             },
             "nar_paper_map01_53_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_002"
             },
             "nar_paper_map01_55_1": {
                 "icon": "note",
@@ -431,11 +441,13 @@
             },
             "nar_paper_map01_70_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_007"
             },
             "nar_paper_map01_75_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_007"
             },
             "nar_paper_map01_7_1": {
                 "icon": "note",
@@ -515,7 +527,8 @@
             },
             "nar_paper_map02_123_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_003prts"
             },
             "nar_paper_map02_12_1": {
                 "icon": "note",
@@ -543,7 +556,8 @@
             },
             "nar_paper_map02_1_1": {
                 "icon": "ntbook",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_001"
             },
             "nar_paper_map02_21_1": {
                 "icon": "note",
@@ -579,7 +593,8 @@
             },
             "nar_paper_map02_27_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_WulingBussiness"
             },
             "nar_paper_map02_28_1": {
                 "icon": "exbook",
@@ -591,11 +606,13 @@
             },
             "nar_paper_map02_29_1": {
                 "icon": "obook",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_WulingBussiness"
             },
             "nar_paper_map02_2_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_001"
             },
             "nar_paper_map02_30_1": {
                 "icon": "ntbook",
@@ -611,7 +628,8 @@
             },
             "nar_paper_map02_32_1": {
                 "icon": "file",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_WulingBussiness"
             },
             "nar_paper_map02_33_1": {
                 "icon": "phone",
@@ -759,7 +777,8 @@
             },
             "nar_paper_map02_60_1": {
                 "icon": "obook",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_WulingBussiness"
             },
             "nar_paper_map02_61_1": {
                 "icon": "phone",
@@ -791,7 +810,8 @@
             },
             "nar_paper_map02_77_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_003prts"
             },
             "nar_paper_map02_78_1": {
                 "icon": "note",
@@ -799,7 +819,8 @@
             },
             "nar_paper_map02_79_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_003prts"
             },
             "nar_paper_map02_7_1": {
                 "icon": "note",
@@ -811,7 +832,8 @@
             },
             "nar_paper_map02_81_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_003prts"
             },
             "nar_paper_map02_82_1": {
                 "icon": "note",
@@ -847,7 +869,8 @@
             },
             "nar_paper_map02_8_1": {
                 "icon": "note",
-                "ctgr": "paper"
+                "ctgr": "paper",
+                "rsch": "research_001"
             },
             "nar_paper_map02_90_1": {
                 "icon": "note",

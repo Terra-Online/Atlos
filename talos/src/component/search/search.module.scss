@@ -59,7 +59,7 @@
             flex-direction: column;
             background-color: var(--search-bg);
             border-radius: 6px;
-            transition: all 0.3s;
+            transition: all 0.35s $adagio-curve;
             box-shadow: 0 2px 8px var(--search-shadow-out);
 
             &:focus-within {
@@ -199,7 +199,6 @@
             max-height: 0;
             overflow: hidden;
             padding: 0;
-            background-color: var(--search-bg);
             opacity: 0;
             border-radius: 6px;
             transition: max-height 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, padding 0.2s ease;
@@ -324,8 +323,24 @@
         text-overflow: ellipsis;
     }
 
+    .resultBinder {
+        color: var(--search-result-text);
+
+        &::after {
+            content: '>';
+            margin: 0 0.25rem;
+            color: var(--search-result-sub);
+            font-family: 'Novecento DemiBold', sans-serif;
+            font-weight: 700;
+        }
+    }
+
+    .resultSelector {
+        color: var(--search-result-sub);
+    }
+
     .resultSub {
-        font-family: 'HMSans_EN', 'HMSans_SC', 'HMSans_TC', 'Noto Sans Thai', sans-serif;
+        font-family: 'UDShinGo', 'HMSans_EN', 'HMSans_SC', 'HMSans_TC', 'Noto Sans Thai', sans-serif;       
         font-size: 0.76rem;
         color: var(--search-result-sub);
         line-height: 1.15;

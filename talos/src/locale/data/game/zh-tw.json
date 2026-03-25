@@ -468,11 +468,19 @@
             "quillbeast_liver": "球刺獸的肝臟",
             "rakerbeast_longfur": "彪獸的長絨"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "紙本紀錄",
             "digital": "電子檔案",
             "collection": "調查報告",
             "media": "多媒體"
+        },
+        "researchId": {
+            "research_007": "超域實驗場的起源",
+            "research_006": "舊日夢魘",
+            "research_002": "碾骨氏族",
+            "research_003prts": "清波寨",
+            "research_001": "景玉谷交通",
+            "research_wulingbussiness": "方興衢"
         }
     }
 }

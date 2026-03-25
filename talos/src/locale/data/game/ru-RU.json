@@ -468,11 +468,19 @@
             "quillbeast_liver": "Печень колючего зверя",
             "rakerbeast_longfur": "Шерсть хитрого зверя"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Рукописи",
             "digital": "Эл. файлы",
             "collection": "Отчеты",
             "media": "Мультимедиа"
+        },
+        "researchId": {
+            "research_007": "Создание лаборатории исследования эфира",
+            "research_006": "Кошмары из прошлого",
+            "research_002": "Клан Костоломов",
+            "research_003prts": "Лагерь Циньбо",
+            "research_001": "Транспорт в долине Цзинъю",
+            "research_wulingbussiness": "Улица Фансин"
         }
     }
 }

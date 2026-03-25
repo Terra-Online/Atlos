@@ -7,6 +7,6 @@ workers_dev = true
 # Public URL template to your prebuilt SearchDoc[] JSON files, for example:
 # INDEX_DOCS_URL = "https://cdn.example.com/oem/search/docs/{locale}.json"
 # If no {locale} placeholder is present and value ends with .json, worker will treat it as legacy single-index mode.
-INDEX_DOCS_URL = "https://cdn.opendfieldmap.org/_dev/endfield/atlos/search/docs/{locale}.json?v=20260322c"
+INDEX_DOCS_URL = "https://cdn.opendfieldmap.org/_dev/endfield/atlos/search/docs/{locale}.json?v=20260325c"
 # Optional explicit CORS origin, e.g. "https://map.example.com"
 ALLOW_ORIGIN = "*"

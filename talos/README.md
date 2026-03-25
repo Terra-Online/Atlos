@@ -11,5 +11,17 @@ Generally you need `config.json` only, to enable local build. R2 version is used
     pnpm dev
 ```
 
+### build (R2)
+
+```shell
+pnpm build:r2
+```
+
+Include worker deploy during build prepare:
+
+```shell
+pnpm build:r2 --deploy
+```
+
 # note
 Due to legal restrictions and file size limitations, we do not upload/pre-host any map tile data used for cartographic display in this repository. If you actually need clips for local preview, contact cirisus with `cirisus@outlook.com`.

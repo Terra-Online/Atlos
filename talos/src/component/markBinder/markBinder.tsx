@@ -25,32 +25,38 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
 
     const iconUrl = useMemo(
-        () => getItemIconUrl(group.dropKey, 'webp'),
-        [group.dropKey],
+        () => group.sharedKey === 'rsch'
+            ? '/assets/images/item/investigate.webp'
+            : getItemIconUrl(group.dropKey, 'webp'),
+        [group.dropKey, group.sharedKey],
     );
 
     const titleKey = `${group.titleKeyPrefix ?? 'markerType.drop'}.${group.dropKey}`;
-    const displayName = String(
-        tGame(titleKey) !== titleKey
-            ? tGame(titleKey)
-            : group.dropName,
-    );
+    const translatedTitle = tGame(titleKey) as string | undefined;
+    const displayName =
+        typeof translatedTitle === 'string' && translatedTitle.trim().length > 0
+            ? translatedTitle
+            : group.dropName;
 
     const typeKeys = useMemo(() => group.types.map((t) => t.key), [group.types]);
     const counts = useMultiRegionMarkerCount(typeKeys);
     const totalCollected = counts.reduce((a, c) => a + c.collected, 0);
     const totalTotal = counts.reduce((a, c) => a + c.total, 0);
+    const binderMatched = Boolean(
+        normalizedSearch &&
+        (group.dropKey.toLowerCase().includes(normalizedSearch) || displayName.toLowerCase().includes(normalizedSearch)),
+    );
 
     const renderedTypes = useMemo(
         () => group.types.filter((typeInfo, index) => {
             const count = counts[index];
             if (!count || count.total <= 0) return false;
-            if (!normalizedSearch) return true;
+            if (!normalizedSearch || binderMatched) return true;
 
             const typeDisplayName = String(tGame(`markerType.key.${typeInfo.key}`) ?? '').toLowerCase();
             return typeInfo.key.toLowerCase().includes(normalizedSearch) || typeDisplayName.includes(normalizedSearch);
         }),
-        [group.types, counts, normalizedSearch, tGame],
+        [group.types, counts, normalizedSearch, binderMatched, tGame],
     );
 
     // Completed selectors float to the top; order is stable within each tier
@@ -106,7 +112,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     const allActive = typeKeys.length > 0 && typeKeys.every((k) => filter.includes(k));
     const isComplete = totalTotal > 0 && totalCollected >= totalTotal;
 
-    // Read allActive from the store imperatively so the callback is never stale
+    // Binder selection has highest priority: can both select and deselect all types
     const handleToggleAll = useCallback(() => {
         const currentFilter = useMarkerStore.getState().filter;
         const currentlyAllActive =

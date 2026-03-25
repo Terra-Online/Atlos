@@ -468,11 +468,19 @@
             "quillbeast_liver": "ตับ​ของ​ควิ​ล​ล์​บี​ส​ต์",
             "rakerbeast_longfur": "ขน​ยาว​เร​เกอร์​บี​ส​ต์"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "ต้นฉบับ",
             "digital": "ไฟล์​อิเล็กทรอนิกส์",
             "collection": "รายงาน",
             "media": "มัลติมีเดีย"
+        },
+        "researchId": {
+            "research_007": "ต้นกำเนิด​ของ​พื้นที่​ทดสอบ​เอ​เทอร์",
+            "research_006": "ฝันร้าย​จาก​อดีต",
+            "research_002": "แคลน​โบน​ค​รัช​เชอร์",
+            "research_003prts": "ค่าย​ชิง​ป๋อ",
+            "research_001": "การ​เดินทาง​ใน​หุบเขา​จิง​หยู",
+            "research_wulingbussiness": "ถนน​ฟาง​ซิง"
         }
     }
 }

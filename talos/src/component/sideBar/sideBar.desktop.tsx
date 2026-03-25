@@ -70,7 +70,7 @@ interface SideBarProps {
 
 const MIN_WIDTH = 300;
 const MAX_WIDTH = 500;
-const WIDE_THRESHOLD = 450;
+const WIDE_THRESHOLD = 400;
 
 const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
@@ -260,12 +260,12 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                                     <div className={styles.binderSection}>
                                                         <div className={styles.binderColumn}>
                                                             {binderColumns.left.map((group) => (
-                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                                <MarkBinder key={group.id} group={group} />
                                                             ))}
                                                         </div>
                                                         <div className={styles.binderColumn}>
                                                             {binderColumns.right.map((group) => (
-                                                                <MarkBinder key={group.dropKey} group={group} />
+                                                                <MarkBinder key={group.id} group={group} />
                                                             ))}
                                                         </div>
                                                     </div>

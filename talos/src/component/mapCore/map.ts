@@ -45,6 +45,7 @@ export class MapCore {
             maxZoom: 3,
             zoomControl: false,
             attributionControl: false,
+            doubleClickZoom: false,
             zoomSnap: 0.25,
             zoomDelta: 0.25,
             wheelPxPerZoomLevel: 50,

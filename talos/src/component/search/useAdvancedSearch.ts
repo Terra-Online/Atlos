@@ -12,6 +12,8 @@ interface SearchDoc {
     typeMain: string;
     title: string;
     aliases: string;
+    binderTokens: string;
+    binderDisplay: string;
     regionKey: string;
     subregionId: string;
     body: string;
@@ -44,6 +46,8 @@ type CreateFn = (args: {
         typeMain: 'string';
         title: 'string';
         aliases: 'string';
+        binderTokens: 'string';
+        binderDisplay: 'string';
         regionKey: 'string';
         subregionId: 'string';
         body: 'string';
@@ -63,6 +67,8 @@ type SearchHitDoc = {
     typeKey: string;
     typeMain: string;
     title: string;
+    binderTokens: string;
+    binderDisplay: string;
     regionKey: string;
     subregionId: string;
     body: string;
@@ -96,6 +102,9 @@ export interface SearchResultGroup {
     typeKey: string;
     typeMain: string;
     displayName: string;
+    binderName: string;
+    selectorName: string;
+    binderMatched: boolean;
     iconKey: string;
     worldTotal: number;
     mainTotal: number;
@@ -114,7 +123,10 @@ const SEARCH_DEBOUNCE_MS = 180;
 const BASE_URL = (import.meta.env.BASE_URL as string | undefined) || '/';
 const PREBUILT_DOCS_BASE_PATH = `${BASE_URL.replace(/\/$/, '')}/search/docs`;
 
-const REMOTE_SEARCH_ENDPOINT = (import.meta.env.VITE_SEARCH_ENDPOINT as string | undefined)?.trim() || '';
+const DEFAULT_SEARCH_ENDPOINT = 'https://oem-search.cirisus.workers.dev/search';
+const REMOTE_SEARCH_ENDPOINT =
+    (import.meta.env.VITE_SEARCH_ENDPOINT as string | undefined)?.trim() || DEFAULT_SEARCH_ENDPOINT;
+const PROD_WORKER_FIRST = false;
 
 const supportedFullLocaleSet = new Set<string>(FULL_LANGS as readonly string[]);
 const uiOnlyLocaleSet = new Set<string>(UI_ONLY_LANGS as readonly string[]);
@@ -127,8 +139,11 @@ const worldTypeCountMap: Record<string, number> = WORLD_MARKS.reduce((acc, marke
 
 const normalizeText = (value: string): string => value.trim().toLowerCase();
 const hasCjk = (input: string): boolean => CJK_RE.test(input);
+const normalizeBinderKey = (value: string): string =>
+    value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
 
 const normalizeDocsLocale = (locale: string): string => {
+    if (locale === 'zh-HK') return 'zh-TW';
     if (supportedFullLocaleSet.has(locale)) return locale;
     if (uiOnlyLocaleSet.has(locale)) return 'en-US';
     return 'en-US';
@@ -155,6 +170,8 @@ const parseWorkerSearchResponse = (value: unknown): WorkerSearchResponse | null 
         const subregionId = item.subregionId;
         const body = item.body;
         const score = item.score;
+        const binderTokens = item.binderTokens;
+        const binderDisplay = item.binderDisplay;
 
         if (
             typeof pointId !== 'string' ||
@@ -177,13 +194,15 @@ const parseWorkerSearchResponse = (value: unknown): WorkerSearchResponse | null 
             subregionId,
             body,
             score,
+            binderTokens: typeof binderTokens === 'string' ? binderTokens : '',
+            binderDisplay: typeof binderDisplay === 'string' ? binderDisplay : '',
         });
     });
 
     return { hits };
 };
 
-const isSearchDoc = (value: unknown): value is SearchDoc => {
+const isSearchDocBase = (value: unknown): value is Omit<SearchDoc, 'binderTokens' | 'binderDisplay'> & Partial<Pick<SearchDoc, 'binderTokens' | 'binderDisplay'>> => {
     if (!isObjectRecord(value)) return false;
     return (
         typeof value.docId === 'string' &&
@@ -201,7 +220,18 @@ const isSearchDoc = (value: unknown): value is SearchDoc => {
 
 const parsePrebuiltDocs = (value: unknown): SearchDoc[] => {
     if (!Array.isArray(value)) return [];
-    return value.filter(isSearchDoc);
+    const docs: SearchDoc[] = [];
+
+    value.forEach((item) => {
+        if (!isSearchDocBase(item)) return;
+        docs.push({
+            ...item,
+            binderTokens: typeof item.binderTokens === 'string' ? item.binderTokens : '',
+            binderDisplay: typeof item.binderDisplay === 'string' ? item.binderDisplay : '',
+        });
+    });
+
+    return docs;
 };
 
 const sortByKeywordCenter = (items: SearchDoc[], rawQuery: string): SearchDoc[] => {
@@ -209,8 +239,8 @@ const sortByKeywordCenter = (items: SearchDoc[], rawQuery: string): SearchDoc[] 
     if (!q) return items;
 
     return [...items].sort((a, b) => {
-        const aText = `${a.title}\n${a.aliases}\n${a.body}\n${a.typeKey}`.toLowerCase();
-        const bText = `${b.title}\n${b.aliases}\n${b.body}\n${b.typeKey}`.toLowerCase();
+        const aText = `${a.title}\n${a.aliases}\n${a.binderTokens}\n${a.body}\n${a.typeKey}`.toLowerCase();
+        const bText = `${b.title}\n${b.aliases}\n${b.binderTokens}\n${b.body}\n${b.typeKey}`.toLowerCase();
         const aIdx = aText.indexOf(q);
         const bIdx = bText.indexOf(q);
         if (aIdx === bIdx) return 0;
@@ -225,7 +255,7 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
     if (!q) return [];
 
     const matched = docs.filter((doc) => {
-        const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.body}`.toLowerCase();
+        const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`.toLowerCase();
         return haystack.includes(q);
     });
 
@@ -236,10 +266,48 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
             typeKey: String(doc.typeKey),
             typeMain: String(doc.typeMain),
             title: String(doc.title || ''),
+            binderTokens: String(doc.binderTokens || ''),
+            binderDisplay: String(doc.binderDisplay || ''),
             regionKey: String(doc.regionKey),
             subregionId: String(doc.subregionId),
             body: String(doc.body || ''),
             score: 0,
+        }));
+};
+
+const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHitDoc[] => {
+    const q = normalizeText(rawQuery);
+    if (!q) return [];
+
+    return docs
+        .filter((doc) => {
+            const binderHaystack = `${doc.binderTokens}\n${doc.aliases}`.toLowerCase();
+            return binderHaystack.includes(q);
+        })
+        .sort((a, b) => {
+            const aFile = a.typeMain === 'files' ? 0 : 1;
+            const bFile = b.typeMain === 'files' ? 0 : 1;
+            if (aFile !== bFile) return aFile - bFile;
+
+            const aText = `${a.binderTokens}\n${a.aliases}`.toLowerCase();
+            const bText = `${b.binderTokens}\n${b.aliases}`.toLowerCase();
+            const aIdx = aText.indexOf(q);
+            const bIdx = bText.indexOf(q);
+            if (aIdx !== bIdx) return aIdx - bIdx;
+            return 0;
+        })
+        .slice(0, limit)
+        .map((doc) => ({
+            pointId: String(doc.pointId),
+            typeKey: String(doc.typeKey),
+            typeMain: String(doc.typeMain),
+            title: String(doc.title || ''),
+            binderTokens: String(doc.binderTokens || ''),
+            binderDisplay: String(doc.binderDisplay || ''),
+            regionKey: String(doc.regionKey),
+            subregionId: String(doc.subregionId),
+            body: String(doc.body || ''),
+            score: doc.typeMain === 'files' ? 1_000_000 : 500_000,
         }));
 };
 
@@ -256,6 +324,8 @@ const buildFallbackDocs = (): SearchDoc[] => {
             typeMain: markerType?.category?.main || '',
             title: typeKey,
             aliases: typeKey,
+            binderTokens: '',
+            binderDisplay: '',
             regionKey: 'Valley_4',
             subregionId: String(marker.subregId),
             body: '',
@@ -274,6 +344,8 @@ const createSearchDb = async (docs: SearchDoc[]): Promise<SearchDb> => {
             typeMain: 'string',
             title: 'string',
             aliases: 'string',
+            binderTokens: 'string',
+            binderDisplay: 'string',
             regionKey: 'string',
             subregionId: 'string',
             body: 'string',
@@ -399,8 +471,64 @@ const toGroups = (
     tGame: (k: string) => unknown,
 ): SearchResultGroup[] => {
     const normalizedNeedle = normalizeText(queryForMatch);
+
+    const getBinderCandidates = (typeKey: string): Array<{ label: string; raw: string; sharedKey: 'rsch' | 'ctgr' | 'drop' }> => {
+        const typeInfo = MARKER_TYPE_DICT[typeKey] as { ctgr?: string; rsch?: string; drop?: string; category?: { main?: string } } | undefined;
+        if (!typeInfo) return [];
+
+        const ctgrRaw = typeof typeInfo.ctgr === 'string' ? typeInfo.ctgr.trim() : '';
+        const ctgrKey = normalizeBinderKey(ctgrRaw);
+        const ctgrLabelRaw = ctgrKey ? tGame(`markerType.FileCtgr.${ctgrKey}`) : '';
+        const ctgrLabel = typeof ctgrLabelRaw === 'string' && ctgrLabelRaw.trim() ? ctgrLabelRaw.trim() : ctgrRaw;
+
+        const rschRaw = typeof typeInfo.rsch === 'string' ? typeInfo.rsch.trim() : '';
+        const rschKey = normalizeBinderKey(rschRaw);
+        const rschLabelRaw = rschKey ? tGame(`markerType.researchId.${rschKey}`) : '';
+        const rschLabel = typeof rschLabelRaw === 'string' && rschLabelRaw.trim() ? rschLabelRaw.trim() : rschRaw;
+
+        const dropRaw = typeof typeInfo.drop === 'string' ? typeInfo.drop.trim() : '';
+        const dropKey = normalizeBinderKey(dropRaw);
+        const dropLabelRaw = dropKey ? tGame(`markerType.drop.${dropKey}`) : '';
+        const dropLabel = typeof dropLabelRaw === 'string' && dropLabelRaw.trim() ? dropLabelRaw.trim() : dropRaw;
+
+        const ret: Array<{ label: string; raw: string; sharedKey: 'rsch' | 'ctgr' | 'drop' }> = [];
+        if (rschLabel || rschRaw) ret.push({ label: rschLabel || rschRaw, raw: rschRaw, sharedKey: 'rsch' });
+        if (ctgrLabel || ctgrRaw) ret.push({ label: ctgrLabel || ctgrRaw, raw: ctgrRaw, sharedKey: 'ctgr' });
+        if (dropLabel || dropRaw) ret.push({ label: dropLabel || dropRaw, raw: dropRaw, sharedKey: 'drop' });
+        return ret;
+    };
+
+    const pickDisplayBinder = (typeKey: string): { name: string; matchedByQuery: boolean; sharedKey: 'rsch' | 'ctgr' | 'drop' | '' } => {
+        const candidates = getBinderCandidates(typeKey);
+        if (!candidates.length) return { name: '', matchedByQuery: false, sharedKey: '' };
+        if (!normalizedNeedle) {
+            return {
+                name: candidates[0].label,
+                matchedByQuery: false,
+                sharedKey: candidates[0].sharedKey,
+            };
+        }
+        const matched = candidates.find((it) =>
+            normalizeText(it.label).includes(normalizedNeedle) || normalizeText(it.raw).includes(normalizedNeedle),
+        );
+        const winner = matched ?? candidates[0];
+        return {
+            name: winner.label,
+            matchedByQuery: Boolean(matched),
+            sharedKey: winner.sharedKey,
+        };
+    };
+
     const getMatchTier = (doc: SearchHitDoc): number => {
         if (!normalizedNeedle) return 0;
+
+        const binderMatched =
+            normalizeText(doc.binderTokens).includes(normalizedNeedle) ||
+            getBinderCandidates(doc.typeKey).some((it) =>
+                normalizeText(it.label).includes(normalizedNeedle) || normalizeText(it.raw).includes(normalizedNeedle),
+            );
+        if (binderMatched) return 4;
+
         const titleMatched = normalizeText(doc.title).includes(normalizedNeedle);
         const bodyMatched = normalizeText(doc.body).includes(normalizedNeedle);
         if (titleMatched && bodyMatched) return 3;
@@ -427,7 +555,12 @@ const toGroups = (
         .map(([typeKey, group]) => {
             const typeInfo = MARKER_TYPE_DICT[typeKey];
             const displayRaw = tGame(`markerType.key.${typeKey}`);
-            const displayName = typeof displayRaw === 'string' && displayRaw.trim() ? displayRaw : typeKey;
+            const selectorName = typeof displayRaw === 'string' && displayRaw.trim() ? displayRaw : typeKey;
+            const binderInfo = pickDisplayBinder(typeKey);
+            const binderName = binderInfo.name;
+            const displayName = (typeInfo?.category?.main === 'files' && binderName && binderInfo.matchedByQuery)
+                ? `${binderName} > ${selectorName}`
+                : selectorName;
             const iconKey = typeInfo?.icon ?? typeKey;
             const uniquePoint = group.docs.length === 1 ? group.docs[0] : null;
             const bestMatchTier = group.docs.reduce((best, doc) => Math.max(best, getMatchTier(doc)), 0);
@@ -463,8 +596,12 @@ const toGroups = (
             const snippetMatched = !!snippetSource && normalizeText(snippetSource).includes(normalizeText(queryForMatch));
 
             const isSelector = !uniquePoint;
+            const binderMatchBoost = binderInfo.matchedByQuery ? 220 : 0;
+            const binderPriorityBoost = binderInfo.sharedKey === 'rsch' ? 30 : 0;
             const sortRank =
                 (isSelector ? 0 : 1000) +
+                binderMatchBoost +
+                binderPriorityBoost +
                 bestMatchTier * 100 +
                 Math.max(0, group.topScore);
 
@@ -473,6 +610,9 @@ const toGroups = (
                     typeKey,
                     typeMain: typeInfo?.category?.main || '',
                     displayName,
+                    binderName,
+                    selectorName,
+                    binderMatched: binderInfo.matchedByQuery,
                     iconKey,
                     worldTotal: worldTypeCountMap[typeKey] ?? 0,
                     mainTotal: REGION_TYPE_COUNT_MAP[currentRegion]?.[typeKey] ?? 0,
@@ -502,6 +642,8 @@ export const useAdvancedSearch = (query: string, locale: string) => {
     const [results, setResults] = useState<SearchResultGroup[]>([]);
     const [loading, setLoading] = useState(false);
     const activeTokenRef = useRef(0);
+    const lastFetchKeyRef = useRef('');
+    const lastDocsRef = useRef<SearchHitDoc[]>([]);
 
     const normalizedQuery = useMemo(() => normalizeText(query), [query]);
     const normalizedSearchQuery = normalizedQuery;
@@ -512,6 +654,8 @@ export const useAdvancedSearch = (query: string, locale: string) => {
             if (!normalizedSearchQuery) {
                 setResults([]);
                 setLoading(false);
+                lastFetchKeyRef.current = '';
+                lastDocsRef.current = [];
                 return;
             }
 
@@ -519,8 +663,77 @@ export const useAdvancedSearch = (query: string, locale: string) => {
             const token = activeTokenRef.current + 1;
             activeTokenRef.current = token;
             const docsLocale = normalizeDocsLocale(locale);
+            const fetchKey = `${docsLocale}@@${normalizedSearchQuery}`;
 
-            if (REMOTE_SEARCH_ENDPOINT) {
+            if (fetchKey === lastFetchKeyRef.current && lastDocsRef.current.length > 0) {
+                setResults(toGroups(lastDocsRef.current, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGame));
+                setLoading(false);
+                return;
+            }
+
+            const runLocalSearch = async (): Promise<SearchHitDoc[]> => {
+                const db = await getPrebuiltDb(docsLocale);
+                if (activeTokenRef.current !== token) return [];
+
+                const cjkMode = hasCjk(normalizedSearchQuery);
+                const result = await searchDocs(db, {
+                    term: normalizedSearchQuery,
+                    properties: ['typeKey', 'title', 'aliases', 'binderTokens', 'body'],
+                    limit: Math.min(1200, DOC_LIMIT * 8),
+                    tolerance: cjkMode ? 0 : 1,
+                });
+
+                if (activeTokenRef.current !== token) return [];
+
+                const docs: SearchHitDoc[] = result.hits
+                    .filter((hit) => {
+                        if (!cjkMode) return true;
+                        const haystack = `${hit.document.title}\n${hit.document.aliases}\n${hit.document.binderTokens}\n${hit.document.body}`;
+                        return haystack.includes(normalizedSearchQuery);
+                    })
+                    .map((hit) => ({
+                        pointId: String(hit.document.pointId),
+                        typeKey: String(hit.document.typeKey),
+                        typeMain: String(hit.document.typeMain),
+                        title: String(hit.document.title || ''),
+                        binderTokens: String(hit.document.binderTokens || ''),
+                        binderDisplay: String(hit.document.binderDisplay || ''),
+                        regionKey: String(hit.document.regionKey),
+                        subregionId: String(hit.document.subregionId),
+                        body: String(hit.document.body || ''),
+                        score: hit.score,
+                    }));
+
+                const resolvedDocs = docs.length > 0
+                    ? docs
+                    : fallbackSubstringSearch(
+                        prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                        normalizedSearchQuery,
+                        DOC_LIMIT,
+                    );
+
+                const cjkSupplement = cjkMode
+                    ? fallbackSubstringSearch(
+                        prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                        normalizedSearchQuery,
+                        DOC_LIMIT,
+                    )
+                    : [];
+
+                const binderSupplement = binderFocusedSupplementSearch(
+                    prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                    normalizedSearchQuery,
+                    DOC_LIMIT,
+                );
+
+                const mergedWithBinder = mergeHits(binderSupplement, resolvedDocs, DOC_LIMIT);
+                return cjkMode ? mergeHits(mergedWithBinder, cjkSupplement, DOC_LIMIT) : mergedWithBinder;
+            };
+
+            const hasLocalDocsCache = prebuiltDocsByLocale.has(docsLocale);
+            const shouldTryRemoteFirst = PROD_WORKER_FIRST || !hasLocalDocsCache;
+
+            if (shouldTryRemoteFirst && REMOTE_SEARCH_ENDPOINT) {
                 try {
                     const url = new URL(REMOTE_SEARCH_ENDPOINT, window.location.origin);
                     url.searchParams.set('q', normalizedSearchQuery);
@@ -530,6 +743,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                     const res = await fetch(url.toString(), {
                         method: 'GET',
                         headers: { Accept: 'application/json' },
+                        cache: 'no-store',
                     });
 
                     if (activeTokenRef.current !== token) return;
@@ -537,6 +751,8 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                     if (res.ok) {
                         const payload = parseWorkerSearchResponse(await res.json());
                         if (payload && payload.hits.length > 0) {
+                            lastFetchKeyRef.current = fetchKey;
+                            lastDocsRef.current = payload.hits;
                             setResults(toGroups(payload.hits, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGame));
                             setLoading(false);
                             return;
@@ -547,54 +763,21 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                 }
             }
 
-            const db = await getPrebuiltDb(docsLocale);
+            if (!shouldTryRemoteFirst && hasLocalDocsCache) {
+                const localDocs = await runLocalSearch();
+                if (activeTokenRef.current !== token) return;
+                lastFetchKeyRef.current = fetchKey;
+                lastDocsRef.current = localDocs;
+                setResults(toGroups(localDocs, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGame));
+                setLoading(false);
+                return;
+            }
+
+            const finalDocs = await runLocalSearch();
             if (activeTokenRef.current !== token) return;
 
-            const cjkMode = hasCjk(normalizedSearchQuery);
-            const result = await searchDocs(db, {
-                term: normalizedSearchQuery,
-                properties: ['typeKey', 'title', 'aliases', 'body'],
-                limit: DOC_LIMIT,
-                tolerance: cjkMode ? 0 : 1,
-            });
-
-            if (activeTokenRef.current !== token) return;
-
-            const docs: SearchHitDoc[] = result.hits
-                .filter((hit) => {
-                    if (!cjkMode) return true;
-                    const haystack = `${hit.document.title}\n${hit.document.aliases}\n${hit.document.body}`;
-                    return haystack.includes(normalizedSearchQuery);
-                })
-                .map((hit) => ({
-                    pointId: String(hit.document.pointId),
-                    typeKey: String(hit.document.typeKey),
-                    typeMain: String(hit.document.typeMain),
-                    title: String(hit.document.title || ''),
-                    regionKey: String(hit.document.regionKey),
-                    subregionId: String(hit.document.subregionId),
-                    body: String(hit.document.body || ''),
-                    score: hit.score,
-                }));
-
-            const resolvedDocs = docs.length > 0
-                ? docs
-                : fallbackSubstringSearch(
-                    prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
-                    normalizedSearchQuery,
-                    DOC_LIMIT,
-                );
-
-            const cjkSupplement = cjkMode
-                ? fallbackSubstringSearch(
-                    prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
-                    normalizedSearchQuery,
-                    DOC_LIMIT,
-                )
-                : [];
-
-            const finalDocs = cjkMode ? mergeHits(resolvedDocs, cjkSupplement, DOC_LIMIT) : resolvedDocs;
-
+            lastFetchKeyRef.current = fetchKey;
+            lastDocsRef.current = finalDocs;
             setResults(toGroups(finalDocs, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGame));
             setLoading(false);
         };
@@ -606,7 +789,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
         return () => {
             window.clearTimeout(timeoutId);
         };
-    }, [normalizedQuery, normalizedSearchQuery, locale, currentRegionKey, currentSubregionKey, tGame]);
+    }, [normalizedSearchQuery, locale, currentRegionKey, currentSubregionKey, tGame]);
 
     return {
         results,

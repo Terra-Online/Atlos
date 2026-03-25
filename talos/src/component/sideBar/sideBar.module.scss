@@ -15,6 +15,8 @@ $transition-speed: 0.3s;
     --sidebar-box-sel-border: #{$primary-accent-5};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
 
+    --sidebar-handle: #{$primary-accent-6};
+
     --discord: #5865F2;
     --github: #24292f;
     --qq: #4397F7;
@@ -30,13 +32,19 @@ $transition-speed: 0.3s;
     --sidebar-box-sel-border: #{$primary-accent-4};
     --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
 
+    --sidebar-handle: #{$primary-accent-4};
+
+
     --discord: #E0E3FF;
     --github: #{$primary-accent-4};
     --qq: #8ab8ec;
+    --bsky: #66b2ff;
     --support: #{$primary-accent-5};
 }
 
 .sidebarContainer {
+    container-name: sidebar;
+    container-type: inline-size;
     position: absolute;
     top: 0;
     left: 0;
@@ -287,26 +295,61 @@ $transition-speed: 0.3s;
     .resizeHandle {
         position: absolute;
         top: 0;
-        right: -3px;
-        width: 6px;
+        right: -4px;
+        width: 8px;
         height: 100%;
         cursor: ew-resize;
         z-index: 1002;
         pointer-events: auto;
         touch-action: none;
+        &::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-170%, -50%);
+            width: 6px;
+            height: 3rem;
+            border-radius: 3px;
+            background-color: var(--drawer-handle-bg);
+            opacity: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba($black-0, .4);
+            z-index: 1;
+        }
         &::after {
             content: '';
             position: absolute;
             top: 0;
             left: 2px;
-            width: 2px;
+            width: 1px;
             height: 100%;
-            background-color: transparent;
-            transition: background-color 0.2s ease;
+            transition: outline-color 0.2s ease, outline-width 0.2s ease;
+            outline-width: 1px;
+            outline-style: dotted;
+            outline-color: transparent;
+            z-index: 0;
         }
-        &:hover::after,
+        &:hover::before {
+            opacity: 1;
+        }
         &.dragging::after {
-            background-color: var(--markfilter-accent, #{$primary-accent-5});
+            outline-color: var(--sidebar-handle);
+        }
+        &.dragging::before {
+            transform: translate(-75%, -50%);
+            background-color: var(--sidebar-handle);
+            opacity: 1;
+            height: 4rem;
+        }
+        @container (min-width: 485px) {
+            &.dragging::before {
+                background-color: $primary-accent-7;
+                height: 5rem;
+            }
+            &.dragging::after {
+                outline-color: $primary-accent-7;
+            }
         }
     }
 

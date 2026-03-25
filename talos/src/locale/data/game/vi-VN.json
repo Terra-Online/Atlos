@@ -468,11 +468,19 @@
             "quillbeast_liver": "Gan Quái Lông Nhọn",
             "rakerbeast_longfur": "Lông Dài Quái Cào"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Bản Thảo",
             "digital": "Hồ Sơ-E",
             "collection": "Báo Cáo",
             "media": "Đa Phương Tiện"
+        },
+        "researchId": {
+            "research_007": "Nguồn Gốc Của Khu Thử Nghiệm Æther",
+            "research_006": "Ác Mộng Từ Quá Khứ",
+            "research_002": "Tộc Bonekrusher",
+            "research_003prts": "Trại Thanh Ba",
+            "research_001": "Giao Thông Ở Cảnh Ngọc Cốc",
+            "research_wulingbussiness": "Đại Lộ Phương Hưng"
         }
     }
 }

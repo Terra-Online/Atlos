@@ -73,7 +73,7 @@ pnpm type-check
 4. Deploy
 
 ```bash
-pnpm deploy
+pnpm run deploy
 ```
 
 ## Frontend integration

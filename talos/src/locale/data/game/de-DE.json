@@ -468,11 +468,19 @@
             "quillbeast_liver": "Federbiestleber",
             "rakerbeast_longfur": "Langfell der Wüstlingsbestie"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manuskripte",
             "digital": "E-Dateien",
             "collection": "Berichte",
             "media": "Multimedia"
+        },
+        "researchId": {
+            "research_007": "Ursprünge des Æther-Testgeländes",
+            "research_006": "Albträume aus der Vergangenheit",
+            "research_002": "Der Knochenbrecher-Klan",
+            "research_003prts": "Qingbo-Palisade",
+            "research_001": "Transport im Jingyu-Tal",
+            "research_wulingbussiness": "Fangxing-Straße"
         }
     }
 }

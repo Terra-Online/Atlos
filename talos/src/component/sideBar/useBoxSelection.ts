@@ -125,8 +125,7 @@ export const useBoxSelection = (containerRef: React.RefObject<HTMLDivElement | n
                     if (!intersect) return;
 
                     it.keys.forEach(key => {
-                        if (nextSet.has(key)) nextSet.delete(key);
-                        else nextSet.add(key);
+                        nextSet.add(key);
                         binderHandledKeys.add(key);
                     });
                 });

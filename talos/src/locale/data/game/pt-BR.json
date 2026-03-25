@@ -468,11 +468,19 @@
             "quillbeast_liver": "Fígado de Penoso",
             "rakerbeast_longfur": "Pelo Longo de Rastejante"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manuscritos",
             "digital": "Arquivos Eletrônicos",
             "collection": "Relatórios",
             "media": "Multimídia"
+        },
+        "researchId": {
+            "research_007": "Origens do Local de Teste do Æther",
+            "research_006": "Pesadelos do Passado",
+            "research_002": "O Clã Quebra-Ossos",
+            "research_003prts": "Paliçada de Qingbo",
+            "research_001": "Transporte no Vale de Jingyu",
+            "research_wulingbussiness": "Avenida Fangxing"
         }
     }
 }

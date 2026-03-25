@@ -468,11 +468,19 @@
             "quillbeast_liver": "Quillbeast Liver",
             "rakerbeast_longfur": "Rakerbeast Longfur"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manuscripts",
             "digital": "E-Files",
             "collection": "Reports",
             "media": "Multimedia"
+        },
+        "researchId": {
+            "research_007": "Origins of the Æther Test Site",
+            "research_006": "Nightmares from the Past",
+            "research_002": "The Bonekrusher Clan",
+            "research_003prts": "Qingbo Stockade",
+            "research_001": "Transport in Jingyu Valley",
+            "research_wulingbussiness": "Fangxing Avenue"
         }
     }
 }

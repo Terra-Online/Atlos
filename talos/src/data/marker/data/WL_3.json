@@ -2914,5 +2914,14 @@
     ],
     "subregId": "WL_3",
     "type": "crate_i"
+  },
+  {
+    "id": 23300000261,
+    "pos": [
+      -584.5202,
+      866.5982
+    ],
+    "subregId": "WL_3",
+    "type": "ruan_yi"
   }
 ]

@@ -468,11 +468,19 @@
             "quillbeast_liver": "Foie de bêtaplume",
             "rakerbeast_longfur": "Poil long de ratisseur"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manuscrits",
             "digital": "Dossiers électroniques",
             "collection": "Rapports",
             "media": "Multimédia"
+        },
+        "researchId": {
+            "research_007": "Les origines du site d'essais æthériques",
+            "research_006": "Cauchemars du passé",
+            "research_002": "Le clan des Broyeurs d'os",
+            "research_003prts": "Palanque de Qingbo",
+            "research_001": "Moyens de transport dans la vallée de Jingyu",
+            "research_wulingbussiness": "Avenue Fangxing"
         }
     }
 }

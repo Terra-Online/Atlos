@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import styles from './domain.module.scss';
 import { useTranslateUI } from '@/locale';
 import LOGGER from '@/utils/log';
 import parse from 'html-react-parser';
-import Button from '@/component/button/button';
+import Banner from '@/component/banner/banner';
 import { useAnnouncementFlowReady, useIsAnnouncementOpen, useIsUserGuideOpen } from '@/store/uiPrefs';
 
 const STORAGE_KEY = 'domain-prefs';
@@ -157,22 +156,11 @@ const DomainBanner: React.FC = () => {
     };
 
     return (
-        <div className={styles.bannerContainer}>
-            <div className={styles.bannerWrap}>
-                <div className={styles.bannerContent}>
-                    <span className={styles.bannerText}>{getMessage()}</span>
-                </div>
-                <Button
-                    text={t('common.close') || 'Close'}
-                    aria-label={t('common.close') || 'Close'}
-                    buttonType='close'
-                    buttonStyle='icon'
-                    schema={resolvedTheme}
-                    size='1.2rem'
-                    onClick={handleClose}
-                />
-            </div>
-        </div>
+        <Banner
+            content={getMessage()}
+            onClose={handleClose}
+            schema={resolvedTheme}
+        />
     );
 };
 

@@ -23,6 +23,7 @@ export interface IMarkerType {
     subIcon?: string;
     icon?: string;
     ctgr?: string;
+    rsch?: string;
     category: {
         main: string;
         sub: string;

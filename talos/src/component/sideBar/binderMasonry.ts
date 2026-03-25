@@ -3,8 +3,9 @@ import type { BinderGroup } from '@/data/marker/binder';
 /**
  * Distributes binder groups into two columns using a greedy height-balancing algorithm.
  *
- * Phase 1 – non-1:1 binders (renderableCount > 1): assign each to the shorter column.
- * Phase 2 – 1:1 binders (renderableCount ≤ 1): continue filling the shorter column.
+ * Phase 1 – non-1:1 binders (renderableCount > 1): sort by estimated height desc,
+ * then assign each to the shorter column.
+ * Phase 2 – 1:1 binders (renderableCount ≤ 1): apply the same greedy rule.
  *
  * Height units: header = 1, each extra child type ≈ 1 (proportional approximation).
  * Invisible binders (renderableCount = 0, totalTotal = 0) are assigned height 0
@@ -15,6 +16,12 @@ export function computeBinderColumns(
     binderTypeCountMap: Map<string, { collected: number; total: number }>,
     typeVisiblePredicate?: (typeKey: string) => boolean,
 ): { left: BinderGroup[]; right: BinderGroup[] } {
+    const sharedKeyRank = (group: BinderGroup): number => {
+        if (group.sharedKey === 'rsch') return 0;
+        if (group.sharedKey === 'ctgr') return 1;
+        return 2;
+    };
+
     const isTypeVisible = typeVisiblePredicate ?? (() => true);
 
     const withMeta = groups.map((group) => {
@@ -30,8 +37,22 @@ export function computeBinderColumns(
         return { group, renderableCount, estimatedHeight };
     });
 
-    const multiGroups = withMeta.filter((g) => g.renderableCount > 1);
-    const oneToOneGroups = withMeta.filter((g) => g.renderableCount <= 1);
+    const multiGroups = withMeta
+        .filter((g) => g.renderableCount > 1)
+        .sort((a, b) => {
+            if (b.estimatedHeight !== a.estimatedHeight) {
+                return b.estimatedHeight - a.estimatedHeight;
+            }
+            return sharedKeyRank(a.group) - sharedKeyRank(b.group);
+        });
+    const oneToOneGroups = withMeta
+        .filter((g) => g.renderableCount <= 1)
+        .sort((a, b) => {
+            if (b.estimatedHeight !== a.estimatedHeight) {
+                return b.estimatedHeight - a.estimatedHeight;
+            }
+            return sharedKeyRank(a.group) - sharedKeyRank(b.group);
+        });
 
     const left: BinderGroup[] = [];
     const right: BinderGroup[] = [];
@@ -58,10 +79,17 @@ export function computeBinderColumns(
         }
     }
 
+    const reorderWithinColumn = (column: BinderGroup[]): BinderGroup[] => {
+        return [...column].sort((a, b) => sharedKeyRank(a) - sharedKeyRank(b));
+    };
+
+    const orderedLeft = reorderWithinColumn(left);
+    const orderedRight = reorderWithinColumn(right);
+
     // Keep left column height >= right column height when both layouts are close.
     if (leftHeight < rightHeight) {
-        return { left: right, right: left };
+        return { left: orderedRight, right: orderedLeft };
     }
 
-    return { left, right };
+    return { left: orderedLeft, right: orderedRight };
 }

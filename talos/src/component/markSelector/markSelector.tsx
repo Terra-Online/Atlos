@@ -16,6 +16,9 @@ interface MarkSelectorProps {
     typeInfo: { key: string; icon?: string; category?: { main?: string; sub?: string }; main?: string; sub?: string };
 }
 
+const normalizeBinderKey = (value: string): string =>
+    value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+
 let zCounter = 80;
 const nextZ = () => {
     zCounter = zCounter >= 500 ? 50 : zCounter + 1;
@@ -38,6 +41,27 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
 
     // i18n display name
     const displayName: string = String(tGame(`markerType.key.${typeInfo.key}`) ?? '');
+    const binderSearchTokens = useMemo(() => {
+        const source = typeInfo as typeof typeInfo & { ctgr?: string; rsch?: string; drop?: string };
+        const ctgrRaw = typeof source.ctgr === 'string' ? source.ctgr.trim() : '';
+        const ctgrKey = normalizeBinderKey(ctgrRaw);
+        const ctgrLabelRaw = ctgrKey ? tGame(`markerType.FileCtgr.${ctgrKey}`) : '';
+        const ctgrLabel = typeof ctgrLabelRaw === 'string' ? ctgrLabelRaw.trim() : '';
+
+        const rschRaw = typeof source.rsch === 'string' ? source.rsch.trim() : '';
+        const rschKey = normalizeBinderKey(rschRaw);
+        const rschLabelRaw = rschKey ? tGame(`markerType.researchId.${rschKey}`) : '';
+        const rschLabel = typeof rschLabelRaw === 'string' ? rschLabelRaw.trim() : '';
+
+        const dropRaw = typeof source.drop === 'string' ? source.drop.trim() : '';
+        const dropKey = normalizeBinderKey(dropRaw);
+        const dropLabelRaw = dropKey ? tGame(`markerType.drop.${dropKey}`) : '';
+        const dropLabel = typeof dropLabelRaw === 'string' ? dropLabelRaw.trim() : '';
+
+        return [ctgrRaw, ctgrKey, ctgrLabel, rschRaw, rschKey, rschLabel, dropRaw, dropKey, dropLabel]
+            .map((token) => token.toLowerCase())
+            .filter(Boolean);
+    }, [tGame, typeInfo]);
 
     // stores
     const filter = useFilter();
@@ -65,8 +89,9 @@ const MarkSelector = ({ typeInfo }: MarkSelectorProps) => {
             Boolean(cnt.total) &&
             (!normalizedSearch ||
                 typeInfo.key.toLowerCase().includes(normalizedSearch) ||
-                displayName.toLowerCase().includes(normalizedSearch)),
-        [cnt.total, normalizedSearch, displayName, typeInfo.key],
+                displayName.toLowerCase().includes(normalizedSearch) ||
+                binderSearchTokens.some((token) => token.includes(normalizedSearch))),
+        [cnt.total, normalizedSearch, displayName, typeInfo.key, binderSearchTokens],
     );
     const isActive = filter.includes(typeInfo.key);
 

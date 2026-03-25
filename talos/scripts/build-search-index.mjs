@@ -37,7 +37,17 @@ const BODY_LOCALE_MAP = {
   'zh-HK': 'zh-TW',
 }
 
-const DOC_VERSION = 2
+const ALIAS_LOCALE_MAP = {
+  'zh-HK': 'zh-TW',
+}
+
+const DOC_VERSION = 4
+
+const normalizeBinderKey = (s) =>
+  String(s ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/(^_|_$)/g, '')
 
 const normalize = (s) =>
   String(s ?? '')
@@ -149,19 +159,28 @@ async function loadMarkers(typeMap) {
 }
 
 async function loadLocaleAlias(locale) {
-  const file = path.resolve(LOCALE_DIR, `${locale}.json`)
+  const effective = ALIAS_LOCALE_MAP[locale] ?? locale
+  const file = path.resolve(LOCALE_DIR, `${effective}.json`)
   try {
     const data = await readJson(file)
     if (data && typeof data === 'object') {
       const markerType = data.markerType
       const markerTypeKey = markerType && typeof markerType === 'object' ? markerType.key : null
+      const fileCtgr = markerType && typeof markerType === 'object' ? markerType.FileCtgr : null
+      const researchId = markerType && typeof markerType === 'object' ? markerType.researchId : null
+      const drop = markerType && typeof markerType === 'object' ? markerType.drop : null
       if (markerTypeKey && typeof markerTypeKey === 'object') {
-        return markerTypeKey
+        return {
+          markerTypeKey,
+          fileCtgr: fileCtgr && typeof fileCtgr === 'object' ? fileCtgr : {},
+          researchId: researchId && typeof researchId === 'object' ? researchId : {},
+          drop: drop && typeof drop === 'object' ? drop : {},
+        }
       }
     }
-    return {}
+    return { markerTypeKey: {}, fileCtgr: {}, researchId: {}, drop: {} }
   } catch {
-    return {}
+    return { markerTypeKey: {}, fileCtgr: {}, researchId: {}, drop: {} }
   }
 }
 
@@ -225,8 +244,8 @@ function buildMultilingualAliasMap(allAlias, typeMap) {
     if (baseName) set.add(baseName)
 
     for (const locale of LANGS) {
-      const alias = allAlias.get(locale) ?? {}
-      const label = normalize(alias[typeKey] ?? '')
+      const aliasMeta = allAlias.get(locale) ?? { markerTypeKey: {}, fileCtgr: {}, researchId: {}, drop: {} }
+      const label = normalize(aliasMeta.markerTypeKey?.[typeKey] ?? '')
       if (label) set.add(label)
     }
 
@@ -236,7 +255,40 @@ function buildMultilingualAliasMap(allAlias, typeMap) {
   return byType
 }
 
-function buildMarkerDocs(markers, typeMap, alias, localeBodyMap, enBodyMap, subregionRegionMap, multilingualAliasMap) {
+function buildMultilingualBinderLabelMaps(allAlias) {
+  const fileCtgrByKey = new Map()
+  const researchByKey = new Map()
+  const dropByKey = new Map()
+
+  for (const locale of LANGS) {
+    const aliasMeta = allAlias.get(locale) ?? { markerTypeKey: {}, fileCtgr: {}, researchId: {}, drop: {} }
+
+    for (const [key, value] of Object.entries(aliasMeta.fileCtgr ?? {})) {
+      const clean = normalize(value)
+      if (!clean) continue
+      const prev = fileCtgrByKey.get(key) ?? ''
+      fileCtgrByKey.set(key, joinUniqueNormalized(prev, clean))
+    }
+
+    for (const [key, value] of Object.entries(aliasMeta.researchId ?? {})) {
+      const clean = normalize(value)
+      if (!clean) continue
+      const prev = researchByKey.get(key) ?? ''
+      researchByKey.set(key, joinUniqueNormalized(prev, clean))
+    }
+
+    for (const [key, value] of Object.entries(aliasMeta.drop ?? {})) {
+      const clean = normalize(value)
+      if (!clean) continue
+      const prev = dropByKey.get(key) ?? ''
+      dropByKey.set(key, joinUniqueNormalized(prev, clean))
+    }
+  }
+
+  return { fileCtgrByKey, researchByKey, dropByKey }
+}
+
+function buildMarkerDocs(markers, typeMap, alias, localeBodyMap, enBodyMap, subregionRegionMap, multilingualAliasMap, multilingualBinderLabels) {
   const docs = []
   const stats = {
     total: 0,
@@ -253,11 +305,46 @@ function buildMarkerDocs(markers, typeMap, alias, localeBodyMap, enBodyMap, subr
     }
 
     const typeMain = normalize(typeInfo?.category?.main ?? '')
-    const title = normalize(alias[typeKey] ?? typeInfo?.name ?? typeKey)
+    const title = normalize(alias.markerTypeKey?.[typeKey] ?? typeInfo?.name ?? typeKey)
+
+    const fileCtgrRaw = normalize(typeInfo?.ctgr ?? '')
+    const fileCtgrKey = normalizeBinderKey(fileCtgrRaw)
+    const fileCtgrLabel = normalize(alias.fileCtgr?.[fileCtgrKey] ?? fileCtgrRaw)
+
+    const researchRaw = normalize(typeInfo?.rsch ?? '')
+    const researchKey = normalizeBinderKey(researchRaw)
+    const researchLabel = normalize(alias.researchId?.[researchKey] ?? researchRaw)
+
+    const dropRaw = normalize(typeInfo?.drop ?? '')
+    const dropKey = normalizeBinderKey(dropRaw)
+    const dropLabel = normalize(alias.drop?.[dropKey] ?? dropRaw)
+
+    const binderTokens = joinUniqueNormalized(
+      fileCtgrRaw,
+      fileCtgrKey,
+      fileCtgrLabel,
+      researchRaw,
+      researchKey,
+      researchLabel,
+      dropRaw,
+      dropKey,
+      dropLabel,
+    )
+
+    const binderDisplay = researchLabel || fileCtgrLabel || dropLabel || ''
     const aliases = joinUniqueNormalized(
       typeKey,
       typeInfo?.name ?? '',
       title,
+      fileCtgrRaw,
+      fileCtgrLabel,
+      multilingualBinderLabels.fileCtgrByKey.get(fileCtgrKey) ?? '',
+      researchRaw,
+      researchLabel,
+      multilingualBinderLabels.researchByKey.get(researchKey) ?? '',
+      dropRaw,
+      dropLabel,
+      multilingualBinderLabels.dropByKey.get(dropKey) ?? '',
       multilingualAliasMap.get(typeKey) ?? '',
     )
     const body = getBodyForType(marker.typeId, localeBodyMap, enBodyMap)
@@ -271,6 +358,8 @@ function buildMarkerDocs(markers, typeMap, alias, localeBodyMap, enBodyMap, subr
       typeMain,
       title,
       aliases,
+      binderTokens,
+      binderDisplay,
       regionKey,
       subregionId: marker.subregionId,
       body,
@@ -292,6 +381,7 @@ async function build() {
   const markers = await loadMarkers(typeMap)
   const allAlias = await loadAllLocaleAlias()
   const multilingualAliasMap = buildMultilingualAliasMap(allAlias, typeMap)
+  const multilingualBinderLabels = buildMultilingualBinderLabelMaps(allAlias)
 
   const enBodyByType = await loadBodyText('en-US')
   const localizedBodyMap = new Map()
@@ -319,6 +409,7 @@ async function build() {
       enBodyByType,
       subregionRegionMap,
       multilingualAliasMap,
+      multilingualBinderLabels,
     )
 
     const file = path.resolve(OUT_DIR, `${locale}.json`)

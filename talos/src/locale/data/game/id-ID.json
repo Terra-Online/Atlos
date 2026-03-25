@@ -468,11 +468,19 @@
             "quillbeast_liver": "Hati Quillbeast",
             "rakerbeast_longfur": "Bulu Panjang Rakerbeast"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Naskah",
             "digital": "E-File",
             "collection": "Laporan",
             "media": "Multimedia"
+        },
+        "researchId": {
+            "research_007": "Asal Lokasi Uji Coba Æther",
+            "research_006": "Mimpi Buruk dari Masa Lalu",
+            "research_002": "Klan Bonekrusher",
+            "research_003prts": "Kampung Benteng Qingbo",
+            "research_001": "Transportasi di Lembah Jingyu",
+            "research_wulingbussiness": "Jalan Lebar Fangxing"
         }
     }
 }

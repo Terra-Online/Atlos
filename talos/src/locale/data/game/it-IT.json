@@ -468,11 +468,19 @@
             "quillbeast_liver": "Fegato di bestiaspina",
             "rakerbeast_longfur": "Lungomanto di rastrobestia"
         },
-        "fileCtgr": {
+        "FileCtgr": {
             "paper": "Manoscritti",
             "digital": "E-File",
             "collection": "Rapporti",
             "media": "Reperti multimediali"
+        },
+        "researchId": {
+            "research_007": "Origini dell'Area test dell'Æther",
+            "research_006": "Incubi dal passato",
+            "research_002": "Il clan degli Spacca-Ossa",
+            "research_003prts": "Palizzata di Qingbo",
+            "research_001": "Trasporti a Valle Jingyu",
+            "research_wulingbussiness": "Viale Fangxing"
         }
     }
 }
