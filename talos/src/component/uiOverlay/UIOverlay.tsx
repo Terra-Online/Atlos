@@ -50,6 +50,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
     const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
+    const [announcements, setAnnouncements] = useState<any[]>([]);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const isUserGuideOpen = useIsUserGuideOpen();
@@ -72,6 +73,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
 
             try {
                 const data = await fetchAnnouncements(locale);
+                setAnnouncements(data);
                 const lastRead = localStorage.getItem('announcement_last_read');
                 const latestDate = data[0]?.date;
                 const hasUnread = !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
@@ -246,6 +248,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 onClose={() => setAnnouncementOpen(false)}
                 onChange={(o) => setAnnouncementOpen(o)}
                 onHasUnread={setHasUnreadAnnouncement}
+                announcements={announcements}
             />
         </div>
     );

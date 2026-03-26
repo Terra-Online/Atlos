@@ -46,6 +46,7 @@
     "leaflet.markercluster": "^1.5.3",
     "liquid-glass-react-positioning": "^1.1.1",
     "motion": "^12.9.4",
+    "pinyin-pro": "^3.28.0",
     "progressive-blur": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
