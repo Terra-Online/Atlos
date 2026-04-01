@@ -423,6 +423,20 @@
         &:last-child {
             margin-bottom: 0;
         }
+        :global(.actor) {
+            opacity: .8;
+            font-size: 0.95em;
+            transform: translateY(-.5px);
+            &::after {
+                content: '';
+                display: inline-block;
+                width: 2px;
+                height: .925rem;
+                background-color: var(--tos-text);
+                margin: 0 6px 0 12px;
+                transform: translateY(1.5px);
+            }
+        }
     }
     del {
         text-decoration: line-through;
@@ -438,7 +452,6 @@
         box-shadow: 0 0 4px rgba($black-0, 0.75);
     }
 }
-
 .inline {
     position: static;
     right: auto;

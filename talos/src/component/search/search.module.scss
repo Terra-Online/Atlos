@@ -122,7 +122,7 @@
                 outline: none;
                 color: var(--search-txt);
                 font-size: 1rem;
-                font-family: 'Roboto Slab', 'UD_ShinGo Demibold', sans-serif;
+                font-family: 'Roboto Slab', 'HMSans', sans-serif;
                 font-weight: 400;
 
                 &::placeholder {
@@ -409,7 +409,7 @@
         display: inline-block;
         color: var(--search-highlight-fg);
         background: var(--search-highlight-bg);
-        font-family: 'Novecento Bold', 'Novecento Cyrillic DemiBold','Novecento Vietnamese DemiBold','UD_ShinGo Bold', 'Noto Sans Thai', sans-serif;
+        font-family: 'Novecento Bold', 'Novecento Cyrillic DemiBold','Novecento Vietnamese DemiBold','HMSans','UD_ShinGo Bold', 'Noto Sans Thai', sans-serif;
         text-transform: uppercase;
         font-weight: 900;
         padding: 1px 1.5px;

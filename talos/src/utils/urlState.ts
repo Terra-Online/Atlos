@@ -20,6 +20,12 @@ const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
 
+// f 參數壓縮格式：
+// - 單個 type: ~<base36Index>
+// - 多個 type: ~~<base64url(varint(count, firstIndex, deltaMinusOne...))>
+const FILTER_SINGLE_PREFIX = '~';
+const FILTER_MULTI_PREFIX = '~~';
+
 // 語言代碼映射（雙向）
 const LANG_CODE_MAP: Record<string, string> = {
     'en-US': 'en',
@@ -58,6 +64,11 @@ const REGION_CODE_REVERSE: Record<string, string> = Object.fromEntries(
     Object.entries(REGION_CODE_MAP).map(([k, v]) => [v, k])
 );
 
+const SORTED_MARKER_TYPE_KEYS = Object.keys(MARKER_TYPE_DICT).sort();
+const MARKER_TYPE_INDEX_MAP = new Map<string, number>(
+    SORTED_MARKER_TYPE_KEYS.map((key, index) => [key, index])
+);
+
 // 從 localStorage 獲取當前語言
 const getCurrentLocale = (): string | null => {
     try {
@@ -71,8 +82,8 @@ const getCurrentLocale = (): string | null => {
 };
 
 /**
- * 為 type key 計算穩定的哈希值（0-65536範圍）
- * 使用簡單的字符串哈希算法，確保同一個key永遠得到相同的值
+ * Legacy: 舊版壓縮格式使用哈希位置編碼。
+ * 新鏈接不再生成此格式，只保留解碼兼容。
  */
 const hashTypeKey = (key: string): number => {
     let hash = 0;
@@ -83,85 +94,167 @@ const hashTypeKey = (key: string): number => {
     return Math.abs(hash) % 65536; // 映射到 0-65535
 };
 
-/**
- * 壓縮filter數組為base64字符串（使用基於哈希的位置編碼）
- * 每個type根據其key的哈希值獲得固定的位置，不受types.json順序影響
- */
-const compressFilter = (keys: string[]): string => {
-    try {
-        if (keys.length === 0) return '';
-        
-        // 計算每個key的哈希位置並排序
-        const positions = keys
-            .map(key => hashTypeKey(key))
-            .sort((a, b) => a - b); // 排序以便壓縮
-        
-        // 使用變長編碼：第一個位置用完整11bits，後續用差值
-        const bits: number[] = [];
-        
-        // 編碼第一個位置（11 bits）
-        bits.push(...numberToBits(positions[0], 11));
-        
-        // 編碼後續位置的差值（最多11 bits，實際可能更少）
-        for (let i = 1; i < positions.length; i++) {
-            const delta = positions[i] - positions[i - 1];
-            bits.push(...encodeVariableInt(delta));
-        }
-        
-        // 轉換為字節數組
-        const byteCount = Math.ceil(bits.length / 8);
-        const bytes = new Uint8Array(byteCount);
-        for (let i = 0; i < bits.length; i++) {
-            if (bits[i]) {
-                bytes[Math.floor(i / 8)] |= (1 << (i % 8));
-            }
-        }
-        
-        // Base64 編碼
-        let binary = '';
-        bytes.forEach(byte => binary += String.fromCharCode(byte));
-        return btoa(binary)
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
-    } catch {
-        return '';
+const encodeVarUint = (num: number): number[] => {
+    const bytes: number[] = [];
+    let value = num >>> 0;
+    while (value >= 0x80) {
+        bytes.push((value & 0x7f) | 0x80);
+        value >>>= 7;
     }
+    bytes.push(value);
+    return bytes;
 };
 
-// 將數字轉換為指定位數的bit數組
-const numberToBits = (num: number, bitCount: number): number[] => {
-    const bits: number[] = [];
-    for (let i = 0; i < bitCount; i++) {
-        bits.push((num >> i) & 1);
+const decodeVarUint = (
+    bytes: Uint8Array,
+    startOffset: number,
+): { value: number; nextOffset: number } | null => {
+    let value = 0;
+    let shift = 0;
+    let offset = startOffset;
+
+    while (offset < bytes.length && shift < 35) {
+        const byte = bytes[offset++];
+        value |= (byte & 0x7f) << shift;
+        if ((byte & 0x80) === 0) {
+            return { value, nextOffset: offset };
+        }
+        shift += 7;
     }
-    return bits;
+
+    return null;
 };
 
-// 變長整數編碼（用於壓縮差值）
-const encodeVariableInt = (num: number): number[] => {
-    const bits: number[] = [];
-    // 使用 4 bits 表示長度，然後是實際值
-    const bitLength = Math.ceil(Math.log2(num + 1));
-    bits.push(...numberToBits(bitLength, 4));
-    bits.push(...numberToBits(num, bitLength));
-    return bits;
+const toBase64Url = (bytes: Uint8Array): string => {
+    let binary = '';
+    bytes.forEach((byte) => {
+        binary += String.fromCharCode(byte);
+    });
+    return btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
 };
 
-/**
- * 解壓base64字符串為filter數組（基於哈希的位置解碼）
- */
-const decompressFilter = (encoded: string): string[] => {
+const fromBase64Url = (encoded: string): Uint8Array | null => {
     try {
-        // 還原base64
         const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
         const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
         const binary = atob(padded);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+    } catch {
+        return null;
+    }
+};
+
+/**
+ * 壓縮 filter 為短字串。
+ * 新版使用無碰撞的 type 索引編碼，並移除舊算法的位數上限。
+ */
+const compressFilter = (keys: string[]): string => {
+    if (keys.length === 0) return '';
+
+    const indexes = Array.from(
+        new Set(
+            keys
+                .map((key) => MARKER_TYPE_INDEX_MAP.get(key))
+                .filter((idx): idx is number => idx !== undefined),
+        ),
+    ).sort((a, b) => a - b);
+
+    if (indexes.length === 0) return '';
+
+    // 單一 type 走最短路徑：~ + base36(index)
+    if (indexes.length === 1) {
+        return `${FILTER_SINGLE_PREFIX}${indexes[0].toString(36)}`;
+    }
+
+    // 多 type 使用 varint + base64url
+    const bytes: number[] = [];
+    bytes.push(...encodeVarUint(indexes.length));
+    bytes.push(...encodeVarUint(indexes[0]));
+    for (let i = 1; i < indexes.length; i++) {
+        // 使用 delta-1 壓縮相鄰索引（最小值可為 0）
+        bytes.push(...encodeVarUint(indexes[i] - indexes[i - 1] - 1));
+    }
+
+    return `${FILTER_MULTI_PREFIX}${toBase64Url(new Uint8Array(bytes))}`;
+};
+
+const decompressFilterV2 = (encoded: string): string[] => {
+    // 單一 type：~<base36Index>
+    if (encoded.startsWith(FILTER_SINGLE_PREFIX) && !encoded.startsWith(FILTER_MULTI_PREFIX)) {
+        const index = Number.parseInt(encoded.slice(FILTER_SINGLE_PREFIX.length), 36);
+        if (!Number.isInteger(index) || index < 0 || index >= SORTED_MARKER_TYPE_KEYS.length) {
+            return [];
+        }
+        const key = SORTED_MARKER_TYPE_KEYS[index];
+        return key ? [key] : [];
+    }
+
+    // 多 type：~~<base64url(varint...)>
+    if (!encoded.startsWith(FILTER_MULTI_PREFIX)) {
+        return [];
+    }
+
+    const payload = encoded.slice(FILTER_MULTI_PREFIX.length);
+    const bytes = fromBase64Url(payload);
+    if (!bytes || bytes.length === 0) {
+        return [];
+    }
+
+    let offset = 0;
+    const countDecoded = decodeVarUint(bytes, offset);
+    if (!countDecoded) return [];
+    const count = countDecoded.value;
+    offset = countDecoded.nextOffset;
+    if (count <= 1) return [];
+
+    const firstDecoded = decodeVarUint(bytes, offset);
+    if (!firstDecoded) return [];
+    let currentIndex = firstDecoded.value;
+    offset = firstDecoded.nextOffset;
+
+    if (currentIndex < 0 || currentIndex >= SORTED_MARKER_TYPE_KEYS.length) {
+        return [];
+    }
+
+    const indexes: number[] = [currentIndex];
+    for (let i = 1; i < count; i++) {
+        const deltaDecoded = decodeVarUint(bytes, offset);
+        if (!deltaDecoded) return [];
+        offset = deltaDecoded.nextOffset;
+        currentIndex += deltaDecoded.value + 1;
+        if (currentIndex < 0 || currentIndex >= SORTED_MARKER_TYPE_KEYS.length) {
+            return [];
+        }
+        indexes.push(currentIndex);
+    }
+
+    // 嚴格要求完整消耗 payload，避免髒數據被誤解析。
+    if (offset !== bytes.length) {
+        return [];
+    }
+
+    return indexes.map((idx) => SORTED_MARKER_TYPE_KEYS[idx]).filter(Boolean);
+};
+
+/**
+ * Legacy：解壓舊版 base64 哈希位置格式。
+ */
+const decompressLegacyFilter = (encoded: string): string[] => {
+    try {
+        const bytes = fromBase64Url(encoded);
+        if (!bytes) return [];
         
         // 轉換為bit數組
         const bits: number[] = [];
-        for (let i = 0; i < binary.length; i++) {
-            const byte = binary.charCodeAt(i);
+        for (let i = 0; i < bytes.length; i++) {
+            const byte = bytes[i];
             for (let j = 0; j < 8; j++) {
                 bits.push((byte >> j) & 1);
             }
@@ -202,6 +295,14 @@ const decompressFilter = (encoded: string): string[] => {
     } catch {
         return [];
     }
+};
+
+const decompressFilter = (encoded: string): string[] => {
+    const v2 = decompressFilterV2(encoded);
+    if (v2.length > 0) {
+        return v2;
+    }
+    return decompressLegacyFilter(encoded);
 };
 
 // 將bit數組轉換為數字
