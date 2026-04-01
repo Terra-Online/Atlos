@@ -15,6 +15,7 @@ export interface DrawerProps {
 	snap?: number[];
 	snapThreshold?: number | number[];
 	handleSize?: number;
+	dragDisabled?: boolean;
 	debug?: boolean;
 	onProgressChange?: (progress: number) => void;
 	className?: string;
@@ -97,6 +98,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	snap = [0, 300],
 	snapThreshold = [50, 50],
 	handleSize = 24,
+	dragDisabled = false,
 	debug = false,
 	onProgressChange,
 	className,
@@ -191,6 +193,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Imperative snap via prop
 	useEffect(() => {
 		if (snapToIndex == null) return;
+		if (isDraggingRef.current) return;
 		const idx = Math.trunc(snapToIndex);
 		const target = snapsNormalized[idx];
 		if (target == null || Math.abs(size.get() - target) <= 0.5) return;
@@ -227,6 +230,11 @@ export const Drawer: React.FC<DrawerProps> = ({
 	}) => {
 		const { first, last, movement, cancel, event, intentional } = state;
 		const [mx, my] = movement;
+
+		if (dragDisabled) {
+			if (first) cancel();
+			return;
+		}
 		
 		logger.logGesture(first ? 'START' : last ? 'END' : 'MOVE', {
 			intentional,
@@ -324,7 +332,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			}
 			logger.logDragComplete();
 		}
-	}, [axis, side, size, minSnap, maxSnap, snapsNormalized, thresholdsPct, logger]);
+	}, [axis, side, size, minSnap, maxSnap, snapsNormalized, thresholdsPct, logger, dragDisabled]);
 	
 	const dragOptions = useMemo(() => ({
 		target: containerRef,
@@ -340,6 +348,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Handle click to cycle snaps
 	const onHandleClick = useCallback((e: React.MouseEvent) => {
 		e.stopPropagation();
+		if (dragDisabled) return;
 		if (isDraggingRef.current) return;
 
 		const currentSize = size.get();
@@ -353,7 +362,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
 		animate(size, target, { duration: 0.25 });
 		logger.logSnapTarget(currentSize, target, nextIndex);
-	}, [size, snapsNormalized, logger]);
+	}, [size, snapsNormalized, logger, dragDisabled]);
 
 	// Handle class
 	const handleClass = useMemo(() => ({
@@ -372,6 +381,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 				role="separator"
 				aria-orientation={axis === 'x' ? 'vertical' : 'horizontal'}
 				aria-label="Drawer drag handle"
+				aria-disabled={dragDisabled}
 				onClick={onHandleClick}
 			/>
 			<div className={`${styles.backdrop} ${backdropClassName ?? ''}`} />
