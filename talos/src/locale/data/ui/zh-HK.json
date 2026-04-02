@@ -154,7 +154,14 @@
     "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
-    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
+    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。",
+    "mobile": {
+      "headbar": "與地圖設定相關的開關位於<span class=\"keyword\">右上角頂欄</span>。點擊右上角圖示展開以查看更多選項。",
+      "regionLayerSwitch": "點擊區域圖示可切換<span class=\"keyword\">不同的箱庭地圖</span>（主區域）。<br>點擊並按住主區域圖示可顯示可用的<span class=\"keyword\">子區域和圖層</span>，選擇子區域或圖層即可跳轉到對應視圖。",
+      "divider": "這是可拖動的<span class=\"keyword\">分隔線</span>。<br>您可以向左或向右拖動分隔線，調整搜尋欄與點位列表的寬度比例，以符合您的使用習慣。",
+      "drawer": "從螢幕底部<span class=\"keyword\">向上拉起抽屜</span>，即可檢視與管理點位篩選器。<br>您可以在這裡選擇想要在地圖上顯示的點位類型。",
+      "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊可切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已標記的數量。"
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>當前遊戲版本為<span class=\"keyword\">1.0.13</span>，地圖的資料集版本為<span class=\"keyword\">0.8.25</span>。我們需要時間來更新資料，更新時間可能晚於遊戲版本更新，有勞管理員等待。如你想及時追蹤我們的更新，請加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='加入Discord'>Discord伺服器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener' aria-label='加入QQ'>QQ群組1075906513</a>。<br><br>亦都推薦您使用如下相關的工具網站：<ul><li><span class=\"keyword\">遊戲Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='訪問遊戲Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">藍圖分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='訪問Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -187,8 +194,8 @@
     "empty": "暫無公告"
   },
   "meta": {
-      "title": "終末地地圖集",
-      "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
+    "title": "終末地地圖集",
+    "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
   },
   "domain": {
     "cn": "<span class=\"keyword\">國內用戶</span>推薦使用大陸鏡像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，訪問更快捷穩定。",
