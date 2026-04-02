@@ -59,7 +59,8 @@ interface SideBarProps {
   visible?: boolean;
 }
 
-const SNAP0 = 64; // px
+const SNAP0_FALLBACK = 64; // px
+const SNAP0_COLLAPSED_EXTRA = 16; // px
 const TOP_ROW_MIN_SEARCH_PX = 48;
 
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
@@ -97,15 +98,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const snaps = useMemo(() => {
-    const s1 = Math.round(vh * 0.55);
-    const s2 = Math.round(vh * 0.85);
-    // Ensure ascending order and clamp
-    const arr = [SNAP0, Math.max(SNAP0, s1), Math.max(SNAP0, s2)];
-    const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
-    return dedup;
-  }, [vh]);
-
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const topRowRef = useRef<HTMLDivElement>(null);
@@ -118,6 +110,22 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const [rightContentWidth, setRightContentWidth] = useState(0);
   const prevHasSearchQueryRef = useRef(false);
   const preSearchSnapIndexRef = useRef<number | null>(null);
+  const hasSearchQuery = searchString.trim().length > 0;
+
+  const snap0 = useMemo(() => {
+    const base = topRowBaseHeight > 0 ? topRowBaseHeight : topRowHeight;
+    if (base <= 0) return SNAP0_FALLBACK;
+    return Math.max(40, Math.round(base + SNAP0_COLLAPSED_EXTRA));
+  }, [topRowBaseHeight, topRowHeight]);
+
+  const snaps = useMemo(() => {
+    const s1 = Math.round(vh * 0.55);
+    const s2 = Math.round(vh * 0.85);
+    // Ensure ascending order and clamp
+    const arr = [snap0, Math.max(snap0, s1), Math.max(snap0, s2)];
+    const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
+    return dedup;
+  }, [vh, snap0]);
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
@@ -162,16 +170,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   // Sync currentSnap to store for UIOverlay to use
   useEffect(() => {
+    if (hasSearchQuery) return;
     if (drawerSnapIndex !== currentSnap) {
       setDrawerSnapIndex(currentSnap);
     }
-  }, [currentSnap, drawerSnapIndex, setDrawerSnapIndex]);
+  }, [currentSnap, drawerSnapIndex, hasSearchQuery, setDrawerSnapIndex]);
 
   const snapsNormalized = snaps;
   const minSnap = snaps[0] ?? 0;
   const maxSnap = snaps[snaps.length - 1] ?? 0;
   const safeRange = (maxSnap - minSnap) || 1;
-  const hasSearchQuery = searchString.trim().length > 0;
 
   useEffect(() => {
     const wasSearching = prevHasSearchQueryRef.current;
@@ -348,7 +356,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       {/* Mobile places the whole sidebar into a bottom drawer */}
       <Drawer
         side="bottom"
-        initialSize={SNAP0}
+        initialSize={snap0}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
         handleSize={16}
