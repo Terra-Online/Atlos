@@ -66,6 +66,7 @@
   },
   "include": [
     "src/**/*",
+    "oem-relink/src/**/*",
     "src/vite-env.d.ts",
     "vite.config.js",
     "eslint.config.js",

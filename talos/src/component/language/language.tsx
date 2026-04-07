@@ -33,6 +33,8 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'sv-SE': 'Svenska',
   'th-TH': 'ไทย',
   'vi-VN': 'Tiếng Việt',
+  'el-GR': 'Ελληνικά',
+  'hi-IN': 'हिंदी',
 };
 
 // Convert possible locale like "en-us" to canonical BCP-47 casing: "en-US"

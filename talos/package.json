@@ -8,6 +8,8 @@
     "subset:fonts": "python3 ./scripts/subset-fonts.py",
     "worker:type-check": "cd oem-search && pnpm type-check",
     "worker:deploy": "cd oem-search && pnpm run deploy",
+    "worker:relink:type-check": "cd oem-relink && pnpm type-check",
+    "worker:relink:deploy": "cd oem-relink && pnpm run deploy",
     "build:prepare": "node ./scripts/build-prepare.mjs",
     "prebuild": "pnpm run build:prepare",
     "build": "cross-env NODE_ENV=production vite build",
