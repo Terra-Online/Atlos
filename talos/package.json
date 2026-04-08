@@ -5,16 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode dev",
+
     "subset:fonts": "python3 ./scripts/subset-fonts.py",
-    "worker:type-check": "cd oem-search && pnpm type-check",
-    "worker:deploy": "cd oem-search && pnpm run deploy",
-    "worker:relink:type-check": "cd oem-relink && pnpm type-check",
-    "worker:relink:deploy": "cd oem-relink && pnpm run deploy",
-    "build:prepare": "node ./scripts/build-prepare.mjs",
-    "prebuild": "pnpm run build:prepare",
-    "build": "cross-env NODE_ENV=production vite build",
-    "build:search-index": "node ./scripts/build-search-index.mjs",
-    "build:check": "tsc --noEmit",
+  
+    "worker:type-check": "pnpm -F oem-search type-check",
+    "worker:deploy": "pnpm -F oem-search deploy",
+    "worker:relink:type-check": "pnpm -F oem-relink type-check",
+    "worker:relink:deploy": "pnpm -F oem-relink deploy",
+
     "lint:js": "eslint \"**/*.{js,ts,tsx,jsx,html,md}\"",
     "lint:css": "stylelint \"**/*.{css,scss}\"",
     "lint": "run-s lint:js lint:css -c",
@@ -22,9 +20,24 @@
     "lint:fix:css": "prettier --write \"**/*.{css,scss}\" && stylelint --fix \"**/*.{css,scss}\"",
     "lint:fix": "run-s lint:fix:js lint:fix:css -c",
     "type-check": "tsc --noEmit",
-    "publish:web": "node ./scripts/publish-oss.js",
+
+    "prebuild": "pnpm run build:prepare",
+    "build:prepare": "node ./scripts/build-prepare.mjs",
+    "build:search-index": "node ./scripts/build-search-index.mjs",
+    "build:check": "tsc --noEmit",
+    "build": "cross-env NODE_ENV=production vite build",
+    "build:beta": "cross-env NODE_ENV=production DEPLOY_CHANNEL=beta vite build",
     "build:r2": "node ./scripts/build-r2.mjs",
+    "build:r2:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/build-r2.mjs",
+
+    "publish:web": "node ./scripts/publish-oss.js",
     "publish:web:r2": "node ./scripts/publish-R2.js",
+
+    "release:package": "node ./scripts/package-dist.mjs",
+    "release:package:cn:beta": "node ./scripts/package-dist.mjs --target cn --channel beta",
+    "release:package:cn:prod": "node ./scripts/package-dist.mjs --target cn --channel prod",
+    "release:package:org:beta": "node ./scripts/package-dist.mjs --target org --channel beta",
+    "release:package:org:prod": "node ./scripts/package-dist.mjs --target org --channel prod",
     "preview": "vite preview",
     "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'"
   },

@@ -1,6 +1,7 @@
 const TARGET_CN_ORIGIN = 'https://opendfieldmap.cn';
 const TARGET_ORG_ORIGIN = 'https://opendfieldmap.org';
-const WORKER_VERSION = '20260407.07';
+const ROOT_SHORT_DOMAIN = 'oem.re';
+const WORKER_VERSION = '20260408.02';
 const PREVIEW_TITLE = 'Open Endfield Map';
 const PREVIEW_DESCRIPTION =
 	'Open Endfield Map is an open-source interactive map for Arknights: Endfield.';
@@ -16,6 +17,41 @@ const SOCIAL_PREVIEW_BOT_KEYWORDS: string[] = [
 type CountrySource = {
 	byHeader?: string;
 	byCfCountry?: string;
+};
+
+type RedirectMode = 'geo' | 'org' | 'cn';
+
+type HostRule = {
+	mode: RedirectMode;
+	description: string;
+	preserveSubdomain?: boolean;
+};
+
+type HostDecision = {
+	allowed: boolean;
+	hostname: string;
+	key: string;
+	rule?: HostRule;
+	reason: string;
+};
+
+// Whitelist table: add new subdomains here only.
+// '@' means the root short domain itself (oem.re).
+const SUBDOMAIN_WHITELIST: Record<string, HostRule> = {
+	'@': {
+		mode: 'geo',
+		description: 'root short domain',
+	},
+	beta: {
+		mode: 'geo',
+		description: 'beta environment uses geo redirect',
+		preserveSubdomain: true,
+	},
+	blog: {
+		mode: 'org',
+		description: 'blog always redirects to org',
+        preserveSubdomain: true,
+	},
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -205,14 +241,83 @@ const detectCountrySource = (request: Request): CountrySource => {
 	return { byHeader, byCfCountry };
 };
 
-const resolveTargetOrigin = (country: CountrySource): { origin: string; reason: string } => {
-	if (country.byHeader === 'CN') {
-		return { origin: TARGET_CN_ORIGIN, reason: 'cf-ipcountry=CN' };
+const normalizeHostname = (hostname: string): string =>
+	hostname.trim().toLowerCase().replace(/\.+$/, '');
+
+const resolveHostDecision = (hostname: string): HostDecision => {
+	const normalizedHost = normalizeHostname(hostname);
+	const rootSuffix = `.${ROOT_SHORT_DOMAIN}`;
+
+	let key = '';
+	if (normalizedHost === ROOT_SHORT_DOMAIN) {
+		key = '@';
+	} else if (normalizedHost.endsWith(rootSuffix)) {
+		key = normalizedHost.slice(0, -rootSuffix.length);
+	} else {
+		return {
+			allowed: false,
+			hostname: normalizedHost,
+			key: '',
+			reason: 'host not under short domain',
+		};
 	}
-	if (country.byCfCountry === 'CN') {
-		return { origin: TARGET_CN_ORIGIN, reason: 'request.cf.country=CN' };
+
+	const rule = SUBDOMAIN_WHITELIST[key];
+	if (!rule) {
+		return {
+			allowed: false,
+			hostname: normalizedHost,
+			key,
+			reason: 'subdomain not whitelisted',
+		};
 	}
-	return { origin: TARGET_ORG_ORIGIN, reason: 'default non-CN' };
+
+	return {
+		allowed: true,
+		hostname: normalizedHost,
+		key,
+		rule,
+		reason: 'whitelisted',
+	};
+};
+
+const resolveTargetOrigin = (
+	country: CountrySource,
+	mode: RedirectMode,
+	hostDecision: HostDecision,
+): { origin: string; reason: string } => {
+	let baseOrigin = TARGET_ORG_ORIGIN;
+	let reason = 'mode=geo; default non-CN';
+
+	if (mode === 'org') {
+		baseOrigin = TARGET_ORG_ORIGIN;
+		reason = 'mode=org';
+	} else if (mode === 'cn') {
+		baseOrigin = TARGET_CN_ORIGIN;
+		reason = 'mode=cn';
+	} else if (country.byHeader === 'CN') {
+		baseOrigin = TARGET_CN_ORIGIN;
+		reason = 'mode=geo; cf-ipcountry=CN';
+	} else if (country.byCfCountry === 'CN') {
+		baseOrigin = TARGET_CN_ORIGIN;
+		reason = 'mode=geo; request.cf.country=CN';
+	}
+
+	const shouldPreserveSubdomain =
+		hostDecision.allowed &&
+		hostDecision.rule?.preserveSubdomain === true &&
+		hostDecision.key !== '@';
+
+	if (!shouldPreserveSubdomain) {
+		return { origin: baseOrigin, reason };
+	}
+
+	const targetUrl = new URL(baseOrigin);
+	targetUrl.hostname = `${hostDecision.key}.${targetUrl.hostname}`;
+	return {
+		origin: targetUrl.origin,
+		reason: `${reason}; preserve-subdomain=${hostDecision.key}`,
+	};
 };
 
 const buildRedirectUrl = (requestUrl: URL, targetOrigin: string): string => {
@@ -228,8 +333,10 @@ export default {
 			requestUrl.pathname === '/_debug' ||
 			requestUrl.searchParams.get('__debug') === '1';
 		const forcePreview = requestUrl.searchParams.get('__preview') === '1';
+		const hostDecision = resolveHostDecision(requestUrl.hostname);
 		const country = detectCountrySource(request);
-		const target = resolveTargetOrigin(country);
+		const mode = hostDecision.rule?.mode ?? 'geo';
+		const target = resolveTargetOrigin(country, mode, hostDecision);
 		const redirectUrl = buildRedirectUrl(requestUrl, target.origin);
 		const isSocialPreview = shouldServeSocialPreview(userAgent, forcePreview);
 
@@ -244,6 +351,7 @@ export default {
 						host: requestUrl.host,
 						path: requestUrl.pathname,
 						search: requestUrl.search,
+						hostDecision,
 						decision: target,
 						isSocialPreview,
 						redirectUrl,
@@ -263,6 +371,20 @@ export default {
 			);
 		}
 
+		if (!hostDecision.allowed) {
+			return new Response('Not Found', {
+				status: 404,
+				headers: {
+					'cache-control': 'no-store',
+					'x-oem-relink-version': WORKER_VERSION,
+					'x-oem-relink-host': hostDecision.hostname,
+					'x-oem-relink-host-reason': hostDecision.reason,
+				},
+			});
+		}
+
+		const hostReason = `host=${hostDecision.key}; ${target.reason}`;
+
 		if (isSocialPreview) {
 			return new Response(buildSocialPreviewHtml(redirectUrl, target.origin), {
 				status: 200,
@@ -274,8 +396,10 @@ export default {
 					'x-content-type-options': 'nosniff',
 					'referrer-policy': 'no-referrer',
 					'x-oem-relink-version': WORKER_VERSION,
-					'x-oem-relink-reason': target.reason,
+					'x-oem-relink-reason': hostReason,
 					'x-oem-relink-target': target.origin,
+					'x-oem-relink-host-key': hostDecision.key,
+					'x-oem-relink-mode': mode,
 					'x-oem-relink-social-preview': '1',
 				},
 			});
@@ -287,8 +411,10 @@ export default {
 				location: redirectUrl,
 				'cache-control': 'no-store',
 				'x-oem-relink-version': WORKER_VERSION,
-				'x-oem-relink-reason': target.reason,
+				'x-oem-relink-reason': hostReason,
 				'x-oem-relink-target': target.origin,
+				'x-oem-relink-host-key': hostDecision.key,
+				'x-oem-relink-mode': mode,
 				'x-oem-relink-country-header': country.byHeader ?? '',
 				'x-oem-relink-country-cf': country.byCfCountry ?? '',
 			},
