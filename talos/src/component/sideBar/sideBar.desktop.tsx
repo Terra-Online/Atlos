@@ -24,7 +24,7 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
-//import IDCard from '../login/idcard';
+import IDCard from '../login/idcard';
 import SupportModal from '../support/support';
 
 // Social media icons
@@ -288,11 +288,9 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         </MarkFilterDragProvider>
                     </div>
                     <Notice />
-                    {/* 
                     <div className={styles.idCardContainer}>
                         <IDCard />
                     </div>
-                    */}
                 </div>
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>

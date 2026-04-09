@@ -1,18 +1,33 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
 $avatar-default: url('@/assets/images/UI/avt/bg/end2.webp');
 $cardbak: url('@/assets/images/UI/avt/bg/logo.webp');
 $contour: url('@/assets/images/UI/avt/bg/contour.webp');
 $qrcode: url('@/assets/images/UI/avt/bg/qrcode.webp');
-$primary-accent: #ecdb09;
+
 
 $border-width: 3px;
+
+:root, :root[data-theme='light'] {
+    --idcard-bg: #333;
+    --idcard-name: #fafafa;
+    --idcard-id: #d6d6d6;
+    --id-highlight-border: #{$primary-accent-3};
+}
 .idCard {
-    height: 7rem;
+    height: 7.5rem;
     width: 19rem;
     max-width: 95%;
     padding: 1rem;
+    padding-top: 1.5rem;
     box-sizing: border-box;
     background-color: #333;
     border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
+    @supports (corner-shape: superellipse(1.5)) {
+        corner-shape: superellipse(1.5);
+        border-radius: calc(2rem - 2px);
+    }
     position: relative;
     &::after {
         content: "";
@@ -22,14 +37,13 @@ $border-width: 3px;
         width: calc(100% + $border-width * 2);
         height: calc(100% + $border-width * 2);
         transform: translate(-#{$border-width}, -#{$border-width});
-        background: radial-gradient(circle at 100% 100%, #0000 0, #0000 2px, transparent 2px) 0% 0%/8px 8px no-repeat,
-            radial-gradient(circle at 0 100%, #0000 0, #0000 2px, transparent 2px) 100% 0%/8px 8px no-repeat,
-            radial-gradient(circle at 100% 0, #0000 0, #0000 2px, transparent 2px) 0% 100%/8px 8px no-repeat,
-            radial-gradient(circle at 0 0, #0000 0, #0000 2px, transparent 2px) 100% 100%/8px 8px no-repeat,
-            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 12px) calc(100% - 16px) no-repeat,
-            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 16px) calc(100% - 12px) no-repeat,
-            linear-gradient(90deg, transparent 0%, #f9f429 100%);
+        background: 
+            linear-gradient(90deg, transparent 0%, transparent 20%, var(--id-highlight-border) 100%);
         border-radius: 6.5% 6.5% 6.5% 6.5% / 12.5% 12.5% 12.5% 12.5% ;
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem);
+        }
         padding: 6px;
         box-sizing: border-box;
         z-index: -1;
@@ -48,6 +62,7 @@ $border-width: 3px;
         background-repeat: no-repeat;
         filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px #666);
         mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
+        transform: translateX(6px);
     }
 }
 .idCard {
@@ -68,17 +83,21 @@ $border-width: 3px;
         grid-area: avatar;
         width: 5rem;
         height: 5rem;
+        padding: 0;
+        margin: 0;
+        border: none;
+        appearance: none;
+        cursor: pointer;
         box-sizing: border-box;
-        border: 4px solid #ffffff;
+        border: 4px solid $white-0;
         background-color: #a3a3a3;
-        box-shadow: inset 0 0 3px 0px #ffffff;
+        box-shadow: inset 0 0 3px 0px $white-0;
         outline: 1px solid transparent;
         outline-offset: 3px;
         transition: all .1s linear;
         &:hover {
-            border-color: $primary-accent;
-            outline: 3px solid $primary-accent;
-
+            border-color: var(--id-highlight-border);
+            outline: 3px solid var(--id-highlight-border);
         }
         > .avatar {
             width: calc(5rem + 25.5px);
@@ -96,7 +115,7 @@ $border-width: 3px;
         grid-area: usrname;
         color: #fafafa;
         font-size: 130%;
-        transform: translate(6px, 6px);
+        transform: translate(12px, 6px);
         font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
         font-weight: 600;
         line-height: 1.2;
@@ -108,7 +127,7 @@ $border-width: 3px;
         color: #d6d6d6;
         font-family: "Novecento Medium", sans-serif;
         white-space: nowrap;
-        transform: translate(6px, 3px);
+        transform: translate(12px, 3px);
         letter-spacing: -1px;
     }
     > .bakPic {
@@ -134,5 +153,194 @@ $border-width: 3px;
         background-position: center;
         background-repeat: no-repeat;
         filter: contrast(0) brightness(1.2) drop-shadow(0 0 4px black) blur(.2px);
+    }
+}
+
+.authModal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.25rem 0.25rem 0.5rem;
+    color: var(--text-1, #f5f5f5);
+}
+
+.authTabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.authTab {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    border-radius: 0.5rem;
+    height: 2rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+
+    &.active {
+        border-color: rgba(88, 101, 242, 0.85);
+        background: rgba(88, 101, 242, 0.25);
+    }
+}
+
+.authBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.authTitle {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.authHint {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.discordButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    height: 2.5rem;
+    border: 1px solid #5865f2;
+    border-radius: 0.6rem;
+    background: rgba(88, 101, 242, 0.18);
+    color: #f5f7ff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    > svg {
+        width: 1rem;
+        height: 1rem;
+        fill: currentColor;
+    }
+
+    &:hover {
+        background: rgba(88, 101, 242, 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+}
+
+.authError {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #ff8d8d;
+    line-height: 1.35;
+}
+
+.backendHint {
+    margin: 0.1rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.75;
+}
+
+.profileModal {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    color: var(--text-1, #f5f5f5);
+    padding: 0.1rem 0.15rem 0.35rem;
+}
+
+.profileTitle {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.profileHint {
+    margin: 0;
+    opacity: 0.85;
+    line-height: 1.4;
+    font-size: 0.84rem;
+}
+
+.profileField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.profileInput {
+    height: 2.35rem;
+    border-radius: 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    padding: 0 0.65rem;
+    outline: none;
+
+    &:focus {
+        border-color: rgba(236, 219, 9, 0.75);
+        box-shadow: 0 0 0 2px rgba(236, 219, 9, 0.2);
+    }
+}
+
+.profileUid {
+    margin: 0;
+    font-size: 0.82rem;
+    opacity: 0.9;
+}
+
+.profileActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    margin-top: 0.1rem;
+}
+
+.profileCancel,
+.profileSave,
+.profileLogout {
+    height: 2.2rem;
+    border-radius: 0.55rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+}
+
+.profileCancel {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+}
+
+.profileLogout {
+    border: 1px solid rgba(255, 120, 120, 0.55);
+    background: rgba(255, 80, 80, 0.16);
+    color: #ffdcdc;
+
+    &:hover {
+        background: rgba(255, 80, 80, 0.28);
+    }
+}
+
+.profileSave {
+    border: 1px solid #ecdb09;
+    background: rgba(236, 219, 9, 0.2);
+    color: #fffde5;
+
+    &:hover {
+        background: rgba(236, 219, 9, 0.32);
     }
 }
