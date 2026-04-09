@@ -9,7 +9,19 @@ import { applyUrlParams } from '@/utils/urlState';
 import { useUserRecordStore } from '@/store/userRecord';
 import { useMarkerStore } from '@/store/marker';
 
+const enforceLocalhostHost = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    if (window.location.hostname !== '127.0.0.1') return false;
+
+    const url = new URL(window.location.href);
+    url.hostname = 'localhost';
+    window.location.replace(url.toString());
+    return true;
+};
+
 async function bootstrap(){
+    if (enforceLocalhostHost()) return;
+
     await i18nInitPromise;
 
     // After migration updates localStorage, force stores to re-read from the
