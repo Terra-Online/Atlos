@@ -1,12 +1,8 @@
-export interface SessionUser {
-  uid: string;
-  nickname: string;
-  email?: string;
-  role?: string;
-  needsProfileSetup?: boolean;
-}
+import { createAuthClient } from 'better-auth/client';
+import type { SessionUser } from './authTypes';
 
 const LOCAL_AUTH_PORT = '8787';
+const PROD_AUTH_BASE = 'https://api.opendfieldmap.org';
 
 const getLocalAuthBase = (): string => {
   if (typeof window === 'undefined') {
@@ -18,8 +14,25 @@ const getLocalAuthBase = (): string => {
 
 export const getAuthBase = (): string => {
   const envBase = (import.meta.env.VITE_AUTH_BASE as string | undefined)?.trim();
-  return (envBase || getLocalAuthBase()).replace(/\/$/, '');
+  if (envBase) {
+    return envBase.replace(/\/$/, '');
+  }
+
+  if (import.meta.env.PROD) {
+    return PROD_AUTH_BASE;
+  }
+
+  return getLocalAuthBase().replace(/\/$/, '');
 };
+
+const authBase = getAuthBase();
+
+export const authClient = createAuthClient({
+  baseURL: `${authBase}/auth/v1`,
+  fetchOptions: {
+    credentials: 'include',
+  },
+});
 
 const pickRedirectUrl = (payload: unknown): string | null => {
   if (!payload || typeof payload !== 'object') return null;
@@ -58,14 +71,6 @@ const pickSessionUser = (payload: unknown): SessionUser | null => {
   };
 };
 
-const readJsonSafely = async (response: Response): Promise<unknown> => {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-};
-
 const pickApiErrorMessage = (payload: unknown, fallback: string): string => {
   if (payload && typeof payload === 'object') {
     const data = payload as {
@@ -84,23 +89,30 @@ const pickApiErrorMessage = (payload: unknown, fallback: string): string => {
   return fallback;
 };
 
-export const fetchSessionUser = async (authBase: string): Promise<SessionUser | null> => {
-  const response = await fetch(`${authBase}/auth/v1/session`, {
-    method: 'GET',
-    headers: { accept: 'application/json' },
-    credentials: 'include',
-  });
-
-  if (response.status === 401) {
+export const fetchSessionUser = async (): Promise<SessionUser | null> => {
+  const sdkSession = await authClient.getSession();
+  if (sdkSession.error?.status === 401 || !sdkSession.data) {
     return null;
   }
 
-  const payload = await readJsonSafely(response);
-  if (!response.ok) {
-    throw new Error(pickApiErrorMessage(payload, `Session request failed (${response.status})`));
+  const { data, error } = await authClient.$fetch('/session', {
+    method: 'GET',
+    headers: { accept: 'application/json' },
+  });
+
+  if (error) {
+    if ((error as { status?: number }).status === 401) {
+      return null;
+    }
+    throw new Error(
+      pickApiErrorMessage(
+        error,
+        `Session request failed (${(error as { status?: number }).status ?? 'unknown'})`
+      )
+    );
   }
 
-  const user = pickSessionUser(payload);
+  const user = pickSessionUser(data);
   if (!user) {
     throw new Error('Session payload does not contain user info.');
   }
@@ -109,61 +121,55 @@ export const fetchSessionUser = async (authBase: string): Promise<SessionUser | 
 };
 
 export const startDiscordAuth = async (
-  authBase: string,
   callbackURL: string
 ): Promise<{ redirectUrl: string }> => {
-  const response = await fetch(`${authBase}/auth/v1/sign-in/social`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      accept: 'application/json',
-    },
-    credentials: 'include',
-    redirect: 'manual',
-    body: JSON.stringify({
-      provider: 'discord',
-      callbackURL,
-    }),
+  const response = await authClient.signIn.social({
+    provider: 'discord',
+    callbackURL,
+    disableRedirect: true,
   });
 
-  const locationHeader = response.headers.get('location');
-  if (locationHeader) {
-    return { redirectUrl: locationHeader };
+  if (response.error) {
+    throw new Error(
+      pickApiErrorMessage(
+        response.error,
+        `Auth request failed (${response.error.status ?? 'unknown'})`
+      )
+    );
   }
 
-  const payload = await readJsonSafely(response);
-  const redirectUrl = pickRedirectUrl(payload);
+  const redirectUrl = pickRedirectUrl(response.data);
   if (redirectUrl) {
     return { redirectUrl };
-  }
-
-  if (!response.ok) {
-    throw new Error(pickApiErrorMessage(payload, `Auth request failed (${response.status})`));
   }
 
   throw new Error('Backend did not return an OAuth redirect URL.');
 };
 
 export const updateProfileNickname = async (
-  authBase: string,
   nickname: string
 ): Promise<SessionUser> => {
-  const response = await fetch(`${authBase}/auth/v1/profile`, {
+  const { data, error } = await authClient.$fetch('/profile', {
     method: 'PATCH',
     headers: {
       'content-type': 'application/json',
       accept: 'application/json',
     },
-    credentials: 'include',
-    body: JSON.stringify({ nickname }),
+    body: {
+      nickname,
+    },
   });
 
-  const payload = await readJsonSafely(response);
-  if (!response.ok) {
-    throw new Error(pickApiErrorMessage(payload, `Profile update failed (${response.status})`));
+  if (error) {
+    throw new Error(
+      pickApiErrorMessage(
+        error,
+        `Profile update failed (${(error as { status?: number }).status ?? 'unknown'})`
+      )
+    );
   }
 
-  const user = pickSessionUser(payload);
+  const user = pickSessionUser(data);
   if (!user) {
     throw new Error('Profile updated, but server did not return latest user data.');
   }
@@ -171,17 +177,14 @@ export const updateProfileNickname = async (
   return user;
 };
 
-export const logoutUser = async (authBase: string): Promise<void> => {
-  const response = await fetch(`${authBase}/auth/v1/logout`, {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-    },
-    credentials: 'include',
-  });
-
-  const payload = await readJsonSafely(response);
-  if (!response.ok) {
-    throw new Error(pickApiErrorMessage(payload, `Logout failed (${response.status})`));
+export const logoutUser = async (): Promise<void> => {
+  const response = await authClient.signOut();
+  if (response.error) {
+    throw new Error(
+      pickApiErrorMessage(
+        response.error,
+        `Logout failed (${response.error.status ?? 'unknown'})`
+      )
+    );
   }
 };

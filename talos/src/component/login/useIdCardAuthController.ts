@@ -3,17 +3,19 @@ import {
   fetchSessionUser,
   getAuthBase,
   logoutUser,
-  type SessionUser,
   startDiscordAuth,
   updateProfileNickname,
 } from './authFlow';
+import { useAuthStore } from '@/store/auth';
 
 export const useIdCardAuthController = () => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const sessionUser = useAuthStore((state) => state.sessionUser);
+  const setSessionUser = useAuthStore((state) => state.setSessionUser);
+  const clearSessionUser = useAuthStore((state) => state.clearSessionUser);
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileName, setProfileName] = useState('');
@@ -24,9 +26,9 @@ export const useIdCardAuthController = () => {
 
   const syncSession = useCallback(async () => {
     try {
-      const user = await fetchSessionUser(authBase);
+      const user = await fetchSessionUser();
       if (!user) {
-        setSessionUser(null);
+        clearSessionUser();
         return;
       }
 
@@ -39,7 +41,7 @@ export const useIdCardAuthController = () => {
     } catch {
       // Ignore transient network errors during startup.
     }
-  }, [authBase]);
+  }, [clearSessionUser, setSessionUser]);
 
   useEffect(() => {
     void syncSession();
@@ -81,14 +83,14 @@ export const useIdCardAuthController = () => {
 
     try {
       const callbackURL = window.location.href;
-      const { redirectUrl } = await startDiscordAuth(authBase, callbackURL);
+      const { redirectUrl } = await startDiscordAuth(callbackURL);
       window.location.assign(redirectUrl);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Network error while contacting auth backend.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [authBase, isSubmitting]);
+  }, [isSubmitting]);
 
   const handleSaveProfile = useCallback(async () => {
     const trimmed = profileName.trim();
@@ -102,7 +104,7 @@ export const useIdCardAuthController = () => {
     setProfileError(null);
 
     try {
-      const user = await updateProfileNickname(authBase, trimmed);
+      const user = await updateProfileNickname(trimmed);
       setSessionUser(user);
       setProfileOpen(false);
       setOpen(false);
@@ -111,12 +113,12 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [authBase, isSavingProfile, profileName]);
+  }, [isSavingProfile, profileName, setSessionUser]);
 
   const handleLogout = useCallback(async () => {
     try {
-      await logoutUser(authBase);
-      setSessionUser(null);
+      await logoutUser();
+      clearSessionUser();
       setProfileOpen(false);
       setOpen(false);
       setProfileName('');
@@ -125,7 +127,7 @@ export const useIdCardAuthController = () => {
     } catch (error) {
       setProfileError(error instanceof Error ? error.message : 'Network error while logging out.');
     }
-  }, [authBase]);
+  }, [clearSessionUser]);
 
   return {
     authBase,
