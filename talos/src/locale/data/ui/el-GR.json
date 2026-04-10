@@ -169,6 +169,20 @@
     "legacy": "<span class=\"keyword\">Σημείωση:</span> Όταν η έκδοση του παιχνιδιού είναι <span class=\"keyword\">1.0.13</span>, η έκδοση δεδομένων του χάρτη είναι <span class=\"keyword\">0.8.25</span>. Χρειαζόμαστε χρόνο για να ενημερώσουμε τα δεδομένα, οπότε οι ενημερώσεις ενδέχεται να φτάσουν αργότερα από το patch του παιχνιδιού. Σας ευχαριστούμε για την υπομονή σας. Για να παρακολουθείτε τις ενημερώσεις μας, εγγραφείτε στον <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Διακομιστή Discord</a> μας.<br><br>Συνιστούμε επίσης τα ακόλουθα εργαλεία:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "Το τρέχον σύνολο δεδομένων είναι ενημερωμένο.<br><br>Εάν χρειαστεί να αναφέρετε προβλήματα, εγγραφείτε στον <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Διακομιστή Discord</a>.<br><br>Συνιστούμε επίσης τα ακόλουθα εργαλεία:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "Ομάδα: ",
+    "since": "Από",
+    "registip": "Κλικ στο avatar για είσοδο/εγγραφή",
+    "ago": "πριν",
+    "karma": "Karma",
+    "loading": "Φόρτωση",
+    "normal": "Κανονικός",
+    "guest": "Επισκέπτης",
+    "pioneer": "Πρωτοπόρος",
+    "admin": "Admin",
+    "suspend": "Αναστολή",
+    "robot": "Bot"
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

@@ -38,30 +38,32 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
   return (
     <>
       <div className={styles.idCard} ref={cardRef} onMouseMove={handleCardMouseMove} onMouseLeave={handleCardMouseLeave}>
-      <button
-        type="button"
-        className={styles.avatarContainer}
-        onClick={handleAvatarClick}
-        aria-label="Open login dialog"
-      >
-        <div className={styles.avatar}></div>
-      </button>
-      <span className={styles.usrName}>{cardProfile.displayName}</span>
-      <span className={styles.usrId}>
-        {cardProfile.uidLabel}: {cardProfile.displayUid}
-      </span>
-      <div className={styles.metaGrid}>
-        <span className={styles.usrGroup}>{cardProfile.groupText}</span>
-        {cardProfile.showAge && <span className={styles.usrAge}>{cardProfile.ageText}</span>}
-        <span className={styles.usrTitle}>{cardProfile.titleLetter}</span>
-        {cardProfile.showKarma && (
-          <span
-            className={styles.usrKarma}
-            data-karma={cardProfile.karmaLevel}
-            aria-label={cardProfile.karmaTooltip}
-          ></span>
-        )}
-      </div>
+        <div className={styles.idCardWrap}>
+          <button
+            type="button"
+            className={styles.avatarContainer}
+            onClick={handleAvatarClick}
+            aria-label="Open login dialog"
+          >
+            <div className={styles.avatar}></div>
+          </button>
+          <span className={styles.usrName}>{cardProfile.displayName}</span>
+          <span className={styles.usrId}>
+            {cardProfile.uidLabel}: {cardProfile.displayUid}
+          </span>
+          <div className={styles.metaGrid}>
+            <span className={styles.usrGroup}>{cardProfile.groupText}</span>
+            {cardProfile.showAge && <span className={styles.usrAge}>{cardProfile.ageText}</span>}
+            <span className={styles.usrTitle}>{cardProfile.titleLetter}</span>
+            {cardProfile.showKarma && (
+              <span
+                className={styles.usrKarma}
+                data-karma={cardProfile.karmaLevel}
+                aria-label={cardProfile.karmaTooltip}
+              ></span>
+            )}
+          </div>
+        </div>
       </div>
 
       <Modal

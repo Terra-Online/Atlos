@@ -170,12 +170,12 @@
     "uptodate": "The current dataset is up to date.<br><br>If you need to report issues, please join <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
   "idcard": {
-    "groupLabel": "Group",
-    "sinceLabel": "Since",
+    "group": "Group: ",
+    "since": "Since",
     "registip": "Click the avatar to register or log in",
-    "agoLabel": "Ago",
-    "karmaLabel": "Karma",
-    "pendingUid": "Pending",
+    "ago": "Ago",
+    "karma": "Karma",
+    "loading": "Loading",
     "normal": "Normal",
     "guest": "Guest",
     "pioneer": "Pioneer",

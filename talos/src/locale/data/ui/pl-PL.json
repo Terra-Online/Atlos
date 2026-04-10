@@ -169,6 +169,20 @@
     "legacy": "<span class=\"keyword\">Uwaga:</span> Gdy wersja gry to <span class=\"keyword\">1.0.13</span>, wersja danych mapy to <span class=\"keyword\">0.8.25</span>. Potrzebujemy czasu na aktualizację danych, więc może się ona pojawić później niż aktualizacja gry. Dziękujemy za cierpliwość. Aby śledzić nasze aktualizacje, dołącz do naszego <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Dołącz do Discorda'>serwera Discord</a>.<br><br>Polecamy również następujące narzędzia:<ul><li><span class=\"keyword\">Wiki gry: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Schematy (Blueprints):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "Bieżący zestaw danych jest aktualny.<br><br>Jeśli musisz zgłosić problemy, dołącz do naszego <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Dołącz do Discorda'>serwera Discord</a>.<br><br>Polecamy również następujące narzędzia:<ul><li><span class=\"keyword\">Wiki gry: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Schematy (Blueprints):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "Grupa: ",
+    "since": "Od",
+    "registip": "Kliknij awatar, aby się zalogować",
+    "ago": "temu",
+    "karma": "Karma",
+    "loading": "Ładowanie",
+    "normal": "Zwykły",
+    "guest": "Gość",
+    "pioneer": "Pionier",
+    "admin": "Admin",
+    "suspend": "Zawieszony",
+    "robot": "Bot"
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

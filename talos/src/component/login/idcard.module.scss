@@ -1,19 +1,16 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-$avatar-default: url('@/assets/images/UI/avt/bg/end2.webp');
-$cardbak: url('@/assets/images/UI/avt/bg/logo.webp');
-$contour: url('@/assets/images/UI/avt/bg/contour.webp');
-$qrcode: url('@/assets/images/UI/avt/bg/qrcode.webp');
-$karma-0: url('@/assets/images/UI/Karma0.png');
-$karma-1: url('@/assets/images/UI/Karma1.png');
-$karma-2: url('@/assets/images/UI/Karma2.png');
-$karma-3: url('@/assets/images/UI/Karma3.png');
-$karma-4: url('@/assets/images/UI/Karma4.png');
-$karma-5: url('@/assets/images/UI/Karma5.png');
+$avatar-default: url('@/assets/images/UI/avt/end.webp');
+$cardbak: url('@/assets/images/UI/avt/noise.webp');
+$contour: url('@/assets/images/UI/avt/contour.webp');
+$karma-0: url('@/assets/images/UI/avt/Karma0.png');
+$karma-1: url('@/assets/images/UI/avt/Karma1.png');
+$karma-2: url('@/assets/images/UI/avt/Karma2.png');
+$karma-3: url('@/assets/images/UI/avt/Karma3.png');
+$karma-4: url('@/assets/images/UI/avt/Karma4.png');
+$karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
-
-$border-width: 3px;
 
 :root, :root[data-theme='light'] {
     --idcard-bg: #333;
@@ -28,8 +25,9 @@ $border-width: 3px;
     inherits: true;
     initial-value: 90deg;
 }
-
 .idCard {
+    $border-width: 3px;
+
     height: 8.5rem;
     width: 21rem;
     max-width: 95%;
@@ -83,12 +81,12 @@ $border-width: 3px;
         }
     }
 }
-.idCard {
+.idCardWrap {
     display: grid;
     align-items: end;
     justify-content: start;
     grid-template-columns: 0.5fr repeat(3, 0.4fr);
-        grid-template-rows: repeat(4, 0.25fr);
+    grid-template-rows: repeat(4, 0.25fr);
     grid-auto-columns: 1fr;
     grid-auto-rows: 1fr;
     gap: 0;
@@ -150,7 +148,6 @@ $border-width: 3px;
         transform: translate(12px, 3px);
         letter-spacing: -1px;
     }
-
     > .metaGrid {
         grid-area: meta;
         display: grid;
@@ -163,66 +160,91 @@ $border-width: 3px;
         column-gap: 6px;
         transform: translate(12px, 2px);
         width: calc(100% - 12px);
-    }
-
-    > .metaGrid > .usrGroup {
+        > .usrGroup {
         grid-area: usrGroup;
         color: #fafafa;
         font-size: 115%;
-        font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-weight: 600;
+        font-family: 'Novecento Medium', 'FedraSansPro Normal', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-weight: 800;
         line-height: 1.2;
         white-space: nowrap;
         letter-spacing: -.5px;
+        }
+        > .usrAge {
+            grid-area: usrAge;
+            color: #cecece;
+            font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-size: 0.73rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -6px);
+            letter-spacing: -.8px;
+            font-variant-numeric: lining-nums;
+        }
+        > .usrTitle {
+            grid-area: usrTitle;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Roboto Slab", sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #f9f9f9;
+            background: #666;
+            box-shadow: 0 0 2px 1px #ffffff6e;;
+            text-transform: uppercase;
+            transform: translate(0, 2.5px);
+        }
+        > .usrKarma {
+            grid-area: usrKarma;
+            width: 27px;
+            height: 7.5px;
+            box-sizing: content-box;
+            background-image: $karma-0;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: translate(-1.5px, -2.5px);
+            &[data-karma='0'] { background-image: $karma-0; }
+            &[data-karma='1'] { background-image: $karma-1; }
+            &[data-karma='2'] { background-image: $karma-2; }
+            &[data-karma='3'] { background-image: $karma-3; }
+            &[data-karma='4'] { background-image: $karma-4; }
+            &[data-karma='5'] { background-image: $karma-5; }
+        }
     }
-
-    > .metaGrid > .usrAge {
-        grid-area: usrAge;
-        color: #cecece;
-        font-family: "Novecento Medium Regular", sans-serif;
-        font-size: 0.7rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transform: translate(0px, -6px);
-        letter-spacing: -.8px;
-    }
-
-    > .metaGrid > .usrTitle {
-        grid-area: usrTitle;
-        width: 1.5rem;
-        height: 1.5rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-family: "Roboto Slab", sans-serif;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #f9f9f9;
-        background: #666;
-        box-shadow: 0 0 2px 1px #ffffff6e;;
-        text-transform: uppercase;
-    }
-
-    > .metaGrid > .usrKarma {
-        grid-area: usrKarma;
-        width: 27px;
-        height: 7.5px;
-        box-sizing: content-box;
-        background-image: $karma-0;
-        background-size: cover;
+    &::before {
+        z-index: 0;
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        transform: translate(-1.5rem, 22px);
+        background-image: $cardbak;
+        background-size: contain;
+        image-rendering: pixelated;
+        background-position: center right;
         background-repeat: no-repeat;
-        background-position: center;
-        transform: translate(-1.5px, -5px);
+        pointer-events: none;
+        border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem - 2px);
+        }
     }
-
-    > .metaGrid > .usrKarma[data-karma='0'] { background-image: $karma-0; }
-    > .metaGrid > .usrKarma[data-karma='1'] { background-image: $karma-1; }
-    > .metaGrid > .usrKarma[data-karma='2'] { background-image: $karma-2; }
-    > .metaGrid > .usrKarma[data-karma='3'] { background-image: $karma-3; }
-    > .metaGrid > .usrKarma[data-karma='4'] { background-image: $karma-4; }
-    > .metaGrid > .usrKarma[data-karma='5'] { background-image: $karma-5; }
 }
+
+
+
+
+
+
+
+
+
 
 .authModal {
     display: flex;

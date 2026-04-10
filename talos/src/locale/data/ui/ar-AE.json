@@ -169,6 +169,20 @@
     "legacy": "<span class=\"keyword\">ملاحظة:</span> عندما يكون إصدار اللعبة <span class=\"keyword\">1.0.13</span>، فإن إصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج إلى وقت لتحديث البيانات، لذا قد يتأخر التحديث عن اللعبة. شكراً لصبركم. لمتابعة تحديثاتنا، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "مجموعة البيانات الحالية محدثة.<br><br>إذا كنت بحاجة إلى الإبلاغ عن مشاكل، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "المجموعة: ",
+    "since": "منذ",
+    "registip": "انقر على الصورة للتسجيل/الدخول",
+    "ago": "قبل",
+    "karma": "كارما",
+    "loading": "تحميل",
+    "normal": "عادي",
+    "guest": "زائر",
+    "pioneer": "رائد",
+    "admin": "مسؤول",
+    "suspend": "موقوف",
+    "robot": "بوت"
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

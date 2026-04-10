@@ -144,22 +144,22 @@ export const useIdCardProfileViewModel = ({
     const displayName = sessionUser?.nickname || fallbackUsername || DEFAULT_NAME;
     const uidLabel: 'UID' | 'GID' = isGuest ? 'GID' : 'UID';
 
-    const pendingUidText = t('idcard.pendingUid') || 'Pending';
+    const pendingText = t('idcard.loading') || 'Pending';
     const displayUid = isGuest
       ? buildGuestId()
       : sessionUser?.needsProfileSetup
-      ? pendingUidText
+      ? pendingText
       : sessionUser?.uid || fallbackUid || DEFAULT_UID;
 
     const groupCode = isGuest
       ? 'guest'
       : normalizeGroupCode(sessionUser?.groupCode) || 'normal';
     const groupName = getGroupName(groupCode);
-    const groupLabel = t('idcard.groupLabel') || 'Group';
-    const groupText = `${groupLabel}: ${groupName}`;
+    const group = t('idcard.group') || 'Group';
+    const groupText = `${group}${groupName}`;
 
-    const sinceLabel = t('idcard.sinceLabel') || 'Since';
-    const agoLabel = t('idcard.agoLabel') || 'Ago';
+    const since = t('idcard.since') || 'Since';
+    const ago = t('idcard.ago') || 'Ago';
     const registipText = t('idcard.registip') || 'Click the avatar';
     const registeredDate = parseRegisteredAt(sessionUser?.registeredAt);
     const ageText = isGuest
@@ -167,9 +167,9 @@ export const useIdCardProfileViewModel = ({
       : registeredDate
       ? (() => {
           const elapsed = formatElapsed(registeredDate.getTime(), Date.now());
-          return `${sinceLabel}: ${formatDate(registeredDate)} (${elapsed} ${agoLabel})`;
+          return `${since}: ${formatDate(registeredDate)} (${elapsed} ${ago})`;
         })()
-      : `${sinceLabel}: --`;
+      : `${since}: --`;
 
     const titleSource = isGuest ? 'g' : sessionUser?.titleCode || groupCode;
     const titleLetter = (titleSource?.trim().charAt(0) || 'n').toUpperCase();
@@ -178,8 +178,8 @@ export const useIdCardProfileViewModel = ({
       ? Math.max(0, sessionUser?.karma as number)
       : 0;
     const karmaLevel = normalizeKarmaLevel(karmaValue);
-    const karmaLabel = t('idcard.karmaLabel') || 'Karma';
-    const karmaTooltip = `${karmaLabel}: ${karmaValue}`;
+    const karma = t('idcard.karma') || 'Karma';
+    const karmaTooltip = `${karma}: ${karmaValue}`;
 
     return {
       displayName,
