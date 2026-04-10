@@ -105,7 +105,11 @@ export const useIdCardAuthController = () => {
 
     try {
       const user = await updateProfileNickname(trimmed);
-      setSessionUser(user);
+      setSessionUser({
+        ...sessionUser,
+        ...user,
+        registeredAt: user.registeredAt ?? sessionUser?.registeredAt,
+      });
       setProfileOpen(false);
       setOpen(false);
     } catch (error) {
@@ -113,7 +117,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [isSavingProfile, profileName, setSessionUser]);
+  }, [isSavingProfile, profileName, sessionUser, setSessionUser]);
 
   const handleLogout = useCallback(async () => {
     try {

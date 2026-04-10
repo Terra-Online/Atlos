@@ -50,24 +50,119 @@ const pickRedirectUrl = (payload: unknown): string | null => {
   return null;
 };
 
+const normalizeTimestampMs = (value: unknown): string | undefined => {
+  if (value instanceof Date) {
+    const ms = value.getTime();
+    if (!Number.isFinite(ms)) return undefined;
+    return String(Math.floor(ms));
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const ms = value < 1_000_000_000_000 ? value * 1000 : value;
+    return String(Math.floor(ms));
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const raw = value.trim();
+
+    if (/^\d+$/.test(raw)) {
+      const numeric = Number(raw);
+      if (!Number.isFinite(numeric)) return undefined;
+      const ms = numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+      return String(Math.floor(ms));
+    }
+
+    const parsedMs = Date.parse(raw);
+    if (Number.isFinite(parsedMs)) {
+      return String(Math.floor(parsedMs));
+    }
+  }
+
+  return undefined;
+};
+
+const mapRoleToGroupCode = (role?: string): SessionUser['groupCode'] => {
+  if (!role) return undefined;
+  const normalized = role.trim().toLowerCase();
+  if (normalized === 'a') return 'admin';
+  if (normalized === 'p') return 'pioneer';
+  if (normalized === 's') return 'suspend';
+  if (normalized === 'r') return 'robot';
+  if (normalized === 'n') return 'normal';
+  return undefined;
+};
+
 const pickSessionUser = (payload: unknown): SessionUser | null => {
   if (!payload || typeof payload !== 'object') return null;
   const root = payload as Record<string, unknown>;
-  const user = root.user;
+
+  const rootData =
+    root.data && typeof root.data === 'object'
+      ? (root.data as Record<string, unknown>)
+      : null;
+
+  const user =
+    root.user ??
+    rootData?.user;
+
   if (!user || typeof user !== 'object') return null;
 
   const u = user as Record<string, unknown>;
+
+  const parseKarma = (value: unknown): number | undefined => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : undefined;
+    }
+    return undefined;
+  };
+
   const uid = typeof u.uid === 'string' ? u.uid : '';
   const nickname = typeof u.nickname === 'string' ? u.nickname : '';
 
   if (!uid || !nickname) return null;
 
+  const role = typeof u.role === 'string' ? u.role : undefined;
+  const groupCode = mapRoleToGroupCode(role);
+  const titleCode = role;
+  const registeredAt = normalizeTimestampMs(u.registeredAt ?? u.createdAt);
+  const karma = parseKarma(
+    u.karma ??
+      u.karmaLevel
+  );
+
   return {
     uid,
     nickname,
+    groupCode,
+    registeredAt,
+    karma,
+    titleCode,
     email: typeof u.email === 'string' ? u.email : undefined,
-    role: typeof u.role === 'string' ? u.role : undefined,
+    role,
     needsProfileSetup: Boolean(u.needsProfileSetup),
+  };
+};
+
+const pickSdkSessionFallback = (payload: unknown): Partial<SessionUser> => {
+  if (!payload || typeof payload !== 'object') return {};
+
+  const root = payload as Record<string, unknown>;
+  const data =
+    root.data && typeof root.data === 'object'
+      ? (root.data as Record<string, unknown>)
+      : root;
+
+  const sdkUser =
+    data.user && typeof data.user === 'object'
+      ? (data.user as Record<string, unknown>)
+      : null;
+  const registeredAt = normalizeTimestampMs(sdkUser?.createdAt);
+
+  return {
+    registeredAt,
+    email: typeof sdkUser?.email === 'string' ? sdkUser.email : undefined,
   };
 };
 
@@ -90,15 +185,15 @@ const pickApiErrorMessage = (payload: unknown, fallback: string): string => {
 };
 
 export const fetchSessionUser = async (): Promise<SessionUser | null> => {
-  const sdkSession = await authClient.getSession();
-  if (sdkSession.error?.status === 401 || !sdkSession.data) {
-    return null;
-  }
+  const [sessionResult, sdkSession] = await Promise.all([
+    authClient.$fetch('/session', {
+      method: 'GET',
+      headers: { accept: 'application/json' },
+    }),
+    authClient.getSession(),
+  ]);
 
-  const { data, error } = await authClient.$fetch('/session', {
-    method: 'GET',
-    headers: { accept: 'application/json' },
-  });
+  const { data, error } = sessionResult;
 
   if (error) {
     if ((error as { status?: number }).status === 401) {
@@ -117,7 +212,15 @@ export const fetchSessionUser = async (): Promise<SessionUser | null> => {
     throw new Error('Session payload does not contain user info.');
   }
 
-  return user;
+  const sdkFallback = sdkSession.data
+    ? pickSdkSessionFallback(sdkSession.data)
+    : {};
+
+  return {
+    ...user,
+    registeredAt: user.registeredAt ?? sdkFallback.registeredAt,
+    email: user.email ?? sdkFallback.email,
+  };
 };
 
 export const startDiscordAuth = async (
@@ -149,27 +252,33 @@ export const startDiscordAuth = async (
 export const updateProfileNickname = async (
   nickname: string
 ): Promise<SessionUser> => {
-  const { data, error } = await authClient.$fetch('/profile', {
+  const response = await fetch(`${authBase}/auth/v1/profile`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'content-type': 'application/json',
       accept: 'application/json',
     },
-    body: {
-      nickname,
-    },
+    body: JSON.stringify({ nickname }),
   });
 
-  if (error) {
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
     throw new Error(
       pickApiErrorMessage(
-        error,
-        `Profile update failed (${(error as { status?: number }).status ?? 'unknown'})`
+        payload,
+        `Profile update failed (${response.status ?? 'unknown'})`
       )
     );
   }
 
-  const user = pickSessionUser(data);
+  const user = pickSessionUser(payload);
   if (!user) {
     throw new Error('Profile updated, but server did not return latest user data.');
   }

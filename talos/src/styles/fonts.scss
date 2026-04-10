@@ -99,7 +99,16 @@
             format('opentype');
     font-display: swap;
 }
-
+@font-face {
+    font-family: 'Novecento Medium Regular';
+    src:
+        url('../assets/fonts/Novecento/Novecento-Medium.woff2')
+            format('woff2'),
+        url('../assets/fonts/Novecento/Novecento-Medium.woff') format('woff'),
+        url('../assets/fonts/Novecento/Novecento-Medium.ttf')
+            format('truetype');
+    font-display: swap;
+}
 @font-face {
     font-family: 'HMSans_EN';
     src:

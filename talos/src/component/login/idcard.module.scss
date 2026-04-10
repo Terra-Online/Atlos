@@ -5,6 +5,12 @@ $avatar-default: url('@/assets/images/UI/avt/bg/end2.webp');
 $cardbak: url('@/assets/images/UI/avt/bg/logo.webp');
 $contour: url('@/assets/images/UI/avt/bg/contour.webp');
 $qrcode: url('@/assets/images/UI/avt/bg/qrcode.webp');
+$karma-0: url('@/assets/images/UI/Karma0.png');
+$karma-1: url('@/assets/images/UI/Karma1.png');
+$karma-2: url('@/assets/images/UI/Karma2.png');
+$karma-3: url('@/assets/images/UI/Karma3.png');
+$karma-4: url('@/assets/images/UI/Karma4.png');
+$karma-5: url('@/assets/images/UI/Karma5.png');
 
 
 $border-width: 3px;
@@ -14,13 +20,20 @@ $border-width: 3px;
     --idcard-name: #fafafa;
     --idcard-id: #d6d6d6;
     --id-highlight-border: #{$primary-accent-3};
+    --idcard-hover-angle: 90deg;
 }
+
+@property --idcard-hover-angle {
+    syntax: '<angle>';
+    inherits: true;
+    initial-value: 90deg;
+}
+
 .idCard {
-    height: 7.5rem;
-    width: 19rem;
+    height: 8.5rem;
+    width: 21rem;
     max-width: 95%;
-    padding: 1rem;
-    padding-top: 1.5rem;
+    padding: 1.5rem 1rem 1.5rem 1.5rem;
     box-sizing: border-box;
     background-color: #333;
     border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
@@ -38,7 +51,8 @@ $border-width: 3px;
         height: calc(100% + $border-width * 2);
         transform: translate(-#{$border-width}, -#{$border-width});
         background: 
-            linear-gradient(90deg, transparent 0%, transparent 20%, var(--id-highlight-border) 100%);
+            linear-gradient(var(--idcard-hover-angle, 90deg), transparent 0%, transparent 20%, var(--id-highlight-border) 100%);
+        transition: --idcard-hover-angle 1s cubic-bezier(0.22, 0.85, 0.3, 1);
         border-radius: 6.5% 6.5% 6.5% 6.5% / 12.5% 12.5% 12.5% 12.5% ;
         @supports (corner-shape: superellipse(1.5)) {
             corner-shape: superellipse(1.5);
@@ -62,27 +76,32 @@ $border-width: 3px;
         background-repeat: no-repeat;
         filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px #666);
         mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
-        transform: translateX(6px);
+        border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem - 2px);
+        }
     }
 }
 .idCard {
     display: grid;
     align-items: end;
     justify-content: start;
-    grid-template-columns: 0.6fr repeat(3, 0.4fr);
-    grid-template-rows: 0.3fr 0.4fr 0.3fr;
+    grid-template-columns: 0.5fr repeat(3, 0.4fr);
+        grid-template-rows: repeat(4, 0.25fr);
     grid-auto-columns: 1fr;
     grid-auto-rows: 1fr;
     gap: 0;
     grid-auto-flow: row;
     grid-template-areas:
-      "avatar . . ."
-      "avatar usrname . ."
-      "avatar usrid usrid .";
+        "avatar meta meta meta"
+        "avatar meta meta meta"
+        "avatar usrname . ."
+        "avatar usrid usrid .";
     > .avatarContainer {
         grid-area: avatar;
-        width: 5rem;
-        height: 5rem;
+        width: 5.5rem;
+        height: 5.5rem;
         padding: 0;
         margin: 0;
         border: none;
@@ -100,9 +119,9 @@ $border-width: 3px;
             outline: 3px solid var(--id-highlight-border);
         }
         > .avatar {
-            width: calc(5rem + 25.5px);
-            height: calc(5rem + 26px);
-            transform: translate(-18.5px, -30px);
+            width: calc(5.5rem + 28px);
+            height: calc(5.5rem + 26px);
+            transform: translate(-20px, -30px);
             object-fit: cover;
             background-image: $avatar-default;
             background-position: center top;
@@ -114,8 +133,8 @@ $border-width: 3px;
     > .usrName {
         grid-area: usrname;
         color: #fafafa;
-        font-size: 130%;
-        transform: translate(12px, 6px);
+        font-size: 125%;
+        transform: translate(12px, 8px);
         font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
         font-weight: 600;
         line-height: 1.2;
@@ -125,35 +144,84 @@ $border-width: 3px;
     > .usrId {
         grid-area: usrid;
         color: #d6d6d6;
-        font-family: "Novecento Medium", sans-serif;
+        font-size: 95%;
+        font-family: "Novecento Medium Regular", sans-serif;
         white-space: nowrap;
         transform: translate(12px, 3px);
         letter-spacing: -1px;
     }
-    > .bakPic {
-        grid-area: 1 / 3 / 3 / 5;
-        height: 100%;
-        width: 100%;
-        background-image: $cardbak;
-        background-size: 90%;
-        background-position-y: 5%;
-        filter: contrast(0) brightness(0.75);
-        mask: linear-gradient(transparent, transparent 10%, white calc(80%), transparent 92%);
-        transform: translateX(12px);
-        position: relative;
+
+    > .metaGrid {
+        grid-area: meta;
+        display: grid;
+        grid-template-columns: 1fr 1.5rem;
+        grid-template-rows: 1fr 1fr;
+        grid-template-areas:
+            "usrGroup usrTitle"
+            "usrAge usrKarma";
+        align-items: center;
+        column-gap: 6px;
+        transform: translate(12px, 2px);
+        width: calc(100% - 12px);
     }
-    > .idCode {
-        grid-area: 1 / 4 / 1 / 4;
-        position: absolute;
-        right: 0;
+
+    > .metaGrid > .usrGroup {
+        grid-area: usrGroup;
+        color: #fafafa;
+        font-size: 115%;
+        font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        letter-spacing: -.5px;
+    }
+
+    > .metaGrid > .usrAge {
+        grid-area: usrAge;
+        color: #cecece;
+        font-family: "Novecento Medium Regular", sans-serif;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transform: translate(0px, -6px);
+        letter-spacing: -.8px;
+    }
+
+    > .metaGrid > .usrTitle {
+        grid-area: usrTitle;
         width: 1.5rem;
         height: 1.5rem;
-        background-image: $qrcode;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        filter: contrast(0) brightness(1.2) drop-shadow(0 0 4px black) blur(.2px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Roboto Slab", sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #f9f9f9;
+        background: #666;
+        box-shadow: 0 0 2px 1px #ffffff6e;;
+        text-transform: uppercase;
     }
+
+    > .metaGrid > .usrKarma {
+        grid-area: usrKarma;
+        width: 27px;
+        height: 7.5px;
+        box-sizing: content-box;
+        background-image: $karma-0;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        transform: translate(-1.5px, -5px);
+    }
+
+    > .metaGrid > .usrKarma[data-karma='0'] { background-image: $karma-0; }
+    > .metaGrid > .usrKarma[data-karma='1'] { background-image: $karma-1; }
+    > .metaGrid > .usrKarma[data-karma='2'] { background-image: $karma-2; }
+    > .metaGrid > .usrKarma[data-karma='3'] { background-image: $karma-3; }
+    > .metaGrid > .usrKarma[data-karma='4'] { background-image: $karma-4; }
+    > .metaGrid > .usrKarma[data-karma='5'] { background-image: $karma-5; }
 }
 
 .authModal {
