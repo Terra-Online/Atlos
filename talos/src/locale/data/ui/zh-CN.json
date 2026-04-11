@@ -181,7 +181,43 @@
     "pioneer": "先锋用户",
     "admin": "管理用户",
     "suspend": "封禁用户",
-    "robot": "机器人"
+    "robot": "机器人",
+    "auth": {
+      "login": "登录",
+      "register": "注册",
+      "email": "邮箱：",
+      "password": "密码：",
+      "verification": "验证码：",
+      "emailHint": "请使用您账户绑定的邮箱。",
+      "forgotPW": "忘记密码？",
+      "resend": "重新发送",
+      "discordButton": "使用 Discord 继续",
+      "connecting": "连接中...",
+      "switchToRegisterPrefix": "尚无帐户？",
+      "switchToRegisterAction": "点此注册！",
+      "switchToLoginPrefix": "若已有帐户，请",
+      "switchToLoginAction": "点此登录。",
+      "errors": {
+        "emailRequired": "请输入邮箱。",
+        "emailInvalid": "请输入有效的邮箱地址。",
+        "passwordRequired": "请输入密码。",
+        "verificationCodeRequired": "请输入验证码。",
+        "emailFlowDisabled": "邮箱鉴权流程尚未接入后端。"
+      }
+    },
+    "profile": {
+      "completeTitle": "完善资料",
+      "editTitle": "编辑资料",
+      "nicknameTitle": "昵称",
+      "nicknameHint": "UID 仅会分配一次且不可修改；昵称可随时更新。",
+      "nameLabel": "名称",
+      "namePlaceholder": "例如：jacychan",
+      "currentUid": "当前 UID",
+      "uidPending": "首次保存后将自动分配",
+      "logout": "退出登录",
+      "save": "保存",
+      "saving": "保存中..."
+    }
   },
   "links": {
     "enka": {

@@ -1,0 +1,103 @@
+.idcardProfileModal {
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	color: var(--text-1, #f5f5f5);
+	padding: 0.1rem 0.15rem 0.35rem;
+}
+
+.idcardProfileTitle {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.idcardProfileHint {
+	margin: 0;
+	opacity: 0.85;
+	line-height: 1.4;
+	font-size: 0.84rem;
+}
+
+.idcardProfileField {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	font-size: 0.85rem;
+}
+
+.idcardProfileInput {
+	height: 2.35rem;
+	border-radius: 0.55rem;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	background: rgba(255, 255, 255, 0.06);
+	color: inherit;
+	padding: 0 0.65rem;
+	outline: none;
+
+	&:focus {
+		border-color: rgba(236, 219, 9, 0.75);
+		box-shadow: 0 0 0 2px rgba(236, 219, 9, 0.2);
+	}
+}
+
+.idcardProfileUid {
+	margin: 0;
+	font-size: 0.82rem;
+	opacity: 0.9;
+}
+
+.idcardProfileError {
+	margin: 0;
+	font-size: 0.8rem;
+	color: #ff8d8d;
+	line-height: 1.35;
+}
+
+.idcardProfileActions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.55rem;
+	margin-top: 0.1rem;
+}
+
+.idcardProfileCancel,
+.idcardProfileSave,
+.idcardProfileLogout {
+	height: 2.2rem;
+	border-radius: 0.55rem;
+	cursor: pointer;
+	font-size: 0.88rem;
+	transition: all 0.2s ease;
+
+	&:disabled {
+		opacity: 0.65;
+		cursor: not-allowed;
+	}
+}
+
+.idcardProfileCancel {
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	background: rgba(255, 255, 255, 0.08);
+	color: inherit;
+}
+
+.idcardProfileLogout {
+	border: 1px solid rgba(255, 120, 120, 0.55);
+	background: rgba(255, 80, 80, 0.16);
+	color: #ffdcdc;
+
+	&:hover {
+		background: rgba(255, 80, 80, 0.28);
+	}
+}
+
+.idcardProfileSave {
+	border: 1px solid #ecdb09;
+	background: rgba(236, 219, 9, 0.2);
+	color: #fffde5;
+
+	&:hover {
+		background: rgba(236, 219, 9, 0.32);
+	}
+}

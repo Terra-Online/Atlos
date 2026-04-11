@@ -181,7 +181,42 @@
     "pioneer": "Pioneer",
     "admin": "Admin",
     "suspend": "Suspended",
-    "robot": "Robot"
+    "robot": "Robot",
+    "auth": {
+      "login": "Login",
+      "register": "Register",
+      "email": "E-mail:",
+      "password": "Password:",
+      "verification": "Verification:",
+      "forgotPW": "Forgot password?",
+      "resend": "Resend",
+      "discordButton": "Continue with Discord",
+      "connecting": "Connecting...",
+      "switchToRegisterPrefix": "No account yet?",
+      "switchToRegisterAction": "Register here!",
+      "switchToLoginPrefix": " if you have an account.",
+      "switchToLoginAction": "Sign in here",
+      "errors": {
+        "emailRequired": "Please enter your email.",
+        "emailInvalid": "Please enter a valid email address.",
+        "passwordRequired": "Please enter your password.",
+        "verificationCodeRequired": "Please enter the verification code.",
+        "emailFlowDisabled": "Email authentication flow is not connected yet."
+      }
+    },
+    "profile": {
+      "completeTitle": "Complete Profile",
+      "editTitle": "Edit Profile",
+      "nicknameTitle": "Nickname",
+      "nicknameHint": "UID is assigned once and cannot be changed. Nickname can be updated at any time.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. jacychan",
+      "currentUid": "Current UID",
+      "uidPending": "Will be assigned after first save",
+      "logout": "Logout",
+      "save": "Save",
+      "saving": "Saving..."
+    }
   },
   "links": {
     "enka": {
