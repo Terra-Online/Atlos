@@ -189,19 +189,45 @@
       "password": "Password:",
       "verification": "Verification:",
       "forgotPW": "Forgot password?",
-      "resend": "Resend",
+      "send": "Send",
+      "resend": "Resend({count})",
       "discordButton": "Continue with Discord",
       "connecting": "Connecting...",
       "switchToRegisterPrefix": "No account yet?",
       "switchToRegisterAction": "Register here!",
       "switchToLoginPrefix": " if you have an account.",
       "switchToLoginAction": "Sign in here",
-      "errors": {
-        "emailRequired": "Please enter your email.",
-        "emailInvalid": "Please enter a valid email address.",
-        "passwordRequired": "Please enter your password.",
-        "verificationCodeRequired": "Please enter the verification code.",
-        "emailFlowDisabled": "Email authentication flow is not connected yet."
+      "hints": {
+        "200": "Access Granted",
+        "201": "Account Created",
+
+        "101": "Email Required",
+        "102": "Email Invalid",
+        "103": "Email Occupied",
+
+        "111": "PWD Required",
+        "112": "PWD Invalid",
+
+        "121": "OTP Required",
+        "122": "OTP Invalid",
+        "123": "OTP Expired",
+
+        "140": "Credential Mismatch",
+
+        "429": "Rate Limited",
+        "430": "Security Check",
+
+        "801": "Suspended: Vandalism",
+        "802": "Suspended: ACC denied",
+
+        "601": "Token Expired",
+        "602": "Session Required",
+        "603": "Access Denied",
+        "604": "Provider Conflict",
+
+        "701": "Overloaded",
+        "702": "Timeout",
+        "703": "Maintenance"
       }
     },
     "profile": {
