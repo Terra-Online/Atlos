@@ -188,7 +188,6 @@
       "email": "電郵：",
       "password": "密碼：",
       "verification": "驗證碼：",
-      "emailHint": "請使用您的帳戶電郵地址。",
       "forgotPW": "忘記密碼？",
       "verificationCodeHint": "請輸入電郵中的驗證碼。",
       "send": "發送驗證碼",
@@ -231,19 +230,6 @@
         "702": "系統超時",
         "703": "系統維護"
       }
-    },
-    "profile": {
-      "completeTitle": "完善資料",
-      "editTitle": "編輯資料",
-      "nicknameTitle": "暱稱",
-      "nicknameHint": "UID 只會分配一次且不可修改；暱稱可隨時更新。",
-      "nameLabel": "名稱",
-      "namePlaceholder": "例如：jacychan",
-      "currentUid": "目前 UID",
-      "uidPending": "首次儲存後將自動分配",
-      "logout": "登出",
-      "save": "儲存",
-      "saving": "儲存中..."
     }
   },
   "links": {

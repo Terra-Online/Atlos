@@ -274,7 +274,6 @@ const Access = ({
       iconScale={0.8}
     >
       <div className={styles.accessAuthModal} data-mode={activeTab} data-auth-node={authMachineNode}>
-        <section className={styles.emailAuthSection}>
           <form className={styles.emailAuthForm} onSubmit={(event) => event.preventDefault()} noValidate>
             <div className={styles.inputRow}>
               <label htmlFor="access-email" className={styles.prtsIoLabel}>
@@ -346,7 +345,6 @@ const Access = ({
                   </span>
                 ) : null}
               </label>
-              <div className={styles.verificationInputGroup}>
                 <div className={styles.prtsIoContainer}>
                   <input
                     id="access-verification-code"
@@ -360,8 +358,7 @@ const Access = ({
                     pattern="[0-9]{3}-[0-9]{3}"
                     maxLength={7}
                   />
-                </div>
-                {shouldShowSendVerificationButton ? (
+                  {shouldShowSendVerificationButton ? (
                   <button
                     type="button"
                     className={styles.sendCodeButton}
@@ -371,10 +368,9 @@ const Access = ({
                     {sendButtonLabel}
                   </button>
                 ) : null}
-              </div>
+                </div>
             </div>
           </form>
-        </section>
 
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" />
@@ -414,8 +410,6 @@ const Access = ({
             </button>
           </p>
         </div>
-
-        {authError && <p className={styles.authError}>{authError}</p>}
       </div>
     </Modal>
   );

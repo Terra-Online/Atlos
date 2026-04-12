@@ -181,7 +181,47 @@
     "pioneer": "Pionier",
     "admin": "Admin",
     "suspend": "Gesperrt",
-    "robot": "Bot"
+    "robot": "Bot",
+    "auth": {
+      "login": "Anmelden",
+      "register": "Registrieren",
+      "email": "E-Mail:",
+      "password": "Passwort:",
+      "verification": "Code:",
+      "forgotPW": "Passwort vergessen?",
+      "send": "Senden",
+      "resend": "Erneut senden({count})",
+      "discordButton": "Weiter mit Discord",
+      "connecting": "Verbinden...",
+      "switchToRegisterPrefix": "Noch kein Konto?",
+      "switchToRegisterAction": "Hier registrieren!",
+      "switchToLoginPrefix": "Bereits registriert?",
+      "switchToLoginAction": "Hier anmelden",
+      "hints": {
+        "200": "Zugriff gewährt",
+        "201": "Konto erstellt",
+        "101": "E-Mail erforderlich",
+        "102": "E-Mail ungültig",
+        "103": "E-Mail bereits vergeben",
+        "111": "Passwort erforderlich",
+        "112": "Passwort ungültig",
+        "121": "Code erforderlich",
+        "122": "Code ungültig",
+        "123": "Code abgelaufen",
+        "140": "Zugangsdaten falsch",
+        "429": "Ratenbegrenzung",
+        "430": "Sicherheitsprüfung",
+        "801": "Gesperrt: Konto-Sperre",
+        "802": "Gesperrt: Zugriff verweigert",
+        "601": "Token abgelaufen",
+        "602": "Sitzung erforderlich",
+        "603": "Zugriff verweigert",
+        "604": "Anbieter-Konflikt",
+        "701": "System überlastet",
+        "702": "Zeitüberschreitung",
+        "703": "Wartungsarbeiten"
+      }
+    }
   },
   "links": {
     "enka": {

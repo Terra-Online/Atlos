@@ -193,10 +193,10 @@
       "resend": "Resend({count})",
       "discordButton": "Continue with Discord",
       "connecting": "Connecting...",
-      "switchToRegisterPrefix": "No account yet?",
+      "switchToRegisterPrefix": "No account yet? ",
       "switchToRegisterAction": "Register here!",
-      "switchToLoginPrefix": " if you have an account.",
-      "switchToLoginAction": "Sign in here",
+      "switchToLoginPrefix": "If you have an account, ",
+      "switchToLoginAction": "Sign in here.",
       "hints": {
         "200": "Access Granted",
         "201": "Account Created",
@@ -229,19 +229,6 @@
         "702": "Timeout",
         "703": "Maintenance"
       }
-    },
-    "profile": {
-      "completeTitle": "Complete Profile",
-      "editTitle": "Edit Profile",
-      "nicknameTitle": "Nickname",
-      "nicknameHint": "UID is assigned once and cannot be changed. Nickname can be updated at any time.",
-      "nameLabel": "Name",
-      "namePlaceholder": "e.g. jacychan",
-      "currentUid": "Current UID",
-      "uidPending": "Will be assigned after first save",
-      "logout": "Logout",
-      "save": "Save",
-      "saving": "Saving..."
     }
   },
   "links": {

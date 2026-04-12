@@ -188,7 +188,6 @@
       "email": "邮箱：",
       "password": "密码：",
       "verification": "验证码：",
-      "emailHint": "请使用您账户绑定的邮箱。",
       "forgotPW": "忘记密码？",
       "send": "发送验证码",
       "resend": "重新发送({count})",
@@ -230,19 +229,6 @@
         "702": "系统超时",
         "703": "系统维护"
       }
-    },
-    "profile": {
-      "completeTitle": "完善资料",
-      "editTitle": "编辑资料",
-      "nicknameTitle": "昵称",
-      "nicknameHint": "UID 仅会分配一次且不可修改；昵称可随时更新。",
-      "nameLabel": "名称",
-      "namePlaceholder": "例如：jacychan",
-      "currentUid": "当前 UID",
-      "uidPending": "首次保存后将自动分配",
-      "logout": "退出登录",
-      "save": "保存",
-      "saving": "保存中..."
     }
   },
   "links": {
