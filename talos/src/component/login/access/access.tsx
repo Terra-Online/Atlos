@@ -293,6 +293,7 @@ const Access = ({
                   onBlur={() => handleFieldBlur('email')}
                   placeholder="ak@ex.talos"
                   autoComplete="email"
+                  spellCheck={false}
                 />
               </div>
             </div>
@@ -308,7 +309,6 @@ const Access = ({
                   <span className={styles.prtsHint}>
                     <a
                       href="#"
-                      className={styles.prtsHintLink}
                       onClick={(event) => {
                         event.preventDefault();
                       }}
@@ -374,7 +374,6 @@ const Access = ({
 
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" />
-
           <section className={styles.otherAuthSection}>
             <button
               type="button"
