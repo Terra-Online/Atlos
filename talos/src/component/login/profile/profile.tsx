@@ -1,7 +1,7 @@
 import Modal from '@/component/modal/modal';
 import { useTranslateUI } from '@/locale';
 import type { SessionUser } from '../authTypes';
-import './profile.scss';
+import './profile.module.scss';
 
 interface ProfileModalProps {
 	profileOpen: boolean;

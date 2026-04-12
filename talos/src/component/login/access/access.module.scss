@@ -52,12 +52,19 @@
 }
 
 .inputRow[data-field='verification'][data-visible='true'] {
-  max-height: 3.2rem;
+  max-height: 4.4rem;
   opacity: 1;
   overflow: visible;
   transform: translateY(0);
   pointer-events: auto;
   transition-delay: 0ms;
+}
+
+.verificationInputGroup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.5rem;
 }
 
 .lowerSection {
@@ -242,6 +249,35 @@
       inset 0 0 0 0 var(--auth-border),
       inset 0 0 0 20px var(--modal-bg);
     }
+  }
+}
+
+.sendCodeButton {
+  min-width: 6.8rem;
+  height: auto;
+  border: none;
+  background: transparent;
+  color: rgba(18, 18, 18, 0.62);
+  font-family: Raleway, sans-serif;
+  font-size: 0.88rem;
+  font-style: italic;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  padding: 0 0 0.06rem;
+  transform: translateY(0.3rem);
+  cursor: pointer;
+  transition: color .2s ease, filter .2s ease;
+
+  &:hover:enabled {
+    color: rgba(18, 18, 18, 0.9);
+    filter: blur(0.2px);
+  }
+
+  &:disabled {
+    color: rgba(18, 18, 18, 0.48);
+    cursor: not-allowed;
   }
 }
 
