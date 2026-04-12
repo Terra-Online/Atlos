@@ -24,6 +24,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     isSavingProfile,
     handleAvatarClick,
     handleDiscordAuthClick,
+    handleGoogleAuthClick,
     handleSaveProfile,
     handleLogout,
   } = useIdCardAuthController();
@@ -73,6 +74,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
         isSubmitting={isSubmitting}
         authError={authError}
         handleDiscordAuthClick={handleDiscordAuthClick}
+        handleGoogleAuthClick={handleGoogleAuthClick}
       />
 
       <ProfileModal

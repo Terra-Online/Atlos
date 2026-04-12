@@ -249,6 +249,32 @@ export const startDiscordAuth = async (
   throw new Error('Backend did not return an OAuth redirect URL.');
 };
 
+export const startGoogleAuth = async (
+  callbackURL: string
+): Promise<{ redirectUrl: string }> => {
+  const response = await authClient.signIn.social({
+    provider: 'google',
+    callbackURL,
+    disableRedirect: true,
+  });
+
+  if (response.error) {
+    throw new Error(
+      pickApiErrorMessage(
+        response.error,
+        `Auth request failed (${response.error.status ?? 'unknown'})`
+      )
+    );
+  }
+
+  const redirectUrl = pickRedirectUrl(response.data);
+  if (redirectUrl) {
+    return { redirectUrl };
+  }
+
+  throw new Error('Backend did not return an OAuth redirect URL.');
+};
+
 export const updateProfileNickname = async (
   nickname: string
 ): Promise<SessionUser> => {

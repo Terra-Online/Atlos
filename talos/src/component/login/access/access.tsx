@@ -1,8 +1,9 @@
 import Modal from '@/component/modal/modal';
 import DiscordIcon from '@/assets/images/UI/media/discordicon.svg?react';
+import GoogleIcon from '@/assets/images/UI/media/google.svg?react';
 import LoginIcon from '@/assets/logos/login.svg?react';
 import RegisterIcon from '@/assets/logos/register.svg?react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslateUI } from '@/locale';
 import {
   OTP_COOLDOWN_SECONDS,
@@ -30,8 +31,40 @@ interface AccessProps {
   isSubmitting: boolean;
   authError: string | null;
   handleDiscordAuthClick: () => Promise<void>;
+  handleGoogleAuthClick?: () => Promise<void>;
   onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void;
 }
+
+type OAuthPlatform = 'discord' | 'google';
+
+interface OAuthMethodProps {
+  platform: OAuthPlatform;
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}
+
+const OAuthMethod = ({
+  platform,
+  label,
+  disabled = false,
+  onClick,
+  children,
+}: OAuthMethodProps) => (
+  <button
+    type="button"
+    className={styles.oauthMethod}
+    data-platform={platform}
+    disabled={disabled}
+    onClick={onClick}
+  >
+    <div className={styles.oauthMethodInner}>
+      <span className={styles.oauthMethodIcon}>{children}</span>
+      <span className={styles.oauthMethodLabel}>{label}</span>
+    </div>
+  </button>
+);
 
 const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
   email: false,
@@ -47,6 +80,7 @@ const Access = ({
   isSubmitting,
   authError,
   handleDiscordAuthClick,
+  handleGoogleAuthClick,
   onAutoSubmit,
 }: AccessProps) => {
   const t = useTranslateUI();
@@ -374,23 +408,30 @@ const Access = ({
 
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" />
-          <section className={styles.otherAuthSection}>
-            <button
-              type="button"
-              className={styles.discordButton}
-              onClick={() => {
-                void handleDiscordAuthClick();
-              }}
-              disabled={isSubmitting}
-            >
-              <DiscordIcon />
-              <span>
-                {isSubmitting
-                  ? t('idcard.auth.connecting')
-                  : t('idcard.auth.discordButton')}
-              </span>
-            </button>
-          </section>
+            <div className={styles.oauthMethods}>
+              <OAuthMethod
+                platform="discord"
+                disabled={isSubmitting}
+                onClick={() => {
+                  void handleDiscordAuthClick();
+                }}
+                label={t('idcard.auth.dcLogin')}
+              >
+                <DiscordIcon />
+              </OAuthMethod>
+              <OAuthMethod
+                platform="google"
+                disabled={isSubmitting || !handleGoogleAuthClick}
+                onClick={() => {
+                  if (handleGoogleAuthClick) {
+                    void handleGoogleAuthClick();
+                  }
+                }}
+                label={t('idcard.auth.gooLogin')}
+              >
+                <GoogleIcon />
+              </OAuthMethod>
+            </div>
 
           <p className={styles.authSwitchLine}>
             <span>

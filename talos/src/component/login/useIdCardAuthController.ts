@@ -4,6 +4,7 @@ import {
   getAuthBase,
   logoutUser,
   startDiscordAuth,
+  startGoogleAuth,
   updateProfileNickname,
 } from './authFlow';
 import { useAuthStore } from '@/store/auth';
@@ -92,6 +93,23 @@ export const useIdCardAuthController = () => {
     }
   }, [isSubmitting]);
 
+  const handleGoogleAuthClick = useCallback(async () => {
+    if (isSubmitting) return;
+
+    setAuthError(null);
+    setIsSubmitting(true);
+
+    try {
+      const callbackURL = window.location.href;
+      const { redirectUrl } = await startGoogleAuth(callbackURL);
+      window.location.assign(redirectUrl);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Network error while contacting auth backend.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting]);
+
   const handleSaveProfile = useCallback(async () => {
     const trimmed = profileName.trim();
     if (!trimmed) {
@@ -152,6 +170,7 @@ export const useIdCardAuthController = () => {
     openProfileModal,
     handleAvatarClick,
     handleDiscordAuthClick,
+    handleGoogleAuthClick,
     handleSaveProfile,
     handleLogout,
     syncSession,
