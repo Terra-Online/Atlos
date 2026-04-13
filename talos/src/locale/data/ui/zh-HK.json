@@ -183,8 +183,8 @@
     "suspend": "封禁用戶",
     "robot": "機器人",
     "auth": {
-      "login": "登入",
-      "register": "註冊",
+      "login": "帳戶登入",
+      "register": "帳戶註冊",
       "email": "電郵",
       "password": "密碼",
       "verification": "驗證碼",

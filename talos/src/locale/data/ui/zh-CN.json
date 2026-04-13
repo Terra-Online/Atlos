@@ -183,8 +183,8 @@
     "suspend": "封禁用户",
     "robot": "机器人",
     "auth": {
-      "login": "登录",
-      "register": "注册",
+      "login": "账号登录",
+      "register": "账号注册",
       "email": "邮箱",
       "password": "密码",
       "verification": "验证码",

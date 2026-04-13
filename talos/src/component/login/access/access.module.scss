@@ -11,8 +11,9 @@
     --auth-err-fg: #{$white-0};
 
     --oauth-pill-bg: #{rgba($white-1, 0.75)};
-    --oauth-pill-border: #{rgba($black-1, 0.25)};
-    --oauth-pill-text: #{$black-1};
+    --oauth-pill-hover: #{$primary-accent-4};
+    --oauth-pill-text: #{$grey-1};
+
     --oauth-discord: #5865f2;
     --oauth-invert: 0;
 
@@ -27,10 +28,11 @@
     --auth-err: #{$primary-accent-4};
     --auth-err-fg: #{$black-0};
 
-    --oauth-pill-bg: #{$black-1};
+    --oauth-pill-bg: #{rgba($black-1, 0.9)};
+    --oauth-pill-hover: #{rgba($primary-accent-4, 0.6)};
     --oauth-pill-text: #{$light-1};
-    --oauth-discord: #e0e3ff;
 
+    --oauth-discord: #e0e3ff;
     --oauth-invert: 1;
 }
 
@@ -128,7 +130,7 @@
   text-transform: uppercase;
   font-weight: 300;
   font-size: .75rem;
-  letter-spacing: -3%;
+  letter-spacing: -4%;
 }
 
 .prtsHint {
@@ -391,19 +393,14 @@
   border-radius: 20px;
   background: var(--oauth-pill-bg);
   color: var(--oauth-pill-text);
+  box-shadow: 0 1px 2px rgba($black-1, 0.45);
   padding: 0.35rem 0.85rem;
   cursor: pointer;
-  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+  transition: background-color .3s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 
-  &[data-platform='discord'] {
-    --oauth-icon: var(--oauth-discord);
-  }
-
-  &[data-platform='google'] {
-    --oauth-icon: var(--oauth-google);
-  }
-  &:hover:enabled {
-    background-color: var(--oauth-pill-border);
+  &:hover {
+    background-color: var(--oauth-pill-hover);
+    box-shadow: 0 0.5px 1px rgba($black-1, 0.45);
   }
 
   &:disabled {
@@ -439,14 +436,19 @@
   gap: .5rem
 }
 .oauthMethodIcon {
-
   width: 1.25rem;
   height: 1.25rem;
-
+  filter: drop-shadow(0 1px .5px rgba($black-1, 0.25));
   > svg {
     width: 100%;
     height: 100%;
     fill: currentcolor;
+  }
+  &[data-platform='discord']>svg {
+    fill: var(--oauth-discord);
+  }
+  &[data-platform='google']>svg {
+    scale: 0.92
   }
 }
 

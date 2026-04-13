@@ -55,12 +55,11 @@ const OAuthMethod = ({
   <button
     type="button"
     className={styles.oauthMethod}
-    data-platform={platform}
     disabled={disabled}
     onClick={onClick}
   >
     <div className={styles.oauthMethodInner}>
-      <span className={styles.oauthMethodIcon}>{children}</span>
+      <span className={styles.oauthMethodIcon} data-platform={platform}>{children}</span>
       <span className={styles.oauthMethodLabel}>{label}</span>
     </div>
   </button>
