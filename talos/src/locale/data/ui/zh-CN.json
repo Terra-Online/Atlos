@@ -172,6 +172,7 @@
   "idcard": {
     "group": "用户组：",
     "since": "注册于",
+    "logintip": "点击头像以登录",
     "registip": "点击头像以注册",
     "ago": "前",
     "karma": "Karma",

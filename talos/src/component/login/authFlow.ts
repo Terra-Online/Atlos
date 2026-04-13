@@ -1,6 +1,18 @@
 import { createAuthClient } from 'better-auth/client';
 import type { SessionUser } from './authTypes';
 
+export class AuthFlowError extends Error {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, options?: { status?: number; code?: string }) {
+    super(message);
+    this.name = 'AuthFlowError';
+    this.status = options?.status;
+    this.code = options?.code;
+  }
+}
+
 const LOCAL_AUTH_PORT = '8787';
 const PROD_AUTH_BASE = 'https://api.opendfieldmap.org';
 
@@ -184,6 +196,66 @@ const pickApiErrorMessage = (payload: unknown, fallback: string): string => {
   return fallback;
 };
 
+const pickApiErrorCode = (payload: unknown): string | undefined => {
+  if (!payload || typeof payload !== 'object') {
+    return undefined;
+  }
+
+  const data = payload as {
+    code?: string;
+    error?: {
+      code?: string;
+    };
+  };
+
+  if (typeof data.code === 'string' && data.code) {
+    return data.code;
+  }
+
+  if (typeof data.error?.code === 'string' && data.error.code) {
+    return data.error.code;
+  }
+
+  return undefined;
+};
+
+async function postAuthJson<TResponse>(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<TResponse> {
+  const response = await fetch(`${authBase}/auth/v1${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new AuthFlowError(
+      pickApiErrorMessage(
+        payload,
+        `Auth request failed (${response.status ?? 'unknown'})`,
+      ),
+      {
+        status: response.status,
+        code: pickApiErrorCode(payload),
+      },
+    );
+  }
+
+  return payload as TResponse;
+}
+
 export const fetchSessionUser = async (): Promise<SessionUser | null> => {
   const [sessionResult, sdkSession] = await Promise.all([
     authClient.$fetch('/session', {
@@ -273,6 +345,57 @@ export const startGoogleAuth = async (
   }
 
   throw new Error('Backend did not return an OAuth redirect URL.');
+};
+
+const deriveDisplayName = (email: string): string => {
+  const local = email.split('@')[0]?.trim() ?? '';
+  const normalized = local.replace(/[^A-Za-z0-9_-]/g, '');
+  if (normalized.length >= 2) {
+    return normalized.slice(0, 26);
+  }
+  return 'Traveler';
+};
+
+export const registerWithEmail = async (
+  email: string,
+  password: string,
+): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  await postAuthJson('/register', {
+    email: normalizedEmail,
+    password,
+    name: deriveDisplayName(normalizedEmail),
+  });
+};
+
+export const sendEmailVerificationOtp = async (email: string): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  await postAuthJson('/email-otp/send-verification-otp', {
+    email: normalizedEmail,
+    type: 'email-verification',
+  });
+};
+
+export const verifyEmailRegistrationOtp = async (
+  email: string,
+  otp: string,
+): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  await postAuthJson('/email-otp/verify-email', {
+    email: normalizedEmail,
+    otp,
+  });
+};
+
+export const loginWithEmail = async (
+  email: string,
+  password: string,
+): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  await postAuthJson('/login', {
+    email: normalizedEmail,
+    password,
+  });
 };
 
 export const updateProfileNickname = async (

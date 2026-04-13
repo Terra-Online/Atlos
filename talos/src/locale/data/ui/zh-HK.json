@@ -172,7 +172,8 @@
   "idcard": {
     "group": "用戶組：",
     "since": "註冊於",
-    "registip": "點擊頭像以註冊或登入",
+    "logintip": "點擊頭像以登入",
+    "registip": "點擊頭像以註冊",
     "ago": "前",
     "karma": "Karma",
     "loading": "載入中",

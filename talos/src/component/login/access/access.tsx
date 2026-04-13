@@ -32,7 +32,8 @@ interface AccessProps {
   authError: string | null;
   handleDiscordAuthClick: () => Promise<void>;
   handleGoogleAuthClick?: () => Promise<void>;
-  onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void;
+  onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void | Promise<void>;
+  onRequestVerificationCode?: (payload: { email: string; password: string }) => Promise<boolean>;
 }
 
 type OAuthPlatform = 'discord' | 'google';
@@ -81,6 +82,7 @@ const Access = ({
   handleDiscordAuthClick,
   handleGoogleAuthClick,
   onAutoSubmit,
+  onRequestVerificationCode,
 }: AccessProps) => {
   const t = useTranslateUI();
   const [emailValue, setEmailValue] = useState('');
@@ -89,6 +91,7 @@ const Access = ({
   const [fieldHintCodes, setFieldHintCodes] = useState<Partial<Record<AuthField, AuthHintCode>>>({});
   const [touchedFields, setTouchedFields] = useState<Record<AuthField, boolean>>(INITIAL_TOUCHED_FIELDS);
   const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
+  const [oauthPendingPlatform, setOauthPendingPlatform] = useState<OAuthPlatform | null>(null);
   const lastAutoSubmittedSignatureRef = useRef<string>('');
 
   const isRegisterMode = activeTab === 'register';
@@ -168,6 +171,12 @@ const Access = ({
   });
 
   useEffect(() => {
+    if (!isSubmitting) {
+      setOauthPendingPlatform(null);
+    }
+  }, [isSubmitting]);
+
+  useEffect(() => {
     if (otpCooldownSeconds <= 0) {
       return undefined;
     }
@@ -215,7 +224,7 @@ const Access = ({
       }
 
       lastAutoSubmittedSignatureRef.current = signature;
-      onAutoSubmit?.({
+      void onAutoSubmit?.({
         mode: activeTab,
         values: {
           email: authValues.email,
@@ -274,7 +283,7 @@ const Access = ({
     setFieldCode(field, validateField(activeTab, field, authValues));
   };
 
-  const handleRequestVerificationCode = () => {
+  const handleRequestVerificationCode = async () => {
     touchField('email');
 
     const emailValidationCode = validateSendVerificationCode(authValues);
@@ -288,6 +297,17 @@ const Access = ({
     }
 
     setFieldCode('email', null);
+
+    if (onRequestVerificationCode) {
+      const success = await onRequestVerificationCode({
+        email: authValues.email,
+        password: authValues.password,
+      });
+      if (!success) {
+        return;
+      }
+    }
+
     setOtpCooldownSeconds(OTP_COOLDOWN_SECONDS);
   };
 
@@ -295,6 +315,37 @@ const Access = ({
   const sendButtonLabel = otpCooldownSeconds > 0
     ? resendTemplate.replace('{count}', String(otpCooldownSeconds))
     : t('idcard.auth.send') || 'Send';
+
+  const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
+    discord: isRegisterMode
+      ? t('idcard.auth.dcLogin') || 'Sign in with Discord'
+      : t('idcard.auth.dcRegis') || 'Continue with Discord',
+    google: isRegisterMode
+      ? t('idcard.auth.gooLogin') || 'Sign in with Google'
+      : t('idcard.auth.gooRegis') || 'Continue with Google',
+  };
+
+  const getOauthButtonLabel = (platform: OAuthPlatform): string =>
+    oauthPendingPlatform === platform
+      ? t('idcard.auth.connecting') || 'Connecting...'
+      : oauthLabelByPlatform[platform];
+
+  const isOauthButtonDisabled = (platform: OAuthPlatform): boolean =>
+    isSubmitting || (oauthPendingPlatform !== null && oauthPendingPlatform !== platform);
+
+  const handleOAuthMethodClick = async (
+    platform: OAuthPlatform,
+    handler?: () => Promise<void>,
+  ) => {
+    if (!handler) {
+      return;
+    }
+    if (isOauthButtonDisabled(platform)) {
+      return;
+    }
+    setOauthPendingPlatform(platform);
+    await handler();
+  };
 
   return (
     <Modal
@@ -395,8 +446,10 @@ const Access = ({
                   <button
                     type="button"
                     className={styles.sendCodeButton}
-                    disabled={otpCooldownSeconds > 0}
-                    onClick={handleRequestVerificationCode}
+                    disabled={otpCooldownSeconds > 0 || isSubmitting}
+                    onClick={() => {
+                      void handleRequestVerificationCode();
+                    }}
                   >
                     {sendButtonLabel}
                   </button>
@@ -410,23 +463,21 @@ const Access = ({
             <div className={styles.oauthMethods}>
               <OAuthMethod
                 platform="discord"
-                disabled={isSubmitting}
+                disabled={isOauthButtonDisabled('discord')}
                 onClick={() => {
-                  void handleDiscordAuthClick();
+                  void handleOAuthMethodClick('discord', handleDiscordAuthClick);
                 }}
-                label={t('idcard.auth.dcLogin')}
+                label={getOauthButtonLabel('discord')}
               >
                 <DiscordIcon />
               </OAuthMethod>
               <OAuthMethod
                 platform="google"
-                disabled={isSubmitting || !handleGoogleAuthClick}
+                disabled={isOauthButtonDisabled('google') || !handleGoogleAuthClick}
                 onClick={() => {
-                  if (handleGoogleAuthClick) {
-                    void handleGoogleAuthClick();
-                  }
+                  void handleOAuthMethodClick('google', handleGoogleAuthClick);
                 }}
-                label={t('idcard.auth.gooLogin')}
+                label={getOauthButtonLabel('google')}
               >
                 <GoogleIcon />
               </OAuthMethod>
