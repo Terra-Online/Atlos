@@ -46,8 +46,7 @@
         pointer-events: none;
     }
 
-    /* per item action */
-    &:nth-of-type(4)>.headbarIcon {
+    &[data-guide='headbar-dark-mode']>.headbarIcon {
         transition: transform 0.45s $moderato-curve;
         transform: var(--darkmode-rotate);
     }
@@ -224,14 +223,9 @@
     }
 
 
-    .headbarItem {
-        &:nth-of-type(4)>.headbarIcon {
-            transform: rotate(0);
-        }
-        &:nth-of-type(5)>.headbarIcon {
-            transform: var(--darkmode-rotate);
-            transition: transform 0.45s $moderato-curve;
-        }
+    .headbarItem[data-guide='headbar-dark-mode']>.headbarIcon {
+        transform: var(--darkmode-rotate);
+        transition: transform 0.45s $moderato-curve;
     }
 }
 .headbarGrid {

@@ -28,7 +28,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
 }) => {
     const hoverTimeoutRef = useRef<number | undefined>(undefined);
     const controlledCloseTimeoutRef = useRef<number | undefined>(undefined);
-    const triggerRef = useRef<HTMLSpanElement | null>(null);
+    const triggerRef = useRef<HTMLElement | null>(null);
     const popoverIdRef = useRef<string>(`tooltip-${Math.random().toString(36).substr(2, 9)}`);
 
     // Cleanup function: ensure popover is closed
@@ -181,27 +181,24 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     const originalOnMouseLeave = childProps.onMouseLeave as ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
 
     const childWithHandlers = React.cloneElement(children, {
+        ref: triggerRef,
         onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
             handleMouseEnter(e);
-            // Call original onMouseEnter if exists
             if (originalOnMouseEnter) {
                 originalOnMouseEnter(e);
             }
         },
         onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
             handleMouseLeave();
-            // Call original onMouseLeave if exists
             if (originalOnMouseLeave) {
                 originalOnMouseLeave(e);
             }
         },
-    } as Partial<React.HTMLAttributes<HTMLElement>>);
+    } as Partial<React.HTMLAttributes<HTMLElement>> & { ref: React.Ref<HTMLElement> });
 
     return (
         <>
-            <span className={styles.popoverAnchor} ref={triggerRef}>
-                {childWithHandlers}
-            </span>
+            {childWithHandlers}
             <div
                 id={popoverIdRef.current}
                 popover="manual"
