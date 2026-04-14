@@ -1,9 +1,10 @@
 import { useIdCardAuthController } from './useIdCardAuthController';
+import { normalizeAvatarIndex } from './avatarConfig';
 import { useIdCardHoverAngle } from './useIdCardHoverAngle';
 import { useIdCardProfileViewModel } from './useIdCardProfileViewModel';
 import { Access } from './access';
+import IdCardView from './idcardView';
 import ProfileModal from './profile/profile';
-import styles from './idcard.module.scss';
 
 const IDCard = ({ username, id }: { username?: string; id?: string }) => {
   const { cardRef, handleCardMouseMove, handleCardMouseLeave } = useIdCardHoverAngle();
@@ -20,9 +21,11 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     setProfileOpen,
     profileName,
     setProfileName,
+    profileAvatar,
     profileError,
     isSavingProfile,
     handleAvatarClick,
+    handleCycleProfileAvatar,
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,
@@ -36,37 +39,19 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     fallbackUsername: username,
     fallbackUid: id,
   });
+  const sidebarAvatarIndex = sessionUser ? normalizeAvatarIndex(sessionUser.avatar) : undefined;
 
   return (
     <>
-      <div className={styles.idCard} ref={cardRef} onMouseMove={handleCardMouseMove} onMouseLeave={handleCardMouseLeave}>
-        <div className={styles.idCardWrap}>
-          <button
-            type="button"
-            className={styles.avatarContainer}
-            onClick={handleAvatarClick}
-            aria-label="Open login dialog"
-          >
-            <div className={styles.avatar}></div>
-          </button>
-          <span className={styles.usrName}>{cardProfile.displayName}</span>
-          <span className={styles.usrId}>
-            {cardProfile.uidLabel}: {cardProfile.displayUid}
-          </span>
-          <div className={styles.metaGrid}>
-            <span className={styles.usrGroup}>{cardProfile.groupText}</span>
-            {cardProfile.showAge && <span className={styles.usrAge}>{cardProfile.ageText}</span>}
-            <span className={styles.usrTitle}>{cardProfile.titleLetter}</span>
-            {cardProfile.showKarma && (
-              <span
-                className={styles.usrKarma}
-                data-karma={cardProfile.karmaLevel}
-                aria-label={cardProfile.karmaTooltip}
-              ></span>
-            )}
-          </div>
-        </div>
-      </div>
+      <IdCardView
+        profile={cardProfile}
+        cardRef={cardRef}
+        onCardMouseMove={handleCardMouseMove}
+        onCardMouseLeave={handleCardMouseLeave}
+        onAvatarClick={handleAvatarClick}
+        avatarAriaLabel="Open profile dialog"
+        avatarIndex={sidebarAvatarIndex}
+      />
 
       <Access
         open={open}
@@ -88,7 +73,9 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
         setProfileName={setProfileName}
         profileError={profileError}
         isSavingProfile={isSavingProfile}
-        sessionUser={sessionUser}
+        cardProfile={cardProfile}
+        profileAvatar={profileAvatar}
+        onAvatarCycle={handleCycleProfileAvatar}
         handleSaveProfile={handleSaveProfile}
         handleLogout={handleLogout}
       />

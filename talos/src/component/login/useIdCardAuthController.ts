@@ -12,6 +12,7 @@ import {
   updateProfileNickname,
 } from './authFlow';
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
+import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
 
 const ONCELOGIN = 'onceLogin';
@@ -72,6 +73,7 @@ export const useIdCardAuthController = () => {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileName, setProfileName] = useState('');
+  const [profileAvatar, setProfileAvatar] = useState(1);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -88,6 +90,7 @@ export const useIdCardAuthController = () => {
       setSessionUser(user);
       if (user.needsProfileSetup) {
         setProfileName('');
+        setProfileAvatar(normalizeAvatarIndex(user.avatar));
         setProfileError(null);
         setProfileOpen(true);
       }
@@ -121,6 +124,7 @@ export const useIdCardAuthController = () => {
     }
 
     setProfileName(sessionUser.needsProfileSetup ? '' : sessionUser.nickname);
+    setProfileAvatar(normalizeAvatarIndex(sessionUser.avatar));
     setProfileError(null);
     setProfileOpen(true);
   }, [openAuthModal, sessionUser]);
@@ -132,6 +136,10 @@ export const useIdCardAuthController = () => {
     }
     openAuthModal(hasOnceLogin() ? 'login' : 'register');
   }, [openAuthModal, openProfileModal, sessionUser]);
+
+  const handleCycleProfileAvatar = useCallback(() => {
+    setProfileAvatar((current) => getNextAvatarIndex(current));
+  }, []);
 
   const handleDiscordAuthClick = useCallback(async () => {
     if (isSubmitting) return;
@@ -238,15 +246,21 @@ export const useIdCardAuthController = () => {
       return;
     }
 
+    if (Array.from(trimmed).length > 15) {
+      setProfileError('Username must be 15 characters or fewer.');
+      return;
+    }
+
     if (isSavingProfile) return;
     setIsSavingProfile(true);
     setProfileError(null);
 
     try {
-      const user = await updateProfileNickname(trimmed);
+      const user = await updateProfileNickname(trimmed, profileAvatar);
       setSessionUser({
         ...sessionUser,
         ...user,
+        avatar: user.avatar ?? profileAvatar,
         registeredAt: user.registeredAt ?? sessionUser?.registeredAt,
       });
       setProfileOpen(false);
@@ -256,7 +270,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [isSavingProfile, profileName, sessionUser, setSessionUser]);
+  }, [isSavingProfile, profileAvatar, profileName, sessionUser, setSessionUser]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -265,6 +279,7 @@ export const useIdCardAuthController = () => {
       setProfileOpen(false);
       setOpen(false);
       setProfileName('');
+      setProfileAvatar(1);
       setProfileError(null);
       setAuthError(null);
     } catch (error) {
@@ -285,11 +300,14 @@ export const useIdCardAuthController = () => {
     setProfileOpen,
     profileName,
     setProfileName,
+    profileAvatar,
+    setProfileAvatar,
     profileError,
     isSavingProfile,
     openAuthModal,
     openProfileModal,
     handleAvatarClick,
+    handleCycleProfileAvatar,
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,

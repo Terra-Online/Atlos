@@ -235,6 +235,20 @@
         "702": "系统超时",
         "703": "系统维护"
       }
+    },
+    "profile": {
+      "modalTitle": "profile",
+      "avatarHint": "打开资料操作",
+      "nameEditorLabel": "编辑用户名",
+      "namePlaceholder": "例如 jacychan",
+      "syncStatus": "数据已于云端同步 - 最近更新",
+      "noteLabel": "说明",
+      "noteLine1": "您可以使用字母、数字以及下划线作为您的用户名。",
+      "noteLine2": "UID 仅在首次设置用户名时分配且不可更改，但您可以随时更新自己的用户名。点击头像区域可查看并切换其他头像。",
+      "auditLabel": "操作",
+      "save": "保存更改",
+      "saving": "保存中...",
+      "logout": "登出"
     }
   },
   "links": {

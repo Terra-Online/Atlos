@@ -131,6 +131,21 @@ const pickSessionUser = (payload: unknown): SessionUser | null => {
     return undefined;
   };
 
+  const parseAvatar = (value: unknown): number | undefined => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return Math.max(1, Math.floor(value));
+    }
+
+    if (typeof value === 'string' && value.trim()) {
+      const num = Number(value);
+      if (Number.isFinite(num)) {
+        return Math.max(1, Math.floor(num));
+      }
+    }
+
+    return undefined;
+  };
+
   const uid = typeof u.uid === 'string' ? u.uid : '';
   const nickname = typeof u.nickname === 'string' ? u.nickname : '';
 
@@ -144,10 +159,12 @@ const pickSessionUser = (payload: unknown): SessionUser | null => {
     u.karma ??
       u.karmaLevel
   );
+  const avatar = parseAvatar(u.avatar);
 
   return {
     uid,
     nickname,
+    avatar,
     groupCode,
     registeredAt,
     karma,
@@ -405,9 +422,7 @@ export const loginWithEmail = async (
   });
 };
 
-export const updateProfileNickname = async (
-  nickname: string
-): Promise<SessionUser> => {
+const patchProfile = async (payloadBody: Record<string, unknown>): Promise<SessionUser> => {
   const response = await fetch(`${authBase}/auth/v1/profile`, {
     method: 'PATCH',
     credentials: 'include',
@@ -415,7 +430,7 @@ export const updateProfileNickname = async (
       'content-type': 'application/json',
       accept: 'application/json',
     },
-    body: JSON.stringify({ nickname }),
+    body: JSON.stringify(payloadBody),
   });
 
   let payload: unknown = null;
@@ -426,11 +441,15 @@ export const updateProfileNickname = async (
   }
 
   if (!response.ok) {
-    throw new Error(
+    throw new AuthFlowError(
       pickApiErrorMessage(
         payload,
         `Profile update failed (${response.status ?? 'unknown'})`
-      )
+      ),
+      {
+        status: response.status,
+        code: pickApiErrorCode(payload),
+      },
     );
   }
 
@@ -440,6 +459,28 @@ export const updateProfileNickname = async (
   }
 
   return user;
+};
+
+export const updateProfileNickname = async (
+  nickname: string,
+  avatar?: number,
+): Promise<SessionUser> => {
+  const normalizedAvatar = Number.isFinite(avatar) ? Math.max(1, Math.floor(avatar as number)) : undefined;
+
+  if (normalizedAvatar === undefined) {
+    return patchProfile({ nickname });
+  }
+
+  try {
+    return await patchProfile({ nickname, avatar: normalizedAvatar });
+  } catch (error) {
+    if (!(error instanceof AuthFlowError) || (error.status !== 400 && error.status !== 422)) {
+      throw error;
+    }
+
+    // Backward compatibility: if backend doesn't support avatar yet, fallback to nickname-only update.
+    return patchProfile({ nickname });
+  }
 };
 
 export const logoutUser = async (): Promise<void> => {

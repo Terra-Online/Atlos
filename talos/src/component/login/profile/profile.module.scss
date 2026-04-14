@@ -1,103 +1,112 @@
-.idcardProfileModal {
-	display: flex;
-	flex-direction: column;
-	gap: 0.65rem;
-	color: var(--text-1, #f5f5f5);
-	padding: 0.1rem 0.15rem 0.35rem;
+.profileModal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.62rem;
+  color: var(--auth-text);
 }
 
-.idcardProfileTitle {
-	margin: 0;
-	font-size: 1rem;
-	font-weight: 600;
+.profileDivider {
+  position: relative;
+  height: 1.5px;
+  width: 88%;
+  transform: translateX(6%);
+  margin: 0.65rem 0 0.45rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--auth-text) 90%, transparent) 15%,
+    color-mix(in srgb, var(--auth-text) 90%, transparent) 65%,
+    transparent 100%
+  );
+
+  &::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 0.5rem;
+    font-family: Raleway, sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--auth-text);
+    background-color: var(--modal-bg);
+  }
 }
 
-.idcardProfileHint {
-	margin: 0;
-	opacity: 0.85;
-	line-height: 1.4;
-	font-size: 0.84rem;
+.profileNote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+
+  > p {
+    font-size: 0.925rem;
+    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    letter-spacing: -0.2px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
 }
 
-.idcardProfileField {
-	display: flex;
-	flex-direction: column;
-	gap: 0.35rem;
-	font-size: 0.85rem;
+.profileError {
+  margin: 0.25rem 0 0;
+  color: #bb1313;
+  font-size: 0.84rem;
+  font-family: 'FedraSansPro Book', 'UD_ShinGo Regular', sans-serif;
 }
 
-.idcardProfileInput {
-	height: 2.35rem;
-	border-radius: 0.55rem;
-	border: 1px solid rgba(255, 255, 255, 0.22);
-	background: rgba(255, 255, 255, 0.06);
-	color: inherit;
-	padding: 0 0.65rem;
-	outline: none;
-
-	&:focus {
-		border-color: rgba(236, 219, 9, 0.75);
-		box-shadow: 0 0 0 2px rgba(236, 219, 9, 0.2);
-	}
+.profileActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 0.35rem;
 }
 
-.idcardProfileUid {
-	margin: 0;
-	font-size: 0.82rem;
-	opacity: 0.9;
+.profileSaveButton,
+.profileLogoutButton {
+  position: relative;
+  overflow: hidden;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: 'FedraSansPro Medium', 'UD_ShinGo DemiBold', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.2px;
+  transition: filter 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(1px);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.35;
+    background-image: url('/src/assets/images/UI/bg.webp');
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+  }
 }
 
-.idcardProfileError {
-	margin: 0;
-	font-size: 0.8rem;
-	color: #ff8d8d;
-	line-height: 1.35;
+.profileSaveButton {
+  color: #f6f6f6;
+  background: #2f3034;
 }
 
-.idcardProfileActions {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 0.55rem;
-	margin-top: 0.1rem;
-}
-
-.idcardProfileCancel,
-.idcardProfileSave,
-.idcardProfileLogout {
-	height: 2.2rem;
-	border-radius: 0.55rem;
-	cursor: pointer;
-	font-size: 0.88rem;
-	transition: all 0.2s ease;
-
-	&:disabled {
-		opacity: 0.65;
-		cursor: not-allowed;
-	}
-}
-
-.idcardProfileCancel {
-	border: 1px solid rgba(255, 255, 255, 0.3);
-	background: rgba(255, 255, 255, 0.08);
-	color: inherit;
-}
-
-.idcardProfileLogout {
-	border: 1px solid rgba(255, 120, 120, 0.55);
-	background: rgba(255, 80, 80, 0.16);
-	color: #ffdcdc;
-
-	&:hover {
-		background: rgba(255, 80, 80, 0.28);
-	}
-}
-
-.idcardProfileSave {
-	border: 1px solid #ecdb09;
-	background: rgba(236, 219, 9, 0.2);
-	color: #fffde5;
-
-	&:hover {
-		background: rgba(236, 219, 9, 0.32);
-	}
+.profileLogoutButton {
+  color: #ffffff;
+  background: #3d3f44;
 }

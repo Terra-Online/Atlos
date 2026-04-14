@@ -235,6 +235,20 @@
         "702": "Timeout",
         "703": "Maintenance"
       }
+    },
+    "profile": {
+      "modalTitle": "profile",
+      "avatarHint": "Open profile actions",
+      "nameEditorLabel": "Edit username",
+      "namePlaceholder": "e.g. jacychan",
+      "syncStatus": "Data synced to cloud - recently updated",
+      "noteLabel": "Note",
+      "noteLine1": "You can use letters, numbers, and underscores in your username.",
+      "noteLine2": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to view or switch avatar.",
+      "auditLabel": "Audit",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "logout": "Sign Out"
     }
   },
   "links": {
