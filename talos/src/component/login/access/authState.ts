@@ -44,6 +44,13 @@ export interface AuthMachineSnapshot {
   isSubmitting: boolean;
 }
 
+export interface AuthFieldRule {
+  requiredCode?: AuthHintCode;
+  invalidCode?: AuthHintCode;
+  normalize?: (value: string) => string;
+  isValid?: (value: string) => boolean;
+}
+
 export const OTP_COOLDOWN_SECONDS = 100;
 
 const EMAIL_ALLOWED_CHARS = /[^A-Za-z0-9@._-]/g;
@@ -174,43 +181,79 @@ export const canEditVerificationCode = (mode: AuthMode, values: AuthValues): boo
 export const canShowSendVerificationButton = (mode: AuthMode, values: AuthValues): boolean =>
   mode === 'register' && isEmailValid(values.email);
 
-export const validateField = (
-  mode: AuthMode,
-  field: AuthField,
-  values: AuthValues,
-): AuthHintCode | null => {
+const EMAIL_FIELD_RULE: AuthFieldRule = {
+  requiredCode: FRONTEND_HINT_CODES.EMAIL_REQUIRED,
+  invalidCode: FRONTEND_HINT_CODES.EMAIL_INVALID,
+  normalize: (value) => value.trim(),
+  isValid: isEmailValid,
+};
+
+const PASSWORD_LOGIN_RULE: AuthFieldRule = {
+  requiredCode: FRONTEND_HINT_CODES.PASSWORD_REQUIRED,
+};
+
+const PASSWORD_REGISTER_RULE: AuthFieldRule = {
+  requiredCode: FRONTEND_HINT_CODES.PASSWORD_REQUIRED,
+  invalidCode: FRONTEND_HINT_CODES.PASSWORD_INVALID,
+  isValid: isPasswordValid,
+};
+
+const OTP_REGISTER_RULE: AuthFieldRule = {
+  requiredCode: FRONTEND_HINT_CODES.OTP_REQUIRED,
+  invalidCode: FRONTEND_HINT_CODES.OTP_INVALID,
+  normalize: getVerificationDigits,
+  isValid: (value) => value.length === 6,
+};
+
+export const resolveFieldRule = (mode: AuthMode, field: AuthField): AuthFieldRule | null => {
   if (field === 'email') {
-    if (!values.email.trim()) {
-      return FRONTEND_HINT_CODES.EMAIL_REQUIRED;
-    }
-    if (!isEmailValid(values.email)) {
-      return FRONTEND_HINT_CODES.EMAIL_INVALID;
-    }
-    return null;
+    return EMAIL_FIELD_RULE;
   }
 
   if (field === 'password') {
-    if (!values.password) {
-      return FRONTEND_HINT_CODES.PASSWORD_REQUIRED;
-    }
-    if (mode === 'register' && !isPasswordValid(values.password)) {
-      return FRONTEND_HINT_CODES.PASSWORD_INVALID;
-    }
-    return null;
+    return mode === 'register' ? PASSWORD_REGISTER_RULE : PASSWORD_LOGIN_RULE;
   }
 
   if (mode !== 'register') {
     return null;
   }
 
-  const otpDigits = getVerificationDigits(values.verificationCode);
-  if (!otpDigits) {
-    return FRONTEND_HINT_CODES.OTP_REQUIRED;
+  return OTP_REGISTER_RULE;
+};
+
+export const validateFieldByRule = (
+  fieldValue: string,
+  rule: AuthFieldRule,
+): AuthHintCode | null => {
+  const normalizedValue = rule.normalize ? rule.normalize(fieldValue) : fieldValue;
+
+  if (rule.requiredCode !== undefined && !normalizedValue) {
+    return rule.requiredCode;
   }
-  if (otpDigits.length !== 6) {
-    return FRONTEND_HINT_CODES.OTP_INVALID;
+
+  if (
+    rule.invalidCode !== undefined
+    && normalizedValue
+    && rule.isValid
+    && !rule.isValid(normalizedValue)
+  ) {
+    return rule.invalidCode;
   }
+
   return null;
+};
+
+export const validateField = (
+  mode: AuthMode,
+  field: AuthField,
+  fieldValue: string,
+): AuthHintCode | null => {
+  const fieldRule = resolveFieldRule(mode, field);
+  if (!fieldRule) {
+    return null;
+  }
+
+  return validateFieldByRule(fieldValue, fieldRule);
 };
 
 export const validateSubmit = (
@@ -219,18 +262,18 @@ export const validateSubmit = (
 ): Partial<Record<AuthField, AuthHintCode>> => {
   const errors: Partial<Record<AuthField, AuthHintCode>> = {};
 
-  const emailCode = validateField(mode, 'email', values);
+  const emailCode = validateField(mode, 'email', values.email);
   if (emailCode) {
     errors.email = emailCode;
   }
 
-  const passwordCode = validateField(mode, 'password', values);
+  const passwordCode = validateField(mode, 'password', values.password);
   if (passwordCode) {
     errors.password = passwordCode;
   }
 
   if (mode === 'register') {
-    const verificationCode = validateField(mode, 'verificationCode', values);
+    const verificationCode = validateField(mode, 'verificationCode', values.verificationCode);
     if (verificationCode) {
       errors.verificationCode = verificationCode;
     }

@@ -11,9 +11,9 @@
     --auth-err-fg: #{$white-0};
     --auth-ok: #004c18;
     --auth-ok-fg: #{$white-0};
-    --auth-con: #{$primary-accent-5};
+    --auth-con: #{$primary-accent-6};
     --auth-con-fg: #{$white-0};
-    --auth-wrn: #{$primary-accent-5};
+    --auth-wrn: #{$primary-accent-6};
     --auth-wrn-fg: #{$white-0};
     --auth-auth: #{$secondary-accent-1};
     --auth-auth-fg: #{$white-0};
@@ -28,6 +28,8 @@
 
     --oauth-discord: #5865f2;
     --oauth-invert: 0;
+
+    --ack-link: #{$primary-accent-6};
 
 }
 
@@ -58,6 +60,8 @@
 
     --oauth-discord: #e0e3ff;
     --oauth-invert: 1;
+
+    --ack-link: #{$primary-accent-4};
 }
 
 
@@ -144,6 +148,8 @@
 
 
 .prtsHint {
+  --clippath: polygon(-2% -2%, 100% -2%, 102% 102%, -2% 102%);
+  clip-path: var(--clippath);
   position: relative;
   font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
   line-height: 1;
@@ -154,6 +160,11 @@
   letter-spacing: -4%;
   --hint-bg: var(--auth-err);
   --hint-fg: var(--auth-err-fg);
+
+  &.removed {
+    --clippath: polygon(102% -2%, 102% -2%, 102% 102%, 102% 102%);
+    transition: clip-path .5s cubic-bezier(0.8, 0, 0.25, 1);
+  }
 }
 
 .prtsHint:not([data-type]) {
@@ -519,19 +530,6 @@
   transform: translateY(1px);
 }
 
-.authSwitchLine {
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  font-size: 14px;
-  color: var(--auth-text);
-  font-family: 'FedraSansPro Normal', sans-serif;
-  letter-spacing: -2%;
-}
-
 .switchModeButton {
   border: none;
   background: transparent;
@@ -543,6 +541,51 @@
   cursor: pointer;
 }
 
+.authSwitchLine {
+  margin-top: .5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--auth-text);
+  font-family: 'FedraSansPro Normal', 'HMSans', sans-serif;
+  letter-spacing: -2%;
+}
+
+.acknowledgement {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  letter-spacing: -.5px;
+  color: var(--auth-text);
+  font-family: 'FedraSansPro Book', 'HMSans', sans-serif;
+  font-weight: 400;
+  text-align: center;
+  > span a {
+    color: var(--ack-link);
+    font-family: 'FedraSansPro Normal', 'HMSans', sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1.5px;
+      background-color: var(--ack-link);
+      transform: scaleX(0);
+      transition: transform .3s ease;
+      transform-origin: right center;
+    }
+    &:hover::after {
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+  }
+}
 
 @keyframes prtsHintEmerge {
   0% {

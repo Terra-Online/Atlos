@@ -3,7 +3,8 @@ import DiscordIcon from '@/assets/images/UI/media/discordicon.svg?react';
 import GoogleIcon from '@/assets/images/UI/media/google.svg?react';
 import LoginIcon from '@/assets/logos/login.svg?react';
 import RegisterIcon from '@/assets/logos/register.svg?react';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import parse from 'html-react-parser';
+import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslateUI } from '@/locale';
 import {
   OTP_COOLDOWN_SECONDS,
@@ -17,8 +18,10 @@ import {
   type AuthValues,
   mapHintCodeToField,
   resolveAuthMachineNode,
+  resolveFieldRule,
   sanitizeEmailInput,
   sanitizeVerificationCodeInput,
+  validateFieldByRule,
   validateField,
   validateSendVerificationCode,
   validateSubmit,
@@ -74,6 +77,8 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
   verificationCode: false,
 };
 
+const FIELD_VALIDATE_DELAY_MS = 500;
+
 const Access = ({
   open,
   setOpen,
@@ -94,7 +99,6 @@ const Access = ({
   const [touchedFields, setTouchedFields] = useState<Record<AuthField, boolean>>(INITIAL_TOUCHED_FIELDS);
   const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
   const [oauthPendingPlatform, setOauthPendingPlatform] = useState<OAuthPlatform | null>(null);
-  const lastAutoSubmittedSignatureRef = useRef<string>('');
 
   const isRegisterMode = activeTab === 'register';
 
@@ -121,7 +125,6 @@ const Access = ({
     setTouchedFields(INITIAL_TOUCHED_FIELDS);
     setOtpCooldownSeconds(0);
     setOauthPendingPlatform(null);
-    lastAutoSubmittedSignatureRef.current = '';
   }, []);
 
   const handleModeSwitch = (nextMode: AuthMode) => {
@@ -158,6 +161,16 @@ const Access = ({
 
   const touchField = useCallback((field: AuthField) => {
     setTouchedFields((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+  }, []);
+
+  const touchFields = useCallback((fields: AuthField[]) => {
+    setTouchedFields((prev) => {
+      const next = { ...prev };
+      fields.forEach((field) => {
+        next[field] = true;
+      });
+      return next;
+    });
   }, []);
 
   const resolveHintText = useCallback(
@@ -221,54 +234,49 @@ const Access = ({
     return () => window.clearInterval(timer);
   }, [otpCooldownSeconds]);
 
+  const validateSingleField = useCallback((field: AuthField, fieldValue: string): AuthHintCode | null => {
+    const rule = resolveFieldRule(activeTab, field);
+    if (!rule) {
+      return null;
+    }
+    return validateFieldByRule(fieldValue, rule);
+  }, [activeTab]);
+
   useEffect(() => {
-    const hasAnyTouchedInput = touchedFields.email || touchedFields.password || touchedFields.verificationCode;
-    if (!hasAnyTouchedInput) {
+    if (!touchedFields.email) {
       return undefined;
     }
 
     const timer = window.setTimeout(() => {
-      const nextCodes: Partial<Record<AuthField, AuthHintCode>> = {};
-
-      (['email', 'password', 'verificationCode'] as AuthField[]).forEach((field) => {
-        if (!touchedFields[field]) {
-          return;
-        }
-
-        const code = validateField(activeTab, field, authValues);
-        if (code !== null) {
-          nextCodes[field] = code;
-        }
-      });
-
-      setFieldHintCodes((prev) => ({
-        ...prev,
-        ...nextCodes,
-      }));
-
-      const submitErrors = validateSubmit(activeTab, authValues);
-      if (Object.keys(submitErrors).length > 0) {
-        return;
-      }
-
-      const signature = `${activeTab}|${authValues.email}|${authValues.password}|${authValues.verificationCode}`;
-      if (signature === lastAutoSubmittedSignatureRef.current) {
-        return;
-      }
-
-      lastAutoSubmittedSignatureRef.current = signature;
-      void onAutoSubmit?.({
-        mode: activeTab,
-        values: {
-          email: authValues.email,
-          password: authValues.password,
-          verificationCode: authValues.verificationCode,
-        },
-      });
-    }, 800);
+      setFieldCode('email', validateSingleField('email', authValues.email));
+    }, FIELD_VALIDATE_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [activeTab, authValues, onAutoSubmit, touchedFields]);
+  }, [authValues.email, setFieldCode, touchedFields.email, validateSingleField]);
+
+  useEffect(() => {
+    if (!touchedFields.password) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setFieldCode('password', validateSingleField('password', authValues.password));
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [authValues.password, setFieldCode, touchedFields.password, validateSingleField]);
+
+  useEffect(() => {
+    if (!isRegisterMode || !touchedFields.verificationCode) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setFieldCode('verificationCode', validateSingleField('verificationCode', authValues.verificationCode));
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [authValues.verificationCode, isRegisterMode, setFieldCode, touchedFields.verificationCode, validateSingleField]);
 
   useEffect(() => {
     if (!authError) {
@@ -309,7 +317,51 @@ const Access = ({
     if (!touchedFields[field]) {
       return;
     }
-    setFieldCode(field, validateField(activeTab, field, authValues));
+    const fieldValue = field === 'email'
+      ? authValues.email
+      : field === 'password'
+        ? authValues.password
+        : authValues.verificationCode;
+    setFieldCode(field, validateField(activeTab, field, fieldValue));
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
+    const submitFields: AuthField[] = isRegisterMode
+      ? ['email', 'password', 'verificationCode']
+      : ['email', 'password'];
+    touchFields(submitFields);
+
+    const submitErrors = validateSubmit(activeTab, authValues);
+    setFieldHintCodes((prev) => {
+      const next = { ...prev };
+      submitFields.forEach((field) => {
+        const code = submitErrors[field];
+        if (code !== undefined) {
+          next[field] = code;
+          return;
+        }
+        delete next[field];
+      });
+      return next;
+    });
+
+    if (Object.keys(submitErrors).length > 0) {
+      return;
+    }
+
+    void onAutoSubmit?.({
+      mode: activeTab,
+      values: {
+        email: authValues.email,
+        password: authValues.password,
+        verificationCode: authValues.verificationCode,
+      },
+    });
   };
 
   const handleRequestVerificationCode = async () => {
@@ -386,7 +438,7 @@ const Access = ({
       iconScale={0.8}
     >
       <div className={styles.accessAuthModal} data-mode={activeTab} data-auth-node={authMachineNode}>
-          <form className={styles.emailAuthForm} onSubmit={(event) => event.preventDefault()} noValidate>
+          <form className={styles.emailAuthForm} onSubmit={handleSubmit} noValidate>
             <div className={styles.inputRow}>
               <label htmlFor="access-email" className={styles.prtsIoLabel}>
                 <span className={styles.prtsIoItem}>{t('idcard.auth.email') || 'EMAIL:'}</span>
@@ -527,6 +579,10 @@ const Access = ({
                 : t('idcard.auth.switchToRegisterAction')}
             </button>
           </p>
+          <div className={styles.acknowledgement}>
+            <span>{t('idcard.auth.ack')}</span>
+            <span>{parse(t('idcard.auth.ackLink'))}</span>
+          </div>
         </div>
       </div>
     </Modal>

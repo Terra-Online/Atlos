@@ -201,6 +201,8 @@
       "switchToRegisterAction": "点此注册！",
       "switchToLoginPrefix": "若已有帐户，请",
       "switchToLoginAction": "点此登录。",
+      "ack": "若继续操作，即表明您已阅读并同意我们的",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">隐私权政策</a>与<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用条款</a>。",
       "hints": {
         "200": "登录已确认",
         "201": "注册已完成",
