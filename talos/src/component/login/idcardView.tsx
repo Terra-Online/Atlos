@@ -28,7 +28,7 @@ interface IdCardViewProps {
   editableName?: boolean;
   nameValue?: string;
   onNameValueChange?: (value: string) => void;
-  namePlaceholder?: string;
+  nickName?: string;
   nameAriaLabel?: string;
   nameMaxLength?: number;
 }
@@ -45,7 +45,7 @@ const IdCardView = ({
   editableName = false,
   nameValue,
   onNameValueChange,
-  namePlaceholder = '',
+  nickName = '',
   nameAriaLabel = 'Edit username',
   nameMaxLength = 15,
 }: IdCardViewProps) => {
@@ -82,7 +82,7 @@ const IdCardView = ({
               maxLength={nameMaxLength}
               spellCheck={false}
               autoComplete="off"
-              placeholder={namePlaceholder}
+              placeholder={nickName}
             />
           </label>
         ) : (

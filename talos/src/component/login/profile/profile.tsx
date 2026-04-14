@@ -1,6 +1,7 @@
 import ProfileIcon from '@/assets/logos/profile.svg?react';
 import Modal from '@/component/modal/modal';
 import { useTranslateUI } from '@/locale';
+import { AccessButton } from '../access';
 import IdCardView, { type IdCardRenderModel } from '../idcardView';
 import { useIdCardHoverAngle } from '../useIdCardHoverAngle';
 import styles from './profile.module.scss';
@@ -39,9 +40,9 @@ const ProfileModal = ({
     <Modal
       open={profileOpen}
       size="m"
-      title={t('idcard.profile.modalTitle') || 'profile'}
+      title={t('idcard.profile.title')}
       icon={<ProfileIcon />}
-      iconScale={0.78}
+      iconScale={0.8}
       onClose={() => setProfileOpen(false)}
       onChange={setProfileOpen}
     >
@@ -53,22 +54,22 @@ const ProfileModal = ({
           onCardMouseMove={handleCardMouseMove}
           onCardMouseLeave={handleCardMouseLeave}
           onAvatarClick={onAvatarCycle}
-          avatarAriaLabel={t('idcard.profile.avatarHint') || 'Open profile actions'}
+          avatarAriaLabel={t('idcard.profile.avatarHint')}
           avatarIndex={profileAvatar}
           editableName
           nameValue={profileName}
           onNameValueChange={setProfileName}
-          namePlaceholder={t('idcard.profile.namePlaceholder') || 'e.g. jacychan'}
-          nameAriaLabel={t('idcard.profile.nameEditorLabel') || 'Edit username'}
+          nickName={t('idcard.profile.nickName')}
+          nameAriaLabel={t('idcard.profile.nameEditHint')}
           nameMaxLength={15}
         />
 
-        <div className={styles.profileDivider} data-label={t('idcard.profile.noteLabel') || 'Note'}></div>
+        <div className={styles.profileDivider} data-label={t('idcard.profile.note') || 'Note'}></div>
 
         <div className={styles.profileNote}>
-          <p>{t('idcard.profile.noteLine1') || 'You can use letters, numbers, and underscores in your username.'}</p>
+          <p>{t('idcard.profile.noteNickname') || 'You can use letters, numbers, and underscores in your username.'}</p>
           <p>
-            {t('idcard.profile.noteLine2') ||
+            {t('idcard.profile.noteUID') ||
               'UID is assigned on first setup and cannot be changed. You can update your username any time.'}
           </p>
         </div>
@@ -78,28 +79,22 @@ const ProfileModal = ({
         <div className={styles.profileDivider} data-label={t('idcard.profile.auditLabel') || 'Audit'}></div>
 
         <div className={styles.profileActions}>
-          <button
-            type="button"
-            className={styles.profileSaveButton}
+          <AccessButton
             onClick={() => {
               void handleSaveProfile();
             }}
             disabled={isSavingProfile}
-          >
-            {isSavingProfile
+            label={isSavingProfile
               ? t('idcard.profile.saving') || 'Saving...'
               : t('idcard.profile.save') || 'Save Changes'}
-          </button>
-          <button
-            type="button"
-            className={styles.profileLogoutButton}
+          />
+          <AccessButton
             onClick={() => {
               void handleLogout();
             }}
             disabled={isSavingProfile}
-          >
-            {t('idcard.profile.logout') || 'Sign Out'}
-          </button>
+            label={t('idcard.profile.logout') || 'Sign Out'}
+          />
         </div>
       </div>
     </Modal>

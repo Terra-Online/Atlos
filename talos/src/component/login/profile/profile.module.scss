@@ -1,23 +1,17 @@
 .profileModal {
   display: flex;
   flex-direction: column;
-  gap: 0.62rem;
+  gap: 0.5rem;
   color: var(--auth-text);
 }
 
 .profileDivider {
   position: relative;
   height: 1.5px;
-  width: 88%;
-  transform: translateX(6%);
-  margin: 0.65rem 0 0.45rem;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--auth-text) 90%, transparent) 15%,
-    color-mix(in srgb, var(--auth-text) 90%, transparent) 65%,
-    transparent 100%
-  );
+  width: 90%;
+  transform: translateX(5%);
+  margin: .75rem 0;
+  background: linear-gradient(90deg, transparent 0%, var(--auth-text) 15%, var(--auth-text) 65%, transparent 100%);
 
   &::after {
     content: attr(data-label);
@@ -25,11 +19,10 @@
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 0 0.5rem;
-    font-family: Raleway, sans-serif;
+    font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
     color: var(--auth-text);
     background-color: var(--modal-bg);
   }
@@ -38,15 +31,13 @@
 .profileNote {
   display: flex;
   flex-direction: column;
-  gap: 0.42rem;
-
-  > p {
-    font-size: 0.925rem;
-    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
-    letter-spacing: -0.2px;
-    font-weight: 600;
-    line-height: 1.25;
-  }
+  gap: 0.8rem;
+  padding: 0 5%;
+  font-size: 0.925rem;
+  font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .profileError {
@@ -59,54 +50,6 @@
 .profileActions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-  margin-top: 0.35rem;
-}
-
-.profileSaveButton,
-.profileLogoutButton {
-  position: relative;
-  overflow: hidden;
-  height: 2.5rem;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  font-family: 'FedraSansPro Medium', 'UD_ShinGo DemiBold', sans-serif;
-  font-size: 0.85rem;
-  letter-spacing: 0.2px;
-  transition: filter 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  &:not(:disabled):hover {
-    filter: brightness(1.08);
-  }
-
-  &:not(:disabled):active {
-    transform: translateY(1px);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.35;
-    background-image: url('/src/assets/images/UI/bg.webp');
-    background-size: cover;
-    background-position: center;
-    pointer-events: none;
-  }
-}
-
-.profileSaveButton {
-  color: #f6f6f6;
-  background: #2f3034;
-}
-
-.profileLogoutButton {
-  color: #ffffff;
-  background: #3d3f44;
+  gap: 0.5rem;
+  padding: 0 5%;
 }

@@ -91,7 +91,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 }
 
 .idCardEmbedded {
-    margin: 0 auto;
+    margin: 0.5rem auto;
 }
 
 .idCardWrap {
@@ -148,7 +148,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
     > .usrName {
         grid-area: usrname;
         overflow: clip;
-        max-width: 8rem;
+        max-width: 8.5rem;
         text-overflow: ellipsis;
         color: #fafafa;
         font-size: 125%;

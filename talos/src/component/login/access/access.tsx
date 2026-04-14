@@ -43,21 +43,21 @@ interface AccessProps {
 
 type OAuthPlatform = 'discord' | 'google';
 
-interface OAuthMethodProps {
-  platform: OAuthPlatform;
+interface AccessButtonProps {
+  platform?: OAuthPlatform;
   label: string;
   disabled?: boolean;
   onClick: () => void;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
-const OAuthMethod = ({
+export const AccessButton = ({
   platform,
   label,
   disabled = false,
   onClick,
   children,
-}: OAuthMethodProps) => (
+}: AccessButtonProps) => (
   <button
     type="button"
     className={styles.oauthMethod}
@@ -65,7 +65,7 @@ const OAuthMethod = ({
     onClick={onClick}
   >
     <div className={styles.oauthMethodInner}>
-      <span className={styles.oauthMethodIcon} data-platform={platform}>{children}</span>
+      {children ? <span className={styles.oauthMethodIcon} data-platform={platform}>{children}</span> : null}
       <span className={styles.oauthMethodLabel}>{label}</span>
     </div>
   </button>
@@ -541,7 +541,7 @@ const Access = ({
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" />
             <div className={styles.oauthMethods}>
-              <OAuthMethod
+              <AccessButton
                 platform="discord"
                 disabled={isOauthButtonDisabled('discord')}
                 onClick={() => {
@@ -550,8 +550,8 @@ const Access = ({
                 label={getOauthButtonLabel('discord')}
               >
                 <DiscordIcon />
-              </OAuthMethod>
-              <OAuthMethod
+              </AccessButton>
+              <AccessButton
                 platform="google"
                 disabled={isOauthButtonDisabled('google') || !handleGoogleAuthClick}
                 onClick={() => {
@@ -560,7 +560,7 @@ const Access = ({
                 label={getOauthButtonLabel('google')}
               >
                 <GoogleIcon />
-              </OAuthMethod>
+              </AccessButton>
             </div>
 
           <p className={styles.authSwitchLine}>
