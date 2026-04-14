@@ -9,11 +9,13 @@ import {
   OTP_COOLDOWN_SECONDS,
   canShowSendVerificationButton,
   formatAuthHint,
+  getAuthHintType,
   type AuthField,
   type AuthHintCode,
+  type AuthHintType,
   type AuthMode,
   type AuthValues,
-  mapBackendCodeToField,
+  mapHintCodeToField,
   resolveAuthMachineNode,
   sanitizeEmailInput,
   sanitizeVerificationCodeInput,
@@ -111,11 +113,28 @@ const Access = ({
 
   const modalIcon = isRegisterMode ? <RegisterIcon /> : <LoginIcon />;
 
+  const resetAuthFormState = useCallback(() => {
+    setEmailValue('');
+    setPasswordValue('');
+    setVerificationCodeValue('');
+    setFieldHintCodes({});
+    setTouchedFields(INITIAL_TOUCHED_FIELDS);
+    setOtpCooldownSeconds(0);
+    setOauthPendingPlatform(null);
+    lastAutoSubmittedSignatureRef.current = '';
+  }, []);
+
   const handleModeSwitch = (nextMode: AuthMode) => {
     setActiveTab(nextMode);
     setFieldHintCodes({});
     setTouchedFields(INITIAL_TOUCHED_FIELDS);
   };
+
+  useEffect(() => {
+    if (!open) {
+      resetAuthFormState();
+    }
+  }, [open, resetAuthFormState]);
 
   const passwordHint = useMemo(() => {
     if (isRegisterMode || fieldHintCodes.password) {
@@ -157,9 +176,23 @@ const Access = ({
     [fieldHintCodes, resolveHintText, touchedFields],
   );
 
+  const getFieldHintType = useCallback(
+    (field: AuthField): AuthHintType | null => {
+      const code = fieldHintCodes[field];
+      if (!code || !touchedFields[field]) {
+        return null;
+      }
+      return getAuthHintType(code);
+    },
+    [fieldHintCodes, touchedFields],
+  );
+
   const emailHintText = getFieldHint('email');
+  const emailHintType = getFieldHintType('email');
   const passwordHintText = getFieldHint('password');
+  const passwordHintType = getFieldHintType('password');
   const verificationHintText = getFieldHint('verificationCode');
+  const verificationHintType = getFieldHintType('verificationCode');
 
   const shouldShowSendVerificationButton = canShowSendVerificationButton(activeTab, authValues);
   const authMachineNode = resolveAuthMachineNode({
@@ -248,11 +281,7 @@ const Access = ({
     }
 
     const code = parsedCode as AuthHintCode;
-    const targetField = mapBackendCodeToField(code);
-    if (!targetField) {
-      return;
-    }
-
+    const targetField = mapHintCodeToField(code) ?? 'email';
     touchField(targetField);
     setFieldCode(targetField, code);
   }, [authError, setFieldCode, touchField]);
@@ -362,7 +391,7 @@ const Access = ({
               <label htmlFor="access-email" className={styles.prtsIoLabel}>
                 <span className={styles.prtsIoItem}>{t('idcard.auth.email') || 'EMAIL:'}</span>
                 {emailHintText ? (
-                  <span className={styles.prtsError} data-text={emailHintText}>
+                  <span className={styles.prtsHint} data-type={emailHintType ?? 'err'} data-text={emailHintText}>
                     {emailHintText}
                   </span>
                 ) : null}
@@ -385,7 +414,7 @@ const Access = ({
               <label htmlFor="access-password" className={styles.prtsIoLabel}>
                 <span className={styles.prtsIoItem}>{t('idcard.auth.password') || 'PASSWORD:'}</span>
                 {passwordHintText ? (
-                  <span className={styles.prtsError} data-text={passwordHintText}>
+                  <span className={styles.prtsHint} data-type={passwordHintType ?? 'err'} data-text={passwordHintText}>
                     {passwordHintText}
                   </span>
                 ) : passwordHint ? (
@@ -423,7 +452,7 @@ const Access = ({
               <label htmlFor="access-verification-code" className={styles.prtsIoLabel}>
                 <span className={styles.prtsIoItem}>{t('idcard.auth.verification') || 'CODE:'}</span>
                 {verificationHintText ? (
-                  <span className={styles.prtsError} data-text={verificationHintText}>
+                  <span className={styles.prtsHint} data-type={verificationHintType ?? 'err'} data-text={verificationHintText}>
                     {verificationHintText}
                   </span>
                 ) : null}

@@ -9,6 +9,18 @@
 
     --auth-err: #{$primary-accent-7};
     --auth-err-fg: #{$white-0};
+    --auth-ok: #004c18;
+    --auth-ok-fg: #{$white-0};
+    --auth-con: #{$primary-accent-5};
+    --auth-con-fg: #{$white-0};
+    --auth-wrn: #{$primary-accent-5};
+    --auth-wrn-fg: #{$white-0};
+    --auth-auth: #{$secondary-accent-1};
+    --auth-auth-fg: #{$white-0};
+    --auth-ban: #{$primary-accent-7};
+    --auth-ban-fg: #{$white-0};
+    --auth-sys: #{$black-1};
+    --auth-sys-fg: #{$white-0};
 
     --oauth-pill-bg: #{rgba($white-1, 0.75)};
     --oauth-pill-hover: #{$primary-accent-4};
@@ -27,6 +39,18 @@
 
     --auth-err: #{$primary-accent-4};
     --auth-err-fg: #{$black-0};
+    --auth-ok: #1A673C;
+    --auth-ok-fg: #{$white-0};
+    --auth-con: #{$primary-accent-4};
+    --auth-con-fg: #{$white-0};
+    --auth-wrn: #{$primary-accent-4};
+    --auth-wrn-fg: #{$white-0};
+    --auth-auth: #{$secondary-accent-1};
+    --auth-auth-fg: #{$white-0};
+    --auth-ban: #{$primary-accent-7};
+    --auth-ban-fg: #{$white-0};
+    --auth-sys: #{$black-1};
+    --auth-sys-fg: #{$white-0};
 
     --oauth-pill-bg: #{rgba($black-1, 0.9)};
     --oauth-pill-hover: #{rgba($primary-accent-4, 0.6)};
@@ -105,12 +129,12 @@
     line-height: 1.27;
     position: absolute;
   }
-  &:has(.prtsHint, .prtsError) {
+  &:has(.prtsHint) {
     > .prtsIoItem {
       transform: translateY(10%);
     }
   }
-  &:not(:has(.prtsHint, .prtsError)) {
+  &:not(:has(.prtsHint)) {
 
     > .prtsIoItem {
       transform: translateY(55%);
@@ -119,8 +143,7 @@
 }
 
 
-.prtsHint,
-.prtsError {
+.prtsHint {
   position: relative;
   font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
   line-height: 1;
@@ -129,9 +152,11 @@
   font-weight: 300;
   font-size: .75rem;
   letter-spacing: -4%;
+  --hint-bg: var(--auth-err);
+  --hint-fg: var(--auth-err-fg);
 }
 
-.prtsHint {
+.prtsHint:not([data-type]) {
   transform: translateY(200%);
   opacity: 0;
   animation: prtsHintEmerge 260ms ease-out forwards;
@@ -164,7 +189,8 @@
     }
   }
 }
-.prtsError {
+
+.prtsHint[data-type] {
   --prtsErrorClip: polygon(-2% -2%, 100% -2%, 102% 102%, -2% 102%);
 
   color: transparent;
@@ -181,8 +207,8 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    color: var(--auth-err-fg);
-    background: var(--auth-err);
+    color: var(--hint-fg);
+    background: var(--hint-bg);
     font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
     -webkit-text-stroke: 0.5px;
     letter-spacing: -4%;
@@ -197,6 +223,40 @@
     z-index: -2;
     color: var(--auth-text);
   }
+}
+
+.prtsHint[data-type='ok'] {
+  --hint-bg: var(--auth-ok);
+  --hint-fg: var(--auth-ok-fg);
+
+  &::before {
+    animation: prtsWipe 3333ms cubic-bezier(0.8, 0, 0.25, 1) 1 both;
+  }
+}
+
+.prtsHint[data-type='con'] {
+  --hint-bg: var(--auth-con);
+  --hint-fg: var(--auth-con-fg);
+}
+
+.prtsHint[data-type='wrn'] {
+  --hint-bg: var(--auth-wrn);
+  --hint-fg: var(--auth-wrn-fg);
+}
+
+.prtsHint[data-type='auth'] {
+  --hint-bg: var(--auth-auth);
+  --hint-fg: var(--auth-auth-fg);
+}
+
+.prtsHint[data-type='ban'] {
+  --hint-bg: var(--auth-ban);
+  --hint-fg: var(--auth-ban-fg);
+}
+
+.prtsHint[data-type='sys'] {
+  --hint-bg: var(--auth-sys);
+  --hint-fg: var(--auth-sys-fg);
 }
 .prtsIoContainer {
   position: relative;

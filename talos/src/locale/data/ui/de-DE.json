@@ -208,7 +208,7 @@
         "121": "Code erforderlich",
         "122": "Code ungültig",
         "123": "Code abgelaufen",
-        "140": "Zugangsdaten falsch",
+        "0": "Zugangsdaten falsch",
         "429": "Ratenbegrenzung",
         "430": "Sicherheitsprüfung",
         "801": "Gesperrt: Konto-Sperre",

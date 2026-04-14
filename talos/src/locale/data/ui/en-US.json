@@ -216,7 +216,7 @@
         "122": "OTP Invalid",
         "123": "OTP Expired",
 
-        "140": "Credential Mismatch",
+        "0": "Credential Mismatch",
 
         "429": "Rate Limited",
         "430": "Security Check",

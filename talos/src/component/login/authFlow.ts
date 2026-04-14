@@ -313,11 +313,15 @@ export const startDiscordAuth = async (
   });
 
   if (response.error) {
-    throw new Error(
+    throw new AuthFlowError(
       pickApiErrorMessage(
         response.error,
         `Auth request failed (${response.error.status ?? 'unknown'})`
-      )
+      ),
+      {
+        status: response.error.status,
+        code: pickApiErrorCode(response.error),
+      }
     );
   }
 
@@ -339,11 +343,15 @@ export const startGoogleAuth = async (
   });
 
   if (response.error) {
-    throw new Error(
+    throw new AuthFlowError(
       pickApiErrorMessage(
         response.error,
         `Auth request failed (${response.error.status ?? 'unknown'})`
-      )
+      ),
+      {
+        status: response.error.status,
+        code: pickApiErrorCode(response.error),
+      }
     );
   }
 

@@ -3,6 +3,7 @@ export type AuthMode = 'login' | 'register';
 export type AuthField = 'email' | 'password' | 'verificationCode';
 
 export type AuthHintCode =
+  | 0
   | 101
   | 102
   | 103
@@ -11,7 +12,6 @@ export type AuthHintCode =
   | 121
   | 122
   | 123
-  | 140
   | 200
   | 201
   | 429
@@ -25,6 +25,8 @@ export type AuthHintCode =
   | 703
   | 801
   | 802;
+
+export type AuthHintType = 'req' | 'err' | 'con' | 'ok' | 'wrn' | 'auth' | 'ban' | 'sys';
 
 export interface AuthValues {
   email: string;
@@ -48,30 +50,93 @@ const EMAIL_ALLOWED_CHARS = /[^A-Za-z0-9@._-]/g;
 const EMAIL_PATTERN = /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$/;
 const PASSWORD_PATTERN = /^(?=.*[A-Z])\S{8,20}$/;
 
-const CODE_PREFIX_MAP: Record<AuthHintCode, string> = {
-  101: 'REQ',
-  102: 'ERR',
-  103: 'CON',
-  111: 'REQ',
-  112: 'ERR',
-  121: 'REQ',
-  122: 'ERR',
-  123: 'ERR',
-  140: 'ERR',
-  200: 'OK',
-  201: 'OK',
-  429: 'WRN',
-  430: 'WRN',
-  601: 'AUTH',
-  602: 'AUTH',
-  603: 'AUTH',
-  604: 'AUTH',
-  701: 'SYS',
-  702: 'SYS',
-  703: 'SYS',
-  801: 'BAN',
-  802: 'BAN',
+interface AuthHintMeta {
+  prefix: string;
+  type: AuthHintType;
+  field?: AuthField;
+  backendCodes?: string[];
+  statuses?: number[];
+}
+
+const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
+  0: {
+    prefix: 'ERR',
+    type: 'err',
+    field: 'password',
+    backendCodes: [
+      'INVALID_EMAIL',
+      'INVALID_PASSWORD',
+      'INVALID_EMAIL_OR_PASSWORD',
+      'CREDENTIAL_MISMATCH',
+      'VALIDATION_ERROR',
+    ],
+    statuses: [400, 401, 422],
+  },
+  101: { prefix: 'REQ', type: 'req', field: 'email' },
+  102: { prefix: 'ERR', type: 'err', field: 'email' },
+  103: {
+    prefix: 'CON',
+    type: 'con',
+    field: 'email',
+    backendCodes: ['USER_ALREADY_EXISTS', 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'],
+    statuses: [409],
+  },
+  111: { prefix: 'REQ', type: 'req', field: 'password' },
+  112: { prefix: 'ERR', type: 'err', field: 'password' },
+  121: { prefix: 'REQ', type: 'req', field: 'verificationCode' },
+  122: { prefix: 'ERR', type: 'err', field: 'verificationCode', backendCodes: ['INVALID_OTP'] },
+  123: { prefix: 'ERR', type: 'err', field: 'verificationCode', backendCodes: ['OTP_EXPIRED'] },
+  200: { prefix: 'OK', type: 'ok' },
+  201: { prefix: 'OK', type: 'ok' },
+  429: {
+    prefix: 'WRN',
+    type: 'wrn',
+    backendCodes: ['RATE_LIMITED', 'TOO_MANY_REQUESTS'],
+    statuses: [429],
+  },
+  430: {
+    prefix: 'WRN',
+    type: 'wrn',
+    field: 'verificationCode',
+    backendCodes: ['TOO_MANY_ATTEMPTS', 'SECURITY_CHECK'],
+    statuses: [403],
+  },
+  601: { prefix: 'AUTH', type: 'auth', backendCodes: ['TOKEN_EXPIRED'] },
+  602: { prefix: 'AUTH', type: 'auth', backendCodes: ['UNAUTHORIZED', 'SESSION_REQUIRED'] },
+  603: { prefix: 'AUTH', type: 'auth', backendCodes: ['ACCESS_DENIED', 'FORBIDDEN'] },
+  604: {
+    prefix: 'AUTH',
+    type: 'auth',
+    backendCodes: ['PROVIDER_CONFLICT', 'ACCOUNT_ALREADY_LINKED', 'SOCIAL_ACCOUNT_ALREADY_LINKED', 'ACCOUNT_NOT_LINKED'],
+  },
+  701: { prefix: 'SYS', type: 'sys', backendCodes: ['OVERLOADED', 'INTERNAL_ERROR', 'AUTH_FLOW_FAILED'] },
+  702: { prefix: 'SYS', type: 'sys', backendCodes: ['TIMEOUT'], statuses: [408, 504] },
+  703: { prefix: 'SYS', type: 'sys', backendCodes: ['MAINTENANCE'], statuses: [503] },
+  801: { prefix: 'BAN', type: 'ban', backendCodes: ['ACCOUNT_SUSPENDED_VANDALISM'] },
+  802: { prefix: 'BAN', type: 'ban', backendCodes: ['ACCOUNT_SUSPENDED_ACC_DENIED'] },
 };
+
+const BACKEND_CODE_TO_HINT_MAP: Record<string, AuthHintCode> = (() => {
+  const next: Partial<Record<string, AuthHintCode>> = {};
+  Object.entries(AUTH_HINT_META).forEach(([hintCode, meta]) => {
+    const parsedHintCode = Number(hintCode) as AuthHintCode;
+    meta.backendCodes?.forEach((backendCode) => {
+      next[backendCode] = parsedHintCode;
+    });
+  });
+  return next as Record<string, AuthHintCode>;
+})();
+
+const STATUS_TO_HINT_MAP: Record<number, AuthHintCode> = (() => {
+  const next: Partial<Record<number, AuthHintCode>> = {};
+  Object.entries(AUTH_HINT_META).forEach(([hintCode, meta]) => {
+    const parsedHintCode = Number(hintCode) as AuthHintCode;
+    meta.statuses?.forEach((status) => {
+      next[status] = parsedHintCode;
+    });
+  });
+  return next as Record<number, AuthHintCode>;
+})();
 
 export const FRONTEND_HINT_CODES = {
   EMAIL_REQUIRED: 101 as const,
@@ -189,21 +254,42 @@ export const formatAuthHint = (
   resolveText: (code: string) => string | undefined,
 ): string => {
   const suffix = resolveText(String(code)) || 'Unknown';
-  const prefix = CODE_PREFIX_MAP[code] || 'ERR';
+  const prefix = AUTH_HINT_META[code]?.prefix || 'ERR';
   return `${prefix}(${code})-${suffix}`;
 };
 
-export const mapBackendCodeToField = (code: AuthHintCode): AuthField | null => {
-  if (code === 103) {
-    return 'email';
+export const getAuthHintType = (code: AuthHintCode): AuthHintType => AUTH_HINT_META[code]?.type ?? 'err';
+
+export const resolveErrorCode = ({
+  backendCode,
+  status,
+}: {
+  backendCode?: string;
+  status?: number;
+}): AuthHintCode | null => {
+  const normalizedCode = backendCode?.trim().toUpperCase();
+  if (normalizedCode) {
+    const mappedByCode = BACKEND_CODE_TO_HINT_MAP[normalizedCode];
+    if (mappedByCode !== undefined) {
+      return mappedByCode;
+    }
   }
-  if (code === 140) {
-    return 'password';
+
+  if (typeof status === 'number') {
+    const mappedByStatus = STATUS_TO_HINT_MAP[status];
+    if (mappedByStatus !== undefined) {
+      return mappedByStatus;
+    }
+    if (status >= 500) {
+      return 701;
+    }
   }
-  if (code === 122 || code === 123) {
-    return 'verificationCode';
-  }
+
   return null;
+};
+
+export const mapHintCodeToField = (code: AuthHintCode): AuthField | null => {
+  return AUTH_HINT_META[code]?.field ?? null;
 };
 
 export const resolveAuthMachineNode = (snapshot: AuthMachineSnapshot): AuthMachineNode => {
@@ -221,7 +307,8 @@ export const resolveAuthMachineNode = (snapshot: AuthMachineSnapshot): AuthMachi
     return 'idle';
   }
 
-  const hasBlockingHints = Object.values(snapshot.hintCodes).some((code) => code !== undefined && code >= 100 && code < 200);
+  const hasBlockingHints = Object.values(snapshot.hintCodes)
+    .some((code) => code !== undefined && (code === 0 || (code >= 100 && code < 200)));
   if (hasBlockingHints) {
     return 'blocked';
   }

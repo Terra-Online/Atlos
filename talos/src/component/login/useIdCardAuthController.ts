@@ -11,78 +11,40 @@ import {
   startGoogleAuth,
   updateProfileNickname,
 } from './authFlow';
-import { getVerificationDigits, type AuthMode, type AuthValues } from './access/authState';
+import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
 import { useAuthStore } from '@/store/auth';
 
 const ONCELOGIN = 'onceLogin';
+const WIPE_MS = 3333;
 
-const AUTH_HINT_BY_BACKEND_CODE: Record<string, string> = {
-  INVALID_EMAIL: '102',
-  INVALID_PASSWORD: '112',
-  INVALID_EMAIL_OR_PASSWORD: '140',
-  USER_ALREADY_EXISTS: '103',
-  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: '103',
-  INVALID_OTP: '122',
-  OTP_EXPIRED: '123',
-  TOO_MANY_ATTEMPTS: '430',
-};
-
-const resolveHintFromBackendCode = (code?: string): string | null => {
-  if (!code) {
-    return null;
-  }
-
-  switch (code) {
-    case 'INVALID_EMAIL':
-    case 'INVALID_PASSWORD':
-    case 'INVALID_EMAIL_OR_PASSWORD':
-    case 'USER_ALREADY_EXISTS':
-    case 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL':
-    case 'INVALID_OTP':
-    case 'OTP_EXPIRED':
-    case 'TOO_MANY_ATTEMPTS':
-      return AUTH_HINT_BY_BACKEND_CODE[code];
-    default:
-      return null;
-  }
+const waitForPrtsWipeCycle = async () => {
+  await new Promise<void>((resolve) => {
+    window.setTimeout(() => resolve(), WIPE_MS);
+  });
 };
 
 const mapAuthErrorToHint = (error: unknown): string => {
   if (error instanceof AuthFlowError) {
-    const mappedByCode = resolveHintFromBackendCode(error.code);
-    if (mappedByCode) {
-      return mappedByCode;
+    const mapped = resolveErrorCode({
+      backendCode: error.code,
+      status: error.status,
+    });
+    if (mapped !== null) {
+      return String(mapped);
     }
 
-    if (error.status === 429) {
-      return '429';
-    }
-    if (error.status === 401) {
-      return '140';
-    }
-    if (error.status === 403) {
-      return '430';
-    }
-    if (error.status && error.status >= 500) {
-      return '701';
-    }
-
-    if (typeof error.message === 'string' && error.message) {
-      return error.message;
-    }
-
-    return 'Network error while contacting auth backend.';
+    return '701';
   }
 
   if (error instanceof Error) {
-    if (typeof error.message === 'string' && error.message) {
-      return error.message;
+    const message = error.message.toLowerCase();
+    if (message.includes('timeout') || message.includes('timed out')) {
+      return '702';
     }
-
-    return 'Network error while contacting auth backend.';
+    return '701';
   }
 
-  return 'Network error while contacting auth backend.';
+  return '701';
 };
 
 const markOnceLogin = () => {
@@ -244,17 +206,22 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
+      let successHintCode: '200' | '201' = '200';
       if (mode === 'login') {
         await loginWithEmail(values.email, values.password);
+        successHintCode = '200';
       } else {
         await registerWithEmail(
           values.email,
           values.password,
           getVerificationDigits(values.verificationCode),
         );
+        successHintCode = '201';
         markOnceLogin();
       }
 
+      setAuthError(successHintCode);
+      await waitForPrtsWipeCycle();
       await syncSession();
       setOpen(false);
     } catch (error) {
