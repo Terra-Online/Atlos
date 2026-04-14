@@ -200,8 +200,8 @@
       "connecting": "連線中...",
       "switchToRegisterPrefix": "尚無帳戶？",
       "switchToRegisterAction": "點此註冊！",
-      "switchToLoginPrefix": "若已有帳戶，請",
-      "switchToLoginAction": "點此登入。",
+      "switchToLoginPrefix": "若已有帳戶，",
+      "switchToLoginAction": "請點此登入。",
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">私隱政策</a>與<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用條款</a>。",
       "hints": {

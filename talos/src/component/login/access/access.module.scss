@@ -551,6 +551,9 @@
   color: var(--auth-text);
   font-family: 'FedraSansPro Normal', 'HMSans', sans-serif;
   letter-spacing: -2%;
+  > span::after {
+    content: '\2005';
+  }
 }
 
 .acknowledgement {

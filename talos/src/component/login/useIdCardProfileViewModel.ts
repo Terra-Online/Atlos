@@ -8,6 +8,7 @@ interface UseIdCardProfileViewModelOptions {
   sessionUser: SessionUser | null;
   fallbackUsername?: string;
   fallbackUid?: string;
+  hasLoggedInBefore?: boolean;
 }
 
 interface IdCardProfileViewModel {
@@ -127,6 +128,7 @@ export const useIdCardProfileViewModel = ({
   sessionUser,
   fallbackUsername,
   fallbackUid,
+  hasLoggedInBefore = false,
 }: UseIdCardProfileViewModelOptions): IdCardProfileViewModel => {
   const t = useTranslateUI();
 
@@ -161,9 +163,10 @@ export const useIdCardProfileViewModel = ({
     const since = t('idcard.since') || 'Since';
     const ago = t('idcard.ago') || 'Ago';
     const registipText = t('idcard.registip') || 'Click the avatar';
+    const logintipText = t('idcard.logintip') || 'Click the avatar';
     const registeredDate = parseRegisteredAt(sessionUser?.registeredAt);
     const ageText = isGuest
-      ? registipText
+      ? hasLoggedInBefore ? logintipText : registipText
       : registeredDate
       ? (() => {
           const elapsed = formatElapsed(registeredDate.getTime(), Date.now());
@@ -193,5 +196,5 @@ export const useIdCardProfileViewModel = ({
       karmaLevel,
       karmaTooltip,
     };
-  }, [fallbackUid, fallbackUsername, sessionUser, t]);
+  }, [fallbackUid, fallbackUsername, hasLoggedInBefore, sessionUser, t]);
 };

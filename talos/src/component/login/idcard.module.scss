@@ -148,7 +148,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
     > .usrName {
         grid-area: usrname;
         overflow: clip;
-        max-width: 8.5rem;
+        max-width: 9rem;
         text-overflow: ellipsis;
         color: #fafafa;
         font-size: 125%;
@@ -162,7 +162,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
     > .usrNameEditable {
         width: fit-content;
-        max-width: 8rem;
+        max-width: 9rem;
         display: inline-flex;
         align-items: center;
         padding: 0;
@@ -173,7 +173,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
     }
 
     > .usrNameEditable > .usrNameInput {
-        min-width: 8rem;
+        min-width: 9rem;
         max-width: 100%;
         border: none;
         outline: none;

@@ -59,7 +59,9 @@ const hasOnceLogin = (): boolean => {
   if (typeof window === 'undefined') {
     return false;
   }
-  return window.localStorage.getItem(ONCELOGIN) === 'true';
+
+  const raw = window.localStorage.getItem(ONCELOGIN);
+  return raw === 'true' || raw === '1';
 };
 
 export const useIdCardAuthController = () => {
@@ -76,6 +78,7 @@ export const useIdCardAuthController = () => {
   const [profileAvatar, setProfileAvatar] = useState(1);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
 
   const authBase = useMemo(() => getAuthBase(), []);
 
@@ -87,6 +90,8 @@ export const useIdCardAuthController = () => {
         return null;
       }
 
+      markOnceLogin();
+      setHasLoggedInBefore(true);
       setSessionUser(user);
       if (user.needsProfileSetup) {
         setProfileName('');
@@ -134,8 +139,8 @@ export const useIdCardAuthController = () => {
       openProfileModal();
       return;
     }
-    openAuthModal(hasOnceLogin() ? 'login' : 'register');
-  }, [openAuthModal, openProfileModal, sessionUser]);
+    openAuthModal(hasLoggedInBefore ? 'login' : 'register');
+  }, [hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
 
   const handleCycleProfileAvatar = useCallback(() => {
     setProfileAvatar((current) => getNextAvatarIndex(current));
@@ -226,6 +231,7 @@ export const useIdCardAuthController = () => {
         );
         successHintCode = '201';
         markOnceLogin();
+        setHasLoggedInBefore(true);
       }
 
       setAuthError(successHintCode);
@@ -302,6 +308,7 @@ export const useIdCardAuthController = () => {
     setProfileName,
     profileAvatar,
     setProfileAvatar,
+    hasLoggedInBefore,
     profileError,
     isSavingProfile,
     openAuthModal,

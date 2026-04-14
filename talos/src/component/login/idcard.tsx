@@ -22,6 +22,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     profileName,
     setProfileName,
     profileAvatar,
+    hasLoggedInBefore,
     profileError,
     isSavingProfile,
     handleAvatarClick,
@@ -38,6 +39,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     sessionUser,
     fallbackUsername: username,
     fallbackUid: id,
+    hasLoggedInBefore,
   });
   const sidebarAvatarIndex = sessionUser ? normalizeAvatarIndex(sessionUser.avatar) : undefined;
 
