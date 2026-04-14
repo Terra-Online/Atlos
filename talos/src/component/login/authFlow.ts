@@ -1,5 +1,6 @@
 import { createAuthClient } from 'better-auth/client';
 import type { SessionUser } from './authTypes';
+import { getCurrentLocale } from '@/locale';
 
 export class AuthFlowError extends Error {
   status?: number;
@@ -223,14 +224,21 @@ async function postAuthJson<TResponse>(
   path: string,
   body: Record<string, unknown>,
 ): Promise<TResponse> {
+  const locale = getCurrentLocale();
+  const requestBody = {
+    ...body,
+    locale,
+  };
+
   const response = await fetch(`${authBase}/auth/v1${path}`, {
     method: 'POST',
     credentials: 'include',
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
+      'x-oem-locale': locale,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(requestBody),
   });
 
   let payload: unknown = null;
@@ -359,11 +367,13 @@ const deriveDisplayName = (email: string): string => {
 export const registerWithEmail = async (
   email: string,
   password: string,
+  otp: string,
 ): Promise<void> => {
   const normalizedEmail = email.trim().toLowerCase();
   await postAuthJson('/register', {
     email: normalizedEmail,
     password,
+    otp,
     name: deriveDisplayName(normalizedEmail),
   });
 };
@@ -372,18 +382,7 @@ export const sendEmailVerificationOtp = async (email: string): Promise<void> => 
   const normalizedEmail = email.trim().toLowerCase();
   await postAuthJson('/email-otp/send-verification-otp', {
     email: normalizedEmail,
-    type: 'email-verification',
-  });
-};
-
-export const verifyEmailRegistrationOtp = async (
-  email: string,
-  otp: string,
-): Promise<void> => {
-  const normalizedEmail = email.trim().toLowerCase();
-  await postAuthJson('/email-otp/verify-email', {
-    email: normalizedEmail,
-    otp,
+    type: 'sign-in',
   });
 };
 
@@ -392,7 +391,7 @@ export const loginWithEmail = async (
   password: string,
 ): Promise<void> => {
   const normalizedEmail = email.trim().toLowerCase();
-  await postAuthJson('/login', {
+  await postAuthJson('/sign-in/email', {
     email: normalizedEmail,
     password,
   });

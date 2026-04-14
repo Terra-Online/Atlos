@@ -313,6 +313,8 @@ export const useTranslateGame = () => {
 
 export const useLocale = () => useI18nStore((s) => s.locale);
 
+export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
+
 export async function setLocale(lang: string) {
     const normalized = normalizeLang(lang);
     await loadAndSet(normalized);

@@ -46,7 +46,7 @@ export const OTP_COOLDOWN_SECONDS = 100;
 
 const EMAIL_ALLOWED_CHARS = /[^A-Za-z0-9@._-]/g;
 const EMAIL_PATTERN = /^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z0-9.-]+$/;
-const PASSWORD_PATTERN = /^(?=.*[A-Z]).{8,}$/;
+const PASSWORD_PATTERN = /^(?=.*[A-Z])\S{8,20}$/;
 
 const CODE_PREFIX_MAP: Record<AuthHintCode, string> = {
   101: 'REQ',

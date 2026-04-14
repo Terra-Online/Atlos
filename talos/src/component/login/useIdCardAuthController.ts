@@ -10,7 +10,6 @@ import {
   startDiscordAuth,
   startGoogleAuth,
   updateProfileNickname,
-  verifyEmailRegistrationOtp,
 } from './authFlow';
 import { getVerificationDigits, type AuthMode, type AuthValues } from './access/authState';
 import { useAuthStore } from '@/store/auth';
@@ -27,11 +26,6 @@ const AUTH_HINT_BY_BACKEND_CODE: Record<string, string> = {
   OTP_EXPIRED: '123',
   TOO_MANY_ATTEMPTS: '430',
 };
-
-const ALREADY_REGISTERED_CODES = new Set([
-  'USER_ALREADY_EXISTS',
-  'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
-]);
 
 const resolveHintFromBackendCode = (code?: string): string | null => {
   if (!code) {
@@ -91,11 +85,6 @@ const mapAuthErrorToHint = (error: unknown): string => {
   return 'Network error while contacting auth backend.';
 };
 
-const isAlreadyRegisteredError = (error: unknown): boolean =>
-  error instanceof AuthFlowError
-  && Boolean(error.code)
-  && ALREADY_REGISTERED_CODES.has(error.code as string);
-
 const markOnceLogin = () => {
   if (typeof window === 'undefined') {
     return;
@@ -135,7 +124,6 @@ export const useIdCardAuthController = () => {
       }
 
       setSessionUser(user);
-      markOnceLogin();
       if (user.needsProfileSetup) {
         setProfileName('');
         setProfileError(null);
@@ -217,24 +205,10 @@ export const useIdCardAuthController = () => {
     }
   }, [isSubmitting]);
 
-  const ensureEmailRegistered = useCallback(async (email: string, password: string) => {
-    try {
-      await registerWithEmail(email, password);
-      return { registeredNow: true };
-    } catch (error) {
-      if (isAlreadyRegisteredError(error)) {
-        return { registeredNow: false };
-      }
-      throw error;
-    }
-  }, []);
-
   const handleRequestVerificationCode = useCallback(async ({
     email,
-    password,
   }: {
     email: string;
-    password: string;
   }): Promise<boolean> => {
     if (isSubmitting) {
       return false;
@@ -244,11 +218,7 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
-      const { registeredNow } = await ensureEmailRegistered(email, password);
-
-      if (!registeredNow) {
-        await sendEmailVerificationOtp(email);
-      }
+      await sendEmailVerificationOtp(email);
 
       return true;
     } catch (error) {
@@ -257,7 +227,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [ensureEmailRegistered, isSubmitting]);
+  }, [isSubmitting]);
 
   const handleAutoSubmit = useCallback(async ({
     mode,
@@ -277,8 +247,12 @@ export const useIdCardAuthController = () => {
       if (mode === 'login') {
         await loginWithEmail(values.email, values.password);
       } else {
-        await ensureEmailRegistered(values.email, values.password);
-        await verifyEmailRegistrationOtp(values.email, getVerificationDigits(values.verificationCode));
+        await registerWithEmail(
+          values.email,
+          values.password,
+          getVerificationDigits(values.verificationCode),
+        );
+        markOnceLogin();
       }
 
       await syncSession();
@@ -288,7 +262,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [ensureEmailRegistered, isSubmitting, syncSession]);
+  }, [isSubmitting, syncSession]);
 
   const handleSaveProfile = useCallback(async () => {
     const trimmed = profileName.trim();

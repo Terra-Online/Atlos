@@ -33,7 +33,7 @@ interface AccessProps {
   handleDiscordAuthClick: () => Promise<void>;
   handleGoogleAuthClick?: () => Promise<void>;
   onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void | Promise<void>;
-  onRequestVerificationCode?: (payload: { email: string; password: string }) => Promise<boolean>;
+  onRequestVerificationCode?: (payload: { email: string }) => Promise<boolean>;
 }
 
 type OAuthPlatform = 'discord' | 'google';
@@ -301,7 +301,6 @@ const Access = ({
     if (onRequestVerificationCode) {
       const success = await onRequestVerificationCode({
         email: authValues.email,
-        password: authValues.password,
       });
       if (!success) {
         return;
