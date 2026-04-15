@@ -176,7 +176,7 @@
     "registip": "Avatar zum Registrieren.",
     "ago": "vor",
     "karma": "Karma",
-    "loading": "Lädt",
+    "loading": "Wird geladen...",
     "normal": "Normal",
     "guest": "Gast",
     "pioneer": "Pionier",
@@ -248,7 +248,7 @@
       "noteNickname": "Sie können maximal 15 Buchstaben, Zahlen, Bindestriche und Unterstriche in Ihrem Benutzernamen verwenden.",
       "noteUID": "Die UID wird bei der ersten Einrichtung zugewiesen und kann nicht geändert werden. Sie können Ihren Benutzernamen jederzeit aktualisieren. Klicken Sie auf den Avatar-Bereich, um den Avatar zu wechseln.",
       "auditLabel": "Prüfung",
-      "save": "Änderungen speichern",
+      "save": "Speichern",
       "saving": "Speichern...",
       "logout": "Abmelden"
     }
