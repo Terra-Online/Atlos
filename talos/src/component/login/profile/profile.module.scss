@@ -1,0 +1,55 @@
+.profileModal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--auth-text);
+}
+
+.profileDivider {
+  position: relative;
+  height: 1.5px;
+  width: 90%;
+  transform: translateX(5%);
+  margin: .75rem 0;
+  background: linear-gradient(90deg, transparent 0%, var(--auth-text) 15%, var(--auth-text) 65%, transparent 100%);
+
+  &::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 0.5rem;
+    font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: var(--auth-text);
+    background-color: var(--modal-bg);
+  }
+}
+
+.profileNote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0 5%;
+  font-size: 0.925rem;
+  font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.profileError {
+  margin: 0.25rem 0 0;
+  color: #bb1313;
+  font-size: 0.84rem;
+  font-family: 'FedraSansPro Book', 'UD_ShinGo Regular', sans-serif;
+}
+
+.profileActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 5%;
+}

@@ -1,0 +1,16 @@
+{
+  "name": "oem-relink",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260317.1",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.7.1"
+  }
+}

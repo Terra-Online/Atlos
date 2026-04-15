@@ -59,7 +59,7 @@ const DomainBanner: React.FC = () => {
         if (hostname.includes(ORG_DOMAIN)) return 'org';
         
         // For localhost testing: check URL parameter ?domain=cn or ?domain=org
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        if (hostname === 'localhost') {
             const urlParams = new URLSearchParams(window.location.search);
             const testDomain = urlParams.get('domain');
             if (testDomain === 'cn') return 'cn';

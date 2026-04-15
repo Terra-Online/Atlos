@@ -4,6 +4,7 @@ import fs from "fs-extra";
 import path from "path";
 import https from "https";
 import http from "http";
+import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
 
 // Read R2 specific config: config/config.r2.json
 // sample expected config file:
@@ -23,9 +24,20 @@ import http from "http";
 //   }
 // }
 const config = JSON.parse(fs.readFileSync("./config/config.r2.json", "utf-8"));
-const { endpoint, bucket, region, prefix, accessKeyId, accessKeySecret } =
+const { endpoint, bucket, region, prefix: basePrefix, accessKeyId, accessKeySecret } =
   config.web.build.r2;
-const cdnPath = config.web.build.cdn + config.web.build.r2.prefix;
+const deployChannel = getDeployChannel();
+const { prefix, source: prefixSource } = resolveDeployPrefix({
+  basePrefix,
+  channel: deployChannel,
+  target: "r2",
+  deployChannels: config?.web?.build?.deployChannels,
+});
+const cdnPath = joinCdnPath(config.web.build.cdn, prefix);
+
+console.log(
+  `[publish-R2] channel=${deployChannel} prefix=${prefix || "/"} source=${prefixSource}`
+);
 
 const client = new S3Client({
   region: region || "auto",
@@ -137,8 +149,8 @@ const upload = async (relativePath, retryCount = 0) => {
   // Normalize path separators to forward slashes
   const normalizedPath = relativePath.replace(/\\/g, '/');
   // Remove leading slash from prefix to avoid double slashes
-  const cleanPrefix = prefix.replace(/^\/+/, '');
-  const objectKey = `${cleanPrefix}/${normalizedPath}`;
+  const cleanPrefix = prefix.replace(/^\/+/, '').replace(/\/+$/, '');
+  const objectKey = cleanPrefix ? `${cleanPrefix}/${normalizedPath}` : normalizedPath;
   const localPath = `./dist/${relativePath}`;
 
   try {

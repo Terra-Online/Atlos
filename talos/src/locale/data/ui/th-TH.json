@@ -72,7 +72,9 @@
       "pl-PL": "โปแลนด์",
       "sv-SE": "สวีเดน",
       "th-TH": "ไทย",
-      "vi-VN": "เวียดนาม"
+      "vi-VN": "เวียดนาม",
+      "el-GR": "กรีก",
+      "hi-IN": "ฮินดี"
     }
   },
   "group": {
@@ -166,6 +168,20 @@
   "notice": {
     "legacy": "<span class=\"keyword\">หมายเหตุ:</span> เมื่อเวอร์ชันเกมคือ <span class=\"keyword\">1.0.13</span> เวอร์ชันข้อมูลแผนที่จะเป็น <span class=\"keyword\">0.8.25</span> เราต้องใช้เวลาในการอัปเดตข้อมูล ซึ่งอาจล่าช้ากว่าการอัปเดตตัวเกม ขอขอบคุณที่รอคอย หากต้องการติดตามการอัปเดต โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "ชุดข้อมูลปัจจุบันเป็นเวอร์ชันล่าสุด<br><br>หากคุณต้องการรายงานปัญหา โปรดเข้าร่วม <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='เข้าร่วม Discord'>Discord Server</a> ของเรา<br><br>นอกจากนี้เรายังแนะนำเครื่องมือที่เกี่ยวข้อง:<ul><li><span class=\"keyword\">Wiki เกม: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">พิมพ์เขียว:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='ไปที่ Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+  },
+  "idcard": {
+    "group": "กลุ่ม: ",
+    "since": "ตั้งแต่",
+    "registip": "คลิกโปรไฟล์เพื่อเข้าสู่ระบบ/สมัคร",
+    "ago": "ที่แล้ว",
+    "karma": "คาร์ม่า",
+    "loading": "กำลังโหลด",
+    "normal": "ทั่วไป",
+    "guest": "ผู้เยี่ยมชม",
+    "pioneer": "ผู้บุกเบิก",
+    "admin": "แอดมิน",
+    "suspend": "ถูกระงับ",
+    "robot": "บอท"
   },
   "links": {
     "enka": {

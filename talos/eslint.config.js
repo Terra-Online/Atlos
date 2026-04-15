@@ -42,7 +42,7 @@ export default [
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        project: true,
+        project: ['./tsconfig.json', './oem-relink/tsconfig.json', './oem-search/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

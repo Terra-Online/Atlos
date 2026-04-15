@@ -19,6 +19,7 @@ const PARAM_FILTER = 'f';
 const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
+const POINT_SHARE_SHORT_ORIGIN = 'https://oem.re';
 
 // f 參數壓縮格式：
 // - 單個 type: ~<base36Index>
@@ -384,10 +385,9 @@ export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type
 };
 
 export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
-    const baseUrl = window.location.origin + window.location.pathname;
     const queryString = buildPointShareParams(point).toString();
 
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    return queryString ? `${POINT_SHARE_SHORT_ORIGIN}/?${queryString}` : `${POINT_SHARE_SHORT_ORIGIN}/`;
 };
 
 /**

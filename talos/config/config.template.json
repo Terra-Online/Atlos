@@ -2,6 +2,14 @@
     "web": {
         "build": {
             "cdn": "",
+            "deployChannels": {
+                "beta": {
+                    "ossPrefix": ""
+                },
+                "prod": {
+                    "ossPrefix": ""
+                }
+            },
             "oss": {
                 "bucket": "",
                 "region": "",

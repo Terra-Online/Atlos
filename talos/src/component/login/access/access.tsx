@@ -1,0 +1,844 @@
+import Modal from '@/component/modal/modal';
+import DiscordIcon from '@/assets/images/UI/media/discordicon.svg?react';
+import GoogleIcon from '@/assets/images/UI/media/google.svg?react';
+import LoginIcon from '@/assets/logos/login.svg?react';
+import RegisterIcon from '@/assets/logos/register.svg?react';
+import parse from 'html-react-parser';
+import { type FormEvent, type KeyboardEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslateUI } from '@/locale';
+import {
+  OTP_COOLDOWN_SECONDS,
+  canShowSendVerificationButton,
+  formatAuthHint,
+  getVerificationDigits,
+  getAuthHintType,
+  type AuthField,
+  type AuthHintCode,
+  type AuthHintType,
+  type AuthMode,
+  type AuthValues,
+  mapHintCodeToField,
+  resolveAuthMachineNode,
+  resolveFieldRule,
+  sanitizeEmailInput,
+  sanitizeVerificationCodeInput,
+  validateFieldByRule,
+  validateField,
+  validateSendVerificationCode,
+  validateSubmit,
+} from './authState';
+import styles from './access.module.scss';
+
+interface AccessProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  activeTab: AuthMode;
+  setActiveTab: (mode: AuthMode) => void;
+  resetToken?: string | null;
+  resetEmail?: string;
+  isSubmitting: boolean;
+  authError: string | null;
+  handleDiscordAuthClick: () => Promise<void>;
+  handleGoogleAuthClick?: () => Promise<void>;
+  onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void | Promise<void>;
+  onRequestVerificationCode?: (payload: { email: string; mode: AuthMode }) => Promise<boolean>;
+  onRequestPasswordReset?: (payload: { email: string }) => Promise<boolean>;
+}
+
+type OAuthPlatform = 'discord' | 'google';
+
+interface AccessButtonProps {
+  platform?: OAuthPlatform;
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children?: ReactNode;
+}
+
+export const AccessButton = ({
+  platform,
+  label,
+  disabled = false,
+  onClick,
+  children,
+}: AccessButtonProps) => (
+  <button
+    type="button"
+    className={styles.oauthMethod}
+    disabled={disabled}
+    onClick={onClick}
+  >
+    <div className={styles.oauthMethodInner}>
+      {children ? <span className={styles.oauthMethodIcon} data-platform={platform}>{children}</span> : null}
+      <span className={styles.oauthMethodLabel}>{label}</span>
+    </div>
+  </button>
+);
+
+const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
+  email: false,
+  password: false,
+  verificationCode: false,
+  repeatPassword: false,
+};
+
+const FIELD_VALIDATE_DELAY_MS = 500;
+const AUTO_SUBMIT_DELAY_MS = 260;
+
+const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }): string => [
+  payload.mode,
+  payload.values.email.trim().toLowerCase(),
+  payload.values.password,
+  getVerificationDigits(payload.values.verificationCode),
+  payload.values.repeatPassword,
+].join('::');
+
+const Access = ({
+  open,
+  setOpen,
+  activeTab,
+  setActiveTab,
+  resetToken,
+  resetEmail = '',
+  isSubmitting,
+  authError,
+  handleDiscordAuthClick,
+  handleGoogleAuthClick,
+  onAutoSubmit,
+  onRequestVerificationCode,
+  onRequestPasswordReset,
+}: AccessProps) => {
+  const t = useTranslateUI();
+  const [emailValue, setEmailValue] = useState('');
+  const [passwordValue, setPasswordValue] = useState('');
+  const [verificationCodeValue, setVerificationCodeValue] = useState('');
+  const [repeatPasswordValue, setRepeatPasswordValue] = useState('');
+  const [fieldHintCodes, setFieldHintCodes] = useState<Partial<Record<AuthField, AuthHintCode>>>({});
+  const [touchedFields, setTouchedFields] = useState<Record<AuthField, boolean>>(INITIAL_TOUCHED_FIELDS);
+  const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
+  const [oauthPendingPlatform, setOauthPendingPlatform] = useState<OAuthPlatform | null>(null);
+  const [lastAutoSubmitSignature, setLastAutoSubmitSignature] = useState<string | null>(null);
+
+  const isRegisterMode = activeTab === 'register';
+  const isResetMode = activeTab === 'passwordReset';
+  const isResetSubmitStage = isResetMode && Boolean(resetToken);
+  const resetNoteText = isResetSubmitStage
+    ? parse(t('idcard.auth.resetRequire'))
+    : parse(t('idcard.auth.resetLink'));
+
+  const authValues = useMemo<AuthValues>(
+    () => ({
+      email: emailValue,
+      password: passwordValue,
+      verificationCode: verificationCodeValue,
+      repeatPassword: repeatPasswordValue,
+    }),
+    [emailValue, passwordValue, repeatPasswordValue, verificationCodeValue],
+  );
+
+  const modalTitle = isResetMode
+    ? t('idcard.auth.passwordReset') || 'Password Reset'
+    : isRegisterMode
+      ? t('idcard.auth.register') || 'Register'
+      : t('idcard.auth.login') || 'Login';
+
+  const modalIcon = isResetMode
+    ? <LoginIcon />
+    : isRegisterMode
+      ? <RegisterIcon />
+      : <LoginIcon />;
+
+  const resetAuthFormState = useCallback(() => {
+    setEmailValue('');
+    setPasswordValue('');
+    setVerificationCodeValue('');
+    setRepeatPasswordValue('');
+    setFieldHintCodes({});
+    setTouchedFields(INITIAL_TOUCHED_FIELDS);
+    setOtpCooldownSeconds(0);
+    setOauthPendingPlatform(null);
+    setLastAutoSubmitSignature(null);
+  }, []);
+
+  const handleModeSwitch = (nextMode: AuthMode) => {
+    setActiveTab(nextMode);
+    setFieldHintCodes({});
+    setTouchedFields(INITIAL_TOUCHED_FIELDS);
+    setLastAutoSubmitSignature(null);
+  };
+
+  useEffect(() => {
+    if (!open) {
+      resetAuthFormState();
+    }
+  }, [open, resetAuthFormState]);
+
+  useEffect(() => {
+    if (!open || !isResetMode) {
+      return;
+    }
+
+    setEmailValue(resetEmail || '');
+  }, [isResetMode, open, resetEmail]);
+
+  const passwordHint = useMemo(() => {
+    if (isRegisterMode || isResetMode || fieldHintCodes.password !== undefined) {
+      return null;
+    }
+
+    return t('idcard.auth.forgotPW') || 'Forgot password?';
+  }, [fieldHintCodes.password, isRegisterMode, t]);
+
+  const setFieldCode = useCallback((field: AuthField, code: AuthHintCode | null) => {
+    setFieldHintCodes((prev) => {
+      const next = { ...prev };
+      if (code === null) {
+        delete next[field];
+      } else {
+        next[field] = code;
+      }
+      return next;
+    });
+  }, []);
+
+  const touchField = useCallback((field: AuthField) => {
+    setTouchedFields((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
+  }, []);
+
+  const touchFields = useCallback((fields: AuthField[]) => {
+    setTouchedFields((prev) => {
+      const next = { ...prev };
+      fields.forEach((field) => {
+        next[field] = true;
+      });
+      return next;
+    });
+  }, []);
+
+  const resolveHintText = useCallback(
+    (code: AuthHintCode): string => formatAuthHint(code, (key) => t(`idcard.auth.hints.${key}`)),
+    [t],
+  );
+
+  const getFieldHint = useCallback(
+    (field: AuthField): string | null => {
+      const code = fieldHintCodes[field];
+      if (code === undefined || !touchedFields[field]) {
+        return null;
+      }
+      return resolveHintText(code);
+    },
+    [fieldHintCodes, resolveHintText, touchedFields],
+  );
+
+  const getFieldHintType = useCallback(
+    (field: AuthField): AuthHintType | null => {
+      const code = fieldHintCodes[field];
+      if (code === undefined || !touchedFields[field]) {
+        return null;
+      }
+      return getAuthHintType(code);
+    },
+    [fieldHintCodes, touchedFields],
+  );
+
+  const emailHintText = getFieldHint('email');
+  const emailHintType = getFieldHintType('email');
+  const passwordHintText = getFieldHint('password');
+  const passwordHintType = getFieldHintType('password');
+  const verificationHintText = getFieldHint('verificationCode');
+  const verificationHintType = getFieldHintType('verificationCode');
+  const repeatPasswordHintText = getFieldHint('repeatPassword');
+  const repeatPasswordHintType = getFieldHintType('repeatPassword');
+
+  const shouldShowSendVerificationButton = canShowSendVerificationButton(activeTab, authValues);
+  const shouldShowSendResetButton = isResetMode
+    && !isResetSubmitStage
+    && validateSendVerificationCode(authValues) === null;
+  const authMachineNode = resolveAuthMachineNode({
+    mode: activeTab,
+    values: authValues,
+    touched: touchedFields,
+    hintCodes: fieldHintCodes,
+    isSubmitting,
+  });
+
+  useEffect(() => {
+    if (!isSubmitting) {
+      setOauthPendingPlatform(null);
+    }
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    if (otpCooldownSeconds <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setOtpCooldownSeconds((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [otpCooldownSeconds]);
+
+  const validateSingleField = useCallback((field: AuthField, fieldValue: string): AuthHintCode | null => {
+    const rule = resolveFieldRule(activeTab, field);
+    if (!rule) {
+      return null;
+    }
+    return validateFieldByRule(fieldValue, rule);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!touchedFields.email) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setFieldCode('email', validateSingleField('email', authValues.email));
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [authValues.email, setFieldCode, touchedFields.email, validateSingleField]);
+
+  useEffect(() => {
+    if (!touchedFields.password) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setFieldCode('password', validateSingleField('password', authValues.password));
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [authValues.password, setFieldCode, touchedFields.password, validateSingleField]);
+
+  useEffect(() => {
+    if (!isResetMode || !isResetSubmitStage || !touchedFields.repeatPassword) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      const mismatch = !authValues.repeatPassword.trim() || authValues.password !== authValues.repeatPassword;
+      setFieldCode('repeatPassword', mismatch ? 113 : null);
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    authValues.password,
+    authValues.repeatPassword,
+    isResetMode,
+    isResetSubmitStage,
+    setFieldCode,
+    touchedFields.repeatPassword,
+  ]);
+
+  useEffect(() => {
+    if (!isRegisterMode || !touchedFields.verificationCode) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setFieldCode('verificationCode', validateSingleField('verificationCode', authValues.verificationCode));
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [authValues.verificationCode, isRegisterMode, setFieldCode, touchedFields.verificationCode, validateSingleField]);
+
+  useEffect(() => {
+    if (!authError) {
+      return;
+    }
+
+    const parsedCode = Number.parseInt(authError, 10);
+    if (!Number.isFinite(parsedCode)) {
+      return;
+    }
+
+    const code = parsedCode as AuthHintCode;
+    const targetField = mapHintCodeToField(code) ?? 'email';
+    touchField(targetField);
+    setFieldCode(targetField, code);
+  }, [authError, setFieldCode, touchField]);
+
+  const handleEmailChange = (rawValue: string) => {
+    touchField('email');
+    const nextValue = sanitizeEmailInput(rawValue);
+    setEmailValue(nextValue);
+    setFieldCode('email', null);
+  };
+
+  const handlePasswordChange = (rawValue: string) => {
+    touchField('password');
+    setPasswordValue(rawValue);
+    setFieldCode('password', null);
+  };
+
+  const handleVerificationCodeChange = (rawValue: string) => {
+    touchField('verificationCode');
+    setVerificationCodeValue(sanitizeVerificationCodeInput(rawValue));
+    setFieldCode('verificationCode', null);
+  };
+
+  const handleRepeatPasswordChange = (rawValue: string) => {
+    touchField('repeatPassword');
+    setRepeatPasswordValue(rawValue);
+    setFieldCode('repeatPassword', null);
+  };
+
+  const handleFieldBlur = (field: AuthField) => {
+    if (!touchedFields[field]) {
+      return;
+    }
+    if (field === 'repeatPassword') {
+      const mismatch = !authValues.repeatPassword.trim() || authValues.password !== authValues.repeatPassword;
+      setFieldCode('repeatPassword', mismatch ? 113 : null);
+      return;
+    }
+
+    const fieldValue = field === 'email'
+      ? authValues.email
+      : field === 'password'
+        ? authValues.password
+        : field === 'verificationCode'
+          ? authValues.verificationCode
+          : authValues.repeatPassword;
+    setFieldCode(field, validateField(activeTab, field, fieldValue));
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
+
+    if (isResetMode && !isResetSubmitStage) {
+      touchField('email');
+      const emailValidationCode = validateSendVerificationCode(authValues);
+      if (emailValidationCode) {
+        setFieldCode('email', emailValidationCode);
+        return;
+      }
+      setFieldCode('email', null);
+      void handleRequestPasswordReset();
+      return;
+    }
+
+    const submitFields: AuthField[] = isResetMode
+      ? (isResetSubmitStage ? ['email', 'password', 'repeatPassword'] : ['email'])
+      : isRegisterMode
+        ? ['email', 'password', 'verificationCode']
+        : ['email', 'password'];
+    touchFields(submitFields);
+
+    const submitErrors = validateSubmit(activeTab, authValues);
+    setFieldHintCodes((prev) => {
+      const next = { ...prev };
+      submitFields.forEach((field) => {
+        const code = submitErrors[field];
+        if (code !== undefined) {
+          next[field] = code;
+          return;
+        }
+        delete next[field];
+      });
+      return next;
+    });
+
+    if (Object.keys(submitErrors).length > 0) {
+      return;
+    }
+
+    const payload = {
+      mode: activeTab,
+      values: {
+        email: authValues.email,
+        password: authValues.password,
+        verificationCode: authValues.verificationCode,
+        repeatPassword: authValues.repeatPassword,
+      },
+    };
+
+    setLastAutoSubmitSignature(createSubmitSignature(payload));
+    void onAutoSubmit?.(payload);
+  };
+
+  useEffect(() => {
+    if (!open || isSubmitting || !onAutoSubmit || !isRegisterMode) {
+      return undefined;
+    }
+
+    if (authMachineNode !== 'ready') {
+      return undefined;
+    }
+
+    const hasRequiredTouches = touchedFields.email && touchedFields.password && touchedFields.verificationCode;
+    if (!hasRequiredTouches) {
+      return undefined;
+    }
+
+    const payload = {
+      mode: activeTab,
+      values: {
+        email: authValues.email,
+        password: authValues.password,
+        verificationCode: authValues.verificationCode,
+        repeatPassword: authValues.repeatPassword,
+      },
+    };
+    const signature = createSubmitSignature(payload);
+
+    if (signature === lastAutoSubmitSignature) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLastAutoSubmitSignature(signature);
+      void onAutoSubmit(payload);
+    }, AUTO_SUBMIT_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    activeTab,
+    authMachineNode,
+    authValues.email,
+    authValues.password,
+    authValues.verificationCode,
+    isRegisterMode,
+    isSubmitting,
+    lastAutoSubmitSignature,
+    onAutoSubmit,
+    open,
+    touchedFields.email,
+    touchedFields.password,
+    touchedFields.verificationCode,
+  ]);
+
+  const handleRequestPasswordReset = async () => {
+    touchField('email');
+
+    const emailValidationCode = validateSendVerificationCode(authValues);
+    if (emailValidationCode) {
+      setFieldCode('email', emailValidationCode);
+      return;
+    }
+
+    if (otpCooldownSeconds > 0) {
+      return;
+    }
+
+    setFieldCode('email', null);
+
+    if (onRequestPasswordReset) {
+      const success = await onRequestPasswordReset({
+        email: authValues.email,
+      });
+      if (!success) {
+        return;
+      }
+    }
+
+    setOtpCooldownSeconds(OTP_COOLDOWN_SECONDS);
+  };
+
+  const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isSubmitting) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
+
+    if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.requestSubmit();
+  };
+
+  const handleRequestVerificationCode = async () => {
+    touchField('email');
+
+    const emailValidationCode = validateSendVerificationCode(authValues);
+    if (emailValidationCode) {
+      setFieldCode('email', emailValidationCode);
+      return;
+    }
+
+    if (otpCooldownSeconds > 0) {
+      return;
+    }
+
+    setFieldCode('email', null);
+
+    if (onRequestVerificationCode) {
+      const success = await onRequestVerificationCode({
+        email: authValues.email,
+        mode: activeTab,
+      });
+      if (!success) {
+        return;
+      }
+    }
+
+    setOtpCooldownSeconds(OTP_COOLDOWN_SECONDS);
+  };
+
+  const resendTemplate = t('idcard.auth.resend') || 'Resend ({count})';
+  const sendButtonLabel = otpCooldownSeconds > 0
+    ? resendTemplate.replace('{count}', String(otpCooldownSeconds))
+    : isResetMode
+      ? t('idcard.auth.sendResetLink') || 'Send reset link'
+      : t('idcard.auth.send') || 'Send';
+
+  const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
+    discord: isRegisterMode
+      ? t('idcard.auth.dcLogin') || 'Sign in with Discord'
+      : t('idcard.auth.dcRegis') || 'Continue with Discord',
+    google: isRegisterMode
+      ? t('idcard.auth.gooLogin') || 'Sign in with Google'
+      : t('idcard.auth.gooRegis') || 'Continue with Google',
+  };
+
+  const getOauthButtonLabel = (platform: OAuthPlatform): string =>
+    oauthPendingPlatform === platform
+      ? t('idcard.auth.connecting') || 'Connecting...'
+      : oauthLabelByPlatform[platform];
+
+  const isOauthButtonDisabled = (platform: OAuthPlatform): boolean =>
+    isSubmitting || (oauthPendingPlatform !== null && oauthPendingPlatform !== platform);
+
+  const handleOAuthMethodClick = async (
+    platform: OAuthPlatform,
+    handler?: () => Promise<void>,
+  ) => {
+    if (!handler) {
+      return;
+    }
+    if (isOauthButtonDisabled(platform)) {
+      return;
+    }
+    setOauthPendingPlatform(platform);
+    await handler();
+  };
+
+  return (
+    <Modal
+      open={open}
+      size="l"
+      title={modalTitle}
+      icon={modalIcon}
+      onClose={() => setOpen(false)}
+      onChange={setOpen}
+      iconScale={0.8}
+    >
+      <div className={styles.accessAuthModal} data-mode={activeTab} data-auth-node={authMachineNode}>
+          <form className={styles.emailAuthForm} onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} noValidate>
+            <div className={styles.inputRow}>
+              <label htmlFor="access-email" className={styles.prtsIoLabel}>
+                <span className={styles.prtsIoItem}>{t('idcard.auth.email') || 'EMAIL:'}</span>
+                {emailHintText ? (
+                  <span className={styles.prtsHint} data-type={emailHintType ?? 'err'} data-text={emailHintText}>
+                    {emailHintText}
+                  </span>
+                ) : null}
+              </label>
+              <div className={styles.prtsIoContainer}>
+                <input
+                  id="access-email"
+                  type="email"
+                  value={emailValue}
+                  onChange={(event) => handleEmailChange(event.target.value)}
+                  onBlur={() => handleFieldBlur('email')}
+                  placeholder="ak@ex.talos"
+                  autoComplete="email"
+                  spellCheck={false}
+                  disabled={isResetSubmitStage}
+                  data-locked={isResetSubmitStage ? 'true' : 'false'}
+                />
+                {shouldShowSendResetButton ? (
+                  <button
+                    type="button"
+                    className={styles.sendCodeButton}
+                    disabled={otpCooldownSeconds > 0 || isSubmitting}
+                    onClick={() => {
+                      void handleRequestPasswordReset();
+                    }}
+                  >
+                    {sendButtonLabel}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div
+              className={styles.inputRow}
+              data-field="password"
+              data-visible={!isResetMode || isResetSubmitStage ? 'true' : 'false'}
+              aria-hidden={isResetMode && !isResetSubmitStage}
+            >
+              <label htmlFor="access-password" className={styles.prtsIoLabel}>
+                <span className={styles.prtsIoItem}>
+                  {(isResetMode ? t('idcard.auth.newPassword') : t('idcard.auth.password')) || 'PASSWORD:'}
+                </span>
+                {passwordHintText ? (
+                  <span className={styles.prtsHint} data-type={passwordHintType ?? 'err'} data-text={passwordHintText}>
+                    {passwordHintText}
+                  </span>
+                ) : passwordHint ? (
+                  <span className={styles.prtsHint}>
+                    <a
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleModeSwitch('passwordReset');
+                      }}
+                    >
+                      {passwordHint}
+                    </a>
+                  </span>
+                ) : null}
+              </label>
+              <div className={styles.prtsIoContainer}>
+                  <input
+                    id="access-password"
+                    type="password"
+                    value={passwordValue}
+                    onChange={(event) => handlePasswordChange(event.target.value)}
+                    onBlur={() => handleFieldBlur('password')}
+                    placeholder=""
+                    autoComplete={isRegisterMode || isResetMode ? 'new-password' : 'current-password'}
+                  />
+                </div>
+            </div>
+
+            <div
+              className={styles.inputRow}
+              data-field="repeat-password"
+              data-visible={isResetSubmitStage ? 'true' : 'false'}
+              aria-hidden={!isResetSubmitStage}
+            >
+              <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
+                <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
+                {repeatPasswordHintText ? (
+                  <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
+                    {repeatPasswordHintText}
+                  </span>
+                ) : null}
+              </label>
+              <div className={styles.prtsIoContainer}>
+                <input
+                  id="access-repeat-password"
+                  type="password"
+                  value={repeatPasswordValue}
+                  onChange={(event) => handleRepeatPasswordChange(event.target.value)}
+                  onBlur={() => handleFieldBlur('repeatPassword')}
+                  placeholder=""
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+
+            <div
+              className={styles.inputRow}
+              data-field="verification"
+              data-visible={isRegisterMode ? 'true' : 'false'}
+              aria-hidden={!isRegisterMode}
+            >
+              <label htmlFor="access-verification-code" className={styles.prtsIoLabel}>
+                <span className={styles.prtsIoItem}>{t('idcard.auth.verification') || 'CODE:'}</span>
+                {verificationHintText ? (
+                  <span className={styles.prtsHint} data-type={verificationHintType ?? 'err'} data-text={verificationHintText}>
+                    {verificationHintText}
+                  </span>
+                ) : null}
+              </label>
+                <div className={styles.prtsIoContainer}>
+                  <input
+                    id="access-verification-code"
+                    type="text"
+                    value={verificationCodeValue}
+                    onChange={(event) => handleVerificationCodeChange(event.target.value)}
+                    onBlur={() => handleFieldBlur('verificationCode')}
+                    placeholder="019-624"
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    pattern="[0-9]{3}-[0-9]{3}"
+                    maxLength={7}
+                  />
+                  {shouldShowSendVerificationButton && !isResetMode ? (
+                  <button
+                    type="button"
+                    className={styles.sendCodeButton}
+                    disabled={otpCooldownSeconds > 0 || isSubmitting}
+                    onClick={() => {
+                      void handleRequestVerificationCode();
+                    }}
+                  >
+                    {sendButtonLabel}
+                  </button>
+                ) : null}
+                </div>
+            </div>
+            <button type="submit" className={styles.hiddenSubmit} aria-hidden="true" tabIndex={-1} />
+          </form>
+
+        <div className={styles.lowerSection}>
+          <div className={styles.authDivider} aria-hidden="true" data-after={isResetMode ? 'Note' : 'OR'} />
+            {isResetMode ? (
+              <p className={styles.resetNote}>{resetNoteText}</p>
+            ) : (
+            <div className={styles.oauthMethods}>
+              <AccessButton
+                platform="discord"
+                disabled={isOauthButtonDisabled('discord')}
+                onClick={() => {
+                  void handleOAuthMethodClick('discord', handleDiscordAuthClick);
+                }}
+                label={getOauthButtonLabel('discord')}
+              >
+                <DiscordIcon />
+              </AccessButton>
+              <AccessButton
+                platform="google"
+                disabled={isOauthButtonDisabled('google') || !handleGoogleAuthClick}
+                onClick={() => {
+                  void handleOAuthMethodClick('google', handleGoogleAuthClick);
+                }}
+                label={getOauthButtonLabel('google')}
+              >
+                <GoogleIcon />
+              </AccessButton>
+            </div>
+            )}
+
+          <p className={styles.authSwitchLine}>
+            <span>{isResetMode ? (t('idcard.auth.backTo') || 'Back to') : (isRegisterMode
+              ? t('idcard.auth.switchToLoginPrefix')
+              : t('idcard.auth.switchToRegisterPrefix'))}</span>
+            <button
+              type="button"
+              className={styles.switchModeButton}
+              onClick={() => handleModeSwitch(isResetMode ? 'login' : (isRegisterMode ? 'login' : 'register'))}
+            >
+              {isResetMode
+                ? (t('idcard.auth.signIn') || 'Sign in')
+                : isRegisterMode
+                  ? t('idcard.auth.switchToLoginAction')
+                  : t('idcard.auth.switchToRegisterAction')}
+            </button>
+          </p>
+          <div className={styles.acknowledgement}>
+            <span>{t('idcard.auth.ack')}</span>
+            <span>{parse(t('idcard.auth.ackLink'))}</span>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export default Access;

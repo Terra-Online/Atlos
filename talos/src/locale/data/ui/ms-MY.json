@@ -72,7 +72,9 @@
       "vi-VN": "Vietnamese",
       "ms-MY": "Melayu",
       "pl-PL": "Polski",
-      "sv-SE": "Svenska"
+      "sv-SE": "Svenska",
+      "el-GR": "Greek",
+      "hi-IN": "Hindi"
     }
   },
   "group": {
@@ -167,17 +169,19 @@
     "legacy": "<span class=\"keyword\">Nota:</span> Apabila versi permainan ialah <span class=\"keyword\">1.0.13</span>, versi data peta ialah <span class=\"keyword\">0.8.25</span>. Kami memerlukan masa untuk mengemas kini data, jadi ia mungkin lewat daripada kemas kini permainan. Terima kasih atas kesabaran anda. Untuk menjejaki kemas kini kami, sila sertai <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Sertai Discord'>Pelayan Discord</a> kami.<br><br>Kami juga mengesyorkan alat berikut:<ul><li><span class=\"keyword\">Wiki Permainan: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Lawati Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprint:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Lawati Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "Set data semasa adalah terkini.<br><br>Jika anda perlu melaporkan masalah, sila sertai <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Sertai Discord'>Pelayan Discord</a> kami.<br><br>Kami juga mengesyorkan alat berikut:<ul><li><span class=\"keyword\">Wiki Permainan: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Lawati Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprint:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Lawati Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
-  "common": {
-    "close": "Tutup",
-    "skip": "Langkau",
-    "clear": "Kosongkan",
-    "all": "Semua",
-    "selected": "Dipilih",
-    "confirm": "Sahkan",
-    "enable": "Dayakan",
-    "disable": "Nyahdayakan",
-    "expand": "Kembangkan",
-    "collapse": "Runtuhkan"
+  "idcard": {
+    "group": "Kumpulan",
+    "since": "Sejak",
+    "registip": "Klik avatar untuk log masuk/daftar",
+    "ago": "lalu",
+    "karma": "Karma",
+    "loading": "Memuatkan",
+    "normal": "Biasa",
+    "guest": "Tetamu",
+    "pioneer": "Perintis",
+    "admin": "Admin",
+    "suspend": "Digantung",
+    "robot": "Bot"
   },
   "links": {
     "enka": {
@@ -204,6 +208,18 @@
     "kofi": "Sokong melalui Ko-fi",
     "afdian": "Sokong melalui Afdian",
     "hint": "Kami mengesyorkan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di tanah besar China."
+  },
+  "common": {
+    "close": "Tutup",
+    "skip": "Langkau",
+    "clear": "Kosongkan",
+    "all": "Semua",
+    "selected": "Dipilih",
+    "confirm": "Sahkan",
+    "enable": "Dayakan",
+    "disable": "Nyahdayakan",
+    "expand": "Kembangkan",
+    "collapse": "Runtuhkan"
   },
   "announcement": {
     "title": "Notis Laman Web",

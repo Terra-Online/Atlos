@@ -3,10 +3,22 @@ import fs from "fs-extra";
 import path from "path";
 import https from "https";
 import http from "http";
+import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
 
 const config = JSON.parse(fs.readFileSync('./config/config.json', 'utf-8'));
-const { region, bucket, accessKeyId, accessKeySecret, prefix } = config.web.build.oss
-const cdnPath = config.web.build.cdn + config.web.build.oss.prefix;
+const { region, bucket, accessKeyId, accessKeySecret, prefix: basePrefix } = config.web.build.oss
+const deployChannel = getDeployChannel();
+const { prefix, source: prefixSource } = resolveDeployPrefix({
+  basePrefix,
+  channel: deployChannel,
+  target: 'oss',
+  deployChannels: config?.web?.build?.deployChannels,
+});
+const cdnPath = joinCdnPath(config.web.build.cdn, prefix);
+
+console.log(
+  `[publish-oss] channel=${deployChannel} prefix=${prefix || '/'} source=${prefixSource}`
+);
 
 const client = new OSS({
   region,
@@ -84,7 +96,9 @@ const MULTIPART_THRESHOLD = 1 * 1024 * 1024;
 const MAX_RETRIES = 3;
 
 const upload = async (relativePath, retryCount = 0) => {
-  const objectKey = `${prefix}/${relativePath}`;
+  const normalizedPath = relativePath.replace(/\\/g, '/');
+  const cleanPrefix = prefix.replace(/^\/+/, '').replace(/\/+$/, '');
+  const objectKey = cleanPrefix ? `${cleanPrefix}/${normalizedPath}` : normalizedPath;
   const localPath = `./dist/${relativePath}`;
   
   const headers = {

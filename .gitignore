@@ -35,12 +35,15 @@ talos/originData
 talos/src/assets/fonts/UD_ShinGo
 talos/src/assets/fonts/Harmony
 talos/src/assets/fonts/Novecento
+talos/src/assets/fonts/Fedra
 talos/src/assets/fonts_original/
 talos/src/assets/images/item
 talos/src/assets/images/shared
 talos/src/assets/images/marker
 talos/src/locale/data/ui/*.fixed.json
 talos/src/locale/data/ui/reports
+
+ref/
 
 # Local-only map label placement tool (UI should not be merged)
 talos/test

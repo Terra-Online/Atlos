@@ -48,14 +48,16 @@ export const SUPPORTED_LANGS = [
     'pl-PL',
     'sv-SE',
     'th-TH',
-    'vi-VN'
+    'vi-VN',
+    'el-GR',
+    'hi-IN'
 ] as const;
 type Lang = (typeof SUPPORTED_LANGS)[number];
 
 // Languages that have both game and UI translations (full support)
 export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'id-ID', 'pt-BR', 'th-TH', 'vi-VN'] as const;
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL', 'sv-SE' ] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL', 'sv-SE', 'el-GR', 'hi-IN' ] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {
@@ -310,6 +312,8 @@ export const useTranslateGame = () => {
 };
 
 export const useLocale = () => useI18nStore((s) => s.locale);
+
+export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 
 export async function setLocale(lang: string) {
     const normalized = normalizeLang(lang);
