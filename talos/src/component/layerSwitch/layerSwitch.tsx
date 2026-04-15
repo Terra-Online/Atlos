@@ -6,17 +6,24 @@ import LayerIcon from '../../assets/images/UI/layer.svg?react';
 import { useForceLayerSubOpen } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
+import { useDevice } from '@/utils/device';
 
 const PREDEFINED_LAYER_ORDER: LayerType[] = ['L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
 
-const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
+const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile: boolean) => {
     if (selectedIndex < 0) return {};
 
     const itemHeight = 2.5; // rem
     const itemGap = 0.6; // rem
     const labelHeight = itemHeight / 2.25; // rem
+    const mobileItemHeight = 2.25; // rem
+    const mobileItemGap = 0.4; // rem
+    const mobileLabelHeight = mobileItemHeight / 2.25; // rem
 
-    const top = selectedIndex * (itemHeight + itemGap) + (hasLabel ? itemHeight / 2 + labelHeight + itemGap : itemHeight / 2);
+    const top = isMobile
+        ? selectedIndex * (mobileItemHeight + mobileItemGap) + (hasLabel ? mobileItemHeight / 2 + mobileLabelHeight + mobileItemGap : mobileItemHeight / 2)
+        : selectedIndex * (itemHeight + itemGap) + (hasLabel ? itemHeight / 2 + labelHeight + itemGap : itemHeight / 2);
+
     return {
         transform: `translateY(calc(${top}rem - 50%))`,
     };
@@ -25,6 +32,7 @@ const getContainerStyle = (selectedIndex: number, hasLabel: boolean) => {
 const LayerSwitch: React.FC<{
     isSidebarOpen: boolean;
 }> = ({ isSidebarOpen }) => {
+    const { isMobile } = useDevice();
     const { currentRegionKey } = useRegion();
     const currentLayer = useCurrentLayer();
     const setCurrentLayer = useSetCurrentLayer();
@@ -61,7 +69,7 @@ const LayerSwitch: React.FC<{
             <div className={classNames(styles.regLabel, styles.layerLabel)}></div>
             <div
                 className={styles.indicator}
-                style={getContainerStyle(0, true)}
+                style={getContainerStyle(0, true, isMobile)}
             ></div>
             <div
                 className={classNames(
@@ -95,7 +103,7 @@ const LayerSwitch: React.FC<{
                                 styles.indicator,
                                 layerIndex < 0 && styles.hidden,
                             )}
-                            style={getContainerStyle(layerIndex, false)}
+                            style={getContainerStyle(layerIndex, false, isMobile)}
                         ></div>
                         {availableLayers.map((layer) => {
                             return (

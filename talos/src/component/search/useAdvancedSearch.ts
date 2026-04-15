@@ -118,7 +118,7 @@ export interface SearchResultGroup {
     topScore: number;
 }
 
-const DOC_LIMIT = 240;
+const DOC_LIMIT = 600;
 const SEARCH_DEBOUNCE_MS = 180;
 const BASE_URL = (import.meta.env.BASE_URL as string | undefined) || '/';
 const PREBUILT_DOCS_BASE_PATH = `${BASE_URL.replace(/\/$/, '')}/search/docs`;
@@ -522,19 +522,23 @@ const toGroups = (
     const getMatchTier = (doc: SearchHitDoc): number => {
         if (!normalizedNeedle) return 0;
 
+        const titleMatched = normalizeText(doc.title).includes(normalizedNeedle);
+        const bodyMatched = normalizeText(doc.body).includes(normalizedNeedle);
         const binderMatched =
             normalizeText(doc.binderTokens).includes(normalizedNeedle) ||
             getBinderCandidates(doc.typeKey).some((it) =>
                 normalizeText(it.label).includes(normalizedNeedle) || normalizeText(it.raw).includes(normalizedNeedle),
             );
-        if (binderMatched) return 4;
 
-        const titleMatched = normalizeText(doc.title).includes(normalizedNeedle);
-        const bodyMatched = normalizeText(doc.body).includes(normalizedNeedle);
-        if (titleMatched && bodyMatched) return 3;
-        if (titleMatched) return 2;
-        if (bodyMatched) return 1;
-        return 0;
+        if (titleMatched && bodyMatched) return 6;
+        if (titleMatched) return 5;
+        if (binderMatched) return 4;
+        if (bodyMatched) return 3;
+
+        const aliasesMatched = normalizeText(doc.title + ' ' + doc.binderTokens).includes(normalizedNeedle);
+        if (aliasesMatched) return 2;
+
+        return 1;
     };
 
     const grouped = new Map<string, { docs: SearchHitDoc[]; topScore: number }>();
@@ -558,7 +562,7 @@ const toGroups = (
             const selectorName = typeof displayRaw === 'string' && displayRaw.trim() ? displayRaw : typeKey;
             const binderInfo = pickDisplayBinder(typeKey);
             const binderName = binderInfo.name;
-            const displayName = (typeInfo?.category?.main === 'files' && binderName && binderInfo.matchedByQuery)
+            const displayName = (binderName && binderInfo.matchedByQuery)
                 ? `${binderName} > ${selectorName}`
                 : selectorName;
             const iconKey = typeInfo?.icon ?? typeKey;
@@ -679,7 +683,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                 const result = await searchDocs(db, {
                     term: normalizedSearchQuery,
                     properties: ['typeKey', 'title', 'aliases', 'binderTokens', 'body'],
-                    limit: Math.min(1200, DOC_LIMIT * 8),
+                    limit: Math.min(2400, DOC_LIMIT * 8),
                     tolerance: cjkMode ? 0 : 1,
                 });
 
@@ -709,29 +713,29 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                     : fallbackSubstringSearch(
                         prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
                         normalizedSearchQuery,
-                        DOC_LIMIT,
+                        DOC_LIMIT * 2,
                     );
 
                 const cjkSupplement = cjkMode
                     ? fallbackSubstringSearch(
                         prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
                         normalizedSearchQuery,
-                        DOC_LIMIT,
+                        DOC_LIMIT * 2,
                     )
                     : [];
 
                 const binderSupplement = binderFocusedSupplementSearch(
                     prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
                     normalizedSearchQuery,
-                    DOC_LIMIT,
+                    DOC_LIMIT * 2,
                 );
 
-                const mergedWithBinder = mergeHits(binderSupplement, resolvedDocs, DOC_LIMIT);
-                return cjkMode ? mergeHits(mergedWithBinder, cjkSupplement, DOC_LIMIT) : mergedWithBinder;
+                const mergedWithBinder = mergeHits(binderSupplement, resolvedDocs, DOC_LIMIT * 2);
+                return cjkMode ? mergeHits(mergedWithBinder, cjkSupplement, DOC_LIMIT * 2) : mergedWithBinder;
             };
 
             const hasLocalDocsCache = prebuiltDocsByLocale.has(docsLocale);
-            const shouldTryRemoteFirst = PROD_WORKER_FIRST || !hasLocalDocsCache;
+            const shouldTryRemoteFirst = PROD_WORKER_FIRST && !hasLocalDocsCache;
 
             if (shouldTryRemoteFirst && REMOTE_SEARCH_ENDPOINT) {
                 try {

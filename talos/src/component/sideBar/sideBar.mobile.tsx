@@ -10,7 +10,7 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
-//import IDCard from '../login/idcard';
+import IDCard from '../login/idcard';
 import Detail from '../detail/detail';
 import SupportModal from '../support/support';
 
@@ -31,10 +31,10 @@ import CombatIcon from '../../assets/images/category/combat.svg?react';
 import NpcIcon from '../../assets/images/category/npc.svg?react';
 import FacilityIcon from '../../assets/images/category/facility.svg?react';
 
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
+import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_DICT, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
 import useRegion from '@/store/region';
 import { useTranslateGame, useTranslateUI } from '@/locale';
-import { useMarkerStore } from '@/store/marker';
+import { useFilter, useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
@@ -59,7 +59,9 @@ interface SideBarProps {
   visible?: boolean;
 }
 
-const SNAP0 = 64; // px
+const SNAP0_FALLBACK = 64; // px
+const SNAP0_COLLAPSED_EXTRA = 16; // px
+const TOP_ROW_MIN_SEARCH_PX = 48;
 
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
   const t = useTranslateUI();
@@ -68,7 +70,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const [supportOpen, setSupportOpen] = useState(false);
 
   const [vh, setVh] = useState<number>(typeof window !== 'undefined' ? window.innerHeight : 800);
-  const currentPoint = useMarkerStore((s) => s.currentActivePoint);
+  const filterList = useFilter();
+  const searchString = useMarkerStore((s) => s.searchString);
   const currentRegion = useRegion((s) => s.currentRegionKey);
   const emptyCategories = useMemo(() => {
     const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion] ?? {};
@@ -95,21 +98,34 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const topRowRef = useRef<HTMLDivElement>(null);
+  const [isScrolledTop, setIsScrolledTop] = useState(true);
+  const [isScrolledBottom, setIsScrolledBottom] = useState(false);
+  const [currentSnap, setCurrentSnap] = useState(0);
+  const [topRowWidth, setTopRowWidth] = useState(0);
+  const [topRowHeight, setTopRowHeight] = useState(0);
+  const [topRowBaseHeight, setTopRowBaseHeight] = useState(0);
+  const [rightContentWidth, setRightContentWidth] = useState(0);
+  const prevHasSearchQueryRef = useRef(false);
+  const preSearchSnapIndexRef = useRef<number | null>(null);
+  const hasSearchQuery = searchString.trim().length > 0;
+
+  const snap0 = useMemo(() => {
+    const base = topRowBaseHeight > 0 ? topRowBaseHeight : topRowHeight;
+    if (base <= 0) return SNAP0_FALLBACK;
+    return Math.max(40, Math.round(base + SNAP0_COLLAPSED_EXTRA));
+  }, [topRowBaseHeight, topRowHeight]);
+
   const snaps = useMemo(() => {
     const s1 = Math.round(vh * 0.55);
     const s2 = Math.round(vh * 0.85);
     // Ensure ascending order and clamp
-    const arr = [SNAP0, Math.max(SNAP0, s1), Math.max(SNAP0, s2)];
+    const arr = [snap0, Math.max(snap0, s1), Math.max(snap0, s2)];
     const dedup = Array.from(new Set(arr)).sort((a, b) => a - b);
     return dedup;
-  }, [vh]);
-
-  const rootRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [isScrolledTop, setIsScrolledTop] = useState(true);
-  const [isScrolledBottom, setIsScrolledBottom] = useState(false);
-  const [currentSnap, setCurrentSnap] = useState(0);
-  const [rightContentWidth, setRightContentWidth] = useState(0);
+  }, [vh, snap0]);
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
@@ -154,30 +170,132 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   // Sync currentSnap to store for UIOverlay to use
   useEffect(() => {
-    setDrawerSnapIndex(currentSnap);
-  }, [currentSnap, setDrawerSnapIndex]);
+    if (hasSearchQuery) return;
+    if (drawerSnapIndex !== currentSnap) {
+      setDrawerSnapIndex(currentSnap);
+    }
+  }, [currentSnap, drawerSnapIndex, hasSearchQuery, setDrawerSnapIndex]);
 
   const snapsNormalized = snaps;
   const minSnap = snaps[0] ?? 0;
   const maxSnap = snaps[snaps.length - 1] ?? 0;
   const safeRange = (maxSnap - minSnap) || 1;
 
-  // When a point is activated, snap to middle (index 1)
   useEffect(() => {
-    if (currentPoint) {
-      setDrawerSnapIndex(1);
-    }
-  }, [currentPoint, setDrawerSnapIndex]);
+    const wasSearching = prevHasSearchQueryRef.current;
+    const maxIndex = Math.max(0, snaps.length - 1);
 
-  const [leftRatio, setLeftRatio] = useState(0.6); // Search pane width ratio in TopRow
-  const [atLeftEdge, setAtLeftEdge] = useState(false);
-  const [atRightEdge, setAtRightEdge] = useState(false);
-  const leftRatioRef = useRef(0.6); // Track current value without triggering re-renders
+    if (!wasSearching && hasSearchQuery) {
+      preSearchSnapIndexRef.current = drawerSnapIndex;
+      if (drawerSnapIndex !== maxIndex) {
+        setDrawerSnapIndex(maxIndex);
+      }
+    }
+
+    if (wasSearching && !hasSearchQuery) {
+      const prevIndex = preSearchSnapIndexRef.current;
+      if (typeof prevIndex === 'number') {
+        const restored = Math.max(0, Math.min(maxIndex, prevIndex));
+        if (drawerSnapIndex !== restored) {
+          setDrawerSnapIndex(restored);
+        }
+      }
+    }
+
+    prevHasSearchQueryRef.current = hasSearchQuery;
+  }, [hasSearchQuery, snaps.length, drawerSnapIndex, setDrawerSnapIndex]);
+
+  const hasFilterList = useMemo(
+    () => filterList.some((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files'),
+    [filterList],
+  );
+
+  useEffect(() => {
+    const row = topRowRef.current;
+    if (!row) return;
+    const update = () => {
+      setTopRowWidth(row.clientWidth || 0);
+      setTopRowHeight(row.offsetHeight || 0);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(row);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (hasSearchQuery) return;
+    if (topRowHeight <= 0) return;
+    if (Math.abs(topRowHeight - topRowBaseHeight) > 0.5) {
+      setTopRowBaseHeight(topRowHeight);
+    }
+  }, [hasSearchQuery, topRowHeight, topRowBaseHeight]);
+
+  const [leftRatio, setLeftRatio] = useState(1);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const leftRatioRef = useRef(1);
+  const prevLeftBoundRef = useRef(1);
+
+  const searchMinRatio = useMemo(() => {
+    if (topRowWidth <= 0) return 0;
+    return Math.min(0.98, TOP_ROW_MIN_SEARCH_PX / topRowWidth);
+  }, [topRowWidth]);
+
+  const filterNaturalLeftBound = useMemo(() => {
+    if (!hasFilterList || topRowWidth <= 0) return 1;
+    const clampedWidth = Math.min(rightContentWidth, topRowWidth);
+    return 1 - clampedWidth / topRowWidth;
+  }, [hasFilterList, rightContentWidth, topRowWidth]);
+
+  const leftBound = hasFilterList ? Math.max(searchMinRatio, filterNaturalLeftBound) : 1;
+  const rightBound = 1;
+  const hasFilterPaneHost = hasFilterList && !hasSearchQuery;
+  const showDivider = hasFilterPaneHost;
+  const showFilterPane = hasFilterPaneHost && !searchExpanded && leftRatio < 0.999;
+
+  const atLeftEdge = showDivider && !searchExpanded && leftRatio <= leftBound + 0.01;
+  const atRightEdge = showDivider && (searchExpanded || leftRatio >= rightBound - 0.01);
+  const resolvedTopRowBaseHeight = topRowBaseHeight > 0 ? topRowBaseHeight : topRowHeight;
+  const topBlurExtraHeight = Math.max(0, topRowHeight - resolvedTopRowBaseHeight);
 
   // Update ref when state changes
   useEffect(() => {
     leftRatioRef.current = leftRatio;
   }, [leftRatio]);
+
+  useEffect(() => {
+    if (!hasSearchQuery) return;
+    setSearchExpanded(true);
+  }, [hasSearchQuery]);
+
+  useEffect(() => {
+    if (!hasFilterList) {
+      setSearchExpanded(false);
+      setLeftRatio(1);
+      prevLeftBoundRef.current = 1;
+      setRightContentWidth(0);
+      return;
+    }
+
+    const current = leftRatioRef.current;
+    const prevLeftBound = prevLeftBoundRef.current;
+    const wasNearLeftEdge = current <= prevLeftBound + 0.01;
+
+    let next = current;
+    if (hasSearchQuery || searchExpanded) {
+      next = rightBound;
+    } else if (wasNearLeftEdge) {
+      next = leftBound;
+    } else {
+      next = Math.min(rightBound, Math.max(leftBound, current));
+    }
+
+    prevLeftBoundRef.current = leftBound;
+
+    if (Math.abs(next - current) > 0.001) {
+      setLeftRatio(next);
+    }
+  }, [hasFilterList, hasSearchQuery, leftBound, rightBound, searchExpanded]);
 
   // Smooth animate helper - stable, no dependency on leftRatio state
   const animateLeftRatio = React.useCallback((to: number, duration = 220) => {
@@ -194,93 +312,55 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   }, []); // No dependencies - stable reference
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!hasFilterList) return;
     const container = (e.currentTarget.parentElement as HTMLDivElement) || null;
     if (!container) return;
+    e.preventDefault();
+    setSearchExpanded(false);
     const rect = container.getBoundingClientRect();
-    // 左侧最小 50px，右侧不超过内容宽度
-    const minLeftPx = 50;
-    const minLeftBound = Math.max(minLeftPx / rect.width, 1 - Math.min(1, (rightContentWidth || 0) / rect.width));
-    const maxLeftBound = 0.98; // allow near-full width when right content is tiny
-    const snapPoint = 0.6;
-    const snapBand = 0.1; // 10% snapping
-    let latestRatio = leftRatioRef.current; // Use ref for initial value
+    const rowWidth = rect.width || 1;
+    const dynamicMinSearchRatio = Math.min(0.98, TOP_ROW_MIN_SEARCH_PX / rowWidth);
+    const dynamicNaturalLeftBound = 1 - Math.min(1, (rightContentWidth || 0) / rowWidth);
+    const dynamicLeftBound = Math.max(dynamicMinSearchRatio, dynamicNaturalLeftBound);
 
     const onMove = (ev: PointerEvent) => {
       const x = ev.clientX;
       const ratio = (x - rect.left) / rect.width;
-      // No snap during move; snap on release for smoothness
-      const clamped = Math.max(minLeftBound, Math.min(maxLeftBound, ratio));
-      latestRatio = clamped;
+      const clamped = Math.max(dynamicLeftBound, Math.min(1, ratio));
       setLeftRatio(clamped);
-      const eps = 0.005;
-      setAtLeftEdge(clamped <= minLeftBound + eps);
-      setAtRightEdge(clamped >= maxLeftBound - eps);
     };
     const onUp = () => {
-      // Snap on release if within band
-      if (Math.abs(latestRatio - snapPoint) <= snapBand) {
-        animateLeftRatio(snapPoint);
-      }
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointercancel', onUp);
     };
     window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointercancel', onUp, { once: true });
     window.addEventListener('pointerup', onUp, { once: true });
   };
 
-  // Expand Search to 0.6 when focused/clicked
+  // Focus Search -> occupy full top row and hide filter pane
   const handleSearchFocus = () => {
-    if (leftRatio < 0.6) animateLeftRatio(0.6);
+    if (!hasFilterList) return;
+    setSearchExpanded(true);
+    if (leftRatioRef.current < rightBound - 0.001) {
+      animateLeftRatio(rightBound);
+    }
   };
 
-  // Constrain right pane to its content width by capping max-width
-  const [rightMaxWidth, setRightMaxWidth] = useState<string | number>('auto');
-  const hasRightContent = rightContentWidth > 1;
-  const prevRightContentWidthRef = useRef(rightContentWidth);
-
-  useEffect(() => {
-    const row = rootRef.current?.querySelector(`.${mobileStyles.topRow}`) as HTMLElement | null;
-    if (!row) return;
-    const rowWidth = row.clientWidth || 1;
-    const minLeftPx = 48; // 3rem
-
-    // Only trigger adjustment when right content width actually changes
-    const widthChanged = Math.abs(rightContentWidth - prevRightContentWidthRef.current) > 2;
-    prevRightContentWidthRef.current = rightContentWidth;
-
-    if (!hasRightContent) {
-      // 右侧无内容时，左侧占满（接近 100%）
-      setRightMaxWidth(0);
-      setAtRightEdge(true); // 右侧空内容时标记为在右边缘（隐藏右箭头）
-      if (widthChanged && leftRatio < 0.98) {
-        animateLeftRatio(0.98, 260);
-      }
-    } else {
-      // 右侧有内容：按内容宽度弹出，最多到 divider 在 0.6 处
-      setAtRightEdge(false);
-      const targetRatio = Math.max(0.6, 1 - Math.min(rightContentWidth / rowWidth, 1));
-      // 限定左侧最小 3rem
-      const minLeftBound = Math.max(minLeftPx / rowWidth, targetRatio);
-      const dynMaxWidth = Math.min(rightContentWidth, rowWidth * (1 - leftRatio));
-      setRightMaxWidth(dynMaxWidth);
-      
-      // 只在内容宽度变化且 leftRatio 明显大于目标时才自动调整（避免循环触发）
-      if (widthChanged && leftRatio > minLeftBound + 0.02) {
-        // 自动收缩左侧以容纳右侧内容（直到 divider 到 0.6）
-        animateLeftRatio(minLeftBound);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rightContentWidth, hasRightContent]); // Remove leftRatio and animateLeftRatio from deps
-
   return (
-    <div className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`} ref={rootRef}>
+    <div
+      className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`}
+      ref={rootRef}
+      style={{ '--top-blur-extra': `${topBlurExtraHeight}px` } as React.CSSProperties}
+    >
       {/* Mobile places the whole sidebar into a bottom drawer */}
       <Drawer
         side="bottom"
-        initialSize={SNAP0}
+        initialSize={snap0}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
         handleSize={16}
+        dragDisabled={hasSearchQuery}
         fullWidth={true}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}
@@ -290,31 +370,39 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         style={{ bottom: 0 }}
         snapToIndex={drawerSnapIndex}
       >
-        <div className={mobileStyles.contentWrapper} ref={contentRef}>
+        <div className={`${mobileStyles.contentWrapper} ${hasSearchQuery ? mobileStyles.searchMode : ''}`} ref={contentRef}>
           <div className={mobileStyles.sidebarContent}>
             {/* Top row: Search + FilterList with draggable divider */}
-            <div className={mobileStyles.topRow}>
-              <div className={mobileStyles.topRowPane} style={{ flexBasis: `${leftRatio * 100}%` }} onFocus={handleSearchFocus} onClick={handleSearchFocus}>
+            <div className={mobileStyles.topRow} ref={topRowRef}>
+              <div
+                className={mobileStyles.topRowPane}
+                style={{ flexBasis: hasFilterPaneHost ? `${leftRatio * 100}%` : '100%' }}
+                onFocus={handleSearchFocus}
+                onClick={handleSearchFocus}
+              >
                 <Search />
               </div>
-              <div
-                className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
-                role="separator"
-                aria-orientation="vertical"
-                onPointerDown={handleDividerPointerDown}
-              />
-              <div 
-                className={mobileStyles.topRowPane} 
-                style={{ 
-                  flexBasis: `${(1 - leftRatio) * 100}%`, 
-                  maxWidth: rightMaxWidth,
-                  visibility: hasRightContent ? 'visible' : 'hidden',
-                  position: hasRightContent ? 'relative' : 'absolute',
-                  pointerEvents: hasRightContent ? 'auto' : 'none',
-                }}
-              >
-                <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
-              </div>
+              {showDivider && (
+                <div
+                  className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
+                  role="separator"
+                  aria-orientation="vertical"
+                  onPointerDown={handleDividerPointerDown}
+                />
+              )}
+              {hasFilterPaneHost && (
+                <div
+                  className={mobileStyles.topRowPane}
+                  style={{
+                    flexBasis: `${(1 - leftRatio) * 100}%`,
+                    maxWidth: rightContentWidth,
+                    visibility: showFilterPane ? 'visible' : 'hidden',
+                    pointerEvents: showFilterPane ? 'auto' : 'none',
+                  }}
+                >
+                  <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
+                </div>
+              )}
             </div>
 
             {/* Detail slot between top row and filters */}
@@ -351,11 +439,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
               </MarkFilterDragProvider>
             </div>
             <Notice />
-            {/* 
-            <div className={styles.idCardContainer}>
+            <div className={mobileStyles.idCardContainer}>
                 <IDCard />
             </div>
-            */}
           </div>
           <div className={mobileStyles.mobileTriggerBar}>
             <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />

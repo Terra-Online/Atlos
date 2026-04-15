@@ -8,7 +8,7 @@ import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
 import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { MARKER_TYPE_DICT } from '@/data/marker';
-import { generatePointShareShortUrl } from '@/utils/urlState';
+import { generatePointShareUrl } from '@/utils/urlState';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -103,8 +103,8 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const pointName = typeof pointNameRaw === 'string' && pointNameRaw.trim()
         ? pointNameRaw
         : (currentPoint?.type ?? '');
-    const pointShareShortUrl = useMemo(
-        () => (currentPoint ? generatePointShareShortUrl(currentPoint) : ''),
+    const pointShareUrl = useMemo(
+        () => (currentPoint ? generatePointShareUrl(currentPoint) : ''),
         [currentPoint],
     );
     const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
@@ -119,10 +119,9 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     }, []);
 
     const handleCopyPointShareUrl = useCallback(async () => {
-        if (!pointShareShortUrl || typeof window === 'undefined') return;
+        if (!pointShareUrl || typeof window === 'undefined') return;
         try {
-            const fullUrl = `${window.location.origin}${window.location.pathname}${pointShareShortUrl}`;
-            await navigator.clipboard.writeText(fullUrl);
+            await navigator.clipboard.writeText(pointShareUrl);
             setCopiedPopupVisible(false);
             requestAnimationFrame(() => {
                 setCopiedPopupVisible(true);
@@ -136,7 +135,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         } catch {
             // ignore clipboard errors
         }
-    }, [pointShareShortUrl]);
+    }, [pointShareUrl]);
 
     // Archive full-text state — content may be plain text and/or HTML (<i>, <del>, <img>, …)
     const [hasFullText, setHasFullText] = useState(false);

@@ -1,19 +1,50 @@
-$avatar-default: url('@/assets/images/UI/avt/bg/end2.webp');
-$cardbak: url('@/assets/images/UI/avt/bg/logo.webp');
-$contour: url('@/assets/images/UI/avt/bg/contour.webp');
-$qrcode: url('@/assets/images/UI/avt/bg/qrcode.webp');
-$primary-accent: #ecdb09;
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
 
-$border-width: 3px;
+@use './avt' as *;
+
+$avatar-default: url('@/assets/images/UI/avt/end.webp');
+$cardbak: url('@/assets/images/UI/avt/noise.webp');
+$contour: url('@/assets/images/UI/avt/contour.webp');
+$karma-0: url('@/assets/images/UI/avt/Karma0.png');
+$karma-1: url('@/assets/images/UI/avt/Karma1.png');
+$karma-2: url('@/assets/images/UI/avt/Karma2.png');
+$karma-3: url('@/assets/images/UI/avt/Karma3.png');
+$karma-4: url('@/assets/images/UI/avt/Karma4.png');
+$karma-5: url('@/assets/images/UI/avt/Karma5.png');
+
+:root, :root[data-theme='light'] {
+    --idcard-bg: #333;
+    --idcard-name: #fafafa;
+    --idcard-id: #d6d6d6;
+    --id-highlight-border: #{$primary-accent-3};
+    --idcard-hover-angle: 90deg;
+}
+
+@property --idcard-hover-angle {
+    syntax: '<angle>';
+    inherits: true;
+    initial-value: 90deg;
+}
+
 .idCard {
-    height: 7rem;
-    width: 19rem;
+    $border-width: 3px;
+
+    height: 8.5rem;
+    width: 21rem;
     max-width: 95%;
-    padding: 1rem;
+    padding: 1.5rem 1rem 1.5rem 1.5rem;
     box-sizing: border-box;
     background-color: #333;
-    border-radius: 6% 6% 6% 6% / 12% 12% 12% 12% ;
+    border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
+
+    @supports (corner-shape: superellipse(1.5)) {
+        corner-shape: superellipse(1.5);
+        border-radius: calc(2rem - 2px);
+    }
+
     position: relative;
+
     &::after {
         content: "";
         position: absolute;
@@ -22,18 +53,20 @@ $border-width: 3px;
         width: calc(100% + $border-width * 2);
         height: calc(100% + $border-width * 2);
         transform: translate(-#{$border-width}, -#{$border-width});
-        background: radial-gradient(circle at 100% 100%, #0000 0, #0000 2px, transparent 2px) 0% 0%/8px 8px no-repeat,
-            radial-gradient(circle at 0 100%, #0000 0, #0000 2px, transparent 2px) 100% 0%/8px 8px no-repeat,
-            radial-gradient(circle at 100% 0, #0000 0, #0000 2px, transparent 2px) 0% 100%/8px 8px no-repeat,
-            radial-gradient(circle at 0 0, #0000 0, #0000 2px, transparent 2px) 100% 100%/8px 8px no-repeat,
-            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 12px) calc(100% - 16px) no-repeat,
-            linear-gradient(#0000, #0000) 50% 50%/calc(100% - 16px) calc(100% - 12px) no-repeat,
-            linear-gradient(90deg, transparent 0%, #f9f429 100%);
-        border-radius: 6.5% 6.5% 6.5% 6.5% / 12.5% 12.5% 12.5% 12.5% ;
+        background: linear-gradient(var(--idcard-hover-angle, 90deg), transparent 0%, transparent 20%, var(--id-highlight-border) 100%);
+        transition: --idcard-hover-angle 1s cubic-bezier(0.22, 0.85, 0.3, 1);
+        border-radius: 6.5% 6.5% 6.5% 6.5% / 12.5% 12.5% 12.5% 12.5%;
+
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem);
+        }
+
         padding: 6px;
         box-sizing: border-box;
         z-index: -1;
     }
+
     &::before {
         content: "";
         position: absolute;
@@ -48,42 +81,61 @@ $border-width: 3px;
         background-repeat: no-repeat;
         filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px #666);
         mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
+        border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
+
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem - 2px);
+        }
     }
 }
-.idCard {
+
+.idCardEmbedded {
+    margin: 0.5rem auto;
+}
+
+.idCardWrap {
     display: grid;
     align-items: end;
     justify-content: start;
-    grid-template-columns: 0.6fr repeat(3, 0.4fr);
-    grid-template-rows: 0.3fr 0.4fr 0.3fr;
+    grid-template-columns: 0.5fr repeat(3, 0.4fr);
+    grid-template-rows: repeat(4, 0.25fr);
     grid-auto-columns: 1fr;
     grid-auto-rows: 1fr;
     gap: 0;
     grid-auto-flow: row;
     grid-template-areas:
-      "avatar . . ."
-      "avatar usrname . ."
-      "avatar usrid usrid .";
+        "avatar meta meta meta"
+        "avatar meta meta meta"
+        "avatar usrname . ."
+        "avatar usrid usrid .";
+
     > .avatarContainer {
         grid-area: avatar;
-        width: 5rem;
-        height: 5rem;
+        width: 5.5rem;
+        height: 5.5rem;
+        padding: 0;
+        margin: 0;
+        border: none;
+        appearance: none;
+        cursor: pointer;
         box-sizing: border-box;
-        border: 4px solid #ffffff;
+        border: 4px solid $white-0;
         background-color: #a3a3a3;
-        box-shadow: inset 0 0 3px 0px #ffffff;
+        box-shadow: inset 0 0 3px 0px $white-0;
         outline: 1px solid transparent;
         outline-offset: 3px;
         transition: all .1s linear;
-        &:hover {
-            border-color: $primary-accent;
-            outline: 3px solid $primary-accent;
 
+        &:hover {
+            border-color: var(--id-highlight-border);
+            outline: 3px solid var(--id-highlight-border);
         }
+
         > .avatar {
-            width: calc(5rem + 25.5px);
-            height: calc(5rem + 26px);
-            transform: translate(-18.5px, -30px);
+            width: calc(5.5rem + 28px);
+            height: calc(5.5rem + 26px);
+            transform: translate(-20px, -30px);
             object-fit: cover;
             background-image: $avatar-default;
             background-position: center top;
@@ -92,47 +144,153 @@ $border-width: 3px;
             filter: drop-shadow(1px 2px 3px #333);
         }
     }
+
     > .usrName {
         grid-area: usrname;
+        max-width: 9rem;
+        text-overflow: ellipsis;
         color: #fafafa;
-        font-size: 130%;
-        transform: translate(6px, 6px);
+        font-size: 125%;
+        transform: translate(12px, 9px);
         font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
         font-weight: 600;
-        line-height: 1.2;
+        line-height: 1.3;
         white-space: nowrap;
         letter-spacing: -1px;
     }
+
+    > .usrNameEditable {
+        width: fit-content;
+        max-width: 9rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+        border: none;
+        background: transparent;
+        cursor: text;
+    }
+
+    > .usrNameEditable > .usrNameInput {
+        min-width: 9rem;
+        max-width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        letter-spacing: inherit;
+        line-height: inherit;
+        padding: 0;
+        margin: 0;
+
+        &::placeholder {
+            color: rgba(250, 250, 250, 0.48);
+        }
+    }
+
     > .usrId {
         grid-area: usrid;
         color: #d6d6d6;
-        font-family: "Novecento Medium", sans-serif;
+        font-size: 95%;
+        font-family: "Novecento Medium Regular", sans-serif;
         white-space: nowrap;
-        transform: translate(6px, 3px);
+        transform: translate(12px, 5px);
         letter-spacing: -1px;
     }
-    > .bakPic {
-        grid-area: 1 / 3 / 3 / 5;
-        height: 100%;
-        width: 100%;
-        background-image: $cardbak;
-        background-size: 90%;
-        background-position-y: 5%;
-        filter: contrast(0) brightness(0.75);
-        mask: linear-gradient(transparent, transparent 10%, white calc(80%), transparent 92%);
-        transform: translateX(12px);
-        position: relative;
+
+    > .metaGrid {
+        grid-area: meta;
+        display: grid;
+        grid-template-columns: 1fr 1.5rem;
+        grid-template-rows: 1fr 1fr;
+        grid-template-areas:
+            "usrGroup usrTitle"
+            "usrAge usrKarma";
+        align-items: center;
+        column-gap: 6px;
+        transform: translate(12px, 2px);
+        width: calc(100% - 12px);
+
+        > .usrGroup {
+            grid-area: usrGroup;
+            color: #fafafa;
+            font-size: 115%;
+            font-family: 'Novecento Medium', 'FedraSansPro Normal', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: nowrap;
+            letter-spacing: -.5px;
+        }
+
+        > .usrAge {
+            grid-area: usrAge;
+            color: #cecece;
+            font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-size: 0.73rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -6px);
+            letter-spacing: -.8px;
+            font-variant-numeric: lining-nums;
+        }
+
+        > .usrTitle {
+            grid-area: usrTitle;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Roboto Slab", sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #f9f9f9;
+            background: #666;
+            box-shadow: 0 0 2px 1px #ffffff6e;
+            text-transform: uppercase;
+            transform: translate(0, 2.5px);
+        }
+
+        > .usrKarma {
+            grid-area: usrKarma;
+            width: 27px;
+            height: 7.5px;
+            box-sizing: content-box;
+            background-image: $karma-0;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: translate(-1.5px, -2.5px);
+
+            &[data-karma='0'] { background-image: $karma-0; }
+            &[data-karma='1'] { background-image: $karma-1; }
+            &[data-karma='2'] { background-image: $karma-2; }
+            &[data-karma='3'] { background-image: $karma-3; }
+            &[data-karma='4'] { background-image: $karma-4; }
+            &[data-karma='5'] { background-image: $karma-5; }
+        }
     }
-    > .idCode {
-        grid-area: 1 / 4 / 1 / 4;
+
+    &::before {
+        z-index: 0;
+        content: '';
         position: absolute;
-        right: 0;
-        width: 1.5rem;
-        height: 1.5rem;
-        background-image: $qrcode;
-        background-size: cover;
-        background-position: center;
+        width: 100%;
+        height: 100%;
+        transform: translate(-1.5rem, 22px);
+        background-image: $cardbak;
+        background-size: contain;
+        image-rendering: pixelated;
+        background-position: center right;
         background-repeat: no-repeat;
-        filter: contrast(0) brightness(1.2) drop-shadow(0 0 4px black) blur(.2px);
+        pointer-events: none;
+        border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
+
+        @supports (corner-shape: superellipse(1.5)) {
+            corner-shape: superellipse(1.5);
+            border-radius: calc(2rem - 2px);
+        }
     }
 }

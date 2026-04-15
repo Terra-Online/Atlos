@@ -25,7 +25,6 @@ const LANGS = [
   'pt-BR',
   'ru-RU',
   'th-TH',
-  'tr-TR',
   'vi-VN',
   'zh-CN',
   'zh-HK',

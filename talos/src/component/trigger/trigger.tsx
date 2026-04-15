@@ -52,17 +52,6 @@ const Trigger = ({
 };
 
 const TriggerBar = ({ children }) => {
-    // const prevSidebarStateRef = useRef(isSidebarOpen);
-
-    /* debug
-  useEffect(() => {
-    if (prevSidebarStateRef.current !== isSidebarOpen) {
-      console.log("TriggerArea receive sideBar.jsx:", isSidebarOpen);
-      prevSidebarStateRef.current = isSidebarOpen;
-    }
-  }, [isSidebarOpen]);
-  */
-
     return <div className={styles.triggerContainer}>{children}</div>;
 };
 

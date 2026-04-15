@@ -59,8 +59,21 @@
             flex-direction: column;
             background-color: var(--search-bg);
             border-radius: 6px;
+            overflow: hidden;
+            isolation: isolate;
             transition: all 0.35s $adagio-curve;
             box-shadow: 0 2px 8px var(--search-shadow-out);
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                box-shadow: inset 0 0 0 0 transparent;
+                pointer-events: none;
+                z-index: 4;
+                transition: box-shadow 0.2s ease;
+            }
 
             &:focus-within {
                 box-shadow: 0 2px 4px var(--search-shadow-in);
@@ -78,6 +91,7 @@
             }
 
             &[data-expanded='true'] {
+                background-color: var(--search-result-bg);
                 box-shadow:
                     inset 0 0 0 1px rgba($white-1, 0.1),
                     0 10px 18px rgba($black-0, 0.25);
@@ -102,6 +116,7 @@
 
         .searchInputRow {
             position: relative;
+            z-index: 2;
             width: 100%;
             height: var(--search-input-row-h);
             display: flex;
@@ -122,7 +137,7 @@
                 outline: none;
                 color: var(--search-txt);
                 font-size: 1rem;
-                font-family: 'Roboto Slab', 'UD_ShinGo Demibold', sans-serif;
+                font-family: 'Roboto Slab', 'HMSans', sans-serif;
                 font-weight: 400;
 
                 &::placeholder {
@@ -195,16 +210,18 @@
 
         .searchResultShell {
             position: relative;
+            z-index: 1;
             width: 100%;
             max-height: 0;
             overflow: hidden;
             padding: 0;
             opacity: 0;
-            border-radius: 6px;
+            border-radius: 0 0 6px 6px;
             transition: max-height 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, padding 0.2s ease;
 
             &[data-open='true'] {
                 max-height: var(--search-result-shell-h);
+                background-color: var(--search-result-bg);
                 opacity: 1;
                 padding: 0.75rem 0;
             }
@@ -409,7 +426,7 @@
         display: inline-block;
         color: var(--search-highlight-fg);
         background: var(--search-highlight-bg);
-        font-family: 'Novecento Bold', 'Novecento Cyrillic DemiBold','Novecento Vietnamese DemiBold','UD_ShinGo Bold', 'Noto Sans Thai', sans-serif;
+        font-family: 'Novecento Bold', 'Novecento Cyrillic DemiBold','Novecento Vietnamese DemiBold','HMSans','UD_ShinGo Bold', 'Noto Sans Thai', sans-serif;
         text-transform: uppercase;
         font-weight: 900;
         padding: 1px 1.5px;
@@ -507,16 +524,23 @@
             transition: all 0.3s;
 
             &[data-expanded='true'] {
-                border-radius: 1rem;
+                border-radius: 1.5rem;
+            }
+
+            .searchResultShell {
+                border-radius: 0 0 1.5rem 1.5rem;
             }
 
             &:has(.searchInput:not(:placeholder-shown)) {
-                box-shadow:
-                    inset 0 0 0 2px var(--search-outline)
+                box-shadow: 0 2px 8px var(--search-shadow-out);
+
+                &::after {
+                    box-shadow: inset 0 0 0 2px var(--search-outline);
+                }
             }
 
             .searchIcon {
-                left: 0.9rem;
+                left: 0.8rem;
             }
         }
     }

@@ -265,6 +265,9 @@ $mobile-indicator-height: 0.48rem;
         width: $mobile-item-height;
         height: $mobile-item-height;
     }
+    .subregItem .subregName {
+        font-size: 18px;
+    }
     .subregionSwitchContainer > .subregionSwitch {
         gap: $mobile-item-gap;
     }

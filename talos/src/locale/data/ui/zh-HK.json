@@ -72,7 +72,9 @@
       "pl-PL": "波蘭語",
       "sv-SE": "瑞典語",
       "th-TH": "泰語",
-      "vi-VN": "越南語"
+      "vi-VN": "越南語",
+      "el-GR": "希臘語",
+      "hi-IN": "印地語"
     }
   },
   "group": {
@@ -154,11 +156,111 @@
     "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
-    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。"
+    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。",
+    "mobile": {
+      "headbar": "與地圖設定相關的開關位於<span class=\"keyword\">右上角頂欄</span>。點擊右上角圖示展開以查看更多選項。",
+      "regionLayerSwitch": "點擊區域圖示可切換<span class=\"keyword\">不同的箱庭地圖</span>（主區域）。<br>點擊並按住主區域圖示可顯示可用的<span class=\"keyword\">子區域和圖層</span>，選擇子區域或圖層即可跳轉到對應視圖。",
+      "divider": "這是可拖動的<span class=\"keyword\">分隔線</span>。<br>您可以向左或向右拖動分隔線，調整搜尋欄與點位列表的寬度比例，以符合您的使用習慣。",
+      "drawer": "從螢幕底部<span class=\"keyword\">向上拉起抽屜</span>，即可檢視與管理點位篩選器。<br>您可以在這裡選擇想要在地圖上顯示的點位類型。",
+      "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊可切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已標記的數量。"
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>當前遊戲版本為<span class=\"keyword\">1.0.13</span>，地圖的資料集版本為<span class=\"keyword\">0.8.25</span>。我們需要時間來更新資料，更新時間可能晚於遊戲版本更新，有勞管理員等待。如你想及時追蹤我們的更新，請加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='加入Discord'>Discord伺服器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener' aria-label='加入QQ'>QQ群組1075906513</a>。<br><br>亦都推薦您使用如下相關的工具網站：<ul><li><span class=\"keyword\">遊戲Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='訪問遊戲Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">藍圖分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='訪問Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "當前地圖數據集已經是最新版本。<br><br>如需反饋問題，您可以加入<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='加入Discord'>Discord伺服器</a>，或<a href='https://qm.qq.com/q/kwN5idvvWw' class='embed' target='_blank' rel='noopener' aria-label='加入QQ'>QQ群組1075906513</a>。<br><br>也推薦您使用如下相關的工具網站：<ul><li><span class=\"keyword\">遊戲Wiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='訪問遊戲Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">藍圖分享：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='訪問Talos Pioneers'>https://talospioneers.com</a></li></ul>"
+  },
+  "idcard": {
+    "group": "用戶組：",
+    "since": "註冊於",
+    "logintip": "點擊頭像以登入",
+    "registip": "點擊頭像以註冊",
+    "ago": "前",
+    "karma": "Karma",
+    "loading": "載入中",
+    "normal": "認證用戶",
+    "guest": "遊客用戶",
+    "pioneer": "先鋒用戶",
+    "admin": "管理用戶",
+    "suspend": "封禁用戶",
+    "robot": "機器人",
+    "auth": {
+      "login": "帳戶登入",
+      "register": "帳戶註冊",
+      "passwordReset": "密碼重設",
+      "email": "電郵",
+      "password": "密碼",
+      "newPassword": "新密碼",
+      "repeatPassword": "重複密碼",
+      "verification": "驗證碼",
+      "forgotPW": "忘記密碼？",
+      "verificationCodeHint": "請輸入電郵中的驗證碼。",
+      "send": "發送驗證碼",
+      "sendResetLink": "重設",
+      "resend": "重新發送({count})",
+      "dcLogin": "使用 Discord 登入",
+      "gooLogin": "使用 Google 登入",
+      "dcRegis": "使用 Discord 註冊",
+      "gooRegis": "使用 Google 註冊",
+      "connecting": "連線中...",
+      "resetLink": "請輸入需要重設密碼的電郵，我們将向阁下已註冊的信箱寄送一封包含密碼重設連結的郵件。<br><br>確認發送後，請檢查收件匣與垃圾郵件夾。",
+      "resetRequire": "請輸入您的新密碼並正確重複一次。<br><br>我們即將為閣下進行密碼重設。",
+      "backTo": "返回",
+      "signIn": "登入",
+      "switchToRegisterPrefix": "尚無帳戶？",
+      "switchToRegisterAction": "點此註冊！",
+      "switchToLoginPrefix": "若已有帳戶，",
+      "switchToLoginAction": "請點此登入。",
+      "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">私隱政策</a>與<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用條款</a>。",
+      "hints": {
+        "200": "登入已確認",
+        "201": "註冊已確認",
+        "202": "密碼已變更",
+
+        "101": "請填寫電郵",
+        "102": "電郵地址無效",
+        "103": "電郵已被註冊",
+        "104": "電郵尚未註冊",
+
+        "111": "請填寫密碼",
+        "112": "密碼非法",
+        "113": "前後密碼不一致",
+
+        "121": "請填寫驗證碼",
+        "122": "驗證碼無效",
+        "123": "驗證碼失效",
+
+        "0": "帳戶/密碼錯誤",
+
+        "429": "請求速率限制",
+        "430": "風險控制",
+
+        "801": "掛起：帳户封禁",
+        "802": "掛起：權限拒絕",
+
+        "601": "令牌失效",
+        "602": "需要會話",
+        "603": "訪問被拒絕",
+        "604": "Auth供應方冲突",
+
+        "701": "系統過載",
+        "702": "系統超時",
+        "703": "系統維護"
+      }
+    },
+    "profile": {
+      "title": "資訊檔案",
+      "avatarHint": "開啟資訊檔案",
+      "nameEditHint": "編輯暱稱",
+      "nickName": "暱稱",
+      "note": "說明",
+      "noteNickname": "使用至多 15 位字母、數字、連字符或底線作為您的暱稱。",
+      "noteUID": "UID 只會在首次設定暱稱時分配且不可更改，但您可隨時更新自己的暱稱。點擊頭像區域可更換其他頭像。",
+      "auditLabel": "操作",
+      "save": "儲存變更",
+      "saving": "儲存中...",
+      "logout": "登出"
+    }
   },
   "links": {
     "enka": {
@@ -187,8 +289,8 @@
     "empty": "暫無公告"
   },
   "meta": {
-      "title": "終末地地圖集",
-      "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
+    "title": "終末地地圖集",
+    "description": "終末地地圖集（Open Endfield Map）是《明日方舟：終末地》的開源線上地圖，提供互動式地圖、物品收集及戰略規劃工具。"
   },
   "domain": {
     "cn": "<span class=\"keyword\">國內用戶</span>推薦使用大陸鏡像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，訪問更快捷穩定。",

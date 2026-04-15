@@ -63,10 +63,12 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%' }) => {
 
     const clickableResults = useMemo(() => results.map((group) => {
         const canNavigate = !!group.uniquePoint;
+        const locateText = String(t('search.locatePoint') || '');
+        const selectText = String(t('search.selectType') || '');
         return {
             ...group,
             canNavigate,
-            clickTitle: canNavigate ? (String(t('search.locatePoint')) || 'Locate point') : (String(t('search.selectType')) || 'Select type'),
+            clickTitle: canNavigate ? (locateText || 'Locate point') : (selectText || 'Select type'),
         };
     }), [results, t]);
 
@@ -251,7 +253,7 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%' }) => {
                                                                     <span>{regionNamesJoined}</span>
                                                                 </span>
                                                             )
-                                                            : '';
+                                                            : null;
                                                         return (
                                                             <PopoverTooltip key={`${group.typeKey}-${regionKey}`} content={regionTip} placement='top' disabled={!regionTip}>
                                                                 <span className={styles.regionIconBox}>

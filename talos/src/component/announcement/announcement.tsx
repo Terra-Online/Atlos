@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
-import { useLocale, useTranslateUI } from '@/locale';
+import { useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Modal from '@/component/modal/modal';
-import { fetchAnnouncements, getAnnouncementDebugMode } from '@/utils/announcement';
+import { getAnnouncementDebugMode } from '@/utils/announcement';
 
 export interface AnnItem {
     id: string;
@@ -19,14 +19,14 @@ export interface AnnModalProps {
     onClose?: () => void;
     onChange?: (open: boolean) => void;
     onHasUnread?: (hasUnread: boolean) => void;
+    announcements?: AnnItem[];
 }
 
-const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnread }) => {
+const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnread, announcements: passedAnnouncements = [] }) => {
     const t = useTranslateUI();
-    const locale = useLocale();
     const [activeIndex, setActiveIndex] = useState(0);
     const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
-    const [announcements, setAnnouncements] = useState<AnnItem[]>([]);
+    const announcements = passedAnnouncements;
     const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
@@ -46,26 +46,6 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
         const centerX = tabRect.left - wrapperRect.left + tabRect.width / 2;
         setIndicatorLeft(centerX);
     }, [activeIndex]);
-
-    // Fetch announcements
-    useEffect(() => {
-        const loadAnnouncements = async () => {
-            try {
-                const data = (await fetchAnnouncements(locale)) as AnnItem[];
-                setAnnouncements(data);
-
-                // Check for unread
-                const lastRead = localStorage.getItem('announcement_last_read');
-                const latestDate = data[0]?.date;
-                const hasUnread = isForceUnreadDebug || !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
-                onHasUnread?.(typeof hasUnread === 'boolean' ? hasUnread : true);
-            } catch (error) {
-                console.error('Failed to fetch announcements:', error);
-                setAnnouncements([]);
-            }
-        };
-        void loadAnnouncements();
-    }, [locale, onHasUnread, isForceUnreadDebug]);
 
     useEffect(() => {
         if (activeIndex >= announcements.length) {

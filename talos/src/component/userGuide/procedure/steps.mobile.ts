@@ -212,22 +212,6 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            id: 'MSTEP-14_divider',
-            target: '[class*="divider"]',
-            content: parse(t('guide.mobile.divider') || ''),
-            placement: 'left',
-            disableBeacon: true,
-            disableAutoScroll: true,
-        },
-        {
-            id: 'MSTEP-15_filter-list',
-            target: '[class*="topRowPane"]:nth-child(3)',
-            content: parse(t('guide.filterList') || ''),
-            placement: 'bottom',
-            disableBeacon: true,
-            disableAutoScroll: true,
-        },
-        {
             id: 'MSTEP-16_drawer',
             target: '[class*="mobileDrawer"]',
             content: parse(t('guide.mobile.drawer') || ''),
@@ -323,6 +307,22 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 const points = WORLD_MARKS.filter((m) => m.type === firstType);
                 points.forEach((p) => addPoint(p.id));
             },
+        },
+        {
+            id: 'MSTEP-14_divider',
+            target: '[class*="divider"]',
+            content: parse(t('guide.mobile.divider') || ''),
+            placement: 'left',
+            disableBeacon: true,
+            disableAutoScroll: true,
+        },
+        {
+            id: 'MSTEP-15_filter-list',
+            target: '[class*="topRowPane"]:nth-child(3)',
+            content: parse(t('guide.filterList') || ''),
+            placement: 'bottom',
+            disableBeacon: true,
+            disableAutoScroll: true,
         },
         {
             onBefore: async () => {

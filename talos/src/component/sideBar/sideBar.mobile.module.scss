@@ -182,7 +182,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0.5rem 0;
+            padding-top: 1.5rem;
             margin-bottom: 0.5rem;
         }
 }
@@ -232,7 +232,7 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
   .contentWrapper {
         display: flex;
         flex-direction: column;
-        padding: 0 1rem 1rem 1rem;
+        padding: 0 1rem;
         padding-top: 0;
         gap: 0.5rem;
         overflow-x: hidden;
@@ -240,6 +240,12 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
         touch-action: pan-y;
         height: 100%;
         position: relative;
+
+        &.searchMode {
+            overflow-x: visible;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+        }
     }
 
     &[data-snap="0"] .contentWrapper {
@@ -368,9 +374,10 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
     transition: transform 0.35s ease-out;
 }
 .topBlur {
+    --top-blur-base: 6.5rem;
     top: -1rem;
-    height: 6.5rem;
-    transform: translateY(-6.5rem);
+    height: calc(var(--top-blur-base) + var(--top-blur-extra, 0px));
+    transform: translateY(calc(-1 * (var(--top-blur-base) + var(--top-blur-extra, 0px))));
     &.visible {
         transform: translateY(0);
     }
