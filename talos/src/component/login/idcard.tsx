@@ -1,16 +1,93 @@
-import styles from './idcard.module.scss';
+import { useIdCardAuthController } from './useIdCardAuthController';
+import { normalizeAvatarIndex } from './avatarConfig';
+import { useIdCardHoverAngle } from './useIdCardHoverAngle';
+import { useIdCardProfileViewModel } from './useIdCardProfileViewModel';
+import { Access } from './access';
+import IdCardView from './idcardView';
+import ProfileModal from './profile/profile';
 
 const IDCard = ({ username, id }: { username?: string; id?: string }) => {
+  const { cardRef, handleCardMouseMove, handleCardMouseLeave } = useIdCardHoverAngle();
+
+  const {
+    open,
+    setOpen,
+    activeTab,
+    setActiveTab,
+    isSubmitting,
+    authError,
+    resetToken,
+    resetEmail,
+    sessionUser,
+    profileOpen,
+    setProfileOpen,
+    profileName,
+    setProfileName,
+    profileAvatar,
+    hasLoggedInBefore,
+    profileError,
+    isSavingProfile,
+    handleAvatarClick,
+    handleCycleProfileAvatar,
+    handleDiscordAuthClick,
+    handleGoogleAuthClick,
+    handleRequestVerificationCode,
+    handleRequestPasswordReset,
+    handleAutoSubmit,
+    handleSaveProfile,
+    handleLogout,
+  } = useIdCardAuthController();
+
+  const cardProfile = useIdCardProfileViewModel({
+    sessionUser,
+    fallbackUsername: username,
+    fallbackUid: id,
+    hasLoggedInBefore,
+  });
+  const sidebarAvatarIndex = sessionUser ? normalizeAvatarIndex(sessionUser.avatar) : undefined;
+
   return (
-    <div className={styles.idCard}>
-      <div className={styles.avatarContainer}>
-        <div className={styles.avatar}></div>
-      </div>
-      <div className={styles.bakPic}></div>
-      <div className={styles.idCode}></div>
-        <span className={styles.usrName}>{username || '陳嘉辭'}</span>
-        <span className={styles.usrId}>UID: {id || '100002CI'}</span>
-    </div>
+    <>
+      <IdCardView
+        profile={cardProfile}
+        cardRef={cardRef}
+        onCardMouseMove={handleCardMouseMove}
+        onCardMouseLeave={handleCardMouseLeave}
+        onAvatarClick={handleAvatarClick}
+        avatarAriaLabel="Open profile dialog"
+        avatarIndex={sidebarAvatarIndex}
+      />
+
+      <Access
+        open={open}
+        setOpen={setOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        resetToken={resetToken}
+        resetEmail={resetEmail}
+        isSubmitting={isSubmitting}
+        authError={authError}
+        handleDiscordAuthClick={handleDiscordAuthClick}
+        handleGoogleAuthClick={handleGoogleAuthClick}
+        onRequestVerificationCode={handleRequestVerificationCode}
+        onRequestPasswordReset={handleRequestPasswordReset}
+        onAutoSubmit={handleAutoSubmit}
+      />
+
+      <ProfileModal
+        profileOpen={profileOpen}
+        setProfileOpen={setProfileOpen}
+        profileName={profileName}
+        setProfileName={setProfileName}
+        profileError={profileError}
+        isSavingProfile={isSavingProfile}
+        cardProfile={cardProfile}
+        profileAvatar={profileAvatar}
+        onAvatarCycle={handleCycleProfileAvatar}
+        handleSaveProfile={handleSaveProfile}
+        handleLogout={handleLogout}
+      />
+    </>
   );
 };
 

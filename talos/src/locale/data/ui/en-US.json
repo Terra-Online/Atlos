@@ -169,6 +169,98 @@
     "legacy": "<span class=\"keyword\">Note:</span> When the game version is <span class=\"keyword\">1.0.13</span>, the map dataset version is <span class=\"keyword\">0.8.25</span>. We need time to update the data, so updates may arrive later than the game patch. Thank you for your patience. To track our updates, please join our <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord Server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "The current dataset is up to date.<br><br>If you need to report issues, please join <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord server</a>.<br><br>We also recommend the following tools:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "Group: ",
+    "since": "Since",
+    "logintip": "Click the avatar to sign in.",
+    "registip": "Click the avatar to register.",
+    "ago": "Ago",
+    "karma": "Karma",
+    "loading": "Loading",
+    "normal": "Normal",
+    "guest": "Guest",
+    "pioneer": "Pioneer",
+    "admin": "Admin",
+    "suspend": "Suspended",
+    "robot": "Robot",
+    "auth": {
+      "login": "Login",
+      "register": "Register",
+      "passwordReset": "Password Reset",
+      "email": "E-mail:",
+      "password": "Password:",
+      "newPassword": "New Password:",
+      "repeatPassword": "Repeat Password:",
+      "verification": "Verification:",
+      "forgotPW": "Forgot password?",
+      "send": "Send",
+      "sendResetLink": "Reset",
+      "resend": "Resend({count})",
+      "dcLogin": "Sign in with Discord",
+      "gooLogin": "Sign in with Google",
+      "dcRegis": "Continue with Discord",
+      "gooRegis": "Continue with Google",
+      "connecting": "Connecting...",
+      "resetLink": "Please enter the email address associated with your account, and we will send you a password reset link if it exists.<br><br>Check your inbox and spam folder after submission.",
+      "resetRequire": "Please enter your new password and confirm it. <br><br>We will reset your password immediately.",
+      "backTo": "Back to",
+      "signIn": "Sign in",
+      "switchToRegisterPrefix": "No account yet?",
+      "switchToRegisterAction": "Register here!",
+      "switchToLoginPrefix": "Already have an account,",
+      "switchToLoginAction": "Sign in here.",
+      "ack": "By proceeding, you have read and agree to our ",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> and <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Terms of Service</a>.",
+      "hints": {
+        "200": "Access Granted",
+        "201": "Account Created",
+        "202": "Password Changed",
+
+        "101": "Email Required",
+        "102": "Email Invalid",
+        "103": "Email Occupied",
+        "104": "Email Void",
+
+        "111": "PWD Required",
+        "112": "PWD Invalid",
+        "113": "PWDs Mismatch",
+
+        "121": "OTP Required",
+        "122": "OTP Invalid",
+        "123": "OTP Expired",
+
+        "0": "Credential Mismatch",
+
+        "429": "Rate Limited",
+        "430": "Security Check",
+
+        "801": "Suspended: Vandalism",
+        "802": "Suspended: ACC denied",
+
+        "601": "Token Expired",
+        "602": "Session Required",
+        "603": "Access Denied",
+        "604": "Provider Conflict",
+
+        "701": "Overloaded",
+        "702": "Timeout",
+        "703": "Maintenance"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "avatarHint": "Open profile info",
+      "nameEditHint": "Edit username",
+      "nickName": "nickname",
+      "note": "Note",
+      "noteNickname": "You can use no more than 15 letters, numbers, hyphens and underscores in your username.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to switch avatar.",
+      "auditLabel": "Audit",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "logout": "Sign Out"
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

@@ -169,6 +169,20 @@
     "legacy": "<span class=\"keyword\">Catatan:</span> Saat versi game adalah <span class=\"keyword\">1.0.13</span>, versi data peta adalah <span class=\"keyword\">0.8.25</span>. Kami butuh waktu untuk memperbarui data, jadi mungkin akan lebih lambat dari update game. Terima kasih atas kesabaran Anda. Untuk memantau pembaruan kami, silakan bergabung dengan <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Gabung Discord'>Server Discord</a> kami.<br><br>Kami juga merekomendasikan alat terkait berikut:<ul><li><span class=\"keyword\">Wiki Game: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Cetak Biru:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "Dataset saat ini sudah terbaru.<br><br>Jika Anda perlu melaporkan masalah, silakan bergabung dengan <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Gabung Discord'>Server Discord</a> kami.<br><br>Kami juga merekomendasikan alat terkait berikut:<ul><li><span class=\"keyword\">Wiki Game: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Cetak Biru:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "Grup: ",
+    "since": "Sejak",
+    "registip": "Klik avatar untuk masuk/daftar",
+    "ago": "lalu",
+    "karma": "Karma",
+    "loading": "Memuat",
+    "normal": "Normal",
+    "guest": "Tamu",
+    "pioneer": "Pionir",
+    "admin": "Admin",
+    "suspend": "Ditangguhkan",
+    "robot": "Bot"
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

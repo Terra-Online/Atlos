@@ -169,6 +169,20 @@
     "legacy": "<span class=\"keyword\">नोट:</span> जब गेम का संस्करण <span class=\"keyword\">1.0.13</span> होता है, तो मानचित्र डेटासेट संस्करण <span class=\"keyword\">0.8.25</span> होता है। हमें डेटा को अपडेट करने के लिए समय चाहिए, इसलिए गेम पैच के बाद अपडेट आ सकते हैं। आपके धैर्य के लिए धन्यवाद। हमारे अपडेट को ट्रैक करने के लिए, कृपया हमारे <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord सर्वर</a> से जुड़ें。<br><br>हम निम्नलिखित उपकरणों की भी अनुशंसा करते हैं:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
     "uptodate": "वर्तमान डेटासेट अद्यतित है。<br><br>यदि आपको समस्याओं की रिपोर्ट करने की आवश्यकता है, तो कृपया <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord सर्वर</a> से जुड़ें。<br><br>हम निम्नलिखित उपकरणों की भी अनुशंसा करते हैं:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>"
   },
+  "idcard": {
+    "group": "समूह: ",
+    "since": "से",
+    "registip": "लॉगिन/रजिस्टर के लिए अवतार पर क्लिक करें",
+    "ago": "पहले",
+    "karma": "कर्मा",
+    "loading": "लोड हो रहा है",
+    "normal": "सामान्य",
+    "guest": "अतिथि",
+    "pioneer": "पायनियर",
+    "admin": "एडमिन",
+    "suspend": "निलंबित",
+    "robot": "बॉट"
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",
