@@ -110,12 +110,18 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     };
     const handleGroup = () => setGroupOpen(true);
 
+    const [isDark, setIsDark] = useState(false);
+
     useEffect(() => {
         initTheme();
+        setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
         return () => cleanupTheme();
     }, []);
 
-    const handleDarkMode = () => toggleTheme();
+    const handleDarkMode = () => {
+        toggleTheme();
+        setIsDark((prev) => !prev);
+    };
     const handleLanguage = () => setLangOpen(true);
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
@@ -158,7 +164,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 <HeadItem
                     icon={Darkmode}
                     onClick={handleDarkMode}
-                    tooltip={t('headbar.darkmode')}
+                    tooltip={isDark ? t('headbar.lightmode') : t('headbar.darkmode')}
                     guideKey='headbar-dark-mode'
                 />
                 <HeadItem
