@@ -172,11 +172,11 @@
   "idcard": {
     "group": "Groupe :",
     "since": "Depuis",
-    "logintip": "Avatar pour connexion.",
-    "registip": "Avatar pour inscription.",
+    "logintip": "Connexion via avatar",
+    "registip": "Inscription via avatar",
     "ago": "il y a",
     "karma": "Karma",
-    "loading": "Chargement",
+    "loading": "Chargement...",
     "normal": "Vérifié",
     "guest": "Invité",
     "pioneer": "Pionnier",
@@ -185,7 +185,7 @@
     "robot": "Bot",
     "auth": {
       "login": "Se connecter",
-      "register": "Registre",
+      "register": "S'inscrire",
       "passwordReset": "Réinitialisation du mot de passe",
       "email": "E-mail:",
       "password": "Mot de passe:",
@@ -200,7 +200,7 @@
       "gooLogin": "Connectez-vous avec Google",
       "dcRegis": "Continuer avec Discord",
       "gooRegis": "Continuer avec Google",
-      "connecting": "De liaison...",
+      "connecting": "Connexion...",
       "resetLink": "Veuillez saisir l'adresse e-mail associée à votre compte et nous vous enverrons un lien de réinitialisation de mot de passe s'il existe.<br><br>Vérifiez votre boîte de réception et votre dossier spam après la soumission.",
       "resetRequire": "Veuillez saisir votre nouveau mot de passe et le confirmer. <br><br>Nous réinitialiserons votre mot de passe immédiatement.",
       "backTo": "Retour à",
@@ -210,7 +210,7 @@
       "switchToLoginPrefix": "Vous avez déjà un compte ?",
       "switchToLoginAction": "Connectez-vous !",
       "ack": "En poursuivant, vous avez lu et accepté notre",
-      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Politique de confidentialité</a> et <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Conditions d'utilisation</a>.",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Politique de confidentialité</a> et <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Conditions d’utilisation</a>.",
       "hints": {
         "200": "Accès accordé",
         "201": "Compte créé",
@@ -248,7 +248,7 @@
       "noteNickname": "Vous ne pouvez pas utiliser plus de 15 lettres, chiffres, traits d’union et traits de soulignement dans votre nom d’utilisateur.",
       "noteUID": "L'UID est attribué lors de la première configuration et ne peut pas être modifié. Vous pouvez mettre à jour votre nom d'utilisateur à tout moment. Cliquez sur la zone de l'avatar pour changer d'avatar.",
       "auditLabel": "Audit",
-      "save": "Enregistrer les modifications",
+      "save": "Enregistrer",
       "saving": "Économie...",
       "logout": "Se déconnecter"
     }
