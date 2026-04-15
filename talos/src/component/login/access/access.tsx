@@ -34,12 +34,15 @@ interface AccessProps {
   setOpen: (open: boolean) => void;
   activeTab: AuthMode;
   setActiveTab: (mode: AuthMode) => void;
+  resetToken?: string | null;
+  resetEmail?: string;
   isSubmitting: boolean;
   authError: string | null;
   handleDiscordAuthClick: () => Promise<void>;
   handleGoogleAuthClick?: () => Promise<void>;
   onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void | Promise<void>;
   onRequestVerificationCode?: (payload: { email: string; mode: AuthMode }) => Promise<boolean>;
+  onRequestPasswordReset?: (payload: { email: string }) => Promise<boolean>;
 }
 
 type OAuthPlatform = 'discord' | 'google';
@@ -76,6 +79,7 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
   email: false,
   password: false,
   verificationCode: false,
+  repeatPassword: false,
 };
 
 const FIELD_VALIDATE_DELAY_MS = 500;
@@ -86,6 +90,7 @@ const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }):
   payload.values.email.trim().toLowerCase(),
   payload.values.password,
   getVerificationDigits(payload.values.verificationCode),
+  payload.values.repeatPassword,
 ].join('::');
 
 const Access = ({
@@ -93,17 +98,21 @@ const Access = ({
   setOpen,
   activeTab,
   setActiveTab,
+  resetToken,
+  resetEmail = '',
   isSubmitting,
   authError,
   handleDiscordAuthClick,
   handleGoogleAuthClick,
   onAutoSubmit,
   onRequestVerificationCode,
+  onRequestPasswordReset,
 }: AccessProps) => {
   const t = useTranslateUI();
   const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
   const [verificationCodeValue, setVerificationCodeValue] = useState('');
+  const [repeatPasswordValue, setRepeatPasswordValue] = useState('');
   const [fieldHintCodes, setFieldHintCodes] = useState<Partial<Record<AuthField, AuthHintCode>>>({});
   const [touchedFields, setTouchedFields] = useState<Record<AuthField, boolean>>(INITIAL_TOUCHED_FIELDS);
   const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
@@ -111,26 +120,39 @@ const Access = ({
   const [lastAutoSubmitSignature, setLastAutoSubmitSignature] = useState<string | null>(null);
 
   const isRegisterMode = activeTab === 'register';
+  const isResetMode = activeTab === 'passwordReset';
+  const isResetSubmitStage = isResetMode && Boolean(resetToken);
+  const resetNoteText = isResetSubmitStage
+    ? t('idcard.auth.resetRequire')
+    : t('idcard.auth.resetLink');
 
   const authValues = useMemo<AuthValues>(
     () => ({
       email: emailValue,
       password: passwordValue,
       verificationCode: verificationCodeValue,
+      repeatPassword: repeatPasswordValue,
     }),
-    [emailValue, passwordValue, verificationCodeValue],
+    [emailValue, passwordValue, repeatPasswordValue, verificationCodeValue],
   );
 
-  const modalTitle = isRegisterMode
-    ? t('idcard.auth.register') || 'Register'
-    : t('idcard.auth.login') || 'Login';
+  const modalTitle = isResetMode
+    ? t('idcard.auth.passwordReset') || 'Password Reset'
+    : isRegisterMode
+      ? t('idcard.auth.register') || 'Register'
+      : t('idcard.auth.login') || 'Login';
 
-  const modalIcon = isRegisterMode ? <RegisterIcon /> : <LoginIcon />;
+  const modalIcon = isResetMode
+    ? <LoginIcon />
+    : isRegisterMode
+      ? <RegisterIcon />
+      : <LoginIcon />;
 
   const resetAuthFormState = useCallback(() => {
     setEmailValue('');
     setPasswordValue('');
     setVerificationCodeValue('');
+    setRepeatPasswordValue('');
     setFieldHintCodes({});
     setTouchedFields(INITIAL_TOUCHED_FIELDS);
     setOtpCooldownSeconds(0);
@@ -151,8 +173,16 @@ const Access = ({
     }
   }, [open, resetAuthFormState]);
 
+  useEffect(() => {
+    if (!open || !isResetMode) {
+      return;
+    }
+
+    setEmailValue(resetEmail || '');
+  }, [isResetMode, open, resetEmail]);
+
   const passwordHint = useMemo(() => {
-    if (isRegisterMode || fieldHintCodes.password !== undefined) {
+    if (isRegisterMode || isResetMode || fieldHintCodes.password !== undefined) {
       return null;
     }
 
@@ -218,8 +248,13 @@ const Access = ({
   const passwordHintType = getFieldHintType('password');
   const verificationHintText = getFieldHint('verificationCode');
   const verificationHintType = getFieldHintType('verificationCode');
+  const repeatPasswordHintText = getFieldHint('repeatPassword');
+  const repeatPasswordHintType = getFieldHintType('repeatPassword');
 
   const shouldShowSendVerificationButton = canShowSendVerificationButton(activeTab, authValues);
+  const shouldShowSendResetButton = isResetMode
+    && !isResetSubmitStage
+    && validateSendVerificationCode(authValues) === null;
   const authMachineNode = resolveAuthMachineNode({
     mode: activeTab,
     values: authValues,
@@ -279,6 +314,26 @@ const Access = ({
   }, [authValues.password, setFieldCode, touchedFields.password, validateSingleField]);
 
   useEffect(() => {
+    if (!isResetMode || !isResetSubmitStage || !touchedFields.repeatPassword) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      const mismatch = !authValues.repeatPassword.trim() || authValues.password !== authValues.repeatPassword;
+      setFieldCode('repeatPassword', mismatch ? 113 : null);
+    }, FIELD_VALIDATE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    authValues.password,
+    authValues.repeatPassword,
+    isResetMode,
+    isResetSubmitStage,
+    setFieldCode,
+    touchedFields.repeatPassword,
+  ]);
+
+  useEffect(() => {
     if (!isRegisterMode || !touchedFields.verificationCode) {
       return undefined;
     }
@@ -325,15 +380,29 @@ const Access = ({
     setFieldCode('verificationCode', null);
   };
 
+  const handleRepeatPasswordChange = (rawValue: string) => {
+    touchField('repeatPassword');
+    setRepeatPasswordValue(rawValue);
+    setFieldCode('repeatPassword', null);
+  };
+
   const handleFieldBlur = (field: AuthField) => {
     if (!touchedFields[field]) {
       return;
     }
+    if (field === 'repeatPassword') {
+      const mismatch = !authValues.repeatPassword.trim() || authValues.password !== authValues.repeatPassword;
+      setFieldCode('repeatPassword', mismatch ? 113 : null);
+      return;
+    }
+
     const fieldValue = field === 'email'
       ? authValues.email
       : field === 'password'
         ? authValues.password
-        : authValues.verificationCode;
+        : field === 'verificationCode'
+          ? authValues.verificationCode
+          : authValues.repeatPassword;
     setFieldCode(field, validateField(activeTab, field, fieldValue));
   };
 
@@ -343,9 +412,23 @@ const Access = ({
       return;
     }
 
-    const submitFields: AuthField[] = isRegisterMode
-      ? ['email', 'password', 'verificationCode']
-      : ['email', 'password'];
+    if (isResetMode && !isResetSubmitStage) {
+      touchField('email');
+      const emailValidationCode = validateSendVerificationCode(authValues);
+      if (emailValidationCode) {
+        setFieldCode('email', emailValidationCode);
+        return;
+      }
+      setFieldCode('email', null);
+      void handleRequestPasswordReset();
+      return;
+    }
+
+    const submitFields: AuthField[] = isResetMode
+      ? (isResetSubmitStage ? ['email', 'password', 'repeatPassword'] : ['email'])
+      : isRegisterMode
+        ? ['email', 'password', 'verificationCode']
+        : ['email', 'password'];
     touchFields(submitFields);
 
     const submitErrors = validateSubmit(activeTab, authValues);
@@ -372,6 +455,7 @@ const Access = ({
         email: authValues.email,
         password: authValues.password,
         verificationCode: authValues.verificationCode,
+        repeatPassword: authValues.repeatPassword,
       },
     };
 
@@ -399,6 +483,7 @@ const Access = ({
         email: authValues.email,
         password: authValues.password,
         verificationCode: authValues.verificationCode,
+        repeatPassword: authValues.repeatPassword,
       },
     };
     const signature = createSubmitSignature(payload);
@@ -428,6 +513,33 @@ const Access = ({
     touchedFields.password,
     touchedFields.verificationCode,
   ]);
+
+  const handleRequestPasswordReset = async () => {
+    touchField('email');
+
+    const emailValidationCode = validateSendVerificationCode(authValues);
+    if (emailValidationCode) {
+      setFieldCode('email', emailValidationCode);
+      return;
+    }
+
+    if (otpCooldownSeconds > 0) {
+      return;
+    }
+
+    setFieldCode('email', null);
+
+    if (onRequestPasswordReset) {
+      const success = await onRequestPasswordReset({
+        email: authValues.email,
+      });
+      if (!success) {
+        return;
+      }
+    }
+
+    setOtpCooldownSeconds(OTP_COOLDOWN_SECONDS);
+  };
 
   const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
     if (event.key !== 'Enter' || event.nativeEvent.isComposing || isSubmitting) {
@@ -478,7 +590,9 @@ const Access = ({
   const resendTemplate = t('idcard.auth.resend') || 'Resend ({count})';
   const sendButtonLabel = otpCooldownSeconds > 0
     ? resendTemplate.replace('{count}', String(otpCooldownSeconds))
-    : t('idcard.auth.send') || 'Send';
+    : isResetMode
+      ? t('idcard.auth.sendResetLink') || 'Send reset link'
+      : t('idcard.auth.send') || 'Send';
 
   const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
     discord: isRegisterMode
@@ -542,13 +656,33 @@ const Access = ({
                   placeholder="ak@ex.talos"
                   autoComplete="email"
                   spellCheck={false}
+                  disabled={isResetSubmitStage}
                 />
+                {shouldShowSendResetButton ? (
+                  <button
+                    type="button"
+                    className={styles.sendCodeButton}
+                    disabled={otpCooldownSeconds > 0 || isSubmitting}
+                    onClick={() => {
+                      void handleRequestPasswordReset();
+                    }}
+                  >
+                    {sendButtonLabel}
+                  </button>
+                ) : null}
               </div>
             </div>
 
-            <div className={styles.inputRow}>
+            <div
+              className={styles.inputRow}
+              data-field="password"
+              data-visible={!isResetMode || isResetSubmitStage ? 'true' : 'false'}
+              aria-hidden={isResetMode && !isResetSubmitStage}
+            >
               <label htmlFor="access-password" className={styles.prtsIoLabel}>
-                <span className={styles.prtsIoItem}>{t('idcard.auth.password') || 'PASSWORD:'}</span>
+                <span className={styles.prtsIoItem}>
+                  {(isResetMode ? t('idcard.auth.newPassword') : t('idcard.auth.password')) || 'PASSWORD:'}
+                </span>
                 {passwordHintText ? (
                   <span className={styles.prtsHint} data-type={passwordHintType ?? 'err'} data-text={passwordHintText}>
                     {passwordHintText}
@@ -559,6 +693,7 @@ const Access = ({
                       href="#"
                       onClick={(event) => {
                         event.preventDefault();
+                        handleModeSwitch('passwordReset');
                       }}
                     >
                       {passwordHint}
@@ -567,14 +702,41 @@ const Access = ({
                 ) : null}
               </label>
               <div className={styles.prtsIoContainer}>
+                  <input
+                    id="access-password"
+                    type="password"
+                    value={passwordValue}
+                    onChange={(event) => handlePasswordChange(event.target.value)}
+                    onBlur={() => handleFieldBlur('password')}
+                    placeholder=""
+                    autoComplete={isRegisterMode || isResetMode ? 'new-password' : 'current-password'}
+                  />
+                </div>
+            </div>
+
+            <div
+              className={styles.inputRow}
+              data-field="repeat-password"
+              data-visible={isResetSubmitStage ? 'true' : 'false'}
+              aria-hidden={!isResetSubmitStage}
+            >
+              <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
+                <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
+                {repeatPasswordHintText ? (
+                  <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
+                    {repeatPasswordHintText}
+                  </span>
+                ) : null}
+              </label>
+              <div className={styles.prtsIoContainer}>
                 <input
-                  id="access-password"
+                  id="access-repeat-password"
                   type="password"
-                  value={passwordValue}
-                  onChange={(event) => handlePasswordChange(event.target.value)}
-                  onBlur={() => handleFieldBlur('password')}
+                  value={repeatPasswordValue}
+                  onChange={(event) => handleRepeatPasswordChange(event.target.value)}
+                  onBlur={() => handleFieldBlur('repeatPassword')}
                   placeholder=""
-                  autoComplete={isRegisterMode ? 'new-password' : 'current-password'}
+                  autoComplete="new-password"
                 />
               </div>
             </div>
@@ -606,7 +768,7 @@ const Access = ({
                     pattern="[0-9]{3}-[0-9]{3}"
                     maxLength={7}
                   />
-                  {shouldShowSendVerificationButton ? (
+                  {shouldShowSendVerificationButton && !isResetMode ? (
                   <button
                     type="button"
                     className={styles.sendCodeButton}
@@ -624,7 +786,10 @@ const Access = ({
           </form>
 
         <div className={styles.lowerSection}>
-          <div className={styles.authDivider} aria-hidden="true" />
+          <div className={styles.authDivider} aria-hidden="true" data-after={isResetMode ? 'Note' : 'OR'} />
+            {isResetMode ? (
+              <p className={styles.resetNote}>{resetNoteText}</p>
+            ) : (
             <div className={styles.oauthMethods}>
               <AccessButton
                 platform="discord"
@@ -647,21 +812,22 @@ const Access = ({
                 <GoogleIcon />
               </AccessButton>
             </div>
+            )}
 
           <p className={styles.authSwitchLine}>
-            <span>
-              {isRegisterMode
-                ? t('idcard.auth.switchToLoginPrefix')
-                : t('idcard.auth.switchToRegisterPrefix')}
-            </span>
+            <span>{isResetMode ? (t('idcard.auth.backTo') || 'Back to') : (isRegisterMode
+              ? t('idcard.auth.switchToLoginPrefix')
+              : t('idcard.auth.switchToRegisterPrefix'))}</span>
             <button
               type="button"
               className={styles.switchModeButton}
-              onClick={() => handleModeSwitch(isRegisterMode ? 'login' : 'register')}
+              onClick={() => handleModeSwitch(isResetMode ? 'login' : (isRegisterMode ? 'login' : 'register'))}
             >
-              {isRegisterMode
-                ? t('idcard.auth.switchToLoginAction')
-                : t('idcard.auth.switchToRegisterAction')}
+              {isResetMode
+                ? (t('idcard.auth.signIn') || 'Sign in')
+                : isRegisterMode
+                  ? t('idcard.auth.switchToLoginAction')
+                  : t('idcard.auth.switchToRegisterAction')}
             </button>
           </p>
           <div className={styles.acknowledgement}>

@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AuthFlowError,
   fetchSessionUser,
+  getResetPasswordPreview,
   getAuthBase,
   loginWithEmail,
   logoutUser,
+  requestPasswordReset,
   registerWithEmail,
+  resetPasswordWithToken,
   sendEmailVerificationOtp,
   startDiscordAuth,
   startGoogleAuth,
@@ -69,9 +72,11 @@ const hasOnceLogin = (): boolean => {
 
 export const useIdCardAuthController = () => {
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [activeTab, setActiveTabInner] = useState<AuthMode>('login');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [resetEmail, setResetEmail] = useState<string>('');
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const setSessionUser = useAuthStore((state) => state.setSessionUser);
   const clearSessionUser = useAuthStore((state) => state.clearSessionUser);
@@ -82,6 +87,14 @@ export const useIdCardAuthController = () => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
+
+  const setActiveTab = useCallback((mode: AuthMode) => {
+    setActiveTabInner(mode);
+    if (mode !== 'passwordReset') {
+      setResetToken(null);
+      setResetEmail('');
+    }
+  }, []);
 
   const authBase = useMemo(() => getAuthBase(), []);
 
@@ -116,8 +129,39 @@ export const useIdCardAuthController = () => {
     void syncSession({ silent: true });
   }, [syncSession]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('token')?.trim() ?? '';
+    if (!token) {
+      return;
+    }
+
+    const emailFromQuery = url.searchParams.get('email')?.trim() ?? '';
+    setResetToken(token);
+    setResetEmail(emailFromQuery);
+    setAuthError(null);
+    setActiveTabInner('passwordReset');
+    setOpen(true);
+    url.searchParams.delete('token');
+    url.searchParams.delete('email');
+    window.history.replaceState({}, '', url.toString());
+    if (!emailFromQuery) {
+      void getResetPasswordPreview(token)
+        .then((preview) => {
+          setResetEmail(preview.email);
+        })
+        .catch((error) => {
+          setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
+        });
+    }
+  }, []);
+
   const openAuthModal = useCallback(
-    (tab: 'login' | 'register') => {
+    (tab: AuthMode) => {
       setActiveTab(tab);
       setAuthError(null);
       setOpen(true);
@@ -198,7 +242,7 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
-      await sendEmailVerificationOtp(email, mode);
+      await sendEmailVerificationOtp(email, mode === 'register' ? 'register' : 'login');
 
       return true;
     } catch (error) {
@@ -228,7 +272,7 @@ export const useIdCardAuthController = () => {
       if (mode === 'login') {
         await loginWithEmail(values.email, values.password);
         successHintCode = '200';
-      } else {
+      } else if (mode === 'register') {
         await registerWithEmail(
           values.email,
           values.password,
@@ -237,12 +281,25 @@ export const useIdCardAuthController = () => {
         successHintCode = '201';
         markOnceLogin();
         setHasLoggedInBefore(true);
+      } else {
+        if (!resetToken) {
+          throw new Error('Missing reset token.');
+        }
+        await resetPasswordWithToken(resetToken, values.password, values.repeatPassword);
+        successHintCode = '200';
       }
 
       setAuthError(successHintCode);
       await waitForPrtsWipeCycle();
-      await syncSession();
+      if (mode !== 'passwordReset') {
+        await syncSession();
+      }
       setOpen(false);
+      if (mode === 'passwordReset') {
+        setResetToken(null);
+        setResetEmail('');
+        setActiveTab('login');
+      }
     } catch (error) {
       const mappedHint = mapAuthErrorToHint(error, { mode });
       setAuthError(mappedHint);
@@ -255,7 +312,33 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, syncSession]);
+  }, [isSubmitting, resetToken, setActiveTab, syncSession]);
+
+  const handleRequestPasswordReset = useCallback(async ({
+    email,
+  }: {
+    email: string;
+  }): Promise<boolean> => {
+    if (isSubmitting) {
+      return false;
+    }
+
+    setAuthError(null);
+    setIsSubmitting(true);
+
+    try {
+      const callbackUrl = new URL(window.location.href);
+      callbackUrl.search = '';
+      callbackUrl.hash = '';
+      await requestPasswordReset(email, callbackUrl.toString());
+      return true;
+    } catch (error) {
+      setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting]);
 
   const handleSaveProfile = useCallback(async () => {
     const trimmed = profileName.trim();
@@ -313,6 +396,8 @@ export const useIdCardAuthController = () => {
     setActiveTab,
     isSubmitting,
     authError,
+    resetToken,
+    resetEmail,
     sessionUser,
     profileOpen,
     setProfileOpen,
@@ -330,6 +415,7 @@ export const useIdCardAuthController = () => {
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,
+    handleRequestPasswordReset,
     handleAutoSubmit,
     handleSaveProfile,
     handleLogout,

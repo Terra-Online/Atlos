@@ -428,6 +428,68 @@ export const loginWithEmail = async (
   });
 };
 
+export const requestPasswordReset = async (
+  email: string,
+  redirectTo: string,
+): Promise<void> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  await postAuthJson('/forget-password', {
+    email: normalizedEmail,
+    redirectTo,
+  });
+};
+
+export const resetPasswordWithToken = async (
+  token: string,
+  newPassword: string,
+  repeatPassword: string,
+): Promise<void> => {
+  await postAuthJson('/reset-password', {
+    token: token.trim(),
+    newPassword,
+    repeatPassword,
+  });
+};
+
+export const getResetPasswordPreview = async (
+  token: string,
+): Promise<{ email: string }> => {
+  const response = await fetch(`${authBase}/auth/v1/reset-password-preview?token=${encodeURIComponent(token.trim())}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      accept: 'application/json',
+    },
+  });
+
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    throw new AuthFlowError(
+      pickApiErrorMessage(
+        payload,
+        `Auth request failed (${response.status ?? 'unknown'})`,
+      ),
+      {
+        status: response.status,
+        code: pickApiErrorCode(payload),
+      },
+    );
+  }
+
+  const email = (payload as { email?: unknown })?.email;
+  if (typeof email !== 'string' || !email.trim()) {
+    throw new Error('Reset preview payload does not contain email.');
+  }
+
+  return { email: email.trim() };
+};
+
 const patchProfile = async (payloadBody: Record<string, unknown>): Promise<SessionUser> => {
   const response = await fetch(`${authBase}/auth/v1/profile`, {
     method: 'PATCH',

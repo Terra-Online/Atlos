@@ -83,19 +83,21 @@
   --io-row-height: 2.45rem;
   --io-row-gap: 0.5rem;
   width: calc(100% - var(--io-indicator-space));
-  .inputRow {
-    display: grid;
-    grid-template-columns: minmax(6rem, 1fr) minmax(11rem, 1.45fr);
-    align-items: start;
-    gap: 0.5rem;
-    overflow: visible;
+    .inputRow {
+      display: grid;
+      grid-template-columns: minmax(6rem, 1fr) minmax(11rem, 1.45fr);
+      align-items: start;
+      gap: 0.5rem;
+      overflow: visible;
 
-    &[data-field='verification'] {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      transform: translateY(-0.35rem);
-      transition:
+      &[data-field='verification'],
+      &[data-field='password'],
+      &[data-field='repeat-password'] {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateY(-0.35rem);
+        transition:
         max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
         opacity 220ms ease,
         transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -108,7 +110,7 @@
         pointer-events: auto;
       }
     }
-  }
+}
 }
 
 .lowerSection {
@@ -443,7 +445,7 @@
   margin: 1rem;
   background: linear-gradient(90deg, transparent 0%, var(--auth-text) 15%, var(--auth-text) 65%, transparent 100%);
   &::after {
-    content: 'OR';
+    content: attr(data-after);
     font-family: Raleway, sans-serif;
     font-weight: 700;
     position: absolute;
@@ -454,6 +456,20 @@
     color: var(--auth-text);
     background-color: var(--modal-bg);
   }
+}
+
+.authDivider:not([data-after])::after {
+  content: 'OR';
+}
+
+.resetNote {
+  width: 88%;
+  margin: 0 auto 1.2rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-family: 'FedraSansPro Book', 'HMSans', sans-serif;
+  text-align: center;
+  color: var(--auth-text);
 }
 
 .oauthMethods {

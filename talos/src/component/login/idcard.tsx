@@ -16,6 +16,8 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     setActiveTab,
     isSubmitting,
     authError,
+    resetToken,
+    resetEmail,
     sessionUser,
     profileOpen,
     setProfileOpen,
@@ -30,6 +32,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,
+    handleRequestPasswordReset,
     handleAutoSubmit,
     handleSaveProfile,
     handleLogout,
@@ -60,11 +63,14 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
         setOpen={setOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        resetToken={resetToken}
+        resetEmail={resetEmail}
         isSubmitting={isSubmitting}
         authError={authError}
         handleDiscordAuthClick={handleDiscordAuthClick}
         handleGoogleAuthClick={handleGoogleAuthClick}
         onRequestVerificationCode={handleRequestVerificationCode}
+        onRequestPasswordReset={handleRequestPasswordReset}
         onAutoSubmit={handleAutoSubmit}
       />
 

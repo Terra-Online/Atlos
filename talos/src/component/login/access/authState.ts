@@ -1,6 +1,6 @@
-export type AuthMode = 'login' | 'register';
+export type AuthMode = 'login' | 'register' | 'passwordReset';
 
-export type AuthField = 'email' | 'password' | 'verificationCode';
+export type AuthField = 'email' | 'password' | 'verificationCode' | 'repeatPassword';
 
 export type AuthHintCode =
   | 0
@@ -10,6 +10,7 @@ export type AuthHintCode =
   | 104
   | 111
   | 112
+  | 113
   | 121
   | 122
   | 123
@@ -33,6 +34,7 @@ export interface AuthValues {
   email: string;
   password: string;
   verificationCode: string;
+  repeatPassword: string;
 }
 
 export type AuthMachineNode = 'idle' | 'editing' | 'blocked' | 'ready' | 'submitting';
@@ -96,6 +98,12 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
   },
   111: { prefix: 'REQ', type: 'req', field: 'password' },
   112: { prefix: 'ERR', type: 'err', field: 'password' },
+  113: {
+    prefix: 'ERR',
+    type: 'err',
+    field: 'repeatPassword',
+    backendCodes: ['PASSWORD_MISMATCH'],
+  },
   121: { prefix: 'REQ', type: 'req', field: 'verificationCode' },
   122: { prefix: 'ERR', type: 'err', field: 'verificationCode', backendCodes: ['INVALID_OTP'] },
   123: { prefix: 'ERR', type: 'err', field: 'verificationCode', backendCodes: ['OTP_EXPIRED'] },
@@ -114,7 +122,7 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
     backendCodes: ['TOO_MANY_ATTEMPTS', 'SECURITY_CHECK'],
     statuses: [403],
   },
-  601: { prefix: 'AUTH', type: 'auth', backendCodes: ['TOKEN_EXPIRED'] },
+  601: { prefix: 'AUTH', type: 'auth', backendCodes: ['TOKEN_EXPIRED', 'INVALID_TOKEN'] },
   602: { prefix: 'AUTH', type: 'auth', backendCodes: ['UNAUTHORIZED', 'SESSION_REQUIRED'] },
   603: { prefix: 'AUTH', type: 'auth', backendCodes: ['ACCESS_DENIED', 'FORBIDDEN'] },
   604: {
@@ -156,6 +164,7 @@ export const FRONTEND_HINT_CODES = {
   EMAIL_INVALID: 102 as const,
   PASSWORD_REQUIRED: 111 as const,
   PASSWORD_INVALID: 112 as const,
+  PASSWORD_MISMATCH: 113 as const,
   OTP_REQUIRED: 121 as const,
   OTP_INVALID: 122 as const,
 };
@@ -211,13 +220,21 @@ const OTP_REGISTER_RULE: AuthFieldRule = {
   isValid: (value) => value.length === 6,
 };
 
+const REPEAT_PASSWORD_RULE: AuthFieldRule = {
+  requiredCode: FRONTEND_HINT_CODES.PASSWORD_REQUIRED,
+};
+
 export const resolveFieldRule = (mode: AuthMode, field: AuthField): AuthFieldRule | null => {
+  if (field === 'repeatPassword') {
+    return mode === 'passwordReset' ? REPEAT_PASSWORD_RULE : null;
+  }
+
   if (field === 'email') {
     return EMAIL_FIELD_RULE;
   }
 
   if (field === 'password') {
-    return mode === 'register' ? PASSWORD_REGISTER_RULE : PASSWORD_LOGIN_RULE;
+    return mode === 'register' || mode === 'passwordReset' ? PASSWORD_REGISTER_RULE : PASSWORD_LOGIN_RULE;
   }
 
   if (mode !== 'register') {
@@ -267,6 +284,24 @@ export const validateSubmit = (
   values: AuthValues,
 ): Partial<Record<AuthField, AuthHintCode>> => {
   const errors: Partial<Record<AuthField, AuthHintCode>> = {};
+
+  if (mode === 'passwordReset') {
+    const emailCode = validateField(mode, 'email', values.email);
+    if (emailCode) {
+      errors.email = emailCode;
+    }
+
+    const passwordCode = validateField('register', 'password', values.password);
+    if (passwordCode) {
+      errors.password = passwordCode;
+    }
+
+    if (!values.repeatPassword.trim() || values.password !== values.repeatPassword) {
+      errors.repeatPassword = FRONTEND_HINT_CODES.PASSWORD_MISMATCH;
+    }
+
+    return errors;
+  }
 
   const emailCode = validateField(mode, 'email', values.email);
   if (emailCode) {
@@ -349,7 +384,8 @@ export const resolveAuthMachineNode = (snapshot: AuthMachineSnapshot): AuthMachi
   const hasTypedAnyValue =
     snapshot.values.email.length > 0
     || snapshot.values.password.length > 0
-    || snapshot.values.verificationCode.length > 0;
+    || snapshot.values.verificationCode.length > 0
+    || snapshot.values.repeatPassword.length > 0;
   const hasTouchedAnyField = Object.values(snapshot.touched).some(Boolean);
 
   if (!hasTypedAnyValue && !hasTouchedAnyField) {
