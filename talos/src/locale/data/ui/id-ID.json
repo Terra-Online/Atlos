@@ -172,7 +172,8 @@
   "idcard": {
     "group": "Grup: ",
     "since": "Sejak",
-    "registip": "Klik avatar untuk masuk/daftar",
+    "logintip": "Klik avatar untuk masuk.",
+    "registip": "Klik avatar untuk daftar.",
     "ago": "lalu",
     "karma": "Karma",
     "loading": "Memuat",
@@ -181,7 +182,85 @@
     "pioneer": "Pionir",
     "admin": "Admin",
     "suspend": "Ditangguhkan",
-    "robot": "Bot"
+    "robot": "Bot",
+    "auth": {
+      "login": "Masuk",
+      "register": "Daftar",
+      "passwordReset": "Reset Password",
+      "email": "E-mail:",
+      "password": "Password:",
+      "newPassword": "Password Baru:",
+      "repeatPassword": "Ulangi Password:",
+      "verification": "Verifikasi:",
+      "forgotPW": "Lupa password?",
+      "send": "Kirim",
+      "sendResetLink": "Reset",
+      "resend": "Kirim ulang({count})",
+      "dcLogin": "Masuk dengan Discord",
+      "gooLogin": "Masuk dengan Google",
+      "dcRegis": "Lanjut dengan Discord",
+      "gooRegis": "Lanjut dengan Google",
+      "connecting": "Menghubungkan...",
+      "resetLink": "Masukkan email akun Anda. Kami akan mengirimkan tautan reset jika tersedia.<br><br>Periksa inbox dan spam Anda.",
+      "resetRequire": "Masukkan dan konfirmasi password baru Anda.<br><br>Password akan segera diperbarui.",
+      "backTo": "Kembali ke",
+      "signIn": "Masuk.",
+      "switchToRegisterPrefix": "Belum punya akun?",
+      "switchToRegisterAction": "Daftar di sini.",
+      "switchToLoginPrefix": "Sudah punya akun?",
+      "switchToLoginAction": "Masuk di sini!",
+      "ack": "Dengan melanjutkan, Anda menyetujui",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Kebijakan Privasi</a> dan <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Ketentuan Layanan</a>",
+
+      "hints": {
+        "200": "Akses diberikan",
+        "201": "Akun dibuat",
+        "202": "Password diubah",
+
+        "101": "Email wajib",
+        "102": "Email tidak valid",
+        "103": "Email sudah digunakan",
+        "104": "Email tidak terdaftar",
+
+        "111": "Password wajib",
+        "112": "Password tidak valid",
+        "113": "Password tidak cocok",
+
+        "121": "OTP wajib",
+        "122": "OTP tidak valid",
+        "123": "OTP kedaluwarsa",
+
+        "0": "Kredensial tidak cocok",
+
+        "429": "Terlalu banyak permintaan",
+        "430": "Pemeriksaan keamanan",
+
+        "801": "Ditangguhkan: Pelanggaran",
+        "802": "Ditangguhkan: Akses ditolak",
+
+        "601": "Token kedaluwarsa",
+        "602": "Sesi diperlukan",
+        "603": "Akses ditolak",
+        "604": "Konflik provider",
+
+        "701": "Server sibuk",
+        "702": "Timeout",
+        "703": "Maintenance"
+      }
+    },
+    "profile": {
+      "title": "Profil",
+      "avatarHint": "Buka profil",
+      "nameEditHint": "Edit username",
+      "nickName": "Nama panggilan",
+      "note": "Catatan",
+      "noteNickname": "Username maksimal 15 karakter (huruf, angka, tanda hubung, garis bawah).",
+      "noteUID": "UID ditetapkan saat pendaftaran dan tidak dapat diubah. Username dapat diperbarui kapan saja. Klik avatar untuk mengganti gambar.",
+      "auditLabel": "Audit",
+      "save": "Simpan",
+      "saving": "Menyimpan...",
+      "logout": "Keluar"
+    }
   },
   "links": {
     "enka": {
