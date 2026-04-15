@@ -35,6 +35,9 @@ const ProfileModal = ({
 }: ProfileModalProps) => {
   const t = useTranslateUI();
   const { cardRef, handleCardMouseMove, handleCardMouseLeave } = useIdCardHoverAngle();
+  const profileErrorText = profileError ?? '';
+  const shouldShowProfileError = profileOpen && Boolean(profileErrorText);
+  const isProfileErrorRemoved = !shouldShowProfileError;
 
   return (
     <Modal
@@ -74,7 +77,14 @@ const ProfileModal = ({
           </p>
         </div>
 
-        {profileError && <p className={styles.profileError}>{profileError}</p>}
+        <div
+          className={styles.profileError}
+          data-removed={isProfileErrorRemoved ? 'true' : 'false'}
+          data-text={profileErrorText}
+          aria-live="polite"
+        >
+          {profileErrorText}
+        </div>
 
         <div className={styles.profileDivider} data-label={t('idcard.profile.auditLabel') || 'Audit'}></div>
 

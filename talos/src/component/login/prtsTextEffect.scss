@@ -1,0 +1,105 @@
+@mixin prts-text-effect($align-self: center, $text-align: center) {
+  width: max-content;
+  max-height: 16px;
+  overflow: hidden;
+  display: inline-flex;
+  align-self: $align-self;
+  position: relative;
+  padding: 0 2px;
+  font-family: Raleway, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+  font-variant-numeric: lining-nums;
+  color: transparent;
+  font-size: 14px;
+  letter-spacing: -.5px;
+  text-transform: uppercase;
+  text-align: $text-align;
+  line-height: 1.125;
+  animation: prtsRegexMount .5s cubic-bezier(0, 0.25, 0.25, 1) forwards, prtsRegexEnter 1s cubic-bezier(0.8, 0, 0.25, 1) forwards;
+  &[data-removed='true'] {
+    animation: prtsRegexUnmount .5s cubic-bezier(0, 0.25, 0.25, 1) forwards, prtsRegexExit .6s cubic-bezier(0.8, 0, 0.25, 1) forwards;
+  }
+  &::before, &::after {
+    content: attr(data-text);
+    position: absolute;
+    width: 100%;
+  }
+  &::before {
+    color: var(--auth-text);
+    z-index: 1;
+    -webkit-text-stroke: 0.5px;
+    animation: prtsWipe 3333ms cubic-bezier(0.8, 0, 0.25, 1) infinite;
+  }
+
+  &::after {
+    color: var(--auth-text);
+    z-index: 0;
+  }
+  @media screen and (max-width: 768px) {
+    padding: 0 0 1rem 0;
+    margin: 1rem 0 0.5rem 0;
+  }
+}
+
+@mixin prts-text-effect-keyframes {
+  @keyframes prtsRegexMount {
+    0% {
+      max-height: 0;
+    }
+    100% {
+      max-height: 16px;
+    }
+  }
+
+  @keyframes prtsRegexUnmount {
+    0% {
+      max-height: 16px;
+    }
+    100% {
+      max-height: 0;
+    }
+  }
+
+  @keyframes prtsRegexEnter {
+    0% {
+      opacity: 0;
+      filter: blur(0.8rem);
+      transform: translateY(150%);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(50%);
+    }
+  }
+
+  @keyframes prtsRegexExit {
+    0% {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(50%);
+    }
+    100% {
+      opacity: 0;
+      filter: blur(1rem);
+      transform: translateY(150%);
+    }
+  }
+
+  @keyframes prtsWipe {
+    0% {
+      clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    }
+    20% {
+      clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    }
+    50% {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    80% {
+      clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+    }
+    100% {
+      clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+    }
+  }
+}

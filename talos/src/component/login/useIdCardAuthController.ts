@@ -88,6 +88,10 @@ export const useIdCardAuthController = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
 
+  const normalizeProfileNameInput = useCallback((value: string): string => {
+    return value.replace(/[^A-Za-z0-9_-]/g, '');
+  }, []);
+
   const setActiveTab = useCallback((mode: AuthMode) => {
     setActiveTabInner(mode);
     if (mode !== 'passwordReset') {
@@ -180,6 +184,10 @@ export const useIdCardAuthController = () => {
     setProfileError(null);
     setProfileOpen(true);
   }, [openAuthModal, sessionUser]);
+
+  const handleProfileNameChange = useCallback((value: string) => {
+    setProfileName(normalizeProfileNameInput(value));
+  }, [normalizeProfileNameInput]);
 
   const handleAvatarClick = useCallback(() => {
     if (sessionUser) {
@@ -352,6 +360,11 @@ export const useIdCardAuthController = () => {
       return;
     }
 
+    if (!/^[A-Za-z0-9_-]+$/.test(trimmed)) {
+      setProfileError('Username can only contain letters, numbers, hyphen, and underscore.');
+      return;
+    }
+
     if (isSavingProfile) return;
     setIsSavingProfile(true);
     setProfileError(null);
@@ -402,7 +415,7 @@ export const useIdCardAuthController = () => {
     profileOpen,
     setProfileOpen,
     profileName,
-    setProfileName,
+    setProfileName: handleProfileNameChange,
     profileAvatar,
     setProfileAvatar,
     hasLoggedInBefore,

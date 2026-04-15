@@ -83,7 +83,7 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
 };
 
 const FIELD_VALIDATE_DELAY_MS = 500;
-const AUTO_SUBMIT_DELAY_MS = 260;
+const AUTO_SUBMIT_DELAY_MS = 200;
 
 const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }): string => [
   payload.mode,
@@ -126,15 +126,12 @@ const Access = ({
     ? parse(t('idcard.auth.resetRequire'))
     : parse(t('idcard.auth.resetLink'));
 
-  const authValues = useMemo<AuthValues>(
-    () => ({
-      email: emailValue,
-      password: passwordValue,
-      verificationCode: verificationCodeValue,
-      repeatPassword: repeatPasswordValue,
-    }),
-    [emailValue, passwordValue, repeatPasswordValue, verificationCodeValue],
-  );
+  const authValues: AuthValues = {
+    email: emailValue,
+    password: passwordValue,
+    verificationCode: verificationCodeValue,
+    repeatPassword: repeatPasswordValue,
+  };
 
   const modalTitle = isResetMode
     ? t('idcard.auth.passwordReset') || 'Password Reset'
@@ -250,6 +247,9 @@ const Access = ({
   const verificationHintType = getFieldHintType('verificationCode');
   const repeatPasswordHintText = getFieldHint('repeatPassword');
   const repeatPasswordHintType = getFieldHintType('repeatPassword');
+  const shouldShowPwdRegex = isRegisterMode && touchedFields.password && fieldHintCodes.password === 112;
+  const isRegexRemoved = !open || !shouldShowPwdRegex;
+  const pwdRegexText = t('idcard.auth.pwdRegex') || '8–20 characters; at least one uppercase';
 
   const shouldShowSendVerificationButton = canShowSendVerificationButton(activeTab, authValues);
   const shouldShowSendResetButton = isResetMode
@@ -371,7 +371,6 @@ const Access = ({
   const handlePasswordChange = (rawValue: string) => {
     touchField('password');
     setPasswordValue(rawValue);
-    setFieldCode('password', null);
   };
 
   const handleVerificationCodeChange = (rawValue: string) => {
@@ -787,6 +786,15 @@ const Access = ({
             </div>
             <button type="submit" className={styles.hiddenSubmit} aria-hidden="true" tabIndex={-1} />
           </form>
+
+          <div
+            className={styles.prtsRegex}
+            data-removed={isRegexRemoved ? 'true' : 'false'}
+            data-text={pwdRegexText}
+            aria-live="polite"
+          >
+            {pwdRegexText}
+          </div>
 
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" data-after={isResetMode ? 'Note' : 'OR'} />
