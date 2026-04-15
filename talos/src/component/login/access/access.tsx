@@ -591,16 +591,16 @@ const Access = ({
   const sendButtonLabel = otpCooldownSeconds > 0
     ? resendTemplate.replace('{count}', String(otpCooldownSeconds))
     : isResetMode
-      ? t('idcard.auth.sendResetLink') || 'Send reset link'
+      ? t('idcard.auth.sendResetLink') || 'Reset'
       : t('idcard.auth.send') || 'Send';
 
   const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
     discord: isRegisterMode
-      ? t('idcard.auth.dcLogin') || 'Sign in with Discord'
-      : t('idcard.auth.dcRegis') || 'Continue with Discord',
+      ? t('idcard.auth.dcRegis') || 'Continue with Discord'
+      : t('idcard.auth.dcLogin') || 'Sign in with Discord',
     google: isRegisterMode
-      ? t('idcard.auth.gooLogin') || 'Sign in with Google'
-      : t('idcard.auth.gooRegis') || 'Continue with Google',
+      ? t('idcard.auth.gooRegis') || 'Continue with Google'
+      : t('idcard.auth.gooLogin') || 'Sign in with Google',
   };
 
   const getOauthButtonLabel = (platform: OAuthPlatform): string =>
@@ -715,32 +715,34 @@ const Access = ({
                 </div>
             </div>
 
-            <div
-              className={styles.inputRow}
-              data-field="repeat-password"
-              data-visible={isResetSubmitStage ? 'true' : 'false'}
-              aria-hidden={!isResetSubmitStage}
-            >
-              <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
-                <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
-                {repeatPasswordHintText ? (
-                  <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
-                    {repeatPasswordHintText}
-                  </span>
-                ) : null}
-              </label>
-              <div className={styles.prtsIoContainer}>
-                <input
-                  id="access-repeat-password"
-                  type="password"
-                  value={repeatPasswordValue}
-                  onChange={(event) => handleRepeatPasswordChange(event.target.value)}
-                  onBlur={() => handleFieldBlur('repeatPassword')}
-                  placeholder=""
-                  autoComplete="new-password"
-                />
+            {isResetSubmitStage ? (
+              <div
+                className={styles.inputRow}
+                data-field="repeat-password"
+                data-visible="true"
+                aria-hidden="false"
+              >
+                <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
+                  <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
+                  {repeatPasswordHintText ? (
+                    <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
+                      {repeatPasswordHintText}
+                    </span>
+                  ) : null}
+                </label>
+                <div className={styles.prtsIoContainer}>
+                  <input
+                    id="access-repeat-password"
+                    type="password"
+                    value={repeatPasswordValue}
+                    onChange={(event) => handleRepeatPasswordChange(event.target.value)}
+                    onBlur={() => handleFieldBlur('repeatPassword')}
+                    placeholder=""
+                    autoComplete="new-password"
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div
               className={styles.inputRow}
