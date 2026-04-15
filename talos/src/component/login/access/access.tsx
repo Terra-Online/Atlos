@@ -123,8 +123,8 @@ const Access = ({
   const isResetMode = activeTab === 'passwordReset';
   const isResetSubmitStage = isResetMode && Boolean(resetToken);
   const resetNoteText = isResetSubmitStage
-    ? t('idcard.auth.resetRequire')
-    : t('idcard.auth.resetLink');
+    ? parse(t('idcard.auth.resetRequire'))
+    : parse(t('idcard.auth.resetLink'));
 
   const authValues = useMemo<AuthValues>(
     () => ({

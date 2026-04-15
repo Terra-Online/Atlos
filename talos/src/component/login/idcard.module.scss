@@ -147,7 +147,6 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
     > .usrName {
         grid-area: usrname;
-        overflow: clip;
         max-width: 9rem;
         text-overflow: ellipsis;
         color: #fafafa;
