@@ -172,7 +172,8 @@
   "idcard": {
     "group": "그룹：",
     "since": "가입일",
-    "registip": "프로필을 눌러 가입/로그인",
+    "logintip": "아바타로 로그인.",
+    "registip": "아바타로 가입.",
     "ago": "전",
     "karma": "카르마",
     "loading": "로딩 중",

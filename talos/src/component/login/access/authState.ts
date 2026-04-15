@@ -7,6 +7,7 @@ export type AuthHintCode =
   | 101
   | 102
   | 103
+  | 104
   | 111
   | 112
   | 121
@@ -75,9 +76,8 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
       'INVALID_PASSWORD',
       'INVALID_EMAIL_OR_PASSWORD',
       'CREDENTIAL_MISMATCH',
-      'VALIDATION_ERROR',
     ],
-    statuses: [400, 401, 422],
+    statuses: [401],
   },
   101: { prefix: 'REQ', type: 'req', field: 'email' },
   102: { prefix: 'ERR', type: 'err', field: 'email' },
@@ -87,6 +87,12 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
     field: 'email',
     backendCodes: ['USER_ALREADY_EXISTS', 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'],
     statuses: [409],
+  },
+  104: {
+    prefix: 'AUTH',
+    type: 'auth',
+    field: 'email',
+    backendCodes: ['USER_NOT_FOUND', 'EMAIL_NOT_FOUND', 'ACCOUNT_NOT_FOUND'],
   },
   111: { prefix: 'REQ', type: 'req', field: 'password' },
   112: { prefix: 'ERR', type: 'err', field: 'password' },

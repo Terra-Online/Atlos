@@ -4,12 +4,13 @@ import GoogleIcon from '@/assets/images/UI/media/google.svg?react';
 import LoginIcon from '@/assets/logos/login.svg?react';
 import RegisterIcon from '@/assets/logos/register.svg?react';
 import parse from 'html-react-parser';
-import { type FormEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, type KeyboardEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslateUI } from '@/locale';
 import {
   OTP_COOLDOWN_SECONDS,
   canShowSendVerificationButton,
   formatAuthHint,
+  getVerificationDigits,
   getAuthHintType,
   type AuthField,
   type AuthHintCode,
@@ -38,7 +39,7 @@ interface AccessProps {
   handleDiscordAuthClick: () => Promise<void>;
   handleGoogleAuthClick?: () => Promise<void>;
   onAutoSubmit?: (payload: { mode: AuthMode; values: AuthValues }) => void | Promise<void>;
-  onRequestVerificationCode?: (payload: { email: string }) => Promise<boolean>;
+  onRequestVerificationCode?: (payload: { email: string; mode: AuthMode }) => Promise<boolean>;
 }
 
 type OAuthPlatform = 'discord' | 'google';
@@ -78,6 +79,14 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
 };
 
 const FIELD_VALIDATE_DELAY_MS = 500;
+const AUTO_SUBMIT_DELAY_MS = 260;
+
+const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }): string => [
+  payload.mode,
+  payload.values.email.trim().toLowerCase(),
+  payload.values.password,
+  getVerificationDigits(payload.values.verificationCode),
+].join('::');
 
 const Access = ({
   open,
@@ -99,6 +108,7 @@ const Access = ({
   const [touchedFields, setTouchedFields] = useState<Record<AuthField, boolean>>(INITIAL_TOUCHED_FIELDS);
   const [otpCooldownSeconds, setOtpCooldownSeconds] = useState(0);
   const [oauthPendingPlatform, setOauthPendingPlatform] = useState<OAuthPlatform | null>(null);
+  const [lastAutoSubmitSignature, setLastAutoSubmitSignature] = useState<string | null>(null);
 
   const isRegisterMode = activeTab === 'register';
 
@@ -125,12 +135,14 @@ const Access = ({
     setTouchedFields(INITIAL_TOUCHED_FIELDS);
     setOtpCooldownSeconds(0);
     setOauthPendingPlatform(null);
+    setLastAutoSubmitSignature(null);
   }, []);
 
   const handleModeSwitch = (nextMode: AuthMode) => {
     setActiveTab(nextMode);
     setFieldHintCodes({});
     setTouchedFields(INITIAL_TOUCHED_FIELDS);
+    setLastAutoSubmitSignature(null);
   };
 
   useEffect(() => {
@@ -140,7 +152,7 @@ const Access = ({
   }, [open, resetAuthFormState]);
 
   const passwordHint = useMemo(() => {
-    if (isRegisterMode || fieldHintCodes.password) {
+    if (isRegisterMode || fieldHintCodes.password !== undefined) {
       return null;
     }
 
@@ -181,7 +193,7 @@ const Access = ({
   const getFieldHint = useCallback(
     (field: AuthField): string | null => {
       const code = fieldHintCodes[field];
-      if (!code || !touchedFields[field]) {
+      if (code === undefined || !touchedFields[field]) {
         return null;
       }
       return resolveHintText(code);
@@ -192,7 +204,7 @@ const Access = ({
   const getFieldHintType = useCallback(
     (field: AuthField): AuthHintType | null => {
       const code = fieldHintCodes[field];
-      if (!code || !touchedFields[field]) {
+      if (code === undefined || !touchedFields[field]) {
         return null;
       }
       return getAuthHintType(code);
@@ -354,14 +366,85 @@ const Access = ({
       return;
     }
 
-    void onAutoSubmit?.({
+    const payload = {
       mode: activeTab,
       values: {
         email: authValues.email,
         password: authValues.password,
         verificationCode: authValues.verificationCode,
       },
-    });
+    };
+
+    setLastAutoSubmitSignature(createSubmitSignature(payload));
+    void onAutoSubmit?.(payload);
+  };
+
+  useEffect(() => {
+    if (!open || isSubmitting || !onAutoSubmit || !isRegisterMode) {
+      return undefined;
+    }
+
+    if (authMachineNode !== 'ready') {
+      return undefined;
+    }
+
+    const hasRequiredTouches = touchedFields.email && touchedFields.password && touchedFields.verificationCode;
+    if (!hasRequiredTouches) {
+      return undefined;
+    }
+
+    const payload = {
+      mode: activeTab,
+      values: {
+        email: authValues.email,
+        password: authValues.password,
+        verificationCode: authValues.verificationCode,
+      },
+    };
+    const signature = createSubmitSignature(payload);
+
+    if (signature === lastAutoSubmitSignature) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLastAutoSubmitSignature(signature);
+      void onAutoSubmit(payload);
+    }, AUTO_SUBMIT_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    activeTab,
+    authMachineNode,
+    authValues.email,
+    authValues.password,
+    authValues.verificationCode,
+    isRegisterMode,
+    isSubmitting,
+    lastAutoSubmitSignature,
+    onAutoSubmit,
+    open,
+    touchedFields.email,
+    touchedFields.password,
+    touchedFields.verificationCode,
+  ]);
+
+  const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isSubmitting) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
+
+    if (target.tagName === 'BUTTON' || target.tagName === 'A') {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.requestSubmit();
   };
 
   const handleRequestVerificationCode = async () => {
@@ -382,6 +465,7 @@ const Access = ({
     if (onRequestVerificationCode) {
       const success = await onRequestVerificationCode({
         email: authValues.email,
+        mode: activeTab,
       });
       if (!success) {
         return;
@@ -430,7 +514,7 @@ const Access = ({
   return (
     <Modal
       open={open}
-      size="m"
+      size="l"
       title={modalTitle}
       icon={modalIcon}
       onClose={() => setOpen(false)}
@@ -438,7 +522,7 @@ const Access = ({
       iconScale={0.8}
     >
       <div className={styles.accessAuthModal} data-mode={activeTab} data-auth-node={authMachineNode}>
-          <form className={styles.emailAuthForm} onSubmit={handleSubmit} noValidate>
+          <form className={styles.emailAuthForm} onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} noValidate>
             <div className={styles.inputRow}>
               <label htmlFor="access-email" className={styles.prtsIoLabel}>
                 <span className={styles.prtsIoItem}>{t('idcard.auth.email') || 'EMAIL:'}</span>
@@ -536,6 +620,7 @@ const Access = ({
                 ) : null}
                 </div>
             </div>
+            <button type="submit" className={styles.hiddenSubmit} aria-hidden="true" tabIndex={-1} />
           </form>
 
         <div className={styles.lowerSection}>

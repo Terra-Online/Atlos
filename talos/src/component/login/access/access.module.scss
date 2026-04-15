@@ -70,6 +70,8 @@
   flex-direction: column;
   gap: 0.5rem;
   color: var(--auth-text);
+  height: 100%;
+  justify-content: space-evenly;
 }
 
 .emailAuthForm {
@@ -148,7 +150,7 @@
 
 
 .prtsHint {
-  --clippath: polygon(-2% -2%, 100% -2%, 102% 102%, -2% 102%);
+  --clippath: polygon(-10% -10%, 110% -10%, 110% 110%, -10% 110%)
   clip-path: var(--clippath);
   position: relative;
   font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
@@ -162,7 +164,7 @@
   --hint-fg: var(--auth-err-fg);
 
   &.removed {
-    --clippath: polygon(102% -2%, 102% -2%, 102% 102%, 102% 102%);
+    --clippath: polygon(110% -10%, 110% -10%, 110% 110%, 110% 110%);
     transition: clip-path .5s cubic-bezier(0.8, 0, 0.25, 1);
   }
 }
@@ -388,6 +390,18 @@
   }
 }
 
+.hiddenSubmit {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 
 .prtsRegexSlot {
   min-height: 1.05rem;
@@ -426,7 +440,7 @@
   height: 1.5px;
   width: 88%;
   transform: translateX(6%);
-  margin: 1rem 0;
+  margin: 1rem;
   background: linear-gradient(90deg, transparent 0%, var(--auth-text) 15%, var(--auth-text) 65%, transparent 100%);
   &::after {
     content: 'OR';
@@ -447,7 +461,7 @@
   flex-direction: column;
   gap: 0.75rem;
   width: 60%;
-  margin: auto;
+  margin: 0 auto 2rem;
 }
 
 .oauthMethod {

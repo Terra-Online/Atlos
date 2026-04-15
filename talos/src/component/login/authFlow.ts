@@ -159,7 +159,7 @@ const pickSessionUser = (payload: unknown): SessionUser | null => {
     u.karma ??
       u.karmaLevel
   );
-  const avatar = parseAvatar(u.avatar);
+  const avatar = parseAvatar(u.avatar ?? u.avt);
 
   return {
     uid,
@@ -403,11 +403,17 @@ export const registerWithEmail = async (
   });
 };
 
-export const sendEmailVerificationOtp = async (email: string): Promise<void> => {
+export const sendEmailVerificationOtp = async (
+  email: string,
+  mode: 'login' | 'register' = 'register',
+): Promise<void> => {
   const normalizedEmail = email.trim().toLowerCase();
+  void mode;
+  const otpType = 'sign-in';
+
   await postAuthJson('/email-otp/send-verification-otp', {
     email: normalizedEmail,
-    type: 'sign-in',
+    type: otpType,
   });
 };
 

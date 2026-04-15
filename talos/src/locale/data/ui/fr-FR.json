@@ -172,7 +172,8 @@
   "idcard": {
     "group": "Groupe: ",
     "since": "Depuis",
-    "registip": "Cliquez sur l'avatar",
+    "logintip": "Avatar pour connexion.",
+    "registip": "Avatar pour inscription.",
     "ago": "il y a",
     "karma": "Karma",
     "loading": "Chargement",

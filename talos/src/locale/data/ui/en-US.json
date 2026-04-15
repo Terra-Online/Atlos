@@ -172,8 +172,8 @@
   "idcard": {
     "group": "Group: ",
     "since": "Since",
-    "logintip": "Click the avatar to sign in",
-    "registip": "Click the avatar to register",
+    "logintip": "Click the avatar to sign in.",
+    "registip": "Click the avatar to register.",
     "ago": "Ago",
     "karma": "Karma",
     "loading": "Loading",
@@ -210,6 +210,7 @@
         "101": "Email Required",
         "102": "Email Invalid",
         "103": "Email Occupied",
+        "104": "Email Void",
 
         "111": "PWD Required",
         "112": "PWD Invalid",

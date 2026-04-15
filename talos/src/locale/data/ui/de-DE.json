@@ -172,7 +172,8 @@
   "idcard": {
     "group": "Gruppe: ",
     "since": "Seit",
-    "registip": "Klick auf den Avatar zum Anmelden",
+    "logintip": "Avatar zum Anmelden.",
+    "registip": "Avatar zum Registrieren.",
     "ago": "vor",
     "karma": "Karma",
     "loading": "Lädt",
@@ -221,6 +222,19 @@
         "702": "Zeitüberschreitung",
         "703": "Wartungsarbeiten"
       }
+    },
+    "profile": {
+      "title": "Profil",
+      "avatarHint": "Profilinformationen öffnen",
+      "nameEditHint": "Benutzernamen bearbeiten",
+      "nickName": "Spitzname",
+      "note": "Notiz",
+      "noteNickname": "Sie können maximal 15 Buchstaben, Zahlen, Bindestriche und Unterstriche in Ihrem Benutzernamen verwenden.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to switch avatar.",
+      "auditLabel": "Audit",
+      "save": "Änderungen speichern",
+      "saving": "Speichern...",
+      "logout": "Abmelden"
     }
   },
   "links": {

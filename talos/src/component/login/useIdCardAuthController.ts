@@ -24,13 +24,16 @@ const waitForPrtsWipeCycle = async () => {
   });
 };
 
-const mapAuthErrorToHint = (error: unknown): string => {
+const mapAuthErrorToHint = (error: unknown, options?: { mode?: AuthMode }): string => {
   if (error instanceof AuthFlowError) {
     const mapped = resolveErrorCode({
       backendCode: error.code,
       status: error.status,
     });
     if (mapped !== null) {
+      if ((mapped === 0 || mapped === 104) && options?.mode && options.mode !== 'login') {
+        return '701';
+      }
       return String(mapped);
     }
 
@@ -182,8 +185,10 @@ export const useIdCardAuthController = () => {
 
   const handleRequestVerificationCode = useCallback(async ({
     email,
+    mode,
   }: {
     email: string;
+    mode: AuthMode;
   }): Promise<boolean> => {
     if (isSubmitting) {
       return false;
@@ -193,11 +198,11 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
-      await sendEmailVerificationOtp(email);
+      await sendEmailVerificationOtp(email, mode);
 
       return true;
     } catch (error) {
-      setAuthError(mapAuthErrorToHint(error));
+      setAuthError(mapAuthErrorToHint(error, { mode }));
       return false;
     } finally {
       setIsSubmitting(false);
@@ -239,7 +244,14 @@ export const useIdCardAuthController = () => {
       await syncSession();
       setOpen(false);
     } catch (error) {
-      setAuthError(mapAuthErrorToHint(error));
+      const mappedHint = mapAuthErrorToHint(error, { mode });
+      setAuthError(mappedHint);
+
+      if (mode === 'login' && mappedHint === '104') {
+        await waitForPrtsWipeCycle();
+        setAuthError(null);
+        setActiveTab('register');
+      }
     } finally {
       setIsSubmitting(false);
     }
