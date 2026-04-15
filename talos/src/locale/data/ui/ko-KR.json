@@ -193,6 +193,7 @@
       "repeatPassword": "비밀번호 반복:",
       "verification": "확인:",
       "forgotPW": "비밀번호를 잊으셨나요?",
+      "pwdRegex": "8–20 글자; 대문자 1개 이상 포함",
       "send": "보내다",
       "sendResetLink": "다시 놓기",
       "resend": "재전송({count})",
