@@ -214,6 +214,7 @@
       "hints": {
         "200": "Access Granted",
         "201": "Account Created",
+        "202": "Password Changed",
 
         "101": "Email Required",
         "102": "Email Invalid",

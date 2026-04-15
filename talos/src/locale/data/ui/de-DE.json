@@ -209,6 +209,7 @@
       "hints": {
         "200": "Zugriff gewährt",
         "201": "Konto erstellt",
+        "202": "Passwort geändert",
         "101": "E-Mail erforderlich",
         "102": "E-Mail ungültig",
         "103": "E-Mail bereits vergeben",

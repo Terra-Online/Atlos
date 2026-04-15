@@ -363,6 +363,11 @@
       inset 0 0 0 20px var(--modal-bg);
       -webkit-text-fill-color: var(--auth-text);
     }
+
+    &[data-locked='true'] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -455,11 +460,10 @@
     padding: 0 0.5rem;
     color: var(--auth-text);
     background-color: var(--modal-bg);
+    &:not([data-after])::after {
+      content: 'OR';
+    }
   }
-}
-
-.authDivider:not([data-after])::after {
-  content: 'OR';
 }
 
 .resetNote {

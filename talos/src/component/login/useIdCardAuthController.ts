@@ -268,7 +268,7 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
-      let successHintCode: '200' | '201' = '200';
+      let successHintCode: '200' | '201' | '202' = '200';
       if (mode === 'login') {
         await loginWithEmail(values.email, values.password);
         successHintCode = '200';
@@ -286,7 +286,7 @@ export const useIdCardAuthController = () => {
           throw new Error('Missing reset token.');
         }
         await resetPasswordWithToken(resetToken, values.password, values.repeatPassword);
-        successHintCode = '200';
+        successHintCode = '202';
       }
 
       setAuthError(successHintCode);

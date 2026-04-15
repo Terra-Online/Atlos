@@ -657,6 +657,7 @@ const Access = ({
                   autoComplete="email"
                   spellCheck={false}
                   disabled={isResetSubmitStage}
+                  data-locked={isResetSubmitStage ? 'true' : 'false'}
                 />
                 {shouldShowSendResetButton ? (
                   <button

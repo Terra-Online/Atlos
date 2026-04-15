@@ -16,6 +16,7 @@ export type AuthHintCode =
   | 123
   | 200
   | 201
+  | 202
   | 429
   | 430
   | 601
@@ -109,6 +110,7 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
   123: { prefix: 'ERR', type: 'err', field: 'verificationCode', backendCodes: ['OTP_EXPIRED'] },
   200: { prefix: 'OK', type: 'ok' },
   201: { prefix: 'OK', type: 'ok' },
+  202: { prefix: 'OK', type: 'ok' },
   429: {
     prefix: 'WRN',
     type: 'wrn',
