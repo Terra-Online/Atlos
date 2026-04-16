@@ -7,7 +7,7 @@
     --ann-panel-bg: #{$light-1};
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
-    --ann-tab-inactive-bg: #{dim-1};
+    --ann-tab-inactive-bg: #{$dim-1};
     --ann-tab-inactive-text: #{$light-1};
     --ann-tab-hover-bg: #{$grey-1};
     --ann-desc-bg: #{$grey-1};
@@ -23,9 +23,9 @@
     --ann-panel-bg: #{$black-1};
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
-    --ann-tab-inactive-bg: #{mid};
-    --ann-tab-inactive-text: #{$light-1};
-    --ann-tab-hover-bg: #{$grey-1};
+    --ann-tab-inactive-bg: #{$mid};
+    --ann-tab-inactive-text: #{$grey-1};
+    --ann-tab-hover-bg: #{$grey-3};
     --ann-desc-bg: #{$black-1};
     --ann-desc-text: #{$light-1};
 
@@ -118,8 +118,7 @@
     line-height: 1.5;
     text-transform: uppercase;
     flex-shrink: 0;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-break: auto-phrase;
     overflow: hidden;
     z-index: 0;
     transition:
