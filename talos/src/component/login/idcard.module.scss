@@ -32,7 +32,8 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
     height: 8.5rem;
     width: 21rem;
-    max-width: 95%;
+    max-width: none;
+    flex-shrink: 0;
     padding: 1.5rem 1rem 1.5rem 1.5rem;
     box-sizing: border-box;
     background-color: #333;
@@ -92,6 +93,24 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
 .idCardEmbedded {
     margin: 0.5rem auto;
+}
+
+.idCardResponsiveShell {
+    --idcard-scale: 1;
+    --idcard-base-width: 21rem;
+    --idcard-base-height: 8.5rem;
+
+    width: 100%;
+    height: calc(var(--idcard-base-height) * var(--idcard-scale));
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.idCardResponsiveScale {
+    width: var(--idcard-base-width);
+    transform: scale(var(--idcard-scale));
+    transform-origin: top center;
 }
 
 .idCardWrap {
@@ -169,6 +188,14 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         border: none;
         background: transparent;
         cursor: text;
+        &:has(.usrNameInput:not(:focus, :focus-within, :focus))::before, &:not:has(input:placeholder-shown)::before {
+            content: "";
+            position: absolute;
+            width: 2px;
+            height: 80%;
+            background: var(--id-highlight-border);
+            animation: blink 2s step-start infinite;
+        }
     }
 
     > .usrNameEditable > .usrNameInput {
@@ -293,4 +320,9 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
             border-radius: calc(2rem - 2px);
         }
     }
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
 }

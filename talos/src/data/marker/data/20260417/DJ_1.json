@@ -1,0 +1,110 @@
+[
+  {
+    "id": 9800000001,
+    "pos": [
+      -528.2047,
+      340.2204
+    ],
+    "subregId": "DJ_1",
+    "type": "tp_point"
+  },
+  {
+    "id": 9800000002,
+    "pos": [
+      -528.2047,
+      642.037
+    ],
+    "subregId": "DJ_1",
+    "type": "tp_point"
+  },
+  {
+    "id": 9800000003,
+    "pos": [
+      -528.1763,
+      217.0
+    ],
+    "subregId": "DJ_1",
+    "type": "control_nexus"
+  },
+  {
+    "id": 9800000012,
+    "pos": [
+      -363.6323,
+      732.5
+    ],
+    "subregId": "DJ_1",
+    "type": "protocol_singularity"
+  },
+  {
+    "id": 9800000013,
+    "pos": [
+      -549.9359,
+      516.7937
+    ],
+    "subregId": "DJ_1",
+    "type": "tower_of_trails"
+  },
+  {
+    "id": 9800000027,
+    "pos": [
+      -337.1633,
+      600.6421
+    ],
+    "subregId": "DJ_1",
+    "type": "cv_wall"
+  },
+  {
+    "id": 9800000029,
+    "pos": [
+      -456.6638,
+      595.5124
+    ],
+    "subregId": "DJ_1",
+    "type": "etchspace_salvage"
+  },
+  {
+    "id": 9800000030,
+    "pos": [
+      -459.3992,
+      445.1289
+    ],
+    "subregId": "DJ_1",
+    "type": "operator_contact_panel"
+  },
+  {
+    "id": 9800000031,
+    "pos": [
+      -337.3024,
+      482.1717
+    ],
+    "subregId": "DJ_1",
+    "type": "tp_platform"
+  },
+  {
+    "id": 9800000032,
+    "pos": [
+      -336.7945,
+      437.2388
+    ],
+    "subregId": "DJ_1",
+    "type": "guest_terminal"
+  },
+  {
+    "id": 9800000033,
+    "pos": [
+      -295.25,
+      459.7672
+    ],
+    "subregId": "DJ_1",
+    "type": "stock_redistribution_terminal"
+  },
+  {
+    "id": 9800000035,
+    "pos": [
+      -281.9213,
+      422.8328
+    ],
+    "subregId": "DJ_1",
+    "type": "reception_room"
+  }
+]
