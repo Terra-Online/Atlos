@@ -1,6 +1,9 @@
 @for $i from 1 through 33 {
   .avatar[data-avt="#{$i}"] {
     background-image: url('@/assets/images/avatar/avt_#{$i}.webp') !important;
+    width: calc(5.5rem) !important;
+    height: calc(5.5rem + 12px) !important;
+    transform: translate(-4px, -11px) !important;
   }
 }
 .avatar {
