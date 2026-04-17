@@ -95,11 +95,11 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 }
 
 .idCardWrap {
+    margin: -0.25rem;
     display: grid;
-    align-items: end;
     justify-content: start;
     grid-template-columns: 0.5fr repeat(3, 0.4fr);
-    grid-template-rows: repeat(4, 0.25fr);
+    grid-template-rows: repeat(4, 0.5fr);
     grid-auto-columns: 1fr;
     grid-auto-rows: 1fr;
     gap: 0;
@@ -112,8 +112,8 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
     > .avatarContainer {
         grid-area: avatar;
-        width: 5.5rem;
-        height: 5.5rem;
+        width: 6rem;
+        height: 6rem;
         padding: 0;
         margin: 0;
         border: none;
@@ -133,8 +133,8 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         }
 
         > .avatar {
-            width: calc(5.5rem + 28px);
-            height: calc(5.5rem + 26px);
+            width: calc(6rem + 28px);
+            height: calc(6rem + 26px);
             transform: translate(-20px, -30px);
             object-fit: cover;
             background-image: $avatar-default;
@@ -279,7 +279,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         position: absolute;
         width: 100%;
         height: 100%;
-        transform: translate(-1.5rem, 22px);
+        transform: translate(-1.2rem, -20px);
         background-image: $cardbak;
         background-size: contain;
         image-rendering: pixelated;
