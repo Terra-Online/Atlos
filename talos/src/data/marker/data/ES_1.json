@@ -1,5 +1,257 @@
 [
   {
+    "id": 26800020291,
+    "pos": [
+      -378.2523,
+      1063.0952
+    ],
+    "subregId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800020292,
+    "pos": [
+      -373.4783,
+      1074.6637
+    ],
+    "subregId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800020293,
+    "pos": [
+      -381.6282,
+      1073.2976
+    ],
+    "subregId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800020299,
+    "pos": [
+      -443.4024,
+      1049.3036
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 26800020300,
+    "pos": [
+      -444.4485,
+      1063.5316
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800020301,
+    "pos": [
+      -429.6906,
+      1054.4307
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800020315,
+    "pos": [
+      -278.2802,
+      985.308
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020316,
+    "pos": [
+      -278.979,
+      1001.0701
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020326,
+    "pos": [
+      -357.0009,
+      912.1026
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020328,
+    "pos": [
+      -354.9151,
+      902.6855
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020329,
+    "pos": [
+      -361.3533,
+      908.6791
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800020330,
+    "pos": [
+      -360.7339,
+      902.8881
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800020392,
+    "pos": [
+      -214.9699,
+      755.7024
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800020393,
+    "pos": [
+      -209.3054,
+      757.4329
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800020394,
+    "pos": [
+      -210.0522,
+      752.2388
+    ],
+    "subregId": "ES_1",
+    "type": "sting_a"
+  },
+  {
+    "id": 26800020450,
+    "pos": [
+      106.7079,
+      992.8728
+    ],
+    "subregId": "ES_1",
+    "type": "sting_a"
+  },
+  {
+    "id": 26800020451,
+    "pos": [
+      106.9265,
+      1000.798
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800020463,
+    "pos": [
+      233.8432,
+      1108.6061
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020464,
+    "pos": [
+      241.939,
+      1103.9373
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020465,
+    "pos": [
+      243.2248,
+      1096.4444
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020466,
+    "pos": [
+      231.9431,
+      1102.1496
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800020467,
+    "pos": [
+      233.8848,
+      1096.0015
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800020573,
+    "pos": [
+      -458.3505,
+      958.2208
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020574,
+    "pos": [
+      -448.9196,
+      959.9805
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020577,
+    "pos": [
+      -478.0128,
+      873.894
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020578,
+    "pos": [
+      -472.5448,
+      879.928
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020579,
+    "pos": [
+      -473.1538,
+      874.8177
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800020582,
+    "pos": [
+      -259.6579,
+      796.8885
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_sting_a"
+  },
+  {
     "id": 26800020600,
     "pos": [
       -570.6822,
@@ -243,6 +495,321 @@
     "type": "bonekrusher_ambusher"
   },
   {
+    "id": 26800021035,
+    "pos": [
+      107.4352,
+      994.3081
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800021036,
+    "pos": [
+      96.7723,
+      994.0687
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800021037,
+    "pos": [
+      102.4524,
+      992.9356
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800021046,
+    "pos": [
+      100.2139,
+      995.3006
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 26800021047,
+    "pos": [
+      106.0183,
+      991.9499
+    ],
+    "subregId": "ES_1",
+    "type": "sting"
+  },
+  {
+    "id": 26800021052,
+    "pos": [
+      98.4101,
+      999.1906
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800021061,
+    "pos": [
+      -275.3106,
+      992.7307
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 26800021066,
+    "pos": [
+      -256.566,
+      806.9346
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_ram_a"
+  },
+  {
+    "id": 26800021068,
+    "pos": [
+      100.3918,
+      1000.656
+    ],
+    "subregId": "ES_1",
+    "type": "heavy_ram_a"
+  },
+  {
+    "id": 26800021075,
+    "pos": [
+      93.8204,
+      990.1803
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800021076,
+    "pos": [
+      113.788,
+      994.7485
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800021080,
+    "pos": [
+      100.953,
+      991.5121
+    ],
+    "subregId": "ES_1",
+    "type": "sting_a"
+  },
+  {
+    "id": 26800021092,
+    "pos": [
+      375.1355,
+      749.3343
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021094,
+    "pos": [
+      380.6405,
+      738.1406
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021102,
+    "pos": [
+      312.5364,
+      722.5998
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800021103,
+    "pos": [
+      312.0208,
+      714.5447
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800021126,
+    "pos": [
+      310.6937,
+      772.528
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_executioner"
+  },
+  {
+    "id": 26800021130,
+    "pos": [
+      249.6742,
+      750.6912
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800021131,
+    "pos": [
+      251.0611,
+      757.8145
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800021152,
+    "pos": [
+      306.1531,
+      427.2595
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021153,
+    "pos": [
+      297.0849,
+      432.814
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021154,
+    "pos": [
+      300.7975,
+      428.4467
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021155,
+    "pos": [
+      295.3353,
+      427.7259
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ambusher"
+  },
+  {
+    "id": 26800021160,
+    "pos": [
+      261.9369,
+      443.7372
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800021161,
+    "pos": [
+      261.7069,
+      429.1501
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
+    "id": 26800021171,
+    "pos": [
+      292.4389,
+      487.8221
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021172,
+    "pos": [
+      295.634,
+      482.1047
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021173,
+    "pos": [
+      296.8075,
+      487.9347
+    ],
+    "subregId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800021177,
+    "pos": [
+      248.2873,
+      481.2142
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800021187,
+    "pos": [
+      239.2868,
+      467.9934
+    ],
+    "subregId": "ES_1",
+    "type": "hazefyre_claw"
+  },
+  {
+    "id": 26800021190,
+    "pos": [
+      173.0531,
+      510.3435
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800021191,
+    "pos": [
+      173.0958,
+      500.7821
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_ripptusk"
+  },
+  {
+    "id": 26800021192,
+    "pos": [
+      168.1669,
+      508.499
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021193,
+    "pos": [
+      167.5086,
+      502.468
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
+    "id": 26800021194,
+    "pos": [
+      177.7899,
+      504.577
+    ],
+    "subregId": "ES_1",
+    "type": "elite_ripptusk"
+  },
+  {
     "id": 26800021234,
     "pos": [
       -633.5997,
@@ -288,6 +855,78 @@
     "type": "bonekrusher_vanguard"
   },
   {
+    "id": 26800021244,
+    "pos": [
+      317.6518,
+      777.5986
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021245,
+    "pos": [
+      302.8837,
+      773.1622
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021246,
+    "pos": [
+      317.2098,
+      717.8119
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021247,
+    "pos": [
+      244.724,
+      754.6132
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021248,
+    "pos": [
+      302.3198,
+      423.4712
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021249,
+    "pos": [
+      254.3205,
+      480.4679
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_vanguard"
+  },
+  {
+    "id": 26800021250,
+    "pos": [
+      251.4701,
+      486.4257
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021251,
+    "pos": [
+      378.7673,
+      743.4973
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_arsonist"
+  },
+  {
     "id": 26800021261,
     "pos": [
       -559.0629,
@@ -317,7 +956,7 @@
   {
     "id": 26800021298,
     "pos": [
-      -699.979,
+      -699.7443,
       890.7615
     ],
     "subregId": "ES_1",
@@ -327,7 +966,7 @@
     "id": 26800021299,
     "pos": [
       -707.3743,
-      901.1496
+      900.8316
     ],
     "subregId": "ES_1",
     "type": "bonekrusher_infiltrator"
@@ -335,8 +974,8 @@
   {
     "id": 26800021300,
     "pos": [
-      -709.2093,
-      878.7621
+      -708.3985,
+      878.8681
     ],
     "subregId": "ES_1",
     "type": "bonekrusher_vanguard"
@@ -349,6 +988,465 @@
     ],
     "subregId": "ES_1",
     "type": "bonekrusher_infiltrator"
+  },
+  {
+    "id": 26800021329,
+    "pos": [
+      -371.0992,
+      1068.5196
+    ],
+    "subregId": "ES_1",
+    "type": "ram"
+  },
+  {
+    "id": 26800021331,
+    "pos": [
+      18.0174,
+      1045.8064
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800021332,
+    "pos": [
+      15.4156,
+      1053.5161
+    ],
+    "subregId": "ES_1",
+    "type": "falsewings"
+  },
+  {
+    "id": 26800021333,
+    "pos": [
+      13.0596,
+      1048.6137
+    ],
+    "subregId": "ES_1",
+    "type": "ram_a"
+  },
+  {
+    "id": 26800026009,
+    "pos": [
+      46.7382,
+      649.9262
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_pyromancer"
+  },
+  {
+    "id": 26800026010,
+    "pos": [
+      52.1152,
+      644.9017
+    ],
+    "subregId": "ES_1",
+    "type": "bonekrusher_siegeknuckles"
+  },
+  {
+    "id": 26800020254,
+    "pos": [
+      -386.5516,
+      1085.2318
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020256,
+    "pos": [
+      -377.4073,
+      1053.2014
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020265,
+    "pos": [
+      -422.7303,
+      1027.3621
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020272,
+    "pos": [
+      -465.9979,
+      1064.9394
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020273,
+    "pos": [
+      -470.3015,
+      1062.2587
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020302,
+    "pos": [
+      -273.4166,
+      969.1263
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020319,
+    "pos": [
+      -350.347,
+      933.6009
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020320,
+    "pos": [
+      -354.0885,
+      935.7028
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020339,
+    "pos": [
+      -238.4674,
+      849.171
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020340,
+    "pos": [
+      -243.3639,
+      847.2227
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020347,
+    "pos": [
+      -223.1318,
+      778.5696
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020348,
+    "pos": [
+      -249.4829,
+      822.3482
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020349,
+    "pos": [
+      -258.4658,
+      832.7999
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020350,
+    "pos": [
+      -277.661,
+      759.1336
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020351,
+    "pos": [
+      -280.403,
+      755.3288
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020356,
+    "pos": [
+      -287.8681,
+      752.684
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area5_1"
+  },
+  {
+    "id": 26800020388,
+    "pos": [
+      -225.9909,
+      785.9473
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020389,
+    "pos": [
+      -224.476,
+      782.216
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020395,
+    "pos": [
+      -190.3795,
+      754.3376
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020419,
+    "pos": [
+      63.4451,
+      1108.2553
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020420,
+    "pos": [
+      106.8123,
+      975.2981
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020442,
+    "pos": [
+      89.3695,
+      977.8311
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020449,
+    "pos": [
+      -27.2178,
+      880.191
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020455,
+    "pos": [
+      90.479,
+      1113.5978
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020456,
+    "pos": [
+      87.1291,
+      1114.255
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020457,
+    "pos": [
+      79.9749,
+      1116.3602
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020475,
+    "pos": [
+      288.5501,
+      1122.8835
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020476,
+    "pos": [
+      287.59,
+      1127.0176
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020477,
+    "pos": [
+      289.0409,
+      1118.4738
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020479,
+    "pos": [
+      295.0579,
+      1103.1036
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800020480,
+    "pos": [
+      235.8051,
+      1084.1082
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020481,
+    "pos": [
+      235.6131,
+      1079.7409
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020493,
+    "pos": [
+      216.8366,
+      1053.0709
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020494,
+    "pos": [
+      121.0336,
+      1227.4009
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area5_1"
+  },
+  {
+    "id": 26800020495,
+    "pos": [
+      136.0074,
+      1231.7281
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020498,
+    "pos": [
+      132.2056,
+      1228.533
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800020510,
+    "pos": [
+      105.1281,
+      1254.6748
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800020552,
+    "pos": [
+      -17.0119,
+      776.0346
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800020553,
+    "pos": [
+      -19.001,
+      780.9228
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800020554,
+    "pos": [
+      -17.102,
+      787.0073
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800020580,
+    "pos": [
+      -236.5214,
+      739.8269
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020581,
+    "pos": [
+      -237.0008,
+      733.1585
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020584,
+    "pos": [
+      234.4182,
+      1132.36
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area5_1"
+  },
+  {
+    "id": 26800020585,
+    "pos": [
+      -470.2992,
+      1065.2611
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800020586,
+    "pos": [
+      -482.888,
+      916.2231
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
   },
   {
     "id": 26800020660,
@@ -567,6 +1665,96 @@
     "type": "crate_i"
   },
   {
+    "id": 26800020713,
+    "pos": [
+      -547.027,
+      702.3757
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020714,
+    "pos": [
+      -549.8091,
+      705.849
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020715,
+    "pos": [
+      -669.3475,
+      794.1051
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020719,
+    "pos": [
+      -560.1705,
+      818.2565
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020720,
+    "pos": [
+      -570.9329,
+      750.1633
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020721,
+    "pos": [
+      -568.6072,
+      753.7186
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020722,
+    "pos": [
+      -665.1714,
+      740.0362
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area4_1"
+  },
+  {
+    "id": 26800020723,
+    "pos": [
+      -593.804,
+      751.997
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020724,
+    "pos": [
+      -590.6824,
+      748.8043
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020728,
+    "pos": [
+      -638.6798,
+      882.0348
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area4_1"
+  },
+  {
     "id": 26800020743,
     "pos": [
       -568.812,
@@ -583,6 +1771,51 @@
     ],
     "subregId": "ES_1",
     "type": "crate_ii"
+  },
+  {
+    "id": 26800020745,
+    "pos": [
+      -521.3963,
+      850.1615
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020746,
+    "pos": [
+      -513.5811,
+      854.7175
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020747,
+    "pos": [
+      -618.6915,
+      849.0107
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020748,
+    "pos": [
+      -621.429,
+      848.6577
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020750,
+    "pos": [
+      -621.1729,
+      916.0746
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800020751,
@@ -675,6 +1908,42 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800020772,
+    "pos": [
+      -514.4631,
+      912.1363
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020773,
+    "pos": [
+      -516.7114,
+      915.5584
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020774,
+    "pos": [
+      -560.8149,
+      854.4167
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020775,
+    "pos": [
+      -556.7795,
+      855.4573
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800020776,
     "pos": [
       -633.0149,
@@ -720,6 +1989,15 @@
     "type": "pure_nodule_m"
   },
   {
+    "id": 26800020787,
+    "pos": [
+      -581.7422,
+      809.7128
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800020788,
     "pos": [
       -590.021,
@@ -727,6 +2005,33 @@
     ],
     "subregId": "ES_1",
     "type": "crate_i"
+  },
+  {
+    "id": 26800020790,
+    "pos": [
+      -699.821,
+      847.0889
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020794,
+    "pos": [
+      -695.2838,
+      848.2139
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020799,
+    "pos": [
+      -667.9222,
+      923.4736
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800020815,
@@ -772,6 +2077,33 @@
     ],
     "subregId": "ES_1",
     "type": "crate_i"
+  },
+  {
+    "id": 26800020839,
+    "pos": [
+      -592.3253,
+      862.2047
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020840,
+    "pos": [
+      -591.0451,
+      854.6786
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020841,
+    "pos": [
+      -578.0576,
+      838.582
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area4_1"
   },
   {
     "id": 26800020842,
@@ -830,8 +2162,8 @@
   {
     "id": 26800020853,
     "pos": [
-      -500.1923,
-      862.0775
+      -500.5607,
+      867.0243
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_l"
@@ -848,8 +2180,8 @@
   {
     "id": 26800020855,
     "pos": [
-      -501.9206,
-      845.3081
+      -502.7558,
+      844.6991
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_l"
@@ -875,11 +2207,29 @@
   {
     "id": 26800020858,
     "pos": [
-      -507.7243,
-      854.615
+      -509.646,
+      855.995
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
+  },
+  {
+    "id": 26800020871,
+    "pos": [
+      -496.9729,
+      947.7512
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area4_1"
+  },
+  {
+    "id": 26800020874,
+    "pos": [
+      -498.4832,
+      880.3734
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800020876,
@@ -1008,10 +2358,64 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800020940,
+    "pos": [
+      -515.6531,
+      920.5479
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area4_1"
+  },
+  {
+    "id": 26800020941,
+    "pos": [
+      -511.1361,
+      754.6414
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020942,
+    "pos": [
+      -507.6714,
+      766.4425
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020945,
+    "pos": [
+      -509.858,
+      870.1949
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020946,
+    "pos": [
+      -547.5604,
+      839.2448
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020947,
+    "pos": [
+      -547.1294,
+      842.533
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800020948,
     "pos": [
-      -555.7111,
-      831.2947
+      -555.5233,
+      829.5245
     ],
     "subregId": "ES_1",
     "type": "crate_ii"
@@ -1019,17 +2423,35 @@
   {
     "id": 26800020949,
     "pos": [
-      -514.5734,
-      852.2618
+      -515.8558,
+      849.7411
     ],
     "subregId": "ES_1",
     "type": "crate_ii"
   },
   {
+    "id": 26800020950,
+    "pos": [
+      -517.1659,
+      916.2549
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800020951,
+    "pos": [
+      -513.3786,
+      918.8731
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800020954,
     "pos": [
-      -541.4345,
-      918.9897
+      -530.5655,
+      918.6674
     ],
     "subregId": "ES_1",
     "type": "crate_i"
@@ -1062,6 +2484,1059 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800021019,
+    "pos": [
+      -426.2384,
+      1026.9522
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021022,
+    "pos": [
+      -259.3833,
+      994.1341
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021023,
+    "pos": [
+      -265.5075,
+      998.315
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021025,
+    "pos": [
+      -161.3612,
+      849.9933
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021026,
+    "pos": [
+      -170.8265,
+      832.3638
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021041,
+    "pos": [
+      82.4563,
+      978.1491
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021042,
+    "pos": [
+      81.7227,
+      983.6726
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021050,
+    "pos": [
+      84.9528,
+      978.6155
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021056,
+    "pos": [
+      92.3012,
+      972.3508
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021058,
+    "pos": [
+      -21.4718,
+      772.0493
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021059,
+    "pos": [
+      -14.8861,
+      765.8534
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021060,
+    "pos": [
+      136.5134,
+      1053.203
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021064,
+    "pos": [
+      -113.7155,
+      856.1346
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021065,
+    "pos": [
+      -203.5231,
+      734.5223
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021070,
+    "pos": [
+      98.2603,
+      971.47
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021079,
+    "pos": [
+      125.9197,
+      997.5474
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021082,
+    "pos": [
+      202.9889,
+      1138.8049
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021083,
+    "pos": [
+      -372.4692,
+      942.168
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021084,
+    "pos": [
+      -289.7884,
+      945.6703
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021085,
+    "pos": [
+      -379.2955,
+      939.8537
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021086,
+    "pos": [
+      110.5421,
+      976.3541
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021087,
+    "pos": [
+      94.794,
+      976.3258
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021088,
+    "pos": [
+      336.5796,
+      740.6846
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021089,
+    "pos": [
+      337.4758,
+      734.7061
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021090,
+    "pos": [
+      344.581,
+      748.1895
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021091,
+    "pos": [
+      364.3725,
+      768.1734
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021095,
+    "pos": [
+      358.5354,
+      758.4505
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021096,
+    "pos": [
+      362.184,
+      760.2313
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021097,
+    "pos": [
+      366.0247,
+      760.1253
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021098,
+    "pos": [
+      349.9856,
+      749.0385
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021099,
+    "pos": [
+      335.0059,
+      745.9025
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021100,
+    "pos": [
+      329.7945,
+      733.3281
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021104,
+    "pos": [
+      302.4637,
+      724.328
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021105,
+    "pos": [
+      306.2594,
+      725.0405
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021106,
+    "pos": [
+      301.8962,
+      720.4903
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021107,
+    "pos": [
+      324.8189,
+      711.8935
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021108,
+    "pos": [
+      326.2312,
+      730.8053
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021109,
+    "pos": [
+      311.8267,
+      746.2652
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021110,
+    "pos": [
+      299.3466,
+      788.5337
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021111,
+    "pos": [
+      296.0821,
+      784.866
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021112,
+    "pos": [
+      301.3523,
+      783.7848
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021113,
+    "pos": [
+      297.917,
+      778.6544
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021114,
+    "pos": [
+      336.2382,
+      789.3605
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021115,
+    "pos": [
+      329.4318,
+      790.4629
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021116,
+    "pos": [
+      294.9544,
+      701.9374
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021117,
+    "pos": [
+      286.7953,
+      725.8346
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021118,
+    "pos": [
+      374.6156,
+      768.2124
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area6_1"
+  },
+  {
+    "id": 26800021119,
+    "pos": [
+      359.6876,
+      710.4318
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021120,
+    "pos": [
+      354.1826,
+      704.1353
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021121,
+    "pos": [
+      352.0916,
+      701.0825
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021122,
+    "pos": [
+      336.7903,
+      719.1377
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021129,
+    "pos": [
+      251.1523,
+      771.8352
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021134,
+    "pos": [
+      228.6973,
+      755.0008
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021135,
+    "pos": [
+      229.1907,
+      751.2
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021136,
+    "pos": [
+      233.202,
+      747.8079
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021137,
+    "pos": [
+      287.718,
+      706.7854
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021138,
+    "pos": [
+      233.5861,
+      738.7342
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021144,
+    "pos": [
+      304.2715,
+      469.68
+    ],
+    "subregId": "ES_1",
+    "type": "crate_i"
+  },
+  {
+    "id": 26800021146,
+    "pos": [
+      277.6475,
+      468.875
+    ],
+    "subregId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800021148,
+    "pos": [
+      234.4079,
+      450.5211
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area6_1"
+  },
+  {
+    "id": 26800021149,
+    "pos": [
+      286.0537,
+      457.6607
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021150,
+    "pos": [
+      285.9683,
+      461.922
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021151,
+    "pos": [
+      299.4533,
+      444.7285
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021157,
+    "pos": [
+      283.0057,
+      420.2455
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021158,
+    "pos": [
+      291.0465,
+      418.7582
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021159,
+    "pos": [
+      286.9925,
+      417.0622
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021162,
+    "pos": [
+      263.7956,
+      464.6028
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021163,
+    "pos": [
+      269.755,
+      460.174
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021164,
+    "pos": [
+      265.3355,
+      459.9504
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021165,
+    "pos": [
+      257.5836,
+      465.411
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021166,
+    "pos": [
+      242.4836,
+      426.3055
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021167,
+    "pos": [
+      263.9699,
+      416.617
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021168,
+    "pos": [
+      270.3936,
+      419.3294
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021169,
+    "pos": [
+      284.2238,
+      488.9962
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021170,
+    "pos": [
+      284.3161,
+      484.9354
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021174,
+    "pos": [
+      303.7021,
+      491.1195
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021175,
+    "pos": [
+      300.258,
+      496.5253
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021176,
+    "pos": [
+      302.9739,
+      494.9096
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021180,
+    "pos": [
+      279.6182,
+      473.0927
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021181,
+    "pos": [
+      280.0246,
+      478.0596
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021182,
+    "pos": [
+      275.1652,
+      472.7796
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021183,
+    "pos": [
+      258.679,
+      472.3961
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021184,
+    "pos": [
+      238.0455,
+      494.4856
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021185,
+    "pos": [
+      238.1095,
+      490.5848
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021186,
+    "pos": [
+      218.1595,
+      471.8013
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021188,
+    "pos": [
+      167.8469,
+      496.9449
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021189,
+    "pos": [
+      168.0176,
+      501.8845
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021195,
+    "pos": [
+      173.4366,
+      485.1257
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021196,
+    "pos": [
+      170.707,
+      488.5014
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021197,
+    "pos": [
+      176.3936,
+      488.4295
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021198,
+    "pos": [
+      169.6252,
+      518.4654
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021199,
+    "pos": [
+      164.5823,
+      516.0039
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021200,
+    "pos": [
+      173.8455,
+      487.6479
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021202,
+    "pos": [
+      456.6641,
+      626.5423
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_l"
+  },
+  {
+    "id": 26800021203,
+    "pos": [
+      459.2459,
+      621.2422
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_l"
+  },
+  {
+    "id": 26800021204,
+    "pos": [
+      451.637,
+      595.0029
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_l"
+  },
+  {
+    "id": 26800021205,
+    "pos": [
+      445.5049,
+      599.8299
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_l"
+  },
+  {
+    "id": 26800021206,
+    "pos": [
+      449.4735,
+      598.8335
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021207,
+    "pos": [
+      462.8524,
+      628.6688
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800021208,
+    "pos": [
+      453.0582,
+      633.3475
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021209,
+    "pos": [
+      455.1988,
+      594.3117
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021210,
+    "pos": [
+      442.2403,
+      601.4411
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021211,
+    "pos": [
+      452.4451,
+      598.2489
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021212,
+    "pos": [
+      456.1537,
+      589.2647
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021213,
+    "pos": [
+      448.492,
+      602.2891
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021214,
+    "pos": [
+      478.9049,
+      597.2717
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area6_1"
+  },
+  {
+    "id": 26800021215,
+    "pos": [
+      480.4369,
+      605.3799
+    ],
+    "subregId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800021216,
+    "pos": [
+      168.0176,
+      501.8845
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021217,
+    "pos": [
+      439.3812,
+      635.3192
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021218,
+    "pos": [
+      432.0527,
+      635.2622
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021219,
+    "pos": [
+      443.5632,
+      629.0651
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021220,
+    "pos": [
+      456.6903,
+      585.1021
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021221,
+    "pos": [
+      463.8179,
+      583.6847
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021222,
+    "pos": [
+      460.1057,
+      584.1661
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021223,
+    "pos": [
+      435.607,
+      634.5471
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021224,
+    "pos": [
+      474.5231,
+      610.0272
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800021225,
+    "pos": [
+      468.2928,
+      608.5432
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
     "id": 26800021231,
     "pos": [
       -534.7652,
@@ -1071,6 +3546,42 @@
     "type": "crate_ii"
   },
   {
+    "id": 26800021253,
+    "pos": [
+      -233.8447,
+      844.836
+    ],
+    "subregId": "ES_1",
+    "type": "crate_ii"
+  },
+  {
+    "id": 26800021254,
+    "pos": [
+      82.9399,
+      1116.1176
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021255,
+    "pos": [
+      -550.9103,
+      829.8107
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021256,
+    "pos": [
+      -547.5604,
+      833.2027
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800021257,
     "pos": [
       -563.073,
@@ -1078,6 +3589,24 @@
     ],
     "subregId": "ES_1",
     "type": "crate_ii"
+  },
+  {
+    "id": 26800021258,
+    "pos": [
+      -537.4437,
+      919.6932
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021259,
+    "pos": [
+      -540.6603,
+      916.8897
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800021260,
@@ -1100,8 +3629,8 @@
   {
     "id": 26800021303,
     "pos": [
-      -704.8484,
-      879.0165
+      -703.2349,
+      879.1225
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_m"
@@ -1109,7 +3638,7 @@
   {
     "id": 26800021304,
     "pos": [
-      -707.8403,
+      -707.6056,
       890.9339
     ],
     "subregId": "ES_1",
@@ -1127,8 +3656,8 @@
   {
     "id": 26800021306,
     "pos": [
-      -703.1709,
-      901.2345
+      -702.9149,
+      901.1072
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
@@ -1136,8 +3665,8 @@
   {
     "id": 26800021307,
     "pos": [
-      -684.2023,
-      901.2768
+      -684.181,
+      901.7009
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
@@ -1145,16 +3674,61 @@
   {
     "id": 26800021308,
     "pos": [
-      -674.238,
-      901.5524
+      -674.0886,
+      901.8493
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800021309,
+    "pos": [
+      -688.1923,
+      879.0801
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021310,
+    "pos": [
+      -699.1809,
+      879.1861
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021312,
+    "pos": [
+      -698.0927,
+      901.3192
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021313,
+    "pos": [
+      -688.6831,
+      901.3192
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021314,
+    "pos": [
+      -670.0346,
+      901.8492
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800021316,
     "pos": [
-      -703.9177,
+      -703.8624,
       890.7191
     ],
     "subregId": "ES_1",
@@ -1168,6 +3742,69 @@
     ],
     "subregId": "ES_1",
     "type": "rope"
+  },
+  {
+    "id": 26800021327,
+    "pos": [
+      -512.4397,
+      910.393
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021328,
+    "pos": [
+      -512.4126,
+      914.0581
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021330,
+    "pos": [
+      56.6813,
+      1141.349
+    ],
+    "subregId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800021341,
+    "pos": [
+      70.849,
+      1113.4515
+    ],
+    "subregId": "ES_1",
+    "type": "crate_iii"
+  },
+  {
+    "id": 26800021342,
+    "pos": [
+      84.2463,
+      1113.9977
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021343,
+    "pos": [
+      43.4097,
+      1089.2598
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021344,
+    "pos": [
+      239.3684,
+      1086.2282
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
   },
   {
     "id": 26800021348,
@@ -1233,6 +3870,33 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800021362,
+    "pos": [
+      -684.4029,
+      798.0081
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021363,
+    "pos": [
+      -541.8421,
+      687.9171
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021364,
+    "pos": [
+      -544.4665,
+      684.207
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800021365,
     "pos": [
       -571.6409,
@@ -1249,6 +3913,24 @@
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
+  },
+  {
+    "id": 26800021367,
+    "pos": [
+      -560.2559,
+      831.1251
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021368,
+    "pos": [
+      -509.9369,
+      878.3699
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800021369,
@@ -1296,6 +3978,42 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800021374,
+    "pos": [
+      -588.442,
+      819.8253
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021375,
+    "pos": [
+      -639.16,
+      896.0828
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021376,
+    "pos": [
+      -638.0721,
+      907.6029
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021377,
+    "pos": [
+      -527.0129,
+      849.9297
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
     "id": 26800021380,
     "pos": [
       -653.7164,
@@ -1332,6 +4050,483 @@
     "type": "pure_nodule_s"
   },
   {
+    "id": 26800021385,
+    "pos": [
+      -568.4151,
+      857.8862
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021386,
+    "pos": [
+      -568.1292,
+      873.0169
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021387,
+    "pos": [
+      -635.4489,
+      911.1384
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021388,
+    "pos": [
+      -637.7091,
+      918.3219
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021389,
+    "pos": [
+      -707.2036,
+      845.6473
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021390,
+    "pos": [
+      -703.4056,
+      845.5413
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021391,
+    "pos": [
+      -595.2272,
+      920.7599
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021392,
+    "pos": [
+      -599.6226,
+      926.1236
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021403,
+    "pos": [
+      -389.8034,
+      950.0672
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021404,
+    "pos": [
+      -384.4338,
+      949.559
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021405,
+    "pos": [
+      -284.7316,
+      1008.7835
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021406,
+    "pos": [
+      -290.962,
+      1007.6387
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021407,
+    "pos": [
+      -463.6841,
+      1069.0236
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021408,
+    "pos": [
+      -344.7132,
+      1054.9797
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021409,
+    "pos": [
+      -346.532,
+      1062.0408
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021413,
+    "pos": [
+      -166.1407,
+      837.6124
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021414,
+    "pos": [
+      -189.1846,
+      771.0858
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_2"
+  },
+  {
+    "id": 26800021415,
+    "pos": [
+      -192.1931,
+      757.7085
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021416,
+    "pos": [
+      -220.9127,
+      746.4299
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021417,
+    "pos": [
+      -277.3917,
+      763.7717
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021427,
+    "pos": [
+      126.8817,
+      1229.6028
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021428,
+    "pos": [
+      106.6525,
+      978.2551
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021429,
+    "pos": [
+      123.2526,
+      1000.4094
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021430,
+    "pos": [
+      84.0566,
+      990.8905
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021431,
+    "pos": [
+      86.0409,
+      982.2196
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021432,
+    "pos": [
+      124.3323,
+      1096.8241
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021433,
+    "pos": [
+      119.9731,
+      1099.0417
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021434,
+    "pos": [
+      263.8719,
+      1099.379
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021435,
+    "pos": [
+      248.2446,
+      1061.9327
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area5_1"
+  },
+  {
+    "id": 26800021436,
+    "pos": [
+      -2.8894,
+      798.4893
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021437,
+    "pos": [
+      1.1944,
+      792.0962
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021438,
+    "pos": [
+      -8.3483,
+      791.8527
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021439,
+    "pos": [
+      302.6965,
+      716.3255
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021440,
+    "pos": [
+      286.6938,
+      722.41
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021441,
+    "pos": [
+      302.0778,
+      780.0536
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021442,
+    "pos": [
+      234.1777,
+      760.1636
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021443,
+    "pos": [
+      339.1827,
+      737.653
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021444,
+    "pos": [
+      355.3775,
+      760.1465
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021445,
+    "pos": [
+      355.1215,
+      709.5202
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021446,
+    "pos": [
+      333.9915,
+      760.263
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021447,
+    "pos": [
+      329.596,
+      718.0554
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021448,
+    "pos": [
+      327.3944,
+      748.8435
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021449,
+    "pos": [
+      239.5391,
+      761.8213
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021450,
+    "pos": [
+      279.3187,
+      482.3796
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021451,
+    "pos": [
+      302.8032,
+      487.0443
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021452,
+    "pos": [
+      259.1713,
+      461.2453
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021453,
+    "pos": [
+      168.2309,
+      491.9628
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021454,
+    "pos": [
+      168.9991,
+      514.0747
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021455,
+    "pos": [
+      297.2129,
+      419.2034
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800021456,
+    "pos": [
+      304.3181,
+      446.4458
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021457,
+    "pos": [
+      238.4509,
+      480.1118
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021458,
+    "pos": [
+      165.6492,
+      508.3294
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800021459,
+    "pos": [
+      250.7837,
+      425.6695
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
     "id": 26800021467,
     "pos": [
       -504.2037,
@@ -1357,6 +4552,42 @@
     ],
     "subregId": "ES_1",
     "type": "crate_ii"
+  },
+  {
+    "id": 26800021474,
+    "pos": [
+      -584.3026,
+      719.1663
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021475,
+    "pos": [
+      -559.8718,
+      717.3431
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021476,
+    "pos": [
+      -560.5655,
+      721.0928
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
+  },
+  {
+    "id": 26800021478,
+    "pos": [
+      -539.6337,
+      714.2139
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_1"
   },
   {
     "id": 26800021479,
@@ -1393,6 +4624,294 @@
     ],
     "subregId": "ES_1",
     "type": "pure_nodule_s"
+  },
+  {
+    "id": 26800021493,
+    "pos": [
+      -422.2867,
+      1037.9128
+    ],
+    "subregId": "ES_1",
+    "type": "rope"
+  },
+  {
+    "id": 26800024114,
+    "pos": [
+      -581.9129,
+      723.4912
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024115,
+    "pos": [
+      -509.5169,
+      873.907
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024116,
+    "pos": [
+      -508.4497,
+      759.3833
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024117,
+    "pos": [
+      -559.5091,
+      815.3097
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024118,
+    "pos": [
+      -516.8778,
+      851.5198
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024119,
+    "pos": [
+      -688.4249,
+      890.3163
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024120,
+    "pos": [
+      -626.0698,
+      915.7376
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024121,
+    "pos": [
+      -584.3796,
+      810.5805
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024122,
+    "pos": [
+      -669.2327,
+      798.3182
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024123,
+    "pos": [
+      -532.9659,
+      717.0675
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024124,
+    "pos": [
+      -498.3787,
+      885.0374
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024125,
+    "pos": [
+      -497.7167,
+      873.731
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024126,
+    "pos": [
+      -613.8757,
+      904.5205
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024127,
+    "pos": [
+      -592.2187,
+      858.3251
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024128,
+    "pos": [
+      -655.471,
+      837.2082
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024129,
+    "pos": [
+      -575.2131,
+      685.7759
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024130,
+    "pos": [
+      -637.0703,
+      800.41
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area4_2"
+  },
+  {
+    "id": 26800024131,
+    "pos": [
+      -189.334,
+      748.6347
+    ],
+    "subregId": "ES_1",
+    "type": "int_vending_machine_area5_1"
+  },
+  {
+    "id": 26800024132,
+    "pos": [
+      26.2447,
+      623.2504
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800024133,
+    "pos": [
+      48.4239,
+      605.9144
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800024134,
+    "pos": [
+      59.9992,
+      605.4925
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800024135,
+    "pos": [
+      56.5532,
+      605.1936
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800024136,
+    "pos": [
+      52.4779,
+      605.0028
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800026001,
+    "pos": [
+      46.7169,
+      630.5279
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
+  },
+  {
+    "id": 26800026002,
+    "pos": [
+      52.0085,
+      629.4891
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800026003,
+    "pos": [
+      56.98,
+      629.9979
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800026004,
+    "pos": [
+      61.162,
+      631.3759
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_s"
+  },
+  {
+    "id": 26800026005,
+    "pos": [
+      44.5642,
+      635.2796
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800026006,
+    "pos": [
+      53.0753,
+      633.1143
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_1"
+  },
+  {
+    "id": 26800026007,
+    "pos": [
+      58.1108,
+      635.3616
+    ],
+    "subregId": "ES_1",
+    "type": "sparkling_nodule_m"
+  },
+  {
+    "id": 26800026008,
+    "pos": [
+      42.6295,
+      630.5115
+    ],
+    "subregId": "ES_1",
+    "type": "int_trchest_wrdg001_Area6_2"
   },
   {
     "id": 26800001153,
@@ -3917,8 +7436,8 @@
   {
     "id": 26800001465,
     "pos": [
-      -551.813,
-      690.6667
+      -549.5837,
+      690.55
     ],
     "subregId": "ES_1",
     "type": "fine_nodule_m"
