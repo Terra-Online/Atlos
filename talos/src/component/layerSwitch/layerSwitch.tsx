@@ -8,7 +8,7 @@ import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
 import { useDevice } from '@/utils/device';
 
-const PREDEFINED_LAYER_ORDER: LayerType[] = ['L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
+const PREDEFINED_LAYER_ORDER: LayerType[] = ['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
 
 const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile: boolean) => {
     if (selectedIndex < 0) return {};

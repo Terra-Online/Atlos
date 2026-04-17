@@ -40,7 +40,7 @@
             "WL_4",
             "WL_5"
         ],
-        "layers": ["L3", "L2", "L1", "B1", "B2", "B3", "B4"]
+        "layers": ["L4", "L3", "L2", "L1", "B1", "B2", "B3", "B4"]
     },
     "Dijiang": {
         "dimensions": [
