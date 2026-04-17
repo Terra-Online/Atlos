@@ -33,7 +33,6 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
     height: 8.5rem;
     width: 21rem;
     max-width: 95%;
-    padding: 1.5rem 1rem 1.5rem 1.5rem;
     box-sizing: border-box;
     background-color: #333;
     border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
@@ -96,6 +95,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
 .idCardWrap {
     position: relative;
+    padding: 1.5rem 1rem 1.5rem 1.5rem;
     display: grid;
     justify-content: start;
     grid-template-columns: 0.5fr repeat(3, 0.4fr);
