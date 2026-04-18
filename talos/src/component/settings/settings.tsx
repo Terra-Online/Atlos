@@ -1,6 +1,7 @@
-import React, { useCallback, useId } from 'react';
+import React, { useCallback, useId, useMemo, useState } from 'react';
 import Modal from '@/component/modal/modal';
 import { Trigger } from '@/component/trigger/trigger';
+import Button from '@/component/button/button';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import DarkModeIcon from '../../assets/logos/darkmode.svg?react';
 import styles from './settings.module.scss';
@@ -17,6 +18,17 @@ import {
 import { applyTheme, startSystemFollow } from '@/utils/theme';
 import { isMac } from '@/utils/platform';
 import { getShortcutConfig, type ShortcutEntry, type KeyChip } from './shortcuts';
+import {
+    authenticateEndfieldSession,
+    EndfieldBrowserClient,
+    type EndfieldRoleOption,
+} from '@/utils/endfield/client';
+import { readEndfieldSession } from '@/utils/endfield/storage';
+import {
+    readEndfieldTrackerConfig,
+    saveEndfieldTrackerConfig,
+    type EndfieldTrackerConfig,
+} from '@/utils/endfield/config';
 
 export interface SettingsProps {
     open: boolean;
@@ -27,6 +39,8 @@ export interface SettingsProps {
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
+const ENDFIELD_BASE_URL = 'https://zonai.skport.com';
+const ENDFIELD_AUTH_BASE_URL = 'https://as.gryphline.com';
 
 interface SectionProps {
     titleKey: string;
@@ -88,6 +102,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         prefsMarkerProgress, setPrefsMarkerProgress,
         prefsAutoCluster, setPrefsAutoCluster,
         prefsHideCompleted, setPrefsHideCompleted,
+        prefsLocatorSync, setPrefsLocatorSync,
     } = useUiPrefsStore(useShallow((s) => ({
         prefsSidebar: s.prefsSidebarEnabled,
         setPrefsSidebar: s.setPrefsSidebarEnabled,
@@ -103,6 +118,8 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setPrefsAutoCluster: s.setPrefsAutoClusterEnabled,
         prefsHideCompleted: s.prefsHideCompletedMarkers,
         setPrefsHideCompleted: s.setPrefsHideCompletedMarkers,
+        prefsLocatorSync: s.prefsLocatorSyncEnabled,
+        setPrefsLocatorSync: s.setPrefsLocatorSyncEnabled,
     })));
     const prefsPerformanceMode = usePerformanceMode();
     const setPrefsPerformanceMode = useSetPerformanceMode();
@@ -120,6 +137,150 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         }
     }, [setThemePreference]);
 
+    const existingTrackerConfig = useMemo(() => readEndfieldTrackerConfig(), []);
+    const endfieldClient = useMemo(() => new EndfieldBrowserClient({ baseUrl: ENDFIELD_BASE_URL }), []);
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [loginLoading, setLoginLoading] = useState(false);
+    const [loginError, setLoginError] = useState('');
+    const [loginStep, setLoginStep] = useState<'auth' | 'role'>('auth');
+    const [roleOptions, setRoleOptions] = useState<EndfieldRoleOption[]>([]);
+    const [selectedRoleKey, setSelectedRoleKey] = useState(
+        existingTrackerConfig ? `${existingTrackerConfig.serverId}:${existingTrackerConfig.roleId}` : '',
+    );
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const closeLoginModal = useCallback(() => {
+        setLoginOpen(false);
+        setLoginLoading(false);
+        setLoginError('');
+        setLoginStep('auth');
+        setRoleOptions([]);
+        setSelectedRoleKey('');
+    }, []);
+
+    const resolveDefaultRole = useCallback((roles: EndfieldRoleOption[]): EndfieldRoleOption | null => {
+        if (!roles.length) return null;
+        return roles.find((role) => role.isDefault) ?? roles[0];
+    }, []);
+
+    const finalizeRoleSelection = useCallback((role: EndfieldRoleOption) => {
+        const currentConfig = readEndfieldTrackerConfig();
+        const nextConfig: EndfieldTrackerConfig = {
+            enabled: true,
+            locatorSync: true,
+            baseUrl: ENDFIELD_BASE_URL,
+            roleId: role.roleId,
+            serverId: role.serverId,
+            debug: currentConfig?.debug ?? false,
+            intervalMs: currentConfig?.intervalMs,
+            offsetX: currentConfig?.offsetX,
+            offsetZ: currentConfig?.offsetZ,
+            scaleX: currentConfig?.scaleX,
+            scaleZ: currentConfig?.scaleZ,
+        };
+        saveEndfieldTrackerConfig(nextConfig);
+        setPrefsLocatorSync(true);
+        setLoginStep('auth');
+        setRoleOptions([]);
+        setSelectedRoleKey('');
+        closeLoginModal();
+    }, [closeLoginModal, setPrefsLocatorSync]);
+
+    const handleLocatorToggle = useCallback((nextEnabled: boolean) => {
+        if (!nextEnabled) {
+            setPrefsLocatorSync(false);
+            const current = readEndfieldTrackerConfig();
+            if (current) {
+                saveEndfieldTrackerConfig({
+                    ...current,
+                    enabled: false,
+                    locatorSync: false,
+                });
+            }
+            return;
+        }
+
+        const current = readEndfieldTrackerConfig();
+        const session = readEndfieldSession();
+        if (current && session?.cred && session.token) {
+            saveEndfieldTrackerConfig({
+                ...current,
+                baseUrl: ENDFIELD_BASE_URL,
+                enabled: true,
+                locatorSync: true,
+            });
+            setPrefsLocatorSync(true);
+            return;
+        }
+
+        setLoginError('');
+        setLoginOpen(true);
+    }, [setPrefsLocatorSync]);
+
+    const handleLocatorLogin = useCallback(async () => {
+        setLoginError('');
+
+        if (!email.trim() || !password.trim()) {
+            setLoginError('Please fill email and password.');
+            return;
+        }
+
+        setLoginLoading(true);
+        try {
+            const session = await authenticateEndfieldSession(
+                {
+                    email: email.trim(),
+                    password,
+                },
+                {
+                    baseUrl: ENDFIELD_BASE_URL,
+                    authBaseUrl: ENDFIELD_AUTH_BASE_URL,
+                },
+            );
+
+            const roles = await endfieldClient.getEndfieldRoleOptions(session.cred, session.token);
+            if (!roles.length) {
+                setLoginError('No Endfield roles found on this account.');
+                return;
+            }
+
+            if (roles.length === 1) {
+                finalizeRoleSelection(roles[0]);
+                return;
+            }
+
+            const defaultRole = resolveDefaultRole(roles);
+            setRoleOptions(roles);
+            setSelectedRoleKey(
+                defaultRole
+                    ? `${defaultRole.serverId}:${defaultRole.roleId}`
+                    : `${roles[0].serverId}:${roles[0].roleId}`,
+            );
+            setLoginStep('role');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Login failed.';
+            setLoginError(message);
+        } finally {
+            setLoginLoading(false);
+        }
+    }, [
+        email,
+        endfieldClient,
+        finalizeRoleSelection,
+        password,
+        resolveDefaultRole,
+    ]);
+
+    const handleRoleConfirm = useCallback(() => {
+        const role = roleOptions.find((item) => `${item.serverId}:${item.roleId}` === selectedRoleKey);
+        if (!role) {
+            setLoginError('Please select a role.');
+            return;
+        }
+        finalizeRoleSelection(role);
+    }, [finalizeRoleSelection, roleOptions, selectedRoleKey]);
+
     const uiPrefItems = [
         { isActive: prefsSidebar,        onToggle: setPrefsSidebar,        label: t('settings.uiPrefs.sidebar') },
         { isActive: prefsFilterOrder,    onToggle: setPrefsFilterOrder,    label: t('settings.uiPrefs.filterOrder') },
@@ -132,6 +293,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         { isActive: prefsMarkerProgress, onToggle: setPrefsMarkerProgress, label: t('settings.mapPrefs.markerProgress') },
         { isActive: prefsAutoCluster,    onToggle: setPrefsAutoCluster,    label: t('settings.mapPrefs.autoCluster') },
         { isActive: prefsHideCompleted,  onToggle: setPrefsHideCompleted,  label: t('settings.mapPrefs.hideCompleted') },
+        { isActive: prefsLocatorSync,    onToggle: handleLocatorToggle,    label: t('settings.mapPrefs.locatorSync') || 'Locator Sync' },
     ];
 
     return (
@@ -192,6 +354,90 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                     </div>
                 </SettingsSection>
             </div>
+
+            <Modal
+                open={loginOpen}
+                size="m"
+                onClose={closeLoginModal}
+                onChange={setLoginOpen}
+                title={t('settings.mapPrefs.locatorSyncLoginTitle') || 'Sign In to Endfield'}
+            >
+                <div className={styles.locatorLoginForm}>
+                    {loginStep === 'auth' ? (
+                        <>
+                            <label className={styles.locatorField}>
+                                <span>{t('settings.mapPrefs.email') || 'Email'}</span>
+                                <input
+                                    className={styles.locatorInput}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    autoComplete="username"
+                                />
+                            </label>
+
+                            <label className={styles.locatorField}>
+                                <span>{t('settings.mapPrefs.password') || 'Password'}</span>
+                                <input
+                                    className={styles.locatorInput}
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    autoComplete="current-password"
+                                />
+                            </label>
+                        </>
+                    ) : (
+                        <div className={styles.roleSelectList}>
+                            {roleOptions.map((role) => {
+                                const key = `${role.serverId}:${role.roleId}`;
+                                const active = key === selectedRoleKey;
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        className={`${styles.roleOption} ${active ? styles.roleOptionActive : ''}`}
+                                        onClick={() => setSelectedRoleKey(key)}
+                                    >
+                                        <div className={styles.roleOptionName}>
+                                            {role.nickname || role.roleId}
+                                        </div>
+                                        <div className={styles.roleOptionMeta}>
+                                            {role.serverName || role.serverType || `Server ${role.serverId}`} · Lv.{role.level}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {loginError ? <div className={styles.locatorError}>{loginError}</div> : null}
+
+                    <div className={styles.locatorActions}>
+                        <Button
+                            text={t('common.cancel') || 'Cancel'}
+                            buttonType="close"
+                            buttonStyle="normal"
+                            onClick={closeLoginModal}
+                            disabled={loginLoading}
+                        />
+                        <Button
+                            text={loginLoading
+                                ? (t('common.loading') || 'Loading...')
+                                : (loginStep === 'auth'
+                                    ? (t('idcard.auth.signIn') || 'Sign in')
+                                    : (t('common.confirm') || 'Confirm'))}
+                            buttonType="confirm"
+                            buttonStyle="normal"
+                            onClick={loginStep === 'auth'
+                                ? () => {
+                                    void handleLocatorLogin();
+                                }
+                                : handleRoleConfirm}
+                            disabled={loginLoading}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </Modal>
     );
 };

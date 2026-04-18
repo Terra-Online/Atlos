@@ -381,6 +381,87 @@
     gap: 0.5rem;
 }
 
+.locatorLoginForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.locatorField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--settings-section-text);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.locatorInput {
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.08);
+    color: var(--settings-title-text);
+    padding: 0.45rem 0.55rem;
+    font-size: 0.9rem;
+    outline: none;
+
+    &:focus {
+        border-color: $primary-accent-4;
+        box-shadow: 0 0 0 1px rgba($primary-accent-4, 0.3);
+    }
+}
+
+.locatorError {
+    color: #d94747;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.locatorActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    margin-top: 0.2rem;
+}
+
+.roleSelectList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    max-height: 16rem;
+    overflow: auto;
+}
+
+.roleOption {
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.08);
+    color: var(--settings-title-text);
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        border-color: $primary-accent-4;
+    }
+}
+
+.roleOptionActive {
+    border-color: $primary-accent-4;
+    box-shadow: 0 0 0 1px rgba($primary-accent-4, 0.25);
+}
+
+.roleOptionName {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.roleOptionMeta {
+    margin-top: 0.1rem;
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+
 /* Key cap styling — inspired by embed.scss span.keyboard */
 
 $keyCap-unit: 1.25rem; // Base size for a single key unit
