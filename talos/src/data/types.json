@@ -340,6 +340,9 @@
             },
             "Ruan Yi": {
                 "faction": "Cangzei Pirates"
+            },
+            "Nefarith": {
+                "faction": "Landbreakers"
             }
         },
         "mob": {
@@ -647,6 +650,16 @@
                 "tier": "Elite",
                 "faction": "Wildlife",
                 "drop": "Rakerbeast Longfur"
+            },
+            "Skydrummer": {
+                "tier": "Alpha",
+                "faction": "Wildlife",
+                "drop": "Howlerbeast Braid"
+            },
+            "Æthillu": {
+                "tier": "Common",
+                "faction": "Wildlife",
+                "drop": "Echoing Dust"
             }
         }
     }

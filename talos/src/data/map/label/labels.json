@@ -575,6 +575,125 @@
             6624,
             5416
           ]
+        },
+        "WL/WL/qijian_dais": {
+          "id": "WL/WL/qijian_dais",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "qijian_dais",
+          "point": [
+            5625.741551120172,
+            865.4987001723341
+          ]
+        },
+        "WL/WL/bureau_of_applied_technologies": {
+          "id": "WL/WL/bureau_of_applied_technologies",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "bureau_of_applied_technologies",
+          "point": [
+            2792.616995057586,
+            1833.9950816683515
+          ]
+        },
+        "WL/MS": {
+          "id": "WL/MS",
+          "type": "sub",
+          "region": "WL",
+          "sub": "MS",
+          "point": [
+            2608,
+            5216
+          ]
+        },
+        "WL/TA": {
+          "id": "WL/TA",
+          "type": "sub",
+          "region": "WL",
+          "sub": "TA",
+          "point": [
+            6432,
+            2320
+          ]
+        },
+        "WL/MS/watchtower_reservoir_station": {
+          "id": "WL/MS/watchtower_reservoir_station",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "watchtower_reservoir_station",
+          "point": [
+            3205.49713494716,
+            4739.2921963699355
+          ]
+        },
+        "WL/MS/restricted_area": {
+          "id": "WL/MS/restricted_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "restricted_area",
+          "point": [
+            3436.7436491419317,
+            5102.979895967167
+          ]
+        },
+        "WL/MS/cloudrest_woods": {
+          "id": "WL/MS/cloudrest_woods",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "cloudrest_woods",
+          "point": [
+            2858.5,
+            5806.5
+          ]
+        },
+        "WL/MS/serenity_garden": {
+          "id": "WL/MS/serenity_garden",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "serenity_garden",
+          "point": [
+            2274,
+            5532
+          ]
+        },
+        "WL/MS/urban_development_hall": {
+          "id": "WL/MS/urban_development_hall",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "urban_development_hall",
+          "point": [
+            2273.7839068460444,
+            4814.9728737427695
+          ]
+        },
+        "WL/MS/lake_islet": {
+          "id": "WL/MS/lake_islet",
+          "type": "site",
+          "region": "WL",
+          "sub": "MS",
+          "site": "lake_islet",
+          "point": [
+            2273.3483015147503,
+            5172.4861043795945
+          ]
+        },
+        "WL/WL/main_pillar_office": {
+          "id": "WL/WL/main_pillar_office",
+          "type": "site",
+          "region": "WL",
+          "sub": "WL",
+          "site": "main_pillar_office",
+          "point": [
+            2608.4606801170225,
+            2349.4645842188784
+          ]
         }
       }
     },

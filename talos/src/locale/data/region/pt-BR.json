@@ -133,7 +133,11 @@
           "maintenance_zone": "Zona de Manutenção",
           "institute_of_materials_science": "Instituto de Ciência de Materiais",
           "tianshi_bureau_academy": "Academia do Escritório Tianshi",
+          "bureau_of_applied_technologies": "Bureau de Tecnologias Aplicadas",
           "citizen_square": "Praça Cívica",
+          "qijian_dais": "Qijian Dais",
+          "long_pavilion": "Pavilhão Longo",
+          "main_pillar_office": "Escritório do Pilar Principal",
           "restricted_area": "Área Restrita",
           "tianjing_courtyard": "Jardim de Tianjing",
           "riverbank_grotto": "Gruta da Margem do Rio",
@@ -173,6 +177,32 @@
           "causeway_trail": "Trilha da Calçada",
           "main_fort": "Forte Principal",
           "bladewoods": "Bladewoods"
+        }
+      },
+      "TA": {
+        "name": "Área de Testes",
+        "short": "ÁT",
+        "site": {
+          "test_area_entrance": "Entrada da Área de Testes",
+          "type_c_auxiliary_pillar_area_1": "Área do Pilar Auxiliar Tipo-C 1",
+          "type_c_auxiliary_pillar_area_2": "Área do Pilar Auxiliar Tipo-C 2",
+          "type_c_auxiliary_pillar_area_3": "Área do Pilar Auxiliar Tipo-C 3",
+          "test_area_peripheries": "Periferias da Área de Teste",
+          "meridian_grid_area": "Área da Rede Meridiana",
+          "integrated_rd_area": "Área de P&D Integrada",
+          "water_treatment_sector": "Setor de Tratamento de Água"
+        }
+      },
+      "MS": {
+        "name": "Pedra de Marcação",
+        "short": "PM",
+        "site": {
+          "watchtower_reservoir_station": "Estação do Reservatório da Torre de Observação",
+          "restricted_area": "Área Restrita",
+          "cloudrest_woods": "Bosque do Descanso",
+          "lake_islet": "Ilhota do Lago",
+          "urban_development_hall": "Salão do Desenvolvimento Urbano",
+          "serenity_garden": "Jardim da Serenidade"
         }
       }
     }

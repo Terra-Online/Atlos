@@ -132,8 +132,12 @@
           "tianshi_pillar_array": "Trận Cột Thiên Sư",
           "maintenance_zone": "Khu Vực Bảo Trì",
           "institute_of_materials_science": "Viện Khoa Học Vật Liệu",
+          "bureau_of_applied_technologies": "Cục Phát Triển Công Nghệ",
           "tianshi_bureau_academy": "Học Viện Cục Thiên Sư",
           "citizen_square": "Quảng Trường Công Dân",
+          "qijian_dais": "Khí Kiếm Đài",
+          "long_pavilion": "Trường Đình",
+          "main_pillar_office": "Trụ Sở Cột Chính",
           "restricted_area": "Khu Vực Hạn Chế",
           "tianjing_courtyard": "Thiên Tỉnh Viện",
           "riverbank_grotto": "Hang Động Bờ Sông",
@@ -173,6 +177,32 @@
           "causeway_trail": "Lối Mòn Đê Đá",
           "main_fort": "Pháo Đài Chính",
           "bladewoods": "Rừng Gươm"
+        }
+      },
+      "TA": {
+        "name": "Khu Thử Nghiệm",
+        "short": "KT",
+        "site": {
+          "test_area_entrance": "Lối Vào Khu Thử Nghiệm",
+          "type_c_auxiliary_pillar_area_1": "Cột Phụ Loại C Khu 1",
+          "type_c_auxiliary_pillar_area_2": "Cột Phụ Loại C Khu 2",
+          "type_c_auxiliary_pillar_area_3": "Cột Phụ Loại C Khu 3",
+          "test_area_peripheries": "Vành Ngoài Khu Thử Nghiệm",
+          "meridian_grid_area": "Khu Lưới Kinh Tuyến",
+          "integrated_rd_area": "Khu R&D Tích Hợp",
+          "water_treatment_sector": "Khu Xử Lý Nước"
+        }
+      },
+      "MS": {
+        "name": "Đá Ranh Giới",
+        "short": "DR",
+        "site": {
+          "watchtower_reservoir_station": "Trạm Trữ Nước Tháp Canh",
+          "restricted_area": "Khu Vực Hạn Chế",
+          "cloudrest_woods": "Rừng Cloudrest",
+          "lake_islet": "Đảo Nhỏ Giữa Hồ",
+          "urban_development_hall": "Sảnh Phát Triển Đô Thị",
+          "serenity_garden": "Vườn Tĩnh Lặng"
         }
       }
     }

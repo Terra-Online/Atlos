@@ -130,10 +130,14 @@
           "xiranflow_channel": "식류 통로",
           "fangxing_avenue": "방흥거리",
           "tianshi_pillar_array": "천사장 배열",
-          "maintenance_zone": "보수 대기 구역",
+          "maintenance_zone": "보수 예정 구역",
           "institute_of_materials_science": "재료 연구소",
           "tianshi_bureau_academy": "천사부 학원",
+          "bureau_of_applied_technologies": "기술 개발국",
           "citizen_square": "시민 광장",
+          "qijian_dais": "폐검대",
+          "long_pavilion": "장정",
+          "main_pillar_office": "주 기둥 사무실",
           "restricted_area": "경계 구역",
           "tianjing_courtyard": "천정원",
           "riverbank_grotto": "안변 석굴",
@@ -173,6 +177,32 @@
           "causeway_trail": "잔교길",
           "main_fort": "주채",
           "bladewoods": "청자숲"
+        }
+      },
+      "TA": {
+        "name": "실험 구역",
+        "short": "TA",
+        "site": {
+          "test_area_entrance": "실험 구역 입구",
+          "type_c_auxiliary_pillar_area_1": "1번 C형 보조 기둥 구역",
+          "type_c_auxiliary_pillar_area_2": "2번 C형 보조 기둥 구역",
+          "type_c_auxiliary_pillar_area_3": "3번 C형 보조 기둥 구역",
+          "test_area_peripheries": "실험 구역 외곽",
+          "meridian_grid_area": "경위 논밭 구역",
+          "integrated_rd_area": "종합 과학 연구 구역",
+          "water_treatment_sector": "오염수 처리 구역"
+        }
+      },
+      "MS": {
+        "name": "수돈",
+        "short": "MS",
+        "site": {
+          "watchtower_reservoir_station": "망루 저수 시설",
+          "restricted_area": "제어 구역",
+          "cloudrest_woods": "서운 숲지대",
+          "lake_islet": "호심도",
+          "urban_development_hall": "도시 건설관",
+          "serenity_garden": "안사원"
         }
       }
     }

@@ -1107,6 +1107,15 @@
         },
         "faction": "Cangzei Pirates"
     },
+    "nefarith": {
+        "key": "nefarith",
+        "name": "Nefarith",
+        "category": {
+            "main": "enemy",
+            "sub": "boss"
+        },
+        "faction": "Landbreakers"
+    },
     "grove_archer": {
         "key": "grove_archer",
         "name": "Grove Archer",
@@ -1775,6 +1784,28 @@
         "tier": "Elite",
         "faction": "Wildlife",
         "drop": "Rakerbeast Longfur"
+    },
+    "skydrummer": {
+        "key": "skydrummer",
+        "name": "Skydrummer",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "Alpha",
+        "faction": "Wildlife",
+        "drop": "Howlerbeast Braid"
+    },
+    "ethillu": {
+        "key": "ethillu",
+        "name": "Æthillu",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "Common",
+        "faction": "Wildlife",
+        "drop": "Echoing Dust"
     },
     "nar_col_lv003_1": {
         "key": "nar_col_lv003_1",
@@ -3085,6 +3116,51 @@
         },
         "ctgr": "paper",
         "icon": "letter"
+    },
+    "nar_paper_map02_115_1": {
+        "key": "nar_paper_map02_115_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_116_1": {
+        "key": "nar_paper_map02_116_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_117_1": {
+        "key": "nar_paper_map02_117_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_118_1": {
+        "key": "nar_paper_map02_118_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_119_1": {
+        "key": "nar_paper_map02_119_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
     },
     "nar_paper_map02_11_1": {
         "key": "nar_paper_map02_11_1",

@@ -591,6 +591,26 @@
                 "icon": "letter",
                 "ctgr": "paper"
             },
+            "nar_paper_map02_115_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_116_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_117_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_118_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_119_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
             "nar_paper_map02_11_1": {
                 "icon": "note",
                 "ctgr": "paper"

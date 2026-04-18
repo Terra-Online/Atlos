@@ -25,6 +25,7 @@ interface SearchHit {
   typeKey: string;
   typeMain: string;
   title: string;
+  aliases: string;
   binderTokens: string;
   binderDisplay: string;
   regionKey: string;
@@ -210,12 +211,12 @@ const loadDocs = async (env: Env, locale: string): Promise<SearchDoc[]> => {
 };
 
 const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHit[] => {
-  const q = rawQuery.trim().toLowerCase();
+  const q = normalizeForMatch(rawQuery);
   if (!q) return [];
 
   return docs
     .filter((doc) => {
-      const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`.toLowerCase();
+      const haystack = normalizeForMatch(`${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`);
       return haystack.includes(q);
     })
     .slice(0, limit)
@@ -224,6 +225,7 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
       typeKey: doc.typeKey,
       typeMain: doc.typeMain,
       title: doc.title,
+      aliases: doc.aliases,
       binderTokens: doc.binderTokens,
       binderDisplay: doc.binderDisplay,
       regionKey: doc.regionKey,
@@ -234,12 +236,12 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
 };
 
 const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHit[] => {
-  const q = rawQuery.trim().toLowerCase();
+  const q = normalizeForMatch(rawQuery);
   if (!q) return [];
 
   return docs
     .filter((doc) => {
-      const binderHaystack = `${doc.binderTokens}\n${doc.aliases}`.toLowerCase();
+      const binderHaystack = normalizeForMatch(`${doc.binderTokens}\n${doc.aliases}`);
       return binderHaystack.includes(q);
     })
     .sort((a, b) => {
@@ -247,8 +249,8 @@ const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limi
       const bFile = b.typeMain === 'files' ? 0 : 1;
       if (aFile !== bFile) return aFile - bFile;
 
-      const aText = `${a.binderTokens}\n${a.aliases}`.toLowerCase();
-      const bText = `${b.binderTokens}\n${b.aliases}`.toLowerCase();
+      const aText = normalizeForMatch(`${a.binderTokens}\n${a.aliases}`);
+      const bText = normalizeForMatch(`${b.binderTokens}\n${b.aliases}`);
       const aIdx = aText.indexOf(q);
       const bIdx = bText.indexOf(q);
       if (aIdx !== bIdx) return aIdx - bIdx;
@@ -260,6 +262,7 @@ const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limi
       typeKey: doc.typeKey,
       typeMain: doc.typeMain,
       title: doc.title,
+      aliases: doc.aliases,
       binderTokens: doc.binderTokens,
       binderDisplay: doc.binderDisplay,
       regionKey: doc.regionKey,
@@ -343,6 +346,7 @@ const asHit = (row: { document: SearchDoc; score: number }): SearchHit => ({
   typeKey: row.document.typeKey,
   typeMain: row.document.typeMain,
   title: row.document.title,
+  aliases: row.document.aliases,
   binderTokens: row.document.binderTokens,
   binderDisplay: row.document.binderDisplay,
   regionKey: row.document.regionKey,
@@ -351,17 +355,32 @@ const asHit = (row: { document: SearchDoc; score: number }): SearchHit => ({
   score: row.score,
 });
 
-const normalizeText = (value: string): string => value.trim().toLowerCase();
+const normalizeText = (value: string): string =>
+  value
+    .normalize('NFKC')
+    .replace(/[\u2018\u2019`]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+const normalizeForMatch = (value: string): string =>
+  normalizeText(value)
+    .replace(/['"]/g, '')
+    .replace(/[^\p{L}\p{N}\u3400-\u9FFF]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 const matchTier = (hit: SearchHit, q: string): number => {
-  const nq = normalizeText(q);
+  const nq = normalizeForMatch(q);
   if (!nq) return 0;
-  if (normalizeText(hit.binderTokens).includes(nq)) return 4;
+  if (normalizeForMatch(hit.binderTokens).includes(nq)) return 4;
 
-  const titleMatched = normalizeText(hit.title).includes(nq);
-  const bodyMatched = normalizeText(hit.body).includes(nq);
+  const titleMatched = normalizeForMatch(hit.title).includes(nq);
+  const bodyMatched = normalizeForMatch(hit.body).includes(nq);
+  const aliasesMatched = normalizeForMatch(hit.aliases).includes(nq);
   if (titleMatched && bodyMatched) return 3;
   if (titleMatched) return 2;
+  if (aliasesMatched) return 2;
   if (bodyMatched) return 1;
   return 0;
 };
@@ -396,7 +415,7 @@ export default {
     }
 
     const qRaw = (url.searchParams.get('q') || '').trim();
-    const q = qRaw.toLowerCase();
+    const q = normalizeText(qRaw);
     if (!q) return json({ hits: [] }, 200, origin);
 
     const limit = parseLimit(url.searchParams.get('limit'));
