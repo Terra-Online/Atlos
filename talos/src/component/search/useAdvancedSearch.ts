@@ -67,6 +67,7 @@ type SearchHitDoc = {
     typeKey: string;
     typeMain: string;
     title: string;
+    aliases: string;
     binderTokens: string;
     binderDisplay: string;
     regionKey: string;
@@ -137,7 +138,20 @@ const worldTypeCountMap: Record<string, number> = WORLD_MARKS.reduce((acc, marke
     return acc;
 }, {} as Record<string, number>);
 
-const normalizeText = (value: string): string => value.trim().toLowerCase();
+const normalizeText = (value: string): string =>
+    value
+        .normalize('NFKC')
+        .replace(/[\u2018\u2019`]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+const normalizeForMatch = (value: string): string =>
+    normalizeText(value)
+        .replace(/['"]/g, '')
+        .replace(/[^\p{L}\p{N}\u3400-\u9FFF]+/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 const hasCjk = (input: string): boolean => CJK_RE.test(input);
 const normalizeBinderKey = (value: string): string =>
     value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
@@ -170,6 +184,7 @@ const parseWorkerSearchResponse = (value: unknown): WorkerSearchResponse | null 
         const subregionId = item.subregionId;
         const body = item.body;
         const score = item.score;
+        const aliases = item.aliases;
         const binderTokens = item.binderTokens;
         const binderDisplay = item.binderDisplay;
 
@@ -190,6 +205,7 @@ const parseWorkerSearchResponse = (value: unknown): WorkerSearchResponse | null 
             typeKey,
             typeMain,
             title: typeof title === 'string' ? title : '',
+            aliases: typeof aliases === 'string' ? aliases : '',
             regionKey,
             subregionId,
             body,
@@ -235,12 +251,12 @@ const parsePrebuiltDocs = (value: unknown): SearchDoc[] => {
 };
 
 const sortByKeywordCenter = (items: SearchDoc[], rawQuery: string): SearchDoc[] => {
-    const q = normalizeText(rawQuery);
+    const q = normalizeForMatch(rawQuery);
     if (!q) return items;
 
     return [...items].sort((a, b) => {
-        const aText = `${a.title}\n${a.aliases}\n${a.binderTokens}\n${a.body}\n${a.typeKey}`.toLowerCase();
-        const bText = `${b.title}\n${b.aliases}\n${b.binderTokens}\n${b.body}\n${b.typeKey}`.toLowerCase();
+        const aText = normalizeForMatch(`${a.title}\n${a.aliases}\n${a.binderTokens}\n${a.body}\n${a.typeKey}`);
+        const bText = normalizeForMatch(`${b.title}\n${b.aliases}\n${b.binderTokens}\n${b.body}\n${b.typeKey}`);
         const aIdx = aText.indexOf(q);
         const bIdx = bText.indexOf(q);
         if (aIdx === bIdx) return 0;
@@ -251,11 +267,11 @@ const sortByKeywordCenter = (items: SearchDoc[], rawQuery: string): SearchDoc[] 
 };
 
 const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHitDoc[] => {
-    const q = normalizeText(rawQuery);
+    const q = normalizeForMatch(rawQuery);
     if (!q) return [];
 
     const matched = docs.filter((doc) => {
-        const haystack = `${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`.toLowerCase();
+        const haystack = normalizeForMatch(`${doc.typeKey}\n${doc.title}\n${doc.aliases}\n${doc.binderTokens}\n${doc.body}`);
         return haystack.includes(q);
     });
 
@@ -266,6 +282,7 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
             typeKey: String(doc.typeKey),
             typeMain: String(doc.typeMain),
             title: String(doc.title || ''),
+            aliases: String(doc.aliases || ''),
             binderTokens: String(doc.binderTokens || ''),
             binderDisplay: String(doc.binderDisplay || ''),
             regionKey: String(doc.regionKey),
@@ -276,12 +293,12 @@ const fallbackSubstringSearch = (docs: SearchDoc[], rawQuery: string, limit: num
 };
 
 const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limit: number): SearchHitDoc[] => {
-    const q = normalizeText(rawQuery);
+    const q = normalizeForMatch(rawQuery);
     if (!q) return [];
 
     return docs
         .filter((doc) => {
-            const binderHaystack = `${doc.binderTokens}\n${doc.aliases}`.toLowerCase();
+            const binderHaystack = normalizeForMatch(`${doc.binderTokens}\n${doc.aliases}`);
             return binderHaystack.includes(q);
         })
         .sort((a, b) => {
@@ -289,8 +306,8 @@ const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limi
             const bFile = b.typeMain === 'files' ? 0 : 1;
             if (aFile !== bFile) return aFile - bFile;
 
-            const aText = `${a.binderTokens}\n${a.aliases}`.toLowerCase();
-            const bText = `${b.binderTokens}\n${b.aliases}`.toLowerCase();
+            const aText = normalizeForMatch(`${a.binderTokens}\n${a.aliases}`);
+            const bText = normalizeForMatch(`${b.binderTokens}\n${b.aliases}`);
             const aIdx = aText.indexOf(q);
             const bIdx = bText.indexOf(q);
             if (aIdx !== bIdx) return aIdx - bIdx;
@@ -302,6 +319,7 @@ const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limi
             typeKey: String(doc.typeKey),
             typeMain: String(doc.typeMain),
             title: String(doc.title || ''),
+            aliases: String(doc.aliases || ''),
             binderTokens: String(doc.binderTokens || ''),
             binderDisplay: String(doc.binderDisplay || ''),
             regionKey: String(doc.regionKey),
@@ -448,6 +466,11 @@ const getSubregionDisplayName = (
     regionKey: string,
     tGame: (k: string) => unknown,
 ): string => {
+    const fallbackLocaleNameKeyBySubregionId: Record<string, string> = {
+        WL_5: 'region.WL.sub.TA.name',
+        DJ_1: 'region.DJ.sub.name',
+    };
+
     const regionCodeMap: Record<string, string> = {
         Valley_4: 'VL',
         Wuling: 'WL',
@@ -460,6 +483,16 @@ const getSubregionDisplayName = (
         const localized = tGame(`region.${code}.sub.${subKey}.name`);
         if (typeof localized === 'string' && localized.trim()) return localized;
     }
+
+    const fallbackLocaleNameKey = fallbackLocaleNameKeyBySubregionId[subregionId];
+    if (fallbackLocaleNameKey) {
+        const fallbackLocalized = tGame(fallbackLocaleNameKey);
+        if (typeof fallbackLocalized === 'string' && fallbackLocalized.trim()) return fallbackLocalized;
+    }
+
+    const regionMainLocalized = tGame(`region.${code}.main`);
+    if (typeof regionMainLocalized === 'string' && regionMainLocalized.trim()) return regionMainLocalized;
+
     return subregionId;
 };
 
@@ -470,7 +503,7 @@ const toGroups = (
     currentSubregion: string | null,
     tGame: (k: string) => unknown,
 ): SearchResultGroup[] => {
-    const normalizedNeedle = normalizeText(queryForMatch);
+    const normalizedNeedle = normalizeForMatch(queryForMatch);
 
     const getBinderCandidates = (typeKey: string): Array<{ label: string; raw: string; sharedKey: 'rsch' | 'ctgr' | 'drop' }> => {
         const typeInfo = MARKER_TYPE_DICT[typeKey] as { ctgr?: string; rsch?: string; drop?: string; category?: { main?: string } } | undefined;
@@ -509,7 +542,7 @@ const toGroups = (
             };
         }
         const matched = candidates.find((it) =>
-            normalizeText(it.label).includes(normalizedNeedle) || normalizeText(it.raw).includes(normalizedNeedle),
+            normalizeForMatch(it.label).includes(normalizedNeedle) || normalizeForMatch(it.raw).includes(normalizedNeedle),
         );
         const winner = matched ?? candidates[0];
         return {
@@ -522,12 +555,12 @@ const toGroups = (
     const getMatchTier = (doc: SearchHitDoc): number => {
         if (!normalizedNeedle) return 0;
 
-        const titleMatched = normalizeText(doc.title).includes(normalizedNeedle);
-        const bodyMatched = normalizeText(doc.body).includes(normalizedNeedle);
+        const titleMatched = normalizeForMatch(doc.title).includes(normalizedNeedle);
+        const bodyMatched = normalizeForMatch(doc.body).includes(normalizedNeedle);
         const binderMatched =
-            normalizeText(doc.binderTokens).includes(normalizedNeedle) ||
+            normalizeForMatch(doc.binderTokens).includes(normalizedNeedle) ||
             getBinderCandidates(doc.typeKey).some((it) =>
-                normalizeText(it.label).includes(normalizedNeedle) || normalizeText(it.raw).includes(normalizedNeedle),
+                normalizeForMatch(it.label).includes(normalizedNeedle) || normalizeForMatch(it.raw).includes(normalizedNeedle),
             );
 
         if (titleMatched && bodyMatched) return 6;
@@ -535,7 +568,7 @@ const toGroups = (
         if (binderMatched) return 4;
         if (bodyMatched) return 3;
 
-        const aliasesMatched = normalizeText(doc.title + ' ' + doc.binderTokens).includes(normalizedNeedle);
+        const aliasesMatched = normalizeForMatch(doc.aliases).includes(normalizedNeedle);
         if (aliasesMatched) return 2;
 
         return 1;
@@ -592,12 +625,12 @@ const toGroups = (
             const bestDoc = uniquePoint ?? group.docs[0];
             const snippetDoc = group.docs.find((doc) => {
                 const bodyWithoutTitle = stripTitlePrefixFromBody(doc.body, doc.title);
-                return normalizeText(bodyWithoutTitle).includes(normalizeText(queryForMatch));
+                return normalizeForMatch(bodyWithoutTitle).includes(normalizeForMatch(queryForMatch));
             }
             ) ?? bestDoc;
             const snippetSource = snippetDoc ? stripTitlePrefixFromBody(snippetDoc.body, snippetDoc.title) : '';
             const snippet = buildSnippet(snippetSource, queryForMatch);
-            const snippetMatched = !!snippetSource && normalizeText(snippetSource).includes(normalizeText(queryForMatch));
+            const snippetMatched = !!snippetSource && normalizeForMatch(snippetSource).includes(normalizeForMatch(queryForMatch));
 
             const isSelector = !uniquePoint;
             const binderMatchBoost = binderInfo.matchedByQuery ? 220 : 0;
@@ -700,6 +733,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                         typeKey: String(hit.document.typeKey),
                         typeMain: String(hit.document.typeMain),
                         title: String(hit.document.title || ''),
+                        aliases: String(hit.document.aliases || ''),
                         binderTokens: String(hit.document.binderTokens || ''),
                         binderDisplay: String(hit.document.binderDisplay || ''),
                         regionKey: String(hit.document.regionKey),

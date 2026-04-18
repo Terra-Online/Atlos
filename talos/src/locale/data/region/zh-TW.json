@@ -133,7 +133,11 @@
           "maintenance_zone": "待修繕區",
           "institute_of_materials_science": "材料研究所",
           "tianshi_bureau_academy": "天師府學院",
+          "bureau_of_applied_technologies": "技術開發局",
           "citizen_square": "市民廣場",
+          "qijian_dais": "棄劍台",
+          "long_pavilion": "長亭",
+          "main_pillar_office": "總樁辦公室",
           "restricted_area": "警戒區",
           "tianjing_courtyard": "天井院",
           "riverbank_grotto": "岸邊石窟",
@@ -173,6 +177,32 @@
           "causeway_trail": "棧橋道",
           "main_fort": "主寨",
           "bladewoods": "青子林"
+        }
+      },
+      "TA": {
+        "name": "试验园区",
+        "short": "园",
+        "site": {
+          "test_area_entrance": "试验园区入口",
+          "type_c_auxiliary_pillar_area_1": "一号丙型辅桩区",
+          "type_c_auxiliary_pillar_area_2": "二号丙型辅桩区",
+          "type_c_auxiliary_pillar_area_3": "三号丙型辅桩区",
+          "test_area_peripheries": "园区外围",
+          "meridian_grid_area": "经纬田区",
+          "integrated_rd_area": "综合科研区",
+          "water_treatment_sector": "污水处理区"
+        }
+      },
+      "MS": {
+        "name": "首墩",
+        "short": "墩",
+        "site": {
+          "watchtower_reservoir_station": "望楼蓄水站",
+          "restricted_area": "控制区",
+          "cloudrest_woods": "栖云林地",
+          "lake_islet": "湖心岛",
+          "urban_development_hall": "城建馆",
+          "serenity_garden": "安思园"
         }
       }
     }

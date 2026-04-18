@@ -4,10 +4,10 @@
   }
 }
 @for $i from 2 through 32 {
-  .avatar[data-karma="#{$i}"] {
+  .avatar[data-avt="#{$i}"] {
     width: calc(5.5rem) !important;
-    height: calc(5.5rem + 12px) !important;
-    transform: translate(-4px, -11px) !important;
+    height: calc(5.5rem + 15px) !important;
+    transform: translate(-4px, -14px) !important;
   }
 }
 .avatar {

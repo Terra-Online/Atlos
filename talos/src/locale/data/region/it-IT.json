@@ -133,7 +133,11 @@
           "maintenance_zone": "Zona di manutenzione",
           "institute_of_materials_science": "Istituto di scienze dei materiali",
           "tianshi_bureau_academy": "Accademia Istituto Tianshi",
+          "bureau_of_applied_technologies": "Dipartimento di tecnologia applicata",
           "citizen_square": "Piazza cittadina",
+          "qijian_dais": "Qijian Dais",
+          "long_pavilion": "Padiglione lungo",
+          "main_pillar_office": "Ufficio della colonna principale",
           "restricted_area": "Area limitata",
           "tianjing_courtyard": "Cortile Tianjing",
           "riverbank_grotto": "Grotta sulla riva del fiume",
@@ -173,6 +177,32 @@
           "causeway_trail": "Sentiero rialzato",
           "main_fort": "Forte principale",
           "bladewoods": "Boschi taglienti"
+        }
+      },
+      "TA": {
+        "name": "Area dei test",
+        "short": "AT",
+        "site": {
+          "test_area_entrance": "Entrata dell'area dei test",
+          "type_c_auxiliary_pillar_area_1": "Area 1 della colonna secondaria di tipo C",
+          "type_c_auxiliary_pillar_area_2": "Area 2 della colonna secondaria di tipo C",
+          "type_c_auxiliary_pillar_area_3": "Area 3 della colonna secondaria di tipo C",
+          "test_area_peripheries": "Margini dell'area dei test",
+          "meridian_grid_area": "Area della Matrice meridiana",
+          "integrated_rd_area": "Area R&S integrata",
+          "water_treatment_sector": "Settore per il trattamento delle acque"
+        }
+      },
+      "MS": {
+        "name": "Pietra di demarcazione",
+        "short": "PD",
+        "site": {
+          "watchtower_reservoir_station": "Stazione di accumulo idrico della torre di sorveglianza",
+          "restricted_area": "Area limitata",
+          "cloudrest_woods": "Foresta del riposo celeste",
+          "lake_islet": "Isoletta del lago",
+          "urban_development_hall": "Sala di sviluppo urbano",
+          "serenity_garden": "Giardino della serenità"
         }
       }
     }
