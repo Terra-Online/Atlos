@@ -48,6 +48,7 @@ const SKLAND_AUTH_BASE_URL = 'https://as.hypergryph.com';
 const SKLAND_DEVICE_ID_KEY = 'endfield.skland.deviceId';
 
 type AccountMode = 'skport' | 'skland';
+type SklandAuthMode = 'code' | 'password';
 
 const inferAccountModeFromBaseUrl = (baseUrl?: string): AccountMode =>
     baseUrl?.includes('skland.com') ? 'skland' : 'skport';
@@ -173,6 +174,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     const [sendCodeLoading, setSendCodeLoading] = useState(false);
     const [loginError, setLoginError] = useState('');
     const [loginStep, setLoginStep] = useState<'auth' | 'role'>('auth');
+    const [sklandAuthMode, setSklandAuthMode] = useState<SklandAuthMode>('code');
     const [roleOptions, setRoleOptions] = useState<EndfieldRoleOption[]>([]);
     const [selectedRoleKey, setSelectedRoleKey] = useState(
         existingTrackerConfig ? `${existingTrackerConfig.serverId}:${existingTrackerConfig.roleId}` : '',
@@ -190,6 +192,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setRoleOptions([]);
         setSelectedRoleKey('');
         setSendCodeLoading(false);
+        setSklandAuthMode('code');
     }, []);
 
     const resolveDefaultRole = useCallback((roles: EndfieldRoleOption[]): EndfieldRoleOption | null => {
@@ -281,16 +284,25 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         try {
             let session: EndfieldSession;
             if (accountMode === 'skland') {
-                if (!phone.trim() || !verificationCode.trim()) {
-                    setLoginError('Please fill phone number and verification code.');
+                const missingSklandFields = sklandAuthMode === 'password'
+                    ? (!phone.trim() || !password.trim())
+                    : (!phone.trim() || !verificationCode.trim());
+                if (missingSklandFields) {
+                    setLoginError(
+                        sklandAuthMode === 'password'
+                            ? 'Please fill phone number and password.'
+                            : 'Please fill phone number and verification code.',
+                    );
                     return;
                 }
                 session = await authenticateEndfieldSession(
                     {
                         provider: 'skland',
                         phone: phone.trim(),
-                        verificationCode: verificationCode.trim(),
+                        verificationCode: sklandAuthMode === 'code' ? verificationCode.trim() : undefined,
+                        password: sklandAuthMode === 'password' ? password : undefined,
                         deviceId: getOrCreateSklandDeviceId(),
+                        sklandLoginType: sklandAuthMode,
                     },
                     hosts,
                 );
@@ -342,6 +354,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         password,
         phone,
         resolveDefaultRole,
+        sklandAuthMode,
         verificationCode,
     ]);
 
@@ -453,6 +466,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                 className={`${styles.accountModeButton} ${accountMode === 'skland' ? styles.accountModeButtonActive : ''}`}
                                 onClick={() => {
                                     setAccountMode('skland');
+                                    setSklandAuthMode('code');
                                     setLoginError('');
                                 }}
                             >
@@ -464,6 +478,29 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                     {loginStep === 'auth' ? (
                         accountMode === 'skland' ? (
                             <>
+                                <div className={styles.accountModeSwitch}>
+                                    <button
+                                        type="button"
+                                        className={`${styles.accountModeButton} ${sklandAuthMode === 'code' ? styles.accountModeButtonActive : ''}`}
+                                        onClick={() => {
+                                            setSklandAuthMode('code');
+                                            setLoginError('');
+                                        }}
+                                    >
+                                        SMS CODE
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`${styles.accountModeButton} ${sklandAuthMode === 'password' ? styles.accountModeButtonActive : ''}`}
+                                        onClick={() => {
+                                            setSklandAuthMode('password');
+                                            setLoginError('');
+                                        }}
+                                    >
+                                        PASSWORD
+                                    </button>
+                                </div>
+
                                 <label className={styles.locatorField}>
                                     <span>{t('settings.mapPrefs.phone') || 'Phone Number'}</span>
                                     <input
@@ -474,28 +511,41 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                     />
                                 </label>
 
-                                <div className={styles.codeInputRow}>
+                                {sklandAuthMode === 'code' ? (
+                                    <div className={styles.codeInputRow}>
+                                        <label className={styles.locatorField}>
+                                            <span>{t('settings.mapPrefs.verificationCode') || 'Verification Code'}</span>
+                                            <input
+                                                className={styles.locatorInput}
+                                                value={verificationCode}
+                                                onChange={(e) => setVerificationCode(e.target.value)}
+                                            />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className={styles.sendCodeButton}
+                                            onClick={() => {
+                                                void handleSendSklandCode();
+                                            }}
+                                            disabled={sendCodeLoading}
+                                        >
+                                            {sendCodeLoading
+                                                ? (t('common.loading') || 'Loading...')
+                                                : (t('settings.mapPrefs.sendCode') || 'Send Code')}
+                                        </button>
+                                    </div>
+                                ) : (
                                     <label className={styles.locatorField}>
-                                        <span>{t('settings.mapPrefs.verificationCode') || 'Verification Code'}</span>
+                                        <span>{t('settings.mapPrefs.password') || 'Password'}</span>
                                         <input
                                             className={styles.locatorInput}
-                                            value={verificationCode}
-                                            onChange={(e) => setVerificationCode(e.target.value)}
+                                            type="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            autoComplete="current-password"
                                         />
                                     </label>
-                                    <button
-                                        type="button"
-                                        className={styles.sendCodeButton}
-                                        onClick={() => {
-                                            void handleSendSklandCode();
-                                        }}
-                                        disabled={sendCodeLoading}
-                                    >
-                                        {sendCodeLoading
-                                            ? (t('common.loading') || 'Loading...')
-                                            : (t('settings.mapPrefs.sendCode') || 'Send Code')}
-                                    </button>
-                                </div>
+                                )}
                             </>
                         ) : (
                             <>

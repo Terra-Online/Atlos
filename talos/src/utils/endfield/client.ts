@@ -216,8 +216,18 @@ export class EndfieldBrowserClient {
         });
 
         const tokenEnvelope = await this.parseHypergryphEnvelope<PhoneCodeTokenData>(tokenResponse);
+        return this.exchangeSklandPhoneTokenToSession(tokenEnvelope.data.token, args.deviceId, appCode);
+    }
 
-        const grantResponse = await this.fetchImpl(this.buildUrl('/user/oauth2/v2/grant', this.authBaseUrl), {
+    async authenticateSklandByPhonePassword(args: {
+        phone: string;
+        password: string;
+        deviceId: string;
+        appCode?: string;
+    }): Promise<EndfieldSession> {
+        const appCode = args.appCode ?? 'endfield';
+
+        const tokenResponse = await this.fetchImpl(this.buildUrl('/user/auth/v1/token_by_phone_password', this.authBaseUrl), {
             method: 'POST',
             headers: {
                 accept: '*/*',
@@ -225,7 +235,33 @@ export class EndfieldBrowserClient {
                 ...this.buildDeviceHeaders(args.deviceId),
             },
             body: JSON.stringify({
-                token: tokenEnvelope.data.token,
+                phone: args.phone,
+                password: args.password,
+            }),
+        });
+
+        const tokenEnvelope = await this.parseHypergryphEnvelope<PhoneCodeTokenData>(tokenResponse);
+        return this.exchangeSklandPhoneTokenToSession(tokenEnvelope.data.token, args.deviceId, appCode);
+    }
+
+    private async exchangeSklandPhoneTokenToSession(
+        phoneToken: string,
+        deviceId: string,
+        appCode: string,
+    ): Promise<EndfieldSession> {
+        if (!phoneToken) {
+            throw new Error('SKLAND login succeeded but no phone token was returned.');
+        }
+
+        const grantResponse = await this.fetchImpl(this.buildUrl('/user/oauth2/v2/grant', this.authBaseUrl), {
+            method: 'POST',
+            headers: {
+                accept: '*/*',
+                'content-type': 'application/json;charset=UTF-8',
+                ...this.buildDeviceHeaders(deviceId),
+            },
+            body: JSON.stringify({
+                token: phoneToken,
                 appCode,
                 type: 0,
             }),
@@ -238,7 +274,7 @@ export class EndfieldBrowserClient {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
-                did: args.deviceId,
+                did: deviceId,
                 platform: '3',
                 timestamp,
                 vname: '1.0.0',
@@ -252,7 +288,7 @@ export class EndfieldBrowserClient {
 
         const credEnvelope = await this.parseEnvelope<GenerateCredData>(credResponse);
         const session = {
-            accountToken: tokenEnvelope.data.token,
+            accountToken: phoneToken,
             cred: credEnvelope.data.cred,
             token: credEnvelope.data.token,
         };
@@ -404,6 +440,7 @@ export async function authenticateEndfieldSession(
         verificationCode?: string;
         deviceId?: string;
         appCode?: string;
+        sklandLoginType?: 'code' | 'password';
         code?: string;
     },
     options: EndfieldClientOptions,
@@ -411,8 +448,25 @@ export async function authenticateEndfieldSession(
     const client = new EndfieldBrowserClient(options);
 
     if (args.provider === 'skland') {
-        if (!args.phone || !args.verificationCode || !args.deviceId) {
-            throw new Error('Missing credentials: provide phone, verification code, and deviceId for SKLAND.');
+        if (!args.phone || !args.deviceId) {
+            throw new Error('Missing credentials: provide phone and deviceId for SKLAND.');
+        }
+
+        const loginType = args.sklandLoginType ?? 'code';
+        if (loginType === 'password') {
+            if (!args.password) {
+                throw new Error('Missing credentials: provide phone and password for SKLAND password login.');
+            }
+            return client.authenticateSklandByPhonePassword({
+                phone: args.phone,
+                password: args.password,
+                deviceId: args.deviceId,
+                appCode: args.appCode,
+            });
+        }
+
+        if (!args.verificationCode) {
+            throw new Error('Missing credentials: provide phone and verification code for SKLAND code login.');
         }
         return client.authenticateSklandByPhoneCode({
             phone: args.phone,
