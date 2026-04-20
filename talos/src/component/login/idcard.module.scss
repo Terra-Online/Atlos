@@ -14,11 +14,39 @@ $karma-4: url('@/assets/images/UI/avt/Karma4.png');
 $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
 :root, :root[data-theme='light'] {
-    --idcard-bg: #333;
-    --idcard-name: #fafafa;
-    --idcard-id: #d6d6d6;
-    --id-highlight-border: #{$primary-accent-3};
+    --idcard-bg: #{$light-2};
+    --idcard-name: #{$grey-1};
+    --idcard-age: #{$grey-2};
+    --idcard-id: #{$grey-2};
+    --id-highlight-border: #{$primary-accent-5};
+
+    --avt-bg: #{$white-1};
+    --avt-shadow: #{$grey-3};
+    --avt-border: #{$grey-3};
+
+    --title-bg: #{$mid};
+    --title-shadow: #{rgba($black-1, 0.5)};
     --idcard-hover-angle: 90deg;
+
+    --deco-invert: 1;
+}
+
+:root[data-theme='dark'] {
+    --idcard-bg: #{$grey-1};
+    --idcard-name: #{$white-1};
+    --idcard-age: #{$mid};
+    --idcard-id: #{$white-3};
+    --id-highlight-border: #{$primary-accent-3};
+
+    --avt-bg: #{$grey-3};
+    --avt-shadow: #{$grey-1};
+    --avt-border: #{$white-0};
+
+    --title-bg: #{$grey-2};
+    --title-shadow: #{rgba($white-0, 0.43)};
+    --idcard-hover-angle: 90deg;
+
+    --deco-invert: 0;
 }
 
 @property --idcard-hover-angle {
@@ -34,9 +62,9 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
     width: 21rem;
     max-width: none;
     flex-shrink: 0;
-    padding: 1.5rem 1rem 1.5rem 1.5rem;
+    padding: 1.5rem;
     box-sizing: border-box;
-    background-color: #333;
+    background-color: var(--idcard-bg);
     border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
 
     @supports (corner-shape: superellipse(1.5)) {
@@ -80,10 +108,12 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-        filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px #666);
-        mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 90%);
+        filter: contrast(0) brightness(1.75) drop-shadow(0px 1px 0.5px $grey-2) invert(var(--deco-invert));
+        mask: linear-gradient(to right, transparent, white 10%, white calc(80%), transparent 100%);
         border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
-
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        transition: filter .35s $adagio-curve;
         @supports (corner-shape: superellipse(1.5)) {
             corner-shape: superellipse(1.5);
             border-radius: calc(2rem - 2px);
@@ -139,9 +169,9 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         appearance: none;
         cursor: pointer;
         box-sizing: border-box;
-        border: 4px solid $white-0;
-        background-color: #a3a3a3;
-        box-shadow: inset 0 0 3px 0px $white-0;
+        border: 4px solid var(--avt-border);
+        background-color: var(--avt-bg);
+        box-shadow: inset 0 0 3px 0px var(--avt-border);
         outline: 1px solid transparent;
         outline-offset: 3px;
         transition: all .1s linear;
@@ -160,7 +190,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
             background-position: center top;
             background-size: cover;
             box-sizing: border-box;
-            filter: drop-shadow(1px 2px 3px #333);
+            filter: drop-shadow(1px 2px 3px var(--avt-shadow));
         }
     }
 
@@ -168,7 +198,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         grid-area: usrname;
         max-width: 9rem;
         text-overflow: ellipsis;
-        color: #fafafa;
+        color: var(--idcard-name);
         font-size: 125%;
         transform: translate(12px, 9px);
         font-family: 'UD_ShinGo DemiBold', 'HMSans', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
@@ -218,7 +248,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
     > .usrId {
         grid-area: usrid;
-        color: #d6d6d6;
+        color: var(--idcard-id);
         font-size: 95%;
         font-family: "Novecento Medium Regular", sans-serif;
         white-space: nowrap;
@@ -241,7 +271,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
         > .usrGroup {
             grid-area: usrGroup;
-            color: #fafafa;
+            color: var(--idcard-name);
             font-size: 115%;
             font-family: "Novecento Medium", "FedraSansPro Normal", "Novecento Cyrillic DemiBold", "Novecento Vietnamese DemiBold", "UD_ShinGo DemiBold", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
             font-weight: 800;
@@ -252,7 +282,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 
         > .usrAge {
             grid-area: usrAge;
-            color: #cecece;
+            color: var(--idcard-age);
             font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
             font-size: 0.73rem;
             white-space: nowrap;
@@ -273,9 +303,9 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
             font-family: "Roboto Slab", sans-serif;
             font-weight: 700;
             font-size: 1rem;
-            color: #f9f9f9;
-            background: #666;
-            box-shadow: 0 0 2px 1px #ffffff6e;
+            color: var(--idcard-name);
+            background: var(--title-bg);
+            box-shadow: 0 0 2px 1px var(--title-shadow);
             text-transform: uppercase;
             transform: translate(0, 2.5px);
         }
@@ -315,6 +345,8 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         background-repeat: no-repeat;
         pointer-events: none;
         border-radius: 6% 6% 6% 6% / 12% 12% 12% 12%;
+        filter: invert(var(--deco-invert));
+        transition: filter .35s $adagio-curve;
 
         @supports (corner-shape: superellipse(1.5)) {
             corner-shape: superellipse(1.5);
