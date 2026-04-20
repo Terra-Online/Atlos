@@ -52,4 +52,5 @@ export type EndfieldTrackerOptions = {
     maxBackoffMs?: number;
     pauseWhenHidden?: boolean;
     debug?: boolean;
+    onError?: (error: unknown) => void;
 };

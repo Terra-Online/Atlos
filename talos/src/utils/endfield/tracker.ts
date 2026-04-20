@@ -18,6 +18,7 @@ export class MapTracker {
         serverId: number;
         cred: string;
         token: string;
+        onError: (error: unknown) => void;
     };
 
     private readonly client: EndfieldBrowserClient;
@@ -36,6 +37,7 @@ export class MapTracker {
             maxBackoffMs: options.maxBackoffMs ?? DEFAULT_MAX_BACKOFF_MS,
             pauseWhenHidden: options.pauseWhenHidden ?? true,
             debug: options.debug ?? false,
+            onError: options.onError ?? (() => {}),
         };
 
         this.client = new EndfieldBrowserClient({
@@ -97,6 +99,7 @@ export class MapTracker {
 
     private stopForAuthFailure(error: EndfieldAuthError): void {
         this.log('stopping due to auth failure', error.reason, error.message);
+        this.options.onError(error);
         this.stop();
     }
 
@@ -133,14 +136,9 @@ export class MapTracker {
                 return;
             }
 
-            this.failureCount += 1;
-            const delay = this.computeBackoffDelay();
-            this.log('poll failed, retrying with backoff', {
-                failureCount: this.failureCount,
-                delay,
-                error,
-            });
-            this.scheduleNextPoll(delay);
+            this.log('poll failed, stopping tracker', { error });
+            this.options.onError(error);
+            this.stop();
         }
     }
 
