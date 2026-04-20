@@ -21,8 +21,8 @@ const PARAM_TYPE = 'type';
 const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
+const PARAM_POINT_TOKEN = 'x';
 const POINT_SHARE_SHORT_ORIGIN = 'https://oem.re';
-const POINT_SHARE_PATH_PREFIX = 'x';
 
 const BASE62_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const BASE62_CHAR_TO_VALUE = new Map<string, bigint>(
@@ -176,16 +176,13 @@ const encodePointIdToken = (pointId: string): string | null => {
     if (id < 0n || id >= POINT_ID_PERMUTATION_MOD) return null;
 
     const obfuscated = (id * POINT_ID_PERMUTATION_MULTIPLIER + POINT_ID_PERMUTATION_OFFSET) % POINT_ID_PERMUTATION_MOD;
-    const encoded = encodeBase62(obfuscated).padStart(POINT_ID_TOKEN_LENGTH, '0');
-    return `${POINT_SHARE_PATH_PREFIX}${encoded}`;
+    return encodeBase62(obfuscated).padStart(POINT_ID_TOKEN_LENGTH, '0');
 };
 
 const decodePointIdToken = (token: string): string | null => {
-    if (!token.startsWith(POINT_SHARE_PATH_PREFIX)) return null;
+    if (token.length !== POINT_ID_TOKEN_LENGTH) return null;
 
-    const payload = token.slice(POINT_SHARE_PATH_PREFIX.length);
-    if (payload.length !== POINT_ID_TOKEN_LENGTH) return null;
-    const encoded = payload.replace(/^0+/, '') || '0';
+    const encoded = token.replace(/^0+/, '') || '0';
     const obfuscated = decodeBase62(encoded, POINT_ID_TOKEN_LENGTH);
     if (obfuscated === null || obfuscated < 0n || obfuscated >= POINT_ID_PERMUTATION_MOD) {
         return null;
@@ -194,27 +191,6 @@ const decodePointIdToken = (token: string): string | null => {
     const decoded = ((obfuscated - POINT_ID_PERMUTATION_OFFSET + POINT_ID_PERMUTATION_MOD) % POINT_ID_PERMUTATION_MOD);
     const id = (decoded * POINT_ID_PERMUTATION_INVERSE) % POINT_ID_PERMUTATION_MOD;
     return id.toString();
-};
-
-const getPathShareToken = (pathname: string): string | null => {
-    const segments = pathname.split('/').filter(Boolean);
-    const lastSegment = segments.at(-1);
-    if (!lastSegment) return null;
-    return /^x[0-9A-Za-z]+$/.test(lastSegment) ? lastSegment : null;
-};
-
-const stripPathShareToken = (pathname: string): string => {
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments.length === 0) return pathname || '/';
-
-    const lastSegment = segments[segments.length - 1];
-    if (!/^x[0-9A-Za-z]+$/.test(lastSegment)) {
-        return pathname || '/';
-    }
-
-    const baseSegments = segments.slice(0, -1);
-    if (baseSegments.length === 0) return '/';
-    return `/${baseSegments.join('/')}`;
 };
 
 const mergeFilterKeys = (keys: string[]) => {
@@ -498,18 +474,6 @@ const getFilterParamValue = (keys: string[]): string => {
     return compressFilter(validKeys);
 };
 
-const buildArchiveTypeShareQuery = (typeKey: string): string => {
-    const params = new URLSearchParams();
-    if (resolveArchiveTypeShareTarget(typeKey)) {
-        params.set(PARAM_TYPE, typeKey);
-    } else {
-        // 非唯一時退化為明文 filter
-        params.set(PARAM_FILTER, typeKey);
-    }
-    const queryString = params.toString();
-    return queryString ? `?${queryString}` : '';
-};
-
 /**
  * 生成分享鏈接
  * @returns 完整的分享URL
@@ -548,15 +512,10 @@ export const generateShareUrl = (): string => {
 
 /**
  * 生成指定點位的分享鏈接。
- * 預設生成單一 path token（/x...）。
+ * 預設生成單一 query token（?x=...）。
  * 若 id 超出編碼範圍，降級為 legacy query 參數。
  */
 const buildPointShareToken = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
-    const markerType = MARKER_TYPE_DICT[point.type];
-    if (markerType?.category?.main === 'files') {
-        return buildArchiveTypeShareQuery(point.type);
-    }
-
     const token = encodePointIdToken(String(point.id));
     if (token) return token;
 
@@ -580,7 +539,9 @@ export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type
     if (tokenOrFallback.startsWith('?')) {
         return tokenOrFallback;
     }
-    return `/${tokenOrFallback}`;
+    const tokenParams = new URLSearchParams();
+    tokenParams.set(PARAM_POINT_TOKEN, tokenOrFallback);
+    return `?${tokenParams.toString()}`;
 };
 
 export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
@@ -588,7 +549,9 @@ export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | '
     if (tokenOrFallback.startsWith('?')) {
         return `${POINT_SHARE_SHORT_ORIGIN}/${tokenOrFallback}`;
     }
-    return `${POINT_SHARE_SHORT_ORIGIN}/${tokenOrFallback}`;
+    const tokenParams = new URLSearchParams();
+    tokenParams.set(PARAM_POINT_TOKEN, tokenOrFallback);
+    return `${POINT_SHARE_SHORT_ORIGIN}/?${tokenParams.toString()}`;
 };
 
 /**
@@ -618,7 +581,6 @@ export const applyUrlParams = async (): Promise<void> => {
     if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams(window.location.search);
-    const pathShareToken = getPathShareToken(window.location.pathname);
 
     // 應用語言參數（以用户本地优先）
     const langParam = params.get(PARAM_LANG);
@@ -687,16 +649,17 @@ export const applyUrlParams = async (): Promise<void> => {
 
     const pointParam = params.get(PARAM_POINT);
     const typeParam = params.get(PARAM_TYPE)?.trim() || null;
-    const pointIdFromPathToken = pathShareToken ? decodePointIdToken(pathShareToken) : null;
-    const resolvedFromPath = pointIdFromPathToken ? resolvePointShareTarget(pointIdFromPathToken) : null;
+    const pointTokenParam = params.get(PARAM_POINT_TOKEN)?.trim() || null;
+    const pointIdFromToken = pointTokenParam ? decodePointIdToken(pointTokenParam) : null;
+    const resolvedFromToken = pointIdFromToken ? resolvePointShareTarget(pointIdFromToken) : null;
     const resolvedFromType = typeParam ? resolveArchiveTypeShareTarget(typeParam) : null;
 
-    if (resolvedFromPath) {
-        mergeFilterKeys([resolvedFromPath.point.type]);
+    if (resolvedFromToken) {
+        mergeFilterKeys([resolvedFromToken.point.type]);
         navigateToSharedPoint({
-            regionKey: resolvedFromPath.regionKey,
-            subregionKey: resolvedFromPath.point.subregId,
-            pointId: resolvedFromPath.point.id,
+            regionKey: resolvedFromToken.regionKey,
+            subregionKey: resolvedFromToken.point.subregId,
+            pointId: resolvedFromToken.point.id,
         });
     } else if (pointParam) {
         const resolvedFromQueryPoint = resolvePointShareTarget(pointParam);
@@ -730,8 +693,7 @@ export const applyUrlParams = async (): Promise<void> => {
 
     // 清除URL參數，保持地址欄乾淨
     // 但保留用于测试的 domain 参数（仅在 localhost 开发环境下）
-    if (params.toString() || pathShareToken) {
-        const cleanPath = pathShareToken ? stripPathShareToken(window.location.pathname) : window.location.pathname;
+    if (params.toString()) {
         const isLocalhost = window.location.hostname === 'localhost' || 
                            window.location.hostname === '127.0.0.1';
         
@@ -744,15 +706,16 @@ export const applyUrlParams = async (): Promise<void> => {
             newParams.delete(PARAM_REGION);
             newParams.delete(PARAM_SUBREGION);
             newParams.delete(PARAM_POINT);
+            newParams.delete(PARAM_POINT_TOKEN);
             
             const queryString = newParams.toString();
             const newUrl = queryString ? 
-                `${cleanPath}?${queryString}` : 
-                cleanPath;
+                `${window.location.pathname}?${queryString}` : 
+                window.location.pathname;
             window.history.replaceState({}, '', newUrl);
         } else {
-            // 生产环境：清除所有参数（並移除短鏈 path token）
-            window.history.replaceState({}, '', cleanPath);
+            // 生产环境：清除所有参数
+            window.history.replaceState({}, '', window.location.pathname);
         }
     }
 };
