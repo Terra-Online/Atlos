@@ -21,9 +21,11 @@ import { getShortcutConfig, type ShortcutEntry, type KeyChip } from './shortcuts
 import {
     authenticateEndfieldSession,
     EndfieldBrowserClient,
+    sendSklandPhoneCode,
     type EndfieldRoleOption,
 } from '@/utils/endfield/client';
 import { readEndfieldSession } from '@/utils/endfield/storage';
+import type { EndfieldSession } from '@/utils/endfield/types';
 import {
     readEndfieldTrackerConfig,
     saveEndfieldTrackerConfig,
@@ -39,8 +41,33 @@ export interface SettingsProps {
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
-const ENDFIELD_BASE_URL = 'https://zonai.skport.com';
-const ENDFIELD_AUTH_BASE_URL = 'https://as.gryphline.com';
+const SKPORT_BASE_URL = 'https://zonai.skport.com';
+const SKPORT_AUTH_BASE_URL = 'https://as.gryphline.com';
+const SKLAND_BASE_URL = 'https://zonai.skland.com';
+const SKLAND_AUTH_BASE_URL = 'https://as.hypergryph.com';
+const SKLAND_DEVICE_ID_KEY = 'endfield.skland.deviceId';
+
+type AccountMode = 'skport' | 'skland';
+
+const inferAccountModeFromBaseUrl = (baseUrl?: string): AccountMode =>
+    baseUrl?.includes('skland.com') ? 'skland' : 'skport';
+
+const resolveApiHosts = (mode: AccountMode): { baseUrl: string; authBaseUrl: string } =>
+    mode === 'skland'
+        ? { baseUrl: SKLAND_BASE_URL, authBaseUrl: SKLAND_AUTH_BASE_URL }
+        : { baseUrl: SKPORT_BASE_URL, authBaseUrl: SKPORT_AUTH_BASE_URL };
+
+const getOrCreateSklandDeviceId = (): string => {
+    const existing = localStorage.getItem(SKLAND_DEVICE_ID_KEY);
+    if (existing) return existing;
+
+    const generated = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `skland-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    localStorage.setItem(SKLAND_DEVICE_ID_KEY, generated);
+    return generated;
+};
 
 interface SectionProps {
     titleKey: string;
@@ -138,9 +165,12 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     }, [setThemePreference]);
 
     const existingTrackerConfig = useMemo(() => readEndfieldTrackerConfig(), []);
-    const endfieldClient = useMemo(() => new EndfieldBrowserClient({ baseUrl: ENDFIELD_BASE_URL }), []);
+    const [accountMode, setAccountMode] = useState<AccountMode>(
+        inferAccountModeFromBaseUrl(existingTrackerConfig?.baseUrl),
+    );
     const [loginOpen, setLoginOpen] = useState(false);
     const [loginLoading, setLoginLoading] = useState(false);
+    const [sendCodeLoading, setSendCodeLoading] = useState(false);
     const [loginError, setLoginError] = useState('');
     const [loginStep, setLoginStep] = useState<'auth' | 'role'>('auth');
     const [roleOptions, setRoleOptions] = useState<EndfieldRoleOption[]>([]);
@@ -149,6 +179,8 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     );
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
 
     const closeLoginModal = useCallback(() => {
         setLoginOpen(false);
@@ -157,6 +189,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setLoginStep('auth');
         setRoleOptions([]);
         setSelectedRoleKey('');
+        setSendCodeLoading(false);
     }, []);
 
     const resolveDefaultRole = useCallback((roles: EndfieldRoleOption[]): EndfieldRoleOption | null => {
@@ -165,11 +198,12 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     }, []);
 
     const finalizeRoleSelection = useCallback((role: EndfieldRoleOption) => {
+        const hosts = resolveApiHosts(accountMode);
         const currentConfig = readEndfieldTrackerConfig();
         const nextConfig: EndfieldTrackerConfig = {
             enabled: true,
             locatorSync: true,
-            baseUrl: ENDFIELD_BASE_URL,
+            baseUrl: hosts.baseUrl,
             roleId: role.roleId,
             serverId: role.serverId,
             debug: currentConfig?.debug ?? false,
@@ -185,7 +219,7 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setRoleOptions([]);
         setSelectedRoleKey('');
         closeLoginModal();
-    }, [closeLoginModal, setPrefsLocatorSync]);
+    }, [accountMode, closeLoginModal, setPrefsLocatorSync]);
 
     const handleLocatorToggle = useCallback((nextEnabled: boolean) => {
         if (!nextEnabled) {
@@ -206,7 +240,6 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         if (current && session?.cred && session.token) {
             saveEndfieldTrackerConfig({
                 ...current,
-                baseUrl: ENDFIELD_BASE_URL,
                 enabled: true,
                 locatorSync: true,
             });
@@ -215,30 +248,68 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         }
 
         setLoginError('');
+        setLoginStep('auth');
+        setAccountMode(inferAccountModeFromBaseUrl(current?.baseUrl));
         setLoginOpen(true);
     }, [setPrefsLocatorSync]);
+
+    const handleSendSklandCode = useCallback(async () => {
+        setLoginError('');
+        if (!phone.trim()) {
+            setLoginError('Please fill phone number.');
+            return;
+        }
+
+        setSendCodeLoading(true);
+        try {
+            const hosts = resolveApiHosts('skland');
+            await sendSklandPhoneCode(phone.trim(), getOrCreateSklandDeviceId(), hosts);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to send verification code.';
+            setLoginError(message);
+        } finally {
+            setSendCodeLoading(false);
+        }
+    }, [phone]);
 
     const handleLocatorLogin = useCallback(async () => {
         setLoginError('');
 
-        if (!email.trim() || !password.trim()) {
-            setLoginError('Please fill email and password.');
-            return;
-        }
+        const hosts = resolveApiHosts(accountMode);
 
         setLoginLoading(true);
         try {
-            const session = await authenticateEndfieldSession(
-                {
-                    email: email.trim(),
-                    password,
-                },
-                {
-                    baseUrl: ENDFIELD_BASE_URL,
-                    authBaseUrl: ENDFIELD_AUTH_BASE_URL,
-                },
-            );
+            let session: EndfieldSession;
+            if (accountMode === 'skland') {
+                if (!phone.trim() || !verificationCode.trim()) {
+                    setLoginError('Please fill phone number and verification code.');
+                    return;
+                }
+                session = await authenticateEndfieldSession(
+                    {
+                        provider: 'skland',
+                        phone: phone.trim(),
+                        verificationCode: verificationCode.trim(),
+                        deviceId: getOrCreateSklandDeviceId(),
+                    },
+                    hosts,
+                );
+            } else {
+                if (!email.trim() || !password.trim()) {
+                    setLoginError('Please fill email and password.');
+                    return;
+                }
+                session = await authenticateEndfieldSession(
+                    {
+                        provider: 'skport',
+                        email: email.trim(),
+                        password,
+                    },
+                    hosts,
+                );
+            }
 
+            const endfieldClient = new EndfieldBrowserClient(hosts);
             const roles = await endfieldClient.getEndfieldRoleOptions(session.cred, session.token);
             if (!roles.length) {
                 setLoginError('No Endfield roles found on this account.');
@@ -265,11 +336,13 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             setLoginLoading(false);
         }
     }, [
+        accountMode,
         email,
-        endfieldClient,
         finalizeRoleSelection,
         password,
+        phone,
         resolveDefaultRole,
+        verificationCode,
     ]);
 
     const handleRoleConfirm = useCallback(() => {
@@ -364,28 +437,90 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             >
                 <div className={styles.locatorLoginForm}>
                     {loginStep === 'auth' ? (
-                        <>
-                            <label className={styles.locatorField}>
-                                <span>{t('settings.mapPrefs.email') || 'Email'}</span>
-                                <input
-                                    className={styles.locatorInput}
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    autoComplete="username"
-                                />
-                            </label>
+                        <div className={styles.accountModeSwitch}>
+                            <button
+                                type="button"
+                                className={`${styles.accountModeButton} ${accountMode === 'skport' ? styles.accountModeButtonActive : ''}`}
+                                onClick={() => {
+                                    setAccountMode('skport');
+                                    setLoginError('');
+                                }}
+                            >
+                                SKPORT
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.accountModeButton} ${accountMode === 'skland' ? styles.accountModeButtonActive : ''}`}
+                                onClick={() => {
+                                    setAccountMode('skland');
+                                    setLoginError('');
+                                }}
+                            >
+                                SKLAND
+                            </button>
+                        </div>
+                    ) : null}
 
-                            <label className={styles.locatorField}>
-                                <span>{t('settings.mapPrefs.password') || 'Password'}</span>
-                                <input
-                                    className={styles.locatorInput}
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    autoComplete="current-password"
-                                />
-                            </label>
-                        </>
+                    {loginStep === 'auth' ? (
+                        accountMode === 'skland' ? (
+                            <>
+                                <label className={styles.locatorField}>
+                                    <span>{t('settings.mapPrefs.phone') || 'Phone Number'}</span>
+                                    <input
+                                        className={styles.locatorInput}
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        autoComplete="tel"
+                                    />
+                                </label>
+
+                                <div className={styles.codeInputRow}>
+                                    <label className={styles.locatorField}>
+                                        <span>{t('settings.mapPrefs.verificationCode') || 'Verification Code'}</span>
+                                        <input
+                                            className={styles.locatorInput}
+                                            value={verificationCode}
+                                            onChange={(e) => setVerificationCode(e.target.value)}
+                                        />
+                                    </label>
+                                    <button
+                                        type="button"
+                                        className={styles.sendCodeButton}
+                                        onClick={() => {
+                                            void handleSendSklandCode();
+                                        }}
+                                        disabled={sendCodeLoading}
+                                    >
+                                        {sendCodeLoading
+                                            ? (t('common.loading') || 'Loading...')
+                                            : (t('settings.mapPrefs.sendCode') || 'Send Code')}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <label className={styles.locatorField}>
+                                    <span>{t('settings.mapPrefs.email') || 'Email'}</span>
+                                    <input
+                                        className={styles.locatorInput}
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        autoComplete="username"
+                                    />
+                                </label>
+
+                                <label className={styles.locatorField}>
+                                    <span>{t('settings.mapPrefs.password') || 'Password'}</span>
+                                    <input
+                                        className={styles.locatorInput}
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        autoComplete="current-password"
+                                    />
+                                </label>
+                            </>
+                        )
                     ) : (
                         <div className={styles.roleSelectList}>
                             {roleOptions.map((role) => {

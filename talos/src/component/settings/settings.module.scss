@@ -387,6 +387,28 @@
     gap: 0.6rem;
 }
 
+.accountModeSwitch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.accountModeButton {
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.08);
+    color: var(--settings-title-text);
+    padding: 0.45rem 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.accountModeButtonActive {
+    border-color: $primary-accent-4;
+    box-shadow: 0 0 0 1px rgba($primary-accent-4, 0.25);
+}
+
 .locatorField {
     display: flex;
     flex-direction: column;
@@ -422,6 +444,31 @@
     justify-content: flex-end;
     gap: 0.45rem;
     margin-top: 0.2rem;
+}
+
+.codeInputRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.45rem;
+    align-items: end;
+}
+
+.sendCodeButton {
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.1);
+    color: var(--settings-title-text);
+    padding: 0.52rem 0.62rem;
+    height: 2.1rem;
+    white-space: nowrap;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
 }
 
 .roleSelectList {

@@ -8,6 +8,8 @@ export type EndfieldClientOptions = {
     fetchImpl?: typeof fetch;
 };
 
+export type EndfieldAccountProvider = 'skport' | 'skland';
+
 type ApiEnvelope<T> = {
     code: number;
     message: string;
@@ -15,9 +17,27 @@ type ApiEnvelope<T> = {
     data: T;
 };
 
+type HypergryphEnvelope<T> = {
+    status: number;
+    msg: string;
+    type?: string;
+    data: T;
+};
+
 type EmailPasswordTokenData = {
     accountToken?: string;
     token?: string;
+};
+
+type PhoneCodeTokenData = {
+    token: string;
+    hgId?: string;
+};
+
+type OauthGrantData = {
+    uid?: string;
+    code: string;
+    token: string;
 };
 
 type GenerateCredData = {
@@ -106,6 +126,35 @@ export class EndfieldBrowserClient {
         return json;
     }
 
+    private async parseHypergryphEnvelope<T>(response: Response): Promise<HypergryphEnvelope<T>> {
+        let json: HypergryphEnvelope<T> | null = null;
+
+        try {
+            json = (await response.json()) as HypergryphEnvelope<T>;
+        } catch {
+            throw new Error(`Failed to parse Hypergryph response (${response.status})`);
+        }
+
+        if (!response.ok) {
+            throw new Error(json.msg || `HTTP ${response.status}`);
+        }
+
+        if (json.status !== 0) {
+            throw new Error(json.msg || `Hypergryph API rejected request (${json.status})`);
+        }
+
+        return json;
+    }
+
+    private buildDeviceHeaders(deviceId: string): Record<string, string> {
+        return {
+            'x-deviceid': deviceId,
+            'x-devicemodel': 'Chrome',
+            'x-devicetype': '7',
+            'x-osver': typeof navigator !== 'undefined' ? navigator.platform || 'Linux' : 'Linux',
+        };
+    }
+
     async tokenByEmailPassword(email: string, password: string): Promise<string> {
         const response = await this.fetchImpl(
             this.buildUrl('/user/auth/v1/token_by_email_password', this.authBaseUrl),
@@ -125,6 +174,90 @@ export class EndfieldBrowserClient {
             throw new Error('Auth succeeded but token is missing in response payload.');
         }
         return accountToken;
+    }
+
+    async sendSklandPhoneCode(phone: string, deviceId: string): Promise<void> {
+        const response = await this.fetchImpl(this.buildUrl('/general/v1/send_phone_code', this.authBaseUrl), {
+            method: 'POST',
+            headers: {
+                accept: '*/*',
+                'content-type': 'application/json;charset=UTF-8',
+                ...this.buildDeviceHeaders(deviceId),
+            },
+            body: JSON.stringify({
+                phone,
+                type: 2,
+            }),
+        });
+
+        await this.parseHypergryphEnvelope<Record<string, unknown>>(response);
+    }
+
+    async authenticateSklandByPhoneCode(args: {
+        phone: string;
+        verificationCode: string;
+        deviceId: string;
+        appCode?: string;
+    }): Promise<EndfieldSession> {
+        const appCode = args.appCode ?? 'endfield';
+
+        const tokenResponse = await this.fetchImpl(this.buildUrl('/user/auth/v2/token_by_phone_code', this.authBaseUrl), {
+            method: 'POST',
+            headers: {
+                accept: '*/*',
+                'content-type': 'application/json;charset=UTF-8',
+                ...this.buildDeviceHeaders(args.deviceId),
+            },
+            body: JSON.stringify({
+                phone: args.phone,
+                code: args.verificationCode,
+                appCode,
+            }),
+        });
+
+        const tokenEnvelope = await this.parseHypergryphEnvelope<PhoneCodeTokenData>(tokenResponse);
+
+        const grantResponse = await this.fetchImpl(this.buildUrl('/user/oauth2/v2/grant', this.authBaseUrl), {
+            method: 'POST',
+            headers: {
+                accept: '*/*',
+                'content-type': 'application/json;charset=UTF-8',
+                ...this.buildDeviceHeaders(args.deviceId),
+            },
+            body: JSON.stringify({
+                token: tokenEnvelope.data.token,
+                appCode,
+                type: 0,
+            }),
+        });
+
+        const grantEnvelope = await this.parseHypergryphEnvelope<OauthGrantData>(grantResponse);
+
+        const timestamp = String(Math.floor(Date.now() / 1000));
+        const credResponse = await this.fetchImpl(this.buildUrl('/web/v1/user/auth/generate_cred_by_code'), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                did: args.deviceId,
+                platform: '3',
+                timestamp,
+                vname: '1.0.0',
+                'accept-language': 'en-US',
+            },
+            body: JSON.stringify({
+                kind: 1,
+                code: grantEnvelope.data.code,
+            }),
+        });
+
+        const credEnvelope = await this.parseEnvelope<GenerateCredData>(credResponse);
+        const session = {
+            accountToken: tokenEnvelope.data.token,
+            cred: credEnvelope.data.cred,
+            token: credEnvelope.data.token,
+        };
+        saveEndfieldSession(session);
+        return session;
     }
 
     async getEndfieldRoleOptions(cred: string, token: string): Promise<EndfieldRoleOption[]> {
@@ -253,15 +386,41 @@ export async function getEndfieldRoleOptions(
     return client.getEndfieldRoleOptions(cred, token);
 }
 
+export async function sendSklandPhoneCode(
+    phone: string,
+    deviceId: string,
+    options: EndfieldClientOptions,
+): Promise<void> {
+    const client = new EndfieldBrowserClient(options);
+    return client.sendSklandPhoneCode(phone, deviceId);
+}
+
 export async function authenticateEndfieldSession(
     args: {
+        provider?: EndfieldAccountProvider;
         email?: string;
         password?: string;
+        phone?: string;
+        verificationCode?: string;
+        deviceId?: string;
+        appCode?: string;
         code?: string;
     },
     options: EndfieldClientOptions,
 ): Promise<EndfieldSession> {
     const client = new EndfieldBrowserClient(options);
+
+    if (args.provider === 'skland') {
+        if (!args.phone || !args.verificationCode || !args.deviceId) {
+            throw new Error('Missing credentials: provide phone, verification code, and deviceId for SKLAND.');
+        }
+        return client.authenticateSklandByPhoneCode({
+            phone: args.phone,
+            verificationCode: args.verificationCode,
+            deviceId: args.deviceId,
+            appCode: args.appCode,
+        });
+    }
 
     if (args.code) {
         const generated = await client.generateCredByCode(args.code);
