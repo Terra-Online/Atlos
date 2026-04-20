@@ -178,6 +178,34 @@ export default defineConfig({
             plugins: [autoprefixer()],
         },
     },
+    server: {
+        proxy: {
+            '/proxy/skport-auth': {
+                target: 'https://as.gryphline.com',
+                changeOrigin: true,
+                secure: true,
+                rewrite: (path) => path.replace(/^\/proxy\/skport-auth/, ''),
+            },
+            '/proxy/skport-api': {
+                target: 'https://zonai.skport.com',
+                changeOrigin: true,
+                secure: true,
+                rewrite: (path) => path.replace(/^\/proxy\/skport-api/, ''),
+            },
+            '/proxy/skland-auth': {
+                target: 'https://as.hypergryph.com',
+                changeOrigin: true,
+                secure: true,
+                rewrite: (path) => path.replace(/^\/proxy\/skland-auth/, ''),
+            },
+            '/proxy/skland-api': {
+                target: 'https://zonai.skland.com',
+                changeOrigin: true,
+                secure: true,
+                rewrite: (path) => path.replace(/^\/proxy\/skland-api/, ''),
+            },
+        },
+    },
     build: {
         rollupOptions: {
             external: [

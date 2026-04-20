@@ -433,6 +433,24 @@
     }
 }
 
+.locatorTextarea {
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.08);
+    color: var(--settings-title-text);
+    padding: 0.45rem 0.55rem;
+    font-size: 0.82rem;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    outline: none;
+    resize: vertical;
+    min-height: 5.2rem;
+
+    &:focus {
+        border-color: $primary-accent-4;
+        box-shadow: 0 0 0 1px rgba($primary-accent-4, 0.3);
+    }
+}
+
 .locatorError {
     color: #d94747;
     font-size: 0.8rem;
@@ -507,6 +525,57 @@
     margin-top: 0.1rem;
     font-size: 0.78rem;
     opacity: 0.85;
+}
+
+.captchaBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid var(--settings-trigger-border);
+    border-radius: 4px;
+    background: rgba($black-0, 0.06);
+    padding: 0.5rem;
+}
+
+.captchaTitle {
+    color: var(--settings-title-text);
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.captchaHint {
+    color: var(--settings-section-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.captchaMeta {
+    color: var(--settings-section-text);
+    font-size: 0.74rem;
+    font-weight: 700;
+    opacity: 0.95;
+    word-break: break-all;
+}
+
+.captchaWidgetHost {
+    min-height: 88px;
+    width: 100%;
+    border: 1px dashed var(--settings-trigger-border);
+    border-radius: 4px;
+    padding: 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($black-0, 0.04);
+    overflow: visible;
+
+    :global(.geetest_box),
+    :global(.geetest_holder),
+    :global(.geetest_btn) {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 /* Key cap styling — inspired by embed.scss span.keyboard */

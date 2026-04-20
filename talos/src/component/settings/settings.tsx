@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import Modal from '@/component/modal/modal';
 import { Trigger } from '@/component/trigger/trigger';
 import Button from '@/component/button/button';
@@ -22,10 +22,11 @@ import {
     authenticateEndfieldSession,
     EndfieldBrowserClient,
     sendSklandPhoneCode,
+    type EndfieldCaptchaChallenge,
     type EndfieldRoleOption,
 } from '@/utils/endfield/client';
 import { readEndfieldSession } from '@/utils/endfield/storage';
-import type { EndfieldSession } from '@/utils/endfield/types';
+import { EndfieldAuthError, type EndfieldSession } from '@/utils/endfield/types';
 import {
     readEndfieldTrackerConfig,
     saveEndfieldTrackerConfig,
@@ -41,14 +42,75 @@ export interface SettingsProps {
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
-const SKPORT_BASE_URL = 'https://zonai.skport.com';
-const SKPORT_AUTH_BASE_URL = 'https://as.gryphline.com';
-const SKLAND_BASE_URL = 'https://zonai.skland.com';
-const SKLAND_AUTH_BASE_URL = 'https://as.hypergryph.com';
+const IS_DEV = import.meta.env.DEV;
+const SKPORT_BASE_URL = IS_DEV ? '/proxy/skport-api' : 'https://zonai.skport.com';
+const SKPORT_AUTH_BASE_URL = IS_DEV ? '/proxy/skport-auth' : 'https://as.gryphline.com';
+const SKLAND_BASE_URL = IS_DEV ? '/proxy/skland-api' : 'https://zonai.skland.com';
+const SKLAND_AUTH_BASE_URL = IS_DEV ? '/proxy/skland-auth' : 'https://as.hypergryph.com';
 const SKLAND_DEVICE_ID_KEY = 'endfield.skland.deviceId';
 
 type AccountMode = 'skport' | 'skland';
 type SklandAuthMode = 'code' | 'password';
+
+type GeeTestValidatePayload = {
+    captcha_id: string;
+    lot_number: string;
+    pass_token: string;
+    gen_time: string;
+    captcha_output: string;
+};
+
+type GeeTestInstance = {
+    showCaptcha: () => void;
+    appendTo?: (element: string | HTMLElement) => void;
+    getValidate: () => Partial<GeeTestValidatePayload> | null | undefined;
+    onSuccess: (callback: () => void) => GeeTestInstance;
+    onError: (callback: () => void) => GeeTestInstance;
+    onReady?: (callback: () => void) => GeeTestInstance;
+};
+
+type GeeTestInitConfig = {
+    captchaId: string;
+    product?: 'popup' | 'bind' | 'float';
+    language?: string;
+    challenge?: string;
+    riskType?: string;
+    container?: string;
+};
+
+declare global {
+    interface Window {
+        initGeetest4?: (
+            config: GeeTestInitConfig,
+            callback: (captcha: GeeTestInstance) => void,
+        ) => void;
+    }
+}
+
+const GEETEST_V4_SCRIPT_URL = 'https://static.geetest.com/v4/gt4.js';
+let geetestScriptPromise: Promise<void> | null = null;
+
+const loadGeeTestScript = (): Promise<void> => {
+    if (typeof window === 'undefined') {
+        return Promise.reject(new Error('GeeTest is only available in browser environment.'));
+    }
+    if (typeof window.initGeetest4 === 'function') {
+        return Promise.resolve();
+    }
+
+    if (!geetestScriptPromise) {
+        geetestScriptPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = GEETEST_V4_SCRIPT_URL;
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load GeeTest script.'));
+            document.head.appendChild(script);
+        });
+    }
+
+    return geetestScriptPromise;
+};
 
 const inferAccountModeFromBaseUrl = (baseUrl?: string): AccountMode =>
     baseUrl?.includes('skland.com') ? 'skland' : 'skport';
@@ -121,6 +183,10 @@ const ShortcutRow: React.FC<{ entry: ShortcutEntry }> = ({ entry }) => {
 const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => {
     const t = useTranslateUI();
     const groupId = useId();
+    const captchaWidgetHostId = useMemo(() => {
+        const sanitized = groupId.replace(/[^a-zA-Z0-9_-]/g, '');
+        return `geetest-host-${sanitized || 'default'}`;
+    }, [groupId]);
 
     const {
         prefsSidebar, setPrefsSidebar,
@@ -183,6 +249,14 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [verificationCode, setVerificationCode] = useState('');
+    const [captchaChallenge, setCaptchaChallenge] = useState<EndfieldCaptchaChallenge | null>(null);
+    const [captchaChallengeValue, setCaptchaChallengeValue] = useState('');
+    const [captchaVerifyPayload, setCaptchaVerifyPayload] = useState<GeeTestValidatePayload | null>(null);
+    const [captchaRunning, setCaptchaRunning] = useState(false);
+    const [captchaMounted, setCaptchaMounted] = useState(false);
+    const geetestRef = useRef<GeeTestInstance | null>(null);
+    const lastCaptchaKeyRef = useRef<string>('');
+    const captchaWidgetHostRef = useRef<HTMLDivElement | null>(null);
 
     const closeLoginModal = useCallback(() => {
         setLoginOpen(false);
@@ -193,6 +267,13 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setSelectedRoleKey('');
         setSendCodeLoading(false);
         setSklandAuthMode('code');
+        setCaptchaChallenge(null);
+        setCaptchaChallengeValue('');
+        setCaptchaVerifyPayload(null);
+        setCaptchaRunning(false);
+        setCaptchaMounted(false);
+        geetestRef.current = null;
+        lastCaptchaKeyRef.current = '';
     }, []);
 
     const resolveDefaultRole = useCallback((roles: EndfieldRoleOption[]): EndfieldRoleOption | null => {
@@ -253,8 +334,148 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setLoginError('');
         setLoginStep('auth');
         setAccountMode(inferAccountModeFromBaseUrl(current?.baseUrl));
+        setCaptchaChallenge(null);
+        setCaptchaChallengeValue('');
+        setCaptchaVerifyPayload(null);
+        setCaptchaRunning(false);
+        setCaptchaMounted(false);
+        geetestRef.current = null;
+        lastCaptchaKeyRef.current = '';
         setLoginOpen(true);
     }, [setPrefsLocatorSync]);
+
+    const runGeeTestCaptcha = useCallback(async () => {
+        const geetestId = captchaChallenge?.geetestId;
+        if (!geetestId) {
+            setLoginError('Captcha configuration is missing geetestId.');
+            return;
+        }
+        if (captchaRunning) return;
+
+        setCaptchaRunning(true);
+        setCaptchaMounted(false);
+        setLoginError('');
+        setCaptchaVerifyPayload(null);
+
+        try {
+            await loadGeeTestScript();
+
+            if (typeof window.initGeetest4 !== 'function') {
+                throw new Error('GeeTest init function is unavailable after script load.');
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                let settled = false;
+                const finishResolve = () => {
+                    if (!settled) {
+                        settled = true;
+                        resolve();
+                    }
+                };
+                const finishReject = (reason: Error) => {
+                    if (!settled) {
+                        settled = true;
+                        reject(reason);
+                    }
+                };
+
+                window.initGeetest4?.(
+                    {
+                        captchaId: geetestId,
+                        product: 'bind',
+                        language: 'en',
+                        challenge: captchaChallenge?.challenge,
+                        riskType: captchaChallenge?.riskType,
+                        container: `#${captchaWidgetHostId}`,
+                    },
+                    (captcha) => {
+                        geetestRef.current = captcha;
+
+                        const hostElement = captchaWidgetHostRef.current;
+                        if (hostElement) {
+                            hostElement.innerHTML = '';
+                        }
+
+                        captcha.onSuccess(() => {
+                            const validate = captcha.getValidate();
+                            if (
+                                validate
+                                && typeof validate.captcha_id === 'string'
+                                && typeof validate.lot_number === 'string'
+                                && typeof validate.pass_token === 'string'
+                                && typeof validate.gen_time === 'string'
+                                && typeof validate.captcha_output === 'string'
+                            ) {
+                                setCaptchaVerifyPayload({
+                                    captcha_id: validate.captcha_id,
+                                    lot_number: validate.lot_number,
+                                    pass_token: validate.pass_token,
+                                    gen_time: validate.gen_time,
+                                    captcha_output: validate.captcha_output,
+                                });
+                                setLoginError('Captcha verified. Click Sign in to continue.');
+                                setCaptchaRunning(false);
+                                return;
+                            }
+
+                            setCaptchaRunning(false);
+                            setLoginError('GeeTest verification completed but response payload is incomplete. Retry captcha.');
+                        });
+
+                        captcha.onError(() => {
+                            setCaptchaRunning(false);
+                            finishReject(new Error('GeeTest verification failed. Please retry.'));
+                        });
+
+                        captcha.onReady?.(() => {
+                            setCaptchaRunning(false);
+                            setCaptchaMounted(true);
+                            finishResolve();
+                        });
+
+                        if (captcha.appendTo) {
+                            captcha.appendTo(hostElement ?? `#${captchaWidgetHostId}`);
+                            return;
+                        }
+
+                        // Fallback path if bind mount API is unavailable.
+                        captcha.showCaptcha();
+                        setCaptchaRunning(false);
+                        finishResolve();
+                    },
+                );
+
+                setTimeout(() => {
+                    if (!settled) {
+                        setCaptchaRunning(false);
+                        finishReject(new Error('GeeTest init timed out. Retry captcha. If this keeps happening, disable ad/tracker blocking for GeeTest domains.'));
+                    }
+                }, 20000);
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to run GeeTest verification.';
+            setLoginError(message);
+            setCaptchaRunning(false);
+        }
+    }, [captchaChallenge, captchaRunning, captchaWidgetHostId]);
+
+    useEffect(() => {
+        if (!loginOpen || loginStep !== 'auth' || accountMode !== 'skport') return;
+        if (!captchaChallenge?.geetestId) return;
+
+        const captchaKey = `${captchaChallenge.geetestId}:${captchaChallenge.challenge || ''}:${captchaChallenge.riskType || ''}`;
+        if (lastCaptchaKeyRef.current === captchaKey) return;
+        lastCaptchaKeyRef.current = captchaKey;
+
+        void runGeeTestCaptcha();
+    }, [
+        accountMode,
+        captchaChallenge,
+        captchaVerifyPayload,
+        loginOpen,
+        loginStep,
+        runGeeTestCaptcha,
+    ]);
 
     const handleSendSklandCode = useCallback(async () => {
         setLoginError('');
@@ -311,11 +532,25 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                     setLoginError('Please fill email and password.');
                     return;
                 }
+                if (captchaChallenge && !captchaVerifyPayload) {
+                    setLoginError('Complete GeeTest verification before signing in.');
+                    return;
+                }
+
                 session = await authenticateEndfieldSession(
                     {
                         provider: 'skport',
                         email: email.trim(),
                         password,
+                        captcha: captchaVerifyPayload
+                            ? {
+                                challenge: captchaChallengeValue.trim() || captchaChallenge?.challenge || undefined,
+                                captcha: {
+                                    ...captchaVerifyPayload,
+                                    challenge: captchaChallengeValue.trim() || captchaChallenge?.challenge || undefined,
+                                },
+                            }
+                            : undefined,
                     },
                     hosts,
                 );
@@ -342,6 +577,16 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
             );
             setLoginStep('role');
         } catch (error) {
+            if (error instanceof EndfieldAuthError && error.reason === 'captcha-required') {
+                const details = error.details as EndfieldCaptchaChallenge | undefined;
+                setCaptchaChallenge(details ?? null);
+                setCaptchaVerifyPayload(null);
+                setCaptchaRunning(false);
+                setCaptchaMounted(false);
+                if (details?.challenge) {
+                    setCaptchaChallengeValue(details.challenge);
+                }
+            }
             const message = error instanceof Error ? error.message : 'Login failed.';
             setLoginError(message);
         } finally {
@@ -356,6 +601,9 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         resolveDefaultRole,
         sklandAuthMode,
         verificationCode,
+        captchaChallengeValue,
+        captchaChallenge,
+        captchaVerifyPayload,
     ]);
 
     const handleRoleConfirm = useCallback(() => {
@@ -457,6 +705,13 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                 onClick={() => {
                                     setAccountMode('skport');
                                     setLoginError('');
+                                    setCaptchaChallenge(null);
+                                    setCaptchaChallengeValue('');
+                                    setCaptchaVerifyPayload(null);
+                                    setCaptchaRunning(false);
+                                    setCaptchaMounted(false);
+                                    geetestRef.current = null;
+                                    lastCaptchaKeyRef.current = '';
                                 }}
                             >
                                 SKPORT
@@ -468,6 +723,13 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                     setAccountMode('skland');
                                     setSklandAuthMode('code');
                                     setLoginError('');
+                                    setCaptchaChallenge(null);
+                                    setCaptchaChallengeValue('');
+                                    setCaptchaVerifyPayload(null);
+                                    setCaptchaRunning(false);
+                                    setCaptchaMounted(false);
+                                    geetestRef.current = null;
+                                    lastCaptchaKeyRef.current = '';
                                 }}
                             >
                                 SKLAND
@@ -569,6 +831,50 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                                         autoComplete="current-password"
                                     />
                                 </label>
+
+                                {captchaChallenge ? (
+                                    <div className={styles.captchaBlock}>
+                                        <div className={styles.captchaTitle}>Captcha Required</div>
+                                        <div className={styles.captchaHint}>
+                                            Complete the GeeTest challenge below. If it does not render, click retry.
+                                        </div>
+                                        <div className={styles.captchaMeta}>geetestId: {captchaChallenge.geetestId || '-'}</div>
+                                        <div className={styles.captchaMeta}>riskType: {captchaChallenge.riskType || '-'}</div>
+                                        <div className={styles.captchaMeta}>
+                                            status: {captchaVerifyPayload ? 'verified' : (captchaRunning ? 'loading' : (captchaMounted ? 'ready' : 'pending'))}
+                                        </div>
+
+                                        <div
+                                            id={captchaWidgetHostId}
+                                            ref={captchaWidgetHostRef}
+                                            className={styles.captchaWidgetHost}
+                                        />
+
+                                        <label className={styles.locatorField}>
+                                            <span>Challenge</span>
+                                            <input
+                                                className={styles.locatorInput}
+                                                value={captchaChallengeValue}
+                                                onChange={(e) => setCaptchaChallengeValue(e.target.value)}
+                                            />
+                                        </label>
+
+                                        <button
+                                            type="button"
+                                            className={styles.sendCodeButton}
+                                            onClick={() => {
+                                                if (geetestRef.current?.showCaptcha && !captchaRunning) {
+                                                    geetestRef.current.showCaptcha();
+                                                    return;
+                                                }
+                                                void runGeeTestCaptcha();
+                                            }}
+                                            disabled={captchaRunning}
+                                        >
+                                            {captchaRunning ? 'Loading GeeTest...' : (captchaMounted ? 'Open GeeTest' : 'Retry GeeTest')}
+                                        </button>
+                                    </div>
+                                ) : null}
                             </>
                         )
                     ) : (

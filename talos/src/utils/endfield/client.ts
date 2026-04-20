@@ -29,6 +29,29 @@ type EmailPasswordTokenData = {
     token?: string;
 };
 
+export type EndfieldCaptchaChallenge = {
+    geetestId?: string;
+    challenge?: string;
+    riskType?: string;
+};
+
+export type EndfieldCaptchaSolution = {
+    captcha?: {
+        captcha_id: string;
+        lot_number: string;
+        pass_token: string;
+        gen_time: string;
+        captcha_output: string;
+        challenge?: string;
+    };
+    challenge?: string;
+    validate?: string;
+    seccode?: string;
+    geetest_challenge?: string;
+    geetest_validate?: string;
+    geetest_seccode?: string;
+};
+
 type PhoneCodeTokenData = {
     token: string;
     hgId?: string;
@@ -38,6 +61,11 @@ type OauthGrantData = {
     uid?: string;
     code: string;
     token: string;
+};
+
+type GrantOAuth2CodeArgs = {
+    appCode?: string;
+    long?: boolean;
 };
 
 type GenerateCredData = {
@@ -140,6 +168,14 @@ export class EndfieldBrowserClient {
         }
 
         if (json.status !== 0) {
+            const captchaChallenge = (json.data as { captcha?: EndfieldCaptchaChallenge } | undefined)?.captcha;
+            if (captchaChallenge) {
+                throw new EndfieldAuthError(
+                    'captcha-required',
+                    json.msg || 'Human-machine verification required.',
+                    captchaChallenge,
+                );
+            }
             throw new Error(json.msg || `Hypergryph API rejected request (${json.status})`);
         }
 
@@ -155,7 +191,22 @@ export class EndfieldBrowserClient {
         };
     }
 
-    async tokenByEmailPassword(email: string, password: string): Promise<string> {
+    async tokenByEmailPassword(email: string, password: string, captcha?: EndfieldCaptchaSolution): Promise<string> {
+        const captchaPayload = captcha?.captcha
+            ? {
+                ...captcha.captcha,
+                challenge: captcha.captcha.challenge ?? captcha.challenge ?? captcha.geetest_challenge,
+            }
+            : null;
+
+        const normalizedCaptcha = captcha
+            ? {
+                challenge: captcha.challenge ?? captcha.geetest_challenge,
+                validate: captcha.validate ?? captcha.geetest_validate,
+                seccode: captcha.seccode ?? captcha.geetest_seccode,
+            }
+            : null;
+
         const response = await this.fetchImpl(
             this.buildUrl('/user/auth/v1/token_by_email_password', this.authBaseUrl),
             {
@@ -163,17 +214,57 @@ export class EndfieldBrowserClient {
             headers: {
                 'content-type': 'application/json',
                 'accept-language': 'en-US',
+                'x-language': 'en-us',
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({
+                email,
+                password,
+                ...(captchaPayload
+                    ? { captcha: captchaPayload }
+                    : {}),
+                ...(normalizedCaptcha
+                    ? {
+                        challenge: normalizedCaptcha.challenge,
+                        validate: normalizedCaptcha.validate,
+                        seccode: normalizedCaptcha.seccode,
+                        geetest_challenge: normalizedCaptcha.challenge,
+                        geetest_validate: normalizedCaptcha.validate,
+                        geetest_seccode: normalizedCaptcha.seccode,
+                    }
+                    : {}),
+            }),
             },
         );
 
-        const envelope = await this.parseEnvelope<EmailPasswordTokenData>(response);
+        const envelope = await this.parseHypergryphEnvelope<EmailPasswordTokenData>(response);
         const accountToken = envelope.data.accountToken ?? envelope.data.token;
         if (!accountToken) {
             throw new Error('Auth succeeded but token is missing in response payload.');
         }
         return accountToken;
+    }
+
+    async grantOAuth2Code(token: string, args: GrantOAuth2CodeArgs = {}): Promise<OauthGrantData> {
+        const useLongGrant = Boolean(args.long);
+        const response = await this.fetchImpl(this.buildUrl('/user/oauth2/v2/grant', this.authBaseUrl), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json;charset=UTF-8',
+                accept: '*/*',
+            },
+            body: JSON.stringify({
+                token,
+                appCode: '6eb76d4e13aa36e6',
+                type: useLongGrant ? 1 : 0,
+            }),
+        });
+
+        const envelope = await this.parseHypergryphEnvelope<OauthGrantData>(response);
+        if (!envelope.data.code) {
+            throw new Error('OAuth2 grant succeeded but response did not include a code.');
+        }
+
+        return envelope.data;
     }
 
     async sendSklandPhoneCode(phone: string, deviceId: string): Promise<void> {
@@ -297,7 +388,7 @@ export class EndfieldBrowserClient {
     }
 
     async getEndfieldRoleOptions(cred: string, token: string): Promise<EndfieldRoleOption[]> {
-        const path = '/api/v1/game/player/binding?';
+        const path = '/api/v1/game/player/binding';
         const timestamp = String(Math.floor(Date.now() / 1000));
         const sign = await getSignature(path, timestamp, token, '');
 
@@ -338,13 +429,13 @@ export class EndfieldBrowserClient {
     }
 
     async generateCredByCode(code: string): Promise<{ cred: string; token: string }> {
-        const response = await this.fetchImpl(this.buildUrl('/web/v1/game/endfield/cred/by/code'), {
+        const response = await this.fetchImpl(this.buildUrl('/web/v1/user/auth/generate_cred_by_code'), {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',
                 'accept-language': 'en-US',
             },
-            body: JSON.stringify({ code }),
+            body: JSON.stringify({ kind: 1, code }),
         });
 
         const envelope = await this.parseEnvelope<GenerateCredData>(response);
@@ -361,9 +452,9 @@ export class EndfieldBrowserClient {
         token: string,
     ): Promise<PositionResponse> {
         const path = '/web/v1/game/endfield/map/me/position';
+        const signPath = `${path}roleId=${roleId}&serverId=${serverId}`;
         const timestamp = String(Math.floor(Date.now() / 1000));
-        const body = '';
-        const sign = await getSignature(path, timestamp, token, body);
+        const sign = await getSignature(signPath, timestamp, token);
         const query = new URLSearchParams({
             roleId,
             serverId: String(serverId),
@@ -389,9 +480,10 @@ export async function tokenByEmailPassword(
     email: string,
     password: string,
     options: EndfieldClientOptions,
+    captcha?: EndfieldCaptchaSolution,
 ): Promise<string> {
     const client = new EndfieldBrowserClient(options);
-    return client.tokenByEmailPassword(email, password);
+    return client.tokenByEmailPassword(email, password, captcha);
 }
 
 export async function generateCredByCode(
@@ -441,6 +533,7 @@ export async function authenticateEndfieldSession(
         deviceId?: string;
         appCode?: string;
         sklandLoginType?: 'code' | 'password';
+        captcha?: EndfieldCaptchaSolution;
         code?: string;
     },
     options: EndfieldClientOptions,
@@ -491,8 +584,11 @@ export async function authenticateEndfieldSession(
         throw new Error('Missing credentials: provide code or email/password.');
     }
 
-    const accountToken = await client.tokenByEmailPassword(args.email, args.password);
-    const generated = await client.generateCredByCode(accountToken);
+    const accountToken = await client.tokenByEmailPassword(args.email, args.password, args.captcha);
+    const grant = await client.grantOAuth2Code(accountToken, {
+        appCode: args.appCode,
+    });
+    const generated = await client.generateCredByCode(grant.code);
     const session = {
         accountToken,
         cred: generated.cred,

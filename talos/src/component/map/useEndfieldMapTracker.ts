@@ -61,17 +61,35 @@ const convertGamePosition = (
 const createTrackerMarker = (): L.Marker => {
     const icon = L.divIcon({
         className: 'endfield-tracker-marker',
-        html: '<div style="width:14px;height:14px;border-radius:50%;background:#13d08a;border:2px solid #ffffff;box-shadow:0 0 10px rgba(19,208,138,.8);"></div>',
-        iconSize: [14, 14],
-        iconAnchor: [7, 7],
+        html: '<div style="position:relative;width:22px;height:22px;border-radius:50%;background:#13d08a;border:3px solid #ffffff;box-shadow:0 0 0 5px rgba(19,208,138,.25),0 0 14px rgba(19,208,138,.85);"></div>',
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
     });
 
-    return L.marker([0, 0], {
+    const marker = L.marker([0, 0], {
         icon,
         keyboard: false,
         interactive: false,
         zIndexOffset: 900,
     });
+
+    marker.bindTooltip('', {
+        permanent: true,
+        direction: 'top',
+        offset: [0, -14],
+        className: 'endfield-tracker-tooltip',
+    });
+
+    return marker;
+};
+
+const formatTrackerTooltip = (payload: PositionResponse['data']): string => {
+    const x = payload.pos.x.toFixed(1);
+    const y = payload.pos.y.toFixed(1);
+    const z = payload.pos.z.toFixed(1);
+    const mapId = payload.mapId || 'unknown-map';
+    const levelId = payload.levelId || 'unknown-level';
+    return `<div>ME X:${x} Y:${y} Z:${z}</div><div>${mapId} / ${levelId}</div>`;
 };
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
@@ -89,6 +107,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
     const trackerRef = useRef<MapTracker | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
+    const hasCenteredOnFirstUpdateRef = useRef(false);
     const animationRef = useRef<AnimationState>({
         rafId: null,
         running: false,
@@ -210,6 +229,16 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
                 const latLng = convertGamePosition(map, payload, config);
                 setTargetPosition(latLng);
+
+                const marker = markerRef.current;
+                if (marker) {
+                    marker.getTooltip()?.setContent(formatTrackerTooltip(payload));
+                }
+
+                if (!hasCenteredOnFirstUpdateRef.current) {
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    map.panTo(latLng, { animate: true, duration: 0.45 });
+                }
             };
 
             tracker.subscribe(onUpdate);
@@ -228,6 +257,8 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 markerRef.current.remove();
                 markerRef.current = null;
             }
+
+            hasCenteredOnFirstUpdateRef.current = false;
         };
     }, [map, configVersion]);
 }

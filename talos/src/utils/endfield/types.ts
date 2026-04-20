@@ -25,15 +25,18 @@ export type EndfieldAuthFailureReason =
     | 'http-403'
     | 'invalid-token'
     | 'invalid-cred'
+    | 'captcha-required'
     | 'server-rejected';
 
 export class EndfieldAuthError extends Error {
     readonly reason: EndfieldAuthFailureReason;
+    readonly details?: unknown;
 
-    constructor(reason: EndfieldAuthFailureReason, message: string) {
+    constructor(reason: EndfieldAuthFailureReason, message: string, details?: unknown) {
         super(message);
         this.name = 'EndfieldAuthError';
         this.reason = reason;
+        this.details = details;
     }
 }
 
