@@ -17,6 +17,7 @@ type Lang = (typeof SUPPORTED_LANGS)[number];
 // URL 參數名稱
 const PARAM_LANG = 'l';
 const PARAM_FILTER = 'f';
+const PARAM_TYPE = 'type';
 const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
@@ -96,6 +97,22 @@ const POINT_ID_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
     }
     return acc;
 }, new Map<string, IMarkerData>());
+
+const UNIQUE_ARCHIVE_TYPE_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
+    const markerType = MARKER_TYPE_DICT[marker.type];
+    if (markerType?.category?.main !== 'files') return acc;
+
+    if (!acc.has(marker.type)) {
+        acc.set(marker.type, marker);
+        return acc;
+    }
+
+    const existing = acc.get(marker.type);
+    if (existing && existing.id !== marker.id) {
+        acc.set(marker.type, null);
+    }
+    return acc;
+}, new Map<string, IMarkerData | null>());
 
 const SORTED_MARKER_TYPE_KEYS = Object.keys(MARKER_TYPE_DICT).sort();
 const MARKER_TYPE_INDEX_MAP = new Map<string, number>(
@@ -211,6 +228,16 @@ const mergeFilterKeys = (keys: string[]) => {
 const resolvePointShareTarget = (pointId: string): { point: IMarkerData; regionKey: string } | null => {
     const normalizedPointId = String(pointId);
     const point = POINT_ID_MARKER_MAP.get(normalizedPointId);
+    if (!point) return null;
+
+    const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
+    if (!regionKey) return null;
+
+    return { point, regionKey };
+};
+
+const resolveArchiveTypeShareTarget = (typeKey: string): { point: IMarkerData; regionKey: string } | null => {
+    const point = UNIQUE_ARCHIVE_TYPE_MARKER_MAP.get(typeKey);
     if (!point) return null;
 
     const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
@@ -471,6 +498,18 @@ const getFilterParamValue = (keys: string[]): string => {
     return compressFilter(validKeys);
 };
 
+const buildArchiveTypeShareQuery = (typeKey: string): string => {
+    const params = new URLSearchParams();
+    if (resolveArchiveTypeShareTarget(typeKey)) {
+        params.set(PARAM_TYPE, typeKey);
+    } else {
+        // 非唯一時退化為明文 filter
+        params.set(PARAM_FILTER, typeKey);
+    }
+    const queryString = params.toString();
+    return queryString ? `?${queryString}` : '';
+};
+
 /**
  * 生成分享鏈接
  * @returns 完整的分享URL
@@ -513,6 +552,11 @@ export const generateShareUrl = (): string => {
  * 若 id 超出編碼範圍，降級為 legacy query 參數。
  */
 const buildPointShareToken = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const markerType = MARKER_TYPE_DICT[point.type];
+    if (markerType?.category?.main === 'files') {
+        return buildArchiveTypeShareQuery(point.type);
+    }
+
     const token = encodePointIdToken(String(point.id));
     if (token) return token;
 
@@ -642,8 +686,10 @@ export const applyUrlParams = async (): Promise<void> => {
     }
 
     const pointParam = params.get(PARAM_POINT);
+    const typeParam = params.get(PARAM_TYPE)?.trim() || null;
     const pointIdFromPathToken = pathShareToken ? decodePointIdToken(pathShareToken) : null;
     const resolvedFromPath = pointIdFromPathToken ? resolvePointShareTarget(pointIdFromPathToken) : null;
+    const resolvedFromType = typeParam ? resolveArchiveTypeShareTarget(typeParam) : null;
 
     if (resolvedFromPath) {
         mergeFilterKeys([resolvedFromPath.point.type]);
@@ -670,6 +716,16 @@ export const applyUrlParams = async (): Promise<void> => {
                 pointId: pointParam,
             });
         }
+    } else if (resolvedFromType) {
+        mergeFilterKeys([resolvedFromType.point.type]);
+        navigateToSharedPoint({
+            regionKey: resolvedFromType.regionKey,
+            subregionKey: resolvedFromType.point.subregId,
+            pointId: resolvedFromType.point.id,
+        });
+    } else if (typeParam) {
+        // ?type 找不到唯一點位時，退化為明文 f
+        mergeFilterKeys([typeParam]);
     }
 
     // 清除URL參數，保持地址欄乾淨
@@ -684,6 +740,7 @@ export const applyUrlParams = async (): Promise<void> => {
             const newParams = new URLSearchParams(window.location.search);
             newParams.delete(PARAM_LANG);
             newParams.delete(PARAM_FILTER);
+            newParams.delete(PARAM_TYPE);
             newParams.delete(PARAM_REGION);
             newParams.delete(PARAM_SUBREGION);
             newParams.delete(PARAM_POINT);
