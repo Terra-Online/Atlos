@@ -22,9 +22,20 @@ export interface AnnouncementApiItem {
     locale?: string;
 }
 
+export interface AnnouncementLatestMeta {
+    latestId: string | null;
+    version: string;
+    locale?: string;
+}
+
 const REMOTE_BASE = 'https://blog.opendfieldmap.org';
 const LOCAL_BASE = 'http://localhost:3000';
 const BLOG_ASSET_BASE = ((import.meta.env.VITE_ANNOUNCEMENT_ASSET_BASE as string | undefined)?.trim() || REMOTE_BASE).replace(/\/$/, '');
+const ANNOUNCEMENT_LATEST_ID_KEY_PREFIX = 'announcement_latest_id';
+const ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX = 'announcement_cache_body';
+const ANNOUNCEMENT_VERSION_KEY_PREFIX = 'announcement_version';
+export const ANNOUNCEMENT_LAST_READ_DATE_KEY = 'announcement_last_read';
+export const ANNOUNCEMENT_LAST_READ_ID_KEY = 'announcement_last_read_id';
 
 type ApiLocale = 'en' | 'zh-cn' | 'zh-hk' | 'ja' | 'ko';
 
@@ -41,6 +52,22 @@ const toApiLocale = (locale?: string): ApiLocale => {
     if (normalized.startsWith('ja')) return 'ja';
     if (normalized.startsWith('ko')) return 'ko';
     return 'en';
+};
+
+export const getAnnouncementLocaleKey = (locale?: string): ApiLocale => {
+    return toApiLocale(locale);
+};
+
+export const getAnnouncementLatestIdStorageKey = (locale?: string): string => {
+    return `${ANNOUNCEMENT_LATEST_ID_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
+};
+
+export const getAnnouncementBodyCacheStorageKey = (locale?: string): string => {
+    return `${ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
+};
+
+export const getAnnouncementVersionStorageKey = (locale?: string): string => {
+    return `${ANNOUNCEMENT_VERSION_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
 };
 
 export const getAnnouncementDebugMode = (): AnnouncementDebugMode => {
@@ -121,8 +148,58 @@ const toApiUrl = (base: string, locale: ApiLocale): string => {
     return `${url}${sep}_=${Date.now()}`;
 };
 
+const toLatestApiUrl = (base: string, locale: ApiLocale): string => {
+    const url = `${base.replace(/\/$/, '')}/api/${locale}/announcements/latest`;
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}_=${Date.now()}`;
+};
+
 const isAnnouncementArray = (value: unknown): value is AnnouncementApiItem[] => {
     return Array.isArray(value);
+};
+
+const normalizeAnnouncementLatestMeta = (raw: unknown): AnnouncementLatestMeta | null => {
+    if (!isRecord(raw)) return null;
+
+    const latestIdRaw = raw.latestId;
+    const latestId = typeof latestIdRaw === 'string' ? latestIdRaw : latestIdRaw === null ? null : null;
+    const version = typeof raw.version === 'string' ? raw.version : '';
+    if (!version) return null;
+
+    return {
+        latestId,
+        version,
+        locale: typeof raw.locale === 'string' ? raw.locale : undefined,
+    };
+};
+
+export const fetchAnnouncementLatestMeta = async (locale?: string): Promise<AnnouncementLatestMeta | null> => {
+    const currentLocale = toApiLocale(locale);
+    const localeCandidates: ApiLocale[] = currentLocale === 'en' ? ['en'] : [currentLocale, 'en'];
+    const bases = getAnnouncementApiBases();
+
+    for (const base of bases) {
+        for (const targetLocale of localeCandidates) {
+            try {
+                const response = await fetch(toLatestApiUrl(base, targetLocale), {
+                    method: 'GET',
+                    headers: { Accept: 'application/json' },
+                    cache: 'no-store',
+                });
+                if (!response.ok) continue;
+
+                const json: unknown = await response.json();
+                const meta = normalizeAnnouncementLatestMeta(json);
+                if (!meta) continue;
+
+                return meta;
+            } catch {
+                // Try next candidate.
+            }
+        }
+    }
+
+    return null;
 };
 
 export const fetchAnnouncements = async (locale?: string): Promise<AnnouncementApiItem[]> => {

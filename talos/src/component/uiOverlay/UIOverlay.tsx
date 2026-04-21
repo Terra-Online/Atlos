@@ -32,7 +32,7 @@ import i18n from '../../assets/logos/i18n.svg?react';
 import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
-import { fetchAnnouncements, getAnnouncementDebugMode } from '@/utils/announcement';
+import { useAnnouncementFlow } from './useAnnFlow';
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -49,42 +49,22 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
-    const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
-    const [announcements, setAnnouncements] = useState<any[]>([]);
+    const {
+        announcements,
+        hasUnreadAnnouncement,
+        setHasUnreadAnnouncement,
+        announcementChecked,
+    } = useAnnouncementFlow(locale);
     const { isMobile } = useDevice();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsAnnouncementOpen = useUiPrefsStore((s) => s.setIsAnnouncementOpen);
     const setAnnouncementFlowReady = useUiPrefsStore((s) => s.setAnnouncementFlowReady);
     const mobileDrawerSnapIndex = useMobileDrawerSnapIndex();
-    const [announcementChecked, setAnnouncementChecked] = useState(false);
     const [autoOpenedOnce, setAutoOpenedOnce] = useState(false);
 
-    // Check for unread announcements on mount
     useEffect(() => {
         setAnnouncementFlowReady(false);
-        const checkUnread = async () => {
-            const debugMode = getAnnouncementDebugMode();
-            if (debugMode === 'force-unread') {
-                setHasUnreadAnnouncement(true);
-                setAnnouncementChecked(true);
-                return;
-            }
-
-            try {
-                const data = await fetchAnnouncements(locale);
-                setAnnouncements(data);
-                const lastRead = localStorage.getItem('announcement_last_read');
-                const latestDate = data[0]?.date;
-                const hasUnread = !lastRead || !!(latestDate && new Date(latestDate) > new Date(lastRead));
-                setHasUnreadAnnouncement(hasUnread);
-            } catch (error) {
-                console.error('Failed to check announcements:', error);
-            } finally {
-                setAnnouncementChecked(true);
-            }
-        };
-        void checkUnread();
     }, [locale, setAnnouncementFlowReady]);
 
     useEffect(() => {
