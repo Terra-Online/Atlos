@@ -37,7 +37,7 @@ type RegionTransform = {
 };
 
 const REGION_TRANSFORMS: Record<string, RegionTransform> = {
-// ONLY FOR TESTING PURPOSES
+
 };
 
 const MAP_ID_TO_REGION_KEY: Record<string, string> = {
@@ -49,7 +49,79 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
 };
 
 const MAP_ID_TO_PROFILE: Record<string, keyof typeof REGION_TRANSFORMS> = {
-// TESTING PURPOSES
+    map01: 'VL',
+    map02: 'WL',
+    base01: 'DJ',
+    dung01: 'ES',
+    indie07: 'WL2',
+    indie_dg007: 'WL2',
+};
+
+const normalizeSceneId = (value?: string | null): string => (value || '').trim().toLowerCase();
+
+const resolveProfileKeyFromPayload = (payload: PositionResponse['data']): keyof typeof REGION_TRANSFORMS => {
+    const mapId = normalizeSceneId(payload.mapId);
+    const levelId = normalizeSceneId(payload.levelId);
+
+    const direct = MAP_ID_TO_PROFILE[mapId];
+    if (direct) return direct;
+
+    // Keep profile inference consistent with transCoord.py's startswith rules.
+    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'VL';
+    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'WL';
+    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'DJ';
+    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'ES';
+
+    if (
+        mapId.startsWith('indie07')
+        || levelId.startsWith('indie07')
+        || mapId.includes('indie_dg007')
+        || levelId.includes('indie_dg007')
+        || mapId.includes('wl2')
+        || levelId.includes('wl2')
+        || mapId.includes('wuling2')
+        || levelId.includes('wuling2')
+    ) {
+        return 'WL2';
+    }
+
+    return 'default';
+};
+
+const resolveRegionKeyFromPayload = (payload: PositionResponse['data']): string | null => {
+    const mapId = normalizeSceneId(payload.mapId);
+    const levelId = normalizeSceneId(payload.levelId);
+
+    const direct = MAP_ID_TO_REGION_KEY[mapId];
+    if (direct && REGION_DICT[direct]) return direct;
+
+    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'Valley_4';
+    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'Wuling';
+    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'Dijiang';
+    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'Weekraid_1';
+    if (
+        mapId.startsWith('indie07')
+        || levelId.startsWith('indie07')
+        || mapId.includes('indie_dg007')
+        || levelId.includes('indie_dg007')
+    ) {
+        return 'Wuling';
+    }
+
+    if (mapId && REGION_DICT[mapId]) return mapId;
+    return null;
+};
+
+const ENDFIELD_TRACKER_PANE = 'talos-endfield-tracker-pane';
+const ENDFIELD_TRACKER_LAYER_Z_INDEX = 640;
+
+const ensureTrackerPane = (map: L.Map): string => {
+    const existing = map.getPane(ENDFIELD_TRACKER_PANE);
+    if (existing) return ENDFIELD_TRACKER_PANE;
+    const pane = map.createPane(ENDFIELD_TRACKER_PANE);
+    pane.style.zIndex = String(ENDFIELD_TRACKER_LAYER_Z_INDEX);
+    pane.style.pointerEvents = 'none';
+    return ENDFIELD_TRACKER_PANE;
 };
 
 
@@ -59,30 +131,10 @@ const parseTrackerConfig = (): TrackerConfig | null => {
     return parsed;
 };
 
-const getRegionForPayload = (payload: PositionResponse['data']): string => {
-    if (payload.mapId && MAP_ID_TO_REGION_KEY[payload.mapId] && REGION_DICT[MAP_ID_TO_REGION_KEY[payload.mapId]]) {
-        return MAP_ID_TO_REGION_KEY[payload.mapId];
-    }
-
-    if (payload.mapId && REGION_DICT[payload.mapId]) return payload.mapId;
-    const currentRegion = useRegion.getState().currentRegionKey;
-    if (REGION_DICT[currentRegion]) return currentRegion;
-    return 'Valley_4';
-};
-
 const convertGamePosition = (
-    map: L.Map,
     payload: PositionResponse['data'],
 ): { latLng: L.LatLng; mapX: number; mapZ: number; mode: string } => {
-    const regionKey = getRegionForPayload(payload);
-    const regionConfig = REGION_DICT[regionKey];
-    const maxZoom = regionConfig?.maxZoom ?? Math.floor(map.getMaxZoom());
-
-    const mapId = (payload.mapId || '').toLowerCase();
-    const levelId = (payload.levelId || '').toLowerCase();
-    const profileKey: keyof typeof REGION_TRANSFORMS =
-        MAP_ID_TO_PROFILE[mapId]
-        ?? ((levelId.includes('wl2') || levelId.includes('wuling2')) ? 'WL2' : 'default');
+    const profileKey = resolveProfileKeyFromPayload(payload);
 
     const transform = REGION_TRANSFORMS[profileKey] ?? REGION_TRANSFORMS.default;
 
@@ -104,14 +156,16 @@ const convertGamePosition = (
     };
 
     return {
-        latLng: map.unproject([selected.mapX, selected.mapZ], maxZoom),
+        // MarkerLayer uses [lat, lng] == [z, x] in CRS.Simple map space.
+        // mapX/mapZ are already converted into that same space, no unproject needed.
+        latLng: L.latLng(selected.mapZ, selected.mapX),
         mapX: selected.mapX,
         mapZ: selected.mapZ,
         mode: selected.mode,
     };
 };
 
-const createTrackerMarker = (): L.Marker => {
+const createTrackerMarker = (pane: string): L.Marker => {
     const icon = L.icon({
         iconUrl: trackerIconUrl,
         iconSize: [28, 28],
@@ -120,6 +174,7 @@ const createTrackerMarker = (): L.Marker => {
 
     const marker = L.marker([0, 0], {
         icon,
+        pane,
         keyboard: false,
         interactive: false,
         zIndexOffset: 900,
@@ -185,6 +240,7 @@ const shouldDisableLocatorOnTabBoot = (): boolean => {
 export function useEndfieldMapTracker(map: L.Map | undefined): void {
     const [configVersion, setConfigVersion] = useState(0);
     const trackerRef = useRef<MapTracker | null>(null);
+    const trackerLayerRef = useRef<L.LayerGroup | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
     const hasCenteredOnFirstUpdateRef = useRef(false);
@@ -219,6 +275,18 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 state.rafId = null;
             }
             state.running = false;
+        };
+
+        const ensureTrackerLayerAttached = () => {
+            const layer = trackerLayerRef.current;
+            if (!layer) return;
+            if (!map.hasLayer(layer)) {
+                layer.addTo(map);
+            }
+        };
+
+        const onRegionSwitched = () => {
+            ensureTrackerLayerAttached();
         };
 
         const setTargetPosition = (target: L.LatLng) => {
@@ -279,7 +347,12 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 return;
             }
 
-            const marker = createTrackerMarker().addTo(map);
+            const pane = ensureTrackerPane(map);
+            const trackerLayer = L.layerGroup();
+            trackerLayer.addTo(map);
+            trackerLayerRef.current = trackerLayer;
+
+            const marker = createTrackerMarker(pane).addTo(trackerLayer);
             markerRef.current = marker;
 
             const session = readEndfieldSession();
@@ -311,7 +384,9 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             const onUpdate = (payload: PositionResponse['data']) => {
                 if (payload.isOnline === false) return;
 
-                const mappedRegion = payload.mapId ? MAP_ID_TO_REGION_KEY[payload.mapId] : undefined;
+                ensureTrackerLayerAttached();
+
+                const mappedRegion = resolveRegionKeyFromPayload(payload);
                 if (config.locatorSync && mappedRegion && REGION_DICT[mappedRegion]) {
                     const store = useRegion.getState();
                     const targetRegion = mappedRegion;
@@ -324,7 +399,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                     lastSyncedRegionRef.current = targetRegion;
                 }
 
-                const converted = convertGamePosition(map, payload);
+                const converted = convertGamePosition(payload);
                 setTargetPosition(converted.latLng);
 
                 const marker = markerRef.current;
@@ -340,6 +415,8 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
             tracker.subscribe(onUpdate);
             tracker.start();
+
+            map.on('talos:regionSwitched', onRegionSwitched);
         };
 
         boot();
@@ -350,9 +427,16 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             trackerRef.current?.destroy();
             trackerRef.current = null;
 
+            map.off('talos:regionSwitched', onRegionSwitched);
+
             if (markerRef.current) {
                 markerRef.current.remove();
                 markerRef.current = null;
+            }
+
+            if (trackerLayerRef.current) {
+                trackerLayerRef.current.remove();
+                trackerLayerRef.current = null;
             }
 
             hasCenteredOnFirstUpdateRef.current = false;

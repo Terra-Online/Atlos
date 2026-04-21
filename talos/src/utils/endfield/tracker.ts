@@ -27,7 +27,6 @@ export class MapTracker {
     private running = false;
     private pausedByOffline = false;
     private pollTimer: number | null = null;
-    private failureCount = 0;
 
     constructor(options: EndfieldTrackerOptions) {
         this.options = {
@@ -91,12 +90,6 @@ export class MapTracker {
         });
     }
 
-    private computeBackoffDelay(): number {
-        if (this.failureCount <= 0) return this.options.intervalMs;
-        const expDelay = this.options.intervalMs * 2 ** Math.max(0, this.failureCount - 1);
-        return Math.min(expDelay, this.options.maxBackoffMs);
-    }
-
     private stopForAuthFailure(error: EndfieldAuthError): void {
         this.log('stopping due to auth failure', error.reason, error.message);
         this.options.onError(error);
@@ -117,8 +110,6 @@ export class MapTracker {
                 this.options.cred,
                 this.options.token,
             );
-
-            this.failureCount = 0;
 
             if (response.data.isOnline === false) {
                 this.pausedByOffline = true;
@@ -145,7 +136,6 @@ export class MapTracker {
     start(): void {
         if (this.running) return;
         this.running = true;
-        this.failureCount = 0;
         this.pausedByOffline = false;
         this.log('tracker started');
         this.scheduleNextPoll(0);

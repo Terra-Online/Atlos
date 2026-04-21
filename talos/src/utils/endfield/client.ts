@@ -254,7 +254,7 @@ export class EndfieldBrowserClient {
             },
             body: JSON.stringify({
                 token,
-                appCode: '6eb76d4e13aa36e6',
+                appCode: '4ca99fa6b56cc2ba',
                 type: useLongGrant ? 1 : 0,
             }),
         });
@@ -290,7 +290,7 @@ export class EndfieldBrowserClient {
         deviceId: string;
         appCode?: string;
     }): Promise<EndfieldSession> {
-        const appCode = args.appCode ?? 'endfield';
+        const appCode = args.appCode ?? '4ca99fa6b56cc2ba';
 
         const tokenResponse = await this.fetchImpl(this.buildUrl('/user/auth/v2/token_by_phone_code', this.authBaseUrl), {
             method: 'POST',
@@ -316,7 +316,7 @@ export class EndfieldBrowserClient {
         deviceId: string;
         appCode?: string;
     }): Promise<EndfieldSession> {
-        const appCode = args.appCode ?? 'endfield';
+        const appCode = args.appCode ?? '4ca99fa6b56cc2ba';
 
         const tokenResponse = await this.fetchImpl(this.buildUrl('/user/auth/v1/token_by_phone_password', this.authBaseUrl), {
             method: 'POST',
