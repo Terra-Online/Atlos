@@ -16,6 +16,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 :root, :root[data-theme='light'] {
     --idcard-bg: #{$light-2};
     --idcard-name: #{$grey-1};
+    --idcard-name-hint: #{rgba($grey-3, 0.6)};
     --idcard-age: #{$grey-2};
     --idcard-id: #{$grey-2};
     --id-highlight-border: #{$primary-accent-5};
@@ -34,6 +35,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
 :root[data-theme='dark'] {
     --idcard-bg: #{$grey-1};
     --idcard-name: #{$white-1};
+    --idcard-name-hint: #{rgba($white-1, 0.45)};
     --idcard-age: #{$mid};
     --idcard-id: #{$white-3};
     --id-highlight-border: #{$primary-accent-3};
@@ -218,7 +220,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         border: none;
         background: transparent;
         cursor: text;
-        &:has(.usrNameInput:not(:focus, :focus-within, :focus))::before, &:not:has(input:placeholder-shown)::before {
+        &:has(.usrNameInput:not(:focus, :focus-within, :focus))::before {
             content: "";
             position: absolute;
             width: 2px;
@@ -242,7 +244,7 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.png');
         margin: 0;
 
         &::placeholder {
-            color: rgba(250, 250, 250, 0.48);
+            color: var(--idcard-name-hint);
         }
     }
 
