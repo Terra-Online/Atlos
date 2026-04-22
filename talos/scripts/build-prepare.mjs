@@ -5,15 +5,25 @@ const run = (cmd) => {
   execSync(cmd, { stdio: 'inherit' });
 };
 
+const isTruthyFlag = (value) =>
+  typeof value === 'string' && value !== 'false' && value !== '0';
+
 const argDeploy = process.argv.includes('--deploy');
 const envDeploy = process.env.npm_config_deploy;
-const shouldDeploy = argDeploy || (typeof envDeploy === 'string' && envDeploy !== 'false' && envDeploy !== '0');
+const shouldDeploy = argDeploy || isTruthyFlag(envDeploy);
 const isCi = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+const argSkipSubset = process.argv.includes('--skip-subset') || process.argv.includes('--skip-subset-fonts');
+const envSkipSubsetArg = process.env.npm_config_skip_subset;
+const envSkipSubsetFontsArg = process.env.npm_config_skip_subset_fonts;
 const envSkipSubset = process.env.SKIP_SUBSET_FONTS;
-const shouldSkipSubset = isCi || (typeof envSkipSubset === 'string' && envSkipSubset !== 'false' && envSkipSubset !== '0');
+const shouldSkipSubset = isCi
+  || argSkipSubset
+  || isTruthyFlag(envSkipSubsetArg)
+  || isTruthyFlag(envSkipSubsetFontsArg)
+  || isTruthyFlag(envSkipSubset);
 
 if (shouldSkipSubset) {
-  console.log('\nSkipping font subsetting in CI environment.');
+  console.log('\nSkipping font subsetting.');
 } else {
   run('pnpm run subset:fonts');
 }

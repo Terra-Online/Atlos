@@ -6,6 +6,7 @@ import RegisterIcon from '@/assets/logos/register.svg?react';
 import parse from 'html-react-parser';
 import { type FormEvent, type KeyboardEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslateUI } from '@/locale';
+import { useDevice } from '@/utils/device';
 import {
   OTP_COOLDOWN_SECONDS,
   canShowSendVerificationButton,
@@ -109,6 +110,7 @@ const Access = ({
   onRequestPasswordReset,
 }: AccessProps) => {
   const t = useTranslateUI();
+  const { isMobile } = useDevice();
   const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
   const [verificationCodeValue, setVerificationCodeValue] = useState('');
@@ -592,6 +594,7 @@ const Access = ({
     : isResetMode
       ? t('idcard.auth.sendResetLink') || 'Reset'
       : t('idcard.auth.send') || 'Send';
+  const modalSize = isMobile ? 'full' : 'l';
 
   const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
     discord: isRegisterMode
@@ -627,7 +630,7 @@ const Access = ({
   return (
     <Modal
       open={open}
-      size="l"
+      size={modalSize}
       title={modalTitle}
       icon={modalIcon}
       onClose={() => setOpen(false)}
