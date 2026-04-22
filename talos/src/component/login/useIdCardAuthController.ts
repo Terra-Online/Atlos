@@ -335,10 +335,12 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const callbackUrl = new URL(window.location.href);
       callbackUrl.search = '';
       callbackUrl.hash = '';
-      await requestPasswordReset(email, callbackUrl.toString());
+      callbackUrl.searchParams.set('email', normalizedEmail);
+      await requestPasswordReset(normalizedEmail, callbackUrl.toString());
       return true;
     } catch (error) {
       setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));

@@ -22,6 +22,7 @@ const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
 const PARAM_POINT_TOKEN = 'x';
+const AUTH_URL_PARAM_WHITELIST = new Set(['token', 'email', 'error', 'domain']);
 const POINT_SHARE_SHORT_ORIGIN = 'https://oem.re';
 
 const BASE62_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -691,32 +692,29 @@ export const applyUrlParams = async (): Promise<void> => {
         mergeFilterKeys([typeParam]);
     }
 
-    // 清除URL參數，保持地址欄乾淨
-    // 但保留用于测试的 domain 参数（仅在 localhost 开发环境下）
+    // 清除地圖分享參數；僅保留認證流程必要參數，避免影響 reset password 流程。
     if (params.toString()) {
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
-        
-        if (isLocalhost) {
-            // 开发环境：只清除已处理的参数，保留 domain 参数
-            const newParams = new URLSearchParams(window.location.search);
-            newParams.delete(PARAM_LANG);
-            newParams.delete(PARAM_FILTER);
-            newParams.delete(PARAM_TYPE);
-            newParams.delete(PARAM_REGION);
-            newParams.delete(PARAM_SUBREGION);
-            newParams.delete(PARAM_POINT);
-            newParams.delete(PARAM_POINT_TOKEN);
-            
-            const queryString = newParams.toString();
-            const newUrl = queryString ? 
-                `${window.location.pathname}?${queryString}` : 
-                window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-        } else {
-            // 生产环境：清除所有参数
-            window.history.replaceState({}, '', window.location.pathname);
-        }
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.delete(PARAM_LANG);
+        newParams.delete(PARAM_FILTER);
+        newParams.delete(PARAM_TYPE);
+        newParams.delete(PARAM_REGION);
+        newParams.delete(PARAM_SUBREGION);
+        newParams.delete(PARAM_POINT);
+        newParams.delete(PARAM_POINT_TOKEN);
+
+        const preservedParams = new URLSearchParams();
+        newParams.forEach((value, key) => {
+            if (AUTH_URL_PARAM_WHITELIST.has(key)) {
+                preservedParams.append(key, value);
+            }
+        });
+
+        const queryString = preservedParams.toString();
+        const newUrl = queryString
+            ? `${window.location.pathname}?${queryString}`
+            : window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
     }
 };
 
