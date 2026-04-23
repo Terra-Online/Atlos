@@ -85,6 +85,16 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
 
 const FIELD_VALIDATE_DELAY_MS = 500;
 const AUTO_SUBMIT_DELAY_MS = 200;
+const ENTER_ACTION_KEYS = new Set(['Enter', 'Go', 'Done', 'Send', 'Search', 'Next']);
+
+const isEnterAction = (event: KeyboardEvent<HTMLElement>): boolean => {
+  if (ENTER_ACTION_KEYS.has(event.key)) {
+    return true;
+  }
+
+  const nativeEvent = event.nativeEvent;
+  return nativeEvent.keyCode === 13 || nativeEvent.which === 13;
+};
 
 const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }): string => [
   payload.mode,
@@ -186,7 +196,7 @@ const Access = ({
     }
 
     return t('idcard.auth.forgotPW') || 'Forgot password?';
-  }, [fieldHintCodes.password, isRegisterMode, t]);
+  }, [fieldHintCodes.password, isRegisterMode, isResetMode, t]);
 
   const setFieldCode = useCallback((field: AuthField, code: AuthHintCode | null) => {
     setFieldHintCodes((prev) => {
@@ -465,7 +475,7 @@ const Access = ({
   };
 
   useEffect(() => {
-    if (!open || isSubmitting || !onAutoSubmit || !isRegisterMode) {
+    if (!open || isSubmitting || !onAutoSubmit) {
       return undefined;
     }
 
@@ -473,7 +483,16 @@ const Access = ({
       return undefined;
     }
 
-    const hasRequiredTouches = touchedFields.email && touchedFields.password && touchedFields.verificationCode;
+    const shouldAutoSubmit = !isResetMode || isResetSubmitStage;
+    if (!shouldAutoSubmit) {
+      return undefined;
+    }
+
+    const hasRequiredTouches = isRegisterMode
+      ? touchedFields.email && touchedFields.password && touchedFields.verificationCode
+      : isResetMode
+        ? touchedFields.password && touchedFields.repeatPassword
+        : touchedFields.email && touchedFields.password;
     if (!hasRequiredTouches) {
       return undefined;
     }
@@ -504,14 +523,18 @@ const Access = ({
     authMachineNode,
     authValues.email,
     authValues.password,
+    authValues.repeatPassword,
     authValues.verificationCode,
     isRegisterMode,
+    isResetMode,
+    isResetSubmitStage,
     isSubmitting,
     lastAutoSubmitSignature,
     onAutoSubmit,
     open,
     touchedFields.email,
     touchedFields.password,
+    touchedFields.repeatPassword,
     touchedFields.verificationCode,
   ]);
 
@@ -543,7 +566,7 @@ const Access = ({
   };
 
   const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isSubmitting) {
+    if (!isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
       return;
     }
 
@@ -558,6 +581,15 @@ const Access = ({
 
     event.preventDefault();
     event.currentTarget.requestSubmit();
+  };
+
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
   };
 
   const handleRequestVerificationCode = async () => {
@@ -654,10 +686,12 @@ const Access = ({
                   type="email"
                   value={emailValue}
                   onChange={(event) => handleEmailChange(event.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   onBlur={() => handleFieldBlur('email')}
                   placeholder="ak@ex.talos"
                   autoComplete="email"
                   spellCheck={false}
+                  enterKeyHint={isResetMode && !isResetSubmitStage ? 'send' : 'next'}
                   disabled={isResetSubmitStage}
                   data-locked={isResetSubmitStage ? 'true' : 'false'}
                 />
@@ -710,9 +744,11 @@ const Access = ({
                     type="password"
                     value={passwordValue}
                     onChange={(event) => handlePasswordChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     onBlur={() => handleFieldBlur('password')}
                     placeholder=""
                     autoComplete={isRegisterMode || isResetMode ? 'new-password' : 'current-password'}
+                    enterKeyHint={isRegisterMode || (isResetMode && isResetSubmitStage) ? 'next' : 'go'}
                   />
                 </div>
             </div>
@@ -738,9 +774,11 @@ const Access = ({
                     type="password"
                     value={repeatPasswordValue}
                     onChange={(event) => handleRepeatPasswordChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     onBlur={() => handleFieldBlur('repeatPassword')}
                     placeholder=""
                     autoComplete="new-password"
+                    enterKeyHint="go"
                   />
                 </div>
               </div>
@@ -766,12 +804,14 @@ const Access = ({
                     type="text"
                     value={verificationCodeValue}
                     onChange={(event) => handleVerificationCodeChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     onBlur={() => handleFieldBlur('verificationCode')}
                     placeholder="019-624"
                     autoComplete="one-time-code"
                     inputMode="numeric"
                     pattern="[0-9]{3}-[0-9]{3}"
                     maxLength={7}
+                    enterKeyHint="go"
                   />
                   {shouldShowSendVerificationButton && !isResetMode ? (
                   <button
