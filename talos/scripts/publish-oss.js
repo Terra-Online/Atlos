@@ -4,6 +4,7 @@ import path from "path";
 import https from "https";
 import http from "http";
 import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
+import { buildClipIndex, normalizeObjectKey, toPrefixedObjectKey } from './tile-index.js';
 
 const config = JSON.parse(fs.readFileSync('./config/config.json', 'utf-8'));
 const { region, bucket, accessKeyId, accessKeySecret, prefix: basePrefix } = config.web.build.oss
@@ -89,7 +90,39 @@ function getAllFiles(dirPath, arrayOfFiles) {
   return arrayOfFiles;
 }
 
-const allFiles = getAllFiles('./dist');
+const listRemoteObjectKeys = async (prefixToList) => {
+  const keys = [];
+  let continuationToken;
+
+  do {
+    const response = await client.listV2({
+      prefix: prefixToList,
+      continuationToken,
+      maxKeys: 1000,
+    });
+
+    const objects = response.objects || [];
+    for (const item of objects) {
+      if (item?.name) {
+        keys.push(item.name);
+      }
+    }
+
+    continuationToken = response.nextContinuationToken;
+  } while (continuationToken);
+
+  return keys;
+};
+
+const deleteRemoteObjectKeys = async (keys) => {
+  if (!keys.length) return;
+
+  const chunkSize = 1000;
+  for (let i = 0; i < keys.length; i += chunkSize) {
+    const chunk = keys.slice(i, i + chunkSize);
+    await client.deleteMulti(chunk, { quiet: true });
+  }
+};
 
 // threshold for large file uploading
 const MULTIPART_THRESHOLD = 1 * 1024 * 1024;
@@ -148,6 +181,26 @@ const upload = async (relativePath, retryCount = 0) => {
 
 const concurrency = 5; // limit concurrency
 let index = 0;
+let allFiles = [];
+
+const reconcileClipObjects = async (expectedClipFiles) => {
+  const clipPrefix = toPrefixedObjectKey(prefix, 'clips/');
+  const remoteClipKeys = await listRemoteObjectKeys(clipPrefix);
+
+  const expectedSet = new Set(
+    expectedClipFiles.map((relativePath) => toPrefixedObjectKey(prefix, relativePath))
+  );
+
+  const staleKeys = remoteClipKeys.filter((key) => !expectedSet.has(normalizeObjectKey(key)));
+
+  if (!staleKeys.length) {
+    console.log('[publish-oss] clips directory already consistent with index.');
+    return;
+  }
+
+  await deleteRemoteObjectKeys(staleKeys);
+  console.log(`[publish-oss] deleted ${staleKeys.length} stale clips objects.`);
+};
 
 const worker = async () => {
   while (index < allFiles.length) {
@@ -157,6 +210,16 @@ const worker = async () => {
 };
 
 const run = async () => {
+  const clipIndex = await buildClipIndex({ distDir: './dist' });
+  if (clipIndex.generated) {
+    console.log(
+      `[publish-oss] clip index generated: tiles=${clipIndex.tileFileCount}, coverageFiles=${clipIndex.coverageFileCount}`
+    );
+  } else {
+    console.log(`[publish-oss] clip index skipped: ${clipIndex.reason}`);
+  }
+
+  allFiles = getAllFiles('./dist');
   const promises = [];
 
   for (let i = 0; i < concurrency; i++) {
@@ -164,6 +227,10 @@ const run = async () => {
   }
 
   await Promise.all(promises);
+
+  if (clipIndex.generated) {
+    await reconcileClipObjects(clipIndex.expectedClipFiles);
+  }
 };
 
 

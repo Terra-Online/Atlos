@@ -60,14 +60,14 @@
     },
     "Weekraid_1": {
         "dimensions": [
-            4000,
-            4000
+            5000,
+            7000
         ],
         "maxZoom": 2,
         "tileSize": 200,
         "initialOffset": {
-            "x": 2000,
-            "y": -100
+            "x": 500,
+            "y": -1000
         },
         "initialZoom": 0,
         "subregions": [
