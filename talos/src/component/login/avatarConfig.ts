@@ -1,4 +1,4 @@
-const DEFAULT_AVATAR_MAX_INDEX = 33;
+const DEFAULT_AVATAR_MAX_INDEX = 35;
 
 const parseAvatarMaxIndex = (): number => {
   const envRaw = (import.meta.env.VITE_AVATAR_MAX_INDEX as string | undefined)?.trim();
