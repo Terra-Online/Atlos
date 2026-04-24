@@ -7017,7 +7017,7 @@
       626.1965
     ],
     "subregId": "ES_1",
-    "type": "green_auto_vender"
+    "type": "white_auto_vender"
   },
   {
     "id": 26800001207,
@@ -7287,7 +7287,7 @@
       683.3874
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800001263,
@@ -7341,7 +7341,7 @@
       811.3503
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800001271,
@@ -8691,7 +8691,7 @@
       466.1676
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800001587,
@@ -10851,7 +10851,7 @@
       754.1836
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800004056,
@@ -10860,7 +10860,7 @@
       551.7593
     ],
     "subregId": "ES_1",
-    "type": "green_auto_vender"
+    "type": "white_auto_vender"
   },
   {
     "id": 26800004057,
@@ -11049,7 +11049,7 @@
       673.1512
     ],
     "subregId": "ES_1",
-    "type": "green_auto_vender"
+    "type": "white_auto_vender"
   },
   {
     "id": 26800004120,
@@ -11058,7 +11058,7 @@
       661.0037
     ],
     "subregId": "ES_1",
-    "type": "green_auto_vender"
+    "type": "white_auto_vender"
   },
   {
     "id": 26800004151,
@@ -11247,7 +11247,7 @@
       897.3279
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800004173,
@@ -11256,7 +11256,7 @@
       574.7607
     ],
     "subregId": "ES_1",
-    "type": "white_auto_vender"
+    "type": "green_auto_vender"
   },
   {
     "id": 26800004175,
@@ -11581,149 +11581,5 @@
     ],
     "subregId": "ES_1",
     "type": "common_nodule_l"
-  },
-  {
-    "id": 26800021298,
-    "pos": [
-      -699.979,
-      890.7615
-    ],
-    "subregId": "ES_1",
-    "type": "bonekrusher_vanguard"
-  },
-  {
-    "id": 26800021299,
-    "pos": [
-      -707.3743,
-      901.1496
-    ],
-    "subregId": "ES_1",
-    "type": "bonekrusher_infiltrator"
-  },
-  {
-    "id": 26800021300,
-    "pos": [
-      -709.2093,
-      878.7621
-    ],
-    "subregId": "ES_1",
-    "type": "bonekrusher_vanguard"
-  },
-  {
-    "id": 26800020853,
-    "pos": [
-      -500.1923,
-      862.0775
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_l"
-  },
-  {
-    "id": 26800020855,
-    "pos": [
-      -501.9206,
-      845.3081
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_l"
-  },
-  {
-    "id": 26800020858,
-    "pos": [
-      -507.7243,
-      854.615
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_s"
-  },
-  {
-    "id": 26800020948,
-    "pos": [
-      -555.7111,
-      831.2947
-    ],
-    "subregId": "ES_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 26800020949,
-    "pos": [
-      -514.5734,
-      852.2618
-    ],
-    "subregId": "ES_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 26800020954,
-    "pos": [
-      -541.4345,
-      918.9897
-    ],
-    "subregId": "ES_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 26800021303,
-    "pos": [
-      -704.8484,
-      879.0165
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_m"
-  },
-  {
-    "id": 26800021304,
-    "pos": [
-      -707.8403,
-      890.9339
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_s"
-  },
-  {
-    "id": 26800021306,
-    "pos": [
-      -703.1709,
-      901.2345
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_s"
-  },
-  {
-    "id": 26800021307,
-    "pos": [
-      -684.2023,
-      901.2768
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_s"
-  },
-  {
-    "id": 26800021308,
-    "pos": [
-      -674.238,
-      901.5524
-    ],
-    "subregId": "ES_1",
-    "type": "pure_nodule_s"
-  },
-  {
-    "id": 26800021316,
-    "pos": [
-      -703.9177,
-      890.7191
-    ],
-    "subregId": "ES_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 26800001465,
-    "pos": [
-      -551.813,
-      690.6667
-    ],
-    "subregId": "ES_1",
-    "type": "fine_nodule_m"
   }
 ]
