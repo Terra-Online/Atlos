@@ -21,6 +21,7 @@ const LINK_IMAGES: Record<string, string> = {
     'VL/link_3': linkVl1,
     'WL/link_0': linkWl0,
     'WL/link_1': linkVl1,
+    'WL/link_2': linkVl1,
 };
 
 // Delay before hiding tooltip (allows user to move mouse to tooltip)

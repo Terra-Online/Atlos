@@ -60,7 +60,7 @@
     },
     "Weekraid_1": {
         "dimensions": [
-            5000,
+            5700,
             7000
         ],
         "maxZoom": 2,
@@ -73,6 +73,6 @@
         "subregions": [
             "ES_1"
         ],
-        "layers": ["L1", "B1", "B2"]
+        "layers": ["L1", "B1", "B2", "B3"]
     }
 }

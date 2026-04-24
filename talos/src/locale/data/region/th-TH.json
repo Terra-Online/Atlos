@@ -178,6 +178,32 @@
           "main_fort": "ป้อมปราการ​หลัก",
           "bladewoods": "เบล​ด​วู้ด​ส์"
         }
+      },
+      "TA": {
+        "name": "เขต​ทดสอบ",
+        "short": "TA",
+        "site": {
+          "test_area_entrance": "ทางเข้า​เขต​ทดสอบ",
+          "type_c_auxiliary_pillar_area_1": "เขต​เสา​เสริม​ Type-C 1",
+          "type_c_auxiliary_pillar_area_2": "เขต​เสา​เสริม​ Type-C 2",
+          "type_c_auxiliary_pillar_area_3": "เขต​เสา​เสริม​ Type-C 3",
+          "test_area_peripheries": "รอบนอก​เขต​ทดสอบ",
+          "meridian_grid_area": "เขต​เส้นเมอริเดียน",
+          "integrated_rd_area": "เขต​วิจัยและพัฒนา​ผสมผสาน",
+          "water_treatment_sector": "ส่วน​บำบัด​น้ำ"
+        }
+      },
+      "MS": {
+        "name": "หินนำทาง",
+        "short": "นำ",
+        "site": {
+          "watchtower_reservoir_station": "สถานี​อ่างเก็บน้ำ​หอ​สังเกตการณ์",
+          "restricted_area": "พื้นที่​หวงห้าม",
+          "cloudrest_woods": "ป่า​เทียมเมฆ",
+          "lake_islet": "เกาะ​กลาง​ทะเลสาบ",
+          "urban_development_hall": "หอ​การพัฒนา​เมือง",
+          "serenity_garden": "สวน​แห่ง​ความสงบ"
+        }
       }
     }
   },
