@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AuthFlowError,
   fetchSessionUser,
@@ -87,6 +87,7 @@ export const useIdCardAuthController = () => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
+  const passwordResetRequestInFlightRef = useRef(false);
 
   const normalizeProfileNameInput = useCallback((value: string): string => {
     return value.replace(/[^A-Za-z0-9_-]/g, '');
@@ -170,7 +171,7 @@ export const useIdCardAuthController = () => {
       setAuthError(null);
       setOpen(true);
     },
-    []
+    [setActiveTab]
   );
 
   const openProfileModal = useCallback(() => {
@@ -327,11 +328,12 @@ export const useIdCardAuthController = () => {
   }: {
     email: string;
   }): Promise<boolean> => {
-    if (isSubmitting) {
+    if (isSubmitting || passwordResetRequestInFlightRef.current) {
       return false;
     }
 
     setAuthError(null);
+    passwordResetRequestInFlightRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -339,13 +341,13 @@ export const useIdCardAuthController = () => {
       const callbackUrl = new URL(window.location.href);
       callbackUrl.search = '';
       callbackUrl.hash = '';
-      callbackUrl.searchParams.set('email', normalizedEmail);
       await requestPasswordReset(normalizedEmail, callbackUrl.toString());
       return true;
     } catch (error) {
       setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
       return false;
     } finally {
+      passwordResetRequestInFlightRef.current = false;
       setIsSubmitting(false);
     }
   }, [isSubmitting]);
