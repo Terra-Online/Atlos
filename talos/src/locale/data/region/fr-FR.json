@@ -133,7 +133,11 @@
           "maintenance_zone": "Zone de maintenance",
           "institute_of_materials_science": "Institut des sciences des matériaux",
           "tianshi_bureau_academy": "Académie des Tianshi",
+          "bureau_of_applied_technologies": "Bureau de technologie appliquée",
           "citizen_square": "Place citoyenne",
+          "qijian_dais": "Estrade de Qijian",
+          "long_pavilion": "Pavillon long",
+          "main_pillar_office": "Bureau du pilier principal",
           "restricted_area": "Zone interdite",
           "tianjing_courtyard": "Cour de Tianjing",
           "riverbank_grotto": "Grotte du rivage",
@@ -173,6 +177,32 @@
           "causeway_trail": "Chemin surélevé",
           "main_fort": "Fort principal",
           "bladewoods": "Bois des lames"
+        }
+      },
+      "TA": {
+        "name": "Zone de test",
+        "short": "ZT",
+        "site": {
+          "test_area_entrance": "Entrée de la zone de test",
+          "type_c_auxiliary_pillar_area_1": "Pilier auxiliaire de type C - Zone 1",
+          "type_c_auxiliary_pillar_area_2": "Pilier auxiliaire de type C - Zone 2",
+          "type_c_auxiliary_pillar_area_3": "Pilier auxiliaire de type C - Zone 3",
+          "test_area_peripheries": "Périphérie de la zone de test",
+          "meridian_grid_area": "Zone de la grille méridienne",
+          "integrated_rd_area": "Zone de R&D intégré",
+          "water_treatment_sector": "Secteur de traitement de l'eau"
+        }
+      },
+      "MS": {
+        "name": "Pierre de marquage",
+        "short": "PM",
+        "site": {
+          "watchtower_reservoir_station": "Station du réservoir de la tour de guet",
+          "restricted_area": "Zone interdite",
+          "cloudrest_woods": "Bois de Sommenuées",
+          "lake_islet": "Îlot du lac",
+          "urban_development_hall": "Salle de développement urbain",
+          "serenity_garden": "Jardin de la sérénité"
         }
       }
     }

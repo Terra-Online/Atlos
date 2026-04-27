@@ -1,5 +1,6 @@
 @use '../../../styles/palette.scss' as *;
 @use '../../../styles/curves.scss' as *;
+@use '../prtsTextEffect.scss' as prts;
 
 :root, :root[data-theme='light'] {
     --auth-text: #{$black-1};
@@ -68,7 +69,6 @@
 .accessAuthModal {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   color: var(--auth-text);
   height: 100%;
   justify-content: space-evenly;
@@ -130,7 +130,8 @@
     font-size: 1rem;
     letter-spacing: -1%;
     font-weight: 700;
-    font-family: 'FedraSansPro Normal', 'UD_ShinGo DemiBold', sans-serif;
+    font-family: 'FedraSansPro Normal', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    text-transform: capitalize;
     font-variant-ligatures: common-ligatures;
     font-feature-settings: 'liga' 1, 'clig' 1, 'calt' 1;
     transition: transform .35s cubic-bezier(0.8, 0, 0.25, 1);
@@ -155,13 +156,15 @@
   --clippath: polygon(-10% -10%, 110% -10%, 110% 110%, -10% 110%)
   clip-path: var(--clippath);
   position: relative;
-  font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
+  font-family: Raleway, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai',sans-serif;
   line-height: 1;
   font-style: italic;
   text-transform: uppercase;
   font-weight: 300;
   font-size: .75rem;
   letter-spacing: -4%;
+  text-align: right;
+  //transform: translateX(-1px);
   --hint-bg: var(--auth-err);
   --hint-fg: var(--auth-err-fg);
 
@@ -206,7 +209,7 @@
 }
 
 .prtsHint[data-type] {
-  --prtsErrorClip: polygon(-2% -2%, 100% -2%, 102% 102%, -2% 102%);
+  --prtsErrorClip: polygon(-10% -10%, 110% -10%, 110% 110%, -10% 110%);
 
   color: transparent;
   clip-path: var(--prtsErrorClip);
@@ -218,16 +221,15 @@
   &::before {
     content: attr(data-text);
     padding: 0 2px;
-    transform: translateX(-1px);
+    transform: translateX(1px);
     position: absolute;
     inset: 0;
     z-index: -1;
     color: var(--hint-fg);
     background: var(--hint-bg);
-    font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
+    font-family: inherit;
     -webkit-text-stroke: 0.5px;
     letter-spacing: -4%;
-    white-space: nowrap;
     animation: prtsWipe 3333ms cubic-bezier(0.8, 0, 0.25, 1) infinite;
   }
 
@@ -404,37 +406,9 @@
 }
 
 
-.prtsRegexSlot {
-  min-height: 1.05rem;
-}
-
 .prtsRegex {
   margin: 0;
-  position: relative;
-  text-align: center;
-  text-transform: uppercase;
-  font-size: 0.86rem;
-  letter-spacing: 0.8px;
-  color: transparent;
-
-  &::before,
-  &::after {
-    content: attr(data-text);
-    position: absolute;
-    inset: 0;
-  }
-
-  &::before {
-    color: rgba(18, 18, 18, 0.85);
-    z-index: 1;
-  }
-
-  &::after {
-    color: rgba(18, 18, 18, 0.25);
-    z-index: 0;
-    -webkit-text-stroke: 1px;
-    animation: prtsWipe 3333ms cubic-bezier(0.8, 0, 0.25, 1) infinite;
-  }
+  @include prts.prts-text-effect(center, center);
 }
 
 .authDivider {
@@ -451,7 +425,7 @@
     text-transform: uppercase;
     font-size: .8rem;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-75%, -50%);
     padding: 0 0.5rem;
     color: var(--auth-text);
     background-color: var(--modal-bg);
@@ -469,7 +443,7 @@
   letter-spacing: -.2px;
   font-weight: 500;
   line-height: 1.25;
-  //text-align: center;
+  unicode-bidi: plaintext;
   color: var(--auth-text);
 }
 
@@ -553,12 +527,14 @@
 }
 
 .oauthMethodLabel {
-  font-family: 'FedraSansPro Normal', sans-serif;
+  font-family: 'FedraSansPro Normal', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
   font-size: 14px;
   line-height: 1;
   font-weight: 700;
   letter-spacing: -0.2px;
+  text-transform: capitalize;
   transform: translateY(1px);
+  unicode-bidi: plaintext;
 }
 
 .switchModeButton {
@@ -580,7 +556,7 @@
   flex-wrap: wrap;
   font-size: 14px;
   color: var(--auth-text);
-  font-family: 'FedraSansPro Normal', 'HMSans', sans-serif;
+  font-family: 'FedraSansPro Normal', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai',sans-serif;
   letter-spacing: -2%;
   > span::after {
     content: '\2005';
@@ -593,12 +569,13 @@
   font-size: 0.75rem;
   letter-spacing: -.5px;
   color: var(--auth-text);
-  font-family: 'FedraSansPro Book', 'HMSans', sans-serif;
+  font-family: 'FedraSansPro Book', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
   font-weight: 400;
   text-align: center;
+  unicode-bidi: plaintext;
   > span a {
     color: var(--ack-link);
-    font-family: 'FedraSansPro Normal', 'HMSans', sans-serif;
+    font-family: 'FedraSansPro Normal', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai',sans-serif;
     font-weight: 500;
     text-decoration: none;
     position: relative;
@@ -625,29 +602,12 @@
   0% {
     opacity: 0;
     filter: blur(3px);
-    transform: translateY(360%);
+    transform: translateY(2.7rem);
   }
   100% {
     opacity: 1;
     filter: blur(0);
-    transform: translateY(200%);
+    transform: translateY(1.5rem);
   }
 }
-
-@keyframes prtsWipe {
-  0% {
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-  }
-  20% {
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-  }
-  50% {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-  80% {
-    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
-  }
-  100% {
-    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
-  }
-}
+@include prts.prts-text-effect-keyframes;

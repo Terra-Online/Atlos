@@ -88,6 +88,10 @@ export const useIdCardAuthController = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
 
+  const normalizeProfileNameInput = useCallback((value: string): string => {
+    return value.replace(/[^A-Za-z0-9_-]/g, '');
+  }, []);
+
   const setActiveTab = useCallback((mode: AuthMode) => {
     setActiveTabInner(mode);
     if (mode !== 'passwordReset') {
@@ -180,6 +184,10 @@ export const useIdCardAuthController = () => {
     setProfileError(null);
     setProfileOpen(true);
   }, [openAuthModal, sessionUser]);
+
+  const handleProfileNameChange = useCallback((value: string) => {
+    setProfileName(normalizeProfileNameInput(value));
+  }, [normalizeProfileNameInput]);
 
   const handleAvatarClick = useCallback(() => {
     if (sessionUser) {
@@ -327,10 +335,12 @@ export const useIdCardAuthController = () => {
     setIsSubmitting(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const callbackUrl = new URL(window.location.href);
       callbackUrl.search = '';
       callbackUrl.hash = '';
-      await requestPasswordReset(email, callbackUrl.toString());
+      callbackUrl.searchParams.set('email', normalizedEmail);
+      await requestPasswordReset(normalizedEmail, callbackUrl.toString());
       return true;
     } catch (error) {
       setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
@@ -349,6 +359,11 @@ export const useIdCardAuthController = () => {
 
     if (Array.from(trimmed).length > 15) {
       setProfileError('Username must be 15 characters or fewer.');
+      return;
+    }
+
+    if (!/^[A-Za-z0-9_-]+$/.test(trimmed)) {
+      setProfileError('Username can only contain letters, numbers, hyphen, and underscore.');
       return;
     }
 
@@ -402,7 +417,7 @@ export const useIdCardAuthController = () => {
     profileOpen,
     setProfileOpen,
     profileName,
-    setProfileName,
+    setProfileName: handleProfileNameChange,
     profileAvatar,
     setProfileAvatar,
     hasLoggedInBefore,

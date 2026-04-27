@@ -1,0 +1,2720 @@
+[
+  {
+    "id": 300002655,
+    "pos": [
+      -829.7804,
+      652.6828
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_9d1"
+  },
+  {
+    "id": 300030037,
+    "pos": [
+      -765.9544,
+      683.939
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_1"
+  },
+  {
+    "id": 300030040,
+    "pos": [
+      -789.4359,
+      672.5565
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_5"
+  },
+  {
+    "id": 300030041,
+    "pos": [
+      -797.0405,
+      688.2253
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_6"
+  },
+  {
+    "id": 300030050,
+    "pos": [
+      -841.3521,
+      686.665
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_15"
+  },
+  {
+    "id": 300030054,
+    "pos": [
+      -769.5899,
+      726.2421
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_19"
+  },
+  {
+    "id": 300030064,
+    "pos": [
+      -776.7459,
+      591.4208
+    ],
+    "subregId": "VL_3",
+    "type": "nar_col_lv003_4"
+  },
+  {
+    "id": 300030065,
+    "pos": [
+      -758.7847,
+      726.8266
+    ],
+    "subregId": "VL_3",
+    "type": "nar_media_map01_120_1"
+  },
+  {
+    "id": 300020190,
+    "pos": [
+      -764.0624,
+      600.6477
+    ],
+    "subregId": "VL_3",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 300020191,
+    "pos": [
+      -765.0964,
+      603.1195
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020192,
+    "pos": [
+      -765.878,
+      602.0564
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020193,
+    "pos": [
+      -766.4228,
+      600.5948
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020194,
+    "pos": [
+      -762.1015,
+      603.0042
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020195,
+    "pos": [
+      -763.2117,
+      603.8252
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020196,
+    "pos": [
+      -762.1364,
+      603.6663
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020201,
+    "pos": [
+      -792.7312,
+      657.451
+    ],
+    "subregId": "VL_3",
+    "type": "rare_mining_site"
+  },
+  {
+    "id": 300020202,
+    "pos": [
+      -787.8139,
+      654.546
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020203,
+    "pos": [
+      -789.9277,
+      655.5525
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020204,
+    "pos": [
+      -789.7603,
+      654.6051
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020205,
+    "pos": [
+      -790.6406,
+      656.8895
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020206,
+    "pos": [
+      -795.2038,
+      661.0096
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020207,
+    "pos": [
+      -796.0405,
+      661.6865
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020212,
+    "pos": [
+      -744.028,
+      688.3182
+    ],
+    "subregId": "VL_3",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 300020213,
+    "pos": [
+      -744.0261,
+      685.5291
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020214,
+    "pos": [
+      -745.2159,
+      686.1308
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020215,
+    "pos": [
+      -744.0899,
+      686.1286
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020216,
+    "pos": [
+      -745.9443,
+      687.08
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020223,
+    "pos": [
+      -796.0453,
+      584.2274
+    ],
+    "subregId": "VL_3",
+    "type": "rare_gathering_site"
+  },
+  {
+    "id": 300020224,
+    "pos": [
+      -797.808,
+      586.2045
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020225,
+    "pos": [
+      -797.9652,
+      584.6675
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020226,
+    "pos": [
+      -798.6588,
+      583.9069
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020227,
+    "pos": [
+      -798.6922,
+      584.775
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020235,
+    "pos": [
+      -847.0004,
+      689.9368
+    ],
+    "subregId": "VL_3",
+    "type": "recycling_stn"
+  },
+  {
+    "id": 300020236,
+    "pos": [
+      -755.0129,
+      647.7099
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020237,
+    "pos": [
+      -762.4213,
+      624.7978
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020238,
+    "pos": [
+      -780.0939,
+      592.3508
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020239,
+    "pos": [
+      -783.7772,
+      592.0355
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020240,
+    "pos": [
+      -772.9942,
+      594.8668
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020241,
+    "pos": [
+      -746.4107,
+      611.1612
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020242,
+    "pos": [
+      -748.7737,
+      617.225
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020243,
+    "pos": [
+      -749.0414,
+      618.8553
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020244,
+    "pos": [
+      -731.7205,
+      627.8949
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020245,
+    "pos": [
+      -737.0973,
+      650.3198
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020246,
+    "pos": [
+      -738.4931,
+      652.0607
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020247,
+    "pos": [
+      -729.8108,
+      653.6728
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020248,
+    "pos": [
+      -726.8529,
+      654.7369
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020249,
+    "pos": [
+      -729.991,
+      658.483
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020250,
+    "pos": [
+      -733.3283,
+      661.4415
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020251,
+    "pos": [
+      -732.955,
+      664.3418
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020252,
+    "pos": [
+      -730.6676,
+      665.7136
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020253,
+    "pos": [
+      -740.5183,
+      667.0399
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020254,
+    "pos": [
+      -748.4874,
+      667.3098
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020255,
+    "pos": [
+      -740.1057,
+      676.4567
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020256,
+    "pos": [
+      -738.6948,
+      675.0922
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020257,
+    "pos": [
+      -755.3858,
+      680.8791
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020258,
+    "pos": [
+      -747.9186,
+      690.062
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020259,
+    "pos": [
+      -751.3686,
+      681.2448
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020260,
+    "pos": [
+      -757.0805,
+      684.7309
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020261,
+    "pos": [
+      -754.4626,
+      680.5968
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020262,
+    "pos": [
+      -785.99,
+      682.2581
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020263,
+    "pos": [
+      -778.4046,
+      670.7003
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020264,
+    "pos": [
+      -805.5553,
+      693.1632
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020265,
+    "pos": [
+      -805.8824,
+      698.5563
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020266,
+    "pos": [
+      -795.0656,
+      633.0665
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020267,
+    "pos": [
+      -756.6566,
+      649.5061
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020268,
+    "pos": [
+      -759.6199,
+      627.8822
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020269,
+    "pos": [
+      -760.7474,
+      624.9162
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020270,
+    "pos": [
+      -807.5429,
+      598.9353
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020271,
+    "pos": [
+      -808.6293,
+      587.7623
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020272,
+    "pos": [
+      -820.794,
+      590.6197
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020273,
+    "pos": [
+      -847.0708,
+      587.7826
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020274,
+    "pos": [
+      -801.3292,
+      608.4571
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020275,
+    "pos": [
+      -796.3427,
+      687.7544
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020276,
+    "pos": [
+      -792.9932,
+      687.4587
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020277,
+    "pos": [
+      -749.5109,
+      617.9451
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020278,
+    "pos": [
+      -744.2781,
+      615.3184
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020279,
+    "pos": [
+      -730.4483,
+      630.1368
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020280,
+    "pos": [
+      -730.6665,
+      657.5445
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020281,
+    "pos": [
+      -741.9547,
+      656.8805
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020282,
+    "pos": [
+      -738.8169,
+      671.8548
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020283,
+    "pos": [
+      -753.8905,
+      676.9463
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020284,
+    "pos": [
+      -741.0751,
+      678.2403
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020285,
+    "pos": [
+      -742.0545,
+      686.2182
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020286,
+    "pos": [
+      -742.568,
+      685.4884
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020287,
+    "pos": [
+      -742.9395,
+      686.2267
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020288,
+    "pos": [
+      -741.5858,
+      685.7635
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020289,
+    "pos": [
+      -797.0535,
+      672.5424
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020290,
+    "pos": [
+      -795.4475,
+      669.2468
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020291,
+    "pos": [
+      -807.9621,
+      699.2063
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020292,
+    "pos": [
+      -761.6174,
+      624.2748
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020293,
+    "pos": [
+      -796.3282,
+      605.9853
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020294,
+    "pos": [
+      -798.7266,
+      607.1038
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020295,
+    "pos": [
+      -812.1434,
+      611.8921
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020296,
+    "pos": [
+      -810.1851,
+      605.2648
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020297,
+    "pos": [
+      -817.4868,
+      599.3927
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020298,
+    "pos": [
+      -843.3483,
+      603.3511
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020299,
+    "pos": [
+      -832.9164,
+      611.2722
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020300,
+    "pos": [
+      -824.7455,
+      611.7782
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020301,
+    "pos": [
+      -774.8632,
+      668.3724
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020302,
+    "pos": [
+      -768.665,
+      670.3425
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020303,
+    "pos": [
+      -774.7845,
+      666.2982
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020304,
+    "pos": [
+      -795.4172,
+      632.1853
+    ],
+    "subregId": "VL_3",
+    "type": "firebuckle"
+  },
+  {
+    "id": 300020305,
+    "pos": [
+      -805.3508,
+      607.3148
+    ],
+    "subregId": "VL_3",
+    "type": "firebuckle"
+  },
+  {
+    "id": 300020306,
+    "pos": [
+      -796.4049,
+      670.1871
+    ],
+    "subregId": "VL_3",
+    "type": "firebuckle"
+  },
+  {
+    "id": 300020307,
+    "pos": [
+      -844.191,
+      605.2365
+    ],
+    "subregId": "VL_3",
+    "type": "firebuckle"
+  },
+  {
+    "id": 300020308,
+    "pos": [
+      -812.5528,
+      611.1571
+    ],
+    "subregId": "VL_3",
+    "type": "umbraline"
+  },
+  {
+    "id": 300020309,
+    "pos": [
+      -808.8103,
+      589.1483
+    ],
+    "subregId": "VL_3",
+    "type": "umbraline"
+  },
+  {
+    "id": 300020310,
+    "pos": [
+      -783.9375,
+      591.343
+    ],
+    "subregId": "VL_3",
+    "type": "umbraline"
+  },
+  {
+    "id": 300020311,
+    "pos": [
+      -726.2413,
+      654.4987
+    ],
+    "subregId": "VL_3",
+    "type": "umbraline"
+  },
+  {
+    "id": 300020312,
+    "pos": [
+      -834.8761,
+      586.0325
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020313,
+    "pos": [
+      -839.1817,
+      585.9146
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020314,
+    "pos": [
+      -808.7344,
+      590.1899
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020315,
+    "pos": [
+      -784.2117,
+      657.0717
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020316,
+    "pos": [
+      -739.1973,
+      676.3759
+    ],
+    "subregId": "VL_3",
+    "type": "firebuckle"
+  },
+  {
+    "id": 300020317,
+    "pos": [
+      -819.6849,
+      597.3743
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020318,
+    "pos": [
+      -811.8703,
+      612.6337
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020319,
+    "pos": [
+      -868.9642,
+      686.0401
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020320,
+    "pos": [
+      -799.2675,
+      639.8784
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020321,
+    "pos": [
+      -776.5452,
+      688.4635
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020322,
+    "pos": [
+      -727.0905,
+      648.5789
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020323,
+    "pos": [
+      -726.9076,
+      649.1221
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020324,
+    "pos": [
+      -731.0258,
+      665.1502
+    ],
+    "subregId": "VL_3",
+    "type": "buckflower"
+  },
+  {
+    "id": 300020325,
+    "pos": [
+      -753.6681,
+      677.9774
+    ],
+    "subregId": "VL_3",
+    "type": "citrome"
+  },
+  {
+    "id": 300020326,
+    "pos": [
+      -822.2804,
+      700.682
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020327,
+    "pos": [
+      -834.1023,
+      691.6309
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020328,
+    "pos": [
+      -854.1765,
+      694.2681
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020329,
+    "pos": [
+      -858.7862,
+      692.2225
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020330,
+    "pos": [
+      -844.9618,
+      689.0012
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020331,
+    "pos": [
+      -854.7001,
+      684.9193
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020332,
+    "pos": [
+      -818.2969,
+      662.3869
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020333,
+    "pos": [
+      -779.7885,
+      617.6507
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020334,
+    "pos": [
+      -774.9202,
+      591.3497
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020335,
+    "pos": [
+      -740.9563,
+      618.9145
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020336,
+    "pos": [
+      -740.7767,
+      623.1257
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020337,
+    "pos": [
+      -785.0578,
+      621.0384
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020338,
+    "pos": [
+      -775.6921,
+      730.9136
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020339,
+    "pos": [
+      -778.3673,
+      730.2382
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020340,
+    "pos": [
+      -771.7691,
+      728.5502
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020341,
+    "pos": [
+      -766.9499,
+      681.6292
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020342,
+    "pos": [
+      -821.4406,
+      603.9194
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020343,
+    "pos": [
+      -906.1062,
+      653.5688
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020344,
+    "pos": [
+      -881.5748,
+      645.0846
+    ],
+    "subregId": "VL_3",
+    "type": null
+  },
+  {
+    "id": 300020358,
+    "pos": [
+      -787.1765,
+      603.3712
+    ],
+    "subregId": "VL_3",
+    "type": "amethyst_spot"
+  },
+  {
+    "id": 300020359,
+    "pos": [
+      -785.3015,
+      599.6211
+    ],
+    "subregId": "VL_3",
+    "type": "amethyst_spot"
+  },
+  {
+    "id": 300020387,
+    "pos": [
+      -795.614,
+      667.1213
+    ],
+    "subregId": "VL_3",
+    "type": "amethyst_spot"
+  },
+  {
+    "id": 300020400,
+    "pos": [
+      -804.0516,
+      673.6838
+    ],
+    "subregId": "VL_3",
+    "type": "amethyst_spot"
+  },
+  {
+    "id": 300020401,
+    "pos": [
+      -763.3092,
+      604.8342
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020402,
+    "pos": [
+      -761.3963,
+      604.0788
+    ],
+    "subregId": "VL_3",
+    "type": "pink_bolete_spot"
+  },
+  {
+    "id": 300020403,
+    "pos": [
+      -796.105,
+      662.5047
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020404,
+    "pos": [
+      -797.0405,
+      661.8295
+    ],
+    "subregId": "VL_3",
+    "type": "kalkonyx_spot"
+  },
+  {
+    "id": 300020405,
+    "pos": [
+      -746.6206,
+      687.8753
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020406,
+    "pos": [
+      -746.8491,
+      688.9521
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020407,
+    "pos": [
+      -747.0317,
+      688.4238
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020408,
+    "pos": [
+      -747.1052,
+      689.7167
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020409,
+    "pos": [
+      -799.7981,
+      584.6397
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020410,
+    "pos": [
+      -800.6446,
+      585.0231
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020411,
+    "pos": [
+      -798.6032,
+      585.9869
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020412,
+    "pos": [
+      -798.5064,
+      587.0811
+    ],
+    "subregId": "VL_3",
+    "type": "kalkodendra_spot"
+  },
+  {
+    "id": 300020413,
+    "pos": [
+      -796.8234,
+      688.7776
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020414,
+    "pos": [
+      -806.6391,
+      699.3339
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020415,
+    "pos": [
+      -796.2667,
+      631.2784
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020416,
+    "pos": [
+      -824.8878,
+      612.4264
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020417,
+    "pos": [
+      -852.0702,
+      692.8608
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300020418,
+    "pos": [
+      -775.3968,
+      646.8994
+    ],
+    "subregId": "VL_3",
+    "type": "glowbug"
+  },
+  {
+    "id": 300140001,
+    "pos": [
+      -800.9408,
+      669.7851
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300140002,
+    "pos": [
+      -858.6658,
+      595.1914
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300140003,
+    "pos": [
+      -800.9408,
+      669.7851
+    ],
+    "subregId": "VL_3",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 300140004,
+    "pos": [
+      -858.6658,
+      595.1914
+    ],
+    "subregId": "VL_3",
+    "type": "temporary_energy_alluvium"
+  },
+  {
+    "id": 300001737,
+    "pos": [
+      -741.3023,
+      659.6699
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001738,
+    "pos": [
+      -743.0865,
+      661.1399
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001739,
+    "pos": [
+      -745.4322,
+      677.9841
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001740,
+    "pos": [
+      -746.3977,
+      675.8707
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001741,
+    "pos": [
+      -754.8452,
+      684.0043
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_ram"
+  },
+  {
+    "id": 300001746,
+    "pos": [
+      -748.1488,
+      674.9837
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001753,
+    "pos": [
+      -758.6444,
+      640.1515
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001754,
+    "pos": [
+      -759.7222,
+      638.3654
+    ],
+    "subregId": "VL_3",
+    "type": "sting_a"
+  },
+  {
+    "id": 300001755,
+    "pos": [
+      -759.0629,
+      638.0282
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001756,
+    "pos": [
+      -781.2427,
+      709.2259
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001757,
+    "pos": [
+      -780.8468,
+      712.5014
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001759,
+    "pos": [
+      -778.8422,
+      715.2311
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300001760,
+    "pos": [
+      -779.9435,
+      713.6304
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_ram_a"
+  },
+  {
+    "id": 300001763,
+    "pos": [
+      -777.5743,
+      714.0566
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001768,
+    "pos": [
+      -785.6047,
+      707.4701
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001769,
+    "pos": [
+      -783.4508,
+      706.6995
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300001770,
+    "pos": [
+      -782.599,
+      707.2125
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300001771,
+    "pos": [
+      -783.4492,
+      710.6637
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002182,
+    "pos": [
+      -743.0797,
+      657.8495
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002184,
+    "pos": [
+      -747.7134,
+      676.9309
+    ],
+    "subregId": "VL_3",
+    "type": "sting_a"
+  },
+  {
+    "id": 300002187,
+    "pos": [
+      -775.5987,
+      657.3646
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300002188,
+    "pos": [
+      -771.9632,
+      660.0804
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002190,
+    "pos": [
+      -772.4221,
+      657.2494
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002191,
+    "pos": [
+      -770.1605,
+      657.4837
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002193,
+    "pos": [
+      -807.479,
+      635.9563
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002194,
+    "pos": [
+      -809.3433,
+      635.8654
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002195,
+    "pos": [
+      -877.5457,
+      663.1657
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_sting_a"
+  },
+  {
+    "id": 300002198,
+    "pos": [
+      -877.6772,
+      664.6414
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300002199,
+    "pos": [
+      -875.1319,
+      663.9515
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300002206,
+    "pos": [
+      -767.3435,
+      721.9392
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_sting_a"
+  },
+  {
+    "id": 300002207,
+    "pos": [
+      -768.5912,
+      721.2002
+    ],
+    "subregId": "VL_3",
+    "type": "ram"
+  },
+  {
+    "id": 300002208,
+    "pos": [
+      -769.5517,
+      720.1867
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002335,
+    "pos": [
+      -808.4405,
+      635.7942
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_sting"
+  },
+  {
+    "id": 300002367,
+    "pos": [
+      -767.6665,
+      722.882
+    ],
+    "subregId": "VL_3",
+    "type": "sting"
+  },
+  {
+    "id": 300002368,
+    "pos": [
+      -767.2369,
+      720.6446
+    ],
+    "subregId": "VL_3",
+    "type": "sting_a"
+  },
+  {
+    "id": 300002520,
+    "pos": [
+      -780.4908,
+      702.8228
+    ],
+    "subregId": "VL_3",
+    "type": "effigy"
+  },
+  {
+    "id": 300002559,
+    "pos": [
+      -784.8838,
+      707.5448
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002595,
+    "pos": [
+      -781.1822,
+      595.3333
+    ],
+    "subregId": "VL_3",
+    "type": "tunneling_nidwyrm"
+  },
+  {
+    "id": 300002613,
+    "pos": [
+      -880.3188,
+      617.135
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002614,
+    "pos": [
+      -875.8779,
+      614.755
+    ],
+    "subregId": "VL_3",
+    "type": "ram_a"
+  },
+  {
+    "id": 300002615,
+    "pos": [
+      -878.1142,
+      615.5071
+    ],
+    "subregId": "VL_3",
+    "type": "heavy_sting_a"
+  },
+  {
+    "id": 300001865,
+    "pos": [
+      -747.8999,
+      630.4931
+    ],
+    "subregId": "VL_3",
+    "type": "tp_point"
+  },
+  {
+    "id": 300001874,
+    "pos": [
+      -802.5,
+      683.6729
+    ],
+    "subregId": "VL_3",
+    "type": "tp_point"
+  },
+  {
+    "id": 300001877,
+    "pos": [
+      -730.4028,
+      673.921
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300001878,
+    "pos": [
+      -795.5423,
+      587.5817
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300001891,
+    "pos": [
+      -740.1781,
+      623.9282
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300001894,
+    "pos": [
+      -791.2317,
+      672.1543
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300001895,
+    "pos": [
+      -774.1921,
+      609.7274
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300001896,
+    "pos": [
+      -885.6942,
+      667.0088
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300001897,
+    "pos": [
+      -808.0122,
+      690.5753
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300001984,
+    "pos": [
+      -776.5162,
+      591.8957
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002171,
+    "pos": [
+      -832.2695,
+      687.9573
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002172,
+    "pos": [
+      -861.9209,
+      643.2978
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002173,
+    "pos": [
+      -883.6465,
+      662.0652
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002174,
+    "pos": [
+      -895.7826,
+      649.0961
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002200,
+    "pos": [
+      -790.5675,
+      595.8383
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002205,
+    "pos": [
+      -820.8394,
+      598.9126
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002210,
+    "pos": [
+      -805.4306,
+      591.3866
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002211,
+    "pos": [
+      -828.3201,
+      585.9731
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002212,
+    "pos": [
+      -815.6304,
+      606.4234
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002214,
+    "pos": [
+      -760.1319,
+      661.3907
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002215,
+    "pos": [
+      -770.6032,
+      696.6814
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002216,
+    "pos": [
+      -825.473,
+      688.6206
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002218,
+    "pos": [
+      -848.963,
+      592.1086
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002219,
+    "pos": [
+      -777.3421,
+      627.2587
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002223,
+    "pos": [
+      -888.5721,
+      606.4508
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002226,
+    "pos": [
+      -906.155,
+      659.2063
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002227,
+    "pos": [
+      -896.2494,
+      667.7247
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002228,
+    "pos": [
+      -864.6189,
+      637.6603
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002229,
+    "pos": [
+      -828.7547,
+      593.4437
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002231,
+    "pos": [
+      -771.2563,
+      696.2968
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002234,
+    "pos": [
+      -881.7116,
+      651.7996
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002235,
+    "pos": [
+      -897.7502,
+      674.6823
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002236,
+    "pos": [
+      -887.0641,
+      669.4859
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002237,
+    "pos": [
+      -817.6735,
+      631.9556
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002238,
+    "pos": [
+      -898.4188,
+      643.5869
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002333,
+    "pos": [
+      -793.5433,
+      666.8624
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002334,
+    "pos": [
+      -786.1078,
+      663.7232
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002336,
+    "pos": [
+      -811.7156,
+      586.782
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002337,
+    "pos": [
+      -797.2119,
+      604.018
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002338,
+    "pos": [
+      -837.6798,
+      687.6573
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002339,
+    "pos": [
+      -863.0738,
+      592.4762
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002340,
+    "pos": [
+      -775.0593,
+      595.2936
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002341,
+    "pos": [
+      -774.2521,
+      595.8641
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002342,
+    "pos": [
+      -773.4313,
+      596.4069
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002345,
+    "pos": [
+      -796.6199,
+      586.911
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002347,
+    "pos": [
+      -779.1131,
+      674.9809
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002348,
+    "pos": [
+      -790.4846,
+      686.6268
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002365,
+    "pos": [
+      -782.4136,
+      721.8949
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002366,
+    "pos": [
+      -771.9841,
+      699.5021
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002381,
+    "pos": [
+      -754.9396,
+      725.5975
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002382,
+    "pos": [
+      -757.6269,
+      730.9661
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002383,
+    "pos": [
+      -766.1183,
+      739.6273
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002385,
+    "pos": [
+      -766.1155,
+      681.8588
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002386,
+    "pos": [
+      -824.0898,
+      586.9995
+    ],
+    "subregId": "VL_3",
+    "type": "repair_logic"
+  },
+  {
+    "id": 300002516,
+    "pos": [
+      -777.3778,
+      650.43
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002517,
+    "pos": [
+      -730.9639,
+      662.4788
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002518,
+    "pos": [
+      -771.2992,
+      646.1275
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002519,
+    "pos": [
+      -772.1403,
+      681.8683
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002521,
+    "pos": [
+      -857.1001,
+      701.3542
+    ],
+    "subregId": "VL_3",
+    "type": "delta_bot"
+  },
+  {
+    "id": 300002522,
+    "pos": [
+      -891.633,
+      609.2446
+    ],
+    "subregId": "VL_3",
+    "type": "delta_bot"
+  },
+  {
+    "id": 300002523,
+    "pos": [
+      -773.7622,
+      592.7028
+    ],
+    "subregId": "VL_3",
+    "type": "delta_bot"
+  },
+  {
+    "id": 300002531,
+    "pos": [
+      -764.269,
+      678.6209
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002532,
+    "pos": [
+      -819.8022,
+      656.4408
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002534,
+    "pos": [
+      -801.7833,
+      677.3405
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002538,
+    "pos": [
+      -771.3937,
+      707.4105
+    ],
+    "subregId": "VL_3",
+    "type": "tp_point"
+  },
+  {
+    "id": 300002545,
+    "pos": [
+      -760.6124,
+      657.8775
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002546,
+    "pos": [
+      -755.9961,
+      673.1863
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002547,
+    "pos": [
+      -775.8738,
+      666.4018
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002554,
+    "pos": [
+      -797.5031,
+      663.4182
+    ],
+    "subregId": "VL_3",
+    "type": "protocol_dl"
+  },
+  {
+    "id": 300002555,
+    "pos": [
+      -766.2327,
+      619.9884
+    ],
+    "subregId": "VL_3",
+    "type": "protocol_dl"
+  },
+  {
+    "id": 300002560,
+    "pos": [
+      -762.4166,
+      617.8106
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002564,
+    "pos": [
+      -785.6934,
+      683.9223
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002566,
+    "pos": [
+      -770.2957,
+      731.4412
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002567,
+    "pos": [
+      -827.0157,
+      619.4634
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002593,
+    "pos": [
+      -878.5174,
+      609.2493
+    ],
+    "subregId": "VL_3",
+    "type": "protocol_dl_ii"
+  },
+  {
+    "id": 300002596,
+    "pos": [
+      -824.3279,
+      690.3959
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002597,
+    "pos": [
+      -798.1148,
+      683.8093
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002598,
+    "pos": [
+      -810.888,
+      671.898
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002599,
+    "pos": [
+      -853.6107,
+      701.7606
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002600,
+    "pos": [
+      -863.356,
+      683.1286
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002601,
+    "pos": [
+      -843.7135,
+      689.0706
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002602,
+    "pos": [
+      -858.9517,
+      689.0139
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002603,
+    "pos": [
+      -774.2873,
+      732.7849
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002604,
+    "pos": [
+      -825.8504,
+      582.4991
+    ],
+    "subregId": "VL_3",
+    "type": "crate_i"
+  },
+  {
+    "id": 300002605,
+    "pos": [
+      -822.3886,
+      582.7063
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002606,
+    "pos": [
+      -834.7079,
+      604.3508
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002607,
+    "pos": [
+      -810.6647,
+      600.6872
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002639,
+    "pos": [
+      -796.5844,
+      692.6776
+    ],
+    "subregId": "VL_3",
+    "type": "crate_ii"
+  },
+  {
+    "id": 300002640,
+    "pos": [
+      -809.0002,
+      710.6922
+    ],
+    "subregId": "VL_3",
+    "type": "gather"
+  },
+  {
+    "id": 300002664,
+    "pos": [
+      -769.3095,
+      595.2104
+    ],
+    "subregId": "VL_3",
+    "type": "aurylene"
+  },
+  {
+    "id": 300002665,
+    "pos": [
+      -871.7205,
+      678.8635
+    ],
+    "subregId": "VL_3",
+    "type": "tp_point"
+  },
+  {
+    "id": 300002673,
+    "pos": [
+      -801.4777,
+      630.1176
+    ],
+    "subregId": "VL_3",
+    "type": "crate_iii"
+  },
+  {
+    "id": 300002674,
+    "pos": [
+      -891.9237,
+      640.8337
+    ],
+    "subregId": "VL_3",
+    "type": "cratesurprise"
+  }
+]

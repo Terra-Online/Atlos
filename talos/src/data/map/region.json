@@ -36,9 +36,11 @@
         "subregions": [
             "WL_1",
             "WL_2",
-            "WL_3"
+            "WL_3",
+            "WL_4",
+            "WL_5"
         ],
-        "layers": ["L3", "L2", "L1", "B1", "B2", "B3", "B4"]
+        "layers": ["L4", "L3", "L2", "L1", "B1", "B2", "B3", "B4"]
     },
     "Dijiang": {
         "dimensions": [
@@ -58,19 +60,19 @@
     },
     "Weekraid_1": {
         "dimensions": [
-            4000,
-            4000
+            5700,
+            7000
         ],
         "maxZoom": 2,
         "tileSize": 200,
         "initialOffset": {
-            "x": 2000,
-            "y": -100
+            "x": 500,
+            "y": -1000
         },
         "initialZoom": 0,
         "subregions": [
             "ES_1"
         ],
-        "layers": ["L1", "B1", "B2"]
+        "layers": ["L1", "B1", "B2", "B3"]
     }
 }

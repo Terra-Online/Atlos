@@ -1,10 +1,16 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectsCommand,
+} from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import fs from "fs-extra";
 import path from "path";
 import https from "https";
 import http from "http";
 import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
+import { buildClipIndex, normalizeObjectKey, toPrefixedObjectKey } from "./tile-index.js";
 
 // Read R2 specific config: config/config.r2.json
 // sample expected config file:
@@ -93,7 +99,49 @@ function getAllFiles(dirPath, arrayOfFiles) {
   return arrayOfFiles;
 }
 
-const allFiles = getAllFiles("./dist");
+const listRemoteObjectKeys = async (prefixToList) => {
+  const keys = [];
+  let continuationToken;
+
+  do {
+    const response = await client.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefixToList,
+        ContinuationToken: continuationToken,
+        MaxKeys: 1000,
+      })
+    );
+
+    for (const item of response.Contents ?? []) {
+      if (item.Key) {
+        keys.push(item.Key);
+      }
+    }
+
+    continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined;
+  } while (continuationToken);
+
+  return keys;
+};
+
+const deleteRemoteObjectKeys = async (keys) => {
+  if (!keys.length) return;
+
+  const chunkSize = 1000;
+  for (let i = 0; i < keys.length; i += chunkSize) {
+    const chunk = keys.slice(i, i + chunkSize);
+    await client.send(
+      new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: {
+          Objects: chunk.map((Key) => ({ Key })),
+          Quiet: true,
+        },
+      })
+    );
+  }
+};
 
 /**
  * Cache-Control strategy:
@@ -234,6 +282,26 @@ const upload = async (relativePath, retryCount = 0) => {
 
 const concurrency = 20; // limit concurrency
 let index = 0;
+let allFiles = [];
+
+const reconcileClipObjects = async (expectedClipFiles) => {
+  const clipPrefix = toPrefixedObjectKey(prefix, "clips/");
+  const remoteClipKeys = await listRemoteObjectKeys(clipPrefix);
+
+  const expectedSet = new Set(
+    expectedClipFiles.map((relativePath) => toPrefixedObjectKey(prefix, relativePath))
+  );
+
+  const staleKeys = remoteClipKeys.filter((key) => !expectedSet.has(normalizeObjectKey(key)));
+
+  if (!staleKeys.length) {
+    console.log("[publish-R2] clips directory already consistent with index.");
+    return;
+  }
+
+  await deleteRemoteObjectKeys(staleKeys);
+  console.log(`[publish-R2] deleted ${staleKeys.length} stale clips objects.`);
+};
 
 const worker = async () => {
   while (index < allFiles.length) {
@@ -243,6 +311,16 @@ const worker = async () => {
 };
 
 const run = async () => {
+  const clipIndex = await buildClipIndex({ distDir: "./dist" });
+  if (clipIndex.generated) {
+    console.log(
+      `[publish-R2] clip index generated: tiles=${clipIndex.tileFileCount}, coverageFiles=${clipIndex.coverageFileCount}`
+    );
+  } else {
+    console.log(`[publish-R2] clip index skipped: ${clipIndex.reason}`);
+  }
+
+  allFiles = getAllFiles("./dist");
   const promises = [];
 
   for (let i = 0; i < concurrency; i++) {
@@ -250,6 +328,10 @@ const run = async () => {
   }
 
   await Promise.all(promises);
+
+  if (clipIndex.generated) {
+    await reconcileClipObjects(clipIndex.expectedClipFiles);
+  }
 };
 
 run()

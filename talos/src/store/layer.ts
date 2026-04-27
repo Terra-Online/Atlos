@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type LayerType = 'M' | 'B1' | 'B2' | 'B3' | 'B4' | 'L1' | 'L2' | 'L3';
+export type LayerType = 'M' | 'B1' | 'B2' | 'B3' | 'B4' | 'L1' | 'L2' | 'L3' | 'L4';
 
 interface LayerState {
     currentLayer: LayerType;

@@ -4,7 +4,11 @@ import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Modal from '@/component/modal/modal';
-import { getAnnouncementDebugMode } from '@/utils/announcement';
+import {
+    ANNOUNCEMENT_LAST_READ_DATE_KEY,
+    ANNOUNCEMENT_LAST_READ_ID_KEY,
+    getAnnouncementDebugMode,
+} from '@/utils/announcement';
 
 export interface AnnItem {
     id: string;
@@ -88,11 +92,15 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
     // Mark as read when opened
     useEffect(() => {
         if (open && announcements.length > 0 && !isForceUnreadDebug) {
+            const latestId = announcements[0]?.id;
             const latestDate = announcements[0]?.date;
-            if (latestDate) {
-                localStorage.setItem('announcement_last_read', latestDate);
-                onHasUnread?.(false);
+            if (latestId) {
+                localStorage.setItem(ANNOUNCEMENT_LAST_READ_ID_KEY, latestId);
             }
+            if (latestDate) {
+                localStorage.setItem(ANNOUNCEMENT_LAST_READ_DATE_KEY, latestDate);
+            }
+            onHasUnread?.(false);
         }
     }, [open, announcements, onHasUnread, isForceUnreadDebug]);
 

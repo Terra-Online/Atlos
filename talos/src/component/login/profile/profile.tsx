@@ -1,6 +1,7 @@
 import ProfileIcon from '@/assets/logos/profile.svg?react';
 import Modal from '@/component/modal/modal';
 import { useTranslateUI } from '@/locale';
+import { useDevice } from '@/utils/device';
 import { AccessButton } from '../access';
 import IdCardView, { type IdCardRenderModel } from '../idcardView';
 import { useIdCardHoverAngle } from '../useIdCardHoverAngle';
@@ -34,12 +35,17 @@ const ProfileModal = ({
   handleLogout,
 }: ProfileModalProps) => {
   const t = useTranslateUI();
+  const { isMobile } = useDevice();
   const { cardRef, handleCardMouseMove, handleCardMouseLeave } = useIdCardHoverAngle();
+  const profileErrorText = profileError ?? '';
+  const shouldShowProfileError = profileOpen && Boolean(profileErrorText);
+  const isProfileErrorRemoved = !shouldShowProfileError;
+  const modalSize = isMobile ? 'full' : 'm';
 
   return (
     <Modal
       open={profileOpen}
-      size="m"
+      size={modalSize}
       title={t('idcard.profile.title')}
       icon={<ProfileIcon />}
       iconScale={0.8}
@@ -74,7 +80,14 @@ const ProfileModal = ({
           </p>
         </div>
 
-        {profileError && <p className={styles.profileError}>{profileError}</p>}
+        <div
+          className={styles.profileError}
+          data-removed={isProfileErrorRemoved ? 'true' : 'false'}
+          data-text={profileErrorText}
+          aria-live="polite"
+        >
+          {profileErrorText}
+        </div>
 
         <div className={styles.profileDivider} data-label={t('idcard.profile.auditLabel') || 'Audit'}></div>
 

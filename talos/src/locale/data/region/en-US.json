@@ -133,7 +133,11 @@
           "maintenance_zone": "Maintenance Zone",
           "institute_of_materials_science": "Institute of Materials Science",
           "tianshi_bureau_academy": "Tianshi Bureau Academy",
+          "bureau_of_applied_technologies": "Bureau of Applied Technologies",
           "citizen_square": "Citizen Square",
+          "qijian_dais": "Qijian Dais",
+          "long_pavilion": "Long Pavilion",
+          "main_pillar_office": "Main Pillar Office",
           "restricted_area": "Restricted Area",
           "tianjing_courtyard": "Tianjing Courtyard",
           "riverbank_grotto": "Riverbank Grotto",
@@ -173,6 +177,32 @@
           "causeway_trail": "Causeway Trail",
           "main_fort": "Main Fort",
           "bladewoods": "Bladewoods"
+        }
+      },
+      "TA": {
+        "name": "Test Area",
+        "short": "TA",
+        "site": {
+          "test_area_entrance": "Test Area Entrance",
+          "type_c_auxiliary_pillar_area_1": "Type-C Auxiliary Pillar Area 1",
+          "type_c_auxiliary_pillar_area_2": "Type-C Auxiliary Pillar Area 2",
+          "type_c_auxiliary_pillar_area_3": "Type-C Auxiliary Pillar Area 3",
+          "test_area_peripheries": "Test Area Peripheries",
+          "meridian_grid_area": "Meridian Grid Area",
+          "integrated_rd_area": "Integrated R&D Area",
+          "water_treatment_sector": "Water Treatment Sector"
+        }
+      },
+      "MS": {
+        "name": "Marker Stone",
+        "short": "MS",
+        "site": {
+          "watchtower_reservoir_station": "Watchtower Reservoir Station",
+          "restricted_area": "Restricted Area",
+          "cloudrest_woods": "Cloudrest Woods",
+          "lake_islet": "Lake Islet",
+          "urban_development_hall": "Urban Development Hall",
+          "serenity_garden": "Serenity Garden"
         }
       }
     }

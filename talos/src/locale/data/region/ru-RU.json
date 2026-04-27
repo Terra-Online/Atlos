@@ -132,8 +132,12 @@
           "tianshi_pillar_array": "Группа столбов Тяньши",
           "maintenance_zone": "Ремонтная зона",
           "institute_of_materials_science": "Институт материаловедения",
+          "bureau_of_applied_technologies": "Бюро прикладных технологий",
           "tianshi_bureau_academy": "Академия бюро Тяньши",
           "citizen_square": "Площадь Граждан",
+          "qijian_dais": "Помост Цицзянь",
+          "long_pavilion": "Длинный павильон",
+          "main_pillar_office": "Кабинет в основном столбе",
           "restricted_area": "Закрытая область",
           "tianjing_courtyard": "Двор Тяньцзин",
           "riverbank_grotto": "Речной грот",
@@ -173,6 +177,32 @@
           "causeway_trail": "Мощеная тропа",
           "main_fort": "Главный форт",
           "bladewoods": "Остролесье"
+        }
+      },
+      "TA": {
+        "name": "Область испытаний",
+        "short": "ОИ",
+        "site": {
+          "test_area_entrance": "Вход в область испытаний",
+          "type_c_auxiliary_pillar_area_1": "Зона 1 вспомогательного столба типа C",
+          "type_c_auxiliary_pillar_area_2": "Зона 2 вспомогательного столба типа C",
+          "type_c_auxiliary_pillar_area_3": "Зона 3 вспомогательного столба типа C",
+          "test_area_peripheries": "Окраины области испытаний",
+          "meridian_grid_area": "Область сети меридиана",
+          "integrated_rd_area": "Объединенная зона НИЦ",
+          "water_treatment_sector": "Сектор очистки воды"
+        }
+      },
+      "MS": {
+        "name": "Межевой камень",
+        "short": "МК",
+        "site": {
+          "watchtower_reservoir_station": "Сторожевая станция водохранилища",
+          "restricted_area": "Закрытая область",
+          "cloudrest_woods": "Лес Облачного покоя",
+          "lake_islet": "Озерный островок",
+          "urban_development_hall": "Зал городского развития",
+          "serenity_garden": "Сад спокойствия"
         }
       }
     }

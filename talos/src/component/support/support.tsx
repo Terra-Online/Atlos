@@ -4,7 +4,7 @@ import { useTranslateUI } from '@/locale';
 import styles from './support.module.scss';
 import parse from 'html-react-parser';
 import Button from '@/component/button/button';
-import Support from '@/assets/images/UI/support.svg?react'
+import Support from '@/assets/logos/support.svg?react'
 
 export interface SupportProps {
   open: boolean;

@@ -133,7 +133,11 @@
           "maintenance_zone": "Wartungszone",
           "institute_of_materials_science": "Institut der Material-wissenschaften",
           "tianshi_bureau_academy": "Akademie der Tianshi-Behörde",
+          "bureau_of_applied_technologies": "Büro für Angewandte Technologien",
           "citizen_square": "Stadtplatz",
+          "qijian_dais": "Qijian-Podium",
+          "long_pavilion": "Langer Pavillon",
+          "main_pillar_office": "Hauptsäulen-Abteilung",
           "restricted_area": "Verbotener Bereich",
           "tianjing_courtyard": "Tianjing-Hof",
           "riverbank_grotto": "Grotte am Flussufer",
@@ -173,6 +177,32 @@
           "causeway_trail": "Dammpfad",
           "main_fort": "Hauptfort",
           "bladewoods": "Klingenwald"
+        }
+      },
+      "TA": {
+        "name": "Testzone",
+        "short": "TZ",
+        "site": {
+          "test_area_entrance": "Testzone: Eingang",
+          "type_c_auxiliary_pillar_area_1": "Typ-C-Hilfssäule in Bereich 1",
+          "type_c_auxiliary_pillar_area_2": "Typ-C-Hilfssäule in Bereich 2",
+          "type_c_auxiliary_pillar_area_3": "Typ-C-Hilfssäule in Bereich 3",
+          "test_area_peripheries": "Testzonen-Außenbereiche",
+          "meridian_grid_area": "Meridiannetz-Bereich",
+          "integrated_rd_area": "Integrierter-F&E-Bereich",
+          "water_treatment_sector": "Wasseraufbereitungs-Sektor"
+        }
+      },
+      "MS": {
+        "name": "Grenzstein",
+        "short": "GS",
+        "site": {
+          "watchtower_reservoir_station": "Wachturmreservoir-Station",
+          "restricted_area": "Verbotener Bereich",
+          "cloudrest_woods": "Wolkenruhforst",
+          "lake_islet": "Kleine See-Insel",
+          "urban_development_hall": "Stadtentwicklungs-Halle",
+          "serenity_garden": "Garten der Klarheit"
         }
       }
     }

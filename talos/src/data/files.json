@@ -153,6 +153,14 @@
                 "icon": "pad",
                 "ctgr": "digital"
             },
+            "nar_digital_map02_100_1": {
+                "icon": "pad",
+                "ctgr": "digital"
+            },
+            "nar_digital_map02_12142_1": {
+                "icon": "pad",
+                "ctgr": "digital"
+            },
             "nar_digital_map02_17_1": {
                 "icon": "pad",
                 "ctgr": "digital"
@@ -206,6 +214,14 @@
                 "ctgr": "media"
             },
             "nar_media_map01_81_1": {
+                "icon": "record",
+                "ctgr": "media"
+            },
+            "nar_media_map02_113_1": {
+                "icon": "record",
+                "ctgr": "media"
+            },
+            "nar_media_map02_12144_1": {
                 "icon": "record",
                 "ctgr": "media"
             },
@@ -517,11 +533,101 @@
                 "icon": "note",
                 "ctgr": "paper"
             },
+            "nar_paper_map02_101_1": {
+                "icon": "ntbook",
+                "ctgr": "paper",
+                "rsch": "research_004prts"
+            },
+            "nar_paper_map02_102_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_103_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_104_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_105_1": {
+                "icon": "letter",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_106_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_107_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_107_2": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_108_1": {
+                "icon": "note",
+                "ctgr": "paper",
+                "rsch": "research_004prts"
+            },
+            "nar_paper_map02_109_1": {
+                "icon": "letter",
+                "ctgr": "paper"
+            },
             "nar_paper_map02_10_1": {
                 "icon": "ntbook",
                 "ctgr": "paper"
             },
+            "nar_paper_map02_110_1": {
+                "icon": "letter",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_111_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_112_1": {
+                "icon": "letter",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_115_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_116_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_117_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_118_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_119_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
             "nar_paper_map02_11_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_12137_1": {
+                "icon": "docs",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_12143_1": {
+                "icon": "letter",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_12145_1": {
+                "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_12146_1": {
                 "icon": "note",
                 "ctgr": "paper"
             },
@@ -529,6 +635,10 @@
                 "icon": "note",
                 "ctgr": "paper",
                 "rsch": "research_003prts"
+            },
+            "nar_paper_map02_128_1": {
+                "icon": "letter",
+                "ctgr": "paper"
             },
             "nar_paper_map02_12_1": {
                 "icon": "note",
@@ -894,6 +1004,24 @@
             },
             "nar_paper_map02_94_1": {
                 "icon": "note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_97_1": {
+                "icon": "ntbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_98_1": {
+                "icon": "note",
+                "ctgr": "paper",
+                "rsch": "research_004prts"
+            },
+            "nar_paper_map02_98_2": {
+                "icon": "note",
+                "ctgr": "paper",
+                "rsch": "research_004prts"
+            },
+            "nar_paper_map02_99_1": {
+                "icon": "ntbook",
                 "ctgr": "paper"
             },
             "nar_sm1l1m2_3": {

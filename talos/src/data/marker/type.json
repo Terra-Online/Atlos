@@ -1107,6 +1107,15 @@
         },
         "faction": "Cangzei Pirates"
     },
+    "nefarith": {
+        "key": "nefarith",
+        "name": "Nefarith",
+        "category": {
+            "main": "enemy",
+            "sub": "boss"
+        },
+        "faction": "Landbreakers"
+    },
     "grove_archer": {
         "key": "grove_archer",
         "name": "Grove Archer",
@@ -1776,6 +1785,28 @@
         "faction": "Wildlife",
         "drop": "Rakerbeast Longfur"
     },
+    "skydrummer": {
+        "key": "skydrummer",
+        "name": "Skydrummer",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "Alpha",
+        "faction": "Wildlife",
+        "drop": "Howlerbeast Braid"
+    },
+    "ethillu": {
+        "key": "ethillu",
+        "name": "Æthillu",
+        "category": {
+            "main": "enemy",
+            "sub": "mob"
+        },
+        "tier": "Common",
+        "faction": "Wildlife",
+        "drop": "Echoing Dust"
+    },
     "nar_col_lv003_1": {
         "key": "nar_col_lv003_1",
         "category": {
@@ -2113,6 +2144,24 @@
         "ctgr": "digital",
         "icon": "pad"
     },
+    "nar_digital_map02_100_1": {
+        "key": "nar_digital_map02_100_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "digital",
+        "icon": "pad"
+    },
+    "nar_digital_map02_12142_1": {
+        "key": "nar_digital_map02_12142_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "digital",
+        "icon": "pad"
+    },
     "nar_digital_map02_17_1": {
         "key": "nar_digital_map02_17_1",
         "category": {
@@ -2232,6 +2281,24 @@
     },
     "nar_media_map01_81_1": {
         "key": "nar_media_map01_81_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "media",
+        "icon": "record"
+    },
+    "nar_media_map02_113_1": {
+        "key": "nar_media_map02_113_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "media",
+        "icon": "record"
+    },
+    "nar_media_map02_12144_1": {
+        "key": "nar_media_map02_12144_1",
         "category": {
             "main": "files",
             "sub": "archives"
@@ -2922,6 +2989,98 @@
         "ctgr": "paper",
         "icon": "note"
     },
+    "nar_paper_map02_101_1": {
+        "key": "nar_paper_map02_101_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook",
+        "rsch": "research_004prts"
+    },
+    "nar_paper_map02_102_1": {
+        "key": "nar_paper_map02_102_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_103_1": {
+        "key": "nar_paper_map02_103_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_104_1": {
+        "key": "nar_paper_map02_104_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_105_1": {
+        "key": "nar_paper_map02_105_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
+    },
+    "nar_paper_map02_106_1": {
+        "key": "nar_paper_map02_106_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_107_1": {
+        "key": "nar_paper_map02_107_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_107_2": {
+        "key": "nar_paper_map02_107_2",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_108_1": {
+        "key": "nar_paper_map02_108_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note",
+        "rsch": "research_004prts"
+    },
+    "nar_paper_map02_109_1": {
+        "key": "nar_paper_map02_109_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
+    },
     "nar_paper_map02_10_1": {
         "key": "nar_paper_map02_10_1",
         "category": {
@@ -2931,8 +3090,116 @@
         "ctgr": "paper",
         "icon": "ntbook"
     },
+    "nar_paper_map02_110_1": {
+        "key": "nar_paper_map02_110_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
+    },
+    "nar_paper_map02_111_1": {
+        "key": "nar_paper_map02_111_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_112_1": {
+        "key": "nar_paper_map02_112_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
+    },
+    "nar_paper_map02_115_1": {
+        "key": "nar_paper_map02_115_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_116_1": {
+        "key": "nar_paper_map02_116_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_117_1": {
+        "key": "nar_paper_map02_117_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_118_1": {
+        "key": "nar_paper_map02_118_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_119_1": {
+        "key": "nar_paper_map02_119_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
     "nar_paper_map02_11_1": {
         "key": "nar_paper_map02_11_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_12137_1": {
+        "key": "nar_paper_map02_12137_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "docs"
+    },
+    "nar_paper_map02_12143_1": {
+        "key": "nar_paper_map02_12143_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
+    },
+    "nar_paper_map02_12145_1": {
+        "key": "nar_paper_map02_12145_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note"
+    },
+    "nar_paper_map02_12146_1": {
+        "key": "nar_paper_map02_12146_1",
         "category": {
             "main": "files",
             "sub": "archives"
@@ -2949,6 +3216,15 @@
         "ctgr": "paper",
         "icon": "note",
         "rsch": "research_003prts"
+    },
+    "nar_paper_map02_128_1": {
+        "key": "nar_paper_map02_128_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "letter"
     },
     "nar_paper_map02_12_1": {
         "key": "nar_paper_map02_12_1",
@@ -3760,6 +4036,44 @@
         },
         "ctgr": "paper",
         "icon": "note"
+    },
+    "nar_paper_map02_97_1": {
+        "key": "nar_paper_map02_97_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
+    },
+    "nar_paper_map02_98_1": {
+        "key": "nar_paper_map02_98_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note",
+        "rsch": "research_004prts"
+    },
+    "nar_paper_map02_98_2": {
+        "key": "nar_paper_map02_98_2",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "note",
+        "rsch": "research_004prts"
+    },
+    "nar_paper_map02_99_1": {
+        "key": "nar_paper_map02_99_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "ntbook"
     },
     "nar_sm1l1m2_3": {
         "key": "nar_sm1l1m2_3",

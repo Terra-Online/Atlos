@@ -6,6 +6,7 @@ import RegisterIcon from '@/assets/logos/register.svg?react';
 import parse from 'html-react-parser';
 import { type FormEvent, type KeyboardEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslateUI } from '@/locale';
+import { useDevice } from '@/utils/device';
 import {
   OTP_COOLDOWN_SECONDS,
   canShowSendVerificationButton,
@@ -83,7 +84,17 @@ const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
 };
 
 const FIELD_VALIDATE_DELAY_MS = 500;
-const AUTO_SUBMIT_DELAY_MS = 260;
+const AUTO_SUBMIT_DELAY_MS = 200;
+const ENTER_ACTION_KEYS = new Set(['Enter', 'Go', 'Done', 'Send', 'Search', 'Next']);
+
+const isEnterAction = (event: KeyboardEvent<HTMLElement>): boolean => {
+  if (ENTER_ACTION_KEYS.has(event.key)) {
+    return true;
+  }
+
+  const nativeEvent = event.nativeEvent;
+  return nativeEvent.keyCode === 13 || nativeEvent.which === 13;
+};
 
 const createSubmitSignature = (payload: { mode: AuthMode; values: AuthValues }): string => [
   payload.mode,
@@ -109,6 +120,7 @@ const Access = ({
   onRequestPasswordReset,
 }: AccessProps) => {
   const t = useTranslateUI();
+  const { isMobile } = useDevice();
   const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
   const [verificationCodeValue, setVerificationCodeValue] = useState('');
@@ -126,15 +138,12 @@ const Access = ({
     ? parse(t('idcard.auth.resetRequire'))
     : parse(t('idcard.auth.resetLink'));
 
-  const authValues = useMemo<AuthValues>(
-    () => ({
-      email: emailValue,
-      password: passwordValue,
-      verificationCode: verificationCodeValue,
-      repeatPassword: repeatPasswordValue,
-    }),
-    [emailValue, passwordValue, repeatPasswordValue, verificationCodeValue],
-  );
+  const authValues: AuthValues = {
+    email: emailValue,
+    password: passwordValue,
+    verificationCode: verificationCodeValue,
+    repeatPassword: repeatPasswordValue,
+  };
 
   const modalTitle = isResetMode
     ? t('idcard.auth.passwordReset') || 'Password Reset'
@@ -187,7 +196,7 @@ const Access = ({
     }
 
     return t('idcard.auth.forgotPW') || 'Forgot password?';
-  }, [fieldHintCodes.password, isRegisterMode, t]);
+  }, [fieldHintCodes.password, isRegisterMode, isResetMode, t]);
 
   const setFieldCode = useCallback((field: AuthField, code: AuthHintCode | null) => {
     setFieldHintCodes((prev) => {
@@ -250,6 +259,9 @@ const Access = ({
   const verificationHintType = getFieldHintType('verificationCode');
   const repeatPasswordHintText = getFieldHint('repeatPassword');
   const repeatPasswordHintType = getFieldHintType('repeatPassword');
+  const shouldShowPwdRegex = isRegisterMode && touchedFields.password && fieldHintCodes.password === 112;
+  const isRegexRemoved = !open || !shouldShowPwdRegex;
+  const pwdRegexText = t('idcard.auth.pwdRegex') || '8–20 characters; at least one uppercase';
 
   const shouldShowSendVerificationButton = canShowSendVerificationButton(activeTab, authValues);
   const shouldShowSendResetButton = isResetMode
@@ -371,7 +383,6 @@ const Access = ({
   const handlePasswordChange = (rawValue: string) => {
     touchField('password');
     setPasswordValue(rawValue);
-    setFieldCode('password', null);
   };
 
   const handleVerificationCodeChange = (rawValue: string) => {
@@ -464,7 +475,7 @@ const Access = ({
   };
 
   useEffect(() => {
-    if (!open || isSubmitting || !onAutoSubmit || !isRegisterMode) {
+    if (!open || isSubmitting || !onAutoSubmit) {
       return undefined;
     }
 
@@ -472,7 +483,16 @@ const Access = ({
       return undefined;
     }
 
-    const hasRequiredTouches = touchedFields.email && touchedFields.password && touchedFields.verificationCode;
+    const shouldAutoSubmit = !isResetMode || isResetSubmitStage;
+    if (!shouldAutoSubmit) {
+      return undefined;
+    }
+
+    const hasRequiredTouches = isRegisterMode
+      ? touchedFields.email && touchedFields.password && touchedFields.verificationCode
+      : isResetMode
+        ? touchedFields.password && touchedFields.repeatPassword
+        : touchedFields.email && touchedFields.password;
     if (!hasRequiredTouches) {
       return undefined;
     }
@@ -503,14 +523,18 @@ const Access = ({
     authMachineNode,
     authValues.email,
     authValues.password,
+    authValues.repeatPassword,
     authValues.verificationCode,
     isRegisterMode,
+    isResetMode,
+    isResetSubmitStage,
     isSubmitting,
     lastAutoSubmitSignature,
     onAutoSubmit,
     open,
     touchedFields.email,
     touchedFields.password,
+    touchedFields.repeatPassword,
     touchedFields.verificationCode,
   ]);
 
@@ -542,7 +566,7 @@ const Access = ({
   };
 
   const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing || isSubmitting) {
+    if (!isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
       return;
     }
 
@@ -557,6 +581,15 @@ const Access = ({
 
     event.preventDefault();
     event.currentTarget.requestSubmit();
+  };
+
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
   };
 
   const handleRequestVerificationCode = async () => {
@@ -591,16 +624,17 @@ const Access = ({
   const sendButtonLabel = otpCooldownSeconds > 0
     ? resendTemplate.replace('{count}', String(otpCooldownSeconds))
     : isResetMode
-      ? t('idcard.auth.sendResetLink') || 'Send reset link'
+      ? t('idcard.auth.sendResetLink') || 'Reset'
       : t('idcard.auth.send') || 'Send';
+  const modalSize = isMobile ? 'full' : 'l';
 
   const oauthLabelByPlatform: Record<OAuthPlatform, string> = {
     discord: isRegisterMode
-      ? t('idcard.auth.dcLogin') || 'Sign in with Discord'
-      : t('idcard.auth.dcRegis') || 'Continue with Discord',
+      ? t('idcard.auth.dcRegis') || 'Continue with Discord'
+      : t('idcard.auth.dcLogin') || 'Sign in with Discord',
     google: isRegisterMode
-      ? t('idcard.auth.gooLogin') || 'Sign in with Google'
-      : t('idcard.auth.gooRegis') || 'Continue with Google',
+      ? t('idcard.auth.gooRegis') || 'Continue with Google'
+      : t('idcard.auth.gooLogin') || 'Sign in with Google',
   };
 
   const getOauthButtonLabel = (platform: OAuthPlatform): string =>
@@ -628,7 +662,7 @@ const Access = ({
   return (
     <Modal
       open={open}
-      size="l"
+      size={modalSize}
       title={modalTitle}
       icon={modalIcon}
       onClose={() => setOpen(false)}
@@ -652,10 +686,12 @@ const Access = ({
                   type="email"
                   value={emailValue}
                   onChange={(event) => handleEmailChange(event.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   onBlur={() => handleFieldBlur('email')}
                   placeholder="ak@ex.talos"
                   autoComplete="email"
                   spellCheck={false}
+                  enterKeyHint={isResetMode && !isResetSubmitStage ? 'send' : 'next'}
                   disabled={isResetSubmitStage}
                   data-locked={isResetSubmitStage ? 'true' : 'false'}
                 />
@@ -708,39 +744,45 @@ const Access = ({
                     type="password"
                     value={passwordValue}
                     onChange={(event) => handlePasswordChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     onBlur={() => handleFieldBlur('password')}
                     placeholder=""
                     autoComplete={isRegisterMode || isResetMode ? 'new-password' : 'current-password'}
+                    enterKeyHint={isRegisterMode || (isResetMode && isResetSubmitStage) ? 'next' : 'go'}
                   />
                 </div>
             </div>
 
-            <div
-              className={styles.inputRow}
-              data-field="repeat-password"
-              data-visible={isResetSubmitStage ? 'true' : 'false'}
-              aria-hidden={!isResetSubmitStage}
-            >
-              <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
-                <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
-                {repeatPasswordHintText ? (
-                  <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
-                    {repeatPasswordHintText}
-                  </span>
-                ) : null}
-              </label>
-              <div className={styles.prtsIoContainer}>
-                <input
-                  id="access-repeat-password"
-                  type="password"
-                  value={repeatPasswordValue}
-                  onChange={(event) => handleRepeatPasswordChange(event.target.value)}
-                  onBlur={() => handleFieldBlur('repeatPassword')}
-                  placeholder=""
-                  autoComplete="new-password"
-                />
+            {isResetSubmitStage ? (
+              <div
+                className={styles.inputRow}
+                data-field="repeat-password"
+                data-visible="true"
+                aria-hidden="false"
+              >
+                <label htmlFor="access-repeat-password" className={styles.prtsIoLabel}>
+                  <span className={styles.prtsIoItem}>{t('idcard.auth.repeatPassword') || 'REPEAT:'}</span>
+                  {repeatPasswordHintText ? (
+                    <span className={styles.prtsHint} data-type={repeatPasswordHintType ?? 'err'} data-text={repeatPasswordHintText}>
+                      {repeatPasswordHintText}
+                    </span>
+                  ) : null}
+                </label>
+                <div className={styles.prtsIoContainer}>
+                  <input
+                    id="access-repeat-password"
+                    type="password"
+                    value={repeatPasswordValue}
+                    onChange={(event) => handleRepeatPasswordChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
+                    onBlur={() => handleFieldBlur('repeatPassword')}
+                    placeholder=""
+                    autoComplete="new-password"
+                    enterKeyHint="go"
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div
               className={styles.inputRow}
@@ -762,12 +804,14 @@ const Access = ({
                     type="text"
                     value={verificationCodeValue}
                     onChange={(event) => handleVerificationCodeChange(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     onBlur={() => handleFieldBlur('verificationCode')}
                     placeholder="019-624"
                     autoComplete="one-time-code"
                     inputMode="numeric"
                     pattern="[0-9]{3}-[0-9]{3}"
                     maxLength={7}
+                    enterKeyHint="go"
                   />
                   {shouldShowSendVerificationButton && !isResetMode ? (
                   <button
@@ -785,6 +829,15 @@ const Access = ({
             </div>
             <button type="submit" className={styles.hiddenSubmit} aria-hidden="true" tabIndex={-1} />
           </form>
+
+          <div
+            className={styles.prtsRegex}
+            data-removed={isRegexRemoved ? 'true' : 'false'}
+            data-text={pwdRegexText}
+            aria-live="polite"
+          >
+            {pwdRegexText}
+          </div>
 
         <div className={styles.lowerSection}>
           <div className={styles.authDivider} aria-hidden="true" data-after={isResetMode ? 'Note' : 'OR'} />

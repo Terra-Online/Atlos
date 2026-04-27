@@ -133,7 +133,11 @@
           "maintenance_zone": "Zona Pemeliharaan",
           "institute_of_materials_science": "Institut Ilmu Material",
           "tianshi_bureau_academy": "Akademi Biro Tianshi",
+          "bureau_of_applied_technologies": "Biro Teknologi Terapan",
           "citizen_square": "Alun-alun Warga",
+          "qijian_dais": "Podium Qijian",
+          "long_pavilion": "Paviliun Panjang",
+          "main_pillar_office": "Kantor Pilar Utama",
           "restricted_area": "Area Terlarang",
           "tianjing_courtyard": "Halaman Tianjing",
           "riverbank_grotto": "Groto Tepi Sungai",
@@ -173,6 +177,32 @@
           "causeway_trail": "Jalur Jalan Landasan",
           "main_fort": "Benteng Utama",
           "bladewoods": "Hutan Pedang"
+        }
+      },
+      "TA": {
+        "name": "Area Uji Coba",
+        "short": "UC",
+        "site": {
+          "test_area_entrance": "Pintu Masuk Area Uji Coba",
+          "type_c_auxiliary_pillar_area_1": "Area 1 Pilar Sokong Tipe C",
+          "type_c_auxiliary_pillar_area_2": "Area 2 Pilar Sokong Tipe C",
+          "type_c_auxiliary_pillar_area_3": "Area 3 Pilar Sokong Tipe C",
+          "test_area_peripheries": "Pinggiran Area Uji Coba",
+          "meridian_grid_area": "Area Jaringan Meridian",
+          "integrated_rd_area": "Area Litbang Terpadu",
+          "water_treatment_sector": "Sektor Pengolahan Air"
+        }
+      },
+      "MS": {
+        "name": "Batu Penanda",
+        "short": "BP",
+        "site": {
+          "watchtower_reservoir_station": "Stasiun Waduk Menara Pengawas",
+          "restricted_area": "Area Terlarang",
+          "cloudrest_woods": "Hutan Bentang Awan",
+          "lake_islet": "Gili Danau",
+          "urban_development_hall": "Balai Pengembangan Kota",
+          "serenity_garden": "Taman Hening"
         }
       }
     }

@@ -1,3 +1,5 @@
+@use '../prtsTextEffect.scss' as prts;
+
 .profileModal {
   display: flex;
   flex-direction: column;
@@ -38,14 +40,15 @@
   letter-spacing: -0.2px;
   font-weight: 600;
   line-height: 1.25;
+  unicode-bidi: plaintext;
 }
 
 .profileError {
-  margin: 0.25rem 0 0;
-  color: #bb1313;
-  font-size: 0.84rem;
-  font-family: 'FedraSansPro Book', 'UD_ShinGo Regular', sans-serif;
+  margin: auto;
+  @include prts.prts-text-effect(flex-end, left);
 }
+
+@include prts.prts-text-effect-keyframes;
 
 .profileActions {
   display: grid;

@@ -8,7 +8,8 @@
 import { useMarkerStore } from '@/store/marker';
 import useRegion from '@/store/region';
 import { setLocale, SUPPORTED_LANGS } from '@/locale';
-import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
+import { MARKER_TYPE_DICT, WORLD_MARKS, type IMarkerData } from '@/data/marker';
+import { REGION_DICT } from '@/data/map';
 import { navigateToSharedPoint } from '@/utils/navigation';
 
 type Lang = (typeof SUPPORTED_LANGS)[number];
@@ -16,10 +17,25 @@ type Lang = (typeof SUPPORTED_LANGS)[number];
 // URL 參數名稱
 const PARAM_LANG = 'l';
 const PARAM_FILTER = 'f';
+const PARAM_TYPE = 'type';
 const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
+const PARAM_POINT_TOKEN = 'x';
+const AUTH_URL_PARAM_WHITELIST = new Set(['token', 'email', 'error', 'domain']);
 const POINT_SHARE_SHORT_ORIGIN = 'https://oem.re';
+
+const BASE62_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const BASE62_CHAR_TO_VALUE = new Map<string, bigint>(
+    BASE62_ALPHABET.split('').map((char, index) => [char, BigInt(index)]),
+);
+const BASE62_BASE = BigInt(BASE62_ALPHABET.length);
+
+// 可逆置換：以 36-bit 空間做乘法置換，兼顧可逆與短碼長度。
+const POINT_ID_PERMUTATION_MOD = 1n << 36n;
+const POINT_ID_PERMUTATION_MULTIPLIER = 25214903917n;
+const POINT_ID_PERMUTATION_OFFSET = 11n;
+const POINT_ID_TOKEN_LENGTH = 7;
 
 // f 參數壓縮格式：
 // - 單個 type: ~<base36Index>
@@ -65,10 +81,147 @@ const REGION_CODE_REVERSE: Record<string, string> = Object.fromEntries(
     Object.entries(REGION_CODE_MAP).map(([k, v]) => [v, k])
 );
 
+const SUBREGION_TO_REGION_MAP = Object.entries(REGION_DICT).reduce(
+    (acc, [regionKey, region]) => {
+        region.subregions.forEach((subregionKey) => {
+            acc[subregionKey] = regionKey;
+        });
+        return acc;
+    },
+    {} as Record<string, string>,
+);
+
+const POINT_ID_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
+    // 若出現重複 id，保留第一筆，避免後續覆寫造成不穩定。
+    if (!acc.has(marker.id)) {
+        acc.set(marker.id, marker);
+    }
+    return acc;
+}, new Map<string, IMarkerData>());
+
+const UNIQUE_ARCHIVE_TYPE_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
+    const markerType = MARKER_TYPE_DICT[marker.type];
+    if (markerType?.category?.main !== 'files') return acc;
+
+    if (!acc.has(marker.type)) {
+        acc.set(marker.type, marker);
+        return acc;
+    }
+
+    const existing = acc.get(marker.type);
+    if (existing && existing.id !== marker.id) {
+        acc.set(marker.type, null);
+    }
+    return acc;
+}, new Map<string, IMarkerData | null>());
+
 const SORTED_MARKER_TYPE_KEYS = Object.keys(MARKER_TYPE_DICT).sort();
 const MARKER_TYPE_INDEX_MAP = new Map<string, number>(
     SORTED_MARKER_TYPE_KEYS.map((key, index) => [key, index])
 );
+
+const modInverse = (a: bigint, mod: bigint): bigint => {
+    let t = 0n;
+    let newT = 1n;
+    let r = mod;
+    let newR = ((a % mod) + mod) % mod;
+
+    while (newR !== 0n) {
+        const quotient = r / newR;
+        [t, newT] = [newT, t - quotient * newT];
+        [r, newR] = [newR, r - quotient * newR];
+    }
+
+    if (r !== 1n) {
+        throw new Error('Permutation multiplier is not invertible under modulus');
+    }
+
+    return ((t % mod) + mod) % mod;
+};
+
+const POINT_ID_PERMUTATION_INVERSE = modInverse(
+    POINT_ID_PERMUTATION_MULTIPLIER,
+    POINT_ID_PERMUTATION_MOD,
+);
+
+const encodeBase62 = (value: bigint): string => {
+    if (value === 0n) return '0';
+
+    let num = value;
+    let encoded = '';
+    while (num > 0n) {
+        const remainder = Number(num % BASE62_BASE);
+        encoded = BASE62_ALPHABET[remainder] + encoded;
+        num /= BASE62_BASE;
+    }
+    return encoded;
+};
+
+const decodeBase62 = (encoded: string, maxLength: number = Number.POSITIVE_INFINITY): bigint | null => {
+    if (!encoded) return null;
+    if (encoded.length > maxLength) return null;
+
+    let value = 0n;
+    for (const ch of encoded) {
+        const digit = BASE62_CHAR_TO_VALUE.get(ch);
+        if (digit === undefined) return null;
+        value = value * BASE62_BASE + digit;
+    }
+    return value;
+};
+
+const encodePointIdToken = (pointId: string): string | null => {
+    if (!/^\d+$/.test(pointId)) return null;
+
+    const id = BigInt(pointId);
+    if (id < 0n || id >= POINT_ID_PERMUTATION_MOD) return null;
+
+    const obfuscated = (id * POINT_ID_PERMUTATION_MULTIPLIER + POINT_ID_PERMUTATION_OFFSET) % POINT_ID_PERMUTATION_MOD;
+    return encodeBase62(obfuscated).padStart(POINT_ID_TOKEN_LENGTH, '0');
+};
+
+const decodePointIdToken = (token: string): string | null => {
+    if (token.length !== POINT_ID_TOKEN_LENGTH) return null;
+
+    const encoded = token.replace(/^0+/, '') || '0';
+    const obfuscated = decodeBase62(encoded, POINT_ID_TOKEN_LENGTH);
+    if (obfuscated === null || obfuscated < 0n || obfuscated >= POINT_ID_PERMUTATION_MOD) {
+        return null;
+    }
+
+    const decoded = ((obfuscated - POINT_ID_PERMUTATION_OFFSET + POINT_ID_PERMUTATION_MOD) % POINT_ID_PERMUTATION_MOD);
+    const id = (decoded * POINT_ID_PERMUTATION_INVERSE) % POINT_ID_PERMUTATION_MOD;
+    return id.toString();
+};
+
+const mergeFilterKeys = (keys: string[]) => {
+    const validKeys = keys.filter((key) => MARKER_TYPE_DICT[key]);
+    if (validKeys.length === 0) return;
+    const currentFilter = useMarkerStore.getState().filter;
+    const mergedFilter = Array.from(new Set([...currentFilter, ...validKeys]));
+    useMarkerStore.getState().setFilter(mergedFilter);
+};
+
+const resolvePointShareTarget = (pointId: string): { point: IMarkerData; regionKey: string } | null => {
+    const normalizedPointId = String(pointId);
+    const point = POINT_ID_MARKER_MAP.get(normalizedPointId);
+    if (!point) return null;
+
+    const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
+    if (!regionKey) return null;
+
+    return { point, regionKey };
+};
+
+const resolveArchiveTypeShareTarget = (typeKey: string): { point: IMarkerData; regionKey: string } | null => {
+    const point = UNIQUE_ARCHIVE_TYPE_MARKER_MAP.get(typeKey);
+    if (!point) return null;
+
+    const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
+    if (!regionKey) return null;
+
+    return { point, regionKey };
+};
 
 // 從 localStorage 獲取當前語言
 const getCurrentLocale = (): string | null => {
@@ -360,34 +513,46 @@ export const generateShareUrl = (): string => {
 
 /**
  * 生成指定點位的分享鏈接。
- * 必含 p/f/r/s 參數，不包含 l。
+ * 預設生成單一 query token（?x=...）。
+ * 若 id 超出編碼範圍，降級為 legacy query 參數。
  */
-const buildPointShareParams = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): URLSearchParams => {
-    const params = new URLSearchParams();
+const buildPointShareToken = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const token = encodePointIdToken(String(point.id));
+    if (token) return token;
 
+    // 非預期邊界：若 id 超出 36-bit 保留舊格式作為降級保底。
+    const params = new URLSearchParams();
     const pointFilter = getFilterParamValue([point.type]);
     if (pointFilter) {
         params.set(PARAM_FILTER, pointFilter);
     }
-
-    const { currentRegionKey } = useRegion.getState();
-    const shortRegion = REGION_CODE_MAP[currentRegionKey] || currentRegionKey;
+    const fallbackRegion = SUBREGION_TO_REGION_MAP[point.subregId] || useRegion.getState().currentRegionKey;
+    const shortRegion = REGION_CODE_MAP[fallbackRegion] || fallbackRegion;
     params.set(PARAM_REGION, shortRegion);
     params.set(PARAM_SUBREGION, point.subregId);
     params.set(PARAM_POINT, String(point.id));
-
-    return params;
-};
-
-export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
-    const queryString = buildPointShareParams(point).toString();
+    const queryString = params.toString();
     return queryString ? `?${queryString}` : '';
 };
 
-export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
-    const queryString = buildPointShareParams(point).toString();
+export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const tokenOrFallback = buildPointShareToken(point);
+    if (tokenOrFallback.startsWith('?')) {
+        return tokenOrFallback;
+    }
+    const tokenParams = new URLSearchParams();
+    tokenParams.set(PARAM_POINT_TOKEN, tokenOrFallback);
+    return `?${tokenParams.toString()}`;
+};
 
-    return queryString ? `${POINT_SHARE_SHORT_ORIGIN}/?${queryString}` : `${POINT_SHARE_SHORT_ORIGIN}/`;
+export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+    const tokenOrFallback = buildPointShareToken(point);
+    if (tokenOrFallback.startsWith('?')) {
+        return `${POINT_SHARE_SHORT_ORIGIN}/${tokenOrFallback}`;
+    }
+    const tokenParams = new URLSearchParams();
+    tokenParams.set(PARAM_POINT_TOKEN, tokenOrFallback);
+    return `${POINT_SHARE_SHORT_ORIGIN}/?${tokenParams.toString()}`;
 };
 
 /**
@@ -458,13 +623,7 @@ export const applyUrlParams = async (): Promise<void> => {
         // 驗證key有效性
         const validKeys = keys.filter(key => MARKER_TYPE_DICT[key]);
         
-        if (validKeys.length > 0) {
-            // 合并模式：获取当前已选中的类型
-            const currentFilter = useMarkerStore.getState().filter;
-            // 合并两个数组并去重
-            const mergedFilter = Array.from(new Set([...currentFilter, ...validKeys]));
-            useMarkerStore.getState().setFilter(mergedFilter);
-        }
+        mergeFilterKeys(validKeys);
     }
 
     // 應用區域參數（以用户本地优先）
@@ -490,39 +649,72 @@ export const applyUrlParams = async (): Promise<void> => {
     }
 
     const pointParam = params.get(PARAM_POINT);
-    if (pointParam && filterParam) {
-        const fallbackRegion = useRegion.getState().currentRegionKey;
+    const typeParam = params.get(PARAM_TYPE)?.trim() || null;
+    const pointTokenParam = params.get(PARAM_POINT_TOKEN)?.trim() || null;
+    const pointIdFromToken = pointTokenParam ? decodePointIdToken(pointTokenParam) : null;
+    const resolvedFromToken = pointIdFromToken ? resolvePointShareTarget(pointIdFromToken) : null;
+    const resolvedFromType = typeParam ? resolveArchiveTypeShareTarget(typeParam) : null;
+
+    if (resolvedFromToken) {
+        mergeFilterKeys([resolvedFromToken.point.type]);
         navigateToSharedPoint({
-            regionKey: navRegion || fallbackRegion,
-            subregionKey: subregionParam || undefined,
-            pointId: pointParam,
+            regionKey: resolvedFromToken.regionKey,
+            subregionKey: resolvedFromToken.point.subregId,
+            pointId: resolvedFromToken.point.id,
         });
+    } else if (pointParam) {
+        const resolvedFromQueryPoint = resolvePointShareTarget(pointParam);
+        if (resolvedFromQueryPoint) {
+            mergeFilterKeys([resolvedFromQueryPoint.point.type]);
+            navigateToSharedPoint({
+                regionKey: resolvedFromQueryPoint.regionKey,
+                subregionKey: resolvedFromQueryPoint.point.subregId,
+                pointId: resolvedFromQueryPoint.point.id,
+            });
+        } else if (filterParam) {
+            // Legacy 後備：舊鏈接僅在提供 f 時才嘗試按 r/s 導航。
+            const fallbackRegion = useRegion.getState().currentRegionKey;
+            navigateToSharedPoint({
+                regionKey: navRegion || fallbackRegion,
+                subregionKey: subregionParam || undefined,
+                pointId: pointParam,
+            });
+        }
+    } else if (resolvedFromType) {
+        mergeFilterKeys([resolvedFromType.point.type]);
+        navigateToSharedPoint({
+            regionKey: resolvedFromType.regionKey,
+            subregionKey: resolvedFromType.point.subregId,
+            pointId: resolvedFromType.point.id,
+        });
+    } else if (typeParam) {
+        // ?type 找不到唯一點位時，退化為明文 f
+        mergeFilterKeys([typeParam]);
     }
 
-    // 清除URL參數，保持地址欄乾淨
-    // 但保留用于测试的 domain 参数（仅在 localhost 开发环境下）
+    // 清除地圖分享參數；僅保留認證流程必要參數，避免影響 reset password 流程。
     if (params.toString()) {
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
-        
-        if (isLocalhost) {
-            // 开发环境：只清除已处理的参数，保留 domain 参数
-            const newParams = new URLSearchParams(window.location.search);
-            newParams.delete(PARAM_LANG);
-            newParams.delete(PARAM_FILTER);
-            newParams.delete(PARAM_REGION);
-            newParams.delete(PARAM_SUBREGION);
-            newParams.delete(PARAM_POINT);
-            
-            const queryString = newParams.toString();
-            const newUrl = queryString ? 
-                `${window.location.pathname}?${queryString}` : 
-                window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-        } else {
-            // 生产环境：清除所有参数
-            window.history.replaceState({}, '', window.location.pathname);
-        }
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.delete(PARAM_LANG);
+        newParams.delete(PARAM_FILTER);
+        newParams.delete(PARAM_TYPE);
+        newParams.delete(PARAM_REGION);
+        newParams.delete(PARAM_SUBREGION);
+        newParams.delete(PARAM_POINT);
+        newParams.delete(PARAM_POINT_TOKEN);
+
+        const preservedParams = new URLSearchParams();
+        newParams.forEach((value, key) => {
+            if (AUTH_URL_PARAM_WHITELIST.has(key)) {
+                preservedParams.append(key, value);
+            }
+        });
+
+        const queryString = preservedParams.toString();
+        const newUrl = queryString
+            ? `${window.location.pathname}?${queryString}`
+            : window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
     }
 };
 
