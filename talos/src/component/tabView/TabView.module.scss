@@ -8,6 +8,8 @@
     --tabview-inactive-bg: #{$dim-1};
     --tabview-inactive-text: #{$light-1};
     --tabview-hover-bg: #{$grey-1};
+    --tabview-desc-bg: #{$grey-1};
+    --tabview-desc-text: #{$light-1};
 }
 
 :root[data-theme='dark'] {
@@ -16,6 +18,8 @@
     --tabview-inactive-bg: #{$mid};
     --tabview-inactive-text: #{$grey-1};
     --tabview-hover-bg: #{$grey-3};
+    --tabview-desc-bg: #{$black-1};
+    --tabview-desc-text: #{$light-1};
 }
 
 .tabBarWrapper {
@@ -51,7 +55,7 @@
 .tabIndicator {
     position: absolute;
     bottom: 0;
-    transform: translateX(-50%) translateY(100%);
+    transform: translateX(-50%);
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid var(--tabview-active-bg);
@@ -87,5 +91,30 @@
     &.activeTab {
         background-color: var(--tabview-active-bg);
         color: var(--tabview-active-text);
+    }
+}
+
+.description {
+    background: var(--tabview-desc-bg);
+    color: var(--tabview-desc-text);
+    padding: 0.375rem 0.75rem;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, 'UD_ShinGo DemiBold', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 900;
+    line-height: 1.5;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    word-break: auto-phrase;
+    overflow: hidden;
+    z-index: 0;
+    transition:
+        background-color 0.35s $adagio-curve,
+        color 0.35s $adagio-curve;
+
+    a {
+        color: inherit;
+        overflow-wrap: anywhere;
+        text-decoration: underline;
+        text-underline-offset: 2px;
     }
 }

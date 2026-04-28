@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
-import styles from './TabView.module.scss';
+import styles from './tabView.module.scss';
 
 export interface TabViewItem {
     key: string;
     label: React.ReactNode;
+    description?: React.ReactNode;
 }
 
 interface TabViewProps {
@@ -26,6 +27,7 @@ const TabView: React.FC<TabViewProps> = ({
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const tabBarRef = useRef<HTMLDivElement | null>(null);
     const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+    const activeItem = items.find((item) => item.key === activeKey);
 
     const updateIndicator = useCallback(() => {
         const activeTab = tabRefs.current.get(activeKey);
@@ -91,13 +93,16 @@ const TabView: React.FC<TabViewProps> = ({
                         {item.label}
                     </button>
                 ))}
-            </div>
-            {indicatorLeft !== null && (
+                {indicatorLeft !== null && (
                 <div
                     className={styles.tabIndicator}
                     style={{ left: `${indicatorLeft}px` }}
                 />
             )}
+            </div>
+            {activeItem?.description ? (
+                <div className={styles.description}>{activeItem.description}</div>
+            ) : null}
         </div>
     );
 };

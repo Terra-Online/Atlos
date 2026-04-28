@@ -81,24 +81,6 @@
     max-width: 100%;
 }
 
-.description {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    color: var(--auth-text);
-    font-size: 0.88rem;
-    font-weight: 600;
-    line-height: 1.45;
-
-    a {
-        color: var(--ack-link);
-        font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-size: 0.82rem;
-        font-weight: 700;
-        overflow-wrap: anywhere;
-    }
-}
-
 .tokenTextarea {
     width: 100%;
     min-height: 8rem;

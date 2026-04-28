@@ -5,8 +5,6 @@
 :root,
 :root[data-theme='light'] {
     --ann-panel-bg: #{$light-1};
-    --ann-desc-bg: #{$grey-1};
-    --ann-desc-text: #{$light-1};
     --ann-content-text: #{$grey-1};
     --ann-content-heading: #{$black-1};
     --ann-border: #{$mid};
@@ -16,9 +14,6 @@
 
 :root[data-theme='dark'] {
     --ann-panel-bg: #{$black-1};
-    --ann-desc-bg: #{$black-1};
-    --ann-desc-text: #{$light-1};
-
     --ann-content-text: #{$light-1};
     --ann-content-heading: #{$white-1};
     --ann-border: #{$mid};
@@ -35,24 +30,6 @@
     overflow: hidden;
     min-height: 0;
     transition: background-color 0.35s $adagio-curve;
-}
-
-.description {
-    background: var(--ann-desc-bg);
-    color: var(--ann-desc-text);
-    padding: 0.375rem 0.75rem;
-    font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, 'UD_ShinGo DemiBold', sans-serif;
-    font-size: 1.125rem;
-    font-weight: 900;
-    line-height: 1.5;
-    text-transform: uppercase;
-    flex-shrink: 0;
-    word-break: auto-phrase;
-    overflow: hidden;
-    z-index: 0;
-    transition:
-        background-color 0.35s $adagio-curve,
-        color 0.35s $adagio-curve;
 }
 
 .content {

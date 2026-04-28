@@ -74,15 +74,17 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
                 ) : (
                     <>
                         <TabView
-                            items={announcements.map((item) => ({ key: item.id, label: item.title }))}
+                            items={announcements.map((item) => ({
+                                key: item.id,
+                                label: item.title,
+                                description: item.description,
+                            }))}
                             activeKey={activeKey}
                             onChange={(key) => {
                                 const nextIndex = announcements.findIndex((item) => item.id === key);
                                 if (nextIndex >= 0) setActiveIndex(nextIndex);
                             }}
                         />
-
-                        <div className={styles.description}>{activeItem?.description}</div>
 
                         <div className={styles.content} role='tabpanel'>
                             <ReactMarkdown>{activeItem?.content || ''}</ReactMarkdown>

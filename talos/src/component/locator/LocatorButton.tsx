@@ -43,7 +43,7 @@ const TOKEN_API_BY_MODE: Record<LocatorAccountMode, string> = {
     skport: 'https://web-api.skport.com/cookie_store/account_token',
 };
 
-const extractAccountToken = (raw: string): string => {
+const extractToken = (raw: string): string => {
     const trimmed = raw.trim();
     if (!trimmed) return '';
 
@@ -73,7 +73,24 @@ const extractAccountToken = (raw: string): string => {
     return trimmed;
 };
 
-const buildDataCollectionUrl = (locale: string): string => {
+const sanitizeToken = (raw: string): string => {
+    const trimmed = raw.trim();
+    if (!trimmed) return raw;
+
+    try {
+        const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+        if ('msg' in parsed) {
+            const { msg: _msg, ...rest } = parsed;
+            return JSON.stringify(rest);
+        }
+    } catch {
+        return raw.replace(/,?\s*"msg"\s*:\s*"[^"]*"\s*/g, (match) => (match.trimStart().startsWith(',') ? '' : ''));
+    }
+
+    return raw;
+};
+
+const buildDocsUrl = (locale: string): string => {
     const lang = locale.trim();
     return lang
         ? `https://blog.opendfieldmap.org/${encodeURIComponent(lang)}/docs/data-collection`
@@ -299,7 +316,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     }, [close, l]);
 
     const bindByToken = useCallback(async () => {
-        const accountToken = extractAccountToken(tokenInput);
+        const accountToken = extractToken(tokenInput);
         if (!accountToken) {
             setError(l('locator.binding.errors.tokenRequired', 'Paste the token response JSON or the content value.'));
             return;
@@ -352,15 +369,31 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     }, []);
 
     const tabItems: TabViewItem[] = useMemo(() => [
-        { key: 'skland', label: t('locator.binding.chinaTab') || 'China(Hypergryph)' },
-        { key: 'skport', label: t('locator.binding.globalTab') || 'Global(Gryphline)' },
+        {
+            key: 'skland',
+            label: t('locator.binding.chinaTab') || 'China(Hypergryph)',
+            description: (
+                <>
+                    <div>{t('locator.binding.chinaDescription') || '1. Open the China token API link. 2. Paste the full response, read the terms, then submit.'}</div>
+                    <a href={TOKEN_API_BY_MODE.skland} target="_blank" rel="noopener noreferrer">{TOKEN_API_BY_MODE.skland}</a>
+                </>
+            ),
+        },
+        {
+            key: 'skport',
+            label: t('locator.binding.globalTab') || 'Global(Gryphline)',
+            description: (
+                <>
+                    <div>{t('locator.binding.globalDescription') || '1. Open the Global token API link. 2. Paste the full response, read the terms, then submit.'}</div>
+                    <a href={TOKEN_API_BY_MODE.skport} target="_blank" rel="noopener noreferrer">{TOKEN_API_BY_MODE.skport}</a>
+                </>
+            ),
+        },
     ], [t]);
-
-    const tokenApiUrl = TOKEN_API_BY_MODE[accountMode];
-    const stepsText = accountMode === 'skland'
-        ? (t('locator.binding.chinaDescription') || '1. Open the China token API link. 2. Paste the full response, read the terms, then submit.')
-        : (t('locator.binding.globalDescription') || '1. Open the Global token API link. 2. Paste the full response, read the terms, then submit.');
-    const bindNotice = (t('locator.binding.bindNotice') || '若您已知悉所有条款，请绑定（{sec}）').replace('{sec}', String(countdown));
+    const bindLabelTemplate = t('locator.binding.bindWithCountdown');
+    const bindLabel = countdown > 0
+        ? bindLabelTemplate.replace('{sec}', String(countdown))
+        : (t('locator.binding.bind'));
 
     return (
         <Modal
@@ -379,14 +412,10 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
 
                 {step === 'auth' ? (
                     <div className={styles.bindingFields}>
-                        <div className={styles.description}>
-                            <div>{stepsText}</div>
-                            <a href={tokenApiUrl} target="_blank" rel="noopener noreferrer">{tokenApiUrl}</a>
-                        </div>
                         <textarea
                             className={styles.tokenTextarea}
                             value={tokenInput}
-                            onChange={(event) => setTokenInput(event.target.value)}
+                            onChange={(event) => setTokenInput(sanitizeToken(event.target.value))}
                             placeholder={t('locator.binding.tokenTextareaPlaceholder') || '{"code":0,"data":{"content":"..."}}'}
                             spellCheck={false}
                         />
@@ -419,25 +448,24 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
 
                 <div className={styles.bindingFooter}>
                     <div className={styles.policyReminder}>
-                        <span>{t('locator.binding.docsLead') || 'Please read the following documents before binding:'}</span>
+                        <span>{t('locator.binding.docsLead')}</span>
                         <span>
                             <a href="https://blog.opendfieldmap.org/docs/tos" target="_blank" rel="noopener noreferrer">
-                                {t('locator.binding.tos') || 'Terms of Service'}
+                                {t('locator.binding.tos')}
                             </a>
                             {' · '}
                             <a href="https://blog.opendfieldmap.org/docs/privacy" target="_blank" rel="noopener noreferrer">
-                                {t('locator.binding.privacy') || 'Privacy Policy'}
+                                {t('locator.binding.privacy')}
                             </a>
                             {' · '}
-                            <a href={buildDataCollectionUrl(locale)} target="_blank" rel="noopener noreferrer">
+                            <a href={buildDocsUrl(locale)} target="_blank" rel="noopener noreferrer">
                                 {t('locator.binding.dataCollection') || 'Data Collection'}
                             </a>
                             {' · '}
                             <a href="https://blog.opendfieldmap.org/docs/disclaimer" target="_blank" rel="noopener noreferrer">
-                                {t('locator.binding.disclaimer') || 'Disclaimer'}
+                                {t('locator.binding.disclaimer')}
                             </a>
                         </span>
-                        <span>{bindNotice}</span>
                     </div>
                     <div className={classNames(profileStyles.profileActions, styles.singleAction)}>
                         <AccessButton
@@ -446,8 +474,8 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                             }}
                             disabled={loading || countdown > 0}
                             label={loading
-                                ? (t('common.loading') || 'Loading...')
-                                : (t('locator.binding.bind') || 'Bind')}
+                                ? (t('common.loading'))
+                                : bindLabel}
                         />
                     </div>
                 </div>
