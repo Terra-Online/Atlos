@@ -1,52 +1,29 @@
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
 import {
-    ANNOUNCEMENT_LAST_READ_DATE_KEY,
-    ANNOUNCEMENT_LAST_READ_ID_KEY,
     type AnnouncementApiItem,
     fetchAnnouncementLatestMeta,
     fetchAnnouncements,
-    getAnnouncementBodyCacheStorageKey,
     getAnnouncementDebugMode,
-    getAnnouncementLatestIdStorageKey,
-    getAnnouncementVersionStorageKey,
+    getAnnouncementLastRead,
+    getAnnouncementLocaleCache,
+    setAnnouncementLocaleCache,
 } from '@/utils/announcement';
 
-const isAnnouncementApiItem = (value: unknown): value is AnnouncementApiItem => {
-    if (typeof value !== 'object' || value === null) return false;
-    const item = value as Partial<AnnouncementApiItem>;
-    return (
-        typeof item.id === 'string'
-        && typeof item.title === 'string'
-        && typeof item.description === 'string'
-        && typeof item.content === 'string'
-    );
-};
-
-const parseCachedAnnouncements = (raw: string | null): AnnouncementApiItem[] => {
-    if (!raw) return [];
-    try {
-        const parsed: unknown = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed.filter(isAnnouncementApiItem);
-    } catch {
-        return [];
-    }
-};
-
 const getHasUnreadAnnouncement = (latestId: string | null, latestDate?: string): boolean => {
-    const lastReadId = localStorage.getItem(ANNOUNCEMENT_LAST_READ_ID_KEY);
+    const lastRead = getAnnouncementLastRead();
+    const lastReadId = lastRead.id;
     if (latestId) {
         if (lastReadId) {
             return lastReadId !== latestId;
         }
-        const lastReadDate = localStorage.getItem(ANNOUNCEMENT_LAST_READ_DATE_KEY);
+        const lastReadDate = lastRead.date;
         if (lastReadDate && latestDate) {
             return new Date(latestDate) > new Date(lastReadDate);
         }
         return true;
     }
 
-    const lastReadDate = localStorage.getItem(ANNOUNCEMENT_LAST_READ_DATE_KEY);
+    const lastReadDate = lastRead.date;
     if (!lastReadDate || !latestDate) {
         return false;
     }
@@ -71,17 +48,15 @@ export const useAnnouncementFlow = (locale?: string): UseAnnouncementFlowResult 
 
         const checkUnread = async () => {
             const debugMode = getAnnouncementDebugMode();
-            const latestIdStorageKey = getAnnouncementLatestIdStorageKey(locale);
-            const bodyCacheStorageKey = getAnnouncementBodyCacheStorageKey(locale);
-            const versionStorageKey = getAnnouncementVersionStorageKey(locale);
-            const cachedAnnouncements = parseCachedAnnouncements(localStorage.getItem(bodyCacheStorageKey));
+            const cache = getAnnouncementLocaleCache(locale);
+            const cachedAnnouncements = cache.body ?? [];
 
             try {
                 const latestMeta = await fetchAnnouncementLatestMeta(locale);
                 const remoteLatestId = latestMeta?.latestId ?? null;
                 const remoteVersion = latestMeta?.version ?? '';
-                const localLatestId = localStorage.getItem(latestIdStorageKey);
-                const localVersion = localStorage.getItem(versionStorageKey);
+                const localLatestId = cache.latestId ?? null;
+                const localVersion = cache.version ?? '';
                 const canUseCachedBody = !!remoteLatestId
                     && remoteLatestId === localLatestId
                     && !!remoteVersion
@@ -91,27 +66,18 @@ export const useAnnouncementFlow = (locale?: string): UseAnnouncementFlowResult 
                 let data = cachedAnnouncements;
                 if (!canUseCachedBody) {
                     data = await fetchAnnouncements(locale);
-                    localStorage.setItem(bodyCacheStorageKey, JSON.stringify(data));
 
                     const fetchedLatestId = data[0]?.id ?? remoteLatestId;
-                    if (fetchedLatestId) {
-                        localStorage.setItem(latestIdStorageKey, fetchedLatestId);
-                    } else {
-                        localStorage.removeItem(latestIdStorageKey);
-                    }
-
-                    if (remoteVersion) {
-                        localStorage.setItem(versionStorageKey, remoteVersion);
-                    } else {
-                        localStorage.removeItem(versionStorageKey);
-                    }
+                    setAnnouncementLocaleCache(locale, {
+                        body: data,
+                        latestId: fetchedLatestId ?? null,
+                        version: remoteVersion,
+                    });
                 } else {
-                    if (remoteLatestId) {
-                        localStorage.setItem(latestIdStorageKey, remoteLatestId);
-                    }
-                    if (remoteVersion) {
-                        localStorage.setItem(versionStorageKey, remoteVersion);
-                    }
+                    setAnnouncementLocaleCache(locale, {
+                        latestId: remoteLatestId,
+                        version: remoteVersion,
+                    });
                 }
 
                 if (!cancelled) {
@@ -123,7 +89,7 @@ export const useAnnouncementFlow = (locale?: string): UseAnnouncementFlowResult 
             } catch (error) {
                 if (!cancelled) {
                     setAnnouncements(cachedAnnouncements);
-                    const cachedLatestId = cachedAnnouncements[0]?.id ?? localStorage.getItem(latestIdStorageKey);
+                    const cachedLatestId = cachedAnnouncements[0]?.id ?? cache.latestId ?? null;
                     const hasUnread = getHasUnreadAnnouncement(cachedLatestId, cachedAnnouncements[0]?.date);
                     setHasUnreadAnnouncement(debugMode === 'force-unread' || hasUnread);
                 }

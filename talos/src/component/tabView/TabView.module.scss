@@ -1,0 +1,91 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root,
+:root[data-theme='light'] {
+    --tabview-active-bg: #{$primary-accent-4};
+    --tabview-active-text: #{$black-1};
+    --tabview-inactive-bg: #{$dim-1};
+    --tabview-inactive-text: #{$light-1};
+    --tabview-hover-bg: #{$grey-1};
+}
+
+:root[data-theme='dark'] {
+    --tabview-active-bg: #{$primary-accent-4};
+    --tabview-active-text: #{$black-1};
+    --tabview-inactive-bg: #{$mid};
+    --tabview-inactive-text: #{$grey-1};
+    --tabview-hover-bg: #{$grey-3};
+}
+
+.tabBarWrapper {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.tabBar {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    background: transparent;
+    padding-bottom: 4px;
+    transform: translateY(4px);
+
+    &::-webkit-scrollbar {
+        height: 0;
+    }
+
+    &[data-fill='true'] {
+        overflow-x: visible;
+
+        .tab {
+            flex: 1 1 0;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+}
+
+.tabIndicator {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%) translateY(100%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--tabview-active-bg);
+    pointer-events: none;
+    z-index: 2;
+    transition: left 0.15s ease;
+}
+
+.tab {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.325rem .625rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, 'UD_ShinGo DemiBold', sans-serif;
+    line-height: 1.25;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: -.2px;
+    background-color: var(--tabview-inactive-bg);
+    color: var(--tabview-inactive-text);
+    box-shadow: 0 1px 2px rgba($black-0, 0.25);
+    z-index: 1;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+
+    &:not(.activeTab):hover {
+        background-color: var(--tabview-hover-bg);
+    }
+
+    &.activeTab {
+        background-color: var(--tabview-active-bg);
+        color: var(--tabview-active-text);
+    }
+}

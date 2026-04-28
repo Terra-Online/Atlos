@@ -4,6 +4,7 @@ import useRegion from '@/store/region';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
+import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/component/locator/state';
 import { clearEndfieldSession, hasEndfieldSessionCookies, readEndfieldSession } from '@/utils/endfield/storage';
 import { MapTracker } from '@/utils/endfield/tracker';
 import type { PositionResponse } from '@/utils/endfield/types';
@@ -37,7 +38,42 @@ type RegionTransform = {
 };
 
 const REGION_TRANSFORMS: Record<string, RegionTransform> = {
-
+    VL: {
+        scaleX: 0.4687511298,
+        scaleZ: 0.4687511298,
+        offsetX: 519.6990737,
+        offsetZ: -479.9101599,
+    },
+    WL: {
+        scaleX: 0.41397681175575596,
+        scaleZ: 0.4123987909522064,
+        offsetX: 955.8805906115372,
+        offsetZ: -155.59250075860632,
+    },
+    WL2: {
+        scaleX: 0.35414771840391185,
+        scaleZ: 0.33417957195526954,
+        offsetX: 229.5095336217924,
+        offsetZ: -639.5187069784344,
+    },
+    DJ: {
+        scaleX: 2.817109225144681,
+        scaleZ: 2.8369668977222067,
+        offsetX: 481.07581876506237,
+        offsetZ: -528.2046998395613,
+    },
+    ES: {
+        scaleX: 2.1236893194106514,
+        scaleZ: 2.1398455301912183,
+        offsetX: 613.9427764351295,
+        offsetZ: -898.0955173659895,
+    },
+    default: {
+        scaleX: 0.4687511298,
+        scaleZ: 0.4687511298,
+        offsetX: 519.6990737,
+        offsetZ: -476.8398401,
+    },
 };
 
 const MAP_ID_TO_REGION_KEY: Record<string, string> = {
@@ -229,12 +265,15 @@ const disableLocatorSync = (): void => {
 
     clearEndfieldSession();
     useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
+    useLocatorStore.getState().setViewMode('off');
+    useLocatorStore.getState().setLastPosition(null);
 };
 
 const shouldDisableLocatorOnTabBoot = (): boolean => {
     const alreadyBooted = sessionStorage.getItem(ENDFIELD_LOCATOR_TAB_KEY);
     sessionStorage.setItem(ENDFIELD_LOCATOR_TAB_KEY, '1');
-    return alreadyBooted !== '1';
+    void alreadyBooted;
+    return false;
 };
 
 export function useEndfieldMapTracker(map: L.Map | undefined): void {
@@ -289,6 +328,18 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             ensureTrackerLayerAttached();
         };
 
+        const markDetachedByUserViewChange = () => {
+            if (!trackerRef.current?.isRunning()) return;
+            useLocatorStore.getState().setViewMode('detached');
+        };
+
+        const returnToCurrentPosition = () => {
+            const lastPosition = useLocatorStore.getState().lastPosition;
+            if (!lastPosition) return;
+            map.panTo(L.latLng(lastPosition.lat, lastPosition.lng), { animate: true, duration: 0.45 });
+            useLocatorStore.getState().setViewMode('tracking');
+        };
+
         const setTargetPosition = (target: L.LatLng) => {
             const marker = markerRef.current;
             if (!marker) return;
@@ -335,7 +386,10 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
         const boot = () => {
             const config = parseTrackerConfig();
-            if (!config) return;
+            if (!config) {
+                useLocatorStore.getState().setViewMode('off');
+                return;
+            }
 
             if (shouldDisableLocatorOnTabBoot()) {
                 disableLocatorSync();
@@ -400,6 +454,10 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 }
 
                 const converted = convertGamePosition(payload);
+                useLocatorStore.getState().setLastPosition({
+                    lat: converted.latLng.lat,
+                    lng: converted.latLng.lng,
+                });
                 setTargetPosition(converted.latLng);
 
                 const marker = markerRef.current;
@@ -415,8 +473,12 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
             tracker.subscribe(onUpdate);
             tracker.start();
+            useLocatorStore.getState().setViewMode('tracking');
 
             map.on('talos:regionSwitched', onRegionSwitched);
+            map.on('dragstart', markDetachedByUserViewChange);
+            map.on('zoomstart', markDetachedByUserViewChange);
+            window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
         };
 
         boot();
@@ -428,6 +490,9 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             trackerRef.current = null;
 
             map.off('talos:regionSwitched', onRegionSwitched);
+            map.off('dragstart', markDetachedByUserViewChange);
+            map.off('zoomstart', markDetachedByUserViewChange);
+            window.removeEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
             if (markerRef.current) {
                 markerRef.current.remove();

@@ -11,6 +11,7 @@ import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
 import { LayerSwitch } from '@/component/layerSwitch/layerSwitch';
+import { LocatorButton } from '@/component/locator';
 import { Detail } from '@/component/detail/detail';
 import FilterList from '@/component/filterList/filterList';
 import {
@@ -179,6 +180,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                 <div className={styles.switchArea}>
                     <RegionContainer isSidebarOpen={isSidebarOpen} />
                     <LayerSwitch isSidebarOpen={isSidebarOpen} />
+                    <LocatorButton variant="desktop" />
                 </div>
             )}
             {isMobile && (
@@ -187,6 +189,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     <LayerSwitch isSidebarOpen={false} />
                 </div>
             )}
+            {isMobile && <LocatorButton variant="mobile" />}
 
             {/* Detail Panel: hide on mobile (rendered inside SideBarMobile) */}
             {!isMobile && <Detail />}

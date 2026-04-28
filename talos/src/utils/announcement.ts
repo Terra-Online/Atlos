@@ -31,18 +31,53 @@ export interface AnnouncementLatestMeta {
 const REMOTE_BASE = 'https://blog.opendfieldmap.org';
 const LOCAL_BASE = 'http://localhost:3000';
 const BLOG_ASSET_BASE = ((import.meta.env.VITE_ANNOUNCEMENT_ASSET_BASE as string | undefined)?.trim() || REMOTE_BASE).replace(/\/$/, '');
-const ANNOUNCEMENT_LATEST_ID_KEY_PREFIX = 'announcement_latest_id';
-const ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX = 'announcement_cache_body';
-const ANNOUNCEMENT_VERSION_KEY_PREFIX = 'announcement_version';
-export const ANNOUNCEMENT_LAST_READ_DATE_KEY = 'announcement_last_read';
-export const ANNOUNCEMENT_LAST_READ_ID_KEY = 'announcement_last_read_id';
+const ANNOUNCEMENT_STORAGE_KEY = 'announcement_state';
+const OLD_ANNOUNCEMENT_LATEST_ID_KEY_PREFIX = 'announcement_latest_id';
+const OLD_ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX = 'announcement_cache_body';
+const OLD_ANNOUNCEMENT_VERSION_KEY_PREFIX = 'announcement_version';
+const OLD_ANNOUNCEMENT_LAST_READ_DATE_KEY = 'announcement_last_read';
+const OLD_ANNOUNCEMENT_LAST_READ_ID_KEY = 'announcement_last_read_id';
 
 type ApiLocale = 'en' | 'zh-cn' | 'zh-hk' | 'ja' | 'ko';
+const API_LOCALES: ApiLocale[] = ['en', 'zh-cn', 'zh-hk', 'ja', 'ko'];
+
+type AnnouncementLocaleCache = {
+    latestId?: string | null;
+    version?: string;
+    body?: AnnouncementApiItem[];
+};
+
+type AnnouncementStorageState = {
+    lastRead?: {
+        id?: string | null;
+        date?: string | null;
+    };
+    locales?: Partial<Record<ApiLocale, AnnouncementLocaleCache>>;
+};
 
 export type AnnouncementDebugMode = 'force-unread' | null;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
     return typeof value === 'object' && value !== null;
+};
+
+const parseAnnouncementBodyCache = (raw: string | null): AnnouncementApiItem[] | undefined => {
+    if (!raw) return undefined;
+    try {
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return undefined;
+        return parsed.filter((item): item is AnnouncementApiItem => {
+            if (!isRecord(item)) return false;
+            return (
+                typeof item.id === 'string'
+                && typeof item.title === 'string'
+                && typeof item.description === 'string'
+                && typeof item.content === 'string'
+            );
+        });
+    } catch {
+        return undefined;
+    }
 };
 
 const toApiLocale = (locale?: string): ApiLocale => {
@@ -58,16 +93,134 @@ export const getAnnouncementLocaleKey = (locale?: string): ApiLocale => {
     return toApiLocale(locale);
 };
 
-export const getAnnouncementLatestIdStorageKey = (locale?: string): string => {
-    return `${ANNOUNCEMENT_LATEST_ID_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
+const normalizeStorageState = (raw: unknown): AnnouncementStorageState => {
+    if (!isRecord(raw)) return {};
+
+    const state: AnnouncementStorageState = {};
+    if (isRecord(raw.lastRead)) {
+        state.lastRead = {
+            id: typeof raw.lastRead.id === 'string' ? raw.lastRead.id : null,
+            date: typeof raw.lastRead.date === 'string' ? raw.lastRead.date : null,
+        };
+    }
+
+    if (isRecord(raw.locales)) {
+        state.locales = {};
+        for (const locale of API_LOCALES) {
+            const localeValue = raw.locales[locale];
+            if (!isRecord(localeValue)) continue;
+            state.locales[locale] = {
+                latestId: typeof localeValue.latestId === 'string' ? localeValue.latestId : null,
+                version: typeof localeValue.version === 'string' ? localeValue.version : '',
+                body: Array.isArray(localeValue.body)
+                    ? localeValue.body.filter((item): item is AnnouncementApiItem => {
+                        if (!isRecord(item)) return false;
+                        return (
+                            typeof item.id === 'string'
+                            && typeof item.title === 'string'
+                            && typeof item.description === 'string'
+                            && typeof item.content === 'string'
+                        );
+                    })
+                    : [],
+            };
+        }
+    }
+
+    return state;
 };
 
-export const getAnnouncementBodyCacheStorageKey = (locale?: string): string => {
-    return `${ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
+const readAnnouncementStorageState = (): AnnouncementStorageState => {
+    if (typeof window === 'undefined') return {};
+
+    let state: AnnouncementStorageState = {};
+    try {
+        const raw = localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY);
+        state = raw ? normalizeStorageState(JSON.parse(raw)) : {};
+    } catch {
+        state = {};
+    }
+
+    let migrated = false;
+    if (!state.lastRead) {
+        const id = localStorage.getItem(OLD_ANNOUNCEMENT_LAST_READ_ID_KEY);
+        const date = localStorage.getItem(OLD_ANNOUNCEMENT_LAST_READ_DATE_KEY);
+        if (id || date) {
+            state.lastRead = { id, date };
+            migrated = true;
+        }
+    }
+
+    const locales = state.locales ?? {};
+    for (const locale of API_LOCALES) {
+        const latestId = localStorage.getItem(`${OLD_ANNOUNCEMENT_LATEST_ID_KEY_PREFIX}:${locale}`);
+        const version = localStorage.getItem(`${OLD_ANNOUNCEMENT_VERSION_KEY_PREFIX}:${locale}`);
+        const body = parseAnnouncementBodyCache(localStorage.getItem(`${OLD_ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX}:${locale}`));
+        if (!latestId && !version && !body) continue;
+
+        locales[locale] = {
+            latestId: locales[locale]?.latestId ?? latestId,
+            version: locales[locale]?.version ?? version ?? '',
+            body: locales[locale]?.body ?? body ?? [],
+        };
+        migrated = true;
+    }
+    state.locales = locales;
+
+    if (migrated) {
+        writeAnnouncementStorageState(state);
+        localStorage.removeItem(OLD_ANNOUNCEMENT_LAST_READ_ID_KEY);
+        localStorage.removeItem(OLD_ANNOUNCEMENT_LAST_READ_DATE_KEY);
+        for (const locale of API_LOCALES) {
+            localStorage.removeItem(`${OLD_ANNOUNCEMENT_LATEST_ID_KEY_PREFIX}:${locale}`);
+            localStorage.removeItem(`${OLD_ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX}:${locale}`);
+            localStorage.removeItem(`${OLD_ANNOUNCEMENT_VERSION_KEY_PREFIX}:${locale}`);
+        }
+    }
+
+    return state;
 };
 
-export const getAnnouncementVersionStorageKey = (locale?: string): string => {
-    return `${ANNOUNCEMENT_VERSION_KEY_PREFIX}:${getAnnouncementLocaleKey(locale)}`;
+const writeAnnouncementStorageState = (state: AnnouncementStorageState): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, JSON.stringify(state));
+};
+
+export const getAnnouncementLocaleCache = (locale?: string): AnnouncementLocaleCache => {
+    const key = getAnnouncementLocaleKey(locale);
+    return readAnnouncementStorageState().locales?.[key] ?? {};
+};
+
+export const setAnnouncementLocaleCache = (
+    locale: string | undefined,
+    patch: AnnouncementLocaleCache,
+): void => {
+    const key = getAnnouncementLocaleKey(locale);
+    const state = readAnnouncementStorageState();
+    const locales = state.locales ?? {};
+    locales[key] = {
+        ...(locales[key] ?? {}),
+        ...patch,
+    };
+    state.locales = locales;
+    writeAnnouncementStorageState(state);
+};
+
+export const getAnnouncementLastRead = (): { id: string | null; date: string | null } => {
+    const lastRead = readAnnouncementStorageState().lastRead;
+    return {
+        id: lastRead?.id ?? null,
+        date: lastRead?.date ?? null,
+    };
+};
+
+export const setAnnouncementLastRead = (lastRead: { id?: string | null; date?: string | null }): void => {
+    const state = readAnnouncementStorageState();
+    state.lastRead = {
+        id: lastRead.id ?? state.lastRead?.id ?? null,
+        date: lastRead.date ?? state.lastRead?.date ?? null,
+    };
+    writeAnnouncementStorageState(state);
 };
 
 export const getAnnouncementDebugMode = (): AnnouncementDebugMode => {

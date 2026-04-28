@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useId } from 'react';
 import Modal from '@/component/modal/modal';
 import { Trigger } from '@/component/trigger/trigger';
-import Button from '@/component/button/button';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import DarkModeIcon from '../../assets/logos/darkmode.svg?react';
 import styles from './settings.module.scss';
@@ -18,20 +17,6 @@ import {
 import { applyTheme, startSystemFollow } from '@/utils/theme';
 import { isMac } from '@/utils/platform';
 import { getShortcutConfig, type ShortcutEntry, type KeyChip } from './shortcuts';
-import {
-    authenticateEndfieldSession,
-    EndfieldBrowserClient,
-    sendSklandPhoneCode,
-    type EndfieldCaptchaChallenge,
-    type EndfieldRoleOption,
-} from '@/utils/endfield/client';
-import { readEndfieldSession } from '@/utils/endfield/storage';
-import { EndfieldAuthError, type EndfieldSession } from '@/utils/endfield/types';
-import {
-    readEndfieldTrackerConfig,
-    saveEndfieldTrackerConfig,
-    type EndfieldTrackerConfig,
-} from '@/utils/endfield/config';
 
 export interface SettingsProps {
     open: boolean;
@@ -42,95 +27,6 @@ export interface SettingsProps {
 type ThemeMode = 'light' | 'dark' | 'auto';
 
 const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
-const IS_DEV = import.meta.env.DEV;
-const SKPORT_BASE_URL = IS_DEV ? '/proxy/skport-api' : 'https://zonai.skport.com';
-const SKPORT_AUTH_BASE_URL = IS_DEV ? '/proxy/skport-auth' : 'https://as.gryphline.com';
-const SKLAND_BASE_URL = IS_DEV ? '/proxy/skland-api' : 'https://zonai.skland.com';
-const SKLAND_AUTH_BASE_URL = IS_DEV ? '/proxy/skland-auth' : 'https://as.hypergryph.com';
-const SKLAND_DEVICE_ID_KEY = 'endfield.skland.deviceId';
-
-type AccountMode = 'skport' | 'skland';
-type SklandAuthMode = 'code' | 'password';
-
-type GeeTestValidatePayload = {
-    captcha_id: string;
-    lot_number: string;
-    pass_token: string;
-    gen_time: string;
-    captcha_output: string;
-};
-
-type GeeTestInstance = {
-    showCaptcha: () => void;
-    appendTo?: (element: string | HTMLElement) => void;
-    getValidate: () => Partial<GeeTestValidatePayload> | null | undefined;
-    onSuccess: (callback: () => void) => GeeTestInstance;
-    onError: (callback: () => void) => GeeTestInstance;
-    onReady?: (callback: () => void) => GeeTestInstance;
-};
-
-type GeeTestInitConfig = {
-    captchaId: string;
-    product?: 'popup' | 'bind' | 'float';
-    language?: string;
-    challenge?: string;
-    riskType?: string;
-    container?: string;
-};
-
-declare global {
-    interface Window {
-        initGeetest4?: (
-            config: GeeTestInitConfig,
-            callback: (captcha: GeeTestInstance) => void,
-        ) => void;
-    }
-}
-
-const GEETEST_V4_SCRIPT_URL = 'https://static.geetest.com/v4/gt4.js';
-let geetestScriptPromise: Promise<void> | null = null;
-
-const loadGeeTestScript = (): Promise<void> => {
-    if (typeof window === 'undefined') {
-        return Promise.reject(new Error('GeeTest is only available in browser environment.'));
-    }
-    if (typeof window.initGeetest4 === 'function') {
-        return Promise.resolve();
-    }
-
-    if (!geetestScriptPromise) {
-        geetestScriptPromise = new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = GEETEST_V4_SCRIPT_URL;
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load GeeTest script.'));
-            document.head.appendChild(script);
-        });
-    }
-
-    return geetestScriptPromise;
-};
-
-const inferAccountModeFromBaseUrl = (baseUrl?: string): AccountMode =>
-    baseUrl?.includes('skland.com') ? 'skland' : 'skport';
-
-const resolveApiHosts = (mode: AccountMode): { baseUrl: string; authBaseUrl: string } =>
-    mode === 'skland'
-        ? { baseUrl: SKLAND_BASE_URL, authBaseUrl: SKLAND_AUTH_BASE_URL }
-        : { baseUrl: SKPORT_BASE_URL, authBaseUrl: SKPORT_AUTH_BASE_URL };
-
-const getOrCreateSklandDeviceId = (): string => {
-    const existing = localStorage.getItem(SKLAND_DEVICE_ID_KEY);
-    if (existing) return existing;
-
-    const generated = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `skland-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-
-    localStorage.setItem(SKLAND_DEVICE_ID_KEY, generated);
-    return generated;
-};
 
 interface SectionProps {
     titleKey: string;
@@ -151,7 +47,6 @@ const SettingsSection: React.FC<SectionProps> = ({ titleKey, hintKey, children }
     );
 };
 
-/** Renders a single key cap chip — resolves `variant:'mod'` to the platform-correct width */
 const KeyCap: React.FC<{ chip: KeyChip }> = ({ chip }) => {
     const size = chip.variant === 'mod'
         ? (isMac() ? '1u' : '2u')
@@ -163,7 +58,6 @@ const KeyCap: React.FC<{ chip: KeyChip }> = ({ chip }) => {
     );
 };
 
-/** Renders one shortcut row: label on left, key caps on right */
 const ShortcutRow: React.FC<{ entry: ShortcutEntry }> = ({ entry }) => {
     const t = useTranslateUI();
     return (
@@ -183,10 +77,6 @@ const ShortcutRow: React.FC<{ entry: ShortcutEntry }> = ({ entry }) => {
 const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => {
     const t = useTranslateUI();
     const groupId = useId();
-    const captchaWidgetHostId = useMemo(() => {
-        const sanitized = groupId.replace(/[^a-zA-Z0-9_-]/g, '');
-        return `geetest-host-${sanitized || 'default'}`;
-    }, [groupId]);
 
     const {
         prefsSidebar, setPrefsSidebar,
@@ -196,7 +86,6 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         prefsMarkerProgress, setPrefsMarkerProgress,
         prefsAutoCluster, setPrefsAutoCluster,
         prefsHideCompleted, setPrefsHideCompleted,
-        prefsLocatorSync, setPrefsLocatorSync,
     } = useUiPrefsStore(useShallow((s) => ({
         prefsSidebar: s.prefsSidebarEnabled,
         setPrefsSidebar: s.setPrefsSidebarEnabled,
@@ -212,13 +101,10 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         setPrefsAutoCluster: s.setPrefsAutoClusterEnabled,
         prefsHideCompleted: s.prefsHideCompletedMarkers,
         setPrefsHideCompleted: s.setPrefsHideCompletedMarkers,
-        prefsLocatorSync: s.prefsLocatorSyncEnabled,
-        setPrefsLocatorSync: s.setPrefsLocatorSyncEnabled,
     })));
     const prefsPerformanceMode = usePerformanceMode();
     const setPrefsPerformanceMode = useSetPerformanceMode();
 
-    // Theme
     const themePreference = useTheme();
     const setThemePreference = useSetTheme();
 
@@ -231,403 +117,18 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
         }
     }, [setThemePreference]);
 
-    const existingTrackerConfig = useMemo(() => readEndfieldTrackerConfig(), []);
-    const [accountMode, setAccountMode] = useState<AccountMode>(
-        inferAccountModeFromBaseUrl(existingTrackerConfig?.baseUrl),
-    );
-    const [loginOpen, setLoginOpen] = useState(false);
-    const [loginLoading, setLoginLoading] = useState(false);
-    const [sendCodeLoading, setSendCodeLoading] = useState(false);
-    const [loginError, setLoginError] = useState('');
-    const [loginStep, setLoginStep] = useState<'auth' | 'role'>('auth');
-    const [sklandAuthMode, setSklandAuthMode] = useState<SklandAuthMode>('code');
-    const [roleOptions, setRoleOptions] = useState<EndfieldRoleOption[]>([]);
-    const [selectedRoleKey, setSelectedRoleKey] = useState(
-        existingTrackerConfig ? `${existingTrackerConfig.serverId}:${existingTrackerConfig.roleId}` : '',
-    );
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [phone, setPhone] = useState('');
-    const [verificationCode, setVerificationCode] = useState('');
-    const [captchaChallenge, setCaptchaChallenge] = useState<EndfieldCaptchaChallenge | null>(null);
-    const [captchaChallengeValue, setCaptchaChallengeValue] = useState('');
-    const [captchaVerifyPayload, setCaptchaVerifyPayload] = useState<GeeTestValidatePayload | null>(null);
-    const [captchaRunning, setCaptchaRunning] = useState(false);
-    const [captchaMounted, setCaptchaMounted] = useState(false);
-    const geetestRef = useRef<GeeTestInstance | null>(null);
-    const lastCaptchaKeyRef = useRef<string>('');
-    const captchaWidgetHostRef = useRef<HTMLDivElement | null>(null);
-
-    const closeLoginModal = useCallback(() => {
-        setLoginOpen(false);
-        setLoginLoading(false);
-        setLoginError('');
-        setLoginStep('auth');
-        setRoleOptions([]);
-        setSelectedRoleKey('');
-        setSendCodeLoading(false);
-        setSklandAuthMode('code');
-        setCaptchaChallenge(null);
-        setCaptchaChallengeValue('');
-        setCaptchaVerifyPayload(null);
-        setCaptchaRunning(false);
-        setCaptchaMounted(false);
-        geetestRef.current = null;
-        lastCaptchaKeyRef.current = '';
-    }, []);
-
-    const resolveDefaultRole = useCallback((roles: EndfieldRoleOption[]): EndfieldRoleOption | null => {
-        if (!roles.length) return null;
-        return roles.find((role) => role.isDefault) ?? roles[0];
-    }, []);
-
-    const finalizeRoleSelection = useCallback((role: EndfieldRoleOption) => {
-        const hosts = resolveApiHosts(accountMode);
-        const currentConfig = readEndfieldTrackerConfig();
-        const nextConfig: EndfieldTrackerConfig = {
-            enabled: true,
-            locatorSync: true,
-            baseUrl: hosts.baseUrl,
-            roleId: role.roleId,
-            serverId: role.serverId,
-            debug: currentConfig?.debug ?? false,
-            intervalMs: currentConfig?.intervalMs,
-            offsetX: currentConfig?.offsetX,
-            offsetZ: currentConfig?.offsetZ,
-            scaleX: currentConfig?.scaleX,
-            scaleZ: currentConfig?.scaleZ,
-        };
-        saveEndfieldTrackerConfig(nextConfig);
-        setPrefsLocatorSync(true);
-        setLoginStep('auth');
-        setRoleOptions([]);
-        setSelectedRoleKey('');
-        closeLoginModal();
-    }, [accountMode, closeLoginModal, setPrefsLocatorSync]);
-
-    const handleLocatorToggle = useCallback((nextEnabled: boolean) => {
-        if (!nextEnabled) {
-            setPrefsLocatorSync(false);
-            const current = readEndfieldTrackerConfig();
-            if (current) {
-                saveEndfieldTrackerConfig({
-                    ...current,
-                    enabled: false,
-                    locatorSync: false,
-                });
-            }
-            return;
-        }
-
-        const current = readEndfieldTrackerConfig();
-        const session = readEndfieldSession();
-        if (current && session?.cred && session.token) {
-            saveEndfieldTrackerConfig({
-                ...current,
-                enabled: true,
-                locatorSync: true,
-            });
-            setPrefsLocatorSync(true);
-            return;
-        }
-
-        setLoginError('');
-        setLoginStep('auth');
-        setAccountMode(inferAccountModeFromBaseUrl(current?.baseUrl));
-        setCaptchaChallenge(null);
-        setCaptchaChallengeValue('');
-        setCaptchaVerifyPayload(null);
-        setCaptchaRunning(false);
-        setCaptchaMounted(false);
-        geetestRef.current = null;
-        lastCaptchaKeyRef.current = '';
-        setLoginOpen(true);
-    }, [setPrefsLocatorSync]);
-
-    const runGeeTestCaptcha = useCallback(async () => {
-        const geetestId = captchaChallenge?.geetestId;
-        if (!geetestId) {
-            setLoginError('Captcha configuration is missing geetestId.');
-            return;
-        }
-        if (captchaRunning) return;
-
-        setCaptchaRunning(true);
-        setCaptchaMounted(false);
-        setLoginError('');
-        setCaptchaVerifyPayload(null);
-
-        try {
-            await loadGeeTestScript();
-
-            if (typeof window.initGeetest4 !== 'function') {
-                throw new Error('GeeTest init function is unavailable after script load.');
-            }
-
-            await new Promise<void>((resolve, reject) => {
-                let settled = false;
-                const finishResolve = () => {
-                    if (!settled) {
-                        settled = true;
-                        resolve();
-                    }
-                };
-                const finishReject = (reason: Error) => {
-                    if (!settled) {
-                        settled = true;
-                        reject(reason);
-                    }
-                };
-
-                window.initGeetest4?.(
-                    {
-                        captchaId: geetestId,
-                        product: 'bind',
-                        language: 'en',
-                        challenge: captchaChallenge?.challenge,
-                        riskType: captchaChallenge?.riskType,
-                        container: `#${captchaWidgetHostId}`,
-                    },
-                    (captcha) => {
-                        geetestRef.current = captcha;
-
-                        const hostElement = captchaWidgetHostRef.current;
-                        if (hostElement) {
-                            hostElement.innerHTML = '';
-                        }
-
-                        captcha.onSuccess(() => {
-                            const validate = captcha.getValidate();
-                            if (
-                                validate
-                                && typeof validate.captcha_id === 'string'
-                                && typeof validate.lot_number === 'string'
-                                && typeof validate.pass_token === 'string'
-                                && typeof validate.gen_time === 'string'
-                                && typeof validate.captcha_output === 'string'
-                            ) {
-                                setCaptchaVerifyPayload({
-                                    captcha_id: validate.captcha_id,
-                                    lot_number: validate.lot_number,
-                                    pass_token: validate.pass_token,
-                                    gen_time: validate.gen_time,
-                                    captcha_output: validate.captcha_output,
-                                });
-                                setLoginError('Captcha verified. Click Sign in to continue.');
-                                setCaptchaRunning(false);
-                                return;
-                            }
-
-                            setCaptchaRunning(false);
-                            setLoginError('GeeTest verification completed but response payload is incomplete. Retry captcha.');
-                        });
-
-                        captcha.onError(() => {
-                            setCaptchaRunning(false);
-                            finishReject(new Error('GeeTest verification failed. Please retry.'));
-                        });
-
-                        captcha.onReady?.(() => {
-                            setCaptchaRunning(false);
-                            setCaptchaMounted(true);
-                            finishResolve();
-                        });
-
-                        if (captcha.appendTo) {
-                            captcha.appendTo(hostElement ?? `#${captchaWidgetHostId}`);
-                            return;
-                        }
-
-                        // Fallback path if bind mount API is unavailable.
-                        captcha.showCaptcha();
-                        setCaptchaRunning(false);
-                        finishResolve();
-                    },
-                );
-
-                setTimeout(() => {
-                    if (!settled) {
-                        setCaptchaRunning(false);
-                        finishReject(new Error('GeeTest init timed out. Retry captcha. If this keeps happening, disable ad/tracker blocking for GeeTest domains.'));
-                    }
-                }, 20000);
-            });
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to run GeeTest verification.';
-            setLoginError(message);
-            setCaptchaRunning(false);
-        }
-    }, [captchaChallenge, captchaRunning, captchaWidgetHostId]);
-
-    useEffect(() => {
-        if (!loginOpen || loginStep !== 'auth' || accountMode !== 'skport') return;
-        if (!captchaChallenge?.geetestId) return;
-
-        const captchaKey = `${captchaChallenge.geetestId}:${captchaChallenge.challenge || ''}:${captchaChallenge.riskType || ''}`;
-        if (lastCaptchaKeyRef.current === captchaKey) return;
-        lastCaptchaKeyRef.current = captchaKey;
-
-        void runGeeTestCaptcha();
-    }, [
-        accountMode,
-        captchaChallenge,
-        captchaVerifyPayload,
-        loginOpen,
-        loginStep,
-        runGeeTestCaptcha,
-    ]);
-
-    const handleSendSklandCode = useCallback(async () => {
-        setLoginError('');
-        if (!phone.trim()) {
-            setLoginError('Please fill phone number.');
-            return;
-        }
-
-        setSendCodeLoading(true);
-        try {
-            const hosts = resolveApiHosts('skland');
-            await sendSklandPhoneCode(phone.trim(), getOrCreateSklandDeviceId(), hosts);
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to send verification code.';
-            setLoginError(message);
-        } finally {
-            setSendCodeLoading(false);
-        }
-    }, [phone]);
-
-    const handleLocatorLogin = useCallback(async () => {
-        setLoginError('');
-
-        const hosts = resolveApiHosts(accountMode);
-
-        setLoginLoading(true);
-        try {
-            let session: EndfieldSession;
-            if (accountMode === 'skland') {
-                const missingSklandFields = sklandAuthMode === 'password'
-                    ? (!phone.trim() || !password.trim())
-                    : (!phone.trim() || !verificationCode.trim());
-                if (missingSklandFields) {
-                    setLoginError(
-                        sklandAuthMode === 'password'
-                            ? 'Please fill phone number and password.'
-                            : 'Please fill phone number and verification code.',
-                    );
-                    return;
-                }
-                session = await authenticateEndfieldSession(
-                    {
-                        provider: 'skland',
-                        phone: phone.trim(),
-                        verificationCode: sklandAuthMode === 'code' ? verificationCode.trim() : undefined,
-                        password: sklandAuthMode === 'password' ? password : undefined,
-                        deviceId: getOrCreateSklandDeviceId(),
-                        sklandLoginType: sklandAuthMode,
-                    },
-                    hosts,
-                );
-            } else {
-                if (!email.trim() || !password.trim()) {
-                    setLoginError('Please fill email and password.');
-                    return;
-                }
-                if (captchaChallenge && !captchaVerifyPayload) {
-                    setLoginError('Complete GeeTest verification before signing in.');
-                    return;
-                }
-
-                session = await authenticateEndfieldSession(
-                    {
-                        provider: 'skport',
-                        email: email.trim(),
-                        password,
-                        captcha: captchaVerifyPayload
-                            ? {
-                                challenge: captchaChallengeValue.trim() || captchaChallenge?.challenge || undefined,
-                                captcha: {
-                                    ...captchaVerifyPayload,
-                                    challenge: captchaChallengeValue.trim() || captchaChallenge?.challenge || undefined,
-                                },
-                            }
-                            : undefined,
-                    },
-                    hosts,
-                );
-            }
-
-            const endfieldClient = new EndfieldBrowserClient(hosts);
-            const roles = await endfieldClient.getEndfieldRoleOptions(session.cred, session.token);
-            if (!roles.length) {
-                setLoginError('No Endfield roles found on this account.');
-                return;
-            }
-
-            if (roles.length === 1) {
-                finalizeRoleSelection(roles[0]);
-                return;
-            }
-
-            const defaultRole = resolveDefaultRole(roles);
-            setRoleOptions(roles);
-            setSelectedRoleKey(
-                defaultRole
-                    ? `${defaultRole.serverId}:${defaultRole.roleId}`
-                    : `${roles[0].serverId}:${roles[0].roleId}`,
-            );
-            setLoginStep('role');
-        } catch (error) {
-            if (error instanceof EndfieldAuthError && error.reason === 'captcha-required') {
-                const details = error.details as EndfieldCaptchaChallenge | undefined;
-                setCaptchaChallenge(details ?? null);
-                setCaptchaVerifyPayload(null);
-                setCaptchaRunning(false);
-                setCaptchaMounted(false);
-                if (details?.challenge) {
-                    setCaptchaChallengeValue(details.challenge);
-                }
-            }
-            const message = error instanceof Error ? error.message : 'Login failed.';
-            setLoginError(message);
-        } finally {
-            setLoginLoading(false);
-        }
-    }, [
-        accountMode,
-        email,
-        finalizeRoleSelection,
-        password,
-        phone,
-        resolveDefaultRole,
-        sklandAuthMode,
-        verificationCode,
-        captchaChallengeValue,
-        captchaChallenge,
-        captchaVerifyPayload,
-    ]);
-
-    const handleRoleConfirm = useCallback(() => {
-        const role = roleOptions.find((item) => `${item.serverId}:${item.roleId}` === selectedRoleKey);
-        if (!role) {
-            setLoginError('Please select a role.');
-            return;
-        }
-        finalizeRoleSelection(role);
-    }, [finalizeRoleSelection, roleOptions, selectedRoleKey]);
-
     const uiPrefItems = [
-        { isActive: prefsSidebar,        onToggle: setPrefsSidebar,        label: t('settings.uiPrefs.sidebar') },
-        { isActive: prefsFilterOrder,    onToggle: setPrefsFilterOrder,    label: t('settings.uiPrefs.filterOrder') },
-        { isActive: prefsTriggers,       onToggle: setPrefsTriggers,       label: t('settings.uiPrefs.triggers') },
+        { isActive: prefsSidebar, onToggle: setPrefsSidebar, label: t('settings.uiPrefs.sidebar') },
+        { isActive: prefsFilterOrder, onToggle: setPrefsFilterOrder, label: t('settings.uiPrefs.filterOrder') },
+        { isActive: prefsTriggers, onToggle: setPrefsTriggers, label: t('settings.uiPrefs.triggers') },
         { isActive: prefsPerformanceMode, onToggle: setPrefsPerformanceMode, label: t('settings.uiPrefs.performanceMode') },
     ];
 
     const mapPrefItems = [
-        { isActive: prefsViewState,      onToggle: setPrefsViewState,      label: t('settings.mapPrefs.viewState') },
+        { isActive: prefsViewState, onToggle: setPrefsViewState, label: t('settings.mapPrefs.viewState') },
         { isActive: prefsMarkerProgress, onToggle: setPrefsMarkerProgress, label: t('settings.mapPrefs.markerProgress') },
-        { isActive: prefsAutoCluster,    onToggle: setPrefsAutoCluster,    label: t('settings.mapPrefs.autoCluster') },
-        { isActive: prefsHideCompleted,  onToggle: setPrefsHideCompleted,  label: t('settings.mapPrefs.hideCompleted') },
-        { isActive: prefsLocatorSync,    onToggle: handleLocatorToggle,    label: t('settings.mapPrefs.locatorSync') || 'Locator Sync' },
+        { isActive: prefsAutoCluster, onToggle: setPrefsAutoCluster, label: t('settings.mapPrefs.autoCluster') },
+        { isActive: prefsHideCompleted, onToggle: setPrefsHideCompleted, label: t('settings.mapPrefs.hideCompleted') },
     ];
 
     return (
@@ -688,247 +189,6 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                     </div>
                 </SettingsSection>
             </div>
-
-            <Modal
-                open={loginOpen}
-                size="m"
-                onClose={closeLoginModal}
-                onChange={setLoginOpen}
-                title={t('settings.mapPrefs.locatorSyncLoginTitle') || 'Sign In to Endfield'}
-            >
-                <div className={styles.locatorLoginForm}>
-                    {loginStep === 'auth' ? (
-                        <div className={styles.accountModeSwitch}>
-                            <button
-                                type="button"
-                                className={`${styles.accountModeButton} ${accountMode === 'skport' ? styles.accountModeButtonActive : ''}`}
-                                onClick={() => {
-                                    setAccountMode('skport');
-                                    setLoginError('');
-                                    setCaptchaChallenge(null);
-                                    setCaptchaChallengeValue('');
-                                    setCaptchaVerifyPayload(null);
-                                    setCaptchaRunning(false);
-                                    setCaptchaMounted(false);
-                                    geetestRef.current = null;
-                                    lastCaptchaKeyRef.current = '';
-                                }}
-                            >
-                                SKPORT
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.accountModeButton} ${accountMode === 'skland' ? styles.accountModeButtonActive : ''}`}
-                                onClick={() => {
-                                    setAccountMode('skland');
-                                    setSklandAuthMode('code');
-                                    setLoginError('');
-                                    setCaptchaChallenge(null);
-                                    setCaptchaChallengeValue('');
-                                    setCaptchaVerifyPayload(null);
-                                    setCaptchaRunning(false);
-                                    setCaptchaMounted(false);
-                                    geetestRef.current = null;
-                                    lastCaptchaKeyRef.current = '';
-                                }}
-                            >
-                                SKLAND
-                            </button>
-                        </div>
-                    ) : null}
-
-                    {loginStep === 'auth' ? (
-                        accountMode === 'skland' ? (
-                            <>
-                                <div className={styles.accountModeSwitch}>
-                                    <button
-                                        type="button"
-                                        className={`${styles.accountModeButton} ${sklandAuthMode === 'code' ? styles.accountModeButtonActive : ''}`}
-                                        onClick={() => {
-                                            setSklandAuthMode('code');
-                                            setLoginError('');
-                                        }}
-                                    >
-                                        SMS CODE
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`${styles.accountModeButton} ${sklandAuthMode === 'password' ? styles.accountModeButtonActive : ''}`}
-                                        onClick={() => {
-                                            setSklandAuthMode('password');
-                                            setLoginError('');
-                                        }}
-                                    >
-                                        PASSWORD
-                                    </button>
-                                </div>
-
-                                <label className={styles.locatorField}>
-                                    <span>{t('settings.mapPrefs.phone') || 'Phone Number'}</span>
-                                    <input
-                                        className={styles.locatorInput}
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        autoComplete="tel"
-                                    />
-                                </label>
-
-                                {sklandAuthMode === 'code' ? (
-                                    <div className={styles.codeInputRow}>
-                                        <label className={styles.locatorField}>
-                                            <span>{t('settings.mapPrefs.verificationCode') || 'Verification Code'}</span>
-                                            <input
-                                                className={styles.locatorInput}
-                                                value={verificationCode}
-                                                onChange={(e) => setVerificationCode(e.target.value)}
-                                            />
-                                        </label>
-                                        <button
-                                            type="button"
-                                            className={styles.sendCodeButton}
-                                            onClick={() => {
-                                                void handleSendSklandCode();
-                                            }}
-                                            disabled={sendCodeLoading}
-                                        >
-                                            {sendCodeLoading
-                                                ? (t('common.loading') || 'Loading...')
-                                                : (t('settings.mapPrefs.sendCode') || 'Send Code')}
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <label className={styles.locatorField}>
-                                        <span>{t('settings.mapPrefs.password') || 'Password'}</span>
-                                        <input
-                                            className={styles.locatorInput}
-                                            type="password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            autoComplete="current-password"
-                                        />
-                                    </label>
-                                )}
-                            </>
-                        ) : (
-                            <>
-                                <label className={styles.locatorField}>
-                                    <span>{t('settings.mapPrefs.email') || 'Email'}</span>
-                                    <input
-                                        className={styles.locatorInput}
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        autoComplete="username"
-                                    />
-                                </label>
-
-                                <label className={styles.locatorField}>
-                                    <span>{t('settings.mapPrefs.password') || 'Password'}</span>
-                                    <input
-                                        className={styles.locatorInput}
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        autoComplete="current-password"
-                                    />
-                                </label>
-
-                                {captchaChallenge ? (
-                                    <div className={styles.captchaBlock}>
-                                        <div className={styles.captchaTitle}>Captcha Required</div>
-                                        <div className={styles.captchaHint}>
-                                            Complete the GeeTest challenge below. If it does not render, click retry.
-                                        </div>
-                                        <div className={styles.captchaMeta}>geetestId: {captchaChallenge.geetestId || '-'}</div>
-                                        <div className={styles.captchaMeta}>riskType: {captchaChallenge.riskType || '-'}</div>
-                                        <div className={styles.captchaMeta}>
-                                            status: {captchaVerifyPayload ? 'verified' : (captchaRunning ? 'loading' : (captchaMounted ? 'ready' : 'pending'))}
-                                        </div>
-
-                                        <div
-                                            id={captchaWidgetHostId}
-                                            ref={captchaWidgetHostRef}
-                                            className={styles.captchaWidgetHost}
-                                        />
-
-                                        <label className={styles.locatorField}>
-                                            <span>Challenge</span>
-                                            <input
-                                                className={styles.locatorInput}
-                                                value={captchaChallengeValue}
-                                                onChange={(e) => setCaptchaChallengeValue(e.target.value)}
-                                            />
-                                        </label>
-
-                                        <button
-                                            type="button"
-                                            className={styles.sendCodeButton}
-                                            onClick={() => {
-                                                if (geetestRef.current?.showCaptcha && !captchaRunning) {
-                                                    geetestRef.current.showCaptcha();
-                                                    return;
-                                                }
-                                                void runGeeTestCaptcha();
-                                            }}
-                                            disabled={captchaRunning}
-                                        >
-                                            {captchaRunning ? 'Loading GeeTest...' : (captchaMounted ? 'Open GeeTest' : 'Retry GeeTest')}
-                                        </button>
-                                    </div>
-                                ) : null}
-                            </>
-                        )
-                    ) : (
-                        <div className={styles.roleSelectList}>
-                            {roleOptions.map((role) => {
-                                const key = `${role.serverId}:${role.roleId}`;
-                                const active = key === selectedRoleKey;
-                                return (
-                                    <button
-                                        key={key}
-                                        type="button"
-                                        className={`${styles.roleOption} ${active ? styles.roleOptionActive : ''}`}
-                                        onClick={() => setSelectedRoleKey(key)}
-                                    >
-                                        <div className={styles.roleOptionName}>
-                                            {role.nickname || role.roleId}
-                                        </div>
-                                        <div className={styles.roleOptionMeta}>
-                                            {role.serverName || role.serverType || `Server ${role.serverId}`} · Lv.{role.level}
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {loginError ? <div className={styles.locatorError}>{loginError}</div> : null}
-
-                    <div className={styles.locatorActions}>
-                        <Button
-                            text={t('common.cancel') || 'Cancel'}
-                            buttonType="close"
-                            buttonStyle="normal"
-                            onClick={closeLoginModal}
-                            disabled={loginLoading}
-                        />
-                        <Button
-                            text={loginLoading
-                                ? (t('common.loading') || 'Loading...')
-                                : (loginStep === 'auth'
-                                    ? (t('idcard.auth.signIn') || 'Sign in')
-                                    : (t('common.confirm') || 'Confirm'))}
-                            buttonType="confirm"
-                            buttonStyle="normal"
-                            onClick={loginStep === 'auth'
-                                ? () => {
-                                    void handleLocatorLogin();
-                                }
-                                : handleRoleConfirm}
-                            disabled={loginLoading}
-                        />
-                    </div>
-                </div>
-            </Modal>
         </Modal>
     );
 };

@@ -4,6 +4,7 @@ import { normalizeAvatarIndex } from './avatarConfig';
 import { useIdCardHoverAngle } from './useIdCardHoverAngle';
 import { useIdCardProfileViewModel } from './useIdCardProfileViewModel';
 import { Access } from './access';
+import { OEM_AUTH_OPEN_EVENT, type OemAuthOpenDetail } from './authEvents';
 import IdCardView from './idcardView';
 import ProfileModal from './profile/profile';
 import styles from './idcard.module.scss';
@@ -42,6 +43,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     handleAutoSubmit,
     handleSaveProfile,
     handleLogout,
+    openAuthModal,
   } = useIdCardAuthController();
 
   const cardProfile = useIdCardProfileViewModel({
@@ -84,6 +86,18 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
       observer.disconnect();
     };
   }, [cardRef]);
+
+  useEffect(() => {
+    const handleAuthOpen = (event: Event) => {
+      const detail = (event as CustomEvent<OemAuthOpenDetail>).detail;
+      openAuthModal(detail?.mode ?? 'login');
+    };
+
+    window.addEventListener(OEM_AUTH_OPEN_EVENT, handleAuthOpen);
+    return () => {
+      window.removeEventListener(OEM_AUTH_OPEN_EVENT, handleAuthOpen);
+    };
+  }, [openAuthModal]);
 
   return (
     <>
