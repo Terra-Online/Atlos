@@ -10,9 +10,10 @@ import { MapTracker } from '@/utils/endfield/tracker';
 import type { PositionResponse } from '@/utils/endfield/types';
 import {
     ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT,
-    readEndfieldTrackerConfig,
-    saveEndfieldTrackerConfig,
+    readEFTrackerConf,
+    saveEFTrackerConf,
 } from '@/utils/endfield/config';
+import styles from './Tracker.module.scss';
 
 type TrackerConfig = {
     enabled: boolean;
@@ -99,6 +100,8 @@ const resolveProfileKeyFromPayload = (payload: PositionResponse['data']): keyof 
     const mapId = normalizeSceneId(payload.mapId);
     const levelId = normalizeSceneId(payload.levelId);
 
+    if (!mapId && !levelId) return 'ES';
+
     const direct = MAP_ID_TO_PROFILE[mapId];
     if (direct) return direct;
 
@@ -127,6 +130,8 @@ const resolveProfileKeyFromPayload = (payload: PositionResponse['data']): keyof 
 const resolveRegionKeyFromPayload = (payload: PositionResponse['data']): string | null => {
     const mapId = normalizeSceneId(payload.mapId);
     const levelId = normalizeSceneId(payload.levelId);
+
+    if (!mapId && !levelId) return 'Weekraid_1';
 
     const direct = MAP_ID_TO_REGION_KEY[mapId];
     if (direct && REGION_DICT[direct]) return direct;
@@ -162,7 +167,7 @@ const ensureTrackerPane = (map: L.Map): string => {
 
 
 const parseTrackerConfig = (): TrackerConfig | null => {
-    const parsed = readEndfieldTrackerConfig();
+    const parsed = readEFTrackerConf();
     if (!parsed || !parsed.enabled) return null;
     return parsed;
 };
@@ -201,44 +206,45 @@ const convertGamePosition = (
     };
 };
 
-const createTrackerMarker = (pane: string): L.Marker => {
-    const icon = L.icon({
-        iconUrl: trackerIconUrl,
+const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
+    const icon = L.divIcon({
+        className: styles.trackerMarkerIcon,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
+        html: `
+            <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
+                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" alt="" />
+            </div>
+        `,
     });
 
-    const marker = L.marker([0, 0], {
+    return L.marker(latLng, {
         icon,
         pane,
         keyboard: false,
         interactive: false,
         zIndexOffset: 900,
     });
-
-    marker.bindTooltip('', {
-        permanent: true,
-        direction: 'top',
-        offset: [0, -14],
-        className: 'endfield-tracker-tooltip',
-    });
-
-    return marker;
 };
 
-const formatTrackerTooltip = (
-    payload: PositionResponse['data'],
-    converted: { mapX: number; mapZ: number; latLng: L.LatLng; mode: string },
-): string => {
-    const x = payload.pos.x.toFixed(1);
-    const z = payload.pos.z.toFixed(1);
-    const mapId = payload.mapId || 'unknown-map';
-    const levelId = payload.levelId || 'unknown-level';
-    const convertedX = converted.mapX.toFixed(1);
-    const convertedZ = converted.mapZ.toFixed(1);
-    const lat = converted.latLng.lat.toFixed(3);
-    const lng = converted.latLng.lng.toFixed(3);
-    return `<div>RAW X:${x} Z:${z}</div><div>MAP X:${convertedX} Z:${convertedZ} (${lat}, ${lng})</div><div>MODE: ${converted.mode}</div><div>${mapId} / ${levelId}</div>`;
+const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
+    marker.getElement()?.style.setProperty('--tracker-bearing', `${angleDeg}deg`);
+};
+
+const stopTrackerPulse = (marker: L.Marker): void => {
+    marker.getElement()
+        ?.querySelector(`.${styles.pulsing}`)
+        ?.classList.remove(styles.pulsing);
+};
+
+const calculateTrackerBearing = (map: L.Map, from: L.LatLng, to: L.LatLng): number | null => {
+    const fromPoint = map.latLngToLayerPoint(from);
+    const toPoint = map.latLngToLayerPoint(to);
+    const dx = toPoint.x - fromPoint.x;
+    const dy = toPoint.y - fromPoint.y;
+    if ((dx * dx + dy * dy) < 0.25) return null;
+
+    return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
 };
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
@@ -254,9 +260,9 @@ type AnimationState = {
 const ENDFIELD_LOCATOR_TAB_KEY = 'endfield.locator.tab.booted';
 
 const disableLocatorSync = (): void => {
-    const current = readEndfieldTrackerConfig();
+    const current = readEFTrackerConf();
     if (current) {
-        saveEndfieldTrackerConfig({
+        saveEFTrackerConf({
             ...current,
             enabled: false,
             locatorSync: false,
@@ -346,6 +352,12 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
             const state = animationRef.current;
             const current = marker.getLatLng();
+            const bearing = calculateTrackerBearing(map, current, target);
+            if (bearing !== null) {
+                setTrackerBearing(marker, bearing);
+                stopTrackerPulse(marker);
+            }
+
             state.from = current;
             state.to = target;
             state.startTime = performance.now();
@@ -406,9 +418,6 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             trackerLayer.addTo(map);
             trackerLayerRef.current = trackerLayer;
 
-            const marker = createTrackerMarker(pane).addTo(trackerLayer);
-            markerRef.current = marker;
-
             const session = readEndfieldSession();
             if (!session) {
                 disableLocatorSync();
@@ -435,10 +444,17 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
             trackerRef.current = tracker;
 
-            const onUpdate = (payload: PositionResponse['data']) => {
+            const applyPositionUpdate = (payload: PositionResponse['data']) => {
                 if (payload.isOnline === false) return;
 
                 ensureTrackerLayerAttached();
+                const converted = convertGamePosition(payload);
+                let marker = markerRef.current;
+
+                if (!marker) {
+                    marker = createTrackerMarker(pane, converted.latLng).addTo(trackerLayer);
+                    markerRef.current = marker;
+                }
 
                 const mappedRegion = resolveRegionKeyFromPayload(payload);
                 if (config.locatorSync && mappedRegion && REGION_DICT[mappedRegion]) {
@@ -453,32 +469,37 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                     lastSyncedRegionRef.current = targetRegion;
                 }
 
-                const converted = convertGamePosition(payload);
                 useLocatorStore.getState().setLastPosition({
                     lat: converted.latLng.lat,
                     lng: converted.latLng.lng,
                 });
-                setTargetPosition(converted.latLng);
-
-                const marker = markerRef.current;
-                if (marker) {
-                    marker.getTooltip()?.setContent(formatTrackerTooltip(payload, converted));
-                }
 
                 if (!hasCenteredOnFirstUpdateRef.current) {
                     hasCenteredOnFirstUpdateRef.current = true;
+                    marker.setLatLng(converted.latLng);
                     map.panTo(converted.latLng, { animate: true, duration: 0.45 });
+                    return;
                 }
-            };
 
-            tracker.subscribe(onUpdate);
-            tracker.start();
-            useLocatorStore.getState().setViewMode('tracking');
+                setTargetPosition(converted.latLng);
+            };
 
             map.on('talos:regionSwitched', onRegionSwitched);
             map.on('dragstart', markDetachedByUserViewChange);
             map.on('zoomstart', markDetachedByUserViewChange);
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
+
+            void tracker.fetchCurrentPosition()
+                .then((payload) => {
+                    if (disposed) return;
+                    applyPositionUpdate(payload);
+                    tracker.subscribe(applyPositionUpdate);
+                    tracker.start();
+                    useLocatorStore.getState().setViewMode('tracking');
+                })
+                .catch(() => {
+                    if (!disposed) disableLocatorSync();
+                });
         };
 
         boot();

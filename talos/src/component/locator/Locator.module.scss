@@ -15,7 +15,23 @@
         transform: translate(-1px, 1px);
     }
 }
-
+ol.bindStep {
+    list-style: none;
+    font-family: "FedraSansPro Normal", HMSans, "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 1rem;
+    text-transform: none;
+    padding-inline-start: 1.25rem;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    > li {
+        list-style: decimal;
+        &::marker {
+            font-variant-numeric: lining-nums !important;
+        }
+    }
+}
 .mobileLocatorShell {
     position: fixed;
     top: 1rem;
@@ -69,8 +85,11 @@
 .bindingForm {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
     color: var(--auth-text);
+    height: 100%;
+    justify-content: space-around;
+    padding: 0 .5rem;
 }
 
 .bindingFields {
@@ -91,11 +110,16 @@
     color: var(--auth-text);
     padding: 0.65rem 0.75rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
     line-height: 1.35;
     outline: none;
+    resize: none;
 
+    &::placeholder {
+        color: var(--settings-section-text, $grey-1);
+        opacity: 0.65;
+    }
     &:focus-visible {
         box-shadow: 0 0 0 2px var(--ack-link);
     }
@@ -148,24 +172,25 @@
 .bindingFooter {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: 0.25rem;
+    gap: 0.5rem;
+    padding-bottom: 10%;
 }
 
 .policyReminder {
     display: flex;
     flex-direction: column;
-    font-size: 0.75rem;
+    gap: .25rem;
+    font-size: 0.875rem;
     letter-spacing: -.5px;
     color: var(--auth-text);
-    font-family: 'FedraSansPro Book', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-weight: 400;
+    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 500;
     text-align: center;
     unicode-bidi: plaintext;
 
     a {
         color: var(--ack-link);
-        font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-family: inherit;
         font-weight: 500;
         text-decoration: none;
         position: relative;

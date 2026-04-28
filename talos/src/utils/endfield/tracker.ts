@@ -104,14 +104,9 @@ export class MapTracker {
         }
 
         try {
-            const response = await this.client.getMapMePositionBrowser(
-                this.options.roleId,
-                this.options.serverId,
-                this.options.cred,
-                this.options.token,
-            );
+            const data = await this.fetchCurrentPosition();
 
-            if (response.data.isOnline === false) {
+            if (data.isOnline === false) {
                 this.pausedByOffline = true;
                 this.log('player offline, slowing polling cadence');
                 this.scheduleNextPoll(this.options.intervalMs * 3);
@@ -119,7 +114,7 @@ export class MapTracker {
             }
 
             this.pausedByOffline = false;
-            this.notify(response.data);
+            this.notify(data);
             this.scheduleNextPoll(this.options.intervalMs);
         } catch (error) {
             if (error instanceof EndfieldAuthError) {
@@ -131,6 +126,16 @@ export class MapTracker {
             this.options.onError(error);
             this.stop();
         }
+    }
+
+    async fetchCurrentPosition(): Promise<PositionResponse['data']> {
+        const response = await this.client.getMapMePositionBrowser(
+            this.options.roleId,
+            this.options.serverId,
+            this.options.cred,
+            this.options.token,
+        );
+        return response.data;
     }
 
     start(): void {

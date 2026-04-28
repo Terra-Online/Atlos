@@ -1,4 +1,4 @@
-export type EndfieldTrackerConfig = {
+export type EFTrackerConf = {
     enabled: boolean;
     baseUrl: string;
     roleId: string;
@@ -15,12 +15,12 @@ export type EndfieldTrackerConfig = {
 export const ENDFIELD_TRACKER_CONFIG_KEY = 'endfield.tracker.config';
 export const ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT = 'endfield:tracker-config-updated';
 
-export const readEndfieldTrackerConfig = (): EndfieldTrackerConfig | null => {
+export const readEFTrackerConf = (): EFTrackerConf | null => {
     const raw = localStorage.getItem(ENDFIELD_TRACKER_CONFIG_KEY);
     if (!raw) return null;
 
     try {
-        const parsed = JSON.parse(raw) as Partial<EndfieldTrackerConfig>;
+        const parsed = JSON.parse(raw) as Partial<EFTrackerConf>;
         if (!parsed.baseUrl || !parsed.roleId || parsed.serverId === undefined || parsed.serverId === null) {
             return null;
         }
@@ -43,12 +43,12 @@ export const readEndfieldTrackerConfig = (): EndfieldTrackerConfig | null => {
     }
 };
 
-export const saveEndfieldTrackerConfig = (config: EndfieldTrackerConfig): void => {
+export const saveEFTrackerConf = (config: EFTrackerConf): void => {
     localStorage.setItem(ENDFIELD_TRACKER_CONFIG_KEY, JSON.stringify(config));
     window.dispatchEvent(new CustomEvent(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT));
 };
 
-export const removeEndfieldTrackerConfig = (): void => {
+export const removeEFTrackerConf = (): void => {
     localStorage.removeItem(ENDFIELD_TRACKER_CONFIG_KEY);
     window.dispatchEvent(new CustomEvent(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT));
 };

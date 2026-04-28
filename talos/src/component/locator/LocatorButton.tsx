@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import Modal from '@/component/modal/modal';
+import parse from 'html-react-parser';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { AccessButton } from '@/component/login/access';
 import { TabView, type TabViewItem } from '@/component/tabView';
@@ -14,9 +15,9 @@ import {
 import { readEndfieldSession, saveEndfieldSession } from '@/utils/endfield/storage';
 import { type EndfieldSession } from '@/utils/endfield/types';
 import {
-    readEndfieldTrackerConfig,
-    saveEndfieldTrackerConfig,
-    type EndfieldTrackerConfig,
+    readEFTrackerConf,
+    saveEFTrackerConf,
+    type EFTrackerConf,
 } from '@/utils/endfield/config';
 import regSwitchStyles from '@/component/regSwitch/regSwitch.module.scss';
 import profileStyles from '@/component/login/profile/profile.module.scss';
@@ -37,11 +38,6 @@ import {
 
 type LocatorButtonVariant = 'desktop' | 'mobile';
 const BIND_COUNTDOWN_SECONDS = 5;
-
-const TOKEN_API_BY_MODE: Record<LocatorAccountMode, string> = {
-    skland: 'https://web-api.hypergryph.com/account/info/hg',
-    skport: 'https://web-api.skport.com/cookie_store/account_token',
-};
 
 const extractToken = (raw: string): string => {
     const trimmed = raw.trim();
@@ -90,11 +86,20 @@ const sanitizeToken = (raw: string): string => {
     return raw;
 };
 
-const buildDocsUrl = (locale: string): string => {
-    const lang = locale.trim();
-    return lang
-        ? `https://blog.opendfieldmap.org/${encodeURIComponent(lang)}/docs/data-collection`
-        : 'https://blog.opendfieldmap.org/docs/data-collection';
+const resolveDocsLang = (locale: string): string => {
+    const normalized = locale.trim().toLowerCase();
+    if (normalized === 'zh-hk') return '';
+    if (normalized.startsWith('zh-cn')) return 'zh-CN';
+    if (normalized.startsWith('ja')) return 'ja';
+    if (normalized.startsWith('ko')) return 'ko';
+    if (normalized.startsWith('en')) return 'en';
+    return 'en';
+};
+
+const buildDocsUrl = (locale: string, slug: string): string => {
+    const lang = resolveDocsLang(locale);
+    const path = lang ? `/${encodeURIComponent(lang)}/docs/${slug}` : `/docs/${slug}`;
+    return `https://blog.opendfieldmap.org${path}`;
 };
 
 const applyRoleConfig = (
@@ -102,8 +107,8 @@ const applyRoleConfig = (
     role: EndfieldRoleOption,
 ): void => {
     const hosts = resolveEndfieldApiHosts(accountMode);
-    const currentConfig = readEndfieldTrackerConfig();
-    const nextConfig: EndfieldTrackerConfig = {
+    const currentConfig = readEFTrackerConf();
+    const nextConfig: EFTrackerConf = {
         enabled: true,
         locatorSync: true,
         baseUrl: hosts.baseUrl,
@@ -116,17 +121,17 @@ const applyRoleConfig = (
         scaleX: currentConfig?.scaleX,
         scaleZ: currentConfig?.scaleZ,
     };
-    saveEndfieldTrackerConfig(nextConfig);
+    saveEFTrackerConf(nextConfig);
     useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
 };
 
 const enableExistingLocatorSession = (): boolean => {
-    const current = readEndfieldTrackerConfig();
+    const current = readEFTrackerConf();
     const session = readEndfieldSession();
     if (!current || !session?.cred || !session.token) return false;
 
-    saveEndfieldTrackerConfig({
+    saveEFTrackerConf({
         ...current,
         enabled: true,
         locatorSync: true,
@@ -137,9 +142,9 @@ const enableExistingLocatorSession = (): boolean => {
 };
 
 const disableLocator = (): void => {
-    const current = readEndfieldTrackerConfig();
+    const current = readEFTrackerConf();
     if (current) {
-        saveEndfieldTrackerConfig({
+        saveEFTrackerConf({
             ...current,
             enabled: false,
             locatorSync: false,
@@ -161,7 +166,6 @@ interface LocatorButtonProps {
 }
 
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) => {
-    const t = useTranslateUI();
     const sessionUser = useAuthStore((state) => state.sessionUser);
     const viewMode = useLocatorStore((state) => state.viewMode);
     const [bindingOpen, setBindingOpen] = useState(false);
@@ -199,11 +203,6 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     }, [sessionUser, viewMode]);
 
     const Icon = resolveIcon(viewMode);
-    const label = viewMode === 'off'
-        ? (t('locator.enable') || 'Enable locator sync')
-        : viewMode === 'detached'
-            ? (t('locator.returnCurrent') || 'Return to current locator position')
-            : (t('locator.disable') || 'Disable locator sync');
 
     if (variant === 'mobile') {
         return (
@@ -214,7 +213,6 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         className={styles.mobileLocatorButton}
                         data-active={viewMode !== 'off'}
                         onClick={handleClick}
-                        aria-label={label}
                     >
                         <Icon />
                     </button>
@@ -235,7 +233,6 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         viewMode !== 'off' && regSwitchStyles.selected,
                     )}
                     onClick={handleClick}
-                    aria-label={label}
                 >
                     <div className={regSwitchStyles.icon}>
                         <Icon />
@@ -255,7 +252,7 @@ interface LocatorBindingModalProps {
 const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose }) => {
     const t = useTranslateUI();
     const locale = useLocale();
-    const existingTrackerConfig = useMemo(() => readEndfieldTrackerConfig(), []);
+    const existingTrackerConfig = useMemo(() => readEFTrackerConf(), []);
     const [accountMode, setAccountMode] = useState<LocatorAccountMode>(
         inferLocatorAccountModeFromBaseUrl(existingTrackerConfig?.baseUrl),
     );
@@ -371,21 +368,27 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const tabItems: TabViewItem[] = useMemo(() => [
         {
             key: 'skland',
-            label: t('locator.binding.chinaTab') || 'China(Hypergryph)',
+            label: t('locator.binding.chinaTab'),
             description: (
                 <>
-                    <div>{t('locator.binding.chinaDescription') || '1. Open the China token API link. 2. Paste the full response, read the terms, then submit.'}</div>
-                    <a href={TOKEN_API_BY_MODE.skland} target="_blank" rel="noopener noreferrer">{TOKEN_API_BY_MODE.skland}</a>
+                    <ol className={styles.bindStep}>
+                        <li>{parse(t('locator.binding.CNStep0'))}</li>
+                        <li>{parse(t('locator.binding.CNStep1'))}</li>
+                        <li>{t('locator.binding.Step2')}</li>
+                    </ol>
                 </>
             ),
         },
         {
             key: 'skport',
-            label: t('locator.binding.globalTab') || 'Global(Gryphline)',
+            label: t('locator.binding.globalTab'),
             description: (
                 <>
-                    <div>{t('locator.binding.globalDescription') || '1. Open the Global token API link. 2. Paste the full response, read the terms, then submit.'}</div>
-                    <a href={TOKEN_API_BY_MODE.skport} target="_blank" rel="noopener noreferrer">{TOKEN_API_BY_MODE.skport}</a>
+                    <ol className={styles.bindStep}>
+                        <li>{parse(t('locator.binding.UniStep0'))}</li>
+                        <li>{parse(t('locator.binding.UniStep1'))}</li>
+                        <li>{t('locator.binding.Step2')}</li>
+                    </ol>
                 </>
             ),
         },
@@ -394,13 +397,17 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const bindLabel = countdown > 0
         ? bindLabelTemplate.replace('{sec}', String(countdown))
         : (t('locator.binding.bind'));
+    const tosUrl = buildDocsUrl(locale, 'tos');
+    const privacyUrl = buildDocsUrl(locale, 'privacy');
+    const dataCollectionUrl = buildDocsUrl(locale, 'data-collection');
+    const disclaimerUrl = buildDocsUrl(locale, 'disclaimer');
 
     return (
         <Modal
             open={open}
             size="l"
             onClose={close}
-            title={t('locator.binding.title') || 'Binding SKLAND/SKPORT'}
+            title={t('locator.binding.title')}
         >
             <div className={styles.bindingForm}>
                 <TabView
@@ -416,7 +423,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                             className={styles.tokenTextarea}
                             value={tokenInput}
                             onChange={(event) => setTokenInput(sanitizeToken(event.target.value))}
-                            placeholder={t('locator.binding.tokenTextareaPlaceholder') || '{"code":0,"data":{"content":"..."}}'}
+                            placeholder={t('locator.binding.tokenTextareaPlaceholder')}
                             spellCheck={false}
                         />
                     </div>
@@ -450,19 +457,19 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                     <div className={styles.policyReminder}>
                         <span>{t('locator.binding.docsLead')}</span>
                         <span>
-                            <a href="https://blog.opendfieldmap.org/docs/tos" target="_blank" rel="noopener noreferrer">
+                            <a href={tosUrl} target="_blank" rel="noopener noreferrer">
                                 {t('locator.binding.tos')}
                             </a>
                             {' · '}
-                            <a href="https://blog.opendfieldmap.org/docs/privacy" target="_blank" rel="noopener noreferrer">
+                            <a href={privacyUrl} target="_blank" rel="noopener noreferrer">
                                 {t('locator.binding.privacy')}
                             </a>
                             {' · '}
-                            <a href={buildDocsUrl(locale)} target="_blank" rel="noopener noreferrer">
+                            <a href={dataCollectionUrl} target="_blank" rel="noopener noreferrer">
                                 {t('locator.binding.dataCollection') || 'Data Collection'}
                             </a>
                             {' · '}
-                            <a href="https://blog.opendfieldmap.org/docs/disclaimer" target="_blank" rel="noopener noreferrer">
+                            <a href={disclaimerUrl} target="_blank" rel="noopener noreferrer">
                                 {t('locator.binding.disclaimer')}
                             </a>
                         </span>

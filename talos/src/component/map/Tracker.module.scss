@@ -1,0 +1,52 @@
+@use '../../styles/palette.scss' as *;
+
+.trackerMarkerIcon {
+    background: transparent;
+}
+
+.trackerMarkerInner {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    transform: scale(1.25);
+}
+
+.trackerMarkerImage {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    transform: rotate(var(--tracker-bearing, 0deg));
+    transform-origin: center;
+    transition: transform 0.18s ease-out;
+    filter: drop-shadow(0 0 3px rgba($black-0, 0.62));
+}
+
+.pulsing {
+    &::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        transform: translate3d(-50%, -50%, 0);
+        pointer-events: none;
+        outline: 2px solid rgba($white-1, 0.95);
+        outline-offset: 2px;
+        animation: locatorPulse 1s ease-out infinite;
+    }
+}
+
+@keyframes locatorPulse {
+    0% {
+        outline-offset: 4px;
+        outline-color: rgba($white-1, 0.95);
+    }
+
+    100% {
+        outline-offset: 14px;
+        outline-color: rgba($white-1, 0);
+    }
+}
