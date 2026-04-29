@@ -109,6 +109,7 @@ type AnimationState = {
 const ENDFIELD_LOCATOR_TAB_KEY = 'endfield.locator.tab.booted';
 const POSITION_UNAVAILABLE_RETRY_MS = 5000;
 const POSITION_UPSTREAM_NOT_IN_GAME_CODE = 19001;
+const POSITION_NOT_IN_GAME_BANNER_KEY = 'locator.errors.posInvalid';
 
 const disableLocatorSync = (): void => {
     const current = readEFTrackerConf();
@@ -149,11 +150,9 @@ const isPositionNotInGameError = (error: EFBackendError): boolean => {
 };
 
 const showPositionUnavailableBanner = (error: EFBackendError): void => {
-    const details = getPositionErrorDetails(error);
     if (!isPositionNotInGameError(error)) return;
-    if (typeof details?.upstreamMessage !== 'string' || !details.upstreamMessage.trim()) return;
 
-    useLocatorStore.getState().showBanner(details.upstreamMessage.trim());
+    useLocatorStore.getState().showBanner(POSITION_NOT_IN_GAME_BANNER_KEY);
 };
 
 export function useEndfieldMapTracker(map: L.Map | undefined): void {
@@ -203,6 +202,12 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 window.clearTimeout(pollTimerRef.current);
                 pollTimerRef.current = null;
             }
+        };
+
+        const pausePollingForPositionUnavailable = (error: EFBackendError) => {
+            showPositionUnavailableBanner(error);
+            cleanupPolling();
+            useLocatorStore.getState().setViewMode('tracking');
         };
 
         const ensureTrackerLayerAttached = () => {
@@ -366,7 +371,10 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                         disableLocatorSync();
                         return;
                     }
-                    showPositionUnavailableBanner(error);
+                    if (isPositionNotInGameError(error)) {
+                        pausePollingForPositionUnavailable(error);
+                        return;
+                    }
                     scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
                 }
             };
@@ -387,8 +395,11 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 .catch((error: unknown) => {
                     if (disposed) return;
                     if (error instanceof EFBackendError && (isPositionNotInGameError(error) || error.code === 'ENDFIELD_POSITION_UNAVAILABLE')) {
+                        if (isPositionNotInGameError(error)) {
+                            pausePollingForPositionUnavailable(error);
+                            return;
+                        }
                         useLocatorStore.getState().setViewMode('tracking');
-                        showPositionUnavailableBanner(error);
                         scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
                         return;
                     }
