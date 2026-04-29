@@ -285,15 +285,15 @@
       "changeBinding": "Change Binding",
       "unlink": "Unlink",
       "bindWithCountdown": "Bind and enable location sync ({sec})",
-      "bind": "Bind and enable location sync",
-      "errors": {
-        "posInvalid": "Position unavailable: Not in game.",
-        "noRole": "No Endfield roles found on this account.",
-        "tokenRequired": "Paste the full token API response or the token value.",
-        "bindingFailed": "Binding failed.",
-        "roleRequired": "Please select a role.",
-        "unlinkFailed": "Failed to unlink binding."
-      }
+      "bind": "Bind and enable location sync"
+    },
+    "errors": {
+      "posInvalid": "Position unavailable: Not in game.",
+      "noRole": "No Endfield roles found on this account.",
+      "tokenRequired": "Paste the full token API response or the token value.",
+      "bindingFailed": "Binding failed.",
+      "roleRequired": "Please select a role.",
+      "unlinkFailed": "Failed to unlink binding."
     }
   },
   "links": {

@@ -382,7 +382,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             onBindingRemoved?.();
             close();
         } catch (err) {
-            setError(err instanceof Error ? err.message : l('locator.binding.errors.unlinkFailed', 'Failed to unlink binding.'));
+            setError(err instanceof Error ? err.message : l('locator.errors.unlinkFailed', 'Failed to unlink binding.'));
         } finally {
             setLoading(false);
         }
@@ -394,7 +394,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         mode: LocatorAccountMode,
     ) => {
         if (!roles.length) {
-            throw new Error(l('locator.binding.errors.noRole', 'No Endfield roles found on this account.'));
+            throw new Error(l('locator.errors.noRole', 'No Endfield roles found on this account.'));
         }
 
         if (roles.length === 1) {
@@ -415,7 +415,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const bindByToken = useCallback(async () => {
         const accountToken = extractToken(tokenInput);
         if (!accountToken) {
-            setError(l('locator.binding.errors.tokenRequired', 'Paste the token response JSON or the content value.'));
+            setError(l('locator.errors.tokenRequired', 'Paste the token response JSON or the content value.'));
             return;
         }
 
@@ -426,7 +426,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const handleRoleConfirm = useCallback(async () => {
         const role = roleOptions.find((item) => `${item.serverId}:${item.roleId}` === selectedRoleKey);
         if (!role || !flowId) {
-            setError(l('locator.binding.errors.roleRequired', 'Please select a role.'));
+            setError(l('locator.errors.roleRequired', 'Please select a role.'));
             return;
         }
         await bindEFRole(flowId, role);
@@ -442,7 +442,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             if (step === 'auth') await bindByToken();
             else await handleRoleConfirm();
         } catch (err) {
-            setError(err instanceof Error ? err.message : l('locator.binding.errors.bindingFailed', 'Binding failed.'));
+            setError(err instanceof Error ? err.message : l('locator.errors.bindingFailed', 'Binding failed.'));
         } finally {
             setLoading(false);
         }

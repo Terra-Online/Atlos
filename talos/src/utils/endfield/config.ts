@@ -8,11 +8,11 @@ export type EFTrackerConf = {
     debug?: boolean;
 };
 
-export const ENDFIELD_TRACKER_CONFIG_KEY = 'endfield.tracker.config';
-export const ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT = 'endfield:tracker-config-updated';
+export const LOCATOR_CONFIG_KEY = 'endfield.tracker.config';
+export const LOCATOR_CONFIG_UPDATED_EVENT = 'endfield:tracker-config-updated';
 
 export const readEFTrackerConf = (): EFTrackerConf | null => {
-    const raw = localStorage.getItem(ENDFIELD_TRACKER_CONFIG_KEY);
+    const raw = localStorage.getItem(LOCATOR_CONFIG_KEY);
     if (!raw) return null;
 
     try {
@@ -36,11 +36,11 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
 };
 
 export const saveEFTrackerConf = (config: EFTrackerConf): void => {
-    localStorage.setItem(ENDFIELD_TRACKER_CONFIG_KEY, JSON.stringify(config));
-    window.dispatchEvent(new CustomEvent(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT));
+    localStorage.setItem(LOCATOR_CONFIG_KEY, JSON.stringify(config));
+    window.dispatchEvent(new CustomEvent(LOCATOR_CONFIG_UPDATED_EVENT));
 };
 
 export const removeEFTrackerConf = (): void => {
-    localStorage.removeItem(ENDFIELD_TRACKER_CONFIG_KEY);
-    window.dispatchEvent(new CustomEvent(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT));
+    localStorage.removeItem(LOCATOR_CONFIG_KEY);
+    window.dispatchEvent(new CustomEvent(LOCATOR_CONFIG_UPDATED_EVENT));
 };

@@ -282,18 +282,18 @@
       "serverFallback": "服务器",
       "levelPrefix": "Lv.",
       "currentBinding": "当前绑定",
-      "changeBinding": "换绑",
+      "changeBinding": "切换绑定",
       "unlink": "解除绑定",
       "bindWithCountdown": "绑定并启用位置同步（{sec}）",
-      "bind": "绑定并启用位置同步",
-      "errors": {
-        "posInvalid": "无法获取当前位置，请确保已登录游戏",
-        "noRole": "未找到此账户下的终末地角色。",
-        "tokenRequired": "请粘贴 token 接口返回的全文或完整 token 值。",
-        "bindingFailed": "绑定失败。",
-        "roleRequired": "请选择角色。",
-        "unlinkFailed": "解除绑定失败。"
-      }
+      "bind": "绑定并启用位置同步"
+    },
+    "errors": {
+      "posInvalid": "无法获取当前位置，请确保已登录游戏。",
+      "noRole": "未找到此账户下的终末地角色。",
+      "tokenRequired": "请粘贴 token 接口返回的全文或完整 token 值。",
+      "bindingFailed": "绑定失败。",
+      "roleRequired": "请选择角色。",
+      "unlinkFailed": "解除绑定失败。"
     }
   },
   "links": {

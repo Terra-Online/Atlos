@@ -16,7 +16,7 @@ import { useSidebarOpen, useSidebarWidth } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
 import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
 import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
-import { useEndfieldMapTracker } from '@/component/map/useEndfieldMapTracker';
+import { useLocator } from '@/component/map/useLocator';
 
 declare global {
     interface Window {
@@ -40,7 +40,7 @@ function App() {
     // Keyboard shortcuts & map multi-select
     useKeyboardShortcuts(mapInstance);
     useMapMultiSelect(mapInstance);
-    useEndfieldMapTracker(mapInstance);
+    useLocator(mapInstance);
 
     // Track previous sidebar state to detect actual toggles
     const prevSidebarOpenRef = useRef(isSidebarOpen);

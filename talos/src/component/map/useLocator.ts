@@ -9,11 +9,11 @@ import { EFBackendError, getEFPosition } from '@/utils/endfield/backendClient';
 import type { PositionResponse } from '@/utils/endfield/types';
 import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
 import {
-    ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT,
+    LOCATOR_CONFIG_UPDATED_EVENT,
     readEFTrackerConf,
     saveEFTrackerConf,
 } from '@/utils/endfield/config';
-import styles from './Tracker.module.scss';
+import styles from './Locator.module.scss';
 
 type TrackerConfig = {
     enabled: boolean;
@@ -25,16 +25,16 @@ type TrackerConfig = {
     debug?: boolean;
 };
 
-const ENDFIELD_TRACKER_PANE = 'talos-endfield-tracker-pane';
-const ENDFIELD_TRACKER_LAYER_Z_INDEX = 640;
+const LOCATOR_PANE = 'talos-endfield-tracker-pane';
+const LOCATOR_LAYER_Z_INDEX = 640;
 
 const ensureTrackerPane = (map: L.Map): string => {
-    const existing = map.getPane(ENDFIELD_TRACKER_PANE);
-    if (existing) return ENDFIELD_TRACKER_PANE;
-    const pane = map.createPane(ENDFIELD_TRACKER_PANE);
-    pane.style.zIndex = String(ENDFIELD_TRACKER_LAYER_Z_INDEX);
+    const existing = map.getPane(LOCATOR_PANE);
+    if (existing) return LOCATOR_PANE;
+    const pane = map.createPane(LOCATOR_PANE);
+    pane.style.zIndex = String(LOCATOR_LAYER_Z_INDEX);
     pane.style.pointerEvents = 'none';
-    return ENDFIELD_TRACKER_PANE;
+    return LOCATOR_PANE;
 };
 
 
@@ -155,7 +155,7 @@ const showPositionUnavailableBanner = (error: EFBackendError): void => {
     useLocatorStore.getState().showBanner(POSITION_NOT_IN_GAME_BANNER_KEY);
 };
 
-export function useEndfieldMapTracker(map: L.Map | undefined): void {
+export function useLocator(map: L.Map | undefined): void {
     const [configVersion, setConfigVersion] = useState(0);
     const trackerRunningRef = useRef(false);
     const pollTimerRef = useRef<number | null>(null);
@@ -176,9 +176,9 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             setConfigVersion((v) => v + 1);
         };
 
-        window.addEventListener(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+        window.addEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
         return () => {
-            window.removeEventListener(ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+            window.removeEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
         };
     }, []);
 
