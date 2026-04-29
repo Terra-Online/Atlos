@@ -5,8 +5,9 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/component/locator/state';
-import { EFBackendError, getEFPosition, type EFLocatorPosition } from '@/utils/endfield/backendClient';
+import { EFBackendError, getEFPosition } from '@/utils/endfield/backendClient';
 import type { PositionResponse } from '@/utils/endfield/types';
+import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
 import {
     ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT,
     readEFTrackerConf,
@@ -297,11 +298,15 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
             if (disposed) return;
 
-            const applyPositionUpdate = (payload: PositionResponse['data'], locator: EFLocatorPosition) => {
+            const applyPositionUpdate = (payload: PositionResponse['data']) => {
                 if (payload.isOnline === false) return;
 
                 useLocatorStore.getState().clearBanner();
                 ensureTrackerLayerAttached();
+                const locator = convertEFPosition(payload);
+                if (!locator) {
+                    throw new Error('Endfield locator transform is not configured.');
+                }
                 const converted = convertGamePosition(locator);
                 let marker = markerRef.current;
 
@@ -353,7 +358,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
 
                 try {
                     const response = await getEFPosition();
-                    applyPositionUpdate(response.data, response.locator);
+                    applyPositionUpdate(response.data);
                     scheduleNextPoll(response.data.isOnline === false ? (config.intervalMs ?? 1500) * 3 : (config.intervalMs ?? 1500));
                 } catch (error) {
                     if (disposed) return;
@@ -375,7 +380,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             void getEFPosition()
                 .then((response) => {
                     if (disposed) return;
-                    applyPositionUpdate(response.data, response.locator);
+                    applyPositionUpdate(response.data);
                     useLocatorStore.getState().setViewMode('tracking');
                     scheduleNextPoll(config.intervalMs ?? 1500);
                 })

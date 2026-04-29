@@ -24,13 +24,6 @@ export type EFBindingSummary = {
     updatedAt?: string;
 };
 
-export type EFLocatorPosition = {
-    mapX: number;
-    mapZ: number;
-    mode: string;
-    regionKey: string | null;
-};
-
 type ApiErrorPayload = {
     code?: string;
     message?: string;
@@ -133,5 +126,5 @@ export const unlinkEFBinding = (): Promise<{ ok: true; binding: EFBindingSummary
         body: '{}',
     });
 
-export const getEFPosition = (): Promise<{ data: PositionResponse['data']; locator: EFLocatorPosition; binding: EFBindingSummary }> =>
+export const getEFPosition = (): Promise<{ data: PositionResponse['data']; binding: EFBindingSummary }> =>
     requestJson('/position');
