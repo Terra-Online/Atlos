@@ -9,25 +9,28 @@ import { useAuthStore } from '@/store/auth';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useLocale, useTranslateUI } from '@/locale';
 import {
-    EndfieldBrowserClient,
-    type EndfieldRoleOption,
-} from '@/utils/endfield/client';
-import { readEndfieldSession, saveEndfieldSession } from '@/utils/endfield/storage';
-import { type EndfieldSession } from '@/utils/endfield/types';
+    bindEFRole,
+    exchangeEFToken,
+    getEFBindingStatus,
+    unlinkEFBinding,
+    type EFBindingSummary,
+    type EFRoleOption,
+} from '@/utils/endfield/backendClient';
 import {
     readEFTrackerConf,
     saveEFTrackerConf,
     type EFTrackerConf,
 } from '@/utils/endfield/config';
+import { SubregionSwitch } from '@/component/regSwitch/regSwitch';
 import regSwitchStyles from '@/component/regSwitch/regSwitch.module.scss';
 import profileStyles from '@/component/login/profile/profile.module.scss';
 import styles from './Locator.module.scss';
 import LocateCloseIcon from '@/assets/images/UI/locateclose.svg?react';
 import LocateOpenIcon from '@/assets/images/UI/locateopen.svg?react';
 import LocateCurrentIcon from '@/assets/images/UI/locatecurrent.svg?react';
+import BindingIcon from '@/assets/logos/binding.svg?react';
 import {
     inferLocatorAccountModeFromBaseUrl,
-    resolveEndfieldApiHosts,
     type LocatorAccountMode,
 } from './endfieldHosts';
 import {
@@ -104,41 +107,46 @@ const buildDocsUrl = (locale: string, slug: string): string => {
 
 const applyRoleConfig = (
     accountMode: LocatorAccountMode,
-    role: EndfieldRoleOption,
+    role: EFRoleOption,
 ): void => {
-    const hosts = resolveEndfieldApiHosts(accountMode);
     const currentConfig = readEFTrackerConf();
     const nextConfig: EFTrackerConf = {
         enabled: true,
         locatorSync: true,
-        baseUrl: hosts.baseUrl,
+        baseUrl: accountMode,
         roleId: role.roleId,
         serverId: role.serverId,
         debug: currentConfig?.debug ?? false,
         intervalMs: currentConfig?.intervalMs,
-        offsetX: currentConfig?.offsetX,
-        offsetZ: currentConfig?.offsetZ,
-        scaleX: currentConfig?.scaleX,
-        scaleZ: currentConfig?.scaleZ,
     };
     saveEFTrackerConf(nextConfig);
     useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
 };
 
-const enableExistingLocatorSession = (): boolean => {
+const enableExistingLocatorSession = async (): Promise<boolean> => {
     const current = readEFTrackerConf();
-    const session = readEndfieldSession();
-    if (!current || !session?.cred || !session.token) return false;
+    const status = await getEFBindingStatus();
+    if (!status.binding.bound || !status.binding.enabled || !status.binding.roleId || status.binding.serverId === undefined) {
+        return false;
+    }
 
     saveEFTrackerConf({
-        ...current,
+        ...(current ?? {}),
         enabled: true,
         locatorSync: true,
+        baseUrl: status.binding.provider ?? current?.baseUrl ?? 'skport',
+        roleId: status.binding.roleId,
+        serverId: status.binding.serverId,
+        debug: current?.debug ?? false,
     });
     useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
     return true;
+};
+
+const disableLocatorLocal = (): void => {
+    disableLocator();
 };
 
 const disableLocator = (): void => {
@@ -166,17 +174,38 @@ interface LocatorButtonProps {
 }
 
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) => {
+    const t = useTranslateUI();
     const sessionUser = useAuthStore((state) => state.sessionUser);
     const viewMode = useLocatorStore((state) => state.viewMode);
     const [bindingOpen, setBindingOpen] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
+    const [bound, setBound] = useState(false);
+
+    const refreshBindingStatus = useCallback(() => {
+        if (!sessionUser) {
+            setBound(false);
+            return;
+        }
+        void getEFBindingStatus()
+            .then((status) => setBound(Boolean(status.binding.bound)))
+            .catch(() => setBound(false));
+    }, [sessionUser]);
+
+    useEffect(() => {
+        refreshBindingStatus();
+    }, [refreshBindingStatus]);
 
     useEffect(() => {
         if (!pendingAfterLogin || !sessionUser) return;
         setPendingAfterLogin(false);
-        if (!enableExistingLocatorSession()) {
+        void enableExistingLocatorSession().then((enabled) => {
+            setBound((current) => enabled || current);
+            if (!enabled) {
+                setBindingOpen(true);
+            }
+        }).catch(() => {
             setBindingOpen(true);
-        }
+        });
     }, [pendingAfterLogin, sessionUser]);
 
     const handleClick = useCallback(() => {
@@ -197,9 +226,14 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
             return;
         }
 
-        if (!enableExistingLocatorSession()) {
+        void enableExistingLocatorSession().then((enabled) => {
+            setBound((current) => enabled || current);
+            if (!enabled) {
+                setBindingOpen(true);
+            }
+        }).catch(() => {
             setBindingOpen(true);
-        }
+        });
     }, [sessionUser, viewMode]);
 
     const Icon = resolveIcon(viewMode);
@@ -217,7 +251,17 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         <Icon />
                     </button>
                 </div>
-                <LocatorBindingModal open={bindingOpen} onClose={() => setBindingOpen(false)} />
+                <LocatorBindingModal
+                    open={bindingOpen}
+                    onClose={() => {
+                        setBindingOpen(false);
+                        refreshBindingStatus();
+                    }}
+                    onBindingRemoved={() => {
+                        setBound(false);
+                        disableLocatorLocal();
+                    }}
+                />
             </>
         );
     }
@@ -225,21 +269,52 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     return (
         <>
             <div className={classNames(regSwitchStyles.regswitch, styles.locatorSwitch)}>
-                <button
-                    type="button"
+                <div
                     className={classNames(
                         regSwitchStyles.regItem,
                         styles.locatorButton,
                         viewMode !== 'off' && regSwitchStyles.selected,
                     )}
                     onClick={handleClick}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('locator.title') || 'Locator'}
+                    onKeyDown={(event) => {
+                        if (event.key !== 'Enter' && event.key !== ' ') return;
+                        event.preventDefault();
+                        handleClick();
+                    }}
                 >
                     <div className={regSwitchStyles.icon}>
                         <Icon />
                     </div>
-                </button>
+                    {bound && (
+                        <SubregionSwitch
+                            showIndicator={false}
+                            items={[
+                                {
+                                    key: 'binding',
+                                    icon: BindingIcon,
+                                    tooltip: t('locator.binding.currentBinding') || 'Current Binding',
+                                    ariaLabel: t('locator.binding.currentBinding') || 'Current Binding',
+                                    onClick: () => setBindingOpen(true),
+                                },
+                            ]}
+                        />
+                    )}
+                </div>
             </div>
-            <LocatorBindingModal open={bindingOpen} onClose={() => setBindingOpen(false)} />
+            <LocatorBindingModal
+                open={bindingOpen}
+                onClose={() => {
+                    setBindingOpen(false);
+                    refreshBindingStatus();
+                }}
+                onBindingRemoved={() => {
+                    setBound(false);
+                    disableLocatorLocal();
+                }}
+            />
         </>
     );
 };
@@ -247,9 +322,10 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
 interface LocatorBindingModalProps {
     open: boolean;
     onClose: () => void;
+    onBindingRemoved?: () => void;
 }
 
-const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose }) => {
+const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose, onBindingRemoved }) => {
     const t = useTranslateUI();
     const locale = useLocale();
     const existingTrackerConfig = useMemo(() => readEFTrackerConf(), []);
@@ -257,12 +333,15 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         inferLocatorAccountModeFromBaseUrl(existingTrackerConfig?.baseUrl),
     );
     const [step, setStep] = useState<'auth' | 'role'>('auth');
-    const [roleOptions, setRoleOptions] = useState<EndfieldRoleOption[]>([]);
+    const [roleOptions, setRoleOptions] = useState<EFRoleOption[]>([]);
     const [selectedRoleKey, setSelectedRoleKey] = useState('');
+    const [flowId, setFlowId] = useState('');
     const [tokenInput, setTokenInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [countdown, setCountdown] = useState(BIND_COUNTDOWN_SECONDS);
+    const [bindingStatus, setBindingStatus] = useState<EFBindingSummary | null>(null);
+    const [replaceMode, setReplaceMode] = useState(false);
     const l = useCallback((key: string, fallback: string) => t(key) || fallback, [t]);
 
     const resetTransient = useCallback(() => {
@@ -270,9 +349,11 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         setStep('auth');
         setRoleOptions([]);
         setSelectedRoleKey('');
+        setFlowId('');
         setTokenInput('');
         setLoading(false);
         setCountdown(BIND_COUNTDOWN_SECONDS);
+        setReplaceMode(false);
     }, []);
 
     const close = useCallback(() => {
@@ -282,6 +363,9 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
 
     useEffect(() => {
         if (!open) return undefined;
+        void getEFBindingStatus()
+            .then((status) => setBindingStatus(status.binding))
+            .catch(() => setBindingStatus(null));
         setCountdown(BIND_COUNTDOWN_SECONDS);
         const timer = window.setInterval(() => {
             setCountdown((value) => Math.max(0, value - 1));
@@ -289,17 +373,32 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         return () => window.clearInterval(timer);
     }, [open]);
 
+    const handleUnlink = useCallback(async () => {
+        if (loading) return;
+        setError('');
+        setLoading(true);
+        try {
+            await unlinkEFBinding();
+            onBindingRemoved?.();
+            close();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : l('locator.binding.errors.unlinkFailed', 'Failed to unlink binding.'));
+        } finally {
+            setLoading(false);
+        }
+    }, [close, l, loading, onBindingRemoved]);
+
     const loadRoles = useCallback(async (
-        session: EndfieldSession,
+        nextFlowId: string,
+        roles: EFRoleOption[],
         mode: LocatorAccountMode,
     ) => {
-        const client = new EndfieldBrowserClient(resolveEndfieldApiHosts(mode));
-        const roles = await client.getEndfieldRoleOptions(session.cred, session.token);
         if (!roles.length) {
             throw new Error(l('locator.binding.errors.noRole', 'No Endfield roles found on this account.'));
         }
 
         if (roles.length === 1) {
+            await bindEFRole(nextFlowId, roles[0]);
             applyRoleConfig(mode, roles[0]);
             close();
             return;
@@ -308,6 +407,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         const defaultRole = roles.find((role) => role.isDefault) ?? roles[0];
         setRoleOptions(roles);
         setSelectedRoleKey(`${defaultRole.serverId}:${defaultRole.roleId}`);
+        setFlowId(nextFlowId);
         setAccountMode(mode);
         setStep('role');
     }, [close, l]);
@@ -319,28 +419,20 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             return;
         }
 
-        const hosts = resolveEndfieldApiHosts(accountMode);
-        const client = new EndfieldBrowserClient(hosts);
-        const grant = await client.grantOAuth2Code(accountToken);
-        const generated = await client.generateCredByCode(grant.code);
-        const session = {
-            accountToken,
-            cred: generated.cred,
-            token: generated.token,
-        };
-        saveEndfieldSession(session);
-        await loadRoles(session, accountMode);
+        const exchanged = await exchangeEFToken(accountMode, accountToken);
+        await loadRoles(exchanged.flowId, exchanged.roles, accountMode);
     }, [accountMode, l, loadRoles, tokenInput]);
 
-    const handleRoleConfirm = useCallback(() => {
+    const handleRoleConfirm = useCallback(async () => {
         const role = roleOptions.find((item) => `${item.serverId}:${item.roleId}` === selectedRoleKey);
-        if (!role) {
+        if (!role || !flowId) {
             setError(l('locator.binding.errors.roleRequired', 'Please select a role.'));
             return;
         }
+        await bindEFRole(flowId, role);
         applyRoleConfig(accountMode, role);
         close();
-    }, [accountMode, close, l, roleOptions, selectedRoleKey]);
+    }, [accountMode, close, flowId, l, roleOptions, selectedRoleKey]);
 
     const handleBind = useCallback(async () => {
         if (loading || countdown > 0) return;
@@ -348,7 +440,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         setLoading(true);
         try {
             if (step === 'auth') await bindByToken();
-            else handleRoleConfirm();
+            else await handleRoleConfirm();
         } catch (err) {
             setError(err instanceof Error ? err.message : l('locator.binding.errors.bindingFailed', 'Binding failed.'));
         } finally {
@@ -363,6 +455,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         setStep('auth');
         setRoleOptions([]);
         setSelectedRoleKey('');
+        setFlowId('');
     }, []);
 
     const tabItems: TabViewItem[] = useMemo(() => [
@@ -408,16 +501,45 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             size="l"
             onClose={close}
             title={t('locator.binding.title')}
+            icon={<BindingIcon />}
+            iconScale={0.86}
         >
             <div className={styles.bindingForm}>
-                <TabView
-                    items={tabItems}
-                    activeKey={accountMode}
-                    onChange={(key) => switchMode(key as LocatorAccountMode)}
-                    fill
-                />
+                {bindingStatus?.bound && !replaceMode ? (
+                    <div className={styles.bindingManagePanel}>
+                        <div className={styles.bindingManageTitle}>
+                            {t('locator.binding.currentBinding') || 'Current Binding'}
+                        </div>
+                        <div className={styles.bindingManageMeta}>
+                            <span>{bindingStatus.provider === 'skland' ? t('locator.binding.chinaTab') : t('locator.binding.globalTab')}</span>
+                            <span>{bindingStatus.nickname || bindingStatus.roleId}</span>
+                            <span>{bindingStatus.serverName || `${t('locator.binding.serverFallback') || 'Server'} ${bindingStatus.serverId ?? ''}`}</span>
+                        </div>
+                        <div className={classNames(profileStyles.profileActions, styles.manageActions)}>
+                            <AccessButton
+                                onClick={() => setReplaceMode(true)}
+                                disabled={loading}
+                                label={t('locator.binding.changeBinding') || 'Change Binding'}
+                            />
+                            <AccessButton
+                                onClick={() => {
+                                    void handleUnlink();
+                                }}
+                                disabled={loading}
+                                label={loading ? t('common.loading') : (t('locator.binding.unlink') || 'Unlink')}
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <TabView
+                            items={tabItems}
+                            activeKey={accountMode}
+                            onChange={(key) => switchMode(key as LocatorAccountMode)}
+                            fill
+                        />
 
-                {step === 'auth' ? (
+                        {step === 'auth' ? (
                     <div className={styles.bindingFields}>
                         <textarea
                             className={styles.tokenTextarea}
@@ -427,7 +549,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                             spellCheck={false}
                         />
                     </div>
-                ) : (
+                        ) : (
                     <div className={styles.roleSelectList}>
                         {roleOptions.map((role) => {
                             const key = `${role.serverId}:${role.roleId}`;
@@ -449,6 +571,8 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                             );
                         })}
                     </div>
+                        )}
+                    </>
                 )}
 
                 {error ? <div className={styles.error}>{error}</div> : <div className={styles.error} aria-hidden="true" />}
@@ -475,15 +599,17 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                         </span>
                     </div>
                     <div className={classNames(profileStyles.profileActions, styles.singleAction)}>
-                        <AccessButton
-                            onClick={() => {
-                                void handleBind();
-                            }}
-                            disabled={loading || countdown > 0}
-                            label={loading
-                                ? (t('common.loading'))
-                                : bindLabel}
-                        />
+                        {(!bindingStatus?.bound || replaceMode) && (
+                            <AccessButton
+                                onClick={() => {
+                                    void handleBind();
+                                }}
+                                disabled={loading || countdown > 0}
+                                label={loading
+                                    ? (t('common.loading'))
+                                    : bindLabel}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

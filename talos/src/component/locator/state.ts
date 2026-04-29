@@ -10,15 +10,21 @@ type LocatorPosition = {
 interface LocatorState {
     viewMode: LocatorViewMode;
     lastPosition: LocatorPosition | null;
+    bannerMessage: string | null;
     setViewMode: (mode: LocatorViewMode) => void;
     setLastPosition: (position: LocatorPosition | null) => void;
+    showBanner: (message: string) => void;
+    clearBanner: () => void;
 }
 
 export const useLocatorStore = create<LocatorState>((set) => ({
     viewMode: 'off',
     lastPosition: null,
+    bannerMessage: null,
     setViewMode: (viewMode) => set({ viewMode }),
     setLastPosition: (lastPosition) => set({ lastPosition }),
+    showBanner: (bannerMessage) => set({ bannerMessage }),
+    clearBanner: () => set({ bannerMessage: null }),
 }));
 
 export const LOCATOR_RETURN_CURRENT_EVENT = 'locator:return-current';

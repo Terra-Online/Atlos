@@ -6,10 +6,6 @@ export type EFTrackerConf = {
     locatorSync: boolean;
     intervalMs?: number;
     debug?: boolean;
-    offsetX?: number;
-    offsetZ?: number;
-    scaleX?: number;
-    scaleZ?: number;
 };
 
 export const ENDFIELD_TRACKER_CONFIG_KEY = 'endfield.tracker.config';
@@ -33,10 +29,6 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
             locatorSync: parsed.locatorSync ?? false,
             intervalMs: parsed.intervalMs,
             debug: parsed.debug ?? false,
-            offsetX: parsed.offsetX,
-            offsetZ: parsed.offsetZ,
-            scaleX: parsed.scaleX,
-            scaleZ: parsed.scaleZ,
         };
     } catch {
         return null;

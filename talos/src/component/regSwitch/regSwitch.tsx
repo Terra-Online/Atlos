@@ -29,7 +29,7 @@ const REGION_I18N_CODE: Record<string, string> = {
     Dijiang: 'DJ',
     Weekraid_1: 'ES',
 };
-const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile) => {
+const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile: boolean) => {
     if (selectedIndex < 0) return {};
 
     const itemHeight = 2.5; // rem
@@ -45,6 +45,91 @@ const getContainerStyle = (selectedIndex: number, hasLabel: boolean, isMobile) =
     return {
         transform: `translateY(calc(${top}rem - 50%))`,
     };
+};
+
+type SubregionSwitchItem = {
+    key: string;
+    label?: React.ReactNode;
+    icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+    selected?: boolean;
+    tooltip?: React.ReactNode;
+    ariaLabel?: string;
+    onClick: () => void;
+};
+
+interface SubregionSwitchProps {
+    items: SubregionSwitchItem[];
+    selectedIndex?: number;
+    forceOpen?: boolean;
+    showIndicator?: boolean;
+    isMobile?: boolean;
+}
+
+const SubregionSwitch: React.FC<SubregionSwitchProps> = ({
+    items,
+    selectedIndex = -1,
+    forceOpen = false,
+    showIndicator = true,
+    isMobile = false,
+}) => {
+    return (
+        <div
+            className={classNames(styles.subregionSwitchContainer, {
+                [styles.forceOpen]: forceOpen,
+            })}
+            onClick={(e) => {
+                e.stopPropagation();
+            }}
+        >
+            <div className={styles.subregionSwitch}>
+                {showIndicator && (
+                    <div
+                        className={classNames(
+                            styles.indicator,
+                            selectedIndex < 0 && styles.hidden,
+                        )}
+                        style={getContainerStyle(selectedIndex, false, isMobile)}
+                    ></div>
+                )}
+                {items.map((item) => {
+                    const Icon = item.icon;
+                    const button = (
+                        <button
+                            className={classNames(
+                                styles.subregItem,
+                                item.selected && styles.selected,
+                            )}
+                            onClick={item.onClick}
+                            aria-label={item.ariaLabel}
+                            type="button"
+                        >
+                            {Icon ? (
+                                <div className={styles.subregIcon}>
+                                    <Icon />
+                                </div>
+                            ) : (
+                                <div className={styles.subregName}>{item.label}</div>
+                            )}
+                        </button>
+                    );
+
+                    if (!item.tooltip) {
+                        return <React.Fragment key={item.key}>{button}</React.Fragment>;
+                    }
+
+                    return (
+                        <PopoverTooltip
+                            key={item.key}
+                            content={item.tooltip}
+                            placement="right"
+                        >
+                            {button}
+                        </PopoverTooltip>
+                    );
+                })}
+            </div>
+        </div>
+    );
 };
 
 const RegionContainer: React.FC<{
@@ -107,58 +192,31 @@ const RegionContainer: React.FC<{
                             <Icon />
                         </div>
                         {region.subregions.length > 1 && (
-                            <div
-                                className={classNames(styles.subregionSwitchContainer, {
-                                    [styles.forceOpen]: forceRegionSubOpen && currentRegionKey === key,
+                            <SubregionSwitch
+                                selectedIndex={subRegionIndex}
+                                forceOpen={forceRegionSubOpen && currentRegionKey === key}
+                                isMobile={isMobile}
+                                items={region.subregions.map((subregion) => {
+                                    const subKey = SUBREGION_DICT[subregion]?.name;
+                                    const fullName = subKey ? tGame(`region.${regionCode}.sub.${subKey}.name`) : subregion;
+                                    const shortName = (() => {
+                                        if (!subKey) return subregion;
+                                        const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
+                                        return typeof v === 'string' && v.trim() ? v : subKey;
+                                    })();
+
+                                    return {
+                                        key: subregion,
+                                        label: shortName,
+                                        selected: currentSubregionKey === subregion,
+                                        tooltip: fullName,
+                                        ariaLabel: fullName,
+                                        onClick: () => {
+                                            requestSubregionSwitch(subregion);
+                                        },
+                                    };
                                 })}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                }}
-                            >
-                                <div className={styles.subregionSwitch}>
-                                    <div
-                                        className={classNames(
-                                            styles.indicator,
-                                            subRegionIndex < 0 && styles.hidden,
-                                        )}
-                                        style={getContainerStyle(
-                                            subRegionIndex, false, isMobile
-                                        )}
-                                    ></div>
-                                    {region.subregions.map((subregion) => {
-                                        const subKey = SUBREGION_DICT[subregion]?.name;
-                                        const fullName = subKey ? tGame(`region.${regionCode}.sub.${subKey}.name`) : subregion;
-                                        return (
-                                            <PopoverTooltip
-                                                key={subregion}
-                                                content={fullName}
-                                                placement="right"
-                                            >
-                                                <button
-                                                    className={classNames(
-                                                        styles.subregItem,
-                                                        currentSubregionKey ===
-                                                            subregion &&
-                                                            styles.selected,
-                                                    )}
-                                                    onClick={() => {
-                                                        requestSubregionSwitch(subregion);
-                                                    }}
-                                                    aria-label={fullName}
-                                                >
-                                                    <div className={styles.subregName}>
-                                                        {(() => {
-                                                            if (!subKey) return subregion;
-                                                            const v = tGame(`region.${regionCode}.sub.${subKey}.short`);
-                                                            return typeof v === 'string' && v.trim() ? v : subKey;
-                                                        })()}
-                                                    </div>
-                                                </button>
-                                            </PopoverTooltip>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                            />
                         )}
                     </div>
                 );
@@ -167,4 +225,5 @@ const RegionContainer: React.FC<{
     );
 };
 
-export { RegionContainer };
+export { RegionContainer, SubregionSwitch };
+export type { SubregionSwitchItem };

@@ -5,8 +5,7 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/component/locator/state';
-import { clearEndfieldSession, hasEndfieldSessionCookies, readEndfieldSession } from '@/utils/endfield/storage';
-import { MapTracker } from '@/utils/endfield/tracker';
+import { EFBackendError, getEFPosition, type EFLocatorPosition } from '@/utils/endfield/backendClient';
 import type { PositionResponse } from '@/utils/endfield/types';
 import {
     ENDFIELD_TRACKER_CONFIG_UPDATED_EVENT,
@@ -23,134 +22,6 @@ type TrackerConfig = {
     locatorSync: boolean;
     intervalMs?: number;
     debug?: boolean;
-    // Optional conversion controls for projects where API space differs from tile pixel space.
-    offsetX?: number;
-    offsetZ?: number;
-    scaleX?: number;
-    scaleZ?: number;
-};
-
-type RegionTransform = {
-    scaleX: number;
-    scaleZ: number;
-    offsetX: number;
-    offsetZ: number;
-    rotateClockwise90?: boolean;
-};
-
-const REGION_TRANSFORMS: Record<string, RegionTransform> = {
-    VL: {
-        scaleX: 0.4687511298,
-        scaleZ: 0.4687511298,
-        offsetX: 519.6990737,
-        offsetZ: -479.9101599,
-    },
-    WL: {
-        scaleX: 0.41397681175575596,
-        scaleZ: 0.4123987909522064,
-        offsetX: 955.8805906115372,
-        offsetZ: -155.59250075860632,
-    },
-    WL2: {
-        scaleX: 0.35414771840391185,
-        scaleZ: 0.33417957195526954,
-        offsetX: 229.5095336217924,
-        offsetZ: -639.5187069784344,
-    },
-    DJ: {
-        scaleX: 2.817109225144681,
-        scaleZ: 2.8369668977222067,
-        offsetX: 481.07581876506237,
-        offsetZ: -528.2046998395613,
-    },
-    ES: {
-        scaleX: 2.1236893194106514,
-        scaleZ: 2.1398455301912183,
-        offsetX: 613.9427764351295,
-        offsetZ: -898.0955173659895,
-    },
-    default: {
-        scaleX: 0.4687511298,
-        scaleZ: 0.4687511298,
-        offsetX: 519.6990737,
-        offsetZ: -476.8398401,
-    },
-};
-
-const MAP_ID_TO_REGION_KEY: Record<string, string> = {
-    map01: 'Valley_4',
-    map02: 'Wuling',
-    base01: 'Dijiang',
-    dung01: 'Weekraid_1',
-    indie07: 'Wuling',
-};
-
-const MAP_ID_TO_PROFILE: Record<string, keyof typeof REGION_TRANSFORMS> = {
-    map01: 'VL',
-    map02: 'WL',
-    base01: 'DJ',
-    dung01: 'ES',
-    indie07: 'WL2',
-    indie_dg007: 'WL2',
-};
-
-const normalizeSceneId = (value?: string | null): string => (value || '').trim().toLowerCase();
-
-const resolveProfileKeyFromPayload = (payload: PositionResponse['data']): keyof typeof REGION_TRANSFORMS => {
-    const mapId = normalizeSceneId(payload.mapId);
-    const levelId = normalizeSceneId(payload.levelId);
-
-    if (!mapId && !levelId) return 'ES';
-
-    const direct = MAP_ID_TO_PROFILE[mapId];
-    if (direct) return direct;
-
-    // Keep profile inference consistent with transCoord.py's startswith rules.
-    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'VL';
-    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'WL';
-    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'DJ';
-    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'ES';
-
-    if (
-        mapId.startsWith('indie07')
-        || levelId.startsWith('indie07')
-        || mapId.includes('indie_dg007')
-        || levelId.includes('indie_dg007')
-        || mapId.includes('wl2')
-        || levelId.includes('wl2')
-        || mapId.includes('wuling2')
-        || levelId.includes('wuling2')
-    ) {
-        return 'WL2';
-    }
-
-    return 'default';
-};
-
-const resolveRegionKeyFromPayload = (payload: PositionResponse['data']): string | null => {
-    const mapId = normalizeSceneId(payload.mapId);
-    const levelId = normalizeSceneId(payload.levelId);
-
-    if (!mapId && !levelId) return 'Weekraid_1';
-
-    const direct = MAP_ID_TO_REGION_KEY[mapId];
-    if (direct && REGION_DICT[direct]) return direct;
-
-    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'Valley_4';
-    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'Wuling';
-    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'Dijiang';
-    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'Weekraid_1';
-    if (
-        mapId.startsWith('indie07')
-        || levelId.startsWith('indie07')
-        || mapId.includes('indie_dg007')
-        || levelId.includes('indie_dg007')
-    ) {
-        return 'Wuling';
-    }
-
-    if (mapId && REGION_DICT[mapId]) return mapId;
-    return null;
 };
 
 const ENDFIELD_TRACKER_PANE = 'talos-endfield-tracker-pane';
@@ -173,36 +44,13 @@ const parseTrackerConfig = (): TrackerConfig | null => {
 };
 
 const convertGamePosition = (
-    payload: PositionResponse['data'],
+    locator: EFLocatorPosition,
 ): { latLng: L.LatLng; mapX: number; mapZ: number; mode: string } => {
-    const profileKey = resolveProfileKeyFromPayload(payload);
-
-    const transform = REGION_TRANSFORMS[profileKey] ?? REGION_TRANSFORMS.default;
-
-    let x = payload.pos.x;
-    let z = payload.pos.z;
-
-    // DJ special handling from reference script: clockwise 90deg, (x, z) -> (z, -x)
-    if (transform.rotateClockwise90) {
-        const rotatedX = z;
-        const rotatedZ = -x;
-        x = rotatedX;
-        z = rotatedZ;
-    }
-
-    const selected = {
-        mapX: x * transform.scaleX + transform.offsetX,
-        mapZ: z * transform.scaleZ + transform.offsetZ,
-        mode: profileKey,
-    };
-
     return {
-        // MarkerLayer uses [lat, lng] == [z, x] in CRS.Simple map space.
-        // mapX/mapZ are already converted into that same space, no unproject needed.
-        latLng: L.latLng(selected.mapZ, selected.mapX),
-        mapX: selected.mapX,
-        mapZ: selected.mapZ,
-        mode: selected.mode,
+        latLng: L.latLng(locator.mapZ, locator.mapX),
+        mapX: locator.mapX,
+        mapZ: locator.mapZ,
+        mode: locator.mode,
     };
 };
 
@@ -258,6 +106,8 @@ type AnimationState = {
 };
 
 const ENDFIELD_LOCATOR_TAB_KEY = 'endfield.locator.tab.booted';
+const POSITION_UNAVAILABLE_RETRY_MS = 5000;
+const POSITION_UPSTREAM_NOT_IN_GAME_CODE = 19001;
 
 const disableLocatorSync = (): void => {
     const current = readEFTrackerConf();
@@ -269,7 +119,6 @@ const disableLocatorSync = (): void => {
         });
     }
 
-    clearEndfieldSession();
     useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
     useLocatorStore.getState().setViewMode('off');
     useLocatorStore.getState().setLastPosition(null);
@@ -282,9 +131,34 @@ const shouldDisableLocatorOnTabBoot = (): boolean => {
     return false;
 };
 
+const getPositionErrorDetails = (error: EFBackendError): {
+    upstreamCode?: unknown;
+    upstreamMessage?: unknown;
+} | undefined => {
+    const details = error.details as {
+        upstreamCode?: unknown;
+        upstreamMessage?: unknown;
+    } | undefined;
+    return details;
+};
+
+const isPositionNotInGameError = (error: EFBackendError): boolean => {
+    const details = getPositionErrorDetails(error);
+    return Number(details?.upstreamCode) === POSITION_UPSTREAM_NOT_IN_GAME_CODE;
+};
+
+const showPositionUnavailableBanner = (error: EFBackendError): void => {
+    const details = getPositionErrorDetails(error);
+    if (!isPositionNotInGameError(error)) return;
+    if (typeof details?.upstreamMessage !== 'string' || !details.upstreamMessage.trim()) return;
+
+    useLocatorStore.getState().showBanner(details.upstreamMessage.trim());
+};
+
 export function useEndfieldMapTracker(map: L.Map | undefined): void {
     const [configVersion, setConfigVersion] = useState(0);
-    const trackerRef = useRef<MapTracker | null>(null);
+    const trackerRunningRef = useRef(false);
+    const pollTimerRef = useRef<number | null>(null);
     const trackerLayerRef = useRef<L.LayerGroup | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
@@ -322,6 +196,14 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
             state.running = false;
         };
 
+        const cleanupPolling = () => {
+            trackerRunningRef.current = false;
+            if (pollTimerRef.current !== null) {
+                window.clearTimeout(pollTimerRef.current);
+                pollTimerRef.current = null;
+            }
+        };
+
         const ensureTrackerLayerAttached = () => {
             const layer = trackerLayerRef.current;
             if (!layer) return;
@@ -335,7 +217,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
         };
 
         const markDetachedByUserViewChange = () => {
-            if (!trackerRef.current?.isRunning()) return;
+            if (!trackerRunningRef.current) return;
             useLocatorStore.getState().setViewMode('detached');
         };
 
@@ -408,47 +290,19 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 return;
             }
 
-            if (!hasEndfieldSessionCookies()) {
-                disableLocatorSync();
-                return;
-            }
-
             const pane = ensureTrackerPane(map);
             const trackerLayer = L.layerGroup();
             trackerLayer.addTo(map);
             trackerLayerRef.current = trackerLayer;
 
-            const session = readEndfieldSession();
-            if (!session) {
-                disableLocatorSync();
-                return;
-            }
-
             if (disposed) return;
 
-            const tracker = new MapTracker({
-                roleId: config.roleId,
-                serverId: config.serverId,
-                cred: session.cred,
-                token: session.token,
-                baseUrl: config.baseUrl,
-                intervalMs: config.intervalMs,
-                pauseWhenHidden: true,
-                debug: config.debug,
-                onError: () => {
-                    if (!disposed) {
-                        disableLocatorSync();
-                    }
-                },
-            });
-
-            trackerRef.current = tracker;
-
-            const applyPositionUpdate = (payload: PositionResponse['data']) => {
+            const applyPositionUpdate = (payload: PositionResponse['data'], locator: EFLocatorPosition) => {
                 if (payload.isOnline === false) return;
 
+                useLocatorStore.getState().clearBanner();
                 ensureTrackerLayerAttached();
-                const converted = convertGamePosition(payload);
+                const converted = convertGamePosition(locator);
                 let marker = markerRef.current;
 
                 if (!marker) {
@@ -456,7 +310,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                     markerRef.current = marker;
                 }
 
-                const mappedRegion = resolveRegionKeyFromPayload(payload);
+                const mappedRegion = locator.regionKey;
                 if (config.locatorSync && mappedRegion && REGION_DICT[mappedRegion]) {
                     const store = useRegion.getState();
                     const targetRegion = mappedRegion;
@@ -484,21 +338,56 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
                 setTargetPosition(converted.latLng);
             };
 
+            const scheduleNextPoll = (delayMs: number) => {
+                if (!trackerRunningRef.current || disposed) return;
+                if (pollTimerRef.current !== null) {
+                    window.clearTimeout(pollTimerRef.current);
+                }
+                pollTimerRef.current = window.setTimeout(() => {
+                    void pollOnce();
+                }, delayMs);
+            };
+
+            const pollOnce = async () => {
+                if (!trackerRunningRef.current || disposed) return;
+
+                try {
+                    const response = await getEFPosition();
+                    applyPositionUpdate(response.data, response.locator);
+                    scheduleNextPoll(response.data.isOnline === false ? (config.intervalMs ?? 1500) * 3 : (config.intervalMs ?? 1500));
+                } catch (error) {
+                    if (disposed) return;
+                    if (!(error instanceof EFBackendError) || (!isPositionNotInGameError(error) && error.code !== 'ENDFIELD_POSITION_UNAVAILABLE')) {
+                        disableLocatorSync();
+                        return;
+                    }
+                    showPositionUnavailableBanner(error);
+                    scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
+                }
+            };
+
             map.on('talos:regionSwitched', onRegionSwitched);
             map.on('dragstart', markDetachedByUserViewChange);
             map.on('zoomstart', markDetachedByUserViewChange);
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
-            void tracker.fetchCurrentPosition()
-                .then((payload) => {
+            trackerRunningRef.current = true;
+            void getEFPosition()
+                .then((response) => {
                     if (disposed) return;
-                    applyPositionUpdate(payload);
-                    tracker.subscribe(applyPositionUpdate);
-                    tracker.start();
+                    applyPositionUpdate(response.data, response.locator);
                     useLocatorStore.getState().setViewMode('tracking');
+                    scheduleNextPoll(config.intervalMs ?? 1500);
                 })
-                .catch(() => {
-                    if (!disposed) disableLocatorSync();
+                .catch((error: unknown) => {
+                    if (disposed) return;
+                    if (error instanceof EFBackendError && (isPositionNotInGameError(error) || error.code === 'ENDFIELD_POSITION_UNAVAILABLE')) {
+                        useLocatorStore.getState().setViewMode('tracking');
+                        showPositionUnavailableBanner(error);
+                        scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
+                        return;
+                    }
+                    disableLocatorSync();
                 });
         };
 
@@ -507,8 +396,7 @@ export function useEndfieldMapTracker(map: L.Map | undefined): void {
         return () => {
             disposed = true;
             cleanupAnimation();
-            trackerRef.current?.destroy();
-            trackerRef.current = null;
+            cleanupPolling();
 
             map.off('talos:regionSwitched', onRegionSwitched);
             map.off('dragstart', markDetachedByUserViewChange);

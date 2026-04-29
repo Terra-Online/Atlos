@@ -1,26 +1,20 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 @use '../../styles/size.scss' as *;
-
-.locatorSwitch {
-    margin-top: 0.35rem;
-}
-
 .locatorButton {
     border: 0;
-
-    /* stylelint-disable-next-line selector-pseudo-class-no-unknown -- CSS Modules global selector */
     :global(svg) {
         scale: 0.9;
         transform: translate(-1px, 1px);
     }
 }
+
 ol.bindStep {
     list-style: none;
     font-family: "FedraSansPro Normal", HMSans, "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     font-weight: 500;
     text-decoration: none;
-    font-size: 1rem;
+    font-size: 15px;
     text-transform: none;
     padding-inline-start: 1.25rem;
     margin-block-start: 0;
@@ -30,8 +24,63 @@ ol.bindStep {
         &::marker {
             font-variant-numeric: lining-nums !important;
         }
+        > a {
+            color: $primary-accent-4;
+            text-decoration: none;
+            position: relative;
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 100%;
+                height: 1.5px;
+                background-color: $primary-accent-4;
+                transform: scaleX(0);
+                transition: transform .3s ease;
+                transform-origin: right center;
+            }
+
+            &:hover::after {
+                transform-origin: left center;
+                transform: scaleX(1);
+            }
+        }
     }
 }
+
+.bindingManagePanel {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+    padding: .75rem;
+    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
+    border-radius: 4px;
+    background: rgba($black-0, 0.05);
+}
+
+.bindingManageTitle {
+    color: var(--auth-text);
+    font-family: "Novecento DemiBold", "HMSans_EN", HMSans, "UD_ShinGo DemiBold", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.bindingManageMeta {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    color: var(--settings-section-text, $grey-1);
+    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.manageActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .mobileLocatorShell {
     position: fixed;
     top: 1rem;
@@ -102,11 +151,14 @@ ol.bindStep {
 
 .tokenTextarea {
     width: 100%;
-    min-height: 8rem;
+    min-height: 6rem;
     resize: vertical;
-    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
     border-radius: 4px;
-    background: rgba($black-0, 0.04);
+    @supports (corner-shape: superellipse(1.5)) {
+        corner-shape: superellipse(1.5);
+        border-radius: 12px;
+    }
+    background: rgba($black-0, 0.1);
     color: var(--auth-text);
     padding: 0.65rem 0.75rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -132,7 +184,7 @@ ol.bindStep {
     border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
     border-radius: 4px;
     background: rgba($black-0, 0.05);
-    padding: 0.55rem;
+    padding: 0.5rem;
 }
 
 .roleOption {
@@ -163,7 +215,7 @@ ol.bindStep {
 }
 
 .error {
-    color: #d04a3a;
+    color: var(--ack-link);
     font-size: 0.82rem;
     font-weight: 800;
     min-height: 1rem;
@@ -173,7 +225,7 @@ ol.bindStep {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-bottom: 10%;
+    padding-bottom: 1rem;
 }
 
 .policyReminder {

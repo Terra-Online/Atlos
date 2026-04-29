@@ -232,10 +232,28 @@ $mobile-indicator-height: 0.48rem;
         justify-content: center;
         width: 100%;
         height: 100%;
+        svg {
+            transition: all 0.3s ease;
+            fill: var(--regswitch-icon-off);
+            width: 1.5rem;
+            height: 1.5rem;
+        }
         .subregColorBlock {
             width: 1.5rem;
             height: 1.5rem;
             border-radius: 3px;
+        }
+    }
+    &.selected {
+        background-color: var(--regswitch-selected);
+        box-shadow: 0 0 4px rgba($black-0, 0.75);
+
+        .subregName {
+            color: var(--regswitch-icon-on);
+        }
+
+        .subregIcon svg {
+            fill: var(--regswitch-icon-on);
         }
     }
 }

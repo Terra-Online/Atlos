@@ -271,23 +271,28 @@
       "privacy": "隐私权政策",
       "dataCollection": "信息收集清单",
       "disclaimer": "责任豁免声明",
-      "chinaTab": "国服（Hypergryph)",
-      "globalTab": "国际服（Gryphline)",
-      "CNStep0": "前往<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>游戏官网</a>，并确保处于登录状态。",
-      "UniStep0": "前往<a href='https://endfield.gryphline.com/' target='_blank' rel='noopener noreferrer'>游戏官网</a>，并确保处于登录状态。",
+      "chinaTab": "国服 (Hypergryph)",
+      "globalTab": "国际服 (Gryphline)",
+      "CNStep0": "前往<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
+      "UniStep0": "前往<a href='https://endfield.gryphline.com/' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
       "CNStep1": "访问<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>鹰角网络登录态API</a>，复制网页全文。",
       "UniStep1": "访问 <a href='https://web-api.skport.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
       "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
       "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
       "serverFallback": "服务器",
       "levelPrefix": "Lv.",
+      "manageShort": "绑定",
+      "currentBinding": "当前绑定",
+      "changeBinding": "换绑",
+      "unlink": "解除绑定",
       "bindWithCountdown": "绑定并启用位置同步（{sec}）",
       "bind": "绑定并启用位置同步",
       "errors": {
         "noRole": "未找到此账户下的终末地角色。",
         "tokenRequired": "请粘贴 token 接口返回的全文或完整 token 值。",
         "bindingFailed": "绑定失败。",
-        "roleRequired": "请选择角色。"
+        "roleRequired": "请选择角色。",
+        "unlinkFailed": "解除绑定失败。"
       }
     }
   },

@@ -8,6 +8,7 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
+import LocatorBanner from '@/component/locator/LocatorBanner';
 // import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
@@ -134,6 +135,7 @@ function App() {
         <StrictMode>
             <MetaHelper />
             <DomainBanner />
+            <LocatorBanner />
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
                 <UserGuide map={mapInstance} />
