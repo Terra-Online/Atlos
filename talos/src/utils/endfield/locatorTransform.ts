@@ -77,6 +77,11 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
     indie_dg007: 'Wuling',
 };
 
+const SCENE_ID_TO_SUBREGION_KEY: Record<string, string> = {
+    indie07: 'WL_4',
+    indie_dg007: 'WL_4',
+};
+
 const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
     VL: 'Valley_4',
     WL: 'Wuling',
@@ -146,6 +151,22 @@ const resolveRegionKey = (mapId: string, levelId: string): string | null => {
     return null;
 };
 
+const resolveSubregionKey = (mapId: string, levelId: string): string | null => {
+    if (levelId && SUBREGION_ID_BY_LEVEL_ID[levelId]) return SUBREGION_ID_BY_LEVEL_ID[levelId];
+    if (mapId && SUBREGION_ID_BY_LEVEL_ID[mapId]) return SUBREGION_ID_BY_LEVEL_ID[mapId];
+    if (levelId && SCENE_ID_TO_SUBREGION_KEY[levelId]) return SCENE_ID_TO_SUBREGION_KEY[levelId];
+    if (mapId && SCENE_ID_TO_SUBREGION_KEY[mapId]) return SCENE_ID_TO_SUBREGION_KEY[mapId];
+    if (
+        mapId.startsWith('indie07')
+        || levelId.startsWith('indie07')
+        || mapId.includes('indie_dg007')
+        || levelId.includes('indie_dg007')
+    ) {
+        return 'WL_4';
+    }
+    return null;
+};
+
 export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorPosition => {
     const mapId = normalizeSceneId(payload.mapId);
     const levelId = normalizeSceneId(payload.levelId);
@@ -168,6 +189,6 @@ export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorP
         regionKey: (!mapId && !levelId)
             ? null
             : (resolveRegionKey(mapId, levelId) ?? REGION_KEY_BY_PROFILE[profileKey] ?? null),
-        subregionKey: SUBREGION_ID_BY_LEVEL_ID[levelId] ?? null,
+        subregionKey: resolveSubregionKey(mapId, levelId),
     };
 };

@@ -111,6 +111,7 @@ const getPositionSceneKey = (payload: PositionResponse['data']): string =>
 
 const DEFAULT_LOCATOR_INTERVAL_MS = 1000;
 const LOCATOR_TARGET_ZOOM = 3;
+const LOCATOR_FOLLOW_CENTER_RATIO = 0.25;
 const POSITION_UNAVAILABLE_RETRY_MS = 5000;
 
 type UpKind = 'expired' | 'notInGame' | 'policy';
@@ -177,6 +178,7 @@ export function useLocator(map: L.Map | undefined): void {
     const lastSyncedSubregionRef = useRef<string | null>(null);
     const lastSceneKeyRef = useRef<string | null>(null);
     const pendingLocatorFocusRef = useRef<L.LatLng | null>(null);
+    const currentLocatorRegionRef = useRef<string | null>(null);
     const programmaticViewChangeRef = useRef(false);
     const programmaticViewTimeoutRef = useRef<number | null>(null);
     const hasCenteredOnFirstUpdateRef = useRef(false);
@@ -267,11 +269,22 @@ export function useLocator(map: L.Map | undefined): void {
             return false;
         };
 
-        const ensureTrackerLayerAttached = () => {
+        const isLocatorRegionVisible = (regionKey = currentLocatorRegionRef.current): boolean => {
+            if (!regionKey) return true;
+            return useRegion.getState().currentRegionKey === regionKey;
+        };
+
+        const syncTrackerLayerVisibility = (regionKey = currentLocatorRegionRef.current) => {
             const layer = trackerLayerRef.current;
             if (!layer) return;
-            if (!map.hasLayer(layer)) {
-                layer.addTo(map);
+            if (isLocatorRegionVisible(regionKey)) {
+                if (!map.hasLayer(layer)) {
+                    layer.addTo(map);
+                }
+                return;
+            }
+            if (map.hasLayer(layer)) {
+                layer.remove();
             }
         };
 
@@ -297,6 +310,32 @@ export function useLocator(map: L.Map | undefined): void {
             useLocatorStore.getState().setViewMode('tracking');
         };
 
+        const panLocatorIntoCenterBand = (target: L.LatLng) => {
+            if (useLocatorStore.getState().viewMode !== 'tracking') return;
+            if (!isLocatorRegionVisible()) return;
+
+            const size = map.getSize();
+            if (!size.x || !size.y) return;
+
+            const point = map.latLngToContainerPoint(target);
+            const center = size.divideBy(2);
+            const dx = point.x - center.x;
+            const dy = point.y - center.y;
+            const limitX = size.x * LOCATOR_FOLLOW_CENTER_RATIO;
+            const limitY = size.y * LOCATOR_FOLLOW_CENTER_RATIO;
+
+            if (Math.abs(dx) <= limitX && Math.abs(dy) <= limitY) return;
+
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1200);
+            map.panTo(target, {
+                animate: true,
+                duration: 0.65,
+            });
+        };
+
         const consumePendingLocatorFocus = () => {
             const target = pendingLocatorFocusRef.current;
             if (!target) return;
@@ -305,9 +344,11 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const onRegionSwitched = () => {
-            ensureTrackerLayerAttached();
+            syncTrackerLayerVisibility();
             lastSyncedRegionRef.current = null;
-            consumePendingLocatorFocus();
+            if (isLocatorRegionVisible()) {
+                consumePendingLocatorFocus();
+            }
         };
 
         const markDetachedByUserViewChange = () => {
@@ -319,7 +360,25 @@ export function useLocator(map: L.Map | undefined): void {
         const returnToCurrentPosition = () => {
             const lastPosition = useLocatorStore.getState().lastPosition;
             if (!lastPosition) return;
-            focusLocatorPosition(L.latLng(lastPosition.lat, lastPosition.lng));
+            const target = L.latLng(lastPosition.lat, lastPosition.lng);
+            const regionKey = lastPosition.regionKey;
+            const subregionKey = lastPosition.subregionKey;
+            currentLocatorRegionRef.current = regionKey ?? null;
+            pendingLocatorFocusRef.current = target;
+
+            if (subregionKey) {
+                useRegion.getState().requestSubregionSwitch(subregionKey);
+                return;
+            }
+
+            if (regionKey && REGION_DICT[regionKey] && regionKey !== useRegion.getState().currentRegionKey) {
+                useRegion.getState().setCurrentRegion(regionKey);
+                return;
+            }
+
+            pendingLocatorFocusRef.current = null;
+            syncTrackerLayerVisibility(regionKey ?? null);
+            focusLocatorPosition(target);
         };
 
         const onSubregionSwitched = () => {
@@ -394,9 +453,10 @@ export function useLocator(map: L.Map | undefined): void {
                 if (payload.isOnline === false) return;
 
                 useLocatorStore.getState().clearBanner();
-                ensureTrackerLayerAttached();
                 const locator = convertEFPosition(payload);
                 const converted = convertGamePosition(locator);
+                currentLocatorRegionRef.current = locator.regionKey;
+                syncTrackerLayerVisibility(locator.regionKey);
                 let marker = markerRef.current;
                 let shouldDeferFocus = false;
                 const sceneKey = getPositionSceneKey(payload);
@@ -444,6 +504,8 @@ export function useLocator(map: L.Map | undefined): void {
                 useLocatorStore.getState().setLastPosition({
                     lat: converted.latLng.lat,
                     lng: converted.latLng.lng,
+                    regionKey: locator.regionKey,
+                    subregionKey: locator.subregionKey,
                 });
 
                 lastSceneKeyRef.current = sceneKey;
@@ -468,6 +530,7 @@ export function useLocator(map: L.Map | undefined): void {
                 }
 
                 setTargetPosition(converted.latLng);
+                panLocatorIntoCenterBand(converted.latLng);
             };
 
             const scheduleNextPoll = (delayMs: number) => {
@@ -562,6 +625,7 @@ export function useLocator(map: L.Map | undefined): void {
             hasCenteredOnFirstUpdateRef.current = false;
             lastSceneKeyRef.current = null;
             pendingLocatorFocusRef.current = null;
+            currentLocatorRegionRef.current = null;
             programmaticViewChangeRef.current = false;
             if (programmaticViewTimeoutRef.current !== null) {
                 window.clearTimeout(programmaticViewTimeoutRef.current);

@@ -9,25 +9,11 @@ import { agreePolicy } from '@/utils/endfield/backendClient';
 import { readEFTrackerConf, saveEFTrackerConf } from '@/utils/endfield/config';
 import SklandIcon from '@/assets/images/UI/media/sklandicon.svg?react';
 import SkportIcon from '@/assets/images/UI/media/skporticon.svg?react';
-import { inferLocatorAccountModeFromBaseUrl } from './endfieldHosts';
+import { currentMode, disableSession } from './session';
 import { useLocatorStore } from './state';
 import styles from './Locator.module.scss';
 
-const disableSync = (): void => {
-    const current = readEFTrackerConf();
-    if (current) {
-        saveEFTrackerConf({
-            ...current,
-            enabled: false,
-            locatorSync: false,
-        });
-    }
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
-    useLocatorStore.getState().setViewMode('off');
-    useLocatorStore.getState().setLastPosition(null);
-};
-
-const LocatorAuth: React.FC = () => {
+const LocationAuth: React.FC = () => {
     const t = useTranslateUI();
     const open = useLocatorStore((state) => state.authOpen);
     const closeAuth = useLocatorStore((state) => state.closeAuth);
@@ -37,14 +23,14 @@ const LocatorAuth: React.FC = () => {
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
-    const conf = readEFTrackerConf();
-    const mode = inferLocatorAccountModeFromBaseUrl(conf?.baseUrl);
+    const mode = currentMode();
     const Icon = mode === 'skland' ? SklandIcon : SkportIcon;
 
     const close = useCallback(() => {
         if (loading) return;
         setError('');
-        disableSync();
+        disableSession();
+        useLocatorStore.getState().setLastPosition(null);
         closeAuth();
     }, [closeAuth, loading]);
 
@@ -118,4 +104,4 @@ const LocatorAuth: React.FC = () => {
     );
 };
 
-export default React.memo(LocatorAuth);
+export default React.memo(LocationAuth);

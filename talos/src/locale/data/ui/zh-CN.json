@@ -290,6 +290,33 @@
       "locateAuthBody": "启用位置同步后将允许访问您的游戏内位置信息。是否启用？",
       "authAndSync": "授权并开始同步"
     },
+    "config": {
+      "title": "追踪配置",
+      "providerSkland": "CN",
+      "providerSkport": "APAC",
+      "server": "区服",
+      "uid": "玩家 UID",
+      "scopeTitle": "Scope",
+      "scopeHint": "您可以选择在位置追踪时，需要提醒的周围点位范围。",
+      "scope": {
+        "auto": {
+          "title": "自动",
+          "desc": "追踪我们为您选择的点集。"
+        },
+        "collection": {
+          "title": "收集物",
+          "desc": "追踪所有位于<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">档案</span>中的点位。"
+        },
+        "enemy": {
+          "title": "掉落物",
+          "desc": "追踪所有位于<span class=\"keyword\">敌人</span>/<span class=\"keyword\">领袖</span>中的点位。"
+        }
+      },
+      "featureTitle": "Feature",
+      "trail": "记录游戏轨迹与热力图",
+      "trailNotePrefix": "启用此功能表明您已接受我们的 ",
+      "trailNoteSuffix": " 与其他条款。"
+    },
     "errors": {
       "10000": "位置同步会话已过期，请重新绑定。",
       "19001": "无法获取当前位置，请确保已登录游戏。",

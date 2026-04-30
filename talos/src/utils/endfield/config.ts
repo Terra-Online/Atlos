@@ -1,9 +1,13 @@
+export type EFTrackerScope = 'auto' | 'collection' | 'enemy';
+
 export type EFTrackerConf = {
     enabled: boolean;
     baseUrl: string;
     roleId: string;
     serverId: number;
     locatorSync: boolean;
+    scope?: EFTrackerScope[];
+    trail?: boolean;
     intervalMs?: number;
     debug?: boolean;
 };
@@ -27,6 +31,12 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
             roleId: parsed.roleId,
             serverId: Number(parsed.serverId),
             locatorSync: parsed.locatorSync ?? false,
+            scope: Array.isArray(parsed.scope)
+                ? parsed.scope.filter((item): item is EFTrackerScope =>
+                    item === 'auto' || item === 'collection' || item === 'enemy',
+                )
+                : undefined,
+            trail: parsed.trail ?? false,
             intervalMs: parsed.intervalMs,
             debug: parsed.debug ?? false,
         };

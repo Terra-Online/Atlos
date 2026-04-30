@@ -5,6 +5,8 @@ export type LocatorViewMode = 'off' | 'tracking' | 'detached';
 type LocatorPosition = {
     lat: number;
     lng: number;
+    regionKey?: string | null;
+    subregionKey?: string | null;
 };
 
 interface LocatorState {

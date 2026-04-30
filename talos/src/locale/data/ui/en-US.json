@@ -290,6 +290,33 @@
       "locateAuthBody": "Enabling Location Sync will allow access to your in-game location information. Do you want to enable it.",
       "authAndSync": "Authorize and start sync"
     },
+    "config": {
+      "title": "Tracking Config",
+      "providerSkland": "CN",
+      "providerSkport": "APAC",
+      "server": "Server",
+      "uid": "Player UID",
+      "scopeTitle": "Scope",
+      "scopeHint": "Choose which nearby point groups should trigger reminders during location sync.",
+      "scope": {
+        "auto": {
+          "title": "Auto",
+          "desc": "Track the point sets selected for you."
+        },
+        "collection": {
+          "title": "Collectibles",
+          "desc": "Track points in collectibles, exploration and archives."
+        },
+        "enemy": {
+          "title": "Enemies",
+          "desc": "Track points in enemies and bosses."
+        }
+      },
+      "featureTitle": "Feature",
+      "trail": "Record game trajectory and heatmap",
+      "trailNotePrefix": "Enabling this feature means you accept our ",
+      "trailNoteSuffix": " and other terms."
+    },
     "errors": {
       "10000": "Location sync session expired. Please bind again.",
       "19001": "Position unavailable. Please sign in the game.",
