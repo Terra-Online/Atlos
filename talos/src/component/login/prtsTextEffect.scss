@@ -1,9 +1,5 @@
-<<<<<<< feat/locator-sync
 @mixin prts-text-effect($align-self: center, $text-align: center, $enter-y: 50%) {
   --prts-enter-y: #{$enter-y};
-=======
-@mixin prts-text-effect($align-self: center, $text-align: center) {
->>>>>>> main
   width: max-content;
   max-height: 16px;
   overflow: hidden;

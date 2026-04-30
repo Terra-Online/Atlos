@@ -4,17 +4,10 @@ import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Modal from '@/component/modal/modal';
-<<<<<<< feat/locator-sync
 import { TabView } from '@/component/tabView';
 import {
     getAnnouncementDebugMode,
     setAnnouncementLastRead,
-=======
-import {
-    ANNOUNCEMENT_LAST_READ_DATE_KEY,
-    ANNOUNCEMENT_LAST_READ_ID_KEY,
-    getAnnouncementDebugMode,
->>>>>>> main
 } from '@/utils/announcement';
 
 export interface AnnItem {
@@ -52,16 +45,7 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
         if (open && announcements.length > 0 && !isForceUnreadDebug) {
             const latestId = announcements[0]?.id;
             const latestDate = announcements[0]?.date;
-<<<<<<< feat/locator-sync
             setAnnouncementLastRead({ id: latestId, date: latestDate });
-=======
-            if (latestId) {
-                localStorage.setItem(ANNOUNCEMENT_LAST_READ_ID_KEY, latestId);
-            }
-            if (latestDate) {
-                localStorage.setItem(ANNOUNCEMENT_LAST_READ_DATE_KEY, latestDate);
-            }
->>>>>>> main
             onHasUnread?.(false);
         }
     }, [open, announcements, onHasUnread, isForceUnreadDebug]);
