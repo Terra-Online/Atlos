@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
-import styles from './tabView.module.scss';
+import styles from './TabView.module.scss';
 
 export interface TabViewItem {
     key: string;
