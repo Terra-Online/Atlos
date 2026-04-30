@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from './announcement.module.scss';
 import { useTranslateUI } from '@/locale';
 import AnnouncementIcon from '@/assets/logos/announce.svg?react';
 import Modal from '@/component/modal/modal';
+<<<<<<< feat/locator-sync
+import { TabView } from '@/component/tabView';
+import {
+    getAnnouncementDebugMode,
+    setAnnouncementLastRead,
+=======
 import {
     ANNOUNCEMENT_LAST_READ_DATE_KEY,
     ANNOUNCEMENT_LAST_READ_ID_KEY,
     getAnnouncementDebugMode,
+>>>>>>> main
 } from '@/utils/announcement';
 
 export interface AnnItem {
@@ -29,27 +36,10 @@ export interface AnnModalProps {
 const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnread, announcements: passedAnnouncements = [] }) => {
     const t = useTranslateUI();
     const [activeIndex, setActiveIndex] = useState(0);
-    const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
     const announcements = passedAnnouncements;
-    const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
-    const tabBarRef = useRef<HTMLDivElement | null>(null);
-    const tabRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
     const activeItem = announcements[activeIndex] ?? announcements[0];
     const isForceUnreadDebug = getAnnouncementDebugMode() === 'force-unread';
-
-    const updateIndicator = useCallback(() => {
-        const activeTab = tabRefs.current.get(activeIndex);
-        const wrapper = tabBarWrapperRef.current;
-        if (!activeTab || !wrapper) {
-            setIndicatorLeft(null);
-            return;
-        }
-
-        const tabRect = activeTab.getBoundingClientRect();
-        const wrapperRect = wrapper.getBoundingClientRect();
-        const centerX = tabRect.left - wrapperRect.left + tabRect.width / 2;
-        setIndicatorLeft(centerX);
-    }, [activeIndex]);
+    const activeKey = activeItem?.id ?? announcements[0]?.id ?? '';
 
     useEffect(() => {
         if (activeIndex >= announcements.length) {
@@ -57,49 +47,21 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
         }
     }, [activeIndex, announcements.length]);
 
-    useEffect(() => {
-        if (!open || announcements.length === 0) {
-            setIndicatorLeft(null);
-            return;
-        }
-
-        const tabBar = tabBarRef.current;
-        if (!tabBar) return;
-
-        const rafId = requestAnimationFrame(updateIndicator);
-        const handleResize = () => updateIndicator();
-        const handleScroll = () => updateIndicator();
-
-        window.addEventListener('resize', handleResize);
-        tabBar.addEventListener('scroll', handleScroll, { passive: true });
-
-        const resizeObserver = new ResizeObserver(() => updateIndicator());
-        resizeObserver.observe(tabBar);
-
-        const activeTab = tabRefs.current.get(activeIndex);
-        if (activeTab) {
-            resizeObserver.observe(activeTab);
-        }
-
-        return () => {
-            cancelAnimationFrame(rafId);
-            window.removeEventListener('resize', handleResize);
-            tabBar.removeEventListener('scroll', handleScroll);
-            resizeObserver.disconnect();
-        };
-    }, [activeIndex, announcements.length, open, updateIndicator]);
-
     // Mark as read when opened
     useEffect(() => {
         if (open && announcements.length > 0 && !isForceUnreadDebug) {
             const latestId = announcements[0]?.id;
             const latestDate = announcements[0]?.date;
+<<<<<<< feat/locator-sync
+            setAnnouncementLastRead({ id: latestId, date: latestDate });
+=======
             if (latestId) {
                 localStorage.setItem(ANNOUNCEMENT_LAST_READ_ID_KEY, latestId);
             }
             if (latestDate) {
                 localStorage.setItem(ANNOUNCEMENT_LAST_READ_DATE_KEY, latestDate);
             }
+>>>>>>> main
             onHasUnread?.(false);
         }
     }, [open, announcements, onHasUnread, isForceUnreadDebug]);
@@ -127,33 +89,18 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
                     </div>
                 ) : (
                     <>
-                        <div className={styles.tabBarWrapper} ref={tabBarWrapperRef}>
-                            <div className={styles.tabBar} role='tablist' ref={tabBarRef}>
-                                {announcements.map((item, index) => (
-                                    <button
-                                        key={item.id}
-                                        role='tab'
-                                        aria-selected={activeIndex === index}
-                                        ref={(el) => {
-                                            if (el) tabRefs.current.set(index, el);
-                                            else tabRefs.current.delete(index);
-                                        }}
-                                        className={`${styles.tab} ${activeIndex === index ? styles.activeTab : ''}`}
-                                        onClick={() => setActiveIndex(index)}
-                                    >
-                                        {item.title}
-                                    </button>
-                                ))}
-                            </div>
-                            {indicatorLeft !== null && (
-                                <div
-                                    className={styles.tabIndicator}
-                                    style={{ left: `${indicatorLeft}px` }}
-                                />
-                            )}
-                        </div>
-
-                        <div className={styles.description}>{activeItem?.description}</div>
+                        <TabView
+                            items={announcements.map((item) => ({
+                                key: item.id,
+                                label: item.title,
+                                description: item.description,
+                            }))}
+                            activeKey={activeKey}
+                            onChange={(key) => {
+                                const nextIndex = announcements.findIndex((item) => item.id === key);
+                                if (nextIndex >= 0) setActiveIndex(nextIndex);
+                            }}
+                        />
 
                         <div className={styles.content} role='tabpanel'>
                             <ReactMarkdown>{activeItem?.content || ''}</ReactMarkdown>

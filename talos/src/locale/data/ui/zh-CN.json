@@ -263,6 +263,45 @@
       "logout": "登出"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "绑定账号",
+      "docsLead": "若继续绑定，即表明您已阅读并同意下列条款与声明：",
+      "tos": "使用条款",
+      "privacy": "隐私权政策",
+      "dataCollection": "信息收集清单",
+      "disclaimer": "责任豁免声明",
+      "chinaTab": "国服 (Hypergryph)",
+      "globalTab": "国际服 (Gryphline)",
+      "CNStep0": "前往<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
+      "UniStep0": "前往<a href='https://endfield.gryphline.com/' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
+      "CNStep1": "访问<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>鹰角网络登录态API</a>，复制网页全文。",
+      "UniStep1": "访问 <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
+      "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
+      "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
+      "serverFallback": "服务器",
+      "levelPrefix": "Lv.",
+      "currentBinding": "当前绑定",
+      "changeBinding": "切换绑定",
+      "unlink": "解除绑定",
+      "bindWithCountdown": "绑定并启用位置同步（{sec}）",
+      "bind": "绑定并启用位置同步",
+      "locateAuth": "位置同步授权",
+      "locateAuthBody": "启用位置同步后将允许访问您的游戏内位置信息。是否启用？",
+      "authAndSync": "授权并开始同步"
+    },
+    "errors": {
+      "10000": "位置同步会话已过期，请重新绑定。",
+      "19001": "无法获取当前位置，请确保已登录游戏。",
+      "19002": "位置同步需要授权后才能开始。",
+      "noRole": "未找到此账户下的终末地角色。",
+      "tokenRequired": "请粘贴 token 接口返回的全文或完整 token 值。",
+      "bindingFailed": "绑定失败。",
+      "roleRequired": "请选择角色。",
+      "unlinkFailed": "解除绑定失败。",
+      "authorizationFailed": "授权失败。"
+    }
+  },
   "links": {
     "enka": {
       "name": "蓝图编辑器",
@@ -280,6 +319,7 @@
     "all": "全部",
     "selected": "选中项",
     "confirm": "确认",
+    "loading": "加载中...",
     "enable": "启用",
     "disable": "禁用",
     "expand": "展开",

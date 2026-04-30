@@ -5,6 +5,8 @@
 :root,
 :root[data-theme='light'] {
     --ann-panel-bg: #{$light-1};
+<<<<<<< feat/locator-sync
+=======
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
     --ann-tab-inactive-bg: #{$dim-1};
@@ -12,6 +14,7 @@
     --ann-tab-hover-bg: #{$grey-1};
     --ann-desc-bg: #{$grey-1};
     --ann-desc-text: #{$light-1};
+>>>>>>> main
     --ann-content-text: #{$grey-1};
     --ann-content-heading: #{$black-1};
     --ann-border: #{$mid};
@@ -21,6 +24,8 @@
 
 :root[data-theme='dark'] {
     --ann-panel-bg: #{$black-1};
+<<<<<<< feat/locator-sync
+=======
     --ann-tab-active-bg: #{$primary-accent-4};
     --ann-tab-active-text: #{$black-1};
     --ann-tab-inactive-bg: #{$mid};
@@ -29,6 +34,7 @@
     --ann-desc-bg: #{$black-1};
     --ann-desc-text: #{$light-1};
 
+>>>>>>> main
     --ann-content-text: #{$light-1};
     --ann-content-heading: #{$white-1};
     --ann-border: #{$mid};
@@ -47,6 +53,8 @@
     transition: background-color 0.35s $adagio-curve;
 }
 
+<<<<<<< feat/locator-sync
+=======
 .tabBarWrapper {
     flex-shrink: 0;
     position: relative;
@@ -126,13 +134,14 @@
         color 0.35s $adagio-curve;
 }
 
+>>>>>>> main
 .content {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     color: var(--ann-content-text);
     padding: .5rem .5rem 30%;
-    font-family: 'HMSans_EN', 'HMSans', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     letter-spacing: -0.2px;
     font-weight: 600;
     line-height: 1.25;
@@ -149,7 +158,7 @@
     }
 
     h1 {
-        font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+        font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, sans-serif;
         font-size: 1.6rem;
         font-weight: 900;
         color: var(--ann-content-heading);
@@ -159,7 +168,7 @@
     }
 
     h2 {
-        font-family: 'Novecento DemiBold', 'HMSans_EN', 'HMSans', sans-serif;
+        font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, sans-serif;
         font-size: 18px;
         font-weight: 900;
         color: var(--ann-content-heading);
@@ -205,7 +214,6 @@
     img {
         max-width: 60%;
         margin: 0.5rem auto;
-        display: block;
         border: 2px solid var(--detail-image-border);
         box-shadow:
                 0 0 4px 0.5px rgba($black-0, 0.6),

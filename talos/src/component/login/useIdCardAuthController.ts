@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AuthFlowError,
   fetchSessionUser,
@@ -17,6 +17,7 @@ import {
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
 import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
+import { getCachedSession } from '@/utils/backendCache';
 
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;
@@ -70,6 +71,8 @@ const hasOnceLogin = (): boolean => {
   return raw === 'true' || raw === '1';
 };
 
+const cachedSession = getCachedSession();
+
 export const useIdCardAuthController = () => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTabInner] = useState<AuthMode>('login');
@@ -87,6 +90,12 @@ export const useIdCardAuthController = () => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
+  const [authReady, setAuthReady] = useState(cachedSession.hit);
+  const passwordResetRequestInFlightRef = useRef(false);
+
+  const normalizeProfileNameInput = useCallback((value: string): string => {
+    return value.replace(/[^A-Za-z0-9_-]/g, '');
+  }, []);
 
   const normalizeProfileNameInput = useCallback((value: string): string => {
     return value.replace(/[^A-Za-z0-9_-]/g, '');
@@ -126,6 +135,8 @@ export const useIdCardAuthController = () => {
         return null;
       }
       throw new Error('Failed to refresh session after auth.');
+    } finally {
+      setAuthReady(true);
     }
   }, [clearSessionUser, setSessionUser]);
 
@@ -170,7 +181,7 @@ export const useIdCardAuthController = () => {
       setAuthError(null);
       setOpen(true);
     },
-    []
+    [setActiveTab]
   );
 
   const openProfileModal = useCallback(() => {
@@ -190,12 +201,15 @@ export const useIdCardAuthController = () => {
   }, [normalizeProfileNameInput]);
 
   const handleAvatarClick = useCallback(() => {
+    if (!authReady) {
+      return;
+    }
     if (sessionUser) {
       openProfileModal();
       return;
     }
     openAuthModal(hasLoggedInBefore ? 'login' : 'register');
-  }, [hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
+  }, [authReady, hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
 
   const handleCycleProfileAvatar = useCallback(() => {
     setProfileAvatar((current) => getNextAvatarIndex(current));
@@ -327,11 +341,12 @@ export const useIdCardAuthController = () => {
   }: {
     email: string;
   }): Promise<boolean> => {
-    if (isSubmitting) {
+    if (isSubmitting || passwordResetRequestInFlightRef.current) {
       return false;
     }
 
     setAuthError(null);
+    passwordResetRequestInFlightRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -339,13 +354,17 @@ export const useIdCardAuthController = () => {
       const callbackUrl = new URL(window.location.href);
       callbackUrl.search = '';
       callbackUrl.hash = '';
+<<<<<<< feat/locator-sync
+=======
       callbackUrl.searchParams.set('email', normalizedEmail);
+>>>>>>> main
       await requestPasswordReset(normalizedEmail, callbackUrl.toString());
       return true;
     } catch (error) {
       setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
       return false;
     } finally {
+      passwordResetRequestInFlightRef.current = false;
       setIsSubmitting(false);
     }
   }, [isSubmitting]);
@@ -388,6 +407,26 @@ export const useIdCardAuthController = () => {
     }
   }, [isSavingProfile, profileAvatar, profileName, sessionUser, setSessionUser]);
 
+  const handleCloseProfile = useCallback(async () => {
+    if (isSavingProfile) return;
+    if (!sessionUser) {
+      setProfileOpen(false);
+      return;
+    }
+
+    const trimmed = profileName.trim();
+    const currentName = sessionUser.needsProfileSetup ? '' : sessionUser.nickname;
+    const currentAvatar = normalizeAvatarIndex(sessionUser.avatar);
+    const changed = trimmed !== currentName || profileAvatar !== currentAvatar;
+
+    if (!changed) {
+      setProfileOpen(false);
+      return;
+    }
+
+    await handleSaveProfile();
+  }, [handleSaveProfile, isSavingProfile, profileAvatar, profileName, sessionUser]);
+
   const handleLogout = useCallback(async () => {
     try {
       await logoutUser();
@@ -414,6 +453,7 @@ export const useIdCardAuthController = () => {
     resetToken,
     resetEmail,
     sessionUser,
+    authReady,
     profileOpen,
     setProfileOpen,
     profileName,
@@ -427,6 +467,7 @@ export const useIdCardAuthController = () => {
     openProfileModal,
     handleAvatarClick,
     handleCycleProfileAvatar,
+    handleCloseProfile,
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,

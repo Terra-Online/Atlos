@@ -114,6 +114,7 @@ export function useMap(ele: HTMLDivElement | null) {
                 setCurrentRegion(targetRegionKey);
             }
             selectSubregionInternal(targetRegionKey);
+            mapCore?.map.fire('talos:subregionSwitched', { subregionId });
             clearSubregionSwitchRequest();
         };
         void run();

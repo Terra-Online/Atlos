@@ -111,8 +111,6 @@ const Modal: React.FC<ModalProps> = ({
     return undefined;
   }, [phase, exitDuration]);
 
-  useEffect(() => { onChange?.(open); }, [open, onChange]);
-
   // Track scroll position for blur effects
   useEffect(() => {
     const scroller = contentRef.current;

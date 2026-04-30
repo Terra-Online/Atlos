@@ -1,0 +1,291 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+@use '../../styles/size.scss' as *;
+@use '../login/prtsTextEffect.scss' as prts;
+.locatorButton {
+    border: 0;
+    :global(svg) {
+        scale: 0.9;
+        transform: translate(-1px, 1px);
+    }
+}
+
+ol.bindStep {
+    list-style: none;
+    font-family: "FedraSansPro Normal", HMSans, "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 15px;
+    text-transform: none;
+    padding-inline-start: 1.25rem;
+    margin-block-start: 0;
+    margin-block-end: 0;
+    > li {
+        list-style: decimal;
+        &::marker {
+            font-variant-numeric: lining-nums !important;
+        }
+        > a {
+            color: $primary-accent-4;
+            text-decoration: none;
+            position: relative;
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 100%;
+                height: 1.5px;
+                background-color: $primary-accent-4;
+                transform: scaleX(0);
+                transition: transform .3s ease;
+                transform-origin: right center;
+            }
+
+            &:hover::after {
+                transform-origin: left center;
+                transform: scaleX(1);
+            }
+        }
+    }
+}
+
+.bindingManagePanel {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+    padding: .75rem;
+    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
+    border-radius: 4px;
+    background: rgba($black-0, 0.05);
+}
+
+.bindingManageTitle {
+    color: var(--auth-text);
+    font-family: "Novecento DemiBold", "HMSans_EN", HMSans, "UD_ShinGo DemiBold", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.bindingManageMeta {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    color: var(--settings-section-text, $grey-1);
+    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.manageActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mobileLocatorShell {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 920;
+    padding: 6px;
+    border-radius: 36px;
+    background: var(--headbar-bg);
+    backdrop-filter: blur(4px);
+    border: 1.5px solid var(--headbar-bg);
+    box-shadow: 0 3px 12px rgba($black-1, 0.3);
+    pointer-events: auto;
+}
+
+.mobileLocatorButton {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 30px;
+    background: transparent;
+    cursor: pointer;
+    filter: drop-shadow(0 0 2.5px rgba($black-0, 0.6));
+    transition: filter 0.2s ease, transform 0.25s $moderato-curve;
+
+    svg {
+        width: 2rem;
+        height: 2rem;
+        fill: var(--headbar-icon-fill);
+        transition: fill 0.2s ease;
+    }
+
+    &:hover {
+        filter: drop-shadow(0 0 1.75px rgba($black-0, 0.6));
+
+        svg {
+            fill: var(--headbar-icon-active-fill);
+        }
+    }
+
+    &[data-active='true'] {
+        svg {
+            fill: var(--headbar-icon-active-fill);
+        }
+    }
+}
+
+.bindingForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--auth-text);
+    height: 100%;
+    justify-content: space-around;
+    padding: 0 .5rem;
+}
+
+.bindingFields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+}
+
+.tokenTextarea {
+    width: 100%;
+    min-height: 6rem;
+    resize: vertical;
+    border-radius: 4px;
+    @supports (corner-shape: superellipse(1.5)) {
+        corner-shape: superellipse(1.5);
+        border-radius: 12px;
+    }
+    background: rgba($black-0, 0.1);
+    color: var(--auth-text);
+    padding: 0.65rem 0.75rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    outline: none;
+    resize: none;
+
+    &::placeholder {
+        color: var(--settings-section-text, $grey-1);
+        opacity: 0.65;
+    }
+    &:focus-visible {
+        box-shadow: 0 0 0 2px var(--ack-link);
+    }
+}
+
+.roleSelectList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
+    border-radius: 4px;
+    background: rgba($black-0, 0.05);
+    padding: 0.5rem;
+}
+
+.roleOption {
+    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
+    border-radius: 4px;
+    background: transparent;
+    color: var(--settings-section-text, $grey-1);
+    padding: 0.55rem 0.65rem;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &.roleOptionActive {
+        background: var(--settings-trigger-border, rgba($grey-1, 0.75));
+        color: var(--settings-title-text, $black-1);
+    }
+}
+
+.roleOptionName {
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.roleOptionMeta {
+    margin-top: 0.1rem;
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+
+.bindingError {
+  margin: 0 auto;
+  @include prts.prts-text-effect(flex-end, left, 15%);
+}
+
+@include prts.prts-text-effect-keyframes;
+
+.bindingFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+}
+
+.policyReminder {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    font-size: 0.875rem;
+    letter-spacing: -.5px;
+    color: var(--auth-text);
+    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 500;
+    text-align: center;
+    unicode-bidi: plaintext;
+
+    a {
+        color: var(--ack-link);
+        font-family: inherit;
+        font-weight: 500;
+        text-decoration: none;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1.5px;
+            background-color: var(--ack-link);
+            transform: scaleX(0);
+            transition: transform .3s ease;
+            transform-origin: right center;
+        }
+
+        &:hover::after {
+            transform-origin: left center;
+            transform: scaleX(1);
+        }
+    }
+}
+
+.authPane {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: var(--auth-text);
+    padding: 0.25rem 0 1rem;
+}
+
+.authBody {
+    padding: 0 .25rem;
+    font-family: "HMSans_EN", HMSans, "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: left;
+    unicode-bidi: plaintext;
+}
+
+.singleAction {
+    grid-template-columns: minmax(0, 1fr);
+}

@@ -47,7 +47,6 @@ const SettingsSection: React.FC<SectionProps> = ({ titleKey, hintKey, children }
     );
 };
 
-/** Renders a single key cap chip — resolves `variant:'mod'` to the platform-correct width */
 const KeyCap: React.FC<{ chip: KeyChip }> = ({ chip }) => {
     const size = chip.variant === 'mod'
         ? (isMac() ? '1u' : '2u')
@@ -59,7 +58,6 @@ const KeyCap: React.FC<{ chip: KeyChip }> = ({ chip }) => {
     );
 };
 
-/** Renders one shortcut row: label on left, key caps on right */
 const ShortcutRow: React.FC<{ entry: ShortcutEntry }> = ({ entry }) => {
     const t = useTranslateUI();
     return (
@@ -107,7 +105,6 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     const prefsPerformanceMode = usePerformanceMode();
     const setPrefsPerformanceMode = useSetPerformanceMode();
 
-    // Theme
     const themePreference = useTheme();
     const setThemePreference = useSetTheme();
 
@@ -121,17 +118,17 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
     }, [setThemePreference]);
 
     const uiPrefItems = [
-        { isActive: prefsSidebar,        onToggle: setPrefsSidebar,        label: t('settings.uiPrefs.sidebar') },
-        { isActive: prefsFilterOrder,    onToggle: setPrefsFilterOrder,    label: t('settings.uiPrefs.filterOrder') },
-        { isActive: prefsTriggers,       onToggle: setPrefsTriggers,       label: t('settings.uiPrefs.triggers') },
+        { isActive: prefsSidebar, onToggle: setPrefsSidebar, label: t('settings.uiPrefs.sidebar') },
+        { isActive: prefsFilterOrder, onToggle: setPrefsFilterOrder, label: t('settings.uiPrefs.filterOrder') },
+        { isActive: prefsTriggers, onToggle: setPrefsTriggers, label: t('settings.uiPrefs.triggers') },
         { isActive: prefsPerformanceMode, onToggle: setPrefsPerformanceMode, label: t('settings.uiPrefs.performanceMode') },
     ];
 
     const mapPrefItems = [
-        { isActive: prefsViewState,      onToggle: setPrefsViewState,      label: t('settings.mapPrefs.viewState') },
+        { isActive: prefsViewState, onToggle: setPrefsViewState, label: t('settings.mapPrefs.viewState') },
         { isActive: prefsMarkerProgress, onToggle: setPrefsMarkerProgress, label: t('settings.mapPrefs.markerProgress') },
-        { isActive: prefsAutoCluster,    onToggle: setPrefsAutoCluster,    label: t('settings.mapPrefs.autoCluster') },
-        { isActive: prefsHideCompleted,  onToggle: setPrefsHideCompleted,  label: t('settings.mapPrefs.hideCompleted') },
+        { isActive: prefsAutoCluster, onToggle: setPrefsAutoCluster, label: t('settings.mapPrefs.autoCluster') },
+        { isActive: prefsHideCompleted, onToggle: setPrefsHideCompleted, label: t('settings.mapPrefs.hideCompleted') },
     ];
 
     return (

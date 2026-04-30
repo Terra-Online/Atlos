@@ -8,6 +8,8 @@ import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
 import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
+import LocatorBanner from '@/component/locator/LocatorBanner';
+import LocatorAuth from '@/component/locator/LocatorAuth';
 // import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
@@ -15,6 +17,7 @@ import { useSidebarOpen, useSidebarWidth } from '@/store/uiPrefs';
 import { useDevice } from '@/utils/device';
 import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
 import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
+import { useLocator } from '@/component/map/useLocator';
 
 declare global {
     interface Window {
@@ -38,6 +41,7 @@ function App() {
     // Keyboard shortcuts & map multi-select
     useKeyboardShortcuts(mapInstance);
     useMapMultiSelect(mapInstance);
+    useLocator(mapInstance);
 
     // Track previous sidebar state to detect actual toggles
     const prevSidebarOpenRef = useRef(isSidebarOpen);
@@ -132,6 +136,8 @@ function App() {
         <StrictMode>
             <MetaHelper />
             <DomainBanner />
+            <LocatorBanner />
+            <LocatorAuth />
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
                 <UserGuide map={mapInstance} />

@@ -19,10 +19,10 @@ export interface IMapRegion {
 export interface IMapSubregionAreaData {
     id: string;
     name: string;
-    bounds: number[][];
-    tiles: number;
-    tileCoords: number[][];
-    polygon: number[][][];
+    bounds?: number[][];
+    tiles?: number;
+    tileCoords?: number[][];
+    polygon?: number[][][];
 }
 
 export const REGION_DICT = REGION_JSON as Record<string, IMapRegion>;
