@@ -390,6 +390,26 @@ export const useIdCardAuthController = () => {
     }
   }, [isSavingProfile, profileAvatar, profileName, sessionUser, setSessionUser]);
 
+  const handleCloseProfile = useCallback(async () => {
+    if (isSavingProfile) return;
+    if (!sessionUser) {
+      setProfileOpen(false);
+      return;
+    }
+
+    const trimmed = profileName.trim();
+    const currentName = sessionUser.needsProfileSetup ? '' : sessionUser.nickname;
+    const currentAvatar = normalizeAvatarIndex(sessionUser.avatar);
+    const changed = trimmed !== currentName || profileAvatar !== currentAvatar;
+
+    if (!changed) {
+      setProfileOpen(false);
+      return;
+    }
+
+    await handleSaveProfile();
+  }, [handleSaveProfile, isSavingProfile, profileAvatar, profileName, sessionUser]);
+
   const handleLogout = useCallback(async () => {
     try {
       await logoutUser();
@@ -429,6 +449,7 @@ export const useIdCardAuthController = () => {
     openProfileModal,
     handleAvatarClick,
     handleCycleProfileAvatar,
+    handleCloseProfile,
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,

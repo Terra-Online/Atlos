@@ -350,6 +350,9 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const [bindingStatus, setBindingStatus] = useState<EFBindingSummary | null>(null);
     const [replaceMode, setReplaceMode] = useState(false);
     const l = useCallback((key: string, fallback: string) => t(key) || fallback, [t]);
+    const errorText = error ?? '';
+    const shouldShowError = open && Boolean(errorText);
+    const isErrorRemoved = !shouldShowError;
 
     const resetTransient = useCallback(() => {
         setError('');
@@ -552,7 +555,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                             className={styles.tokenTextarea}
                             value={tokenInput}
                             onChange={(event) => setTokenInput(sanitizeToken(event.target.value))}
-                            placeholder={t('locator.binding.tokenTextareaPlaceholder')}
+                            placeholder={'"code":0,"data":{"content":"..."}'}
                             spellCheck={false}
                         />
                     </div>
@@ -582,7 +585,14 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
                     </>
                 )}
 
-                {error ? <div className={styles.error}>{error}</div> : <div className={styles.error} aria-hidden="true" />}
+                <div
+                    className={styles.bindingError}
+                    data-removed={isErrorRemoved ? 'true' : 'false'}
+                    data-text={errorText}
+                    aria-live="polite"
+                >
+                    {errorText}
+                </div>
 
                 <div className={styles.bindingFooter}>
                     <div className={styles.policyReminder}>

@@ -116,7 +116,7 @@ const POSITION_UNAVAILABLE_RETRY_MS = 5000;
 type UpKind = 'expired' | 'notInGame' | 'policy';
 
 const UP_KIND: Partial<Record<number, UpKind>> = {
-    19000: 'expired',
+    10000: 'expired',
     19001: 'notInGame',
     19002: 'policy',
 };
@@ -244,6 +244,12 @@ export function useLocator(map: L.Map | undefined): void {
             useLocatorStore.getState().openAuth();
         };
 
+        const onNotInGame = (error: EFBackendError) => {
+            showErr(error);
+            cleanupPolling();
+            disableLocatorSync();
+        };
+
         const onUpstream = (error: EFBackendError): boolean => {
             const kind = errKind(error);
             if (kind === 'expired') {
@@ -255,7 +261,7 @@ export function useLocator(map: L.Map | undefined): void {
                 return true;
             }
             if (kind === 'notInGame') {
-                pauseForErr(error);
+                onNotInGame(error);
                 return true;
             }
             return false;

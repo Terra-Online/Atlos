@@ -45,7 +45,7 @@
 
 .profileError {
   margin: auto;
-  @include prts.prts-text-effect(flex-end, left);
+  @include prts.prts-text-effect(flex-end, left, 25%);
 }
 
 @include prts.prts-text-effect-keyframes;

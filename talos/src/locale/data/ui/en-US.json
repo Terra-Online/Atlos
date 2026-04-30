@@ -286,16 +286,16 @@
       "unlink": "Unlink",
       "bindWithCountdown": "Bind and enable location sync ({sec})",
       "bind": "Bind and enable location sync",
-      "authorizationTitle": "Location Sync Authorization",
-      "authorizationBody": "Enabling Location Sync will allow access to your in-game location information. Do you want to enable it",
-      "authorizeAndSync": "Authorize and start sync"
+      "locateAuth": "Authorize",
+      "locateAuthBody": "Enabling Location Sync will allow access to your in-game location information. Do you want to enable it.",
+      "authAndSync": "Authorize and start sync"
     },
     "errors": {
-      "19000": "Location sync session expired. Please bind again.",
+      "10000": "Location sync session expired. Please bind again.",
       "19001": "Position unavailable: Not in game.",
       "19002": "Location sync requires authorization before it can start.",
       "noRole": "No Endfield roles found on this account.",
-      "tokenRequired": "Paste the full token API response or the token value.",
+      "tokenRequired": "Paste the full response or the token.",
       "bindingFailed": "Binding failed.",
       "roleRequired": "Please select a role.",
       "unlinkFailed": "Failed to unlink binding.",

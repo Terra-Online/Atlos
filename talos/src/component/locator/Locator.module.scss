@@ -1,6 +1,7 @@
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 @use '../../styles/size.scss' as *;
+@use '../login/prtsTextEffect.scss' as prts;
 .locatorButton {
     border: 0;
     :global(svg) {
@@ -214,12 +215,12 @@ ol.bindStep {
     opacity: 0.85;
 }
 
-.error {
-    color: var(--ack-link);
-    font-size: 0.82rem;
-    font-weight: 800;
-    min-height: 1rem;
+.bindingError {
+  margin: 0 auto;
+  @include prts.prts-text-effect(flex-end, left, 15%);
 }
+
+@include prts.prts-text-effect-keyframes;
 
 .bindingFooter {
     display: flex;
@@ -276,12 +277,12 @@ ol.bindStep {
 }
 
 .authBody {
-    padding: 0 5%;
-    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    padding: 0 .25rem;
+    font-family: "HMSans_EN", HMSans, "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
-    line-height: 1.35;
-    text-align: center;
+    line-height: 1.25;
+    text-align: left;
     unicode-bidi: plaintext;
 }
 

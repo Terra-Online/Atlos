@@ -36,6 +36,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
     isSavingProfile,
     handleAvatarClick,
     handleCycleProfileAvatar,
+    handleCloseProfile,
     handleDiscordAuthClick,
     handleGoogleAuthClick,
     handleRequestVerificationCode,
@@ -145,6 +146,7 @@ const IDCard = ({ username, id }: { username?: string; id?: string }) => {
         cardProfile={cardProfile}
         profileAvatar={profileAvatar}
         onAvatarCycle={handleCycleProfileAvatar}
+        handleCloseProfile={handleCloseProfile}
         handleSaveProfile={handleSaveProfile}
         handleLogout={handleLogout}
       />

@@ -7,9 +7,25 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useTranslateUI } from '@/locale';
 import { agreePolicy } from '@/utils/endfield/backendClient';
 import { readEFTrackerConf, saveEFTrackerConf } from '@/utils/endfield/config';
-import BindingIcon from '@/assets/logos/binding.svg?react';
+import SklandIcon from '@/assets/images/UI/media/sklandicon.svg?react';
+import SkportIcon from '@/assets/images/UI/media/skporticon.svg?react';
+import { inferLocatorAccountModeFromBaseUrl } from './endfieldHosts';
 import { useLocatorStore } from './state';
 import styles from './Locator.module.scss';
+
+const disableSync = (): void => {
+    const current = readEFTrackerConf();
+    if (current) {
+        saveEFTrackerConf({
+            ...current,
+            enabled: false,
+            locatorSync: false,
+        });
+    }
+    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
+    useLocatorStore.getState().setViewMode('off');
+    useLocatorStore.getState().setLastPosition(null);
+};
 
 const LocatorAuth: React.FC = () => {
     const t = useTranslateUI();
@@ -18,10 +34,17 @@ const LocatorAuth: React.FC = () => {
     const clearBanner = useLocatorStore((state) => state.clearBanner);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const errorText = error ?? '';
+    const shouldShowError = open && Boolean(errorText);
+    const isErrorRemoved = !shouldShowError;
+    const conf = readEFTrackerConf();
+    const mode = inferLocatorAccountModeFromBaseUrl(conf?.baseUrl);
+    const Icon = mode === 'skland' ? SklandIcon : SkportIcon;
 
     const close = useCallback(() => {
         if (loading) return;
         setError('');
+        disableSync();
         closeAuth();
     }, [closeAuth, loading]);
 
@@ -63,15 +86,22 @@ const LocatorAuth: React.FC = () => {
             open={open}
             size="s"
             onClose={close}
-            title={t('locator.binding.authorizationTitle') || 'Location Sync Authorization'}
-            icon={<BindingIcon />}
+            title={t('locator.binding.locateAuth') || 'Location Sync Authorization'}
+            icon={<Icon />}
             iconScale={0.86}
         >
             <div className={styles.authPane}>
                 <div className={styles.authBody}>
-                    {t('locator.binding.authorizationBody') || 'Enabling Location Sync will allow access to your in-game location information. Do you want to enable it'}
+                    {t('locator.binding.locateAuthBody') || 'Enabling Location Sync will allow access to your in-game location information. Do you want to enable it'}
                 </div>
-                {error ? <div className={styles.error}>{error}</div> : <div className={styles.error} aria-hidden="true" />}
+                <div
+                    className={styles.bindingError}
+                    data-removed={isErrorRemoved ? 'true' : 'false'}
+                    data-text={errorText}
+                    aria-live="polite"
+                >
+                    {errorText}
+                </div>
                 <div className={classNames(profileStyles.profileActions, styles.singleAction)}>
                     <AccessButton
                         onClick={() => {
@@ -80,7 +110,7 @@ const LocatorAuth: React.FC = () => {
                         disabled={loading}
                         label={loading
                             ? (t('common.loading') || 'Loading...')
-                            : (t('locator.binding.authorizeAndSync') || 'Authorize and start sync')}
+                            : (t('locator.binding.authAndSync') || 'Authorize and start sync')}
                     />
                 </div>
             </div>

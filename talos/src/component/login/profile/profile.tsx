@@ -17,6 +17,7 @@ interface ProfileModalProps {
   cardProfile: IdCardRenderModel;
   profileAvatar: number;
   onAvatarCycle: () => void;
+  handleCloseProfile: () => Promise<void>;
   handleSaveProfile: () => Promise<void>;
   handleLogout: () => Promise<void>;
 }
@@ -31,6 +32,7 @@ const ProfileModal = ({
   cardProfile,
   profileAvatar,
   onAvatarCycle,
+  handleCloseProfile,
   handleSaveProfile,
   handleLogout,
 }: ProfileModalProps) => {
@@ -49,8 +51,16 @@ const ProfileModal = ({
       title={t('idcard.profile.title')}
       icon={<ProfileIcon />}
       iconScale={0.8}
-      onClose={() => setProfileOpen(false)}
-      onChange={setProfileOpen}
+      onClose={() => {
+        void handleCloseProfile();
+      }}
+      onChange={(nextOpen) => {
+        if (nextOpen) {
+          setProfileOpen(true);
+          return;
+        }
+        void handleCloseProfile();
+      }}
     >
       <div className={styles.profileModal}>
         <IdCardView
