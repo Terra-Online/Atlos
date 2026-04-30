@@ -292,7 +292,7 @@
     },
     "errors": {
       "10000": "Location sync session expired. Please bind again.",
-      "19001": "Position unavailable: Not in game.",
+      "19001": "Position unavailable. Please sign in the game.",
       "19002": "Location sync requires authorization before it can start.",
       "noRole": "No Endfield roles found on this account.",
       "tokenRequired": "Paste the full response or the token.",

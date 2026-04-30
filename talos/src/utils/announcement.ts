@@ -31,7 +31,7 @@ export interface AnnouncementLatestMeta {
 const REMOTE_BASE = 'https://blog.opendfieldmap.org';
 const LOCAL_BASE = 'http://localhost:3000';
 const BLOG_ASSET_BASE = ((import.meta.env.VITE_ANNOUNCEMENT_ASSET_BASE as string | undefined)?.trim() || REMOTE_BASE).replace(/\/$/, '');
-const ANNOUNCEMENT_STORAGE_KEY = 'announcement_state';
+const ANNOUNCEMENT_STORAGE_KEY = 'announcementState';
 const OLD_ANNOUNCEMENT_LATEST_ID_KEY_PREFIX = 'announcement_latest_id';
 const OLD_ANNOUNCEMENT_BODY_CACHE_KEY_PREFIX = 'announcement_cache_body';
 const OLD_ANNOUNCEMENT_VERSION_KEY_PREFIX = 'announcement_version';

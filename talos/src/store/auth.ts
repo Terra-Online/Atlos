@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { SessionUser } from '@/component/login/authTypes';
+import { getCachedSession, setCachedSession } from '@/utils/backendCache';
 
 interface AuthState {
   sessionUser: SessionUser | null;
@@ -7,8 +8,16 @@ interface AuthState {
   clearSessionUser: () => void;
 }
 
+const cachedSession = getCachedSession();
+
 export const useAuthStore = create<AuthState>((set) => ({
-  sessionUser: null,
-  setSessionUser: (user) => set({ sessionUser: user }),
-  clearSessionUser: () => set({ sessionUser: null }),
+  sessionUser: cachedSession.hit ? cachedSession.value : null,
+  setSessionUser: (user) => {
+    setCachedSession(user);
+    set({ sessionUser: user });
+  },
+  clearSessionUser: () => {
+    setCachedSession(null);
+    set({ sessionUser: null });
+  },
 }));

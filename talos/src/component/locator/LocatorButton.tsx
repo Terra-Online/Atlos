@@ -21,6 +21,7 @@ import {
     saveEFTrackerConf,
     type EFTrackerConf,
 } from '@/utils/endfield/config';
+import { getCachedBinding, setCachedBinding } from '@/utils/backendCache';
 import { SubregionSwitch } from '@/component/regSwitch/regSwitch';
 import regSwitchStyles from '@/component/regSwitch/regSwitch.module.scss';
 import profileStyles from '@/component/login/profile/profile.module.scss';
@@ -127,6 +128,10 @@ const applyRoleConfig = (
 const enableExistingLocatorSession = async (): Promise<boolean> => {
     const current = readEFTrackerConf();
     const status = await getEFBindingStatus();
+    const sessionUser = useAuthStore.getState().sessionUser;
+    if (sessionUser?.uid) {
+        setCachedBinding(sessionUser.uid, status.binding);
+    }
     if (!status.binding.bound || !status.binding.enabled || !status.binding.roleId || status.binding.serverId === undefined) {
         return false;
     }
@@ -176,11 +181,13 @@ interface LocatorButtonProps {
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) => {
     const t = useTranslateUI();
     const sessionUser = useAuthStore((state) => state.sessionUser);
+    const uid = sessionUser?.uid;
     const viewMode = useLocatorStore((state) => state.viewMode);
     const bindReq = useLocatorStore((state) => state.bindReq);
+    const cachedBinding = useMemo(() => getCachedBinding(uid), [uid]);
     const [bindingOpen, setBindingOpen] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
-    const [bound, setBound] = useState(false);
+    const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
 
     const refreshBindingStatus = useCallback(() => {
         if (!sessionUser) {
@@ -188,9 +195,22 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
             return;
         }
         void getEFBindingStatus()
-            .then((status) => setBound(Boolean(status.binding.bound)))
+            .then((status) => {
+                setCachedBinding(sessionUser.uid, status.binding);
+                setBound(Boolean(status.binding.bound));
+            })
             .catch(() => setBound(false));
     }, [sessionUser]);
+
+    useEffect(() => {
+        if (!sessionUser) {
+            setBound(false);
+            return;
+        }
+        if (cachedBinding.hit) {
+            setBound(Boolean(cachedBinding.value?.bound));
+        }
+    }, [cachedBinding.hit, cachedBinding.value?.bound, sessionUser]);
 
     useEffect(() => {
         refreshBindingStatus();
@@ -347,7 +367,11 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [countdown, setCountdown] = useState(BIND_COUNTDOWN_SECONDS);
-    const [bindingStatus, setBindingStatus] = useState<EFBindingSummary | null>(null);
+    const sessionUser = useAuthStore((state) => state.sessionUser);
+    const uid = sessionUser?.uid;
+    const cachedBinding = useMemo(() => getCachedBinding(uid), [uid]);
+    const [bindingStatus, setBindingStatus] = useState<EFBindingSummary | null>(cachedBinding.value);
+    const [statusLoading, setStatusLoading] = useState(!cachedBinding.hit);
     const [replaceMode, setReplaceMode] = useState(false);
     const l = useCallback((key: string, fallback: string) => t(key) || fallback, [t]);
     const errorText = error ?? '';
@@ -373,22 +397,35 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
 
     useEffect(() => {
         if (!open) return undefined;
+        if (cachedBinding.hit) {
+            setBindingStatus(cachedBinding.value);
+        }
+        setStatusLoading(!cachedBinding.hit);
         void getEFBindingStatus()
-            .then((status) => setBindingStatus(status.binding))
-            .catch(() => setBindingStatus(null));
+            .then((status) => {
+                if (sessionUser?.uid) {
+                    setCachedBinding(sessionUser.uid, status.binding);
+                }
+                setBindingStatus(status.binding);
+            })
+            .catch(() => setBindingStatus(null))
+            .finally(() => setStatusLoading(false));
         setCountdown(BIND_COUNTDOWN_SECONDS);
         const timer = window.setInterval(() => {
             setCountdown((value) => Math.max(0, value - 1));
         }, 1000);
         return () => window.clearInterval(timer);
-    }, [open]);
+    }, [cachedBinding, open, sessionUser?.uid]);
 
     const handleUnlink = useCallback(async () => {
         if (loading) return;
         setError('');
         setLoading(true);
         try {
-            await unlinkEFBinding();
+            const result = await unlinkEFBinding();
+            if (sessionUser?.uid) {
+                setCachedBinding(sessionUser.uid, result.binding);
+            }
             onBindingRemoved?.();
             close();
         } catch (err) {
@@ -396,7 +433,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         } finally {
             setLoading(false);
         }
-    }, [close, l, loading, onBindingRemoved]);
+    }, [close, l, loading, onBindingRemoved, sessionUser?.uid]);
 
     const loadRoles = useCallback(async (
         nextFlowId: string,
@@ -408,7 +445,10 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         }
 
         if (roles.length === 1) {
-            await bindEFRole(nextFlowId, roles[0]);
+            const result = await bindEFRole(nextFlowId, roles[0]);
+            if (sessionUser?.uid) {
+                setCachedBinding(sessionUser.uid, result.binding);
+            }
             applyRoleConfig(mode, roles[0]);
             close();
             return;
@@ -420,7 +460,7 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
         setFlowId(nextFlowId);
         setAccountMode(mode);
         setStep('role');
-    }, [close, l]);
+    }, [close, l, sessionUser?.uid]);
 
     const bindByToken = useCallback(async () => {
         const accountToken = extractToken(tokenInput);
@@ -439,10 +479,13 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             setError(l('locator.errors.roleRequired', 'Please select a role.'));
             return;
         }
-        await bindEFRole(flowId, role);
+        const result = await bindEFRole(flowId, role);
+        if (sessionUser?.uid) {
+            setCachedBinding(sessionUser.uid, result.binding);
+        }
         applyRoleConfig(accountMode, role);
         close();
-    }, [accountMode, close, flowId, l, roleOptions, selectedRoleKey]);
+    }, [accountMode, close, flowId, l, roleOptions, selectedRoleKey, sessionUser?.uid]);
 
     const handleBind = useCallback(async () => {
         if (loading || countdown > 0) return;
@@ -515,7 +558,13 @@ const LocatorBindingModal: React.FC<LocatorBindingModalProps> = ({ open, onClose
             iconScale={0.86}
         >
             <div className={styles.bindingForm}>
-                {bindingStatus?.bound && !replaceMode ? (
+                {statusLoading && !replaceMode ? (
+                    <div className={styles.bindingManagePanel}>
+                        <div className={styles.bindingManageTitle}>
+                            {t('common.loading') || 'Loading'}
+                        </div>
+                    </div>
+                ) : bindingStatus?.bound && !replaceMode ? (
                     <div className={styles.bindingManagePanel}>
                         <div className={styles.bindingManageTitle}>
                             {t('locator.binding.currentBinding') || 'Current Binding'}

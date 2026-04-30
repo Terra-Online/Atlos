@@ -9,6 +9,7 @@ interface UseIdCardProfileViewModelOptions {
   fallbackUsername?: string;
   fallbackUid?: string;
   hasLoggedInBefore?: boolean;
+  authReady?: boolean;
 }
 
 interface IdCardProfileViewModel {
@@ -129,10 +130,28 @@ export const useIdCardProfileViewModel = ({
   fallbackUsername,
   fallbackUid,
   hasLoggedInBefore = false,
+  authReady = true,
 }: UseIdCardProfileViewModelOptions): IdCardProfileViewModel => {
   const t = useTranslateUI();
 
   return useMemo(() => {
+    if (!authReady && hasLoggedInBefore) {
+      const loadingText = t('common.loading') || 'Loading';
+      const group = t('idcard.group') || 'Group';
+      return {
+        displayName: loadingText,
+        uidLabel: 'UID',
+        displayUid: '...',
+        groupText: `${group}...`,
+        ageText: `${loadingText}...`,
+        showAge: true,
+        showKarma: false,
+        titleLetter: '.',
+        karmaLevel: 0,
+        karmaTooltip: loadingText,
+      };
+    }
+
     const getGroupName = (groupCode: UserGroupCode): string => {
       if (groupCode === 'normal') return t('idcard.normal') || GROUP_NAME_FALLBACK.normal;
       if (groupCode === 'pioneer') return t('idcard.pioneer') || GROUP_NAME_FALLBACK.pioneer;
@@ -196,5 +215,5 @@ export const useIdCardProfileViewModel = ({
       karmaLevel,
       karmaTooltip,
     };
-  }, [fallbackUid, fallbackUsername, hasLoggedInBefore, sessionUser, t]);
+  }, [authReady, fallbackUid, fallbackUsername, hasLoggedInBefore, sessionUser, t]);
 };

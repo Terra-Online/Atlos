@@ -17,6 +17,7 @@ import {
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
 import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
+import { getCachedSession } from '@/utils/backendCache';
 
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;
@@ -70,6 +71,8 @@ const hasOnceLogin = (): boolean => {
   return raw === 'true' || raw === '1';
 };
 
+const cachedSession = getCachedSession();
+
 export const useIdCardAuthController = () => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTabInner] = useState<AuthMode>('login');
@@ -87,6 +90,7 @@ export const useIdCardAuthController = () => {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
+  const [authReady, setAuthReady] = useState(cachedSession.hit);
   const passwordResetRequestInFlightRef = useRef(false);
 
   const normalizeProfileNameInput = useCallback((value: string): string => {
@@ -127,6 +131,8 @@ export const useIdCardAuthController = () => {
         return null;
       }
       throw new Error('Failed to refresh session after auth.');
+    } finally {
+      setAuthReady(true);
     }
   }, [clearSessionUser, setSessionUser]);
 
@@ -191,12 +197,15 @@ export const useIdCardAuthController = () => {
   }, [normalizeProfileNameInput]);
 
   const handleAvatarClick = useCallback(() => {
+    if (!authReady) {
+      return;
+    }
     if (sessionUser) {
       openProfileModal();
       return;
     }
     openAuthModal(hasLoggedInBefore ? 'login' : 'register');
-  }, [hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
+  }, [authReady, hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
 
   const handleCycleProfileAvatar = useCallback(() => {
     setProfileAvatar((current) => getNextAvatarIndex(current));
@@ -436,6 +445,7 @@ export const useIdCardAuthController = () => {
     resetToken,
     resetEmail,
     sessionUser,
+    authReady,
     profileOpen,
     setProfileOpen,
     profileName,
