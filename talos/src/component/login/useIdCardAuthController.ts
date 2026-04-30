@@ -97,6 +97,10 @@ export const useIdCardAuthController = () => {
     return value.replace(/[^A-Za-z0-9_-]/g, '');
   }, []);
 
+  const normalizeProfileNameInput = useCallback((value: string): string => {
+    return value.replace(/[^A-Za-z0-9_-]/g, '');
+  }, []);
+
   const setActiveTab = useCallback((mode: AuthMode) => {
     setActiveTabInner(mode);
     if (mode !== 'passwordReset') {
@@ -350,6 +354,10 @@ export const useIdCardAuthController = () => {
       const callbackUrl = new URL(window.location.href);
       callbackUrl.search = '';
       callbackUrl.hash = '';
+<<<<<<< feat/locator-sync
+=======
+      callbackUrl.searchParams.set('email', normalizedEmail);
+>>>>>>> main
       await requestPasswordReset(normalizedEmail, callbackUrl.toString());
       return true;
     } catch (error) {
