@@ -267,6 +267,24 @@ ol.bindStep {
     }
 }
 
+.authPane {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: var(--auth-text);
+    padding: 0.25rem 0 1rem;
+}
+
+.authBody {
+    padding: 0 5%;
+    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    unicode-bidi: plaintext;
+}
+
 .singleAction {
     grid-template-columns: minmax(0, 1fr);
 }

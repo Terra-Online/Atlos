@@ -1,6 +1,6 @@
 // dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
 
-import { getCachedFontBuffer } from './fontCache';
+import { cleanupFontCache, getCachedFontBuffer } from './fontCache';
 
 import { getFontAssetUrl } from './fontAssets';
 
@@ -187,6 +187,18 @@ async function loadFonts(region: Region): Promise<void> {
         document.fonts.delete(font);
     });
     loadedFonts.clear();
+
+    const fontUrls = fontDefinitions
+        .map((definition) => {
+            const files = region === 'CN' ? definition.cnFiles :
+                          region === 'HK' ? definition.hkFiles :
+                          definition.jpFiles;
+            const fileRaw = files?.woff2 || files?.woff || files?.ttf || files?.otf;
+            return fileRaw ? toCdnUrl(fileRaw) : undefined;
+        })
+        .filter((url): url is string => Boolean(url));
+
+    await cleanupFontCache(fontUrls);
 
     const loadPromises = fontDefinitions.map(async (definition) => {
         const files = region === 'CN' ? definition.cnFiles : 

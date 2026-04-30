@@ -1,132 +1,162 @@
 import type { PositionResponse } from './types';
+import { SUBREGION_DICT } from '@/data/map';
 
 export type EFLocatorPosition = {
     mapX: number;
     mapZ: number;
     mode: string;
     regionKey: string | null;
+    subregionKey: string | null;
 };
 
-type LocatorTransformProfile = {
+type RegionTransform = {
     scaleX: number;
     scaleZ: number;
     offsetX: number;
     offsetZ: number;
     rotateClockwise90?: boolean;
-    regionKey?: string | null;
 };
 
-type LocatorTransformConfig = {
-    defaultProfile?: string;
-    emptyProfile?: string;
-    profiles: Record<string, LocatorTransformProfile>;
-    aliases?: Record<string, string>;
+type RegionProfile = 'VL' | 'WL' | 'WL2' | 'DJ' | 'ES' | 'default';
+
+const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
+    VL: {
+        scaleX: 0.4687511298,
+        scaleZ: 0.4687511298,
+        offsetX: 519.6990737,
+        offsetZ: -479.9101599,
+    },
+    WL: {
+        scaleX: 0.41397681175575596,
+        scaleZ: 0.4123987909522064,
+        offsetX: 955.8805906115372,
+        offsetZ: -155.59250075860632,
+    },
+    WL2: {
+        scaleX: 0.35414771840391185,
+        scaleZ: 0.33417957195526954,
+        offsetX: 229.5095336217924,
+        offsetZ: -639.5187069784344,
+    },
+    DJ: {
+        scaleX: 2.817109225144681,
+        scaleZ: 2.8369668977222067,
+        offsetX: 481.07581876506237,
+        offsetZ: -528.2046998395613,
+        rotateClockwise90: true,
+    },
+    ES: {
+        scaleX: 2.1236893194106514,
+        scaleZ: 2.1398455301912183,
+        offsetX: 613.9427764351295,
+        offsetZ: -898.0955173659895,
+    },
+    default: {
+        scaleX: 0.4687511298,
+        scaleZ: 0.4687511298,
+        offsetX: 519.6990737,
+        offsetZ: -476.8398401,
+    },
 };
 
-let cachedTransformConfig: LocatorTransformConfig | null | undefined;
-
-const readRawTransformConfig = (): unknown => {
-    const runtimeValue = globalThis.window?.__ENDFIELD_LOCATOR_TRANSFORMS__;
-    if (runtimeValue) return runtimeValue;
-
-    const buildValue = import.meta.env.VITE_ENDFIELD_LOCATOR_TRANSFORMS;
-    return typeof buildValue === 'string' ? buildValue.trim() : '';
+const MAP_ID_TO_PROFILE: Record<string, RegionProfile> = {
+    map01: 'VL',
+    map02: 'WL',
+    base01: 'DJ',
+    dung01: 'ES',
+    indie07: 'WL2',
+    indie_dg007: 'WL2',
 };
 
-const parseFiniteNumber = (value: unknown, key: string): number => {
-    const parsed = typeof value === 'number' ? value : Number(value);
-    if (!Number.isFinite(parsed)) {
-        throw new Error(`Invalid Endfield locator transform value: ${key}`);
+const MAP_ID_TO_REGION_KEY: Record<string, string> = {
+    map01: 'Valley_4',
+    map02: 'Wuling',
+    base01: 'Dijiang',
+    dung01: 'Weekraid_1',
+    indie07: 'Wuling',
+    indie_dg007: 'Wuling',
+};
+
+const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
+    VL: 'Valley_4',
+    WL: 'Wuling',
+    WL2: 'Wuling',
+    DJ: 'Dijiang',
+    ES: 'Weekraid_1',
+    default: 'Valley_4',
+};
+
+const isRegionProfile = (value: string): value is RegionProfile =>
+    Object.prototype.hasOwnProperty.call(REGION_TRANSFORMS, value);
+
+const SUBREGION_ID_BY_LEVEL_ID = Object.keys(SUBREGION_DICT).reduce<Record<string, string>>(
+    (acc, subregionId) => {
+        acc[subregionId.toLowerCase()] = subregionId;
+        return acc;
+    },
+    {},
+);
+
+const normalizeSceneId = (value: string | null | undefined): string =>
+    (value ?? '').trim().toLowerCase();
+
+const resolveProfileKey = (mapId: string, levelId: string): RegionProfile => {
+    if (!mapId && !levelId) return 'ES';
+    if (mapId && MAP_ID_TO_PROFILE[mapId]) return MAP_ID_TO_PROFILE[mapId];
+    if (mapId && isRegionProfile(mapId)) return mapId;
+    if (levelId && isRegionProfile(levelId)) return levelId;
+    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'VL';
+    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'WL';
+    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'DJ';
+    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'ES';
+    if (
+        mapId.startsWith('indie07')
+        || levelId.startsWith('indie07')
+        || mapId.includes('indie_dg007')
+        || levelId.includes('indie_dg007')
+        || mapId.includes('wl2')
+        || levelId.includes('wl2')
+        || mapId.includes('wuling2')
+        || levelId.includes('wuling2')
+    ) {
+        return 'WL2';
     }
-    return parsed;
+    return 'default';
 };
 
-const normalizeTransformConfig = (raw: unknown): LocatorTransformConfig => {
-    if (!raw || typeof raw !== 'object') {
-        throw new Error('Endfield locator transform config is invalid.');
+const resolveRegionKey = (mapId: string, levelId: string): string | null => {
+    if (!mapId && !levelId) return null;
+    if (mapId && MAP_ID_TO_REGION_KEY[mapId]) return MAP_ID_TO_REGION_KEY[mapId];
+    if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'Valley_4';
+    if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'Wuling';
+    if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'Dijiang';
+    if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'Weekraid_1';
+    if (
+        mapId.startsWith('indie07')
+        || levelId.startsWith('indie07')
+        || mapId.includes('indie_dg007')
+        || levelId.includes('indie_dg007')
+        || mapId.includes('wl2')
+        || levelId.includes('wl2')
+        || mapId.includes('wuling2')
+        || levelId.includes('wuling2')
+    ) {
+        return 'Wuling';
     }
-
-    const config = raw as Partial<LocatorTransformConfig>;
-    const profiles = config.profiles;
-    if (!profiles || typeof profiles !== 'object') {
-        throw new Error('Endfield locator transform profiles are missing.');
-    }
-
-    const normalizedProfiles = Object.fromEntries(
-        Object.entries(profiles).map(([key, profile]) => [
-            key,
-            {
-                scaleX: parseFiniteNumber(profile.scaleX, `${key}.scaleX`),
-                scaleZ: parseFiniteNumber(profile.scaleZ, `${key}.scaleZ`),
-                offsetX: parseFiniteNumber(profile.offsetX, `${key}.offsetX`),
-                offsetZ: parseFiniteNumber(profile.offsetZ, `${key}.offsetZ`),
-                rotateClockwise90: Boolean(profile.rotateClockwise90),
-                regionKey: profile.regionKey ?? null,
-            },
-        ]),
-    );
-
-    return {
-        defaultProfile: config.defaultProfile,
-        emptyProfile: config.emptyProfile,
-        profiles: normalizedProfiles,
-        aliases: config.aliases,
-    };
+    return null;
 };
 
-const readTransformConfig = (): LocatorTransformConfig | null => {
-    if (cachedTransformConfig !== undefined) return cachedTransformConfig;
-
-    const raw = readRawTransformConfig();
-    if (!raw || (typeof raw === 'string' && !raw)) {
-        cachedTransformConfig = null;
-        return cachedTransformConfig;
-    }
-
-    cachedTransformConfig = normalizeTransformConfig(
-        typeof raw === 'string' ? JSON.parse(raw) : raw,
-    );
-    return cachedTransformConfig;
-};
-
-const resolveProfileKey = (
-    payload: PositionResponse['data'],
-    config: LocatorTransformConfig,
-): string | null => {
-    const mapId = payload.mapId.trim();
-    const levelId = payload.levelId.trim();
-
-    if (!mapId && !levelId && config.emptyProfile) {
-        return config.emptyProfile;
-    }
-
-    const alias = config.aliases?.[`mapId:${mapId}`]
-        ?? config.aliases?.[`levelId:${levelId}`]
-        ?? config.aliases?.[mapId]
-        ?? config.aliases?.[levelId];
-    if (alias) return alias;
-
-    if (mapId && config.profiles[mapId]) return mapId;
-    if (levelId && config.profiles[levelId]) return levelId;
-    return config.defaultProfile ?? null;
-};
-
-export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorPosition | null => {
-    const config = readTransformConfig();
-    if (!config) return null;
-
-    const profileKey = resolveProfileKey(payload, config);
-    if (!profileKey) return null;
-
-    const transform = config.profiles[profileKey];
-    if (!transform) return null;
-
+export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorPosition => {
+    const mapId = normalizeSceneId(payload.mapId);
+    const levelId = normalizeSceneId(payload.levelId);
+    const profileKey = resolveProfileKey(mapId, levelId);
+    const transform = REGION_TRANSFORMS[profileKey] ?? REGION_TRANSFORMS.default;
     let x = payload.pos.x;
     let z = payload.pos.z;
 
     if (transform.rotateClockwise90) {
-        const rotatedX = z;
-        const rotatedZ = -x;
+        const rotatedX = x;
+        const rotatedZ = z;
         x = rotatedX;
         z = rotatedZ;
     }
@@ -135,6 +165,9 @@ export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorP
         mapX: x * transform.scaleX + transform.offsetX,
         mapZ: z * transform.scaleZ + transform.offsetZ,
         mode: profileKey,
-        regionKey: transform.regionKey ?? null,
+        regionKey: (!mapId && !levelId)
+            ? null
+            : (resolveRegionKey(mapId, levelId) ?? REGION_KEY_BY_PROFILE[profileKey] ?? null),
+        subregionKey: SUBREGION_ID_BY_LEVEL_ID[levelId] ?? null,
     };
 };

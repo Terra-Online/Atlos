@@ -26,6 +26,7 @@
     "build:r2:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/build-r2.mjs",
     "publish:web": "node ./scripts/publish-oss.js",
     "publish:web:r2": "node ./scripts/publish-R2.js",
+    "publish:web:r2:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/publish-R2.js",
     "release:package": "node ./scripts/package-dist.mjs",
     "release:package:cn:beta": "node ./scripts/package-dist.mjs --target cn --channel beta",
     "release:package:cn:prod": "node ./scripts/package-dist.mjs --target cn --channel prod",

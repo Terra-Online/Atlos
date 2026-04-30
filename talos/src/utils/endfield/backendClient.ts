@@ -24,6 +24,13 @@ export type EFBindingSummary = {
     updatedAt?: string;
 };
 
+export type AgreeRes = {
+    ok?: true;
+    code?: number;
+    message?: string;
+    timestamp?: string;
+};
+
 type ApiErrorPayload = {
     code?: string;
     message?: string;
@@ -39,7 +46,8 @@ type ApiErrorPayload = {
     };
 };
 
-const API_BASE = `${getAuthBase()}/binding/v1/endfield`;
+const BINDING_API_BASE = `${getAuthBase()}/binding/v1/endfield`;
+const LOCATOR_API_BASE = `${getAuthBase()}/locator`;
 
 export class EFBackendError extends Error {
     readonly status: number;
@@ -78,8 +86,8 @@ const readApiError = async (response: Response): Promise<EFBackendError> => {
     }
 };
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE}${path}`, {
+async function requestJson<T>(baseUrl: string, path: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(`${baseUrl}${path}`, {
         ...init,
         credentials: 'include',
         headers: {
@@ -96,16 +104,16 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const getEFBindingStatus = (): Promise<{ binding: EFBindingSummary }> =>
-    requestJson('/status');
+    requestJson(BINDING_API_BASE, '/status');
 
 export const exchangeEFToken = (provider: EFProvider, token: string): Promise<{ flowId: string; roles: EFRoleOption[] }> =>
-    requestJson('/exchange-token', {
+    requestJson(BINDING_API_BASE, '/exchange-token', {
         method: 'POST',
         body: JSON.stringify({ provider, token }),
     });
 
 export const bindEFRole = (flowId: string, role: { serverId: number; roleId: string }): Promise<{ ok: true; binding: EFBindingSummary }> =>
-    requestJson('/bind-role', {
+    requestJson(BINDING_API_BASE, '/bind-role', {
         method: 'POST',
         body: JSON.stringify({
             flowId,
@@ -115,16 +123,27 @@ export const bindEFRole = (flowId: string, role: { serverId: number; roleId: str
     });
 
 export const disableEFBinding = (): Promise<{ ok: true; binding: EFBindingSummary }> =>
-    requestJson('/disable', {
+    requestJson(BINDING_API_BASE, '/disable', {
         method: 'POST',
         body: '{}',
     });
 
 export const unlinkEFBinding = (): Promise<{ ok: true; binding: EFBindingSummary }> =>
-    requestJson('/unlink', {
+    requestJson(BINDING_API_BASE, '/unlink', {
         method: 'POST',
         body: '{}',
     });
 
-export const getEFPosition = (): Promise<{ data: PositionResponse['data']; binding: EFBindingSummary }> =>
-    requestJson('/position');
+export const agreePolicy = (role?: { roleId?: string; serverId?: number | string }): Promise<AgreeRes> =>
+    requestJson(LOCATOR_API_BASE, '/agree-policy', {
+        method: 'POST',
+        body: JSON.stringify(role?.roleId && role.serverId !== undefined
+            ? {
+                roleId: role.roleId,
+                serverId: String(role.serverId),
+            }
+            : {}),
+    });
+
+export const getEFPosition = (options: { includeBinding?: boolean } = {}): Promise<{ data: PositionResponse['data']; binding?: EFBindingSummary }> =>
+    requestJson(LOCATOR_API_BASE, options.includeBinding ? '/position?binding=1' : '/position');

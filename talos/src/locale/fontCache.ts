@@ -3,6 +3,7 @@ import logger from '@/utils/log';
 import { getFontAssetUrls } from './fontAssets';
 
 const CACHE_NAME = 'Talos_FontCache';
+const METADATA_KEY = 'Talos:fontMetadata';
 const CACHE_EXPIRY_DAYS = 30; // Cache fonts for 30 days
 
 interface CachedFontMetadata {
@@ -27,7 +28,7 @@ const isCacheAvailable = (): boolean => {
 // Get cached font metadata from localStorage
 const getCacheMetadata = (): Record<string, CachedFontMetadata> => {
     try {
-        const data = localStorage.getItem('Talos:fontMetadata');
+        const data = localStorage.getItem(METADATA_KEY);
         return data ? (JSON.parse(data) as Record<string, CachedFontMetadata>) : {};
     } catch {
         return {};
@@ -43,7 +44,15 @@ const setCacheMetadata = (url: string): void => {
             url: fullUrl,
             cachedAt: Date.now(),
         };
-        localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
+        localStorage.setItem(METADATA_KEY, JSON.stringify(metadata));
+    } catch {
+        // Ignore localStorage errors
+    }
+};
+
+const persistCacheMetadata = (metadata: Record<string, CachedFontMetadata>): void => {
+    try {
+        localStorage.setItem(METADATA_KEY, JSON.stringify(metadata));
     } catch {
         // Ignore localStorage errors
     }
@@ -107,6 +116,8 @@ export async function preloadFonts(urls: string[]): Promise<void> {
         logger.debug('Cache API not available, skipping font preloading');
         return;
     }
+
+    await cleanupFontCache(urls);
 
     logger.debug(`Preloading ${urls.length} fonts...`);
 
@@ -179,28 +190,43 @@ export async function getCachedFont(url: string): Promise<Response> {
 }
 
 /**
- * Clear expired font cache entries
+ * Clear expired font cache entries.
+ * When activeUrls is provided, also remove font entries from old builds whose
+ * hashed URLs are no longer part of the current request set.
  */
-export async function cleanupFontCache(): Promise<void> {
+export async function cleanupFontCache(activeUrls?: string[]): Promise<void> {
     if (!isCacheAvailable()) return;
 
     try {
         const cache = await caches.open(CACHE_NAME);
         const requests = await cache.keys();
         const metadata = getCacheMetadata();
+        const activeUrlSet = activeUrls ? new Set(activeUrls.map(normalizeUrl)) : undefined;
 
         let cleaned = 0;
 
         for (const request of requests) {
-            if (isCacheExpired(request.url)) {
+            const normalizedRequestUrl = normalizeUrl(request.url);
+            const isInactive = activeUrlSet ? !activeUrlSet.has(normalizedRequestUrl) : false;
+            if (isInactive || isCacheExpired(request.url)) {
                 await cache.delete(request);
+                delete metadata[normalizedRequestUrl];
                 delete metadata[request.url];
                 cleaned++;
             }
         }
 
+        if (activeUrlSet) {
+            for (const key of Object.keys(metadata)) {
+                if (!activeUrlSet.has(normalizeUrl(key))) {
+                    delete metadata[key];
+                    cleaned++;
+                }
+            }
+        }
+
         if (cleaned > 0) {
-            localStorage.setItem('Talos:fontMetadata', JSON.stringify(metadata));
+            persistCacheMetadata(metadata);
             logger.debug(`Cleaned up ${cleaned} expired font cache entries`);
         }
     } catch (error) {

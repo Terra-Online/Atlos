@@ -5,7 +5,7 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/component/locator/state';
-import { EFBackendError, getEFPosition } from '@/utils/endfield/backendClient';
+import { EFBackendError, getEFPosition, unlinkEFBinding } from '@/utils/endfield/backendClient';
 import type { PositionResponse } from '@/utils/endfield/types';
 import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
 import {
@@ -106,10 +106,20 @@ type AnimationState = {
     startTime: number;
 };
 
-const ENDFIELD_LOCATOR_TAB_KEY = 'endfield.locator.tab.booted';
+const getPositionSceneKey = (payload: PositionResponse['data']): string =>
+    `${payload.mapId.trim().toLowerCase()}\n${payload.levelId.trim().toLowerCase()}`;
+
+const DEFAULT_LOCATOR_INTERVAL_MS = 1000;
+const LOCATOR_TARGET_ZOOM = 3;
 const POSITION_UNAVAILABLE_RETRY_MS = 5000;
-const POSITION_UPSTREAM_NOT_IN_GAME_CODE = 19001;
-const POSITION_NOT_IN_GAME_BANNER_KEY = 'locator.errors.posInvalid';
+
+type UpKind = 'expired' | 'notInGame' | 'policy';
+
+const UP_KIND: Partial<Record<number, UpKind>> = {
+    19000: 'expired',
+    19001: 'notInGame',
+    19002: 'policy',
+};
 
 const disableLocatorSync = (): void => {
     const current = readEFTrackerConf();
@@ -126,14 +136,7 @@ const disableLocatorSync = (): void => {
     useLocatorStore.getState().setLastPosition(null);
 };
 
-const shouldDisableLocatorOnTabBoot = (): boolean => {
-    const alreadyBooted = sessionStorage.getItem(ENDFIELD_LOCATOR_TAB_KEY);
-    sessionStorage.setItem(ENDFIELD_LOCATOR_TAB_KEY, '1');
-    void alreadyBooted;
-    return false;
-};
-
-const getPositionErrorDetails = (error: EFBackendError): {
+const errInfo = (error: EFBackendError): {
     upstreamCode?: unknown;
     upstreamMessage?: unknown;
 } | undefined => {
@@ -144,15 +147,24 @@ const getPositionErrorDetails = (error: EFBackendError): {
     return details;
 };
 
-const isPositionNotInGameError = (error: EFBackendError): boolean => {
-    const details = getPositionErrorDetails(error);
-    return Number(details?.upstreamCode) === POSITION_UPSTREAM_NOT_IN_GAME_CODE;
+const errCode = (error: EFBackendError): number | null => {
+    const details = errInfo(error);
+    const code = Number(details?.upstreamCode);
+    return Number.isFinite(code) ? code : null;
 };
 
-const showPositionUnavailableBanner = (error: EFBackendError): void => {
-    if (!isPositionNotInGameError(error)) return;
+const errKind = (error: EFBackendError): UpKind | null => {
+    const code = errCode(error);
+    return code === null ? null : UP_KIND[code] ?? null;
+};
 
-    useLocatorStore.getState().showBanner(POSITION_NOT_IN_GAME_BANNER_KEY);
+const showErr = (error: EFBackendError): void => {
+    const code = errCode(error);
+    if (code === null) return;
+
+    if (UP_KIND[code]) {
+        useLocatorStore.getState().showBanner(`locator.errors.${code}`);
+    }
 };
 
 export function useLocator(map: L.Map | undefined): void {
@@ -162,6 +174,11 @@ export function useLocator(map: L.Map | undefined): void {
     const trackerLayerRef = useRef<L.LayerGroup | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
+    const lastSyncedSubregionRef = useRef<string | null>(null);
+    const lastSceneKeyRef = useRef<string | null>(null);
+    const pendingLocatorFocusRef = useRef<L.LatLng | null>(null);
+    const programmaticViewChangeRef = useRef(false);
+    const programmaticViewTimeoutRef = useRef<number | null>(null);
     const hasCenteredOnFirstUpdateRef = useRef(false);
     const animationRef = useRef<AnimationState>({
         rafId: null,
@@ -204,10 +221,44 @@ export function useLocator(map: L.Map | undefined): void {
             }
         };
 
-        const pausePollingForPositionUnavailable = (error: EFBackendError) => {
-            showPositionUnavailableBanner(error);
+        const pauseForErr = (error: EFBackendError) => {
+            showErr(error);
             cleanupPolling();
             useLocatorStore.getState().setViewMode('tracking');
+        };
+
+        const onExpired = (error: EFBackendError) => {
+            showErr(error);
+            cleanupPolling();
+            void unlinkEFBinding()
+                .catch(() => undefined)
+                .finally(() => {
+                    if (disposed) return;
+                    disableLocatorSync();
+                    useLocatorStore.getState().reqBind();
+                });
+        };
+
+        const onPolicy = (error: EFBackendError) => {
+            pauseForErr(error);
+            useLocatorStore.getState().openAuth();
+        };
+
+        const onUpstream = (error: EFBackendError): boolean => {
+            const kind = errKind(error);
+            if (kind === 'expired') {
+                onExpired(error);
+                return true;
+            }
+            if (kind === 'policy') {
+                onPolicy(error);
+                return true;
+            }
+            if (kind === 'notInGame') {
+                pauseForErr(error);
+                return true;
+            }
+            return false;
         };
 
         const ensureTrackerLayerAttached = () => {
@@ -218,11 +269,43 @@ export function useLocator(map: L.Map | undefined): void {
             }
         };
 
+        const releaseProgrammaticViewChange = () => {
+            programmaticViewChangeRef.current = false;
+            map.off('moveend', releaseProgrammaticViewChange);
+            if (programmaticViewTimeoutRef.current !== null) {
+                window.clearTimeout(programmaticViewTimeoutRef.current);
+                programmaticViewTimeoutRef.current = null;
+            }
+        };
+
+        const focusLocatorPosition = (target: L.LatLng) => {
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            const targetZoom = Math.min(LOCATOR_TARGET_ZOOM, map.getMaxZoom());
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1500);
+            map.flyTo(target, targetZoom, {
+                animate: true,
+                duration: 0.9,
+            });
+            useLocatorStore.getState().setViewMode('tracking');
+        };
+
+        const consumePendingLocatorFocus = () => {
+            const target = pendingLocatorFocusRef.current;
+            if (!target) return;
+            pendingLocatorFocusRef.current = null;
+            focusLocatorPosition(target);
+        };
+
         const onRegionSwitched = () => {
             ensureTrackerLayerAttached();
+            lastSyncedRegionRef.current = null;
+            consumePendingLocatorFocus();
         };
 
         const markDetachedByUserViewChange = () => {
+            if (programmaticViewChangeRef.current) return;
             if (!trackerRunningRef.current) return;
             useLocatorStore.getState().setViewMode('detached');
         };
@@ -230,8 +313,11 @@ export function useLocator(map: L.Map | undefined): void {
         const returnToCurrentPosition = () => {
             const lastPosition = useLocatorStore.getState().lastPosition;
             if (!lastPosition) return;
-            map.panTo(L.latLng(lastPosition.lat, lastPosition.lng), { animate: true, duration: 0.45 });
-            useLocatorStore.getState().setViewMode('tracking');
+            focusLocatorPosition(L.latLng(lastPosition.lat, lastPosition.lng));
+        };
+
+        const onSubregionSwitched = () => {
+            consumePendingLocatorFocus();
         };
 
         const setTargetPosition = (target: L.LatLng) => {
@@ -291,11 +377,6 @@ export function useLocator(map: L.Map | undefined): void {
                 return;
             }
 
-            if (shouldDisableLocatorOnTabBoot()) {
-                disableLocatorSync();
-                return;
-            }
-
             const pane = ensureTrackerPane(map);
             const trackerLayer = L.layerGroup();
             trackerLayer.addTo(map);
@@ -309,11 +390,12 @@ export function useLocator(map: L.Map | undefined): void {
                 useLocatorStore.getState().clearBanner();
                 ensureTrackerLayerAttached();
                 const locator = convertEFPosition(payload);
-                if (!locator) {
-                    throw new Error('Endfield locator transform is not configured.');
-                }
                 const converted = convertGamePosition(locator);
                 let marker = markerRef.current;
+                let shouldDeferFocus = false;
+                const sceneKey = getPositionSceneKey(payload);
+                const isFirstScene = lastSceneKeyRef.current === null;
+                const sceneChanged = isFirstScene || sceneKey !== lastSceneKeyRef.current;
 
                 if (!marker) {
                     marker = createTrackerMarker(pane, converted.latLng).addTo(trackerLayer);
@@ -321,16 +403,36 @@ export function useLocator(map: L.Map | undefined): void {
                 }
 
                 const mappedRegion = locator.regionKey;
-                if (config.locatorSync && mappedRegion && REGION_DICT[mappedRegion]) {
+                const shouldFocusScene = Boolean(config.locatorSync
+                    && sceneChanged
+                    && mappedRegion
+                    && REGION_DICT[mappedRegion]);
+
+                if (config.locatorSync && sceneChanged && mappedRegion && REGION_DICT[mappedRegion]) {
                     const store = useRegion.getState();
                     const targetRegion = mappedRegion;
                     if (
                         targetRegion !== store.currentRegionKey
                         && targetRegion !== lastSyncedRegionRef.current
                     ) {
+                        pendingLocatorFocusRef.current = converted.latLng;
+                        marker.setLatLng(converted.latLng);
                         store.setCurrentRegion(targetRegion);
+                        lastSyncedRegionRef.current = targetRegion;
+                        shouldDeferFocus = true;
                     }
-                    lastSyncedRegionRef.current = targetRegion;
+                }
+
+                if (
+                    config.locatorSync
+                    && sceneChanged
+                    && locator.subregionKey
+                    && locator.subregionKey !== lastSyncedSubregionRef.current
+                ) {
+                    pendingLocatorFocusRef.current = converted.latLng;
+                    useRegion.getState().requestSubregionSwitch(locator.subregionKey);
+                    lastSyncedSubregionRef.current = locator.subregionKey;
+                    shouldDeferFocus = true;
                 }
 
                 useLocatorStore.getState().setLastPosition({
@@ -338,10 +440,24 @@ export function useLocator(map: L.Map | undefined): void {
                     lng: converted.latLng.lng,
                 });
 
+                lastSceneKeyRef.current = sceneKey;
+
+                if (shouldDeferFocus) {
+                    marker.setLatLng(converted.latLng);
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    return;
+                }
+
+                if (shouldFocusScene) {
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    marker.setLatLng(converted.latLng);
+                    focusLocatorPosition(converted.latLng);
+                    return;
+                }
+
                 if (!hasCenteredOnFirstUpdateRef.current) {
                     hasCenteredOnFirstUpdateRef.current = true;
                     marker.setLatLng(converted.latLng);
-                    map.panTo(converted.latLng, { animate: true, duration: 0.45 });
                     return;
                 }
 
@@ -364,15 +480,18 @@ export function useLocator(map: L.Map | undefined): void {
                 try {
                     const response = await getEFPosition();
                     applyPositionUpdate(response.data);
-                    scheduleNextPoll(response.data.isOnline === false ? (config.intervalMs ?? 1500) * 3 : (config.intervalMs ?? 1500));
+                    scheduleNextPoll(response.data.isOnline === false ? (config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) * 3 : (config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS));
                 } catch (error) {
                     if (disposed) return;
-                    if (!(error instanceof EFBackendError) || (!isPositionNotInGameError(error) && error.code !== 'ENDFIELD_POSITION_UNAVAILABLE')) {
+                    if (!(error instanceof EFBackendError)) {
                         disableLocatorSync();
                         return;
                     }
-                    if (isPositionNotInGameError(error)) {
-                        pausePollingForPositionUnavailable(error);
+                    if (onUpstream(error)) {
+                        return;
+                    }
+                    if (error.code !== 'ENDFIELD_POSITION_UNAVAILABLE') {
+                        disableLocatorSync();
                         return;
                     }
                     scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
@@ -380,23 +499,27 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             map.on('talos:regionSwitched', onRegionSwitched);
+            map.on('talos:subregionSwitched', onSubregionSwitched);
             map.on('dragstart', markDetachedByUserViewChange);
             map.on('zoomstart', markDetachedByUserViewChange);
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
             trackerRunningRef.current = true;
-            void getEFPosition()
+            void getEFPosition({ includeBinding: true })
                 .then((response) => {
                     if (disposed) return;
                     applyPositionUpdate(response.data);
                     useLocatorStore.getState().setViewMode('tracking');
-                    scheduleNextPoll(config.intervalMs ?? 1500);
+                    scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
                 })
                 .catch((error: unknown) => {
                     if (disposed) return;
-                    if (error instanceof EFBackendError && (isPositionNotInGameError(error) || error.code === 'ENDFIELD_POSITION_UNAVAILABLE')) {
-                        if (isPositionNotInGameError(error)) {
-                            pausePollingForPositionUnavailable(error);
+                    if (error instanceof EFBackendError) {
+                        if (onUpstream(error)) {
+                            return;
+                        }
+                        if (error.code !== 'ENDFIELD_POSITION_UNAVAILABLE') {
+                            disableLocatorSync();
                             return;
                         }
                         useLocatorStore.getState().setViewMode('tracking');
@@ -415,6 +538,7 @@ export function useLocator(map: L.Map | undefined): void {
             cleanupPolling();
 
             map.off('talos:regionSwitched', onRegionSwitched);
+            map.off('talos:subregionSwitched', onSubregionSwitched);
             map.off('dragstart', markDetachedByUserViewChange);
             map.off('zoomstart', markDetachedByUserViewChange);
             window.removeEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
@@ -430,6 +554,13 @@ export function useLocator(map: L.Map | undefined): void {
             }
 
             hasCenteredOnFirstUpdateRef.current = false;
+            lastSceneKeyRef.current = null;
+            pendingLocatorFocusRef.current = null;
+            programmaticViewChangeRef.current = false;
+            if (programmaticViewTimeoutRef.current !== null) {
+                window.clearTimeout(programmaticViewTimeoutRef.current);
+                programmaticViewTimeoutRef.current = null;
+            }
         };
     }, [map, configVersion]);
 }

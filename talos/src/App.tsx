@@ -9,6 +9,7 @@ import SideBar from './component/sideBar/sideBar';
 import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
 import LocatorBanner from '@/component/locator/LocatorBanner';
+import LocatorAuth from '@/component/locator/LocatorAuth';
 // import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
@@ -136,6 +137,7 @@ function App() {
             <MetaHelper />
             <DomainBanner />
             <LocatorBanner />
+            <LocatorAuth />
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
                 <UserGuide map={mapInstance} />

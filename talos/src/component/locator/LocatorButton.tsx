@@ -177,6 +177,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     const t = useTranslateUI();
     const sessionUser = useAuthStore((state) => state.sessionUser);
     const viewMode = useLocatorStore((state) => state.viewMode);
+    const bindReq = useLocatorStore((state) => state.bindReq);
     const [bindingOpen, setBindingOpen] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
     const [bound, setBound] = useState(false);
@@ -194,6 +195,12 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     useEffect(() => {
         refreshBindingStatus();
     }, [refreshBindingStatus]);
+
+    useEffect(() => {
+        if (bindReq <= 0) return;
+        setBindingOpen(true);
+        refreshBindingStatus();
+    }, [bindReq, refreshBindingStatus]);
 
     useEffect(() => {
         if (!pendingAfterLogin || !sessionUser) return;
