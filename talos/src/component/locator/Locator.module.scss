@@ -35,7 +35,7 @@
 
 ol.bindStep {
     list-style: none;
-    font-family: "FedraSansPro Normal", HMSans, "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-weight: 500;
     text-decoration: none;
     font-size: 15px;
@@ -71,38 +71,6 @@ ol.bindStep {
             }
         }
     }
-}
-
-.bindingManagePanel {
-    display: flex;
-    flex-direction: column;
-    gap: .85rem;
-    padding: .75rem;
-    border: 1px solid var(--settings-trigger-border, rgba($grey-1, 0.75));
-    border-radius: 4px;
-    background: rgba($black-0, 0.05);
-}
-
-.bindingManageTitle {
-    color: var(--auth-text);
-    font-family: "Novecento DemiBold", "HMSans_EN", HMSans, "UD_ShinGo DemiBold", sans-serif;
-    font-size: 1.05rem;
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.bindingManageMeta {
-    display: flex;
-    flex-direction: column;
-    gap: .25rem;
-    color: var(--settings-section-text, $grey-1);
-    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: .95rem;
-    font-weight: 600;
-}
-
-.manageActions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .mobileLocatorShell {
@@ -227,15 +195,13 @@ ol.bindStep {
         color: var(--settings-title-text, $black-1);
     }
 }
-
 .roleOptionName {
     font-size: 0.95rem;
     font-weight: 900;
 }
-
 .roleOptionMeta {
     margin-top: 0.1rem;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     opacity: 0.85;
 }
 
@@ -299,17 +265,15 @@ ol.bindStep {
     color: var(--auth-text);
     padding: 0.25rem 0 1rem;
 }
-
 .authBody {
     padding: 0 .25rem;
-    font-family: "HMSans_EN", HMSans, "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.25;
     text-align: left;
     unicode-bidi: plaintext;
 }
-
 .singleAction {
     grid-template-columns: minmax(0, 1fr) !important;
 }
@@ -395,8 +359,6 @@ ol.bindStep {
     }
 }
 
-
-
 .configActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 0 0.1rem;
@@ -410,73 +372,78 @@ ol.bindStep {
     line-height: 1.25;
     padding: 0 0.3rem;
     unicode-bidi: plaintext;
+    width: 92%;
+    margin: 0 auto;
 }
 
 .scopeList {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.55rem;
+    gap: 0.5rem;
+    width: 90%;
+    margin: 0 auto;
 }
 
 .scopeItem {
     position: relative;
     display: flex;
-    min-height: 4.4rem;
+    min-height: 4rem;
     flex-direction: column;
     justify-content: center;
-    gap: 0.3rem;
+    gap: 0.5rem;
     border: 0;
-    border-radius: 4px;
-    padding: 0.55rem 0.75rem 0.55rem 1.45rem;
-    background: var(--locator-card-bg);
-    color: var(--locator-card-text);
-    box-shadow: 0 0 4px 1px rgba($black-0, 0.22);
+    border-radius: 3px;
+    padding: 0.5rem 0.75rem 0.55rem 1.25rem;
+    background: var(--lang-bg);
+    color: var(--lang-text);
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
     cursor: pointer;
     text-align: left;
-    transition: background-color .2s ease-in, color .2s ease-in, box-shadow .3s $moderato-curve;
+    transition: background-color .2s ease-in, color .2s ease-in, box-shadow .4s $moderato-curve, opacity 0.2s ease-in;
 
     &::before {
-        content: "";
+        content: '';
         position: absolute;
-        left: 0.45rem;
-        top: 12%;
-        width: 0.28rem;
-        height: 76%;
-        border-radius: 2px;
-        background: var(--locator-card-bar);
-        transition: background-color .25s ease, box-shadow .3s ease;
+        left: 0.5rem;
+        top: 12.5%;
+        width: 4px;
+        height: 75%;
+        border-radius: 1px;
+        background: var(--lang-bar);
+        transition: background-color .4s ease;
     }
 
     &:hover {
-        background: var(--locator-card-hover-bg);
-        box-shadow: 0 0 5px 1px rgba($black-0, 0.32);
+        background-color: var(--lang-hover-bg);
+        box-shadow: 0 0 5px 1px rgba($black-0, 0.35);
+        &::before {
+            background-color: var(--lang-hover-bar);
+            transition: background-color .2s ease;
+        }
     }
-
+    &.active {
+        background-color: var(--lang-actived-bg);
+        color: var(--lang-actived-text);
+        &::before {
+            background-color: var(--lang-active-bar);
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
+        }
+        &:hover {
+            background-color: var(--lang-text);
+        }
+    }
     &:disabled {
         cursor: not-allowed;
         opacity: 0.8;
     }
-
-    &:disabled:hover {
-        background: var(--locator-card-bg);
-        box-shadow: 0 0 4px 1px rgba($black-0, 0.22);
-    }
-}
-
-.scopeActive {
-    background: var(--locator-card-active-bg);
-    color: var(--locator-card-bg);
-
-    &::before {
-        background: var(--locator-card-active-bar);
-        box-shadow: 0 0 3px 0 $primary-accent-4;
-    }
 }
 
 .scopeMain {
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN', HMSans, 'UD_ShinGo DemiBold', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-size: 1.35rem;
-    font-weight: 900;
+    letter-spacing: -.5px;
+    font-weight: 700;
     line-height: 1;
     overflow-wrap: anywhere;
 }
@@ -498,23 +465,24 @@ ol.bindStep {
 
 .featureTrigger {
     width: 100%;
-    gap: 0.8rem;
+    gap: 0.4rem;
 }
 
 .featureNote {
     color: var(--auth-text);
     font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 0.9rem;
+    font-size: 14px;
+    letter-spacing: -0.2px;
     font-weight: 600;
     line-height: 1.25;
     padding: 0 0.3rem;
     text-align: center;
     unicode-bidi: plaintext;
-
     a {
         color: var(--ack-link);
         text-decoration: none;
         position: relative;
+        display: inline-block;
 
         &::after {
             content: '';

@@ -292,32 +292,29 @@
     },
     "config": {
       "title": "追踪配置",
-      "providerSkland": "CN",
-      "providerSkport": "APAC",
       "server": "区服",
       "uid": "玩家 UID",
-      "scopeTitle": "Scope",
-      "scopeHint": "您可以选择在位置追踪时，需要提醒的周围点位范围。",
+      "scopeTitle": "范围",
+      "scopeHint": "您可以选择在位置追踪时，需要提醒的周围点位配置。",
       "scope": {
         "balanced": {
           "title": "平衡",
-          "desc": "追踪开发者为您选择的点位。"
+          "desc": "追踪 OEM 为您选择的点位。"
         },
         "collection": {
           "title": "收集物",
           "desc": "追踪所有位于<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">档案</span>中的点位。"
         },
         "manual": {
-          "title": "手册",
-          "desc": "追踪手册中的稀有点位，包括当前的 <span class=\"keyword\">mob.*</span>/<span class=\"keyword\">boss.*</span>，以及 <span class=\"keyword\">natural</span> 中 tier 为 2 的点位。"
+          "title": "简制手册",
+          "desc": "追踪简制手册中的点位，包括敌人与稀有植物。"
         }
       },
-      "featureTitle": "Feature",
-      "trackPoints": "Track Points",
-      "heatmap": "Heatmap",
-      "trail": "记录游戏轨迹与热力图",
-      "trailNotePrefix": "启用此功能表明您已接受我们的 ",
-      "trailNoteSuffix": " 与其他条款。"
+      "featureTitle": "功能",
+      "trackPoints": "追踪点位",
+      "heatmap": "热力图",
+      "configNote1": "启用此功能表明您已接受我们的 ",
+      "configNote2": " 与其他条款。"
     },
     "errors": {
       "10000": "位置同步会话已过期，请重新绑定。",

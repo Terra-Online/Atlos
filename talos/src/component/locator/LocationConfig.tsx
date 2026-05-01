@@ -238,7 +238,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                         <button
                             key={item}
                             type="button"
-                            className={classNames(styles.scopeItem, scope.includes(item) && styles.scopeActive)}
+                            className={classNames(styles.scopeItem, scope.includes(item) && styles.active)}
                             onClick={() => toggleScope(item)}
                             aria-pressed={scope.includes(item)}
                             disabled={!trackPoints}
@@ -265,11 +265,11 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                     />
                 </div>
                 <div className={styles.featureNote}>
-                    {t('locator.config.trailNotePrefix')}
+                    {t('locator.config.configNote1')}
                     <a href={dataUrl} target="_blank" rel="noopener noreferrer">
                         {t('locator.binding.dataCollection')}
                     </a>
-                    {t('locator.config.trailNoteSuffix')}
+                    {t('locator.config.configNote2')}
                 </div>
 
                 <div

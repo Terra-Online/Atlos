@@ -292,8 +292,6 @@
     },
     "config": {
       "title": "Tracking Config",
-      "providerSkland": "CN",
-      "providerSkport": "APAC",
       "server": "Server",
       "uid": "Player UID",
       "scopeTitle": "Scope",
@@ -301,23 +299,23 @@
       "scope": {
         "balanced": {
           "title": "Balanced",
-          "desc": "Track point sets selected by the developers."
+          "desc": "Track point sets selected by OEM."
         },
         "collection": {
           "title": "Collectibles",
-          "desc": "Track points in collectibles, exploration and archives."
+          "desc": "Track points in <span class=\"keyword\">collections</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
         },
         "manual": {
-          "title": "Manual",
-          "desc": "Track rare points from the manual, including mobs, bosses and tier 2 natural resources."
+          "title": " Craft Manual",
+          "desc": "Track points from the manual, including enemies and rare plants."
         }
       },
       "featureTitle": "Feature",
-      "trackPoints": "Track Points",
+      "trackPoints": "Tracking",
       "heatmap": "Heatmap",
       "trail": "Record game trajectory and heatmap",
-      "trailNotePrefix": "Enabling this feature means you accept our ",
-      "trailNoteSuffix": " and other terms."
+      "configNote1": "Enabling this feature means you accept our ",
+      "configNote2": " and other terms."
     },
     "errors": {
       "10000": "Location sync session expired. Please bind again.",
