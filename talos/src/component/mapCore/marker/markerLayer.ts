@@ -1,5 +1,5 @@
 import { REGION_DICT } from '@/data/map';
-import { IMarkerData, MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, } from '@/data/marker';
+import { IMarkerData, MARKER_TYPE_DICT, loadRegionMarkers } from '@/data/marker';
 import LOGGER from '@/utils/log';
 import L from 'leaflet';
 import { getMarkerLayer } from './markerRenderer';
@@ -7,6 +7,7 @@ import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
+import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
 
 // leaflet renderer
@@ -94,9 +95,6 @@ export class MarkerLayer {
             this.clusterLayer.registerType(type);
         });
 
-        // 导入全图marker
-        this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat());
-
         // Register lasso selection handler for Cmd/Ctrl+drag multi-select
         this._destroyLasso = registerLassoHandler(this.map, {
             markerDataDict: this.markerDataDict,
@@ -175,6 +173,39 @@ export class MarkerLayer {
         };
 
         return true;
+    }
+
+    async ensureMarkerVisible(id: string): Promise<boolean> {
+        const markerData = this.markerDataDict[id];
+        const layer = this.markerDict[id];
+        if (!markerData || !layer) return false;
+
+        if (!this.activeFilterKeys.includes(markerData.type)) {
+            this.filterMarker([...this.activeFilterKeys, markerData.type]);
+        } else {
+            this.filterMarker(this.activeFilterKeys);
+        }
+
+        if (this.clusterLayer.isEnabled() && this.clusterLayer.isTypeManaged(markerData.type)) {
+            await this.clusterLayer.showMarker(id);
+        } else {
+            const parent = this.layerSubregionDict[markerData.subregId];
+            if (!parent || !this.map.hasLayer(parent)) return false;
+            if (!parent.hasLayer(layer)) {
+                layer.addTo(parent);
+            }
+        }
+
+        for (let i = 0; i < 20; i++) {
+            const inner = this.getMarkerInnerElement(id);
+            if (inner) {
+                inner.classList.remove(styles.disappearing);
+                return true;
+            }
+            await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+        }
+
+        return false;
     }
 
     /**
@@ -257,7 +288,11 @@ export class MarkerLayer {
      * 导入marker列表
      */
     importMarker(markers: IMarkerData[]) {
+        const newMarkerIds: string[] = [];
+
         markers.forEach((marker) => {
+            if (this.markerDataDict[marker.id]) return;
+
             const typeKey = marker.type;
             if (!this.markerTypeMap[typeKey]) {
                 LOGGER.warn(`Missing type config for '${typeKey}'`);
@@ -268,14 +303,16 @@ export class MarkerLayer {
             this.markerDataDict[marker.id] = marker;
 
             this.markerTypeMap[typeKey].push(marker.id);
+            newMarkerIds.push(marker.id);
             // layer.addTo(this.layerSubregionDict[marker.region.sub]);
         });
 
-        const newMarkerIds = markers.map((marker) => marker.id);
-        this.clusterLayer.notifyMarkersAdded(newMarkerIds);
+        if (newMarkerIds.length > 0) {
+            this.clusterLayer.notifyMarkersAdded(newMarkerIds);
+        }
     }
 
-    changeRegion(regionId: string) {
+    async changeRegion(regionId: string) {
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
         });
@@ -286,9 +323,14 @@ export class MarkerLayer {
         });
 
         this.clusterLayer.setActiveSubregions(subregions);
+        const markers = await loadRegionMarkers(regionId);
+        this.importMarker(markers);
+
         if (this.clusterLayer.isEnabled()) {
             this.clusterLayer.applyFilter(this.activeFilterKeys);
         }
+        this.filterMarker(this.activeFilterKeys);
+        useMarkerStore.getState().bumpMarkerDataVersion();
     }
 
     filterMarker(typeKeys: string[]) {

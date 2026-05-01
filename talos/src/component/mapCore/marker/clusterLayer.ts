@@ -184,6 +184,58 @@ export class ClusterLayer {
         return Boolean(this.clusterGroupsByType[typeKey]);
     }
 
+    async showMarker(markerId: string): Promise<boolean> {
+        if (!this.enabled) return false;
+
+        const markerDict = this.deps.getMarkerDict();
+        const markerDataDict = this.deps.getMarkerDataDict();
+        const layerSubregionDict = this.deps.getLayerSubregionDict();
+        const data = markerDataDict[markerId];
+        const layer = markerDict[markerId];
+        if (!data || !layer) return false;
+        if (!this.activeSubregions.has(data.subregId)) return false;
+
+        const clusterGroup = this.clusterGroupsByType[data.type];
+        if (!clusterGroup) return false;
+
+        const parentGroup = layerSubregionDict[data.subregId];
+        if (parentGroup?.hasLayer(layer)) {
+            parentGroup.removeLayer(layer);
+        }
+
+        if (!clusterGroup.hasLayer(layer)) {
+            clusterGroup.addLayer(layer);
+        }
+        if (!this.deps.map.hasLayer(clusterGroup)) {
+            clusterGroup.addTo(this.deps.map);
+        }
+
+        await new Promise<void>((resolve) => {
+            const zoomToShowLayer = (
+                clusterGroup as L.MarkerClusterGroup & {
+                    zoomToShowLayer?: (targetLayer: L.Layer, callback: () => void) => void;
+                }
+            ).zoomToShowLayer;
+
+            if (typeof zoomToShowLayer !== 'function') {
+                resolve();
+                return;
+            }
+
+            let resolved = false;
+            const finish = () => {
+                if (resolved) return;
+                resolved = true;
+                resolve();
+            };
+
+            window.setTimeout(finish, 1200);
+            zoomToShowLayer.call(clusterGroup, layer, finish);
+        });
+
+        return true;
+    }
+
     private refreshClusters() {
         if (!this.enabled) return;
 

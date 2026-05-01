@@ -27,6 +27,7 @@ if (shouldSkipSubset) {
 } else {
   run('pnpm run subset:fonts');
 }
+run('pnpm run build:marker-stats');
 run('pnpm run build:search-index');
 
 if (shouldDeploy) {

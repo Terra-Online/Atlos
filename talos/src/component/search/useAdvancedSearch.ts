@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { create, insertMultiple, search as oramaSearch } from '@orama/orama';
-import { MARKER_TYPE_DICT, REGION_TYPE_COUNT_MAP, SUBREGION_TYPE_COUNT_MAP, WORLD_MARKS } from '@/data/marker';
+import {
+    loadAllMarkers,
+    MARKER_TYPE_DICT,
+    REGION_TYPE_COUNT_MAP,
+    SUBREGION_TYPE_COUNT_MAP,
+    WORLD_TYPE_COUNT_MAP,
+} from '@/data/marker';
 import { SUBREGION_DICT } from '@/data/map';
 import { FULL_LANGS, UI_ONLY_LANGS, useTranslateGame } from '@/locale';
 import useRegion from '@/store/region';
@@ -58,9 +63,22 @@ type CreateFn = (args: {
 type InsertMultipleFn<TDoc> = (db: SearchDb, docs: TDoc[], batchSize?: number) => Promise<unknown>;
 type SearchFn<TDoc> = (db: SearchDb, params: OramaSearchParams) => Promise<OramaSearchResult<TDoc>>;
 
-const createDb = create as unknown as CreateFn;
-const insertDocs = insertMultiple as unknown as InsertMultipleFn<SearchDoc>;
-const searchDocs = oramaSearch as unknown as SearchFn<SearchDoc>;
+let oramaPromise: Promise<{
+    createDb: CreateFn;
+    insertDocs: InsertMultipleFn<SearchDoc>;
+    searchDocs: SearchFn<SearchDoc>;
+}> | null = null;
+
+const loadOrama = () => {
+    if (!oramaPromise) {
+        oramaPromise = import('@orama/orama').then((mod) => ({
+            createDb: mod.create as unknown as CreateFn,
+            insertDocs: mod.insertMultiple as unknown as InsertMultipleFn<SearchDoc>,
+            searchDocs: mod.search as unknown as SearchFn<SearchDoc>,
+        }));
+    }
+    return oramaPromise;
+};
 
 type SearchHitDoc = {
     pointId: string;
@@ -132,11 +150,6 @@ const PROD_WORKER_FIRST = false;
 const supportedFullLocaleSet = new Set<string>(FULL_LANGS as readonly string[]);
 const uiOnlyLocaleSet = new Set<string>(UI_ONLY_LANGS as readonly string[]);
 const CJK_RE = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
-
-const worldTypeCountMap: Record<string, number> = WORLD_MARKS.reduce((acc, marker) => {
-    acc[marker.type] = (acc[marker.type] || 0) + 1;
-    return acc;
-}, {} as Record<string, number>);
 
 const normalizeText = (value: string): string =>
     value
@@ -329,9 +342,10 @@ const binderFocusedSupplementSearch = (docs: SearchDoc[], rawQuery: string, limi
         }));
 };
 
-const buildFallbackDocs = (): SearchDoc[] => {
+const buildFallbackDocs = async (): Promise<SearchDoc[]> => {
     const docs: SearchDoc[] = [];
-    WORLD_MARKS.forEach((marker) => {
+    const markers = await loadAllMarkers();
+    markers.forEach((marker) => {
         if (typeof marker.type !== 'string' || !marker.type.trim()) return;
         const typeKey = marker.type.trim();
         const markerType = MARKER_TYPE_DICT[typeKey];
@@ -354,6 +368,7 @@ const buildFallbackDocs = (): SearchDoc[] => {
 };
 
 const createSearchDb = async (docs: SearchDoc[]): Promise<SearchDb> => {
+    const { createDb, insertDocs } = await loadOrama();
     const db = await createDb({
         schema: {
             docId: 'string',
@@ -413,7 +428,7 @@ const getPrebuiltDb = (docsLocale: string): Promise<SearchDb> => {
             }
         }
 
-        return createSearchDb(buildFallbackDocs());
+        return createSearchDb(await buildFallbackDocs());
     })();
 
     prebuiltDbPromiseByLocale.set(docsLocale, promise);
@@ -651,7 +666,7 @@ const toGroups = (
                     selectorName,
                     binderMatched: binderInfo.matchedByQuery,
                     iconKey,
-                    worldTotal: worldTypeCountMap[typeKey] ?? 0,
+                    worldTotal: WORLD_TYPE_COUNT_MAP[typeKey] ?? 0,
                     mainTotal: REGION_TYPE_COUNT_MAP[currentRegion]?.[typeKey] ?? 0,
                     subTotal: currentSubregion ? (SUBREGION_TYPE_COUNT_MAP[currentSubregion]?.[typeKey] ?? 0) : 0,
                     uniquePoint,
@@ -710,6 +725,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
 
             const runLocalSearch = async (): Promise<SearchHitDoc[]> => {
                 const db = await getPrebuiltDb(docsLocale);
+                const { searchDocs } = await loadOrama();
                 if (activeTokenRef.current !== token) return [];
 
                 const cjkMode = hasCjk(normalizedSearchQuery);
@@ -745,21 +761,21 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                 const resolvedDocs = docs.length > 0
                     ? docs
                     : fallbackSubstringSearch(
-                        prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                        prebuiltDocsByLocale.get(docsLocale) ?? await buildFallbackDocs(),
                         normalizedSearchQuery,
                         DOC_LIMIT * 2,
                     );
 
                 const cjkSupplement = cjkMode
                     ? fallbackSubstringSearch(
-                        prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                        prebuiltDocsByLocale.get(docsLocale) ?? await buildFallbackDocs(),
                         normalizedSearchQuery,
                         DOC_LIMIT * 2,
                     )
                     : [];
 
                 const binderSupplement = binderFocusedSupplementSearch(
-                    prebuiltDocsByLocale.get(docsLocale) ?? buildFallbackDocs(),
+                    prebuiltDocsByLocale.get(docsLocale) ?? await buildFallbackDocs(),
                     normalizedSearchQuery,
                     DOC_LIMIT * 2,
                 );

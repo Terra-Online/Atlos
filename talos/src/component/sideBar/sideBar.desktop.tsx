@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef as useReactRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useMemo, useRef as useReactRef, useState } from 'react';
 import styles from './sideBar.module.scss';
 import drawerStyles from './triggerDrawer.module.scss';
 
@@ -24,7 +24,6 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
-import IDCard from '../login/idcard';
 import SupportModal from '../support/support';
 
 // Social media icons
@@ -47,6 +46,7 @@ import { computeBinderColumns } from './binderMasonry';
 
 const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
 const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
+const IDCard = lazy(() => import('../login/idcard'));
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -289,7 +289,9 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     </div>
                     <Notice />
                     <div className={styles.idCardContainer}>
-                        <IDCard />
+                        <Suspense fallback={null}>
+                            <IDCard />
+                        </Suspense>
                     </div>
                 </div>
                 <div className={styles.copyright}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
 import L from 'leaflet';
 
 import './styles/global.scss';
@@ -6,10 +6,8 @@ import './styles/global.scss';
 import Map from './component/map/Map';
 import UIOverlay from './component/uiOverlay/UIOverlay';
 import SideBar from './component/sideBar/sideBar';
-import UserGuide from '@/component/userGuide/UserGuide';
 import DomainBanner from './component/domain/domain';
 import LocatorBanner from '@/component/locator/LocatorBanner';
-import LocationAuth from '@/component/locator/LocationAuth';
 // import SupportAutoPopup from '@/component/support/SupportAutoPopup';
 import { MetaHelper } from './component/MetaHelper';
 
@@ -18,6 +16,11 @@ import { useDevice } from '@/utils/device';
 import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
 import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
 import { useLocator } from '@/component/map/useLocator';
+import { useIsUserGuideOpen } from '@/store/uiPrefs';
+import { useLocatorStore } from '@/component/locator/state';
+
+const UserGuide = lazy(() => import('@/component/userGuide/UserGuide'));
+const LocationAuth = lazy(() => import('@/component/locator/LocationAuth'));
 
 declare global {
     interface Window {
@@ -37,11 +40,26 @@ function App() {
         undefined,
     );
     const [uiVisible, setUiVisible] = useState(true);
+    const [shouldLoadUserGuide, setShouldLoadUserGuide] = useState(false);
+    const [userGuideReady, setUserGuideReady] = useState(false);
+    const isUserGuideOpen = useIsUserGuideOpen();
+    const locatorAuthOpen = useLocatorStore((state) => state.authOpen);
 
     // Keyboard shortcuts & map multi-select
     useKeyboardShortcuts(mapInstance);
     useMapMultiSelect(mapInstance);
     useLocator(mapInstance);
+
+    useEffect(() => {
+        if (shouldLoadUserGuide) return;
+        if (isUserGuideOpen) {
+            setShouldLoadUserGuide(true);
+            return;
+        }
+
+        const id = globalThis.setTimeout(() => setShouldLoadUserGuide(true), 0);
+        return () => globalThis.clearTimeout(id);
+    }, [isUserGuideOpen, shouldLoadUserGuide]);
 
     // Track previous sidebar state to detect actual toggles
     const prevSidebarOpenRef = useRef(isSidebarOpen);
@@ -137,10 +155,18 @@ function App() {
             <MetaHelper />
             <DomainBanner />
             <LocatorBanner />
-            <LocationAuth />
+            {locatorAuthOpen && (
+                <Suspense fallback={null}>
+                    <LocationAuth />
+                </Suspense>
+            )}
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
-                <UserGuide map={mapInstance} />
+                {shouldLoadUserGuide && (
+                    <Suspense fallback={null}>
+                        <UserGuide map={mapInstance} onReady={() => setUserGuideReady(true)} />
+                    </Suspense>
+                )}
                 {/* Map layer - always fill the entire window */}
                 <Map onMapReady={handleMapReady} />
                 {/* UI layer - floats over the map */}
@@ -149,6 +175,7 @@ function App() {
                     isSidebarOpen={isSidebarOpen}
                     visible={uiVisible}
                     onHideUI={handleHideUI}
+                    userGuideReady={userGuideReady}
                 />
                 {/* Sidebar layer - floats over the map */}
                 <SideBar

@@ -18,7 +18,8 @@ export function useMarker(
 ) {
     const { filter } = useMarkerStore();
     const collectedPoints = useUserRecord();
-    const selectedPoints = useMarkerStore.getState().selectedPoints;
+    const selectedPoints = useMarkerStore((state) => state.selectedPoints);
+    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     const prefsHideCompletedMarkers = useHideCompletedMarkers();
     const initialFilterApplied = useRef(false);
     const prevSelectedRef = useRef<Set<string>>(new Set());
@@ -45,7 +46,7 @@ export function useMarker(
             .map((point) => point.id) ?? [];
 
         useMarkerStore.setState({ points: currentPoints });
-    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints]);
+    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints, markerDataVersion]);
 
     // Auto-cluster logic: enable clustering if preference is on and visible markers > threshold
     useEffect(() => {
@@ -99,5 +100,5 @@ export function useMarker(
 
         // Update ref for next comparison
         prevSelectedRef.current = current;
-    }, [selectedPoints, mapCore]);
+    }, [selectedPoints, mapCore, markerDataVersion]);
 }

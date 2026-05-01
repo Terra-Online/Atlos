@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
@@ -12,8 +12,6 @@ import LocateCloseIcon from '@/assets/images/UI/locateclose.svg?react';
 import LocateOpenIcon from '@/assets/images/UI/locateopen.svg?react';
 import LocateCurrentIcon from '@/assets/images/UI/locatecurrent.svg?react';
 import BindingIcon from '@/assets/logos/binding.svg?react';
-import LocationBinding from './LocationBinding';
-import LocationConfig from './LocationConfig';
 import { disableSession, enableSession } from './session';
 import {
     requestLocatorReturnCurrent,
@@ -33,6 +31,9 @@ const resolveIcon = (viewMode: LocatorViewMode): React.FC =>
 interface LocatorButtonProps {
     variant?: LocatorButtonVariant;
 }
+
+const LocationBinding = lazy(() => import('./LocationBinding'));
+const LocationConfig = lazy(() => import('./LocationConfig'));
 
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) => {
     const t = useTranslateUI();
@@ -136,31 +137,39 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         <Icon />
                     </button>
                 </div>
-                <LocationBinding
-                    open={bindingOpen}
-                    onClose={() => {
-                        setBindingOpen(false);
-                        refreshBindingStatus();
-                    }}
-                    onBound={() => {
-                        setBound(true);
-                        refreshBindingStatus();
-                    }}
-                />
-                <LocationConfig
-                    open={configOpen}
-                    onClose={() => {
-                        setConfigOpen(false);
-                        refreshBindingStatus();
-                    }}
-                    onChangeBinding={() => {
-                        setConfigOpen(false);
-                        setBindingOpen(true);
-                    }}
-                    onBindingRemoved={() => {
-                        setBound(false);
-                    }}
-                />
+                {bindingOpen && (
+                    <Suspense fallback={null}>
+                        <LocationBinding
+                            open={bindingOpen}
+                            onClose={() => {
+                                setBindingOpen(false);
+                                refreshBindingStatus();
+                            }}
+                            onBound={() => {
+                                setBound(true);
+                                refreshBindingStatus();
+                            }}
+                        />
+                    </Suspense>
+                )}
+                {configOpen && (
+                    <Suspense fallback={null}>
+                        <LocationConfig
+                            open={configOpen}
+                            onClose={() => {
+                                setConfigOpen(false);
+                                refreshBindingStatus();
+                            }}
+                            onChangeBinding={() => {
+                                setConfigOpen(false);
+                                setBindingOpen(true);
+                            }}
+                            onBindingRemoved={() => {
+                                setBound(false);
+                            }}
+                        />
+                    </Suspense>
+                )}
             </>
         );
     }
@@ -203,31 +212,39 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                     )}
                 </div>
             </div>
-            <LocationBinding
-                open={bindingOpen}
-                onClose={() => {
-                    setBindingOpen(false);
-                    refreshBindingStatus();
-                }}
-                onBound={() => {
-                    setBound(true);
-                    refreshBindingStatus();
-                }}
-            />
-            <LocationConfig
-                open={configOpen}
-                onClose={() => {
-                    setConfigOpen(false);
-                    refreshBindingStatus();
-                }}
-                onChangeBinding={() => {
-                    setConfigOpen(false);
-                    setBindingOpen(true);
-                }}
-                onBindingRemoved={() => {
-                    setBound(false);
-                }}
-            />
+            {bindingOpen && (
+                <Suspense fallback={null}>
+                    <LocationBinding
+                        open={bindingOpen}
+                        onClose={() => {
+                            setBindingOpen(false);
+                            refreshBindingStatus();
+                        }}
+                        onBound={() => {
+                            setBound(true);
+                            refreshBindingStatus();
+                        }}
+                    />
+                </Suspense>
+            )}
+            {configOpen && (
+                <Suspense fallback={null}>
+                    <LocationConfig
+                        open={configOpen}
+                        onClose={() => {
+                            setConfigOpen(false);
+                            refreshBindingStatus();
+                        }}
+                        onChangeBinding={() => {
+                            setConfigOpen(false);
+                            setBindingOpen(true);
+                        }}
+                        onBindingRemoved={() => {
+                            setBound(false);
+                        }}
+                    />
+                </Suspense>
+            )}
         </>
     );
 };

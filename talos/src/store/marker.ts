@@ -3,9 +3,17 @@ import { persist } from 'zustand/middleware';
 import { useUserRecord } from './userRecord';
 import useRegion from './region';
 import { DATASET_VERSION } from '@/data/migration/version';
-import { useMemo } from 'react';
-import { IMarkerData, SUBREGION_MARKS_MAP, WORLD_MARKS, SUBREGION_TYPE_COUNT_MAP, REGION_TYPE_COUNT_MAP } from '@/data/marker';
-import { REGION_DICT } from '@/data/map';
+import { useEffect, useMemo } from 'react';
+import {
+    getLoadedRegionMarkers,
+    getLoadedSubregionMarkers,
+    getLoadedWorldMarkers,
+    IMarkerData,
+    loadAllMarkers,
+    REGION_TYPE_COUNT_MAP,
+    SUBREGION_TYPE_COUNT_MAP,
+    WORLD_TYPE_COUNT_MAP,
+} from '@/data/marker';
 
 interface IMarkerStore {
     currentActivePoint: IMarkerData | null;
@@ -27,6 +35,8 @@ interface IMarkerStore {
 
     /** Version of the dataset when selectedPoints was last modified */
     datasetVersion: number;
+    markerDataVersion: number;
+    bumpMarkerDataVersion: () => void;
 }
 
 export const useMarkerStore = create<IMarkerStore>()(
@@ -110,6 +120,10 @@ export const useMarkerStore = create<IMarkerStore>()(
                     }
                 });
             },
+            markerDataVersion: 0,
+            bumpMarkerDataVersion: () => {
+                set((state) => ({ markerDataVersion: state.markerDataVersion + 1 }));
+            },
         }),
         {
             name: 'marker-filter',
@@ -137,51 +151,57 @@ export const useToggleSelected = () =>
 
 export const useWorldMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
+    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
+
+    useEffect(() => {
+        if (!type) return;
+        void loadAllMarkers().then(() => {
+            useMarkerStore.getState().bumpMarkerDataVersion();
+        });
+    }, [type]);
+
     return useMemo(() => {
+        void markerDataVersion;
         const ret = { total: 0, collected: 0 };
         if (!type) return ret;
-        // 使用预计算的总数，只需计算已收集数量
-        const worldTotal = WORLD_MARKS.filter((m) => m.type === type);
-        ret.total = worldTotal.length;
-        ret.collected = worldTotal.filter((m) =>
+        ret.total = WORLD_TYPE_COUNT_MAP[type] ?? 0;
+        const worldMarkers = getLoadedWorldMarkers().filter((m) => m.type === type);
+        ret.collected = worldMarkers.filter((m) =>
             pointsRecord.includes(m.id),
         ).length;
         return ret;
-    }, [pointsRecord, type]);
+    }, [markerDataVersion, pointsRecord, type]);
 };
 
 export const useRegionMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
+    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     return useMemo(() => {
+        void markerDataVersion;
         const ret = { total: 0, collected: 0 };
         if (!type || !currentRegion) return ret;
         // 使用预计算的区域类型统计
         const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
         ret.total = regionTypeCounts?.[type] ?? 0;
         // 计算已收集数量
-        const regionConfig = REGION_DICT[currentRegion];
-        const subRegions = regionConfig?.subregions ?? [];
-        const regionMarkers = subRegions
-            .map((sr) => SUBREGION_MARKS_MAP[sr])
-            .flat()
-            .filter((m) => m.type === type);
+        const regionMarkers = getLoadedRegionMarkers(currentRegion).filter((m) => m.type === type);
         ret.collected = regionMarkers.filter((m) =>
             pointsRecord.includes(m.id),
         ).length;
         return ret;
-    }, [pointsRecord, currentRegion, type]);
+    }, [markerDataVersion, pointsRecord, currentRegion, type]);
 };
 
 export const useMultiRegionMarkerCount = (types: string[]) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
+    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     return useMemo(() => {
+        void markerDataVersion;
         if (!currentRegion) return types.map(() => ({ total: 0, collected: 0 }));
         const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
-        const regionConfig = REGION_DICT[currentRegion];
-        const subRegions = regionConfig?.subregions ?? [];
-        const allMarkers = subRegions.flatMap((sr) => SUBREGION_MARKS_MAP[sr] ?? []);
+        const allMarkers = getLoadedRegionMarkers(currentRegion);
         return types.map((type) => {
             const total = regionTypeCounts?.[type] ?? 0;
             const collected = allMarkers.filter(
@@ -190,24 +210,25 @@ export const useMultiRegionMarkerCount = (types: string[]) => {
             return { total, collected };
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pointsRecord, currentRegion, types.join(',')]);
+    }, [markerDataVersion, pointsRecord, currentRegion, types.join(',')]);
 };
 
 // Get the marker count for a specific subregion (based on current active point)
 export const useSubregionMarkerCount = (type?: string, subregionId?: string) => {
     const pointsRecord = useUserRecord();
+    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     return useMemo(() => {
+        void markerDataVersion;
         const ret = { total: 0, collected: 0 };
         if (!type || !subregionId) return ret;
         // 使用预计算的子区域类型统计
         const subregionTypeCounts = SUBREGION_TYPE_COUNT_MAP[subregionId];
         ret.total = subregionTypeCounts?.[type] ?? 0;
         // 计算已收集数量
-        const subregionMarks = SUBREGION_MARKS_MAP[subregionId] ?? [];
-        const subregionMarkers = subregionMarks.filter((m) => m.type === type);
+        const subregionMarkers = getLoadedSubregionMarkers(subregionId).filter((m) => m.type === type);
         ret.collected = subregionMarkers.filter((m) =>
             pointsRecord.includes(m.id),
         ).length;
         return ret;
-    }, [pointsRecord, subregionId, type]);
+    }, [markerDataVersion, pointsRecord, subregionId, type]);
 };
