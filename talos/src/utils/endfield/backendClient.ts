@@ -87,13 +87,15 @@ const readApiError = async (response: Response): Promise<EFBackendError> => {
 };
 
 async function requestJson<T>(baseUrl: string, path: string, init?: RequestInit): Promise<T> {
+    const hasBody = init?.body !== undefined && init.body !== null;
+    const headers = {
+        ...(hasBody ? { 'content-type': 'application/json' } : {}),
+        ...(init?.headers ?? {}),
+    };
     const response = await fetch(`${baseUrl}${path}`, {
         ...init,
         credentials: 'include',
-        headers: {
-            'content-type': 'application/json',
-            ...(init?.headers ?? {}),
-        },
+        headers,
     });
 
     if (!response.ok) {

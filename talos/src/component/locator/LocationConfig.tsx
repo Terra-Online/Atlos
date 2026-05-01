@@ -20,10 +20,11 @@ import {
 } from '@/utils/endfield/config';
 import { getCachedBinding, setCachedBinding } from '@/utils/backendCache';
 import ConfigIcon from '@/assets/images/UI/config.svg?react';
+import { LOCATOR_REMINDER_SCOPE_OPTIONS } from './proximityReminderConfig';
 import { docsUrl, disableSession } from './session';
 import styles from './Locator.module.scss';
 
-const SCOPES: EFTrackerScope[] = ['auto', 'collection', 'enemy'];
+const SCOPES: EFTrackerScope[] = LOCATOR_REMINDER_SCOPE_OPTIONS;
 
 interface LocationConfigProps {
     open: boolean;

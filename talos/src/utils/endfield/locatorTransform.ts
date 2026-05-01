@@ -4,9 +4,15 @@ import { SUBREGION_DICT } from '@/data/map';
 export type EFLocatorPosition = {
     mapX: number;
     mapZ: number;
-    mode: string;
+    mode: RegionProfile;
     regionKey: string | null;
     subregionKey: string | null;
+};
+
+export type EFGamePosition = {
+    x: number;
+    y: number;
+    z: number;
 };
 
 type RegionTransform = {
@@ -17,7 +23,7 @@ type RegionTransform = {
     rotateClockwise90?: boolean;
 };
 
-type RegionProfile = 'VL' | 'WL' | 'WL2' | 'DJ' | 'ES' | 'default';
+export type RegionProfile = 'VL' | 'WL' | 'WL2' | 'DJ' | 'ES' | 'default';
 
 const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
     VL: {
@@ -35,8 +41,8 @@ const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
     WL2: {
         scaleX: 0.35414771840391185,
         scaleZ: 0.33417957195526954,
-        offsetX: 229.5095336217924,
-        offsetZ: -639.5187069784344,
+        offsetX: 229.5667736625251,
+        offsetZ: -639.0186688639493,
     },
     DJ: {
         scaleX: 2.817109225144681,
@@ -65,6 +71,7 @@ const MAP_ID_TO_PROFILE: Record<string, RegionProfile> = {
     base01: 'DJ',
     dung01: 'ES',
     indie07: 'WL2',
+    indie007: 'WL2',
     indie_dg007: 'WL2',
 };
 
@@ -74,12 +81,15 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
     base01: 'Dijiang',
     dung01: 'Weekraid_1',
     indie07: 'Wuling',
+    indie007: 'Wuling',
     indie_dg007: 'Wuling',
 };
 
 const SCENE_ID_TO_SUBREGION_KEY: Record<string, string> = {
     indie07: 'WL_4',
+    indie007: 'WL_4',
     indie_dg007: 'WL_4',
+    map02_lv004: 'WL_4',
 };
 
 const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
@@ -89,6 +99,17 @@ const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
     DJ: 'Dijiang',
     ES: 'Weekraid_1',
     default: 'Valley_4',
+};
+
+const REGION_KEY_TO_PROFILE: Record<string, RegionProfile> = {
+    Valley_4: 'VL',
+    Wuling: 'WL',
+    Dijiang: 'DJ',
+    Weekraid_1: 'ES',
+};
+
+const SUBREGION_KEY_TO_PROFILE: Record<string, RegionProfile> = {
+    WL_4: 'WL2',
 };
 
 const isRegionProfile = (value: string): value is RegionProfile =>
@@ -105,27 +126,28 @@ const SUBREGION_ID_BY_LEVEL_ID = Object.keys(SUBREGION_DICT).reduce<Record<strin
 const normalizeSceneId = (value: string | null | undefined): string =>
     (value ?? '').trim().toLowerCase();
 
+const isWL2Scene = (mapId: string, levelId: string): boolean =>
+    mapId.startsWith('indie07')
+    || levelId.startsWith('indie07')
+    || mapId.startsWith('indie007')
+    || levelId.startsWith('indie007')
+    || mapId.includes('indie_dg007')
+    || levelId.includes('indie_dg007')
+    || mapId.includes('wl2')
+    || levelId.includes('wl2')
+    || mapId.includes('wuling2')
+    || levelId.includes('wuling2');
+
 const resolveProfileKey = (mapId: string, levelId: string): RegionProfile => {
     if (!mapId && !levelId) return 'ES';
-    if (mapId && MAP_ID_TO_PROFILE[mapId]) return MAP_ID_TO_PROFILE[mapId];
     if (mapId && isRegionProfile(mapId)) return mapId;
     if (levelId && isRegionProfile(levelId)) return levelId;
+    if (isWL2Scene(mapId, levelId)) return 'WL2';
+    if (mapId && MAP_ID_TO_PROFILE[mapId]) return MAP_ID_TO_PROFILE[mapId];
     if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'VL';
     if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'WL';
     if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'DJ';
     if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'ES';
-    if (
-        mapId.startsWith('indie07')
-        || levelId.startsWith('indie07')
-        || mapId.includes('indie_dg007')
-        || levelId.includes('indie_dg007')
-        || mapId.includes('wl2')
-        || levelId.includes('wl2')
-        || mapId.includes('wuling2')
-        || levelId.includes('wuling2')
-    ) {
-        return 'WL2';
-    }
     return 'default';
 };
 
@@ -136,18 +158,7 @@ const resolveRegionKey = (mapId: string, levelId: string): string | null => {
     if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'Wuling';
     if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'Dijiang';
     if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'Weekraid_1';
-    if (
-        mapId.startsWith('indie07')
-        || levelId.startsWith('indie07')
-        || mapId.includes('indie_dg007')
-        || levelId.includes('indie_dg007')
-        || mapId.includes('wl2')
-        || levelId.includes('wl2')
-        || mapId.includes('wuling2')
-        || levelId.includes('wuling2')
-    ) {
-        return 'Wuling';
-    }
+    if (isWL2Scene(mapId, levelId)) return 'Wuling';
     return null;
 };
 
@@ -156,12 +167,7 @@ const resolveSubregionKey = (mapId: string, levelId: string): string | null => {
     if (mapId && SUBREGION_ID_BY_LEVEL_ID[mapId]) return SUBREGION_ID_BY_LEVEL_ID[mapId];
     if (levelId && SCENE_ID_TO_SUBREGION_KEY[levelId]) return SCENE_ID_TO_SUBREGION_KEY[levelId];
     if (mapId && SCENE_ID_TO_SUBREGION_KEY[mapId]) return SCENE_ID_TO_SUBREGION_KEY[mapId];
-    if (
-        mapId.startsWith('indie07')
-        || levelId.startsWith('indie07')
-        || mapId.includes('indie_dg007')
-        || levelId.includes('indie_dg007')
-    ) {
+    if (isWL2Scene(mapId, levelId)) {
         return 'WL_4';
     }
     return null;
@@ -190,5 +196,33 @@ export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorP
             ? null
             : (resolveRegionKey(mapId, levelId) ?? REGION_KEY_BY_PROFILE[profileKey] ?? null),
         subregionKey: resolveSubregionKey(mapId, levelId),
+    };
+};
+
+export const resolveLocatorProfile = (
+    regionKey: string | null | undefined,
+    subregionKey?: string | null,
+): RegionProfile => {
+    if (subregionKey && SUBREGION_KEY_TO_PROFILE[subregionKey]) {
+        return SUBREGION_KEY_TO_PROFILE[subregionKey];
+    }
+    if (regionKey && REGION_KEY_TO_PROFILE[regionKey]) {
+        return REGION_KEY_TO_PROFILE[regionKey];
+    }
+    return 'default';
+};
+
+export const convertMapMarkerToEFGamePosition = (
+    marker: { x: number; y: number; z: number; subregId?: string },
+    regionKey: string | null | undefined,
+    profileOverride?: RegionProfile | null,
+): EFGamePosition => {
+    const profile = profileOverride ?? resolveLocatorProfile(regionKey, marker.subregId);
+    const transform = REGION_TRANSFORMS[profile] ?? REGION_TRANSFORMS.default;
+
+    return {
+        x: (marker.x - transform.offsetX) / transform.scaleX,
+        y: marker.y,
+        z: (marker.z - transform.offsetZ) / transform.scaleZ,
     };
 };

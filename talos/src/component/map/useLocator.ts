@@ -504,6 +504,10 @@ export function useLocator(map: L.Map | undefined): void {
                 useLocatorStore.getState().setLastPosition({
                     lat: converted.latLng.lat,
                     lng: converted.latLng.lng,
+                    gameX: payload.pos.x,
+                    gameY: payload.pos.y,
+                    gameZ: payload.pos.z,
+                    locatorProfile: locator.mode,
                     regionKey: locator.regionKey,
                     subregionKey: locator.subregionKey,
                 });

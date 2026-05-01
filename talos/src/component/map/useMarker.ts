@@ -1,8 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapCore } from '../mapCore/map';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
 import { useUiPrefsStore, useHideCompletedMarkers } from '@/store/uiPrefs';
+import { useLocatorStore } from '@/component/locator/state';
+import { LOCATOR_CONFIG_UPDATED_EVENT, readEFTrackerConf, type EFTrackerScope } from '@/utils/endfield/config';
+import { getLocatorReminderTypeKeys } from '@/component/locator/proximityReminder';
 
 const AUTO_CLUSTER_THRESHOLD = 300;
 const AUTO_CLUSTER_FILTER_COUNT = 6;
@@ -21,8 +24,26 @@ export function useMarker(
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     const prefsHideCompletedMarkers = useHideCompletedMarkers();
+    const locatorViewMode = useLocatorStore((state) => state.viewMode);
+    const locatorPosition = useLocatorStore((state) => state.lastPosition);
+    const [locatorConfigVersion, setLocatorConfigVersion] = useState(0);
     const initialFilterApplied = useRef(false);
     const prevSelectedRef = useRef<Set<string>>(new Set());
+
+    useEffect(() => {
+        const onConfigUpdated = () => setLocatorConfigVersion((version) => version + 1);
+        window.addEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+        return () => {
+            window.removeEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+        };
+    }, []);
+
+    const locatorReminderTypeKeys = useMemo(() => {
+        void locatorConfigVersion;
+        const config = readEFTrackerConf();
+        const scopes: EFTrackerScope[] = config?.scope && config.scope.length ? config.scope : ['auto'];
+        return getLocatorReminderTypeKeys(scopes);
+    }, [locatorConfigVersion]);
 
     // 第一次初始化时应用已保存的 filter
     useEffect(() => {
@@ -101,4 +122,26 @@ export function useMarker(
         // Update ref for next comparison
         prevSelectedRef.current = current;
     }, [selectedPoints, mapCore, markerDataVersion]);
+
+    useEffect(() => {
+        const markerLayer = mapCore?.markerLayer;
+        if (!markerLayer) return;
+
+        if (locatorViewMode === 'off' || !locatorPosition) {
+            markerLayer.clearProximityReminder();
+            return;
+        }
+
+        markerLayer.updateProximityReminder({
+            currentRegion,
+            subregionKey: locatorPosition.subregionKey,
+            locatorProfile: locatorPosition.locatorProfile,
+            position: {
+                x: locatorPosition.gameX,
+                y: locatorPosition.gameY,
+                z: locatorPosition.gameZ,
+            },
+            typeKeys: locatorReminderTypeKeys,
+        });
+    }, [mapCore, currentRegion, locatorPosition, locatorReminderTypeKeys, locatorViewMode, collectedPoints, markerDataVersion]);
 }

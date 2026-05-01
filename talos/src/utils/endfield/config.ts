@@ -1,5 +1,7 @@
 export type EFTrackerScope = 'auto' | 'collection' | 'enemy';
 
+export const EF_TRACKER_SCOPES: readonly EFTrackerScope[] = ['auto', 'collection', 'enemy'];
+
 export type EFTrackerConf = {
     enabled: boolean;
     baseUrl: string;
@@ -33,7 +35,7 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
             locatorSync: parsed.locatorSync ?? false,
             scope: Array.isArray(parsed.scope)
                 ? parsed.scope.filter((item): item is EFTrackerScope =>
-                    item === 'auto' || item === 'collection' || item === 'enemy',
+                    EF_TRACKER_SCOPES.includes(item),
                 )
                 : undefined,
             trail: parsed.trail ?? false,

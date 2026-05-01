@@ -9,6 +9,10 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
 import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
+import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/utils/endfield/locatorTransform';
+
+const LOCATOR_PROXIMITY_XZ_METERS = 20;
+const LOCATOR_PROXIMITY_Y_METERS = 6;
 
 // leaflet renderer
 export class MarkerLayer {
@@ -50,6 +54,8 @@ export class MarkerLayer {
      */
     private pendingRemovalTimers: Record<string, number> = {};
     private pulseCleanupDict: Record<string, () => void> = {};
+    private proximityPulseIds = new Set<string>();
+    private proximityUpdateSeq = 0;
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
     private _destroyLasso?: () => void;
@@ -119,6 +125,7 @@ export class MarkerLayer {
      */
     destroy() {
         this._destroyLasso?.();
+        this.clearProximityReminder();
         Object.values(this.pulseCleanupDict).forEach((cleanup) => cleanup());
         this.pulseCleanupDict = {};
     }
@@ -173,6 +180,100 @@ export class MarkerLayer {
         };
 
         return true;
+    }
+
+    clearProximityReminder() {
+        this.proximityUpdateSeq += 1;
+        this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
+        this.proximityPulseIds.clear();
+    }
+
+    updateProximityReminder(params: {
+        currentRegion: string | null | undefined;
+        subregionKey?: string | null;
+        locatorProfile?: RegionProfile | null;
+        position: EFGamePosition;
+        typeKeys: string[];
+    }) {
+        const { currentRegion, subregionKey, locatorProfile, position, typeKeys } = params;
+        if (!currentRegion || typeKeys.length === 0) {
+            this.clearProximityReminder();
+            return;
+        }
+
+        const activeTypeKeys = new Set(typeKeys);
+        const activeSubregions = new Set(REGION_DICT[currentRegion]?.subregions ?? []);
+        if (activeSubregions.size === 0) {
+            this.clearProximityReminder();
+            return;
+        }
+
+        const markerStore = useMarkerStore.getState();
+        const collected = new Set(getActivePoints());
+        const selected = new Set(markerStore.selectedPoints);
+        const filter = new Set(markerStore.filter);
+        const filterTypesToActivate = new Set<string>();
+        const nextPulseIds = new Set<string>();
+
+        Object.values(this.markerDataDict).forEach((markerData) => {
+            if (!activeSubregions.has(markerData.subregId)) return;
+            if (subregionKey && markerData.subregId !== subregionKey) return;
+            if (!activeTypeKeys.has(markerData.type)) return;
+
+            if (collected.has(markerData.id)) {
+                this.stopMarkerPulse(markerData.id);
+                return;
+            }
+
+            const markerGamePosition = convertMapMarkerToEFGamePosition(markerData, currentRegion, locatorProfile);
+            const inRange = Math.abs(markerGamePosition.x - position.x) < LOCATOR_PROXIMITY_XZ_METERS
+                && Math.abs(markerGamePosition.z - position.z) < LOCATOR_PROXIMITY_XZ_METERS
+                && Math.abs(markerGamePosition.y - position.y) < LOCATOR_PROXIMITY_Y_METERS;
+
+            if (!inRange) return;
+
+            nextPulseIds.add(markerData.id);
+            if (!filter.has(markerData.type)) {
+                filterTypesToActivate.add(markerData.type);
+            }
+            if (!selected.has(markerData.id)) {
+                useMarkerStore.getState().setSelected(markerData.id, true);
+                this.updateSelectedMarkers([{ id: markerData.id, selected: true }]);
+            }
+        });
+
+        if (filterTypesToActivate.size > 0) {
+            useMarkerStore.getState().setFilterKeys([...filterTypesToActivate], true);
+        }
+
+        this.proximityPulseIds.forEach((id) => {
+            if (!nextPulseIds.has(id)) {
+                this.stopMarkerPulse(id);
+            }
+        });
+
+        const seq = ++this.proximityUpdateSeq;
+        this.proximityPulseIds = nextPulseIds;
+
+        const showPulses = async () => {
+            for (const id of nextPulseIds) {
+                if (seq !== this.proximityUpdateSeq) return;
+                if (collected.has(id)) continue;
+                if (!this.pulseCleanupDict[id]) {
+                    await this.ensureMarkerVisible(id);
+                }
+                if (seq !== this.proximityUpdateSeq) return;
+                if (getActivePoints().includes(id)) {
+                    this.stopMarkerPulse(id);
+                    continue;
+                }
+                if (!this.pulseCleanupDict[id]) {
+                    this.startMarkerPulse(id);
+                }
+            }
+        };
+
+        void showPulses();
     }
 
     async ensureMarkerVisible(id: string): Promise<boolean> {
@@ -233,6 +334,8 @@ export class MarkerLayer {
 
             if (wasCollected !== isCollected) {
                 if (isCollected) {
+                    this.stopMarkerPulse(id);
+                    this.proximityPulseIds.delete(id);
                     inner.classList.add(styles.checked);
 
                     // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除

@@ -1,10 +1,15 @@
 import { create } from 'zustand';
+import type { RegionProfile } from '@/utils/endfield/locatorTransform';
 
 export type LocatorViewMode = 'off' | 'tracking' | 'detached';
 
 type LocatorPosition = {
     lat: number;
     lng: number;
+    gameX: number;
+    gameY: number;
+    gameZ: number;
+    locatorProfile?: RegionProfile | null;
     regionKey?: string | null;
     subregionKey?: string | null;
 };
