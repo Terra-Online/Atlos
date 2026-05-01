@@ -1,2936 +1,2284 @@
 [
-  {
-    "id": 23300200002,
-    "pos": [
-      -659.0836,
-      765.6438
-    ],
-    "subregId": "WL_3",
-    "type": "nar_media_map02_71_1"
-  },
-  {
-    "id": 23300200004,
-    "pos": [
-      -666.5171,
-      768.4663
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_74_1"
-  },
-  {
-    "id": 23300200005,
-    "pos": [
-      -761.6917,
-      786.119
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_79_1"
-  },
-  {
-    "id": 23300200006,
-    "pos": [
-      -723.8368,
-      762.8994
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_80_1"
-  },
-  {
-    "id": 23300200008,
-    "pos": [
-      -750.2448,
-      841.464
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_83_1"
-  },
-  {
-    "id": 23300200009,
-    "pos": [
-      -627.1767,
-      849.6442
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_92_1"
-  },
-  {
-    "id": 23300200011,
-    "pos": [
-      -650.3057,
-      749.7537
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_75_1"
-  },
-  {
-    "id": 23300200012,
-    "pos": [
-      -745.8568,
-      723.0468
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_81_1"
-  },
-  {
-    "id": 23300200013,
-    "pos": [
-      -733.9554,
-      774.4991
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_84_1"
-  },
-  {
-    "id": 23300200014,
-    "pos": [
-      -712.5688,
-      836.262
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_85_1"
-  },
-  {
-    "id": 23300200017,
-    "pos": [
-      -691.68,
-      864.7001
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_86_1"
-  },
-  {
-    "id": 23300200018,
-    "pos": [
-      -590.764,
-      779.7914
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_88_1"
-  },
-  {
-    "id": 23300200022,
-    "pos": [
-      -599.7043,
-      744.5732
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_72_1"
-  },
-  {
-    "id": 23300200024,
-    "pos": [
-      -613.535,
-      754.5045
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_73_1"
-  },
-  {
-    "id": 23300200025,
-    "pos": [
-      -655.1287,
-      765.587
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_76_1"
-  },
-  {
-    "id": 23300200026,
-    "pos": [
-      -671.5145,
-      771.4324
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_77_1"
-  },
-  {
-    "id": 23300200027,
-    "pos": [
-      -673.7856,
-      796.6742
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_78_1"
-  },
-  {
-    "id": 23300200028,
-    "pos": [
-      -728.1311,
-      772.1712
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_82_1"
-  },
-  {
-    "id": 23300200029,
-    "pos": [
-      -750.6122,
-      847.9825
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_89_1"
-  },
-  {
-    "id": 23300200031,
-    "pos": [
-      -722.4491,
-      843.5149
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_123_1"
-  },
-  {
-    "id": 23300200033,
-    "pos": [
-      -629.1504,
-      841.5824
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_92_2"
-  },
-  {
-    "id": 23300200035,
-    "pos": [
-      -547.9244,
-      829.9087
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_87_1"
-  },
-  {
-    "id": 23300200039,
-    "pos": [
-      -650.7643,
-      864.3213
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_90_1"
-  },
-  {
-    "id": 23300130002,
-    "pos": [
-      -619.2438,
-      854.2274
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_94_1"
-  },
-  {
-    "id": 23300130003,
-    "pos": [
-      -605.2231,
-      858.5795
-    ],
-    "subregId": "WL_3",
-    "type": "nar_collection_map02_95_1"
-  },
-  {
-    "id": 23300130004,
-    "pos": [
-      -619.2438,
-      854.2274
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_94_1"
-  },
-  {
-    "id": 23300130005,
-    "pos": [
-      -605.2231,
-      858.5795
-    ],
-    "subregId": "WL_3",
-    "type": "nar_collection_map02_95_1"
-  },
-  {
-    "id": 23300060004,
-    "pos": [
-      -623.9047,
-      868.3119
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_93_2"
-  },
-  {
-    "id": 23300060006,
-    "pos": [
-      -622.1772,
-      865.3247
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_93_1"
-  },
-  {
-    "id": 23300060007,
-    "pos": [
-      -622.1772,
-      865.3247
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_93_1"
-  },
-  {
-    "id": 23300060008,
-    "pos": [
-      -623.9047,
-      868.3119
-    ],
-    "subregId": "WL_3",
-    "type": "nar_paper_map02_93_2"
-  },
-  {
-    "id": 23300120000,
-    "pos": [
-      -694.8575,
-      860.8978
-    ],
-    "subregId": "WL_3",
-    "type": null
-  },
-  {
-    "id": 23300120001,
-    "pos": [
-      -694.1894,
-      860.9433
-    ],
-    "subregId": "WL_3",
-    "type": null
-  },
-  {
-    "id": 23300120002,
-    "pos": [
-      -693.4636,
-      862.326
-    ],
-    "subregId": "WL_3",
-    "type": null
-  },
-  {
-    "id": 23300120003,
-    "pos": [
-      -696.3545,
-      862.0569
-    ],
-    "subregId": "WL_3",
-    "type": null
-  },
-  {
-    "id": 23300120004,
-    "pos": [
-      -694.8534,
-      861.5601
-    ],
-    "subregId": "WL_3",
-    "type": null
-  },
-  {
-    "id": 23300120005,
-    "pos": [
-      -628.0654,
-      711.8371
-    ],
-    "subregId": "WL_3",
-    "type": "recycling_stn"
-  },
-  {
-    "id": 23300120006,
-    "pos": [
-      -651.502,
-      804.5721
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120019,
-    "pos": [
-      -648.6153,
-      803.7441
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120020,
-    "pos": [
-      -645.7285,
-      801.6742
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120033,
-    "pos": [
-      -645.7285,
-      799.1904
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120034,
-    "pos": [
-      -642.4293,
-      799.1904
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120047,
-    "pos": [
-      -649.8525,
-      801.6742
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120048,
-    "pos": [
-      -740.1678,
-      746.6153
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120061,
-    "pos": [
-      -743.467,
-      747.0293
-    ],
-    "subregId": "WL_3",
-    "type": "cuprium_spot"
-  },
-  {
-    "id": 23300120062,
-    "pos": [
-      -703.8437,
-      839.9671
-    ],
-    "subregId": "WL_3",
-    "type": "rare_gathering_site"
-  },
-  {
-    "id": 23300120063,
-    "pos": [
-      -702.5029,
-      841.1644
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120064,
-    "pos": [
-      -703.53,
-      841.9794
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120065,
-    "pos": [
-      -704.8867,
-      841.7967
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120066,
-    "pos": [
-      -705.5859,
-      838.3226
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120067,
-    "pos": [
-      -702.1122,
-      838.2484
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120068,
-    "pos": [
-      -703.9597,
-      837.6619
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120069,
-    "pos": [
-      -705.8627,
-      839.701
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120070,
-    "pos": [
-      -706.6088,
-      841.5108
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120071,
-    "pos": [
-      -701.5124,
-      840.6322
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120072,
-    "pos": [
-      -702.6443,
-      837.1985
-    ],
-    "subregId": "WL_3",
-    "type": "blighted_jadeleaf_spot"
-  },
-  {
-    "id": 23300120073,
-    "pos": [
-      -561.129,
-      825.0763
-    ],
-    "subregId": "WL_3",
-    "type": "rare_gathering_site"
-  },
-  {
-    "id": 23300120074,
-    "pos": [
-      -559.3344,
-      825.0809
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120075,
-    "pos": [
-      -559.5654,
-      826.3746
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120076,
-    "pos": [
-      -560.702,
-      827.1403
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120077,
-    "pos": [
-      -563.5193,
-      825.004
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120078,
-    "pos": [
-      -560.9672,
-      822.6373
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120079,
-    "pos": [
-      -562.7378,
-      823.4273
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120080,
-    "pos": [
-      -562.8165,
-      826.2203
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120081,
-    "pos": [
-      -562.1803,
-      828.0719
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120082,
-    "pos": [
-      -559.4971,
-      823.5139
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120083,
-    "pos": [
-      -562.0588,
-      822.2051
-    ],
-    "subregId": "WL_3",
-    "type": "false_aggela_spot"
-  },
-  {
-    "id": 23300120084,
-    "pos": [
-      -593.9951,
-      833.7806
-    ],
-    "subregId": "WL_3",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 23300120085,
-    "pos": [
-      -707.9883,
-      726.525
-    ],
-    "subregId": "WL_3",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 23300120086,
-    "pos": [
-      -813.6447,
-      833.3419
-    ],
-    "subregId": "WL_3",
-    "type": "protocol_dl_ii"
-  },
-  {
-    "id": 23300120087,
-    "pos": [
-      -645.6118,
-      858.849
-    ],
-    "subregId": "WL_3",
-    "type": "protocol_dl_ii"
-  },
-  {
-    "id": 23300120089,
-    "pos": [
-      -621.8544,
-      727.4956
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120090,
-    "pos": [
-      -622.0221,
-      727.0777
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120091,
-    "pos": [
-      -631.7316,
-      790.2692
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120092,
-    "pos": [
-      -631.2863,
-      790.1822
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120093,
-    "pos": [
-      -631.7234,
-      789.7724
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120094,
-    "pos": [
-      -672.9014,
-      748.4782
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120095,
-    "pos": [
-      -675.6645,
-      749.153
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120096,
-    "pos": [
-      -676.8114,
-      750.0108
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120097,
-    "pos": [
-      -676.6611,
-      750.5095
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120098,
-    "pos": [
-      -676.1264,
-      750.0027
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120099,
-    "pos": [
-      -676.2171,
-      750.606
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120100,
-    "pos": [
-      -672.8354,
-      747.9024
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120101,
-    "pos": [
-      -632.5193,
-      790.1864
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120102,
-    "pos": [
-      -632.5235,
-      790.708
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120104,
-    "pos": [
-      -726.1194,
-      727.2954
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120106,
-    "pos": [
-      -724.8266,
-      726.9638
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120107,
-    "pos": [
-      -724.707,
-      726.2145
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120108,
-    "pos": [
-      -725.9771,
-      726.02
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120112,
-    "pos": [
-      -726.5875,
-      726.5747
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120114,
-    "pos": [
-      -782.9671,
-      858.771
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120115,
-    "pos": [
-      -783.5604,
-      860.1609
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120116,
-    "pos": [
-      -786.0925,
-      862.0238
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120117,
-    "pos": [
-      -786.1614,
-      862.8273
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120118,
-    "pos": [
-      -786.3235,
-      862.3136
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120119,
-    "pos": [
-      -667.6227,
-      874.203
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120120,
-    "pos": [
-      -667.8289,
-      875.0392
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120121,
-    "pos": [
-      -668.2413,
-      874.2112
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120122,
-    "pos": [
-      -668.2289,
-      874.7453
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120123,
-    "pos": [
-      -667.1031,
-      874.6708
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120124,
-    "pos": [
-      -638.2414,
-      855.8704
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120125,
-    "pos": [
-      -638.7571,
-      855.979
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120126,
-    "pos": [
-      -638.3715,
-      856.5485
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120127,
-    "pos": [
-      -786.3853,
-      860.7404
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120128,
-    "pos": [
-      -621.8753,
-      728.3548
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120129,
-    "pos": [
-      -619.5205,
-      728.5701
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120130,
-    "pos": [
-      -635.2535,
-      790.3934
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120131,
-    "pos": [
-      -633.6699,
-      789.2384
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120132,
-    "pos": [
-      -657.3086,
-      809.5274
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120133,
-    "pos": [
-      -652.9119,
-      796.5951
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120134,
-    "pos": [
-      -642.5984,
-      787.8847
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120135,
-    "pos": [
-      -646.6564,
-      788.3069
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120136,
-    "pos": [
-      -749.5664,
-      878.0281
-    ],
-    "subregId": "WL_3",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 23300120137,
-    "pos": [
-      -630.1769,
-      744.8807
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120138,
-    "pos": [
-      -666.3616,
-      726.6008
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120139,
-    "pos": [
-      -673.2717,
-      728.0164
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120140,
-    "pos": [
-      -681.4092,
-      730.2549
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120141,
-    "pos": [
-      -666.8474,
-      724.6207
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120142,
-    "pos": [
-      -664.8143,
-      723.5485
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120143,
-    "pos": [
-      -644.1861,
-      789.7476
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120144,
-    "pos": [
-      -654.2527,
-      722.1658
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120145,
-    "pos": [
-      -784.205,
-      858.8403
-    ],
-    "subregId": "WL_3",
-    "type": "amber_rice"
-  },
-  {
-    "id": 23300120146,
-    "pos": [
-      -789.4989,
-      826.4665
-    ],
-    "subregId": "WL_3",
-    "type": "redjade_ginseng"
-  },
-  {
-    "id": 23300120147,
-    "pos": [
-      -623.7897,
-      896.6374
-    ],
-    "subregId": "WL_3",
-    "type": "redjade_ginseng"
-  },
-  {
-    "id": 23300120148,
-    "pos": [
-      -648.5282,
-      851.1299
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120149,
-    "pos": [
-      -646.8873,
-      848.7393
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120150,
-    "pos": [
-      -647.6296,
-      845.8042
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120152,
-    "pos": [
-      -750.2536,
-      885.7925
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120153,
-    "pos": [
-      -750.3608,
-      881.1642
-    ],
-    "subregId": "WL_3",
-    "type": "glowbug"
-  },
-  {
-    "id": 23300120154,
-    "pos": [
-      -757.0788,
-      874.1059
-    ],
-    "subregId": "WL_3",
-    "type": "scorchbug"
-  },
-  {
-    "id": 23300120155,
-    "pos": [
-      -785.0072,
-      827.5689
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120156,
-    "pos": [
-      -785.9391,
-      826.9691
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120157,
-    "pos": [
-      -786.5853,
-      827.883
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120158,
-    "pos": [
-      -785.7651,
-      824.9919
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120159,
-    "pos": [
-      -787.0893,
-      824.9247
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120160,
-    "pos": [
-      -799.314,
-      804.3071
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120161,
-    "pos": [
-      -798.8197,
-      803.604
-    ],
-    "subregId": "WL_3",
-    "type": "jincao"
-  },
-  {
-    "id": 23300120162,
-    "pos": [
-      -798.0315,
-      803.4709
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120163,
-    "pos": [
-      -804.2628,
-      818.0387
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120164,
-    "pos": [
-      -805.2979,
-      818.403
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300120165,
-    "pos": [
-      -804.9106,
-      817.1329
-    ],
-    "subregId": "WL_3",
-    "type": "yazhen"
-  },
-  {
-    "id": 23300050020,
-    "pos": [
-      -698.8707,
-      864.1231
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050021,
-    "pos": [
-      -679.5108,
-      775.6468
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050022,
-    "pos": [
-      -724.8669,
-      769.1534
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050023,
-    "pos": [
-      -746.072,
-      884.5226
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050025,
-    "pos": [
-      -711.6292,
-      861.0799
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300050028,
-    "pos": [
-      -691.6697,
-      862.2804
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050030,
-    "pos": [
-      -707.0109,
-      855.4084
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050037,
-    "pos": [
-      -778.6327,
-      825.8184
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300050038,
-    "pos": [
-      -742.5973,
-      767.1703
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300050039,
-    "pos": [
-      -720.7863,
-      767.1858
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300050042,
-    "pos": [
-      -737.1944,
-      800.9332
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300050045,
-    "pos": [
-      -797.2232,
-      831.0914
-    ],
-    "subregId": "WL_3",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 23300050046,
-    "pos": [
-      -816.6824,
-      836.9088
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300050055,
-    "pos": [
-      -613.4696,
-      730.9804
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050056,
-    "pos": [
-      -618.757,
-      710.4622
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050057,
-    "pos": [
-      -633.5753,
-      705.4802
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050058,
-    "pos": [
-      -738.1532,
-      805.1574
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050059,
-    "pos": [
-      -772.071,
-      789.1245
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050060,
-    "pos": [
-      -691.0263,
-      820.8165
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050062,
-    "pos": [
-      -618.1746,
-      718.1389
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050063,
-    "pos": [
-      -627.6651,
-      731.152
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050064,
-    "pos": [
-      -620.1513,
-      696.4053
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050065,
-    "pos": [
-      -675.6147,
-      768.8228
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050066,
-    "pos": [
-      -723.2842,
-      843.8585
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300050067,
-    "pos": [
-      -753.2491,
-      846.4789
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300220003,
-    "pos": [
-      -714.2342,
-      726.105
-    ],
-    "subregId": "WL_3",
-    "type": "crate_iii"
-  },
-  {
-    "id": 23300220004,
-    "pos": [
-      -714.2342,
-      726.105
-    ],
-    "subregId": "WL_3",
-    "type": "temporary_energy_alluvium"
-  },
-  {
-    "id": 23300220005,
-    "pos": [
-      -751.9981,
-      816.5755
-    ],
-    "subregId": "WL_3",
-    "type": "crate_iii"
-  },
-  {
-    "id": 23300220006,
-    "pos": [
-      -751.9981,
-      816.5755
-    ],
-    "subregId": "WL_3",
-    "type": "temporary_energy_alluvium"
-  },
-  {
-    "id": 23300220007,
-    "pos": [
-      -728.4887,
-      797.7953
-    ],
-    "subregId": "WL_3",
-    "type": "energy_alluvium"
-  },
-  {
-    "id": 23300000058,
-    "pos": [
-      -620.1886,
-      755.0108
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000059,
-    "pos": [
-      -618.8112,
-      757.8258
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000064,
-    "pos": [
-      -619.8917,
-      760.3511
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000066,
-    "pos": [
-      -630.9741,
-      775.2269
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000067,
-    "pos": [
-      -626.6591,
-      755.2674
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000068,
-    "pos": [
-      -628.4737,
-      755.4868
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000069,
-    "pos": [
-      -631.0471,
-      753.5536
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000071,
-    "pos": [
-      -634.0741,
-      781.7454
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000072,
-    "pos": [
-      -588.8298,
-      757.7803
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000073,
-    "pos": [
-      -723.9204,
-      767.7119
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000074,
-    "pos": [
-      -729.532,
-      768.8748
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000075,
-    "pos": [
-      -730.2331,
-      770.1251
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000078,
-    "pos": [
-      -766.7345,
-      785.169
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000080,
-    "pos": [
-      -747.3724,
-      765.8694
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000083,
-    "pos": [
-      -681.3927,
-      845.2743
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000084,
-    "pos": [
-      -681.3886,
-      843.0926
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000085,
-    "pos": [
-      -726.1297,
-      841.2558
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000086,
-    "pos": [
-      -785.3897,
-      854.0225
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000087,
-    "pos": [
-      -785.6059,
-      851.2273
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000089,
-    "pos": [
-      -626.09,
-      843.7715
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000090,
-    "pos": [
-      -625.29,
-      844.2766
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000093,
-    "pos": [
-      -708.941,
-      885.5666
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000137,
-    "pos": [
-      -708.31,
-      884.5193
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000139,
-    "pos": [
-      -627.1004,
-      757.1055
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000157,
-    "pos": [
-      -765.8891,
-      783.1902
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000172,
-    "pos": [
-      -650.5453,
-      750.9455
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000200,
-    "pos": [
-      -750.185,
-      840.5549
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000201,
-    "pos": [
-      -726.8589,
-      841.2354
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000202,
-    "pos": [
-      -749.1045,
-      840.7702
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000205,
-    "pos": [
-      -630.8207,
-      837.855
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000216,
-    "pos": [
-      -747.6858,
-      838.9156
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000221,
-    "pos": [
-      -784.3563,
-      852.4982
-    ],
-    "subregId": "WL_3",
-    "type": "spotted_rakerbeast"
-  },
-  {
-    "id": 23300000228,
-    "pos": [
-      -728.6082,
-      755.7021
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000231,
-    "pos": [
-      -701.7528,
-      776.136
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000232,
-    "pos": [
-      -698.099,
-      775.809
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000234,
-    "pos": [
-      -763.6011,
-      785.318
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000250,
-    "pos": [
-      -626.6319,
-      773.9708
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000251,
-    "pos": [
-      -629.6428,
-      767.1084
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000252,
-    "pos": [
-      -628.8902,
-      759.4734
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000253,
-    "pos": [
-      -633.5709,
-      753.9261
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000254,
-    "pos": [
-      -624.7167,
-      750.2749
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000258,
-    "pos": [
-      -773.799,
-      763.9165
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000259,
-    "pos": [
-      -637.1827,
-      751.4576
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000260,
-    "pos": [
-      -631.7382,
-      766.9631
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000264,
-    "pos": [
-      -730.2661,
-      774.447
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000267,
-    "pos": [
-      -635.1793,
-      783.7283
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000268,
-    "pos": [
-      -732.5673,
-      766.9954
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000279,
-    "pos": [
-      -763.0477,
-      774.8071
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000280,
-    "pos": [
-      -762.5322,
-      774.062
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000282,
-    "pos": [
-      -744.5268,
-      767.7074
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000283,
-    "pos": [
-      -710.4256,
-      882.7102
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000288,
-    "pos": [
-      -727.5443,
-      755.7435
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000302,
-    "pos": [
-      -634.9195,
-      779.8452
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000303,
-    "pos": [
-      -773.1423,
-      764.7593
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000330,
-    "pos": [
-      -630.9382,
-      761.8103
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000343,
-    "pos": [
-      -634.5937,
-      778.6488
-    ],
-    "subregId": "WL_3",
-    "type": "road_plunderer"
-  },
-  {
-    "id": 23300000344,
-    "pos": [
-      -633.9895,
-      779.9763
-    ],
-    "subregId": "WL_3",
-    "type": "grove_archer"
-  },
-  {
-    "id": 23300000348,
-    "pos": [
-      -701.2662,
-      862.7979
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000351,
-    "pos": [
-      -705.9591,
-      849.1724
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000379,
-    "pos": [
-      -703.3612,
-      863.4644
-    ],
-    "subregId": "WL_3",
-    "type": "highway_reaver"
-  },
-  {
-    "id": 23300000380,
-    "pos": [
-      -729.0619,
-      730.8676
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_obliterator"
-  },
-  {
-    "id": 23300000385,
-    "pos": [
-      -774.7268,
-      764.3087
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_stalker"
-  },
-  {
-    "id": 23300000386,
-    "pos": [
-      -773.1556,
-      764.5529
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000388,
-    "pos": [
-      -725.4905,
-      730.3295
-    ],
-    "subregId": "WL_3",
-    "type": "cloud_obliterator"
-  },
-  {
-    "id": 23300000390,
-    "pos": [
-      -707.1397,
-      886.6225
-    ],
-    "subregId": "WL_3",
-    "type": "nimbus_razor"
-  },
-  {
-    "id": 23300000391,
-    "pos": [
-      -670.4971,
-      807.8094
-    ],
-    "subregId": "WL_3",
-    "type": "breaking_gust"
-  },
-  {
-    "id": 23300000044,
-    "pos": [
-      -674.9428,
-      797.7042
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000045,
-    "pos": [
-      -649.5877,
-      751.0026
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000046,
-    "pos": [
-      -751.7145,
-      846.9546
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000049,
-    "pos": [
-      -739.2019,
-      858.192
-    ],
-    "subregId": "WL_3",
-    "type": "cratesurprise"
-  },
-  {
-    "id": 23300000050,
-    "pos": [
-      -705.5098,
-      848.5488
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000051,
-    "pos": [
-      -747.3394,
-      763.4849
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000052,
-    "pos": [
-      -706.4336,
-      847.5594
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000055,
-    "pos": [
-      -639.4753,
-      793.5412
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000065,
-    "pos": [
-      -615.8007,
-      753.9551
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000091,
-    "pos": [
-      -785.841,
-      866.7555
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000095,
-    "pos": [
-      -758.7835,
-      880.2594
-    ],
-    "subregId": "WL_3",
-    "type": "tp_point"
-  },
-  {
-    "id": 23300000096,
-    "pos": [
-      -713.8526,
-      801.9889
-    ],
-    "subregId": "WL_3",
-    "type": "tp_point"
-  },
-  {
-    "id": 23300000097,
-    "pos": [
-      -672.1014,
-      755.0149
-    ],
-    "subregId": "WL_3",
-    "type": "tp_point"
-  },
-  {
-    "id": 23300000098,
-    "pos": [
-      -591.7991,
-      734.4692
-    ],
-    "subregId": "WL_3",
-    "type": "tp_point"
-  },
-  {
-    "id": 23300000099,
-    "pos": [
-      -621.3363,
-      838.9731
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000102,
-    "pos": [
-      -619.1576,
-      860.4175
-    ],
-    "subregId": "WL_3",
-    "type": "tp_point"
-  },
-  {
-    "id": 23300000174,
-    "pos": [
-      -739.9946,
-      848.4246
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000175,
-    "pos": [
-      -720.0304,
-      897.9611
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000178,
-    "pos": [
-      -704.4458,
-      845.1459
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000189,
-    "pos": [
-      -620.7412,
-      764.2631
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000192,
-    "pos": [
-      -694.7214,
-      859.4406
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000196,
-    "pos": [
-      -772.6896,
-      763.2034
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000197,
-    "pos": [
-      -730.53,
-      773.855
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000199,
-    "pos": [
-      -605.8371,
-      890.7993
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000204,
-    "pos": [
-      -700.7878,
-      865.5881
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000206,
-    "pos": [
-      -779.1436,
-      811.3116
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000222,
-    "pos": [
-      -718.4834,
-      894.0204
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000223,
-    "pos": [
-      -745.4812,
-      733.2048
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000224,
-    "pos": [
-      -711.893,
-      757.5288
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000229,
-    "pos": [
-      -700.561,
-      828.9553
-    ],
-    "subregId": "WL_3",
-    "type": "cratelocked"
-  },
-  {
-    "id": 23300000246,
-    "pos": [
-      -727.07,
-      737.6523
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000247,
-    "pos": [
-      -708.5752,
-      751.2005
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000255,
-    "pos": [
-      -670.7334,
-      746.5474
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000256,
-    "pos": [
-      -683.2041,
-      734.3552
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000257,
-    "pos": [
-      -733.6783,
-      770.2232
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000276,
-    "pos": [
-      -713.3247,
-      875.2213
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000278,
-    "pos": [
-      -588.0091,
-      758.0121
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000281,
-    "pos": [
-      -611.5241,
-      723.917
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000285,
-    "pos": [
-      -706.4961,
-      751.151
-    ],
-    "subregId": "WL_3",
-    "type": "delta_bot"
-  },
-  {
-    "id": 23300000286,
-    "pos": [
-      -700.6347,
-      863.2908
-    ],
-    "subregId": "WL_3",
-    "type": "delta_bot"
-  },
-  {
-    "id": 23300000287,
-    "pos": [
-      -767.5423,
-      834.1426
-    ],
-    "subregId": "WL_3",
-    "type": "delta_bot"
-  },
-  {
-    "id": 23300000295,
-    "pos": [
-      -708.9987,
-      865.6792
-    ],
-    "subregId": "WL_3",
-    "type": "gear_template"
-  },
-  {
-    "id": 23300000296,
-    "pos": [
-      -774.479,
-      799.5162
-    ],
-    "subregId": "WL_3",
-    "type": "gear_template"
-  },
-  {
-    "id": 23300000297,
-    "pos": [
-      -743.9297,
-      740.0095
-    ],
-    "subregId": "WL_3",
-    "type": "gear_template"
-  },
-  {
-    "id": 23300000301,
-    "pos": [
-      -638.2339,
-      751.2619
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000305,
-    "pos": [
-      -768.5198,
-      794.1585
-    ],
-    "subregId": "WL_3",
-    "type": "blight_core"
-  },
-  {
-    "id": 23300000307,
-    "pos": [
-      -753.7407,
-      796.5558
-    ],
-    "subregId": "WL_3",
-    "type": "blight_core"
-  },
-  {
-    "id": 23300000308,
-    "pos": [
-      -730.3106,
-      803.1877
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000323,
-    "pos": [
-      -706.3633,
-      867.1231
-    ],
-    "subregId": "WL_3",
-    "type": "cratelocked"
-  },
-  {
-    "id": 23300000325,
-    "pos": [
-      -703.2164,
-      857.4286
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000327,
-    "pos": [
-      -770.2366,
-      773.2203
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000328,
-    "pos": [
-      -792.1939,
-      807.203
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000329,
-    "pos": [
-      -781.6188,
-      787.9123
-    ],
-    "subregId": "WL_3",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 23300000337,
-    "pos": [
-      -790.3268,
-      838.5582
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000338,
-    "pos": [
-      -712.8014,
-      837.0779
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000339,
-    "pos": [
-      -654.3229,
-      854.3486
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000340,
-    "pos": [
-      -697.9031,
-      854.2431
-    ],
-    "subregId": "WL_3",
-    "type": "aurylene"
-  },
-  {
-    "id": 23300000341,
-    "pos": [
-      -726.9518,
-      723.4562
-    ],
-    "subregId": "WL_3",
-    "type": "crate_iii"
-  },
-  {
-    "id": 23300000342,
-    "pos": [
-      -741.6292,
-      738.1828
-    ],
-    "subregId": "WL_3",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 23300000345,
-    "pos": [
-      -641.9908,
-      790.6036
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000346,
-    "pos": [
-      -635.9321,
-      767.3894
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000349,
-    "pos": [
-      -709.2634,
-      865.521
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000350,
-    "pos": [
-      -709.2991,
-      856.6674
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000359,
-    "pos": [
-      -744.2588,
-      725.3907
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000360,
-    "pos": [
-      -747.793,
-      767.1486
-    ],
-    "subregId": "WL_3",
-    "type": "blight_core"
-  },
-  {
-    "id": 23300000362,
-    "pos": [
-      -798.0748,
-      822.003
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000374,
-    "pos": [
-      -749.7849,
-      774.4139
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000389,
-    "pos": [
-      -586.4255,
-      865.5922
-    ],
-    "subregId": "WL_3",
-    "type": "re_crisis"
-  },
-  {
-    "id": 23300000395,
-    "pos": [
-      -624.16,
-      751.1484
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000396,
-    "pos": [
-      -620.9904,
-      787.3602
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000397,
-    "pos": [
-      -634.625,
-      761.2585
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000398,
-    "pos": [
-      -674.6949,
-      801.3633
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000399,
-    "pos": [
-      -671.7932,
-      769.8699
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000400,
-    "pos": [
-      -682.3907,
-      786.0135
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000401,
-    "pos": [
-      -758.1888,
-      781.3314
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000402,
-    "pos": [
-      -699.9847,
-      831.6259
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000403,
-    "pos": [
-      -727.5076,
-      790.0361
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000404,
-    "pos": [
-      -614.2447,
-      858.2537
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000405,
-    "pos": [
-      -696.1937,
-      853.8726
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000406,
-    "pos": [
-      -723.8987,
-      860.6038
-    ],
-    "subregId": "WL_3",
-    "type": "crate_iii"
-  },
-  {
-    "id": 23300000407,
-    "pos": [
-      -721.9344,
-      764.5865
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000408,
-    "pos": [
-      -729.2351,
-      787.9633
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000409,
-    "pos": [
-      -734.8388,
-      781.1174
-    ],
-    "subregId": "WL_3",
-    "type": "gather"
-  },
-  {
-    "id": 23300000410,
-    "pos": [
-      -789.9608,
-      836.291
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000411,
-    "pos": [
-      -667.1278,
-      769.798
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000412,
-    "pos": [
-      -692.7873,
-      855.3587
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000413,
-    "pos": [
-      -621.0711,
-      694.4998
-    ],
-    "subregId": "WL_3",
-    "type": "crate_ii"
-  },
-  {
-    "id": 23300000414,
-    "pos": [
-      -791.4619,
-      804.1395
-    ],
-    "subregId": "WL_3",
-    "type": "crate_i"
-  },
-  {
-    "id": 23300000261,
-    "pos": [
-      -584.5202,
-      866.5982
-    ],
-    "subregId": "WL_3",
-    "type": "ruan_yi"
-  }
+  [
+    23300200002,
+    -659.0836,
+    765.6438,
+    265.800018,
+    "nar_media_map02_71_1"
+  ],
+  [
+    23300200004,
+    -666.5171,
+    768.4663,
+    263.903,
+    "nar_paper_map02_74_1"
+  ],
+  [
+    23300200005,
+    -761.6917,
+    786.119,
+    279.573059,
+    "nar_paper_map02_79_1"
+  ],
+  [
+    23300200006,
+    -723.8368,
+    762.8994,
+    269.928345,
+    "nar_paper_map02_80_1"
+  ],
+  [
+    23300200008,
+    -750.2448,
+    841.464,
+    327.5357,
+    "nar_paper_map02_83_1"
+  ],
+  [
+    23300200009,
+    -627.1767,
+    849.6442,
+    284.172,
+    "nar_paper_map02_92_1"
+  ],
+  [
+    23300200011,
+    -650.3057,
+    749.7537,
+    258.2845,
+    "nar_paper_map02_75_1"
+  ],
+  [
+    23300200012,
+    -745.8568,
+    723.0468,
+    259.663971,
+    "nar_paper_map02_81_1"
+  ],
+  [
+    23300200013,
+    -733.9554,
+    774.4991,
+    248.46405,
+    "nar_paper_map02_84_1"
+  ],
+  [
+    23300200014,
+    -712.5688,
+    836.262,
+    312.341,
+    "nar_paper_map02_85_1"
+  ],
+  [
+    23300200017,
+    -691.68,
+    864.7001,
+    323.269257,
+    "nar_paper_map02_86_1"
+  ],
+  [
+    23300200018,
+    -590.764,
+    779.7914,
+    253.72757,
+    "nar_paper_map02_88_1"
+  ],
+  [
+    23300200022,
+    -599.7043,
+    744.5732,
+    251.666,
+    "nar_paper_map02_72_1"
+  ],
+  [
+    23300200024,
+    -613.535,
+    754.5045,
+    252.572,
+    "nar_paper_map02_73_1"
+  ],
+  [
+    23300200025,
+    -655.1287,
+    765.587,
+    266.025,
+    "nar_paper_map02_76_1"
+  ],
+  [
+    23300200026,
+    -671.5145,
+    771.4324,
+    265.594,
+    "nar_paper_map02_77_1"
+  ],
+  [
+    23300200027,
+    -673.7856,
+    796.6742,
+    263.78,
+    "nar_paper_map02_78_1"
+  ],
+  [
+    23300200028,
+    -728.1311,
+    772.1712,
+    246.585861,
+    "nar_paper_map02_82_1"
+  ],
+  [
+    23300200029,
+    -750.6122,
+    847.9825,
+    329.828033,
+    "nar_paper_map02_89_1"
+  ],
+  [
+    23300200031,
+    -722.4491,
+    843.5149,
+    460.801,
+    "nar_paper_map02_123_1"
+  ],
+  [
+    23300200033,
+    -629.1504,
+    841.5824,
+    284.288,
+    "nar_paper_map02_92_2"
+  ],
+  [
+    23300200035,
+    -547.9244,
+    829.9087,
+    305.714,
+    "nar_paper_map02_87_1"
+  ],
+  [
+    23300200039,
+    -650.7643,
+    864.3213,
+    315.019,
+    "nar_paper_map02_90_1"
+  ],
+  [
+    23300130002,
+    -619.2438,
+    854.2274,
+    306.519,
+    "nar_paper_map02_94_1"
+  ],
+  [
+    23300130003,
+    -605.2231,
+    858.5795,
+    301.3939,
+    "nar_collection_map02_95_1"
+  ],
+  [
+    23300130004,
+    -619.2438,
+    854.2274,
+    306.519,
+    "nar_paper_map02_94_1"
+  ],
+  [
+    23300130005,
+    -605.2231,
+    858.5795,
+    301.3939,
+    "nar_collection_map02_95_1"
+  ],
+  [
+    23300060004,
+    -623.9047,
+    868.3119,
+    308.5286,
+    "nar_paper_map02_93_2"
+  ],
+  [
+    23300060006,
+    -622.1772,
+    865.3247,
+    307.3987,
+    "nar_paper_map02_93_1"
+  ],
+  [
+    23300060007,
+    -622.1772,
+    865.3247,
+    307.3987,
+    "nar_paper_map02_93_1"
+  ],
+  [
+    23300060008,
+    -623.9047,
+    868.3119,
+    308.5286,
+    "nar_paper_map02_93_2"
+  ],
+  [
+    23300120000,
+    -694.8575,
+    860.8978,
+    323.8673,
+    null
+  ],
+  [
+    23300120001,
+    -694.1894,
+    860.9433,
+    323.8673,
+    null
+  ],
+  [
+    23300120002,
+    -693.4636,
+    862.326,
+    323.8673,
+    null
+  ],
+  [
+    23300120003,
+    -696.3545,
+    862.0569,
+    323.8673,
+    null
+  ],
+  [
+    23300120004,
+    -694.8534,
+    861.5601,
+    323.8673,
+    null
+  ],
+  [
+    23300120005,
+    -628.0654,
+    711.8371,
+    250.531,
+    "recycling_stn"
+  ],
+  [
+    23300120006,
+    -651.502,
+    804.5721,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120019,
+    -648.6153,
+    803.7441,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120020,
+    -645.7285,
+    801.6742,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120033,
+    -645.7285,
+    799.1904,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120034,
+    -642.4293,
+    799.1904,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120047,
+    -649.8525,
+    801.6742,
+    252.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120048,
+    -740.1678,
+    746.6153,
+    254.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120061,
+    -743.467,
+    747.0293,
+    254.0,
+    "cuprium_spot"
+  ],
+  [
+    23300120062,
+    -703.8437,
+    839.9671,
+    256.09,
+    "rare_gathering_site"
+  ],
+  [
+    23300120063,
+    -702.5029,
+    841.1644,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120064,
+    -703.53,
+    841.9794,
+    256.311,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120065,
+    -704.8867,
+    841.7967,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120066,
+    -705.5859,
+    838.3226,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120067,
+    -702.1122,
+    838.2484,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120068,
+    -703.9597,
+    837.6619,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120069,
+    -705.8627,
+    839.701,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120070,
+    -706.6088,
+    841.5108,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120071,
+    -701.5124,
+    840.6322,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120072,
+    -702.6443,
+    837.1985,
+    256.32,
+    "blighted_jadeleaf_spot"
+  ],
+  [
+    23300120073,
+    -561.129,
+    825.0763,
+    260.47,
+    "rare_gathering_site"
+  ],
+  [
+    23300120074,
+    -559.3344,
+    825.0809,
+    260.64,
+    "false_aggela_spot"
+  ],
+  [
+    23300120075,
+    -559.5654,
+    826.3746,
+    260.596,
+    "false_aggela_spot"
+  ],
+  [
+    23300120076,
+    -560.702,
+    827.1403,
+    261.128,
+    "false_aggela_spot"
+  ],
+  [
+    23300120077,
+    -563.5193,
+    825.004,
+    260.858,
+    "false_aggela_spot"
+  ],
+  [
+    23300120078,
+    -560.9672,
+    822.6373,
+    260.47,
+    "false_aggela_spot"
+  ],
+  [
+    23300120079,
+    -562.7378,
+    823.4273,
+    260.47,
+    "false_aggela_spot"
+  ],
+  [
+    23300120080,
+    -562.8165,
+    826.2203,
+    260.933,
+    "false_aggela_spot"
+  ],
+  [
+    23300120081,
+    -562.1803,
+    828.0719,
+    261.293,
+    "false_aggela_spot"
+  ],
+  [
+    23300120082,
+    -559.4971,
+    823.5139,
+    260.592,
+    "false_aggela_spot"
+  ],
+  [
+    23300120083,
+    -562.0588,
+    822.2051,
+    260.369,
+    "false_aggela_spot"
+  ],
+  [
+    23300120084,
+    -593.9951,
+    833.7806,
+    325.6551,
+    "protocol_dl"
+  ],
+  [
+    23300120085,
+    -707.9883,
+    726.525,
+    260.3388,
+    "protocol_dl"
+  ],
+  [
+    23300120086,
+    -813.6447,
+    833.3419,
+    316.813446,
+    "protocol_dl_ii"
+  ],
+  [
+    23300120087,
+    -645.6118,
+    858.849,
+    311.79892,
+    "protocol_dl_ii"
+  ],
+  [
+    23300120089,
+    -621.8544,
+    727.4956,
+    254.46492,
+    "jincao"
+  ],
+  [
+    23300120090,
+    -622.0221,
+    727.0777,
+    254.46492,
+    "jincao"
+  ],
+  [
+    23300120091,
+    -631.7316,
+    790.2692,
+    256.8486,
+    "jincao"
+  ],
+  [
+    23300120092,
+    -631.2863,
+    790.1822,
+    256.8486,
+    "jincao"
+  ],
+  [
+    23300120093,
+    -631.7234,
+    789.7724,
+    256.8486,
+    "jincao"
+  ],
+  [
+    23300120094,
+    -672.9014,
+    748.4782,
+    253.5096,
+    "jincao"
+  ],
+  [
+    23300120095,
+    -675.6645,
+    749.153,
+    253.5096,
+    "jincao"
+  ],
+  [
+    23300120096,
+    -676.8114,
+    750.0108,
+    253.222626,
+    "jincao"
+  ],
+  [
+    23300120097,
+    -676.6611,
+    750.5095,
+    253.222626,
+    "jincao"
+  ],
+  [
+    23300120098,
+    -676.1264,
+    750.0027,
+    253.826935,
+    "yazhen"
+  ],
+  [
+    23300120099,
+    -676.2171,
+    750.606,
+    253.826935,
+    "yazhen"
+  ],
+  [
+    23300120100,
+    -672.8354,
+    747.9024,
+    253.826935,
+    "yazhen"
+  ],
+  [
+    23300120101,
+    -632.5193,
+    790.1864,
+    256.8486,
+    "yazhen"
+  ],
+  [
+    23300120102,
+    -632.5235,
+    790.708,
+    256.8486,
+    "yazhen"
+  ],
+  [
+    23300120104,
+    -726.1194,
+    727.2954,
+    254.414108,
+    "yazhen"
+  ],
+  [
+    23300120106,
+    -724.8266,
+    726.9638,
+    254.465576,
+    "yazhen"
+  ],
+  [
+    23300120107,
+    -724.707,
+    726.2145,
+    254.943924,
+    "yazhen"
+  ],
+  [
+    23300120108,
+    -725.9771,
+    726.02,
+    254.829391,
+    "yazhen"
+  ],
+  [
+    23300120112,
+    -726.5875,
+    726.5747,
+    254.7013,
+    "yazhen"
+  ],
+  [
+    23300120114,
+    -782.9671,
+    858.771,
+    336.38382,
+    "yazhen"
+  ],
+  [
+    23300120115,
+    -783.5604,
+    860.1609,
+    336.1714,
+    "yazhen"
+  ],
+  [
+    23300120116,
+    -786.0925,
+    862.0238,
+    335.8811,
+    "yazhen"
+  ],
+  [
+    23300120117,
+    -786.1614,
+    862.8273,
+    335.8811,
+    "yazhen"
+  ],
+  [
+    23300120118,
+    -786.3235,
+    862.3136,
+    335.8811,
+    "jincao"
+  ],
+  [
+    23300120119,
+    -667.6227,
+    874.203,
+    281.610535,
+    "jincao"
+  ],
+  [
+    23300120120,
+    -667.8289,
+    875.0392,
+    281.5677,
+    "yazhen"
+  ],
+  [
+    23300120121,
+    -668.2413,
+    874.2112,
+    281.573059,
+    "yazhen"
+  ],
+  [
+    23300120122,
+    -668.2289,
+    874.7453,
+    281.5677,
+    "yazhen"
+  ],
+  [
+    23300120123,
+    -667.1031,
+    874.6708,
+    281.610535,
+    "jincao"
+  ],
+  [
+    23300120124,
+    -638.2414,
+    855.8704,
+    311.005035,
+    "jincao"
+  ],
+  [
+    23300120125,
+    -638.7571,
+    855.979,
+    311.153778,
+    "jincao"
+  ],
+  [
+    23300120126,
+    -638.3715,
+    856.5485,
+    310.977264,
+    "jincao"
+  ],
+  [
+    23300120127,
+    -786.3853,
+    860.7404,
+    335.89624,
+    "yazhen"
+  ],
+  [
+    23300120128,
+    -621.8753,
+    728.3548,
+    254.46492,
+    "glowbug"
+  ],
+  [
+    23300120129,
+    -619.5205,
+    728.5701,
+    254.77,
+    "glowbug"
+  ],
+  [
+    23300120130,
+    -635.2535,
+    790.3934,
+    256.696259,
+    "glowbug"
+  ],
+  [
+    23300120131,
+    -633.6699,
+    789.2384,
+    256.696259,
+    "glowbug"
+  ],
+  [
+    23300120132,
+    -657.3086,
+    809.5274,
+    251.480438,
+    "glowbug"
+  ],
+  [
+    23300120133,
+    -652.9119,
+    796.5951,
+    255.499084,
+    "scorchbug"
+  ],
+  [
+    23300120134,
+    -642.5984,
+    787.8847,
+    256.506226,
+    "scorchbug"
+  ],
+  [
+    23300120135,
+    -646.6564,
+    788.3069,
+    256.298035,
+    "scorchbug"
+  ],
+  [
+    23300120136,
+    -749.5664,
+    878.0281,
+    329.832947,
+    "protocol_dl"
+  ],
+  [
+    23300120137,
+    -630.1769,
+    744.8807,
+    258.405823,
+    "glowbug"
+  ],
+  [
+    23300120138,
+    -666.3616,
+    726.6008,
+    259.326538,
+    "glowbug"
+  ],
+  [
+    23300120139,
+    -673.2717,
+    728.0164,
+    257.334778,
+    "glowbug"
+  ],
+  [
+    23300120140,
+    -681.4092,
+    730.2549,
+    256.465485,
+    "glowbug"
+  ],
+  [
+    23300120141,
+    -666.8474,
+    724.6207,
+    260.983917,
+    "glowbug"
+  ],
+  [
+    23300120142,
+    -664.8143,
+    723.5485,
+    260.390717,
+    "glowbug"
+  ],
+  [
+    23300120143,
+    -644.1861,
+    789.7476,
+    255.787,
+    "scorchbug"
+  ],
+  [
+    23300120144,
+    -654.2527,
+    722.1658,
+    263.7103,
+    "scorchbug"
+  ],
+  [
+    23300120145,
+    -784.205,
+    858.8403,
+    336.439728,
+    "amber_rice"
+  ],
+  [
+    23300120146,
+    -789.4989,
+    826.4665,
+    309.623016,
+    "redjade_ginseng"
+  ],
+  [
+    23300120147,
+    -623.7897,
+    896.6374,
+    313.455231,
+    "redjade_ginseng"
+  ],
+  [
+    23300120148,
+    -648.5282,
+    851.1299,
+    282.4005,
+    "glowbug"
+  ],
+  [
+    23300120149,
+    -646.8873,
+    848.7393,
+    282.4005,
+    "glowbug"
+  ],
+  [
+    23300120150,
+    -647.6296,
+    845.8042,
+    281.974518,
+    "glowbug"
+  ],
+  [
+    23300120152,
+    -750.2536,
+    885.7925,
+    329.035,
+    "glowbug"
+  ],
+  [
+    23300120153,
+    -750.3608,
+    881.1642,
+    329.7033,
+    "glowbug"
+  ],
+  [
+    23300120154,
+    -757.0788,
+    874.1059,
+    331.4433,
+    "scorchbug"
+  ],
+  [
+    23300120155,
+    -785.0072,
+    827.5689,
+    310.565735,
+    "jincao"
+  ],
+  [
+    23300120156,
+    -785.9391,
+    826.9691,
+    310.0447,
+    "jincao"
+  ],
+  [
+    23300120157,
+    -786.5853,
+    827.883,
+    310.032623,
+    "jincao"
+  ],
+  [
+    23300120158,
+    -785.7651,
+    824.9919,
+    309.782043,
+    "jincao"
+  ],
+  [
+    23300120159,
+    -787.0893,
+    824.9247,
+    309.915161,
+    "jincao"
+  ],
+  [
+    23300120160,
+    -799.314,
+    804.3071,
+    320.655853,
+    "jincao"
+  ],
+  [
+    23300120161,
+    -798.8197,
+    803.604,
+    320.655853,
+    "jincao"
+  ],
+  [
+    23300120162,
+    -798.0315,
+    803.4709,
+    320.728546,
+    "yazhen"
+  ],
+  [
+    23300120163,
+    -804.2628,
+    818.0387,
+    321.240448,
+    "yazhen"
+  ],
+  [
+    23300120164,
+    -805.2979,
+    818.403,
+    320.942657,
+    "yazhen"
+  ],
+  [
+    23300120165,
+    -804.9106,
+    817.1329,
+    321.056458,
+    "yazhen"
+  ],
+  [
+    23300050020,
+    -698.8707,
+    864.1231,
+    322.6131,
+    "gather"
+  ],
+  [
+    23300050021,
+    -679.5108,
+    775.6468,
+    262.8449,
+    "gather"
+  ],
+  [
+    23300050022,
+    -724.8669,
+    769.1534,
+    278.0437,
+    "gather"
+  ],
+  [
+    23300050023,
+    -746.072,
+    884.5226,
+    328.57843,
+    "gather"
+  ],
+  [
+    23300050025,
+    -711.6292,
+    861.0799,
+    337.980164,
+    "aurylene"
+  ],
+  [
+    23300050028,
+    -691.6697,
+    862.2804,
+    333.1573,
+    "gather"
+  ],
+  [
+    23300050030,
+    -707.0109,
+    855.4084,
+    340.392639,
+    "gather"
+  ],
+  [
+    23300050037,
+    -778.6327,
+    825.8184,
+    318.170319,
+    "aurylene"
+  ],
+  [
+    23300050038,
+    -742.5973,
+    767.1703,
+    263.7503,
+    "aurylene"
+  ],
+  [
+    23300050039,
+    -720.7863,
+    767.1858,
+    278.382935,
+    "aurylene"
+  ],
+  [
+    23300050042,
+    -737.1944,
+    800.9332,
+    280.46,
+    "aurylene"
+  ],
+  [
+    23300050045,
+    -797.2232,
+    831.0914,
+    313.07,
+    "guiding_butterflies"
+  ],
+  [
+    23300050046,
+    -816.6824,
+    836.9088,
+    316.743256,
+    "crate_ii"
+  ],
+  [
+    23300050055,
+    -613.4696,
+    730.9804,
+    249.337769,
+    "gather"
+  ],
+  [
+    23300050056,
+    -618.757,
+    710.4622,
+    252.556854,
+    "gather"
+  ],
+  [
+    23300050057,
+    -633.5753,
+    705.4802,
+    248.37529,
+    "gather"
+  ],
+  [
+    23300050058,
+    -738.1532,
+    805.1574,
+    268.0726,
+    "gather"
+  ],
+  [
+    23300050059,
+    -772.071,
+    789.1245,
+    278.2406,
+    "gather"
+  ],
+  [
+    23300050060,
+    -691.0263,
+    820.8165,
+    264.5607,
+    "gather"
+  ],
+  [
+    23300050062,
+    -618.1746,
+    718.1389,
+    251.293533,
+    "gather"
+  ],
+  [
+    23300050063,
+    -627.6651,
+    731.152,
+    256.954773,
+    "gather"
+  ],
+  [
+    23300050064,
+    -620.1513,
+    696.4053,
+    242.447,
+    "gather"
+  ],
+  [
+    23300050065,
+    -675.6147,
+    768.8228,
+    251.354492,
+    "gather"
+  ],
+  [
+    23300050066,
+    -723.2842,
+    843.8585,
+    460.21994,
+    "gather"
+  ],
+  [
+    23300050067,
+    -753.2491,
+    846.4789,
+    395.096,
+    "gather"
+  ],
+  [
+    23300220003,
+    -714.2342,
+    726.105,
+    259.769562,
+    "crate_iii"
+  ],
+  [
+    23300220004,
+    -714.2342,
+    726.105,
+    259.983551,
+    "temporary_energy_alluvium"
+  ],
+  [
+    23300220005,
+    -751.9981,
+    816.5755,
+    263.094971,
+    "crate_iii"
+  ],
+  [
+    23300220006,
+    -751.9981,
+    816.5755,
+    263.094971,
+    "temporary_energy_alluvium"
+  ],
+  [
+    23300220007,
+    -728.4887,
+    797.7953,
+    266.993835,
+    "energy_alluvium"
+  ],
+  [
+    23300000058,
+    -620.1886,
+    755.0108,
+    255.238739,
+    "road_plunderer"
+  ],
+  [
+    23300000059,
+    -618.8112,
+    757.8258,
+    255.408691,
+    "road_plunderer"
+  ],
+  [
+    23300000064,
+    -619.8917,
+    760.3511,
+    255.42131,
+    "road_plunderer"
+  ],
+  [
+    23300000066,
+    -630.9741,
+    775.2269,
+    255.519562,
+    "road_plunderer"
+  ],
+  [
+    23300000067,
+    -626.6591,
+    755.2674,
+    256.620636,
+    "road_plunderer"
+  ],
+  [
+    23300000068,
+    -628.4737,
+    755.4868,
+    256.814484,
+    "road_plunderer"
+  ],
+  [
+    23300000069,
+    -631.0471,
+    753.5536,
+    255.788071,
+    "road_plunderer"
+  ],
+  [
+    23300000071,
+    -634.0741,
+    781.7454,
+    256.227631,
+    "road_plunderer"
+  ],
+  [
+    23300000072,
+    -588.8298,
+    757.7803,
+    252.128769,
+    "cloud_stalker"
+  ],
+  [
+    23300000073,
+    -723.9204,
+    767.7119,
+    269.977264,
+    "road_plunderer"
+  ],
+  [
+    23300000074,
+    -729.532,
+    768.8748,
+    269.977264,
+    "road_plunderer"
+  ],
+  [
+    23300000075,
+    -730.2331,
+    770.1251,
+    269.977264,
+    "road_plunderer"
+  ],
+  [
+    23300000078,
+    -766.7345,
+    785.169,
+    278.551544,
+    "road_plunderer"
+  ],
+  [
+    23300000080,
+    -747.3724,
+    765.8694,
+    274.303,
+    "cloud_stalker"
+  ],
+  [
+    23300000083,
+    -681.3927,
+    845.2743,
+    318.843842,
+    "road_plunderer"
+  ],
+  [
+    23300000084,
+    -681.3886,
+    843.0926,
+    318.843842,
+    "road_plunderer"
+  ],
+  [
+    23300000085,
+    -726.1297,
+    841.2558,
+    307.862366,
+    "road_plunderer"
+  ],
+  [
+    23300000086,
+    -785.3897,
+    854.0225,
+    335.944824,
+    "road_plunderer"
+  ],
+  [
+    23300000087,
+    -785.6059,
+    851.2273,
+    336.167816,
+    "road_plunderer"
+  ],
+  [
+    23300000089,
+    -626.09,
+    843.7715,
+    283.3245,
+    "road_plunderer"
+  ],
+  [
+    23300000090,
+    -625.29,
+    844.2766,
+    283.3245,
+    "road_plunderer"
+  ],
+  [
+    23300000093,
+    -708.941,
+    885.5666,
+    328.506683,
+    "road_plunderer"
+  ],
+  [
+    23300000137,
+    -708.31,
+    884.5193,
+    328.743652,
+    "cloud_stalker"
+  ],
+  [
+    23300000139,
+    -627.1004,
+    757.1055,
+    256.2584,
+    "cloud_stalker"
+  ],
+  [
+    23300000157,
+    -765.8891,
+    783.1902,
+    278.622528,
+    "road_plunderer"
+  ],
+  [
+    23300000172,
+    -650.5453,
+    750.9455,
+    257.95282,
+    "cloud_stalker"
+  ],
+  [
+    23300000200,
+    -750.185,
+    840.5549,
+    327.4825,
+    "road_plunderer"
+  ],
+  [
+    23300000201,
+    -726.8589,
+    841.2354,
+    307.862366,
+    "road_plunderer"
+  ],
+  [
+    23300000202,
+    -749.1045,
+    840.7702,
+    327.4825,
+    "road_plunderer"
+  ],
+  [
+    23300000205,
+    -630.8207,
+    837.855,
+    283.5807,
+    "road_plunderer"
+  ],
+  [
+    23300000216,
+    -747.6858,
+    838.9156,
+    327.5525,
+    "grove_archer"
+  ],
+  [
+    23300000221,
+    -784.3563,
+    852.4982,
+    336.018341,
+    "spotted_rakerbeast"
+  ],
+  [
+    23300000228,
+    -728.6082,
+    755.7021,
+    265.289917,
+    "grove_archer"
+  ],
+  [
+    23300000231,
+    -701.7528,
+    776.136,
+    265.224182,
+    "grove_archer"
+  ],
+  [
+    23300000232,
+    -698.099,
+    775.809,
+    264.837555,
+    "grove_archer"
+  ],
+  [
+    23300000234,
+    -763.6011,
+    785.318,
+    279.682526,
+    "grove_archer"
+  ],
+  [
+    23300000250,
+    -626.6319,
+    773.9708,
+    255.630249,
+    "grove_archer"
+  ],
+  [
+    23300000251,
+    -629.6428,
+    767.1084,
+    259.757874,
+    "grove_archer"
+  ],
+  [
+    23300000252,
+    -628.8902,
+    759.4734,
+    261.3792,
+    "grove_archer"
+  ],
+  [
+    23300000253,
+    -633.5709,
+    753.9261,
+    259.683258,
+    "grove_archer"
+  ],
+  [
+    23300000254,
+    -624.7167,
+    750.2749,
+    258.659973,
+    "grove_archer"
+  ],
+  [
+    23300000258,
+    -773.799,
+    763.9165,
+    272.681244,
+    "cloud_stalker"
+  ],
+  [
+    23300000259,
+    -637.1827,
+    751.4576,
+    270.670227,
+    "grove_archer"
+  ],
+  [
+    23300000260,
+    -631.7382,
+    766.9631,
+    269.098328,
+    "grove_archer"
+  ],
+  [
+    23300000264,
+    -730.2661,
+    774.447,
+    270.096,
+    "grove_archer"
+  ],
+  [
+    23300000267,
+    -635.1793,
+    783.7283,
+    259.9643,
+    "grove_archer"
+  ],
+  [
+    23300000268,
+    -732.5673,
+    766.9954,
+    249.827515,
+    "cloud_stalker"
+  ],
+  [
+    23300000279,
+    -763.0477,
+    774.8071,
+    277.06778,
+    "grove_archer"
+  ],
+  [
+    23300000280,
+    -762.5322,
+    774.062,
+    276.99,
+    "grove_archer"
+  ],
+  [
+    23300000282,
+    -744.5268,
+    767.7074,
+    274.241058,
+    "road_plunderer"
+  ],
+  [
+    23300000283,
+    -710.4256,
+    882.7102,
+    328.408264,
+    "grove_archer"
+  ],
+  [
+    23300000288,
+    -727.5443,
+    755.7435,
+    265.1489,
+    "grove_archer"
+  ],
+  [
+    23300000302,
+    -634.9195,
+    779.8452,
+    255.8333,
+    "nimbus_razor"
+  ],
+  [
+    23300000303,
+    -773.1423,
+    764.7593,
+    272.592865,
+    "nimbus_razor"
+  ],
+  [
+    23300000330,
+    -630.9382,
+    761.8103,
+    261.3792,
+    "grove_archer"
+  ],
+  [
+    23300000343,
+    -634.5937,
+    778.6488,
+    256.227631,
+    "road_plunderer"
+  ],
+  [
+    23300000344,
+    -633.9895,
+    779.9763,
+    255.816467,
+    "grove_archer"
+  ],
+  [
+    23300000348,
+    -701.2662,
+    862.7979,
+    338.885925,
+    "nimbus_razor"
+  ],
+  [
+    23300000351,
+    -705.9591,
+    849.1724,
+    336.8973,
+    "nimbus_razor"
+  ],
+  [
+    23300000379,
+    -703.3612,
+    863.4644,
+    338.642639,
+    "highway_reaver"
+  ],
+  [
+    23300000380,
+    -729.0619,
+    730.8676,
+    253.530029,
+    "cloud_obliterator"
+  ],
+  [
+    23300000385,
+    -774.7268,
+    764.3087,
+    272.681244,
+    "cloud_stalker"
+  ],
+  [
+    23300000386,
+    -773.1556,
+    764.5529,
+    272.592865,
+    "nimbus_razor"
+  ],
+  [
+    23300000388,
+    -725.4905,
+    730.3295,
+    253.93,
+    "cloud_obliterator"
+  ],
+  [
+    23300000390,
+    -707.1397,
+    886.6225,
+    328.506683,
+    "nimbus_razor"
+  ],
+  [
+    23300000391,
+    -670.4971,
+    807.8094,
+    252.122528,
+    "breaking_gust"
+  ],
+  [
+    23300000044,
+    -674.9428,
+    797.7042,
+    262.371033,
+    "crate_i"
+  ],
+  [
+    23300000045,
+    -649.5877,
+    751.0026,
+    257.639618,
+    "crate_i"
+  ],
+  [
+    23300000046,
+    -751.7145,
+    846.9546,
+    329.183,
+    "crate_ii"
+  ],
+  [
+    23300000049,
+    -739.2019,
+    858.192,
+    305.539459,
+    "cratesurprise"
+  ],
+  [
+    23300000050,
+    -705.5098,
+    848.5488,
+    320.865845,
+    "crate_i"
+  ],
+  [
+    23300000051,
+    -747.3394,
+    763.4849,
+    274.2462,
+    "crate_i"
+  ],
+  [
+    23300000052,
+    -706.4336,
+    847.5594,
+    361.793823,
+    "crate_i"
+  ],
+  [
+    23300000055,
+    -639.4753,
+    793.5412,
+    265.308716,
+    "crate_i"
+  ],
+  [
+    23300000065,
+    -615.8007,
+    753.9551,
+    255.423172,
+    "crate_i"
+  ],
+  [
+    23300000091,
+    -785.841,
+    866.7555,
+    336.080719,
+    "crate_i"
+  ],
+  [
+    23300000095,
+    -758.7835,
+    880.2594,
+    329.74527,
+    "tp_point"
+  ],
+  [
+    23300000096,
+    -713.8526,
+    801.9889,
+    267.15,
+    "tp_point"
+  ],
+  [
+    23300000097,
+    -672.1014,
+    755.0149,
+    253.061264,
+    "tp_point"
+  ],
+  [
+    23300000098,
+    -591.7991,
+    734.4692,
+    256.0102,
+    "tp_point"
+  ],
+  [
+    23300000099,
+    -621.3363,
+    838.9731,
+    283.385254,
+    "crate_i"
+  ],
+  [
+    23300000102,
+    -619.1576,
+    860.4175,
+    305.871033,
+    "tp_point"
+  ],
+  [
+    23300000174,
+    -739.9946,
+    848.4246,
+    305.54895,
+    "aurylene"
+  ],
+  [
+    23300000175,
+    -720.0304,
+    897.9611,
+    335.6,
+    "aurylene"
+  ],
+  [
+    23300000178,
+    -704.4458,
+    845.1459,
+    335.8275,
+    "gather"
+  ],
+  [
+    23300000189,
+    -620.7412,
+    764.2631,
+    266.899,
+    "aurylene"
+  ],
+  [
+    23300000192,
+    -694.7214,
+    859.4406,
+    324.0325,
+    "aurylene"
+  ],
+  [
+    23300000196,
+    -772.6896,
+    763.2034,
+    272.7307,
+    "crate_ii"
+  ],
+  [
+    23300000197,
+    -730.53,
+    773.855,
+    246.0916,
+    "crate_ii"
+  ],
+  [
+    23300000199,
+    -605.8371,
+    890.7993,
+    282.34,
+    "aurylene"
+  ],
+  [
+    23300000204,
+    -700.7878,
+    865.5881,
+    275.3707,
+    "crate_i"
+  ],
+  [
+    23300000206,
+    -779.1436,
+    811.3116,
+    288.378418,
+    "aurylene"
+  ],
+  [
+    23300000222,
+    -718.4834,
+    894.0204,
+    329.748169,
+    "gather"
+  ],
+  [
+    23300000223,
+    -745.4812,
+    733.2048,
+    263.391846,
+    "gather"
+  ],
+  [
+    23300000224,
+    -711.893,
+    757.5288,
+    267.139526,
+    "gather"
+  ],
+  [
+    23300000229,
+    -700.561,
+    828.9553,
+    256.251251,
+    "cratelocked"
+  ],
+  [
+    23300000246,
+    -727.07,
+    737.6523,
+    265.135345,
+    "gather"
+  ],
+  [
+    23300000247,
+    -708.5752,
+    751.2005,
+    255.541,
+    "aurylene"
+  ],
+  [
+    23300000255,
+    -670.7334,
+    746.5474,
+    258.42,
+    "gather"
+  ],
+  [
+    23300000256,
+    -683.2041,
+    734.3552,
+    257.175232,
+    "gather"
+  ],
+  [
+    23300000257,
+    -733.6783,
+    770.2232,
+    277.902863,
+    "gather"
+  ],
+  [
+    23300000276,
+    -713.3247,
+    875.2213,
+    325.846344,
+    "gather"
+  ],
+  [
+    23300000278,
+    -588.0091,
+    758.0121,
+    252.094528,
+    "crate_ii"
+  ],
+  [
+    23300000281,
+    -611.5241,
+    723.917,
+    249.287308,
+    "crate_ii"
+  ],
+  [
+    23300000285,
+    -706.4961,
+    751.151,
+    265.9815,
+    "delta_bot"
+  ],
+  [
+    23300000286,
+    -700.6347,
+    863.2908,
+    322.389832,
+    "delta_bot"
+  ],
+  [
+    23300000287,
+    -767.5423,
+    834.1426,
+    332.7774,
+    "delta_bot"
+  ],
+  [
+    23300000295,
+    -708.9987,
+    865.6792,
+    324.3272,
+    "gear_template"
+  ],
+  [
+    23300000296,
+    -774.479,
+    799.5162,
+    271.206848,
+    "gear_template"
+  ],
+  [
+    23300000297,
+    -743.9297,
+    740.0095,
+    269.137543,
+    "gear_template"
+  ],
+  [
+    23300000301,
+    -638.2339,
+    751.2619,
+    271.662,
+    "gather"
+  ],
+  [
+    23300000305,
+    -768.5198,
+    794.1585,
+    264.896851,
+    "blight_core"
+  ],
+  [
+    23300000307,
+    -753.7407,
+    796.5558,
+    256.433838,
+    "blight_core"
+  ],
+  [
+    23300000308,
+    -730.3106,
+    803.1877,
+    268.413,
+    "crate_ii"
+  ],
+  [
+    23300000323,
+    -706.3633,
+    867.1231,
+    338.7973,
+    "cratelocked"
+  ],
+  [
+    23300000325,
+    -703.2164,
+    857.4286,
+    330.9,
+    "aurylene"
+  ],
+  [
+    23300000327,
+    -770.2366,
+    773.2203,
+    273.361542,
+    "crate_ii"
+  ],
+  [
+    23300000328,
+    -792.1939,
+    807.203,
+    311.6386,
+    "crate_ii"
+  ],
+  [
+    23300000329,
+    -781.6188,
+    787.9123,
+    274.087555,
+    "guiding_butterflies"
+  ],
+  [
+    23300000337,
+    -790.3268,
+    838.5582,
+    337.936554,
+    "gather"
+  ],
+  [
+    23300000338,
+    -712.8014,
+    837.0779,
+    311.886658,
+    "gather"
+  ],
+  [
+    23300000339,
+    -654.3229,
+    854.3486,
+    282.176331,
+    "gather"
+  ],
+  [
+    23300000340,
+    -697.9031,
+    854.2431,
+    315.587,
+    "aurylene"
+  ],
+  [
+    23300000341,
+    -726.9518,
+    723.4562,
+    266.281036,
+    "crate_iii"
+  ],
+  [
+    23300000342,
+    -741.6292,
+    738.1828,
+    256.672943,
+    "guiding_butterflies"
+  ],
+  [
+    23300000345,
+    -641.9908,
+    790.6036,
+    256.79248,
+    "gather"
+  ],
+  [
+    23300000346,
+    -635.9321,
+    767.3894,
+    258.178741,
+    "gather"
+  ],
+  [
+    23300000349,
+    -709.2634,
+    865.521,
+    331.666626,
+    "gather"
+  ],
+  [
+    23300000350,
+    -709.2991,
+    856.6674,
+    340.470123,
+    "gather"
+  ],
+  [
+    23300000359,
+    -744.2588,
+    725.3907,
+    259.4998,
+    "crate_ii"
+  ],
+  [
+    23300000360,
+    -747.793,
+    767.1486,
+    263.336853,
+    "blight_core"
+  ],
+  [
+    23300000362,
+    -798.0748,
+    822.003,
+    306.0317,
+    "crate_ii"
+  ],
+  [
+    23300000374,
+    -749.7849,
+    774.4139,
+    263.448547,
+    "crate_i"
+  ],
+  [
+    23300000389,
+    -586.4255,
+    865.5922,
+    300.0244,
+    "re_crisis"
+  ],
+  [
+    23300000395,
+    -624.16,
+    751.1484,
+    259.938049,
+    "gather"
+  ],
+  [
+    23300000396,
+    -620.9904,
+    787.3602,
+    254.480057,
+    "gather"
+  ],
+  [
+    23300000397,
+    -634.625,
+    761.2585,
+    261.770752,
+    "gather"
+  ],
+  [
+    23300000398,
+    -674.6949,
+    801.3633,
+    254.503769,
+    "gather"
+  ],
+  [
+    23300000399,
+    -671.7932,
+    769.8699,
+    248.937027,
+    "gather"
+  ],
+  [
+    23300000400,
+    -682.3907,
+    786.0135,
+    263.481567,
+    "gather"
+  ],
+  [
+    23300000401,
+    -758.1888,
+    781.3314,
+    278.731018,
+    "gather"
+  ],
+  [
+    23300000402,
+    -699.9847,
+    831.6259,
+    291.29895,
+    "gather"
+  ],
+  [
+    23300000403,
+    -727.5076,
+    790.0361,
+    274.023834,
+    "gather"
+  ],
+  [
+    23300000404,
+    -614.2447,
+    858.2537,
+    285.526459,
+    "gather"
+  ],
+  [
+    23300000405,
+    -696.1937,
+    853.8726,
+    343.186737,
+    "gather"
+  ],
+  [
+    23300000406,
+    -723.8987,
+    860.6038,
+    461.1073,
+    "crate_iii"
+  ],
+  [
+    23300000407,
+    -721.9344,
+    764.5865,
+    260.544769,
+    "crate_ii"
+  ],
+  [
+    23300000408,
+    -729.2351,
+    787.9633,
+    280.086548,
+    "crate_i"
+  ],
+  [
+    23300000409,
+    -734.8388,
+    781.1174,
+    277.125,
+    "gather"
+  ],
+  [
+    23300000410,
+    -789.9608,
+    836.291,
+    337.070343,
+    "crate_i"
+  ],
+  [
+    23300000411,
+    -667.1278,
+    769.798,
+    253.534912,
+    "crate_i"
+  ],
+  [
+    23300000412,
+    -692.7873,
+    855.3587,
+    319.531158,
+    "crate_ii"
+  ],
+  [
+    23300000413,
+    -621.0711,
+    694.4998,
+    241.7952,
+    "crate_ii"
+  ],
+  [
+    23300000414,
+    -791.4619,
+    804.1395,
+    324.4385,
+    "crate_i"
+  ],
+  [
+    23300000261,
+    -584.5202,
+    866.5982,
+    299.7171936035156,
+    "ruan_yi"
+  ]
 ]

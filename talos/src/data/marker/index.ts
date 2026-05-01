@@ -3,6 +3,9 @@ import { REGION_DICT } from '@/data/map';
 
 export interface IMarkerData {
     id: string;
+    z: number;
+    x: number;
+    y: number;
     pos: [number, number];
     subregId: string;
     type: string;
@@ -10,12 +13,25 @@ export interface IMarkerData {
 }
 
 // Raw marker data from JSON (id may be number or string)
-interface IRawMarkerData {
+type IRawMarkerTuple = [
+    id: string | number,
+    z: number,
+    x: number,
+    y: number,
+    type: string | null,
+];
+
+interface IRawMarkerObject {
     id: string | number;
-    pos: [number, number];
-    subregId: string;
-    type: string;
+    z?: number;
+    x?: number;
+    y?: number;
+    pos?: [number, number] | [number, number, number];
+    subregId?: string;
+    type: string | null;
 }
+
+type IRawMarkerData = IRawMarkerTuple | IRawMarkerObject;
 
 export interface IMarkerType {
     key: string;
@@ -34,10 +50,24 @@ export interface IMarkerType {
  * Convert raw marker data to normalized format with string IDs
  * This ensures numeric IDs are converted to strings to avoid precision issues
  */
-const normalizeMarker = (raw: IRawMarkerData): IMarkerData => ({
-    ...raw,
-    id: String(raw.id),
-});
+const normalizeMarker = (raw: IRawMarkerData, subregId: string): IMarkerData => {
+    const rawObject = Array.isArray(raw)
+        ? { id: raw[0], z: raw[1], x: raw[2], y: raw[3], type: raw[4] }
+        : raw;
+    const z = rawObject.z ?? rawObject.pos?.[0] ?? 0;
+    const x = rawObject.x ?? rawObject.pos?.[1] ?? 0;
+    const y = rawObject.y ?? rawObject.pos?.[2] ?? 0;
+
+    return {
+        id: String(rawObject.id),
+        z,
+        x,
+        y,
+        pos: [z, x],
+        subregId: rawObject.subregId ?? subregId,
+        type: rawObject.type ?? '',
+    };
+};
 
 // TODO 当前实现并不能实现懒加载内容
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -53,7 +83,7 @@ export const SUBREGION_MARKS_MAP = Object.keys(modules).reduce((acc, key) => {
     const subregionId = key.replace('./data/', '').replace('.json', '');
     const rawMarkers = modules[key].default || modules[key];
     // Normalize all markers to ensure string IDs
-    acc[subregionId] = rawMarkers.map(normalizeMarker);
+    acc[subregionId] = rawMarkers.map((marker) => normalizeMarker(marker, subregionId));
     return acc;
 }, {}) as Record<string, IMarkerData[]>;
 
