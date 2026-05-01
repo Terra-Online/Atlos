@@ -34,19 +34,28 @@ const ruleMatchesPath = (rule: LocatorReminderRule, path: string[]): boolean => 
 const ruleMatchesType = (rule: LocatorReminderRule, typeInfo: MarkerTypeWithName): boolean =>
     markerTypePaths(typeInfo).some((path) => ruleMatchesPath(rule, path));
 
-const strategyMatchesType = (scope: EFTrackerScope, typeInfo: MarkerTypeWithName): boolean => {
+const strategyIncludesType = (scope: EFTrackerScope, typeInfo: MarkerTypeWithName): boolean => {
     const strategy = LOCATOR_REMINDER_STRATEGIES[scope];
     if (!strategy) return false;
-    if (strategy.exclude.some((rule) => ruleMatchesType(rule, typeInfo))) return false;
     return strategy.include.some((rule) => ruleMatchesType(rule, typeInfo));
+};
+
+const strategyExcludesType = (scope: EFTrackerScope, typeInfo: MarkerTypeWithName): boolean => {
+    const strategy = LOCATOR_REMINDER_STRATEGIES[scope];
+    if (!strategy) return false;
+    return strategy.exclude.some((rule) => ruleMatchesType(rule, typeInfo));
 };
 
 export const getLocatorReminderTypeKeys = (scopes: EFTrackerScope[]): string[] => {
     if (scopes.length === 0) return [];
 
     return Object.values(MARKER_TYPE_DICT)
-        .filter((typeInfo) =>
-            scopes.every((scope) => strategyMatchesType(scope, typeInfo as MarkerTypeWithName)),
-        )
+        .filter((typeInfo) => {
+            const markerType = typeInfo as MarkerTypeWithName;
+            const included = scopes.some((scope) => strategyIncludesType(scope, markerType));
+            if (!included) return false;
+
+            return !scopes.every((scope) => strategyExcludesType(scope, markerType));
+        })
         .map((typeInfo) => typeInfo.key);
 };

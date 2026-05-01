@@ -730,7 +730,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "tier": "2"
+        "tier": "1"
     },
     "scorchbug": {
         "key": "scorchbug",
@@ -739,7 +739,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "tier": "3"
+        "tier": "2"
     },
     "wild_tuskbeast": {
         "key": "wild_tuskbeast",
@@ -748,7 +748,7 @@
             "main": "resource",
             "sub": "natural"
         },
-        "tier": "3"
+        "tier": "1"
     },
     "pink_bolete_spot": {
         "key": "pink_bolete_spot",

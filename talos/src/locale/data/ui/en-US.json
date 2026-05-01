@@ -299,20 +299,22 @@
       "scopeTitle": "Scope",
       "scopeHint": "Choose which nearby point groups should trigger reminders during location sync.",
       "scope": {
-        "auto": {
-          "title": "Auto",
-          "desc": "Track the point sets selected for you."
+        "balanced": {
+          "title": "Balanced",
+          "desc": "Track point sets selected by the developers."
         },
         "collection": {
           "title": "Collectibles",
           "desc": "Track points in collectibles, exploration and archives."
         },
-        "enemy": {
-          "title": "Enemies",
-          "desc": "Track points in enemies and bosses."
+        "manual": {
+          "title": "Manual",
+          "desc": "Track rare points from the manual, including mobs, bosses and tier 2 natural resources."
         }
       },
       "featureTitle": "Feature",
+      "trackPoints": "Track Points",
+      "heatmap": "Heatmap",
       "trail": "Record game trajectory and heatmap",
       "trailNotePrefix": "Enabling this feature means you accept our ",
       "trailNoteSuffix": " and other terms."

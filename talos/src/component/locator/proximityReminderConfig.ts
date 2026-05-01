@@ -19,8 +19,15 @@ const COMMON_MOB_RULES: LocatorReminderRule[] = Object.values(MARKER_TYPE_DICT)
     )
     .map((typeInfo) => `mob.${typeInfo.key}`);
 
+const TIER_2_NATURAL_RULES: LocatorReminderRule[] = Object.values(MARKER_TYPE_DICT)
+    .filter((typeInfo): typeInfo is MarkerTypeWithTier =>
+        typeInfo.category.sub === 'natural'
+        && (typeInfo as MarkerTypeWithTier).tier === '2',
+    )
+    .map((typeInfo) => `natural.${typeInfo.key}`);
+
 export const LOCATOR_REMINDER_STRATEGIES = {
-    auto: {
+    balanced: {
         include: [
             'collection.*',
             'archives.*',
@@ -42,10 +49,10 @@ export const LOCATOR_REMINDER_STRATEGIES = {
         ],
         exclude: [],
     },
-    enemy: {
+    manual: {
         include: [
             'mob.*',
-            'boss.*',
+            ...TIER_2_NATURAL_RULES,
         ],
         exclude: [],
     },

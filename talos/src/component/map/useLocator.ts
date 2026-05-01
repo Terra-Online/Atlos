@@ -5,7 +5,13 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/component/locator/state';
-import { EFBackendError, getEFPosition, unlinkEFBinding } from '@/utils/endfield/backendClient';
+import {
+    EFBackendError,
+    getEFPosition,
+    openEFPositionSocket,
+    unlinkEFBinding,
+    type EFPositionSocketMessage,
+} from '@/utils/endfield/backendClient';
 import type { PositionResponse } from '@/utils/endfield/types';
 import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
 import {
@@ -172,6 +178,7 @@ export function useLocator(map: L.Map | undefined): void {
     const [configVersion, setConfigVersion] = useState(0);
     const trackerRunningRef = useRef(false);
     const pollTimerRef = useRef<number | null>(null);
+    const socketRef = useRef<WebSocket | null>(null);
     const trackerLayerRef = useRef<L.LayerGroup | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
@@ -220,6 +227,10 @@ export function useLocator(map: L.Map | undefined): void {
             if (pollTimerRef.current !== null) {
                 window.clearTimeout(pollTimerRef.current);
                 pollTimerRef.current = null;
+            }
+            if (socketRef.current) {
+                socketRef.current.close(1000, 'locator stopped');
+                socketRef.current = null;
             }
         };
 
@@ -553,7 +564,14 @@ export function useLocator(map: L.Map | undefined): void {
                 try {
                     const response = await getEFPosition();
                     applyPositionUpdate(response.data);
-                    scheduleNextPoll(response.data.isOnline === false ? (config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) * 3 : (config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS));
+                    if (response.data.isOnline === false) {
+                        scheduleNextPoll((config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) * 3);
+                        return;
+                    }
+                    startPositionSocket();
+                    if (!socketRef.current) {
+                        scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
+                    }
                 } catch (error) {
                     if (disposed) return;
                     if (!(error instanceof EFBackendError)) {
@@ -571,6 +589,55 @@ export function useLocator(map: L.Map | undefined): void {
                 }
             };
 
+            const startPositionSocket = () => {
+                if (disposed || !trackerRunningRef.current || socketRef.current) return;
+                if (typeof WebSocket === 'undefined') {
+                    scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
+                    return;
+                }
+
+                let sawPosition = false;
+                const socket = openEFPositionSocket();
+                socketRef.current = socket;
+
+                socket.addEventListener('message', (event) => {
+                    if (disposed) return;
+                    try {
+                        const message = JSON.parse(String(event.data)) as EFPositionSocketMessage;
+                        if (message.type === 'position') {
+                            sawPosition = true;
+                            applyPositionUpdate(message.data);
+                            return;
+                        }
+
+                        if (message.type === 'error') {
+                            const error = new EFBackendError(message.error.message || message.error.code || 'Locator stream error.', {
+                                status: message.error.status ?? 500,
+                                code: message.error.code ?? 'LOCATOR_STREAM_ERROR',
+                                details: message.error.details,
+                            });
+                            if (onUpstream(error)) {
+                                socket.close(1000, 'locator upstream state changed');
+                            }
+                        }
+                    } catch {
+                        // Ignore malformed stream frames; the next valid frame will recover state.
+                    }
+                });
+
+                socket.addEventListener('close', () => {
+                    if (socketRef.current === socket) {
+                        socketRef.current = null;
+                    }
+                    if (disposed || !trackerRunningRef.current) return;
+                    scheduleNextPoll(sawPosition ? (config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) : 250);
+                });
+
+                socket.addEventListener('error', () => {
+                    socket.close();
+                });
+            };
+
             map.on('talos:regionSwitched', onRegionSwitched);
             map.on('talos:subregionSwitched', onSubregionSwitched);
             map.on('dragstart', markDetachedByUserViewChange);
@@ -583,7 +650,7 @@ export function useLocator(map: L.Map | undefined): void {
                     if (disposed) return;
                     applyPositionUpdate(response.data);
                     useLocatorStore.getState().setViewMode('tracking');
-                    scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
+                    startPositionSocket();
                 })
                 .catch((error: unknown) => {
                     if (disposed) return;

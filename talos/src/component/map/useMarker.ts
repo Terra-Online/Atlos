@@ -41,7 +41,8 @@ export function useMarker(
     const locatorReminderTypeKeys = useMemo(() => {
         void locatorConfigVersion;
         const config = readEFTrackerConf();
-        const scopes: EFTrackerScope[] = config?.scope && config.scope.length ? config.scope : ['auto'];
+        if (config?.trackPoints === false) return [];
+        const scopes: EFTrackerScope[] = config?.scope && config.scope.length ? config.scope : ['balanced'];
         return getLocatorReminderTypeKeys(scopes);
     }, [locatorConfigVersion]);
 

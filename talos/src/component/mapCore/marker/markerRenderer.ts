@@ -38,6 +38,12 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
     return acc;
 }, {});
 
+const ensureMarkerTypeFilterSelected = (typeKey: string): void => {
+    const markerStore = useMarkerStore.getState();
+    if (markerStore.filter.includes(typeKey)) return;
+    markerStore.setFilter([...markerStore.filter, typeKey]);
+};
+
 const RENDERER_DICT: Record<
     string,
     (
@@ -73,6 +79,7 @@ const RENDERER_DICT: Record<
         
         layer.addEventListener('click', (e) => {
             e.originalEvent.stopPropagation();
+            ensureMarkerTypeFilterSelected(markerData.type);
             
             // 获取 marker 的 DOM 
             const markerRoot = layer.getElement?.() as HTMLElement | null;
@@ -194,6 +201,7 @@ const RENDERER_DICT: Record<
             
         layer.addEventListener('click', (e) => {
             e.originalEvent.stopPropagation();
+            ensureMarkerTypeFilterSelected(markerData.type);
             
             // 获取 marker 的 DOM 元素
             const markerRoot = layer.getElement?.() as HTMLElement | null;

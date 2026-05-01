@@ -42,7 +42,7 @@ const tagFor = (serverName?: string): string => {
 
 const readScope = (): EFTrackerScope[] => {
     const scope = readEFTrackerConf()?.scope;
-    return scope && scope.length ? scope : ['auto'];
+    return scope && scope.length ? scope : ['balanced'];
 };
 
 const saveScope = (scope: EFTrackerScope[], binding: EFBindingSummary | null): void => {
@@ -64,6 +64,36 @@ const saveScope = (scope: EFTrackerScope[], binding: EFBindingSummary | null): v
         roleId: binding.roleId,
         serverId: binding.serverId,
         scope,
+        trackPoints: true,
+        trail: false,
+        debug: false,
+    };
+    saveEFTrackerConf(next);
+};
+
+const readTrackPoints = (): boolean =>
+    readEFTrackerConf()?.trackPoints ?? true;
+
+const saveTrackPoints = (trackPoints: boolean, binding: EFBindingSummary | null): void => {
+    const current = readEFTrackerConf();
+    if (current) {
+        saveEFTrackerConf({
+            ...current,
+            trackPoints,
+        });
+        return;
+    }
+
+    if (!binding?.roleId || binding.serverId === undefined) return;
+
+    const next: EFTrackerConf = {
+        enabled: false,
+        locatorSync: false,
+        baseUrl: binding.provider ?? 'skport',
+        roleId: binding.roleId,
+        serverId: binding.serverId,
+        scope: ['balanced'],
+        trackPoints,
         trail: false,
         debug: false,
     };
@@ -86,6 +116,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [scope, setScope] = useState<EFTrackerScope[]>(() => readScope());
+    const [trackPoints, setTrackPoints] = useState(() => readTrackPoints());
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
@@ -97,6 +128,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
         }
         setLoading(!cachedBinding.hit);
         setScope(readScope());
+        setTrackPoints(readTrackPoints());
         void getEFBindingStatus()
             .then((status) => {
                 if (sessionUser?.uid) {
@@ -120,6 +152,11 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
             saveScope(next, binding);
             return next;
         });
+    }, [binding]);
+
+    const toggleTrackPoints = useCallback((active: boolean) => {
+        setTrackPoints(active);
+        saveTrackPoints(active, binding);
     }, [binding]);
 
     const handleUnlink = useCallback(async () => {
@@ -204,6 +241,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                             className={classNames(styles.scopeItem, scope.includes(item) && styles.scopeActive)}
                             onClick={() => toggleScope(item)}
                             aria-pressed={scope.includes(item)}
+                            disabled={!trackPoints}
                         >
                             <div className={styles.scopeMain}>{t(`locator.config.scope.${item}.title`)}</div>
                             <div className={styles.scopeDesc}>{parse(t(`locator.config.scope.${item}.desc`))}</div>
@@ -212,10 +250,17 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                 </div>
 
                 <div className={profileStyles.profileDivider} data-label={t('locator.config.featureTitle') || 'Feature'}></div>
-                <div className={styles.featureRow}>
+                <div className={styles.featureGrid}>
+                    <Trigger
+                        isActive={trackPoints}
+                        onToggle={toggleTrackPoints}
+                        label={t('locator.config.trackPoints')}
+                        className={styles.featureTrigger}
+                    />
                     <Trigger
                         isActive={false}
-                        label={t('locator.config.trail')}
+                        label={t('locator.config.heatmap')}
+                        disabled
                         className={styles.featureTrigger}
                     />
                 </div>

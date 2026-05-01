@@ -41,8 +41,8 @@ const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
     WL2: {
         scaleX: 0.35414771840391185,
         scaleZ: 0.33417957195526954,
-        offsetX: 229.5667736625251,
-        offsetZ: -639.0186688639493,
+        offsetX: 229.5095336217924,
+        offsetZ: -639.5187069784344,
     },
     DJ: {
         scaleX: 2.817109225144681,

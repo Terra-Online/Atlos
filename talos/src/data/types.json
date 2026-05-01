@@ -190,13 +190,13 @@
                 "tier": "2"
             },
             "Glowbug": {
-                "tier": "2"
+                "tier": "1"
             },
             "Scorchbug": {
-                "tier": "3"
+                "tier": "2"
             },
             "Wild Tuskbeast": {
-                "tier": "3"
+                "tier": "1"
             }
         },
         "valuable": {

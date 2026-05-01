@@ -55,6 +55,7 @@ export class MarkerLayer {
     private pendingRemovalTimers: Record<string, number> = {};
     private pulseCleanupDict: Record<string, () => void> = {};
     private proximityPulseIds = new Set<string>();
+    private temporaryVisibleIds = new Set<string>();
     private proximityUpdateSeq = 0;
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
@@ -211,8 +212,6 @@ export class MarkerLayer {
         const markerStore = useMarkerStore.getState();
         const collected = new Set(getActivePoints());
         const selected = new Set(markerStore.selectedPoints);
-        const filter = new Set(markerStore.filter);
-        const filterTypesToActivate = new Set<string>();
         const nextPulseIds = new Set<string>();
 
         Object.values(this.markerDataDict).forEach((markerData) => {
@@ -233,18 +232,11 @@ export class MarkerLayer {
             if (!inRange) return;
 
             nextPulseIds.add(markerData.id);
-            if (!filter.has(markerData.type)) {
-                filterTypesToActivate.add(markerData.type);
-            }
             if (!selected.has(markerData.id)) {
                 useMarkerStore.getState().setSelected(markerData.id, true);
                 this.updateSelectedMarkers([{ id: markerData.id, selected: true }]);
             }
         });
-
-        if (filterTypesToActivate.size > 0) {
-            useMarkerStore.getState().setFilterKeys([...filterTypesToActivate], true);
-        }
 
         this.proximityPulseIds.forEach((id) => {
             if (!nextPulseIds.has(id)) {
@@ -281,20 +273,21 @@ export class MarkerLayer {
         const layer = this.markerDict[id];
         if (!markerData || !layer) return false;
 
-        if (!this.activeFilterKeys.includes(markerData.type)) {
-            this.filterMarker([...this.activeFilterKeys, markerData.type]);
-        } else {
-            this.filterMarker(this.activeFilterKeys);
-        }
-
         if (this.clusterLayer.isEnabled() && this.clusterLayer.isTypeManaged(markerData.type)) {
-            await this.clusterLayer.showMarker(id);
+            const shown = await this.clusterLayer.showMarker(id);
+            if (!shown) return false;
         } else {
             const parent = this.layerSubregionDict[markerData.subregId];
             if (!parent || !this.map.hasLayer(parent)) return false;
             if (!parent.hasLayer(layer)) {
                 layer.addTo(parent);
             }
+        }
+
+        if (this.activeFilterKeys.includes(markerData.type)) {
+            this.temporaryVisibleIds.delete(id);
+        } else {
+            this.temporaryVisibleIds.add(id);
         }
 
         for (let i = 0; i < 20; i++) {
@@ -336,6 +329,7 @@ export class MarkerLayer {
                 if (isCollected) {
                     this.stopMarkerPulse(id);
                     this.proximityPulseIds.delete(id);
+                    this.temporaryVisibleIds.delete(id);
                     inner.classList.add(styles.checked);
 
                     // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
@@ -416,6 +410,10 @@ export class MarkerLayer {
     }
 
     async changeRegion(regionId: string) {
+        this.temporaryVisibleIds.clear();
+        this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
+        this.proximityPulseIds.clear();
+
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
         });

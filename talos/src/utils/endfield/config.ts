@@ -1,6 +1,6 @@
-export type EFTrackerScope = 'auto' | 'collection' | 'enemy';
+export type EFTrackerScope = 'balanced' | 'collection' | 'manual';
 
-export const EF_TRACKER_SCOPES: readonly EFTrackerScope[] = ['auto', 'collection', 'enemy'];
+export const EF_TRACKER_SCOPES: readonly EFTrackerScope[] = ['balanced', 'collection', 'manual'];
 
 export type EFTrackerConf = {
     enabled: boolean;
@@ -9,6 +9,7 @@ export type EFTrackerConf = {
     serverId: number;
     locatorSync: boolean;
     scope?: EFTrackerScope[];
+    trackPoints?: boolean;
     trail?: boolean;
     intervalMs?: number;
     debug?: boolean;
@@ -16,6 +17,14 @@ export type EFTrackerConf = {
 
 export const LOCATOR_CONFIG_KEY = 'endfield.tracker.config';
 export const LOCATOR_CONFIG_UPDATED_EVENT = 'endfield:tracker-config-updated';
+
+const normalizeScope = (scope: unknown): EFTrackerScope | null => {
+    if (scope === 'auto') return 'balanced';
+    if (scope === 'enemy') return 'manual';
+    return EF_TRACKER_SCOPES.includes(scope as EFTrackerScope)
+        ? scope as EFTrackerScope
+        : null;
+};
 
 export const readEFTrackerConf = (): EFTrackerConf | null => {
     const raw = localStorage.getItem(LOCATOR_CONFIG_KEY);
@@ -34,10 +43,11 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
             serverId: Number(parsed.serverId),
             locatorSync: parsed.locatorSync ?? false,
             scope: Array.isArray(parsed.scope)
-                ? parsed.scope.filter((item): item is EFTrackerScope =>
-                    EF_TRACKER_SCOPES.includes(item),
-                )
+                ? parsed.scope
+                    .map(normalizeScope)
+                    .filter((item): item is EFTrackerScope => item !== null)
                 : undefined,
+            trackPoints: parsed.trackPoints ?? true,
             trail: parsed.trail ?? false,
             intervalMs: parsed.intervalMs,
             debug: parsed.debug ?? false,
