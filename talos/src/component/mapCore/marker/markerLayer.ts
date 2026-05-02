@@ -189,6 +189,10 @@ export class MarkerLayer {
         this.proximityPulseIds.clear();
     }
 
+    private syncTemporaryVisibleMarkers() {
+        this.clusterLayer.setTemporaryVisibleIds(this.temporaryVisibleIds);
+    }
+
     updateProximityReminder(params: {
         currentRegion: string | null | undefined;
         subregionKey?: string | null;
@@ -289,6 +293,7 @@ export class MarkerLayer {
         } else {
             this.temporaryVisibleIds.add(id);
         }
+        this.syncTemporaryVisibleMarkers();
 
         for (let i = 0; i < 20; i++) {
             const inner = this.getMarkerInnerElement(id);
@@ -330,6 +335,7 @@ export class MarkerLayer {
                     this.stopMarkerPulse(id);
                     this.proximityPulseIds.delete(id);
                     this.temporaryVisibleIds.delete(id);
+                    this.syncTemporaryVisibleMarkers();
                     inner.classList.add(styles.checked);
 
                     // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
@@ -411,6 +417,7 @@ export class MarkerLayer {
 
     async changeRegion(regionId: string) {
         this.temporaryVisibleIds.clear();
+        this.syncTemporaryVisibleMarkers();
         this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
         this.proximityPulseIds.clear();
 
@@ -436,6 +443,14 @@ export class MarkerLayer {
 
     filterMarker(typeKeys: string[]) {
         this.activeFilterKeys = typeKeys;
+        const activeTypeSet = new Set(typeKeys);
+        this.temporaryVisibleIds.forEach((id) => {
+            const markerData = this.markerDataDict[id];
+            if (markerData && activeTypeSet.has(markerData.type)) {
+                this.temporaryVisibleIds.delete(id);
+            }
+        });
+        this.syncTemporaryVisibleMarkers();
         this.clusterLayer.applyFilter(typeKeys);
 
         const clusterEnabled = this.clusterLayer.isEnabled();
@@ -462,7 +477,7 @@ export class MarkerLayer {
             }
 
             // Check if marker should be shown: must be in filter AND not completed (if hiding completed is enabled)
-            const shouldShow = markerIdsSet.has(id) && !completedMarkerIds.has(id);
+            const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id)) && !completedMarkerIds.has(id);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 

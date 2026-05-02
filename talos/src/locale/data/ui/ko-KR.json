@@ -137,7 +137,8 @@
       "regionLayerSwitch": "지역 아이콘을 눌러 <span class=\"keyword\">다른 샌드박스 맵</span>으로 전환합니다. 지역 아이콘을 길게 눌러 <span class=\"keyword\">하위 지역과 레이어</span>를 표시하고 원하는 뷰를 선택하세요.",
       "divider": "이것은 드래그 가능한 <span class=\"keyword\">구분선</span>입니다. 검색창과 마커 목록의 폭 비율을 좌우로 드래그해 조절하세요.",
       "drawer": "화면 하단에서 <span class=\"keyword\">위로 스와이프</span>하여 서랍을 열고 마커 필터를 확인하세요.",
-      "selectorSelect": "<span class=\"keyword\">마커 선택기</span>입니다. 탭하여 선택을 전환하면 선택된 마커가 지도에 표시됩니다. 현재 지역의 총 개수와 완료한 개수를 볼 수 있습니다."
+      "selectorSelect": "<span class=\"keyword\">마커 선택기</span>입니다. 탭하여 선택을 전환하면 선택된 마커가 지도에 표시됩니다. 현재 지역의 총 개수와 완료한 개수를 볼 수 있습니다.",
+      "locator": "<span class=\"keyword\">위치 동기화</span>는 왼쪽 위에 있습니다.<br>계정을 연동한 뒤 탭하면 먼저 설정 진입 버튼이 있는 캡슐이 펼쳐집니다. 펼쳐진 상태에서 메인 버튼을 다시 탭하면 동기화가 전환됩니다."
     },
     "filterContainer": "동일한 유형의 마커는 하나의 <span class=\"keyword\">필터</span>에 그룹화됩니다.<br>클릭하여 해당 유형의 마커 목록을 펼칩니다.",
     "filterSort": "필터 왼쪽의 아이콘을 길게 누르면 <span class=\"keyword\">드래그 상태</span>가 됩니다.<br>필요에 따라 중요한 필터를 정렬할 수 있습니다.",
@@ -163,7 +164,8 @@
     "pointSelect": "마커를 클릭하면 마커가 <span class=\"keyword\">선택 상태</span>가 됩니다. 마커의 정보를 확인할 수 있습니다.",
     "pointMark": "마커를 다시 클릭하면 완료로 표시됩니다.",
     "detail": "선택한 마커의 구체적인 정보를 확인할 수 있습니다. 여기에는 <span class=\"keyword\">모든 구역</span>, 현재 <span class=\"keyword\">주 구역</span> 및 현재 <span class=\"keyword\">하위 구역</span>의 해당 유형 마커 수가 포함됩니다.",
-    "pointIcon": "마커 아이콘을 클릭하여 완료 상태로 표시할 수도 있습니다."
+    "pointIcon": "마커 아이콘을 클릭하여 완료 상태로 표시할 수도 있습니다.",
+    "locator": "<span class=\"keyword\">위치 동기화</span>를 누르면 게임 내 현재 위치를 지도에 표시할 수 있습니다.<br>게임 계정을 연동한 뒤에는 추적 설정을 열어 포인트 추적 범위를 조정할 수 있습니다."
   },
   "notice": {
     "legacy": "<span class=\"keyword\">주의:</span> 게임 버전이 <span class=\"keyword\">1.0.13</span>일 때, 지도 데이터 버전은 <span class=\"keyword\">0.8.25</span>입니다. 데이터를 업데이트하는 데 시간이 필요하므로 게임 업데이트보다 늦어질 수 있습니다. 기다려 주셔서 감사합니다. 업데이트 소식을 받으려면 <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Discord 참여'>Discord 서버</a>에 가입하세요.<br><br>다음 관련 도구 사이트도 추천합니다:<ul><li><span class=\"keyword\">게임 위키: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='게임 위키 방문'>https://warfarin.wiki</a></li><li><span class=\"keyword\">블루프린트 공유:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Talos Pioneers 방문'>https://talospioneers.com</a></li></ul>",

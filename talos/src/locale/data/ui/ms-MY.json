@@ -147,7 +147,8 @@
       "regionLayerSwitch": "Ketik ikon wilayah untuk tukar antara <span class=\"keyword\">peta sandbox</span>. Tekan lama ikon wilayah untuk paparkan <span class=\"keyword\">sub-wilayah dan lapisan</span>, kemudian pilih pandangan.",
       "divider": "Ini ialah <span class=\"keyword\">pembahagi</span> boleh seret. Seret ke kiri/kanan untuk laras lebar antara carian dan senarai penanda.",
       "drawer": "<span class=\"keyword\">Leret ke atas dari bawah</span> untuk buka laci dan lihat penapis penanda.",
-      "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span>. Ketik untuk tukar; penanda terpilih muncul di peta. Anda boleh lihat jumlah dan berapa yang telah ditanda di kawasan ini."
+      "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span>. Ketik untuk tukar; penanda terpilih muncul di peta. Anda boleh lihat jumlah dan berapa yang telah ditanda di kawasan ini.",
+      "locator": "<span class=\"keyword\">Segerak Lokasi</span> berada di penjuru kiri atas.<br>Selepas akaun dipautkan, ketikan pertama akan membuka kapsul dengan pintasan konfigurasi; ketik butang utama sekali lagi ketika terbuka untuk menukar status segerak."
     },
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Laman Web</span> untuk mengambil tangkapan skrin atau melihat penanda di tepi.",
     "group": "Lihat <span class=\"keyword\">kumpulan perbincangan</span> dan <span class=\"keyword\">komuniti</span> yang berkaitan dengan projek ini.",
@@ -163,7 +164,8 @@
     "pointSelect": "Klik penanda untuk memasuki <span class=\"keyword\">status dipilih</span>. Anda akan dapat melihat maklumat penanda.",
     "pointMark": "Klik penanda sekali lagi untuk menandainya sebagai selesai.",
     "detail": "Anda boleh melihat maklumat khusus tentang penanda yang dipilih, termasuk bilangan penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> semasa, dan <span class=\"keyword\">sub-wilayah</span> semasa.",
-    "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai."
+    "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai.",
+    "locator": "Klik <span class=\"keyword\">Segerak Lokasi</span> untuk memaparkan kedudukan semasa anda dalam permainan pada peta.<br>Selepas akaun permainan dipautkan, anda juga boleh membuka konfigurasi penjejakan untuk melaras penjejakan titik."
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Apabila versi permainan ialah <span class=\"keyword\">1.0.13</span>, versi data peta ialah <span class=\"keyword\">0.8.25</span>. Kami memerlukan masa untuk mengemas kini data, jadi ia mungkin lewat daripada kemas kini permainan. Terima kasih atas kesabaran anda. Untuk menjejaki kemas kini kami, sila sertai <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Sertai Discord'>Pelayan Discord</a> kami.<br><br>Kami juga mengesyorkan alat berikut:<ul><li><span class=\"keyword\">Wiki Permainan: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Lawati Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprint:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Lawati Talos Pioneers'>https://talospioneers.com</a></li></ul>",

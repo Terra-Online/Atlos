@@ -148,7 +148,8 @@
       "regionLayerSwitch": "地域アイコンをタップして<span class=\"keyword\">異なるサンドボックスマップ</span>に切り替えます。地域アイコンを長押しすると<span class=\"keyword\">サブ地域とレイヤー</span>が表示され、選んでそのビューへ移動できます。",
       "divider": "これはドラッグ可能な<span class=\"keyword\">仕切り</span>です。検索とマーカーリストの幅の比率を左右にドラッグして調整します。",
       "drawer": "画面下から<span class=\"keyword\">上方向にスワイプ</span>してドロワーを開き、マーカーフィルターを表示します。",
-      "selectorSelect": "<span class=\"keyword\">マーカーセレクター</span>です。タップで選択を切り替え、選択したマーカーがマップに表示されます。現在のエリアでの総数と、完了済みの数を確認できます。"
+      "selectorSelect": "<span class=\"keyword\">マーカーセレクター</span>です。タップで選択を切り替え、選択したマーカーがマップに表示されます。現在のエリアでの総数と、完了済みの数を確認できます。",
+      "locator": "<span class=\"keyword\">位置同期</span>は左上にあります。<br>アカウント連携後は、タップするとまず設定アイコン付きのカプセルが開きます。開いた状態でもう一度メインボタンをタップすると同期を切り替えます。"
     },
     "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
@@ -163,7 +164,8 @@
     "pointSelect": "ピンをクリックすると、ピンは<span class=\"keyword\">選択状態</span>になります。ピンの情報を確認できます。",
     "pointMark": "ピンをもう一度クリックすると、完了としてマークされます。",
     "detail": "選択したピンの具体的な情報を確認できます。これには、<span class=\"keyword\">すべてのエリア</span>、現在の<span class=\"keyword\">メインエリア</span>、および現在の<span class=\"keyword\">サブエリア</span>におけるそのタイプのピンの数が含まれます。",
-    "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。"
+    "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。",
+    "locator": "<span class=\"keyword\">位置同期</span>をクリックすると、ゲーム内の現在位置をマップ上に表示できます。<br>ゲームアカウントを連携すると、追跡設定を開いてポイント追跡の範囲も調整できます。"
   },
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Talos Pioneersにアクセス'>https://talospioneers.com</a></li></ul>",

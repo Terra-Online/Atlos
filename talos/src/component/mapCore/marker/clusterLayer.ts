@@ -32,6 +32,7 @@ export class ClusterLayer {
     private enabled = false;
     private filterKeys: string[] = [];
     private activeSubregions = new Set<string>();
+    private temporaryVisibleIds = new Set<string>();
     /**
      * 延迟移除定时器，和普通点位保持一致，用于淡出动画
      */
@@ -112,6 +113,13 @@ export class ClusterLayer {
             this.refreshClusters(); // 增量刷新
         } else {
             this.removeClustersFromMap();
+        }
+    }
+
+    setTemporaryVisibleIds(ids: Iterable<string>) {
+        this.temporaryVisibleIds = new Set(ids);
+        if (this.enabled) {
+            this.refreshClusters();
         }
     }
 
@@ -256,12 +264,13 @@ export class ClusterLayer {
             const shouldBeActive = activeManagedTypes.includes(typeKey);
 
             // 目标集合（需要在聚合中的点位）- 排除已完成的點位
-            const desiredIds = shouldBeActive
-                ? (markerTypeMap[typeKey] ?? []).filter((id) => {
-                      const d = markerDataDict[id];
-                                            return d && this.activeSubregions.has(d.subregId) && !completedMarkerIds.has(id);
-                  })
-                : [];
+            const desiredIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
+                const d = markerDataDict[id];
+                return d
+                    && this.activeSubregions.has(d.subregId)
+                    && !completedMarkerIds.has(id)
+                    && (shouldBeActive || this.temporaryVisibleIds.has(id));
+            });
             const desiredSet = new Set(desiredIds);
 
             // 当前集合（已经在聚合中的点位）
@@ -301,11 +310,11 @@ export class ClusterLayer {
             });
 
             // 如果该类型现在应该展示并且有点位则确保加入地图；否则如果不再需要并且无活动标记则从地图移除
-            if (shouldBeActive && clusterGroup.getLayers().length > 0) {
+            if ((shouldBeActive || desiredIds.length > 0) && clusterGroup.getLayers().length > 0) {
                 if (!map.hasLayer(clusterGroup)) {
                     clusterGroup.addTo(map);
                 }
-            } else if (!shouldBeActive) {
+            } else if (!shouldBeActive && desiredIds.length === 0) {
                 // 如果处于淡出阶段，等待全部 timer 完成后移除 group；简单策略：无层时立即移除
                 if (clusterGroup.getLayers().length === 0 && map.hasLayer(clusterGroup)) {
                     map.removeLayer(clusterGroup);

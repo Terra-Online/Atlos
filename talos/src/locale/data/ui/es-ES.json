@@ -147,7 +147,8 @@
       "regionLayerSwitch": "Toca los iconos de región para cambiar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Mantén pulsado un icono de región para mostrar <span class=\"keyword\">subregiones y capas</span>, luego elige una para ir a esa vista.",
       "divider": "Este es un <span class=\"keyword\">separador</span> arrastrable. Arrástralo a izquierda o derecha para ajustar la proporción entre búsqueda y lista de marcadores.",
       "drawer": "<span class=\"keyword\">Desliza hacia arriba desde la parte inferior</span> para abrir el cajón y ver los filtros de marcadores.",
-      "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span>. Toca para alternar su estado; los seleccionados aparecerán en el mapa. Puedes ver el total y cuántos has marcado en el área actual."
+      "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span>. Toca para alternar su estado; los seleccionados aparecerán en el mapa. Puedes ver el total y cuántos has marcado en el área actual.",
+      "locator": "<span class=\"keyword\">Sincronización de ubicación</span> está en la esquina superior izquierda.<br>Después de vincular la cuenta, al tocarlo se abre primero una cápsula con el acceso a la configuración; toca de nuevo el botón principal mientras está abierta para activar o desactivar la sincronización."
     },
     "hideUI": "<span class=\"keyword\">Ocultar la interfaz de usuario del sitio web</span> para tomar capturas de pantalla o ver marcadores de borde.",
     "group": "Ver <span class=\"keyword\">grupos de discusión</span> y <span class=\"keyword\">comunidades</span> relacionados con este proyecto.",
@@ -163,7 +164,8 @@
     "pointMark": "Haga clic en el marcador nuevamente para marcarlo como completado.",
     "detail": "Puede ver información específica sobre el marcador seleccionado, incluido el número de marcadores de este tipo en <span class=\"keyword\">todas las regiones</span>, la <span class=\"keyword\">región principal</span> actual y la <span class=\"keyword\">subregión</span> actual.",
     "pointIcon": "Hacer clic en el icono del marcador también puede marcarlo como completado.",
-    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones."
+    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones.",
+    "locator": "Haz clic en <span class=\"keyword\">Sincronización de ubicación</span> para mostrar tu posición actual del juego en el mapa.<br>Tras vincular tu cuenta del juego, también puedes abrir la configuración de rastreo y ajustar el seguimiento de puntos."
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Cuando la versión del juego es <span class=\"keyword\">1.0.13</span>, la versión de los datos del mapa es <span class=\"keyword\">0.8.25</span>. Necesitamos tiempo para actualizar los datos, por lo que puede tardar más que la actualización del juego. Gracias por su paciencia. Para seguir nuestras actualizaciones, únete a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>",
