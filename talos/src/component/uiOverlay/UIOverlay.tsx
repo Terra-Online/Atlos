@@ -52,6 +52,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
+    const [announcementMounted, setAnnouncementMounted] = useState(false);
     const {
         announcements,
         hasUnreadAnnouncement,
@@ -110,6 +111,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
     const handleAnnouncement = () => setAnnouncementOpen(true);
+
+    useEffect(() => {
+        if (announcementOpen) {
+            setAnnouncementMounted(true);
+        }
+    }, [announcementOpen]);
 
     useEffect(() => {
         setIsAnnouncementOpen(announcementOpen);
@@ -235,7 +242,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
             />
 
             {/* Announcement Modal */}
-            {announcementOpen && (
+            {announcementMounted && (
                 <Suspense fallback={null}>
                     <AnnouncementModal
                         open={announcementOpen}

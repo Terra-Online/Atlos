@@ -149,6 +149,7 @@
     "announcement": "查看近期的<span class=\"keyword\">网站公告</span>，用户协议等更新也会在此发布。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
     "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
+    "locator": "点击<span class=\"keyword\">位置同步</span>按钮，可以根据您的游戏内位置在地图上显示当前位置。<br>绑定游戏账号后，您还可以进入配置面板调整点位追踪范围。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱庭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
     "layerMain": "点击<span class=\"keyword\">图层图标</span>可随时返回<span class=\"keyword\">主图层 [M]</span>。",
@@ -159,6 +160,7 @@
     "pointIcon": "单击点位图标也可以将其标记为完成状态。",
     "mobile": {
       "headbar": "与地图设置有关的开关位于<span class=\"keyword\">右上角的顶栏</span>。点击右上角图标展开查看更多选项。",
+      "locator": "<span class=\"keyword\">位置同步</span>入口位于左上角。<br>绑定账号后，点击它会先展开为胶囊按钮，您可以从这里进入位置同步配置；展开后再次点击主按钮才会切换同步状态。",
       "regionLayerSwitch": "点击区域图标可以切换<span class=\"keyword\">不同的箱庭地图</span>（主区域）。<br>点击并按住主区域图标可显示可用的<span class=\"keyword\">子区域和图层</span>，选择子区域或图层跳转到对应视图。",
       "divider": "这是可拖动的<span class=\"keyword\">分割线</span>。<br>您可以向左或向右拖动分割线，来调节搜索栏和点位列表的宽度比例，以适应您的使用习惯。",
       "drawer": "从屏幕底部<span class=\"keyword\">向上拉起抽屉</span>，可以查看和管理点位筛选器。<br>您可以在这里选择您想要在地图上显示的点位类型。",

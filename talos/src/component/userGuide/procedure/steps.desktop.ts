@@ -331,7 +331,15 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-23_point-select',
+            id: 'STEP-23_locator-button',
+            target: '[data-guide="locator-button"]',
+            content: parse(t('guide.locator') || ''),
+            placement: 'right',
+            disableBeacon: true,
+            disableAutoScroll: true,
+        },
+        {
+            id: 'STEP-24_point-select',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
@@ -343,7 +351,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-24_point-check',
+            id: 'STEP-25_point-check',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',
@@ -353,7 +361,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-25_detail-container',
+            id: 'STEP-26_detail-container',
             target: '[class*="detailContainer"]',
             content: parse(t('guide.detail') || ''),
             placement: 'top',
@@ -361,7 +369,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            id: 'STEP-26_point-icon',
+            id: 'STEP-27_point-icon',
             target: '[class*="pointIcon"]',
             content: parse(t('guide.pointIcon') || ''),
             placement: 'top',

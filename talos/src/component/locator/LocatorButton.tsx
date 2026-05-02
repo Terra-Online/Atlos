@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
@@ -11,7 +11,7 @@ import styles from './Locator.module.scss';
 import LocateCloseIcon from '@/assets/images/UI/locateclose.svg?react';
 import LocateOpenIcon from '@/assets/images/UI/locateopen.svg?react';
 import LocateCurrentIcon from '@/assets/images/UI/locatecurrent.svg?react';
-import BindingIcon from '@/assets/logos/binding.svg?react';
+import ConfigIcon from '@/assets/images/UI/config.svg?react';
 import { disableSession, enableSession } from './session';
 import {
     requestLocatorReturnCurrent,
@@ -46,8 +46,10 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     const [bindingMounted, setBindingMounted] = useState(false);
     const [configOpen, setConfigOpen] = useState(false);
     const [configMounted, setConfigMounted] = useState(false);
+    const [mobileExpanded, setMobileExpanded] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
     const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
+    const mobileShellRef = useRef<HTMLDivElement | null>(null);
 
     const refreshBindingStatus = useCallback(() => {
         if (!sessionUser) {
@@ -75,6 +77,23 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     useEffect(() => {
         refreshBindingStatus();
     }, [refreshBindingStatus]);
+
+    useEffect(() => {
+        if (!mobileExpanded) return;
+
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (mobileShellRef.current?.contains(event.target as Node)) return;
+            setMobileExpanded(false);
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [mobileExpanded]);
 
     useEffect(() => {
         if (bindReq <= 0) return;
@@ -136,19 +155,72 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
         });
     }, [sessionUser, viewMode]);
 
+    const handleMobileClick = useCallback(() => {
+        if (mobileExpanded) {
+            setMobileExpanded(false);
+            handleClick();
+            return;
+        }
+
+        if (!sessionUser) {
+            setPendingAfterLogin(true);
+            openOemAuthModal('login');
+            return;
+        }
+
+        if (bound) {
+            setMobileExpanded(true);
+            return;
+        }
+
+        void getEFBindingStatus()
+            .then((status) => {
+                setCachedBinding(sessionUser.uid, status.binding);
+                const isBound = Boolean(status.binding.bound);
+                setBound(isBound);
+                if (isBound) {
+                    setMobileExpanded(true);
+                    return;
+                }
+                setBindingOpen(true);
+            })
+            .catch(() => {
+                setBound(false);
+                setBindingOpen(true);
+            });
+    }, [bound, handleClick, mobileExpanded, sessionUser]);
+
     const Icon = resolveIcon(viewMode);
 
     if (variant === 'mobile') {
         return (
             <>
-                <div className={styles.mobileLocatorShell}>
+                <div
+                    ref={mobileShellRef}
+                    className={styles.mobileLocatorShell}
+                    data-expanded={mobileExpanded ? 'true' : 'false'}
+                    data-guide="mobile-locator-shell"
+                >
                     <button
                         type="button"
                         className={styles.mobileLocatorButton}
                         data-active={viewMode !== 'off'}
-                        onClick={handleClick}
+                        onClick={handleMobileClick}
+                        aria-label={t('locator.title') || 'Locator'}
                     >
                         <Icon />
+                    </button>
+                    <button
+                        type="button"
+                        className={styles.mobileLocatorConfigButton}
+                        onClick={() => {
+                            setMobileExpanded(false);
+                            setConfigOpen(true);
+                        }}
+                        aria-label={t('locator.config.title') || 'Tracking Config'}
+                        tabIndex={mobileExpanded ? 0 : -1}
+                    >
+                        <ConfigIcon />
                     </button>
                 </div>
                 {bindingMounted && (
@@ -180,6 +252,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                             }}
                             onBindingRemoved={() => {
                                 setBound(false);
+                                setMobileExpanded(false);
                             }}
                         />
                     </Suspense>
@@ -197,6 +270,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         styles.locatorButton,
                         viewMode !== 'off' && regSwitchStyles.selected,
                     )}
+                    data-guide="locator-button"
                     onClick={handleClick}
                     role="button"
                     tabIndex={0}
@@ -216,7 +290,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                             items={[
                                 {
                                     key: 'binding',
-                                    icon: BindingIcon,
+                                    icon: ConfigIcon,
                                     tooltip: t('locator.binding.currentBinding') || 'Current Binding',
                                     ariaLabel: t('locator.binding.currentBinding') || 'Current Binding',
                                     onClick: () => setConfigOpen(true),
@@ -255,6 +329,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         }}
                         onBindingRemoved={() => {
                             setBound(false);
+                            setMobileExpanded(false);
                         }}
                     />
                 </Suspense>
