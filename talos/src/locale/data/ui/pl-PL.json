@@ -7,8 +7,8 @@
     "lightmode": "Przełącz na tryb jasny",
     "language": "Wybierz język",
     "help": "Uzyskaj pomoc",
-    "settings": "Preferencje",
-    "announcement": "Ogłoszenia"
+    "announcement": "Ogłoszenia",
+    "settings": "Preferencje"
   },
   "trigger": {
     "boundaryMode": "Tryb granic",
@@ -68,11 +68,11 @@
       "pt-BR": "Portugalski",
       "id-ID": "Indonezyjski",
       "ar-AE": "Arabski",
-      "th-TH": "Tajski",
-      "vi-VN": "Wietnamski",
       "ms-MY": "Malajski",
       "pl-PL": "Polski",
       "sv-SE": "Szwedzki",
+      "th-TH": "Tajski",
+      "vi-VN": "Wietnamski",
       "el-GR": "Grecki",
       "hi-IN": "Hindi"
     }
@@ -142,14 +142,6 @@
     "filterList": "<span class=\"keyword\">Lista znaczników</span> pokazuje wybrane przez Ciebie znaczniki; kliknij ikonę, aby je odznaczyć.",
     "headbar": "Przełączniki związane z ustawieniami mapy znajdują się na <span class=\"keyword\">górnym pasku</span>.",
     "tos": "<span class=\"keyword\">Warunki korzystania</span> i <span class=\"keyword\">zarządzanie danymi</span> strony.",
-    "mobile": {
-      "headbar": "Ustawienia mapy są w <span class=\"keyword\">prawym górnym pasku</span>. Stuknij ikonę w prawym górnym rogu, aby rozwinąć i zobaczyć więcej opcji.",
-      "regionLayerSwitch": "Stuknij ikony regionów, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span>. Przytrzymaj ikonę regionu, aby pokazać <span class=\"keyword\">podregiony i warstwy</span>, a następnie wybierz widok.",
-      "divider": "To jest <span class=\"keyword\">separator</span>, który można przeciągać. Przeciągnij w lewo/prawo, aby dopasować szerokość między wyszukiwaniem a listą znaczników.",
-      "drawer": "<span class=\"keyword\">Przesuń palcem w górę od dołu</span>, aby otworzyć szufladę i zobaczyć filtry znaczników.",
-      "selectorSelect": "<span class=\"keyword\">Selektor znaczników</span>. Stuknij, aby przełączać; wybrane znaczniki pojawią się na mapie. Widzisz łączną liczbę i ile oznaczyłeś w bieżącym obszarze.",
-      "locator": "<span class=\"keyword\">Synchronizacja pozycji</span> znajduje się w lewym górnym rogu.<br>Po powiązaniu konta pierwsze stuknięcie rozwija kapsułę ze skrótem do konfiguracji; stuknij główny przycisk ponownie, gdy jest rozwinięta, aby przełączyć synchronizację."
-    },
     "hideUI": "<span class=\"keyword\">Ukryj interfejs strony</span>, aby robić zrzuty ekranu lub oglądać znaczniki na krawędziach.",
     "group": "Zobacz <span class=\"keyword\">grupy dyskusyjne</span> i <span class=\"keyword\">społeczności</span> związane z tym projektem.",
     "darkMode": "Przełącz bieżący <span class=\"keyword\">tryb oświetlenia otoczenia</span>.",
@@ -157,6 +149,7 @@
     "announcement": "Zobacz <span class=\"keyword\">ogłoszenia strony</span>. Aktualizacje regulaminu i polityki prywatności będą również publikowane tutaj.",
     "help": "Uruchom ponownie ten <span class=\"keyword\">samouczek</span>.",
     "settings": "Otwórz <span class=\"keyword\">Preferencje</span>, aby kontrolować, jakiego lokalnego przechowywania danych mapa używa do zapamiętywania Twoich działań.",
+    "locator": "Kliknij <span class=\"keyword\">Synchronizacja pozycji</span>, aby pokazać na mapie swoją aktualną pozycję w grze.<br>Po powiązaniu konta gry możesz też otworzyć konfigurację śledzenia i dostosować śledzenie punktów.",
     "regionSwitch": "Kliknij, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span> (głównymi regionami) w grze.",
     "subregionSwitch": "<span class=\"keyword\">Najedź курсorem na ikonę głównego regionu</span>, aby wyświetlić dostępne podregiony; kliknięcie ikony podregionu przeniesie widok do tego podregionu.<br>Podobnie możesz także wybrać warstwę dla regionu.",
     "layerMain": "Kliknij <span class=\"keyword\">ikonę warstwy</span>, aby w dowolnym momencie wrócić do <span class=\"keyword\">warstwy głównej (M)</span>.",
@@ -165,7 +158,14 @@
     "pointMark": "Kliknij znacznik ponownie, aby oznaczyć go jako ukończony.",
     "detail": "Możesz wyświetlić szczegółowe informacje o wybranym znaczniku, w tym liczbę znaczników tego typu we <span class=\"keyword\">wszystkich regionach</span>, w bieżącym <span class=\"keyword\">głównym regionie</span> oraz w bieżącym <span class=\"keyword\">podregionie</span>.",
     "pointIcon": "Kliknięcie ikony znacznika również oznacza go jako ukończony.",
-    "locator": "Kliknij <span class=\"keyword\">Synchronizacja pozycji</span>, aby pokazać na mapie swoją aktualną pozycję w grze.<br>Po powiązaniu konta gry możesz też otworzyć konfigurację śledzenia i dostosować śledzenie punktów."
+    "mobile": {
+      "headbar": "Ustawienia mapy są w <span class=\"keyword\">prawym górnym pasku</span>. Stuknij ikonę w prawym górnym rogu, aby rozwinąć i zobaczyć więcej opcji.",
+      "locator": "<span class=\"keyword\">Synchronizacja pozycji</span> znajduje się w lewym górnym rogu.<br>Po powiązaniu konta pierwsze stuknięcie rozwija kapsułę ze skrótem do konfiguracji; stuknij główny przycisk ponownie, gdy jest rozwinięta, aby przełączyć synchronizację.",
+      "regionLayerSwitch": "Stuknij ikony regionów, aby przełączać się między <span class=\"keyword\">różnymi mapami sandbox</span>. Przytrzymaj ikonę regionu, aby pokazać <span class=\"keyword\">podregiony i warstwy</span>, a następnie wybierz widok.",
+      "divider": "To jest <span class=\"keyword\">separator</span>, który można przeciągać. Przeciągnij w lewo/prawo, aby dopasować szerokość między wyszukiwaniem a listą znaczników.",
+      "drawer": "<span class=\"keyword\">Przesuń palcem w górę od dołu</span>, aby otworzyć szufladę i zobaczyć filtry znaczników.",
+      "selectorSelect": "<span class=\"keyword\">Selektor znaczników</span>. Stuknij, aby przełączać; wybrane znaczniki pojawią się na mapie. Widzisz łączną liczbę i ile oznaczyłeś w bieżącym obszarze."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Uwaga:</span> Gdy wersja gry to <span class=\"keyword\">1.0.13</span>, wersja danych mapy to <span class=\"keyword\">0.8.25</span>. Potrzebujemy czasu na aktualizację danych, więc może się ona pojawić później niż aktualizacja gry. Dziękujemy za cierpliwość. Aby śledzić nasze aktualizacje, dołącz do naszego <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Dołącz do Discorda'>serwera Discord</a>.<br><br>Polecamy również następujące narzędzia:<ul><li><span class=\"keyword\">Wiki gry: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Schematy (Blueprints):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Odwiedź Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Wszystkie",
     "selected": "Wybrane",
     "confirm": "Potwierdź",
+    "loading": "Ładowanie…",
     "enable": "Włącz",
     "disable": "Wyłącz",
     "expand": "Rozwiń",
     "collapse": "Zwiń"
+  },
+  "announcement": {
+    "title": "Powiadomienie strony",
+    "empty": "Brak dostępnych ogłoszeń"
   },
   "meta": {
     "title": "Open Endfield Map",
@@ -356,9 +361,5 @@
     "kofi": "Wesprzyj przez Ko-fi",
     "afdian": "Wesprzyj przez Afdian",
     "hint": "Użytkownikom globalnym polecamy Patreon lub Ko-fi, a użytkownikom w Chinach kontynentalnych Afdian."
-  },
-  "announcement": {
-    "title": "Powiadomienie strony",
-    "empty": "Brak dostępnych ogłoszeń"
   }
 }

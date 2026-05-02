@@ -7,8 +7,8 @@
     "lightmode": "Beralih ke mode terang",
     "language": "Pilih bahasa",
     "help": "Minta bantuan",
-    "settings": "Preferensi",
-    "announcement": "Pengumuman"
+    "announcement": "Pengumuman",
+    "settings": "Preferensi"
   },
   "trigger": {
     "boundaryMode": "Mode Batas",
@@ -142,20 +142,14 @@
     "filterList": "<span class=\"keyword\">Daftar Penanda</span> mencantumkan penanda yang telah Anda pilih; klik ikon untuk membatalkan pilihan.",
     "headbar": "Sakelar yang terkait dengan pengaturan peta terletak di <span class=\"keyword\">bilah atas</span>.",
     "tos": "<span class=\"keyword\">Ketentuan Layanan</span> dan <span class=\"keyword\">Manajemen Data</span> situs web.",
-    "mobile": {
-      "headbar": "Pengaturan peta ada di <span class=\"keyword\">bilah kanan atas</span>. Ketuk ikon kanan atas untuk membuka dan melihat lebih banyak opsi.",
-      "regionLayerSwitch": "Ketuk ikon region untuk berpindah antar <span class=\"keyword\">peta sandbox</span>. Tahan ikon region untuk menampilkan <span class=\"keyword\">sub-region dan layer</span>, lalu pilih tampilan yang diinginkan.",
-      "divider": "Ini adalah <span class=\"keyword\">pemisah</span> yang bisa diseret. Seret ke kiri/kanan untuk menyesuaikan lebar antara pencarian dan daftar marker.",
-      "drawer": "<span class=\"keyword\">Usap ke atas dari bawah layar</span> untuk membuka laci dan melihat filter marker.",
-      "selectorSelect": "<span class=\"keyword\">Selector marker</span>. Ketuk untuk mengaktifkan/nonaktifkan; marker terpilih akan muncul di peta. Kamu bisa melihat total dan berapa yang sudah kamu tandai di area ini.",
-      "locator": "<span class=\"keyword\">Sinkron Lokasi</span> ada di pojok kiri atas.<br>Setelah akun tertaut, ketuk sekali untuk membuka kapsul berisi pintasan konfigurasi; saat kapsul terbuka, ketuk tombol utama lagi untuk menyalakan atau mematikan sinkronisasi."
-    },
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Situs Web</span> untuk mengambil tangkapan layar atau melihat penanda tepi.",
     "group": "Lihat <span class=\"keyword\">grup diskusi</span> dan <span class=\"keyword\">komunitas</span> yang terkait dengan proyek ini.",
     "darkMode": "Beralih <span class=\"keyword\">mode cahaya sekitar</span> saat ini.",
     "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, Korea, Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Thailand, dan Vietnam.<br>Bahasa dengan <span class=\"keyword\">hanya dukungan terjemahan antarmuka</span> mencakup Arab, Melayu, Polandia dan Sweden.",
     "announcement": "Lihat <span class=\"keyword\">pengumuman situs web</span> terkini. Pembaruan kebijakan layanan dan privasi juga akan diposting di sini.",
     "help": "Mulai ulang <span class=\"keyword\">panduan</span> ini.",
+    "settings": "Buka <span class=\"keyword\">Preferensi</span> untuk mengontrol penyimpanan lokal yang digunakan peta untuk mengingat tindakan Anda.",
+    "locator": "Klik <span class=\"keyword\">Sinkron Lokasi</span> untuk menampilkan posisi in-game kamu saat ini di peta.<br>Setelah akun game ditautkan, kamu juga bisa membuka konfigurasi tracking untuk mengatur pelacakan titik.",
     "regionSwitch": "Klik untuk beralih antara <span class=\"keyword\">peta kotak pasir yang berbeda</span> (wilayah utama) dalam game.",
     "subregionSwitch": "<span class=\"keyword\">Arahkan kursor ke ikon wilayah utama</span> untuk menampilkan sub-wilayah yang tersedia; mengklik ikon sub-wilayah akan melompat ke tampilan sub-wilayah itu.<br>Demikian pula, Anda juga dapat memilih lapisan untuk suatu wilayah.",
     "layerMain": "Klik <span class=\"keyword\">ikon lapisan</span> untuk kembali ke <span class=\"keyword\">lapisan utama (M)</span> kapan saja.",
@@ -164,8 +158,14 @@
     "pointMark": "Klik penanda lagi untuk menandainya sebagai selesai.",
     "detail": "Anda dapat melihat informasi spesifik tentang penanda yang dipilih, termasuk jumlah penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> saat ini, dan <span class=\"keyword\">sub-wilayah</span> saat ini.",
     "pointIcon": "Mengklik ikon penanda juga dapat menandainya sebagai selesai.",
-    "settings": "Buka <span class=\"keyword\">Preferensi</span> untuk mengontrol penyimpanan lokal yang digunakan peta untuk mengingat tindakan Anda.",
-    "locator": "Klik <span class=\"keyword\">Sinkron Lokasi</span> untuk menampilkan posisi in-game kamu saat ini di peta.<br>Setelah akun game ditautkan, kamu juga bisa membuka konfigurasi tracking untuk mengatur pelacakan titik."
+    "mobile": {
+      "headbar": "Pengaturan peta ada di <span class=\"keyword\">bilah kanan atas</span>. Ketuk ikon kanan atas untuk membuka dan melihat lebih banyak opsi.",
+      "locator": "<span class=\"keyword\">Sinkron Lokasi</span> ada di pojok kiri atas.<br>Setelah akun tertaut, ketuk sekali untuk membuka kapsul berisi pintasan konfigurasi; saat kapsul terbuka, ketuk tombol utama lagi untuk menyalakan atau mematikan sinkronisasi.",
+      "regionLayerSwitch": "Ketuk ikon region untuk berpindah antar <span class=\"keyword\">peta sandbox</span>. Tahan ikon region untuk menampilkan <span class=\"keyword\">sub-region dan layer</span>, lalu pilih tampilan yang diinginkan.",
+      "divider": "Ini adalah <span class=\"keyword\">pemisah</span> yang bisa diseret. Seret ke kiri/kanan untuk menyesuaikan lebar antara pencarian dan daftar marker.",
+      "drawer": "<span class=\"keyword\">Usap ke atas dari bawah layar</span> untuk membuka laci dan melihat filter marker.",
+      "selectorSelect": "<span class=\"keyword\">Selector marker</span>. Ketuk untuk mengaktifkan/nonaktifkan; marker terpilih akan muncul di peta. Kamu bisa melihat total dan berapa yang sudah kamu tandai di area ini."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Catatan:</span> Saat versi game adalah <span class=\"keyword\">1.0.13</span>, versi data peta adalah <span class=\"keyword\">0.8.25</span>. Kami butuh waktu untuk memperbarui data, jadi mungkin akan lebih lambat dari update game. Terima kasih atas kesabaran Anda. Untuk memantau pembaruan kami, silakan bergabung dengan <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Gabung Discord'>Server Discord</a> kami.<br><br>Kami juga merekomendasikan alat terkait berikut:<ul><li><span class=\"keyword\">Wiki Game: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Cetak Biru:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Kunjungi Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Semua",
     "selected": "Terpilih",
     "confirm": "Konfirmasi",
+    "loading": "Memuat…",
     "enable": "Aktifkan",
     "disable": "Nonaktifkan",
     "expand": "Perluas",
     "collapse": "Lipat"
+  },
+  "announcement": {
+    "title": "Pemberitahuan Situs",
+    "empty": "Tidak ada pengumuman tersedia"
   },
   "meta": {
     "title": "Atlas Endfield",
@@ -356,9 +361,5 @@
     "kofi": "Dukung via Ko-fi",
     "afdian": "Dukung via Afdian",
     "hint": "Kami merekomendasikan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di Tiongkok daratan."
-  },
-  "announcement": {
-    "title": "Pemberitahuan Situs",
-    "empty": "Tidak ada pengumuman tersedia"
   }
 }

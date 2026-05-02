@@ -7,8 +7,8 @@
     "lightmode": "Växla till ljust läge",
     "language": "Välj språk",
     "help": "Hjälp",
-    "settings": "Inställningar",
-    "announcement": "Meddelanden"
+    "announcement": "Meddelanden",
+    "settings": "Inställningar"
   },
   "trigger": {
     "boundaryMode": "Gränsläge",
@@ -149,6 +149,7 @@
     "announcement": "Visa <span class=\"keyword\">webbplatsmeddelanden</span>. Uppdateringar av användarvillkor och sekretesspolicy kommer också att publiceras här.",
     "help": "Starta om denna <span class=\"keyword\">guide</span>.",
     "settings": "Öppna <span class=\"keyword\">Inställningar</span> för att kontrollera vilken lokal lagring kartan använder för att komma ihåg dina handlingar.",
+    "locator": "Klicka på <span class=\"keyword\">Platssynk</span> för att visa din aktuella position i spelet på kartan.<br>När ditt spelkonto är länkat kan du också öppna spårningsinställningarna och justera punktspårningen.",
     "regionSwitch": "Klicka för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner) i spelet.",
     "subregionSwitch": "<span class=\"keyword\">Hovra över huvudregionsikonen</span> för att visa tillgängliga underregioner; klick på en underregionsikon hoppar till den vyn.<br>På samma sätt kan du också välja ett lager för en region.",
     "layerMain": "Klicka på <span class=\"keyword\">lagerikonen</span> för att återgå till <span class=\"keyword\">huvudlagret (M)</span> när som helst.",
@@ -159,13 +160,12 @@
     "pointIcon": "Att klicka på markörikonen kan också markera den som klar.",
     "mobile": {
       "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn i övre högra hörnet</span>. Klicka på ikonen uppe till höger för att expandera och se fler alternativ.",
+      "locator": "<span class=\"keyword\">Platssynk</span> finns uppe till vänster.<br>När kontot är länkat öppnar första trycket en kapsel med genväg till inställningarna; tryck på huvudknappen igen medan den är öppen för att slå på eller av synken.",
       "regionLayerSwitch": "Klicka på regionikoner för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner).<br>Tryck och håll på en huvudregionsikon för att visa tillgängliga <span class=\"keyword\">underregioner och lager</span>, välj sedan en underregion eller ett lager för att hoppa till den vyn.",
       "divider": "Detta är en dragbar <span class=\"keyword\">avdelare</span>.<br>Du kan dra avdelaren åt vänster eller höger för att justera breddförhållandet mellan sökfältet och markörlistan, anpassat efter dina preferenser.",
       "drawer": "<span class=\"keyword\">Svep uppåt från skärmens botten</span> för att öppna lådan och se markörfilter.<br>Här kan du välja vilka markörtyper du vill visa på kartan.",
-      "selectorSelect": "Specifik <span class=\"keyword\">markörväljare</span>. Tryck för att växla valstatus; valda markörer kommer att visas på kartan.<br>Du kan se det totala antalet sådana markörer i det aktuella området, samt antalet du har markerat.",
-      "locator": "<span class=\"keyword\">Platssynk</span> finns uppe till vänster.<br>När kontot är länkat öppnar första trycket en kapsel med genväg till inställningarna; tryck på huvudknappen igen medan den är öppen för att slå på eller av synken."
-    },
-    "locator": "Klicka på <span class=\"keyword\">Platssynk</span> för att visa din aktuella position i spelet på kartan.<br>När ditt spelkonto är länkat kan du också öppna spårningsinställningarna och justera punktspårningen."
+      "selectorSelect": "Specifik <span class=\"keyword\">markörväljare</span>. Tryck för att växla valstatus; valda markörer kommer att visas på kartan.<br>Du kan se det totala antalet sådana markörer i det aktuella området, samt antalet du har markerat."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Obs:</span> När spelversionen är <span class=\"keyword\">1.0.13</span>, är kartdataversionen <span class=\"keyword\">0.8.25</span>. Vi behöver tid för att uppdatera datan, så uppdateringar kan komma senare än spelets patch. Tack för ditt tålamod. För att spåra våra uppdateringar, vänligen gå med i vår <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Gå med i Discord'>Discord-server</a>.<br><br>Vi rekommenderar också följande verktyg:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Besök Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Ritningar:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Besök Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Alla",
     "selected": "Valda",
     "confirm": "Bekräfta",
+    "loading": "Laddar…",
     "enable": "Aktivera",
     "disable": "Inaktivera",
     "expand": "Expandera",
     "collapse": "Komprimera"
+  },
+  "announcement": {
+    "title": "Webbplatsmeddelande",
+    "empty": "Inga meddelanden tillgängliga"
   },
   "meta": {
     "title": "Endfield Kartsamling",
@@ -356,9 +361,5 @@
     "kofi": "Stöd via Ko-fi",
     "afdian": "Stöd via Afdian",
     "hint": "Vi rekommenderar Patreon eller Ko-fi för globala användare, och Afdian för användare i Kina."
-  },
-  "announcement": {
-    "title": "Webbplatsmeddelande",
-    "empty": "Inga meddelanden tillgängliga"
   }
 }

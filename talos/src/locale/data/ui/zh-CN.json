@@ -219,33 +219,25 @@
         "200": "登录已确认",
         "201": "注册已完成",
         "202": "密码已变更",
-
         "101": "请填写邮箱",
         "102": "邮箱地址无效",
         "103": "邮箱已被注册",
         "104": "邮箱尚未注册",
-
         "111": "请填写密码",
         "112": "密码不合法",
         "113": "两次密码不一致",
-
         "121": "请填写验证码",
         "122": "验证码无效",
         "123": "验证码已过期",
-
         "0": "账号/密码错误",
-
         "429": "请求速率限制",
         "430": "风险控制",
-
         "801": "挂起：账号封禁",
         "802": "挂起：权限拒绝",
-
         "601": "令牌失效",
         "602": "需要会话",
         "603": "访问被拒绝",
         "604": "Auth提供方冲突",
-
         "701": "系统过载",
         "702": "系统超时",
         "703": "系统维护"
@@ -344,7 +336,7 @@
     "all": "全部",
     "selected": "选中项",
     "confirm": "确认",
-    "loading": "加载中...",
+    "loading": "加载中⋯",
     "enable": "启用",
     "disable": "禁用",
     "expand": "展开",
@@ -359,8 +351,8 @@
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   },
   "domain": {
-      "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
-      "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
+    "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
+    "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
   },
   "support": {
     "title": "支持我们",

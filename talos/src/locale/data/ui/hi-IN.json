@@ -149,6 +149,7 @@
     "announcement": "हालिया <span class=\"keyword\">वेबसाइट घोषणाएँ</span> देखें। सेवा की शर्तों और गोपनीयता नीति के अपडेट भी यहाँ पोस्ट किए जाएँगे।",
     "help": "इस <span class=\"keyword\">गाइड</span> को पुनः आरंभ करें।",
     "settings": "यह नियंत्रित करने के लिए कि मानचित्र आपके कार्यों को याद रखने के लिए किस स्थानीय संग्रहण का उपयोग करता है, <span class=\"keyword\">प्राथमिकताएं</span> खोलें।",
+    "locator": "<span class=\"keyword\">Location Sync</span> पर क्लिक करें ताकि मैप पर आपकी मौजूदा इन-गेम स्थिति दिखे।<br>गेम अकाउंट लिंक करने के बाद, आप tracking config खोलकर point tracking भी बदल सकते हैं।",
     "regionSwitch": "गेम में <span class=\"keyword\">विभिन्न सैंडबॉक्स मैप्स</span> (मुख्य क्षेत्रों) के बीच स्विच करने के लिए क्लिक करें।",
     "subregionSwitch": "उपलब्ध उप-क्षेत्रों को दिखाने के लिए <span class=\"keyword\">मुख्य क्षेत्र आइकन पर होवर करें</span>; एक उप-क्षेत्र आइकन पर क्लिक करने से वह उप-क्षेत्र दृश्य में आ जाएगा。<br>इसी तरह, आप किसी क्षेत्र के लिए एक लेयर भी चुन सकते हैं।",
     "layerMain": "किसी भी समय <span class=\"keyword\">मुख्य लेयर (M)</span> पर लौटने के लिए <span class=\"keyword\">लेयर आइकन</span> पर क्लिक करें।",
@@ -159,13 +160,12 @@
     "pointIcon": "मार्कर आइकन पर क्लिक करने से भी इसे पूर्ण के रूप में चिह्नित किया जा सकता है。",
     "mobile": {
       "headbar": "मानचित्र सेटिंग्स से संबंधित स्विच <span class=\"keyword\">ऊपर-दाएं कोने के हेडर बार</span> में स्थित हैं। अधिक विकल्प देखने के लिए ऊपर-दाएं आइकन पर क्लिक करें।",
+      "locator": "<span class=\"keyword\">Location Sync</span> ऊपर बाईं ओर है।<br>अकाउंट लिंक होने के बाद, टैप करने पर पहले config entry वाला capsule खुलेगा; खुले रहने पर main button को फिर टैप करें ताकि sync on/off हो।",
       "regionLayerSwitch": "<span class=\"keyword\">विभिन्न सैंडबॉक्स मैप्स</span> (मुख्य क्षेत्रों) के बीच स्विच करने के लिए क्षेत्र आइकन पर क्लिक करें。<br>उपलब्ध <span class=\"keyword\">उप-क्षेत्र और लेयर्स</span> प्रदर्शित करने के लिए एक मुख्य क्षेत्र आइकन को टैप करके रखें, फिर उस दृश्य पर जाने के लिए एक उप-क्षेत्र या लेयर का चयन करें।",
       "divider": "यह एक खींचने योग्य <span class=\"keyword\">विभाजक</span> है。<br>आप अपने उपयोग की प्राथमिकताओं के अनुकूल खोज बार और मार्कर सूची के बीच चौड़ाई अनुपात को समायोजित करने के लिए विभाजक को बाएँ या दाएँ खींच सकते हैं।",
       "drawer": "दराज खोलने और मार्कर फ़िल्टर देखने के लिए <span class=\"keyword\">स्क्रीन के नीचे से ऊपर की ओर स्वाइप करें</span>。<br>यहां आप चुन सकते हैं कि आप मानचित्र पर कौन से मार्कर प्रकार प्रदर्शित करना चाहते हैं।",
-      "selectorSelect": "विशिष्ट <span class=\"keyword\">मार्कर चयनकर्ता</span>। चयन स्थिति को टॉगल करने के लिए टैप करें; चयनित मार्कर मानचित्र पर दिखाई देंगे。<br>आप वर्तमान क्षेत्र में ऐसे मार्करों की कुल संख्या के साथ-साथ आपके द्वारा चिह्नित संख्या भी देख सकते हैं।",
-      "locator": "<span class=\"keyword\">Location Sync</span> ऊपर बाईं ओर है।<br>अकाउंट लिंक होने के बाद, टैप करने पर पहले config entry वाला capsule खुलेगा; खुले रहने पर main button को फिर टैप करें ताकि sync on/off हो।"
-    },
-    "locator": "<span class=\"keyword\">Location Sync</span> पर क्लिक करें ताकि मैप पर आपकी मौजूदा इन-गेम स्थिति दिखे।<br>गेम अकाउंट लिंक करने के बाद, आप tracking config खोलकर point tracking भी बदल सकते हैं।"
+      "selectorSelect": "विशिष्ट <span class=\"keyword\">मार्कर चयनकर्ता</span>। चयन स्थिति को टॉगल करने के लिए टैप करें; चयनित मार्कर मानचित्र पर दिखाई देंगे。<br>आप वर्तमान क्षेत्र में ऐसे मार्करों की कुल संख्या के साथ-साथ आपके द्वारा चिह्नित संख्या भी देख सकते हैं।"
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">नोट:</span> जब गेम का संस्करण <span class=\"keyword\">1.0.13</span> होता है, तो मानचित्र डेटासेट संस्करण <span class=\"keyword\">0.8.25</span> होता है। हमें डेटा को अपडेट करने के लिए समय चाहिए, इसलिए गेम पैच के बाद अपडेट आ सकते हैं। आपके धैर्य के लिए धन्यवाद। हमारे अपडेट को ट्रैक करने के लिए, कृपया हमारे <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Join Discord'>Discord सर्वर</a> से जुड़ें。<br><br>हम निम्नलिखित उपकरणों की भी अनुशंसा करते हैं:<ul><li><span class=\"keyword\">Game Wiki: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visit Game Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visit Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,6 +336,7 @@
     "all": "सभी",
     "selected": "चयनित",
     "confirm": "ठीक",
+    "loading": "लोड हो रहा है…",
     "enable": "चालू",
     "disable": "बंद",
     "expand": "खोलें",

@@ -7,8 +7,8 @@
     "lightmode": "Chuyển sang chế độ sáng",
     "language": "Chọn ngôn ngữ",
     "help": "Nhận trợ giúp",
-    "settings": "Cài đặt",
-    "announcement": "Thông báo"
+    "announcement": "Thông báo",
+    "settings": "Cài đặt"
   },
   "trigger": {
     "boundaryMode": "Hiển thị ranh giới khu vực",
@@ -142,20 +142,14 @@
     "filterList": "<span class=\"keyword\">Danh sách Điểm</span> liệt kê các điểm bạn đã chọn; nhấp vào biểu tượng để bỏ chọn.",
     "headbar": "Các công tắc liên quan đến cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên cùng</span>.",
     "tos": "<span class=\"keyword\">Điều khoản Dịch vụ</span> và <span class=\"keyword\">Quản lý Dữ liệu</span> của trang web.",
-    "mobile": {
-      "headbar": "Cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên bên phải</span>. Chạm vào biểu tượng ở góc trên bên phải để mở rộng và xem thêm tùy chọn.",
-      "regionLayerSwitch": "Chạm vào biểu tượng vùng để chuyển giữa <span class=\"keyword\">các bản đồ sandbox</span>. Nhấn giữ biểu tượng vùng để hiển thị <span class=\"keyword\">phân vùng và lớp</span>, sau đó chọn chế độ xem.",
-      "divider": "Đây là <span class=\"keyword\">thanh chia</span> có thể kéo. Kéo sang trái/phải để điều chỉnh độ rộng giữa tìm kiếm và danh sách điểm đánh dấu.",
-      "drawer": "<span class=\"keyword\">Vuốt lên từ dưới cùng màn hình</span> để mở ngăn kéo và xem bộ lọc điểm đánh dấu.",
-      "selectorSelect": "<span class=\"keyword\">Trình chọn điểm đánh dấu</span>. Chạm để bật/tắt; các điểm đã chọn sẽ hiển thị trên bản đồ. Bạn có thể xem tổng số và số lượng đã đánh dấu trong khu vực hiện tại.",
-      "locator": "<span class=\"keyword\">Đồng bộ vị trí</span> nằm ở góc trên bên trái.<br>Sau khi liên kết tài khoản, chạm một lần sẽ mở một nút dạng capsule có lối vào cấu hình; khi đang mở, chạm lại nút chính để bật hoặc tắt đồng bộ."
-    },
     "hideUI": "<span class=\"keyword\">Ẩn Giao diện Trang web</span> để chụp ảnh màn hình hoặc xem các điểm ở rìa.",
     "group": "Xem <span class=\"keyword\">nhóm thảo luận</span> và <span class=\"keyword\">cộng đồng</span> liên quan đến dự án này.",
     "darkMode": "Chuyển đổi <span class=\"keyword\">chế độ ánh sáng môi trường</span> hiện tại.",
     "language": "Chuyển đổi <span class=\"keyword\">ngôn ngữ giao diện</span>.<br>Hiện tại, các ngôn ngữ có <span class=\"keyword\">hỗ trợ dịch thuật nội dung trò chơi đầy đủ</span> bao gồm tiếng Anh, tiếng Trung Giản thể, tiếng Trung Phồn thể, tiếng Nhật, tiếng Hàn, tiếng Pháp, tiếng Đức, tiếng Ý, tiếng Nga, tiếng Tây Ban Nha, tiếng Indonesia, tiếng Bồ Đào Nha, tiếng Thái và tiếng Việt.<br>Các ngôn ngữ có <span class=\"keyword\">chỉ hỗ trợ dịch thuật giao diện</span> bao gồm tiếng Ả Rập, tiếng Mã Lai, tiếng Ba Lan và tiếng Thụy Điển.",
     "announcement": "Xem <span class=\"keyword\">thông báo trang web</span> gần nhất. Các cập nhật về điều khoản dịch vụ và chính sách bảo mật cũng sẽ được đăng tại đây.",
     "help": "Khởi động lại <span class=\"keyword\">hướng dẫn</span> này.",
+    "settings": "Mở <span class=\"keyword\">Cài đặt</span> để kiểm soát việc lưu trữ cục bộ mà bản đồ sử dụng để ghi nhớ các hành động của bạn.",
+    "locator": "Nhấn <span class=\"keyword\">Đồng bộ vị trí</span> để hiển thị vị trí hiện tại trong game của bạn trên bản đồ.<br>Sau khi liên kết tài khoản game, bạn cũng có thể mở cấu hình theo dõi để chỉnh phạm vi theo dõi điểm.",
     "regionSwitch": "Nhấp để chuyển đổi giữa <span class=\"keyword\">các bản đồ sandbox khác nhau</span> (khu vực chính) trong trò chơi.",
     "subregionSwitch": "<span class=\"keyword\">Di chuột qua biểu tượng khu vực chính</span> để hiển thị các khu vực con có sẵn; nhấp vào biểu tượng khu vực con sẽ chuyển đến chế độ xem khu vực con đó.<br>Tương tự, bạn cũng có thể chọn một lớp cho một khu vực.",
     "layerMain": "Nhấp vào <span class=\"keyword\">biểu tượng lớp</span> để quay lại <span class=\"keyword\">lớp chính (M)</span> bất kỳ lúc nào.",
@@ -164,8 +158,14 @@
     "pointMark": "Nhấp vào điểm một lần nữa để đánh dấu là hoàn thành.",
     "detail": "Bạn có thể xem thông tin cụ thể về điểm đã chọn, bao gồm số lượng điểm loại này trong <span class=\"keyword\">tất cả các khu vực</span>, <span class=\"keyword\">khu vực chính</span> hiện tại và <span class=\"keyword\">khu vực con</span> hiện tại.",
     "pointIcon": "Nhấp vào biểu tượng điểm cũng có thể đánh dấu nó là hoàn thành.",
-    "settings": "Mở <span class=\"keyword\">Cài đặt</span> để kiểm soát việc lưu trữ cục bộ mà bản đồ sử dụng để ghi nhớ các hành động của bạn.",
-    "locator": "Nhấn <span class=\"keyword\">Đồng bộ vị trí</span> để hiển thị vị trí hiện tại trong game của bạn trên bản đồ.<br>Sau khi liên kết tài khoản game, bạn cũng có thể mở cấu hình theo dõi để chỉnh phạm vi theo dõi điểm."
+    "mobile": {
+      "headbar": "Cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên bên phải</span>. Chạm vào biểu tượng ở góc trên bên phải để mở rộng và xem thêm tùy chọn.",
+      "locator": "<span class=\"keyword\">Đồng bộ vị trí</span> nằm ở góc trên bên trái.<br>Sau khi liên kết tài khoản, chạm một lần sẽ mở một nút dạng capsule có lối vào cấu hình; khi đang mở, chạm lại nút chính để bật hoặc tắt đồng bộ.",
+      "regionLayerSwitch": "Chạm vào biểu tượng vùng để chuyển giữa <span class=\"keyword\">các bản đồ sandbox</span>. Nhấn giữ biểu tượng vùng để hiển thị <span class=\"keyword\">phân vùng và lớp</span>, sau đó chọn chế độ xem.",
+      "divider": "Đây là <span class=\"keyword\">thanh chia</span> có thể kéo. Kéo sang trái/phải để điều chỉnh độ rộng giữa tìm kiếm và danh sách điểm đánh dấu.",
+      "drawer": "<span class=\"keyword\">Vuốt lên từ dưới cùng màn hình</span> để mở ngăn kéo và xem bộ lọc điểm đánh dấu.",
+      "selectorSelect": "<span class=\"keyword\">Trình chọn điểm đánh dấu</span>. Chạm để bật/tắt; các điểm đã chọn sẽ hiển thị trên bản đồ. Bạn có thể xem tổng số và số lượng đã đánh dấu trong khu vực hiện tại."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Lưu ý:</span> Khi phiên bản trò chơi là <span class=\"keyword\">1.0.13</span>, phiên bản dữ liệu bản đồ là <span class=\"keyword\">0.8.25</span>. Chúng tôi cần thời gian để cập nhật dữ liệu, nên có thể chậm hơn cập nhật game. Cảm ơn bạn đã kiên nhẫn. Để theo dõi cập nhật, vui lòng tham gia <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Tham gia Discord'>Máy chủ Discord</a> của chúng tôi.<br><br>Chúng tôi cũng đề xuất các công cụ sau:<ul><li><span class=\"keyword\">Wiki Trò chơi: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Truy cập Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Chia sẻ Bản thiết kế:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Truy cập Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Tất cả",
     "selected": "Đã chọn",
     "confirm": "Xác nhận",
+    "loading": "Đang tải…",
     "enable": "Bật",
     "disable": "Tắt",
     "expand": "Mở rộng",
     "collapse": "Thu gọn"
+  },
+  "announcement": {
+    "title": "Thông báo trang web",
+    "empty": "Không có thông báo nào"
   },
   "meta": {
     "title": "Atlas Endfield",
@@ -356,9 +361,5 @@
     "kofi": "Hỗ trợ qua Ko-fi",
     "afdian": "Hỗ trợ qua Afdian",
     "hint": "Chúng tôi khuyên dùng Patreon hoặc Ko-fi cho người dùng toàn cầu và Afdian cho người dùng ở Trung Quốc đại lục."
-  },
-  "announcement": {
-    "title": "Thông báo trang web",
-    "empty": "Không có thông báo nào"
   }
 }

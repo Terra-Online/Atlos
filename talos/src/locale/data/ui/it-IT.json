@@ -7,8 +7,8 @@
     "lightmode": "Passa alla modalità chiara",
     "language": "Scegli la lingua",
     "help": "Richiedi aiuto",
-    "settings": "Impostazioni",
-    "announcement": "Annunci"
+    "announcement": "Annunci",
+    "settings": "Impostazioni"
   },
   "trigger": {
     "boundaryMode": "Modalità Confine",
@@ -142,14 +142,6 @@
     "filterList": "L'<span class=\"keyword\">elenco dei marcatori</span> elenca i marcatori che hai selezionato; clicca sull'icona per deselezionare.",
     "headbar": "Gli interruttori relativi alle impostazioni della mappa si trovano nella <span class=\"keyword\">barra superiore</span>.",
     "tos": "I <span class=\"keyword\">Termini di servizio</span> e la <span class=\"keyword\">Gestione dei dati</span> del sito web.",
-    "mobile": {
-      "headbar": "Le impostazioni della mappa sono nella <span class=\"keyword\">barra in alto a destra</span>. Tocca l'icona in alto a destra per espandere e vedere altre opzioni.",
-      "regionLayerSwitch": "Tocca le icone delle regioni per passare tra <span class=\"keyword\">diverse mappe sandbox</span>. Tieni premuta un'icona di regione per mostrare <span class=\"keyword\">sottoregioni e livelli</span>, quindi scegli la vista.",
-      "divider": "Questo è un <span class=\"keyword\">divisore</span> trascinabile. Trascinalo a sinistra o a destra per regolare la larghezza tra ricerca e elenco dei marker.",
-      "drawer": "<span class=\"keyword\">Scorri verso l'alto dal basso</span> per aprire il cassetto e vedere i filtri dei marker.",
-      "selectorSelect": "<span class=\"keyword\">Selettore di marker</span>. Tocca per attivare/disattivare; i marker selezionati appaiono sulla mappa. Puoi vedere il totale e quanti ne hai segnati nell'area attuale.",
-      "locator": "<span class=\"keyword\">Sincronizzazione posizione</span> si trova in alto a sinistra.<br>Dopo il collegamento dell’account, il primo tocco espande una capsula con l’accesso alla configurazione; tocca di nuovo il pulsante principale mentre è aperta per attivare o disattivare la sincronizzazione."
-    },
     "hideUI": "<span class=\"keyword\">Nascondi l'interfaccia utente del sito web</span> per fare screenshot o visualizzare i marcatori ai bordi.",
     "group": "Visualizza <span class=\"keyword\">gruppi di discussione</span> e <span class=\"keyword\">comunità</span> relativi a questo progetto.",
     "darkMode": "Attiva/disattiva la <span class=\"keyword\">modalità luce ambientale</span> corrente.",
@@ -157,6 +149,7 @@
     "announcement": "Visualizza le <span class=\"keyword\">notifiche del sito web</span>. Le aggiornamenti alle condizioni di servizio e alla politica sulla privacy verranno anche pubblicati qui.",
     "help": "Riavvia questa <span class=\"keyword\">guida</span>.",
     "settings": "Apri <span class=\"keyword\">Impostazioni</span> per controllare l'archivio locale utilizzato dalla mappa per ricordare le tue azioni.",
+    "locator": "Fai clic su <span class=\"keyword\">Sincronizzazione posizione</span> per mostrare sulla mappa la tua posizione attuale in gioco.<br>Dopo aver collegato l’account di gioco, puoi anche aprire la configurazione del tracciamento e regolare il tracking dei punti.",
     "regionSwitch": "Clicca per passare tra <span class=\"keyword\">diverse mappe sandbox</span> (regioni principali) nel gioco.",
     "subregionSwitch": "<span class=\"keyword\">Passa il mouse sull'icona della regione principale</span> per mostrare le sottoregioni disponibili; cliccando su un'icona della sottoregione passerai a quella vista della sottoregione.<br>Allo stesso modo, puoi anche selezionare un livello per una regione.",
     "layerMain": "Clicca sull'<span class=\"keyword\">icona del livello</span> per tornare al <span class=\"keyword\">livello principale (M)</span> in qualsiasi momento.",
@@ -165,7 +158,14 @@
     "pointMark": "Clicca di nuovo sul marcatore per contrassegnarlo come completato.",
     "detail": "Puoi visualizzare informazioni specifiche sul marcatore selezionato, incluso il numero di marcatori di questo tipo in <span class=\"keyword\">tutte le regioni</span>, la <span class=\"keyword\">regione principale</span> corrente e la <span class=\"keyword\">sottoregione</span> corrente.",
     "pointIcon": "Cliccare sull'icona del marcatore può anche contrassegnarlo come completato.",
-    "locator": "Fai clic su <span class=\"keyword\">Sincronizzazione posizione</span> per mostrare sulla mappa la tua posizione attuale in gioco.<br>Dopo aver collegato l’account di gioco, puoi anche aprire la configurazione del tracciamento e regolare il tracking dei punti."
+    "mobile": {
+      "headbar": "Le impostazioni della mappa sono nella <span class=\"keyword\">barra in alto a destra</span>. Tocca l'icona in alto a destra per espandere e vedere altre opzioni.",
+      "locator": "<span class=\"keyword\">Sincronizzazione posizione</span> si trova in alto a sinistra.<br>Dopo il collegamento dell’account, il primo tocco espande una capsula con l’accesso alla configurazione; tocca di nuovo il pulsante principale mentre è aperta per attivare o disattivare la sincronizzazione.",
+      "regionLayerSwitch": "Tocca le icone delle regioni per passare tra <span class=\"keyword\">diverse mappe sandbox</span>. Tieni premuta un'icona di regione per mostrare <span class=\"keyword\">sottoregioni e livelli</span>, quindi scegli la vista.",
+      "divider": "Questo è un <span class=\"keyword\">divisore</span> trascinabile. Trascinalo a sinistra o a destra per regolare la larghezza tra ricerca e elenco dei marker.",
+      "drawer": "<span class=\"keyword\">Scorri verso l'alto dal basso</span> per aprire il cassetto e vedere i filtri dei marker.",
+      "selectorSelect": "<span class=\"keyword\">Selettore di marker</span>. Tocca per attivare/disattivare; i marker selezionati appaiono sulla mappa. Puoi vedere il totale e quanti ne hai segnati nell'area attuale."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Quando la versione del gioco è <span class=\"keyword\">1.0.13</span>, la versione dei dati della mappa è <span class=\"keyword\">0.8.25</span>. Abbiamo bisogno di tempo per aggiornare i dati, quindi l'aggiornamento potrebbe arrivare dopo la patch del gioco. Grazie per la pazienza. Per seguire i nostri aggiornamenti, unisciti al nostro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Unisciti a Discord'>server Discord</a>.<br><br>Consigliamo anche i seguenti strumenti:<ul><li><span class=\"keyword\">Wiki del gioco: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visita la Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Progetti (Blueprint):</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visita Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Tutto",
     "selected": "Selezionato",
     "confirm": "Conferma",
+    "loading": "Caricamento…",
     "enable": "Abilita",
     "disable": "Disabilita",
     "expand": "Espandi",
     "collapse": "Comprimi"
+  },
+  "announcement": {
+    "title": "Avviso del sito",
+    "empty": "Nessun annuncio disponibile"
   },
   "meta": {
     "title": "Mappa Open Endfield",
@@ -356,9 +361,5 @@
     "kofi": "Sostieni via Ko-fi",
     "afdian": "Sostieni via Afdian",
     "hint": "Consigliamo Patreon o Ko-fi per gli utenti globali e Afdian per gli utenti nella Cina continentale."
-  },
-  "announcement": {
-    "title": "Avviso del sito",
-    "empty": "Nessun annuncio disponibile"
   }
 }

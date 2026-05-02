@@ -7,8 +7,8 @@
     "lightmode": "Passer en mode clair",
     "language": "Choisir la langue",
     "help": "Demander de l’aide",
-    "settings": "Paramètres",
-    "announcement": "Annonces"
+    "announcement": "Annonces",
+    "settings": "Paramètres"
   },
   "trigger": {
     "boundaryMode": "Mode des limites",
@@ -142,14 +142,6 @@
     "filterList": "La <span class=\"keyword\">liste des marqueurs</span> répertorie les marqueurs que vous avez sélectionnés ; cliquez sur l'icône pour désélectionner.",
     "headbar": "Les commutateurs liés aux paramètres de la carte sont situés dans la <span class=\"keyword\">barre supérieure</span>.",
     "tos": "Les <span class=\"keyword\">Conditions d'utilisation</span> et la <span class=\"keyword\">Gestion des données</span> du site Web.",
-    "mobile": {
-      "headbar": "Les réglages de la carte sont dans la <span class=\"keyword\">barre en haut à droite</span>. Touchez l'icône en haut à droite pour dérouler et voir plus d'options.",
-      "regionLayerSwitch": "Touchez les icônes de région pour passer entre <span class=\"keyword\">différentes cartes sandbox</span>. Maintenez une icône de région pour afficher les <span class=\"keyword\">sous-régions et couches</span>, puis choisissez la vue souhaitée.",
-      "divider": "Ceci est un <span class=\"keyword\">séparateur</span> à faire glisser. Faites-le glisser à gauche ou à droite pour ajuster la largeur entre recherche et liste des marqueurs.",
-      "drawer": "<span class=\"keyword\">Faites glisser depuis le bas</span> pour ouvrir le tiroir et voir les filtres de marqueurs.",
-      "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueurs</span>. Touchez pour basculer ; les marqueurs sélectionnés apparaissent sur la carte. Vous voyez le total et combien vous avez marqués dans la zone actuelle.",
-      "locator": "<span class=\"keyword\">Synchro position</span> se trouve en haut à gauche.<br>Une fois le compte lié, un premier appui déploie une capsule avec l’accès à la configuration ; appuyez de nouveau sur le bouton principal lorsqu’elle est ouverte pour activer ou couper la synchro."
-    },
     "hideUI": "<span class=\"keyword\">Masquer l'interface utilisateur</span> pour prendre des captures d'écran ou voir les marqueurs en bordure.",
     "group": "Voir les <span class=\"keyword\">groupes de discussion</span> et les <span class=\"keyword\">communautés</span> liés à ce projet.",
     "darkMode": "Basculer le <span class=\"keyword\">mode d'éclairage ambiant</span> actuel.",
@@ -157,6 +149,7 @@
     "announcement": "Voir les <span class=\"keyword\">annonces du site web</span>. Les mises à jour des conditions d'utilisation et de la politique de confidentialité seront également publiées ici.",
     "help": "Redémarrer ce <span class=\"keyword\">guide</span>.",
     "settings": "Ouvrez les <span class=\"keyword\">Paramètres</span> pour contrôler le stockage local que la carte utilise pour mémoriser vos actions.",
+    "locator": "Cliquez sur <span class=\"keyword\">Synchro position</span> pour afficher votre position actuelle en jeu sur la carte.<br>Après avoir lié votre compte de jeu, vous pouvez aussi ouvrir la configuration de suivi pour ajuster le suivi des points.",
     "regionSwitch": "Cliquez pour basculer entre <span class=\"keyword\">différentes cartes bac à sable</span> (régions principales) dans le jeu.",
     "subregionSwitch": "<span class=\"keyword\">Survolez l'icône de la région principale</span> pour afficher les sous-régions disponibles ; cliquer sur une icône de sous-région vous fera passer à cette vue de sous-région.<br>De même, vous pouvez également sélectionner un calque pour une région.",
     "layerMain": "Cliquez sur l'<span class=\"keyword\">icône de calque</span> pour revenir au <span class=\"keyword\">calque principal (M)</span> à tout moment.",
@@ -165,7 +158,14 @@
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
     "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé.",
-    "locator": "Cliquez sur <span class=\"keyword\">Synchro position</span> pour afficher votre position actuelle en jeu sur la carte.<br>Après avoir lié votre compte de jeu, vous pouvez aussi ouvrir la configuration de suivi pour ajuster le suivi des points."
+    "mobile": {
+      "headbar": "Les réglages de la carte sont dans la <span class=\"keyword\">barre en haut à droite</span>. Touchez l'icône en haut à droite pour dérouler et voir plus d'options.",
+      "locator": "<span class=\"keyword\">Synchro position</span> se trouve en haut à gauche.<br>Une fois le compte lié, un premier appui déploie une capsule avec l’accès à la configuration ; appuyez de nouveau sur le bouton principal lorsqu’elle est ouverte pour activer ou couper la synchro.",
+      "regionLayerSwitch": "Touchez les icônes de région pour passer entre <span class=\"keyword\">différentes cartes sandbox</span>. Maintenez une icône de région pour afficher les <span class=\"keyword\">sous-régions et couches</span>, puis choisissez la vue souhaitée.",
+      "divider": "Ceci est un <span class=\"keyword\">séparateur</span> à faire glisser. Faites-le glisser à gauche ou à droite pour ajuster la largeur entre recherche et liste des marqueurs.",
+      "drawer": "<span class=\"keyword\">Faites glisser depuis le bas</span> pour ouvrir le tiroir et voir les filtres de marqueurs.",
+      "selectorSelect": "<span class=\"keyword\">Sélecteur de marqueurs</span>. Touchez pour basculer ; les marqueurs sélectionnés apparaissent sur la carte. Vous voyez le total et combien vous avez marqués dans la zone actuelle."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Note :</span> Lorsque la version du jeu est <span class=\"keyword\">1.0.13</span>, la version des données de la carte est <span class=\"keyword\">0.8.25</span>. Nous avons besoin de temps pour mettre à jour les données, cela peut donc arriver après la mise à jour du jeu. Merci de votre patience. Pour suivre nos mises à jour, veuillez rejoindre notre <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Rejoindre Discord'>serveur Discord</a>.<br><br>Nous recommandons également les outils suivants :<ul><li><span class=\"keyword\">Wiki du jeu : </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visiter le Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Partage de plans:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visiter Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Tout",
     "selected": "Sélectionné",
     "confirm": "Confirmer",
+    "loading": "Chargement…",
     "enable": "Activer",
     "disable": "Désactiver",
     "expand": "Développer",
     "collapse": "Réduire"
+  },
+  "announcement": {
+    "title": "Avis du site",
+    "empty": "Aucune annonce disponible"
   },
   "meta": {
     "title": "Atlas d’Endfield",
@@ -356,9 +361,5 @@
     "kofi": "Soutenir via Ko-fi",
     "afdian": "Soutenir via Afdian",
     "hint": "Nous recommandons Patreon ou Ko-fi pour les utilisateurs internationaux, et Afdian pour les utilisateurs en Chine continentale."
-  },
-  "announcement": {
-    "title": "Avis du site",
-    "empty": "Aucune annonce disponible"
   }
 }

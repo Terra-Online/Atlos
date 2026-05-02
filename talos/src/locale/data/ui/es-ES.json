@@ -7,8 +7,8 @@
     "lightmode": "Cambiar a modo claro",
     "language": "Seleccionar idioma",
     "help": "Solicitar ayuda",
-    "settings": "Ajustes",
-    "announcement": "Anuncios"
+    "announcement": "Anuncios",
+    "settings": "Ajustes"
   },
   "trigger": {
     "boundaryMode": "Modo de límites",
@@ -142,20 +142,14 @@
     "filterList": "La <span class=\"keyword\">lista de marcadores</span> enumera los marcadores que ha seleccionado; haga clic en el icono para anular la selección.",
     "headbar": "Los interruptores relacionados con la configuración del mapa se encuentran en la <span class=\"keyword\">barra superior</span>.",
     "tos": "Los <span class=\"keyword\">Términos de servicio</span> y la <span class=\"keyword\">Gestión de datos</span> del sitio web.",
-    "mobile": {
-      "headbar": "Los ajustes del mapa están en la <span class=\"keyword\">barra superior derecha</span>. Toca el icono para desplegar y ver más opciones.",
-      "regionLayerSwitch": "Toca los iconos de región para cambiar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Mantén pulsado un icono de región para mostrar <span class=\"keyword\">subregiones y capas</span>, luego elige una para ir a esa vista.",
-      "divider": "Este es un <span class=\"keyword\">separador</span> arrastrable. Arrástralo a izquierda o derecha para ajustar la proporción entre búsqueda y lista de marcadores.",
-      "drawer": "<span class=\"keyword\">Desliza hacia arriba desde la parte inferior</span> para abrir el cajón y ver los filtros de marcadores.",
-      "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span>. Toca para alternar su estado; los seleccionados aparecerán en el mapa. Puedes ver el total y cuántos has marcado en el área actual.",
-      "locator": "<span class=\"keyword\">Sincronización de ubicación</span> está en la esquina superior izquierda.<br>Después de vincular la cuenta, al tocarlo se abre primero una cápsula con el acceso a la configuración; toca de nuevo el botón principal mientras está abierta para activar o desactivar la sincronización."
-    },
     "hideUI": "<span class=\"keyword\">Ocultar la interfaz de usuario del sitio web</span> para tomar capturas de pantalla o ver marcadores de borde.",
     "group": "Ver <span class=\"keyword\">grupos de discusión</span> y <span class=\"keyword\">comunidades</span> relacionados con este proyecto.",
     "darkMode": "Alternar el <span class=\"keyword\">modo de luz ambiental</span> actual.",
     "language": "Cambiar el <span class=\"keyword\">idioma de la interfaz</span>.<br>Actualmente, los idiomas con <span class=\"keyword\">soporte completo de traducción de contenido del juego</span> incluyen inglés, chino simplificado, chino tradicional, japonés, coreano, francés, alemán, italiano, ruso, español, indonesio, portugués, tailandés y vietnamita.<br>Los idiomas con <span class=\"keyword\">solo soporte de traducción de interfaz</span> incluyen árabe, malayo, polaco y sueco.",
     "announcement": "Ver <span class=\"keyword\">anuncios del sitio web</span>. Las actualizaciones a las condiciones de servicio y política de privacidad también se publicarán aquí.",
     "help": "Reiniciar esta <span class=\"keyword\">guía</span>.",
+    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones.",
+    "locator": "Haz clic en <span class=\"keyword\">Sincronización de ubicación</span> para mostrar tu posición actual del juego en el mapa.<br>Tras vincular tu cuenta del juego, también puedes abrir la configuración de rastreo y ajustar el seguimiento de puntos.",
     "regionSwitch": "Haga clic para cambiar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiones principales) en el juego.",
     "subregionSwitch": "<span class=\"keyword\">Pase el mouse sobre el icono de la región principal</span> para mostrar las subregiones disponibles; al hacer clic en un icono de subregión, saltará a esa vista de subregión.<br>Del mismo modo, también puede seleccionar una capa para una región.",
     "layerMain": "Haga clic en el <span class=\"keyword\">icono de capa</span> para volver a la <span class=\"keyword\">capa principal (M)</span> en cualquier momento.",
@@ -164,8 +158,14 @@
     "pointMark": "Haga clic en el marcador nuevamente para marcarlo como completado.",
     "detail": "Puede ver información específica sobre el marcador seleccionado, incluido el número de marcadores de este tipo en <span class=\"keyword\">todas las regiones</span>, la <span class=\"keyword\">región principal</span> actual y la <span class=\"keyword\">subregión</span> actual.",
     "pointIcon": "Hacer clic en el icono del marcador también puede marcarlo como completado.",
-    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones.",
-    "locator": "Haz clic en <span class=\"keyword\">Sincronización de ubicación</span> para mostrar tu posición actual del juego en el mapa.<br>Tras vincular tu cuenta del juego, también puedes abrir la configuración de rastreo y ajustar el seguimiento de puntos."
+    "mobile": {
+      "headbar": "Los ajustes del mapa están en la <span class=\"keyword\">barra superior derecha</span>. Toca el icono para desplegar y ver más opciones.",
+      "locator": "<span class=\"keyword\">Sincronización de ubicación</span> está en la esquina superior izquierda.<br>Después de vincular la cuenta, al tocarlo se abre primero una cápsula con el acceso a la configuración; toca de nuevo el botón principal mientras está abierta para activar o desactivar la sincronización.",
+      "regionLayerSwitch": "Toca los iconos de región para cambiar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Mantén pulsado un icono de región para mostrar <span class=\"keyword\">subregiones y capas</span>, luego elige una para ir a esa vista.",
+      "divider": "Este es un <span class=\"keyword\">separador</span> arrastrable. Arrástralo a izquierda o derecha para ajustar la proporción entre búsqueda y lista de marcadores.",
+      "drawer": "<span class=\"keyword\">Desliza hacia arriba desde la parte inferior</span> para abrir el cajón y ver los filtros de marcadores.",
+      "selectorSelect": "<span class=\"keyword\">Selector de marcadores</span>. Toca para alternar su estado; los seleccionados aparecerán en el mapa. Puedes ver el total y cuántos has marcado en el área actual."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Cuando la versión del juego es <span class=\"keyword\">1.0.13</span>, la versión de los datos del mapa es <span class=\"keyword\">0.8.25</span>. Necesitamos tiempo para actualizar los datos, por lo que puede tardar más que la actualización del juego. Gracias por su paciencia. Para seguir nuestras actualizaciones, únete a nuestro <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Unirse a Discord'>servidor de Discord</a>.<br><br>También recomendamos las siguientes herramientas:<ul><li><span class=\"keyword\">Wiki del juego: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "Todo",
     "selected": "Seleccionado",
     "confirm": "Confirmar",
+    "loading": "Cargando…",
     "enable": "Habilitar",
     "disable": "Deshabilitar",
     "expand": "Expandir",
     "collapse": "Contraer"
+  },
+  "announcement": {
+    "title": "Aviso del sitio",
+    "empty": "No hay anuncios disponibles"
   },
   "meta": {
     "title": "Mapa Open Endfield",
@@ -356,9 +361,5 @@
     "kofi": "Apoyar vía Ko-fi",
     "afdian": "Apoyar vía Afdian",
     "hint": "Recomendamos Patreon o Ko-fi para usuarios globales, y Afdian para usuarios en China continental."
-  },
-  "announcement": {
-    "title": "Aviso del sitio",
-    "empty": "No hay anuncios disponibles"
   }
 }

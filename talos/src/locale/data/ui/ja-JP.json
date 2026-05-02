@@ -7,8 +7,8 @@
     "lightmode": "ライトモードに切り替え",
     "language": "言語を選択",
     "help": "ヘルプ",
-    "settings": "設定",
-    "announcement": "お知らせ"
+    "announcement": "お知らせ",
+    "settings": "設定"
   },
   "trigger": {
     "boundaryMode": "バウンダリー モード",
@@ -143,20 +143,13 @@
     "headbar": "マップ設定に関連するスイッチは<span class=\"keyword\">トップバー</span>にあります。",
     "tos": "ウェブサイトの<span class=\"keyword\">利用規約</span>と<span class=\"keyword\">データ管理</span>。",
     "hideUI": "スクリーンショットを撮ったり、端のピンを確認したりするために<span class=\"keyword\">ウェブサイトのUIを非表示</span>にします。",
-    "mobile": {
-      "headbar": "マップ設定は<span class=\"keyword\">右上のヘッダー</span>にあります。右上のアイコンをタップして展開し、さらにオプションを表示します。",
-      "regionLayerSwitch": "地域アイコンをタップして<span class=\"keyword\">異なるサンドボックスマップ</span>に切り替えます。地域アイコンを長押しすると<span class=\"keyword\">サブ地域とレイヤー</span>が表示され、選んでそのビューへ移動できます。",
-      "divider": "これはドラッグ可能な<span class=\"keyword\">仕切り</span>です。検索とマーカーリストの幅の比率を左右にドラッグして調整します。",
-      "drawer": "画面下から<span class=\"keyword\">上方向にスワイプ</span>してドロワーを開き、マーカーフィルターを表示します。",
-      "selectorSelect": "<span class=\"keyword\">マーカーセレクター</span>です。タップで選択を切り替え、選択したマーカーがマップに表示されます。現在のエリアでの総数と、完了済みの数を確認できます。",
-      "locator": "<span class=\"keyword\">位置同期</span>は左上にあります。<br>アカウント連携後は、タップするとまず設定アイコン付きのカプセルが開きます。開いた状態でもう一度メインボタンをタップすると同期を切り替えます。"
-    },
     "group": "このプロジェクトに関連する<span class=\"keyword\">ディスカッショングループ</span>と<span class=\"keyword\">コミュニティ</span>を表示します。",
     "darkMode": "現在の<span class=\"keyword\">環境光モード</span>を切り替えます。",
     "language": "<span class=\"keyword\">インターフェース言語</span>を切り替えます。<br><span class=\"keyword\">ゲームコンテンツの翻訳を完全にサポート</span>している言語は、英語、簡体字中国語、繁体字中国語、日本語、韓国語、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、タイ語、ベトナム語です。<br><span class=\"keyword\">インターフェース翻訳のみサポート</span>している言語には、アラビア語、マレー語、ポーランド語、スウェーデン語が含まれます。",
     "announcement": "最近の<span class=\"keyword\">ウェブサイトのお知らせ</span>を表示します。利用規約とプライバシーポリシーの更新もここに掲載されます。",
     "help": "この<span class=\"keyword\">ガイド</span>を再起動します。",
     "settings": "<span class=\"keyword\">設定</span>を開いて、マップがあなたの操作を記憶するために使用するローカルストレージを制御します。",
+    "locator": "<span class=\"keyword\">位置同期</span>をクリックすると、ゲーム内の現在位置をマップ上に表示できます。<br>ゲームアカウントを連携すると、追跡設定を開いてポイント追跡の範囲も調整できます。",
     "regionSwitch": "クリックして、ゲーム内の<span class=\"keyword\">異なるサンドボックスマップ</span>（メインエリア）を切り替えます。",
     "subregionSwitch": "マウスを<span class=\"keyword\">メインエリアアイコンにホバー</span>すると、利用可能なサブエリアが表示されます。サブエリアアイコンをクリックすると、そのサブエリアビューにジャンプします。<br>同様に、特定のエリアのレイヤーを選択することもできます。",
     "layerMain": "<span class=\"keyword\">レイヤーアイコン</span>をクリックすると、いつでも<span class=\"keyword\">メインレイヤー(M)</span>に戻ることができます。",
@@ -165,7 +158,14 @@
     "pointMark": "ピンをもう一度クリックすると、完了としてマークされます。",
     "detail": "選択したピンの具体的な情報を確認できます。これには、<span class=\"keyword\">すべてのエリア</span>、現在の<span class=\"keyword\">メインエリア</span>、および現在の<span class=\"keyword\">サブエリア</span>におけるそのタイプのピンの数が含まれます。",
     "pointIcon": "ピンアイコンをクリックしても、完了状態としてマークできます。",
-    "locator": "<span class=\"keyword\">位置同期</span>をクリックすると、ゲーム内の現在位置をマップ上に表示できます。<br>ゲームアカウントを連携すると、追跡設定を開いてポイント追跡の範囲も調整できます。"
+    "mobile": {
+      "headbar": "マップ設定は<span class=\"keyword\">右上のヘッダー</span>にあります。右上のアイコンをタップして展開し、さらにオプションを表示します。",
+      "locator": "<span class=\"keyword\">位置同期</span>は左上にあります。<br>アカウント連携後は、タップするとまず設定アイコン付きのカプセルが開きます。開いた状態でもう一度メインボタンをタップすると同期を切り替えます。",
+      "regionLayerSwitch": "地域アイコンをタップして<span class=\"keyword\">異なるサンドボックスマップ</span>に切り替えます。地域アイコンを長押しすると<span class=\"keyword\">サブ地域とレイヤー</span>が表示され、選んでそのビューへ移動できます。",
+      "divider": "これはドラッグ可能な<span class=\"keyword\">仕切り</span>です。検索とマーカーリストの幅の比率を左右にドラッグして調整します。",
+      "drawer": "画面下から<span class=\"keyword\">上方向にスワイプ</span>してドロワーを開き、マーカーフィルターを表示します。",
+      "selectorSelect": "<span class=\"keyword\">マーカーセレクター</span>です。タップで選択を切り替え、選択したマーカーがマップに表示されます。現在のエリアでの総数と、完了済みの数を確認できます。"
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">注意：</span>ゲームバージョンが<span class=\"keyword\">1.0.13</span>の場合、マップデータバージョンは<span class=\"keyword\">0.8.25</span>です。データの更新には時間がかかるため、反映がゲームの更新より遅れる場合があります。恐れ入りますが、少々お待ちください。更新情報を追跡するには、<a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Discordに参加'>Discordサーバー</a>にご参加ください。<br><br>以下の関連ツールも推奨します：<ul><li><span class=\"keyword\">ゲームWiki：</span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='ゲームWikiにアクセス'>https://warfarin.wiki</a></li><li><span class=\"keyword\">ブループリント共有：</span><a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Talos Pioneersにアクセス'>https://talospioneers.com</a></li></ul>",
@@ -336,10 +336,15 @@
     "all": "すべて",
     "selected": "選択中",
     "confirm": "確認",
+    "loading": "読み込み中…",
     "enable": "有効",
     "disable": "無効",
     "expand": "展開",
     "collapse": "折りたたむ"
+  },
+  "announcement": {
+    "title": "サイトのお知らせ",
+    "empty": "お知らせはありません"
   },
   "meta": {
     "title": "終末地マップ集",
@@ -356,9 +361,5 @@
     "kofi": "Ko-fiで支援",
     "afdian": "Afdianで支援",
     "hint": "グローバルユーザーにはPatreonまたはKo-fiを、中国本土のユーザーにはAfdianをお勧めします。"
-  },
-  "announcement": {
-    "title": "サイトのお知らせ",
-    "empty": "お知らせはありません"
   }
 }

@@ -7,8 +7,8 @@
     "lightmode": "Tukar ke mod cerah",
     "language": "Pilih bahasa",
     "help": "Dapatkan bantuan",
-    "settings": "Keutamaan",
-    "announcement": "Pengumuman"
+    "announcement": "Pengumuman",
+    "settings": "Keutamaan"
   },
   "trigger": {
     "boundaryMode": "Mod Sempadan",
@@ -68,11 +68,11 @@
       "pt-BR": "Portuguese",
       "id-ID": "Indonesian",
       "ar-AE": "Arabic",
-      "th-TH": "Thai",
-      "vi-VN": "Vietnamese",
       "ms-MY": "Melayu",
       "pl-PL": "Polski",
       "sv-SE": "Svenska",
+      "th-TH": "Thai",
+      "vi-VN": "Vietnamese",
       "el-GR": "Greek",
       "hi-IN": "Hindi"
     }
@@ -142,14 +142,6 @@
     "filterList": "<span class=\"keyword\">Senarai Penanda</span> menyenaraikan penanda yang anda pilih; klik ikon untuk nyahpilih.",
     "headbar": "Suis berkaitan tetapan peta berada di <span class=\"keyword\">bar kepala</span>.",
     "tos": "<span class=\"keyword\">Terma Perkhidmatan</span> dan <span class=\"keyword\">Pengurusan Data</span> laman web.",
-    "mobile": {
-      "headbar": "Tetapan peta berada di <span class=\"keyword\">bar kanan atas</span>. Ketik ikon kanan atas untuk kembangkan dan lihat lebih banyak pilihan.",
-      "regionLayerSwitch": "Ketik ikon wilayah untuk tukar antara <span class=\"keyword\">peta sandbox</span>. Tekan lama ikon wilayah untuk paparkan <span class=\"keyword\">sub-wilayah dan lapisan</span>, kemudian pilih pandangan.",
-      "divider": "Ini ialah <span class=\"keyword\">pembahagi</span> boleh seret. Seret ke kiri/kanan untuk laras lebar antara carian dan senarai penanda.",
-      "drawer": "<span class=\"keyword\">Leret ke atas dari bawah</span> untuk buka laci dan lihat penapis penanda.",
-      "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span>. Ketik untuk tukar; penanda terpilih muncul di peta. Anda boleh lihat jumlah dan berapa yang telah ditanda di kawasan ini.",
-      "locator": "<span class=\"keyword\">Segerak Lokasi</span> berada di penjuru kiri atas.<br>Selepas akaun dipautkan, ketikan pertama akan membuka kapsul dengan pintasan konfigurasi; ketik butang utama sekali lagi ketika terbuka untuk menukar status segerak."
-    },
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Laman Web</span> untuk mengambil tangkapan skrin atau melihat penanda di tepi.",
     "group": "Lihat <span class=\"keyword\">kumpulan perbincangan</span> dan <span class=\"keyword\">komuniti</span> yang berkaitan dengan projek ini.",
     "darkMode": "Togol <span class=\"keyword\">mod cahaya persekitaran</span> semasa.",
@@ -157,6 +149,7 @@
     "announcement": "Lihat <span class=\"keyword\">pengumuman situs web</span> terkini. Pembaruan kebijakan layanan dan privasi juga akan diposting di sini.",
     "help": "Mulakan semula <span class=\"keyword\">panduan</span> ini.",
     "settings": "Buka <span class=\"keyword\">Keutamaan</span> untuk mengawal storan setempat yang digunakan peta bagi mengingati tindakan anda.",
+    "locator": "Klik <span class=\"keyword\">Segerak Lokasi</span> untuk memaparkan kedudukan semasa anda dalam permainan pada peta.<br>Selepas akaun permainan dipautkan, anda juga boleh membuka konfigurasi penjejakan untuk melaras penjejakan titik.",
     "regionSwitch": "Klik untuk bertukar antara <span class=\"keyword\">peta sandbox yang berbeza</span> (wilayah utama) dalam permainan.",
     "subregionSwitch": "<span class=\"keyword\">Layang kursor pada ikon wilayah utama</span> untuk memaparkan sub-wilayah yang tersedia; klik ikon sub-wilayah untuk melompat ke paparan sub-wilayah tersebut.<br>Begitu juga, anda boleh memilih lapisan untuk sesuatu wilayah.",
     "layerMain": "Klik <span class=\"keyword\">ikon lapisan</span> untuk kembali ke <span class=\"keyword\">lapisan utama (M)</span> pada bila-bila masa.",
@@ -165,7 +158,14 @@
     "pointMark": "Klik penanda sekali lagi untuk menandainya sebagai selesai.",
     "detail": "Anda boleh melihat maklumat khusus tentang penanda yang dipilih, termasuk bilangan penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> semasa, dan <span class=\"keyword\">sub-wilayah</span> semasa.",
     "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai.",
-    "locator": "Klik <span class=\"keyword\">Segerak Lokasi</span> untuk memaparkan kedudukan semasa anda dalam permainan pada peta.<br>Selepas akaun permainan dipautkan, anda juga boleh membuka konfigurasi penjejakan untuk melaras penjejakan titik."
+    "mobile": {
+      "headbar": "Tetapan peta berada di <span class=\"keyword\">bar kanan atas</span>. Ketik ikon kanan atas untuk kembangkan dan lihat lebih banyak pilihan.",
+      "locator": "<span class=\"keyword\">Segerak Lokasi</span> berada di penjuru kiri atas.<br>Selepas akaun dipautkan, ketikan pertama akan membuka kapsul dengan pintasan konfigurasi; ketik butang utama sekali lagi ketika terbuka untuk menukar status segerak.",
+      "regionLayerSwitch": "Ketik ikon wilayah untuk tukar antara <span class=\"keyword\">peta sandbox</span>. Tekan lama ikon wilayah untuk paparkan <span class=\"keyword\">sub-wilayah dan lapisan</span>, kemudian pilih pandangan.",
+      "divider": "Ini ialah <span class=\"keyword\">pembahagi</span> boleh seret. Seret ke kiri/kanan untuk laras lebar antara carian dan senarai penanda.",
+      "drawer": "<span class=\"keyword\">Leret ke atas dari bawah</span> untuk buka laci dan lihat penapis penanda.",
+      "selectorSelect": "<span class=\"keyword\">Pemilih penanda</span>. Ketik untuk tukar; penanda terpilih muncul di peta. Anda boleh lihat jumlah dan berapa yang telah ditanda di kawasan ini."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Apabila versi permainan ialah <span class=\"keyword\">1.0.13</span>, versi data peta ialah <span class=\"keyword\">0.8.25</span>. Kami memerlukan masa untuk mengemas kini data, jadi ia mungkin lewat daripada kemas kini permainan. Terima kasih atas kesabaran anda. Untuk menjejaki kemas kini kami, sila sertai <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Sertai Discord'>Pelayan Discord</a> kami.<br><br>Kami juga mengesyorkan alat berikut:<ul><li><span class=\"keyword\">Wiki Permainan: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Lawati Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprint:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Lawati Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -329,6 +329,23 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "common": {
+    "close": "Tutup",
+    "skip": "Langkau",
+    "clear": "Kosongkan",
+    "all": "Semua",
+    "selected": "Dipilih",
+    "confirm": "Sahkan",
+    "loading": "Memuat…",
+    "enable": "Dayakan",
+    "disable": "Nyahdayakan",
+    "expand": "Kembangkan",
+    "collapse": "Runtuhkan"
+  },
+  "announcement": {
+    "title": "Notis Laman Web",
+    "empty": "Tiada pengumuman tersedia"
+  },
   "meta": {
     "title": "Open Endfield Map",
     "description": "Open Endfield Map ialah peta dalam talian sumber terbuka untuk Arknights: Endfield, menyediakan peta interaktif, pengumpulan item, dan alat perancangan strategik untuk pemain."
@@ -344,21 +361,5 @@
     "kofi": "Sokong melalui Ko-fi",
     "afdian": "Sokong melalui Afdian",
     "hint": "Kami mengesyorkan Patreon atau Ko-fi untuk pengguna global, dan Afdian untuk pengguna di tanah besar China."
-  },
-  "common": {
-    "close": "Tutup",
-    "skip": "Langkau",
-    "clear": "Kosongkan",
-    "all": "Semua",
-    "selected": "Dipilih",
-    "confirm": "Sahkan",
-    "enable": "Dayakan",
-    "disable": "Nyahdayakan",
-    "expand": "Kembangkan",
-    "collapse": "Runtuhkan"
-  },
-  "announcement": {
-    "title": "Notis Laman Web",
-    "empty": "Tiada pengumuman tersedia"
   }
 }
