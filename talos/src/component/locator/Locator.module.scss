@@ -5,24 +5,16 @@
 
 :root, :root[data-theme='light'] {
     --locator-card-bg: #{$white-1};
-    --locator-card-hover-bg: #{$white-3};
-    --locator-card-active-bg: #{$dim-1};
     --locator-card-text: #{$black-1};
     --locator-card-muted: #{$grey-1};
     --locator-card-bar: #{$grey-1};
-    --locator-card-active-bar: #{$primary-accent-4};
-    --locator-card-border: #{rgba($grey-1, 0.75)};
 }
 
 :root[data-theme='dark'] {
     --locator-card-bg: #{$black-1};
-    --locator-card-hover-bg: #{$grey-2};
-    --locator-card-active-bg: #{$light-1};
     --locator-card-text: #{$light-1};
     --locator-card-muted: #{$light-1};
     --locator-card-bar: #{$light-1};
-    --locator-card-active-bar: #{$primary-accent-4};
-    --locator-card-border: #{rgba($light-1, 0.75)};
 }
 
 .locatorButton {
@@ -374,6 +366,8 @@ ol.bindStep {
     unicode-bidi: plaintext;
     width: 92%;
     margin: 0 auto;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .scopeList {
@@ -432,6 +426,9 @@ ol.bindStep {
         &:hover {
             background-color: var(--lang-text);
         }
+        :global(.keyword) {
+            color: var(--lang-active-bar);
+        }
     }
     &:disabled {
         cursor: not-allowed;
@@ -450,10 +447,11 @@ ol.bindStep {
 
 .scopeDesc {
     font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 0.92rem;
+    font-size: 14px;
     font-weight: 600;
     line-height: 1.2;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .featureGrid {
@@ -465,7 +463,7 @@ ol.bindStep {
 
 .featureTrigger {
     width: 100%;
-    gap: 0.4rem;
+    gap: 0.5rem;
 }
 
 .featureNote {
@@ -478,6 +476,8 @@ ol.bindStep {
     padding: 0 0.3rem;
     text-align: center;
     unicode-bidi: plaintext;
+    overflow-wrap: break-word;
+    hyphens: auto;
     a {
         color: var(--ack-link);
         text-decoration: none;

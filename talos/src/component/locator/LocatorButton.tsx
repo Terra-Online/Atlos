@@ -43,6 +43,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     const bindReq = useLocatorStore((state) => state.bindReq);
     const cachedBinding = useMemo(() => getCachedBinding(uid), [uid]);
     const [bindingOpen, setBindingOpen] = useState(false);
+    const [bindingMounted, setBindingMounted] = useState(false);
     const [configOpen, setConfigOpen] = useState(false);
     const [configMounted, setConfigMounted] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
@@ -81,6 +82,12 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
         setConfigOpen(false);
         refreshBindingStatus();
     }, [bindReq, refreshBindingStatus]);
+
+    useEffect(() => {
+        if (bindingOpen) {
+            setBindingMounted(true);
+        }
+    }, [bindingOpen]);
 
     useEffect(() => {
         if (configOpen) {
@@ -144,7 +151,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                         <Icon />
                     </button>
                 </div>
-                {bindingOpen && (
+                {bindingMounted && (
                     <Suspense fallback={null}>
                         <LocationBinding
                             open={bindingOpen}
@@ -219,7 +226,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                     )}
                 </div>
             </div>
-            {bindingOpen && (
+            {bindingMounted && (
                 <Suspense fallback={null}>
                     <LocationBinding
                         open={bindingOpen}

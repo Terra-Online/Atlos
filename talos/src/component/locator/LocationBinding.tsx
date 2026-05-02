@@ -212,7 +212,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({ open, onClose, onBoun
                             className={styles.tokenTextarea}
                             value={tokenInput}
                             onChange={(event) => setTokenInput(cleanToken(event.target.value))}
-                            placeholder={t('locator.binding.tokenTextareaPlaceholder') || '{"code":0,"data":{"content":"..."}}'}
+                            placeholder={'{"code":0,"data":{"content":"..."}}'}
                             spellCheck={false}
                         />
                     </div>

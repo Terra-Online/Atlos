@@ -30,6 +30,8 @@
     letter-spacing: -0.2px;
     font-weight: 600;
     line-height: 1.25;
+    overflow-wrap: break-word;
+    hyphens: auto;
     p {
         margin-bottom: 0.8em;
         &:last-child {

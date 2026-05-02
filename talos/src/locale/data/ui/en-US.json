@@ -278,7 +278,6 @@
       "CNStep1": "Open the <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API link</a>, then copy the full response.",
       "UniStep1": "Open the <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API link</a>, then copy the full response.",
       "Step2": "Paste the full response, read the terms, then bind your account.",
-      "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
       "serverFallback": "Server",
       "levelPrefix": "Lv.",
       "currentBinding": "Current Binding",
@@ -303,7 +302,7 @@
         },
         "collection": {
           "title": "Collectibles",
-          "desc": "Track points in <span class=\"keyword\">collections</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
+          "desc": "Track points in <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
         },
         "manual": {
           "title": " Craft Manual",
@@ -313,7 +312,6 @@
       "featureTitle": "Feature",
       "trackPoints": "Tracking",
       "heatmap": "Heatmap",
-      "trail": "Record game trajectory and heatmap",
       "configNote1": "Enabling this feature means you accept our ",
       "configNote2": " and other terms."
     },

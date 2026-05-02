@@ -104,7 +104,8 @@
     line-height: 1.5;
     text-transform: uppercase;
     flex-shrink: 0;
-    word-break: auto-phrase;
+    overflow-wrap: break-word;
+    hyphens: auto;
     overflow: hidden;
     z-index: 0;
     transition:

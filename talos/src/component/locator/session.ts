@@ -63,7 +63,7 @@ export const cleanToken = (raw: string): string => {
 const docsLang = (locale: string): string => {
     const normalized = locale.trim().toLowerCase();
     if (normalized === 'zh-hk') return '';
-    if (normalized.startsWith('zh-cn')) return 'zh-CN';
+    if (normalized.startsWith('zh-cn')) return 'zh-cn';
     if (normalized.startsWith('ja')) return 'ja';
     if (normalized.startsWith('ko')) return 'ko';
     if (normalized.startsWith('en')) return 'en';

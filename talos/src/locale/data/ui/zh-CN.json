@@ -278,7 +278,6 @@
       "CNStep1": "访问<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>鹰角网络登录态API</a>，复制网页全文。",
       "UniStep1": "访问 <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
       "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
-      "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
       "serverFallback": "服务器",
       "levelPrefix": "Lv.",
       "currentBinding": "当前绑定",
