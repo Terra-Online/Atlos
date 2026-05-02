@@ -255,6 +255,68 @@
       "logout": "Sair"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Vincular conta",
+      "docsLead": "Ao continuar, você confirma que concorda com os termos abaixo:",
+      "tos": "Termos de Serviço",
+      "privacy": "Política de Privacidade",
+      "dataCollection": "Checklist de coleta de dados",
+      "disclaimer": "Isenção de responsabilidade",
+      "chinaTab": "China (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Acesse o <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
+      "UniStep0": "Acesse o <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
+      "CNStep1": "Abra o <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link da API da Hypergryph</a> e copie a resposta completa.",
+      "UniStep1": "Abra o <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link da API da Gryphline</a> e copie a resposta completa.",
+      "Step2": "Cole a resposta completa, leia os termos e vincule sua conta.",
+      "serverFallback": "Servidor",
+      "changeBinding": "Trocar vínculo",
+      "unlink": "Desvincular",
+      "bindWithCountdown": "Vincular e ativar sincronização ({sec})",
+      "bind": "Vincular e ativar sincronização",
+      "locateAuth": "Autorizar",
+      "locateAuthBody": "Ativar a sincronização de localização permitirá acesso à sua posição no jogo. Deseja ativar?",
+      "authAndSync": "Autorizar e iniciar sync"
+    },
+    "config": {
+      "title": "Config. de rastreio",
+      "server": "Servidor",
+      "uid": "UID do jogador",
+      "scopeTitle": "Escopo",
+      "scopeHint": "Escolha quais grupos próximos devem alertar durante a sincronização.",
+      "scope": {
+        "balanced": {
+          "title": "Equilibrado",
+          "desc": "Rastrear pontos escolhidos pela OEM."
+        },
+        "collection": {
+          "title": "Coletáveis",
+          "desc": "Rastrear pontos em <span class=\"keyword\">coleção</span>/<span class=\"keyword\">exploração</span>/<span class=\"keyword\">arquivos</span>."
+        },
+        "manual": {
+          "title": "Manual de Confecção",
+          "desc": "Rastrear pontos do manual, incluindo inimigos e plantas raras."
+        }
+      },
+      "featureTitle": "Funções",
+      "trackPoints": "Rastreio",
+      "heatmap": "Mapa de calor",
+      "configNote1": "Ao ativar este recurso, você aceita nossos ",
+      "configNote2": " e outros termos."
+    },
+    "errors": {
+      "10000": "Sessão de sincronização expirada. Vincule novamente.",
+      "19001": "Posição indisponível. Faça login no jogo.",
+      "19002": "A sincronização de localização precisa de autorização para iniciar.",
+      "noRole": "Nenhum papel de Endfield encontrado nesta conta.",
+      "tokenRequired": "Cole a resposta completa ou o token.",
+      "bindingFailed": "Falha ao vincular.",
+      "roleRequired": "Selecione um papel.",
+      "unlinkFailed": "Falha ao desvincular.",
+      "authorizationFailed": "Falha na autorização."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

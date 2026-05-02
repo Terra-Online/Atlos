@@ -254,6 +254,68 @@
       "logout": "로그아웃"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "계정 연동",
+      "docsLead": "계속 진행하면 아래의 모든 약관에 동의한 것으로 간주됩니다:",
+      "tos": "서비스 이용약관",
+      "privacy": "개인정보 처리방침",
+      "dataCollection": "개인정보 수집 및 이용 안내",
+      "disclaimer": "면책사항",
+      "chinaTab": "중국 (Hypergryph)",
+      "globalTab": "글로벌 (Gryphline)",
+      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>공식 사이트</a>에 접속하여 로그인되어 있는지 확인해 주세요.",
+      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>공식 사이트</a>에 접속하여 로그인되어 있는지 확인해 주세요.",
+      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API 링크</a>를 열고 응답 전체를 복사해 주세요.",
+      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API 링크</a>를 열고 응답 전체를 복사해 주세요.",
+      "Step2": "응답 전체를 붙여넣고 약관을 확인한 후 계정을 연동해 주세요.",
+      "serverFallback": "서버",
+      "changeBinding": "연동 변경",
+      "unlink": "연동 해제",
+      "bindWithCountdown": "연동 후 위치 동기화 활성화 ({sec})",
+      "bind": "연동 후 위치 동기화 활성화",
+      "locateAuth": "권한 요청",
+      "locateAuthBody": "위치 동기화를 활성화하면 게임 내 위치 정보에 접근합니다. 활성화하시겠습니까?",
+      "authAndSync": "권한 허용 후 동기화 시작"
+    },
+    "config": {
+      "title": "추적 설정",
+      "server": "서버",
+      "uid": "플레이어 UID",
+      "scopeTitle": "범위",
+      "scopeHint": "위치 동기화 중 알림을 표시할 주변 포인트 유형을 선택해 주세요.",
+      "scope": {
+        "balanced": {
+          "title": "균형",
+          "desc": "추천 포인트를 추적합니다."
+        },
+        "collection": {
+          "title": "수집물",
+          "desc": "<span class=\"keyword\">수집</span>/<span class=\"keyword\">탐색</span>/<span class=\"keyword\">아카이브</span> 관련 포인트를 추적합니다."
+        },
+        "manual": {
+          "title": "제작 매뉴얼",
+          "desc": "매뉴얼에 포함된 포인트(적 및 희귀 자원 포함)를 추적합니다."
+        }
+      },
+      "featureTitle": "기능",
+      "trackPoints": "마커 추적",
+      "heatmap": "히트맵",
+      "configNote1": "이 기능을 활성화하면 ",
+      "configNote2": " 및 기타 약관에 동의한 것으로 간주됩니다."
+    },
+    "errors": {
+      "10000": "위치 동기화 세션이 만료되었습니다. 다시 연동해 주세요.",
+      "19001": "위치 정보를 확인할 수 없습니다. 게임에 로그인해 주세요.",
+      "19002": "위치 동기화를 시작하려면 권한이 필요합니다.",
+      "noRole": "이 계정에서 Endfield 캐릭터를 찾을 수 없습니다.",
+      "tokenRequired": "응답 전체 또는 토큰을 붙여넣어 주세요.",
+      "bindingFailed": "연동에 실패했습니다.",
+      "roleRequired": "캐릭터를 선택해 주세요.",
+      "unlinkFailed": "연동 해제에 실패했습니다.",
+      "authorizationFailed": "권한 요청에 실패했습니다."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

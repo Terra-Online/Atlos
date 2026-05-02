@@ -255,6 +255,68 @@
       "logout": "登出"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "綁定帳户",
+      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款與聲明：",
+      "tos": "使用條款",
+      "privacy": "私隱政策",
+      "dataCollection": "資料收集清單",
+      "disclaimer": "免責聲明",
+      "chinaTab": "國服 (Hypergryph)",
+      "globalTab": "國際服 (Gryphline)",
+      "CNStep0": "前往<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>官方網站</a>，登入一次或確保已登入。",
+      "UniStep0": "前往<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>官方網站</a>，登入一次或確保已登入。",
+      "CNStep1": "開啟<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API 連結</a>，複製完整回應。",
+      "UniStep1": "開啟<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API 連結</a>，複製完整回應。",
+      "Step2": "在下方貼上完整回應，閱讀條款後即可綁定帳號。",
+      "serverFallback": "伺服器",
+      "changeBinding": "切換綁定",
+      "unlink": "解除綁定",
+      "bindWithCountdown": "綁定並啟用位置同步（{sec}）",
+      "bind": "綁定並啟用位置同步",
+      "locateAuth": "位置同步授權",
+      "locateAuthBody": "啟用位置同步後將允許存取你的遊戲內位置資訊。是否啟用？",
+      "authAndSync": "授權並開始同步"
+    },
+    "config": {
+      "title": "追蹤設定",
+      "server": "伺服器",
+      "uid": "玩家 UID",
+      "scopeTitle": "範圍",
+      "scopeHint": "你可以選擇位置追蹤時，要提醒的附近點位範圍。",
+      "scope": {
+        "balanced": {
+          "title": "平衡",
+          "desc": "追蹤 OEM 為你選擇的點位。"
+        },
+        "collection": {
+          "title": "收集物",
+          "desc": "追蹤位於<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">檔案</span>中的點位。"
+        },
+        "manual": {
+          "title": "簡製手冊",
+          "desc": "追蹤手冊中的點位，包括敵人與稀有植物。"
+        }
+      },
+      "featureTitle": "功能",
+      "trackPoints": "追蹤點位",
+      "heatmap": "熱力圖",
+      "configNote1": "啟用此功能代表你已接受我們的 ",
+      "configNote2": " 與其他條款。"
+    },
+    "errors": {
+      "10000": "位置同步工作階段已過期，請重新綁定。",
+      "19001": "無法取得位置，請確認已登入遊戲。",
+      "19002": "位置同步需要授權後才能開始。",
+      "noRole": "此帳號下未找到終末地角色。",
+      "tokenRequired": "請貼上完整回應或 Token。",
+      "bindingFailed": "綁定失敗。",
+      "roleRequired": "請選擇角色。",
+      "unlinkFailed": "解除綁定失敗。",
+      "authorizationFailed": "授權失敗。"
+    }
+  },
   "links": {
     "enka": {
       "name": "藍圖編輯器",

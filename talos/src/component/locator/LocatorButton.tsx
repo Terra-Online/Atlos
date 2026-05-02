@@ -291,8 +291,8 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                                 {
                                     key: 'binding',
                                     icon: ConfigIcon,
-                                    tooltip: t('locator.binding.currentBinding') || 'Current Binding',
-                                    ariaLabel: t('locator.binding.currentBinding') || 'Current Binding',
+                                    tooltip: t('locator.config.title'),
+                                    ariaLabel: t('locator.config.title'),
                                     onClick: () => setConfigOpen(true),
                                 },
                             ]}

@@ -255,6 +255,68 @@
       "logout": "Logga ut"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Koppla konto",
+      "docsLead": "Genom att fortsätta bekräftar du att du godkänner villkoren nedan:",
+      "tos": "Användarvillkor",
+      "privacy": "Integritetspolicy",
+      "dataCollection": "Checklista för datainsamling",
+      "disclaimer": "Ansvarsfriskrivning",
+      "chinaTab": "Kina (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Gå till <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
+      "UniStep0": "Gå till <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
+      "CNStep1": "Öppna <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API-länken</a> och kopiera hela svaret.",
+      "UniStep1": "Öppna <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API-länken</a> och kopiera hela svaret.",
+      "Step2": "Klistra in hela svaret, läs villkoren och koppla kontot.",
+      "serverFallback": "Server",
+      "changeBinding": "Byt koppling",
+      "unlink": "Koppla bort",
+      "bindWithCountdown": "Koppla och aktivera sync ({sec})",
+      "bind": "Koppla och aktivera sync",
+      "locateAuth": "Godkänn",
+      "locateAuthBody": "Aktivering av plats-synk ger åtkomst till din position i spelet. Vill du aktivera?",
+      "authAndSync": "Godkänn och starta synk"
+    },
+    "config": {
+      "title": "Spårningsinställn.",
+      "server": "Server",
+      "uid": "Spelar-ID",
+      "scopeTitle": "Område",
+      "scopeHint": "Välj vilka närliggande punktgrupper som ska ge påminnelser under plats-synk.",
+      "scope": {
+        "balanced": {
+          "title": "Balanserad",
+          "desc": "Spåra punkter valda av OEM."
+        },
+        "collection": {
+          "title": "Samlarobjekt",
+          "desc": "Spåra punkter i <span class=\"keyword\">samling</span>/<span class=\"keyword\">utforskning</span>/<span class=\"keyword\">arkiv</span>."
+        },
+        "manual": {
+          "title": "Hantverksmanual",
+          "desc": "Spåra punkter från manualen, inklusive fiender och sällsynta växter."
+        }
+      },
+      "featureTitle": "Funktioner",
+      "trackPoints": "Spårning",
+      "heatmap": "Värmekarta",
+      "configNote1": "Att aktivera funktionen innebär att du accepterar våra ",
+      "configNote2": " och andra villkor."
+    },
+    "errors": {
+      "10000": "Plats-synkningen har löpt ut. Koppla igen.",
+      "19001": "Positionen är inte tillgänglig. Logga in i spelet.",
+      "19002": "Plats-synk kräver godkännande innan start.",
+      "noRole": "Inga Endfield-roller hittades på kontot.",
+      "tokenRequired": "Klistra in hela svaret eller token.",
+      "bindingFailed": "Koppling misslyckades.",
+      "roleRequired": "Välj en roll.",
+      "unlinkFailed": "Koppla bort misslyckades.",
+      "authorizationFailed": "Godkännande misslyckades."
+    }
+  },
   "links": {
     "enka": {
       "name": "Enka Network",

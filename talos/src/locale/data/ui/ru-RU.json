@@ -255,6 +255,68 @@
       "logout": "Выход"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Привязка аккаунта",
+      "docsLead": "Продолжая, вы подтверждаете согласие со следующими условиями:",
+      "tos": "Условия использования",
+      "privacy": "Политика конфиденциальности",
+      "dataCollection": "Чек-лист сбора данных",
+      "disclaimer": "Отказ от ответственности",
+      "chinaTab": "Китай (Hypergryph)",
+      "globalTab": "Глобал (Gryphline)",
+      "CNStep0": "Перейдите на <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>официальный сайт</a> и убедитесь, что вы вошли в аккаунт.",
+      "UniStep0": "Перейдите на <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>официальный сайт</a> и убедитесь, что вы вошли в аккаунт.",
+      "CNStep1": "Откройте <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>ссылку API Hypergryph</a> и скопируйте полный ответ.",
+      "UniStep1": "Откройте <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>ссылку API Gryphline</a> и скопируйте полный ответ.",
+      "Step2": "Вставьте полный ответ, прочитайте условия и привяжите аккаунт.",
+      "serverFallback": "Сервер",
+      "changeBinding": "Сменить привязку",
+      "unlink": "Отвязать",
+      "bindWithCountdown": "Привязать и включить синхронизацию ({sec})",
+      "bind": "Привязать и включить синхронизацию",
+      "locateAuth": "Авторизовать",
+      "locateAuthBody": "Включение синхронизации местоположения позволит доступ к вашей позиции в игре. Включить?",
+      "authAndSync": "Авторизовать и начать синхронизацию"
+    },
+    "config": {
+      "title": "Настройки трекинга",
+      "server": "Сервер",
+      "uid": "UID игрока",
+      "scopeTitle": "Диапазон",
+      "scopeHint": "Выберите группы ближайших точек, которые будут напоминаться при синхронизации.",
+      "scope": {
+        "balanced": {
+          "title": "Сбаланс.",
+          "desc": "Отслеживать точки, выбранные OEM."
+        },
+        "collection": {
+          "title": "Коллекции",
+          "desc": "Отслеживать точки из <span class=\"keyword\">коллекции</span>/<span class=\"keyword\">исследования</span>/<span class=\"keyword\">архива</span>."
+        },
+        "manual": {
+          "title": "Руководство по созданию",
+          "desc": "Отслеживать точки из руководства, включая врагов и редкие растения."
+        }
+      },
+      "featureTitle": "Функции",
+      "trackPoints": "Трекинг",
+      "heatmap": "Тепловая карта",
+      "configNote1": "Включая эту функцию, вы принимаете наши ",
+      "configNote2": " и другие условия."
+    },
+    "errors": {
+      "10000": "Сеанс синхронизации истек. Привяжите снова.",
+      "19001": "Позиция недоступна. Войдите в игру.",
+      "19002": "Для синхронизации требуется авторизация.",
+      "noRole": "Роли Endfield в этой учетной записи не найдены.",
+      "tokenRequired": "Вставьте полный ответ или токен.",
+      "bindingFailed": "Привязка не удалась.",
+      "roleRequired": "Выберите роль.",
+      "unlinkFailed": "Не удалось отвязать.",
+      "authorizationFailed": "Авторизация не удалась."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

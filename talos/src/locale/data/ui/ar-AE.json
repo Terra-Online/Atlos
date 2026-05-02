@@ -144,6 +144,7 @@
     "tos": "<span class=\"keyword\">شروط الخدمة</span> و <span class=\"keyword\">إدارة البيانات</span> للموقع.",
     "mobile": {
       "headbar": "إعدادات الخريطة في <span class=\"keyword\">الشريط العلوي الأيمن</span>. اضغط على الأيقونة في الأعلى لعرض مزيد من الخيارات.",
+      "locator": "<span class=\"keyword\">مزامنة الموقع</span> في الزاوية العلوية اليسرى.<br>بعد ربط الحساب، الضغط عليه يفتح زرًا كبسوليًا مع خيار إعدادات التتبع؛ اضغط الزر الرئيسي مرة أخرى أثناء التوسيع لتبديل المزامنة.",
       "regionLayerSwitch": "اضغط على أيقونات المناطق للتبديل بين <span class=\"keyword\">خرائط الساندبوكس</span>. اضغط مطولًا على أيقونة المنطقة لإظهار <span class=\"keyword\">المناطق الفرعية والطبقات</span> ثم اختر العرض المطلوب.",
       "divider": "هذا <span class=\"keyword\">فاصل</span> قابل للسحب. اسحبه يمينًا أو يسارًا لضبط عرض البحث وقائمة العلامات.",
       "drawer": "<span class=\"keyword\">اسحب للأعلى من أسفل الشاشة</span> لفتح الدرج ورؤية مرشحات العلامات.",
@@ -163,7 +164,8 @@
     "pointMark": "انقر فوق العلامة مرة أخرى لتمييزها كمكتملة.",
     "detail": "يمكنك عرض معلومات محددة حول العلامة المحددة، بما في ذلك عدد العلامات من هذا النوع في <span class=\"keyword\">جميع المناطق</span>، و<span class=\"keyword\">المنطقة الرئيسية</span> الحالية، و<span class=\"keyword\">المنطقة الفرعية</span> الحالية.",
     "pointIcon": "يمكن أن يؤدي النقر فوق رمز العلامة أيضًا إلى تمييزها كمكتملة.",
-    "settings": "افتح <span class=\"keyword\">التفضيلات</span> للتحكم في التخزين المحلي الذي يستخدمه الخريطة لتذكر أفعالك."
+    "settings": "افتح <span class=\"keyword\">التفضيلات</span> للتحكم في التخزين المحلي الذي يستخدمه الخريطة لتذكر أفعالك.",
+    "locator": "اضغط <span class=\"keyword\">مزامنة الموقع</span> لعرض موقعك داخل اللعبة على الخريطة.<br>بعد ربط الحساب يمكنك فتح إعدادات التتبع لضبط نطاق التتبع."
   },
   "notice": {
     "legacy": "<span class=\"keyword\">ملاحظة:</span> عندما يكون إصدار اللعبة <span class=\"keyword\">1.0.13</span>، فإن إصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج إلى وقت لتحديث البيانات، لذا قد يتأخر التحديث عن اللعبة. شكراً لصبركم. لمتابعة تحديثاتنا، يرجى الانضمام إلى <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='انضم إلى Discord'>سيرفر ديسكورد</a>.<br><br>نوصي أيضاً بالأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='زيارة الويكي'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مشاركة المخططات:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='زيارة Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -253,6 +255,68 @@
       "save": "حفظ التغييرات",
       "saving": "جارٍ الحفظ...",
       "logout": "تسجيل الخروج"
+    }
+  },
+  "locator": {
+    "binding": {
+      "title": "ربط الحساب",
+      "docsLead": "بالمتابعة، تؤكد موافقتك على الشروط أدناه:",
+      "tos": "شروط الخدمة",
+      "privacy": "سياسة الخصوصية",
+      "dataCollection": "قائمة جمع البيانات",
+      "disclaimer": "إخلاء مسؤولية",
+      "chinaTab": "الصين (Hypergryph)",
+      "globalTab": "عالمي (Gryphline)",
+      "CNStep0": "انتقل إلى <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وتأكد من تسجيل الدخول.",
+      "UniStep0": "انتقل إلى <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وتأكد من تسجيل الدخول.",
+      "CNStep1": "افتح <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>رابط Hypergryph API</a> ثم انسخ الرد الكامل.",
+      "UniStep1": "افتح <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>رابط Gryphline API</a> ثم انسخ الرد الكامل.",
+      "Step2": "الصق الرد الكامل، اقرأ الشروط، ثم اربط الحساب.",
+      "serverFallback": "الخادم",
+      "changeBinding": "تغيير الربط",
+      "unlink": "إلغاء الربط",
+      "bindWithCountdown": "اربط وفعّل المزامنة ({sec})",
+      "bind": "اربط وفعّل المزامنة",
+      "locateAuth": "تفويض",
+      "locateAuthBody": "تفعيل مزامنة الموقع سيسمح بالوصول إلى موقعك داخل اللعبة. هل تريد التفعيل؟",
+      "authAndSync": "فوض وابدأ المزامنة"
+    },
+    "config": {
+      "title": "إعدادات التتبع",
+      "server": "الخادم",
+      "uid": "UID اللاعب",
+      "scopeTitle": "النطاق",
+      "scopeHint": "اختر مجموعات النقاط القريبة التي تُطلق تنبيهات أثناء مزامنة الموقع.",
+      "scope": {
+        "balanced": {
+          "title": "متوازن",
+          "desc": "تتبع النقاط التي اختارتها OEM."
+        },
+        "collection": {
+          "title": "مقتنيات",
+          "desc": "تتبع النقاط في <span class=\"keyword\">المقتنيات</span>/<span class=\"keyword\">الاستكشاف</span>/<span class=\"keyword\">الأرشيف</span>."
+        },
+        "manual": {
+          "title": "دليل الصياغة",
+          "desc": "تتبع نقاط الدليل، بما في ذلك الأعداء والنباتات النادرة."
+        }
+      },
+      "featureTitle": "الميزات",
+      "trackPoints": "التتبع",
+      "heatmap": "خريطة حرارية",
+      "configNote1": "تفعيل هذه الميزة يعني موافقتك على ",
+      "configNote2": " وغيرها من الشروط."
+    },
+    "errors": {
+      "10000": "انتهت جلسة مزامنة الموقع. يرجى الربط مجددًا.",
+      "19001": "الموقع غير متاح. يرجى تسجيل الدخول إلى اللعبة.",
+      "19002": "تتطلب مزامنة الموقع تفويضًا قبل البدء.",
+      "noRole": "لم يتم العثور على أدوار Endfield في هذا الحساب.",
+      "tokenRequired": "الصق الرد الكامل أو الرمز.",
+      "bindingFailed": "فشل الربط.",
+      "roleRequired": "يرجى اختيار دور.",
+      "unlinkFailed": "فشل إلغاء الربط.",
+      "authorizationFailed": "فشل التفويض."
     }
   },
   "links": {

@@ -281,8 +281,6 @@
       "UniStep1": "访问 <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
       "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
       "serverFallback": "服务器",
-      "levelPrefix": "Lv.",
-      "currentBinding": "当前绑定",
       "changeBinding": "切换绑定",
       "unlink": "解除绑定",
       "bindWithCountdown": "绑定并启用位置同步（{sec}）",

@@ -255,6 +255,68 @@
       "logout": "Đăng xuất"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Liên kết tài khoản",
+      "docsLead": "Khi tiếp tục, bạn xác nhận đồng ý với các điều khoản dưới đây:",
+      "tos": "Điều khoản dịch vụ",
+      "privacy": "Chính sách quyền riêng tư",
+      "dataCollection": "Danh sách thu thập dữ liệu",
+      "disclaimer": "Tuyên bố miễn trừ",
+      "chinaTab": "Trung Quốc (Hypergryph)",
+      "globalTab": "Toàn cầu (Gryphline)",
+      "CNStep0": "Vào <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>trang chính thức</a> và đảm bảo bạn đã đăng nhập.",
+      "UniStep0": "Vào <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>trang chính thức</a> và đảm bảo bạn đã đăng nhập.",
+      "CNStep1": "Mở <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>liên kết API Hypergryph</a> và sao chép phản hồi đầy đủ.",
+      "UniStep1": "Mở <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>liên kết API Gryphline</a> và sao chép phản hồi đầy đủ.",
+      "Step2": "Dán phản hồi đầy đủ, đọc điều khoản rồi liên kết tài khoản.",
+      "serverFallback": "Máy chủ",
+      "changeBinding": "Đổi liên kết",
+      "unlink": "Hủy liên kết",
+      "bindWithCountdown": "Liên kết và bật đồng bộ ({sec})",
+      "bind": "Liên kết và bật đồng bộ",
+      "locateAuth": "Cho phép",
+      "locateAuthBody": "Bật đồng bộ vị trí sẽ cho phép truy cập vị trí trong game của bạn. Bật không?",
+      "authAndSync": "Cho phép và bắt đầu đồng bộ"
+    },
+    "config": {
+      "title": "Cấu hình theo dõi",
+      "server": "Máy chủ",
+      "uid": "UID người chơi",
+      "scopeTitle": "Phạm vi",
+      "scopeHint": "Chọn nhóm điểm gần cần nhắc khi đồng bộ.",
+      "scope": {
+        "balanced": {
+          "title": "Cân bằng",
+          "desc": "Theo dõi điểm do OEM chọn."
+        },
+        "collection": {
+          "title": "Vật phẩm",
+          "desc": "Theo dõi điểm trong <span class=\"keyword\">sưu tầm</span>/<span class=\"keyword\">khám phá</span>/<span class=\"keyword\">lưu trữ</span>."
+        },
+        "manual": {
+          "title": "Cẩm Nang Chế Tạo",
+          "desc": "Theo dõi điểm trong cẩm nang, gồm kẻ địch và cây hiếm."
+        }
+      },
+      "featureTitle": "Tính năng",
+      "trackPoints": "Theo dõi",
+      "heatmap": "Bản đồ nhiệt",
+      "configNote1": "Bật tính năng này đồng nghĩa bạn chấp nhận ",
+      "configNote2": " và các điều khoản khác."
+    },
+    "errors": {
+      "10000": "Phiên đồng bộ vị trí đã hết hạn. Vui lòng liên kết lại.",
+      "19001": "Không thể lấy vị trí. Hãy đăng nhập vào game.",
+      "19002": "Đồng bộ vị trí cần được cho phép trước khi bắt đầu.",
+      "noRole": "Không tìm thấy vai trò Endfield trong tài khoản này.",
+      "tokenRequired": "Dán phản hồi đầy đủ hoặc token.",
+      "bindingFailed": "Liên kết thất bại.",
+      "roleRequired": "Vui lòng chọn vai trò.",
+      "unlinkFailed": "Hủy liên kết thất bại.",
+      "authorizationFailed": "Cho phép thất bại."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

@@ -255,6 +255,68 @@
       "logout": "Wyloguj się"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Powiąż konto",
+      "docsLead": "Kontynuując, potwierdzasz zgodę na poniższe warunki:",
+      "tos": "Warunki korzystania",
+      "privacy": "Polityka prywatności",
+      "dataCollection": "Lista zbierania danych",
+      "disclaimer": "Wyłączenie odpowiedzialności",
+      "chinaTab": "Chiny (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Wejdź na <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>oficjalną stronę</a> i upewnij się, że jesteś zalogowany.",
+      "UniStep0": "Wejdź na <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>oficjalną stronę</a> i upewnij się, że jesteś zalogowany.",
+      "CNStep1": "Otwórz <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link API Hypergryph</a> i skopiuj pełną odpowiedź.",
+      "UniStep1": "Otwórz <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link API Gryphline</a> i skopiuj pełną odpowiedź.",
+      "Step2": "Wklej pełną odpowiedź, przeczytaj warunki i powiąż konto.",
+      "serverFallback": "Serwer",
+      "changeBinding": "Zmień powiązanie",
+      "unlink": "Odłącz",
+      "bindWithCountdown": "Powiąż i włącz synchronizację ({sec})",
+      "bind": "Powiąż i włącz synchronizację",
+      "locateAuth": "Autoryzuj",
+      "locateAuthBody": "Włączenie synchronizacji lokalizacji umożliwi dostęp do Twojej pozycji w grze. Włączyć?",
+      "authAndSync": "Autoryzuj i uruchom sync"
+    },
+    "config": {
+      "title": "Ustawienia śledzenia",
+      "server": "Serwer",
+      "uid": "UID gracza",
+      "scopeTitle": "Zakres",
+      "scopeHint": "Wybierz pobliskie grupy punktów do przypomnień podczas synchronizacji.",
+      "scope": {
+        "balanced": {
+          "title": "Zrównoważony",
+          "desc": "Śledź punkty wybrane przez OEM."
+        },
+        "collection": {
+          "title": "Kolekcje",
+          "desc": "Śledź punkty w <span class=\"keyword\">kolekcji</span>/<span class=\"keyword\">eksploracji</span>/<span class=\"keyword\">archiwum</span>."
+        },
+        "manual": {
+          "title": "Podręcznik tworzenia",
+          "desc": "Śledź punkty z podręcznika, w tym wrogów i rzadkie rośliny."
+        }
+      },
+      "featureTitle": "Funkcje",
+      "trackPoints": "Śledzenie",
+      "heatmap": "Mapa cieplna",
+      "configNote1": "Włączenie tej funkcji oznacza akceptację ",
+      "configNote2": " oraz innych warunków."
+    },
+    "errors": {
+      "10000": "Sesja synchronizacji lokalizacji wygasła. Powiąż ponownie.",
+      "19001": "Pozycja niedostępna. Zaloguj się do gry.",
+      "19002": "Synchronizacja lokalizacji wymaga autoryzacji przed startem.",
+      "noRole": "Brak ról Endfield na tym koncie.",
+      "tokenRequired": "Wklej pełną odpowiedź lub token.",
+      "bindingFailed": "Powiązanie nie powiodło się.",
+      "roleRequired": "Wybierz rolę.",
+      "unlinkFailed": "Odłączenie nie powiodło się.",
+      "authorizationFailed": "Autoryzacja nie powiodła się."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

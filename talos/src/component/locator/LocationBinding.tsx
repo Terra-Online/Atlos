@@ -231,7 +231,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({ open, onClose, onBoun
                                     <div className={styles.roleOptionMeta}>
                                         {role.serverName || role.serverType || `${t('locator.binding.serverFallback') || 'Server'} ${role.serverId}`}
                                         {' · '}
-                                        {t('locator.binding.levelPrefix') || 'Lv.'}
+                                        {'Lv.'}
                                         {role.level}
                                     </div>
                                 </button>

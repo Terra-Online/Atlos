@@ -255,6 +255,68 @@
       "logout": "Log Keluar"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Paut Akaun",
+      "docsLead": "Dengan meneruskan, anda mengesahkan persetujuan terhadap syarat di bawah:",
+      "tos": "Terma Perkhidmatan",
+      "privacy": "Dasar Privasi",
+      "dataCollection": "Senarai semak pengumpulan data",
+      "disclaimer": "Penafian Liabiliti",
+      "chinaTab": "China (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Pergi ke <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>laman rasmi</a> dan pastikan anda sudah log masuk.",
+      "UniStep0": "Pergi ke <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>laman rasmi</a> dan pastikan anda sudah log masuk.",
+      "CNStep1": "Buka <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>pautan API Hypergryph</a> dan salin respons penuh.",
+      "UniStep1": "Buka <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>pautan API Gryphline</a> dan salin respons penuh.",
+      "Step2": "Tampal respons penuh, baca terma, kemudian pautkan akaun.",
+      "serverFallback": "Server",
+      "changeBinding": "Tukar pautan",
+      "unlink": "Nyahpaut",
+      "bindWithCountdown": "Paut & aktifkan segerak lokasi ({sec})",
+      "bind": "Paut & aktifkan segerak lokasi",
+      "locateAuth": "Kebenaran",
+      "locateAuthBody": "Mengaktifkan segerak lokasi membenarkan akses ke lokasi dalam permainan anda. Mahu aktifkan?",
+      "authAndSync": "Benarkan & mula sync"
+    },
+    "config": {
+      "title": "Konfig Jejak",
+      "server": "Server",
+      "uid": "UID Pemain",
+      "scopeTitle": "Skop",
+      "scopeHint": "Pilih kumpulan titik berdekatan untuk peringatan semasa segerak lokasi.",
+      "scope": {
+        "balanced": {
+          "title": "Seimbang",
+          "desc": "Jejak titik yang dipilih OEM."
+        },
+        "collection": {
+          "title": "Koleksi",
+          "desc": "Jejak titik dalam <span class=\"keyword\">koleksi</span>/<span class=\"keyword\">eksplorasi</span>/<span class=\"keyword\">arkib</span>."
+        },
+        "manual": {
+          "title": "Manual Pembuatan",
+          "desc": "Jejak titik dari manual, termasuk musuh dan tumbuhan jarang."
+        }
+      },
+      "featureTitle": "Ciri",
+      "trackPoints": "Jejak",
+      "heatmap": "Peta haba",
+      "configNote1": "Mengaktifkan ciri ini bermaksud anda menerima ",
+      "configNote2": " dan terma lain."
+    },
+    "errors": {
+      "10000": "Sesi segerak lokasi tamat. Sila paut semula.",
+      "19001": "Lokasi tidak tersedia. Sila log masuk ke permainan.",
+      "19002": "Segerak lokasi memerlukan kebenaran sebelum bermula.",
+      "noRole": "Tiada peranan Endfield ditemui pada akaun ini.",
+      "tokenRequired": "Tampal respons penuh atau token.",
+      "bindingFailed": "Pautan gagal.",
+      "roleRequired": "Sila pilih peranan.",
+      "unlinkFailed": "Nyahpaut gagal.",
+      "authorizationFailed": "Kebenaran gagal."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

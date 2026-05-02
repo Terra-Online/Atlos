@@ -255,6 +255,68 @@
       "logout": "ออกจากระบบ"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "ผูกบัญชี",
+      "docsLead": "หากดำเนินการต่อ แสดงว่าคุณยอมรับข้อกำหนดด้านล่าง:",
+      "tos": "ข้อกำหนดการให้บริการ",
+      "privacy": "นโยบายความเป็นส่วนตัว",
+      "dataCollection": "เช็กลิสต์การเก็บข้อมูล",
+      "disclaimer": "ข้อจำกัดความรับผิด",
+      "chinaTab": "จีน (Hypergryph)",
+      "globalTab": "โกลบอล (Gryphline)",
+      "CNStep0": "ไปที่<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>เว็บไซต์ทางการ</a> และตรวจสอบว่าได้ล็อกอินแล้ว",
+      "UniStep0": "ไปที่<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>เว็บไซต์ทางการ</a> และตรวจสอบว่าได้ล็อกอินแล้ว",
+      "CNStep1": "เปิด<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>ลิงก์ API ของ Hypergryph</a> แล้วคัดลอกผลลัพธ์ทั้งหมด",
+      "UniStep1": "เปิด<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>ลิงก์ API ของ Gryphline</a> แล้วคัดลอกผลลัพธ์ทั้งหมด",
+      "Step2": "วางผลลัพธ์ทั้งหมด อ่านข้อกำหนด แล้วผูกบัญชี",
+      "serverFallback": "เซิร์ฟเวอร์",
+      "changeBinding": "เปลี่ยนการผูก",
+      "unlink": "ยกเลิกการผูก",
+      "bindWithCountdown": "ผูกและเปิดซิงก์ตำแหน่ง ({sec})",
+      "bind": "ผูกและเปิดซิงก์ตำแหน่ง",
+      "locateAuth": "อนุญาต",
+      "locateAuthBody": "การเปิดซิงก์ตำแหน่งจะให้สิทธิ์เข้าถึงตำแหน่งในเกมของคุณ ต้องการเปิดหรือไม่?",
+      "authAndSync": "อนุญาตและเริ่มซิงก์"
+    },
+    "config": {
+      "title": "ตั้งค่าการติดตาม",
+      "server": "เซิร์ฟเวอร์",
+      "uid": "UID ผู้เล่น",
+      "scopeTitle": "ขอบเขต",
+      "scopeHint": "เลือกกลุ่มจุดใกล้เคียงที่จะเตือนระหว่างการซิงก์ตำแหน่ง",
+      "scope": {
+        "balanced": {
+          "title": "สมดุล",
+          "desc": "ติดตามจุดที่ OEM เลือก"
+        },
+        "collection": {
+          "title": "ของสะสม",
+          "desc": "ติดตามจุดใน <span class=\"keyword\">สะสม</span>/<span class=\"keyword\">สำรวจ</span>/<span class=\"keyword\">คลังข้อมูล</span>."
+        },
+        "manual": {
+          "title": "คู่มือการสร้าง",
+          "desc": "ติดตามจุดจากคู่มือ รวมศัตรูและพืชหายาก"
+        }
+      },
+      "featureTitle": "ฟีเจอร์",
+      "trackPoints": "ติดตามจุด",
+      "heatmap": "ฮีตแมป",
+      "configNote1": "การเปิดฟีเจอร์นี้หมายถึงคุณยอมรับ ",
+      "configNote2": " และข้อกำหนดอื่นๆ"
+    },
+    "errors": {
+      "10000": "เซสชันซิงก์ตำแหน่งหมดอายุ กรุณาผูกใหม่",
+      "19001": "ไม่พบตำแหน่ง กรุณาเข้าสู่เกม",
+      "19002": "ซิงก์ตำแหน่งต้องได้รับอนุญาตก่อนเริ่ม",
+      "noRole": "ไม่พบบทบาท Endfield ในบัญชีนี้",
+      "tokenRequired": "วางผลลัพธ์ทั้งหมดหรือโทเคน",
+      "bindingFailed": "ผูกบัญชีล้มเหลว",
+      "roleRequired": "โปรดเลือกบทบาท",
+      "unlinkFailed": "ยกเลิกการผูกล้มเหลว",
+      "authorizationFailed": "อนุญาตล้มเหลว"
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

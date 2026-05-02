@@ -255,6 +255,68 @@
       "logout": "Se déconnecter"
     }
   },
+    "locator": {
+    "binding": {
+      "title": "Lier le compte",
+      "docsLead": "En continuant, vous confirmez accepter les termes ci-dessous :",
+      "tos": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité",
+      "dataCollection": "Liste de collecte de données",
+      "disclaimer": "Clause de non-responsabilité",
+      "chinaTab": "Chine (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Rendez-vous sur le <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>site officiel</a> et assurez-vous d'être connecté.",
+      "UniStep0": "Rendez-vous sur le <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>site officiel</a> et assurez-vous d'être connecté.",
+      "CNStep1": "Ouvrez le <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>lien API Hypergryph</a> et copiez la réponse complète.",
+      "UniStep1": "Ouvrez le <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>lien API Gryphline</a> et copiez la réponse complète.",
+      "Step2": "Collez la réponse complète, lisez les termes, puis liez votre compte.",
+      "serverFallback": "Serveur",
+      "changeBinding": "Changer la liaison",
+      "unlink": "Délier",
+      "bindWithCountdown": "Lier et activer la synchro ({sec})",
+      "bind": "Lier et activer la synchro",
+      "locateAuth": "Autoriser",
+      "locateAuthBody": "Activer la synchronisation de position permettra d'accéder à votre position en jeu. Voulez-vous l'activer ?",
+      "authAndSync": "Autoriser et démarrer la synchro"
+    },
+    "config": {
+      "title": "Config. de suivi",
+      "server": "Serveur",
+      "uid": "UID joueur",
+      "scopeTitle": "Portée",
+      "scopeHint": "Choisissez quels groupes de points proches doivent alerter pendant la synchro.",
+      "scope": {
+        "balanced": {
+          "title": "Équilibré",
+          "desc": "Suivre les points sélectionnés par OEM."
+        },
+        "collection": {
+          "title": "Collectibles",
+          "desc": "Suivre les points en <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
+        },
+        "manual": {
+          "title": "Manuel de fabrication",
+          "desc": "Suivre les points du manuel, y compris ennemis et plantes rares."
+        }
+      },
+      "featureTitle": "Fonctions",
+      "trackPoints": "Suivi",
+      "heatmap": "Carte thermique",
+      "configNote1": "Activer cette fonctionnalité signifie que vous acceptez nos ",
+      "configNote2": " et autres conditions."
+    },
+    "errors": {
+      "10000": "La session de synchro de position a expiré. Veuillez lier à nouveau.",
+      "19001": "Position indisponible. Veuillez vous connecter au jeu.",
+      "19002": "La synchronisation de position nécessite une autorisation avant de démarrer.",
+      "noRole": "Aucun rôle Endfield trouvé sur ce compte.",
+      "tokenRequired": "Collez la réponse complète ou le token.",
+      "bindingFailed": "Liaison échouée.",
+      "roleRequired": "Veuillez sélectionner un rôle.",
+      "unlinkFailed": "Échec du déliement.",
+      "authorizationFailed": "Autorisation échouée."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

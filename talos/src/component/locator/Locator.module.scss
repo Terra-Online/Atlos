@@ -27,7 +27,7 @@
 
 ol.bindStep {
     list-style: none;
-    font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family: 'FedraSansPro Normal', 'UD_Shingo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-weight: 500;
     text-decoration: none;
     font-size: 15px;
@@ -326,7 +326,7 @@ ol.bindStep {
     .roleBar {
         width: 4px;
         align-self: stretch;
-        height: 3.5rem;
+        height: 100%;
         border-radius: 1px;
         background: var(--locator-card-bar);
     }

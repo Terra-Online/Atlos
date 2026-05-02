@@ -281,8 +281,6 @@
       "UniStep1": "Open the <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API link</a>, then copy the full response.",
       "Step2": "Paste the full response, read the terms, then bind your account.",
       "serverFallback": "Server",
-      "levelPrefix": "Lv.",
-      "currentBinding": "Current Binding",
       "changeBinding": "Change Binding",
       "unlink": "Unlink",
       "bindWithCountdown": "Bind and enable location sync ({sec})",

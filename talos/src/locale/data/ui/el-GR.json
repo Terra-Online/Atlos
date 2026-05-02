@@ -255,6 +255,68 @@
       "logout": "Αποσύνδεση"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Σύνδεση λογαριασμού",
+      "docsLead": "Συνεχίζοντας, επιβεβαιώνετε ότι αποδέχεστε τους παρακάτω όρους:",
+      "tos": "Όροι χρήσης",
+      "privacy": "Πολιτική απορρήτου",
+      "dataCollection": "Λίστα συλλογής δεδομένων",
+      "disclaimer": "Αποποίηση ευθύνης",
+      "chinaTab": "Κίνα (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Μεταβείτε στον <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>επίσημο ιστότοπο</a> και βεβαιωθείτε ότι έχετε συνδεθεί.",
+      "UniStep0": "Μεταβείτε στον <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>επίσημο ιστότοπο</a> και βεβαιωθείτε ότι έχετε συνδεθεί.",
+      "CNStep1": "Ανοίξτε τον <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>σύνδεσμο Hypergryph API</a> και αντιγράψτε την πλήρη απάντηση.",
+      "UniStep1": "Ανοίξτε τον <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>σύνδεσμο Gryphline API</a> και αντιγράψτε την πλήρη απάντηση.",
+      "Step2": "Επικολλήστε την πλήρη απάντηση, διαβάστε τους όρους και συνδέστε τον λογαριασμό σας.",
+      "serverFallback": "Διακομιστής",
+      "changeBinding": "Αλλαγή σύνδεσης",
+      "unlink": "Αποσύνδεση",
+      "bindWithCountdown": "Σύνδεση & ενεργοποίηση συγχρονισμού ({sec})",
+      "bind": "Σύνδεση & ενεργοποίηση συγχρονισμού",
+      "locateAuth": "Εξουσιοδότηση",
+      "locateAuthBody": "Η ενεργοποίηση συγχρονισμού τοποθεσίας επιτρέπει πρόσβαση στη θέση σας στο παιχνίδι. Να ενεργοποιηθεί;",
+      "authAndSync": "Εξουσιοδότηση και έναρξη συγχρονισμού"
+    },
+    "config": {
+      "title": "Ρυθμίσεις παρακολούθησης",
+      "server": "Διακομιστής",
+      "uid": "UID παίκτη",
+      "scopeTitle": "Εμβέλεια",
+      "scopeHint": "Επιλέξτε ποιες κοντινές ομάδες σημείων θα ενεργοποιούν υπενθυμίσεις κατά τον συγχρονισμό.",
+      "scope": {
+        "balanced": {
+          "title": "Ισορροπημένο",
+          "desc": "Παρακολούθηση σημείων που επέλεξε το OEM."
+        },
+        "collection": {
+          "title": "Συλλεκτικά",
+          "desc": "Παρακολούθηση σημείων σε <span class=\"keyword\">συλλογή</span>/<span class=\"keyword\">εξερεύνηση</span>/<span class=\"keyword\">αρχείο</span>."
+        },
+        "manual": {
+          "title": "Εγχειρίδιο κατασκευής",
+          "desc": "Παρακολούθηση σημείων από το εγχειρίδιο, μαζί με εχθρούς και σπάνια φυτά."
+        }
+      },
+      "featureTitle": "Λειτουργίες",
+      "trackPoints": "Παρακολούθηση",
+      "heatmap": "Θερμικός χάρτης",
+      "configNote1": "Η ενεργοποίηση της λειτουργίας σημαίνει ότι αποδέχεστε τους ",
+      "configNote2": " και άλλους όρους."
+    },
+    "errors": {
+      "10000": "Η συνεδρία συγχρονισμού τοποθεσίας έληξε. Συνδεθείτε ξανά.",
+      "19001": "Η θέση δεν είναι διαθέσιμη. Συνδεθείτε στο παιχνίδι.",
+      "19002": "Ο συγχρονισμός τοποθεσίας απαιτεί εξουσιοδότηση πριν ξεκινήσει.",
+      "noRole": "Δεν βρέθηκαν ρόλοι Endfield σε αυτόν τον λογαριασμό.",
+      "tokenRequired": "Επικολλήστε την πλήρη απάντηση ή το token.",
+      "bindingFailed": "Η σύνδεση απέτυχε.",
+      "roleRequired": "Επιλέξτε ρόλο.",
+      "unlinkFailed": "Η αποσύνδεση απέτυχε.",
+      "authorizationFailed": "Η εξουσιοδότηση απέτυχε."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

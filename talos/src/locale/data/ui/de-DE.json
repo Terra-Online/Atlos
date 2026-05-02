@@ -255,6 +255,68 @@
       "logout": "Abmelden"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Konto verbinden",
+      "docsLead": "Wenn Sie fortfahren, bestätigen Sie, dass Sie den folgenden Bedingungen zustimmen:",
+      "tos": "Nutzungsbedingungen",
+      "privacy": "Datenschutzerklärung",
+      "dataCollection": "Checkliste zur Datenerfassung",
+      "disclaimer": "Haftungsausschluss",
+      "chinaTab": "China (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Gehen Sie auf die <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>offizielle Website</a> und stellen Sie sicher, dass Sie angemeldet sind.",
+      "UniStep0": "Gehen Sie auf die <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>offizielle Website</a> und stellen Sie sicher, dass Sie angemeldet sind.",
+      "CNStep1": "Öffnen Sie den <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph-API-Link</a> und kopieren Sie die vollständige Antwort.",
+      "UniStep1": "Öffnen Sie den <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline-API-Link</a> und kopieren Sie die vollständige Antwort.",
+      "Step2": "Fügen Sie die vollständige Antwort ein, lesen Sie die Bedingungen und verbinden Sie Ihr Konto.",
+      "serverFallback": "Server",
+      "changeBinding": "Bindung wechseln",
+      "unlink": "Entkoppeln",
+      "bindWithCountdown": "Binden & Standortsync aktivieren ({sec})",
+      "bind": "Binden & Standortsync aktivieren",
+      "locateAuth": "Autorisieren",
+      "locateAuthBody": "Das Aktivieren der Standortsync erlaubt den Zugriff auf Ihre In-Game-Position. Möchten Sie aktivieren?",
+      "authAndSync": "Autorisieren & Sync starten"
+    },
+    "config": {
+      "title": "Tracking-Konfig",
+      "server": "Server",
+      "uid": "Spieler-UID",
+      "scopeTitle": "Bereich",
+      "scopeHint": "Wählen Sie, welche nahegelegenen Punktgruppen während der Standortsync erinnern sollen.",
+      "scope": {
+        "balanced": {
+          "title": "Ausgewogen",
+          "desc": "Punkte verfolgen, die OEM ausgewählt hat."
+        },
+        "collection": {
+          "title": "Sammlungen",
+          "desc": "Punkte in <span class=\"keyword\">Sammlung</span>/<span class=\"keyword\">Erkundung</span>/<span class=\"keyword\">Archiv</span> verfolgen."
+        },
+        "manual": {
+          "title": "Herstellungshandbuch",
+          "desc": "Punkte aus dem Handbuch verfolgen, einschließlich Gegnern und seltener Pflanzen."
+        }
+      },
+      "featureTitle": "Funktion",
+      "trackPoints": "Tracking",
+      "heatmap": "Heatmap",
+      "configNote1": "Durch Aktivieren dieser Funktion akzeptieren Sie unsere ",
+      "configNote2": " und weitere Bedingungen."
+    },
+    "errors": {
+      "10000": "Standortsync-Sitzung abgelaufen. Bitte erneut binden.",
+      "19001": "Position nicht verfügbar. Bitte im Spiel anmelden.",
+      "19002": "Standortsync benötigt Autorisierung, bevor er starten kann.",
+      "noRole": "Keine Endfield-Rollen für dieses Konto gefunden.",
+      "tokenRequired": "Fügen Sie die vollständige Antwort oder das Token ein.",
+      "bindingFailed": "Bindung fehlgeschlagen.",
+      "roleRequired": "Bitte Rolle auswählen.",
+      "unlinkFailed": "Entkoppeln fehlgeschlagen.",
+      "authorizationFailed": "Autorisierung fehlgeschlagen."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",

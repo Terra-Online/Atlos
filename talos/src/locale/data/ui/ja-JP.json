@@ -255,6 +255,68 @@
       "logout": "ログアウト"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "アカウント連携",
+      "docsLead": "続行すると、以下のすべての規約に同意したものとみなされます：",
+      "tos": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "dataCollection": "個人情報収集および利用チェックリスト",
+      "disclaimer": "免責事項",
+      "chinaTab": "中国 (Hypergryph)",
+      "globalTab": "グローバル (Gryphline)",
+      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>公式サイト</a>にアクセスし、ログイン済みであることを確認してください。",
+      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>公式サイト</a>にアクセスし、ログイン済みであることを確認してください。",
+      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph APIリンク</a>を開き、レスポンス全文をコピーしてください。",
+      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline APIリンク</a>を開き、レスポンス全文をコピーしてください。",
+      "Step2": "レスポンス全文を貼り付け、規約を確認したうえでアカウントを連携してください。",
+      "serverFallback": "サーバー",
+      "changeBinding": "連携を変更",
+      "unlink": "連携解除",
+      "bindWithCountdown": "連携して位置同期を有効化（{sec}）",
+      "bind": "連携して位置同期を有効化",
+      "locateAuth": "許可",
+      "locateAuthBody": "位置同期を有効にすると、ゲーム内の位置情報へのアクセスが許可されます。有効にしますか？",
+      "authAndSync": "許可して同期開始"
+    },
+    "config": {
+      "title": "追跡設定",
+      "server": "サーバー",
+      "uid": "プレイヤーUID",
+      "scopeTitle": "範囲",
+      "scopeHint": "位置同期中に通知する周辺ポイントの種類を選択してください。",
+      "scope": {
+        "balanced": {
+          "title": "バランス",
+          "desc": "推奨されるポイントを追跡します。"
+        },
+        "collection": {
+          "title": "収集物",
+          "desc": "<span class=\"keyword\">収集</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">アーカイブ</span>関連のポイントを追跡します。"
+        },
+        "manual": {
+          "title": "製作手帳",
+          "desc": "手帳に掲載されているポイント（敵や希少資源を含む）を追跡します。"
+        }
+      },
+      "featureTitle": "機能",
+      "trackPoints": "マーカー追跡",
+      "heatmap": "ヒートマップ",
+      "configNote1": "この機能を有効にすると、",
+      "configNote2": "およびその他の規約に同意したものとみなされます。"
+    },
+    "errors": {
+      "10000": "位置同期セッションの有効期限が切れました。再連携してください。",
+      "19001": "位置情報を取得できません。ゲームにログインしてください。",
+      "19002": "位置同期を開始するには許可が必要です。",
+      "noRole": "このアカウントに終末地のキャラクターが見つかりません。",
+      "tokenRequired": "レスポンス全文またはトークンを貼り付けてください。",
+      "bindingFailed": "連携に失敗しました。",
+      "roleRequired": "キャラクターを選択してください。",
+      "unlinkFailed": "連携解除に失敗しました。",
+      "authorizationFailed": "許可に失敗しました。"
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",
