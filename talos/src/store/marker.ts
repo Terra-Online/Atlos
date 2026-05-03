@@ -30,8 +30,12 @@ interface IMarkerStore {
 
     // Persisted selected points (for UI selected state)
     selectedPoints: string[];
+    // Non-persisted selected points mounted by transient flows such as locator reminders
+    temporarySelectedPoints: string[];
     toggleSelected: (id: string) => void;
     setSelected: (id: string, value: boolean) => void;
+    setTemporarySelected: (id: string, value: boolean) => void;
+    clearTemporarySelected: (ids?: Iterable<string>) => void;
 
     /** Version of the dataset when selectedPoints was last modified */
     datasetVersion: number;
@@ -96,6 +100,7 @@ export const useMarkerStore = create<IMarkerStore>()(
             },
             datasetVersion: DATASET_VERSION,
             selectedPoints: [],
+            temporarySelectedPoints: [],
             toggleSelected: (id: string) => {
                 const exists = get().selectedPoints.includes(id);
                 get().setSelected(id, !exists);
@@ -118,6 +123,34 @@ export const useMarkerStore = create<IMarkerStore>()(
                             datasetVersion: DATASET_VERSION,
                         };
                     }
+                });
+            },
+            setTemporarySelected: (id: string, value: boolean) => {
+                set((state) => {
+                    const exists = state.temporarySelectedPoints.includes(id);
+                    if (value) {
+                        return exists
+                            ? {}
+                            : { temporarySelectedPoints: [...state.temporarySelectedPoints, id] };
+                    }
+                    return exists
+                        ? { temporarySelectedPoints: state.temporarySelectedPoints.filter((x) => x !== id) }
+                        : {};
+                });
+            },
+            clearTemporarySelected: (ids?: Iterable<string>) => {
+                set((state) => {
+                    if (!ids) {
+                        return state.temporarySelectedPoints.length > 0
+                            ? { temporarySelectedPoints: [] }
+                            : {};
+                    }
+                    const idSet = new Set(ids);
+                    if (idSet.size === 0) return {};
+                    const next = state.temporarySelectedPoints.filter((id) => !idSet.has(id));
+                    return next.length !== state.temporarySelectedPoints.length
+                        ? { temporarySelectedPoints: next }
+                        : {};
                 });
             },
             markerDataVersion: 0,

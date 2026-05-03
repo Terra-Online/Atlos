@@ -33,6 +33,7 @@ export class ClusterLayer {
     private filterKeys: string[] = [];
     private activeSubregions = new Set<string>();
     private temporaryVisibleIds = new Set<string>();
+    private checkedVisibleOverrideIds = new Set<string>();
     /**
      * 延迟移除定时器，和普通点位保持一致，用于淡出动画
      */
@@ -118,6 +119,13 @@ export class ClusterLayer {
 
     setTemporaryVisibleIds(ids: Iterable<string>) {
         this.temporaryVisibleIds = new Set(ids);
+        if (this.enabled) {
+            this.refreshClusters();
+        }
+    }
+
+    setCheckedVisibleOverrideIds(ids: Iterable<string>) {
+        this.checkedVisibleOverrideIds = new Set(ids);
         if (this.enabled) {
             this.refreshClusters();
         }
@@ -266,10 +274,11 @@ export class ClusterLayer {
             // 目标集合（需要在聚合中的点位）- 排除已完成的點位
             const desiredIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
                 const d = markerDataDict[id];
+                const forceVisible = this.checkedVisibleOverrideIds.has(id);
                 return d
                     && this.activeSubregions.has(d.subregId)
-                    && !completedMarkerIds.has(id)
-                    && (shouldBeActive || this.temporaryVisibleIds.has(id));
+                    && (!completedMarkerIds.has(id) || forceVisible)
+                    && (shouldBeActive || this.temporaryVisibleIds.has(id) || forceVisible);
             });
             const desiredSet = new Set(desiredIds);
 

@@ -141,10 +141,14 @@ const detectMigrationNeeds = (): {
 
   const activeCount = activePoints?.length ?? 0;
   const selectedCount = selectedPoints?.length ?? 0;
+  const pointsNeedMigration = activePoints !== null && activePoints.some((id) => !isNumericId(id));
+  const filterNeedMigration = selectedPoints !== null && selectedPoints.some((id) => !isNumericId(id));
 
-  // Recovery needed when selectedPoints exists and activePoints is
-  // disproportionately small (< 30% of selected), indicating data loss.
-  const needsRecovery = selectedCount > 0 && activeCount < selectedCount * RECOVERY_THRESHOLD;
+  // Recovery is only valid while migrating legacy ID formats. Current selectedPoints
+  // are UI selection state and must not be promoted to collected activePoints on refresh.
+  const needsRecovery = (pointsNeedMigration || filterNeedMigration)
+    && selectedCount > 0
+    && activeCount < selectedCount * RECOVERY_THRESHOLD;
 
   // Check if stored version is behind the current build version.
   // Old data without datasetVersion is treated as version 0 (needs migration).
@@ -152,8 +156,8 @@ const detectMigrationNeeds = (): {
   const storedVersionOutdated = storedVersion < DATASET_VERSION;
 
   return {
-    pointsNeedMigration: activePoints !== null && activePoints.some((id) => !isNumericId(id)),
-    filterNeedMigration: selectedPoints !== null && selectedPoints.some((id) => !isNumericId(id)),
+    pointsNeedMigration,
+    filterNeedMigration,
     activePointsCount: activeCount,
     selectedPointsCount: selectedCount,
     needsRecovery,
@@ -169,7 +173,7 @@ const detectMigrationNeeds = (): {
  * Migrate `activePoints` inside `points-storage`.
  * Returns true if localStorage was actually written.
  */
-const migratePointsStorage = (maps: Record<string, string>[]): boolean => {
+const migratePointsStorage = (maps: Record<string, string>[], allowRecovery: boolean): boolean => {
   const storageKey = 'points-storage';
   const raw = localStorage.getItem(storageKey);
   if (!raw) return false;
@@ -188,7 +192,7 @@ const migratePointsStorage = (maps: Record<string, string>[]): boolean => {
     let recoveredFromSelected = false;
     let merged = existingActive.map((id) => migrateIdThroughMaps(id, maps));
 
-    if (filterRaw) {
+    if (allowRecovery && filterRaw) {
       try {
         const filterData = JSON.parse(filterRaw) as Record<string, unknown>;
         const filterState = filterData.state as Record<string, unknown> | undefined;
@@ -351,7 +355,7 @@ export const runStorageMigration = async (): Promise<boolean> => {
     let migrated = false;
 
     if (pointsNeedMigration || needsRecovery) {
-      migrated = migratePointsStorage(maps) || migrated;
+      migrated = migratePointsStorage(maps, needsRecovery) || migrated;
     }
     if (filterNeedMigration) {
       migrated = migrateMarkerFilter(maps) || migrated;

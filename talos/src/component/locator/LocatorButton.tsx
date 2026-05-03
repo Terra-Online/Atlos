@@ -50,6 +50,24 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
     const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
     const mobileShellRef = useRef<HTMLDivElement | null>(null);
+    const mobilePrimaryButtonRef = useRef<HTMLButtonElement | null>(null);
+
+    const resetMobileShellScroll = useCallback(() => {
+        if (!mobileShellRef.current) return;
+        mobileShellRef.current.scrollLeft = 0;
+    }, []);
+
+    const collapseMobileShell = useCallback(() => {
+        setMobileExpanded(false);
+        requestAnimationFrame(resetMobileShellScroll);
+    }, [resetMobileShellScroll]);
+
+    const focusMobilePrimaryButton = useCallback(() => {
+        requestAnimationFrame(() => {
+            resetMobileShellScroll();
+            mobilePrimaryButtonRef.current?.focus({ preventScroll: true });
+        });
+    }, [resetMobileShellScroll]);
 
     const refreshBindingStatus = useCallback(() => {
         if (!sessionUser) {
@@ -83,7 +101,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
 
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (mobileShellRef.current?.contains(event.target as Node)) return;
-            setMobileExpanded(false);
+            collapseMobileShell();
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -93,7 +111,13 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [mobileExpanded]);
+    }, [collapseMobileShell, mobileExpanded]);
+
+    useEffect(() => {
+        if (mobileExpanded) return;
+        const raf = requestAnimationFrame(resetMobileShellScroll);
+        return () => cancelAnimationFrame(raf);
+    }, [mobileExpanded, resetMobileShellScroll]);
 
     useEffect(() => {
         if (bindReq <= 0) return;
@@ -157,7 +181,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
 
     const handleMobileClick = useCallback(() => {
         if (mobileExpanded) {
-            setMobileExpanded(false);
+            collapseMobileShell();
             handleClick();
             return;
         }
@@ -188,7 +212,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                 setBound(false);
                 setBindingOpen(true);
             });
-    }, [bound, handleClick, mobileExpanded, sessionUser]);
+    }, [bound, collapseMobileShell, handleClick, mobileExpanded, sessionUser]);
 
     const Icon = resolveIcon(viewMode);
 
@@ -202,6 +226,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                     data-guide="mobile-locator-shell"
                 >
                     <button
+                        ref={mobilePrimaryButtonRef}
                         type="button"
                         className={styles.mobileLocatorButton}
                         data-active={viewMode !== 'off'}
@@ -213,8 +238,9 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                     <button
                         type="button"
                         className={styles.mobileLocatorConfigButton}
-                        onClick={() => {
-                            setMobileExpanded(false);
+                        onClick={(event) => {
+                            event.currentTarget.blur();
+                            collapseMobileShell();
                             setConfigOpen(true);
                         }}
                         aria-label={t('locator.config.title') || 'Tracking Config'}
@@ -227,9 +253,11 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                     <Suspense fallback={null}>
                         <LocationBinding
                             open={bindingOpen}
+                            modalSize="full"
                             onClose={() => {
                                 setBindingOpen(false);
                                 refreshBindingStatus();
+                                focusMobilePrimaryButton();
                             }}
                             onBound={() => {
                                 setBound(true);
@@ -245,6 +273,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                             onClose={() => {
                                 setConfigOpen(false);
                                 refreshBindingStatus();
+                                focusMobilePrimaryButton();
                             }}
                             onChangeBinding={() => {
                                 setConfigOpen(false);
@@ -252,7 +281,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop' }) =>
                             }}
                             onBindingRemoved={() => {
                                 setBound(false);
-                                setMobileExpanded(false);
+                                collapseMobileShell();
                             }}
                         />
                     </Suspense>

@@ -55,7 +55,10 @@ export class MarkerLayer {
     private pendingRemovalTimers: Record<string, number> = {};
     private pulseCleanupDict: Record<string, () => void> = {};
     private proximityPulseIds = new Set<string>();
+    private proximityTemporarySelectedIds = new Set<string>();
+    private proximityTemporaryVisibleIds = new Set<string>();
     private temporaryVisibleIds = new Set<string>();
+    private checkedVisibleOverrideIds = new Set<string>();
     private proximityUpdateSeq = 0;
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
@@ -187,10 +190,51 @@ export class MarkerLayer {
         this.proximityUpdateSeq += 1;
         this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
         this.proximityPulseIds.clear();
+        this.clearProximityTemporaryMarkers(this.proximityTemporarySelectedIds);
+    }
+
+    private clearProximityTemporaryMarkers(ids: Iterable<string>) {
+        const idList = [...ids];
+        if (idList.length === 0) return;
+
+        useMarkerStore.getState().clearTemporarySelected(idList);
+
+        const changedSelectedPoints: { id: string; selected: boolean }[] = [];
+        let visibilityChanged = false;
+        idList.forEach((id) => {
+            this.proximityTemporarySelectedIds.delete(id);
+            if (this.proximityTemporaryVisibleIds.has(id)) {
+                this.temporaryVisibleIds.delete(id);
+                this.proximityTemporaryVisibleIds.delete(id);
+                visibilityChanged = true;
+            }
+            if (!useMarkerStore.getState().selectedPoints.includes(id)) {
+                changedSelectedPoints.push({ id, selected: false });
+            }
+        });
+
+        this.syncTemporaryVisibleMarkers();
+        if (changedSelectedPoints.length > 0) {
+            this.updateSelectedMarkers(changedSelectedPoints);
+        }
+        if (visibilityChanged) {
+            this.filterMarker(this.activeFilterKeys);
+        }
     }
 
     private syncTemporaryVisibleMarkers() {
         this.clusterLayer.setTemporaryVisibleIds(this.temporaryVisibleIds);
+    }
+
+    private syncCheckedVisibleOverrides() {
+        this.clusterLayer.setCheckedVisibleOverrideIds(this.checkedVisibleOverrideIds);
+    }
+
+    prepareMarkerCheck(markerData: IMarkerData, context: { filterWasActive: boolean }): boolean {
+        if (context.filterWasActive && !this.temporaryVisibleIds.has(markerData.id)) return false;
+        this.checkedVisibleOverrideIds.add(markerData.id);
+        this.syncCheckedVisibleOverrides();
+        return true;
     }
 
     updateProximityReminder(params: {
@@ -215,7 +259,10 @@ export class MarkerLayer {
 
         const markerStore = useMarkerStore.getState();
         const collected = new Set(getActivePoints());
-        const selected = new Set(markerStore.selectedPoints);
+        const selected = new Set([
+            ...markerStore.selectedPoints,
+            ...markerStore.temporarySelectedPoints,
+        ]);
         const nextPulseIds = new Set<string>();
 
         Object.values(this.markerDataDict).forEach((markerData) => {
@@ -236,11 +283,19 @@ export class MarkerLayer {
             if (!inRange) return;
 
             nextPulseIds.add(markerData.id);
+            if (!markerStore.selectedPoints.includes(markerData.id)) {
+                useMarkerStore.getState().setTemporarySelected(markerData.id, true);
+                this.proximityTemporarySelectedIds.add(markerData.id);
+            }
             if (!selected.has(markerData.id)) {
-                useMarkerStore.getState().setSelected(markerData.id, true);
+                selected.add(markerData.id);
                 this.updateSelectedMarkers([{ id: markerData.id, selected: true }]);
             }
         });
+
+        this.clearProximityTemporaryMarkers(
+            [...this.proximityTemporarySelectedIds].filter((id) => !nextPulseIds.has(id)),
+        );
 
         this.proximityPulseIds.forEach((id) => {
             if (!nextPulseIds.has(id)) {
@@ -256,7 +311,7 @@ export class MarkerLayer {
                 if (seq !== this.proximityUpdateSeq) return;
                 if (collected.has(id)) continue;
                 if (!this.pulseCleanupDict[id]) {
-                    await this.ensureMarkerVisible(id);
+                    await this.ensureMarkerVisible(id, { source: 'proximity' });
                 }
                 if (seq !== this.proximityUpdateSeq) return;
                 if (getActivePoints().includes(id)) {
@@ -272,7 +327,7 @@ export class MarkerLayer {
         void showPulses();
     }
 
-    async ensureMarkerVisible(id: string): Promise<boolean> {
+    async ensureMarkerVisible(id: string, options?: { source?: 'proximity' }): Promise<boolean> {
         const markerData = this.markerDataDict[id];
         const layer = this.markerDict[id];
         if (!markerData || !layer) return false;
@@ -290,8 +345,14 @@ export class MarkerLayer {
 
         if (this.activeFilterKeys.includes(markerData.type)) {
             this.temporaryVisibleIds.delete(id);
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.delete(id);
+            }
         } else {
             this.temporaryVisibleIds.add(id);
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.add(id);
+            }
         }
         this.syncTemporaryVisibleMarkers();
 
@@ -334,12 +395,14 @@ export class MarkerLayer {
                 if (isCollected) {
                     this.stopMarkerPulse(id);
                     this.proximityPulseIds.delete(id);
-                    this.temporaryVisibleIds.delete(id);
+                    if (!this.checkedVisibleOverrideIds.has(id)) {
+                        this.temporaryVisibleIds.delete(id);
+                    }
                     this.syncTemporaryVisibleMarkers();
                     inner.classList.add(styles.checked);
 
                     // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
-                    if (shouldHideCompleted) {
+                    if (shouldHideCompleted && !this.checkedVisibleOverrideIds.has(id)) {
                         const markerData = this.markerDataDict[id];
                         if (!markerData) return;
 
@@ -367,6 +430,8 @@ export class MarkerLayer {
                         }, 160);
                     }
                 } else {
+                    this.checkedVisibleOverrideIds.delete(id);
+                    this.syncCheckedVisibleOverrides();
                     inner.classList.remove(styles.checked);
                 }
             }
@@ -402,7 +467,14 @@ export class MarkerLayer {
                 return;
             }
 
-            this.markerDict[marker.id] = getMarkerLayer(marker, this._onSwitchCurrentMarker, this.collectedPoints);
+            this.markerDict[marker.id] = getMarkerLayer(
+                marker,
+                this._onSwitchCurrentMarker,
+                this.collectedPoints,
+                {
+                    beforeCheck: (markerData, context) => this.prepareMarkerCheck(markerData, context),
+                },
+            );
             this.markerDataDict[marker.id] = marker;
 
             this.markerTypeMap[typeKey].push(marker.id);
@@ -416,10 +488,12 @@ export class MarkerLayer {
     }
 
     async changeRegion(regionId: string) {
+        this.clearProximityReminder();
         this.temporaryVisibleIds.clear();
+        this.proximityTemporaryVisibleIds.clear();
         this.syncTemporaryVisibleMarkers();
-        this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
-        this.proximityPulseIds.clear();
+        this.checkedVisibleOverrideIds.clear();
+        this.syncCheckedVisibleOverrides();
 
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
@@ -444,6 +518,13 @@ export class MarkerLayer {
     filterMarker(typeKeys: string[]) {
         this.activeFilterKeys = typeKeys;
         const activeTypeSet = new Set(typeKeys);
+        this.checkedVisibleOverrideIds.forEach((id) => {
+            const markerData = this.markerDataDict[id];
+            if (!markerData || !activeTypeSet.has(markerData.type)) {
+                this.checkedVisibleOverrideIds.delete(id);
+            }
+        });
+        this.syncCheckedVisibleOverrides();
         this.temporaryVisibleIds.forEach((id) => {
             const markerData = this.markerDataDict[id];
             if (markerData && activeTypeSet.has(markerData.type)) {
@@ -477,7 +558,9 @@ export class MarkerLayer {
             }
 
             // Check if marker should be shown: must be in filter AND not completed (if hiding completed is enabled)
-            const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id)) && !completedMarkerIds.has(id);
+            const forceVisible = this.checkedVisibleOverrideIds.has(id);
+            const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
+                && (!completedMarkerIds.has(id) || forceVisible);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 

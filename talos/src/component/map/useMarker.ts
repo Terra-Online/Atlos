@@ -22,6 +22,7 @@ export function useMarker(
     const { filter } = useMarkerStore();
     const collectedPoints = useUserRecord();
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
+    const temporarySelectedPoints = useMarkerStore((state) => state.temporarySelectedPoints);
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     const prefsHideCompletedMarkers = useHideCompletedMarkers();
     const locatorViewMode = useLocatorStore((state) => state.viewMode);
@@ -103,7 +104,7 @@ export function useMarker(
         const markerLayer = mapCore?.markerLayer;
         if (!markerLayer) return;
 
-        const current = new Set(selectedPoints);
+        const current = new Set([...selectedPoints, ...temporarySelectedPoints]);
 
         const added = [...current].filter((id) => !prevSelectedRef.current.has(id));
         const removed = [...prevSelectedRef.current].filter((id) => !current.has(id));
@@ -122,7 +123,7 @@ export function useMarker(
 
         // Update ref for next comparison
         prevSelectedRef.current = current;
-    }, [selectedPoints, mapCore, markerDataVersion]);
+    }, [selectedPoints, temporarySelectedPoints, mapCore, markerDataVersion]);
 
     useEffect(() => {
         const markerLayer = mapCore?.markerLayer;

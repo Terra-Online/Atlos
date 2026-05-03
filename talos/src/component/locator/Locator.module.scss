@@ -82,7 +82,12 @@ ol.bindStep {
     box-shadow: 0 3px 12px rgba($black-1, 0.3);
     pointer-events: auto;
     overflow: hidden;
+    overscroll-behavior: contain;
     transition: width 0.2s ease, gap 0.2s ease;
+
+    @supports (overflow: clip) {
+        overflow: clip;
+    }
 
     &[data-expanded='true'] {
         width: 120px;

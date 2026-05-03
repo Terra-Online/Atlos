@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import parse from 'html-react-parser';
-import Modal from '@/component/modal/modal';
+import Modal, { type ModalProps } from '@/component/modal/modal';
 import { AccessButton } from '@/component/login/access';
 import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
@@ -34,9 +34,10 @@ interface LocationBindingProps {
     open: boolean;
     onClose: () => void;
     onBound?: (binding: EFBindingSummary) => void;
+    modalSize?: ModalProps['size'];
 }
 
-const LocationBinding: React.FC<LocationBindingProps> = ({ open, onClose, onBound }) => {
+const LocationBinding: React.FC<LocationBindingProps> = ({ open, onClose, onBound, modalSize = 'l' }) => {
     const t = useTranslateUI();
     const locale = useLocale();
     const existingTrackerConfig = useMemo(() => readEFTrackerConf(), []);
@@ -192,7 +193,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({ open, onClose, onBoun
     return (
         <Modal
             open={open}
-            size="l"
+            size={modalSize}
             onClose={close}
             title={t('locator.binding.title')}
             icon={<BindingIcon />}
