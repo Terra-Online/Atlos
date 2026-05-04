@@ -894,6 +894,10 @@
                 "icon": "phone",
                 "ctgr": "paper"
             },
+            "nar_paper_map02_62_1": {
+                "icon": "exbook",
+                "ctgr": "paper"
+            },
             "nar_paper_map02_63_1": {
                 "icon": "ntbook",
                 "ctgr": "paper"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import L from 'leaflet';
 import styles from './UIOverlay.module.scss';
 
@@ -6,7 +6,6 @@ import LanguageModal from '@/component/language/language';
 import GroupsModal from '@/component/group/group';
 import ToSModal from '@/component/tos/tos';
 import SettingsModal from '@/component/settings/settings';
-import AnnouncementModal from '@/component/announcement/announcement';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
 import { RegionContainer } from '@/component/regSwitch/regSwitch';
@@ -35,14 +34,17 @@ import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 import { useAnnouncementFlow } from './useAnnFlow';
 
+const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
+
 interface UIOverlayProps {
     map?: L.Map;
     isSidebarOpen: boolean;
     visible?: boolean;
     onHideUI?: () => void;
+    userGuideReady?: boolean;
 }
 
-const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = true, onHideUI }) => {
+const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = true, onHideUI, userGuideReady = false }) => {
     const t = useTranslateUI();
     const locale = useLocale();
     const [langOpen, setLangOpen] = useState(false);
@@ -50,6 +52,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
+    const [announcementMounted, setAnnouncementMounted] = useState(false);
     const {
         announcements,
         hasUnreadAnnouncement,
@@ -70,6 +73,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
 
     useEffect(() => {
         if (!announcementChecked) return;
+        if (!userGuideReady) return;
         if (isUserGuideOpen) return;
 
         if (hasUnreadAnnouncement && !autoOpenedOnce) {
@@ -80,7 +84,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
         }
 
         setAnnouncementFlowReady(true);
-    }, [announcementChecked, isUserGuideOpen, hasUnreadAnnouncement, autoOpenedOnce, setAnnouncementFlowReady, setIsAnnouncementOpen]);
+    }, [announcementChecked, userGuideReady, isUserGuideOpen, hasUnreadAnnouncement, autoOpenedOnce, setAnnouncementFlowReady, setIsAnnouncementOpen]);
 
     const handleReset = () => {
         setStorageOpen(true);
@@ -109,11 +113,17 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleAnnouncement = () => setAnnouncementOpen(true);
 
     useEffect(() => {
+        if (announcementOpen) {
+            setAnnouncementMounted(true);
+        }
+    }, [announcementOpen]);
+
+    useEffect(() => {
         setIsAnnouncementOpen(announcementOpen);
-        if (!announcementOpen && announcementChecked) {
+        if (!announcementOpen && announcementChecked && userGuideReady) {
             setAnnouncementFlowReady(true);
         }
-    }, [announcementOpen, announcementChecked, setIsAnnouncementOpen, setAnnouncementFlowReady]);
+    }, [announcementOpen, announcementChecked, userGuideReady, setIsAnnouncementOpen, setAnnouncementFlowReady]);
 
     return (
         <div
@@ -232,13 +242,17 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
             />
 
             {/* Announcement Modal */}
-            <AnnouncementModal
-                open={announcementOpen}
-                onClose={() => setAnnouncementOpen(false)}
-                onChange={(o) => setAnnouncementOpen(o)}
-                onHasUnread={setHasUnreadAnnouncement}
-                announcements={announcements}
-            />
+            {announcementMounted && (
+                <Suspense fallback={null}>
+                    <AnnouncementModal
+                        open={announcementOpen}
+                        onClose={() => setAnnouncementOpen(false)}
+                        onChange={(o) => setAnnouncementOpen(o)}
+                        onHasUnread={setHasUnreadAnnouncement}
+                        announcements={announcements}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

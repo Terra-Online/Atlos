@@ -149,6 +149,7 @@
     "announcement": "हालिया <span class=\"keyword\">वेबसाइट घोषणाएँ</span> देखें। सेवा की शर्तों और गोपनीयता नीति के अपडेट भी यहाँ पोस्ट किए जाएँगे।",
     "help": "इस <span class=\"keyword\">गाइड</span> को पुनः आरंभ करें।",
     "settings": "यह नियंत्रित करने के लिए कि मानचित्र आपके कार्यों को याद रखने के लिए किस स्थानीय संग्रहण का उपयोग करता है, <span class=\"keyword\">प्राथमिकताएं</span> खोलें।",
+    "locator": "<span class=\"keyword\">Location Sync</span> पर क्लिक करें ताकि मैप पर आपकी मौजूदा इन-गेम स्थिति दिखे।<br>गेम अकाउंट लिंक करने के बाद, आप tracking config खोलकर point tracking भी बदल सकते हैं।",
     "regionSwitch": "गेम में <span class=\"keyword\">विभिन्न सैंडबॉक्स मैप्स</span> (मुख्य क्षेत्रों) के बीच स्विच करने के लिए क्लिक करें।",
     "subregionSwitch": "उपलब्ध उप-क्षेत्रों को दिखाने के लिए <span class=\"keyword\">मुख्य क्षेत्र आइकन पर होवर करें</span>; एक उप-क्षेत्र आइकन पर क्लिक करने से वह उप-क्षेत्र दृश्य में आ जाएगा。<br>इसी तरह, आप किसी क्षेत्र के लिए एक लेयर भी चुन सकते हैं।",
     "layerMain": "किसी भी समय <span class=\"keyword\">मुख्य लेयर (M)</span> पर लौटने के लिए <span class=\"keyword\">लेयर आइकन</span> पर क्लिक करें।",
@@ -159,6 +160,7 @@
     "pointIcon": "मार्कर आइकन पर क्लिक करने से भी इसे पूर्ण के रूप में चिह्नित किया जा सकता है。",
     "mobile": {
       "headbar": "मानचित्र सेटिंग्स से संबंधित स्विच <span class=\"keyword\">ऊपर-दाएं कोने के हेडर बार</span> में स्थित हैं। अधिक विकल्प देखने के लिए ऊपर-दाएं आइकन पर क्लिक करें।",
+      "locator": "<span class=\"keyword\">Location Sync</span> ऊपर बाईं ओर है।<br>अकाउंट लिंक होने के बाद, टैप करने पर पहले config entry वाला capsule खुलेगा; खुले रहने पर main button को फिर टैप करें ताकि sync on/off हो।",
       "regionLayerSwitch": "<span class=\"keyword\">विभिन्न सैंडबॉक्स मैप्स</span> (मुख्य क्षेत्रों) के बीच स्विच करने के लिए क्षेत्र आइकन पर क्लिक करें。<br>उपलब्ध <span class=\"keyword\">उप-क्षेत्र और लेयर्स</span> प्रदर्शित करने के लिए एक मुख्य क्षेत्र आइकन को टैप करके रखें, फिर उस दृश्य पर जाने के लिए एक उप-क्षेत्र या लेयर का चयन करें।",
       "divider": "यह एक खींचने योग्य <span class=\"keyword\">विभाजक</span> है。<br>आप अपने उपयोग की प्राथमिकताओं के अनुकूल खोज बार और मार्कर सूची के बीच चौड़ाई अनुपात को समायोजित करने के लिए विभाजक को बाएँ या दाएँ खींच सकते हैं।",
       "drawer": "दराज खोलने और मार्कर फ़िल्टर देखने के लिए <span class=\"keyword\">स्क्रीन के नीचे से ऊपर की ओर स्वाइप करें</span>。<br>यहां आप चुन सकते हैं कि आप मानचित्र पर कौन से मार्कर प्रकार प्रदर्शित करना चाहते हैं।",
@@ -255,6 +257,68 @@
       "logout": "लॉग आउट"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "खाता लिंक",
+      "docsLead": "आगे बढ़ने पर आप नीचे दिए गए नियमों से सहमत होते हैं:",
+      "tos": "सेवा की शर्तें",
+      "privacy": "गोपनीयता नीति",
+      "dataCollection": "डेटा संग्रह चेकलिस्ट",
+      "disclaimer": "उत्तरदायित्व अस्वीकरण",
+      "chinaTab": "चीन (Hypergryph)",
+      "globalTab": "ग्लोबल (Gryphline)",
+      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>आधिकारिक वेबसाइट</a> पर जाएं और सुनिश्चित करें कि आप लॉग इन हैं।",
+      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>आधिकारिक वेबसाइट</a> पर जाएं और सुनिश्चित करें कि आप लॉग इन हैं।",
+      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।",
+      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।",
+      "Step2": "पूरा रिस्पॉन्स पेस्ट करें, शर्तें पढ़ें और खाता लिंक करें।",
+      "serverFallback": "सर्वर",
+      "changeBinding": "लिंक बदलें",
+      "unlink": "अनलिंक",
+      "bindWithCountdown": "लिंक करें और सिंक चालू करें ({sec})",
+      "bind": "लिंक करें और सिंक चालू करें",
+      "locateAuth": "अनुमति",
+      "locateAuthBody": "लोकेशन सिंक चालू करने से आपके गेम की लोकेशन तक पहुंच मिलेगी। क्या चालू करें?",
+      "authAndSync": "अनुमति दें और सिंक शुरू करें"
+    },
+    "config": {
+      "title": "ट्रैकिंग सेटिंग्स",
+      "server": "सर्वर",
+      "uid": "प्लेयर UID",
+      "scopeTitle": "दायरा",
+      "scopeHint": "लोकेशन सिंक के दौरान किन नज़दीकी पॉइंट समूहों पर रिमाइंडर चाहिए चुनें।",
+      "scope": {
+        "balanced": {
+          "title": "संतुलित",
+          "desc": "OEM द्वारा चुने गए पॉइंट ट्रैक करें।"
+        },
+        "collection": {
+          "title": "कलेक्टिबल्स",
+          "desc": "<span class=\"keyword\">कलेक्शन</span>/<span class=\"keyword\">एक्सप्लोरेशन</span>/<span class=\"keyword\">आर्काइव</span> के पॉइंट ट्रैक करें।"
+        },
+        "manual": {
+          "title": "शिल्प मैनुअल",
+          "desc": "मैनुअल के पॉइंट ट्रैक करें, दुश्मन और दुर्लभ पौधे शामिल।"
+        }
+      },
+      "featureTitle": "फीचर",
+      "trackPoints": "ट्रैकिंग",
+      "heatmap": "हीटमैप",
+      "configNote1": "इस फीचर को चालू करने का मतलब है कि आप हमारे ",
+      "configNote2": " और अन्य शर्तें स्वीकार करते हैं।"
+    },
+    "errors": {
+      "10000": "लोकेशन सिंक सत्र समाप्त हो गया। कृपया फिर से लिंक करें।",
+      "19001": "स्थान उपलब्ध नहीं है। कृपया गेम में साइन इन करें।",
+      "19002": "लोकेशन सिंक शुरू करने से पहले अनुमति आवश्यक है।",
+      "noRole": "इस खाते पर Endfield रोल नहीं मिले।",
+      "tokenRequired": "पूरा रिस्पॉन्स या टोकन पेस्ट करें।",
+      "bindingFailed": "लिंक विफल।",
+      "roleRequired": "कृपया रोल चुनें।",
+      "unlinkFailed": "अनलिंक विफल।",
+      "authorizationFailed": "अनुमति विफल।"
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",
@@ -272,6 +336,7 @@
     "all": "सभी",
     "selected": "चयनित",
     "confirm": "ठीक",
+    "loading": "लोड हो रहा है…",
     "enable": "चालू",
     "disable": "बंद",
     "expand": "खोलें",

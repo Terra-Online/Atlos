@@ -118,6 +118,29 @@ async function loadSubregionRegionMap() {
   return map
 }
 
+function normalizeMarker(marker, fallbackSubregionId) {
+  if (Array.isArray(marker)) {
+    const [id, z, x, , type] = marker
+    return {
+      markerId: String(id ?? ''),
+      typeId: String(type ?? ''),
+      subregionId: fallbackSubregionId,
+      position: [z, x],
+    }
+  }
+
+  if (marker && typeof marker === 'object') {
+    return {
+      markerId: String(marker.id ?? ''),
+      typeId: String(marker.type ?? ''),
+      subregionId: String(marker.subregId ?? fallbackSubregionId),
+      position: marker.pos ?? [marker.z, marker.x],
+    }
+  }
+
+  return null
+}
+
 async function loadMarkers(typeMap) {
   const files = (await safeReadDir(MARKER_DIR)).filter((f) => f.endsWith('.json'))
   const all = []
@@ -125,12 +148,12 @@ async function loadMarkers(typeMap) {
   for (const file of files) {
     const json = await readJson(path.resolve(MARKER_DIR, file))
     if (!Array.isArray(json)) continue
+    const subregionFromFile = path.basename(file, '.json')
 
     for (const marker of json) {
-      if (!marker || typeof marker !== 'object') continue
-      const typeId = String(marker.type ?? '')
-      const markerId = String(marker.id ?? '')
-      const position = marker.pos ?? {}
+      const normalized = normalizeMarker(marker, subregionFromFile)
+      if (!normalized) continue
+      const { typeId, markerId, position, subregionId } = normalized
       const hasPos =
         Array.isArray(position) &&
         position.length >= 2 &&
@@ -138,7 +161,6 @@ async function loadMarkers(typeMap) {
         Number.isFinite(position[0]) &&
         typeof position[1] === 'number' &&
         Number.isFinite(position[1])
-      const subregionId = String(marker.subregId ?? '')
 
       if (!typeId || !markerId || !typeMap[typeId] || !subregionId || !hasPos) {
         continue

@@ -31,6 +31,23 @@ export type AgreeRes = {
     timestamp?: string;
 };
 
+export type EFPositionEnvelope = {
+    data: PositionResponse['data'];
+    binding?: EFBindingSummary;
+};
+
+export type EFPositionSocketMessage =
+    | ({ type: 'position' } & EFPositionEnvelope)
+    | {
+        type: 'error';
+        error: {
+            status?: number;
+            code?: string;
+            message?: string;
+            details?: unknown;
+        };
+    };
+
 type ApiErrorPayload = {
     code?: string;
     message?: string;
@@ -87,13 +104,15 @@ const readApiError = async (response: Response): Promise<EFBackendError> => {
 };
 
 async function requestJson<T>(baseUrl: string, path: string, init?: RequestInit): Promise<T> {
+    const hasBody = init?.body !== undefined && init.body !== null;
+    const headers = {
+        ...(hasBody ? { 'content-type': 'application/json' } : {}),
+        ...(init?.headers ?? {}),
+    };
     const response = await fetch(`${baseUrl}${path}`, {
         ...init,
         credentials: 'include',
-        headers: {
-            'content-type': 'application/json',
-            ...(init?.headers ?? {}),
-        },
+        headers,
     });
 
     if (!response.ok) {
@@ -147,3 +166,10 @@ export const agreePolicy = (role?: { roleId?: string; serverId?: number | string
 
 export const getEFPosition = (options: { includeBinding?: boolean } = {}): Promise<{ data: PositionResponse['data']; binding?: EFBindingSummary }> =>
     requestJson(LOCATOR_API_BASE, options.includeBinding ? '/position?binding=1' : '/position');
+
+export const openEFPositionSocket = (options: { includeBinding?: boolean } = {}): WebSocket => {
+    const path = options.includeBinding ? '/position-stream?binding=1' : '/position-stream';
+    const url = new URL(`${LOCATOR_API_BASE}${path}`);
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    return new WebSocket(url.toString());
+};

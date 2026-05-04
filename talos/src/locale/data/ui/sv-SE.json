@@ -7,8 +7,8 @@
     "lightmode": "Växla till ljust läge",
     "language": "Välj språk",
     "help": "Hjälp",
-    "settings": "Inställningar",
-    "announcement": "Meddelanden"
+    "announcement": "Meddelanden",
+    "settings": "Inställningar"
   },
   "trigger": {
     "boundaryMode": "Gränsläge",
@@ -149,6 +149,7 @@
     "announcement": "Visa <span class=\"keyword\">webbplatsmeddelanden</span>. Uppdateringar av användarvillkor och sekretesspolicy kommer också att publiceras här.",
     "help": "Starta om denna <span class=\"keyword\">guide</span>.",
     "settings": "Öppna <span class=\"keyword\">Inställningar</span> för att kontrollera vilken lokal lagring kartan använder för att komma ihåg dina handlingar.",
+    "locator": "Klicka på <span class=\"keyword\">Platssynk</span> för att visa din aktuella position i spelet på kartan.<br>När ditt spelkonto är länkat kan du också öppna spårningsinställningarna och justera punktspårningen.",
     "regionSwitch": "Klicka för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner) i spelet.",
     "subregionSwitch": "<span class=\"keyword\">Hovra över huvudregionsikonen</span> för att visa tillgängliga underregioner; klick på en underregionsikon hoppar till den vyn.<br>På samma sätt kan du också välja ett lager för en region.",
     "layerMain": "Klicka på <span class=\"keyword\">lagerikonen</span> för att återgå till <span class=\"keyword\">huvudlagret (M)</span> när som helst.",
@@ -159,6 +160,7 @@
     "pointIcon": "Att klicka på markörikonen kan också markera den som klar.",
     "mobile": {
       "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn i övre högra hörnet</span>. Klicka på ikonen uppe till höger för att expandera och se fler alternativ.",
+      "locator": "<span class=\"keyword\">Platssynk</span> finns uppe till vänster.<br>När kontot är länkat öppnar första trycket en kapsel med genväg till inställningarna; tryck på huvudknappen igen medan den är öppen för att slå på eller av synken.",
       "regionLayerSwitch": "Klicka på regionikoner för att växla mellan <span class=\"keyword\">olika sandlådekartor</span> (huvudregioner).<br>Tryck och håll på en huvudregionsikon för att visa tillgängliga <span class=\"keyword\">underregioner och lager</span>, välj sedan en underregion eller ett lager för att hoppa till den vyn.",
       "divider": "Detta är en dragbar <span class=\"keyword\">avdelare</span>.<br>Du kan dra avdelaren åt vänster eller höger för att justera breddförhållandet mellan sökfältet och markörlistan, anpassat efter dina preferenser.",
       "drawer": "<span class=\"keyword\">Svep uppåt från skärmens botten</span> för att öppna lådan och se markörfilter.<br>Här kan du välja vilka markörtyper du vill visa på kartan.",
@@ -255,6 +257,68 @@
       "logout": "Logga ut"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Koppla konto",
+      "docsLead": "Genom att fortsätta bekräftar du att du godkänner villkoren nedan:",
+      "tos": "Användarvillkor",
+      "privacy": "Integritetspolicy",
+      "dataCollection": "Checklista för datainsamling",
+      "disclaimer": "Ansvarsfriskrivning",
+      "chinaTab": "Kina (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Gå till <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
+      "UniStep0": "Gå till <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
+      "CNStep1": "Öppna <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API-länken</a> och kopiera hela svaret.",
+      "UniStep1": "Öppna <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API-länken</a> och kopiera hela svaret.",
+      "Step2": "Klistra in hela svaret, läs villkoren och koppla kontot.",
+      "serverFallback": "Server",
+      "changeBinding": "Byt koppling",
+      "unlink": "Koppla bort",
+      "bindWithCountdown": "Koppla och aktivera sync ({sec})",
+      "bind": "Koppla och aktivera sync",
+      "locateAuth": "Godkänn",
+      "locateAuthBody": "Aktivering av plats-synk ger åtkomst till din position i spelet. Vill du aktivera?",
+      "authAndSync": "Godkänn och starta synk"
+    },
+    "config": {
+      "title": "Spårningsinställn.",
+      "server": "Server",
+      "uid": "Spelar-ID",
+      "scopeTitle": "Område",
+      "scopeHint": "Välj vilka närliggande punktgrupper som ska ge påminnelser under plats-synk.",
+      "scope": {
+        "balanced": {
+          "title": "Balanserad",
+          "desc": "Spåra punkter valda av OEM."
+        },
+        "collection": {
+          "title": "Samlarobjekt",
+          "desc": "Spåra punkter i <span class=\"keyword\">samling</span>/<span class=\"keyword\">utforskning</span>/<span class=\"keyword\">arkiv</span>."
+        },
+        "manual": {
+          "title": "Hantverksmanual",
+          "desc": "Spåra punkter från manualen, inklusive fiender och sällsynta växter."
+        }
+      },
+      "featureTitle": "Funktioner",
+      "trackPoints": "Spårning",
+      "heatmap": "Värmekarta",
+      "configNote1": "Att aktivera funktionen innebär att du accepterar våra ",
+      "configNote2": " och andra villkor."
+    },
+    "errors": {
+      "10000": "Plats-synkningen har löpt ut. Koppla igen.",
+      "19001": "Positionen är inte tillgänglig. Logga in i spelet.",
+      "19002": "Plats-synk kräver godkännande innan start.",
+      "noRole": "Inga Endfield-roller hittades på kontot.",
+      "tokenRequired": "Klistra in hela svaret eller token.",
+      "bindingFailed": "Koppling misslyckades.",
+      "roleRequired": "Välj en roll.",
+      "unlinkFailed": "Koppla bort misslyckades.",
+      "authorizationFailed": "Godkännande misslyckades."
+    }
+  },
   "links": {
     "enka": {
       "name": "Enka Network",
@@ -272,10 +336,15 @@
     "all": "Alla",
     "selected": "Valda",
     "confirm": "Bekräfta",
+    "loading": "Laddar…",
     "enable": "Aktivera",
     "disable": "Inaktivera",
     "expand": "Expandera",
     "collapse": "Komprimera"
+  },
+  "announcement": {
+    "title": "Webbplatsmeddelande",
+    "empty": "Inga meddelanden tillgängliga"
   },
   "meta": {
     "title": "Endfield Kartsamling",
@@ -292,9 +361,5 @@
     "kofi": "Stöd via Ko-fi",
     "afdian": "Stöd via Afdian",
     "hint": "Vi rekommenderar Patreon eller Ko-fi för globala användare, och Afdian för användare i Kina."
-  },
-  "announcement": {
-    "title": "Webbplatsmeddelande",
-    "empty": "Inga meddelanden tillgängliga"
   }
 }

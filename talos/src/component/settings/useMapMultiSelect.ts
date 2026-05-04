@@ -464,6 +464,7 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
     if (lassoIds.length === 0) return false;
 
     const userRecord = useUserRecordStore.getState();
+    const markerStore = useMarkerStore.getState();
 
     // Find ids that are lasso-selected but not yet checked
     const unchecked = lassoIds.filter(
@@ -473,7 +474,10 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
     if (unchecked.length === 0) return false;
 
     // Mark all as checked
-    unchecked.forEach((id) => userRecord.addPoint(id));
+    unchecked.forEach((id) => {
+        userRecord.addPoint(id);
+        markerStore.setSelected(id, false);
+    });
 
     // Clear lasso tracking — they are now checked, batch-select lifecycle ends
     lassoIds.forEach((id) => _lassoSelectedIds.delete(id));
@@ -482,12 +486,18 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
     useHistoryStore.getState().push({
         label: `Batch check ${unchecked.length} markers`,
         undo: () => {
-            unchecked.forEach((id) => useUserRecordStore.getState().deletePoint(id));
+            unchecked.forEach((id) => {
+                useUserRecordStore.getState().deletePoint(id);
+                useMarkerStore.getState().setSelected(id, true);
+            });
             // Restore lasso tracking so re-clicking can re-trigger batch check
             lassoIds.forEach((id) => _lassoSelectedIds.add(id));
         },
         redo: () => {
-            unchecked.forEach((id) => useUserRecordStore.getState().addPoint(id));
+            unchecked.forEach((id) => {
+                useUserRecordStore.getState().addPoint(id);
+                useMarkerStore.getState().setSelected(id, false);
+            });
             lassoIds.forEach((id) => _lassoSelectedIds.delete(id));
         },
     });

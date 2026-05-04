@@ -18,6 +18,7 @@
     "lint:fix": "run-s lint:fix:js lint:fix:css -c",
     "type-check": "tsc --noEmit",
     "build:prepare": "node ./scripts/build-prepare.mjs",
+    "build:marker-stats": "node ./scripts/build-marker-stats.mjs",
     "build:search-index": "node ./scripts/build-search-index.mjs",
     "build:check": "tsc --noEmit",
     "build": "node ./scripts/build-oss.mjs",

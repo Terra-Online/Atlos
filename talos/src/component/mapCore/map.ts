@@ -37,6 +37,8 @@ export class MapCore {
     private currentLayer: LayerType = 'M';
 
     private transforming = false;
+    private switchingRegionId: string | null = null;
+    private switchRegionPromise: Promise<void> | null = null;
 
     constructor(ele: HTMLDivElement, options?: IMapOptions) {
         this.map = L.map(ele, {
@@ -77,6 +79,30 @@ export class MapCore {
     }
 
     async switchRegion(regionId: string): Promise<void> {
+        if (this.switchRegionPromise) {
+            if (this.switchingRegionId === regionId) {
+                return this.switchRegionPromise;
+            }
+            await this.switchRegionPromise;
+        }
+
+        if (this.currentRegionId === regionId) return;
+
+        const promise = this.performSwitchRegion(regionId);
+        this.switchingRegionId = regionId;
+        this.switchRegionPromise = promise;
+
+        try {
+            await promise;
+        } finally {
+            if (this.switchRegionPromise === promise) {
+                this.switchRegionPromise = null;
+                this.switchingRegionId = null;
+            }
+        }
+    }
+
+    private async performSwitchRegion(regionId: string): Promise<void> {
         this.currentRegionId = regionId;
 
         this.map.eachLayer((layer) => this.map.removeLayer(layer));
@@ -187,10 +213,12 @@ export class MapCore {
         //     interactive: false,
         // }).addTo(this.map);
 
-        this.markerLayer.changeRegion(regionId);
+        const markerReady = this.markerLayer.changeRegion(regionId);
 
         // Resolve when base tiles finish initial load to signal readiness
-        await new Promise<void>((resolve) => {
+        await Promise.all([
+            markerReady,
+            new Promise<void>((resolve) => {
             // If the layer is already loaded (from cache), resolve on next tick
             let resolved = false;
             const done = () => {
@@ -203,7 +231,8 @@ export class MapCore {
             // Fallback: if no tiles are needed, Leaflet may not fire 'load';
             // use a microtask to resolve quickly without arbitrary timeout
             void Promise.resolve().then(done);
-        });
+            }),
+        ]);
 
         // Notify external layers/tools that region switch finished.
         // MapCore clears all layers at the start of switchRegion, so any custom overlays

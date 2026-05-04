@@ -1,15 +1,15 @@
 import {
   S3Client,
   PutObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import fs from "fs-extra";
 import path from "path";
-import https from "https";
-import http from "http";
-import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
+import crypto from "crypto";
+import { getDeployChannel, resolveDeployPrefix } from "./release-channel.js";
 import { buildClipIndex, normalizeObjectKey, toPrefixedObjectKey } from "./tile-index.js";
 
 // Read R2 specific config: config/config.r2.json
@@ -39,7 +39,6 @@ const { prefix, source: prefixSource } = resolveDeployPrefix({
   target: "r2",
   deployChannels: config?.web?.build?.deployChannels,
 });
-const cdnPath = joinCdnPath(config.web.build.cdn, prefix);
 
 console.log(
   `[publish-R2] channel=${deployChannel} prefix=${prefix || "/"} source=${prefixSource}`
@@ -54,33 +53,6 @@ const client = new S3Client({
     secretAccessKey: accessKeySecret,
   },
 });
-
-// Check if CDN resource exists (logic consistent with publish-oss.js)
-const checkCDNResourceExists = async (relativePath) => {
-  return new Promise((resolve) => {
-    const cdnUrl = `${cdnPath}/${relativePath}`;
-    const url = new URL(cdnUrl);
-    const client = url.protocol === "https:" ? https : http;
-
-    const req = client.request(url, { method: "HEAD" }, (res) => {
-      resolve({
-        exists: res.statusCode === 200,
-        size: parseInt(res.headers["content-length"]) || 0,
-      });
-    });
-
-    req.on("error", () => {
-      resolve({ exists: false, size: 0 });
-    });
-
-    req.setTimeout(5000, () => {
-      req.destroy();
-      resolve({ exists: false, size: 0 });
-    });
-
-    req.end();
-  });
-};
 
 function getAllFiles(dirPath, arrayOfFiles) {
   const files = fs.readdirSync(dirPath);
@@ -189,9 +161,61 @@ const getMimeType = (filePath) => {
   return mimeMap[ext] || "application/octet-stream";
 };
 
-// Minimum threshold for R2 is 5MB
-const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB
+// Keep search docs on single PUT so the remote ETag stays comparable to local MD5.
+const MULTIPART_THRESHOLD = 64 * 1024 * 1024;
 const MAX_RETRIES = 3;
+
+const normalizeEtag = (etag) =>
+  String(etag ?? "").replace(/^"|"$/g, "").toLowerCase();
+
+const calculateFileMd5 = (filePath) =>
+  new Promise((resolve, reject) => {
+    const hash = crypto.createHash("md5");
+    const stream = fs.createReadStream(filePath);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("error", reject);
+    stream.on("end", () => resolve(hash.digest("hex")));
+  });
+
+const getRemoteObjectInfo = async (objectKey) => {
+  try {
+    const result = await client.send(
+      new HeadObjectCommand({
+        Bucket: bucket,
+        Key: objectKey,
+      })
+    );
+    return {
+      etag: normalizeEtag(result.ETag),
+      size: result.ContentLength ?? 0,
+    };
+  } catch (e) {
+    const status = e?.$metadata?.httpStatusCode;
+    if (status === 404 || e?.name === "NotFound" || e?.Code === "NoSuchKey") {
+      return null;
+    }
+    throw e;
+  }
+};
+
+const shouldSkipUpload = async (relativePath, objectKey, localPath, fileSize) => {
+  const [localEtag, remote] = await Promise.all([
+    calculateFileMd5(localPath),
+    getRemoteObjectInfo(objectKey),
+  ]);
+
+  if (!remote) return false;
+
+  if (remote.size === fileSize && remote.etag === localEtag) {
+    console.log(`${relativePath} skipped (same ETag ${localEtag})`);
+    return true;
+  }
+
+  console.log(
+    `${relativePath} changed, uploading (remote size=${remote.size}, etag=${remote.etag || "-"}; local size=${fileSize}, etag=${localEtag})`
+  );
+  return false;
+};
 
 const upload = async (relativePath, retryCount = 0) => {
   // Normalize path separators to forward slashes
@@ -206,18 +230,7 @@ const upload = async (relativePath, retryCount = 0) => {
     const fileSize = stats.size;
     const contentType = getMimeType(localPath); // get MIME type
 
-    // check if CDN already has the resource
-    const cdnCheck = await checkCDNResourceExists(relativePath);
-
-    // If the resource already exists on the CDN and the file is large (greater than 5MB), skip uploading
-    if (cdnCheck.exists && fileSize > MULTIPART_THRESHOLD) {
-      console.log(
-        `Skipping upload of ${relativePath} - resource already exists (${(
-          fileSize /
-          1024 /
-          1024
-        ).toFixed(2)}MB)`
-      );
+    if (await shouldSkipUpload(relativePath, objectKey, localPath, fileSize)) {
       return;
     }
 

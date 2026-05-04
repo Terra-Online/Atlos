@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { LinearBlur } from "progressive-blur";
 import mobileStyles from './sideBar.mobile.module.scss';
 
@@ -10,7 +10,6 @@ import MarkFilter from '../markFilter/markFilter';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Notice from '../notice/notice';
-import IDCard from '../login/idcard';
 import Detail from '../detail/detail';
 import SupportModal from '../support/support';
 
@@ -52,6 +51,7 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
 
 const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
 const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
+const IDCard = lazy(() => import('../login/idcard'));
 
 interface SideBarProps {
   currentRegion: null;
@@ -440,7 +440,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
             </div>
             <Notice />
             <div className={mobileStyles.idCardContainer}>
-                <IDCard />
+                <Suspense fallback={null}>
+                  <IDCard />
+                </Suspense>
             </div>
           </div>
           <div className={mobileStyles.mobileTriggerBar}>

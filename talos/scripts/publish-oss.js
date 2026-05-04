@@ -1,9 +1,8 @@
 import OSS from 'ali-oss';
 import fs from "fs-extra";
 import path from "path";
-import https from "https";
-import http from "http";
-import { getDeployChannel, resolveDeployPrefix, joinCdnPath } from "./release-channel.js";
+import crypto from "crypto";
+import { getDeployChannel, resolveDeployPrefix } from "./release-channel.js";
 import { buildClipIndex, normalizeObjectKey, toPrefixedObjectKey } from './tile-index.js';
 
 const config = JSON.parse(fs.readFileSync('./config/config.json', 'utf-8'));
@@ -15,7 +14,6 @@ const { prefix, source: prefixSource } = resolveDeployPrefix({
   target: 'oss',
   deployChannels: config?.web?.build?.deployChannels,
 });
-const cdnPath = joinCdnPath(config.web.build.cdn, prefix);
 
 console.log(
   `[publish-oss] channel=${deployChannel} prefix=${prefix || '/'} source=${prefixSource}`
@@ -30,33 +28,6 @@ const client = new OSS({
   timeout: 120000, // 2 minutes
   agent: undefined, // 禁用连接池,避免callback twice
 });
-
-// 检查CDN资源是否存在
-const checkCDNResourceExists = async (relativePath) => {
-  return new Promise((resolve) => {
-    const cdnUrl = `${cdnPath}/${relativePath}`;
-    const url = new URL(cdnUrl);
-    const client = url.protocol === 'https:' ? https : http;
-    
-    const req = client.request(url, { method: 'HEAD' }, (res) => {
-      resolve({
-        exists: res.statusCode === 200,
-        size: parseInt(res.headers['content-length']) || 0
-      });
-    });
-    
-    req.on('error', () => {
-      resolve({ exists: false, size: 0 });
-    });
-    
-    req.setTimeout(5000, () => {
-      req.destroy();
-      resolve({ exists: false, size: 0 });
-    });
-    
-    req.end();
-  });
-};
 
 /**
  * Cache-Control strategy:
@@ -124,9 +95,56 @@ const deleteRemoteObjectKeys = async (keys) => {
   }
 };
 
-// threshold for large file uploading
-const MULTIPART_THRESHOLD = 1 * 1024 * 1024;
+// Keep search index docs as single PUT objects so OSS ETag remains the file MD5.
+const MULTIPART_THRESHOLD = 64 * 1024 * 1024;
 const MAX_RETRIES = 3;
+
+const normalizeEtag = (etag) =>
+  String(etag ?? '').replace(/^"|"$/g, '').toLowerCase();
+
+const calculateFileMd5 = (filePath) =>
+  new Promise((resolve, reject) => {
+    const hash = crypto.createHash('md5');
+    const stream = fs.createReadStream(filePath);
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('error', reject);
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
+
+const getRemoteObjectInfo = async (objectKey) => {
+  try {
+    const result = await client.getObjectMeta(objectKey);
+    const headers = result?.res?.headers ?? {};
+    return {
+      etag: normalizeEtag(headers.etag),
+      size: Number.parseInt(headers['content-length'], 10) || 0,
+    };
+  } catch (e) {
+    if (e?.status === 404 || e?.code === 'NoSuchKey' || e?.code === 'NoSuchObject') {
+      return null;
+    }
+    throw e;
+  }
+};
+
+const shouldSkipUpload = async (relativePath, objectKey, localPath, fileSize) => {
+  const [localEtag, remote] = await Promise.all([
+    calculateFileMd5(localPath),
+    getRemoteObjectInfo(objectKey),
+  ]);
+
+  if (!remote) return false;
+
+  if (remote.size === fileSize && remote.etag === localEtag) {
+    console.log(`${relativePath} skipped (same ETag ${localEtag})`);
+    return true;
+  }
+
+  console.log(
+    `${relativePath} changed, uploading (remote size=${remote.size}, etag=${remote.etag || '-'}; local size=${fileSize}, etag=${localEtag})`
+  );
+  return false;
+};
 
 const upload = async (relativePath, retryCount = 0) => {
   const normalizedPath = relativePath.replace(/\\/g, '/');
@@ -144,13 +162,8 @@ const upload = async (relativePath, retryCount = 0) => {
   try {
     const stats = fs.statSync(localPath);
     const fileSize = stats.size;
-    
-    // 检查CDN是否已存在该资源
-    const cdnCheck = await checkCDNResourceExists(relativePath);
-    
-    // 如果CDN已存在该资源且文件较大（大于1MB），则跳过上传
-    if (cdnCheck.exists && fileSize > MULTIPART_THRESHOLD) {
-      console.log(`跳过上传 ${relativePath} - CDN已存在该资源 (${(fileSize / 1024 / 1024).toFixed(2)}MB)`);
+
+    if (await shouldSkipUpload(relativePath, objectKey, localPath, fileSize)) {
       return;
     }
     

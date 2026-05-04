@@ -1,4799 +1,3733 @@
 [
-  {
-    "id": 10100350000,
-    "pos": [
-      -867.809,
-      536.4421
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_1_1"
-  },
-  {
-    "id": 10100350001,
-    "pos": [
-      -835.6616,
-      543.0988
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_2_1"
-  },
-  {
-    "id": 10100350002,
-    "pos": [
-      -813.219,
-      557.7152
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_3_1"
-  },
-  {
-    "id": 10100350004,
-    "pos": [
-      -843.5917,
-      577.2333
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_3_2"
-  },
-  {
-    "id": 10100350006,
-    "pos": [
-      -778.2474,
-      582.277
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_3_3"
-  },
-  {
-    "id": 10100350007,
-    "pos": [
-      -777.0284,
-      640.9623
-    ],
-    "subregId": "WL_1",
-    "type": "nar_media_map02_65_1"
-  },
-  {
-    "id": 10100350008,
-    "pos": [
-      -815.0758,
-      637.5087
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_7_1"
-  },
-  {
-    "id": 10100350009,
-    "pos": [
-      -832.3006,
-      598.0371
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_8_1"
-  },
-  {
-    "id": 10100350010,
-    "pos": [
-      -809.5806,
-      596.1402
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_3_4"
-  },
-  {
-    "id": 10100350011,
-    "pos": [
-      -781.418,
-      549.1421
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_10_1"
-  },
-  {
-    "id": 10100350012,
-    "pos": [
-      -803.7228,
-      499.9131
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_11_1"
-  },
-  {
-    "id": 10100350016,
-    "pos": [
-      -870.1676,
-      597.5861
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_12_1"
-  },
-  {
-    "id": 10100350017,
-    "pos": [
-      -874.7208,
-      577.2287
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_13_1"
-  },
-  {
-    "id": 10100350019,
-    "pos": [
-      -713.5041,
-      483.3293
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_14_1"
-  },
-  {
-    "id": 10100350023,
-    "pos": [
-      -735.7153,
-      622.0599
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_15_1"
-  },
-  {
-    "id": 10100350024,
-    "pos": [
-      -728.4863,
-      629.7303
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_16_1"
-  },
-  {
-    "id": 10100350025,
-    "pos": [
-      -665.9915,
-      673.4674
-    ],
-    "subregId": "WL_1",
-    "type": "nar_digital_map02_17_1"
-  },
-  {
-    "id": 10100350026,
-    "pos": [
-      -653.8184,
-      585.6894
-    ],
-    "subregId": "WL_1",
-    "type": "nar_digital_map02_18_1"
-  },
-  {
-    "id": 10100350027,
-    "pos": [
-      -619.7043,
-      582.609
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_19_1"
-  },
-  {
-    "id": 10100350028,
-    "pos": [
-      -612.5442,
-      552.1082
-    ],
-    "subregId": "WL_1",
-    "type": "nar_digital_map02_20_1"
-  },
-  {
-    "id": 10100350029,
-    "pos": [
-      -579.5365,
-      568.5099
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_21_1"
-  },
-  {
-    "id": 10100350031,
-    "pos": [
-      -565.7976,
-      656.3158
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_22_1"
-  },
-  {
-    "id": 10100350032,
-    "pos": [
-      -542.1514,
-      663.2449
-    ],
-    "subregId": "WL_1",
-    "type": "nar_paper_map02_23_1"
-  },
-  {
-    "id": 10100030017,
-    "pos": [
-      -694.7379,
-      545.1245
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030018,
-    "pos": [
-      -624.9139,
-      644.7748
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030027,
-    "pos": [
-      -592.6816,
-      557.6807
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030036,
-    "pos": [
-      -754.8904,
-      634.6718
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030041,
-    "pos": [
-      -697.4639,
-      670.2614
-    ],
-    "subregId": "WL_1",
-    "type": "cratesurprise"
-  },
-  {
-    "id": 10100030046,
-    "pos": [
-      -600.2209,
-      563.3604
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030048,
-    "pos": [
-      -711.8814,
-      651.5
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030138,
-    "pos": [
-      -724.8867,
-      521.1833
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030146,
-    "pos": [
-      -749.9697,
-      640.0771
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030151,
-    "pos": [
-      -586.3966,
-      661.4189
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100030162,
-    "pos": [
-      -673.0581,
-      639.5568
-    ],
-    "subregId": "WL_1",
-    "type": "exploration_level"
-  },
-  {
-    "id": 10100030166,
-    "pos": [
-      -701.3444,
-      671.1522
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030170,
-    "pos": [
-      -574.4484,
-      659.1481
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030171,
-    "pos": [
-      -540.339,
-      669.1382
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030172,
-    "pos": [
-      -642.8062,
-      648.6725
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030174,
-    "pos": [
-      -592.5125,
-      544.0403
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030176,
-    "pos": [
-      -576.3341,
-      591.817
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030179,
-    "pos": [
-      -742.7453,
-      517.5454
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100030181,
-    "pos": [
-      -643.8314,
-      552.129
-    ],
-    "subregId": "WL_1",
-    "type": "repair_logic"
-  },
-  {
-    "id": 10100030183,
-    "pos": [
-      -636.6392,
-      566.3574
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100030184,
-    "pos": [
-      -597.3293,
-      583.525
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100030185,
-    "pos": [
-      -679.1733,
-      491.3365
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030186,
-    "pos": [
-      -746.329,
-      646.8966
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030191,
-    "pos": [
-      -689.7685,
-      678.0811
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030192,
-    "pos": [
-      -550.7365,
-      668.6262
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100030193,
-    "pos": [
-      -706.4379,
-      576.5387
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030195,
-    "pos": [
-      -629.7079,
-      566.1762
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030196,
-    "pos": [
-      -600.2083,
-      590.0083
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100030197,
-    "pos": [
-      -579.9025,
-      562.1804
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030198,
-    "pos": [
-      -607.5026,
-      578.2354
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030199,
-    "pos": [
-      -597.5125,
-      579.6808
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030200,
-    "pos": [
-      -625.3993,
-      606.2236
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030201,
-    "pos": [
-      -690.3814,
-      661.3189
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030204,
-    "pos": [
-      -669.92,
-      506.0215
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030205,
-    "pos": [
-      -693.6257,
-      513.8903
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030210,
-    "pos": [
-      -638.1651,
-      646.4495
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030211,
-    "pos": [
-      -630.8413,
-      647.1574
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030212,
-    "pos": [
-      -713.9279,
-      524.4107
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030213,
-    "pos": [
-      -707.5083,
-      507.6713
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030223,
-    "pos": [
-      -544.1529,
-      646.3439
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100030225,
-    "pos": [
-      -659.2103,
-      582.1738
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033001,
-    "pos": [
-      -577.6497,
-      591.2043
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033005,
-    "pos": [
-      -678.0142,
-      629.933
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033006,
-    "pos": [
-      -720.818,
-      510.3587
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100033013,
-    "pos": [
-      -621.8836,
-      572.6884
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033014,
-    "pos": [
-      -733.7861,
-      502.6875
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100033015,
-    "pos": [
-      -642.6668,
-      555.3899
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100033020,
-    "pos": [
-      -729.3716,
-      494.6645
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100033021,
-    "pos": [
-      -654.2698,
-      578.7942
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100033022,
-    "pos": [
-      -706.5367,
-      602.0249
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033023,
-    "pos": [
-      -711.9092,
-      552.1875
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033024,
-    "pos": [
-      -713.9055,
-      667.0295
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100033026,
-    "pos": [
-      -645.7982,
-      617.3211
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033030,
-    "pos": [
-      -703.3113,
-      666.4971
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100033033,
-    "pos": [
-      -740.8266,
-      507.0436
-    ],
-    "subregId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 10100010001,
-    "pos": [
-      -644.8336,
-      597.327
-    ],
-    "subregId": "WL_1",
-    "type": "rare_gathering_site"
-  },
-  {
-    "id": 10100010002,
-    "pos": [
-      -641.418,
-      598.8214
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010003,
-    "pos": [
-      -649.398,
-      596.8682
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010004,
-    "pos": [
-      -640.8376,
-      597.7
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010005,
-    "pos": [
-      -647.4888,
-      596.9128
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010006,
-    "pos": [
-      -647.3467,
-      595.5542
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010007,
-    "pos": [
-      -647.2379,
-      598.2914
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010008,
-    "pos": [
-      -645.8732,
-      599.2415
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010009,
-    "pos": [
-      -648.6934,
-      597.7755
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010010,
-    "pos": [
-      -642.348,
-      596.7971
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010011,
-    "pos": [
-      -642.7256,
-      595.8227
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010012,
-    "pos": [
-      -645.0274,
-      628.1848
-    ],
-    "subregId": "WL_1",
-    "type": "rare_gathering_site"
-  },
-  {
-    "id": 10100010013,
-    "pos": [
-      -641.6168,
-      628.8229
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010014,
-    "pos": [
-      -642.9797,
-      630.6913
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010015,
-    "pos": [
-      -646.3003,
-      625.8712
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010016,
-    "pos": [
-      -645.1225,
-      630.9431
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010017,
-    "pos": [
-      -640.7749,
-      628.1955
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010018,
-    "pos": [
-      -642.7627,
-      625.2004
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010019,
-    "pos": [
-      -647.1509,
-      628.1272
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010020,
-    "pos": [
-      -645.4016,
-      632.0825
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010021,
-    "pos": [
-      -642.719,
-      627.8862
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010022,
-    "pos": [
-      -640.5545,
-      626.87
-    ],
-    "subregId": "WL_1",
-    "type": "ruby_bolete_spot"
-  },
-  {
-    "id": 10100010023,
-    "pos": [
-      -692.9852,
-      498.4735
-    ],
-    "subregId": "WL_1",
-    "type": "rare_mining_site"
-  },
-  {
-    "id": 10100010024,
-    "pos": [
-      -692.4169,
-      495.7722
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010025,
-    "pos": [
-      -691.6271,
-      495.6101
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010026,
-    "pos": [
-      -694.0743,
-      493.1665
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010027,
-    "pos": [
-      -695.0286,
-      495.5596
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010028,
-    "pos": [
-      -694.516,
-      494.3844
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010029,
-    "pos": [
-      -693.455,
-      492.0664
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010030,
-    "pos": [
-      -692.799,
-      493.596
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010031,
-    "pos": [
-      -692.8495,
-      494.6875
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010032,
-    "pos": [
-      -696.8731,
-      495.1997
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010033,
-    "pos": [
-      -695.349,
-      496.3638
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010034,
-    "pos": [
-      -656.4508,
-      520.17
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010041,
-    "pos": [
-      -656.8632,
-      516.0302
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010048,
-    "pos": [
-      -656.8632,
-      523.8958
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010055,
-    "pos": [
-      -660.5748,
-      516.4442
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010062,
-    "pos": [
-      -660.5748,
-      522.6539
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010069,
-    "pos": [
-      -679.1328,
-      590.1321
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010076,
-    "pos": [
-      -683.2568,
-      585.5783
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010083,
-    "pos": [
-      -744.2918,
-      576.0569
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010097,
-    "pos": [
-      -745.529,
-      578.5407
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010110,
-    "pos": [
-      -746.3538,
-      581.0246
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010111,
-    "pos": [
-      -749.2406,
-      581.0246
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010124,
-    "pos": [
-      -751.715,
-      580.1966
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010125,
-    "pos": [
-      -842.9593,
-      576.651
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010126,
-    "pos": [
-      -845.9981,
-      577.3819
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010131,
-    "pos": [
-      -843.8637,
-      577.2942
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010132,
-    "pos": [
-      -948.8972,
-      495.5239
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010133,
-    "pos": [
-      -947.9203,
-      494.8131
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010134,
-    "pos": [
-      -951.4763,
-      505.8465
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010135,
-    "pos": [
-      -948.8844,
-      505.6962
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010136,
-    "pos": [
-      -837.2367,
-      541.193
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010137,
-    "pos": [
-      -830.3927,
-      530.1461
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010138,
-    "pos": [
-      -834.3429,
-      534.447
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010139,
-    "pos": [
-      -843.7005,
-      537.3766
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010140,
-    "pos": [
-      -838.2844,
-      538.1306
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010141,
-    "pos": [
-      -832.785,
-      543.9092
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010142,
-    "pos": [
-      -831.361,
-      596.3883
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010143,
-    "pos": [
-      -834.1131,
-      595.6612
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010144,
-    "pos": [
-      -832.5434,
-      594.1711
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010145,
-    "pos": [
-      -833.9794,
-      529.9469
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010146,
-    "pos": [
-      -840.5339,
-      539.9113
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010147,
-    "pos": [
-      -844.5844,
-      541.9286
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010148,
-    "pos": [
-      -844.6419,
-      541.401
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010149,
-    "pos": [
-      -848.5854,
-      541.5346
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010150,
-    "pos": [
-      -871.186,
-      587.518
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010151,
-    "pos": [
-      -858.8664,
-      587.0398
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010152,
-    "pos": [
-      -856.4106,
-      582.1034
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010153,
-    "pos": [
-      -847.0043,
-      601.7943
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010154,
-    "pos": [
-      -844.2645,
-      599.9196
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010155,
-    "pos": [
-      -838.4604,
-      598.9042
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010156,
-    "pos": [
-      -832.7559,
-      593.3421
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010157,
-    "pos": [
-      -848.6928,
-      602.0112
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010159,
-    "pos": [
-      -805.446,
-      576.7541
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010160,
-    "pos": [
-      -804.2849,
-      576.0511
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010161,
-    "pos": [
-      -803.5144,
-      577.0552
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010162,
-    "pos": [
-      -802.8937,
-      577.028
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010163,
-    "pos": [
-      -799.9191,
-      574.1349
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010164,
-    "pos": [
-      -800.739,
-      574.5865
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010165,
-    "pos": [
-      -799.5965,
-      575.15
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010166,
-    "pos": [
-      -803.1777,
-      575.1615
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010167,
-    "pos": [
-      -805.0188,
-      577.0143
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010168,
-    "pos": [
-      -799.3131,
-      573.9997
-    ],
-    "subregId": "WL_1",
-    "type": "vitrodendra_spot"
-  },
-  {
-    "id": 10100010169,
-    "pos": [
-      -800.9677,
-      576.4833
-    ],
-    "subregId": "WL_1",
-    "type": "rare_gathering_site"
-  },
-  {
-    "id": 10100010170,
-    "pos": [
-      -821.0524,
-      511.2205
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010171,
-    "pos": [
-      -824.1745,
-      505.8733
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010172,
-    "pos": [
-      -821.8621,
-      507.9708
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010173,
-    "pos": [
-      -824.0331,
-      503.8257
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010174,
-    "pos": [
-      -821.0198,
-      507.1742
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010175,
-    "pos": [
-      -826.5044,
-      506.8751
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010176,
-    "pos": [
-      -825.5764,
-      505.7751
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010177,
-    "pos": [
-      -826.0669,
-      505.7171
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010178,
-    "pos": [
-      -820.935,
-      508.6263
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010179,
-    "pos": [
-      -822.3552,
-      506.5139
-    ],
-    "subregId": "WL_1",
-    "type": "umbronyx_spot"
-  },
-  {
-    "id": 10100010180,
-    "pos": [
-      -823.9301,
-      509.2617
-    ],
-    "subregId": "WL_1",
-    "type": "rare_mining_site"
-  },
-  {
-    "id": 10100010181,
-    "pos": [
-      -677.1124,
-      616.8216
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010182,
-    "pos": [
-      -580.0423,
-      565.6338
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010185,
-    "pos": [
-      -620.6764,
-      626.5356
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010186,
-    "pos": [
-      -949.3571,
-      509.7378
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010187,
-    "pos": [
-      -777.0482,
-      548.3982
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010188,
-    "pos": [
-      -680.5428,
-      590.5353
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010194,
-    "pos": [
-      -627.0112,
-      649.7537
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010222,
-    "pos": [
-      -694.8757,
-      657.5078
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010223,
-    "pos": [
-      -638.7218,
-      623.8422
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010224,
-    "pos": [
-      -705.3002,
-      572.9798
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010225,
-    "pos": [
-      -702.7835,
-      575.7055
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010226,
-    "pos": [
-      -708.9285,
-      573.4261
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010227,
-    "pos": [
-      -705.2787,
-      576.2381
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010228,
-    "pos": [
-      -706.3675,
-      572.4135
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010229,
-    "pos": [
-      -695.448,
-      657.0489
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010230,
-    "pos": [
-      -720.6401,
-      654.415
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010231,
-    "pos": [
-      -719.9801,
-      654.7744
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010232,
-    "pos": [
-      -639.7377,
-      623.9618
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010233,
-    "pos": [
-      -637.7723,
-      622.5558
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010234,
-    "pos": [
-      -637.6093,
-      623.9126
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010235,
-    "pos": [
-      -639.9293,
-      622.3877
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010236,
-    "pos": [
-      -679.3014,
-      591.0946
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010237,
-    "pos": [
-      -677.8319,
-      582.2714
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010238,
-    "pos": [
-      -675.7032,
-      582.0619
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010239,
-    "pos": [
-      -626.787,
-      650.1337
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010240,
-    "pos": [
-      -631.3671,
-      652.2013
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010241,
-    "pos": [
-      -679.9779,
-      634.5384
-    ],
-    "subregId": "WL_1",
-    "type": "amber_rice"
-  },
-  {
-    "id": 10100010242,
-    "pos": [
-      -679.8242,
-      635.2303
-    ],
-    "subregId": "WL_1",
-    "type": "amber_rice"
-  },
-  {
-    "id": 10100010243,
-    "pos": [
-      -729.7951,
-      501.928
-    ],
-    "subregId": "WL_1",
-    "type": "redjade_ginseng"
-  },
-  {
-    "id": 10100010244,
-    "pos": [
-      -728.5502,
-      501.2433
-    ],
-    "subregId": "WL_1",
-    "type": "redjade_ginseng"
-  },
-  {
-    "id": 10100010245,
-    "pos": [
-      -843.0577,
-      576.4134
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010246,
-    "pos": [
-      -727.1978,
-      581.9256
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010247,
-    "pos": [
-      -727.4912,
-      582.8064
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010248,
-    "pos": [
-      -727.2048,
-      585.1851
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010249,
-    "pos": [
-      -720.295,
-      655.545
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010250,
-    "pos": [
-      -846.1912,
-      572.355
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010251,
-    "pos": [
-      -803.0091,
-      489.0224
-    ],
-    "subregId": "WL_1",
-    "type": "protocol_dl"
-  },
-  {
-    "id": 10100010258,
-    "pos": [
-      -752.9521,
-      626.1481
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010265,
-    "pos": [
-      -755.0141,
-      628.2179
-    ],
-    "subregId": "WL_1",
-    "type": "originium_spot"
-  },
-  {
-    "id": 10100010266,
-    "pos": [
-      -905.92,
-      555.7562
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010267,
-    "pos": [
-      -934.9056,
-      564.0241
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010268,
-    "pos": [
-      -938.923,
-      554.1678
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010269,
-    "pos": [
-      -931.0932,
-      559.3724
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010270,
-    "pos": [
-      -932.6166,
-      571.4666
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010271,
-    "pos": [
-      -905.5804,
-      555.9205
-    ],
-    "subregId": "WL_1",
-    "type": "aketine"
-  },
-  {
-    "id": 10100010272,
-    "pos": [
-      -885.505,
-      599.4275
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010273,
-    "pos": [
-      -881.0749,
-      601.3447
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010274,
-    "pos": [
-      -881.0749,
-      601.0826
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010275,
-    "pos": [
-      -884.072,
-      598.2481
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010276,
-    "pos": [
-      -874.3364,
-      598.7076
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010277,
-    "pos": [
-      -869.9687,
-      601.4604
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010278,
-    "pos": [
-      -874.3384,
-      598.4148
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010279,
-    "pos": [
-      -816.8853,
-      640.6617
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010280,
-    "pos": [
-      -830.4708,
-      639.979
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010281,
-    "pos": [
-      -818.4818,
-      653.5255
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010282,
-    "pos": [
-      -826.5598,
-      639.5584
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010283,
-    "pos": [
-      -830.0287,
-      641.974
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010284,
-    "pos": [
-      -814.2626,
-      646.8644
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010285,
-    "pos": [
-      -814.7561,
-      647.0736
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010286,
-    "pos": [
-      -805.8471,
-      513.4553
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010287,
-    "pos": [
-      -799.0602,
-      506.329
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010288,
-    "pos": [
-      -804.8287,
-      514.3386
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010289,
-    "pos": [
-      -804.6752,
-      514.0142
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010290,
-    "pos": [
-      -800.4522,
-      505.7181
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010291,
-    "pos": [
-      -800.6832,
-      505.9333
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010292,
-    "pos": [
-      -842.6104,
-      504.9009
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010293,
-    "pos": [
-      -843.9067,
-      504.0587
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010294,
-    "pos": [
-      -843.0448,
-      504.8534
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010295,
-    "pos": [
-      -846.3481,
-      503.6109
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010296,
-    "pos": [
-      -847.808,
-      503.8221
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010298,
-    "pos": [
-      -788.4124,
-      531.7043
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010299,
-    "pos": [
-      -784.1759,
-      530.2519
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010300,
-    "pos": [
-      -785.3082,
-      529.4384
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010301,
-    "pos": [
-      -784.3719,
-      530.1261
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010302,
-    "pos": [
-      -789.0294,
-      531.3135
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010303,
-    "pos": [
-      -784.8177,
-      531.8087
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010304,
-    "pos": [
-      -893.3053,
-      558.8957
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010305,
-    "pos": [
-      -885.7574,
-      556.7531
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010306,
-    "pos": [
-      -890.2624,
-      559.0927
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010307,
-    "pos": [
-      -890.6208,
-      559.1611
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010308,
-    "pos": [
-      -893.8891,
-      558.2702
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010309,
-    "pos": [
-      -884.9261,
-      558.4744
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010310,
-    "pos": [
-      -804.8847,
-      538.2855
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010311,
-    "pos": [
-      -806.9404,
-      534.3409
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010312,
-    "pos": [
-      -811.7655,
-      535.3118
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010313,
-    "pos": [
-      -808.0094,
-      532.1458
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010314,
-    "pos": [
-      -824.5671,
-      622.2451
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010315,
-    "pos": [
-      -829.3714,
-      621.8232
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010316,
-    "pos": [
-      -828.309,
-      623.1643
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010317,
-    "pos": [
-      -641.8148,
-      577.6921
-    ],
-    "subregId": "WL_1",
-    "type": "recycling_stn"
-  },
-  {
-    "id": 10100010318,
-    "pos": [
-      -747.5868,
-      631.8775
-    ],
-    "subregId": "WL_1",
-    "type": "recycling_stn"
-  },
-  {
-    "id": 10100010319,
-    "pos": [
-      -692.511,
-      666.1548
-    ],
-    "subregId": "WL_1",
-    "type": "stock_redistrib"
-  },
-  {
-    "id": 10100010320,
-    "pos": [
-      -714.6883,
-      661.3899
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010321,
-    "pos": [
-      -713.8906,
-      662.3015
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010322,
-    "pos": [
-      -600.2841,
-      653.9685
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010324,
-    "pos": [
-      -598.9138,
-      654.4781
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010325,
-    "pos": [
-      -567.6929,
-      657.3949
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010326,
-    "pos": [
-      -568.2099,
-      657.78
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010327,
-    "pos": [
-      -802.4804,
-      515.8936
-    ],
-    "subregId": "WL_1",
-    "type": "recycling_stn"
-  },
-  {
-    "id": 10100010329,
-    "pos": [
-      -819.736,
-      529.883
-    ],
-    "subregId": "WL_1",
-    "type": "fluffed_jincao"
-  },
-  {
-    "id": 10100010330,
-    "pos": [
-      -818.6356,
-      534.479
-    ],
-    "subregId": "WL_1",
-    "type": "jincao"
-  },
-  {
-    "id": 10100010331,
-    "pos": [
-      -861.7924,
-      592.7412
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010332,
-    "pos": [
-      -862.0729,
-      592.7412
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010333,
-    "pos": [
-      -867.9248,
-      597.1324
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010334,
-    "pos": [
-      -874.0773,
-      593.0264
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010335,
-    "pos": [
-      -873.6518,
-      593.1417
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010336,
-    "pos": [
-      -875.3615,
-      588.5854
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010337,
-    "pos": [
-      -862.2048,
-      590.8938
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010338,
-    "pos": [
-      -861.063,
-      588.8644
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010342,
-    "pos": [
-      -676.5722,
-      546.123
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010343,
-    "pos": [
-      -682.679,
-      545.8697
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010344,
-    "pos": [
-      -679.6009,
-      548.1087
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010345,
-    "pos": [
-      -710.607,
-      628.5491
-    ],
-    "subregId": "WL_1",
-    "type": "aic_steward"
-  },
-  {
-    "id": 10100010346,
-    "pos": [
-      -595.82,
-      578.8222
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010347,
-    "pos": [
-      -596.3399,
-      581.3889
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010348,
-    "pos": [
-      -595.7045,
-      579.3894
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010349,
-    "pos": [
-      -609.6518,
-      548.0182
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010350,
-    "pos": [
-      -610.3659,
-      547.981
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010351,
-    "pos": [
-      -626.1484,
-      649.0601
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010352,
-    "pos": [
-      -687.8967,
-      565.1454
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010354,
-    "pos": [
-      -684.6252,
-      559.3994
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010355,
-    "pos": [
-      -685.3125,
-      560.4325
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010356,
-    "pos": [
-      -685.8364,
-      561.696
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010357,
-    "pos": [
-      -686.1445,
-      563.5325
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010358,
-    "pos": [
-      -676.8643,
-      634.1875
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010359,
-    "pos": [
-      -676.4078,
-      634.6107
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010360,
-    "pos": [
-      -746.3094,
-      634.2831
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010361,
-    "pos": [
-      -745.4714,
-      635.0556
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010362,
-    "pos": [
-      -751.3643,
-      636.7145
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010363,
-    "pos": [
-      -751.6313,
-      635.6816
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010364,
-    "pos": [
-      -835.3344,
-      538.4864
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010365,
-    "pos": [
-      -846.8955,
-      550.2491
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010366,
-    "pos": [
-      -841.042,
-      540.0741
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010367,
-    "pos": [
-      -844.5986,
-      546.0453
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010368,
-    "pos": [
-      -829.9471,
-      532.9973
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010369,
-    "pos": [
-      -858.1871,
-      530.3443
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010370,
-    "pos": [
-      -853.0359,
-      528.9973
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010371,
-    "pos": [
-      -857.1978,
-      526.9127
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010372,
-    "pos": [
-      -853.9248,
-      594.8014
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010373,
-    "pos": [
-      -856.0579,
-      583.2886
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010374,
-    "pos": [
-      -846.7959,
-      590.9746
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010375,
-    "pos": [
-      -842.9604,
-      583.6351
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010376,
-    "pos": [
-      -847.7882,
-      585.8809
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010377,
-    "pos": [
-      -832.2029,
-      589.5093
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010378,
-    "pos": [
-      -834.0421,
-      589.3327
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010379,
-    "pos": [
-      -815.3233,
-      639.2504
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010380,
-    "pos": [
-      -813.7647,
-      634.2827
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010381,
-    "pos": [
-      -813.2862,
-      636.7253
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010382,
-    "pos": [
-      -806.0129,
-      639.6877
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010383,
-    "pos": [
-      -810.6226,
-      633.3008
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010384,
-    "pos": [
-      -808.8851,
-      638.2548
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010385,
-    "pos": [
-      -883.7238,
-      602.5584
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010386,
-    "pos": [
-      -885.7715,
-      605.3126
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010387,
-    "pos": [
-      -882.7717,
-      603.982
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010388,
-    "pos": [
-      -884.8538,
-      605.5486
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010389,
-    "pos": [
-      -886.4562,
-      605.5941
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010390,
-    "pos": [
-      -830.6633,
-      533.3543
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010391,
-    "pos": [
-      -843.0177,
-      534.308
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010392,
-    "pos": [
-      -807.1784,
-      540.1871
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010393,
-    "pos": [
-      -801.3638,
-      541.3457
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010394,
-    "pos": [
-      -651.7536,
-      566.9968
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010395,
-    "pos": [
-      -653.8486,
-      567.387
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010396,
-    "pos": [
-      -655.6137,
-      566.0221
-    ],
-    "subregId": "WL_1",
-    "type": "scorchbug"
-  },
-  {
-    "id": 10100010397,
-    "pos": [
-      -658.3843,
-      564.6145
-    ],
-    "subregId": "WL_1",
-    "type": "glowbug"
-  },
-  {
-    "id": 10100010398,
-    "pos": [
-      -661.1791,
-      577.4131
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010399,
-    "pos": [
-      -661.1027,
-      578.4182
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010400,
-    "pos": [
-      -646.269,
-      631.377
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010401,
-    "pos": [
-      -646.6682,
-      630.5018
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010402,
-    "pos": [
-      -646.7196,
-      632.1398
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010403,
-    "pos": [
-      -673.9201,
-      605.8782
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010404,
-    "pos": [
-      -674.4815,
-      604.8606
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010405,
-    "pos": [
-      -703.2948,
-      668.1065
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010406,
-    "pos": [
-      -703.4474,
-      667.1415
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010407,
-    "pos": [
-      -702.4272,
-      668.306
-    ],
-    "subregId": "WL_1",
-    "type": "thorny_yazhen"
-  },
-  {
-    "id": 10100010408,
-    "pos": [
-      -689.1008,
-      557.2189
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010409,
-    "pos": [
-      -690.2718,
-      558.1325
-    ],
-    "subregId": "WL_1",
-    "type": "yazhen"
-  },
-  {
-    "id": 10100010410,
-    "pos": [
-      -706.8501,
-      660.9718
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100010411,
-    "pos": [
-      -706.5061,
-      660.4394
-    ],
-    "subregId": "WL_1",
-    "type": null
-  },
-  {
-    "id": 10100500001,
-    "pos": [
-      -779.6632,
-      582.5936
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100500002,
-    "pos": [
-      -777.7111,
-      662.4378
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100500003,
-    "pos": [
-      -777.7111,
-      662.4378
-    ],
-    "subregId": "WL_1",
-    "type": "temporary_energy_alluvium"
-  },
-  {
-    "id": 10100500004,
-    "pos": [
-      -779.6632,
-      582.5936
-    ],
-    "subregId": "WL_1",
-    "type": "temporary_energy_alluvium"
-  },
-  {
-    "id": 10100360038,
-    "pos": [
-      -680.6659,
-      588.0302
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360039,
-    "pos": [
-      -680.4779,
-      586.443
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360044,
-    "pos": [
-      -639.3987,
-      590.6584
-    ],
-    "subregId": "WL_1",
-    "type": "imbued_quillbeast"
-  },
-  {
-    "id": 10100360045,
-    "pos": [
-      -713.6134,
-      492.0486
-    ],
-    "subregId": "WL_1",
-    "type": "tidewalker_d"
-  },
-  {
-    "id": 10100360047,
-    "pos": [
-      -654.9786,
-      579.1203
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360048,
-    "pos": [
-      -652.9702,
-      579.5798
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100360049,
-    "pos": [
-      -653.1558,
-      578.4538
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100360050,
-    "pos": [
-      -654.6651,
-      580.0807
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360054,
-    "pos": [
-      -674.6848,
-      642.9666
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100360055,
-    "pos": [
-      -673.6057,
-      642.6185
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100360056,
-    "pos": [
-      -636.5921,
-      618.9498
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360057,
-    "pos": [
-      -635.52,
-      616.3613
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360058,
-    "pos": [
-      -674.7386,
-      626.7407
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360059,
-    "pos": [
-      -671.868,
-      627.8451
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360060,
-    "pos": [
-      -735.8458,
-      520.7951
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360062,
-    "pos": [
-      -636.2488,
-      617.8092
-    ],
-    "subregId": "WL_1",
-    "type": "blazemist_originium_slug"
-  },
-  {
-    "id": 10100360063,
-    "pos": [
-      -725.8039,
-      486.4392
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360064,
-    "pos": [
-      -734.6334,
-      520.6626
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360065,
-    "pos": [
-      -720.5999,
-      484.1242
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360066,
-    "pos": [
-      -735.3916,
-      519.8285
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360067,
-    "pos": [
-      -668.2289,
-      610.0733
-    ],
-    "subregId": "WL_1",
-    "type": "quillbeast"
-  },
-  {
-    "id": 10100360068,
-    "pos": [
-      -667.5264,
-      649.2141
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360070,
-    "pos": [
-      -629.204,
-      589.7
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360086,
-    "pos": [
-      -670.5485,
-      594.8808
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100360093,
-    "pos": [
-      -640.3472,
-      592.1042
-    ],
-    "subregId": "WL_1",
-    "type": "quillbeast"
-  },
-  {
-    "id": 10100360094,
-    "pos": [
-      -635.2764,
-      588.9611
-    ],
-    "subregId": "WL_1",
-    "type": "blazemist_originium_slug"
-  },
-  {
-    "id": 10100360095,
-    "pos": [
-      -632.9685,
-      592.1269
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100360096,
-    "pos": [
-      -712.9628,
-      491.9874
-    ],
-    "subregId": "WL_1",
-    "type": "tidewalker_d"
-  },
-  {
-    "id": 10100360007,
-    "pos": [
-      -576.0636,
-      576.1724
-    ],
-    "subregId": "WL_1",
-    "type": "cratelocked"
-  },
-  {
-    "id": 10100360008,
-    "pos": [
-      -712.2849,
-      483.6141
-    ],
-    "subregId": "WL_1",
-    "type": "cratelocked"
-  },
-  {
-    "id": 10100360013,
-    "pos": [
-      -625.4188,
-      631.1932
-    ],
-    "subregId": "WL_1",
-    "type": "cratelocked"
-  },
-  {
-    "id": 10100360017,
-    "pos": [
-      -632.8497,
-      578.7342
-    ],
-    "subregId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 10100360018,
-    "pos": [
-      -609.4504,
-      567.3438
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100360024,
-    "pos": [
-      -671.5777,
-      506.755
-    ],
-    "subregId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 10100360026,
-    "pos": [
-      -666.9402,
-      552.527
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100360029,
-    "pos": [
-      -708.4321,
-      653.5643
-    ],
-    "subregId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 10100360030,
-    "pos": [
-      -689.2613,
-      662.5904
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100360032,
-    "pos": [
-      -677.7316,
-      587.6116
-    ],
-    "subregId": "WL_1",
-    "type": "pressure_plate"
-  },
-  {
-    "id": 10100360033,
-    "pos": [
-      -676.5264,
-      588.9854
-    ],
-    "subregId": "WL_1",
-    "type": "pressure_plate"
-  },
-  {
-    "id": 10100360034,
-    "pos": [
-      -679.0049,
-      586.1869
-    ],
-    "subregId": "WL_1",
-    "type": "pressure_plate"
-  },
-  {
-    "id": 10100360035,
-    "pos": [
-      -676.6955,
-      586.7043
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100360036,
-    "pos": [
-      -553.7503,
-      574.6671
-    ],
-    "subregId": "WL_1",
-    "type": "gear_template"
-  },
-  {
-    "id": 10100360037,
-    "pos": [
-      -669.0661,
-      628.1351
-    ],
-    "subregId": "WL_1",
-    "type": "gear_template"
-  },
-  {
-    "id": 10100360043,
-    "pos": [
-      -739.7634,
-      562.7014
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100360084,
-    "pos": [
-      -642.228,
-      586.5123
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100360085,
-    "pos": [
-      -704.2685,
-      495.6957
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100050001,
-    "pos": [
-      -713.6423,
-      597.4181
-    ],
-    "subregId": "WL_1",
-    "type": "ew_terminal"
-  },
-  {
-    "id": 10100490001,
-    "pos": [
-      -808.4487,
-      485.5988
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100480001,
-    "pos": [
-      -835.968,
-      603.6898
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023002,
-    "pos": [
-      -785.7177,
-      646.3358
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023003,
-    "pos": [
-      -783.3176,
-      645.6445
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023004,
-    "pos": [
-      -784.6043,
-      643.7958
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023011,
-    "pos": [
-      -821.217,
-      674.0806
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023012,
-    "pos": [
-      -828.236,
-      673.8032
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023013,
-    "pos": [
-      -823.0102,
-      673.5145
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023014,
-    "pos": [
-      -827.8053,
-      674.5047
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023018,
-    "pos": [
-      -856.271,
-      604.7918
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023019,
-    "pos": [
-      -856.5843,
-      602.7565
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023020,
-    "pos": [
-      -857.8387,
-      606.1546
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023048,
-    "pos": [
-      -888.97,
-      556.7554
-    ],
-    "subregId": "WL_1",
-    "type": "quillbeast"
-  },
-  {
-    "id": 10100023066,
-    "pos": [
-      -808.7774,
-      674.0074
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023067,
-    "pos": [
-      -820.2437,
-      667.455
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023068,
-    "pos": [
-      -809.9123,
-      671.7915
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023071,
-    "pos": [
-      -828.0216,
-      660.9865
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023072,
-    "pos": [
-      -828.1082,
-      658.9042
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023073,
-    "pos": [
-      -826.8257,
-      660.1585
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023074,
-    "pos": [
-      -815.842,
-      628.6597
-    ],
-    "subregId": "WL_1",
-    "type": "quillbeast"
-  },
-  {
-    "id": 10100023082,
-    "pos": [
-      -783.0,
-      563.5488
-    ],
-    "subregId": "WL_1",
-    "type": "hedron"
-  },
-  {
-    "id": 10100023083,
-    "pos": [
-      -784.3751,
-      563.5472
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023084,
-    "pos": [
-      -781.7293,
-      564.2026
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023085,
-    "pos": [
-      -782.7104,
-      553.4261
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023086,
-    "pos": [
-      -790.3338,
-      570.2435
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023126,
-    "pos": [
-      -938.59,
-      555.1384
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023127,
-    "pos": [
-      -931.7107,
-      555.5196
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023128,
-    "pos": [
-      -931.9797,
-      556.1924
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023245,
-    "pos": [
-      -778.9648,
-      546.1059
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023246,
-    "pos": [
-      -789.2646,
-      581.9472
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023247,
-    "pos": [
-      -782.8136,
-      589.5582
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023248,
-    "pos": [
-      -769.8888,
-      583.6724
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023252,
-    "pos": [
-      -860.5269,
-      485.4728
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023253,
-    "pos": [
-      -860.6547,
-      489.9934
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023254,
-    "pos": [
-      -864.8612,
-      489.5297
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023255,
-    "pos": [
-      -864.8323,
-      485.3858
-    ],
-    "subregId": "WL_1",
-    "type": "waterlamp"
-  },
-  {
-    "id": 10100023256,
-    "pos": [
-      -806.348,
-      484.7365
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100023257,
-    "pos": [
-      -803.4509,
-      486.2179
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100023258,
-    "pos": [
-      -803.3214,
-      486.785
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100023262,
-    "pos": [
-      -873.0679,
-      598.0165
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100023263,
-    "pos": [
-      -870.9394,
-      599.4225
-    ],
-    "subregId": "WL_1",
-    "type": "firemist_originium_slug"
-  },
-  {
-    "id": 10100023264,
-    "pos": [
-      -777.1728,
-      538.5653
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023265,
-    "pos": [
-      -777.2264,
-      536.6196
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023266,
-    "pos": [
-      -776.7027,
-      537.7828
-    ],
-    "subregId": "WL_1",
-    "type": "hedron"
-  },
-  {
-    "id": 10100023275,
-    "pos": [
-      -824.2482,
-      578.8866
-    ],
-    "subregId": "WL_1",
-    "type": "quillbeast"
-  },
-  {
-    "id": 10100023325,
-    "pos": [
-      -849.7509,
-      453.9774
-    ],
-    "subregId": "WL_1",
-    "type": "hedron"
-  },
-  {
-    "id": 10100023332,
-    "pos": [
-      -853.0088,
-      450.2433
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023333,
-    "pos": [
-      -849.7797,
-      459.1314
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023334,
-    "pos": [
-      -851.8005,
-      449.109
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023335,
-    "pos": [
-      -842.6287,
-      454.1388
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023336,
-    "pos": [
-      -841.7285,
-      450.5264
-    ],
-    "subregId": "WL_1",
-    "type": "mudflow"
-  },
-  {
-    "id": 10100023337,
-    "pos": [
-      -848.0642,
-      454.913
-    ],
-    "subregId": "WL_1",
-    "type": "hedron"
-  },
-  {
-    "id": 10100023338,
-    "pos": [
-      -848.5049,
-      453.8302
-    ],
-    "subregId": "WL_1",
-    "type": "prism"
-  },
-  {
-    "id": 10100020314,
-    "pos": [
-      -875.8841,
-      489.0307
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100020315,
-    "pos": [
-      -971.625,
-      441.0741
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100020319,
-    "pos": [
-      -941.34,
-      557.5521
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100020350,
-    "pos": [
-      -843.6964,
-      524.1814
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100020646,
-    "pos": [
-      -792.3362,
-      647.2857
-    ],
-    "subregId": "WL_1",
-    "type": "tp_point"
-  },
-  {
-    "id": 10100020731,
-    "pos": [
-      -815.7849,
-      678.0296
-    ],
-    "subregId": "WL_1",
-    "type": "cratelocked"
-  },
-  {
-    "id": 10100020762,
-    "pos": [
-      -919.4582,
-      588.7519
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100020770,
-    "pos": [
-      -785.6966,
-      644.3465
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023016,
-    "pos": [
-      -813.9459,
-      631.7616
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023036,
-    "pos": [
-      -889.9552,
-      500.9698
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023044,
-    "pos": [
-      -791.4331,
-      564.8505
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023047,
-    "pos": [
-      -831.4275,
-      458.9635
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100023055,
-    "pos": [
-      -871.5681,
-      597.4231
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023101,
-    "pos": [
-      -793.5033,
-      660.7317
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100023120,
-    "pos": [
-      -853.4681,
-      449.0419
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023123,
-    "pos": [
-      -842.8321,
-      461.2613
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023125,
-    "pos": [
-      -882.2845,
-      496.4375
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023131,
-    "pos": [
-      -848.5007,
-      459.47
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023134,
-    "pos": [
-      -871.5292,
-      587.5375
-    ],
-    "subregId": "WL_1",
-    "type": "cratelocked"
-  },
-  {
-    "id": 10100023136,
-    "pos": [
-      -875.4311,
-      568.2938
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023138,
-    "pos": [
-      -877.1626,
-      568.4703
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023139,
-    "pos": [
-      -877.438,
-      569.6024
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023143,
-    "pos": [
-      -910.2205,
-      564.3938
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100023144,
-    "pos": [
-      -804.2835,
-      594.1891
-    ],
-    "subregId": "WL_1",
-    "type": "crate_iii"
-  },
-  {
-    "id": 10100023145,
-    "pos": [
-      -820.2635,
-      607.1941
-    ],
-    "subregId": "WL_1",
-    "type": "guiding_butterflies"
-  },
-  {
-    "id": 10100023146,
-    "pos": [
-      -868.4568,
-      449.5373
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023147,
-    "pos": [
-      -900.8144,
-      600.4571
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023148,
-    "pos": [
-      -859.7291,
-      589.7932
-    ],
-    "subregId": "WL_1",
-    "type": "delta_bot"
-  },
-  {
-    "id": 10100023150,
-    "pos": [
-      -931.2513,
-      550.7174
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023151,
-    "pos": [
-      -930.5074,
-      553.7604
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023152,
-    "pos": [
-      -931.9836,
-      550.9926
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023153,
-    "pos": [
-      -800.3595,
-      666.0741
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023154,
-    "pos": [
-      -778.7403,
-      640.181
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023155,
-    "pos": [
-      -830.4708,
-      640.3806
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023156,
-    "pos": [
-      -866.766,
-      483.8668
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023157,
-    "pos": [
-      -878.2813,
-      501.4653
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023158,
-    "pos": [
-      -877.3032,
-      502.5378
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023159,
-    "pos": [
-      -803.8358,
-      482.5194
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023160,
-    "pos": [
-      -802.5106,
-      498.8905
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023161,
-    "pos": [
-      -803.6236,
-      499.3711
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023162,
-    "pos": [
-      -878.1656,
-      499.3304
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023164,
-    "pos": [
-      -869.5906,
-      599.5289
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023165,
-    "pos": [
-      -873.7901,
-      597.5831
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023166,
-    "pos": [
-      -895.755,
-      595.1975
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023167,
-    "pos": [
-      -894.6705,
-      586.3326
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023179,
-    "pos": [
-      -812.7087,
-      635.8875
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023180,
-    "pos": [
-      -863.8132,
-      609.9781
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023181,
-    "pos": [
-      -797.6356,
-      666.8792
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023182,
-    "pos": [
-      -847.5152,
-      452.3411
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023183,
-    "pos": [
-      -868.4444,
-      590.012
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023184,
-    "pos": [
-      -873.598,
-      583.8189
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023185,
-    "pos": [
-      -918.7806,
-      575.9176
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023190,
-    "pos": [
-      -832.6144,
-      654.154
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023191,
-    "pos": [
-      -813.1508,
-      670.459
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023194,
-    "pos": [
-      -874.2914,
-      455.6625
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100023213,
-    "pos": [
-      -769.6749,
-      571.1802
-    ],
-    "subregId": "WL_1",
-    "type": "gear_template"
-  },
-  {
-    "id": 10100023214,
-    "pos": [
-      -851.685,
-      545.2425
-    ],
-    "subregId": "WL_1",
-    "type": "gear_template"
-  },
-  {
-    "id": 10100023240,
-    "pos": [
-      -887.3657,
-      485.1397
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023268,
-    "pos": [
-      -941.2407,
-      562.0806
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023269,
-    "pos": [
-      -786.4274,
-      543.9008
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023270,
-    "pos": [
-      -823.7545,
-      531.7207
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023271,
-    "pos": [
-      -793.7204,
-      557.7983
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023272,
-    "pos": [
-      -792.9312,
-      556.9002
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023279,
-    "pos": [
-      -887.8449,
-      559.0979
-    ],
-    "subregId": "WL_1",
-    "type": "cratesurprise"
-  },
-  {
-    "id": 10100023280,
-    "pos": [
-      -895.4299,
-      606.9271
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023282,
-    "pos": [
-      -791.7506,
-      596.942
-    ],
-    "subregId": "WL_1",
-    "type": "crate_i"
-  },
-  {
-    "id": 10100023283,
-    "pos": [
-      -788.1545,
-      547.0081
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023286,
-    "pos": [
-      -909.733,
-      578.6215
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023287,
-    "pos": [
-      -795.3279,
-      538.7646
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023288,
-    "pos": [
-      -834.6944,
-      479.7534
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023301,
-    "pos": [
-      -821.2865,
-      499.5175
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100023318,
-    "pos": [
-      -834.8752,
-      473.9122
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100023321,
-    "pos": [
-      -874.7823,
-      537.7199
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023322,
-    "pos": [
-      -876.221,
-      538.5357
-    ],
-    "subregId": "WL_1",
-    "type": "gather"
-  },
-  {
-    "id": 10100023323,
-    "pos": [
-      -922.7738,
-      553.6607
-    ],
-    "subregId": "WL_1",
-    "type": "crate_ii"
-  },
-  {
-    "id": 10100023339,
-    "pos": [
-      -859.439,
-      507.6969
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  },
-  {
-    "id": 10100023343,
-    "pos": [
-      -828.6768,
-      498.7219
-    ],
-    "subregId": "WL_1",
-    "type": "aurylene"
-  }
+  [
+    10100350000,
+    -867.809,
+    536.4421,
+    227.53772,
+    "nar_paper_map02_1_1"
+  ],
+  [
+    10100350001,
+    -835.6616,
+    543.0988,
+    227.002686,
+    "nar_paper_map02_2_1"
+  ],
+  [
+    10100350002,
+    -813.219,
+    557.7152,
+    230.55423,
+    "nar_paper_map02_3_1"
+  ],
+  [
+    10100350004,
+    -843.5917,
+    577.2333,
+    227.858383,
+    "nar_paper_map02_3_2"
+  ],
+  [
+    10100350006,
+    -778.2474,
+    582.277,
+    228.785614,
+    "nar_paper_map02_3_3"
+  ],
+  [
+    10100350007,
+    -777.0284,
+    640.9623,
+    228.917664,
+    "nar_media_map02_65_1"
+  ],
+  [
+    10100350008,
+    -815.0758,
+    637.5087,
+    248.530716,
+    "nar_paper_map02_7_1"
+  ],
+  [
+    10100350009,
+    -832.3006,
+    598.0371,
+    239.666885,
+    "nar_paper_map02_8_1"
+  ],
+  [
+    10100350010,
+    -809.5806,
+    596.1402,
+    234.412445,
+    "nar_paper_map02_3_4"
+  ],
+  [
+    10100350011,
+    -781.418,
+    549.1421,
+    227.136719,
+    "nar_paper_map02_10_1"
+  ],
+  [
+    10100350012,
+    -803.7228,
+    499.9131,
+    228.345581,
+    "nar_paper_map02_11_1"
+  ],
+  [
+    10100350016,
+    -870.1676,
+    597.5861,
+    262.031525,
+    "nar_paper_map02_12_1"
+  ],
+  [
+    10100350017,
+    -874.7208,
+    577.2287,
+    178.16481,
+    "nar_paper_map02_13_1"
+  ],
+  [
+    10100350019,
+    -713.5041,
+    483.3293,
+    202.282,
+    "nar_paper_map02_14_1"
+  ],
+  [
+    10100350023,
+    -735.7153,
+    622.0599,
+    233.925659,
+    "nar_paper_map02_15_1"
+  ],
+  [
+    10100350024,
+    -728.4863,
+    629.7303,
+    234.301132,
+    "nar_paper_map02_16_1"
+  ],
+  [
+    10100350025,
+    -665.9915,
+    673.4674,
+    239.711716,
+    "nar_digital_map02_17_1"
+  ],
+  [
+    10100350026,
+    -653.8184,
+    585.6894,
+    227.075714,
+    "nar_digital_map02_18_1"
+  ],
+  [
+    10100350027,
+    -619.7043,
+    582.609,
+    236.334351,
+    "nar_paper_map02_19_1"
+  ],
+  [
+    10100350028,
+    -612.5442,
+    552.1082,
+    247.619888,
+    "nar_digital_map02_20_1"
+  ],
+  [
+    10100350029,
+    -579.5365,
+    568.5099,
+    249.8625,
+    "nar_paper_map02_21_1"
+  ],
+  [
+    10100350031,
+    -565.7976,
+    656.3158,
+    244.59198,
+    "nar_paper_map02_22_1"
+  ],
+  [
+    10100350032,
+    -542.1514,
+    663.2449,
+    253.492645,
+    "nar_paper_map02_23_1"
+  ],
+  [
+    10100030017,
+    -694.7379,
+    545.1245,
+    237.07,
+    "tp_point"
+  ],
+  [
+    10100030018,
+    -624.9139,
+    644.7748,
+    234.762,
+    "tp_point"
+  ],
+  [
+    10100030027,
+    -592.6816,
+    557.6807,
+    247.26,
+    "tp_point"
+  ],
+  [
+    10100030036,
+    -754.8904,
+    634.6718,
+    227.85,
+    "crate_i"
+  ],
+  [
+    10100030041,
+    -697.4639,
+    670.2614,
+    256.1961,
+    "cratesurprise"
+  ],
+  [
+    10100030046,
+    -600.2209,
+    563.3604,
+    247.659988,
+    "crate_i"
+  ],
+  [
+    10100030048,
+    -711.8814,
+    651.5,
+    236.006,
+    "tp_point"
+  ],
+  [
+    10100030138,
+    -724.8867,
+    521.1833,
+    203.13855,
+    "crate_i"
+  ],
+  [
+    10100030146,
+    -749.9697,
+    640.0771,
+    227.218735,
+    "tp_point"
+  ],
+  [
+    10100030151,
+    -586.3966,
+    661.4189,
+    233.278,
+    "crate_ii"
+  ],
+  [
+    10100030162,
+    -673.0581,
+    639.5568,
+    237.92,
+    "exploration_level"
+  ],
+  [
+    10100030166,
+    -701.3444,
+    671.1522,
+    246.5,
+    "aurylene"
+  ],
+  [
+    10100030170,
+    -574.4484,
+    659.1481,
+    242.22,
+    "aurylene"
+  ],
+  [
+    10100030171,
+    -540.339,
+    669.1382,
+    253.718,
+    "crate_i"
+  ],
+  [
+    10100030172,
+    -642.8062,
+    648.6725,
+    237.47,
+    "aurylene"
+  ],
+  [
+    10100030174,
+    -592.5125,
+    544.0403,
+    247.209915,
+    "crate_i"
+  ],
+  [
+    10100030176,
+    -576.3341,
+    591.817,
+    237.347,
+    "gather"
+  ],
+  [
+    10100030179,
+    -742.7453,
+    517.5454,
+    193.59,
+    "tp_point"
+  ],
+  [
+    10100030181,
+    -643.8314,
+    552.129,
+    228.67,
+    "repair_logic"
+  ],
+  [
+    10100030183,
+    -636.6392,
+    566.3574,
+    237.555,
+    "delta_bot"
+  ],
+  [
+    10100030184,
+    -597.3293,
+    583.525,
+    238.1805,
+    "delta_bot"
+  ],
+  [
+    10100030185,
+    -679.1733,
+    491.3365,
+    220.942154,
+    "aurylene"
+  ],
+  [
+    10100030186,
+    -746.329,
+    646.8966,
+    235.43,
+    "aurylene"
+  ],
+  [
+    10100030191,
+    -689.7685,
+    678.0811,
+    239.3824,
+    "gather"
+  ],
+  [
+    10100030192,
+    -550.7365,
+    668.6262,
+    255.64,
+    "aurylene"
+  ],
+  [
+    10100030193,
+    -706.4379,
+    576.5387,
+    226.595444,
+    "gather"
+  ],
+  [
+    10100030195,
+    -629.7079,
+    566.1762,
+    239.3985,
+    "gather"
+  ],
+  [
+    10100030196,
+    -600.2083,
+    590.0083,
+    233.413,
+    "crate_i"
+  ],
+  [
+    10100030197,
+    -579.9025,
+    562.1804,
+    248.326752,
+    "gather"
+  ],
+  [
+    10100030198,
+    -607.5026,
+    578.2354,
+    242.17482,
+    "gather"
+  ],
+  [
+    10100030199,
+    -597.5125,
+    579.6808,
+    238.554413,
+    "gather"
+  ],
+  [
+    10100030200,
+    -625.3993,
+    606.2236,
+    230.586563,
+    "gather"
+  ],
+  [
+    10100030201,
+    -690.3814,
+    661.3189,
+    247.684814,
+    "gather"
+  ],
+  [
+    10100030204,
+    -669.92,
+    506.0215,
+    221.948288,
+    "gather"
+  ],
+  [
+    10100030205,
+    -693.6257,
+    513.8903,
+    215.635681,
+    "gather"
+  ],
+  [
+    10100030210,
+    -638.1651,
+    646.4495,
+    234.46,
+    "gather"
+  ],
+  [
+    10100030211,
+    -630.8413,
+    647.1574,
+    234.307,
+    "gather"
+  ],
+  [
+    10100030212,
+    -713.9279,
+    524.4107,
+    209.404327,
+    "gather"
+  ],
+  [
+    10100030213,
+    -707.5083,
+    507.6713,
+    201.367981,
+    "gather"
+  ],
+  [
+    10100030223,
+    -544.1529,
+    646.3439,
+    253.569244,
+    "gather"
+  ],
+  [
+    10100030225,
+    -659.2103,
+    582.1738,
+    225.633,
+    "gather"
+  ],
+  [
+    10100033001,
+    -577.6497,
+    591.2043,
+    237.75,
+    "gather"
+  ],
+  [
+    10100033005,
+    -678.0142,
+    629.933,
+    235.500916,
+    "gather"
+  ],
+  [
+    10100033006,
+    -720.818,
+    510.3587,
+    195.09,
+    "aurylene"
+  ],
+  [
+    10100033013,
+    -621.8836,
+    572.6884,
+    238.488739,
+    "gather"
+  ],
+  [
+    10100033014,
+    -733.7861,
+    502.6875,
+    194.247833,
+    "crate_ii"
+  ],
+  [
+    10100033015,
+    -642.6668,
+    555.3899,
+    227.191071,
+    "crate_ii"
+  ],
+  [
+    10100033020,
+    -729.3716,
+    494.6645,
+    198.941,
+    "crate_i"
+  ],
+  [
+    10100033021,
+    -654.2698,
+    578.7942,
+    225.97,
+    "crate_ii"
+  ],
+  [
+    10100033022,
+    -706.5367,
+    602.0249,
+    242.752884,
+    "gather"
+  ],
+  [
+    10100033023,
+    -711.9092,
+    552.1875,
+    225.789429,
+    "gather"
+  ],
+  [
+    10100033024,
+    -713.9055,
+    667.0295,
+    249.702942,
+    "crate_ii"
+  ],
+  [
+    10100033026,
+    -645.7982,
+    617.3211,
+    225.380035,
+    "gather"
+  ],
+  [
+    10100033030,
+    -703.3113,
+    666.4971,
+    250.627991,
+    "gather"
+  ],
+  [
+    10100033033,
+    -740.8266,
+    507.0436,
+    193.700012,
+    "guiding_butterflies"
+  ],
+  [
+    10100010001,
+    -644.8336,
+    597.327,
+    226.1,
+    "rare_gathering_site"
+  ],
+  [
+    10100010002,
+    -641.418,
+    598.8214,
+    226.281708,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010003,
+    -649.398,
+    596.8682,
+    226.048264,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010004,
+    -640.8376,
+    597.7,
+    225.848343,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010005,
+    -647.4888,
+    596.9128,
+    226.08017,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010006,
+    -647.3467,
+    595.5542,
+    225.726685,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010007,
+    -647.2379,
+    598.2914,
+    226.241516,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010008,
+    -645.8732,
+    599.2415,
+    226.3661,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010009,
+    -648.6934,
+    597.7755,
+    226.18338,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010010,
+    -642.348,
+    596.7971,
+    226.075867,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010011,
+    -642.7256,
+    595.8227,
+    226.37529,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010012,
+    -645.0274,
+    628.1848,
+    225.3,
+    "rare_gathering_site"
+  ],
+  [
+    10100010013,
+    -641.6168,
+    628.8229,
+    226.531281,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010014,
+    -642.9797,
+    630.6913,
+    226.688171,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010015,
+    -646.3003,
+    625.8712,
+    225.451,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010016,
+    -645.1225,
+    630.9431,
+    225.45,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010017,
+    -640.7749,
+    628.1955,
+    226.476837,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010018,
+    -642.7627,
+    625.2004,
+    225.659058,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010019,
+    -647.1509,
+    628.1272,
+    225.321381,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010020,
+    -645.4016,
+    632.0825,
+    225.713715,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010021,
+    -642.719,
+    627.8862,
+    225.641174,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010022,
+    -640.5545,
+    626.87,
+    225.83,
+    "ruby_bolete_spot"
+  ],
+  [
+    10100010023,
+    -692.9852,
+    498.4735,
+    220.39,
+    "rare_mining_site"
+  ],
+  [
+    10100010024,
+    -692.4169,
+    495.7722,
+    219.71,
+    "umbronyx_spot"
+  ],
+  [
+    10100010025,
+    -691.6271,
+    495.6101,
+    219.51,
+    "umbronyx_spot"
+  ],
+  [
+    10100010026,
+    -694.0743,
+    493.1665,
+    220.4,
+    "umbronyx_spot"
+  ],
+  [
+    10100010027,
+    -695.0286,
+    495.5596,
+    221.02,
+    "umbronyx_spot"
+  ],
+  [
+    10100010028,
+    -694.516,
+    494.3844,
+    220.89,
+    "umbronyx_spot"
+  ],
+  [
+    10100010029,
+    -693.455,
+    492.0664,
+    220.19,
+    "umbronyx_spot"
+  ],
+  [
+    10100010030,
+    -692.799,
+    493.596,
+    219.78,
+    "umbronyx_spot"
+  ],
+  [
+    10100010031,
+    -692.8495,
+    494.6875,
+    219.97,
+    "umbronyx_spot"
+  ],
+  [
+    10100010032,
+    -696.8731,
+    495.1997,
+    220.297714,
+    "umbronyx_spot"
+  ],
+  [
+    10100010033,
+    -695.349,
+    496.3638,
+    221.71,
+    "umbronyx_spot"
+  ],
+  [
+    10100010034,
+    -656.4508,
+    520.17,
+    231.0,
+    "originium_spot"
+  ],
+  [
+    10100010041,
+    -656.8632,
+    516.0302,
+    231.0,
+    "originium_spot"
+  ],
+  [
+    10100010048,
+    -656.8632,
+    523.8958,
+    231.0,
+    "originium_spot"
+  ],
+  [
+    10100010055,
+    -660.5748,
+    516.4442,
+    231.0,
+    "originium_spot"
+  ],
+  [
+    10100010062,
+    -660.5748,
+    522.6539,
+    231.0,
+    "originium_spot"
+  ],
+  [
+    10100010069,
+    -679.1328,
+    590.1321,
+    225.0,
+    "originium_spot"
+  ],
+  [
+    10100010076,
+    -683.2568,
+    585.5783,
+    225.0,
+    "originium_spot"
+  ],
+  [
+    10100010083,
+    -744.2918,
+    576.0569,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010097,
+    -745.529,
+    578.5407,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010110,
+    -746.3538,
+    581.0246,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010111,
+    -749.2406,
+    581.0246,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010124,
+    -751.715,
+    580.1966,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010125,
+    -842.9593,
+    576.651,
+    226.869,
+    "jincao"
+  ],
+  [
+    10100010126,
+    -845.9981,
+    577.3819,
+    227.67366,
+    "jincao"
+  ],
+  [
+    10100010131,
+    -843.8637,
+    577.2942,
+    227.842056,
+    "fluffed_jincao"
+  ],
+  [
+    10100010132,
+    -948.8972,
+    495.5239,
+    228.305847,
+    "glowbug"
+  ],
+  [
+    10100010133,
+    -947.9203,
+    494.8131,
+    228.3345,
+    "glowbug"
+  ],
+  [
+    10100010134,
+    -951.4763,
+    505.8465,
+    228.005249,
+    "glowbug"
+  ],
+  [
+    10100010135,
+    -948.8844,
+    505.6962,
+    227.9405,
+    "glowbug"
+  ],
+  [
+    10100010136,
+    -837.2367,
+    541.193,
+    226.6221,
+    "yazhen"
+  ],
+  [
+    10100010137,
+    -830.3927,
+    530.1461,
+    226.6221,
+    "jincao"
+  ],
+  [
+    10100010138,
+    -834.3429,
+    534.447,
+    226.6221,
+    "yazhen"
+  ],
+  [
+    10100010139,
+    -843.7005,
+    537.3766,
+    227.723557,
+    "yazhen"
+  ],
+  [
+    10100010140,
+    -838.2844,
+    538.1306,
+    226.6221,
+    "jincao"
+  ],
+  [
+    10100010141,
+    -832.785,
+    543.9092,
+    226.966782,
+    "fluffed_jincao"
+  ],
+  [
+    10100010142,
+    -831.361,
+    596.3883,
+    239.95015,
+    "jincao"
+  ],
+  [
+    10100010143,
+    -834.1131,
+    595.6612,
+    240.357941,
+    "jincao"
+  ],
+  [
+    10100010144,
+    -832.5434,
+    594.1711,
+    239.9288,
+    "jincao"
+  ],
+  [
+    10100010145,
+    -833.9794,
+    529.9469,
+    226.7412,
+    "jincao"
+  ],
+  [
+    10100010146,
+    -840.5339,
+    539.9113,
+    226.726212,
+    "jincao"
+  ],
+  [
+    10100010147,
+    -844.5844,
+    541.9286,
+    226.6221,
+    "jincao"
+  ],
+  [
+    10100010148,
+    -844.6419,
+    541.401,
+    226.6221,
+    "jincao"
+  ],
+  [
+    10100010149,
+    -848.5854,
+    541.5346,
+    226.844543,
+    "fluffed_jincao"
+  ],
+  [
+    10100010150,
+    -871.186,
+    587.518,
+    172.8753,
+    "glowbug"
+  ],
+  [
+    10100010151,
+    -858.8664,
+    587.0398,
+    172.746567,
+    "glowbug"
+  ],
+  [
+    10100010152,
+    -856.4106,
+    582.1034,
+    172.654755,
+    "glowbug"
+  ],
+  [
+    10100010153,
+    -847.0043,
+    601.7943,
+    229.06,
+    "scorchbug"
+  ],
+  [
+    10100010154,
+    -844.2645,
+    599.9196,
+    229.543732,
+    "scorchbug"
+  ],
+  [
+    10100010155,
+    -838.4604,
+    598.9042,
+    240.44,
+    "scorchbug"
+  ],
+  [
+    10100010156,
+    -832.7559,
+    593.3421,
+    240.7845,
+    "scorchbug"
+  ],
+  [
+    10100010157,
+    -848.6928,
+    602.0112,
+    250.561829,
+    "scorchbug"
+  ],
+  [
+    10100010159,
+    -805.446,
+    576.7541,
+    227.454849,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010160,
+    -804.2849,
+    576.0511,
+    227.524231,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010161,
+    -803.5144,
+    577.0552,
+    227.7462,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010162,
+    -802.8937,
+    577.028,
+    227.532333,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010163,
+    -799.9191,
+    574.1349,
+    227.594772,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010164,
+    -800.739,
+    574.5865,
+    227.447113,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010165,
+    -799.5965,
+    575.15,
+    227.7189,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010166,
+    -803.1777,
+    575.1615,
+    227.401566,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010167,
+    -805.0188,
+    577.0143,
+    227.263336,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010168,
+    -799.3131,
+    573.9997,
+    228.085373,
+    "vitrodendra_spot"
+  ],
+  [
+    10100010169,
+    -800.9677,
+    576.4833,
+    227.17,
+    "rare_gathering_site"
+  ],
+  [
+    10100010170,
+    -821.0524,
+    511.2205,
+    226.978,
+    "umbronyx_spot"
+  ],
+  [
+    10100010171,
+    -824.1745,
+    505.8733,
+    227.33,
+    "umbronyx_spot"
+  ],
+  [
+    10100010172,
+    -821.8621,
+    507.9708,
+    227.240921,
+    "umbronyx_spot"
+  ],
+  [
+    10100010173,
+    -824.0331,
+    503.8257,
+    226.6221,
+    "umbronyx_spot"
+  ],
+  [
+    10100010174,
+    -821.0198,
+    507.1742,
+    226.66803,
+    "umbronyx_spot"
+  ],
+  [
+    10100010175,
+    -826.5044,
+    506.8751,
+    227.825,
+    "umbronyx_spot"
+  ],
+  [
+    10100010176,
+    -825.5764,
+    505.7751,
+    226.909836,
+    "umbronyx_spot"
+  ],
+  [
+    10100010177,
+    -826.0669,
+    505.7171,
+    226.863052,
+    "umbronyx_spot"
+  ],
+  [
+    10100010178,
+    -820.935,
+    508.6263,
+    227.33,
+    "umbronyx_spot"
+  ],
+  [
+    10100010179,
+    -822.3552,
+    506.5139,
+    227.33,
+    "umbronyx_spot"
+  ],
+  [
+    10100010180,
+    -823.9301,
+    509.2617,
+    227.33,
+    "rare_mining_site"
+  ],
+  [
+    10100010181,
+    -677.1124,
+    616.8216,
+    229.979,
+    "protocol_dl"
+  ],
+  [
+    10100010182,
+    -580.0423,
+    565.6338,
+    248.141449,
+    "protocol_dl"
+  ],
+  [
+    10100010185,
+    -620.6764,
+    626.5356,
+    230.3855,
+    "protocol_dl"
+  ],
+  [
+    10100010186,
+    -949.3571,
+    509.7378,
+    228.005249,
+    "protocol_dl"
+  ],
+  [
+    10100010187,
+    -777.0482,
+    548.3982,
+    226.4,
+    "protocol_dl"
+  ],
+  [
+    10100010188,
+    -680.5428,
+    590.5353,
+    225.318878,
+    "scorchbug"
+  ],
+  [
+    10100010194,
+    -627.0112,
+    649.7537,
+    234.239487,
+    "glowbug"
+  ],
+  [
+    10100010222,
+    -694.8757,
+    657.5078,
+    244.277,
+    "jincao"
+  ],
+  [
+    10100010223,
+    -638.7218,
+    623.8422,
+    225.387344,
+    "fluffed_jincao"
+  ],
+  [
+    10100010224,
+    -705.3002,
+    572.9798,
+    226.083679,
+    "yazhen"
+  ],
+  [
+    10100010225,
+    -702.7835,
+    575.7055,
+    225.4108,
+    "thorny_yazhen"
+  ],
+  [
+    10100010226,
+    -708.9285,
+    573.4261,
+    226.972488,
+    "yazhen"
+  ],
+  [
+    10100010227,
+    -705.2787,
+    576.2381,
+    226.335175,
+    "yazhen"
+  ],
+  [
+    10100010228,
+    -706.3675,
+    572.4135,
+    225.998,
+    "yazhen"
+  ],
+  [
+    10100010229,
+    -695.448,
+    657.0489,
+    243.686,
+    "jincao"
+  ],
+  [
+    10100010230,
+    -720.6401,
+    654.415,
+    234.495,
+    "jincao"
+  ],
+  [
+    10100010231,
+    -719.9801,
+    654.7744,
+    234.476,
+    "jincao"
+  ],
+  [
+    10100010232,
+    -639.7377,
+    623.9618,
+    225.386871,
+    "jincao"
+  ],
+  [
+    10100010233,
+    -637.7723,
+    622.5558,
+    225.37999,
+    "jincao"
+  ],
+  [
+    10100010234,
+    -637.6093,
+    623.9126,
+    225.498352,
+    "jincao"
+  ],
+  [
+    10100010235,
+    -639.9293,
+    622.3877,
+    225.379974,
+    "jincao"
+  ],
+  [
+    10100010236,
+    -679.3014,
+    591.0946,
+    225.368958,
+    "scorchbug"
+  ],
+  [
+    10100010237,
+    -677.8319,
+    582.2714,
+    225.153519,
+    "scorchbug"
+  ],
+  [
+    10100010238,
+    -675.7032,
+    582.0619,
+    225.1528,
+    "scorchbug"
+  ],
+  [
+    10100010239,
+    -626.787,
+    650.1337,
+    234.045364,
+    "glowbug"
+  ],
+  [
+    10100010240,
+    -631.3671,
+    652.2013,
+    233.679718,
+    "glowbug"
+  ],
+  [
+    10100010241,
+    -679.9779,
+    634.5384,
+    237.540741,
+    "amber_rice"
+  ],
+  [
+    10100010242,
+    -679.8242,
+    635.2303,
+    237.518,
+    "amber_rice"
+  ],
+  [
+    10100010243,
+    -729.7951,
+    501.928,
+    193.708862,
+    "redjade_ginseng"
+  ],
+  [
+    10100010244,
+    -728.5502,
+    501.2433,
+    193.7,
+    "redjade_ginseng"
+  ],
+  [
+    10100010245,
+    -843.0577,
+    576.4134,
+    226.869,
+    "jincao"
+  ],
+  [
+    10100010246,
+    -727.1978,
+    581.9256,
+    232.52,
+    "glowbug"
+  ],
+  [
+    10100010247,
+    -727.4912,
+    582.8064,
+    231.723877,
+    "glowbug"
+  ],
+  [
+    10100010248,
+    -727.2048,
+    585.1851,
+    232.726776,
+    "glowbug"
+  ],
+  [
+    10100010249,
+    -720.295,
+    655.545,
+    234.31,
+    "jincao"
+  ],
+  [
+    10100010250,
+    -846.1912,
+    572.355,
+    227.423676,
+    "jincao"
+  ],
+  [
+    10100010251,
+    -803.0091,
+    489.0224,
+    226.622116,
+    "protocol_dl"
+  ],
+  [
+    10100010258,
+    -752.9521,
+    626.1481,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010265,
+    -755.0141,
+    628.2179,
+    227.0,
+    "originium_spot"
+  ],
+  [
+    10100010266,
+    -905.92,
+    555.7562,
+    270.379456,
+    "aketine"
+  ],
+  [
+    10100010267,
+    -934.9056,
+    564.0241,
+    227.84491,
+    "aketine"
+  ],
+  [
+    10100010268,
+    -938.923,
+    554.1678,
+    227.835861,
+    "aketine"
+  ],
+  [
+    10100010269,
+    -931.0932,
+    559.3724,
+    227.8909,
+    "aketine"
+  ],
+  [
+    10100010270,
+    -932.6166,
+    571.4666,
+    264.235474,
+    "aketine"
+  ],
+  [
+    10100010271,
+    -905.5804,
+    555.9205,
+    270.433258,
+    "aketine"
+  ],
+  [
+    10100010272,
+    -885.505,
+    599.4275,
+    267.332062,
+    "jincao"
+  ],
+  [
+    10100010273,
+    -881.0749,
+    601.3447,
+    266.7952,
+    "jincao"
+  ],
+  [
+    10100010274,
+    -881.0749,
+    601.0826,
+    266.7952,
+    "jincao"
+  ],
+  [
+    10100010275,
+    -884.072,
+    598.2481,
+    267.81308,
+    "fluffed_jincao"
+  ],
+  [
+    10100010276,
+    -874.3364,
+    598.7076,
+    262.200653,
+    "jincao"
+  ],
+  [
+    10100010277,
+    -869.9687,
+    601.4604,
+    262.3808,
+    "jincao"
+  ],
+  [
+    10100010278,
+    -874.3384,
+    598.4148,
+    262.1247,
+    "jincao"
+  ],
+  [
+    10100010279,
+    -816.8853,
+    640.6617,
+    231.641113,
+    "jincao"
+  ],
+  [
+    10100010280,
+    -830.4708,
+    639.979,
+    228.81218,
+    "jincao"
+  ],
+  [
+    10100010281,
+    -818.4818,
+    653.5255,
+    229.007935,
+    "jincao"
+  ],
+  [
+    10100010282,
+    -826.5598,
+    639.5584,
+    229.0163,
+    "fluffed_jincao"
+  ],
+  [
+    10100010283,
+    -830.0287,
+    641.974,
+    228.560547,
+    "jincao"
+  ],
+  [
+    10100010284,
+    -814.2626,
+    646.8644,
+    229.1279,
+    "jincao"
+  ],
+  [
+    10100010285,
+    -814.7561,
+    647.0736,
+    229.128922,
+    "jincao"
+  ],
+  [
+    10100010286,
+    -805.8471,
+    513.4553,
+    228.497147,
+    "yazhen"
+  ],
+  [
+    10100010287,
+    -799.0602,
+    506.329,
+    230.204529,
+    "thorny_yazhen"
+  ],
+  [
+    10100010288,
+    -804.8287,
+    514.3386,
+    229.299515,
+    "yazhen"
+  ],
+  [
+    10100010289,
+    -804.6752,
+    514.0142,
+    229.299515,
+    "yazhen"
+  ],
+  [
+    10100010290,
+    -800.4522,
+    505.7181,
+    229.5099,
+    "yazhen"
+  ],
+  [
+    10100010291,
+    -800.6832,
+    505.9333,
+    229.5069,
+    "yazhen"
+  ],
+  [
+    10100010292,
+    -842.6104,
+    504.9009,
+    227.05806,
+    "yazhen"
+  ],
+  [
+    10100010293,
+    -843.9067,
+    504.0587,
+    227.117249,
+    "thorny_yazhen"
+  ],
+  [
+    10100010294,
+    -843.0448,
+    504.8534,
+    227.329025,
+    "yazhen"
+  ],
+  [
+    10100010295,
+    -846.3481,
+    503.6109,
+    227.212784,
+    "yazhen"
+  ],
+  [
+    10100010296,
+    -847.808,
+    503.8221,
+    227.167679,
+    "yazhen"
+  ],
+  [
+    10100010298,
+    -788.4124,
+    531.7043,
+    229.939743,
+    "yazhen"
+  ],
+  [
+    10100010299,
+    -784.1759,
+    530.2519,
+    229.961761,
+    "thorny_yazhen"
+  ],
+  [
+    10100010300,
+    -785.3082,
+    529.4384,
+    229.7238,
+    "yazhen"
+  ],
+  [
+    10100010301,
+    -784.3719,
+    530.1261,
+    229.880646,
+    "yazhen"
+  ],
+  [
+    10100010302,
+    -789.0294,
+    531.3135,
+    229.852753,
+    "yazhen"
+  ],
+  [
+    10100010303,
+    -784.8177,
+    531.8087,
+    231.903748,
+    "yazhen"
+  ],
+  [
+    10100010304,
+    -893.3053,
+    558.8957,
+    271.0352,
+    "yazhen"
+  ],
+  [
+    10100010305,
+    -885.7574,
+    556.7531,
+    270.086731,
+    "thorny_yazhen"
+  ],
+  [
+    10100010306,
+    -890.2624,
+    559.0927,
+    270.402557,
+    "yazhen"
+  ],
+  [
+    10100010307,
+    -890.6208,
+    559.1611,
+    270.403046,
+    "yazhen"
+  ],
+  [
+    10100010308,
+    -893.8891,
+    558.2702,
+    270.9251,
+    "yazhen"
+  ],
+  [
+    10100010309,
+    -884.9261,
+    558.4744,
+    270.1137,
+    "yazhen"
+  ],
+  [
+    10100010310,
+    -804.8847,
+    538.2855,
+    234.617737,
+    "glowbug"
+  ],
+  [
+    10100010311,
+    -806.9404,
+    534.3409,
+    234.609985,
+    "glowbug"
+  ],
+  [
+    10100010312,
+    -811.7655,
+    535.3118,
+    233.953171,
+    "glowbug"
+  ],
+  [
+    10100010313,
+    -808.0094,
+    532.1458,
+    234.307816,
+    "glowbug"
+  ],
+  [
+    10100010314,
+    -824.5671,
+    622.2451,
+    251.153854,
+    "scorchbug"
+  ],
+  [
+    10100010315,
+    -829.3714,
+    621.8232,
+    250.143112,
+    "scorchbug"
+  ],
+  [
+    10100010316,
+    -828.309,
+    623.1643,
+    250.880783,
+    "scorchbug"
+  ],
+  [
+    10100010317,
+    -641.8148,
+    577.6921,
+    231.647217,
+    "recycling_stn"
+  ],
+  [
+    10100010318,
+    -747.5868,
+    631.8775,
+    227.88,
+    "recycling_stn"
+  ],
+  [
+    10100010319,
+    -692.511,
+    666.1548,
+    248.361633,
+    "stock_redistrib"
+  ],
+  [
+    10100010320,
+    -714.6883,
+    661.3899,
+    234.618927,
+    null
+  ],
+  [
+    10100010321,
+    -713.8906,
+    662.3015,
+    234.7304,
+    null
+  ],
+  [
+    10100010322,
+    -600.2841,
+    653.9685,
+    236.314,
+    null
+  ],
+  [
+    10100010324,
+    -598.9138,
+    654.4781,
+    236.0103,
+    null
+  ],
+  [
+    10100010325,
+    -567.6929,
+    657.3949,
+    242.764938,
+    null
+  ],
+  [
+    10100010326,
+    -568.2099,
+    657.78,
+    242.7247,
+    null
+  ],
+  [
+    10100010327,
+    -802.4804,
+    515.8936,
+    230.587,
+    "recycling_stn"
+  ],
+  [
+    10100010329,
+    -819.736,
+    529.883,
+    227.407,
+    "fluffed_jincao"
+  ],
+  [
+    10100010330,
+    -818.6356,
+    534.479,
+    228.668762,
+    "jincao"
+  ],
+  [
+    10100010331,
+    -861.7924,
+    592.7412,
+    225.760284,
+    "yazhen"
+  ],
+  [
+    10100010332,
+    -862.0729,
+    592.7412,
+    225.760284,
+    "yazhen"
+  ],
+  [
+    10100010333,
+    -867.9248,
+    597.1324,
+    218.690216,
+    "yazhen"
+  ],
+  [
+    10100010334,
+    -874.0773,
+    593.0264,
+    211.805084,
+    "yazhen"
+  ],
+  [
+    10100010335,
+    -873.6518,
+    593.1417,
+    212.2174,
+    "yazhen"
+  ],
+  [
+    10100010336,
+    -875.3615,
+    588.5854,
+    191.046265,
+    "thorny_yazhen"
+  ],
+  [
+    10100010337,
+    -862.2048,
+    590.8938,
+    172.280426,
+    "glowbug"
+  ],
+  [
+    10100010338,
+    -861.063,
+    588.8644,
+    172.08,
+    "glowbug"
+  ],
+  [
+    10100010342,
+    -676.5722,
+    546.123,
+    244.220581,
+    "scorchbug"
+  ],
+  [
+    10100010343,
+    -682.679,
+    545.8697,
+    241.450439,
+    "scorchbug"
+  ],
+  [
+    10100010344,
+    -679.6009,
+    548.1087,
+    242.443588,
+    "glowbug"
+  ],
+  [
+    10100010345,
+    -710.607,
+    628.5491,
+    233.155,
+    "aic_steward"
+  ],
+  [
+    10100010346,
+    -595.82,
+    578.8222,
+    238.565369,
+    null
+  ],
+  [
+    10100010347,
+    -596.3399,
+    581.3889,
+    238.320511,
+    null
+  ],
+  [
+    10100010348,
+    -595.7045,
+    579.3894,
+    238.394852,
+    null
+  ],
+  [
+    10100010349,
+    -609.6518,
+    548.0182,
+    247.782364,
+    null
+  ],
+  [
+    10100010350,
+    -610.3659,
+    547.981,
+    247.782364,
+    null
+  ],
+  [
+    10100010351,
+    -626.1484,
+    649.0601,
+    234.41748,
+    "glowbug"
+  ],
+  [
+    10100010352,
+    -687.8967,
+    565.1454,
+    223.99054,
+    "glowbug"
+  ],
+  [
+    10100010354,
+    -684.6252,
+    559.3994,
+    223.997025,
+    "glowbug"
+  ],
+  [
+    10100010355,
+    -685.3125,
+    560.4325,
+    224.175919,
+    "glowbug"
+  ],
+  [
+    10100010356,
+    -685.8364,
+    561.696,
+    224.216934,
+    "scorchbug"
+  ],
+  [
+    10100010357,
+    -686.1445,
+    563.5325,
+    223.990921,
+    "scorchbug"
+  ],
+  [
+    10100010358,
+    -676.8643,
+    634.1875,
+    237.000824,
+    "glowbug"
+  ],
+  [
+    10100010359,
+    -676.4078,
+    634.6107,
+    237.266449,
+    "glowbug"
+  ],
+  [
+    10100010360,
+    -746.3094,
+    634.2831,
+    228.217712,
+    "glowbug"
+  ],
+  [
+    10100010361,
+    -745.4714,
+    635.0556,
+    228.571075,
+    "glowbug"
+  ],
+  [
+    10100010362,
+    -751.3643,
+    636.7145,
+    227.314636,
+    "glowbug"
+  ],
+  [
+    10100010363,
+    -751.6313,
+    635.6816,
+    227.171539,
+    "glowbug"
+  ],
+  [
+    10100010364,
+    -835.3344,
+    538.4864,
+    226.668732,
+    "glowbug"
+  ],
+  [
+    10100010365,
+    -846.8955,
+    550.2491,
+    226.6221,
+    "glowbug"
+  ],
+  [
+    10100010366,
+    -841.042,
+    540.0741,
+    226.890366,
+    "glowbug"
+  ],
+  [
+    10100010367,
+    -844.5986,
+    546.0453,
+    226.6221,
+    "glowbug"
+  ],
+  [
+    10100010368,
+    -829.9471,
+    532.9973,
+    226.6221,
+    "glowbug"
+  ],
+  [
+    10100010369,
+    -858.1871,
+    530.3443,
+    231.9368,
+    "glowbug"
+  ],
+  [
+    10100010370,
+    -853.0359,
+    528.9973,
+    231.415314,
+    "glowbug"
+  ],
+  [
+    10100010371,
+    -857.1978,
+    526.9127,
+    231.886444,
+    "glowbug"
+  ],
+  [
+    10100010372,
+    -853.9248,
+    594.8014,
+    229.940643,
+    "glowbug"
+  ],
+  [
+    10100010373,
+    -856.0579,
+    583.2886,
+    233.4683,
+    "glowbug"
+  ],
+  [
+    10100010374,
+    -846.7959,
+    590.9746,
+    223.322113,
+    "glowbug"
+  ],
+  [
+    10100010375,
+    -842.9604,
+    583.6351,
+    223.527756,
+    "glowbug"
+  ],
+  [
+    10100010376,
+    -847.7882,
+    585.8809,
+    224.029358,
+    "glowbug"
+  ],
+  [
+    10100010377,
+    -832.2029,
+    589.5093,
+    228.728165,
+    "glowbug"
+  ],
+  [
+    10100010378,
+    -834.0421,
+    589.3327,
+    228.427292,
+    "glowbug"
+  ],
+  [
+    10100010379,
+    -815.3233,
+    639.2504,
+    231.970749,
+    "glowbug"
+  ],
+  [
+    10100010380,
+    -813.7647,
+    634.2827,
+    232.772552,
+    "glowbug"
+  ],
+  [
+    10100010381,
+    -813.2862,
+    636.7253,
+    232.907883,
+    "glowbug"
+  ],
+  [
+    10100010382,
+    -806.0129,
+    639.6877,
+    231.71701,
+    "glowbug"
+  ],
+  [
+    10100010383,
+    -810.6226,
+    633.3008,
+    231.812317,
+    "glowbug"
+  ],
+  [
+    10100010384,
+    -808.8851,
+    638.2548,
+    232.161621,
+    "glowbug"
+  ],
+  [
+    10100010385,
+    -883.7238,
+    602.5584,
+    266.858459,
+    "glowbug"
+  ],
+  [
+    10100010386,
+    -885.7715,
+    605.3126,
+    266.971558,
+    "glowbug"
+  ],
+  [
+    10100010387,
+    -882.7717,
+    603.982,
+    267.018921,
+    "glowbug"
+  ],
+  [
+    10100010388,
+    -884.8538,
+    605.5486,
+    266.971558,
+    "glowbug"
+  ],
+  [
+    10100010389,
+    -886.4562,
+    605.5941,
+    266.971558,
+    "glowbug"
+  ],
+  [
+    10100010390,
+    -830.6633,
+    533.3543,
+    226.6221,
+    "glowbug"
+  ],
+  [
+    10100010391,
+    -843.0177,
+    534.308,
+    227.4429,
+    "glowbug"
+  ],
+  [
+    10100010392,
+    -807.1784,
+    540.1871,
+    234.3406,
+    "glowbug"
+  ],
+  [
+    10100010393,
+    -801.3638,
+    541.3457,
+    235.3706,
+    "glowbug"
+  ],
+  [
+    10100010394,
+    -651.7536,
+    566.9968,
+    225.118774,
+    "glowbug"
+  ],
+  [
+    10100010395,
+    -653.8486,
+    567.387,
+    225.194885,
+    "glowbug"
+  ],
+  [
+    10100010396,
+    -655.6137,
+    566.0221,
+    225.156754,
+    "scorchbug"
+  ],
+  [
+    10100010397,
+    -658.3843,
+    564.6145,
+    225.224686,
+    "glowbug"
+  ],
+  [
+    10100010398,
+    -661.1791,
+    577.4131,
+    225.907532,
+    "yazhen"
+  ],
+  [
+    10100010399,
+    -661.1027,
+    578.4182,
+    225.983643,
+    "yazhen"
+  ],
+  [
+    10100010400,
+    -646.269,
+    631.377,
+    225.382141,
+    "yazhen"
+  ],
+  [
+    10100010401,
+    -646.6682,
+    630.5018,
+    225.3763,
+    "yazhen"
+  ],
+  [
+    10100010402,
+    -646.7196,
+    632.1398,
+    225.317108,
+    "thorny_yazhen"
+  ],
+  [
+    10100010403,
+    -673.9201,
+    605.8782,
+    226.692963,
+    "yazhen"
+  ],
+  [
+    10100010404,
+    -674.4815,
+    604.8606,
+    226.628479,
+    "yazhen"
+  ],
+  [
+    10100010405,
+    -703.2948,
+    668.1065,
+    234.930115,
+    "yazhen"
+  ],
+  [
+    10100010406,
+    -703.4474,
+    667.1415,
+    234.969284,
+    "yazhen"
+  ],
+  [
+    10100010407,
+    -702.4272,
+    668.306,
+    235.158539,
+    "thorny_yazhen"
+  ],
+  [
+    10100010408,
+    -689.1008,
+    557.2189,
+    225.546539,
+    "yazhen"
+  ],
+  [
+    10100010409,
+    -690.2718,
+    558.1325,
+    225.638443,
+    "yazhen"
+  ],
+  [
+    10100010410,
+    -706.8501,
+    660.9718,
+    235.804855,
+    null
+  ],
+  [
+    10100010411,
+    -706.5061,
+    660.4394,
+    235.69,
+    null
+  ],
+  [
+    10100500001,
+    -779.6632,
+    582.5936,
+    228.705246,
+    "crate_iii"
+  ],
+  [
+    10100500002,
+    -777.7111,
+    662.4378,
+    227.63765,
+    "crate_iii"
+  ],
+  [
+    10100500003,
+    -777.7111,
+    662.4378,
+    227.787643,
+    "temporary_energy_alluvium"
+  ],
+  [
+    10100500004,
+    -779.6632,
+    582.5936,
+    229.472244,
+    "temporary_energy_alluvium"
+  ],
+  [
+    10100360038,
+    -680.6659,
+    588.0302,
+    225.264908,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360039,
+    -680.4779,
+    586.443,
+    225.264908,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360044,
+    -639.3987,
+    590.6584,
+    228.5104,
+    "imbued_quillbeast"
+  ],
+  [
+    10100360045,
+    -713.6134,
+    492.0486,
+    193.614471,
+    "tidewalker_d"
+  ],
+  [
+    10100360047,
+    -654.9786,
+    579.1203,
+    225.571,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360048,
+    -652.9702,
+    579.5798,
+    227.570313,
+    "waterlamp"
+  ],
+  [
+    10100360049,
+    -653.1558,
+    578.4538,
+    228.22934,
+    "waterlamp"
+  ],
+  [
+    10100360050,
+    -654.6651,
+    580.0807,
+    225.31,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360054,
+    -674.6848,
+    642.9666,
+    236.461441,
+    "waterlamp"
+  ],
+  [
+    10100360055,
+    -673.6057,
+    642.6185,
+    235.706635,
+    "waterlamp"
+  ],
+  [
+    10100360056,
+    -636.5921,
+    618.9498,
+    225.887054,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360057,
+    -635.52,
+    616.3613,
+    225.93895,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360058,
+    -674.7386,
+    626.7407,
+    233.565521,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360059,
+    -671.868,
+    627.8451,
+    233.544647,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360060,
+    -735.8458,
+    520.7951,
+    197.511353,
+    "mudflow"
+  ],
+  [
+    10100360062,
+    -636.2488,
+    617.8092,
+    225.917389,
+    "blazemist_originium_slug"
+  ],
+  [
+    10100360063,
+    -725.8039,
+    486.4392,
+    195.641449,
+    "mudflow"
+  ],
+  [
+    10100360064,
+    -734.6334,
+    520.6626,
+    196.97583,
+    "mudflow"
+  ],
+  [
+    10100360065,
+    -720.5999,
+    484.1242,
+    198.624481,
+    "mudflow"
+  ],
+  [
+    10100360066,
+    -735.3916,
+    519.8285,
+    196.9244,
+    "mudflow"
+  ],
+  [
+    10100360067,
+    -668.2289,
+    610.0733,
+    226.251633,
+    "quillbeast"
+  ],
+  [
+    10100360068,
+    -667.5264,
+    649.2141,
+    235.428574,
+    "mudflow"
+  ],
+  [
+    10100360070,
+    -629.204,
+    589.7,
+    231.059036,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360086,
+    -670.5485,
+    594.8808,
+    225.572937,
+    "mudflow"
+  ],
+  [
+    10100360093,
+    -640.3472,
+    592.1042,
+    228.294281,
+    "quillbeast"
+  ],
+  [
+    10100360094,
+    -635.2764,
+    588.9611,
+    229.197235,
+    "blazemist_originium_slug"
+  ],
+  [
+    10100360095,
+    -632.9685,
+    592.1269,
+    229.009659,
+    "firemist_originium_slug"
+  ],
+  [
+    10100360096,
+    -712.9628,
+    491.9874,
+    193.614471,
+    "tidewalker_d"
+  ],
+  [
+    10100360007,
+    -576.0636,
+    576.1724,
+    248.805817,
+    "cratelocked"
+  ],
+  [
+    10100360008,
+    -712.2849,
+    483.6141,
+    202.402924,
+    "cratelocked"
+  ],
+  [
+    10100360013,
+    -625.4188,
+    631.1932,
+    231.742859,
+    "cratelocked"
+  ],
+  [
+    10100360017,
+    -632.8497,
+    578.7342,
+    233.107178,
+    "guiding_butterflies"
+  ],
+  [
+    10100360018,
+    -609.4504,
+    567.3438,
+    247.032,
+    "crate_ii"
+  ],
+  [
+    10100360024,
+    -671.5777,
+    506.755,
+    220.748322,
+    "guiding_butterflies"
+  ],
+  [
+    10100360026,
+    -666.9402,
+    552.527,
+    249.158,
+    "crate_ii"
+  ],
+  [
+    10100360029,
+    -708.4321,
+    653.5643,
+    235.6652,
+    "guiding_butterflies"
+  ],
+  [
+    10100360030,
+    -689.2613,
+    662.5904,
+    250.079834,
+    "crate_ii"
+  ],
+  [
+    10100360032,
+    -677.7316,
+    587.6116,
+    225.29,
+    "pressure_plate"
+  ],
+  [
+    10100360033,
+    -676.5264,
+    588.9854,
+    225.35,
+    "pressure_plate"
+  ],
+  [
+    10100360034,
+    -679.0049,
+    586.1869,
+    225.21,
+    "pressure_plate"
+  ],
+  [
+    10100360035,
+    -676.6955,
+    586.7043,
+    225.15184,
+    "crate_ii"
+  ],
+  [
+    10100360036,
+    -553.7503,
+    574.6671,
+    260.8138,
+    "gear_template"
+  ],
+  [
+    10100360037,
+    -669.0661,
+    628.1351,
+    233.527008,
+    "gear_template"
+  ],
+  [
+    10100360043,
+    -739.7634,
+    562.7014,
+    227.826462,
+    "crate_ii"
+  ],
+  [
+    10100360084,
+    -642.228,
+    586.5123,
+    228.441,
+    "crate_iii"
+  ],
+  [
+    10100360085,
+    -704.2685,
+    495.6957,
+    196.01,
+    "crate_iii"
+  ],
+  [
+    10100050001,
+    -713.6423,
+    597.4181,
+    233.26,
+    "ew_terminal"
+  ],
+  [
+    10100490001,
+    -808.4487,
+    485.5988,
+    226.683655,
+    "delta_bot"
+  ],
+  [
+    10100480001,
+    -835.968,
+    603.6898,
+    240.0833,
+    "delta_bot"
+  ],
+  [
+    10100023002,
+    -785.7177,
+    646.3358,
+    226.6895,
+    "waterlamp"
+  ],
+  [
+    10100023003,
+    -783.3176,
+    645.6445,
+    226.643448,
+    "waterlamp"
+  ],
+  [
+    10100023004,
+    -784.6043,
+    643.7958,
+    226.725174,
+    "waterlamp"
+  ],
+  [
+    10100023011,
+    -821.217,
+    674.0806,
+    228.46109,
+    "waterlamp"
+  ],
+  [
+    10100023012,
+    -828.236,
+    673.8032,
+    228.46,
+    "waterlamp"
+  ],
+  [
+    10100023013,
+    -823.0102,
+    673.5145,
+    228.460678,
+    "waterlamp"
+  ],
+  [
+    10100023014,
+    -827.8053,
+    674.5047,
+    228.46,
+    "waterlamp"
+  ],
+  [
+    10100023018,
+    -856.271,
+    604.7918,
+    251.040527,
+    "waterlamp"
+  ],
+  [
+    10100023019,
+    -856.5843,
+    602.7565,
+    251.034943,
+    "waterlamp"
+  ],
+  [
+    10100023020,
+    -857.8387,
+    606.1546,
+    251.007523,
+    "waterlamp"
+  ],
+  [
+    10100023048,
+    -888.97,
+    556.7554,
+    270.347748,
+    "quillbeast"
+  ],
+  [
+    10100023066,
+    -808.7774,
+    674.0074,
+    228.482208,
+    "waterlamp"
+  ],
+  [
+    10100023067,
+    -820.2437,
+    667.455,
+    228.900345,
+    "waterlamp"
+  ],
+  [
+    10100023068,
+    -809.9123,
+    671.7915,
+    228.539948,
+    "waterlamp"
+  ],
+  [
+    10100023071,
+    -828.0216,
+    660.9865,
+    242.0693,
+    "waterlamp"
+  ],
+  [
+    10100023072,
+    -828.1082,
+    658.9042,
+    242.0693,
+    "waterlamp"
+  ],
+  [
+    10100023073,
+    -826.8257,
+    660.1585,
+    242.0693,
+    "waterlamp"
+  ],
+  [
+    10100023074,
+    -815.842,
+    628.6597,
+    249.5715,
+    "quillbeast"
+  ],
+  [
+    10100023082,
+    -783.0,
+    563.5488,
+    228.107544,
+    "hedron"
+  ],
+  [
+    10100023083,
+    -784.3751,
+    563.5472,
+    228.247375,
+    "mudflow"
+  ],
+  [
+    10100023084,
+    -781.7293,
+    564.2026,
+    228.2268,
+    "mudflow"
+  ],
+  [
+    10100023085,
+    -782.7104,
+    553.4261,
+    226.846558,
+    "mudflow"
+  ],
+  [
+    10100023086,
+    -790.3338,
+    570.2435,
+    228.183487,
+    "mudflow"
+  ],
+  [
+    10100023126,
+    -938.59,
+    555.1384,
+    228.19014,
+    "waterlamp"
+  ],
+  [
+    10100023127,
+    -931.7107,
+    555.5196,
+    228.122665,
+    "waterlamp"
+  ],
+  [
+    10100023128,
+    -931.9797,
+    556.1924,
+    228.282089,
+    "waterlamp"
+  ],
+  [
+    10100023245,
+    -778.9648,
+    546.1059,
+    227.035126,
+    "mudflow"
+  ],
+  [
+    10100023246,
+    -789.2646,
+    581.9472,
+    227.051743,
+    "mudflow"
+  ],
+  [
+    10100023247,
+    -782.8136,
+    589.5582,
+    227.097351,
+    "mudflow"
+  ],
+  [
+    10100023248,
+    -769.8888,
+    583.6724,
+    227.568756,
+    "mudflow"
+  ],
+  [
+    10100023252,
+    -860.5269,
+    485.4728,
+    227.247757,
+    "waterlamp"
+  ],
+  [
+    10100023253,
+    -860.6547,
+    489.9934,
+    227.125275,
+    "waterlamp"
+  ],
+  [
+    10100023254,
+    -864.8612,
+    489.5297,
+    227.002686,
+    "waterlamp"
+  ],
+  [
+    10100023255,
+    -864.8323,
+    485.3858,
+    227.0876,
+    "waterlamp"
+  ],
+  [
+    10100023256,
+    -806.348,
+    484.7365,
+    227.247284,
+    "firemist_originium_slug"
+  ],
+  [
+    10100023257,
+    -803.4509,
+    486.2179,
+    227.262451,
+    "firemist_originium_slug"
+  ],
+  [
+    10100023258,
+    -803.3214,
+    486.785,
+    227.174423,
+    "firemist_originium_slug"
+  ],
+  [
+    10100023262,
+    -873.0679,
+    598.0165,
+    262.1146,
+    "firemist_originium_slug"
+  ],
+  [
+    10100023263,
+    -870.9394,
+    599.4225,
+    262.1146,
+    "firemist_originium_slug"
+  ],
+  [
+    10100023264,
+    -777.1728,
+    538.5653,
+    226.912369,
+    "mudflow"
+  ],
+  [
+    10100023265,
+    -777.2264,
+    536.6196,
+    227.001038,
+    "mudflow"
+  ],
+  [
+    10100023266,
+    -776.7027,
+    537.7828,
+    227.024963,
+    "hedron"
+  ],
+  [
+    10100023275,
+    -824.2482,
+    578.8866,
+    232.349686,
+    "quillbeast"
+  ],
+  [
+    10100023325,
+    -849.7509,
+    453.9774,
+    228.382248,
+    "hedron"
+  ],
+  [
+    10100023332,
+    -853.0088,
+    450.2433,
+    227.837479,
+    "mudflow"
+  ],
+  [
+    10100023333,
+    -849.7797,
+    459.1314,
+    227.890472,
+    "mudflow"
+  ],
+  [
+    10100023334,
+    -851.8005,
+    449.109,
+    227.837479,
+    "mudflow"
+  ],
+  [
+    10100023335,
+    -842.6287,
+    454.1388,
+    227.847229,
+    "mudflow"
+  ],
+  [
+    10100023336,
+    -841.7285,
+    450.5264,
+    227.837479,
+    "mudflow"
+  ],
+  [
+    10100023337,
+    -848.0642,
+    454.913,
+    228.382248,
+    "hedron"
+  ],
+  [
+    10100023338,
+    -848.5049,
+    453.8302,
+    228.382278,
+    "prism"
+  ],
+  [
+    10100020314,
+    -875.8841,
+    489.0307,
+    226.68718,
+    "tp_point"
+  ],
+  [
+    10100020315,
+    -971.625,
+    441.0741,
+    240.191971,
+    "tp_point"
+  ],
+  [
+    10100020319,
+    -941.34,
+    557.5521,
+    228.587952,
+    "tp_point"
+  ],
+  [
+    10100020350,
+    -843.6964,
+    524.1814,
+    229.197952,
+    "tp_point"
+  ],
+  [
+    10100020646,
+    -792.3362,
+    647.2857,
+    234.008453,
+    "tp_point"
+  ],
+  [
+    10100020731,
+    -815.7849,
+    678.0296,
+    228.474808,
+    "cratelocked"
+  ],
+  [
+    10100020762,
+    -919.4582,
+    588.7519,
+    283.217316,
+    "crate_ii"
+  ],
+  [
+    10100020770,
+    -785.6966,
+    644.3465,
+    226.538834,
+    "crate_i"
+  ],
+  [
+    10100023016,
+    -813.9459,
+    631.7616,
+    249.887573,
+    "delta_bot"
+  ],
+  [
+    10100023036,
+    -889.9552,
+    500.9698,
+    226.687119,
+    "crate_i"
+  ],
+  [
+    10100023044,
+    -791.4331,
+    564.8505,
+    237.391586,
+    "delta_bot"
+  ],
+  [
+    10100023047,
+    -831.4275,
+    458.9635,
+    227.067123,
+    "crate_iii"
+  ],
+  [
+    10100023055,
+    -871.5681,
+    597.4231,
+    262.096283,
+    "crate_i"
+  ],
+  [
+    10100023101,
+    -793.5033,
+    660.7317,
+    244.196472,
+    "crate_iii"
+  ],
+  [
+    10100023120,
+    -853.4681,
+    449.0419,
+    227.794281,
+    "gather"
+  ],
+  [
+    10100023123,
+    -842.8321,
+    461.2613,
+    227.902267,
+    "gather"
+  ],
+  [
+    10100023125,
+    -882.2845,
+    496.4375,
+    228.687,
+    "gather"
+  ],
+  [
+    10100023131,
+    -848.5007,
+    459.47,
+    227.6767,
+    "gather"
+  ],
+  [
+    10100023134,
+    -871.5292,
+    587.5375,
+    172.84317,
+    "cratelocked"
+  ],
+  [
+    10100023136,
+    -875.4311,
+    568.2938,
+    173.027161,
+    "gather"
+  ],
+  [
+    10100023138,
+    -877.1626,
+    568.4703,
+    172.56723,
+    "gather"
+  ],
+  [
+    10100023139,
+    -877.438,
+    569.6024,
+    172.535858,
+    "gather"
+  ],
+  [
+    10100023143,
+    -910.2205,
+    564.3938,
+    263.27597,
+    "crate_ii"
+  ],
+  [
+    10100023144,
+    -804.2835,
+    594.1891,
+    234.312622,
+    "crate_iii"
+  ],
+  [
+    10100023145,
+    -820.2635,
+    607.1941,
+    235.9304,
+    "guiding_butterflies"
+  ],
+  [
+    10100023146,
+    -868.4568,
+    449.5373,
+    227.045,
+    "delta_bot"
+  ],
+  [
+    10100023147,
+    -900.8144,
+    600.4571,
+    267.294952,
+    "delta_bot"
+  ],
+  [
+    10100023148,
+    -859.7291,
+    589.7932,
+    172.64357,
+    "delta_bot"
+  ],
+  [
+    10100023150,
+    -931.2513,
+    550.7174,
+    228.800522,
+    "gather"
+  ],
+  [
+    10100023151,
+    -930.5074,
+    553.7604,
+    228.744217,
+    "gather"
+  ],
+  [
+    10100023152,
+    -931.9836,
+    550.9926,
+    228.4701,
+    "gather"
+  ],
+  [
+    10100023153,
+    -800.3595,
+    666.0741,
+    229.54895,
+    "gather"
+  ],
+  [
+    10100023154,
+    -778.7403,
+    640.181,
+    228.53,
+    "gather"
+  ],
+  [
+    10100023155,
+    -830.4708,
+    640.3806,
+    228.793518,
+    "gather"
+  ],
+  [
+    10100023156,
+    -866.766,
+    483.8668,
+    227.002686,
+    "gather"
+  ],
+  [
+    10100023157,
+    -878.2813,
+    501.4653,
+    227.234344,
+    "gather"
+  ],
+  [
+    10100023158,
+    -877.3032,
+    502.5378,
+    227.226547,
+    "gather"
+  ],
+  [
+    10100023159,
+    -803.8358,
+    482.5194,
+    227.475952,
+    "gather"
+  ],
+  [
+    10100023160,
+    -802.5106,
+    498.8905,
+    227.230637,
+    "gather"
+  ],
+  [
+    10100023161,
+    -803.6236,
+    499.3711,
+    226.864487,
+    "gather"
+  ],
+  [
+    10100023162,
+    -878.1656,
+    499.3304,
+    226.790054,
+    "gather"
+  ],
+  [
+    10100023164,
+    -869.5906,
+    599.5289,
+    262.5749,
+    "gather"
+  ],
+  [
+    10100023165,
+    -873.7901,
+    597.5831,
+    262.192474,
+    "gather"
+  ],
+  [
+    10100023166,
+    -895.755,
+    595.1975,
+    272.919067,
+    "gather"
+  ],
+  [
+    10100023167,
+    -894.6705,
+    586.3326,
+    272.736,
+    "gather"
+  ],
+  [
+    10100023179,
+    -812.7087,
+    635.8875,
+    239.78,
+    "aurylene"
+  ],
+  [
+    10100023180,
+    -863.8132,
+    609.9781,
+    259.35,
+    "aurylene"
+  ],
+  [
+    10100023181,
+    -797.6356,
+    666.8792,
+    231.03,
+    "aurylene"
+  ],
+  [
+    10100023182,
+    -847.5152,
+    452.3411,
+    234.12,
+    "aurylene"
+  ],
+  [
+    10100023183,
+    -868.4444,
+    590.012,
+    228.207245,
+    "aurylene"
+  ],
+  [
+    10100023184,
+    -873.598,
+    583.8189,
+    173.77,
+    "aurylene"
+  ],
+  [
+    10100023185,
+    -918.7806,
+    575.9176,
+    283.9,
+    "aurylene"
+  ],
+  [
+    10100023190,
+    -832.6144,
+    654.154,
+    242.101685,
+    "crate_i"
+  ],
+  [
+    10100023191,
+    -813.1508,
+    670.459,
+    228.461,
+    "gather"
+  ],
+  [
+    10100023194,
+    -874.2914,
+    455.6625,
+    226.6221,
+    "crate_ii"
+  ],
+  [
+    10100023213,
+    -769.6749,
+    571.1802,
+    226.8101,
+    "gear_template"
+  ],
+  [
+    10100023214,
+    -851.685,
+    545.2425,
+    226.696945,
+    "gear_template"
+  ],
+  [
+    10100023240,
+    -887.3657,
+    485.1397,
+    228.093,
+    "aurylene"
+  ],
+  [
+    10100023268,
+    -941.2407,
+    562.0806,
+    226.973145,
+    "crate_i"
+  ],
+  [
+    10100023269,
+    -786.4274,
+    543.9008,
+    234.456,
+    "crate_i"
+  ],
+  [
+    10100023270,
+    -823.7545,
+    531.7207,
+    227.063965,
+    "gather"
+  ],
+  [
+    10100023271,
+    -793.7204,
+    557.7983,
+    236.66,
+    "aurylene"
+  ],
+  [
+    10100023272,
+    -792.9312,
+    556.9002,
+    236.165222,
+    "gather"
+  ],
+  [
+    10100023279,
+    -887.8449,
+    559.0979,
+    270.431,
+    "cratesurprise"
+  ],
+  [
+    10100023280,
+    -895.4299,
+    606.9271,
+    258.885651,
+    "aurylene"
+  ],
+  [
+    10100023282,
+    -791.7506,
+    596.942,
+    227.345978,
+    "crate_i"
+  ],
+  [
+    10100023283,
+    -788.1545,
+    547.0081,
+    236.36,
+    "aurylene"
+  ],
+  [
+    10100023286,
+    -909.733,
+    578.6215,
+    283.74646,
+    "gather"
+  ],
+  [
+    10100023287,
+    -795.3279,
+    538.7646,
+    238.40065,
+    "gather"
+  ],
+  [
+    10100023288,
+    -834.6944,
+    479.7534,
+    226.779892,
+    "gather"
+  ],
+  [
+    10100023301,
+    -821.2865,
+    499.5175,
+    226.622086,
+    "crate_ii"
+  ],
+  [
+    10100023318,
+    -834.8752,
+    473.9122,
+    226.7744,
+    "crate_ii"
+  ],
+  [
+    10100023321,
+    -874.7823,
+    537.7199,
+    226.816635,
+    "gather"
+  ],
+  [
+    10100023322,
+    -876.221,
+    538.5357,
+    226.816635,
+    "gather"
+  ],
+  [
+    10100023323,
+    -922.7738,
+    553.6607,
+    263.95578,
+    "crate_ii"
+  ],
+  [
+    10100023339,
+    -859.439,
+    507.6969,
+    227.2,
+    "aurylene"
+  ],
+  [
+    10100023343,
+    -828.6768,
+    498.7219,
+    227.5,
+    "aurylene"
+  ]
 ]

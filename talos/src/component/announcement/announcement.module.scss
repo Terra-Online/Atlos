@@ -43,6 +43,8 @@
     font-weight: 600;
     line-height: 1.25;
     font-size: 0.925rem;
+    overflow-wrap: break-word;
+    hyphens: auto;
     transition: background-color 0.35s $adagio-curve;
 
     &::-webkit-scrollbar {

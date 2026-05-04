@@ -149,6 +149,7 @@
     "announcement": "View recent <span class=\"keyword\">website announcements</span>. Updates to terms of service and privacy policy will also be posted here.",
     "help": "Restart this <span class=\"keyword\">guide</span>.",
     "settings": "Open <span class=\"keyword\">Preferences</span> to control which local storage the map uses to remember your actions.",
+    "locator": "Click <span class=\"keyword\">Location Sync</span> to show your current in-game position on the map.<br>After binding your game account, you can also open tracking config to adjust point tracking.",
     "regionSwitch": "Click to switch between <span class=\"keyword\">different sandbox maps</span> (main regions) in the game.",
     "subregionSwitch": "<span class=\"keyword\">Hover over the main region icon</span> to show available sub-regions; clicking a sub-region icon will jump to that sub-region view.<br>Similarly, you can also select a layer for a region.",
     "layerMain": "Click the <span class=\"keyword\">layer icon</span> to return to the <span class=\"keyword\">main layer (M)</span> at any time.",
@@ -159,6 +160,7 @@
     "pointIcon": "Clicking the marker icon can also mark it as complete.",
     "mobile": {
       "headbar": "Switches related to map settings are located in the <span class=\"keyword\">top-right corner header bar</span>. Click the top-right icon to expand and see more options.",
+      "locator": "<span class=\"keyword\">Location Sync</span> is in the top-left corner.<br>After your account is bound, tapping it first expands a capsule with the tracking config entry; tap the main button again while expanded to toggle sync.",
       "regionLayerSwitch": "Click region icons to switch between <span class=\"keyword\">different sandbox maps</span> (main regions).<br>Tap and hold a main region icon to display available <span class=\"keyword\">sub-regions and layers</span>, then select a sub-region or layer to jump to that view.",
       "divider": "This is a draggable <span class=\"keyword\">divider</span>.<br>You can drag the divider left or right to adjust the width ratio between the search bar and marker list, adapting to your usage preferences.",
       "drawer": "<span class=\"keyword\">Swipe up from the bottom of the screen</span> to open the drawer and view marker filters.<br>Here you can select which marker types you want to display on the map.",
@@ -278,10 +280,7 @@
       "CNStep1": "Open the <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API link</a>, then copy the full response.",
       "UniStep1": "Open the <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API link</a>, then copy the full response.",
       "Step2": "Paste the full response, read the terms, then bind your account.",
-      "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
       "serverFallback": "Server",
-      "levelPrefix": "Lv.",
-      "currentBinding": "Current Binding",
       "changeBinding": "Change Binding",
       "unlink": "Unlink",
       "bindWithCountdown": "Bind and enable location sync ({sec})",
@@ -289,6 +288,32 @@
       "locateAuth": "Authorize",
       "locateAuthBody": "Enabling Location Sync will allow access to your in-game location information. Do you want to enable it.",
       "authAndSync": "Authorize and start sync"
+    },
+    "config": {
+      "title": "Tracking Config",
+      "server": "Server",
+      "uid": "Player UID",
+      "scopeTitle": "Scope",
+      "scopeHint": "Choose which nearby point groups should trigger reminders during location sync.",
+      "scope": {
+        "balanced": {
+          "title": "Balanced",
+          "desc": "Track point sets selected by OEM."
+        },
+        "collection": {
+          "title": "Collectibles",
+          "desc": "Track points in <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
+        },
+        "manual": {
+          "title": " Craft Manual",
+          "desc": "Track points from the manual, including enemies and rare plants."
+        }
+      },
+      "featureTitle": "Feature",
+      "trackPoints": "Tracking",
+      "heatmap": "Heatmap",
+      "configNote1": "Enabling this feature means you accept our ",
+      "configNote2": " and other terms."
     },
     "errors": {
       "10000": "Location sync session expired. Please bind again.",
