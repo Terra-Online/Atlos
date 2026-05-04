@@ -20,11 +20,12 @@ span.hl, span.keyword {
 }
 span.keyword {
     font-size: inherit;
-    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', HMSans_EN, 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-feature-settings: "lnum" 1;
     text-transform: uppercase;
     letter-spacing: 0;
     line-height: inherit;
+    word-break: break-all;
 }
 span.keyboard {
     position: relative;

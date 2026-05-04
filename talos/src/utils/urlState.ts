@@ -8,7 +8,12 @@
 import { useMarkerStore } from '@/store/marker';
 import useRegion from '@/store/region';
 import { setLocale, SUPPORTED_LANGS } from '@/locale';
-import { MARKER_TYPE_DICT, WORLD_MARKS, type IMarkerData } from '@/data/marker';
+import {
+    findMarkerById,
+    findUniqueArchiveMarkerByType,
+    MARKER_TYPE_DICT,
+    type IMarkerData,
+} from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 import { navigateToSharedPoint } from '@/utils/navigation';
 
@@ -90,30 +95,6 @@ const SUBREGION_TO_REGION_MAP = Object.entries(REGION_DICT).reduce(
     },
     {} as Record<string, string>,
 );
-
-const POINT_ID_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
-    // 若出現重複 id，保留第一筆，避免後續覆寫造成不穩定。
-    if (!acc.has(marker.id)) {
-        acc.set(marker.id, marker);
-    }
-    return acc;
-}, new Map<string, IMarkerData>());
-
-const UNIQUE_ARCHIVE_TYPE_MARKER_MAP = WORLD_MARKS.reduce((acc, marker) => {
-    const markerType = MARKER_TYPE_DICT[marker.type];
-    if (markerType?.category?.main !== 'files') return acc;
-
-    if (!acc.has(marker.type)) {
-        acc.set(marker.type, marker);
-        return acc;
-    }
-
-    const existing = acc.get(marker.type);
-    if (existing && existing.id !== marker.id) {
-        acc.set(marker.type, null);
-    }
-    return acc;
-}, new Map<string, IMarkerData | null>());
 
 const SORTED_MARKER_TYPE_KEYS = Object.keys(MARKER_TYPE_DICT).sort();
 const MARKER_TYPE_INDEX_MAP = new Map<string, number>(
@@ -202,9 +183,9 @@ const mergeFilterKeys = (keys: string[]) => {
     useMarkerStore.getState().setFilter(mergedFilter);
 };
 
-const resolvePointShareTarget = (pointId: string): { point: IMarkerData; regionKey: string } | null => {
+const resolvePointShareTarget = async (pointId: string): Promise<{ point: IMarkerData; regionKey: string } | null> => {
     const normalizedPointId = String(pointId);
-    const point = POINT_ID_MARKER_MAP.get(normalizedPointId);
+    const point = await findMarkerById(normalizedPointId);
     if (!point) return null;
 
     const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
@@ -213,8 +194,8 @@ const resolvePointShareTarget = (pointId: string): { point: IMarkerData; regionK
     return { point, regionKey };
 };
 
-const resolveArchiveTypeShareTarget = (typeKey: string): { point: IMarkerData; regionKey: string } | null => {
-    const point = UNIQUE_ARCHIVE_TYPE_MARKER_MAP.get(typeKey);
+const resolveArchiveTypeShareTarget = async (typeKey: string): Promise<{ point: IMarkerData; regionKey: string } | null> => {
+    const point = await findUniqueArchiveMarkerByType(typeKey);
     if (!point) return null;
 
     const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
@@ -652,8 +633,8 @@ export const applyUrlParams = async (): Promise<void> => {
     const typeParam = params.get(PARAM_TYPE)?.trim() || null;
     const pointTokenParam = params.get(PARAM_POINT_TOKEN)?.trim() || null;
     const pointIdFromToken = pointTokenParam ? decodePointIdToken(pointTokenParam) : null;
-    const resolvedFromToken = pointIdFromToken ? resolvePointShareTarget(pointIdFromToken) : null;
-    const resolvedFromType = typeParam ? resolveArchiveTypeShareTarget(typeParam) : null;
+    const resolvedFromToken = pointIdFromToken ? await resolvePointShareTarget(pointIdFromToken) : null;
+    const resolvedFromType = typeParam ? await resolveArchiveTypeShareTarget(typeParam) : null;
 
     if (resolvedFromToken) {
         mergeFilterKeys([resolvedFromToken.point.type]);
@@ -663,7 +644,7 @@ export const applyUrlParams = async (): Promise<void> => {
             pointId: resolvedFromToken.point.id,
         });
     } else if (pointParam) {
-        const resolvedFromQueryPoint = resolvePointShareTarget(pointParam);
+        const resolvedFromQueryPoint = await resolvePointShareTarget(pointParam);
         if (resolvedFromQueryPoint) {
             mergeFilterKeys([resolvedFromQueryPoint.point.type]);
             navigateToSharedPoint({

@@ -29,9 +29,10 @@ const CURRENT_GUIDE_VERSION = '1.0.0';
 
 interface UserGuideProps {
     map?: L.Map;
+    onReady?: () => void;
 }
 
-const UserGuide = ({ map }: UserGuideProps) => {
+const UserGuide = ({ map, onReady }: UserGuideProps) => {
     const { isMobile } = useDevice();
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
@@ -52,6 +53,13 @@ const UserGuide = ({ map }: UserGuideProps) => {
     const mobileSteps = useMobileGuideSteps(map);
     const steps = isMobile ? mobileSteps : desktopSteps;
     const helpersRef = useRef<StoreHelpers | null>(null);
+    const readyNotifiedRef = useRef(false);
+
+    const notifyReady = useCallback(() => {
+        if (readyNotifiedRef.current) return;
+        readyNotifiedRef.current = true;
+        onReady?.();
+    }, [onReady]);
 
     // Force Joyride remount for TARGET_NOT_FOUND retries
     const [joyrideKey, setJoyrideKey] = useState(0);
@@ -138,6 +146,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
             wasOpenRef.current = true; // Mark as already opened
             setStepIndex(0);
             setIsUserGuideOpen(true);
+            notifyReady();
             return;
         }
 
@@ -158,6 +167,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
             setStepIndex(resumeIndex);
             setIsUserGuideOpen(true);
         }
+        notifyReady();
     }, [
         i18nReady,
         userGuideVersion,
@@ -170,6 +180,7 @@ const UserGuide = ({ map }: UserGuideProps) => {
         replaceUserGuideStepCompleted,
         buildAllStepsCompletionMap,
         firstIncompleteIndex,
+        notifyReady,
     ]);
 
     // Custom spotlight tracking

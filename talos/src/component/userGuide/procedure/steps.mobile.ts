@@ -1,7 +1,7 @@
 import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import {
     useToggleMarkFilterExpanded,
@@ -15,7 +15,7 @@ import {
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { useAddPoint, useDeletePoint } from '@/store/userRecord';
 import useRegion from '@/store/region';
-import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
+import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
     id: string;
@@ -45,8 +45,17 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         : Object.keys(MARKER_TYPE_TREE)[0];
     const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
 
-    const targetPoint = useMemo(() => {
-        return WORLD_MARKS.find((m) => m.type === firstType);
+    const [targetPoint, setTargetPoint] = useState<IMarkerData | undefined>();
+
+    useEffect(() => {
+        let cancelled = false;
+        void loadAllMarkers().then((markers) => {
+            if (cancelled) return;
+            setTargetPoint(markers.find((m) => m.type === firstType));
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [firstType]);
 
     const waitForElement = useCallback((selector: string, timeoutMs = 1200) => {
@@ -155,7 +164,15 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'MSTEP-9_region-switch',
+            id: 'MSTEP-9_locator-button',
+            target: '[data-guide="mobile-locator-shell"]',
+            content: parse(t('guide.mobile.locator') || ''),
+            placement: 'right',
+            disableBeacon: true,
+            disableAutoScroll: true,
+        },
+        {
+            id: 'MSTEP-10_region-switch',
             target: '[class*="regswitch"]',
             content: parse(t('guide.regionSwitch') || ''),
             placement: 'right',
@@ -167,7 +184,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'MSTEP-10_subregion-switch',
+            id: 'MSTEP-11_subregion-switch',
             target: '[class*="subregionSwitch"]',
             content: parse(t('guide.subregionSwitch') || ''),
             placement: 'right',
@@ -181,7 +198,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 420,
         },
         {
-            id: 'MSTEP-11_layer-main',
+            id: 'MSTEP-12_layer-main',
             target: '[data-guide="layer-main-toggle"]',
             content: parse(t('guide.layerMain') || ''),
             placement: 'right',
@@ -193,7 +210,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 260,
         },
         {
-            id: 'MSTEP-12_layer-switch',
+            id: 'MSTEP-13_layer-switch',
             target: '[data-guide="layer-switch-item"]',
             content: parse(t('guide.layerSwitch') || ''),
             placement: 'right',
@@ -204,7 +221,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'MSTEP-13_search',
+            id: 'MSTEP-14_search',
             target: '[class*="searchContainer"]',
             content: parse(t('guide.search') || ''),
             placement: 'bottom',
@@ -212,7 +229,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            id: 'MSTEP-16_drawer',
+            id: 'MSTEP-17_drawer',
             target: '[class*="mobileDrawer"]',
             content: parse(t('guide.mobile.drawer') || ''),
             placement: 'top',
@@ -225,7 +242,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'MSTEP-17_filter-container',
+            id: 'MSTEP-18_filter-container',
             target: `[data-category="${firstSubCategory}"]`,
             content: parse(t('guide.filterContainer') || ''),
             placement: 'right',
@@ -260,14 +277,14 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 400,
         },
         {
-            id: 'MSTEP-18_filter-icon',
+            id: 'MSTEP-19_filter-icon',
             target: `[data-category="${firstSubCategory}"] [class*="filterIcon"]`,
             content: parse(t('guide.filterSort') || ''),
             placement: 'right',
             disableBeacon: true,
         },
         {
-            id: 'MSTEP-19_selector-select',
+            id: 'MSTEP-20_selector-select',
             target: `[data-key="${firstType}"]`,
             content: parse(t('guide.mobile.selectorSelect') || ''),
             placement: 'right',
@@ -289,7 +306,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'MSTEP-20_selector-complete',
+            id: 'MSTEP-21_selector-complete',
             target: `[data-key="${firstType}"]`,
             content: parse(t('guide.selectorComplete') || ''),
             placement: 'right',
@@ -304,12 +321,15 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 await scrollTypeIntoView();
             },
             onNext: () => {
-                const points = WORLD_MARKS.filter((m) => m.type === firstType);
-                points.forEach((p) => addPoint(p.id));
+                void loadAllMarkers().then((markers) => {
+                    markers
+                        .filter((m) => m.type === firstType)
+                        .forEach((p) => addPoint(p.id));
+                });
             },
         },
         {
-            id: 'MSTEP-14_divider',
+            id: 'MSTEP-15_divider',
             target: '[class*="divider"]',
             content: parse(t('guide.mobile.divider') || ''),
             placement: 'left',
@@ -317,7 +337,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            id: 'MSTEP-15_filter-list',
+            id: 'MSTEP-16_filter-list',
             target: '[class*="topRowPane"]:nth-child(3)',
             content: parse(t('guide.filterList') || ''),
             placement: 'bottom',
@@ -329,7 +349,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 setDrawerSnapIndex(1);
                 await scrollTypeIntoView();
             },
-            id: 'MSTEP-21_trigger-switch',
+            id: 'MSTEP-22_trigger-switch',
             target: '[class*="mobileTriggerBar"]',
             content: parse(t('guide.triggerSwitch') || ''),
             placement: 'top',
@@ -338,13 +358,16 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             onNext: () => {
                 // Pull down drawer to snap index 0
                 setDrawerSnapIndex(0);
-                const points = WORLD_MARKS.filter((m) => m.type === firstType);
-                points.forEach((p) => deletePoint(p.id));
+                void loadAllMarkers().then((markers) => {
+                    markers
+                        .filter((m) => m.type === firstType)
+                        .forEach((p) => deletePoint(p.id));
+                });
             },
             delay: 300,
         },
         {
-            id: 'MSTEP-22_point-select',
+            id: 'MSTEP-23_point-select',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
@@ -359,7 +382,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'MSTEP-23_point-check',
+            id: 'MSTEP-24_point-check',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',

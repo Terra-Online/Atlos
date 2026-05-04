@@ -1,5 +1,5 @@
 import { REGION_DICT } from '@/data/map';
-import { IMarkerData, MARKER_TYPE_DICT, SUBREGION_MARKS_MAP, } from '@/data/marker';
+import { IMarkerData, MARKER_TYPE_DICT, loadRegionMarkers } from '@/data/marker';
 import LOGGER from '@/utils/log';
 import L from 'leaflet';
 import { getMarkerLayer } from './markerRenderer';
@@ -7,7 +7,12 @@ import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
+import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
+import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/utils/endfield/locatorTransform';
+
+const LOCATOR_PROXIMITY_XZ_METERS = 20;
+const LOCATOR_PROXIMITY_Y_METERS = 6;
 
 // leaflet renderer
 export class MarkerLayer {
@@ -49,6 +54,12 @@ export class MarkerLayer {
      */
     private pendingRemovalTimers: Record<string, number> = {};
     private pulseCleanupDict: Record<string, () => void> = {};
+    private proximityPulseIds = new Set<string>();
+    private proximityTemporarySelectedIds = new Set<string>();
+    private proximityTemporaryVisibleIds = new Set<string>();
+    private temporaryVisibleIds = new Set<string>();
+    private checkedVisibleOverrideIds = new Set<string>();
+    private proximityUpdateSeq = 0;
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
     private _destroyLasso?: () => void;
@@ -94,9 +105,6 @@ export class MarkerLayer {
             this.clusterLayer.registerType(type);
         });
 
-        // 导入全图marker
-        this.importMarker(Object.values(SUBREGION_MARKS_MAP).flat());
-
         // Register lasso selection handler for Cmd/Ctrl+drag multi-select
         this._destroyLasso = registerLassoHandler(this.map, {
             markerDataDict: this.markerDataDict,
@@ -121,6 +129,7 @@ export class MarkerLayer {
      */
     destroy() {
         this._destroyLasso?.();
+        this.clearProximityReminder();
         Object.values(this.pulseCleanupDict).forEach((cleanup) => cleanup());
         this.pulseCleanupDict = {};
     }
@@ -177,6 +186,188 @@ export class MarkerLayer {
         return true;
     }
 
+    clearProximityReminder() {
+        this.proximityUpdateSeq += 1;
+        this.proximityPulseIds.forEach((id) => this.stopMarkerPulse(id));
+        this.proximityPulseIds.clear();
+        this.clearProximityTemporaryMarkers(this.proximityTemporarySelectedIds);
+    }
+
+    private clearProximityTemporaryMarkers(ids: Iterable<string>) {
+        const idList = [...ids];
+        if (idList.length === 0) return;
+
+        useMarkerStore.getState().clearTemporarySelected(idList);
+
+        const changedSelectedPoints: { id: string; selected: boolean }[] = [];
+        let visibilityChanged = false;
+        idList.forEach((id) => {
+            this.proximityTemporarySelectedIds.delete(id);
+            if (this.proximityTemporaryVisibleIds.has(id)) {
+                this.temporaryVisibleIds.delete(id);
+                this.proximityTemporaryVisibleIds.delete(id);
+                visibilityChanged = true;
+            }
+            if (!useMarkerStore.getState().selectedPoints.includes(id)) {
+                changedSelectedPoints.push({ id, selected: false });
+            }
+        });
+
+        this.syncTemporaryVisibleMarkers();
+        if (changedSelectedPoints.length > 0) {
+            this.updateSelectedMarkers(changedSelectedPoints);
+        }
+        if (visibilityChanged) {
+            this.filterMarker(this.activeFilterKeys);
+        }
+    }
+
+    private syncTemporaryVisibleMarkers() {
+        this.clusterLayer.setTemporaryVisibleIds(this.temporaryVisibleIds);
+    }
+
+    private syncCheckedVisibleOverrides() {
+        this.clusterLayer.setCheckedVisibleOverrideIds(this.checkedVisibleOverrideIds);
+    }
+
+    prepareMarkerCheck(markerData: IMarkerData, context: { filterWasActive: boolean }): boolean {
+        if (context.filterWasActive && !this.temporaryVisibleIds.has(markerData.id)) return false;
+        this.checkedVisibleOverrideIds.add(markerData.id);
+        this.syncCheckedVisibleOverrides();
+        return true;
+    }
+
+    updateProximityReminder(params: {
+        currentRegion: string | null | undefined;
+        subregionKey?: string | null;
+        locatorProfile?: RegionProfile | null;
+        position: EFGamePosition;
+        typeKeys: string[];
+    }) {
+        const { currentRegion, subregionKey, locatorProfile, position, typeKeys } = params;
+        if (!currentRegion || typeKeys.length === 0) {
+            this.clearProximityReminder();
+            return;
+        }
+
+        const activeTypeKeys = new Set(typeKeys);
+        const activeSubregions = new Set(REGION_DICT[currentRegion]?.subregions ?? []);
+        if (activeSubregions.size === 0) {
+            this.clearProximityReminder();
+            return;
+        }
+
+        const markerStore = useMarkerStore.getState();
+        const collected = new Set(getActivePoints());
+        const selected = new Set([
+            ...markerStore.selectedPoints,
+            ...markerStore.temporarySelectedPoints,
+        ]);
+        const nextPulseIds = new Set<string>();
+
+        Object.values(this.markerDataDict).forEach((markerData) => {
+            if (!activeSubregions.has(markerData.subregId)) return;
+            if (subregionKey && markerData.subregId !== subregionKey) return;
+            if (!activeTypeKeys.has(markerData.type)) return;
+
+            if (collected.has(markerData.id)) {
+                this.stopMarkerPulse(markerData.id);
+                return;
+            }
+
+            const markerGamePosition = convertMapMarkerToEFGamePosition(markerData, currentRegion, locatorProfile);
+            const inRange = Math.abs(markerGamePosition.x - position.x) < LOCATOR_PROXIMITY_XZ_METERS
+                && Math.abs(markerGamePosition.z - position.z) < LOCATOR_PROXIMITY_XZ_METERS
+                && Math.abs(markerGamePosition.y - position.y) < LOCATOR_PROXIMITY_Y_METERS;
+
+            if (!inRange) return;
+
+            nextPulseIds.add(markerData.id);
+            if (!markerStore.selectedPoints.includes(markerData.id)) {
+                useMarkerStore.getState().setTemporarySelected(markerData.id, true);
+                this.proximityTemporarySelectedIds.add(markerData.id);
+            }
+            if (!selected.has(markerData.id)) {
+                selected.add(markerData.id);
+                this.updateSelectedMarkers([{ id: markerData.id, selected: true }]);
+            }
+        });
+
+        this.clearProximityTemporaryMarkers(
+            [...this.proximityTemporarySelectedIds].filter((id) => !nextPulseIds.has(id)),
+        );
+
+        this.proximityPulseIds.forEach((id) => {
+            if (!nextPulseIds.has(id)) {
+                this.stopMarkerPulse(id);
+            }
+        });
+
+        const seq = ++this.proximityUpdateSeq;
+        this.proximityPulseIds = nextPulseIds;
+
+        const showPulses = async () => {
+            for (const id of nextPulseIds) {
+                if (seq !== this.proximityUpdateSeq) return;
+                if (collected.has(id)) continue;
+                if (!this.pulseCleanupDict[id]) {
+                    await this.ensureMarkerVisible(id, { source: 'proximity' });
+                }
+                if (seq !== this.proximityUpdateSeq) return;
+                if (getActivePoints().includes(id)) {
+                    this.stopMarkerPulse(id);
+                    continue;
+                }
+                if (!this.pulseCleanupDict[id]) {
+                    this.startMarkerPulse(id);
+                }
+            }
+        };
+
+        void showPulses();
+    }
+
+    async ensureMarkerVisible(id: string, options?: { source?: 'proximity' }): Promise<boolean> {
+        const markerData = this.markerDataDict[id];
+        const layer = this.markerDict[id];
+        if (!markerData || !layer) return false;
+
+        if (this.clusterLayer.isEnabled() && this.clusterLayer.isTypeManaged(markerData.type)) {
+            const shown = await this.clusterLayer.showMarker(id);
+            if (!shown) return false;
+        } else {
+            const parent = this.layerSubregionDict[markerData.subregId];
+            if (!parent || !this.map.hasLayer(parent)) return false;
+            if (!parent.hasLayer(layer)) {
+                layer.addTo(parent);
+            }
+        }
+
+        if (this.activeFilterKeys.includes(markerData.type)) {
+            this.temporaryVisibleIds.delete(id);
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.delete(id);
+            }
+        } else {
+            this.temporaryVisibleIds.add(id);
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.add(id);
+            }
+        }
+        this.syncTemporaryVisibleMarkers();
+
+        for (let i = 0; i < 20; i++) {
+            const inner = this.getMarkerInnerElement(id);
+            if (inner) {
+                inner.classList.remove(styles.disappearing);
+                return true;
+            }
+            await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
+        }
+
+        return false;
+    }
+
     /**
      * 更新已收集的点位列表
      */
@@ -202,10 +393,16 @@ export class MarkerLayer {
 
             if (wasCollected !== isCollected) {
                 if (isCollected) {
+                    this.stopMarkerPulse(id);
+                    this.proximityPulseIds.delete(id);
+                    if (!this.checkedVisibleOverrideIds.has(id)) {
+                        this.temporaryVisibleIds.delete(id);
+                    }
+                    this.syncTemporaryVisibleMarkers();
                     inner.classList.add(styles.checked);
 
                     // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
-                    if (shouldHideCompleted) {
+                    if (shouldHideCompleted && !this.checkedVisibleOverrideIds.has(id)) {
                         const markerData = this.markerDataDict[id];
                         if (!markerData) return;
 
@@ -233,6 +430,8 @@ export class MarkerLayer {
                         }, 160);
                     }
                 } else {
+                    this.checkedVisibleOverrideIds.delete(id);
+                    this.syncCheckedVisibleOverrides();
                     inner.classList.remove(styles.checked);
                 }
             }
@@ -257,25 +456,45 @@ export class MarkerLayer {
      * 导入marker列表
      */
     importMarker(markers: IMarkerData[]) {
+        const newMarkerIds: string[] = [];
+
         markers.forEach((marker) => {
+            if (this.markerDataDict[marker.id]) return;
+
             const typeKey = marker.type;
             if (!this.markerTypeMap[typeKey]) {
                 LOGGER.warn(`Missing type config for '${typeKey}'`);
                 return;
             }
 
-            this.markerDict[marker.id] = getMarkerLayer(marker, this._onSwitchCurrentMarker, this.collectedPoints);
+            this.markerDict[marker.id] = getMarkerLayer(
+                marker,
+                this._onSwitchCurrentMarker,
+                this.collectedPoints,
+                {
+                    beforeCheck: (markerData, context) => this.prepareMarkerCheck(markerData, context),
+                },
+            );
             this.markerDataDict[marker.id] = marker;
 
             this.markerTypeMap[typeKey].push(marker.id);
+            newMarkerIds.push(marker.id);
             // layer.addTo(this.layerSubregionDict[marker.region.sub]);
         });
 
-        const newMarkerIds = markers.map((marker) => marker.id);
-        this.clusterLayer.notifyMarkersAdded(newMarkerIds);
+        if (newMarkerIds.length > 0) {
+            this.clusterLayer.notifyMarkersAdded(newMarkerIds);
+        }
     }
 
-    changeRegion(regionId: string) {
+    async changeRegion(regionId: string) {
+        this.clearProximityReminder();
+        this.temporaryVisibleIds.clear();
+        this.proximityTemporaryVisibleIds.clear();
+        this.syncTemporaryVisibleMarkers();
+        this.checkedVisibleOverrideIds.clear();
+        this.syncCheckedVisibleOverrides();
+
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
         });
@@ -286,13 +505,33 @@ export class MarkerLayer {
         });
 
         this.clusterLayer.setActiveSubregions(subregions);
+        const markers = await loadRegionMarkers(regionId);
+        this.importMarker(markers);
+
         if (this.clusterLayer.isEnabled()) {
             this.clusterLayer.applyFilter(this.activeFilterKeys);
         }
+        this.filterMarker(this.activeFilterKeys);
+        useMarkerStore.getState().bumpMarkerDataVersion();
     }
 
     filterMarker(typeKeys: string[]) {
         this.activeFilterKeys = typeKeys;
+        const activeTypeSet = new Set(typeKeys);
+        this.checkedVisibleOverrideIds.forEach((id) => {
+            const markerData = this.markerDataDict[id];
+            if (!markerData || !activeTypeSet.has(markerData.type)) {
+                this.checkedVisibleOverrideIds.delete(id);
+            }
+        });
+        this.syncCheckedVisibleOverrides();
+        this.temporaryVisibleIds.forEach((id) => {
+            const markerData = this.markerDataDict[id];
+            if (markerData && activeTypeSet.has(markerData.type)) {
+                this.temporaryVisibleIds.delete(id);
+            }
+        });
+        this.syncTemporaryVisibleMarkers();
         this.clusterLayer.applyFilter(typeKeys);
 
         const clusterEnabled = this.clusterLayer.isEnabled();
@@ -319,7 +558,9 @@ export class MarkerLayer {
             }
 
             // Check if marker should be shown: must be in filter AND not completed (if hiding completed is enabled)
-            const shouldShow = markerIdsSet.has(id) && !completedMarkerIds.has(id);
+            const forceVisible = this.checkedVisibleOverrideIds.has(id);
+            const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
+                && (!completedMarkerIds.has(id) || forceVisible);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 

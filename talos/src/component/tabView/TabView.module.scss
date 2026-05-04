@@ -97,14 +97,15 @@
 .description {
     background: var(--tabview-desc-bg);
     color: var(--tabview-desc-text);
-        padding: 0.625rem .75rem 0.375rem;
+    padding: 0.375rem .75rem;
     font-family: 'Novecento DemiBold', 'HMSans_EN', HMSans, 'UD_ShinGo DemiBold', sans-serif;
     font-size: 1.125rem;
     font-weight: 900;
     line-height: 1.5;
     text-transform: uppercase;
     flex-shrink: 0;
-    word-break: auto-phrase;
+    overflow-wrap: break-word;
+    hyphens: auto;
     overflow: hidden;
     z-index: 0;
     transition:

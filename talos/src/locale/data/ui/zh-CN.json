@@ -149,6 +149,7 @@
     "announcement": "查看近期的<span class=\"keyword\">网站公告</span>，用户协议等更新也会在此发布。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
     "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
+    "locator": "点击<span class=\"keyword\">位置同步</span>按钮，可以根据您的游戏内位置在地图上显示当前位置。<br>绑定游戏账号后，您还可以进入配置面板调整点位追踪范围。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱庭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
     "layerMain": "点击<span class=\"keyword\">图层图标</span>可随时返回<span class=\"keyword\">主图层 [M]</span>。",
@@ -159,6 +160,7 @@
     "pointIcon": "单击点位图标也可以将其标记为完成状态。",
     "mobile": {
       "headbar": "与地图设置有关的开关位于<span class=\"keyword\">右上角的顶栏</span>。点击右上角图标展开查看更多选项。",
+      "locator": "<span class=\"keyword\">位置同步</span>入口位于左上角。<br>绑定账号后，点击它会先展开为胶囊按钮，您可以从这里进入位置同步配置；展开后再次点击主按钮才会切换同步状态。",
       "regionLayerSwitch": "点击区域图标可以切换<span class=\"keyword\">不同的箱庭地图</span>（主区域）。<br>点击并按住主区域图标可显示可用的<span class=\"keyword\">子区域和图层</span>，选择子区域或图层跳转到对应视图。",
       "divider": "这是可拖动的<span class=\"keyword\">分割线</span>。<br>您可以向左或向右拖动分割线，来调节搜索栏和点位列表的宽度比例，以适应您的使用习惯。",
       "drawer": "从屏幕底部<span class=\"keyword\">向上拉起抽屉</span>，可以查看和管理点位筛选器。<br>您可以在这里选择您想要在地图上显示的点位类型。",
@@ -217,33 +219,25 @@
         "200": "登录已确认",
         "201": "注册已完成",
         "202": "密码已变更",
-
         "101": "请填写邮箱",
         "102": "邮箱地址无效",
         "103": "邮箱已被注册",
         "104": "邮箱尚未注册",
-
         "111": "请填写密码",
         "112": "密码不合法",
         "113": "两次密码不一致",
-
         "121": "请填写验证码",
         "122": "验证码无效",
         "123": "验证码已过期",
-
         "0": "账号/密码错误",
-
         "429": "请求速率限制",
         "430": "风险控制",
-
         "801": "挂起：账号封禁",
         "802": "挂起：权限拒绝",
-
         "601": "令牌失效",
         "602": "需要会话",
         "603": "访问被拒绝",
         "604": "Auth提供方冲突",
-
         "701": "系统过载",
         "702": "系统超时",
         "703": "系统维护"
@@ -278,10 +272,7 @@
       "CNStep1": "访问<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>鹰角网络登录态API</a>，复制网页全文。",
       "UniStep1": "访问 <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
       "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
-      "tokenTextareaPlaceholder": "{\"code\":0,\"data\":{\"content\":\"...\"}}",
       "serverFallback": "服务器",
-      "levelPrefix": "Lv.",
-      "currentBinding": "当前绑定",
       "changeBinding": "切换绑定",
       "unlink": "解除绑定",
       "bindWithCountdown": "绑定并启用位置同步（{sec}）",
@@ -289,6 +280,32 @@
       "locateAuth": "位置同步授权",
       "locateAuthBody": "启用位置同步后将允许访问您的游戏内位置信息。是否启用？",
       "authAndSync": "授权并开始同步"
+    },
+    "config": {
+      "title": "追踪配置",
+      "server": "区服",
+      "uid": "玩家 UID",
+      "scopeTitle": "范围",
+      "scopeHint": "您可以选择在位置追踪时，需要提醒的周围点位配置。",
+      "scope": {
+        "balanced": {
+          "title": "平衡",
+          "desc": "追踪 OEM 为您选择的点位。"
+        },
+        "collection": {
+          "title": "收集物",
+          "desc": "追踪所有位于<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">档案</span>中的点位。"
+        },
+        "manual": {
+          "title": "简制手册",
+          "desc": "追踪简制手册中的点位，包括敌人与稀有植物。"
+        }
+      },
+      "featureTitle": "功能",
+      "trackPoints": "追踪点位",
+      "heatmap": "热力图",
+      "configNote1": "启用此功能表明您已接受我们的 ",
+      "configNote2": " 与其他条款。"
     },
     "errors": {
       "10000": "位置同步会话已过期，请重新绑定。",
@@ -319,7 +336,7 @@
     "all": "全部",
     "selected": "选中项",
     "confirm": "确认",
-    "loading": "加载中...",
+    "loading": "加载中⋯",
     "enable": "启用",
     "disable": "禁用",
     "expand": "展开",
@@ -334,8 +351,8 @@
     "description": "终末地地图集 (Open Endfield Map) 是明日方舟：终末地的开源在线地图，提供交互式地图、物品收集和战略规划工具。"
   },
   "domain": {
-      "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
-      "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
+    "cn": "<span class=\"keyword\">国内用户</span>推荐使用大陆镜像<a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a>，访问更快捷稳定。",
+    "org": "<span class=\"keyword\">海外用户</span>推荐使用全球镜像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，访问更快捷稳定。"
   },
   "support": {
     "title": "支持我们",

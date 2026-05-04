@@ -7,8 +7,8 @@
     "lightmode": "Mudar para modo claro",
     "language": "Escolher idioma",
     "help": "Entre em contato para obter ajuda",
-    "settings": "Preferências",
-    "announcement": "Anúncios"
+    "announcement": "Anúncios",
+    "settings": "Preferências"
   },
   "trigger": {
     "boundaryMode": "Modo de Limite",
@@ -142,19 +142,14 @@
     "filterList": "A <span class=\"keyword\">lista de marcadores</span> lista os marcadores que você selecionou; clique no ícone para desmarcar.",
     "headbar": "Os interruptores relacionados às configurações do mapa estão localizados na <span class=\"keyword\">barra superior</span>.",
     "tos": "Os <span class=\"keyword\">Termos de Serviço</span> e o <span class=\"keyword\">Gerenciamento de Dados</span> do site.",
-    "mobile": {
-      "headbar": "As configurações do mapa ficam na <span class=\"keyword\">barra superior direita</span>. Toque no ícone no canto superior direito para expandir e ver mais opções.",
-      "regionLayerSwitch": "Toque nos ícones de região para alternar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Toque e segure um ícone de região para mostrar <span class=\"keyword\">sub-regiões e camadas</span>, e então escolha a vista.",
-      "divider": "Este é um <span class=\"keyword\">divisor</span> arrastável. Arraste para esquerda/direita para ajustar a largura entre busca e lista de marcadores.",
-      "drawer": "<span class=\"keyword\">Deslize de baixo para cima</span> para abrir a gaveta e ver os filtros de marcadores.",
-      "selectorSelect": "<span class=\"keyword\">Seletor de marcador</span>. Toque para alternar; os marcadores selecionados aparecem no mapa. Você vê o total e quantos marcou na área atual."
-    },
     "hideUI": "<span class=\"keyword\">Ocultar a interface do usuário do site</span> para tirar capturas de tela ou visualizar marcadores de borda.",
     "group": "Veja <span class=\"keyword\">grupos de discussão</span> e <span class=\"keyword\">comunidades</span> relacionados a este projeto.",
     "darkMode": "Alternar o <span class=\"keyword\">modo de luz ambiente</span> atual.",
     "language": "Alternar <span class=\"keyword\">idioma da interface</span>.<br>Atualmente, os idiomas com <span class=\"keyword\">suporte completo à tradução de conteúdo do jogo</span> incluem inglês, chinês simplificado, chinês tradicional, japonês, coreano, francês, alemão, italiano, russo, espanhol, indonésio, português, tailandês e vietnamita.<br>Os idiomas com <span class=\"keyword\">apenas suporte à tradução de interface</span> incluem árabe, malaio, polonês e sueco.",
     "announcement": "Veja as <span class=\"keyword\">notificações do site</span> mais recentes. As atualizações das condições de serviço e da política de privacidade também serão postadas aqui.",
     "help": "Reiniciar este <span class=\"keyword\">guia</span>.",
+    "settings": "Abra as <span class=\"keyword\">Preferências</span> para controlar qual armazenamento local o mapa usa para lembrar suas ações.",
+    "locator": "Clique em <span class=\"keyword\">Sinc. de Localização</span> para mostrar no mapa sua posição atual dentro do jogo.<br>Depois de vincular sua conta do jogo, você também pode abrir a configuração de rastreamento para ajustar o tracking de pontos.",
     "regionSwitch": "Clique para alternar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiões principais) no jogo.",
     "subregionSwitch": "<span class=\"keyword\">Passe o mouse sobre o ícone da região principal</span> para mostrar as sub-regiões disponíveis; clicar em um ícone de sub-região o levará a essa visualização de sub-região.<br>Da mesma forma, você também pode selecionar uma camada para uma região.",
     "layerMain": "Clique no <span class=\"keyword\">ícone de camada</span> para retornar à <span class=\"keyword\">camada principal (M)</span> a qualquer momento.",
@@ -163,7 +158,14 @@
     "pointMark": "Clique no marcador novamente para marcá-lo como concluído.",
     "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
     "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído.",
-    "settings": "Abra as <span class=\"keyword\">Preferências</span> para controlar qual armazenamento local o mapa usa para lembrar suas ações."
+    "mobile": {
+      "headbar": "As configurações do mapa ficam na <span class=\"keyword\">barra superior direita</span>. Toque no ícone no canto superior direito para expandir e ver mais opções.",
+      "locator": "<span class=\"keyword\">Sinc. de Localização</span> fica no canto superior esquerdo.<br>Após vincular a conta, o primeiro toque expande uma cápsula com o atalho de configuração; toque novamente no botão principal enquanto ela estiver aberta para ligar ou desligar a sincronização.",
+      "regionLayerSwitch": "Toque nos ícones de região para alternar entre <span class=\"keyword\">diferentes mapas sandbox</span>. Toque e segure um ícone de região para mostrar <span class=\"keyword\">sub-regiões e camadas</span>, e então escolha a vista.",
+      "divider": "Este é um <span class=\"keyword\">divisor</span> arrastável. Arraste para esquerda/direita para ajustar a largura entre busca e lista de marcadores.",
+      "drawer": "<span class=\"keyword\">Deslize de baixo para cima</span> para abrir a gaveta e ver os filtros de marcadores.",
+      "selectorSelect": "<span class=\"keyword\">Seletor de marcador</span>. Toque para alternar; os marcadores selecionados aparecem no mapa. Você vê o total e quantos marcou na área atual."
+    }
   },
   "notice": {
     "legacy": "<span class=\"keyword\">Nota:</span> Quando a versão do jogo é <span class=\"keyword\">1.0.13</span>, a versão dos dados do mapa é <span class=\"keyword\">0.8.25</span>. Precisamos de tempo para atualizar os dados, o que pode ocorrer após a atualização do jogo. Agradecemos sua paciência. Para acompanhar nossas atualizações, entre em nosso <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Entrar no Discord'>servidor do Discord</a>.<br><br>Também recomendamos as seguintes ferramentas:<ul><li><span class=\"keyword\">Wiki do Jogo: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener' aria-label='Visitar Wiki'>https://warfarin.wiki</a></li><li><span class=\"keyword\">Blueprints:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener' aria-label='Visitar Talos Pioneers'>https://talospioneers.com</a></li></ul>",
@@ -255,6 +257,68 @@
       "logout": "Sair"
     }
   },
+  "locator": {
+    "binding": {
+      "title": "Vincular conta",
+      "docsLead": "Ao continuar, você confirma que concorda com os termos abaixo:",
+      "tos": "Termos de Serviço",
+      "privacy": "Política de Privacidade",
+      "dataCollection": "Checklist de coleta de dados",
+      "disclaimer": "Isenção de responsabilidade",
+      "chinaTab": "China (Hypergryph)",
+      "globalTab": "Global (Gryphline)",
+      "CNStep0": "Acesse o <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
+      "UniStep0": "Acesse o <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
+      "CNStep1": "Abra o <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link da API da Hypergryph</a> e copie a resposta completa.",
+      "UniStep1": "Abra o <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link da API da Gryphline</a> e copie a resposta completa.",
+      "Step2": "Cole a resposta completa, leia os termos e vincule sua conta.",
+      "serverFallback": "Servidor",
+      "changeBinding": "Trocar vínculo",
+      "unlink": "Desvincular",
+      "bindWithCountdown": "Vincular e ativar sincronização ({sec})",
+      "bind": "Vincular e ativar sincronização",
+      "locateAuth": "Autorizar",
+      "locateAuthBody": "Ativar a sincronização de localização permitirá acesso à sua posição no jogo. Deseja ativar?",
+      "authAndSync": "Autorizar e iniciar sync"
+    },
+    "config": {
+      "title": "Config. de rastreio",
+      "server": "Servidor",
+      "uid": "UID do jogador",
+      "scopeTitle": "Escopo",
+      "scopeHint": "Escolha quais grupos próximos devem alertar durante a sincronização.",
+      "scope": {
+        "balanced": {
+          "title": "Equilibrado",
+          "desc": "Rastrear pontos escolhidos pela OEM."
+        },
+        "collection": {
+          "title": "Coletáveis",
+          "desc": "Rastrear pontos em <span class=\"keyword\">coleção</span>/<span class=\"keyword\">exploração</span>/<span class=\"keyword\">arquivos</span>."
+        },
+        "manual": {
+          "title": "Manual de Confecção",
+          "desc": "Rastrear pontos do manual, incluindo inimigos e plantas raras."
+        }
+      },
+      "featureTitle": "Funções",
+      "trackPoints": "Rastreio",
+      "heatmap": "Mapa de calor",
+      "configNote1": "Ao ativar este recurso, você aceita nossos ",
+      "configNote2": " e outros termos."
+    },
+    "errors": {
+      "10000": "Sessão de sincronização expirada. Vincule novamente.",
+      "19001": "Posição indisponível. Faça login no jogo.",
+      "19002": "A sincronização de localização precisa de autorização para iniciar.",
+      "noRole": "Nenhum papel de Endfield encontrado nesta conta.",
+      "tokenRequired": "Cole a resposta completa ou o token.",
+      "bindingFailed": "Falha ao vincular.",
+      "roleRequired": "Selecione um papel.",
+      "unlinkFailed": "Falha ao desvincular.",
+      "authorizationFailed": "Falha na autorização."
+    }
+  },
   "links": {
     "enka": {
       "name": "Factory Planner",
@@ -272,10 +336,15 @@
     "all": "Tudo",
     "selected": "Selecionado",
     "confirm": "Confirmar",
+    "loading": "Carregando…",
     "enable": "Ativar",
     "disable": "Desativar",
     "expand": "Expandir",
     "collapse": "Recolher"
+  },
+  "announcement": {
+    "title": "Aviso do site",
+    "empty": "Nenhum anúncio disponível"
   },
   "meta": {
     "title": "Atlas de Endfield",
@@ -292,9 +361,5 @@
     "kofi": "Apoie via Ko-fi",
     "afdian": "Apoie via Afdian",
     "hint": "Recomendamos Patreon ou Ko-fi para usuários globais e Afdian para usuários na China continental."
-  },
-  "announcement": {
-    "title": "Aviso do site",
-    "empty": "Nenhum anúncio disponível"
   }
 }

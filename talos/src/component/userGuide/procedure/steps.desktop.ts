@@ -1,7 +1,7 @@
 import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import {
     useSetSidebarOpen,
@@ -15,7 +15,7 @@ import {
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { useAddPoint, useDeletePoint } from '@/store/userRecord';
 import useRegion from '@/store/region';
-import { MARKER_TYPE_TREE, WORLD_MARKS, type IMarkerType } from '@/data/marker';
+import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
 
 export type GuideStep = Step & {
     id: string;
@@ -47,8 +47,17 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         
     const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
 
-    const targetPoint = useMemo(() => {
-        return WORLD_MARKS.find((m) => m.type === firstType);
+    const [targetPoint, setTargetPoint] = useState<IMarkerData | undefined>();
+
+    useEffect(() => {
+        let cancelled = false;
+        void loadAllMarkers().then((markers) => {
+            if (cancelled) return;
+            setTargetPoint(markers.find((m) => m.type === firstType));
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [firstType]);
 
     const steps: GuideStep[] = useMemo(() => [
@@ -164,10 +173,11 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableBeacon: true,
             disableAutoScroll: true,
             onNext: () => {
-                const points = WORLD_MARKS.filter(
-                    (m) => m.type === firstType,
-                );
-                points.forEach((p) => addPoint(p.id));
+                void loadAllMarkers().then((markers) => {
+                    markers
+                        .filter((m) => m.type === firstType)
+                        .forEach((p) => addPoint(p.id));
+                });
             },
         },
         {
@@ -179,10 +189,11 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
             onNext: () => {
                 setDrawerSnapIndex(1);
-                const points = WORLD_MARKS.filter(
-                    (m) => m.type === firstType,
-                );
-                points.forEach((p) => deletePoint(p.id));
+                void loadAllMarkers().then((markers) => {
+                    markers
+                        .filter((m) => m.type === firstType)
+                        .forEach((p) => deletePoint(p.id));
+                });
             },
             delay: 300,
         },
@@ -320,7 +331,15 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-23_point-select',
+            id: 'STEP-23_locator-button',
+            target: '[data-guide="locator-button"]',
+            content: parse(t('guide.locator') || ''),
+            placement: 'right',
+            disableBeacon: true,
+            disableAutoScroll: true,
+        },
+        {
+            id: 'STEP-24_point-select',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointSelect') || ''),
             placement: 'top',
@@ -332,7 +351,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             delay: 300,
         },
         {
-            id: 'STEP-24_point-check',
+            id: 'STEP-25_point-check',
             target: '.leaflet-marker-icon',
             content: parse(t('guide.pointMark') || ''),
             placement: 'top',
@@ -342,7 +361,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             },
         },
         {
-            id: 'STEP-25_detail-container',
+            id: 'STEP-26_detail-container',
             target: '[class*="detailContainer"]',
             content: parse(t('guide.detail') || ''),
             placement: 'top',
@@ -350,7 +369,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            id: 'STEP-26_point-icon',
+            id: 'STEP-27_point-icon',
             target: '[class*="pointIcon"]',
             content: parse(t('guide.pointIcon') || ''),
             placement: 'top',

@@ -41,6 +41,8 @@
   font-weight: 600;
   line-height: 1.25;
   unicode-bidi: plaintext;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .profileError {
