@@ -3790,6 +3790,15 @@
         "ctgr": "paper",
         "icon": "phone"
     },
+    "nar_paper_map02_62_1": {
+        "key": "nar_paper_map02_62_1",
+        "category": {
+            "main": "files",
+            "sub": "archives"
+        },
+        "ctgr": "paper",
+        "icon": "exbook"
+    },
     "nar_paper_map02_63_1": {
         "key": "nar_paper_map02_63_1",
         "category": {
