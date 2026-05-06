@@ -215,6 +215,32 @@ const reconcileClipObjects = async (expectedClipFiles) => {
   console.log(`[publish-oss] deleted ${staleKeys.length} stale clips objects.`);
 };
 
+const reconcileAssetObjects = async (localFiles) => {
+  if (!(await fs.pathExists('./dist/assets'))) {
+    console.log('[publish-oss] assets directory skipped: dist/assets does not exist.');
+    return;
+  }
+
+  const assetPrefix = toPrefixedObjectKey(prefix, 'assets/');
+  const remoteAssetKeys = await listRemoteObjectKeys(assetPrefix);
+
+  const expectedSet = new Set(
+    localFiles
+      .filter((relativePath) => relativePath.replace(/\\/g, '/').startsWith('assets/'))
+      .map((relativePath) => toPrefixedObjectKey(prefix, relativePath))
+  );
+
+  const staleKeys = remoteAssetKeys.filter((key) => !expectedSet.has(normalizeObjectKey(key)));
+
+  if (!staleKeys.length) {
+    console.log('[publish-oss] assets directory already consistent with local dist.');
+    return;
+  }
+
+  await deleteRemoteObjectKeys(staleKeys);
+  console.log(`[publish-oss] deleted ${staleKeys.length} stale assets objects.`);
+};
+
 const worker = async () => {
   while (index < allFiles.length) {
     const file = allFiles[index++];
@@ -244,6 +270,8 @@ const run = async () => {
   if (clipIndex.generated) {
     await reconcileClipObjects(clipIndex.expectedClipFiles);
   }
+
+  await reconcileAssetObjects(allFiles);
 };
 
 

@@ -13,8 +13,10 @@ import json
 import os
 import shutil
 import unicodedata
+from argparse import ArgumentParser
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Set
+from typing import Callable, Optional, Set
 from fontTools import subset
 from fontTools.ttLib import TTFont
 
@@ -46,6 +48,18 @@ HARMONY_FONTS = [
     "Harmony/HMSans_SC.ttf",
     "Harmony/HMSans_TC.ttf",
 ]
+
+
+def parse_args():
+    parser = ArgumentParser(description="Subset project fonts to used locale characters.")
+    parser.add_argument(
+        "-j",
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of fonts to process in parallel. Defaults to min(4, CPU count minus one).",
+    )
+    return parser.parse_args()
 
 
 def collect_characters_from_json(json_path: Path) -> Set[str]:
@@ -224,7 +238,11 @@ def format_size(size_bytes: int) -> str:
     return f"{size_bytes:.1f} TB"
 
 
-def process_font(font_rel_path: str, characters: Set[str]) -> None:
+def process_font(
+    font_rel_path: str,
+    characters: Set[str],
+    log: Callable[[str], None] = print,
+) -> None:
     """Process a single font file: backup, subset, and convert to web formats."""
     target_path = FONTS_DIR / font_rel_path
     original_path = ORIGINAL_FONTS_DIR / font_rel_path
@@ -235,16 +253,16 @@ def process_font(font_rel_path: str, characters: Set[str]) -> None:
         pass
     elif target_path.exists():
         # Source is in assets (first run?), move/copy to backup
-        print(f"  📦 Establishing backup for: {font_rel_path}")
+        log(f"  📦 Establishing backup for: {font_rel_path}")
         original_path.parent.mkdir(parents=True, exist_ok=True)
         # We copy instead of move to be safe, though effectively we read from original next.
         shutil.copy2(target_path, original_path)
     else:
-        print(f"  ⚠️  Font not found (checked assets and backup): {font_rel_path}")
+        log(f"  ⚠️  Font not found (checked assets and backup): {font_rel_path}")
         return
 
-    print(f"\n🔤 Processing: {font_rel_path}")
-    print(f"   Source: {original_path.relative_to(PROJECT_ROOT)}")
+    log(f"\n🔤 Processing: {font_rel_path}")
+    log(f"   Source: {original_path.relative_to(PROJECT_ROOT)}")
     
     # Get original size
     original_size = original_path.stat().st_size
@@ -267,19 +285,19 @@ def process_font(font_rel_path: str, characters: Set[str]) -> None:
         if candidate.name != expected_woff:
             try:
                 candidate.unlink()
-                print(f"  🧹 Removed stale artifact: {candidate.name}")
+                log(f"  🧹 Removed stale artifact: {candidate.name}")
             except Exception as e:
-                print(f"  ⚠️  Failed to remove stale artifact {candidate.name}: {e}")
+                log(f"  ⚠️  Failed to remove stale artifact {candidate.name}: {e}")
     for candidate in output_dir.glob(f"{base_name}*.woff2"):
         if candidate.name != expected_woff2:
             try:
                 candidate.unlink()
-                print(f"  🧹 Removed stale artifact: {candidate.name}")
+                log(f"  🧹 Removed stale artifact: {candidate.name}")
             except Exception as e:
-                print(f"  ⚠️  Failed to remove stale artifact {candidate.name}: {e}")
+                log(f"  ⚠️  Failed to remove stale artifact {candidate.name}: {e}")
     
     # Subset original format (keep extension)
-    print(f"  ⚙️  Subsetting {ext} format...")
+    log(f"  ⚙️  Subsetting {ext} format...")
     temp_output = output_dir / f"{base_name}_subset{ext}"
     subset_font(original_path, temp_output, characters)
     
@@ -287,26 +305,79 @@ def process_font(font_rel_path: str, characters: Set[str]) -> None:
     shutil.move(str(temp_output), str(target_path))
     new_size = target_path.stat().st_size
     reduction = (1 - new_size / original_size) * 100
-    print(f"  ✅ {ext}: {format_size(original_size)} → {format_size(new_size)} ({reduction:.1f}% reduction)")
+    log(f"  ✅ {ext}: {format_size(original_size)} → {format_size(new_size)} ({reduction:.1f}% reduction)")
     
     # Generate WOFF format
     woff_path = output_dir / f"{base_name}.woff"
-    print(f"  ⚙️  Generating WOFF...")
+    log(f"  ⚙️  Generating WOFF...")
     convert_to_woff(original_path, woff_path, characters)
     woff_size = woff_path.stat().st_size
-    print(f"  ✅ .woff: {format_size(woff_size)} (generated)")
+    log(f"  ✅ .woff: {format_size(woff_size)} (generated)")
     
     # Generate WOFF2 format
     woff2_path = output_dir / f"{base_name}.woff2"
-    print(f"  ⚙️  Generating WOFF2...")
+    log(f"  ⚙️  Generating WOFF2...")
     convert_to_woff2(original_path, woff2_path, characters)
     woff2_size = woff2_path.stat().st_size
-    print(f"  ✅ .woff2: {format_size(woff2_size)} (generated)")
+    log(f"  ✅ .woff2: {format_size(woff2_size)} (generated)")
 
+
+def process_font_job(font_rel_path: str, characters: Set[str]):
+    """Run a font job in a worker process and return buffered logs."""
+    logs = []
+    process_font(font_rel_path, characters, logs.append)
+    return font_rel_path, "\n".join(logs)
+
+
+def run_font_jobs(title: str, jobs, workers: int) -> None:
+    print("\n" + "=" * 70)
+    print(title)
+    print("=" * 70)
+
+    if not jobs:
+        print("No fonts configured.")
+        return
+
+    effective_workers = max(1, min(workers, len(jobs)))
+    if effective_workers == 1:
+        for font_path, characters in jobs:
+            process_font(font_path, characters)
+        return
+
+    print(f"Processing {len(jobs)} fonts with {effective_workers} parallel workers...")
+    failures = []
+    with ProcessPoolExecutor(max_workers=effective_workers) as executor:
+        futures = {
+            executor.submit(process_font_job, font_path, characters): font_path
+            for font_path, characters in jobs
+        }
+
+        for future in as_completed(futures):
+            font_path = futures[future]
+            try:
+                _, output = future.result()
+                if output:
+                    print(output)
+            except Exception as e:
+                failures.append((font_path, e))
+                print(f"\n❌ Failed processing {font_path}: {e}")
+
+    if failures:
+        failed_fonts = ", ".join(font_path for font_path, _ in failures)
+        raise RuntimeError(f"Font subsetting failed for: {failed_fonts}")
+
+
+def resolve_worker_count(requested_workers: Optional[int]) -> int:
+    if requested_workers is not None:
+        return max(1, requested_workers)
+
+    cpu_count = os.cpu_count() or 2
+    return max(1, min(8, cpu_count - 1))
 
 
 def main():
     """Main execution function."""
+    args = parse_args()
     print("=" * 70)
     print("Font Subsetting Script for Atlos Project")
     print("=" * 70)
@@ -319,20 +390,22 @@ def main():
 
     # Create original fonts directory
     ORIGINAL_FONTS_DIR.mkdir(parents=True, exist_ok=True)
+    workers = resolve_worker_count(args.workers)
+    print(f"Parallel workers: {workers}")
 
     # Process UD_ShinGo fonts (locale data only)
-    print("\n" + "=" * 70)
-    print("Processing UD_ShinGo Fonts")
-    print("=" * 70)
-    for font_path in UDSHINGO_FONTS:
-        process_font(font_path, locale_chars)
+    run_font_jobs(
+        "Processing UD_ShinGo Fonts",
+        [(font_path, locale_chars) for font_path in UDSHINGO_FONTS],
+        workers,
+    )
 
     # Process Harmony / HMSans (locale + public/files text)
-    print("\n" + "=" * 70)
-    print("Processing Harmony Fonts (HMSans — includes public/files)")
-    print("=" * 70)
-    for font_path in HARMONY_FONTS:
-        process_font(font_path, harmony_chars)
+    run_font_jobs(
+        "Processing Harmony Fonts (HMSans — includes public/files)",
+        [(font_path, harmony_chars) for font_path in HARMONY_FONTS],
+        workers,
+    )
     
     print("\n" + "=" * 70)
     print("✨ Font subsetting completed successfully!")
