@@ -1,0 +1,21 @@
+@use '@/styles/palette.scss' as *;
+
+.previewAnchor {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+
+.previewContent {
+    width: 300px;
+}
+
+.previewImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    box-shadow: 0 4px 16px rgba($black-0, 0.28);
+}
+

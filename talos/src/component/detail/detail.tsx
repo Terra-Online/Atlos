@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback, type CSSPrope
 import styles from './detail.module.scss';
 import Button from '@/component/button/button';
 import Modal from '@/component/modal/modal';
+import Viewer from './viewer/viewer';
 import PopoverTooltip from '@/component/popover/popover';
 
 import parse from 'html-react-parser';
@@ -17,6 +18,7 @@ import {
     listUGCMyImages,
     resolveUGCUploadTarget,
     uploadUGCImage,
+    getUGCImageTransformedUrl,
     UGCClientError,
     type UGCImage,
     type UGCSubmissionImage,
@@ -74,6 +76,27 @@ const isPublicSubmission = (image: UGCSubmissionImage): boolean => (
     image.status === 'active' || image.status === 'flagged' || image.status === 'remove_request'
 );
 
+const formatUGCImageCreatedAt = (value: string | undefined, locale: string): string => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+    try {
+        return new Intl.DateTimeFormat(locale, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+        }).format(date);
+    } catch {
+        return date.toISOString().replace('T', ' ').slice(0, 19);
+    }
+};
+
 export const Detail = ({ inline = false }: { inline?: boolean }) => {
     /**
      * @type {import('../mapContainer/store/marker.type').IMarkerData}
@@ -120,6 +143,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const [ugcUploading, setUgcUploading] = useState(false);
     const [ugcUploadProgress, setUgcUploadProgress] = useState(0);
     const [ugcUploadError, setUgcUploadError] = useState<string | null>(null);
+    const [ugcViewerOpen, setUgcViewerOpen] = useState(false);
     const [pendingUploadAfterLogin, setPendingUploadAfterLogin] = useState(false);
     const [lastUploadSubmission, setLastUploadSubmission] = useState<UGCUploadSubmission | null>(null);
     const ownPublicUgcImage = useMemo(
@@ -127,6 +151,24 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         [ugcMyImages],
     );
     const activeUgcImage = ugcImages[0] ?? ownPublicUgcImage;
+    const activeUgcPreviewUrl = useMemo(
+        () => (activeUgcImage
+            ? getUGCImageTransformedUrl(activeUgcImage.url, { width: 400 })
+            : ''),
+        [activeUgcImage],
+    );
+    const activeUgcAuthorNickname = useMemo(
+        () => activeUgcImage?.author?.nickname ?? '',
+        [activeUgcImage],
+    );
+    const activeUgcAuthorPublicUid = useMemo(
+        () => activeUgcImage?.author?.publicUid ?? '',
+        [activeUgcImage],
+    );
+    const activeUgcCreatedAtLabel = useMemo(
+        () => formatUGCImageCreatedAt(activeUgcImage?.createdAt, locale),
+        [activeUgcImage, locale],
+    );
     const pendingOwnSubmission = useMemo(
         () => ugcMyImages.find(isPendingSubmission) ?? null,
         [ugcMyImages],
@@ -146,6 +188,8 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         ? Math.max(0, sessionUser?.karma as number)
         : 0;
     const shouldShowCommunityRule = canUploadUGCImage && ugcImageState === 'noImage' && userKarma < 2;
+    const canPreviewUGCImage = Boolean(activeUgcImage);
+    const pointImageInteractive = canPreviewUGCImage || canUploadUGCImage;
     const communityGuidelinesUrl = useMemo(
         () => `https://blog.opendfieldmap.org/${getAnnouncementLocaleKey(locale)}/docs/community-guidelines`,
         [locale],
@@ -164,6 +208,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         setUgcMyImages([]);
         setUgcUploadError(null);
         setLastUploadSubmission(null);
+        setUgcViewerOpen(false);
         if (!currentPoint || !ugcUploadTarget) return;
 
         let disposed = false;
@@ -483,27 +528,35 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                         [styles.noImage]: ugcImageState === 'noImage',
                                         [styles.pending]: ugcImageState === 'pending',
                                         [styles.hasImage]: ugcImageState === 'hasImage',
-                                        [styles.isClickable]: canUploadUGCImage,
+                                        [styles.isClickable]: pointImageInteractive,
                                         [styles.isUploading]: ugcUploading,
                                     })}
                                     style={{
                                         '--ugc-upload-progress': `${Math.round(ugcUploadProgress * 100)}%`,
                                     } as CSSProperties}
                                     onClick={() => {
+                                        if (canPreviewUGCImage) {
+                                            setUgcViewerOpen(true);
+                                            return;
+                                        }
                                         if (canUploadUGCImage) handleRequestImageUpload();
                                     }}
-                                    role={canUploadUGCImage ? 'button' : undefined}
-                                    tabIndex={canUploadUGCImage ? 0 : undefined}
+                                    role={pointImageInteractive ? 'button' : undefined}
+                                    tabIndex={pointImageInteractive ? 0 : undefined}
                                     onKeyDown={(event) => {
-                                        if (!canUploadUGCImage) return;
+                                        if (!pointImageInteractive) return;
                                         if (event.key === 'Enter' || event.key === ' ') {
                                             event.preventDefault();
+                                            if (canPreviewUGCImage) {
+                                                setUgcViewerOpen(true);
+                                                return;
+                                            }
                                             handleRequestImageUpload();
                                         }
                                     }}
                                 >
                                     {ugcImageState === 'hasImage' && activeUgcImage ? (
-                                        <img src={activeUgcImage.url} alt={activeUgcImage.content || pointName} />
+                                        <img src={activeUgcPreviewUrl} alt={activeUgcImage.content || pointName} />
                                     ) : (
                                         <div className={styles.noImage}>
                                             {ugcUploading
@@ -588,6 +641,15 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                 {isLoadingFullText ? null : fullTextDom}
             </div>
         </Modal>
+        <Viewer
+            open={ugcViewerOpen && Boolean(activeUgcImage)}
+            imageUrl={activeUgcImage?.url ?? ''}
+            alt={activeUgcImage?.content || pointName}
+            authorNickname={activeUgcAuthorNickname}
+            authorPublicUid={activeUgcAuthorPublicUid}
+            createdAtLabel={activeUgcCreatedAtLabel}
+            onClose={() => setUgcViewerOpen(false)}
+        />
         </>
     );
 };

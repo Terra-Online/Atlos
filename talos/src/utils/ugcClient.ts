@@ -25,6 +25,10 @@ export type UGCImage = {
     url: string;
     filePath?: string;
     content: string | null;
+    author?: {
+        nickname: string;
+        publicUid: string;
+    } | null;
     createdAt: string;
 };
 
@@ -38,6 +42,11 @@ export type UGCUploadSubmission = {
 
 export type UGCSubmissionImage = UGCImage & {
     status: UGCSubmissionStatus;
+};
+
+export type UGCImageTransformOptions = {
+    width?: number;
+    fit?: 'scale-down' | 'cover' | 'contain';
 };
 
 type ImageCacheEntry = {
@@ -102,6 +111,39 @@ export const invalidateUGCImageCache = (markerId: string): void => {
 export const invalidateUGCSubmissionCache = (markerId: string): void => {
     submissionCache.delete(markerId);
 };
+
+export function getUGCImageTransformedUrl(
+    rawUrl: string,
+    options: UGCImageTransformOptions = {},
+): string {
+    if (!rawUrl || import.meta.env.DEV) {
+        return rawUrl;
+    }
+
+    let sourceUrl: URL;
+    try {
+        sourceUrl = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : undefined);
+    } catch {
+        return rawUrl;
+    }
+
+    if (!/^https?:$/.test(sourceUrl.protocol)) {
+        return rawUrl;
+    }
+
+    if (sourceUrl.pathname.includes('/cdn-cgi/image/')) {
+        return sourceUrl.toString();
+    }
+
+    const directives: string[] = [];
+    if (options.width && Number.isFinite(options.width) && options.width > 0) {
+        directives.push(`width=${Math.round(options.width)}`);
+    }
+    directives.push(`fit=${options.fit ?? 'cover'}`);
+
+    const source = `${sourceUrl.origin}${sourceUrl.pathname}${sourceUrl.search}`;
+    return `${sourceUrl.origin}/cdn-cgi/image/${directives.join(',')}/${source}`;
+}
 
 export function resolveUGCUploadTarget(point: IMarkerData): UGCUploadTarget | null {
     const category = MARKER_TYPE_DICT[point.type]?.category?.sub;

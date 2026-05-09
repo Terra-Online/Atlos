@@ -5,6 +5,7 @@ import { useMap } from './useMap';
 import L from 'leaflet';
 import { useLabel } from './useLabel';
 import { useLink } from './useLink';
+import { UsePreview } from './usePreview';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 
 interface MapProps {
@@ -28,6 +29,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
     const maxZoom = (currentRegion ? REGION_DICT[currentRegion]?.maxZoom : undefined) ?? REGION_DICT[DEFAULT_REGION].maxZoom;
     useLabel(map, currentRegion, maxZoom);
     const { linkTooltipElement } = useLink(map, currentRegion, maxZoom);
+    const { PreviewElement } = UsePreview(map);
 
     useEffect(() => {
         if (!map) return;
@@ -91,6 +93,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
                 id='map'
             ></div>
             {linkTooltipElement}
+            {PreviewElement}
         </>
     );
 };

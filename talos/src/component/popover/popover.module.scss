@@ -23,13 +23,12 @@
 }
 
 .popoverTooltip {
-    padding: 6px 12px;
     border-radius: 12px;
     background: var(--tooltip-bg);
     color: var(--tooltip-text);
     font-size: 13px;
     font-weight: 500;
-    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     user-select: none;
     white-space: nowrap;
     border: 1px solid  var(--tooltip-border);
@@ -57,4 +56,15 @@
         opacity: 0;
         transition: opacity .12s $moderato-curve;
     }
+}
+
+.txtInner {
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+
+.imgInner {
+    padding: 8px;
+    white-space: normal;
+    line-height: 0;
 }

@@ -8,6 +8,7 @@ interface PopoverTooltipProps {
     disabled?: boolean;
     visible?: boolean;
     gap?: number;
+    variant?: 'text' | 'image';
 }
 
 const hasRenderableContent = (content: React.ReactNode): boolean => {
@@ -25,6 +26,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     disabled = false,
     visible,
     gap = 12,
+    variant = 'text',
 }) => {
     const hoverTimeoutRef = useRef<number | undefined>(undefined);
     const controlledCloseTimeoutRef = useRef<number | undefined>(undefined);
@@ -202,7 +204,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             <div
                 id={popoverIdRef.current}
                 popover="manual"
-                className={styles.popoverTooltip}
+                className={`${styles.popoverTooltip} ${variant === 'image' ? styles.imgInner : styles.txtInner}`}
             >
                 {content}
             </div>

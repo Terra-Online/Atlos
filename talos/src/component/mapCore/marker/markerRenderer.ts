@@ -3,6 +3,10 @@ import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import LOGGER from '@/utils/log';
+import {
+    MARKER_PREVIEW_ENTER_EVENT,
+    MARKER_PREVIEW_LEAVE_EVENT,
+} from '@/component/map/PreviewEvents';
 
 import styles from './marker.module.scss';
 import { useMarkerStore } from '@/store/marker';
@@ -136,6 +140,20 @@ const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handle
     syncMarkerStateClasses(inner, markerData.id);
 };
 
+const emitPreviewEnter = (markerData: IMarkerData): void => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent(MARKER_PREVIEW_ENTER_EVENT, {
+        detail: { marker: markerData },
+    }));
+};
+
+const emitPreviewLeave = (markerId: string): void => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent(MARKER_PREVIEW_LEAVE_EVENT, {
+        detail: { markerId },
+    }));
+};
+
 const RENDERER_DICT: Record<
     string,
     (
@@ -177,6 +195,14 @@ const RENDERER_DICT: Record<
             
             LOGGER.debug('marker clicked', markerData);
             onClick?.(markerData);
+        });
+
+        layer.on('mouseover', () => {
+            emitPreviewEnter(markerData);
+        });
+
+        layer.on('mouseout', () => {
+            emitPreviewLeave(markerData.id);
         });
         
         return layer;
@@ -235,6 +261,14 @@ const RENDERER_DICT: Record<
             
             LOGGER.debug('marker clicked', markerData);
             onClick?.(markerData);
+        });
+
+        layer.on('mouseover', () => {
+            emitPreviewEnter(markerData);
+        });
+
+        layer.on('mouseout', () => {
+            emitPreviewLeave(markerData.id);
         });
 
         return layer;
