@@ -497,7 +497,7 @@ export const generateShareUrl = (): string => {
  * 預設生成單一 query token（?x=...）。
  * 若 id 超出編碼範圍，降級為 legacy query 參數。
  */
-const buildPointShareToken = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+export const buildPointShareToken = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
     const token = encodePointIdToken(String(point.id));
     if (token) return token;
 
