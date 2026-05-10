@@ -51,15 +51,7 @@
       "uploadNetwork": "Network error while uploading.",
       "uploadAborted": "Upload was cancelled.",
       "uploadFailed": "Upload failed.",
-      "backendUnknown": "Upload service returned an error.",
-      "UPLOAD_FILE_MISSING": "Image file is required.",
-      "VALIDATION_ERROR": "Upload payload is invalid.",
-      "MIME_NOT_ALLOWED": "This image format is not allowed by the server.",
-      "UPLOAD_SIZE_INVALID": "The uploaded image size is invalid.",
-      "IMAGE_PROCESSING_FAILED": "The server could not process this image.",
-      "UNAUTHORIZED": "Please sign in before uploading.",
-      "UPLOADS_TEMPORARILY_DISABLED": "Uploads are temporarily disabled.",
-      "INTERNAL_ERROR": "Upload service failed."
+      "backendUnknown": "Upload service returned an error."
     }
   },
   "footer": {

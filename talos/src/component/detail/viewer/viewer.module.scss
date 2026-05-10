@@ -1,26 +1,47 @@
 @use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
 
 .viewerOverlay {
     position: fixed;
     inset: 0;
-    z-index: 1600;
-    display: grid;
-    place-items: center;
+    background: rgba($black-0, 0.6);
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
-    background: rgba($black-0, 0.82);
-    backdrop-filter: blur(10px);
+    z-index: 1000;
+    opacity: 0;
+    backdrop-filter: blur(0);
+    transition: opacity .3s $adagio-curve, backdrop-filter .3s $adagio-curve;
+    will-change: opacity, backdrop-filter;
     cursor: zoom-out;
 }
 
+.viewerOverlay[data-state='open'] {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    transition: opacity .3s $adagio-curve, backdrop-filter .3s $adagio-curve;
+    will-change: opacity, backdrop-filter;
+}
+
 .viewerPanel {
-    width: min(92vw, 1400px);
+    width: fit-content;
+    max-width: min(92vw, 1400px);
     max-height: 90vh;
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
-    overflow: hidden;
+    justify-items: center;
     cursor: default;
+    transform: scale(.92) translateY(4px);
+    opacity: 0;
+    filter: blur(.25rem);
+    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve;
+    will-change: opacity, transform, filter;
+}
+
+.viewerPanel[data-state='open'] {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: blur(0);
 }
 
 .viewerContent {
@@ -28,6 +49,8 @@
     align-items: center;
     justify-content: center;
     min-height: 0;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .viewerImage {
@@ -42,9 +65,12 @@
 
 .viewerMetaBar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(12rem, auto);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
     align-items: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 0.85rem 1rem;
     margin-top: 0.9rem;
     border-radius: 10px;
@@ -74,4 +100,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+    .viewerMetaBar {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.6rem;
+    }
 }

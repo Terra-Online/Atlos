@@ -1,0 +1,174 @@
+@use '../../styles/palette.scss' as *;
+@use '../../styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --uploader-placeholder: #{$grey-1};
+    --uploader-image-border: #{$light-2};
+}
+
+:root[data-theme='dark'] {
+    --uploader-placeholder: #{$grey-1};
+    --uploader-image-border: #{$light-2};
+}
+
+.pointImage {
+    margin: 0.5rem 0;
+    width: 100%;
+    height: 14rem;
+    background: repeating-linear-gradient(-60deg, $mid, $mid 1rem, $white-3 0, $white-3 2rem);
+    background-size: 200%;
+    background-position: 100% 100%;
+    background-repeat: repeat;
+    border: 2px solid var(--uploader-image-border);
+    box-shadow:
+        0 0 4px 0.5px rgba($black-0, 0.6),
+        0 0 4px 2px rgba($light-2, 0.6) inset;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: border-color 0.2s ease, filter 0.2s ease;
+
+    &.hasImage {
+        cursor: default;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 12px 12px;
+            border-color: transparent transparent $light-2;
+            filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6));
+            z-index: 2;
+            pointer-events: none;
+        }
+    }
+
+    &.isClickable {
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $primary-accent-4;
+            outline: none;
+            box-shadow:
+                0 0 4px 0.5px rgba($black-0, 0.6),
+                0 0 4px 2px rgba($primary-accent-4, 0.6) inset;
+        }
+    }
+
+    &.pending {
+        animation: uploaderPending 60s linear infinite;
+        border-color: rgba($primary-accent-4, 0.7);
+        box-shadow:
+            0 0 4px 0.5px rgba($black-0, 0.6),
+            0 0 4px 2px rgba($primary-accent-4, 0.6) inset;
+
+        &::before {
+            opacity: 0.16;
+            clip-path: none;
+        }
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        opacity: 1;
+        background: linear-gradient(90deg, rgba($primary-accent-4, 0.75));
+        clip-path: polygon(
+            0 0,
+            var(--uploader-progress, 0%) 0,
+            calc(var(--uploader-progress, 0%) - 2rem) 100%,
+            0 100%
+        );
+        transition:
+            clip-path 0.2s $standard-curve,
+            opacity 0.2s ease;
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .noImage {
+        position: relative;
+        z-index: 2;
+        color: var(--uploader-placeholder);
+        font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
+        font-size: 0.875rem;
+        max-width: 80%;
+        text-align: center;
+        line-height: 1.25;
+
+        .communityRule {
+            margin-top: 4px;
+            font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-size: 13px;
+            letter-spacing: -0.2px;
+            font-weight: 500;
+            text-align: center;
+            unicode-bidi: plaintext;
+            overflow-wrap: break-word;
+            hyphens: auto;
+
+            a {
+                color: $primary-accent-6;
+                text-decoration: none;
+                position: relative;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 1.5px;
+                    background-color: $primary-accent-6;
+                    transform: scaleX(0);
+                    transition: transform 0.3s ease;
+                    transform-origin: right center;
+                }
+
+                &:hover::after {
+                    transform-origin: left center;
+                    transform: scaleX(1);
+                }
+            }
+        }
+    }
+}
+
+.imageInput {
+    display: none;
+}
+
+.uploadHint {
+    color: var(--uploader-placeholder);
+    font-family: Raleway, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-variant-numeric: lining-nums;
+    font-size: 14px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.125;
+}
+
+@keyframes uploaderPending {
+    0% {
+        background-position: 100% 100%;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}

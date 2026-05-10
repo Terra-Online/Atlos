@@ -1,29 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback, type CSSProperties } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
 import Button from '@/component/button/button';
 import Modal from '@/component/modal/modal';
-import Viewer from './viewer/viewer';
 import PopoverTooltip from '@/component/popover/popover';
+import Uploader from '../uploader/uploader';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
 import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { MARKER_TYPE_DICT } from '@/data/marker';
 import { generatePointShareUrl } from '@/utils/urlState';
-import { getAnnouncementLocaleKey } from '@/utils/announcement';
-import { openOemAuthModal } from '@/component/login/authEvents';
-import { useAuthStore } from '@/store/auth';
-import {
-    listUGCImages,
-    listUGCMyImages,
-    resolveUGCUploadTarget,
-    uploadUGCImage,
-    getUGCImageTransformedUrl,
-    UGCClientError,
-    type UGCImage,
-    type UGCSubmissionImage,
-    type UGCUploadSubmission,
-} from '@/utils/ugcClient';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -48,7 +34,6 @@ import {
     useUserRecord,
 } from '@/store/userRecord.ts';
 import classNames from 'classnames';
-import { motion, AnimatePresence } from 'motion/react';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
 import { useForceDetailOpen } from '@/store/uiPrefs';
 
@@ -66,36 +51,9 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     exploration: ExplorationIcon,
 };
 
-type UGCImageState = 'noImage' | 'pending' | 'hasImage';
+type DetailPhase = 'hidden' | 'entering' | 'open' | 'exiting';
 
-const isPendingSubmission = (image: UGCSubmissionImage): boolean => (
-    image.status === 'pending_openai' || image.status === 'pending_audit'
-);
-
-const isPublicSubmission = (image: UGCSubmissionImage): boolean => (
-    image.status === 'active' || image.status === 'flagged' || image.status === 'remove_request'
-);
-
-const formatUGCImageCreatedAt = (value: string | undefined, locale: string): string => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-    try {
-        return new Intl.DateTimeFormat(locale, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-        }).format(date);
-    } catch {
-        return date.toISOString().replace('T', ' ').slice(0, 19);
-    }
-};
+const DETAIL_EXIT_DURATION_MS = 300;
 
 export const Detail = ({ inline = false }: { inline?: boolean }) => {
     /**
@@ -105,8 +63,6 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const pointsRecord = useUserRecord();
     const addPoint = useAddPoint();
     const deletePoint = useDeletePoint();
-    const sessionUser = useAuthStore((state) => state.sessionUser);
-
     const isCollected = currentPoint
         ? pointsRecord.includes(currentPoint.id)
         : false;
@@ -130,70 +86,8 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         () => (currentPoint ? generatePointShareUrl(currentPoint) : ''),
         [currentPoint],
     );
-    const ugcUploadTarget = useMemo(
-        () => (currentPoint ? resolveUGCUploadTarget(currentPoint) : null),
-        [currentPoint],
-    );
     const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
     const copyPopupTimerRef = useRef<number | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [ugcImages, setUgcImages] = useState<UGCImage[]>([]);
-    const [ugcMyImages, setUgcMyImages] = useState<UGCSubmissionImage[]>([]);
-    const [ugcLoading, setUgcLoading] = useState(false);
-    const [ugcUploading, setUgcUploading] = useState(false);
-    const [ugcUploadProgress, setUgcUploadProgress] = useState(0);
-    const [ugcUploadError, setUgcUploadError] = useState<string | null>(null);
-    const [ugcViewerOpen, setUgcViewerOpen] = useState(false);
-    const [pendingUploadAfterLogin, setPendingUploadAfterLogin] = useState(false);
-    const [lastUploadSubmission, setLastUploadSubmission] = useState<UGCUploadSubmission | null>(null);
-    const ownPublicUgcImage = useMemo(
-        () => ugcMyImages.find(isPublicSubmission) ?? null,
-        [ugcMyImages],
-    );
-    const activeUgcImage = ugcImages[0] ?? ownPublicUgcImage;
-    const activeUgcPreviewUrl = useMemo(
-        () => (activeUgcImage
-            ? getUGCImageTransformedUrl(activeUgcImage.url, { width: 400 })
-            : ''),
-        [activeUgcImage],
-    );
-    const activeUgcAuthorNickname = useMemo(
-        () => activeUgcImage?.author?.nickname ?? '',
-        [activeUgcImage],
-    );
-    const activeUgcAuthorPublicUid = useMemo(
-        () => activeUgcImage?.author?.publicUid ?? '',
-        [activeUgcImage],
-    );
-    const activeUgcCreatedAtLabel = useMemo(
-        () => formatUGCImageCreatedAt(activeUgcImage?.createdAt, locale),
-        [activeUgcImage, locale],
-    );
-    const pendingOwnSubmission = useMemo(
-        () => ugcMyImages.find(isPendingSubmission) ?? null,
-        [ugcMyImages],
-    );
-    const lastUploadIsPending = lastUploadSubmission?.status === 'pending_openai'
-        || lastUploadSubmission?.status === 'pending_audit';
-    const ugcImageState: UGCImageState = pendingOwnSubmission || lastUploadIsPending
-        ? 'pending'
-        : activeUgcImage
-            ? 'hasImage'
-            : 'noImage';
-    const canUploadUGCImage = Boolean(ugcUploadTarget)
-        && ugcImageState !== 'hasImage'
-        && ugcImageState !== 'pending'
-        && !ugcUploading;
-    const userKarma = Number.isFinite(sessionUser?.karma)
-        ? Math.max(0, sessionUser?.karma as number)
-        : 0;
-    const shouldShowCommunityRule = canUploadUGCImage && ugcImageState === 'noImage' && userKarma < 2;
-    const canPreviewUGCImage = Boolean(activeUgcImage);
-    const pointImageInteractive = canPreviewUGCImage || canUploadUGCImage;
-    const communityGuidelinesUrl = useMemo(
-        () => `https://blog.opendfieldmap.org/${getAnnouncementLocaleKey(locale)}/docs/community-guidelines`,
-        [locale],
-    );
 
     useEffect(() => {
         return () => {
@@ -202,48 +96,6 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
             }
         };
     }, []);
-
-    useEffect(() => {
-        setUgcImages([]);
-        setUgcMyImages([]);
-        setUgcUploadError(null);
-        setLastUploadSubmission(null);
-        setUgcViewerOpen(false);
-        if (!currentPoint || !ugcUploadTarget) return;
-
-        let disposed = false;
-        setUgcLoading(true);
-        void listUGCImages(currentPoint.id)
-            .then((images) => {
-                if (!disposed) setUgcImages(images);
-            })
-            .catch(() => {
-                if (!disposed) setUgcImages([]);
-            })
-            .finally(() => {
-                if (!disposed) setUgcLoading(false);
-            });
-
-        if (sessionUser) {
-            void listUGCMyImages(currentPoint.id)
-                .then((images) => {
-                    if (!disposed) setUgcMyImages(images);
-                })
-                .catch(() => {
-                    if (!disposed) setUgcMyImages([]);
-                });
-        }
-
-        return () => {
-            disposed = true;
-        };
-    }, [currentPoint, sessionUser, ugcUploadTarget]);
-
-    useEffect(() => {
-        if (!pendingUploadAfterLogin || !sessionUser) return;
-        setPendingUploadAfterLogin(false);
-        requestAnimationFrame(() => fileInputRef.current?.click());
-    }, [pendingUploadAfterLogin, sessionUser]);
 
     const handleCopyPointShareUrl = useCallback(async () => {
         if (!pointShareUrl || typeof window === 'undefined') return;
@@ -263,60 +115,6 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
             // ignore clipboard errors
         }
     }, [pointShareUrl]);
-
-    const tDetail = useCallback((key: string, fallback: string): string => {
-        const value = tUI(`detail.${key}`);
-        return typeof value === 'string' && value ? value : fallback;
-    }, [tUI]);
-
-    const resolveUploadError = useCallback((error: unknown): string => {
-        if (error instanceof UGCClientError) {
-            const key = `detail.errors.${error.code}`;
-            const fallbackKey = error.status ? 'detail.errors.backendUnknown' : 'detail.errors.uploadFailed';
-            const translated = tUI(key);
-            const fallback = tUI(fallbackKey);
-            const text = typeof translated === 'string' && translated ? translated : String(fallback || 'Upload failed.');
-            return error.status ? `ERR(${error.code})-${text}` : text;
-        }
-
-        return String(tUI('detail.errors.uploadFailed') || 'Upload failed.');
-    }, [tUI]);
-
-    const handleRequestImageUpload = useCallback(() => {
-        if (!canUploadUGCImage) return;
-        setUgcUploadError(null);
-        if (!sessionUser) {
-            setPendingUploadAfterLogin(true);
-            openOemAuthModal('login');
-            return;
-        }
-        fileInputRef.current?.click();
-    }, [canUploadUGCImage, sessionUser]);
-
-    const handleImageInputChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        event.target.value = '';
-        if (!file || !currentPoint || !ugcUploadTarget) return;
-
-        setUgcUploading(true);
-        setUgcUploadProgress(0.02);
-        setUgcUploadError(null);
-        try {
-            const submission = await uploadUGCImage(ugcUploadTarget, file, setUgcUploadProgress);
-            setLastUploadSubmission(submission);
-            const [images, myImages] = await Promise.all([
-                listUGCImages(currentPoint.id),
-                listUGCMyImages(currentPoint.id).catch(() => []),
-            ]);
-            setUgcImages(images);
-            setUgcMyImages(myImages);
-        } catch (error) {
-            setUgcUploadError(resolveUploadError(error));
-        } finally {
-            setUgcUploading(false);
-            setUgcUploadProgress(0);
-        }
-    }, [currentPoint, resolveUploadError, ugcUploadTarget]);
 
     // Archive full-text state — content may be plain text and/or HTML (<i>, <del>, <img>, …)
     const [hasFullText, setHasFullText] = useState(false);
@@ -376,15 +174,34 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     }, [fullTextContent, archiveJsonUrl]);
 
     // const noteContent = currentPoint?.status?.user?.localNote;
-    const [isVisible, setIsVisible] = useState(false);
+    const [detailPhase, setDetailPhase] = useState<DetailPhase>('hidden');
     const forceDetailOpen = useForceDetailOpen();
     const ref = useRef<HTMLDivElement | null>(null);
+    const headerRef = useRef<HTMLDivElement | null>(null);
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const contentInnerRef = useRef<HTMLDivElement | null>(null);
+    const updateDetailHeight = useCallback(() => {
+        const container = ref.current;
+        const header = headerRef.current;
+        const content = contentRef.current;
+        const contentInner = contentInnerRef.current;
+        if (!container || !header || !content || !contentInner || typeof window === 'undefined') return;
+
+        const contentStyle = window.getComputedStyle(content);
+        const contentPadding =
+            Number.parseFloat(contentStyle.paddingTop || '0') +
+            Number.parseFloat(contentStyle.paddingBottom || '0');
+        const naturalHeight = header.getBoundingClientRect().height + contentPadding + contentInner.scrollHeight;
+        const maxHeight = Math.max(0, window.innerHeight * 0.8);
+        const nextHeight = Math.ceil(Math.min(naturalHeight, maxHeight));
+        container.style.setProperty('--detail-panel-height', `${nextHeight}px`);
+    }, []);
     
     // 当 currentPoint 更新时，显示 detail
     useEffect(() => {
         if (currentPoint) {
             console.log('[Detail] currentPoint changed:', currentPoint, 'forceDetailOpen:', forceDetailOpen);
-            setIsVisible(true);
+            setDetailPhase((phase) => (phase === 'hidden' || phase === 'exiting' ? 'entering' : phase));
         }
     }, [currentPoint, forceDetailOpen]);
 
@@ -404,21 +221,65 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
         [worldCnt, regionCnt, subCnt, tUI],
     );
 
+    useLayoutEffect(() => {
+        if (!currentPoint || detailPhase === 'hidden') return;
+        updateDetailHeight();
+    }, [
+        currentPoint,
+        detailPhase,
+        hasFullText,
+        pointName,
+        statItems,
+        updateDetailHeight,
+    ]);
+
+    useEffect(() => {
+        if (detailPhase !== 'entering') return undefined;
+        updateDetailHeight();
+        const raf = window.requestAnimationFrame(() => {
+            setDetailPhase('open');
+        });
+        return () => window.cancelAnimationFrame(raf);
+    }, [detailPhase, updateDetailHeight]);
+
+    useEffect(() => {
+        if (detailPhase !== 'exiting') return undefined;
+        const timer = window.setTimeout(() => {
+            setDetailPhase('hidden');
+        }, DETAIL_EXIT_DURATION_MS);
+        return () => window.clearTimeout(timer);
+    }, [detailPhase]);
+
+    useEffect(() => {
+        if (detailPhase === 'hidden' || typeof ResizeObserver === 'undefined') return undefined;
+        const resizeObserver = new ResizeObserver(() => updateDetailHeight());
+        if (headerRef.current) resizeObserver.observe(headerRef.current);
+        if (contentInnerRef.current) resizeObserver.observe(contentInnerRef.current);
+        return () => resizeObserver.disconnect();
+    }, [detailPhase, updateDetailHeight]);
+
+    useEffect(() => {
+        if (detailPhase === 'hidden') return undefined;
+        window.addEventListener('resize', updateDetailHeight);
+        return () => window.removeEventListener('resize', updateDetailHeight);
+    }, [detailPhase, updateDetailHeight]);
+
+    useEffect(() => {
+        contentRef.current?.scrollTo({ top: 0 });
+    }, [currentPoint?.id]);
+
     return (
         <>
-        <AnimatePresence mode='wait'>
-            {isVisible && currentPoint && (
-                <motion.div
-                    initial={{ x: '150%' }}
-                    animate={{ x: '0%' }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    key={currentPoint ? 'active' : 'null'}
-                    className={`${styles.detailContainer} ${inline ? styles.inline : ''}`}
+            {detailPhase !== 'hidden' && currentPoint && (
+                <div
+                    data-state={detailPhase === 'open' ? 'open' : 'closed'}
+                    className={classNames(styles.detailContainer, {
+                        [styles.inline]: inline,
+                    })}
                     ref={ref}
                 >
                     {/* Head */}
-                    <div className={styles.detailHeader}>
+                    <div className={styles.detailHeader} ref={headerRef}>
                         <div className={styles.pointInfo}>
                             {CategoryIcon && (
                                 <span className={styles.categoryIcon}>
@@ -434,13 +295,14 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 buttonType='close'
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setIsVisible(false);
+                                    setDetailPhase('exiting');
                                 }}
                             />
                         </div>
                     </div>
                     {/* Content */}
-                    <div className={styles.detailContent}>
+                    <div className={styles.detailContent} ref={contentRef}>
+                        <div className={styles.detailContentInner} ref={contentInnerRef}>
                         {/* Icon & Stats */}
                         <div className={styles.iconStatsContainer}>
                             <div
@@ -455,19 +317,13 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                     }
                                 }}
                             >
-                                <AnimatePresence mode='wait'>
-                                    {iconUrl && (
-                                        <motion.img
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            key={currentPoint?.id ?? 'null'}
-                                            src={iconUrl}
-                                            alt={pointName}
-                                        />
-                                    )}
-                                </AnimatePresence>
+                                {iconUrl && (
+                                    <img
+                                        key={currentPoint?.id ?? 'null'}
+                                        src={iconUrl}
+                                        alt={pointName}
+                                    />
+                                )}
                             </div>
                             <div className={styles.pointStats}>
                                 <div className={styles.statsTxt}>
@@ -520,81 +376,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 </div>
                             </div>
                         </div>
-                        {/* Circumstance */}
-                        {(ugcUploadTarget || ugcImages.length > 0) && (
-                            <>
-                                <div
-                                    className={classNames(styles.pointImage, {
-                                        [styles.noImage]: ugcImageState === 'noImage',
-                                        [styles.pending]: ugcImageState === 'pending',
-                                        [styles.hasImage]: ugcImageState === 'hasImage',
-                                        [styles.isClickable]: pointImageInteractive,
-                                        [styles.isUploading]: ugcUploading,
-                                    })}
-                                    style={{
-                                        '--ugc-upload-progress': `${Math.round(ugcUploadProgress * 100)}%`,
-                                    } as CSSProperties}
-                                    onClick={() => {
-                                        if (canPreviewUGCImage) {
-                                            setUgcViewerOpen(true);
-                                            return;
-                                        }
-                                        if (canUploadUGCImage) handleRequestImageUpload();
-                                    }}
-                                    role={pointImageInteractive ? 'button' : undefined}
-                                    tabIndex={pointImageInteractive ? 0 : undefined}
-                                    onKeyDown={(event) => {
-                                        if (!pointImageInteractive) return;
-                                        if (event.key === 'Enter' || event.key === ' ') {
-                                            event.preventDefault();
-                                            if (canPreviewUGCImage) {
-                                                setUgcViewerOpen(true);
-                                                return;
-                                            }
-                                            handleRequestImageUpload();
-                                        }
-                                    }}
-                                >
-                                    {ugcImageState === 'hasImage' && activeUgcImage ? (
-                                        <img src={activeUgcPreviewUrl} alt={activeUgcImage.content || pointName} />
-                                    ) : (
-                                        <div className={styles.noImage}>
-                                            {ugcUploading
-                                                ? tDetail('uploading', 'Uploading...')
-                                                : ugcLoading
-                                                    ? ''
-                                                    : ugcImageState === 'pending'
-                                                        ? tDetail('uploadPending', 'Upload received. Waiting for review.')
-                                                        : tDetail('uploadCta', 'No info. Click to upload.')}
-                                            {shouldShowCommunityRule && !ugcUploading && !ugcLoading && (
-                                                <div className={styles.communityRule}>
-                                                    <span>{tDetail('communityRule1', 'By uploading, you confirm you have read')}</span>
-                                                    {' '}
-                                                    <a
-                                                        href={communityGuidelinesUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        onClick={(event) => event.stopPropagation()}
-                                                    >
-                                                        {tDetail('communityRule2', 'Community Guidelines')}
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <input
-                                    ref={fileInputRef}
-                                    className={styles.imageInput}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/avif"
-                                    onChange={(event) => void handleImageInputChange(event)}
-                                />
-                                {ugcUploadError && (
-                                    <div className={styles.uploadHint}>{ugcUploadError}</div>
-                                )}
-                            </>
-                        )}
+                        <Uploader point={currentPoint} pointName={pointName} />
                         {/* Note — shown when an archive full-text file is available */}
                         {hasFullText && (
                             <div className={styles.detailNotes}>
@@ -624,10 +406,10 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                                 </a>
                             </PopoverTooltip>
                         </div>
+                        </div>
                     </div>
-                </motion.div>
+                </div>
             )}
-        </AnimatePresence>
         {/* Full-text modal — rendered as a portal, independent of detail visibility */}
         <Modal
             open={textModalOpen}
@@ -641,15 +423,6 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                 {isLoadingFullText ? null : fullTextDom}
             </div>
         </Modal>
-        <Viewer
-            open={ugcViewerOpen && Boolean(activeUgcImage)}
-            imageUrl={activeUgcImage?.url ?? ''}
-            alt={activeUgcImage?.content || pointName}
-            authorNickname={activeUgcAuthorNickname}
-            authorPublicUid={activeUgcAuthorPublicUid}
-            createdAtLabel={activeUgcCreatedAtLabel}
-            onClose={() => setUgcViewerOpen(false)}
-        />
         </>
     );
 };
