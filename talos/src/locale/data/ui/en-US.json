@@ -34,7 +34,7 @@
     },
     "noInfo": "No info.",
     "uploadCta": "No info. Click to upload.",
-    "communityRule1": "By uploading, you confirm you have read",
+    "communityRule1": "By uploading, make sure you have read and follow the",
     "communityRule2": "Community Guidelines",
     "uploading": "Uploading...",
     "uploadPending": "Upload received. Waiting for review.",
@@ -42,7 +42,7 @@
     "share": "Copy shareable link for this marker.",
     "copied": "Link copied",
     "errors": {
-      "unsupportedType": "Only JPEG, PNG, WebP, and AVIF images are supported.",
+      "unsupportedType": "Only JPEG/PNG/WebP/AVIF images are supported.",
       "fileTooLarge": "The image is too large.",
       "imageDecodeFailed": "This image could not be opened by the browser.",
       "imageProcessingUnavailable": "Local image processing is unavailable.",

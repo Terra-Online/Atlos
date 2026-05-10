@@ -184,16 +184,22 @@ const useUpload = (point: IMarkerData) => {
         setUploading(true);
         setProgress(0.02);
         setError(null);
+        setLastSubmission(null);
         try {
             const submission = await uploadUGCImage(target, file, setProgress);
             setLastSubmission(submission);
-            const [nextImages, nextMyImages] = await Promise.all([
+            const [nextImages, nextMyImages] = await Promise.allSettled([
                 listUGCImages(point.id),
-                listUGCMyImages(point.id).catch(() => []),
+                listUGCMyImages(point.id),
             ]);
-            setImages(nextImages);
-            setMyImages(nextMyImages);
+            if (nextImages.status === 'fulfilled') {
+                setImages(nextImages.value);
+            }
+            if (nextMyImages.status === 'fulfilled') {
+                setMyImages(nextMyImages.value);
+            }
         } catch (err) {
+            setLastSubmission(null);
             setError(errText(err));
         } finally {
             setUploading(false);

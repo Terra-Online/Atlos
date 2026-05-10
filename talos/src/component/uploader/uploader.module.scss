@@ -46,6 +46,7 @@
             filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6));
             z-index: 2;
             pointer-events: none;
+            transition: border-color 0.2s ease;
         }
     }
 
@@ -59,6 +60,9 @@
             box-shadow:
                 0 0 4px 0.5px rgba($black-0, 0.6),
                 0 0 4px 2px rgba($primary-accent-4, 0.6) inset;
+        }
+        &:hover::after {
+            border-color: transparent transparent $primary-accent-4;
         }
     }
 
@@ -109,7 +113,6 @@
         max-width: 80%;
         text-align: center;
         line-height: 1.25;
-
         .communityRule {
             margin-top: 4px;
             font-family: 'FedraSansPro Normal', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
@@ -125,7 +128,6 @@
                 color: $primary-accent-6;
                 text-decoration: none;
                 position: relative;
-
                 &::after {
                     content: '';
                     position: absolute;
@@ -138,7 +140,6 @@
                     transition: transform 0.3s ease;
                     transform-origin: right center;
                 }
-
                 &:hover::after {
                     transform-origin: left center;
                     transform: scaleX(1);

@@ -24,6 +24,11 @@ const Viewer: React.FC<ViewerProps> = ({
     type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
     const exitDuration = 300;
     const [phase, setPhase] = useState<Phase>(() => (open ? 'entering' : 'unmounted'));
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    useEffect(() => {
+        setImageLoaded(false);
+    }, [imageUrl]);
 
     useEffect(() => {
         if (open) {
@@ -94,20 +99,32 @@ const Viewer: React.FC<ViewerProps> = ({
                 aria-label={alt}
             >
                 <div className={styles.viewerContent}>
-                    <img src={imageUrl} alt={alt} className={styles.viewerImage} />
+                    {!imageLoaded && (
+                        <div className={styles.viewerSkeleton} aria-hidden="true" />
+                    )}
+                    <img
+                        src={imageUrl}
+                        alt={alt}
+                        className={styles.viewerImage}
+                        data-loaded={imageLoaded ? 'true' : 'false'}
+                        onLoad={() => setImageLoaded(true)}
+                    />
                 </div>
                 <div className={styles.viewerMetaBar}>
-                    <div className={styles.viewerMetaItem}>
-                        <span className={styles.viewerMetaLabel}>AUTHOR</span>
-                        <span className={styles.viewerMetaValue}>{authorNickname || '--'}</span>
+                    <div className={styles.viewerAuthorBlock}>
+                        <div className={styles.viewerMetaRow}>
+                            <span className={styles.viewerMetaLabel}>AUTHOR</span>
+                            <span className={styles.viewerMetaDivider}>|</span>
+                            <span className={styles.viewerAuthorName}>{authorNickname || '--'}</span>
+                        </div>
+                        <div className={styles.viewerMetaRow}>
+                            <span className={styles.viewerMetaLabel}>OEM ID</span>
+                            <span className={styles.viewerMetaDivider}>|</span>
+                            <span className={styles.viewerAuthorId}>{authorPublicUid || '--'}</span>
+                        </div>
                     </div>
-                    <div className={styles.viewerMetaItem}>
-                        <span className={styles.viewerMetaLabel}>UID</span>
-                        <span className={styles.viewerMetaValue}>{authorPublicUid || '--'}</span>
-                    </div>
-                    <div className={styles.viewerMetaItem}>
-                        <span className={styles.viewerMetaLabel}>TIME</span>
-                        <span className={styles.viewerMetaValue}>{createdAtLabel || '--'}</span>
+                    <div className={styles.viewerTime}>
+                        Uploaded At: {createdAtLabel || '--'}
                     </div>
                 </div>
             </div>
