@@ -33,9 +33,30 @@
       "sub": "子區域"
     },
     "noInfo": "暫無資料",
+    "uploadCta": "暫無資料，點擊上傳點位詳情",
+    "communityRule1": "上傳截圖前，請您詳閱並遵循",
+    "communityRule2": "OEM 社群守則",
+    "uploading": "正在上傳…",
+    "uploadPending": "已提交，等待審核後展示。",
     "readFullText": "點此查看全文。",
     "share": "複製此點位之分享連結。",
-    "copied": "連結已複製"
+    "copied": "連結已複製",
+    "viewer": {
+      "author": "作者",
+      "uploadedAt": "上傳於"
+    },
+    "errors": {
+      "unsupportedType": "僅支援 JPEG/PNG/WebP/AVIF 圖片。",
+      "fileTooLarge": "圖片檔案過大。",
+      "imageDecodeFailed": "瀏覽器無法讀取此圖片。",
+      "imageProcessingUnavailable": "本機圖片處理不可用。",
+      "processedTooLarge": "處理後的圖片仍然過大。",
+      "uploadInvalidResponse": "上傳介面返回異常。",
+      "uploadNetwork": "上傳時發生網路錯誤。",
+      "uploadAborted": "上傳已取消。",
+      "uploadFailed": "上傳失敗。",
+      "backendUnknown": "上傳服務返回錯誤。"
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">私隱政策</a>與<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用條款</a>。",
       "hints": {
-        "200": "登入已確認",
-        "201": "註冊已確認",
-        "202": "密碼已變更",
+        "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
         "102": "電郵地址無效",
         "103": "電郵已被註冊",
@@ -229,18 +248,20 @@
         "121": "請填寫驗證碼",
         "122": "驗證碼無效",
         "123": "驗證碼失效",
-        "0": "帳戶/密碼錯誤",
+        "200": "登入已確認",
+        "201": "註冊已確認",
+        "202": "密碼已變更",
         "429": "請求速率限制",
         "430": "風險控制",
-        "801": "掛起：帳戶封禁",
-        "802": "掛起：權限拒絕",
         "601": "令牌失效",
         "602": "需要會話",
         "603": "訪問被拒絕",
         "604": "Auth供應方冲突",
         "701": "系統過載",
         "702": "系統超時",
-        "703": "系統維護"
+        "703": "系統維護",
+        "801": "掛起：帳戶封禁",
+        "802": "掛起：權限拒絕"
       }
     },
     "profile": {

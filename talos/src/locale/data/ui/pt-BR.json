@@ -33,9 +33,30 @@
       "sub": "Sub"
     },
     "noInfo": "Sem informações.",
+    "uploadCta": "Sem informações. Clique para enviar detalhes do ponto.",
+    "communityRule1": "Antes de enviar, confirme que você leu e segue as",
+    "communityRule2": "Diretrizes da Comunidade OEM",
+    "uploading": "Enviando…",
+    "uploadPending": "Envio recebido. Será exibido após revisão.",
     "readFullText": "Clique para ler o texto completo.",
     "share": "Copie o link compartilhável para este marcador.",
-    "copied": "Link copiado"
+    "copied": "Link copiado",
+    "viewer": {
+      "author": "Autor",
+      "uploadedAt": "Enviado em"
+    },
+    "errors": {
+      "unsupportedType": "Apenas imagens JPEG/PNG/WebP/AVIF são suportadas.",
+      "fileTooLarge": "A imagem é grande demais.",
+      "imageDecodeFailed": "O navegador não conseguiu abrir esta imagem.",
+      "imageProcessingUnavailable": "O processamento local de imagem não está disponível.",
+      "processedTooLarge": "A imagem processada ainda é grande demais.",
+      "uploadInvalidResponse": "A resposta da API de envio é inválida.",
+      "uploadNetwork": "Erro de rede durante o envio.",
+      "uploadAborted": "O envio foi cancelado.",
+      "uploadFailed": "Falha no envio.",
+      "backendUnknown": "O serviço de envio retornou um erro."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "Ao continuar, você concorda com nossa",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Política de Privacidade</a> e <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Termos de Serviço</a>",
       "hints": {
-        "200": "Acesso concedido",
-        "201": "Conta criada",
-        "202": "Senha alterada",
+        "0": "Credenciais inválidas",
         "101": "Email obrigatório",
         "102": "Email inválido",
         "103": "Email já em uso",
@@ -229,18 +248,20 @@
         "121": "OTP obrigatório",
         "122": "OTP inválido",
         "123": "OTP expirado",
-        "0": "Credenciais inválidas",
+        "200": "Acesso concedido",
+        "201": "Conta criada",
+        "202": "Senha alterada",
         "429": "Muitas requisições",
         "430": "Verificação de segurança",
-        "801": "Conta suspensa: violação",
-        "802": "Conta suspensa: acesso negado",
         "601": "Token expirado",
         "602": "Sessão obrigatória",
         "603": "Acesso negado",
         "604": "Conflito de provedor",
         "701": "Servidor sobrecarregado",
         "702": "Tempo esgotado",
-        "703": "Manutenção"
+        "703": "Manutenção",
+        "801": "Conta suspensa: violação",
+        "802": "Conta suspensa: acesso negado"
       }
     },
     "profile": {

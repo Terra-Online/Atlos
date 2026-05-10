@@ -33,9 +33,30 @@
       "sub": "서브"
     },
     "noInfo": "정보 없음",
+    "uploadCta": "정보 없음. 클릭하여 위치 상세 정보를 업로드하세요.",
+    "communityRule1": "업로드하기 전에 다음을 읽고 준수해 주세요",
+    "communityRule2": "OEM 커뮤니티 가이드라인",
+    "uploading": "업로드 중…",
+    "uploadPending": "제출되었습니다. 검토 후 표시됩니다.",
     "readFullText": "전체 텍스트를 읽으려면 클릭하세요.",
     "share": "이 마커의 공유 링크를 복사하세요.",
-    "copied": "링크 복사됨"
+    "copied": "링크 복사됨",
+    "viewer": {
+      "author": "작성자",
+      "uploadedAt": "업로드일"
+    },
+    "errors": {
+      "unsupportedType": "JPEG/PNG/WebP/AVIF 이미지만 지원됩니다.",
+      "fileTooLarge": "이미지 파일이 너무 큽니다.",
+      "imageDecodeFailed": "브라우저에서 이 이미지를 열 수 없습니다.",
+      "imageProcessingUnavailable": "로컬 이미지 처리를 사용할 수 없습니다.",
+      "processedTooLarge": "처리된 이미지가 여전히 너무 큽니다.",
+      "uploadInvalidResponse": "업로드 API 응답이 올바르지 않습니다.",
+      "uploadNetwork": "업로드 중 네트워크 오류가 발생했습니다.",
+      "uploadAborted": "업로드가 취소되었습니다.",
+      "uploadFailed": "업로드에 실패했습니다.",
+      "backendUnknown": "업로드 서비스에서 오류를 반환했습니다."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "계속 진행하면 귀하는 당사의 내용을 읽고 동의하게 됩니다.",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">개인정보 보호정책</a> 및 <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">서비스 약관</a>.",
       "hints": {
-        "200": "액세스 권한이 부여됨",
-        "201": "계정이 생성되었습니다",
-        "202": "비밀번호가 변경되었습니다.",
+        "0": "자격 증명 불일치",
         "101": "이메일 필수",
         "102": "이메일이 잘못되었습니다",
         "103": "이메일 사용 중",
@@ -229,18 +248,20 @@
         "121": "OTP 필요",
         "122": "OTP가 유효하지 않음",
         "123": "OTP 만료됨",
-        "0": "자격 증명 불일치",
+        "200": "액세스 권한이 부여됨",
+        "201": "계정이 생성되었습니다",
+        "202": "비밀번호가 변경되었습니다.",
         "429": "요금 제한",
         "430": "보안 검색",
-        "801": "정지됨: 기물 파손",
-        "802": "정지됨: ACC 거부됨",
         "601": "토큰 만료됨",
         "602": "세션 필요",
         "603": "접근 불가",
         "604": "공급자 충돌",
         "701": "과부하됨",
         "702": "시간 초과",
-        "703": "유지"
+        "703": "유지",
+        "801": "정지됨: 기물 파손",
+        "802": "정지됨: ACC 거부됨"
       }
     },
     "profile": {

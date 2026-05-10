@@ -33,9 +33,30 @@
       "sub": "Sotto"
     },
     "noInfo": "Nessuna informazione.",
+    "uploadCta": "Nessuna informazione. Clicca per caricare i dettagli del punto.",
+    "communityRule1": "Prima di caricare, assicurati di aver letto e rispettare le",
+    "communityRule2": "Linee guida della community OEM",
+    "uploading": "Caricamento…",
+    "uploadPending": "Invio ricevuto. Verrà mostrato dopo la revisione.",
     "readFullText": "Clicca per leggere il testo completo.",
     "share": "Copia il link condivisibile per questo marker.",
-    "copied": "Link copiato"
+    "copied": "Link copiato",
+    "viewer": {
+      "author": "Autore",
+      "uploadedAt": "Caricato il"
+    },
+    "errors": {
+      "unsupportedType": "Sono supportate solo immagini JPEG/PNG/WebP/AVIF.",
+      "fileTooLarge": "L’immagine è troppo grande.",
+      "imageDecodeFailed": "Il browser non ha potuto aprire questa immagine.",
+      "imageProcessingUnavailable": "L’elaborazione locale dell’immagine non è disponibile.",
+      "processedTooLarge": "L’immagine elaborata è ancora troppo grande.",
+      "uploadInvalidResponse": "La risposta dell’API di caricamento non è valida.",
+      "uploadNetwork": "Errore di rete durante il caricamento.",
+      "uploadAborted": "Il caricamento è stato annullato.",
+      "uploadFailed": "Caricamento non riuscito.",
+      "backendUnknown": "Il servizio di caricamento ha restituito un errore."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "Procedendo dichiari di aver letto e accettato la ns",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Informativa sulla privacy</a> e <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Termini di servizio</a>.",
       "hints": {
-        "200": "Accesso concesso",
-        "201": "Conto creato",
-        "202": "Password modificata",
+        "0": "Credenziali non valide",
         "101": "E-mail obbligatoria",
         "102": "E-mail non valida",
         "103": "E-mail occupata",
@@ -229,18 +248,20 @@
         "121": "OTP obbligatorio",
         "122": "OTP non valida",
         "123": "OTP scaduta",
-        "0": "Credenziali non valide",
+        "200": "Accesso concesso",
+        "201": "Conto creato",
+        "202": "Password modificata",
         "429": "Tariffa limitata",
         "430": "Controllo di sicurezza",
-        "801": "Sospeso: vandalismo",
-        "802": "Sospeso: ACC negato",
         "601": "Gettone scaduto",
         "602": "Sessione richiesta",
         "603": "Accesso negato",
         "604": "Conflitto tra fornitori",
         "701": "Sovraccarico",
         "702": "Tempo scaduto",
-        "703": "Manutenzione"
+        "703": "Manutenzione",
+        "801": "Sospeso: vandalismo",
+        "802": "Sospeso: ACC negato"
       }
     },
     "profile": {

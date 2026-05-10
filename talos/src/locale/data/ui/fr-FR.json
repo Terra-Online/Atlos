@@ -33,9 +33,30 @@
       "sub": "Sous"
     },
     "noInfo": "Aucune information.",
+    "uploadCta": "Aucune information. Cliquez pour téléverser les détails du point.",
+    "communityRule1": "Avant de téléverser, assurez-vous d’avoir lu et de respecter les",
+    "communityRule2": "Règles de la communauté OEM",
+    "uploading": "Téléversement…",
+    "uploadPending": "Envoi reçu. Affichage après vérification.",
     "readFullText": "Cliquez pour lire le texte complet.",
     "share": "Copiez le lien partageable pour cette marque.",
-    "copied": "Lien copié"
+    "copied": "Lien copié",
+    "viewer": {
+      "author": "Auteur",
+      "uploadedAt": "Téléversé le"
+    },
+    "errors": {
+      "unsupportedType": "Seules les images JPEG/PNG/WebP/AVIF sont prises en charge.",
+      "fileTooLarge": "L’image est trop volumineuse.",
+      "imageDecodeFailed": "Le navigateur n’a pas pu ouvrir cette image.",
+      "imageProcessingUnavailable": "Le traitement local de l’image est indisponible.",
+      "processedTooLarge": "L’image traitée est encore trop volumineuse.",
+      "uploadInvalidResponse": "La réponse de l’API de téléversement est invalide.",
+      "uploadNetwork": "Erreur réseau pendant le téléversement.",
+      "uploadAborted": "Le téléversement a été annulé.",
+      "uploadFailed": "Échec du téléversement.",
+      "backendUnknown": "Le service de téléversement a renvoyé une erreur."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "En poursuivant, vous avez lu et accepté notre",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Politique de confidentialité</a> et <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Conditions d’utilisation</a>.",
       "hints": {
-        "200": "Accès accordé",
-        "201": "Compte créé",
-        "202": "Mot de passe modifié",
+        "0": "Identifiants incorrects",
         "101": "Email requis",
         "102": "Email invalide",
         "103": "Email occupé",
@@ -229,18 +248,20 @@
         "121": "OTP requis",
         "122": "OTP invalide",
         "123": "OTP expiré",
-        "0": "Identifiants incorrects",
+        "200": "Accès accordé",
+        "201": "Compte créé",
+        "202": "Mot de passe modifié",
         "429": "Tarif Limité",
         "430": "Contrôle de sécurité",
-        "801": "Suspendu : vandalisme",
-        "802": "Suspendu : ACC refusé",
         "601": "Jeton expiré",
         "602": "Séance requise",
         "603": "Accès refusé",
         "604": "Conflit de fournisseur",
         "701": "Surchargé",
         "702": "Temps mort",
-        "703": "Entretien"
+        "703": "Entretien",
+        "801": "Suspendu : vandalisme",
+        "802": "Suspendu : ACC refusé"
       }
     },
     "profile": {

@@ -33,9 +33,30 @@
       "sub": "Phụ"
     },
     "noInfo": "Chưa có thông tin",
+    "uploadCta": "Chưa có thông tin. Nhấn để tải lên chi tiết điểm.",
+    "communityRule1": "Trước khi tải lên, hãy đảm bảo bạn đã đọc và tuân thủ",
+    "communityRule2": "Nguyên tắc Cộng đồng OEM",
+    "uploading": "Đang tải lên…",
+    "uploadPending": "Đã gửi. Sẽ hiển thị sau khi được duyệt.",
     "readFullText": "Nhấn để đọc văn bản đầy đủ.",
     "share": "Sao chép liên kết chia sẻ cho điểm này.",
-    "copied": "Liên kết đã được sao chép"
+    "copied": "Liên kết đã được sao chép",
+    "viewer": {
+      "author": "Tác giả",
+      "uploadedAt": "Đã tải lên lúc"
+    },
+    "errors": {
+      "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF.",
+      "fileTooLarge": "Ảnh quá lớn.",
+      "imageDecodeFailed": "Trình duyệt không thể mở ảnh này.",
+      "imageProcessingUnavailable": "Không thể xử lý ảnh cục bộ.",
+      "processedTooLarge": "Ảnh sau xử lý vẫn quá lớn.",
+      "uploadInvalidResponse": "Phản hồi API tải lên không hợp lệ.",
+      "uploadNetwork": "Lỗi mạng khi tải lên.",
+      "uploadAborted": "Đã hủy tải lên.",
+      "uploadFailed": "Tải lên thất bại.",
+      "backendUnknown": "Dịch vụ tải lên trả về lỗi."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "Bằng việc tiếp tục, bạn xác nhận đã đọc và đồng ý với",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Chính sách bảo mật</a> và <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Điều khoản dịch vụ</a> của chúng tôi.",
       "hints": {
-        "200": "Đăng nhập thành công",
-        "201": "Tạo tài khoản thành công",
-        "202": "Đổi mật khẩu thành công",
+        "0": "Email hoặc mật khẩu không đúng",
         "101": "Vui lòng nhập email",
         "102": "Email không hợp lệ",
         "103": "Email đã được sử dụng",
@@ -229,18 +248,20 @@
         "121": "Vui lòng nhập mã OTP",
         "122": "Mã OTP không hợp lệ",
         "123": "Mã OTP đã hết hạn",
-        "0": "Email hoặc mật khẩu không đúng",
+        "200": "Đăng nhập thành công",
+        "201": "Tạo tài khoản thành công",
+        "202": "Đổi mật khẩu thành công",
         "429": "Quá nhiều yêu cầu",
         "430": "Kiểm tra bảo mật",
-        "801": "Bị khóa: Phá hoại",
-        "802": "Bị khóa: Từ chối truy cập",
         "601": "Phiên đăng nhập hết hạn",
         "602": "Yêu cầu phiên đăng nhập",
         "603": "Truy cập bị từ chối",
         "604": "Xung đột tài khoản liên kết",
         "701": "Hệ thống quá tải",
         "702": "Hết thời gian kết nối",
-        "703": "Hệ thống bảo trì"
+        "703": "Hệ thống bảo trì",
+        "801": "Bị khóa: Phá hoại",
+        "802": "Bị khóa: Từ chối truy cập"
       }
     },
     "profile": {

@@ -33,9 +33,30 @@
       "sub": "Unter"
     },
     "noInfo": "Keine Informationen.",
+    "uploadCta": "Keine Informationen. Klicken, um Punktdetails hochzuladen.",
+    "communityRule1": "Stellen Sie vor dem Hochladen sicher, dass Sie die folgenden Regeln gelesen haben und befolgen:",
+    "communityRule2": "OEM-Community-Richtlinien",
+    "uploading": "Wird hochgeladen…",
+    "uploadPending": "Eingereicht. Wird nach Prüfung angezeigt.",
     "readFullText": "Klicken Sie, um den vollständigen Text zu lesen.",
     "share": "Kopieren Sie den freigegebenen Link für diese Marke.",
-    "copied": "Link kopiert"
+    "copied": "Link kopiert",
+    "viewer": {
+      "author": "Autor",
+      "uploadedAt": "Hochgeladen am"
+    },
+    "errors": {
+      "unsupportedType": "Nur JPEG/PNG/WebP/AVIF-Bilder werden unterstützt.",
+      "fileTooLarge": "Das Bild ist zu groß.",
+      "imageDecodeFailed": "Dieses Bild konnte vom Browser nicht geöffnet werden.",
+      "imageProcessingUnavailable": "Lokale Bildverarbeitung ist nicht verfügbar.",
+      "processedTooLarge": "Das verarbeitete Bild ist weiterhin zu groß.",
+      "uploadInvalidResponse": "Die Upload-API hat eine ungültige Antwort zurückgegeben.",
+      "uploadNetwork": "Netzwerkfehler beim Hochladen.",
+      "uploadAborted": "Der Upload wurde abgebrochen.",
+      "uploadFailed": "Upload fehlgeschlagen.",
+      "backendUnknown": "Der Upload-Dienst hat einen Fehler zurückgegeben."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "Durch die Fortsetzung bestätigen Sie, dass Sie unsere ",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Datenschutzerklärung</a> und <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Nutzungsbedingungen</a> gelesen haben und ihnen zustimmen.",
       "hints": {
-        "200": "Zugriff gewährt",
-        "201": "Konto erstellt",
-        "202": "Passwort geändert",
+        "0": "Zugangsdaten falsch",
         "101": "E-Mail erforderlich",
         "102": "E-Mail ungültig",
         "103": "E-Mail bereits vergeben",
@@ -229,18 +248,20 @@
         "121": "Code erforderlich",
         "122": "Code ungültig",
         "123": "Code abgelaufen",
-        "0": "Zugangsdaten falsch",
+        "200": "Zugriff gewährt",
+        "201": "Konto erstellt",
+        "202": "Passwort geändert",
         "429": "Ratenbegrenzung",
         "430": "Sicherheitsprüfung",
-        "801": "Gesperrt: Konto-Sperre",
-        "802": "Gesperrt: Zugriff verweigert",
         "601": "Token abgelaufen",
         "602": "Sitzung erforderlich",
         "603": "Zugriff verweigert",
         "604": "Anbieter-Konflikt",
         "701": "System überlastet",
         "702": "Zeitüberschreitung",
-        "703": "Wartungsarbeiten"
+        "703": "Wartungsarbeiten",
+        "801": "Gesperrt: Konto-Sperre",
+        "802": "Gesperrt: Zugriff verweigert"
       }
     },
     "profile": {

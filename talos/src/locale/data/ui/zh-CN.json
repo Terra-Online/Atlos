@@ -41,6 +41,10 @@
     "readFullText": "点此查看全文。",
     "share": "复制此点位的分享链接。",
     "copied": "链接已复制",
+    "viewer": {
+      "author": "作者",
+      "uploadedAt": "上传于"
+    },
     "errors": {
       "unsupportedType": "仅支持 JPEG/PNG/WebP/AVIF 图片。",
       "fileTooLarge": "图片文件过大。",

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslateUI } from '@/locale';
+import { formatDateYYYYMMDD, formatElapsedShort, parseDateLike } from '@/utils/timeFormat';
 import type { SessionUser, UserGroupCode } from './authTypes';
 
 type KarmaLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -61,51 +62,6 @@ const normalizeGroupCode = (value?: string): UserGroupCode | undefined => {
     g: 'guest',
   };
   return map[normalized];
-};
-
-const parseRegisteredAt = (value?: string): Date | null => {
-  if (!value) return null;
-  const raw = value.trim();
-  if (!raw) return null;
-
-  if (/^\d+$/.test(raw)) {
-    const numeric = Number(raw);
-    if (!Number.isFinite(numeric)) return null;
-    const ms = numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
-    const date = new Date(ms);
-    return Number.isNaN(date.getTime()) ? null : date;
-  }
-
-  const parsed = new Date(raw);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-};
-
-const formatDate = (date: Date): string => {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const formatElapsed = (fromMs: number, nowMs: number): string => {
-  const diffSec = Math.max(0, Math.floor((nowMs - fromMs) / 1000));
-
-  if (diffSec < 60) {
-    return `${diffSec}s`;
-  }
-
-  if (diffSec < 60 * 60) {
-    const minutes = Math.floor(diffSec / 60);
-    return `${minutes}m`;
-  }
-
-  if (diffSec < 24 * 60 * 60) {
-    const hours = Math.floor(diffSec / (60 * 60));
-    return `${hours}hr`;
-  }
-
-  const days = Math.floor(diffSec / (24 * 60 * 60));
-  return `${days}d`;
 };
 
 const hash32 = (text: string, seed: number): number => {
@@ -183,15 +139,15 @@ export const useIdCardProfileViewModel = ({
     const ago = t('idcard.ago') || 'Ago';
     const registipText = t('idcard.registip') || 'Click the avatar';
     const logintipText = t('idcard.logintip') || 'Click the avatar';
-    const registeredDate = parseRegisteredAt(sessionUser?.registeredAt);
+    const registeredDate = parseDateLike(sessionUser?.registeredAt);
     const ageText = isGuest
       ? hasLoggedInBefore ? logintipText : registipText
       : registeredDate
       ? (() => {
-          const elapsed = formatElapsed(registeredDate.getTime(), Date.now());
-          return `${since}: ${formatDate(registeredDate)} (${elapsed} ${ago})`;
+          const elapsed = formatElapsedShort(registeredDate.getTime(), Date.now());
+          return `${since} ${formatDateYYYYMMDD(registeredDate)} (${elapsed} ${ago})`;
         })()
-      : `${since}: --`;
+      : `${since} --`;
 
     const titleSource = isGuest ? 'g' : sessionUser?.titleCode || groupCode;
     const titleLetter = (titleSource?.trim().charAt(0) || 'n').toUpperCase();

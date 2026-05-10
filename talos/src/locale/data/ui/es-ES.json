@@ -33,9 +33,30 @@
       "sub": "Sub"
     },
     "noInfo": "No hay información.",
+    "uploadCta": "No hay información. Haz clic para subir detalles del punto.",
+    "communityRule1": "Antes de subir, asegúrate de haber leído y seguir las",
+    "communityRule2": "Normas de la comunidad OEM",
+    "uploading": "Subiendo…",
+    "uploadPending": "Envío recibido. Se mostrará tras la revisión.",
     "readFullText": "Haga clic para leer el texto completo.",
     "share": "Copie el enlace compartible para esta marca.",
-    "copied": "Enlace copiado"
+    "copied": "Enlace copiado",
+    "viewer": {
+      "author": "Autor",
+      "uploadedAt": "Subido el"
+    },
+    "errors": {
+      "unsupportedType": "Solo se admiten imágenes JPEG/PNG/WebP/AVIF.",
+      "fileTooLarge": "La imagen es demasiado grande.",
+      "imageDecodeFailed": "El navegador no pudo abrir esta imagen.",
+      "imageProcessingUnavailable": "El procesamiento local de imágenes no está disponible.",
+      "processedTooLarge": "La imagen procesada sigue siendo demasiado grande.",
+      "uploadInvalidResponse": "La respuesta de la API de subida no es válida.",
+      "uploadNetwork": "Error de red durante la subida.",
+      "uploadAborted": "La subida fue cancelada.",
+      "uploadFailed": "Error al subir.",
+      "backendUnknown": "El servicio de subida devolvió un error."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -216,9 +237,7 @@
       "ack": "Al continuar, ha leído y acepta nuestras",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Política de privacidad</a> y <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Términos de servicio</a>.",
       "hints": {
-        "200": "Acceso concedido",
-        "201": "Cuenta creada",
-        "202": "Contraseña cambiada",
+        "0": "No coinciden las credenciales",
         "101": "Correo electrónico requerido",
         "102": "Correo electrónico no válido",
         "103": "Correo electrónico ocupado",
@@ -229,18 +248,20 @@
         "121": "Se requiere OTP",
         "122": "OTP no válida",
         "123": "OTP caducada",
-        "0": "No coinciden las credenciales",
+        "200": "Acceso concedido",
+        "201": "Cuenta creada",
+        "202": "Contraseña cambiada",
         "429": "Tarifa limitada",
         "430": "Control de seguridad",
-        "801": "Suspendido: Vandalismo",
-        "802": "Suspendido: ACC denegado",
         "601": "Token caducado",
         "602": "Sesión requerida",
         "603": "Acceso denegado",
         "604": "Conflicto de proveedores",
         "701": "Sobrecargado",
         "702": "Se acabó el tiempo",
-        "703": "Mantenimiento"
+        "703": "Mantenimiento",
+        "801": "Suspendido: Vandalismo",
+        "802": "Suspendido: ACC denegado"
       }
     },
     "profile": {

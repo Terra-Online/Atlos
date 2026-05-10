@@ -34,26 +34,6 @@ const isPublic = (image: UGCSubmissionImage): boolean => (
     image.status === 'active' || image.status === 'flagged' || image.status === 'remove_request'
 );
 
-const fmtDate = (value: string | undefined, locale: string): string => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-
-    try {
-        return new Intl.DateTimeFormat(locale, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-        }).format(date);
-    } catch {
-        return date.toISOString().replace('T', ' ').slice(0, 19);
-    }
-};
-
 const useUpload = (point: IMarkerData) => {
     const tUI = useTranslateUI();
     const locale = useLocale();
@@ -69,11 +49,6 @@ const useUpload = (point: IMarkerData) => {
     const [viewerOpen, setViewerOpen] = useState(false);
     const [pendingLoginUpload, setPendingLoginUpload] = useState(false);
     const [lastSubmission, setLastSubmission] = useState<UGCUploadSubmission | null>(null);
-
-    const tr = useCallback((key: string, fallback: string): string => {
-        const value = tUI(`detail.${key}`);
-        return typeof value === 'string' && value ? value : fallback;
-    }, [tUI]);
 
     const errText = useCallback((err: unknown): string => {
         if (err instanceof UGCClientError) {
@@ -224,11 +199,10 @@ const useUpload = (point: IMarkerData) => {
         show: Boolean(target) || pointImages.length > 0,
         showRules,
         state,
-        tr,
         upload,
         uploading,
         viewerOpen,
-        createdAtLabel: fmtDate(active?.createdAt, locale),
+        createdAt: active?.createdAt ?? '',
     };
 };
 
@@ -238,7 +212,7 @@ const Uploader = memo(({ point, pointName }: Props) => {
         authorNickname,
         authorPublicUid,
         canPreview,
-        createdAtLabel,
+        createdAt,
         error,
         inputRef,
         interactive,
@@ -251,7 +225,6 @@ const Uploader = memo(({ point, pointName }: Props) => {
         show,
         showRules,
         state,
-        tr,
         upload,
         uploading,
         viewerOpen,
@@ -298,15 +271,15 @@ const Uploader = memo(({ point, pointName }: Props) => {
                 ) : (
                     <div className={styles.noImage}>
                         {uploading
-                            ? tr('uploading', 'Uploading...')
+                            ? tUI('uploading', 'Uploading...')
                             : loading
                                 ? ''
                                 : state === 'pending'
-                                    ? tr('uploadPending', 'Upload received. Waiting for review.')
-                                    : tr('uploadCta', 'No info. Click to upload.')}
+                                    ? tUI('uploadPending', 'Upload received. Waiting for review.')
+                                    : tUI('noInfo', 'No info. Click to upload.')}
                         {showRules && !uploading && !loading && (
                             <div className={styles.communityRule}>
-                                <span>{tr('communityRule1', 'By uploading, you confirm you have read')}</span>
+                                <span>{tUI('communityRule1', 'By uploading, you confirm you have read')}</span>
                                 {' '}
                                 <a
                                     href={rulesUrl}
@@ -314,7 +287,7 @@ const Uploader = memo(({ point, pointName }: Props) => {
                                     rel="noopener noreferrer"
                                     onClick={(event) => event.stopPropagation()}
                                 >
-                                    {tr('communityRule2', 'Community Guidelines')}
+                                    {tUI('communityRule2', 'Community Guidelines')}
                                 </a>
                             </div>
                         )}
@@ -337,7 +310,7 @@ const Uploader = memo(({ point, pointName }: Props) => {
                 alt={active?.content || pointName}
                 authorNickname={authorNickname}
                 authorPublicUid={authorPublicUid}
-                createdAtLabel={createdAtLabel}
+                createdAt={createdAt}
                 onClose={() => setViewerOpen(false)}
             />
         </>

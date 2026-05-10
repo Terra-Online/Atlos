@@ -2,6 +2,24 @@
 @use '@/styles/curves.scss' as *;
 @use '@/styles/size.scss' as *;
 
+:root, :root[data-theme='light'] {
+    --viewer-bg: #{$light-1};
+    --viewer-label: #{$black-1};
+    --viewer-value: #{$grey-1};
+    --viewer-time: #{$grey-2};
+    --viewer-hl: #{$primary-accent-5};
+    --viewer-border: #{$white-1};
+}
+
+:root[data-theme='dark'] {
+    --viewer-bg: #{$grey-1};
+    --viewer-label: #{$light-2};
+    --viewer-value: #{$white-1};
+    --viewer-time: #{$white-3};
+    --viewer-hl: #{$secondary-accent-1};
+    --viewer-border: #{$black-1};
+}
+
 .viewerOverlay {
     position: fixed;
     inset: 0;
@@ -28,8 +46,8 @@
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
     padding: 1rem;
-    background: $white-1;
-    box-shadow: 0 20px 70px rgba($black-0, 0.5);
+    background-color: var(--viewer-bg);
+    box-shadow: 0 20px 70px rgba($black-0, 0.6);
     cursor: default;
     transform: scale(.92) translateY(4px);
     opacity: 0;
@@ -57,7 +75,7 @@
     justify-content: center;
     overflow: hidden;
     background: $grey-3;
-    border: 2px solid $white-1;
+    border: 2px solid var(--viewer-border);
     box-shadow:
         0 0 5px 0 rgba($black-0, 0.45),
         0 2px 8px rgba($black-0, 0.25) inset;
@@ -71,7 +89,7 @@
     height: auto;
     object-fit: contain;
     opacity: 0;
-    transition: opacity 0.22s ease;
+    transition: opacity 0.2s ease;
 }
 
 .viewerImage[data-loaded='true'] {
@@ -90,7 +108,7 @@
 }
 
 .viewerMetaBar {
-    min-height: 4.25rem;
+    min-height: 4rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -102,64 +120,71 @@
 .viewerAuthorBlock {
     min-width: 0;
     display: grid;
-    gap: 0.2rem;
+    grid-template-columns: max-content auto minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 5px;
+    row-gap: 4px;
 }
 
 .viewerMetaRow {
     min-width: 0;
-    display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr);
-    align-items: baseline;
-    column-gap: 0.45rem;
+    display: contents;
+}
+
+.viewerMetaLabel,
+.viewerMetaDivider {
+    position: relative;
+    width: fit-content;
+    font-family: "Novecento Medium", "Novecento Cyrillic DemiBold", "Novecento Vietnamese Medium", 'FedraSansPro Normal', "UD_ShinGo DemiBold" , 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--viewer-label);
 }
 
 .viewerMetaLabel {
-    position: relative;
-    width: fit-content;
-    color: $black-0;
-    font-family: "Novecento Medium Regular", sans-serif;
-    font-size: 1rem;
-    line-height: 1;
-    letter-spacing: -0.8px;
-    white-space: nowrap;
-    text-transform: uppercase;
+    justify-self: end;
+}
+
+.viewerMetaDivider {
+    justify-self: center;
+}
+
+.viewerAuthorName,
+.viewerAuthorId {
+    justify-self: start;
 }
 
 .viewerMetaLabel::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -0.08rem;
-    height: 0.32rem;
-    background: $primary-accent-5;
+    width: 106%;
+    left: -3%;
+    bottom: 1px;
+    height: 5px;
+    background: var(--viewer-hl);
     z-index: -1;
-}
-
-.viewerMetaDivider {
-    color: $black-0;
-    font-family: "Novecento Medium Regular", sans-serif;
-    font-size: 1rem;
 }
 
 .viewerAuthorName {
     min-width: 0;
-    color: var(--idcard-name);
-    font-size: 1.25rem;
-    font-family: 'UD_ShinGo DemiBold', HMSans, 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    color: var(--viewer-value);
+    font-size: 1rem;
+    font-family: 'UD_ShinGo DemiBold', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-weight: 600;
     line-height: 1.15;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     letter-spacing: -1px;
 }
 
 .viewerAuthorId {
     min-width: 0;
-    color: var(--idcard-id);
-    font-size: 1.05rem;
-    font-family: "Novecento Medium Regular", sans-serif;
+    color: var(--viewer-value);
+    font-size: 1rem;
+    font-family: 'Novecento Medium Regular', sans-serif;
     line-height: 1.15;
     white-space: nowrap;
     overflow: hidden;
@@ -169,13 +194,15 @@
 
 .viewerTime {
     flex: 0 0 auto;
-    color: var(--idcard-age);
+    align-self: flex-start;
+    color: var(--viewer-time);
     font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 1.05rem;
+    font-size: 14px;
     line-height: 1.2;
     white-space: nowrap;
     letter-spacing: -0.8px;
     font-variant-numeric: lining-nums;
+    cursor: help;
 }
 
 @keyframes skeletonSweep {

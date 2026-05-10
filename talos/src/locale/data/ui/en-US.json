@@ -41,6 +41,10 @@
     "readFullText": "Click to read full text.",
     "share": "Copy shareable link for this marker.",
     "copied": "Link copied",
+    "viewer": {
+      "author": "AUTHOR",
+      "uploadedAt": "Uploaded At"
+    },
     "errors": {
       "unsupportedType": "Only JPEG/PNG/WebP/AVIF images are supported.",
       "fileTooLarge": "The image is too large.",
