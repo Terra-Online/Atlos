@@ -16,7 +16,7 @@
     "labelName": "أسماء المناطق"
   },
   "search": {
-    "placeholder": "البحث الشامل…",
+    "placeholder": "البحث الشامل...",
     "results": "{count} نتيجة(ة)",
     "locatedAt": "موجود في",
     "distributeAt": "موزع في"
@@ -32,29 +32,28 @@
       "main": "الرئيسية",
       "sub": "فرعي"
     },
-    "noInfo": "لا توجد معلومات",
-    "uploadCta": "لا توجد معلومات. انقر لرفع تفاصيل النقطة.",
+    "noInfo": "لا توجد معلومات. انقر لرفع لقطة شاشة للنقطة.",
     "communityRule1": "قبل الرفع، تأكد من أنك قرأت وتلتزم بـ",
-    "communityRule2": "إرشادات مجتمع OEM",
-    "uploading": "جارٍ الرفع…",
+    "communityRule2": "إرشادات المجتمع",
+    "uploading": "جارٍ الرفع...",
     "uploadPending": "تم استلام الإرسال. سيظهر بعد المراجعة.",
     "readFullText": "انقر لقراءة النص الكامل.",
-    "share": "انسخ رابط العلامة هذا وشاركه.",
-    "copied": "رابط منسوخ",
+    "share": "انسخ رابط المشاركة لهذه العلامة.",
+    "copied": "تم نسخ الرابط",
     "viewer": {
-      "author": "المؤلف",
+      "author": "الناشر",
       "uploadedAt": "تم الرفع في"
     },
     "errors": {
       "unsupportedType": "يتم دعم صور JPEG/PNG/WebP/AVIF فقط.",
-      "fileTooLarge": "الصورة كبيرة جدًا.",
+      "fileTooLarge": "ملف الصورة كبير جدًا.",
       "imageDecodeFailed": "تعذر على المتصفح فتح هذه الصورة.",
       "imageProcessingUnavailable": "معالجة الصور المحلية غير متاحة.",
       "processedTooLarge": "لا تزال الصورة المعالجة كبيرة جدًا.",
       "uploadInvalidResponse": "استجابة واجهة الرفع غير صالحة.",
       "uploadNetwork": "حدث خطأ في الشبكة أثناء الرفع.",
       "uploadAborted": "تم إلغاء الرفع.",
-      "uploadFailed": "فشل الرفع.",
+      "uploadFailed": "فشل الرفع، يرجى المحاولة مرة أخرى.",
       "backendUnknown": "أرجعت خدمة الرفع خطأ."
     }
   },
@@ -357,7 +356,7 @@
     "all": "الكل",
     "selected": "المحدد",
     "confirm": "تأكيد",
-    "loading": "جارٍ التحميل…",
+    "loading": "جارٍ التحميل...",
     "enable": "تمكين",
     "disable": "تعطيل",
     "expand": "توسيع",

@@ -16,7 +16,7 @@
     "labelName": "Tên khu vực"
   },
   "search": {
-    "placeholder": "Tìm kiếm toàn cục…",
+    "placeholder": "Tìm kiếm toàn cục...",
     "results": "{count} kết quả",
     "locatedAt": "Tìm thấy tại",
     "distributeAt": "Phân phối tại"
@@ -32,29 +32,28 @@
       "main": "Khu vực",
       "sub": "Phụ"
     },
-    "noInfo": "Chưa có thông tin",
-    "uploadCta": "Chưa có thông tin. Nhấn để tải lên chi tiết điểm.",
+    "noInfo": "Chưa có thông tin. Nhấn để tải lên ảnh chụp điểm.",
     "communityRule1": "Trước khi tải lên, hãy đảm bảo bạn đã đọc và tuân thủ",
-    "communityRule2": "Nguyên tắc Cộng đồng OEM",
-    "uploading": "Đang tải lên…",
+    "communityRule2": "Nguyên tắc cộng đồng",
+    "uploading": "Đang tải lên...",
     "uploadPending": "Đã gửi. Sẽ hiển thị sau khi được duyệt.",
-    "readFullText": "Nhấn để đọc văn bản đầy đủ.",
+    "readFullText": "Nhấn để đọc toàn bộ nội dung.",
     "share": "Sao chép liên kết chia sẻ cho điểm này.",
-    "copied": "Liên kết đã được sao chép",
+    "copied": "Đã sao chép liên kết",
     "viewer": {
-      "author": "Tác giả",
+      "author": "Người đăng",
       "uploadedAt": "Đã tải lên lúc"
     },
     "errors": {
       "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF.",
-      "fileTooLarge": "Ảnh quá lớn.",
+      "fileTooLarge": "Tệp ảnh quá lớn.",
       "imageDecodeFailed": "Trình duyệt không thể mở ảnh này.",
       "imageProcessingUnavailable": "Không thể xử lý ảnh cục bộ.",
       "processedTooLarge": "Ảnh sau xử lý vẫn quá lớn.",
       "uploadInvalidResponse": "Phản hồi API tải lên không hợp lệ.",
       "uploadNetwork": "Lỗi mạng khi tải lên.",
       "uploadAborted": "Đã hủy tải lên.",
-      "uploadFailed": "Tải lên thất bại.",
+      "uploadFailed": "Tải lên thất bại, vui lòng thử lại.",
       "backendUnknown": "Dịch vụ tải lên trả về lỗi."
     }
   },
@@ -357,7 +356,7 @@
     "all": "Tất cả",
     "selected": "Đã chọn",
     "confirm": "Xác nhận",
-    "loading": "Đang tải…",
+    "loading": "Đang tải...",
     "enable": "Bật",
     "disable": "Tắt",
     "expand": "Mở rộng",

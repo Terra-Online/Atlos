@@ -29,33 +29,32 @@
   "detail": {
     "stat": {
       "world": "ワールド",
-      "main": "地域",
-      "sub": "サブ"
+      "main": "メインエリア",
+      "sub": "サブエリア"
     },
-    "noInfo": "情報がありません",
-    "uploadCta": "情報がありません。クリックして場所の詳細をアップロード。",
-    "communityRule1": "アップロードする前に、以下を読み遵守してください",
+    "noInfo": "情報がありません。クリックして地点のスクリーンショットをアップロードしてください。",
+    "communityRule1": "アップロード前に、以下をよく読み遵守してください",
     "communityRule2": "OEM コミュニティガイドライン",
     "uploading": "アップロード中…",
-    "uploadPending": "送信済みです。レビュー後に表示されます。",
-    "readFullText": "全文を読むにはクリックしてください。",
-    "share": "この場所のリンクをコピーして共有します。",
+    "uploadPending": "送信済みです。審査後に表示されます。",
+    "readFullText": "クリックして全文を表示。",
+    "share": "この地点の共有リンクをコピーします。",
     "copied": "リンクをコピーしました",
     "viewer": {
       "author": "投稿者",
-      "uploadedAt": "アップロード日"
+      "uploadedAt": "アップロード日時"
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF 画像のみ対応しています。",
       "fileTooLarge": "画像ファイルが大きすぎます。",
-      "imageDecodeFailed": "ブラウザーでこの画像を開けませんでした。",
-      "imageProcessingUnavailable": "ローカル画像処理を利用できません。",
-      "processedTooLarge": "処理後の画像がまだ大きすぎます。",
-      "uploadInvalidResponse": "アップロード API の応答が不正です。",
+      "imageDecodeFailed": "ブラウザでこの画像を読み込めませんでした。",
+      "imageProcessingUnavailable": "ローカルでの画像処理を利用できません。",
+      "processedTooLarge": "処理後の画像サイズが大きすぎます。",
+      "uploadInvalidResponse": "アップロードサービスから異常な応答が返されました。",
       "uploadNetwork": "アップロード中にネットワークエラーが発生しました。",
       "uploadAborted": "アップロードはキャンセルされました。",
-      "uploadFailed": "アップロードに失敗しました。",
-      "backendUnknown": "アップロードサービスがエラーを返しました。"
+      "uploadFailed": "アップロードに失敗しました。しばらくしてからもう一度お試しください。",
+      "backendUnknown": "アップロードサービスでエラーが発生しました。"
     }
   },
   "footer": {
@@ -225,7 +224,7 @@
       "gooLogin": "Google でログイン",
       "dcRegis": "Discord アカウントで登録",
       "gooRegis": "Google アカウントで登録",
-      "connecting": "接続中...",
+      "connecting": "接続中…",
       "resetLink": "パスワード再設定用のメールアドレスを入力してください。登録済みのメールアドレスにパスワード再設定リンクを送信します。<br><br>送信後、受信トレイおよび迷惑メールフォルダをご確認ください。",
       "resetRequire": "新しいパスワードを入力し、正しく再入力してください。<br><br>パスワードを再設定します。",
       "backTo": "戻る",
@@ -274,7 +273,7 @@
       "noteUID": "UIDはユーザー名を初めて設定した際にのみ割り当てられ、変更することはできませんが、ユーザー名はいつでも更新できます。アバターエリアをクリックすると、他のアバターに切り替えることができます。",
       "auditLabel": "操作",
       "save": "変更を保存",
-      "saving": "保存中...",
+      "saving": "保存中…",
       "logout": "ログアウト"
     }
   },

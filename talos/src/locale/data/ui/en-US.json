@@ -32,12 +32,11 @@
       "main": "Main",
       "sub": "Sub"
     },
-    "noInfo": "No info.",
-    "uploadCta": "No info. Click to upload.",
+    "noInfo": "No info. Click to upload snapshot.",
     "communityRule1": "By uploading, make sure you have read and follow the",
     "communityRule2": "Community Guidelines",
     "uploading": "Uploading...",
-    "uploadPending": "Upload received. Waiting for review.",
+    "uploadPending": "Uploaded. Waiting for review.",
     "readFullText": "Click to read full text.",
     "share": "Copy shareable link for this marker.",
     "copied": "Link copied",
@@ -54,7 +53,7 @@
       "uploadInvalidResponse": "The upload response was invalid.",
       "uploadNetwork": "Network error while uploading.",
       "uploadAborted": "Upload was cancelled.",
-      "uploadFailed": "Upload failed.",
+      "uploadFailed": "Upload failed, please try again.",
       "backendUnknown": "Upload service returned an error."
     }
   },
