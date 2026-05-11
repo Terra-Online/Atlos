@@ -32,9 +32,8 @@
       "main": "主区域",
       "sub": "子区域"
     },
-    "noInfo": "暂无信息。",
-    "uploadCta": "暂无信息，点击上传点位详情",
-    "communityRule1": "上传截图前，请您详阅并遵循",
+    "noInfo": "暂无信息，点击上传点位详情",
+    "communityRule1": "上传前，请您详阅并遵循",
     "communityRule2": "OEM 社区守则",
     "uploading": "正在上传…",
     "uploadPending": "已提交，等待审核后展示。",
@@ -46,16 +45,16 @@
       "uploadedAt": "上传于"
     },
     "errors": {
-      "unsupportedType": "仅支持 JPEG/PNG/WebP/AVIF 图片。",
-      "fileTooLarge": "图片文件过大。",
-      "imageDecodeFailed": "浏览器无法读取此图片。",
-      "imageProcessingUnavailable": "本地图片处理不可用。",
-      "processedTooLarge": "处理后的图片仍然过大。",
-      "uploadInvalidResponse": "上传接口返回异常。",
-      "uploadNetwork": "上传时发生网络错误。",
-      "uploadAborted": "上传已取消。",
-      "uploadFailed": "上传失败。",
-      "backendUnknown": "上传服务返回错误。"
+      "unsupportedType": "仅支持 JPEG/PNG/WebP/AVIF 图片",
+      "fileTooLarge": "图片文件过大",
+      "imageDecodeFailed": "浏览器无法读取此图片",
+      "imageProcessingUnavailable": "本地图片处理不可用",
+      "processedTooLarge": "处理后的图片仍然过大",
+      "uploadInvalidResponse": "上传接口返回异常",
+      "uploadNetwork": "上传时发生网络错误",
+      "uploadAborted": "上传已取消",
+      "uploadFailed": "上传失败",
+      "backendUnknown": "上传服务返回错误"
     }
   },
   "footer": {

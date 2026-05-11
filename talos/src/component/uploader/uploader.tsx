@@ -207,6 +207,7 @@ const useUpload = (point: IMarkerData) => {
 };
 
 const Uploader = memo(({ point, pointName }: Props) => {
+    const tUI = useTranslateUI();
     const {
         active,
         authorNickname,
@@ -271,15 +272,15 @@ const Uploader = memo(({ point, pointName }: Props) => {
                 ) : (
                     <div className={styles.noImage}>
                         {uploading
-                            ? tUI('uploading', 'Uploading...')
+                            ? tUI('detail.uploading')
                             : loading
                                 ? ''
                                 : state === 'pending'
-                                    ? tUI('uploadPending', 'Upload received. Waiting for review.')
-                                    : tUI('noInfo', 'No info. Click to upload.')}
+                                    ? tUI('detail.uploadPending')
+                                    : tUI('detail.noInfo')}
                         {showRules && !uploading && !loading && (
                             <div className={styles.communityRule}>
-                                <span>{tUI('communityRule1', 'By uploading, you confirm you have read')}</span>
+                                <span>{tUI('detail.communityRule1')}</span>
                                 {' '}
                                 <a
                                     href={rulesUrl}
@@ -287,7 +288,7 @@ const Uploader = memo(({ point, pointName }: Props) => {
                                     rel="noopener noreferrer"
                                     onClick={(event) => event.stopPropagation()}
                                 >
-                                    {tUI('communityRule2', 'Community Guidelines')}
+                                    {tUI('detail.communityRule2')}
                                 </a>
                             </div>
                         )}

@@ -43,7 +43,7 @@
     "copied": "Link copied",
     "viewer": {
       "author": "AUTHOR",
-      "uploadedAt": "Uploaded At"
+      "uploadedAt": "Uploaded at"
     },
     "errors": {
       "unsupportedType": "Only JPEG/PNG/WebP/AVIF images are supported.",

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './viewer.module.scss';
 import PopoverTooltip from '@/component/popover/popover';
@@ -28,30 +28,24 @@ const Viewer: React.FC<ViewerProps> = ({
     const exitDuration = 300;
     const [phase, setPhase] = useState<Phase>(() => (open ? 'entering' : 'unmounted'));
     const [imageLoaded, setImageLoaded] = useState(false);
-    const [nowMs, setNowMs] = useState(() => Date.now());
+    const [createdAtAgo, setCreatedAtAgo] = useState('');
     const tUI = useTranslateUI();
 
-    const authorLabel = String(tUI('detail.viewer.author') || 'AUTHOR');
-    const uploadedAtLabel = String(tUI('detail.viewer.uploadedAt') || 'Uploaded At');
-    const agoLabel = String(tUI('idcard.ago') || 'Ago');
     const createdAtDate = useMemo(() => parseDateLike(createdAt), [createdAt]);
     const createdAtLabel = createdAtDate ? formatDateTimeYYYYMMDDHHMMSS(createdAtDate) : '';
-    const createdAtAgo = createdAtDate
-        ? `${formatElapsedShort(createdAtDate.getTime(), nowMs)} ${agoLabel}`
-        : '';
+    const refreshCreatedAtAgo = useCallback(() => {
+        setCreatedAtAgo(createdAtDate
+            ? `${formatElapsedShort(createdAtDate.getTime(), Date.now())} ${tUI('idcard.ago')}`
+            : '');
+    }, [createdAtDate, tUI]);
 
     useEffect(() => {
         setImageLoaded(false);
     }, [imageUrl]);
 
     useEffect(() => {
-        if (!open || !createdAtDate) return undefined;
-        setNowMs(Date.now());
-        const timer = window.setInterval(() => {
-            setNowMs(Date.now());
-        }, 1000);
-        return () => window.clearInterval(timer);
-    }, [open, createdAtDate]);
+        setCreatedAtAgo('');
+    }, [createdAt]);
 
     useEffect(() => {
         if (open) {
@@ -136,7 +130,7 @@ const Viewer: React.FC<ViewerProps> = ({
                 <div className={styles.viewerMetaBar}>
                     <div className={styles.viewerAuthorBlock}>
                         <div className={styles.viewerMetaRow}>
-                            <span className={styles.viewerMetaLabel}>{authorLabel}</span>
+                            <span className={styles.viewerMetaLabel}>{tUI('detail.viewer.author')}</span>
                             <span className={styles.viewerMetaDivider}>|</span>
                             <span className={styles.viewerAuthorName}>{authorNickname || '--'}</span>
                         </div>
@@ -146,12 +140,14 @@ const Viewer: React.FC<ViewerProps> = ({
                             <span className={styles.viewerAuthorId}>{authorPublicUid || '--'}</span>
                         </div>
                     </div>
-                    <PopoverTooltip content={createdAtAgo} placement="top" disabled={!createdAtAgo}>
+                    <PopoverTooltip content={<span>{createdAtAgo}</span>} placement="top" disabled={!createdAtDate}>
                         <div
                             className={styles.viewerTime}
-                            aria-label={`${uploadedAtLabel} ${createdAtLabel || '--'}${createdAtAgo ? ` (${createdAtAgo})` : ''}`}
+                            aria-label={`${tUI('detail.viewer.uploadedAt')} ${createdAtLabel || '--'}${createdAtAgo ? ` (${createdAtAgo})` : ''}`}
+                            onPointerEnter={refreshCreatedAtAgo}
+                            onFocus={refreshCreatedAtAgo}
                         >
-                            {uploadedAtLabel} {createdAtLabel || '--'}
+                            {tUI('detail.viewer.uploadedAt')} {createdAtLabel || '--'}
                         </div>
                     </PopoverTooltip>
                 </div>
