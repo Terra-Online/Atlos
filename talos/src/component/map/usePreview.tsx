@@ -5,7 +5,6 @@ import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
 import PopoverTooltip from '@/component/popover/popover';
 import {
-    getUGCImageTransformedUrl,
     listUGCImages,
 } from '@/utils/ugcClient';
 import {
@@ -27,7 +26,6 @@ interface UsePreviewResult {
     PreviewElement: ReactNode;
 }
 
-const PREVIEW_WIDTH = 200;
 const PREVIEW_HIDE_DELAY_MS = 160;
 
 export const UsePreview = (
@@ -112,9 +110,7 @@ export const UsePreview = (
                         clearHover();
                         return;
                     }
-                    const previewUrl = getUGCImageTransformedUrl(activeImage.url, {
-                        width: PREVIEW_WIDTH,
-                    });
+                    const previewUrl = activeImage.url;
                     const preloadImage = new Image();
                     preloadImage.onload = () => {
                         if (requestTokenRef.current !== requestToken) return;

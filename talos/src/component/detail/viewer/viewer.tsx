@@ -4,6 +4,10 @@ import styles from './viewer.module.scss';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
 import { formatDateTimeYYYYMMDDHHMMSS, formatElapsedShort, parseDateLike } from '@/utils/timeFormat';
+import UpvoteIcon from '@/assets/images/UI/upvote.svg?react';
+import FlagIcon from '@/assets/images/UI/flag.svg?react';
+import ShareIcon from '@/assets/images/UI/share.svg?react';
+import RecallIcon from '@/assets/images/UI/recall.svg?react';
 
 interface ViewerProps {
     open: boolean;
@@ -12,6 +16,18 @@ interface ViewerProps {
     authorNickname?: string;
     authorPublicUid?: string;
     createdAt?: string;
+    upvoteCount?: number;
+    upvoted?: boolean;
+    flagged?: boolean;
+    recallRequested?: boolean;
+    canFlag?: boolean;
+    canRecall?: boolean;
+    actionPending?: boolean;
+    shareCopied?: boolean;
+    onToggleUpvote?: () => void;
+    onToggleFlag?: () => void;
+    onShare?: () => void;
+    onToggleRecall?: () => void;
     onClose: () => void;
 }
 
@@ -22,6 +38,18 @@ const Viewer: React.FC<ViewerProps> = ({
     authorNickname,
     authorPublicUid,
     createdAt,
+    upvoteCount = 0,
+    upvoted = false,
+    flagged = false,
+    recallRequested = false,
+    canFlag = true,
+    canRecall = false,
+    actionPending = false,
+    shareCopied = false,
+    onToggleUpvote,
+    onToggleFlag,
+    onShare,
+    onToggleRecall,
     onClose,
 }) => {
     type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
@@ -38,6 +66,8 @@ const Viewer: React.FC<ViewerProps> = ({
             ? `${formatElapsedShort(createdAtDate.getTime(), Date.now())} ${tUI('idcard.ago')}`
             : '');
     }, [createdAtDate, tUI]);
+    const flagLabel = flagged ? tUI('detail.viewer.unflag') : tUI('detail.viewer.flag');
+    const recallLabel = recallRequested ? tUI('detail.viewer.unrecall') : tUI('detail.viewer.recall');
 
     useEffect(() => {
         setImageLoaded(false);
@@ -115,7 +145,9 @@ const Viewer: React.FC<ViewerProps> = ({
                 aria-modal="true"
                 aria-label={alt}
             >
-                <div className={styles.viewerContent}>
+                <div 
+                    className={styles.viewerContent}
+                    style={{ '--bg': `url(${imageUrl})` } as React.CSSProperties}>
                     {!imageLoaded && (
                         <div className={styles.viewerSkeleton} aria-hidden="true" />
                     )}
@@ -140,6 +172,72 @@ const Viewer: React.FC<ViewerProps> = ({
                             <span className={styles.viewerAuthorId}>{authorPublicUid || '--'}</span>
                         </div>
                     </div>
+                    <div className={styles.viewerActions}>
+                        <PopoverTooltip content={tUI('detail.viewer.upvote')} placement="top" gap={4}>
+                            <button
+                                type="button"
+                                className={styles.viewerActionButton}
+                                data-active={upvoted ? 'true' : 'false'}
+                                disabled={actionPending || !onToggleUpvote}
+                                onClick={onToggleUpvote}
+                                aria-pressed={upvoted}
+                                aria-label='Upvote'
+                            >
+                                <UpvoteIcon />
+                                <span className={styles.viewerUpvoteCount}>{upvoteCount}</span>
+                            </button>
+                        </PopoverTooltip>
+                        <span className={styles.viewerActionDivider} aria-hidden="true"></span>
+                        {canFlag && (
+                            <PopoverTooltip content={flagLabel} placement="top" gap={4}>
+                                <button
+                                    type="button"
+                                    className={styles.viewerActionButton}
+                                    data-active={flagged ? 'true' : 'false'}
+                                    disabled={actionPending || !onToggleFlag}
+                                    onClick={onToggleFlag}
+                                    aria-pressed={flagged}
+                                    aria-label='Flag'
+                                >
+                                    <FlagIcon />
+                                </button>
+                            </PopoverTooltip>
+                        )}
+                        <PopoverTooltip
+                            content={shareCopied ? tUI('detail.copied') : tUI('detail.viewer.share')}
+                            placement="top"
+                            gap={4}
+                            visible={shareCopied ? true : undefined}
+                        >
+                            <button
+                                type="button"
+                                className={styles.viewerActionButton}
+                                disabled={!onShare}
+                                onClick={onShare}
+                                aria-label='Share'
+                            >
+                                <ShareIcon />
+                            </button>
+                        </PopoverTooltip>
+                        {canRecall && (
+                            <>
+                                <span className={styles.viewerActionDivider} aria-hidden="true"></span>
+                                <PopoverTooltip content={recallLabel} placement="top" gap={4}>
+                                    <button
+                                        type="button"
+                                        className={styles.viewerActionButton}
+                                        data-active={recallRequested ? 'true' : 'false'}
+                                        disabled={actionPending || !onToggleRecall}
+                                        onClick={onToggleRecall}
+                                        aria-pressed={recallRequested}
+                                        aria-label='Recall'
+                                    >
+                                        <RecallIcon />
+                                    </button>
+                                </PopoverTooltip>
+                            </>
+                        )}
+                    </div>
                     <PopoverTooltip content={<span>{createdAtAgo}</span>} placement="top" disabled={!createdAtDate}>
                         <div
                             className={styles.viewerTime}
@@ -147,7 +245,7 @@ const Viewer: React.FC<ViewerProps> = ({
                             onPointerEnter={refreshCreatedAtAgo}
                             onFocus={refreshCreatedAtAgo}
                         >
-                            {tUI('detail.viewer.uploadedAt')} {createdAtLabel || '--'}
+                            <span className={styles.viewerTimeLabel}>{tUI('detail.viewer.uploadedAt')}</span><span className={styles.viewerTimeValue}>{createdAtLabel || '--'}</span>
                         </div>
                     </PopoverTooltip>
                 </div>

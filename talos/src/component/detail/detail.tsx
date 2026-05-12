@@ -9,7 +9,7 @@ import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
 import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { MARKER_TYPE_DICT } from '@/data/marker';
-import { generatePointShareUrl } from '@/utils/urlState';
+import { usePointShareLink } from '@/utils/shareLink';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -82,39 +82,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
     const pointName = typeof pointNameRaw === 'string' && pointNameRaw.trim()
         ? pointNameRaw
         : (currentPoint?.type ?? '');
-    const pointShareUrl = useMemo(
-        () => (currentPoint ? generatePointShareUrl(currentPoint) : ''),
-        [currentPoint],
-    );
-    const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
-    const copyPopupTimerRef = useRef<number | null>(null);
-
-    useEffect(() => {
-        return () => {
-            if (copyPopupTimerRef.current !== null) {
-                window.clearTimeout(copyPopupTimerRef.current);
-            }
-        };
-    }, []);
-
-    const handleCopyPointShareUrl = useCallback(async () => {
-        if (!pointShareUrl || typeof window === 'undefined') return;
-        try {
-            await navigator.clipboard.writeText(pointShareUrl);
-            setCopiedPopupVisible(false);
-            requestAnimationFrame(() => {
-                setCopiedPopupVisible(true);
-            });
-            if (copyPopupTimerRef.current !== null) {
-                window.clearTimeout(copyPopupTimerRef.current);
-            }
-            copyPopupTimerRef.current = window.setTimeout(() => {
-                setCopiedPopupVisible(false);
-            }, 1500);
-        } catch {
-            // ignore clipboard errors
-        }
-    }, [pointShareUrl]);
+    const { copiedPopupVisible, copyPointShareUrl } = usePointShareLink(currentPoint);
 
     // Archive full-text state — content may be plain text and/or HTML (<i>, <del>, <img>, …)
     const [hasFullText, setHasFullText] = useState(false);
@@ -399,7 +367,7 @@ export const Detail = ({ inline = false }: { inline?: boolean }) => {
                             >
                                 <a
                                     className={styles.pointShareLink}
-                                    onClick={() => void handleCopyPointShareUrl()}
+                                    onClick={() => void copyPointShareUrl()}
                                     role="button"
                                 >
                                     {String(tUI('detail.share'))}

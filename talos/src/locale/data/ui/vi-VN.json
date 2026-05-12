@@ -42,7 +42,13 @@
     "copied": "Đã sao chép liên kết",
     "viewer": {
       "author": "Người đăng",
-      "uploadedAt": "Đã tải lên lúc"
+      "uploadedAt": "Đã tải lên lúc",
+      "upvote": "Sửa chữa",
+      "flag": "Đánh dấu không chính xác",
+      "unflag": "Bỏ đánh dấu",
+      "share": "Chia sẻ",
+      "recall": "Yêu cầu gỡ",
+      "unrecall": "Hủy yêu cầu gỡ"
     },
     "errors": {
       "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF.",

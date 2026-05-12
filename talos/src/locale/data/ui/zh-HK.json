@@ -42,7 +42,13 @@
     "copied": "連結已複製",
     "viewer": {
       "author": "貢獻者",
-      "uploadedAt": "上載時間"
+      "uploadedAt": "上載時間",
+      "upvote": "維護此點位",
+      "flag": "標記為不準確",
+      "unflag": "取消標記",
+      "share": "分享此點位",
+      "recall": "申請撤回此圖片",
+      "unrecall": "取消撤回申請"
     },
     "errors": {
       "unsupportedType": "僅接收 JPEG/PNG/WebP/AVIF 檔案",

@@ -42,7 +42,13 @@
     "copied": "Link copied",
     "viewer": {
       "author": "AUTHOR",
-      "uploadedAt": "Uploaded at"
+      "uploadedAt": "Uploaded at",
+      "upvote": "Upvote",
+      "flag": "Flag as inaccurate",
+      "unflag": "Unflag",
+      "share": "Share",
+      "recall": "Recall",
+      "unrecall": "Cancel recall"
     },
     "errors": {
       "unsupportedType": "Only JPEG/PNG/WebP/AVIF images are supported.",
@@ -236,39 +242,31 @@
       "ack": "By proceeding, you have read and agree to our ",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> and <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Terms of Service</a>.",
       "hints": {
-        "200": "Access Granted",
-        "201": "Account Created",
-        "202": "Password Changed",
-
+        "0": "Credential Mismatch",
         "101": "Email Required",
         "102": "Email Invalid",
         "103": "Email Occupied",
         "104": "Email Not Found",
-
         "111": "Password Required",
         "112": "Password Invalid",
         "113": "Passwords Mismatch",
-
         "121": "OTP Required",
         "122": "OTP Invalid",
         "123": "OTP Expired",
-
-        "0": "Credential Mismatch",
-
+        "200": "Access Granted",
+        "201": "Account Created",
+        "202": "Password Changed",
         "429": "Rate Limited",
         "430": "Security Check",
-
-        "801": "Suspended: Vandalism",
-        "802": "Suspended: ACC denied",
-
         "601": "Token Expired",
         "602": "Session Required",
         "603": "Access Denied",
         "604": "Provider Conflict",
-
         "701": "Overloaded",
         "702": "Timeout",
-        "703": "Maintenance"
+        "703": "Maintenance",
+        "801": "Suspended: Vandalism",
+        "802": "Suspended: ACC denied"
       }
     },
     "profile": {

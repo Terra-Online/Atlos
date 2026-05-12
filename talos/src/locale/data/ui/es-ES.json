@@ -42,7 +42,13 @@
     "copied": "Enlace copiado",
     "viewer": {
       "author": "Autor",
-      "uploadedAt": "Subido el"
+      "uploadedAt": "Subido el",
+      "upvote": "Apoyar",
+      "flag": "Marcar como inexacto",
+      "unflag": "Quitar marca",
+      "share": "Compartir",
+      "recall": "Solicitar retirada",
+      "unrecall": "Cancelar retirada"
     },
     "errors": {
       "unsupportedType": "Solo se admiten imágenes JPEG/PNG/WebP/AVIF.",

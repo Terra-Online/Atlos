@@ -42,7 +42,13 @@
     "copied": "คัดลอกลิงก์แล้ว",
     "viewer": {
       "author": "ผู้โพสต์",
-      "uploadedAt": "อัปโหลดเมื่อ"
+      "uploadedAt": "อัปโหลดเมื่อ",
+      "upvote": "สนับสนุน",
+      "flag": "รายงานว่าไม่ถูกต้อง",
+      "unflag": "ยกเลิกการรายงาน",
+      "share": "แชร์",
+      "recall": "ขอถอนรูปภาพ",
+      "unrecall": "ยกเลิกคำขอถอน"
     },
     "errors": {
       "unsupportedType": "รองรับเฉพาะรูปภาพ JPEG/PNG/WebP/AVIF",

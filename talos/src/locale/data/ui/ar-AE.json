@@ -42,7 +42,13 @@
     "copied": "تم نسخ الرابط",
     "viewer": {
       "author": "الناشر",
-      "uploadedAt": "تم الرفع في"
+      "uploadedAt": "تم الرفع في",
+        "upvote": "دعم",
+        "flag": "الإبلاغ عن عدم الدقة",
+        "unflag": "إلغاء الإبلاغ",
+        "share": "مشاركة",
+        "recall": "طلب سحب الصورة",
+        "unrecall": "إلغاء طلب السحب"
     },
     "errors": {
       "unsupportedType": "يتم دعم صور JPEG/PNG/WebP/AVIF فقط.",

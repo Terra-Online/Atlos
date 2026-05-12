@@ -42,7 +42,13 @@
     "copied": "Tautan disalin",
     "viewer": {
       "author": "Pengunggah",
-      "uploadedAt": "Diunggah pada"
+      "uploadedAt": "Diunggah pada",
+      "upvote": "Dukung",
+      "flag": "Tandai tidak akurat",
+      "unflag": "Batalkan tanda",
+      "share": "Bagikan",
+      "recall": "Minta penghapusan",
+      "unrecall": "Batalkan penghapusan"
     },
     "errors": {
       "unsupportedType": "Hanya gambar JPEG/PNG/WebP/AVIF yang didukung.",

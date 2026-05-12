@@ -42,7 +42,13 @@
     "copied": "링크가 복사되었습니다",
     "viewer": {
       "author": "작성자",
-      "uploadedAt": "업로드 날짜"
+      "uploadedAt": "업로드 날짜",
+      "upvote": "지지",
+      "flag": "부정확한 정보로 신고",
+      "unflag": "신고 취소",
+      "share": "공유",
+      "recall": "철회 요청",
+      "unrecall": "철회 요청 취소"
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF 이미지만 지원됩니다.",

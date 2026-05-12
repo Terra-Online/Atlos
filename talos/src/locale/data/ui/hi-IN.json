@@ -42,7 +42,13 @@
     "copied": "लिंक कॉपी किया गया",
     "viewer": {
       "author": "अपलोडकर्ता",
-      "uploadedAt": "अपलोड किया गया"
+      "uploadedAt": "अपलोड किया गया",
+      "upvote": "समर्थन करें",
+      "flag": "गलत के रूप में चिह्नित करें",
+      "unflag": "चिह्न हटाएँ",
+      "share": "साझा करें",
+      "recall": "हटाने का अनुरोध करें",
+      "unrecall": "अनुरोध रद्द करें"
     },
     "errors": {
       "unsupportedType": "केवल JPEG/PNG/WebP/AVIF छवियाँ समर्थित हैं।",

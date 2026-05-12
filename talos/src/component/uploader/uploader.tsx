@@ -7,14 +7,18 @@ import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
 import type { IMarkerData } from '@/data/marker';
+import { usePointShareLink } from '@/utils/shareLink';
 import {
-    getUGCImageTransformedUrl,
     listUGCImages,
     listUGCMyImages,
     resolveUGCUploadTarget,
+    toggleUGCImageFlag,
+    toggleUGCImageRecall,
+    toggleUGCImageUpvote,
     uploadUGCImage,
     UGCClientError,
     type UGCImage,
+    type UGCImageActionPatch,
     type UGCSubmissionImage,
     type UGCUploadSubmission,
 } from '@/utils/ugcClient';
@@ -34,6 +38,18 @@ const isPublic = (image: UGCSubmissionImage): boolean => (
     image.status === 'active' || image.status === 'flagged' || image.status === 'remove_request'
 );
 
+const getUpvoteCount = (image: UGCImage): number => (
+    Number.isFinite(image.upvotes)
+        ? Math.max(0, image.upvotes as number)
+        : Number.isFinite(image.upvoteCount)
+            ? Math.max(0, image.upvoteCount as number)
+            : 0
+);
+
+const isActionConflict = (err: unknown): boolean => (
+    err instanceof UGCClientError && err.status === 409
+);
+
 const useUpload = (point: IMarkerData) => {
     const tUI = useTranslateUI();
     const locale = useLocale();
@@ -49,6 +65,7 @@ const useUpload = (point: IMarkerData) => {
     const [viewerOpen, setViewerOpen] = useState(false);
     const [pendingLoginUpload, setPendingLoginUpload] = useState(false);
     const [lastSubmission, setLastSubmission] = useState<UGCUploadSubmission | null>(null);
+    const [actionPending, setActionPending] = useState(false);
 
     const errText = useCallback((err: unknown): string => {
         if (err instanceof UGCClientError) {
@@ -116,11 +133,22 @@ const useUpload = (point: IMarkerData) => {
         () => pointMyImages.find(isPublic) ?? null,
         [pointMyImages],
     );
-    const active = pointImages[0] ?? ownPublic;
-    const previewUrl = useMemo(
-        () => (active ? getUGCImageTransformedUrl(active.url, { width: 400 }) : ''),
-        [active],
-    );
+    const active = useMemo(() => {
+        const publicActive = pointImages[0] ?? null;
+        if (!publicActive) return ownPublic;
+
+        const ownMatch = pointMyImages.find((image) => image.id === publicActive.id);
+        return ownMatch
+            ? {
+                ...publicActive,
+                ...ownMatch,
+                author: publicActive.author ?? ownMatch.author,
+                url: publicActive.url || ownMatch.url,
+            }
+            : publicActive;
+    }, [ownPublic, pointImages, pointMyImages]);
+    const isOwnActive = Boolean(active && pointMyImages.some((image) => image.id === active.id));
+    const previewUrl = active?.url ?? '';
     const pendingOwn = useMemo(
         () => pointMyImages.find(isPending) ?? null,
         [pointMyImages],
@@ -202,7 +230,13 @@ const useUpload = (point: IMarkerData) => {
         upload,
         uploading,
         viewerOpen,
+        actionPending,
+        isOwnActive,
+        isAuthenticated: Boolean(user),
         createdAt: active?.createdAt ?? '',
+        setActionPending,
+        setImages,
+        setMyImages,
     };
 };
 
@@ -215,8 +249,11 @@ const Uploader = memo(({ point, pointName }: Props) => {
         canPreview,
         createdAt,
         error,
+        actionPending,
         inputRef,
         interactive,
+        isAuthenticated,
+        isOwnActive,
         loading,
         previewUrl,
         progress,
@@ -229,7 +266,11 @@ const Uploader = memo(({ point, pointName }: Props) => {
         upload,
         uploading,
         viewerOpen,
+        setActionPending,
+        setImages,
+        setMyImages,
     } = useUpload(point);
+    const { copiedPopupVisible, copyPointShareUrl } = usePointShareLink(point);
     const progressStyle = useMemo(
         () => ({ '--uploader-progress': `${Math.round(progress * 100)}%` }) as CSSProperties,
         [progress],
@@ -248,6 +289,113 @@ const Uploader = memo(({ point, pointName }: Props) => {
         event.preventDefault();
         handleClick();
     }, [handleClick, interactive]);
+
+    const patchActiveImage = useCallback((patch: (image: UGCImage) => UGCImage) => {
+        if (!active) return;
+        setImages((current) => current.map((image) => (image.id === active.id ? patch(image) : image)));
+        setMyImages((current) => current.map((image) => (image.id === active.id ? patch(image) as UGCSubmissionImage : image)));
+    }, [active, setImages, setMyImages]);
+
+    const applyServerImage = useCallback((serverImage: UGCImageActionPatch) => {
+        setImages((current) => current.map((image) => (image.id === serverImage.id ? {
+            ...image,
+            ...serverImage,
+        } : image)));
+        setMyImages((current) => current.map((image) => (image.id === serverImage.id ? {
+            ...image,
+            ...serverImage,
+            status: (serverImage as UGCSubmissionImage).status ?? image.status,
+        } : image)));
+    }, [setImages, setMyImages]);
+
+    const handleToggleUpvote = useCallback(async () => {
+        if (!active || actionPending) return;
+        if (!isAuthenticated) {
+            openOemAuthModal('login');
+            return;
+        }
+        const nextUpvoted = !active.upvoted;
+        const delta = nextUpvoted ? 1 : -1;
+        patchActiveImage((image) => ({
+            ...image,
+            upvoted: nextUpvoted,
+            upvotes: Math.max(0, getUpvoteCount(image) + delta),
+            upvoteCount: Math.max(0, getUpvoteCount(image) + delta),
+        }));
+        setActionPending(true);
+        try {
+            applyServerImage(await toggleUGCImageUpvote(active.id, nextUpvoted));
+        } catch {
+            patchActiveImage((image) => ({
+                ...image,
+                upvoted: !nextUpvoted,
+                upvotes: Math.max(0, getUpvoteCount(image) - delta),
+                upvoteCount: Math.max(0, getUpvoteCount(image) - delta),
+            }));
+        } finally {
+            setActionPending(false);
+        }
+    }, [actionPending, active, applyServerImage, isAuthenticated, patchActiveImage, setActionPending]);
+
+    const handleToggleFlag = useCallback(async () => {
+        if (!active || actionPending || isOwnActive) return;
+        if (!isAuthenticated) {
+            openOemAuthModal('login');
+            return;
+        }
+        const nextFlagged = !active.flagged;
+        patchActiveImage((image) => ({
+            ...image,
+            flagged: nextFlagged,
+            status: nextFlagged ? 'flagged' : image.status === 'flagged' ? 'active' : image.status,
+        }));
+        setActionPending(true);
+        try {
+            applyServerImage(await toggleUGCImageFlag(active.id, nextFlagged));
+        } catch {
+            patchActiveImage((image) => ({
+                ...image,
+                flagged: !nextFlagged,
+                status: !nextFlagged ? 'flagged' : image.status === 'flagged' ? 'active' : image.status,
+            }));
+        } finally {
+            setActionPending(false);
+        }
+    }, [actionPending, active, applyServerImage, isAuthenticated, isOwnActive, patchActiveImage, setActionPending]);
+
+    const handleToggleRecall = useCallback(async () => {
+        if (!active || actionPending || !isOwnActive) return;
+        if (!isAuthenticated) {
+            openOemAuthModal('login');
+            return;
+        }
+        const nextRecallRequested = !active.recallRequested && active.status !== 'remove_request';
+        patchActiveImage((image) => ({
+            ...image,
+            recallRequested: nextRecallRequested,
+            status: nextRecallRequested ? 'remove_request' : image.status === 'remove_request' ? 'active' : image.status,
+        }));
+        setActionPending(true);
+        try {
+            applyServerImage(await toggleUGCImageRecall(active.id, nextRecallRequested));
+        } catch (err) {
+            if (nextRecallRequested && isActionConflict(err)) {
+                patchActiveImage((image) => ({
+                    ...image,
+                    recallRequested: true,
+                    status: 'remove_request',
+                }));
+                return;
+            }
+            patchActiveImage((image) => ({
+                ...image,
+                recallRequested: !nextRecallRequested,
+                status: !nextRecallRequested ? 'remove_request' : image.status === 'remove_request' ? 'active' : image.status,
+            }));
+        } finally {
+            setActionPending(false);
+        }
+    }, [actionPending, active, applyServerImage, isAuthenticated, isOwnActive, patchActiveImage, setActionPending]);
 
     if (!show) return null;
 
@@ -312,6 +460,18 @@ const Uploader = memo(({ point, pointName }: Props) => {
                 authorNickname={authorNickname}
                 authorPublicUid={authorPublicUid}
                 createdAt={createdAt}
+                upvoteCount={active ? getUpvoteCount(active) : 0}
+                upvoted={Boolean(active?.upvoted)}
+                flagged={Boolean(active?.flagged)}
+                recallRequested={Boolean(active?.recallRequested || active?.status === 'remove_request')}
+                canFlag={!isOwnActive}
+                canRecall={isOwnActive}
+                actionPending={actionPending}
+                shareCopied={copiedPopupVisible}
+                onToggleUpvote={() => void handleToggleUpvote()}
+                onToggleFlag={() => void handleToggleFlag()}
+                onShare={() => void copyPointShareUrl()}
+                onToggleRecall={() => void handleToggleRecall()}
                 onClose={() => setViewerOpen(false)}
             />
         </>

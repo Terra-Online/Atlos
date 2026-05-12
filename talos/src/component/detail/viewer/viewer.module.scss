@@ -9,6 +9,9 @@
     --viewer-time: #{$grey-2};
     --viewer-hl: #{$primary-accent-5};
     --viewer-border: #{$white-1};
+    --viewer-action: #{$grey-1};
+    --viewer-action-active: #{$primary-accent-6};
+    --viewer-action-divider: #{$grey-3};
 }
 
 :root[data-theme='dark'] {
@@ -18,6 +21,9 @@
     --viewer-time: #{$white-3};
     --viewer-hl: #{$secondary-accent-1};
     --viewer-border: #{$black-1};
+    --viewer-action: #{$white-2};
+    --viewer-action-active: #{$primary-accent-4};
+    --viewer-action-divider: #{$grey-3};
 }
 
 .viewerOverlay {
@@ -68,7 +74,6 @@
 
 .viewerContent {
     position: relative;
-    min-height: 16rem;
     max-height: calc(85dvh - 7rem);
     display: flex;
     align-items: center;
@@ -79,6 +84,16 @@
     box-shadow:
         0 0 5px 0 rgba($black-0, 0.45),
         0 2px 8px rgba($black-0, 0.25) inset;
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: var(--bg);
+        filter: blur(16px) brightness(1.05) contrast(0.85);
+        z-index: 0;
+        background-size: cover;
+        background-position: center;
+    }
 }
 
 .viewerImage {
@@ -90,6 +105,8 @@
     object-fit: contain;
     opacity: 0;
     transition: opacity 0.2s ease;
+    z-index: 1;
+    box-shadow: 0 4px 20px rgba($black-0, 0.5);
 }
 
 .viewerImage[data-loaded='true'] {
@@ -109,9 +126,9 @@
 
 .viewerMetaBar {
     min-height: 4rem;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
     gap: 1.5rem;
     padding: 0.85rem 1.1rem 0;
     color: $grey-1;
@@ -192,9 +209,88 @@
     letter-spacing: -1px;
 }
 
+.viewerActions {
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--viewer-action);
+}
+
+.viewerActionButton {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: color .2s ease, opacity .2s ease, transform .2s ease;
+    > svg {
+        fill: currentcolor;
+        flex-shrink: 0;
+    }
+    &[aria-label='Upvote'] {
+        width: 56px;
+        height: 36px;
+        > svg {
+            width: 30px;
+            height: 30px;
+        }
+    }
+    &[aria-label='Share'] > svg {
+        width: 25px;
+        height: 25px;
+    }
+    &[aria-label='Flag'] > svg {
+        width: 30px;
+        height: 30px;
+        transform: translateY(-2px);
+    }
+    &[aria-label='Recall'] > svg {
+        width: 26px;
+        height: 26px;
+    }
+    &:hover:not(:disabled), &:focus-visible {
+        color: var(--viewer-action-active);
+        outline: none;
+    }
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+    &[data-active='true'] {
+        color: var(--viewer-action-active);
+    }
+}
+.viewerActionDivider {
+    width: 3px;
+    height: 36px;
+    border-radius: 2px;
+    background: var(--viewer-action-divider);
+}
+.viewerUpvoteCount {
+    color: currentcolor;
+    font-family: 'Novecento Medium Regular', sans-serif;
+    font-size: 1rem;
+    width: 20px;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    font-variant-numeric: lining-nums;
+}
+
 .viewerTime {
     flex: 0 0 auto;
     align-self: flex-start;
+    justify-self: end;
+    display: flex;
+    gap: 4px;
     color: var(--viewer-time);
     font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-size: 14px;
@@ -203,6 +299,9 @@
     letter-spacing: -0.8px;
     font-variant-numeric: lining-nums;
     cursor: help;
+    > .viewerTimeLabel {
+        display: inline-block;
+    }
 }
 
 @keyframes skeletonSweep {
@@ -211,15 +310,15 @@
     }
 }
 
-@media (width <= 720px) {
+@media screen and (max-width: $mobile-bp) {
     .viewerOverlay {
-        padding: 0.8rem;
+        padding: 0.5rem;
     }
 
     .viewerPanel {
         width: min(96dvw, 92rem);
         max-height: 92dvh;
-        padding: 0.7rem 0.7rem 0.9rem;
+        padding: 10px
     }
 
     .viewerContent,
@@ -229,15 +328,23 @@
 
     .viewerMetaBar {
         min-height: 6.25rem;
-        flex-direction: column;
-        align-items: stretch;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
         justify-content: center;
-        gap: 0.6rem;
+        gap: 0.5rem;
         padding: 0.75rem 0.35rem 0;
     }
 
+    .viewerActions {
+        order: 2;
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
     .viewerTime {
-        white-space: normal;
-        font-size: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        transform: translateY(4px);
     }
 }

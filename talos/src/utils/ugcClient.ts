@@ -30,6 +30,12 @@ export type UGCImage = {
         publicUid: string;
     } | null;
     createdAt: string;
+    upvotes?: number;
+    upvoteCount?: number;
+    upvoted?: boolean;
+    flagged?: boolean;
+    recallRequested?: boolean;
+    status?: UGCSubmissionStatus;
 };
 
 export type UGCUploadSubmission = {
@@ -42,11 +48,6 @@ export type UGCUploadSubmission = {
 
 export type UGCSubmissionImage = UGCImage & {
     status: UGCSubmissionStatus;
-};
-
-export type UGCImageTransformOptions = {
-    width?: number;
-    fit?: 'scale-down' | 'cover' | 'contain';
 };
 
 type ImageCacheEntry = {
@@ -111,39 +112,6 @@ export const invalidateUGCImageCache = (markerId: string): void => {
 export const invalidateUGCSubmissionCache = (markerId: string): void => {
     submissionCache.delete(markerId);
 };
-
-export function getUGCImageTransformedUrl(
-    rawUrl: string,
-    options: UGCImageTransformOptions = {},
-): string {
-    if (!rawUrl || import.meta.env.DEV) {
-        return rawUrl;
-    }
-
-    let sourceUrl: URL;
-    try {
-        sourceUrl = new URL(rawUrl, typeof window !== 'undefined' ? window.location.origin : undefined);
-    } catch {
-        return rawUrl;
-    }
-
-    if (!/^https?:$/.test(sourceUrl.protocol)) {
-        return rawUrl;
-    }
-
-    if (sourceUrl.pathname.includes('/cdn-cgi/image/')) {
-        return sourceUrl.toString();
-    }
-
-    const directives: string[] = [];
-    if (options.width && Number.isFinite(options.width) && options.width > 0) {
-        directives.push(`width=${Math.round(options.width)}`);
-    }
-    directives.push(`fit=${options.fit ?? 'cover'}`);
-
-    const source = `${sourceUrl.origin}${sourceUrl.pathname}${sourceUrl.search}`;
-    return `${sourceUrl.origin}/cdn-cgi/image/${directives.join(',')}/${source}`;
-}
 
 export function resolveUGCUploadTarget(point: IMarkerData): UGCUploadTarget | null {
     const category = MARKER_TYPE_DICT[point.type]?.category?.sub;
@@ -249,6 +217,74 @@ export async function uploadUGCImage(
     invalidateUGCImageCache(point.id);
     invalidateUGCSubmissionCache(point.id);
     return payload.submission;
+}
+
+export type UGCImageActionPatch = Partial<Pick<UGCImage, 'upvoteCount' | 'upvotes' | 'upvoted' | 'flagged' | 'recallRequested' | 'status'>> & {
+    id: string;
+};
+
+type UGCImageActionResponse = {
+    ok?: boolean;
+    image?: UGCImage;
+    upvoteCount?: number;
+    flagCount?: number;
+    status?: UGCSubmissionStatus;
+};
+
+export async function toggleUGCImageUpvote(imageId: string, upvoted: boolean): Promise<UGCImageActionPatch> {
+    return updateUGCImageAction(imageId, upvoted ? 'upvote' : 'unvote');
+}
+
+export async function toggleUGCImageFlag(imageId: string, flagged: boolean): Promise<UGCImageActionPatch> {
+    return updateUGCImageAction(imageId, flagged ? 'flag' : 'unflag');
+}
+
+export async function toggleUGCImageRecall(imageId: string, recallRequested: boolean): Promise<UGCImageActionPatch> {
+    return updateUGCImageAction(imageId, recallRequested ? 'remove-request' : 'unrecall');
+}
+
+async function updateUGCImageAction(imageId: string, action: string): Promise<UGCImageActionPatch> {
+    const response = await fetch(`${UGC_API_BASE}/images/${encodeURIComponent(imageId)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw await readUGCError(response);
+    }
+
+    const payload = await response.json() as UGCImageActionResponse;
+    if (payload.image) {
+        const image = normalizeUGCImage(payload.image);
+        invalidateUGCImageCache(image.markerId);
+        invalidateUGCSubmissionCache(image.markerId);
+        return image;
+    }
+
+    if (payload.ok !== true) {
+        throw new UGCClientError('Image action response is invalid.', 'imageActionInvalidResponse');
+    }
+
+    const patch: UGCImageActionPatch = { id: imageId };
+    if (Number.isFinite(payload.upvoteCount)) {
+        patch.upvoteCount = Math.max(0, payload.upvoteCount as number);
+        patch.upvotes = patch.upvoteCount;
+        patch.upvoted = action === 'upvote';
+    }
+    if (Number.isFinite(payload.flagCount)) {
+        patch.flagged = action === 'flag';
+    }
+    if (payload.status) {
+        patch.status = payload.status;
+        patch.recallRequested = payload.status === 'remove_request';
+        if (payload.status === 'flagged') {
+            patch.flagged = true;
+        }
+        if (payload.status === 'active' && (action === 'unflag' || action === 'unrecall')) {
+            patch.flagged = false;
+        }
+    }
+    return patch;
 }
 
 function buildPoiHash(point: IMarkerData): string {

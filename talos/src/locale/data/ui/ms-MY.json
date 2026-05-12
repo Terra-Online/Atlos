@@ -42,7 +42,13 @@
     "copied": "Pautan disalin",
     "viewer": {
       "author": "Pemuat naik",
-      "uploadedAt": "Dimuat naik pada"
+      "uploadedAt": "Dimuat naik pada",
+      "upvote": "Sokong",
+      "flag": "Tandakan sebagai tidak tepat",
+      "unflag": "Buang tanda",
+      "share": "Kongsi",
+      "recall": "Minta pemadaman",
+      "unrecall": "Batalkan pemadaman"
     },
     "errors": {
       "unsupportedType": "Hanya imej JPEG/PNG/WebP/AVIF disokong.",

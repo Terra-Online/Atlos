@@ -42,7 +42,13 @@
     "copied": "Länk kopierad",
     "viewer": {
       "author": "Uppladdare",
-      "uploadedAt": "Uppladdad"
+      "uploadedAt": "Uppladdad",
+      "upvote": "Stöd",
+      "flag": "Markera som felaktig",
+      "unflag": "Ta bort markering",
+      "share": "Dela",
+      "recall": "Begär borttagning",
+      "unrecall": "Avbryt borttagning"
     },
     "errors": {
       "unsupportedType": "Endast JPEG/PNG/WebP/AVIF-bilder stöds.",

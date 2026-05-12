@@ -30,6 +30,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
 }) => {
     const hoverTimeoutRef = useRef<number | undefined>(undefined);
     const controlledCloseTimeoutRef = useRef<number | undefined>(undefined);
+    const wasControlledRef = useRef(visible !== undefined);
     const triggerRef = useRef<HTMLElement | null>(null);
     const popoverIdRef = useRef<string>(`tooltip-${Math.random().toString(36).substr(2, 9)}`);
 
@@ -137,19 +138,36 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     };
 
     useEffect(() => {
-        if (visible === undefined || !hasRenderableContent(content)) return;
-
         const popover = document.getElementById(popoverIdRef.current) as HTMLElement & {
             showPopover?: () => void;
             hidePopover?: () => void;
         };
         const trigger = triggerRef.current;
-        if (!popover || !trigger) return;
+        if (!popover) return;
 
         if (controlledCloseTimeoutRef.current) {
             clearTimeout(controlledCloseTimeoutRef.current);
             controlledCloseTimeoutRef.current = undefined;
         }
+
+        if (visible === undefined) {
+            if (wasControlledRef.current) {
+                popover.classList.add(styles.popoverClose);
+                controlledCloseTimeoutRef.current = window.setTimeout(() => {
+                    try {
+                        popover.hidePopover?.();
+                        popover.classList.remove(styles.popoverClose);
+                    } catch (_e) {
+                        // Ignore if already hidden
+                    }
+                }, 120);
+            }
+            wasControlledRef.current = false;
+            return;
+        }
+
+        wasControlledRef.current = true;
+        if (!trigger || !hasRenderableContent(content)) return;
 
         if (visible) {
             popover.classList.remove(styles.popoverClose);

@@ -42,7 +42,13 @@
     "copied": "リンクをコピーしました",
     "viewer": {
       "author": "投稿者",
-      "uploadedAt": "アップロード日時"
+      "uploadedAt": "アップロード日時",
+      "upvote": "いいね",
+      "flag": "不正確として報告",
+      "unflag": "報告を取り消す",
+      "share": "共有",
+      "recall": "削除申請",
+      "unrecall": "削除申請を取り消す"
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF 画像のみ対応しています。",
