@@ -109,7 +109,7 @@ const FULL_LANGS = new Set([
   'zh-HK',
   'zh-TW',
 ]);
-const UI_ONLY_LANGS = new Set(['ar-AE', 'ms-MY', 'pl-PL', 'sv-SE']);
+const UI_ONLY_LANGS = new Set(['ar-SA', 'ms-MY', 'pl-PL', 'sv-SE']);
 
 const CORS_HEADERS = (origin: string) => ({
   'access-control-allow-origin': origin,

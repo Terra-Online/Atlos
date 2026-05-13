@@ -62,7 +62,7 @@ const LANG_CODE_MAP: Record<string, string> = {
     'it-IT': 'it',
     'id-ID': 'id',
     'pt-BR': 'br',
-    'ar-AE': 'ar',
+    'ar-SA': 'ar',
     'ms-MY': 'my',
     'pl-PL': 'pl',
     'sv-SE': 'se',
