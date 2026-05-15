@@ -614,8 +614,8 @@
           "region": "WL",
           "sub": "TA",
           "point": [
-            6432,
-            2320
+            6520,
+            2400
           ]
         },
         "WL/MS/watchtower_reservoir_station": {
@@ -693,6 +693,83 @@
           "point": [
             2608.4606801170225,
             2349.4645842188784
+          ]
+        },
+        "WL/TA/type_c_auxiliary_pillar_area_1": {
+          "id": "WL/TA/type_c_auxiliary_pillar_area_1",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "type_c_auxiliary_pillar_area_1",
+          "point": [
+            5727.221465853105,
+            1676.7820321538368
+          ]
+        },
+        "WL/TA/type_c_auxiliary_pillar_area_2": {
+          "id": "WL/TA/type_c_auxiliary_pillar_area_2",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "type_c_auxiliary_pillar_area_2",
+          "point": [
+            6369.393307954574,
+            1698.1877602238858
+          ]
+        },
+        "WL/TA/type_c_auxiliary_pillar_area_3": {
+          "id": "WL/TA/type_c_auxiliary_pillar_area_3",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "type_c_auxiliary_pillar_area_3",
+          "point": [
+            6880.752367405745,
+            1829.0005428741852
+          ]
+        },
+        "WL/TA/test_area_peripheries": {
+          "id": "WL/TA/test_area_peripheries",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "test_area_peripheries",
+          "point": [
+            6319.44660912446,
+            2166.7353635349577
+          ]
+        },
+        "WL/TA/meridian_grid_area": {
+          "id": "WL/TA/meridian_grid_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "meridian_grid_area",
+          "point": [
+            6507.34133329489,
+            2390.3063011554696
+          ]
+        },
+        "WL/TA/water_treatment_sector": {
+          "id": "WL/TA/water_treatment_sector",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "water_treatment_sector",
+          "point": [
+            6129.173470724025,
+            2635.28296684603
+          ]
+        },
+        "WL/TA/integrated_rd_area": {
+          "id": "WL/TA/integrated_rd_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "TA",
+          "site": "integrated_rd_area",
+          "point": [
+            6555.5,
+            2725.5
           ]
         }
       }

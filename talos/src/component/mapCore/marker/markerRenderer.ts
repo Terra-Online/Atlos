@@ -147,11 +147,21 @@ const emitPreviewEnter = (markerData: IMarkerData): void => {
     }));
 };
 
-const emitPreviewLeave = (markerId: string): void => {
+export const emitPreviewLeave = (markerId: string): void => {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(new CustomEvent(MARKER_PREVIEW_LEAVE_EVENT, {
         detail: { markerId },
     }));
+};
+
+const attachPreviewLifecycle = (layer: L.Marker, markerData: IMarkerData): void => {
+    layer.on('mouseover', () => {
+        emitPreviewEnter(markerData);
+    });
+
+    layer.on('mouseout', () => {
+        emitPreviewLeave(markerData.id);
+    });
 };
 
 const RENDERER_DICT: Record<
@@ -197,13 +207,7 @@ const RENDERER_DICT: Record<
             onClick?.(markerData);
         });
 
-        layer.on('mouseover', () => {
-            emitPreviewEnter(markerData);
-        });
-
-        layer.on('mouseout', () => {
-            emitPreviewLeave(markerData.id);
-        });
+        attachPreviewLifecycle(layer, markerData);
         
         return layer;
     },
@@ -263,13 +267,7 @@ const RENDERER_DICT: Record<
             onClick?.(markerData);
         });
 
-        layer.on('mouseover', () => {
-            emitPreviewEnter(markerData);
-        });
-
-        layer.on('mouseout', () => {
-            emitPreviewLeave(markerData.id);
-        });
+        attachPreviewLifecycle(layer, markerData);
 
         return layer;
     },

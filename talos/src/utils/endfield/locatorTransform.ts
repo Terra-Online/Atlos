@@ -76,11 +76,7 @@ const MAP_ID_TO_PROFILE: Record<string, RegionProfile> = {
     map02: 'WL',
     base01: 'DJ',
     dung01: 'ES',
-    indie07: 'WL2',
-    indie007: 'WL2',
     indie_dg007: 'WL2',
-    indie05: 'WL3',
-    indie005: 'WL3',
     indie_dg005: 'WL3',
 };
 
@@ -89,23 +85,13 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
     map02: 'Wuling',
     base01: 'Dijiang',
     dung01: 'Weekraid_1',
-    indie07: 'Wuling',
-    indie007: 'Wuling',
     indie_dg007: 'Wuling',
-    indie05: 'Wuling',
-    indie005: 'Wuling',
     indie_dg005: 'Wuling',
 };
 
 const SCENE_ID_TO_SUBREGION_KEY: Record<string, string> = {
-    indie05: 'WL_2',
-    indie005: 'WL_2',
     indie_dg005: 'WL_2',
-    map02_lv005: 'WL_2',
-    indie07: 'WL_4',
-    indie007: 'WL_4',
     indie_dg007: 'WL_4',
-    map02_lv004: 'WL_4',
 };
 
 const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
@@ -144,31 +130,9 @@ const SUBREGION_ID_BY_LEVEL_ID = Object.keys(SUBREGION_DICT).reduce<Record<strin
 const normalizeSceneId = (value: string | null | undefined): string =>
     (value ?? '').trim().toLowerCase();
 
-const isWL2Scene = (mapId: string, levelId: string): boolean =>
-    mapId.startsWith('indie07')
-    || levelId.startsWith('indie07')
-    || mapId.startsWith('indie007')
-    || levelId.startsWith('indie007')
-    || mapId.includes('indie_dg007')
-    || levelId.includes('indie_dg007')
-    || mapId.includes('wl2')
-    || levelId.includes('wl2')
-    || mapId.includes('wuling2')
-    || levelId.includes('wuling2');
+const isWL2Scene = (mapId: string, levelId: string): boolean => levelId === 'indie_dg007';
 
-const isWL3Scene = (mapId: string, levelId: string): boolean =>
-    mapId.startsWith('indie05')
-    || levelId.startsWith('indie05')
-    || mapId.startsWith('indie005')
-    || levelId.startsWith('indie005')
-    || mapId.includes('indie_dg005')
-    || levelId.includes('indie_dg005')
-    || mapId.includes('map02_lv005')
-    || levelId.includes('map02_lv005')
-    || mapId.includes('wl3')
-    || levelId.includes('wl3')
-    || mapId.includes('wuling3')
-    || levelId.includes('wuling3');
+const isWL3Scene = (mapId: string, levelId: string): boolean => levelId === 'indie_dg005';
 
 const resolveProfileKey = (mapId: string, levelId: string): RegionProfile => {
     if (!mapId && !levelId) return 'ES';

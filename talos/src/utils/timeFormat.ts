@@ -11,7 +11,14 @@ export const parseDateLike = (value?: string): Date | null => {
         return Number.isNaN(date.getTime()) ? null : date;
     }
 
-    const parsed = new Date(raw);
+    const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T');
+    const hasTimezone = /([zZ]|[+-]\d{2}:\d{2})$/.test(normalized);
+    if (!hasTimezone) {
+        const utcParsed = new Date(`${normalized}Z`);
+        return Number.isNaN(utcParsed.getTime()) ? null : utcParsed;
+    }
+
+    const parsed = new Date(normalized);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
