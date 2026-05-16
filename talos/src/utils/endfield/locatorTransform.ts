@@ -33,10 +33,10 @@ const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
         offsetZ: -479.9101599,
     },
     WL: {
-        scaleX: 0.41397681175575596,
-        scaleZ: 0.4123987909522064,
-        offsetX: 955.8805906115372,
-        offsetZ: -155.59250075860632,
+        scaleX: 0.41325973072814376,
+        scaleZ: 0.4123987865647275,
+        offsetX: 954.6386210238377,
+        offsetZ: -155.22105766590062,
     },
     WL2: {
         scaleX: 0.35414771840391185,
