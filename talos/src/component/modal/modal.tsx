@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useId, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss'; 
 import Button from '@/component/button/button';
+import { getOpenerDocument, getPictureInPictureDocument } from '@/component/scale/pip';
 
 import { useTranslateUI } from '@/locale';
 import { LinearBlur } from 'progressive-blur';
@@ -34,6 +35,12 @@ const FOCUS_SELECTOR = [
   'select:not([disabled])',
   '[tabindex]:not([tabindex="-1"])'
 ].join(',');
+
+const getModalDocument = (size: ModalProps['size']) => {
+  if (typeof document === 'undefined') return null;
+  if (size !== 'full') return getPictureInPictureDocument() ?? document;
+  return getOpenerDocument() ?? document;
+};
 
 const Modal: React.FC<ModalProps> = ({
   open,
@@ -140,8 +147,10 @@ const Modal: React.FC<ModalProps> = ({
 
   // Focus management & focus container on enter
   useEffect(() => {
+    const ownerDocument = getModalDocument(size);
+    if (!ownerDocument) return undefined;
     if (open) {
-      prevActiveRef.current = document.activeElement as HTMLElement | null;
+      prevActiveRef.current = ownerDocument.activeElement as HTMLElement | null;
       const raf = requestAnimationFrame(() => {
         dialogRef.current?.focus();
       });
@@ -150,22 +159,23 @@ const Modal: React.FC<ModalProps> = ({
       prevActiveRef.current.focus?.();
     }
     return undefined;
-  }, [open]);
+  }, [open, size]);
 
   // keyboard support
   useEffect(() => {
     if (!open || !closeOnEsc) return undefined;
+    const ownerWindow = getModalDocument(size)?.defaultView ?? window;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose?.();
         onChange?.(false);
       }
     };
-    window.addEventListener('keydown', onKey);
+    ownerWindow.addEventListener('keydown', onKey);
     return () => {
-      window.removeEventListener('keydown', onKey);
+      ownerWindow.removeEventListener('keydown', onKey);
     };
-  }, [open, closeOnEsc, onClose, onChange]);
+  }, [open, closeOnEsc, onClose, onChange, size]);
 
   // escape key focus trap
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -180,7 +190,7 @@ const Modal: React.FC<ModalProps> = ({
     }
     const first = nodes[0];
     const last = nodes[nodes.length - 1];
-    const active = document.activeElement as HTMLElement | null;
+    const active = container.ownerDocument.activeElement as HTMLElement | null;
     if (!e.shiftKey && active === last) {
       e.preventDefault();
       first.focus();
@@ -199,7 +209,7 @@ const Modal: React.FC<ModalProps> = ({
     onChange?.(false);
   };
 
-  const root = document.body;
+  const root = getModalDocument(size)?.body ?? document.body;
   return ReactDOM.createPortal(
     <div
       className={styles.modalMask}

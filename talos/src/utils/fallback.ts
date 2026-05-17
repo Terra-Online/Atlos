@@ -322,7 +322,7 @@ export const runStorageMigration = async (): Promise<boolean> => {
   const { pointsNeedMigration, filterNeedMigration, needsRecovery, storedVersionOutdated } = needs;
 
   if (!pointsNeedMigration && !filterNeedMigration && !needsRecovery && !storedVersionOutdated) {
-    console.log('[Migration] All IDs are numeric, activePoints is present, version is current — no migration needed');
+    // console.log('[Migration] All IDs are numeric, activePoints is present, version is current — no migration needed');
     return false;
   }
 

@@ -130,16 +130,16 @@ const SUBREGION_ID_BY_LEVEL_ID = Object.keys(SUBREGION_DICT).reduce<Record<strin
 const normalizeSceneId = (value: string | null | undefined): string =>
     (value ?? '').trim().toLowerCase();
 
-const isWL2Scene = (mapId: string, levelId: string): boolean => levelId === 'indie_dg007';
+const isWL2Scene = (levelId: string): boolean => levelId === 'indie_dg007';
 
-const isWL3Scene = (mapId: string, levelId: string): boolean => levelId === 'indie_dg005';
+const isWL3Scene = (levelId: string): boolean => levelId === 'indie_dg005';
 
 const resolveProfileKey = (mapId: string, levelId: string): RegionProfile => {
     if (!mapId && !levelId) return 'ES';
     if (mapId && isRegionProfile(mapId)) return mapId;
     if (levelId && isRegionProfile(levelId)) return levelId;
-    if (isWL3Scene(mapId, levelId)) return 'WL3';
-    if (isWL2Scene(mapId, levelId)) return 'WL2';
+    if (isWL3Scene(levelId)) return 'WL3';
+    if (isWL2Scene(levelId)) return 'WL2';
     if (mapId && MAP_ID_TO_PROFILE[mapId]) return MAP_ID_TO_PROFILE[mapId];
     if (mapId.startsWith('map01') || levelId.startsWith('map01')) return 'VL';
     if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'WL';
@@ -155,8 +155,8 @@ const resolveRegionKey = (mapId: string, levelId: string): string | null => {
     if (mapId.startsWith('map02') || levelId.startsWith('map02')) return 'Wuling';
     if (mapId.startsWith('base01') || levelId.startsWith('base01')) return 'Dijiang';
     if (mapId.startsWith('dung01') || levelId.startsWith('dung01')) return 'Weekraid_1';
-    if (isWL3Scene(mapId, levelId)) return 'Wuling';
-    if (isWL2Scene(mapId, levelId)) return 'Wuling';
+    if (isWL3Scene(levelId)) return 'Wuling';
+    if (isWL2Scene(levelId)) return 'Wuling';
     return null;
 };
 
@@ -165,10 +165,10 @@ const resolveSubregionKey = (mapId: string, levelId: string): string | null => {
     if (mapId && SUBREGION_ID_BY_LEVEL_ID[mapId]) return SUBREGION_ID_BY_LEVEL_ID[mapId];
     if (levelId && SCENE_ID_TO_SUBREGION_KEY[levelId]) return SCENE_ID_TO_SUBREGION_KEY[levelId];
     if (mapId && SCENE_ID_TO_SUBREGION_KEY[mapId]) return SCENE_ID_TO_SUBREGION_KEY[mapId];
-    if (isWL3Scene(mapId, levelId)) {
+    if (isWL3Scene(levelId)) {
         return 'WL_2';
     }
-    if (isWL2Scene(mapId, levelId)) {
+    if (isWL2Scene(levelId)) {
         return 'WL_4';
     }
     return null;

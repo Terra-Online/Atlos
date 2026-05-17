@@ -63,6 +63,11 @@
     }
 }
 @media screen and (max-width: $mobile-bp) {
+   .uiOverlay.sidebarOpen {
+        left: 0;
+        width: 100%;
+   }
+
    .switchArea {
         top: 25%
    } 

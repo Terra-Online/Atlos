@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getAppViewport, subscribeAppViewport } from '@/component/scale/pip';
 
 export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
@@ -7,6 +8,9 @@ interface UseDeviceResult {
     isMobile: boolean;
     isTablet: boolean;
     isDesktop: boolean;
+    isPictureInPicture: boolean;
+    width: number;
+    height: number;
 }
 
 export function useDevice(
@@ -15,8 +19,10 @@ export function useDevice(
 ): UseDeviceResult {
     const getDeviceType = useCallback((): DeviceType => {
         if (typeof window === 'undefined') return 'desktop'; // SSR fallback
-        const width = window.innerWidth;
-        if (width <= mobileBP) return 'mobile';
+        const viewport = getAppViewport();
+        const width = viewport.width;
+        const effectiveMobileBP = viewport.inPictureInPicture ? viewport.mobileBreakpoint : mobileBP;
+        if (width <= effectiveMobileBP) return 'mobile';
         if (width <= tabletBP) return 'tablet';
         return 'desktop';
     }, [mobileBP, tabletBP]);
@@ -27,13 +33,22 @@ export function useDevice(
         const handleResize = () => setDeviceType(getDeviceType());
         handleResize();
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const unsubscribeViewport = subscribeAppViewport(handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            unsubscribeViewport();
+        };
     }, [getDeviceType]);
+
+    const viewport = getAppViewport();
 
     return {
         type: deviceType,
         isMobile: deviceType === 'mobile',
         isTablet: deviceType === 'tablet',
         isDesktop: deviceType === 'desktop',
+        isPictureInPicture: viewport.inPictureInPicture,
+        width: viewport.width,
+        height: viewport.height,
     };
 }

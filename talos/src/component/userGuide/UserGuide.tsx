@@ -34,6 +34,7 @@ interface UserGuideProps {
 
 const UserGuide = ({ map, onReady }: UserGuideProps) => {
     const { isMobile } = useDevice();
+    const initialGuideDeviceRef = useRef<'mobile' | 'desktop'>(isMobile ? 'mobile' : 'desktop');
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const setForceDetailOpen = useSetForceDetailOpen();
@@ -67,19 +68,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
     // Track retries per-step (by step id) when target is temporarily missing
     const targetNotFoundRetriesRef = useRef<Record<string, number>>({});
 
-    const describeStepTarget = useCallback((step: unknown) => {
-        const s = step as { id?: string; target?: unknown } | undefined;
-        const id = s?.id ?? '(no-id)';
-        const target = s?.target;
-        if (typeof target === 'string') {
-            return { id, targetType: 'selector', target: target };
-        }
-        if (target instanceof HTMLElement) {
-            return { id, targetType: 'element', target: target.tagName.toLowerCase() };
-        }
-        return { id, targetType: typeof target, target: String(target) };
-    }, []);
-
     const isElementInViewport = useCallback((el: HTMLElement) => {
         const rect = el.getBoundingClientRect();
         const vw = window.innerWidth || 0;
@@ -110,6 +98,7 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
 
     const didAutoOpenRef = useRef(false);
     const wasOpenRef = useRef(false);
+    const deviceMatchesInitialGuide = initialGuideDeviceRef.current === (isMobile ? 'mobile' : 'desktop');
 
     const firstIncompleteIndex = useCallback((): number => {
         for (let i = 0; i < steps.length; i++) {
@@ -160,7 +149,7 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
         }
 
         const hasIncomplete = steps.some((s) => stepCompleted[s.id] !== true);
-        if (!didAutoOpenRef.current && hasIncomplete) {
+        if (!didAutoOpenRef.current && deviceMatchesInitialGuide && hasIncomplete) {
             didAutoOpenRef.current = true;
             wasOpenRef.current = true; // Mark as already opened to prevent the second effect from resetting stepIndex
             const resumeIndex = firstIncompleteIndex();
@@ -181,6 +170,7 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
         buildAllStepsCompletionMap,
         firstIncompleteIndex,
         notifyReady,
+        deviceMatchesInitialGuide,
     ]);
 
     // Custom spotlight tracking
@@ -209,16 +199,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
             return;
         }
 
-        {
-            const info = describeStepTarget(step);
-            console.debug('[UserGuide] stepIndex change', {
-                stepIndex,
-                stepId: info.id,
-                targetType: info.targetType,
-                target: info.target,
-            });
-        }
-
         let cancelled = false;
         const updateTarget = () => {
             if (cancelled) return;
@@ -230,36 +210,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
                 el = targetSel;
             }
             setCurrentTarget(el);
-
-            if (!el) {
-                const info = describeStepTarget(step);
-                const matchCount = typeof targetSel === 'string' ? document.querySelectorAll(targetSel).length : 0;
-                console.debug('[UserGuide] target resolved: NOT FOUND', {
-                    stepIndex,
-                    stepId: info.id,
-                    targetType: info.targetType,
-                    target: info.target,
-                    matchCount,
-                });
-            } else if (el instanceof HTMLElement) {
-                const info = describeStepTarget(step);
-                const view = isElementInViewport(el);
-                console.debug('[UserGuide] target resolved: FOUND', {
-                    stepIndex,
-                    stepId: info.id,
-                    targetType: info.targetType,
-                    target: info.target,
-                    inView: view.inView,
-                    isVisible: view.isVisible,
-                    rect: {
-                        top: Math.round(view.rect.top),
-                        left: Math.round(view.rect.left),
-                        width: Math.round(view.rect.width),
-                        height: Math.round(view.rect.height),
-                    },
-                    viewport: { w: view.vw, h: view.vh },
-                });
-            }
 
             // Joyride has disableScrolling=true; manually try to reveal the target.
             // Skip auto-scroll if the step has disableAutoScroll set, or if element is already in viewport
@@ -294,25 +244,11 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
         return () => {
             cancelled = true;
         };
-    }, [isUserGuideOpen, stepIndex, steps, firstIncompleteIndex, describeStepTarget, isElementInViewport]);
+    }, [isUserGuideOpen, stepIndex, steps, firstIncompleteIndex, isElementInViewport]);
 
     const handleJoyrideCallback = useCallback(
         (data: CallBackProps) => {
             const { action, index, type, status } = data;
-
-            if (type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) {
-                const step = steps[index] as unknown;
-                const info = describeStepTarget(step);
-                console.debug('[UserGuide] joyride event', {
-                    type,
-                    action,
-                    index,
-                    status,
-                    stepId: info.id,
-                    targetType: info.targetType,
-                    target: info.target,
-                });
-            }
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
                 // FINISHED / SKIPPED: treat as fully completed so it won't auto-run again.
@@ -358,7 +294,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
                     };
 
                     if (currentStep && currentStep.onNext) {
-                        console.debug('[UserGuide] onNext()', { stepId: currentStep.id, index });
                         const result = currentStep.onNext();
                         if (result instanceof Promise) {
                             void result.then(proceed).catch((err) => {
@@ -385,23 +320,13 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
                 const target = step?.target;
                 const selector = typeof target === 'string' ? target : null;
                 const nodeList = selector ? document.querySelectorAll(selector) : null;
-                const matchCount = nodeList ? nodeList.length : 0;
                 const el = nodeList && nodeList.length > 0 ? nodeList[0] as HTMLElement : null;
                 const MAX_RETRIES = 8;
-
-                console.warn('[UserGuide] TARGET_NOT_FOUND', {
-                    stepId,
-                    index,
-                    retry: next,
-                    selector,
-                    matchCount,
-                });
 
                 // Case 1: selector完全找不到，才重試/跳步
                 if (!el) {
                     if (next <= MAX_RETRIES) {
                         const waitMs = 120 + next * 120;
-                        console.warn(`Target not found for step ${stepId} (retry ${next}/${MAX_RETRIES}, wait ${waitMs}ms)`);
                         try {
                             const r = step?.onBefore?.();
                             if (r instanceof Promise) {
@@ -416,7 +341,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
                         }
                         return;
                     }
-                    console.warn(`Target still not found for step ${stepId}; skipping.`);
                     delete targetNotFoundRetriesRef.current[stepId];
                     setStepIndex(index + 1);
                     return;
@@ -441,7 +365,6 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
         },
         [
             steps,
-            describeStepTarget,
             isElementInViewport,
             setForceDetailOpen,
             setForceRegionSubOpen,
@@ -473,7 +396,7 @@ const UserGuide = ({ map, onReady }: UserGuideProps) => {
                 run={isUserGuideOpen && i18nReady}
                 stepIndex={stepIndex}
                 continuous={true}
-                debug={true}
+                debug={false}
                 tooltipComponent={GuideTooltip}
                 callback={handleJoyrideCallback}
                 getHelpers={(helpers) => {
