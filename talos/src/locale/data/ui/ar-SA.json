@@ -284,6 +284,12 @@
       "logout": "تسجيل الخروج"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "وضع صورة في صورة نشط",
+      "returnHint": "انقر على الشعار للعودة إلى علامة التبويب هذه"
+    }
+  },
   "locator": {
     "binding": {
       "title": "ربط الحساب",
@@ -330,6 +336,7 @@
       },
       "featureTitle": "الميزات",
       "trackPoints": "التتبع",
+      "centerOnPosition": "إبقاء التوسيط",
       "heatmap": "خريطة حرارية",
       "configNote1": "تفعيلك لهذه الميزة يعني موافقتك على ",
       "configNote2": " والشروط الأخرى."

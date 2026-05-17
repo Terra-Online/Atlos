@@ -283,6 +283,12 @@
       "logout": "Wyloguj się"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Tryb obraz w obrazie jest aktywny",
+      "returnHint": "Kliknij logo, aby wrócić do tej karty"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Powiąż konto",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funkcje",
       "trackPoints": "Śledzenie",
+      "centerOnPosition": "Wyśrodkuj gracza",
       "heatmap": "Mapa cieplna",
       "configNote1": "Włączenie tej funkcji oznacza akceptację ",
       "configNote2": " oraz innych warunków."

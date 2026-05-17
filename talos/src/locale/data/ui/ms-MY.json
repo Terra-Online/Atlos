@@ -283,6 +283,12 @@
       "logout": "Log Keluar"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Gambar dalam gambar aktif",
+      "returnHint": "Klik logo untuk kembali ke tab ini"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Paut Akaun",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Ciri",
       "trackPoints": "Jejak",
+      "centerOnPosition": "Di tengah",
       "heatmap": "Peta haba",
       "configNote1": "Mengaktifkan ciri ini bermaksud anda menerima ",
       "configNote2": " dan terma lain."

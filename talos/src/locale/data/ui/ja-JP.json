@@ -283,6 +283,12 @@
       "logout": "ログアウト"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "ピクチャーインピクチャーが有効です",
+      "returnHint": "ロゴをクリックして現在のタブに戻ります"
+    }
+  },
   "locator": {
     "binding": {
       "title": "アカウント連携",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "機能",
       "trackPoints": "マーカー追跡",
+      "centerOnPosition": "中央に固定",
       "heatmap": "ヒートマップ",
       "configNote1": "この機能を有効にすると、",
       "configNote2": "およびその他の規約に同意したものとみなされます。"

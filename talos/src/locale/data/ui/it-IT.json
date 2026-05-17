@@ -283,6 +283,12 @@
       "logout": "Disconnessione"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Picture-in-picture attivo",
+      "returnHint": "Fai clic sul logo per tornare a questa scheda"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Collega account",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funzioni",
       "trackPoints": "Tracciamento",
+      "centerOnPosition": "Resta centrato",
       "heatmap": "Mappa di calore",
       "configNote1": "Abilitando questa funzione accetti i nostri ",
       "configNote2": " e altri termini."

@@ -283,6 +283,12 @@
       "logout": "Se déconnecter"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Le mode Image dans l'image est actif",
+      "returnHint": "Cliquez sur le logo pour revenir à cet onglet"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Lier le compte",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Fonctions",
       "trackPoints": "Suivi",
+      "centerOnPosition": "Maintenir centré",
       "heatmap": "Carte thermique",
       "configNote1": "Activer cette fonctionnalité signifie que vous acceptez nos ",
       "configNote2": " et autres conditions."

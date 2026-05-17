@@ -283,6 +283,12 @@
       "logout": "로그아웃"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "PIP 모드가 활성화되었습니다",
+      "returnHint": "이 탭으로 돌아가려면 로고를 클릭하세요"
+    }
+  },
   "locator": {
     "binding": {
       "title": "계정 연동",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "기능",
       "trackPoints": "마커 추적",
+      "centerOnPosition": "중앙 고정",
       "heatmap": "히트맵",
       "configNote1": "이 기능을 활성화하면 ",
       "configNote2": " 및 기타 약관에 동의한 것으로 간주됩니다."

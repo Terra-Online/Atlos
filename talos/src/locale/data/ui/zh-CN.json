@@ -286,7 +286,7 @@
   "scale": {
     "pip": {
       "activeTitle": "画中画模式已开启",
-      "returnHint": "点击 Logo 以返回当前标签页"
+      "returnHint": "点击 Logo 以返回当前标签页。"
     }
   },
   "locator": {

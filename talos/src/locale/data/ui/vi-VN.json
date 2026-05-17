@@ -283,6 +283,12 @@
       "logout": "Đăng xuất"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Chế độ hình trong hình đang bật",
+      "returnHint": "Nhấp vào logo để quay lại thẻ này"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Liên kết tài khoản",

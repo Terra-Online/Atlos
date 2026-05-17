@@ -283,6 +283,12 @@
       "logout": "Abmelden"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Bild-in-Bild ist aktiv",
+      "returnHint": "Klicke auf das Logo, um zu diesem Tab zurückzukehren"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Konto verbinden",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funktion",
       "trackPoints": "Tracking",
+      "centerOnPosition": "Zentriert bleiben",
       "heatmap": "Heatmap",
       "configNote1": "Durch Aktivieren dieser Funktion akzeptieren Sie unsere ",
       "configNote2": " und weitere Bedingungen."

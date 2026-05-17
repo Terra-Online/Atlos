@@ -283,6 +283,12 @@
       "logout": "Logga ut"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Bild-i-bild är aktivt",
+      "returnHint": "Klicka på logotypen för att återgå till den här fliken"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Koppla konto",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funktioner",
       "trackPoints": "Spårning",
+      "centerOnPosition": "Håll centrerad",
       "heatmap": "Värmekarta",
       "configNote1": "Att aktivera funktionen innebär att du accepterar våra ",
       "configNote2": " och andra villkor."

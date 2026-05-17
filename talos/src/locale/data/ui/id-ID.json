@@ -283,6 +283,12 @@
       "logout": "Keluar"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Mode Gambar-dalam-gambar aktif",
+      "returnHint": "Klik logo untuk kembali ke tab ini"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Tautkan Akun",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Fitur",
       "trackPoints": "Pelacakan",
+      "centerOnPosition": "Di tengah",
       "heatmap": "Peta panas",
       "configNote1": "Mengaktifkan fitur ini berarti Anda menerima ",
       "configNote2": " dan syarat lainnya."

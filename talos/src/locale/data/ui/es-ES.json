@@ -283,6 +283,12 @@
       "logout": "Desconectar"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Picture-in-picture está activo",
+      "returnHint": "Haz clic en el logo para volver a esta pestaña"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Vincular cuenta",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funciones",
       "trackPoints": "Rastreo",
+      "centerOnPosition": "Mantener centrado",
       "heatmap": "Mapa de calor",
       "configNote1": "Al habilitar esta función aceptas nuestras ",
       "configNote2": " y otros términos."

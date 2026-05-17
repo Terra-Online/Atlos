@@ -283,6 +283,12 @@
       "logout": "Sair"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Picture-in-picture ativado",
+      "returnHint": "Clique no logo para voltar a esta guia"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Vincular conta",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Funções",
       "trackPoints": "Rastreio",
+      "centerOnPosition": "Seguir jogador",
       "heatmap": "Mapa de calor",
       "configNote1": "Ao ativar este recurso, você aceita nossos ",
       "configNote2": " e outros termos."
