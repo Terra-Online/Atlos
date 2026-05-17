@@ -27,6 +27,7 @@ type TrackerConfig = {
     roleId: string;
     serverId: number;
     locatorSync: boolean;
+    centerOnPosition?: boolean;
     intervalMs?: number;
     debug?: boolean;
 };
@@ -110,6 +111,7 @@ type AnimationState = {
     from: L.LatLng | null;
     to: L.LatLng | null;
     startTime: number;
+    keepCentered: boolean;
 };
 
 const getPositionSceneKey = (payload: PositionResponse['data']): string =>
@@ -118,6 +120,7 @@ const getPositionSceneKey = (payload: PositionResponse['data']): string =>
 const DEFAULT_LOCATOR_INTERVAL_MS = 1000;
 const LOCATOR_TARGET_ZOOM = 3;
 const LOCATOR_FOLLOW_CENTER_RATIO = 0.25;
+const LOCATOR_MOVE_ANIMATION_MS = 900;
 const POSITION_UNAVAILABLE_RETRY_MS = 5000;
 
 type UpKind = 'expired' | 'notInGame' | 'policy';
@@ -195,6 +198,7 @@ export function useLocator(map: L.Map | undefined): void {
         from: null,
         to: null,
         startTime: 0,
+        keepCentered: false,
     });
 
     useEffect(() => {
@@ -347,6 +351,20 @@ export function useLocator(map: L.Map | undefined): void {
             });
         };
 
+        const keepLocatorAtCenter = (target: L.LatLng) => {
+            if (useLocatorStore.getState().viewMode !== 'tracking') return;
+            if (!isLocatorRegionVisible()) return;
+
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1200);
+            map.panTo(target, {
+                animate: true,
+                duration: 0.45,
+            });
+        };
+
         const consumePendingLocatorFocus = () => {
             const target = pendingLocatorFocusRef.current;
             if (!target) return;
@@ -396,10 +414,11 @@ export function useLocator(map: L.Map | undefined): void {
             consumePendingLocatorFocus();
         };
 
-        const setTargetPosition = (target: L.LatLng) => {
+        const setTargetPosition = (target: L.LatLng, options?: { keepCentered?: boolean }) => {
             const marker = markerRef.current;
             if (!marker) return;
 
+            const keepCentered = Boolean(options?.keepCentered);
             const state = animationRef.current;
             const current = marker.getLatLng();
             const bearing = calculateTrackerBearing(map, current, target);
@@ -411,6 +430,16 @@ export function useLocator(map: L.Map | undefined): void {
             state.from = current;
             state.to = target;
             state.startTime = performance.now();
+            state.keepCentered = keepCentered;
+
+            if (keepCentered) {
+                releaseProgrammaticViewChange();
+                programmaticViewChangeRef.current = true;
+                programmaticViewTimeoutRef.current = window.setTimeout(
+                    releaseProgrammaticViewChange,
+                    LOCATOR_MOVE_ANIMATION_MS + 300,
+                );
+            }
 
             if (state.running) return;
 
@@ -425,7 +454,7 @@ export function useLocator(map: L.Map | undefined): void {
                     return;
                 }
 
-                const durationMs = 900;
+                const durationMs = LOCATOR_MOVE_ANIMATION_MS;
                 const t = Math.min(1, (now - anim.startTime) / durationMs);
                 const eased = 1 - (1 - t) ** 3;
                 const next = L.latLng(
@@ -433,8 +462,14 @@ export function useLocator(map: L.Map | undefined): void {
                     lerp(anim.from.lng, anim.to.lng, eased),
                 );
                 marker.setLatLng(next);
+                if (anim.keepCentered && isLocatorRegionVisible()) {
+                    map.setView(next, map.getZoom(), { animate: false });
+                }
 
                 if (t >= 1) {
+                    if (anim.keepCentered) {
+                        releaseProgrammaticViewChange();
+                    }
                     anim.running = false;
                     anim.rafId = null;
                     return;
@@ -541,6 +576,14 @@ export function useLocator(map: L.Map | undefined): void {
                 if (!hasCenteredOnFirstUpdateRef.current) {
                     hasCenteredOnFirstUpdateRef.current = true;
                     marker.setLatLng(converted.latLng);
+                    if (config.centerOnPosition) {
+                        keepLocatorAtCenter(converted.latLng);
+                    }
+                    return;
+                }
+
+                if (config.centerOnPosition) {
+                    setTargetPosition(converted.latLng, { keepCentered: true });
                     return;
                 }
 

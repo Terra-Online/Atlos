@@ -89,6 +89,7 @@ export const applyRole = (
         serverId: role.serverId,
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
+        centerOnPosition: current?.centerOnPosition ?? false,
         trail: current?.trail ?? false,
         debug: current?.debug ?? false,
         intervalMs: current?.intervalMs,
@@ -118,6 +119,7 @@ export const enableSession = async (): Promise<boolean> => {
         serverId: status.binding.serverId,
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
+        centerOnPosition: current?.centerOnPosition ?? false,
         trail: current?.trail ?? false,
         debug: current?.debug ?? false,
     });

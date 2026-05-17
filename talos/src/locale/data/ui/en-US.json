@@ -283,6 +283,12 @@
       "logout": "Sign Out"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "Picture-in-picture is active",
+      "returnHint": "Click the Logo to return to this tab"
+    }
+  },
   "locator": {
     "binding": {
       "title": "Binding Account",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "Feature",
       "trackPoints": "Tracking",
+      "centerOnPosition": "Keep centered",
       "heatmap": "Heatmap",
       "configNote1": "Enabling this feature means you accept our ",
       "configNote2": " and other terms."

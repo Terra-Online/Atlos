@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
+import { useTranslateUI } from '@/locale';
 import Icon from '../../assets/images/UI/observator_6.webp';
 
 type DocumentPictureInPictureOptions = {
@@ -113,10 +115,49 @@ let activePipWindow: Window | null = null;
 let movedRoot: HTMLElement | null = null;
 let restoreAnchor: Comment | null = null;
 let originalParent: Node | null = null;
-let placeholder: HTMLElement | null = null;
+let placeholderCleanup: (() => void) | null = null;
 let rootAttributeObserver: MutationObserver | null = null;
 const listeners = new Set<StateListener>();
 const viewportListeners = new Set<ViewportListener>();
+
+// eslint-disable-next-line react-refresh/only-export-components
+const PictureInPicturePlaceholder = ({ onReturn }: { onReturn: () => void }) => {
+    const tUI = useTranslateUI();
+    const hint = tUI('scale.pip.returnHint');
+
+    return (
+        <div className="PipPlaceholder">
+            <span className="PipPlaceholderPattern" aria-hidden="true" />
+            <span className="PipPlaceholderCard">
+                <button
+                    className="PipPlaceholderLogoButton"
+                    type="button"
+                    aria-label={hint}
+                    onClick={onReturn}
+                >
+                    <img className="PipPlaceholderLogo" src={Icon} alt="" draggable="false" />
+                </button>
+                <span className="PipPlaceholderTitle">{tUI('scale.pip.activeTitle')}</span>
+                <span className="PipPlaceholderDesc">{hint}</span>
+            </span>
+        </div>
+    );
+};
+
+const mountPictureInPicturePlaceholder = (
+    targetDocument: Document,
+    onReturn: () => void,
+): (() => void) => {
+    const container = targetDocument.createElement('div');
+    const root: Root = createRoot(container);
+    root.render(<PictureInPicturePlaceholder onReturn={onReturn} />);
+    targetDocument.body.append(container);
+
+    return () => {
+        root.unmount();
+        container.remove();
+    };
+};
 
 const openerDocument = typeof window === 'undefined' ? null : window.document;
 
@@ -534,32 +575,14 @@ const resetLeafletDragState = () => {
     }
 };
 
-const createPlaceholder = () => {
-    const node = window.document.createElement('button');
-    node.type = 'button';
-    node.className = 'talosPipPlaceholder';
-    node.setAttribute('aria-label', 'Return map from picture-in-picture');
-    node.innerHTML = `
-        <span class="talosPipPlaceholderPattern" aria-hidden="true"></span>
-        <span class="talosPipPlaceholderCard">
-            <img class="talosPipPlaceholderLogo" src="${Icon}" alt="" draggable="false" />
-            <span class="talosPipPlaceholderTitle">Picture-in-picture is active</span>
-            <span class="talosPipPlaceholderDesc">Click here to return the map to this tab.</span>
-        </span>
-    `;
-    node.addEventListener('click', closeAppPictureInPicture);
-    return node;
-};
-
 const mountPlaceholder = () => {
-    if (placeholder) return;
-    placeholder = createPlaceholder();
-    window.document.body.append(placeholder);
+    if (placeholderCleanup) return;
+    placeholderCleanup = mountPictureInPicturePlaceholder(window.document, closeAppPictureInPicture);
 };
 
 const unmountPlaceholder = () => {
-    placeholder?.remove();
-    placeholder = null;
+    placeholderCleanup?.();
+    placeholderCleanup = null;
 };
 
 export const closeAppPictureInPicture = () => {

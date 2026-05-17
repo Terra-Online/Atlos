@@ -10,6 +10,7 @@ export type EFTrackerConf = {
     locatorSync: boolean;
     scope?: EFTrackerScope[];
     trackPoints?: boolean;
+    centerOnPosition?: boolean;
     trail?: boolean;
     intervalMs?: number;
     debug?: boolean;
@@ -48,6 +49,7 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
                     .filter((item): item is EFTrackerScope => item !== null)
                 : undefined,
             trackPoints: parsed.trackPoints ?? true,
+            centerOnPosition: parsed.centerOnPosition ?? false,
             trail: parsed.trail ?? false,
             intervalMs: parsed.intervalMs,
             debug: parsed.debug ?? false,

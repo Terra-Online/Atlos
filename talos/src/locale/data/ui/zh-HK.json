@@ -283,6 +283,12 @@
       "logout": "登出"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "畫中畫模式已開啟",
+      "returnHint": "點擊 Logo 以返回目前分頁"
+    }
+  },
   "locator": {
     "binding": {
       "title": "綁定帳户",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "功能",
       "trackPoints": "追蹤點位",
+      "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
       "configNote1": "啟用此功能代表你已接受我們的 ",
       "configNote2": " 與其他條款。"

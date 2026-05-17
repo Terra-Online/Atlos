@@ -1,4 +1,5 @@
 @use './palette' as *;
+@use './curves.scss' as *;
 
 :root[data-pip-window='true']:not([data-pip-mobile='true']) .app {
     min-width: min(var(--app-responsive-width, 800px), 100dvw);
@@ -43,7 +44,7 @@
     gap: 0;
 }
 
-.talosPipPlaceholder {
+.PipPlaceholder {
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -51,24 +52,30 @@
     border: 0;
     padding: 0;
     overflow: hidden;
-    cursor: pointer;
-    color: $light-1;
-    background-color: var(--map-bg, #111);
+    cursor: default;
+    color: $grey-1;
+    background-color: var(--map-bg);
+    transition: all 0.35s $adagio-curve;
     font-family: inherit;
 }
 
-.talosPipPlaceholderPattern {
+:root[data-theme='dark'] .PipPlaceholder {
+    color: $light-2;
+}
+
+.PipPlaceholderPattern {
     position: absolute;
     inset: 0;
-    background-color: var(--map-pattern-bg, #333);
+    background-color: var(--map-pattern-bg);
     mask-image: url('../assets/images/UI/map-pattern.svg');
     mask-repeat: repeat;
     mask-size: 100px;
     opacity: var(--map-pattern-opacity, 1);
+    transition: all 0.35s $adagio-curve;
     pointer-events: none;
 }
 
-.talosPipPlaceholderCard {
+.PipPlaceholderCard {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -81,21 +88,45 @@
     text-shadow: 0 2px 4px rgba($black-0, 0.45);
 }
 
-.talosPipPlaceholderLogo {
-    width: min(34vw, 12rem);
-    max-width: 180px;
+.PipPlaceholderLogoButton {
+    display: block;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
     filter: drop-shadow(0 4px 8px rgba($black-0, 0.45));
+    transition:
+        filter 0.2s $adagio-curve,
+        transform 0.2s $adagio-curve;
+
+    &:hover {
+        filter: drop-shadow(0 2px 5px rgba($black-0, 0.28));
+        transform: translateY(-4px);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-accent-4;
+        outline-offset: 0.35rem;
+    }
 }
 
-.talosPipPlaceholderTitle {
-    margin-top: 0.4rem;
+.PipPlaceholderLogo {
+    display: block;
+    width: min(33dvw, 12rem);
+    max-width: 15rem;
+}
+
+.PipPlaceholderTitle {
+    margin-top: 0.6rem;
     font-size: clamp(1rem, 2.4vw, 1.4rem);
     color: $primary-accent-4;
+    pointer-events: none;
 }
 
-.talosPipPlaceholderDesc {
+.PipPlaceholderDesc {
     max-width: 24rem;
     font-family: 'HMSans_EN', HMSans, 'Noto Sans SC', sans-serif;
     font-size: clamp(0.8rem, 1.6vw, 1rem);
-    color: $light-2;
+    color: currentcolor;
+    pointer-events: none;
 }

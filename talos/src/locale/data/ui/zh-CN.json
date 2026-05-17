@@ -283,6 +283,12 @@
       "logout": "登出"
     }
   },
+  "scale": {
+    "pip": {
+      "activeTitle": "画中画模式已开启",
+      "returnHint": "点击 Logo 以返回当前标签页"
+    }
+  },
   "locator": {
     "binding": {
       "title": "绑定账号",
@@ -329,6 +335,7 @@
       },
       "featureTitle": "功能",
       "trackPoints": "追踪点位",
+      "centerOnPosition": "角色光标居中",
       "heatmap": "热力图",
       "configNote1": "启用此功能表明您已接受我们的 ",
       "configNote2": " 与其他条款。"

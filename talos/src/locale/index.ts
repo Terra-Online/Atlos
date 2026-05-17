@@ -311,6 +311,11 @@ export const useTranslateGame = () => {
     return (k: string) => t(`game.${k}`);
 };
 
+export const translateUI = (key: string, fallback = ''): string => {
+    const value = deepGet(useI18nStore.getState().data.ui, key);
+    return typeof value === 'string' ? value : fallback;
+};
+
 export const useLocale = () => useI18nStore((s) => s.locale);
 
 export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
