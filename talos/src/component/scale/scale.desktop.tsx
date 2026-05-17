@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import styles from './scale.module.scss';
 import L from 'leaflet';
+import { useAppPictureInPicture } from './pip';
 
 const calculateScale = (current: number, min: number, max: number) =>
     Math.max(0, Math.min(1, (current - min) / (max - min)));
@@ -22,6 +23,7 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
     const animationFrameRef = useRef<number>(null);
     const isZoomingRef = useRef<boolean>(false);
     const targetZoomRef = useRef<number>(null);
+    const pictureInPicture = useAppPictureInPicture(map);
 
     const ZOOM_STEP = 0.5; // +/- step
 
@@ -86,6 +88,10 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
         },
         [map, zoomBounds, handleZoomChange],
     );
+    const handlePictureInPictureToggle = useCallback(() => {
+        void pictureInPicture.toggle();
+    }, [pictureInPicture]);
+
     useEffect(() => {
         if (!map) return;
         const initialZoom = map.getZoom();
@@ -187,6 +193,19 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
                     disabled={zoomLevel <= zoomBounds.min}
                 >
                     -
+                </button>
+            </div>
+
+            <div className={`${styles.buttonFrame} ${styles.pipFrame}`}>
+                <button
+                    type="button"
+                    className={`${styles.zoomButton} ${styles.pipButton} ${pictureInPicture.active ? styles.active : ''} ${!pictureInPicture.supported ? styles.disabled : ''}`}
+                    onClick={handlePictureInPictureToggle}
+                    disabled={!pictureInPicture.supported}
+                    aria-label={pictureInPicture.active ? 'Exit picture-in-picture' : 'Open picture-in-picture'}
+                    title={pictureInPicture.supported ? 'Picture-in-picture' : 'Document Picture-in-Picture is not supported'}
+                >
+                    PiP
                 </button>
             </div>
         </div>

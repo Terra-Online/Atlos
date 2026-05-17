@@ -228,9 +228,10 @@ export function useMapMultiSelect(map: L.Map | undefined) {
         if (!map) return;
 
         const container = map.getContainer();
+        const keyupWindows = new Set<Window>();
 
         // Create persistent overlay element
-        const overlay = document.createElement('div');
+        const overlay = container.ownerDocument.createElement('div');
         overlay.className = lassoStyles.lassoOverlay;
         overlay.style.display = 'none';
         container.appendChild(overlay);
@@ -274,6 +275,7 @@ export function useMapMultiSelect(map: L.Map | undefined) {
         // ── pointer down ──
         const onPointerDown = (e: PointerEvent) => {
             if (!isModKeyPressed(e)) return;
+            bindKeyupWindow(container.ownerDocument.defaultView ?? window);
             // Disable map dragging & box zoom while lasso is active
             map.dragging.disable();
             if (map.boxZoom) map.boxZoom.disable();
@@ -316,6 +318,7 @@ export function useMapMultiSelect(map: L.Map | undefined) {
         const onPointerUp = (e: PointerEvent) => {
             if (!dragging.current || !startPx.current || !startLatLng.current) return;
             dragging.current = false;
+            unbindKeyupWindows();
             container.style.cursor = '';
             map.dragging.enable();
             if (map.boxZoom) map.boxZoom.enable();
@@ -424,6 +427,7 @@ export function useMapMultiSelect(map: L.Map | undefined) {
         const onKeyUp = (e: KeyboardEvent) => {
             if (dragging.current && !isModKeyPressed(e)) {
                 dragging.current = false;
+                unbindKeyupWindows();
                 container.style.cursor = '';
                 map.dragging.enable();
                 if (map.boxZoom) map.boxZoom.enable();
@@ -434,16 +438,28 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             }
         };
 
+        const bindKeyupWindow = (targetWindow: Window) => {
+            if (keyupWindows.has(targetWindow)) return;
+            targetWindow.addEventListener('keyup', onKeyUp);
+            keyupWindows.add(targetWindow);
+        };
+
+        const unbindKeyupWindows = () => {
+            keyupWindows.forEach((targetWindow) => {
+                targetWindow.removeEventListener('keyup', onKeyUp);
+            });
+            keyupWindows.clear();
+        };
+
         container.addEventListener('pointerdown', onPointerDown);
         container.addEventListener('pointermove', onPointerMove);
         container.addEventListener('pointerup', onPointerUp);
-        window.addEventListener('keyup', onKeyUp);
 
         return () => {
             container.removeEventListener('pointerdown', onPointerDown);
             container.removeEventListener('pointermove', onPointerMove);
             container.removeEventListener('pointerup', onPointerUp);
-            window.removeEventListener('keyup', onKeyUp);
+            unbindKeyupWindows();
             if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
             if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
             overlayRef.current = null;

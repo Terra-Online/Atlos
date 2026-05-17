@@ -42,6 +42,7 @@ talos/src/assets/images/shared
 talos/src/assets/images/marker
 talos/src/locale/data/ui/*.fixed.json
 talos/src/locale/data/ui/reports
+talos/src/data/marker/stats.json
 
 ref/
 stats.json

@@ -43,7 +43,7 @@ export const SUPPORTED_LANGS = [
     'it-IT',
     'id-ID',
     'pt-BR',
-    'ar-AE',
+    'ar-SA',
     'ms-MY',
     'pl-PL',
     'sv-SE',
@@ -57,7 +57,7 @@ type Lang = (typeof SUPPORTED_LANGS)[number];
 // Languages that have both game and UI translations (full support)
 export const FULL_LANGS: readonly Lang[] = ['en-US', 'zh-CN', 'zh-HK', 'ja-JP', 'ko-KR', 'ru-RU', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'id-ID', 'pt-BR', 'th-TH', 'vi-VN'] as const;
 // Languages that only have UI translations
-export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-AE', 'ms-MY', 'pl-PL', 'sv-SE', 'el-GR', 'hi-IN' ] as const;
+export const UI_ONLY_LANGS: readonly Lang[] = [ 'ar-SA', 'ms-MY', 'pl-PL', 'sv-SE', 'el-GR', 'hi-IN' ] as const;
 
 // Check if a language has full support (game + UI)
 export const hasFullSupport = (lang: Lang): boolean => {
@@ -309,6 +309,11 @@ export const useTranslateUI = () => {
 export const useTranslateGame = () => {
     const t = useTranslate();
     return (k: string) => t(`game.${k}`);
+};
+
+export const translateUI = (key: string, fallback = ''): string => {
+    const value = deepGet(useI18nStore.getState().data.ui, key);
+    return typeof value === 'string' ? value : fallback;
 };
 
 export const useLocale = () => useI18nStore((s) => s.locale);

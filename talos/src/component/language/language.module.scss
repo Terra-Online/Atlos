@@ -252,10 +252,10 @@
     &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'], &[lang='it-IT'], &[lang='pl-PL'] {
         max-width: 4rem;
     }
-    &[lang='ar-AE'], &[lang='vi-VN'], &[lang='th-TH'] {
+    &[lang='ar-SA'], &[lang='vi-VN'], &[lang='th-TH'] {
         height: 1.5rem;
     }
-    &[lang='ar-AE'] {
+    &[lang='ar-SA'] {
         font-size: 0.85rem;
         text-transform: uppercase;
         transform: translateY(-2px);

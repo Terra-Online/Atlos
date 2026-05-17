@@ -32,10 +32,36 @@
       "main": "Haupt",
       "sub": "Unter"
     },
-    "noInfo": "Keine Informationen.",
+    "noInfo": "Keine Informationen. Klicken, um Punktdetails hochzuladen.",
+    "communityRule1": "Bitte lesen und befolgen Sie vor dem Hochladen die folgenden",
+    "communityRule2": "Community-Richtlinien",
+    "uploading": "Wird hochgeladen...",
+    "uploadPending": "Eingereicht. Wird nach Prüfung angezeigt.",
     "readFullText": "Klicken Sie, um den vollständigen Text zu lesen.",
-    "share": "Kopieren Sie den freigegebenen Link für diese Marke.",
-    "copied": "Link kopiert"
+    "share": "Freigabelink für diesen Punkt kopieren.",
+    "copied": "Link kopiert",
+    "viewer": {
+      "author": "Autor",
+      "uploadedAt": "Hochgeladen am",
+      "upvote": "Upvote",
+      "flag": "Als ungenau markieren",
+      "unflag": "Markierung entfernen",
+      "share": "Teilen",
+      "recall": "Bildrücknahme beantragen",
+      "unrecall": "Rücknahme abbrechen"
+    },
+    "errors": {
+      "unsupportedType": "Nur JPEG-/PNG-/WebP-/AVIF-Bilder werden unterstützt.",
+      "fileTooLarge": "Die Bilddatei ist zu groß.",
+      "imageDecodeFailed": "Dieses Bild konnte vom Browser nicht geöffnet werden.",
+      "imageProcessingUnavailable": "Lokale Bildverarbeitung ist nicht verfügbar.",
+      "processedTooLarge": "Das verarbeitete Bild ist weiterhin zu groß.",
+      "uploadInvalidResponse": "Der Upload-Dienst hat eine ungültige Antwort zurückgegeben.",
+      "uploadNetwork": "Beim Hochladen ist ein Netzwerkfehler aufgetreten.",
+      "uploadAborted": "Der Upload wurde abgebrochen.",
+      "uploadFailed": "Upload fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+      "backendUnknown": "Der Upload-Dienst hat einen Fehler zurückgegeben."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "Russisch",
       "pt-BR": "Portugiesisch",
       "id-ID": "Indonesisch",
-      "ar-AE": "Arabisch",
+      "ar-SA": "Arabisch",
       "ms-MY": "Malaiisch",
       "pl-PL": "Polnisch",
       "sv-SE": "Schwedisch",
@@ -216,9 +242,7 @@
       "ack": "Durch die Fortsetzung bestätigen Sie, dass Sie unsere ",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Datenschutzerklärung</a> und <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Nutzungsbedingungen</a> gelesen haben und ihnen zustimmen.",
       "hints": {
-        "200": "Zugriff gewährt",
-        "201": "Konto erstellt",
-        "202": "Passwort geändert",
+        "0": "Zugangsdaten falsch",
         "101": "E-Mail erforderlich",
         "102": "E-Mail ungültig",
         "103": "E-Mail bereits vergeben",
@@ -229,18 +253,20 @@
         "121": "Code erforderlich",
         "122": "Code ungültig",
         "123": "Code abgelaufen",
-        "0": "Zugangsdaten falsch",
+        "200": "Zugriff gewährt",
+        "201": "Konto erstellt",
+        "202": "Passwort geändert",
         "429": "Ratenbegrenzung",
         "430": "Sicherheitsprüfung",
-        "801": "Gesperrt: Konto-Sperre",
-        "802": "Gesperrt: Zugriff verweigert",
         "601": "Token abgelaufen",
         "602": "Sitzung erforderlich",
         "603": "Zugriff verweigert",
         "604": "Anbieter-Konflikt",
         "701": "System überlastet",
         "702": "Zeitüberschreitung",
-        "703": "Wartungsarbeiten"
+        "703": "Wartungsarbeiten",
+        "801": "Gesperrt: Konto-Sperre",
+        "802": "Gesperrt: Zugriff verweigert"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "Speichern",
       "saving": "Speichern...",
       "logout": "Abmelden"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "Bild-in-Bild ist aktiv",
+      "returnHint": "Klicke auf das Logo, um zu diesem Tab zurückzukehren"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "Funktion",
       "trackPoints": "Tracking",
+      "centerOnPosition": "Zentriert bleiben",
       "heatmap": "Heatmap",
       "configNote1": "Durch Aktivieren dieser Funktion akzeptieren Sie unsere ",
       "configNote2": " und weitere Bedingungen."
@@ -336,7 +369,7 @@
     "all": "Alle",
     "selected": "Ausgewählt",
     "confirm": "Bestätigen",
-    "loading": "Lädt…",
+    "loading": "Lädt...",
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
     "expand": "Erweitern",

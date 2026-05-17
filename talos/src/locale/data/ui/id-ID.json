@@ -32,10 +32,36 @@
       "main": "Utama",
       "sub": "Sub"
     },
-    "noInfo": "Tidak ada informasi.",
+    "noInfo": "Belum ada informasi. Klik untuk mengunggah tangkapan layar titik.",
+    "communityRule1": "Sebelum mengunggah, pastikan Anda telah membaca dan mengikuti",
+    "communityRule2": "Panduan Komunitas",
+    "uploading": "Mengunggah...",
+    "uploadPending": "Terkirim. Akan ditampilkan setelah ditinjau.",
     "readFullText": "Klik untuk membaca teks lengkap.",
-    "share": "Salin tautan yang dapat dibagikan untuk penanda ini.",
-    "copied": "Tautan disalin"
+    "share": "Salin tautan yang dapat dibagikan untuk titik ini.",
+    "copied": "Tautan disalin",
+    "viewer": {
+      "author": "Pengunggah",
+      "uploadedAt": "Diunggah pada",
+      "upvote": "Dukung",
+      "flag": "Tandai tidak akurat",
+      "unflag": "Batalkan tanda",
+      "share": "Bagikan",
+      "recall": "Minta penghapusan",
+      "unrecall": "Batalkan penghapusan"
+    },
+    "errors": {
+      "unsupportedType": "Hanya gambar JPEG/PNG/WebP/AVIF yang didukung.",
+      "fileTooLarge": "File gambar terlalu besar.",
+      "imageDecodeFailed": "Browser tidak dapat membuka gambar ini.",
+      "imageProcessingUnavailable": "Pemrosesan gambar lokal tidak tersedia.",
+      "processedTooLarge": "Gambar yang diproses masih terlalu besar.",
+      "uploadInvalidResponse": "Layanan unggahan mengembalikan respons yang tidak valid.",
+      "uploadNetwork": "Terjadi kesalahan jaringan saat mengunggah.",
+      "uploadAborted": "Unggahan dibatalkan.",
+      "uploadFailed": "Unggahan gagal. Silakan coba lagi nanti.",
+      "backendUnknown": "Layanan unggahan mengembalikan kesalahan."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "Rusia",
       "pt-BR": "Portugis",
       "id-ID": "Indonesia",
-      "ar-AE": "Arab",
+      "ar-SA": "Arab",
       "ms-MY": "Melayu",
       "pl-PL": "Polandia",
       "sv-SE": "Swedia",
@@ -216,9 +242,7 @@
       "ack": "Dengan melanjutkan, Anda menyetujui",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Kebijakan Privasi</a> dan <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Ketentuan Layanan</a>",
       "hints": {
-        "200": "Akses diberikan",
-        "201": "Akun dibuat",
-        "202": "Password diubah",
+        "0": "Kredensial tidak cocok",
         "101": "Email wajib",
         "102": "Email tidak valid",
         "103": "Email sudah digunakan",
@@ -229,18 +253,20 @@
         "121": "OTP wajib",
         "122": "OTP tidak valid",
         "123": "OTP kedaluwarsa",
-        "0": "Kredensial tidak cocok",
+        "200": "Akses diberikan",
+        "201": "Akun dibuat",
+        "202": "Password diubah",
         "429": "Terlalu banyak permintaan",
         "430": "Pemeriksaan keamanan",
-        "801": "Ditangguhkan: Pelanggaran",
-        "802": "Ditangguhkan: Akses ditolak",
         "601": "Token kedaluwarsa",
         "602": "Sesi diperlukan",
         "603": "Akses ditolak",
         "604": "Konflik provider",
         "701": "Server sibuk",
         "702": "Timeout",
-        "703": "Maintenance"
+        "703": "Maintenance",
+        "801": "Ditangguhkan: Pelanggaran",
+        "802": "Ditangguhkan: Akses ditolak"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "Simpan",
       "saving": "Menyimpan...",
       "logout": "Keluar"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "Mode Gambar-dalam-gambar aktif",
+      "returnHint": "Klik logo untuk kembali ke tab ini"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "Fitur",
       "trackPoints": "Pelacakan",
+      "centerOnPosition": "Di tengah",
       "heatmap": "Peta panas",
       "configNote1": "Mengaktifkan fitur ini berarti Anda menerima ",
       "configNote2": " dan syarat lainnya."
@@ -336,7 +369,7 @@
     "all": "Semua",
     "selected": "Terpilih",
     "confirm": "Konfirmasi",
-    "loading": "Memuat…",
+    "loading": "Memuat...",
     "enable": "Aktifkan",
     "disable": "Nonaktifkan",
     "expand": "Perluas",

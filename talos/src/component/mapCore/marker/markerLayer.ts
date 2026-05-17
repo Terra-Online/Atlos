@@ -2,7 +2,7 @@ import { REGION_DICT } from '@/data/map';
 import { IMarkerData, MARKER_TYPE_DICT, loadRegionMarkers } from '@/data/marker';
 import LOGGER from '@/utils/log';
 import L from 'leaflet';
-import { getMarkerLayer } from './markerRenderer';
+import { emitPreviewLeave, getMarkerLayer } from './markerRenderer';
 import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
 import { useUiPrefsStore } from '@/store/uiPrefs';
@@ -422,6 +422,7 @@ export class MarkerLayer {
                         if (this.pendingRemovalTimers[id] !== undefined) {
                             clearTimeout(this.pendingRemovalTimers[id]);
                         }
+                        emitPreviewLeave(id);
                         // 延迟移除，等待淡出动画完成
                         this.pendingRemovalTimers[id] = window.setTimeout(() => {
                             // @ts-expect-error leaflet官方文档支持从layerGroup中移除
@@ -577,6 +578,7 @@ export class MarkerLayer {
                 if (inner) {
                     inner.classList.add(styles.disappearing);
                 }
+                emitPreviewLeave(id);
                 if (this.pendingRemovalTimers[id] !== undefined) {
                     clearTimeout(this.pendingRemovalTimers[id]);
                 }

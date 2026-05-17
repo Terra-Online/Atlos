@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 198.614 173.592">
+  <defs>
+    <style>
+      .b {
+        fill: currentColor;
+        transform-box: view-box;
+        transform-origin: 0 0;
+      }
+    </style>
+  </defs>
+  <rect class="b" x="41.926" y="99.242" width="31.023" height="18.535" transform="translate(-59.905 72.396) rotate(-45)"/>
+  <rect class="b" x="54.835" y="117.534" width="35.482" height="18.535" transform="translate(-68.405 88.459) rotate(-45)"/>
+  <rect class="b" x="78.019" y="131.292" width="27.674" height="18.535" transform="translate(-72.487 106.121) rotate(-45)"/>
+  <rect class="b" x="94.713" y="147.987" width="27.674" height="18.536" transform="translate(-79.402 122.815) rotate(-45)"/>
+  <rect class="b" x="101.758" y="69.009" width="32.979" height="96.183" transform="translate(-48.169 117.912) rotate(-45)"/>
+  <path class="b" d="M50.111,72.284l23.32-23.32-6.955-6.954c2.8-11.136-.15-23.42-8.86-32.13C48.67.934,35.954-1.933,24.583,1.264l21.14,21.14-23.32,23.32L1.264,24.583c-3.197,11.37-.329,24.087,8.616,33.033,9.179,9.179,22.327,11.959,33.918,8.355l6.313,6.313Z"/>
+  <path class="b" d="M138.52,49.919c-8.144-2.475-24.696-7.46-34.17-10.001-6.836-1.834-13.52,1.647-15.596,3.038-2.389,1.6-4.62,3.791-6.184,5.355-1.564,1.564-28.216,28.216-28.216,28.216l14.714,14.714,26.572-26.572,65.155,65.155,3.346-3.346,24.355-24.355h10.118v-52.203h-60.094Z"/>
+</svg>

@@ -32,10 +32,36 @@
       "main": "지역",
       "sub": "서브"
     },
-    "noInfo": "정보 없음",
-    "readFullText": "전체 텍스트를 읽으려면 클릭하세요.",
-    "share": "이 마커의 공유 링크를 복사하세요.",
-    "copied": "링크 복사됨"
+    "noInfo": "정보가 없습니다. 클릭하여 위치 스크린샷을 업로드하세요.",
+    "communityRule1": "업로드하기 전에 아래 내용을 읽고 준수해 주세요",
+    "communityRule2": "커뮤니티 가이드라인",
+    "uploading": "업로드 중…",
+    "uploadPending": "제출되었습니다. 검토 후 표시됩니다.",
+    "readFullText": "전체 내용을 보려면 클릭하세요.",
+    "share": "이 위치의 공유 링크를 복사합니다.",
+    "copied": "링크가 복사되었습니다",
+    "viewer": {
+      "author": "작성자",
+      "uploadedAt": "업로드 날짜",
+      "upvote": "지지",
+      "flag": "부정확한 정보로 신고",
+      "unflag": "신고 취소",
+      "share": "공유",
+      "recall": "철회 요청",
+      "unrecall": "철회 요청 취소"
+    },
+    "errors": {
+      "unsupportedType": "JPEG/PNG/WebP/AVIF 이미지만 지원됩니다.",
+      "fileTooLarge": "이미지 파일이 너무 큽니다.",
+      "imageDecodeFailed": "브라우저에서 이 이미지를 읽을 수 없습니다.",
+      "imageProcessingUnavailable": "로컬 이미지 처리를 사용할 수 없습니다.",
+      "processedTooLarge": "처리된 이미지가 여전히 너무 큽니다.",
+      "uploadInvalidResponse": "업로드 서비스에서 잘못된 응답을 반환했습니다.",
+      "uploadNetwork": "업로드 중 네트워크 오류가 발생했습니다.",
+      "uploadAborted": "업로드가 취소되었습니다.",
+      "uploadFailed": "업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      "backendUnknown": "업로드 서비스에서 오류가 발생했습니다."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "러시아어",
       "pt-BR": "포르투갈어",
       "id-ID": "인도네시아어",
-      "ar-AE": "아랍어",
+      "ar-SA": "아랍어",
       "ms-MY": "말레이어",
       "pl-PL": "폴란드어",
       "sv-SE": "스웨덴어",
@@ -204,7 +230,7 @@
       "gooLogin": "Google로 로그인",
       "dcRegis": "디스코드로 계속하기",
       "gooRegis": "Google로 계속하기",
-      "connecting": "연결 중...",
+      "connecting": "연결 중…",
       "resetLink": "귀하의 계정과 연결된 이메일 주소를 입력해 주세요. 비밀번호 재설정 링크가 있는 경우 보내드리겠습니다.<br><br>제출 후 받은 편지함과 스팸 폴더를 확인하세요.",
       "resetRequire": "새로운 비밀번호를 입력하고 확인해주세요. <br><br>귀하의 비밀번호는 즉시 재설정됩니다.",
       "backTo": "돌아가기",
@@ -216,9 +242,7 @@
       "ack": "계속 진행하면 귀하는 당사의 내용을 읽고 동의하게 됩니다.",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">개인정보 보호정책</a> 및 <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">서비스 약관</a>.",
       "hints": {
-        "200": "액세스 권한이 부여됨",
-        "201": "계정이 생성되었습니다",
-        "202": "비밀번호가 변경되었습니다.",
+        "0": "자격 증명 불일치",
         "101": "이메일 필수",
         "102": "이메일이 잘못되었습니다",
         "103": "이메일 사용 중",
@@ -229,18 +253,20 @@
         "121": "OTP 필요",
         "122": "OTP가 유효하지 않음",
         "123": "OTP 만료됨",
-        "0": "자격 증명 불일치",
+        "200": "액세스 권한이 부여됨",
+        "201": "계정이 생성되었습니다",
+        "202": "비밀번호가 변경되었습니다.",
         "429": "요금 제한",
         "430": "보안 검색",
-        "801": "정지됨: 기물 파손",
-        "802": "정지됨: ACC 거부됨",
         "601": "토큰 만료됨",
         "602": "세션 필요",
         "603": "접근 불가",
         "604": "공급자 충돌",
         "701": "과부하됨",
         "702": "시간 초과",
-        "703": "유지"
+        "703": "유지",
+        "801": "정지됨: 기물 파손",
+        "802": "정지됨: ACC 거부됨"
       }
     },
     "profile": {
@@ -253,8 +279,14 @@
       "noteUID": "UID는 최초 설정 시 할당되며 변경할 수 없습니다. 언제든지 사용자 이름을 업데이트할 수 있습니다. 아바타 영역을 클릭하면 아바타가 전환됩니다.",
       "auditLabel": "심사",
       "save": "변경 사항 저장",
-      "saving": "절약...",
+      "saving": "절약…",
       "logout": "로그아웃"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "PIP 모드가 활성화되었습니다",
+      "returnHint": "이 탭으로 돌아가려면 로고를 클릭하세요"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "기능",
       "trackPoints": "마커 추적",
+      "centerOnPosition": "중앙 고정",
       "heatmap": "히트맵",
       "configNote1": "이 기능을 활성화하면 ",
       "configNote2": " 및 기타 약관에 동의한 것으로 간주됩니다."

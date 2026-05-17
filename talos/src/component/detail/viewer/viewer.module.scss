@@ -1,0 +1,350 @@
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+@use '@/styles/size.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --viewer-bg: #{$light-1};
+    --viewer-label: #{$black-1};
+    --viewer-value: #{$grey-1};
+    --viewer-time: #{$grey-2};
+    --viewer-hl: #{$primary-accent-5};
+    --viewer-border: #{$white-1};
+    --viewer-action: #{$grey-1};
+    --viewer-action-active: #{$primary-accent-6};
+    --viewer-action-divider: #{$grey-3};
+}
+
+:root[data-theme='dark'] {
+    --viewer-bg: #{$grey-1};
+    --viewer-label: #{$light-2};
+    --viewer-value: #{$white-1};
+    --viewer-time: #{$white-3};
+    --viewer-hl: #{$secondary-accent-1};
+    --viewer-border: #{$black-1};
+    --viewer-action: #{$white-2};
+    --viewer-action-active: #{$primary-accent-4};
+    --viewer-action-divider: #{$grey-3};
+}
+
+.viewerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba($black-0, 0.6);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    backdrop-filter: blur(0);
+    transition: opacity 0.3s $adagio-curve, backdrop-filter 0.3s $adagio-curve;
+    will-change: opacity, backdrop-filter;
+    cursor: zoom-out;
+}
+
+.viewerOverlay[data-state='open'] {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+}
+
+.viewerPanel {
+    width: min(70dvw, 90rem);
+    max-height: 85dvh;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: 1rem;
+    background-color: var(--viewer-bg);
+    box-shadow: 0 20px 70px rgba($black-0, 0.6);
+    cursor: default;
+    transform: scale(.92) translateY(4px);
+    opacity: 0;
+    filter: blur(.25rem);
+    transition: opacity .2s $adagio-curve, transform .25s $adagio-curve, filter .25s $standard-curve;
+    will-change: opacity, transform, filter;
+}
+@media screen and (max-width: $mobile-bp) {
+    .viewerPanel {
+        width: 100dvw;
+    }
+}
+.viewerPanel[data-state='open'] {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: blur(0);
+}
+
+.viewerContent {
+    position: relative;
+    max-height: calc(85dvh - 7rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: $grey-3;
+    border: 2px solid var(--viewer-border);
+    box-shadow:
+        0 0 5px 0 rgba($black-0, 0.45),
+        0 2px 8px rgba($black-0, 0.25) inset;
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: var(--bg);
+        filter: blur(16px) brightness(1.05) contrast(0.85);
+        z-index: 0;
+        background-size: cover;
+        background-position: center;
+    }
+}
+
+.viewerImage {
+    display: block;
+    max-width: 100%;
+    max-height: calc(92dvh - 7rem);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+    box-shadow: 0 4px 20px rgba($black-0, 0.5);
+}
+
+.viewerImage[data-loaded='true'] {
+    opacity: 1;
+}
+
+.viewerSkeleton {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, transparent, rgba($white-1, 0.28), transparent),
+        linear-gradient(135deg, rgba($grey-1, 0.18), rgba($black-0, 0.22));
+    background-size: 45% 100%, 100% 100%;
+    background-position: -60% 0, 0 0;
+    animation: skeletonSweep 1.35s ease-in-out infinite;
+}
+
+.viewerMetaBar {
+    min-height: 4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.85rem 1.1rem 0;
+    color: $grey-1;
+}
+
+.viewerAuthorBlock {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: max-content auto minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 5px;
+    row-gap: 4px;
+}
+
+.viewerMetaRow {
+    min-width: 0;
+    display: contents;
+}
+
+.viewerMetaLabel,
+.viewerMetaDivider {
+    position: relative;
+    width: fit-content;
+    font-family: "Novecento Medium", "Novecento Cyrillic DemiBold", "Novecento Vietnamese Medium", 'FedraSansPro Normal', "UD_ShinGo DemiBold" , 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--viewer-label);
+}
+
+.viewerMetaLabel {
+    justify-self: end;
+}
+
+.viewerMetaDivider {
+    justify-self: center;
+}
+
+.viewerAuthorName,
+.viewerAuthorId {
+    justify-self: start;
+}
+
+.viewerMetaLabel::after {
+    content: '';
+    position: absolute;
+    width: 106%;
+    left: -3%;
+    bottom: 1px;
+    height: 5px;
+    background: var(--viewer-hl);
+    z-index: -1;
+}
+
+.viewerAuthorName {
+    min-width: 0;
+    color: var(--viewer-value);
+    font-size: 1rem;
+    font-family: 'UD_ShinGo DemiBold', HMSans, 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 600;
+    line-height: 1.15;
+    white-space: nowrap;
+    letter-spacing: -1px;
+}
+
+.viewerAuthorId {
+    min-width: 0;
+    color: var(--viewer-value);
+    font-size: 1rem;
+    font-family: 'Novecento Medium Regular', sans-serif;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -1px;
+}
+
+.viewerActions {
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--viewer-action);
+}
+
+.viewerActionButton {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: color .2s ease, opacity .2s ease, transform .2s ease;
+    > svg {
+        fill: currentcolor;
+        flex-shrink: 0;
+    }
+    &[aria-label='Upvote'] {
+        width: 56px;
+        height: 36px;
+        > svg {
+            width: 30px;
+            height: 30px;
+        }
+    }
+    &[aria-label='Share'] > svg {
+        width: 25px;
+        height: 25px;
+    }
+    &[aria-label='Flag'] > svg {
+        width: 30px;
+        height: 30px;
+        transform: translateY(-2px);
+    }
+    &[aria-label='Recall'] > svg {
+        width: 26px;
+        height: 26px;
+    }
+    &:hover:not(:disabled), &:focus-visible {
+        color: var(--viewer-action-active);
+        outline: none;
+    }
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+    &[data-active='true'] {
+        color: var(--viewer-action-active);
+    }
+}
+.viewerActionDivider {
+    width: 3px;
+    height: 36px;
+    border-radius: 2px;
+    background: var(--viewer-action-divider);
+}
+.viewerUpvoteCount {
+    color: currentcolor;
+    font-family: 'Novecento Medium Regular', sans-serif;
+    font-size: 1rem;
+    width: 20px;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    font-variant-numeric: lining-nums;
+}
+
+.viewerTime {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    justify-self: end;
+    display: flex;
+    gap: 4px;
+    color: var(--viewer-time);
+    font-family: "FedraSansPro Normal", "UD_ShinGo Regular", 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 14px;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: -0.8px;
+    font-variant-numeric: lining-nums;
+    cursor: help;
+    > .viewerTimeLabel {
+        display: inline-block;
+    }
+}
+
+@keyframes skeletonSweep {
+    100% {
+        background-position: 160% 0, 0 0;
+    }
+}
+
+@media screen and (max-width: $mobile-bp) {
+    .viewerOverlay {
+        padding: 0.5rem;
+    }
+
+    .viewerPanel {
+        width: min(96dvw, 92rem);
+        max-height: 92dvh;
+        padding: 10px
+    }
+
+    .viewerContent,
+    .viewerImage {
+        max-height: calc(92dvh - 8.5rem);
+    }
+
+    .viewerMetaBar {
+        min-height: 6.25rem;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 0.35rem 0;
+    }
+
+    .viewerActions {
+        order: 2;
+        grid-column: 1 / -1;
+        justify-self: center;
+    }
+
+    .viewerTime {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        transform: translateY(4px);
+    }
+}

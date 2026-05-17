@@ -5,6 +5,7 @@ import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
 import styles from './marker.module.scss';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
+import { emitPreviewLeave } from './markerRenderer';
 
 // NOTE: whitelist is based on 2nd-level category (`category.sub`).
 // Currently includes ALL known sub categories (see src/data/marker/type.json),
@@ -340,6 +341,7 @@ export class ClusterLayer {
                 inner.classList.add(styles.disappearing);
             }
         }
+        emitPreviewLeave(markerId);
         if (this.pendingRemovalTimers[markerId] !== undefined) {
             clearTimeout(this.pendingRemovalTimers[markerId]);
         }

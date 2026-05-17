@@ -1,0 +1,129 @@
+@use './palette' as *;
+@use './curves.scss' as *;
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) .app {
+    min-width: min(var(--app-responsive-width, 800px), 100dvw);
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='uiOverlay'][class*='sidebarOpen'] {
+    left: var(--sidebar-width, 300px);
+    width: calc(100% - var(--sidebar-width, 300px));
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='switchArea'] {
+    top: 26%;
+}
+
+:root[data-pip-window='true'] [class*='headbarItem'][class*='disabled'] {
+    opacity: 0.28;
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='mainFilterList'] {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    height: 56px;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba($black-0, 0.6);
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='innerContainer'] {
+    gap: 4px;
+}
+
+:root[data-pip-window='true'][data-pip-mobile='true'] [class*='mainFilterList'] {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 28px;
+    box-shadow: inset 0 0 8px rgba($black-0, 0.35);
+}
+
+:root[data-pip-window='true'][data-pip-mobile='true'] [class*='innerContainer'] {
+    gap: 0;
+}
+
+.PipPlaceholder {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    cursor: default;
+    color: $grey-1;
+    background-color: var(--map-bg);
+    transition: all 0.35s $adagio-curve;
+    font-family: inherit;
+}
+
+:root[data-theme='dark'] .PipPlaceholder {
+    color: $light-2;
+}
+
+.PipPlaceholderPattern {
+    position: absolute;
+    inset: 0;
+    background-color: var(--map-pattern-bg);
+    mask-image: url('../assets/images/UI/map-pattern.svg');
+    mask-repeat: repeat;
+    mask-size: 100px;
+    opacity: var(--map-pattern-opacity, 1);
+    transition: all 0.35s $adagio-curve;
+    pointer-events: none;
+}
+
+.PipPlaceholderCard {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.PipPlaceholderLogoButton {
+    display: block;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    filter: drop-shadow(0 4px 8px rgba($black-0, 0.45));
+    transition:
+        filter 0.3s $standard-curve,
+        transform 0.25s $standard-curve;
+
+    &:hover {
+        filter: drop-shadow(0 2px 4px rgba($black-0, 0.2));
+        transform: translateY(-6px);
+    }
+}
+
+.PipPlaceholderLogo {
+    display: block;
+    width: min(33dvw, 12rem);
+    max-width: 15rem;
+}
+
+.PipPlaceholderTitle {
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'FedraSansPro Normal', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--embed-keyword-color);
+    transition: color 0.35s $adagio-curve;
+    pointer-events: none;
+    letter-spacing: -0.5px;
+}
+
+.PipPlaceholderDesc {
+    font-family: 'HMSans_EN', HMSans, 'FedraSansPro Book', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 1rem;
+    color: currentcolor;
+    pointer-events: none;
+}

@@ -27,7 +27,7 @@ const LANG_LABEL_KEYS: Record<string, string> = {
   'it-IT': 'Italiano',
   'pt-BR': 'Português',
   'id-ID': 'Bahasa Indonesia',
-  'ar-AE': 'العربية',
+  'ar-SA': 'العربية',
   'ms-MY': 'Bahasa Melayu',
   'pl-PL': 'Polski',
   'sv-SE': 'Svenska',

@@ -39,6 +39,9 @@
         &:has(.out) {
             margin-top: 6px;
         }
+        &.pipFrame {
+            margin-top: 10px;
+        }
     }
     .zoomButton {
         line-height: 0;
@@ -62,6 +65,15 @@
         &.disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        &.pipButton {
+            font-size: 0.45rem;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+        &.active {
+            background-color: $primary-accent-4;
+            color: $grey-1;
         }
     }
     .scalerWrapper {

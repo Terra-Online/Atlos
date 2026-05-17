@@ -23,6 +23,7 @@ import {
 import { useLocale, useTranslateUI } from '@/locale';
 import { useDevice } from '@/utils/device';
 import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
+import { useAppPictureInPicture } from '@/component/scale/pip';
 
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
@@ -60,6 +61,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
         announcementChecked,
     } = useAnnouncementFlow(locale);
     const { isMobile } = useDevice();
+    const pictureInPicture = useAppPictureInPicture(map);
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsAnnouncementOpen = useUiPrefsStore((s) => s.setIsAnnouncementOpen);
@@ -111,6 +113,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
     const handleHelp = () => setIsUserGuideOpen(true);
     const handleSettings = () => setSettingsOpen(true);
     const handleAnnouncement = () => setAnnouncementOpen(true);
+    const layoutSidebarOpen = !isMobile && isSidebarOpen;
+    const fullModalActionsDisabled = pictureInPicture.active;
 
     useEffect(() => {
         if (announcementOpen) {
@@ -127,7 +131,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
 
     return (
         <div
-            className={`${styles.uiOverlay} ${isSidebarOpen ? styles.sidebarOpen : ''} ${!visible ? styles.hidden : ''}`}
+            className={`${styles.uiOverlay} ${layoutSidebarOpen ? styles.sidebarOpen : ''} ${!visible ? styles.hidden : ''}`}
         >
             {/* Scale Component */}
             {map && <Scale map={map} />}
@@ -138,6 +142,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={ToS}
                     onClick={handleReset}
                     tooltip={t('headbar.tos')}
+                    disabled={fullModalActionsDisabled}
                     guideKey='headbar-tos'
                 />
                 <HeadItem
@@ -168,6 +173,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     icon={Guide}
                     onClick={handleHelp}
                     tooltip={t('headbar.help')}
+                    disabled={fullModalActionsDisabled}
                     guideKey='headbar-help'
                 />
                 <HeadItem
@@ -175,6 +181,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
                     onClick={handleAnnouncement}
                     tooltip={t('headbar.announcement')}
                     badge={hasUnreadAnnouncement}
+                    disabled={fullModalActionsDisabled}
                     guideKey='headbar-announcement'
                 />
                 <HeadItem
@@ -188,8 +195,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({ map, isSidebarOpen, visible = tru
             {/* Switch Area: wrap both Region and Layer switches */}
             {!isMobile && (
                 <div className={styles.switchArea}>
-                    <RegionContainer isSidebarOpen={isSidebarOpen} />
-                    <LayerSwitch isSidebarOpen={isSidebarOpen} />
+                    <RegionContainer isSidebarOpen={layoutSidebarOpen} />
+                    <LayerSwitch isSidebarOpen={layoutSidebarOpen} />
                     <LocatorButton variant="desktop" />
                 </div>
             )}

@@ -32,10 +32,36 @@
       "main": "Område",
       "sub": "Zon"
     },
-    "noInfo": "Ingen info.",
+    "noInfo": "Ingen information. Klicka för att ladda upp en skärmbild av platsen.",
+    "communityRule1": "Innan du laddar upp, se till att du har läst och följer",
+    "communityRule2": "Community-riktlinjer",
+    "uploading": "Laddar upp...",
+    "uploadPending": "Uppladdningen mottagen. Visas efter granskning.",
     "readFullText": "Klicka för att läsa hela texten.",
     "share": "Kopiera delningslänken för denna markör.",
-    "copied": "Länk kopierad"
+    "copied": "Länk kopierad",
+    "viewer": {
+      "author": "Uppladdare",
+      "uploadedAt": "Uppladdad",
+      "upvote": "Stöd",
+      "flag": "Markera som felaktig",
+      "unflag": "Ta bort markering",
+      "share": "Dela",
+      "recall": "Begär borttagning",
+      "unrecall": "Avbryt borttagning"
+    },
+    "errors": {
+      "unsupportedType": "Endast JPEG/PNG/WebP/AVIF-bilder stöds.",
+      "fileTooLarge": "Bildfilen är för stor.",
+      "imageDecodeFailed": "Webbläsaren kunde inte öppna bilden.",
+      "imageProcessingUnavailable": "Lokal bildbehandling är inte tillgänglig.",
+      "processedTooLarge": "Den bearbetade bilden är fortfarande för stor.",
+      "uploadInvalidResponse": "Uppladdnings-API:ets svar var ogiltigt.",
+      "uploadNetwork": "Nätverksfel vid uppladdning.",
+      "uploadAborted": "Uppladdningen avbröts.",
+      "uploadFailed": "Uppladdningen misslyckades. Försök igen senare.",
+      "backendUnknown": "Uppladdningstjänsten returnerade ett fel."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "Ryska",
       "pt-BR": "Portugisiska",
       "id-ID": "Indonesiska",
-      "ar-AE": "Arabiska",
+      "ar-SA": "Arabiska",
       "ms-MY": "Malaysiska",
       "pl-PL": "Polska",
       "sv-SE": "Svenska",
@@ -216,9 +242,7 @@
       "ack": "Genom att fortsätta godkänner du",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Sekretesspolicyn</a> och <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">användarvillkoren</a>.",
       "hints": {
-        "200": "Inloggning lyckades",
-        "201": "Konto skapat",
-        "202": "Lösenordet har ändrats",
+        "0": "Fel e-post eller lösenord",
         "101": "-post krävs",
         "102": "Ogiltig e-postadress",
         "103": "E-posten används redan",
@@ -229,18 +253,20 @@
         "121": "OTP krävs",
         "122": "Ogiltig OTP",
         "123": "OTP har löpt ut",
-        "0": "Fel e-post eller lösenord",
+        "200": "Inloggning lyckades",
+        "201": "Konto skapat",
+        "202": "Lösenordet har ändrats",
         "429": "För många försök",
         "430": "Säkerhetskontroll",
-        "801": "Avstängd: Regelbrott",
-        "802": "Avstängd: Åtkomst nekad",
         "601": "Sessionen har löpt ut",
         "602": "Inloggning krävs",
         "603": "Åtkomst nekad",
         "604": "Konflikt med länkat konto",
         "701": "Systemet är överbelastat",
         "702": "Anslutningen gjorde timeout",
-        "703": "Underhåll pågår"
+        "703": "Underhåll pågår",
+        "801": "Avstängd: Regelbrott",
+        "802": "Avstängd: Åtkomst nekad"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "Spara ändringar",
       "saving": "Sparar...",
       "logout": "Logga ut"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "Bild-i-bild är aktivt",
+      "returnHint": "Klicka på logotypen för att återgå till den här fliken"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "Funktioner",
       "trackPoints": "Spårning",
+      "centerOnPosition": "Håll centrerad",
       "heatmap": "Värmekarta",
       "configNote1": "Att aktivera funktionen innebär att du accepterar våra ",
       "configNote2": " och andra villkor."
@@ -336,7 +369,7 @@
     "all": "Alla",
     "selected": "Valda",
     "confirm": "Bekräfta",
-    "loading": "Laddar…",
+    "loading": "Laddar...",
     "enable": "Aktivera",
     "disable": "Inaktivera",
     "expand": "Expandera",

@@ -1,0 +1,399 @@
+{
+  "headbar": {
+    "tos": "الشروط والتخزين",
+    "hideUI": "إخفاء الواجهة",
+    "group": "الانضمام للمجتمع",
+    "darkmode": "الوضع الداكن",
+    "lightmode": "الوضع الفاتح",
+    "language": "اختيار اللغة",
+    "help": "المساعدة",
+    "announcement": "الإعلانات",
+    "settings": "الإعدادات"
+  },
+  "trigger": {
+    "boundaryMode": "عرض الحدود",
+    "clusterMode": "تجميع النقاط",
+    "labelName": "أسماء المناطق"
+  },
+  "search": {
+    "placeholder": "بحث شامل...",
+    "results": "{count} نتيجة",
+    "locatedAt": "ضمن",
+    "distributeAt": "يتواجد في"
+  },
+  "markFilter": {
+    "title": "الفلاتر",
+    "emptyTitle": "لا توجد فلاتر مطابقة.",
+    "emptyDesc": "إذا لاحظت أي معلومات مفقودة أو غير صحيحة، يرجى التواصل مع المشرفين في مجتمعنا، أو تقديم <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='الإبلاغ عن خطأ'>Issue</a> على GitHub."
+  },
+  "detail": {
+    "stat": {
+      "world": "العالم",
+      "main": "الرئيسية",
+      "sub": "الفرعية"
+    },
+    "noInfo": "لا توجد معلومات. انقر لرفع لقطة شاشة.",
+    "communityRule1": "برفعك للصورة، أنت تؤكد قراءتك والتزامك بـ",
+    "communityRule2": "إرشادات المجتمع",
+    "uploading": "جاري الرفع...",
+    "uploadPending": "تم الرفع. بانتظار المراجعة.",
+    "readFullText": "انقر لقراءة النص الكامل.",
+    "share": "انسخ رابط المشاركة لهذه العلامة.",
+    "copied": "تم النسخ",
+    "viewer": {
+      "author": "الناشر",
+      "uploadedAt": "تاريخ الرفع",
+      "upvote": "تأكيد",
+      "flag": "إبلاغ عن خطأ",
+      "unflag": "إلغاء الإبلاغ",
+      "share": "مشاركة",
+      "recall": "تراجع",
+      "unrecall": "إلغاء التراجع"
+    },
+    "errors": {
+      "unsupportedType": "يُدعم فقط صيغ JPEG/PNG/WebP/AVIF.",
+      "fileTooLarge": "حجم الصورة كبير جداً.",
+      "imageDecodeFailed": "لم يتمكن المتصفح من قراءة الصورة.",
+      "imageProcessingUnavailable": "معالجة الصور المحلية غير متاحة.",
+      "processedTooLarge": "الصورة لا تزال كبيرة بعد المعالجة.",
+      "uploadInvalidResponse": "استجابة الخادم غير صالحة.",
+      "uploadNetwork": "خطأ في الشبكة أثناء الرفع.",
+      "uploadAborted": "تم إلغاء الرفع.",
+      "uploadFailed": "فشل الرفع، يرجى المحاولة لاحقاً.",
+      "backendUnknown": "خطأ من خدمة الرفع."
+    }
+  },
+  "footer": {
+    "icp": "沪ICP备2025119702号-1"
+  },
+  "sidebar": {
+    "alt": {
+      "supportedBy": "مدعوم بواسطة Observator 6"
+    }
+  },
+  "language": {
+    "title": "اللغة",
+    "cancel": "إلغاء",
+    "current": "الحالية",
+    "fullSupport": "لغات مدعومة بالكامل",
+    "fullSupportHint": "ترجمة كاملة للواجهة ومحتوى اللعبة.",
+    "uiOnly": "ترجمة الواجهة فقط",
+    "uiOnlyHint": "ترجمة للواجهة فقط، سيُعرض محتوى اللعبة بالإنجليزية.",
+    "fyi": "إذا لم تكن لغتك متاحة بعد، يمكنك التواصل مع مشرف الموقع عبر <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>، أو زيارة GitHub للمشاركة في مشروع الترجمة مفتوح المصدر. يمكنك طلب إضافة لغتك والمساعدة في ترجمة قسم WIKI. نقدر مساهماتكم ونتطلع إليها.\nيمكنك أيضاً النقر لعرض قائمة المساهمين في الترجمة.",
+    "names": {
+      "en-US": "الإنجليزية (English)",
+      "zh-CN": "الصينية المبسطة (简体中文)",
+      "zh-HK": "الصينية التقليدية (繁體中文)",
+      "ja-JP": "اليابانية (日本語)",
+      "ko-KR": "الكورية (한국어)",
+      "es-ES": "الإسبانية (Español)",
+      "fr-FR": "الفرنسية (Français)",
+      "de-DE": "الألمانية (Deutsch)",
+      "it-IT": "الإيطالية (Italiano)",
+      "ru-RU": "الروسية (Русский)",
+      "pt-BR": "البرتغالية (Português)",
+      "id-ID": "الإندونيسية (Bahasa Indonesia)",
+      "ar-SA": "العربية (الإمارات)",
+      "ar-SA": "العربية (السعودية)",
+      "ms-MY": "الماليزية (Bahasa Melayu)",
+      "pl-PL": "البولندية (Polski)",
+      "sv-SE": "السويدية (Svenska)",
+      "th-TH": "التايلاندية (ไทย)",
+      "vi-VN": "الفيتنامية (Tiếng Việt)",
+      "el-GR": "اليونانية (Ελληνικά)",
+      "hi-IN": "الهندية (हिन्दी)"
+    }
+  },
+  "group": {
+    "title": "المجتمع والمنصات",
+    "visit": "زيارة"
+  },
+  "tos": {
+    "title": "الشروط والتخزين",
+    "calculating": "جاري حساب المساحة...",
+    "policy": "<p dir=\"rtl\">نستخدم ملفات الارتباط (Cookies) لتسجيل دخولك تلقائياً؛ و LocalStorage لحفظ إعدادات الواجهة وتقدم العلامات؛ و CacheStorage لبيانات الخطوط والصور. تتيح لك هذه الملفات تصفح الموقع بشكل أسرع مستقبلاً وتدعم وضع عدم الاتصال.</p><p dir=\"rtl\">حذف البيانات سيوفر مساحة في جهازك، ولكن <span class=\"keyword\">سيستغرق تحميل الموقع وقتاً أطول</span> عند زيارتك القادمة؛ وإذا عطلت التخزين، <span class=\"keyword\">لن يتمكن الموقع من حفظ تقدمك</span> تلقائياً.</p><p dir=\"rtl\">نحن لا نرسل بياناتك إلى الخوادم، فلا تقلق بشأن خصوصيتك.</p><p dir=\"rtl\">القرار لك في تفعيل أو تعطيل التخزين المحلي.</p>",
+    "filtersAndMarkers": "الفلاتر وبيانات العلامات",
+    "warning": "<p dir=\"rtl\"><strong>تحذير:</strong> حذف البيانات سيؤدي لفقدان تسجيل الدخول التلقائي، وإعداداتك، وتقدم العلامات؛ وسيطول وقت تحميل الموقع في المرة القادمة.</p><p dir=\"rtl\">إذا كنت متأكداً، انقر على زر الحذف مجدداً.</p>",
+    "export": "تصدير البيانات",
+    "import": "استيراد البيانات"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "uiPrefs": {
+      "title": "تفضيلات الواجهة",
+      "hint": "اختر إعدادات الواجهة التي تود حفظها. ننصح <span class=\"keyword\">بتفعيل كافة الخيارات</span> لتجربة أفضل.",
+      "sidebar": "حفظ حالة الشريط الجانبي",
+      "filterOrder": "حفظ ترتيب الفلاتر",
+      "triggers": "حفظ حالة المفاتيح",
+      "performanceMode": "وضع الأداء"
+    },
+    "mapPrefs": {
+      "title": "تفضيلات الخريطة",
+      "hint": "اختر إعدادات حفظ الخريطة والتحسين التلقائي. ننصح <span class=\"keyword\">بتفعيل كافة الخيارات</span> لتجربة أفضل.",
+      "viewState": "حفظ عرض الخريطة",
+      "markerProgress": "حفظ تقدم العلامات",
+      "autoCluster": "تجميع تلقائي للنقاط",
+      "hideCompleted": "إخفاء العلامات المكتملة"
+    },
+    "theme": {
+      "title": "المظهر",
+      "hint": "اختر المظهر المفضل. في الوضع <span class=\"keyword\">التلقائي</span>، سيتغير المظهر حسب إعدادات جهازك.",
+      "light": "فاتح",
+      "dark": "داكن",
+      "auto": "تلقائي"
+    },
+    "shortcuts": {
+      "title": "اختصارات لوحة المفاتيح",
+      "hint": "اختصارات لتسريع التصفح.",
+      "exportData": "تصدير البيانات",
+      "importData": "استيراد البيانات",
+      "undo": "تراجع",
+      "redo": "إعادة",
+      "zoomIn": "تكبير",
+      "zoomOut": "تصغير",
+      "multiSelect": "تحديد متعدد",
+      "multiDeselect": "إلغاء التحديد المتعدد"
+    }
+  },
+  "guide": {
+    "welcome": "<p dir=\"rtl\">مرحباً بك في <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>هذه زيارتك الأولى. أعددنا لك جولة سريعة لتتعرف على ميزات الخريطة.</p><p dir=\"rtl\">يمكنك النقر على زر '<span class=\"keyword\">تخطي</span>' متى شئت، أو إعادة تشغيل الجولة من زر المساعدة بالأعلى.</p>",
+    "sidebarToggle": "انقر لتوسيع <span class=\"keyword\">الشريط الجانبي</span>.<br>يحتوي الشريط على أهم الفلاتر ومفاتيح التحكم بالخريطة.",
+    "search": "يمكنك البحث عن العلامات باستخدام <span class=\"keyword\">اللغات المدعومة باللعبة</span> وتحديدها مباشرة من النتائج.",
+    "filterContainer": "تُجمَع العلامات المتشابهة في <span class=\"keyword\">فلتر واحد</span>.<br>انقر لتوسيع قائمة العلامات التابعة للفلتر.",
+    "filterSort": "اضغط باستمرار على الأيقونة بجانب الفلتر للدخول في <span class=\"keyword\">وضع السحب</span>.<br>لترتيب الفلاتر حسب الأهمية بالنسبة لك.",
+    "selectorSelect": "هذا <span class=\"keyword\">مُحدِّد للعلامات</span>. انقره لتفعيل العلامات وإظهارها على الخريطة.<br>سترى إجمالي عدد العلامات في منطقتك، وكم علامة أكملتها منها.<br><br>يمكنك أيضاً <span class=\"keyword\">الضغط والسحب في المنطقة الفارغة</span> لتحديد عدة عناصر معاً <span class=\"keyword\">(تحديد الصندوق)</span>، لتفعيلها أو إيقافها دفعة واحدة.",
+    "selectorComplete": "عند اكتمال كافة العلامات ضمن الفئة، سيتحول المُحدِّد إلى <span class=\"keyword\">مكتمل</span> لتسهيل متابعة تقدمك.",
+    "triggerHandle": "مفاتيح التحكم بالخريطة موجودة بأسفل الشريط الجانبي.<br>يمكنك <span class=\"keyword\">سحبها للتحكم بها</span>.",
+    "triggerSwitch": "انقر لتغيير حالة المفتاح.<br><ul><li><span class=\"keyword\">وضع تجميع النقاط</span> لدمج العلامات المتقاربة؛</li><li><span class=\"keyword\">عرض الحدود</span> لإبراز كل منطقة فرعية وحدودها.</li><li><span class=\"keyword\">عرض أسماء المناطق</span> لإظهار أسماء المناطق كما في اللعبة.</li></ul>",
+    "scale": "استخدم <span class=\"keyword\">أداة التكبير/التصغير</span> للتحكم بمستوى عرض الخريطة.<br>يمكنك استخدام عجلة الفأرة، أو أزرار <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> للتكبير والتصغير.",
+    "filterList": "تُظهر <span class=\"keyword\">قائمة العلامات</span> العناصر التي حددتها؛ انقر على الأيقونة لإلغاء التحديد.",
+    "headbar": "إعدادات الخريطة موجودة في <span class=\"keyword\">الشريط العلوي</span>.",
+    "tos": "<span class=\"keyword\">شروط الخدمة</span> و<span class=\"keyword\">إدارة البيانات</span> الخاصة بالموقع.",
+    "hideUI": "<span class=\"keyword\">إخفاء الواجهة</span> لالتقاط شاشة نظيفة أو رؤية العلامات على الأطراف.",
+    "group": "استعرض <span class=\"keyword\">المجتمعات ومجموعات النقاش</span> المتعلقة بالمشروع.",
+    "darkMode": "تبديل <span class=\"keyword\">المظهر الفاتح/الداكن</span>.",
+    "language": "تغيير <span class=\"keyword\">لغة الواجهة</span>.<br>اللغات <span class=\"keyword\">المدعومة بالكامل (لواجهة الموقع ومحتوى اللعبة)</span> تشمل: الإنجليزية، الصينية، اليابانية، الكورية، الفرنسية، الألمانية، الإيطالية، الروسية، الإسبانية، الإندونيسية، البرتغالية، التايلاندية، والفيتنامية.<br>اللغات <span class=\"keyword\">المدعومة للواجهة فقط</span> تشمل: العربية، الماليزية، البولندية، والسويدية.",
+    "announcement": "استعرض <span class=\"keyword\">إعلانات الموقع</span> والتحديثات الخاصة بسياسة الخصوصية.",
+    "help": "إعادة تشغيل <span class=\"keyword\">الدليل التعريفي</span>.",
+    "settings": "افتح <span class=\"keyword\">الإعدادات</span> للتحكم بخيارات التخزين المحلي وأداء الخريطة.",
+    "locator": "انقر على <span class=\"keyword\">مزامنة الموقع</span> لعرض موقعك باللعبة على الخريطة.<br>بعد ربط حسابك، يمكنك تعديل إعدادات التتبع للمزامنة.",
+    "regionSwitch": "انقر للتبديل بين <span class=\"keyword\">الخرائط (المناطق الرئيسية)</span> المختلفة باللعبة.",
+    "subregionSwitch": "<span class=\"keyword\">مرر مؤشر الفأرة على المنطقة</span> لتظهر لك المناطق الفرعية؛ انقر على أي منطقة فرعية للانتقال إليها.<br>يمكنك أيضاً تغيير الطبقات (الأدوار) بنفس الطريقة.",
+    "layerMain": "انقر على <span class=\"keyword\">أيقونة الطبقة</span> للعودة إلى <span class=\"keyword\">الطبقة الرئيسية (M)</span> في أي وقت.",
+    "layerSwitch": "<span class=\"keyword\">مرر الفأرة على أيقونة الطبقة</span> لعرض الطبقات المتاحة؛ انقر على الطبقة المرادة للانتقال إليها.<br>تُسهل عليك الطبقات استكشاف <span class=\"keyword\">الأدوار والارتفاعات المختلفة</span> بالخريطة.",
+    "pointSelect": "انقر على العلامة لفتح <span class=\"keyword\">تفاصيلها</span>.",
+    "pointMark": "انقر على العلامة مجدداً لتسجيلها كمكتملة.",
+    "detail": "ستتمكن من رؤية تفاصيل العلامة، وإجمالي عددها في <span class=\"keyword\">العالم</span>، و<span class=\"keyword\">المنطقة الرئيسية</span>، و<span class=\"keyword\">المنطقة الفرعية</span>.",
+    "pointIcon": "النقر على أيقونة العلامة يُسجلها كمكتملة أيضاً.",
+    "mobile": {
+      "headbar": "إعدادات الخريطة موجودة في <span class=\"keyword\">الشريط العلوي</span>. اضغط على الأيقونة لعرض الخيارات الإضافية.",
+      "locator": "<span class=\"keyword\">مزامنة الموقع</span> في أعلى اليسار.<br>بعد ربط الحساب، اضغط لفتح إعدادات التتبع؛ واضغط مجدداً على الزر الرئيسي لتفعيل/تعطيل المزامنة.",
+      "regionLayerSwitch": "اضغط على أيقونات المناطق للتبديل بين <span class=\"keyword\">الخرائط الرئيسية</span>.<br>اضغط باستمرار على الأيقونة لعرض <span class=\"keyword\">المناطق الفرعية والطبقات</span>.",
+      "divider": "هذا <span class=\"keyword\">فاصل</span> يمكنك سحبه يميناً ويساراً لضبط عرض شريط البحث وقائمة العلامات.",
+      "drawer": "<span class=\"keyword\">اسحب للأعلى من أسفل الشاشة</span> لفتح الفلاتر وتحديد العلامات التي تود عرضها.",
+      "selectorSelect": "<span class=\"keyword\">مُحدِّد العلامات</span>. اضغط لتفعيله؛ ستظهر العلامات المحددة على الخريطة، مع عرض إجمالي العلامات المكتملة."
+    }
+  },
+  "notice": {
+    "legacy": "<span class=\"keyword\">ملاحظة:</span> إصدار اللعبة الحالي هو <span class=\"keyword\">1.0.13</span>، وإصدار بيانات الخريطة هو <span class=\"keyword\">0.8.25</span>. نحتاج لبعض الوقت لتحديث البيانات، لذا قد يتأخر التحديث مقارنة باللعبة. شكراً لتفهمكم. لمتابعة أحدث تطوراتنا، انضم لـ <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Discord'>سيرفر Discord</a>.<br><br>كما نرشح لك الأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مجتمع التصاميم:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener'>https://talospioneers.com</a></li></ul>",
+    "uptodate": "بيانات الخريطة محدثة لآخر إصدار.<br><br>للإبلاغ عن أي خطأ، يسعدنا انضمامك لـ <a href='https://discord.gg/BFMAKZSUG7' class='embed' target='_blank' rel='noopener' aria-label='Discord'>سيرفر Discord</a>.<br><br>كما نرشح لك الأدوات التالية:<ul><li><span class=\"keyword\">ويكي اللعبة: </span><a href='https://warfarin.wiki' class='embed' target='_blank' rel='noopener'>https://warfarin.wiki</a></li><li><span class=\"keyword\">مجتمع التصاميم:</span> <a href='https://talospioneers.com' class='embed' target='_blank' rel='noopener'>https://talospioneers.com</a></li></ul>"
+  },
+  "idcard": {
+    "group": "المجموعة:",
+    "since": "عضو منذ",
+    "logintip": "انقر لتسجيل الدخول",
+    "registip": "انقر لإنشاء حساب",
+    "ago": "مضت",
+    "karma": "نقاط السمعة",
+    "loading": "جارٍ التحميل",
+    "unassigned": "غير معين",
+    "normal": "مستخدم",
+    "guest": "زائر",
+    "pioneer": "رائد",
+    "admin": "مشرف",
+    "suspend": "موقوف",
+    "robot": "بوت",
+    "auth": {
+      "login": "دخول",
+      "register": "تسجيل",
+      "passwordReset": "استعادة المرور",
+      "email": "البريد الإلكتروني:",
+      "password": "كلمة المرور:",
+      "newPassword": "كلمة المرور الجديدة:",
+      "repeatPassword": "تأكيد كلمة المرور:",
+      "verification": "رمز التحقق:",
+      "forgotPW": "نسيت كلمة المرور؟",
+      "pwdRegex": "8-20 حرفاً؛ بحرف كبير واحد على الأقل",
+      "send": "إرسال",
+      "sendResetLink": "إعادة تعيين",
+      "resend": "إعادة إرسال ({count})",
+      "dcLogin": "الدخول عبر Discord",
+      "gooLogin": "الدخول عبر Google",
+      "dcRegis": "المتابعة عبر Discord",
+      "gooRegis": "المتابعة عبر Google",
+      "connecting": "يتصل...",
+      "resetLink": "أدخل بريدك الإلكتروني المسجل لدينا، وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.<br><br>يرجى تفقد صندوق الوارد والبريد المزعج (Spam).",
+      "resetRequire": "أدخل كلمة المرور الجديدة وقم بتأكيدها.<br><br>سيتم التحديث فوراً.",
+      "backTo": "رجوع",
+      "signIn": "دخول",
+      "switchToRegisterPrefix": "ليس لديك حساب؟",
+      "switchToRegisterAction": "سجل الآن!",
+      "switchToLoginPrefix": "لديك حساب؟",
+      "switchToLoginAction": "سجل دخولك.",
+      "ack": "بمتابعتك، أنت توافق على",
+      "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">سياسة الخصوصية</a> و<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">شروط الخدمة</a>.",
+      "hints": {
+        "0": "بيانات غير صحيحة",
+        "101": "البريد مطلوب",
+        "102": "بريد غير صالح",
+        "103": "البريد مستخدم",
+        "104": "البريد غير مسجل",
+        "111": "كلمة المرور مطلوبة",
+        "112": "كلمة مرور غير صالحة",
+        "113": "كلمتا المرور غير متطابقتين",
+        "121": "رمز التحقق مطلوب",
+        "122": "رمز التحقق غير صالح",
+        "123": "انتهت صلاحية الرمز",
+        "200": "تم تسجيل الدخول",
+        "201": "تم إنشاء الحساب",
+        "202": "تم تغيير كلمة المرور",
+        "429": "طلبات كثيرة جداً",
+        "430": "فحص أمني",
+        "601": "انتهت الجلسة",
+        "602": "يجب تسجيل الدخول",
+        "603": "تم رفض الوصول",
+        "604": "تعارض في مزود الخدمة",
+        "701": "النظام مثقل",
+        "702": "انتهت مهلة الاتصال",
+        "703": "صيانة النظام",
+        "801": "موقوف: مخالفة الشروط",
+        "802": "موقوف: تم الرفض"
+      }
+    },
+    "profile": {
+      "title": "الملف الشخصي",
+      "avatarHint": "فتح الملف الشخصي",
+      "nameEditHint": "تعديل اسم المستخدم",
+      "nickName": "اسم المستخدم",
+      "note": "ملاحظة",
+      "noteNickname": "يسمح بـ 15 حرفاً كحد أقصى (أحرف، أرقام، وشرطات فقط).",
+      "noteUID": "يُعين معرفك (UID) عند التسجيل ولا يمكن تغييره. انقر على صورتك لتغييرها.",
+      "auditLabel": "الإجراءات",
+      "save": "حفظ",
+      "saving": "يحفظ...",
+      "logout": "تسجيل الخروج"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "وضع صورة في صورة نشط",
+      "returnHint": "انقر على الشعار للعودة إلى علامة التبويب هذه"
+    }
+  },
+  "locator": {
+    "binding": {
+      "title": "ربط الحساب",
+      "docsLead": "بمتابعتك، أنت توافق على الشروط التالية:",
+      "tos": "شروط الخدمة",
+      "privacy": "سياسة الخصوصية",
+      "dataCollection": "قائمة جمع البيانات",
+      "disclaimer": "إخلاء المسؤولية",
+      "chinaTab": "الصين (Hypergryph)",
+      "globalTab": "عالمي (Gryphline)",
+      "CNStep0": "اذهب لـ <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وسجل دخولك.",
+      "UniStep0": "اذهب لـ <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وسجل دخولك.",
+      "CNStep1": "افتح <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>رابط Hypergryph API</a> وانسخ النص بالكامل.",
+      "UniStep1": "افتح <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>رابط Gryphline API</a> وانسخ النص بالكامل.",
+      "Step2": "ألصق النص المنسوخ هنا لربط حسابك.",
+      "serverFallback": "الخادم",
+      "changeBinding": "تغيير الربط",
+      "unlink": "إلغاء الربط",
+      "bindWithCountdown": "اربط وفعّل المزامنة ({sec})",
+      "bind": "اربط وفعّل المزامنة",
+      "locateAuth": "تخويل",
+      "locateAuthBody": "تفعيل مزامنة الموقع يسمح بالوصول لموقعك الفعلي داخل اللعبة. هل تود التفعيل؟",
+      "authAndSync": "خوّل وابدأ المزامنة"
+    },
+    "config": {
+      "title": "إعدادات التتبع",
+      "server": "الخادم",
+      "uid": "UID اللاعب",
+      "scopeTitle": "النطاق",
+      "scopeHint": "اختر العلامات القريبة التي تود تتبعها وتنبيهك بها.",
+      "scope": {
+        "balanced": {
+          "title": "متوازن",
+          "desc": "تتبع النقاط الموصى بها من OEM."
+        },
+        "collection": {
+          "title": "مقتنيات",
+          "desc": "تتبع نقاط <span class=\"keyword\">المقتنيات</span>، <span class=\"keyword\">الاستكشاف</span>، و<span class=\"keyword\">الأرشيف</span>."
+        },
+        "manual": {
+          "title": "دليل الصياغة",
+          "desc": "تتبع نقاط الدليل (الأعداء والنباتات النادرة)."
+        }
+      },
+      "featureTitle": "الميزات",
+      "trackPoints": "التتبع",
+      "centerOnPosition": "إبقاء التوسيط",
+      "heatmap": "خريطة حرارية",
+      "configNote1": "تفعيلك لهذه الميزة يعني موافقتك على ",
+      "configNote2": " والشروط الأخرى."
+    },
+    "errors": {
+      "10000": "انتهت جلسة المزامنة. يرجى الربط مجدداً.",
+      "19001": "الموقع غير متاح. يرجى تسجيل الدخول للعبة.",
+      "19002": "المزامنة تتطلب تصريحاً أولاً.",
+      "noRole": "لم يتم العثور على شخصية Endfield بهذا الحساب.",
+      "tokenRequired": "ألصق النص الكامل أو الـ Token.",
+      "bindingFailed": "فشل الربط.",
+      "roleRequired": "يرجى اختيار شخصية.",
+      "unlinkFailed": "فشل إلغاء الربط.",
+      "authorizationFailed": "فشل التخويل."
+    }
+  },
+  "links": {
+    "enka": {
+      "name": "Enka Network",
+      "desc": "محرر التصاميم (Blueprint Editor)"
+    },
+    "talospioneers": {
+      "name": "Talos Pioneers",
+      "desc": "مجتمع مشاركة التصاميم"
+    }
+  },
+  "common": {
+    "close": "إغلاق",
+    "skip": "تخطي",
+    "clear": "مسح",
+    "all": "الكل",
+    "selected": "المُحدَّد",
+    "confirm": "تأكيد",
+    "loading": "جاري التحميل...",
+    "enable": "تفعيل",
+    "disable": "تعطيل",
+    "expand": "توسيع",
+    "collapse": "طي"
+  },
+  "announcement": {
+    "title": "إعلانات الموقع",
+    "empty": "لا توجد إعلانات حالياً"
+  },
+  "meta": {
+    "title": "خريطة إندفيلد المفتوحة (OEM)",
+    "description": "خريطة إندفيلد (Open Endfield Map) هي خريطة تفاعلية مفتوحة المصدر للعبة Arknights: Endfield، تقدم أدوات التتبع، جمع العناصر، والتخطيط الاستراتيجي."
+  },
+  "domain": {
+    "cn": "نوصي <span class=\"keyword\">للمستخدمين في الصين</span> باستخدام النطاق المحلي <a href='https://opendfieldmap.cn/' class='embed' target='_blank' rel='noopener'>(https://opendfieldmap.cn)</a> لسرعة واستقرار أفضل.",
+    "org": "نوصي <span class=\"keyword\">للمستخدمين حول العالم</span> باستخدام النطاق العالمي (<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>) لسرعة واستقرار أفضل."
+  },
+  "support": {
+    "title": "ادعمنا",
+    "content": "خلال الأسابيع الثلاثة الماضية، عالجت خريطة Open Endfield Map أكثر من <span class=\"hl\">200 مليون</span> طلب HTTPS (بمتوسط <span class=\"hl\">8.34 مليون يومياً</span>) واستهلكت أكثر من <span class=\"hl\">2.8 تيرابايت</span> من الباندويث. كما تجاوز عدد مستخدمينا النشطين <span class=\"hl\">70,000 مستخدم</span> وما زال في ازدياد.<br><br>مشروع OEM مفتوح المصدر ومجاني بالكامل منذ فبراير 2025، ويتم <span class=\"hl\">صيانته وتطويره بشكل فردي بواسطة (Jacy Chan/Cirisus)</span>. في الشهر الماضي وحده، بلغت <a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>فاتورة خوادم CDN وتوجيه Argo</a> حوالي <span class=\"hl\">266.07 دولار أمريكي (≈ 1000 ريال سعودي)</span>. إذا كان الموقع يساعدك في رحلتك، يسعدنا جداً دعمك للمشروع. تذهب كافة التبرعات مباشرة لتغطية تكاليف الخوادم وتطوير ميزات جديدة كحسابات المستخدمين ورفع الصور.<br><br>إذا لاحظت أي مشكلة في البيانات أو الترجمة أو الواجهة، لا تتردد في الإبلاغ وسأقوم بإصلاحها فوراً. شكراً لدعمكم وتفهمكم!",
+    "patreon": "ادعمنا عبر Patreon",
+    "kofi": "ادعمنا عبر Ko-fi",
+    "afdian": "ادعمنا عبر Afdian",
+    "hint": "نوصي بـ Patreon أو Ko-fi للمستخدمين حول العالم، و Afdian للمستخدمين في الصين."
+  }
+}

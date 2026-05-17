@@ -32,10 +32,36 @@
       "main": "Utama",
       "sub": "Sub"
     },
-    "noInfo": "Tiada maklumat.",
-    "readFullText": "Klik untuk membaca teks lengkap.",
-    "share": "Salin tautan yang dapat dibagikan untuk penanda ini.",
-    "copied": "Tautan disalin"
+    "noInfo": "Tiada maklumat. Klik untuk memuat naik tangkapan skrin lokasi.",
+    "communityRule1": "Sebelum memuat naik, pastikan anda telah membaca dan mematuhi",
+    "communityRule2": "Garis Panduan Komuniti",
+    "uploading": "Memuat naik...",
+    "uploadPending": "Hantaran diterima. Akan dipaparkan selepas semakan.",
+    "readFullText": "Klik untuk membaca teks penuh.",
+    "share": "Salin pautan perkongsian untuk penanda ini.",
+    "copied": "Pautan disalin",
+    "viewer": {
+      "author": "Pemuat naik",
+      "uploadedAt": "Dimuat naik pada",
+      "upvote": "Sokong",
+      "flag": "Tandakan sebagai tidak tepat",
+      "unflag": "Buang tanda",
+      "share": "Kongsi",
+      "recall": "Minta pemadaman",
+      "unrecall": "Batalkan pemadaman"
+    },
+    "errors": {
+      "unsupportedType": "Hanya imej JPEG/PNG/WebP/AVIF disokong.",
+      "fileTooLarge": "Fail imej terlalu besar.",
+      "imageDecodeFailed": "Pelayar tidak dapat membuka imej ini.",
+      "imageProcessingUnavailable": "Pemprosesan imej setempat tidak tersedia.",
+      "processedTooLarge": "Imej yang diproses masih terlalu besar.",
+      "uploadInvalidResponse": "Respons API muat naik tidak sah.",
+      "uploadNetwork": "Ralat rangkaian semasa memuat naik.",
+      "uploadAborted": "Muat naik dibatalkan.",
+      "uploadFailed": "Muat naik gagal. Sila cuba lagi.",
+      "backendUnknown": "Perkhidmatan muat naik mengembalikan ralat."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "Russian",
       "pt-BR": "Portuguese",
       "id-ID": "Indonesian",
-      "ar-AE": "Arabic",
+      "ar-SA": "Arabic",
       "ms-MY": "Melayu",
       "pl-PL": "Polski",
       "sv-SE": "Svenska",
@@ -216,9 +242,7 @@
       "ack": "Dengan meneruskan, anda bersetuju bahawa anda telah membaca dan menerima",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Dasar Privasi</a> dan <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Syarat Perkhidmatan</a> kami.",
       "hints": {
-        "200": "Log masuk berjaya",
-        "201": "Akaun berjaya dicipta",
-        "202": "Kata laluan berjaya ditukar",
+        "0": "Emel/kata laluan tidak sah",
         "101": "Sila masukkan e-mel",
         "102": "Format e-mel tidak sah",
         "103": "Emel ini telah digunakan",
@@ -229,18 +253,20 @@
         "121": "Sila masukkan kod OTP",
         "122": "Kod OTP tidak sah",
         "123": "Kod OTP telah tamat tempoh",
-        "0": "Emel/kata laluan tidak sah",
+        "200": "Log masuk berjaya",
+        "201": "Akaun berjaya dicipta",
+        "202": "Kata laluan berjaya ditukar",
         "429": "Terlalu banyak permintaan",
         "430": "Pemeriksaan keselamatan",
-        "801": "Digantung: Melanggar syarat",
-        "802": "Digantung: Akses ditolak",
         "601": "Sesi log masuk tamat tempoh",
         "602": "Sesi log masuk diperlukan",
         "603": "Akses ditolak",
         "604": "Konflik akaun pautan",
         "701": "Sistem terlalu sibuk",
         "702": "Tamat masa sambungan",
-        "703": "Sistem dalam penyelenggaraan"
+        "703": "Sistem dalam penyelenggaraan",
+        "801": "Digantung: Melanggar syarat",
+        "802": "Digantung: Akses ditolak"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "Simpan Perubahan",
       "saving": "Menyimpan...",
       "logout": "Log Keluar"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "Gambar dalam gambar aktif",
+      "returnHint": "Klik logo untuk kembali ke tab ini"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "Ciri",
       "trackPoints": "Jejak",
+      "centerOnPosition": "Di tengah",
       "heatmap": "Peta haba",
       "configNote1": "Mengaktifkan ciri ini bermaksud anda menerima ",
       "configNote2": " dan terma lain."
@@ -336,7 +369,7 @@
     "all": "Semua",
     "selected": "Dipilih",
     "confirm": "Sahkan",
-    "loading": "Memuat…",
+    "loading": "Memuat...",
     "enable": "Dayakan",
     "disable": "Nyahdayakan",
     "expand": "Kembangkan",

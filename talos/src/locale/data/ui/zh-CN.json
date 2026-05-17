@@ -32,10 +32,36 @@
       "main": "主区域",
       "sub": "子区域"
     },
-    "noInfo": "暂无信息",
+    "noInfo": "暂无信息，点击上传点位截图",
+    "communityRule1": "上传前，请您详阅并遵循",
+    "communityRule2": "OEM 社区守则",
+    "uploading": "正在上传…",
+    "uploadPending": "已提交，等待审核后展示。",
     "readFullText": "点此查看全文。",
     "share": "复制此点位的分享链接。",
-    "copied": "链接已复制"
+    "copied": "链接已复制",
+    "viewer": {
+      "author": "作者",
+      "uploadedAt": "上传于",
+      "upvote": "维护此点位",
+      "flag": "标记为不准确",
+      "unflag": "取消标记",
+      "share": "分享",
+      "recall": "申请撤回此图片",
+      "unrecall": "取消撤回"
+    },
+    "errors": {
+      "unsupportedType": "仅支持 JPEG/PNG/WebP/AVIF 图片",
+      "fileTooLarge": "图片文件过大",
+      "imageDecodeFailed": "浏览器无法读取此图片",
+      "imageProcessingUnavailable": "本地图片处理不可用",
+      "processedTooLarge": "处理后的图片仍然过大",
+      "uploadInvalidResponse": "上传接口返回异常",
+      "uploadNetwork": "上传时发生网络错误",
+      "uploadAborted": "上传已取消",
+      "uploadFailed": "上传失败，请稍后再试",
+      "backendUnknown": "上传服务返回错误"
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "俄语",
       "pt-BR": "葡萄牙语",
       "id-ID": "印度尼西亚语",
-      "ar-AE": "阿拉伯语",
+      "ar-SA": "阿拉伯语",
       "ms-MY": "马来语",
       "pl-PL": "波兰语",
       "sv-SE": "瑞典语",
@@ -106,7 +132,7 @@
       "viewState": "保存当前视图",
       "markerProgress": "保存点位与筛选器",
       "autoCluster": "点位自动聚合",
-      "hideCompleted": "隐藏已完成标点"
+      "hideCompleted": "隐藏已完成点位"
     },
     "theme": {
       "title": "主题",
@@ -132,7 +158,7 @@
     "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
-    "filterContainer": "同类型的点位可用一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
+    "filterContainer": "同类型的点位会归类在同一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
     "filterSort": "按住筛选器左侧的ICON，其将进入<span class=\"keyword\">拖拽状态</span>。<br>您可以根据自己的需要排序对您重要的筛选器。",
     "selectorSelect": "具体的<span class=\"keyword\">点位选择器</span>。点击以切换选择状态，被选择的点位会出现在地图上。<br>您可以看到在当前区域此类点位的总数，以及您已经标记的数量。<br><br>您也可以在侧边栏的<span class=\"keyword\">空白区域按住并拖动</span>，对多个点位选择器进行<span class=\"keyword\">框选</span>，从而快速批量切换它们的选择状态。",
     "selectorComplete": "当此类型所有点位都被标记为完成时，选择器将会变为<span class=\"keyword\">完成状态</span>，以便您快捷判断标记情况。",
@@ -204,7 +230,7 @@
       "gooLogin": "使用 Google 登录",
       "dcRegis": "使用 Discord 注册",
       "gooRegis": "使用 Google 注册",
-      "connecting": "连接中...",
+      "connecting": "连接中…",
       "resetLink": "请输入需要重置密码的邮箱，我们会往您已经注册的邮箱发送一封包含密码重置链接的邮件。<br><br>确认发送后，请检查您的收件箱与垃圾桶。",
       "resetRequire": "请输入您的新密码并且正确重复此密码。<br><br>我们马上会为您重置密码。",
       "backTo": "返回",
@@ -216,9 +242,7 @@
       "ack": "若继续操作，即表明您已阅读并同意我们的",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">隐私权政策</a>与<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用条款</a>。",
       "hints": {
-        "200": "登录已确认",
-        "201": "注册已完成",
-        "202": "密码已变更",
+        "0": "账号/密码错误",
         "101": "请填写邮箱",
         "102": "邮箱地址无效",
         "103": "邮箱已被注册",
@@ -229,18 +253,20 @@
         "121": "请填写验证码",
         "122": "验证码无效",
         "123": "验证码已过期",
-        "0": "账号/密码错误",
+        "200": "登录已确认",
+        "201": "注册已完成",
+        "202": "密码已变更",
         "429": "请求速率限制",
         "430": "风险控制",
-        "801": "挂起：账号封禁",
-        "802": "挂起：权限拒绝",
         "601": "令牌失效",
         "602": "需要会话",
         "603": "访问被拒绝",
         "604": "Auth提供方冲突",
         "701": "系统过载",
         "702": "系统超时",
-        "703": "系统维护"
+        "703": "系统维护",
+        "801": "挂起：账号封禁",
+        "802": "挂起：权限拒绝"
       }
     },
     "profile": {
@@ -253,8 +279,14 @@
       "noteUID": "UID 仅在首次设置用户名时分配且不可更改，但您可以随时更新自己的用户名。点击头像区域可以切换其他头像。",
       "auditLabel": "操作",
       "save": "保存更改",
-      "saving": "保存中...",
+      "saving": "保存中…",
       "logout": "登出"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "画中画模式已开启",
+      "returnHint": "点击 Logo 以返回当前标签页。"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "功能",
       "trackPoints": "追踪点位",
+      "centerOnPosition": "角色光标居中",
       "heatmap": "热力图",
       "configNote1": "启用此功能表明您已接受我们的 ",
       "configNote2": " 与其他条款。"
@@ -311,7 +344,7 @@
       "10000": "位置同步会话已过期，请重新绑定。",
       "19001": "无法获取当前位置，请确保已登录游戏。",
       "19002": "位置同步需要授权后才能开始。",
-      "noRole": "未找到此账户下的终末地角色。",
+      "noRole": "未找到此账号下的终末地角色。",
       "tokenRequired": "请粘贴 token 接口返回的全文或完整 token 值。",
       "bindingFailed": "绑定失败。",
       "roleRequired": "请选择角色。",

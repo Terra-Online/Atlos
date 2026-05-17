@@ -6,12 +6,12 @@
 $avatar-default: url('@/assets/images/UI/avt/end.webp');
 $cardbak: url('@/assets/images/UI/avt/noise.webp');
 $contour: url('@/assets/images/UI/avt/contour.webp');
-$karma-0: url('@/assets/images/UI/avt/Karma0.png');
-$karma-1: url('@/assets/images/UI/avt/Karma1.png');
-$karma-2: url('@/assets/images/UI/avt/Karma2.png');
-$karma-3: url('@/assets/images/UI/avt/Karma3.png');
-$karma-4: url('@/assets/images/UI/avt/Karma4.png');
-$karma-5: url('@/assets/images/UI/avt/Karma5.png');
+$karma-0: url('@/assets/images/UI/avt/Karma0.svg');
+$karma-1: url('@/assets/images/UI/avt/Karma1.svg');
+$karma-2: url('@/assets/images/UI/avt/Karma2.svg');
+$karma-3: url('@/assets/images/UI/avt/Karma3.svg');
+$karma-4: url('@/assets/images/UI/avt/Karma4.svg');
+$karma-5: url('@/assets/images/UI/avt/Karma5.svg');
 
 :root, :root[data-theme='light'] {
     --idcard-bg: #{$light-2};

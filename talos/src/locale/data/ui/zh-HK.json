@@ -32,10 +32,36 @@
       "main": "主區域",
       "sub": "子區域"
     },
-    "noInfo": "暫無資料",
+    "noInfo": "暫無資訊，點擊上載點位截圖",
+    "communityRule1": "上載前，請詳閱並遵循",
+    "communityRule2": "OEM 社群守則",
+    "uploading": "上載中…",
+    "uploadPending": "提交成功，待審核後顯示。",
     "readFullText": "點此查看全文。",
     "share": "複製此點位之分享連結。",
-    "copied": "連結已複製"
+    "copied": "連結已複製",
+    "viewer": {
+      "author": "貢獻者",
+      "uploadedAt": "上載時間",
+      "upvote": "維護此點位",
+      "flag": "標記為不準確",
+      "unflag": "取消標記",
+      "share": "分享此點位",
+      "recall": "申請撤回此圖片",
+      "unrecall": "取消撤回申請"
+    },
+    "errors": {
+      "unsupportedType": "僅接收 JPEG/PNG/WebP/AVIF 檔案",
+      "fileTooLarge": "圖片檔案過大",
+      "imageDecodeFailed": "瀏覽器無法讀取此圖片",
+      "imageProcessingUnavailable": "無法於裝置上處理圖片",
+      "processedTooLarge": "處理後的圖片仍然過大",
+      "uploadInvalidResponse": "上載服務回應異常",
+      "uploadNetwork": "上載時發生網絡錯誤",
+      "uploadAborted": "上載已取消",
+      "uploadFailed": "上載失敗，請稍後再試",
+      "backendUnknown": "上載服務返回錯誤"
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "俄語",
       "pt-BR": "葡萄牙語",
       "id-ID": "印尼語",
-      "ar-AE": "阿拉伯語",
+      "ar-SA": "阿拉伯語",
       "ms-MY": "馬來語",
       "pl-PL": "波蘭語",
       "sv-SE": "瑞典語",
@@ -106,7 +132,7 @@
       "viewState": "保存當前視圖",
       "markerProgress": "保存點位與篩選器",
       "autoCluster": "點位自動聚合",
-      "hideCompleted": "隱藏已完成標點"
+      "hideCompleted": "隱藏已完成點位"
     },
     "theme": {
       "title": "主題",
@@ -131,8 +157,8 @@
   "guide": {
     "welcome": "歡迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>這是您第一次使用本地圖，我們將為您提供簡短的新手引導，幫助您快速了解地圖的各項功能。</p><p>您可以隨時點擊「<span class=\"keyword\">跳過</span>」按鈕結束引導，或在頂欄的幫助按鈕中重新啟動引導。",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
-    "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並且在搜索結果中選中它們。",
-    "filterContainer": "同類型的點位位于同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
+    "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並在搜索結果中選中它們。",
+    "filterContainer": "同類型的點位位於同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
     "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可以根據自己的需要排序對您重要的篩選器。",
     "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。<br><br>您也可以在側邊欄的<span class=\"keyword\">空白區域按住並拖動</span>，對多個點位選擇器進行<span class=\"keyword\">框選</span>，從而快速批量切換它們的選擇狀態。",
     "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
@@ -145,7 +171,7 @@
     "hideUI": "<span class=\"keyword\">隱藏網站UI</span>以截圖或查看邊緣點位。",
     "group": "查看與本項目有關的<span class=\"keyword\">討論群組</span>與<span class=\"keyword\">社區</span>。",
     "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
-    "language": "切換<span class=\"keyword\">界面語言</span>。<br><span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語，韓語，法語，德語，意大利語，俄語，西班牙語，印尼語，葡萄牙語，泰語和越南語。<br><span class=\"keyword\">僅支持界面翻譯</span>的語言包括阿拉伯語，馬來語，波蘭語和瑞典語。",
+    "language": "切換<span class=\"keyword\">介面語言</span>。<br><span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語，韓語，法語，德語，意大利語，俄語，西班牙語，印尼語，葡萄牙語，泰語和越南語。<br><span class=\"keyword\">僅支持介面翻譯</span>的語言包括阿拉伯語，馬來語，波蘭語和瑞典語。",
     "announcement": "查看近期的<span class=\"keyword\">網站公告</span>，用戶協議等更新也會在此發布。",
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
     "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
@@ -216,9 +242,7 @@
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">私隱政策</a>與<a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">使用條款</a>。",
       "hints": {
-        "200": "登入已確認",
-        "201": "註冊已確認",
-        "202": "密碼已變更",
+        "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
         "102": "電郵地址無效",
         "103": "電郵已被註冊",
@@ -229,18 +253,20 @@
         "121": "請填寫驗證碼",
         "122": "驗證碼無效",
         "123": "驗證碼失效",
-        "0": "帳戶/密碼錯誤",
+        "200": "登入已確認",
+        "201": "註冊已確認",
+        "202": "密碼已變更",
         "429": "請求速率限制",
         "430": "風險控制",
-        "801": "掛起：帳戶封禁",
-        "802": "掛起：權限拒絕",
         "601": "令牌失效",
         "602": "需要會話",
         "603": "訪問被拒絕",
         "604": "Auth供應方冲突",
         "701": "系統過載",
         "702": "系統超時",
-        "703": "系統維護"
+        "703": "系統維護",
+        "801": "掛起：帳戶封禁",
+        "802": "掛起：權限拒絕"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "儲存變更",
       "saving": "儲存中...",
       "logout": "登出"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "畫中畫模式已開啟",
+      "returnHint": "點擊 Logo 以返回目前分頁"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "功能",
       "trackPoints": "追蹤點位",
+      "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
       "configNote1": "啟用此功能代表你已接受我們的 ",
       "configNote2": " 與其他條款。"
@@ -356,7 +389,7 @@
   },
   "support": {
     "title": "支持我們",
-    "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並且仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並且始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上傳）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
+    "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上載）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
     "patreon": "買一份日誌（Patreon）",
     "kofi": "買一杯咖啡（Ko-fi）",
     "afdian": "買一份流量包（愛發電）",

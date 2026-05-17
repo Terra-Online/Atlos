@@ -100,8 +100,9 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const clampWidth = (startW: number, dx: number) =>
         Math.round(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startW + dx)));
 
-    const setAppCssVar = (w: number) => {
-        const el = document.querySelector<HTMLElement>('.app');
+    const setAppCssVar = (w: number, source?: HTMLElement | null) => {
+        const ownerDocument = source?.ownerDocument ?? document;
+        const el = ownerDocument.querySelector<HTMLElement>('.app');
         el?.style.setProperty('--sidebar-width', `${w}px`);
     };
 
@@ -112,21 +113,21 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
         setIsResizing(true);
         resizeStartX.current = e.clientX;
         resizeStartW.current = sidebarWidth;
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, sidebarWidth]);
 
     const onResizeMove = useCallback((e: React.PointerEvent) => {
         if (!isResizing) return;
         const newW = clampWidth(resizeStartW.current, e.clientX - resizeStartX.current);
-        setAppCssVar(newW);
+        setAppCssVar(newW, e.currentTarget as HTMLElement);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isResizing]);
 
     const onResizeEnd = useCallback((e: React.PointerEvent) => {
         if (!isResizing) return;
         setIsResizing(false);
-        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
         const newW = clampWidth(resizeStartW.current, e.clientX - resizeStartX.current);
         setSidebarWidth(newW);
         requestAnimationFrame(() => incrementLayoutVersion());

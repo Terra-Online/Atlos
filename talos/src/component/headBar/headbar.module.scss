@@ -74,7 +74,7 @@
         width: 200%;
         height: 200%;
         left: -50%;
-        top: -50%; //Scale the element so the border-radius remains visually correct; otherwise the offset will exaggerate the corner radius.
+        top: -50%; // Scale the element so the border-radius remains visually correct; otherwise the offset will exaggerate the corner radius.
         animation: badgePulse 1s cubic-bezier(0, 0, 0.2, 1) infinite;
     }
 }
@@ -237,7 +237,6 @@
     justify-items: center;
     align-items: center;
 }
-// Fallback styles for performance mode
 .headbarFallback {
     background: var(--headbar-bg);
     backdrop-filter: blur(4px);

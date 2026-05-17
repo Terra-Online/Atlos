@@ -8,8 +8,6 @@
     --detail-brakt: #{$grey-1};
     --detail-checked-deco: #{$primary-accent-6};
     --detail-text: #{$grey-1};
-    --detail-placeholder: #{$dim-1};
-    --detail-image-border: #{$light-2};
     --detail-prog: #{$grey-1};
     --detail-checked-prog: #{$primary-accent-6};
 }
@@ -19,19 +17,19 @@
     --detail-title: #{$white-0};
     --detail-brakt: #{$grey-1};
     --detail-text: #{$grey-1};
-    --detail-placeholder: #{$dim-1};
-    --detail-image-border: #{$light-2};
     --detail-prog: #{$grey-1};
     --detail-checked-prog: #{$primary-accent-6};
-
-    // no difference for now
 }
 
 .detailContainer {
+    --detail-panel-height: 0px;
+
     position: absolute;
     bottom: 1rem;
     right: 1rem;
-    width: 20rem;
+    width: 25rem;
+    height: var(--detail-panel-height);
+    max-height: min(80dvh, calc(100dvh - 2rem));
     background-color: var(--detail-bg);
     border-radius: 3px;
     box-shadow: 0 4px 4px rgba($black-0, 0.25);
@@ -39,26 +37,26 @@
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    max-height: 45dvh;
+    transform: translate3d(0, calc(var(--detail-panel-height) + 1rem), 0);
+    transition:
+        height 0.28s $standard-curve,
+        transform 0.3s $standard-curve;
+    will-change: height, transform;
 
-    // transition: opacity 0.3s ease;
-    // transition: transform 0.3s ease;
-    will-change: transform;
-
-    // &.hidden {
-    //   pointer-events: none;
-    //   // opacity: 0;
-    //   transform: translateX(130%);
-    // }
+    &[data-state='open'] {
+        transform: translate3d(0, 0, 0);
+    }
 
     .detailHeader {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex: 0 0 auto;
         padding: 0.45rem 0.5rem;
+        gap: 0.5rem;
         background-color: var(--detail-header-bg);
         background-image: url('../../assets/images/UI/detail.webp');
-        background-size: 47%;
+        background-size: 40%;
         background-position-x: 3%;
         box-shadow: 0 2px 3px rgba($black-0, 0.25);
         position: sticky;
@@ -67,7 +65,7 @@
         .pointInfo {
             display: flex;
             align-items: center;
-            gap: 0.15rem;
+            gap: 0.5rem;
             flex: 1;
             min-width: 0;
 
@@ -77,8 +75,7 @@
                 justify-content: center;
                 height: 1rem;
                 width: 1rem;
-                filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25)); /* THEME-NOTE: keep shadow */
-                
+                filter: drop-shadow(1px 2px 1px rgba($black-0, 0.25));
                 .icon {
                     width: 100%;
                     height: 100%;
@@ -108,13 +105,20 @@
         }
     }
 
-    // content
     .detailContent {
         padding: 0.6rem;
+        overflow-x: hidden;
         overflow-y: auto;
-
+        flex: 1 1 auto;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
         &::-webkit-scrollbar {
             width: 0;
+        }
+
+        .detailContentInner {
+            display: flex;
+            flex-direction: column;
         }
 
         .iconStatsContainer {
@@ -264,8 +268,6 @@
                 .progBar {
                     height: 0.875rem;
                     width: min(calc(var(--prog) * 100%), 100%);
-
-                    // clip-path: polygon(0 0, calc(var(--prog) * 100%) 0, calc(var(--prog) * 100%) 100%, 0 100%); 性能爆炸爛
                     transition:
                         background-color 0.15s $standard-curve 0s,
                         width 0.25s $standard-curve 0.1s;
@@ -282,58 +284,7 @@
                 }
             }
         }
-
-        .pointImage {
-            margin: 0.5rem 0 1.5rem;
-            width: 100%;
-            height: 10rem;
-            background: rgba($black-0, 0.25); /* THEME-NOTE: keep overlay */
-
-            background-image: url('../../assets/images/UI/detest.png');
-
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-
-            border: 2px solid var(--detail-image-border);
-            box-shadow:
-                0 0 4px 0.5px rgba($black-0, 0.6),
-                0 0 4px 2px rgba($light-2, 0.6) inset;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-
-            &::before {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                right: 0;
-                width: 0;
-                height: 0;
-                border-style: solid;
-                border-width: 0 0 15px 15px;
-                border-color: transparent transparent $light-2;
-                filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6)); /* THEME-NOTE: keep shadow */
-                z-index: 2;
-                pointer-events: none;
-            }
-
-            img {
-                max-width: 100%;
-                max-height: 100%;
-                object-fit: cover;
-            }
-
-            .noImage {
-                color: var(--detail-placeholder);
-                font-family: 'Novecento Medium', 'UD_ShinGo DemiBold', sans-serif;
-                font-size: 0.875rem;
-            }
-        }
     }
-    // note
     .detailNotes, .detailUrl {
         position: relative;
         font-size: 1rem;
@@ -361,8 +312,9 @@
             white-space: pre-line;
         }
         .noNote {
-            color: var(--detail-placeholder);
+            color: var(--detail-text);
             font-style: italic;
+            opacity: 0.65;
         }
         > a, > * > a {
             display: inline-block;
@@ -383,7 +335,6 @@
         }
     }
 
-    // wiki
     .detailWiki {
         margin-top: 0.5rem;
         position: relative;
@@ -399,7 +350,7 @@
             position: relative;
             content: 'WIKI';
             font-family: GothamMedium, sans-serif;
-            color: $light-1; /* THEME-TODO */
+            color: $light-1;
             background-color: var(--detail-text);
             padding: 3px 3px 2px;
             margin-right: 3px;
@@ -414,7 +365,7 @@
     flex-direction: column;
     font-size: .925rem;
     color: var(--tos-text);
-    font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+    font-family: "HMSans_EN", HMSans, "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     letter-spacing: -0.2px;
     font-weight: 600;
     line-height: 1.25;
@@ -423,6 +374,7 @@
         &:last-child {
             margin-bottom: 0;
         }
+        /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
         :global(.actor) {
             opacity: .8;
             font-size: 0.95em;
@@ -457,7 +409,12 @@
     right: auto;
     bottom: auto;
     width: 100%;
-    max-height: 40dvh;
+    max-height: min(80dvh, calc(100dvh - 2rem));
     margin: 0;
     z-index: auto;
+    transform: none;
+
+    &[data-state='open'] {
+        transform: none;
+    }
 }

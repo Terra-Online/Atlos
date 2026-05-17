@@ -4,6 +4,7 @@
 @use './highlight';
 @use './boundary';
 @use './cluster';
+@use './pip.scss';
 @use './embed' as *;
 
 /* Import Leaflet MarkerCluster styles */
@@ -46,7 +47,7 @@
     }
 }
 @supports not (height: 100dvh) {
-    app {
+    .app {
         width: 100vw;
         width: 100svw;
         height: 100vh;
@@ -54,11 +55,12 @@
     }
 }
 @supports (not (height: 100dvh)) and (not (height: 100svh)) {
-    app {
+    .app {
         width: 100%;
         height: 100%;
     }
 }
+
 * {
     overscroll-behavior: none;
     transform-origin: center;
@@ -86,7 +88,7 @@ button {
 }
 body {
     margin: 0;
-    font-family: 'Novecento Medium', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', HMSans_EN, 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family: 'Novecento Medium', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'HMSans_EN', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
 }
 p {
     margin: 0;

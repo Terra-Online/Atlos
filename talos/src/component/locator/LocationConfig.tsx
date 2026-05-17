@@ -65,6 +65,7 @@ const saveScope = (scope: EFTrackerScope[], binding: EFBindingSummary | null): v
         serverId: binding.serverId,
         scope,
         trackPoints: true,
+        centerOnPosition: true,
         trail: false,
         debug: false,
     };
@@ -94,6 +95,37 @@ const saveTrackPoints = (trackPoints: boolean, binding: EFBindingSummary | null)
         serverId: binding.serverId,
         scope: ['balanced'],
         trackPoints,
+        centerOnPosition: true,
+        trail: false,
+        debug: false,
+    };
+    saveEFTrackerConf(next);
+};
+
+const readCenterOnPosition = (): boolean =>
+    readEFTrackerConf()?.centerOnPosition ?? false;
+
+const saveCenterOnPosition = (centerOnPosition: boolean, binding: EFBindingSummary | null): void => {
+    const current = readEFTrackerConf();
+    if (current) {
+        saveEFTrackerConf({
+            ...current,
+            centerOnPosition,
+        });
+        return;
+    }
+
+    if (!binding?.roleId || binding.serverId === undefined) return;
+
+    const next: EFTrackerConf = {
+        enabled: false,
+        locatorSync: false,
+        baseUrl: binding.provider ?? 'skport',
+        roleId: binding.roleId,
+        serverId: binding.serverId,
+        scope: ['balanced'],
+        trackPoints: true,
+        centerOnPosition,
         trail: false,
         debug: false,
     };
@@ -117,6 +149,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
     const [error, setError] = useState('');
     const [scope, setScope] = useState<EFTrackerScope[]>(() => readScope());
     const [trackPoints, setTrackPoints] = useState(() => readTrackPoints());
+    const [centerOnPosition, setCenterOnPosition] = useState(() => readCenterOnPosition());
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
@@ -129,6 +162,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
         setLoading(!cachedBinding.hit);
         setScope(readScope());
         setTrackPoints(readTrackPoints());
+        setCenterOnPosition(readCenterOnPosition());
         void getEFBindingStatus()
             .then((status) => {
                 if (sessionUser?.uid) {
@@ -157,6 +191,11 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
     const toggleTrackPoints = useCallback((active: boolean) => {
         setTrackPoints(active);
         saveTrackPoints(active, binding);
+    }, [binding]);
+
+    const toggleCenterOnPosition = useCallback((active: boolean) => {
+        setCenterOnPosition(active);
+        saveCenterOnPosition(active, binding);
     }, [binding]);
 
     const handleUnlink = useCallback(async () => {
@@ -255,6 +294,12 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                         isActive={trackPoints}
                         onToggle={toggleTrackPoints}
                         label={t('locator.config.trackPoints')}
+                        className={styles.featureTrigger}
+                    />
+                    <Trigger
+                        isActive={centerOnPosition}
+                        onToggle={toggleCenterOnPosition}
+                        label={t('locator.config.centerOnPosition')}
                         className={styles.featureTrigger}
                     />
                     <Trigger

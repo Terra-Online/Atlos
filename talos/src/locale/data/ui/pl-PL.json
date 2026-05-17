@@ -32,10 +32,36 @@
       "main": "Główny",
       "sub": "Podreg"
     },
-    "noInfo": "Brak informacji.",
+    "noInfo": "Brak informacji. Kliknij, aby przesłać zrzut ekranu punktu.",
+    "communityRule1": "Przed przesłaniem upewnij się, że przeczytałeś i przestrzegasz",
+    "communityRule2": "Wytycznych społeczności",
+    "uploading": "Przesyłanie...",
+    "uploadPending": "Przesłano. Zostanie wyświetlone po weryfikacji.",
     "readFullText": "Kliknij, aby przeczytać pełny tekst.",
-    "share": "Skopiuj link do udostępnienia dla tego znacznika.",
-    "copied": "Link skopiowany"
+    "share": "Skopiuj link udostępniania tego znacznika.",
+    "copied": "Link skopiowany",
+    "viewer": {
+      "author": "Autor",
+      "uploadedAt": "Przesłano",
+      "upvote": "Wesprzyj",
+      "flag": "Oznacz jako nieprawidłowe",
+      "unflag": "Usuń oznaczenie",
+      "share": "Udostępnij",
+      "recall": "Poproś o usunięcie",
+      "unrecall": "Anuluj usunięcie"
+    },
+    "errors": {
+      "unsupportedType": "Obsługiwane są tylko obrazy JPEG/PNG/WebP/AVIF.",
+      "fileTooLarge": "Plik obrazu jest zbyt duży.",
+      "imageDecodeFailed": "Przeglądarka nie mogła otworzyć tego obrazu.",
+      "imageProcessingUnavailable": "Lokalne przetwarzanie obrazu jest niedostępne.",
+      "processedTooLarge": "Przetworzony obraz nadal jest zbyt duży.",
+      "uploadInvalidResponse": "Odpowiedź API przesyłania jest nieprawidłowa.",
+      "uploadNetwork": "Błąd sieci podczas przesyłania.",
+      "uploadAborted": "Przesyłanie anulowane.",
+      "uploadFailed": "Przesyłanie nie powiodło się. Spróbuj ponownie.",
+      "backendUnknown": "Usługa przesyłania zwróciła błąd."
+    }
   },
   "footer": {
     "icp": "沪ICP备2025119702号-1"
@@ -67,7 +93,7 @@
       "ru-RU": "Rosyjski",
       "pt-BR": "Portugalski",
       "id-ID": "Indonezyjski",
-      "ar-AE": "Arabski",
+      "ar-SA": "Arabski",
       "ms-MY": "Malajski",
       "pl-PL": "Polski",
       "sv-SE": "Szwedzki",
@@ -216,9 +242,7 @@
       "ack": "Kontynuując, potwierdzasz, że przeczytałeś i akceptujesz",
       "ackLink": "<a href=\"https://blog.opendfieldmap.org/docs/privacy\" target=\"_blank\" rel=\"noopener\">Politykę prywatności</a> oraz <a href=\"https://blog.opendfieldmap.org/docs/tos\" target=\"_blank\" rel=\"noopener\">Warunki korzystania z usługi</a>.",
       "hints": {
-        "200": "Dostęp przyznany",
-        "201": "Konto utworzone",
-        "202": "Hasło zmienione",
+        "0": "Błędny e-mail lub hasło",
         "101": "Wymagany adres e-mail",
         "102": "Nieprawidłowy e-mail",
         "103": "E-mail jest już w użyciu",
@@ -229,18 +253,20 @@
         "121": "Wymagany kod OTP",
         "122": "Nieprawidłowy kod OTP",
         "123": "Kod OTP wygasł",
-        "0": "Błędny e-mail lub hasło",
+        "200": "Dostęp przyznany",
+        "201": "Konto utworzone",
+        "202": "Hasło zmienione",
         "429": "Zbyt wiele prób",
         "430": "Kontrola bezpieczeństwa",
-        "801": "Zawieszony: Naruszenie zasad",
-        "802": "Zawieszony: Odmowa dostępu",
         "601": "Sesja wygasła",
         "602": "Wymagane logowanie",
         "603": "Odmowa dostępu",
         "604": "Konflikt powiązanych kont",
         "701": "Przeciążenie systemu",
         "702": "Przekroczono limit czasu",
-        "703": "Przerwa techniczna"
+        "703": "Przerwa techniczna",
+        "801": "Zawieszony: Naruszenie zasad",
+        "802": "Zawieszony: Odmowa dostępu"
       }
     },
     "profile": {
@@ -255,6 +281,12 @@
       "save": "Zapisz zmiany",
       "saving": "Zapisywanie...",
       "logout": "Wyloguj się"
+    }
+  },
+  "scale": {
+    "pip": {
+      "activeTitle": "Tryb obraz w obrazie jest aktywny",
+      "returnHint": "Kliknij logo, aby wrócić do tej karty"
     }
   },
   "locator": {
@@ -303,6 +335,7 @@
       },
       "featureTitle": "Funkcje",
       "trackPoints": "Śledzenie",
+      "centerOnPosition": "Wyśrodkuj gracza",
       "heatmap": "Mapa cieplna",
       "configNote1": "Włączenie tej funkcji oznacza akceptację ",
       "configNote2": " oraz innych warunków."
@@ -336,7 +369,7 @@
     "all": "Wszystkie",
     "selected": "Wybrane",
     "confirm": "Potwierdź",
-    "loading": "Ładowanie…",
+    "loading": "Ładowanie...",
     "enable": "Włącz",
     "disable": "Wyłącz",
     "expand": "Rozwiń",
