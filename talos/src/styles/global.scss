@@ -4,6 +4,7 @@
 @use './highlight';
 @use './boundary';
 @use './cluster';
+@use './pip.scss';
 @use './embed' as *;
 
 /* Import Leaflet MarkerCluster styles */
@@ -21,101 +22,12 @@
     These transition can be overrided for UX need.
     NOTE: Use transition-delay: 0s to ensure no delay interference with local animations.
 */
-/* stylelint-disable selector-class-pattern */
 :root[data-theme-switching] .theme-transition-scope,
 :root[data-theme-switching] .theme-transition-scope * {
     transition-property: color, background-color, border-color, fill, stroke, box-shadow, text-shadow, filter;
     transition-duration: var(--theme-transition-duration);
     transition-timing-function: var(--theme-transition-ease);
     transition-delay: 0s; /* Explicit 0 delay to prevent inheritance issues */
-}
-/* stylelint-enable selector-class-pattern */
-
-:root[data-pip-window='true']:not([data-pip-mobile='true']) .app {
-    min-width: var(--app-responsive-width, 800px);
-}
-
-:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='uiOverlay'][class*='sidebarOpen'] {
-    left: var(--sidebar-width, 300px);
-    width: calc(100% - var(--sidebar-width, 300px));
-}
-
-:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='switchArea'] {
-    top: 26%;
-}
-
-:root[data-pip-window='true'] [class*='headbarItem'][class*='disabled'] {
-    opacity: 0.28;
-}
-
-:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='mainFilterList'] {
-    position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-    height: 56px;
-    border-radius: 6px;
-    box-shadow: 0 0 5px rgba($black-0, 0.6);
-}
-
-:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='innerContainer'] {
-    gap: 4px;
-}
-
-.talosPipPlaceholder {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    border: 0;
-    padding: 0;
-    overflow: hidden;
-    cursor: pointer;
-    color: $light-1;
-    background-color: var(--map-bg, #111);
-    font-family: inherit;
-}
-
-.talosPipPlaceholderPattern {
-    position: absolute;
-    inset: 0;
-    background-color: var(--map-pattern-bg, #333);
-    mask-image: url('../assets/images/UI/map-pattern.svg');
-    mask-repeat: repeat;
-    mask-size: 100px;
-    opacity: var(--map-pattern-opacity, 1);
-    pointer-events: none;
-}
-
-.talosPipPlaceholderCard {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    text-shadow: 0 2px 4px rgba($black-0, 0.45);
-}
-
-.talosPipPlaceholderLogo {
-    width: min(34vw, 12rem);
-    max-width: 180px;
-    filter: drop-shadow(0 4px 8px rgba($black-0, 0.45));
-}
-
-.talosPipPlaceholderTitle {
-    margin-top: 0.4rem;
-    font-size: clamp(1rem, 2.4vw, 1.4rem);
-    color: $primary-accent-4;
-}
-
-.talosPipPlaceholderDesc {
-    max-width: 24rem;
-    font-family: 'HMSans_EN', HMSans, 'Noto Sans SC', sans-serif;
-    font-size: clamp(0.8rem, 1.6vw, 1rem);
-    color: $light-2;
 }
 .app {
     position: relative;
@@ -125,7 +37,6 @@
     height: 100dvh;
     overflow: hidden;
     /* opt-in container for theme transitions */
-    /* stylelint-disable-next-line selector-class-pattern */
     &.theme-transition-scope {
         outline: none; /* activated by :root[data-theme-switching] */
     }
@@ -149,6 +60,7 @@
         height: 100%;
     }
 }
+
 * {
     overscroll-behavior: none;
     transform-origin: center;

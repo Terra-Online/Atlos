@@ -1,0 +1,101 @@
+@use './palette' as *;
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) .app {
+    min-width: min(var(--app-responsive-width, 800px), 100dvw);
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='uiOverlay'][class*='sidebarOpen'] {
+    left: var(--sidebar-width, 300px);
+    width: calc(100% - var(--sidebar-width, 300px));
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='switchArea'] {
+    top: 26%;
+}
+
+:root[data-pip-window='true'] [class*='headbarItem'][class*='disabled'] {
+    opacity: 0.28;
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='mainFilterList'] {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    height: 56px;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba($black-0, 0.6);
+}
+
+:root[data-pip-window='true']:not([data-pip-mobile='true']) [class*='innerContainer'] {
+    gap: 4px;
+}
+
+:root[data-pip-window='true'][data-pip-mobile='true'] [class*='mainFilterList'] {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 28px;
+    box-shadow: inset 0 0 8px rgba($black-0, 0.35);
+}
+
+:root[data-pip-window='true'][data-pip-mobile='true'] [class*='innerContainer'] {
+    gap: 0;
+}
+
+.talosPipPlaceholder {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    color: $light-1;
+    background-color: var(--map-bg, #111);
+    font-family: inherit;
+}
+
+.talosPipPlaceholderPattern {
+    position: absolute;
+    inset: 0;
+    background-color: var(--map-pattern-bg, #333);
+    mask-image: url('../assets/images/UI/map-pattern.svg');
+    mask-repeat: repeat;
+    mask-size: 100px;
+    opacity: var(--map-pattern-opacity, 1);
+    pointer-events: none;
+}
+
+.talosPipPlaceholderCard {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    text-shadow: 0 2px 4px rgba($black-0, 0.45);
+}
+
+.talosPipPlaceholderLogo {
+    width: min(34vw, 12rem);
+    max-width: 180px;
+    filter: drop-shadow(0 4px 8px rgba($black-0, 0.45));
+}
+
+.talosPipPlaceholderTitle {
+    margin-top: 0.4rem;
+    font-size: clamp(1rem, 2.4vw, 1.4rem);
+    color: $primary-accent-4;
+}
+
+.talosPipPlaceholderDesc {
+    max-width: 24rem;
+    font-family: 'HMSans_EN', HMSans, 'Noto Sans SC', sans-serif;
+    font-size: clamp(0.8rem, 1.6vw, 1rem);
+    color: $light-2;
+}

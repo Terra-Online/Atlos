@@ -20,6 +20,10 @@ type WindowWithDocumentPictureInPicture = Window &
         documentPictureInPicture?: DocumentPictureInPicture;
     };
 
+type SvgElementInstanceLike = Element & {
+    correspondingUseElement?: Element | null;
+};
+
 type StateListener = (active: boolean) => void;
 type ViewportListener = () => void;
 type LeafletWithMutableDocument = typeof L & {
@@ -28,9 +32,75 @@ type LeafletWithMutableDocument = typeof L & {
         _pointersCount?: number;
     };
     Draggable?: {
-        _dragging?: unknown;
+        prototype?: LeafletDraggablePrototype;
+        _dragging?: LeafletDraggableInstance | false;
+    };
+    Browser?: {
+        touch?: boolean;
     };
 };
+
+type LeafletPointLikeEvent = Event & {
+    touches?: TouchList;
+    which?: number;
+    button?: number;
+    shiftKey?: boolean;
+    clientX?: number;
+    clientY?: number;
+    srcElement?: EventTarget | null;
+};
+
+type SvgElementInstanceConstructor = {
+    new(): SvgElementInstanceLike;
+};
+
+type WindowWithSvgElementInstance = Window & {
+    SVGElementInstance?: SvgElementInstanceConstructor;
+};
+
+type LeafletDraggableInstance = {
+    _enabled?: boolean;
+    _moved?: boolean;
+    _moving?: boolean;
+    _element?: HTMLElement;
+    _dragStartTarget?: HTMLElement;
+    _preventOutline?: boolean;
+    _startPoint?: L.Point;
+    _startPos?: L.Point;
+    _parentScale?: {
+        x: number;
+        y: number;
+    };
+    _newPos?: L.Point;
+    _lastEvent?: Event;
+    _lastTarget?: Element | null;
+    options?: {
+        clickTolerance?: number;
+    };
+    _updatePosition?: () => void;
+    fire?: (type: string, data?: unknown) => LeafletDraggableInstance;
+    _onDown?: (event: LeafletPointLikeEvent) => void;
+    _onMove?: (event: LeafletPointLikeEvent) => void;
+    _onUp?: (event?: LeafletPointLikeEvent) => void;
+    finishDrag?: (noInertia?: boolean) => void;
+    __talosDragDocument?: Document | null;
+    __talosDragWindow?: Window | null;
+    __talosDragWasMouse?: boolean;
+    __talosDragCleanup?: (() => void) | null;
+    __talosOutlineCleanup?: (() => void) | null;
+};
+
+type LeafletDraggablePrototype = LeafletDraggableInstance & {
+    __talosPatched?: boolean;
+};
+
+type NodeLike = {
+    ownerDocument?: Document | null;
+};
+
+const isElement = (value: unknown): value is Element => (
+    typeof Element !== 'undefined' && value instanceof Element
+);
 
 const APP_ROOT_ID = 'root';
 const PIP_WIDTH = 800;
@@ -48,8 +118,6 @@ let rootAttributeObserver: MutationObserver | null = null;
 const listeners = new Set<StateListener>();
 const viewportListeners = new Set<ViewportListener>();
 
-let nativeDocumentDescriptor: PropertyDescriptor | null = null;
-let documentOverride: Document | null = null;
 const openerDocument = typeof window === 'undefined' ? null : window.document;
 
 const getDocumentPictureInPicture = (): DocumentPictureInPicture | null => {
@@ -71,6 +139,8 @@ export const getPictureInPictureWindow = () => (
 export const getPictureInPictureDocument = () => getPictureInPictureWindow()?.document ?? null;
 
 export const getOpenerDocument = () => openerDocument;
+
+export const getAppDocument = () => getPictureInPictureDocument() ?? openerDocument ?? document;
 
 export const getAppViewport = () => {
     const pipWindow = activePipWindow && !activePipWindow.closed ? activePipWindow : null;
@@ -132,8 +202,20 @@ const isPipMobileViewport = (targetWindow: Window) => {
 
 const syncPipViewportAttributes = (targetWindow: Window) => {
     const root = targetWindow.document.documentElement;
-    root.style.setProperty('--app-responsive-width', `${PIP_WIDTH}px`);
+    root.style.setProperty('--app-responsive-width', `${targetWindow.innerWidth}px`);
+    root.style.setProperty('--app-responsive-height', `${targetWindow.innerHeight}px`);
     root.toggleAttribute('data-pip-mobile', isPipMobileViewport(targetWindow));
+};
+
+const syncPictureInPictureViewport = (targetWindow: Window) => {
+    syncPipViewportAttributes(targetWindow);
+    emitViewport();
+};
+
+const schedulePictureInPictureViewportSync = (targetWindow: Window) => {
+    syncPictureInPictureViewport(targetWindow);
+    targetWindow.requestAnimationFrame(() => syncPictureInPictureViewport(targetWindow));
+    targetWindow.setTimeout(() => syncPictureInPictureViewport(targetWindow), 120);
 };
 
 const cloneAppStyles = (source: Document, target: Document) => {
@@ -172,7 +254,6 @@ const notifyViewportChanged = () => {
     if (activePipWindow && !activePipWindow.closed) {
         syncPipViewportAttributes(activePipWindow);
     }
-    window.dispatchEvent(new Event('resize'));
     emitViewport();
 };
 
@@ -180,42 +261,270 @@ const handlePictureInPictureResize = () => {
     notifyViewportChanged();
 };
 
-const activateDocumentOverride = (targetDocument: Document) => {
-    if (!nativeDocumentDescriptor) {
-        nativeDocumentDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'document') ?? null;
-    }
-
-    documentOverride = targetDocument;
-
-    try {
-        Object.defineProperty(globalThis, 'document', {
-            configurable: true,
-            get: (): Document => {
-                if (documentOverride) return documentOverride;
-                if (nativeDocumentDescriptor?.get) {
-                    return nativeDocumentDescriptor.get.call(globalThis) as Document;
-                }
-                return window.document;
-            },
-        });
-    } catch (error) {
-        console.warn('[PiP] Failed to redirect global document for cross-document drag events.', error);
-    }
+const eventDocument = (event?: Event, fallback?: HTMLElement | null) => {
+    const target = event?.target as NodeLike | null | undefined;
+    if (target?.ownerDocument) return target.ownerDocument;
+    return fallback?.ownerDocument ?? openerDocument ?? null;
 };
 
-const restoreDocumentOverride = () => {
-    documentOverride = null;
-    if (!nativeDocumentDescriptor) return;
+const eventWindow = (event?: Event, fallback?: HTMLElement | null) => (
+    eventDocument(event, fallback)?.defaultView ?? window
+);
 
-    try {
-        Object.defineProperty(globalThis, 'document', nativeDocumentDescriptor);
-    } catch (error) {
-        console.warn('[PiP] Failed to restore global document.', error);
-    }
+const getSizedParentNodeForDocument = (element: HTMLElement, targetDocument: Document) => {
+    let current: HTMLElement | null = element;
+    do {
+        current = current.parentElement;
+    } while (current && (!current.offsetWidth || !current.offsetHeight) && current !== targetDocument.body);
+    return current ?? targetDocument.body;
 };
+
+const disableScopedTextSelection = (targetWindow: Window) => {
+    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
+    return () => {
+        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
+    };
+};
+
+const disableScopedImageDrag = (targetWindow: Window) => {
+    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
+    return () => {
+        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
+    };
+};
+
+const preventScopedOutline = (draggable: LeafletDraggableInstance, targetWindow: Window) => {
+    let element = draggable._element;
+    if (!draggable._preventOutline || !element) return;
+
+    while (element.tabIndex === -1 && element.parentElement) {
+        element = element.parentElement;
+    }
+    if (!element.style) return;
+
+    const outlineElement = element;
+    draggable.__talosOutlineCleanup?.();
+    const previousOutline = outlineElement.style.outlineStyle;
+    outlineElement.style.outlineStyle = 'none';
+
+    const restoreOutline = () => {
+        outlineElement.style.outlineStyle = previousOutline;
+        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'keydown', restoreOutline);
+        if (draggable.__talosOutlineCleanup === restoreOutline) {
+            draggable.__talosOutlineCleanup = null;
+        }
+    };
+
+    draggable.__talosOutlineCleanup = restoreOutline;
+    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'keydown', restoreOutline);
+};
+
+const cleanupScopedDragGuards = (draggable: LeafletDraggableInstance) => {
+    draggable.__talosDragCleanup?.();
+    draggable.__talosDragCleanup = null;
+    draggable.__talosOutlineCleanup?.();
+    draggable.__talosOutlineCleanup = null;
+};
+
+const installLeafletDraggableDocumentPatch = () => {
+    const leaflet = L as LeafletWithMutableDocument;
+    const draggablePrototype = leaflet.Draggable?.prototype;
+    if (!draggablePrototype || draggablePrototype.__talosPatched) return;
+
+    const originalOnDown = draggablePrototype._onDown;
+    const originalOnMove = draggablePrototype._onMove;
+    const originalOnUp = draggablePrototype._onUp;
+    const originalFinishDrag = draggablePrototype.finishDrag;
+    if (!originalOnDown || !originalOnMove || !originalOnUp || !originalFinishDrag) return;
+
+    draggablePrototype._onDown = function patchedOnDown(this: LeafletDraggableInstance, event: LeafletPointLikeEvent) {
+        const isPipDrag = eventDocument(event, this._dragStartTarget) === getPictureInPictureDocument();
+        if (!isPipDrag) {
+            originalOnDown.call(this, event);
+            return;
+        }
+
+        if (!this._enabled) return;
+        this._moved = false;
+
+        if (!this._element || L.DomUtil.hasClass(this._element, 'leaflet-zoom-anim')) return;
+
+        if (event.touches && event.touches.length !== 1) {
+            if (leaflet.Draggable?._dragging === this) {
+                this.finishDrag?.();
+            }
+            return;
+        }
+
+        if (
+            leaflet.Draggable?._dragging ||
+            event.shiftKey ||
+            (event.which !== 1 && event.button !== 1 && !event.touches)
+        ) {
+            return;
+        }
+
+        const targetDocument = eventDocument(event, this._dragStartTarget);
+        const targetWindow = eventWindow(event, this._dragStartTarget);
+        if (!targetDocument || !leaflet.Draggable) return;
+
+        const first = event.touches ? event.touches[0] : event;
+        if (typeof first?.clientX !== 'number' || typeof first.clientY !== 'number') return;
+
+        cleanupScopedDragGuards(this);
+        this.__talosDragDocument = targetDocument;
+        this.__talosDragWindow = targetWindow;
+        this.__talosDragWasMouse = event.type === 'mousedown';
+        leaflet.Draggable._dragging = this;
+
+        preventScopedOutline(this, targetWindow);
+        const restoreImageDrag = disableScopedImageDrag(targetWindow);
+        const restoreTextSelection = disableScopedTextSelection(targetWindow);
+        this.__talosDragCleanup = () => {
+            restoreImageDrag();
+            restoreTextSelection();
+        };
+
+        if (this._moving) return;
+
+        this.fire?.('down');
+
+        const sizedParent = getSizedParentNodeForDocument(this._element, targetDocument);
+
+        this._startPoint = new L.Point(first.clientX, first.clientY);
+        this._startPos = L.DomUtil.getPosition(this._element);
+        this._parentScale = L.DomUtil.getScale(sizedParent);
+
+        L.DomEvent.on(
+            targetDocument as unknown as HTMLElement,
+            this.__talosDragWasMouse ? 'mousemove' : 'touchmove',
+            this._onMove as (moveEvent: Event) => void,
+            this,
+        );
+        L.DomEvent.on(
+            targetDocument as unknown as HTMLElement,
+            this.__talosDragWasMouse ? 'mouseup' : 'touchend touchcancel',
+            this._onUp as (upEvent: Event) => void,
+            this,
+        );
+    };
+
+    draggablePrototype._onMove = function patchedOnMove(this: LeafletDraggableInstance, event: LeafletPointLikeEvent) {
+        if (!this.__talosDragDocument) {
+            originalOnMove.call(this, event);
+            return;
+        }
+
+        if (!this._enabled || !this._startPoint || !this._startPos || !this._parentScale) return;
+
+        if (event.touches && event.touches.length > 1) {
+            this._moved = true;
+            return;
+        }
+
+        const first = event.touches && event.touches.length === 1 ? event.touches[0] : event;
+        if (typeof first?.clientX !== 'number' || typeof first.clientY !== 'number') return;
+        const offset = new L.Point(first.clientX, first.clientY).subtract(this._startPoint);
+
+        if (!offset.x && !offset.y) return;
+        if (Math.abs(offset.x) + Math.abs(offset.y) < (this.options?.clickTolerance ?? 3)) return;
+
+        offset.x /= this._parentScale.x;
+        offset.y /= this._parentScale.y;
+
+        L.DomEvent.preventDefault(event);
+
+        const targetDocument = this.__talosDragDocument ?? eventDocument(event, this._dragStartTarget);
+        const targetWindow = this.__talosDragWindow ?? eventWindow(event, this._dragStartTarget);
+
+        if (!this._moved) {
+            this.fire?.('dragstart');
+            this._moved = true;
+
+            if (targetDocument) {
+                L.DomUtil.addClass(targetDocument.body, 'leaflet-dragging');
+            }
+
+            const rawTarget = event.target || event.srcElement;
+            const target = isElement(rawTarget) ? rawTarget : null;
+            const svgElementInstance = (targetWindow as WindowWithSvgElementInstance).SVGElementInstance;
+            if (svgElementInstance && target instanceof svgElementInstance) {
+                this._lastTarget = target.correspondingUseElement;
+            } else {
+                this._lastTarget = target;
+            }
+            if (this._lastTarget) {
+                L.DomUtil.addClass(this._lastTarget as HTMLElement, 'leaflet-drag-target');
+            }
+        }
+
+        this._newPos = this._startPos.add(offset);
+        this._moving = true;
+        this._lastEvent = event;
+        this._updatePosition?.();
+    };
+
+    draggablePrototype._onUp = function patchedOnUp(this: LeafletDraggableInstance, event?: LeafletPointLikeEvent) {
+        if (!this.__talosDragDocument) {
+            originalOnUp.call(this, event);
+            return;
+        }
+
+        if (!this._enabled) return;
+        this.finishDrag?.();
+    };
+
+    draggablePrototype.finishDrag = function patchedFinishDrag(this: LeafletDraggableInstance, noInertia?: boolean) {
+        if (!this.__talosDragDocument) {
+            originalFinishDrag.call(this, noInertia);
+            return;
+        }
+
+        const targetDocument = this.__talosDragDocument ?? this._dragStartTarget?.ownerDocument ?? openerDocument;
+        if (targetDocument) {
+            L.DomUtil.removeClass(targetDocument.body, 'leaflet-dragging');
+        }
+
+        if (this._lastTarget) {
+            L.DomUtil.removeClass(this._lastTarget as HTMLElement, 'leaflet-drag-target');
+            this._lastTarget = null;
+        }
+
+        const listenerDocument = (targetDocument ?? document) as unknown as HTMLElement;
+        L.DomEvent.off(listenerDocument, 'mousemove touchmove', this._onMove as (moveEvent: Event) => void, this);
+        L.DomEvent.off(listenerDocument, 'mouseup touchend touchcancel', this._onUp as (upEvent: Event) => void, this);
+        cleanupScopedDragGuards(this);
+
+        const fireDragend = Boolean(this._moved && this._moving && this._newPos && this._startPos);
+
+        this._moving = false;
+        if (leaflet.Draggable) {
+            leaflet.Draggable._dragging = false;
+        }
+
+        if (fireDragend) {
+            this.fire?.('dragend', {
+                noInertia,
+                distance: this._newPos?.distanceTo(this._startPos as L.Point) ?? 0,
+            });
+        }
+
+        this.__talosDragDocument = null;
+        this.__talosDragWindow = null;
+        this.__talosDragWasMouse = false;
+    };
+
+    draggablePrototype.__talosPatched = true;
+};
+
+installLeafletDraggableDocumentPatch();
 
 const resetLeafletDragState = () => {
     const leaflet = L as LeafletWithMutableDocument;
+    const activeDraggable = leaflet.Draggable?._dragging;
+    if (activeDraggable) {
+        activeDraggable.finishDrag?.(true);
+    }
     if (leaflet.Draggable) {
         leaflet.Draggable._dragging = false;
     }
@@ -260,7 +569,6 @@ export const closeAppPictureInPicture = () => {
     rootAttributeObserver?.disconnect();
     rootAttributeObserver = null;
     resetLeafletDragState();
-    restoreDocumentOverride();
     pipWindow?.removeEventListener('resize', handlePictureInPictureResize);
 
     if (root && originalParent && restoreAnchor?.parentNode === originalParent) {
@@ -315,10 +623,9 @@ export const openAppPictureInPicture = async () => {
         preparePictureInPictureDocument(pipWindow);
         mountPlaceholder();
         pipWindow.document.body.append(root);
-        activateDocumentOverride(pipWindow.document);
         pipWindow.addEventListener('resize', handlePictureInPictureResize);
         pipWindow.addEventListener('pagehide', closeAppPictureInPicture, { once: true });
-        notifyViewportChanged();
+        schedulePictureInPictureViewportSync(pipWindow);
         emitState();
         return true;
     } catch (error) {
@@ -342,6 +649,12 @@ export const useAppPictureInPicture = (map?: LeafletMap) => {
             map?.invalidateSize();
         });
     }, [active, map]);
+
+    useEffect(() => subscribeAppViewport(() => {
+        requestAnimationFrame(() => {
+            map?.invalidateSize();
+        });
+    }), [map]);
 
     const toggle = useCallback(async () => {
         if (!supported) return;

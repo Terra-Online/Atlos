@@ -33,7 +33,9 @@ export function useDevice(
         const handleResize = () => setDeviceType(getDeviceType());
         handleResize();
         window.addEventListener('resize', handleResize);
-        const unsubscribeViewport = subscribeAppViewport(handleResize);
+        const unsubscribeViewport = subscribeAppViewport(() => {
+            handleResize();
+        });
         return () => {
             window.removeEventListener('resize', handleResize);
             unsubscribeViewport();

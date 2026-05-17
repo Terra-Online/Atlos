@@ -18,6 +18,7 @@ import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
 import { useLocator } from '@/component/map/useLocator';
 import { useIsUserGuideOpen } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/component/locator/state';
+import { getAppDocument, subscribePictureInPictureState } from '@/component/scale/pip';
 
 const UserGuide = lazy(() => import('@/component/userGuide/UserGuide'));
 const LocationAuth = lazy(() => import('@/component/locator/LocationAuth'));
@@ -115,6 +116,7 @@ function App() {
 
     // Show UI on any click or page visibility change
     useEffect(() => {
+        const activeDocument = getAppDocument();
         const showUI = () => {
             setUiVisible(true);
         };
@@ -127,28 +129,32 @@ function App() {
         };
 
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+            if (activeDocument.visibilityState === 'visible') {
                 showUI();
             }
         };
 
         if (!uiVisible) {
             // Use capture phase to catch clicks before they reach other elements
-            document.addEventListener('click', handleClick, true);
-            document.addEventListener(
+            activeDocument.addEventListener('click', handleClick, true);
+            activeDocument.addEventListener(
                 'visibilitychange',
                 handleVisibilityChange,
             );
         }
 
         return () => {
-            document.removeEventListener('click', handleClick, true);
-            document.removeEventListener(
+            activeDocument.removeEventListener('click', handleClick, true);
+            activeDocument.removeEventListener(
                 'visibilitychange',
                 handleVisibilityChange,
             );
         };
     }, [uiVisible]);
+
+    useEffect(() => subscribePictureInPictureState(() => {
+        setUiVisible(true);
+    }), []);
 
     return (
         <StrictMode>
