@@ -15,7 +15,7 @@ import {
   updateProfileNickname,
 } from './authFlow';
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
-import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
+import { getNextAvatarIndex, getPrevAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
 import { getCachedSession } from '@/utils/backendCache';
 
@@ -207,8 +207,10 @@ export const useIdCardAuthController = () => {
     openAuthModal(hasLoggedInBefore ? 'login' : 'register');
   }, [authReady, hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
 
-  const handleCycleProfileAvatar = useCallback(() => {
-    setProfileAvatar((current) => getNextAvatarIndex(current));
+  const handleCycleProfileAvatar = useCallback((direction: 1 | -1) => {
+    setProfileAvatar((current) =>
+      direction === 1 ? getNextAvatarIndex(current) : getPrevAvatarIndex(current),
+    );
   }, []);
 
   const handleDiscordAuthClick = useCallback(async () => {

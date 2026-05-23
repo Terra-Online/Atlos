@@ -22,7 +22,7 @@ interface IdCardViewProps {
   cardRef?: RefObject<HTMLDivElement | null>;
   onCardMouseMove?: MouseEventHandler<HTMLDivElement>;
   onCardMouseLeave?: MouseEventHandler<HTMLDivElement>;
-  onAvatarClick?: () => void;
+  onAvatarClick?: MouseEventHandler<HTMLButtonElement>;
   avatarAriaLabel?: string;
   avatarIndex?: number;
   editableName?: boolean;
