@@ -1,0 +1,15 @@
+{
+  "name": "@atlos/intel",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "subset:fonts": "python3 ./scripts/subset-fonts.py",
+    "type-check": "tsc --noEmit",
+    "build": "pnpm run subset:fonts && vite build",
+    "build:oss": "pnpm run subset:fonts && cross-env BUILD_TARGET=oss vite build",
+    "build:r2": "pnpm run subset:fonts && cross-env BUILD_TARGET=r2 vite build",
+    "build:r2:beta": "pnpm run subset:fonts && cross-env BUILD_TARGET=r2 DEPLOY_CHANNEL=beta vite build"
+  }
+}

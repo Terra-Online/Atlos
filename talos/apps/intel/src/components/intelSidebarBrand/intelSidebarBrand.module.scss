@@ -1,0 +1,45 @@
+@use '@main/styles/palette.scss' as *;
+
+/* stylelint-disable property-no-vendor-prefix, selector-pseudo-class-no-unknown */
+
+.brand {
+  --intel-sidebar-with-color: #{$black-1};
+
+  position: relative;
+  width: 100%;
+  height: 5.5rem;
+  display: grid;
+  place-items: center;
+
+  :global(:root[data-theme='dark']) & {
+    --intel-sidebar-with-color: #{$light-2};
+  }
+
+  &::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1.15rem;
+    aspect-ratio: 24 / 25;
+    background-color: var(--intel-sidebar-with-color);
+    content: '';
+    pointer-events: none;
+    transform: translate3d(-50%, -50%, 0);
+    transition: background-color var(--theme-transition-duration) var(--theme-transition-ease);
+    -webkit-mask-image: url('@intel/assets/with.svg');
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-image: url('@intel/assets/with.svg');
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: contain;
+  }
+
+  > img {
+    display: block;
+    width: min(80%, 12rem);
+    max-height: 4.5rem;
+    object-fit: contain;
+  }
+}

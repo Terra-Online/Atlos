@@ -1,0 +1,7 @@
+.host {
+  display: contents;
+
+  > * {
+    z-index: 500;
+  }
+}
