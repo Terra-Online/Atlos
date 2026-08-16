@@ -14,7 +14,7 @@ export default function LazyApp() {
         });
         const load = async () => {
             setMaxProgress(60);
-            fontLoader();
+            await fontLoader();
             setMaxProgress(90);
             const module = await import('./App');
             setMaxProgress(100);
