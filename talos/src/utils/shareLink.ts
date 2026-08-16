@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { IMarkerData } from '@/data/marker';
-import { generatePointShareUrl } from '@/utils/urlState';
+import { generatePointShareUrl } from '@/utils/url/share';
 
 const COPY_POPUP_DURATION_MS = 1500;
 

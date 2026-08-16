@@ -43,7 +43,7 @@ import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 import { useAnnouncementFlow } from './useAnnFlow';
-import { shouldSuppressInitialAutoOverlays } from '@/utils/urlState';
+import { shouldSuppressInitialAutoOverlays } from '@/utils/url/apply';
 
 const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
 

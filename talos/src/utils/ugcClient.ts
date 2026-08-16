@@ -1,6 +1,6 @@
 import { getAuthBase, getAuthHeaders } from '@/component/login/authFlow';
 import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
-import { buildPointShareToken } from '@/utils/urlState';
+import { buildPointShareToken } from '@/utils/url/share';
 
 export type UGCUploadableCategory = 'collection' | 'archives' | 'exploration';
 

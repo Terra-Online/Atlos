@@ -7,7 +7,7 @@ import {
 import {
     applyUrlParams,
     shouldSuppressInitialAutoOverlays,
-} from './urlState';
+} from './url/apply';
 
 describe('URL state user guide handling', () => {
     beforeEach(() => {
