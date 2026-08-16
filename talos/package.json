@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode dev",
+    "dev:intel": "node ./scripts/dev-intel.mjs",
     "subset:fonts": "python3 ./scripts/subset-fonts.py",
     "worker:type-check": "pnpm -F oem-search type-check",
     "worker:deploy": "pnpm -F oem-search run deploy",
@@ -18,6 +19,7 @@
     "lint:fix:css": "prettier --write \"**/*.{css,scss}\" && stylelint --fix \"**/*.{css,scss}\"",
     "lint:fix": "run-s lint:fix:js lint:fix:css -c",
     "type-check": "tsc --noEmit",
+    "type-check:intel": "pnpm --filter @atlos/intel type-check",
     "test": "vitest run",
     "build:prepare": "node ./scripts/build-prepare.mjs",
     "build:marker-stats": "node ./scripts/build-marker-stats.mjs",
@@ -26,36 +28,33 @@
     "build:seo": "node ./scripts/build-seo-pages.mjs",
     "build:seo:pages": "cross-env SEO_WRITE_ALL_POINT_FILES=1 SEO_SKIP_IMAGES=1 node ./scripts/build-seo-pages.mjs",
     "build:relink-preview": "node ./scripts/build-relink-preview.mjs",
-
+    "sync:intel-data": "node ./scripts/sync-intel-data.mjs",
+    "validate:intel-data": "node ./scripts/validate-intel-data.mjs",
     "build:seo:og": "run-p build:seo:og:oss build:seo:og:r2",
     "build:seo:og:oss": "cross-env BUILD_TARGET=oss SEO_IMAGE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/oss node ./scripts/build-seo-pages.mjs",
     "build:seo:og:r2": "cross-env BUILD_TARGET=r2 SEO_IMAGE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/r2 node ./scripts/build-seo-pages.mjs",
     "build:seo:og:refresh-state": "run-s build:seo:og:refresh-state:oss build:seo:og:refresh-state:r2",
     "build:seo:og:refresh-state:oss": "cross-env BUILD_TARGET=oss SEO_IMAGE_ONLY=1 SEO_OG_REFRESH_STATE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/oss node ./scripts/build-seo-pages.mjs",
     "build:seo:og:refresh-state:r2": "cross-env BUILD_TARGET=r2 SEO_IMAGE_ONLY=1 SEO_OG_REFRESH_STATE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/r2 node ./scripts/build-seo-pages.mjs",
-
     "build:check": "run-s type-check lint:style-contracts",
-
     "build": "node ./scripts/build-oss.mjs",
     "build:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/build-oss.mjs",
     "build:r2": "node ./scripts/build-r2.mjs",
     "build:r2:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/build-r2.mjs",
+    "build:intel": "pnpm --filter @atlos/intel build:oss",
+    "build:intel:r2": "pnpm --filter @atlos/intel build:r2",
+    "build:intel:r2:beta": "pnpm --filter @atlos/intel build:r2:beta",
     "build:all": "node ./scripts/build-all.mjs",
-
     "publish:web": "node ./scripts/publish-oss.js",
     "publish:web:r2": "node ./scripts/publish-R2.js",
     "publish:web:r2:beta": "cross-env DEPLOY_CHANNEL=beta node ./scripts/publish-R2.js",
     "publish:web:r2:resources:beta": "cross-env DEPLOY_CHANNEL=beta R2_UPLOAD_PROFILE=resources node ./scripts/publish-R2.js",
-
     "package:pages:org:beta": "cross-env DEPLOY_CHANNEL=beta BUILD_TARGET=r2 node ./scripts/package-pages.mjs --target org --channel beta --project oem-root-uatenv --branch beta --custom-domain beta.opendfieldmap.org",
     "publish:pages:org:beta": "wrangler pages deploy .pages-dist/org-beta --project-name oem-root-uatenv --branch beta",
-
     "package:pages:org:prod": "cross-env DEPLOY_CHANNEL=prod BUILD_TARGET=r2 node ./scripts/package-pages.mjs --target org --channel prod --project oem-root --branch main --custom-domain opendfieldmap.org",
     "publish:pages:org:prod": "wrangler pages deploy .pages-dist/org-prod --project-name oem-root --branch main",
-
     "publish:seo:og:oss": "node ./scripts/publish-seo-og-OSS.js",
     "publish:seo:og:r2": "node ./scripts/publish-seo-og-R2.js",
-
     "release:package": "node ./scripts/package-dist.mjs",
     "release:package:cn:beta": "node ./scripts/package-dist.mjs --target cn --channel beta",
     "release:package:cn:prod": "node ./scripts/package-dist.mjs --target cn --channel prod",
@@ -90,6 +89,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "liquid-glass-react-positioning": "^1.1.1",
+    "lucide-react": "^0.468.0",
     "motion": "^12.9.4",
     "pinyin-pro": "^3.28.0",
     "progressive-blur": "^1.0.0",

@@ -6,11 +6,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const shouldSkipSubset = args.includes('--skip-subset') || args.includes('--skip-subset-fonts');
 const shouldSkipOg = args.includes('--skip-og') || args.includes('--skip-seo-og');
+const shouldSkipIntel = args.includes('--skip-intel');
 const knownArgs = [
   '--skip-subset',
   '--skip-subset-fonts',
   '--skip-og',
   '--skip-seo-og',
+  '--skip-intel',
 ];
 const unknownArgs = args.filter((arg) => !knownArgs.includes(arg));
 
@@ -67,10 +69,24 @@ runSync('node', [
   '--skip-seo',
   ...(shouldSkipSubset ? ['--skip-subset'] : []),
 ]);
+
+if (!shouldSkipIntel) {
+  runSync('node', ['./scripts/validate-intel-data.mjs']);
+  if (!shouldSkipSubset) {
+    runSync('pnpm', ['--filter', '@atlos/intel', 'subset:fonts']);
+  }
+}
+
 if (!shouldSkipOg) runSync('pnpm', ['run', 'build:seo:og']);
 
 const ossDistDir = path.resolve(ROOT, 'dist/oss');
 const r2DistDir = path.resolve(ROOT, 'dist/r2');
+const intelBuildStep = (target) => ({
+  name: 'build-intel',
+  command: 'pnpm',
+  args: ['--filter', '@atlos/intel', 'exec', 'vite', 'build'],
+  env: { BUILD_TARGET: target },
+});
 
 const results = await Promise.all([
   runPipeline('cn', [
@@ -80,6 +96,7 @@ const results = await Promise.all([
       args: ['./scripts/build-oss.mjs', '--skip-prepare'],
       env: { BUILD_TARGET: 'oss', BUILD_OUT_DIR: 'dist/oss' },
     },
+    ...(!shouldSkipIntel ? [intelBuildStep('oss')] : []),
     {
       name: 'publish',
       command: 'bash',
@@ -94,6 +111,7 @@ const results = await Promise.all([
       args: ['./scripts/build-r2.mjs', '--skip-prepare'],
       env: { BUILD_TARGET: 'r2', BUILD_OUT_DIR: 'dist/r2' },
     },
+    ...(!shouldSkipIntel ? [intelBuildStep('r2')] : []),
     {
       name: 'publish-r2',
       command: 'pnpm',
@@ -103,7 +121,10 @@ const results = await Promise.all([
     {
       name: 'package-pages',
       command: 'pnpm',
-      args: ['package:pages:org:prod'],
+      args: [
+        'package:pages:org:prod',
+        ...(shouldSkipIntel ? ['--', '--skip-intel'] : []),
+      ],
       env: { DIST_DIR: r2DistDir },
     },
     {

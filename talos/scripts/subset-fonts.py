@@ -421,7 +421,7 @@ def main():
         [(font_path, harmony_chars) for font_path in HARMONY_FONTS],
         workers,
     )
-    
+
     print("\n" + "=" * 70)
     print("✨ Font subsetting completed successfully!")
     print("=" * 70)
