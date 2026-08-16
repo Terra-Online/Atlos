@@ -8,7 +8,7 @@ import {
   normalizeLang,
   toBCP47,
   type Lang,
-} from '@main/utils/lang';
+} from '@main/lib/i18n/lang';
 import { switchFontRegion } from '@main/locale/fontLoader';
 
 export {
@@ -33,7 +33,7 @@ export {
   toBCP47,
   type FontRegion,
   type Lang,
-} from '@main/utils/lang';
+} from '@main/lib/i18n/lang';
 
 interface I18nBundle {
   game: Record<string, unknown>;

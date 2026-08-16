@@ -11,7 +11,7 @@ import {
   type ArchiveProgressManifestPayload,
   type ArchiveProgressSyncRequestPayload,
   type CloudArchiveProgress,
-} from '@main/utils/progressSyncClient';
+} from '@main/services/progress';
 import { useTranslateUI } from '@intel/locale';
 import {
   areArchiveSetsEqual,

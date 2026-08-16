@@ -5,7 +5,7 @@ import { Trigger, TriggerBar } from '@main/component/trigger/trigger';
 import drawerStyles from '@main/component/sideBar/triggerDrawer.module.scss';
 import { useTranslateGame, useTranslateUI } from '@intel/locale';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
-import { useDevice } from '@main/utils/device';
+import { useDevice } from '@main/platform/device';
 import {
   useUiPrefsStore,
   useIntelCardsExpanded,

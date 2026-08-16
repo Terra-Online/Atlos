@@ -3,7 +3,7 @@ import LanguageModal from '@main/component/language/language';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { useTranslateUI } from '@main/locale';
 import { setLocale as setIntelLocale } from '@intel/locale';
-import { cleanupTheme, initTheme, toggleTheme } from '@main/utils/theme';
+import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
 import styles from './intelHeadBar.module.scss';

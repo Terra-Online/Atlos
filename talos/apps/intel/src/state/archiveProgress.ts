@@ -1,5 +1,5 @@
 import { intelArchives } from '@intel/data/types';
-import type { ArchiveProgressManifestPayload } from '@main/utils/progressSyncClient';
+import type { ArchiveProgressManifestPayload } from '@main/services/progress';
 
 let archiveProgressIndexPromise: Promise<ArchiveProgressManifestPayload> | null = null;
 
