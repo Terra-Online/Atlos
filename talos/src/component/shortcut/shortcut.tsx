@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './shortcut.module.scss';
-import { isMac } from '@/utils/platform';
+import { isMac } from '@/platform/platform';
 
 export interface KeyChip {
     label: string;

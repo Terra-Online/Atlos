@@ -37,7 +37,7 @@ import useRegion from '@/store/region';
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useFilter, useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
-import { useAppViewport } from '@/utils/device';
+import { useAppViewport } from '@/platform/device';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,

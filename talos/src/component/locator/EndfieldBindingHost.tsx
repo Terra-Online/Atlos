@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import {
     ENDFIELD_BINDING_REQUEST_EVENT,
     type EndfieldBindingRequestDetail,

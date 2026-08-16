@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { UseBoundStore, StoreApi } from 'zustand';
-import LOGGER from '@/utils/log';
+import LOGGER from '@/lib/logging/logger';
 import { switchFontRegion } from '@/locale/fontLoader';
 import {
     SUPPORTED_LANGS,
@@ -10,7 +10,7 @@ import {
     normalizeLang,
     toBCP47,
     type Lang,
-} from '@/utils/lang';
+} from '@/lib/i18n/lang';
 export {
     FULL_LANGS,
     UI_ONLY_LANGS,
@@ -33,7 +33,7 @@ export {
     toBCP47,
     type FontRegion,
     type Lang,
-} from '@/utils/lang';
+} from '@/lib/i18n/lang';
 
 export interface II18nBundle {
     game: Record<string, unknown>; // Game stuff(point, category, etc)

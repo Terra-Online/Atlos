@@ -15,9 +15,9 @@ import {
     type IMarkerData,
 } from '@/data/marker';
 import { SUBREGION_DICT } from '@/data/map';
-import { formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
-import { navigateToMarkerId } from '@/utils/navigation';
-import { useDevice } from '@/utils/device';
+import { formatRelativeTime, parseTimestamp } from '@/lib/format/time';
+import { navigateToMarkerId } from '@/services/map';
+import { useDevice } from '@/platform/device';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { AccessButton } from '@/component/login/access';
 import {
@@ -30,7 +30,7 @@ import {
     type NotificationItem,
     type NotificationLiveUpdate,
     type NotificationUnreadCounts,
-} from '@/utils/notifyClient';
+} from '@/services/notifications/client';
 import NotificationIcon from '@/assets/logos/group.svg?react';
 import CheckAllIcon from '@/assets/logos/collectall.svg?react';
 import CommunityIcon from '@/assets/logos/reply.svg?react';

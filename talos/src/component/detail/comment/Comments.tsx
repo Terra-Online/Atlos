@@ -5,15 +5,15 @@ import styles from './comments.module.scss';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
-import { formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
-import { docsLink, linkTpl } from '@/utils/docsLink';
+import { formatRelativeTime, parseTimestamp } from '@/lib/format/time';
+import { docsLink, linkTpl } from '@/lib/i18n/docsLink';
 import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
     listUGCComments,
     type UGCComment,
     type UGCCommentVoteValue,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import ShortActions, { type ShortActionItem } from '@/component/uploader/shortActions';
 import TranslateIcon from '@/assets/logos/translater.svg?react';
 import LikeIcon from '@/assets/images/UI/like.svg?react';

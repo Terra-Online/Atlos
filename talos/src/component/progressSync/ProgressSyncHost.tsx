@@ -5,14 +5,14 @@ import { useAuthStore } from '@/store/auth';
 import { useProgressSyncStore, type CloudProgress, type ProgressConflictState } from '@/store/progressSync';
 import { useUserRecordStore } from '@/store/userRecord';
 import { replacePointProgressFromExternal } from '@/store/history';
-import { getProgressManifestPayload, getProgressMarkerIndex, type ProgressManifestPayload } from '@/utils/progressBitmap';
+import { getProgressManifestPayload, getProgressMarkerIndex, type ProgressManifestPayload } from '@/services/progress';
 import {
     fetchCloudProgress,
     ProgressSyncError,
     registerProgressManifest,
     syncCloudProgress,
     type ProgressSyncRequestPayload,
-} from '@/utils/progressSyncClient';
+} from '@/services/progress';
 
 const MAX_DIRTY_MS = 60_000;
 const COUNT_FLUSH_THRESHOLD = 10;

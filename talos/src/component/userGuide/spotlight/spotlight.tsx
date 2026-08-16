@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import styles from './spotlight.module.scss';
-import { useAppViewport } from '@/utils/device';
+import { useAppViewport } from '@/platform/device';
 
 interface SpotlightProps {
   getCurrentTarget: () => Element | null;

@@ -1,4 +1,4 @@
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import L from 'leaflet';
 import ScaleDesktop from './scale.desktop';
 import ScaleMobile from './scale.mobile';

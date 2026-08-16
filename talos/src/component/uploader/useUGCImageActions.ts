@@ -8,7 +8,7 @@ import {
     type UGCImage,
     type UGCImageActionPatch,
     type UGCSubmissionImage,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import { getUpvoteCount, type PointImagesState } from './useUGCPointImages';
 import type { UploadState } from './useUGCUpload';
 

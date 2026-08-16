@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { RegionProfile } from '@/utils/endfield/locatorTransform';
+import type { RegionProfile } from '@/services/endfield';
 
 export type LocatorViewMode = 'off' | 'tracking' | 'detached';
 

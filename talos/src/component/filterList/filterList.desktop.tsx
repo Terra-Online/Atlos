@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { getItemIconUrl } from '@/utils/resource.ts';
+import { getItemIconUrl } from '@/services/assets/resource';
 import { useFilter, useSwitchFilter } from '@/store/marker.ts';
 import { MARKER_TYPE_DICT } from '@/data/marker';
 import styles from './filterList.module.scss';

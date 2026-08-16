@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import { useForceHeadbarExpanded } from '@/store/uiPrefs';
 import PopoverTooltip from '@/component/popover/popover';
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import type { SessionUser } from '@/component/login/authTypes';
-import { getCachedSession, setCachedSession } from '@/utils/backendCache';
+import type { SessionUser } from '@/services/auth';
+import { getCachedSession, setCachedSession } from '@/services/cache/backend';
 
 interface AuthState {
   sessionUser: SessionUser | null;

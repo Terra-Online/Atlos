@@ -316,7 +316,6 @@ export default defineConfig({
         alias: {
             '@': resolve(__dirname, 'src'),
             '@/components': resolve(__dirname, 'src/component'),
-            '@/utils': resolve(__dirname, 'src/utils'),
             '@/data': resolve(__dirname, 'src/data'),
             '@/assets': resolve(__dirname, 'src/assets'),
             '@/styles': resolve(__dirname, 'src/styles'),

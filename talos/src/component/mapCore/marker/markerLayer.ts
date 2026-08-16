@@ -1,6 +1,6 @@
 import { REGION_DICT } from '@/data/map';
 import { IMarkerData, MARKER_TYPE_DICT, loadRegionMarkers } from '@/data/marker';
-import LOGGER from '@/utils/log';
+import LOGGER from '@/lib/logging/logger';
 import L from 'leaflet';
 import {
     emitPreviewLeave,
@@ -15,7 +15,7 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
 import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
-import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/utils/endfield/locatorTransform';
+import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/services/endfield';
 import type { LayerType } from '@/store/layer';
 
 const LOCATOR_PROXIMITY_XZ_METERS = 20;

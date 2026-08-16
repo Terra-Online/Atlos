@@ -6,15 +6,15 @@ import { AccessButton } from '@/component/login/access';
 import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
-import { docsLinks as makeDocsLinks, linksTpl } from '@/utils/docsLink';
+import { docsLinks as makeDocsLinks, linksTpl } from '@/lib/i18n/docsLink';
 import {
     bindEFRole,
     exchangeEFToken,
     type EFBindingSummary,
     type EFRoleOption,
-} from '@/utils/endfield/backendClient';
-import { readEFTrackerConf } from '@/utils/endfield/config';
-import { setCachedBinding } from '@/utils/backendCache';
+} from '@/services/endfield';
+import { readEFTrackerConf } from '@/services/endfield';
+import { setCachedBinding } from '@/services/cache/backend';
 import profileStyles from '@/component/login/profile/profile.module.scss';
 import BindingIcon from '@/assets/logos/binding.svg?react';
 import {

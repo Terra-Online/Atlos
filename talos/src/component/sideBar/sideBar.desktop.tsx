@@ -59,7 +59,7 @@ import {
 import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
 import { computeBinderColumns } from './binderMasonry';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 

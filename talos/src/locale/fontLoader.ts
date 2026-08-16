@@ -1,7 +1,7 @@
 // dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
 
 import { getFontAssetUrl } from './fontAssets';
-import { getFontRegionForLocale, type FontRegion } from '@/utils/lang';
+import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
 
 
 // Build CDN URL with base and normalize dev paths to production paths

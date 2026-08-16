@@ -1,5 +1,5 @@
 import { getProjectLangNameKey } from '@/locale';
-import type { UGCComment } from '@/utils/ugcClient';
+import type { UGCComment } from '@/services/ugc/client';
 import { isReviewing } from './commentsTree';
 
 export const avatarIndex = (comment: UGCComment): number | undefined => {

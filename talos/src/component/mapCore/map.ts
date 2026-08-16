@@ -2,7 +2,7 @@ import { REGION_DICT, type IMapRegion } from '@/data/map';
 import L from 'leaflet';
 import { MarkerLayer } from './marker/markerLayer';
 import { IMapView } from './type';
-import { getTileResourceUrl } from '@/utils/resource';
+import { getTileResourceUrl } from '@/services/assets/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/component/map/boundary';

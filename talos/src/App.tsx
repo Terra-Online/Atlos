@@ -15,7 +15,7 @@ import EndfieldBindingHost from '@/component/locator/EndfieldBindingHost';
 import { MetaHelper } from './component/MetaHelper';
 
 import { useSidebarOpen, useSidebarWidth } from '@/store/uiPrefs';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import { useKeyboardShortcuts } from '@/component/settings/useShortcuts';
 import { useMapMultiSelect } from '@/component/settings/useMapMultiSelect';
 import { useLocator } from '@/component/map/useLocator';

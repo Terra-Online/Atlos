@@ -3,13 +3,13 @@ import { createPortal } from 'react-dom';
 import styles from './viewer.module.scss';
 import PopoverTooltip from '@/component/popover/popover';
 import { useLocale, useTranslateUI } from '@/locale';
-import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
+import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/lib/format/time';
 import UpvoteIcon from '@/assets/images/UI/upvote.svg?react';
 import FlagIcon from '@/assets/images/UI/flag.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
 import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import Carousel from '@/component/carousel';
-import type { UGCImage } from '@/utils/ugcClient';
+import type { UGCImage } from '@/services/ugc/client';
 import ShortActions, { type ShortActionItem } from '@/component/uploader/shortActions';
 
 type CarouselDirection = 'previous' | 'next';

@@ -5,7 +5,7 @@ import App from './App.tsx';
 import { fontLoader } from './locale/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
 import { loadDevTools } from '@/devtools/loadDevTool';
-import { applyUrlParams } from '@/utils/url/apply';
+import { applyUrlParams } from '@/services/routing';
 
 const enforceLocalhostHost = (): boolean => {
     if (typeof window === 'undefined') return false;

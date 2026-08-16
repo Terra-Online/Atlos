@@ -27,7 +27,9 @@ Atlos/
       locale/           # i18n loader, language data
       store/            # Zustand stores
       styles/           # global SCSS (palette, fonts, curves)
-      utils/            # helpers (device, fonts, logging, resources)
+      lib/              # pure helpers (i18n, formatting, logging)
+      platform/         # browser and runtime adapters
+      services/         # domain APIs and application services
       data/             # static data (types, markers)
     config/             # build-time config (ignored from VCS)
     scripts/            # publish / utility scripts
@@ -57,7 +59,7 @@ Node 20+ and pnpm 8+ recommended.
 ## 5. Coding Standards
 - **TypeScript**: prefer explicit types; avoid implicit `any`. Use discriminated unions for complex variants.
 - **Components**: keep pure/presentational vs. stateful separated. Co-locate style file (`.module.scss`) with component.
-- **Imports**: use path aliases (`@/utils/...`) instead of deep relative traversals.
+- **Imports**: use the domain path aliases (`@/lib/...`, `@/platform/...`, and `@/services/...`) instead of deep relative traversals.
 - **Logging**: use provided util (`log.ts`) rather than raw `console.log` for future centralization.
 - **Performance**: memoize expensive derived values; avoid unnecessary re-renders (React hooks discipline).
 - **CSS/SCSS**: leverage variables from `palette.scss`, keep selectors shallow, avoid global leakage.

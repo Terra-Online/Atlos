@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { UGCComment } from '@/utils/ugcClient';
+import type { UGCComment } from '@/services/ugc/client';
 
 export const useReplyQuote = (duration: number) => {
     const timerRef = useRef<number | undefined>(undefined);

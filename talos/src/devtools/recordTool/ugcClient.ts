@@ -1,7 +1,7 @@
-import { getAuthBase } from '@/component/login/authFlow';
-import type { UGCImage } from '@/utils/ugcClient';
+import { getAuthBase } from '@/services/http/authRuntime';
+import type { UGCImage } from '@/services/ugc/client';
 
-export type { UGCImage } from '@/utils/ugcClient';
+export type { UGCImage } from '@/services/ugc/client';
 
 type CacheEntry = {
     expiresAt: number;

@@ -21,8 +21,8 @@ import {
 } from '@/store/uiPrefs';
 
 import { useLocale, useTranslateUI } from '@/locale';
-import { useDevice } from '@/utils/device';
-import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
+import { useDevice } from '@/platform/device';
+import { initTheme, cleanupTheme, toggleTheme } from '@/platform/theme';
 import { useAppPictureInPicture } from '@/component/scale/pip';
 import { Shortcut } from '@/component/shortcut';
 import { modKey } from '@/component/settings/shortcuts';
@@ -32,7 +32,7 @@ import {
     subscribeNotificationLive,
     type NotificationLiveUpdate,
     type NotificationUnreadCounts,
-} from '@/utils/notifyClient';
+} from '@/services/notifications/client';
 
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
@@ -43,7 +43,7 @@ import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 import { useAnnouncementFlow } from './useAnnFlow';
-import { shouldSuppressInitialAutoOverlays } from '@/utils/url/apply';
+import { shouldSuppressInitialAutoOverlays } from '@/services/routing';
 
 const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
 

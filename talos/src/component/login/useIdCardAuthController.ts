@@ -14,11 +14,11 @@ import {
   startOAuth,
   type OAuthProvider,
   updateProfileNickname,
-} from './authFlow';
+} from '@/services/auth';
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
 import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
-import { getCachedSession } from '@/utils/backendCache';
+import { getCachedSession } from '@/services/cache/backend';
 
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;

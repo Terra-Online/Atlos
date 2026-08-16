@@ -10,14 +10,14 @@ import {
     getEFPosition,
     openEFPositionSocket,
     type EFPositionSocketMessage,
-} from '@/utils/endfield/backendClient';
-import type { PositionResponse } from '@/utils/endfield/types';
-import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
+} from '@/services/endfield';
+import type { PositionResponse } from '@/services/endfield';
+import { convertEFPosition, type EFLocatorPosition } from '@/services/endfield';
 import {
     LOCATOR_CONFIG_UPDATED_EVENT,
     readEFTrackerConf,
     saveEFTrackerConf,
-} from '@/utils/endfield/config';
+} from '@/services/endfield';
 import styles from './Locator.module.scss';
 
 type TrackerConfig = {

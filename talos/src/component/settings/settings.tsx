@@ -14,7 +14,7 @@ import {
     usePerformanceMode,
     useSetPerformanceMode,
 } from '@/store/uiPrefs';
-import { applyTheme, startSystemFollow } from '@/utils/theme';
+import { applyTheme, startSystemFollow } from '@/platform/theme';
 import { Shortcut } from '@/component/shortcut';
 import { getShortcutConfig, type ShortcutEntry } from './shortcuts';
 

@@ -1,8 +1,8 @@
 import L, { divIcon } from 'leaflet';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
-import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
-import LOGGER from '@/utils/log';
+import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
+import LOGGER from '@/lib/logging/logger';
 import {
     MARKER_PREVIEW_ENTER_EVENT,
     MARKER_PREVIEW_LEAVE_EVENT,

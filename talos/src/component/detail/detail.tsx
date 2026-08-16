@@ -11,12 +11,12 @@ import { useAutoTrans } from './comment/useAutoTrans';
 import { useGlobalCollectionRate } from './useGlobalCollectionRate';
 
 import parse from 'html-react-parser';
-import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/utils/resource.ts';
+import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/services/assets/resource';
 import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
 import { getLoadedRegionMarkers, loadRegionMarkers, MARKER_TYPE_DICT } from '@/data/marker';
-import { usePointShareLink } from '@/utils/shareLink';
+import { usePointShareLink } from '@/component/share/usePointShareLink';
 import useRegion from '@/store/region';
-import { listUGCComments, resolveUGCUploadTarget, type UGCComment } from '@/utils/ugcClient';
+import { listUGCComments, resolveUGCUploadTarget, type UGCComment } from '@/services/ugc/client';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';

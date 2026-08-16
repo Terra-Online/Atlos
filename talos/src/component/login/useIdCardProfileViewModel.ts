@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLocale, useTranslateUI } from '@/locale';
-import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
-import type { SessionUser, UserGroupCode } from './authTypes';
+import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/lib/format/time';
+import type { SessionUser, UserGroupCode } from '@/services/auth';
 
 type KarmaLevel = 0 | 1 | 2 | 3 | 4 | 5;
 

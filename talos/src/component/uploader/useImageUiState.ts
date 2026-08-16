@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useLocale } from '@/locale';
-import { docsLink } from '@/utils/docsLink';
+import { docsLink } from '@/lib/i18n/docsLink';
 import { getUpvoteCount, type PointImagesState } from './useUGCPointImages';
 import type { UploadState } from './useUGCUpload';
 

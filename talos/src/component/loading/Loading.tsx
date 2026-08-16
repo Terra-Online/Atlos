@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './Loading.module.scss';
-import { useDevice } from '@/utils/device.ts';
+import { useDevice } from '@/platform/device';
 
 const Loading = ({
     maxProgress = 50,

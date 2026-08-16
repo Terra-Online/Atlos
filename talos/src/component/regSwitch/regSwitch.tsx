@@ -8,7 +8,7 @@ import useRegion from '@/store/region';
 import { useTranslateGame } from '@/locale';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { useForceRegionSubOpen } from '@/store/uiPrefs';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Wuling from '../../assets/logos/_Wuling.svg?react';

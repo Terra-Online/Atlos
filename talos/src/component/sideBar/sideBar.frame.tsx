@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type Ref } from 'react';
-import { useDevice, useAppViewport } from '@/utils/device';
+import { useDevice, useAppViewport } from '@/platform/device';
 import { useTranslateUI } from '@/locale';
 import {
   SIDEBAR_MIN_WIDTH,

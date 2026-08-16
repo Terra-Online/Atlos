@@ -7,15 +7,15 @@ import { useLocale, useTranslateUI } from '@/locale';
 import { formatIcuText } from '@/locale/messageFormat';
 import { useProgressSyncStore } from '@/store/progressSync';
 import { useUserRecordStore } from '@/store/userRecord';
-import { useDevice } from '@/utils/device';
-import { EFBackendError, getEFBindingStatus } from '@/utils/endfield/backendClient';
+import { useDevice } from '@/platform/device';
+import { EFBackendError, getEFBindingStatus } from '@/services/endfield';
 import {
   applyOfficialMarks,
   hasOfficialMarksConflict,
   loadOfficialMarksSnapshot,
   type OfficialMarksSnapshot,
-} from '@/utils/endfield/officialMarks';
-import { formatElapsedShort, parseTimestamp } from '@/utils/timeFormat';
+} from '@/services/endfield';
+import { formatElapsedShort, parseTimestamp } from '@/lib/format/time';
 import ProgressSyncHost from '@/component/progressSync/ProgressSyncHost';
 import { requestProgressSyncNow } from '@/component/progressSync/progressSyncController';
 import { AccessButton } from '../access';

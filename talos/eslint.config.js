@@ -11,7 +11,7 @@ const commonRules = {
 };
 
 export default [
-  { ignores: ['dist', '**/*.config.js', 'scripts'] },
+  { ignores: ['dist', '.pages-dist', '**/*.config.js', 'scripts'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -64,6 +64,17 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-non-null-assertion': 'warn',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/utils', '@/utils/*', '@/utils/**'],
+              message: 'Import from src/lib, src/platform, or src/services instead of src/utils.',
+            },
+          ],
+        },
+      ],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

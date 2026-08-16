@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import { IMarkerData, IMarkerType } from '@/data/marker';
-import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
+import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
 import styles from './marker.module.scss';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';

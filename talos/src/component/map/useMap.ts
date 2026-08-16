@@ -7,7 +7,7 @@ import { useMarkerStore } from '@/store/marker';
 import { useMarker } from './useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
 import { useCurrentLayer } from '@/store/layer';
-import { registerSharedPointMapCore } from '@/utils/navigation';
+import { registerSharedPointMapCore } from '@/services/map';
 import L from 'leaflet';
 
 // Hook for map initialization and region management

@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from './markBinder.module.scss';
 import type { BinderGroup } from '@/data/marker/binder';
-import { getItemIconUrl } from '@/utils/resource';
+import { getItemIconUrl } from '@/services/assets/resource';
 import { useTranslateGame } from '@/locale';
 import { useMultiRegionMarkerCount, useFilter, useSearchString, useMarkerStore } from '@/store/marker';
 import MarkSelector from '../markSelector/markSelector';

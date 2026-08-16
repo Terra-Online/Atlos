@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './markSelector.module.scss';
-import { getItemIconUrl } from '@/utils/resource.ts';
+import { getItemIconUrl } from '@/services/assets/resource';
 import { useTranslateGame } from '@/locale';
 import { MarkVisibilityContext } from '../markFilter/visibilityContext';
 import {

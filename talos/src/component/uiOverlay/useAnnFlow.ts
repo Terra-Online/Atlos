@@ -7,7 +7,7 @@ import {
     getAnnouncementLastRead,
     getAnnouncementLocaleCache,
     setAnnouncementLocaleCache,
-} from '@/utils/announcement';
+} from '@/services/announcements/client';
 
 const getHasUnreadAnnouncement = (latestId: string | null, latestDate?: string): boolean => {
     const lastRead = getAnnouncementLastRead();

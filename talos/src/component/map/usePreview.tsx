@@ -5,15 +5,15 @@ import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
 import { getAppViewport } from '@/component/scale/pip';
 import PopoverTooltip from '@/component/popover/popover';
-import { useAppViewport } from '@/utils/device';
-import { parseTimestamp } from '@/utils/timeFormat';
+import { useAppViewport } from '@/platform/device';
+import { parseTimestamp } from '@/lib/format/time';
 import { isRecordToolEnabled } from '@/devtools/loadDevTool';
 import {
     peekUGCImages,
     peekPublicUGCImages,
     listPublicUGCImagesByMarkerIds,
     type UGCImage,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import {
     MARKER_PREVIEW_ENTER_EVENT,
     MARKER_PREVIEW_LEAVE_EVENT,

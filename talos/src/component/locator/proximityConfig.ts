@@ -1,4 +1,4 @@
-import type { EFTrackerScope } from '@/utils/endfield/config';
+import type { EFTrackerScope } from '@/services/endfield';
 import { MARKER_TYPE_DICT, type IMarkerType } from '@/data/marker';
 
 export type LocatorReminderRule = string;

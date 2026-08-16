@@ -6,7 +6,7 @@ import LayerIcon from '../../assets/images/UI/layer.svg?react';
 import { useForceLayerSubOpen } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
 

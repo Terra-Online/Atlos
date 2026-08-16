@@ -4,8 +4,8 @@ import {
     getAppViewport,
     subscribePictureInPictureState,
 } from '@/component/scale/pip';
-import { isApplePlatform } from '@/utils/platform';
-import { useAppViewport } from '@/utils/device';
+import { isApplePlatform } from '@/platform/platform';
+import { useAppViewport } from '@/platform/device';
 
 const isUIVisibilityShortcut = (event: KeyboardEvent): boolean => {
     if (event.key.toLowerCase() !== 'h' || event.altKey || event.shiftKey) return false;

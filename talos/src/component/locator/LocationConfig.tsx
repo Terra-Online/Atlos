@@ -7,19 +7,19 @@ import profileStyles from '@/component/login/profile/profile.module.scss';
 import { Trigger } from '@/component/trigger/trigger';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
-import { docsLink, linksTpl } from '@/utils/docsLink';
+import { docsLink, linksTpl } from '@/lib/i18n/docsLink';
 import {
     getEFBindingStatus,
     unlinkEFBinding,
     type EFBindingSummary,
-} from '@/utils/endfield/backendClient';
+} from '@/services/endfield';
 import {
     readEFTrackerConf,
     saveEFTrackerConf,
     type EFTrackerConf,
     type EFTrackerScope,
-} from '@/utils/endfield/config';
-import { getCachedBinding, setCachedBinding } from '@/utils/backendCache';
+} from '@/services/endfield';
+import { getCachedBinding, setCachedBinding } from '@/services/cache/backend';
 import ConfigIcon from '@/assets/images/UI/config.svg?react';
 import { LOCATOR_REMINDER_SCOPE_OPTIONS } from './proximityConfig';
 import { disableSession } from './session';

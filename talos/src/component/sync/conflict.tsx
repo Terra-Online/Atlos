@@ -4,7 +4,7 @@ import { AccessButton } from '@/component/login/access';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { loadAllMarkers, type IMarkerData } from '@/data/marker';
 import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
-import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
+import { formatAbsoluteTime, formatRelativeTime, parseTimestamp } from '@/lib/format/time';
 import ConflictIcon from '@/assets/logos/conflict.svg?react';
 import styles from './conflict.module.scss';
 
