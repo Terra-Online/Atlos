@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Intel Archive - Open Endfieldmap",
+    "collecting": "Collecting",
+    "collectionComplete": "Complete",
+    "collected": "Collected",
+    "uncollected": "Not Collected",
+    "search": "Search intels",
+    "noResults": "No matching intel",
+    "noResultsHint": "Check your search or filters",
+    "mapSite": "View on OEM",
+    "showDetails": "Show Details",
+    "source": "Source",
+    "investUnlock": "Unlocks after {mission}",
+    "centralUnlock": "Unlocks through the main story",
+    "collectionSummary": "Collected: {items}",
+    "nonMapArchives": "Non-map archives",
+    "missionMapInteraction": "Interact with and complete {point}",
+    "pointPuzzle": "{point} puzzle",
+    "optionalCondition": "(Optional)",
+    "shopSystemPurchase": "Buy from {shop} in {region} regional development page.",
+    "shopNpcPurchase": "Buy from {shop} via {npc}.",
+    "specialNpcDialog": "{npc}: \"{dialog}\"",
+    "specialAcquisition": "Complete the dialogue and read the related Baker messages",
+    "method": {
+      "map": "Exploration",
+      "mission": "Mission",
+      "auto": "Progression",
+      "shop": "Shop",
+      "invstgt": "Investigation"
+    },
+    "label": {
+      "missionSequence": "Mission",
+      "acquisitionLocation": "Location",
+      "npc": "NPC"
+    }
+  }
+}

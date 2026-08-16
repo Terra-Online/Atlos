@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Archiwum - {site}",
+    "collecting": "Zbieranie",
+    "collectionComplete": "Ukończono",
+    "collected": "Zebrane",
+    "uncollected": "Niezebrane",
+    "search": "Szukaj informacji",
+    "noResults": "Brak pasujących informacji",
+    "noResultsHint": "Sprawdź wyszukiwane hasła lub filtry kategorii",
+    "mapSite": "Pokaż w OEM",
+    "showDetails": "Pokaż szczegóły",
+    "source": "Źródło",
+    "investUnlock": "Odblokowuje się po {mission}",
+    "centralUnlock": "Odblokowuje się w głównej fabule",
+    "collectionSummary": "Zebrane: {items}",
+    "nonMapArchives": "Archiwa poza mapą",
+    "missionMapInteraction": "Wejdź w interakcję z odpowiednim punktem {point} i ukończ go",
+    "pointPuzzle": "Zagadka {point}",
+    "optionalCondition": "(opcjonalne)",
+    "shopSystemPurchase": "Kup od {shop} na stronie rozwoju regionu {region}.",
+    "shopNpcPurchase": "Kup od {shop} u {npc}.",
+    "specialNpcDialog": "{npc} „{dialog}”",
+    "specialAcquisition": "Ukończ dialog i przeczytaj powiązane wiadomości Baker",
+    "method": {
+      "map": "Eksploracja",
+      "mission": "Misja",
+      "auto": "Postęp",
+      "shop": "Sklep",
+      "invstgt": "Dochodzenie"
+    },
+    "label": {
+      "missionSequence": "Misja",
+      "acquisitionLocation": "Lokalizacja",
+      "npc": "NPC"
+    }
+  }
+}

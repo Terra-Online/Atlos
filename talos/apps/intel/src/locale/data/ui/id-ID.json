@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Arsip - {site}",
+    "collecting": "Sedang dikumpulkan",
+    "collectionComplete": "Selesai",
+    "collected": "Terkumpul",
+    "uncollected": "Belum terkumpul",
+    "search": "Cari intel",
+    "noResults": "Tidak ada intel yang cocok",
+    "noResultsHint": "Periksa kata pencarian atau filter kategori",
+    "mapSite": "Tampilkan di OEM",
+    "showDetails": "Tampilkan detail",
+    "source": "Sumber",
+    "investUnlock": "Terbuka setelah {mission}",
+    "centralUnlock": "Terbuka melalui cerita utama",
+    "collectionSummary": "Terkumpul: {items}",
+    "nonMapArchives": "Arsip non-peta",
+    "missionMapInteraction": "Berinteraksi dengan {point} yang sesuai dan selesaikan",
+    "pointPuzzle": "Teka-teki {point}",
+    "optionalCondition": "(opsional)",
+    "shopSystemPurchase": "Beli dari {shop} di halaman pengembangan wilayah {region}.",
+    "shopNpcPurchase": "Beli dari {shop} milik {npc}.",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "Selesaikan dialog dan baca pesan Baker terkait",
+    "method": {
+      "map": "Eksplorasi",
+      "mission": "Misi",
+      "auto": "Progres",
+      "shop": "Toko",
+      "invstgt": "Investigasi"
+    },
+    "label": {
+      "missionSequence": "Misi",
+      "acquisitionLocation": "Lokasi",
+      "npc": "NPC"
+    }
+  }
+}

@@ -1,0 +1,3700 @@
+{
+  "version": 1,
+  "categories": {
+    "paper": [
+      {
+        "id": "nar_sm1l5m1_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l5m1"
+        }
+      },
+      {
+        "id": "nar_col_lv003_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030037
+        }
+      },
+      {
+        "id": "nar_col_lv003_5",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030040
+        }
+      },
+      {
+        "id": "nar_col_lv003_6",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030041
+        }
+      },
+      {
+        "id": "nar_col_lv003_19",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030054
+        }
+      },
+      {
+        "id": "nar_col_lv003_4",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030064
+        }
+      },
+      {
+        "id": "nar_col_lv003_15",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030050
+        }
+      },
+      {
+        "id": "nar_paper_map01_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330133
+        }
+      },
+      {
+        "id": "nar_paper_map01_5_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_6_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330180
+        }
+      },
+      {
+        "id": "nar_paper_map01_7_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330017
+        }
+      },
+      {
+        "id": "nar_paper_map01_8_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330016
+        }
+      },
+      {
+        "id": "nar_paper_map01_9_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330032
+        }
+      },
+      {
+        "id": "nar_paper_map01_12_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330026
+        }
+      },
+      {
+        "id": "nar_paper_map01_13_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330027
+        }
+      },
+      {
+        "id": "nar_paper_map01_16_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330187
+        }
+      },
+      {
+        "id": "nar_paper_map01_17_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330185
+        }
+      },
+      {
+        "id": "nar_paper_map01_18_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330075
+        }
+      },
+      {
+        "id": "nar_paper_map01_18_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330077
+        }
+      },
+      {
+        "id": "nar_paper_map01_18_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330083
+        }
+      },
+      {
+        "id": "nar_paper_map01_21_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330080
+        }
+      },
+      {
+        "id": "nar_paper_map01_21_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330078
+        }
+      },
+      {
+        "id": "nar_paper_map01_21_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330079
+        }
+      },
+      {
+        "id": "nar_paper_map01_21_4",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330081
+        }
+      },
+      {
+        "id": "nar_paper_map01_25_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330082
+        }
+      },
+      {
+        "id": "nar_paper_map01_47_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150028
+        }
+      },
+      {
+        "id": "nar_paper_map01_48_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150029
+        }
+      },
+      {
+        "id": "nar_paper_map01_49_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150031
+        }
+      },
+      {
+        "id": "nar_paper_map01_50_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150037
+        }
+      },
+      {
+        "id": "nar_paper_map01_51_1",
+        "icon": "prts_read_news",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150030
+        }
+      },
+      {
+        "id": "nar_paper_map01_52_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150043
+        }
+      },
+      {
+        "id": "nar_paper_map01_53_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150044
+        }
+      },
+      {
+        "id": "nar_paper_map01_2_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150002
+        }
+      },
+      {
+        "id": "nar_paper_map01_55_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150004
+        }
+      },
+      {
+        "id": "nar_paper_map01_56_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150038
+        }
+      },
+      {
+        "id": "nar_paper_map01_57_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150039
+        }
+      },
+      {
+        "id": "nar_paper_map01_58_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150027
+        }
+      },
+      {
+        "id": "nar_paper_map01_59_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150046
+        }
+      },
+      {
+        "id": "nar_paper_map01_60_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150041
+        }
+      },
+      {
+        "id": "nar_paper_map01_60_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150019
+        }
+      },
+      {
+        "id": "nar_paper_map01_60_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150042
+        }
+      },
+      {
+        "id": "nar_paper_map01_83_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230000
+        }
+      },
+      {
+        "id": "nar_paper_map01_85_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230001
+        }
+      },
+      {
+        "id": "nar_paper_map01_86_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230010
+        }
+      },
+      {
+        "id": "nar_paper_map01_87_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230013
+        }
+      },
+      {
+        "id": "nar_paper_map01_88_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230025
+        }
+      },
+      {
+        "id": "nar_paper_map01_89_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230028
+        }
+      },
+      {
+        "id": "nar_paper_map01_91_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230066
+        }
+      },
+      {
+        "id": "nar_paper_map01_92_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230035
+        }
+      },
+      {
+        "id": "nar_paper_map01_93_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230036
+        }
+      },
+      {
+        "id": "nar_paper_map01_94_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230038
+        }
+      },
+      {
+        "id": "nar_paper_map01_95_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230040
+        }
+      },
+      {
+        "id": "nar_paper_map01_96_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230049
+        }
+      },
+      {
+        "id": "nar_paper_map01_97_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230041
+        }
+      },
+      {
+        "id": "nar_paper_map01_99_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230046
+        }
+      },
+      {
+        "id": "nar_paper_map01_28_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090024
+        }
+      },
+      {
+        "id": "nar_paper_map01_37_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090013
+        }
+      },
+      {
+        "id": "nar_paper_map01_39_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090019
+        }
+      },
+      {
+        "id": "nar_paper_map01_42_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090025
+        }
+      },
+      {
+        "id": "nar_paper_map01_44_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090033
+        }
+      },
+      {
+        "id": "nar_paper_map01_27_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140003
+        }
+      },
+      {
+        "id": "nar_paper_map01_63_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140005
+        }
+      },
+      {
+        "id": "nar_paper_map01_65_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140041
+        }
+      },
+      {
+        "id": "nar_paper_map01_66_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140009
+        }
+      },
+      {
+        "id": "nar_paper_map01_67_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140010
+        }
+      },
+      {
+        "id": "nar_paper_map01_68_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140011
+        }
+      },
+      {
+        "id": "nar_paper_map01_127_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140020
+        }
+      },
+      {
+        "id": "nar_paper_map01_127_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140019
+        }
+      },
+      {
+        "id": "nar_paper_map01_127_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140018
+        }
+      },
+      {
+        "id": "nar_paper_map01_127_4",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140036
+        }
+      },
+      {
+        "id": "nar_paper_map01_69_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140012
+        }
+      },
+      {
+        "id": "nar_paper_map01_70_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140013
+        }
+      },
+      {
+        "id": "nar_paper_map01_75_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140048
+        }
+      },
+      {
+        "id": "nar_paper_map01_131_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140067
+        }
+      },
+      {
+        "id": "nar_paper_map01_106_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_paper_map01_107_1",
+        "icon": "prts_sm1l7m1_4",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_paper_map01_121_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100130086
+        }
+      },
+      {
+        "id": "nar_paper_map01_122_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100130083
+        }
+      },
+      {
+        "id": "nar_paper_map01_123_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100130084
+        }
+      },
+      {
+        "id": "nar_paper_map01_124_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100130085
+        }
+      },
+      {
+        "id": "nar_paper_map01_110_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_111_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_112_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv001_2",
+          "shopId": "shop_common_map01_lv001_2_1",
+          "npcId": "maji_map01",
+          "pointId": 2100500005,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "HB"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_112_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv001_2",
+          "shopId": "shop_common_map01_lv001_2_1",
+          "npcId": "maji_map01",
+          "pointId": 2100500005,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "HB"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_113_1",
+        "icon": "prts_read_news",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv006_1",
+          "shopId": "shop_common_map01_lv006_1_1",
+          "npcId": "e2m6env05_map01",
+          "pointId": 3500310003,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "OL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_114_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv006_1",
+          "shopId": "shop_common_map01_lv006_1_1",
+          "npcId": "e2m6env05_map01",
+          "pointId": 3500310003,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "OL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_115_1",
+        "icon": "prts_read_news",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv003_1",
+          "shopId": "shop_common_map01_lv003_1_2",
+          "npcId": "lunnade_map01",
+          "pointId": 300010026,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "AQ"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_116_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map01_lv003_1",
+          "shopId": "shop_common_map01_lv003_1_2",
+          "npcId": "lunnade_map01",
+          "pointId": 300010026,
+          "location": {
+            "regionId": "VL",
+            "subregionId": "AQ"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_research2_1_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m9d1"
+        }
+      },
+      {
+        "id": "nar_paper_map01_research2_3_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m9d3",
+          "questId": "f1m9d3_q#4"
+        }
+      },
+      {
+        "id": "nar_report_map01_research2_4_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m9d4"
+        }
+      },
+      {
+        "id": "nar_paper_map01_research3_2_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_research3_3_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map01_research3_4_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "domainshop_map01",
+          "shopId": "domainshop_page_com_map01",
+          "location": {
+            "regionId": "VL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map02_1_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350000
+        }
+      },
+      {
+        "id": "nar_paper_map02_2_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350001
+        }
+      },
+      {
+        "id": "nar_paper_map02_3_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350002
+        }
+      },
+      {
+        "id": "nar_paper_map02_3_2",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350004
+        }
+      },
+      {
+        "id": "nar_paper_map02_3_3",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350006
+        }
+      },
+      {
+        "id": "nar_paper_map02_3_4",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350010
+        }
+      },
+      {
+        "id": "nar_paper_map02_7_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350008
+        }
+      },
+      {
+        "id": "nar_paper_map02_8_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350009
+        }
+      },
+      {
+        "id": "nar_paper_map02_10_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350011
+        }
+      },
+      {
+        "id": "nar_paper_map02_11_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350012
+        }
+      },
+      {
+        "id": "nar_paper_map02_12_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350016
+        }
+      },
+      {
+        "id": "nar_paper_map02_13_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350017
+        }
+      },
+      {
+        "id": "nar_paper_map02_14_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350019
+        }
+      },
+      {
+        "id": "nar_paper_map02_15_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350023
+        }
+      },
+      {
+        "id": "nar_paper_map02_16_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350024
+        }
+      },
+      {
+        "id": "nar_paper_map02_19_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350027
+        }
+      },
+      {
+        "id": "nar_paper_map02_21_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350029
+        }
+      },
+      {
+        "id": "nar_paper_map02_22_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350031
+        }
+      },
+      {
+        "id": "nar_paper_map02_23_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350032
+        }
+      },
+      {
+        "id": "nar_paper_map02_24_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420001
+        }
+      },
+      {
+        "id": "nar_paper_map02_25_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420002
+        }
+      },
+      {
+        "id": "nar_paper_map02_25_2",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420003
+        }
+      },
+      {
+        "id": "nar_paper_map02_25_3",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420021
+        }
+      },
+      {
+        "id": "nar_paper_map02_25_4",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420037
+        }
+      },
+      {
+        "id": "nar_paper_map02_27_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420007
+        }
+      },
+      {
+        "id": "nar_paper_map02_28_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420009
+        }
+      },
+      {
+        "id": "nar_paper_map02_28_2",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420056
+        }
+      },
+      {
+        "id": "nar_paper_map02_29_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420010
+        }
+      },
+      {
+        "id": "nar_paper_map02_30_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420011
+        }
+      },
+      {
+        "id": "nar_paper_map02_31_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420012
+        }
+      },
+      {
+        "id": "nar_paper_map02_31_2",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420013
+        }
+      },
+      {
+        "id": "nar_paper_map02_32_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420015
+        }
+      },
+      {
+        "id": "nar_paper_map02_33_1",
+        "icon": "prts_listen_phonecall",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420004
+        }
+      },
+      {
+        "id": "nar_paper_map02_34_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420073
+        }
+      },
+      {
+        "id": "nar_paper_map02_35_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420074
+        }
+      },
+      {
+        "id": "nar_paper_map02_36_1",
+        "icon": "prts_listen_phonecall",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420023
+        }
+      },
+      {
+        "id": "nar_paper_map02_37_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420024
+        }
+      },
+      {
+        "id": "nar_paper_map02_38_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420026
+        }
+      },
+      {
+        "id": "nar_paper_map02_39_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420029
+        }
+      },
+      {
+        "id": "nar_paper_map02_39_2",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420030
+        }
+      },
+      {
+        "id": "nar_paper_map02_39_3",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420032
+        }
+      },
+      {
+        "id": "nar_paper_map02_39_4",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420034
+        }
+      },
+      {
+        "id": "nar_paper_map02_40_1",
+        "icon": "prts_listen_phonecall",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420036
+        }
+      },
+      {
+        "id": "nar_paper_map02_41_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420035
+        }
+      },
+      {
+        "id": "nar_paper_map02_42_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420040
+        }
+      },
+      {
+        "id": "nar_paper_map02_42_2",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420041
+        }
+      },
+      {
+        "id": "nar_paper_map02_42_3",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420042
+        }
+      },
+      {
+        "id": "nar_paper_map02_43_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420018
+        }
+      },
+      {
+        "id": "nar_paper_map02_44_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420043
+        }
+      },
+      {
+        "id": "nar_paper_map02_45_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420044
+        }
+      },
+      {
+        "id": "nar_paper_map02_46_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420045
+        }
+      },
+      {
+        "id": "nar_paper_map02_47_1",
+        "icon": "prts_read_news",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420046
+        }
+      },
+      {
+        "id": "nar_paper_map02_48_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420048
+        }
+      },
+      {
+        "id": "nar_paper_map02_49_1",
+        "icon": "prts_listen_phonecall",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420049
+        }
+      },
+      {
+        "id": "nar_paper_map02_50_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420051
+        }
+      },
+      {
+        "id": "nar_paper_map02_51_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420078
+        }
+      },
+      {
+        "id": "nar_paper_map02_52_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420052
+        }
+      },
+      {
+        "id": "nar_paper_map02_52_2",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420058
+        }
+      },
+      {
+        "id": "nar_paper_map02_53_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420053
+        }
+      },
+      {
+        "id": "nar_paper_map02_55_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420055
+        }
+      },
+      {
+        "id": "nar_paper_map02_56_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420063
+        }
+      },
+      {
+        "id": "nar_paper_map02_57_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420064
+        }
+      },
+      {
+        "id": "nar_paper_map02_58_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420067
+        }
+      },
+      {
+        "id": "nar_paper_map02_59_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420071
+        }
+      },
+      {
+        "id": "nar_paper_map02_60_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420057
+        }
+      },
+      {
+        "id": "nar_paper_map02_61_1",
+        "icon": "prts_listen_phonecall",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420059
+        }
+      },
+      {
+        "id": "nar_paper_map02_62_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25600110001
+        }
+      },
+      {
+        "id": "nar_paper_map02_63_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800070004
+        }
+      },
+      {
+        "id": "nar_paper_map02_67_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "shop",
+          "shopGroupId": "shop_common_map02_lv002_1",
+          "shopId": "shop_common_map02_lv002_1_1",
+          "npcId": "puyuan_map02",
+          "pointId": 22800280015,
+          "location": {
+            "regionId": "WL",
+            "subregionId": "WL"
+          }
+        }
+      },
+      {
+        "id": "nar_paper_map02_72_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200022
+        }
+      },
+      {
+        "id": "nar_paper_map02_73_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200024
+        }
+      },
+      {
+        "id": "nar_paper_map02_74_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200004
+        }
+      },
+      {
+        "id": "nar_paper_map02_75_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200011
+        }
+      },
+      {
+        "id": "nar_paper_map02_76_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200025
+        }
+      },
+      {
+        "id": "nar_paper_map02_77_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200026
+        }
+      },
+      {
+        "id": "nar_paper_map02_78_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200027
+        }
+      },
+      {
+        "id": "nar_paper_map02_79_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200005
+        }
+      },
+      {
+        "id": "nar_paper_map02_80_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200006
+        }
+      },
+      {
+        "id": "nar_paper_map02_81_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200012
+        }
+      },
+      {
+        "id": "nar_paper_map02_82_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200028
+        }
+      },
+      {
+        "id": "nar_paper_map02_83_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200008
+        }
+      },
+      {
+        "id": "nar_paper_map02_84_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200013
+        }
+      },
+      {
+        "id": "nar_paper_map02_85_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200014
+        }
+      },
+      {
+        "id": "nar_paper_map02_86_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200017
+        }
+      },
+      {
+        "id": "nar_paper_map02_87_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200035
+        }
+      },
+      {
+        "id": "nar_paper_map02_88_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200018
+        }
+      },
+      {
+        "id": "nar_paper_map02_89_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200029
+        }
+      },
+      {
+        "id": "nar_paper_map02_90_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200039
+        }
+      },
+      {
+        "id": "nar_paper_map02_92_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200009
+        }
+      },
+      {
+        "id": "nar_paper_map02_92_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200033
+        }
+      },
+      {
+        "id": "nar_paper_map02_93_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300060006
+        }
+      },
+      {
+        "id": "nar_paper_map02_93_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300060004
+        }
+      },
+      {
+        "id": "nar_paper_map02_94_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300130002
+        }
+      },
+      {
+        "id": "nar_paper_map02_123_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200031
+        }
+      },
+      {
+        "id": "nar_paper_map02_115_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800980001
+        }
+      },
+      {
+        "id": "nar_paper_map02_116_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800980002
+        }
+      },
+      {
+        "id": "nar_paper_map02_117_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800980005
+        }
+      },
+      {
+        "id": "nar_paper_map02_118_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800980006
+        }
+      },
+      {
+        "id": "nar_paper_map02_119_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800980007
+        }
+      },
+      {
+        "id": "nar_paper_map02_12147_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "e10m3"
+        }
+      },
+      {
+        "id": "nar_paper_map02_97_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250001
+        }
+      },
+      {
+        "id": "nar_paper_map02_98_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250034
+        }
+      },
+      {
+        "id": "nar_paper_map02_98_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250040
+        }
+      },
+      {
+        "id": "nar_paper_map02_99_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250039
+        }
+      },
+      {
+        "id": "nar_paper_map02_101_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250005
+        }
+      },
+      {
+        "id": "nar_paper_map02_102_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250006
+        }
+      },
+      {
+        "id": "nar_paper_map02_103_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250007
+        }
+      },
+      {
+        "id": "nar_paper_map02_104_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250009
+        }
+      },
+      {
+        "id": "nar_paper_map02_105_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250012
+        }
+      },
+      {
+        "id": "nar_paper_map02_106_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250033
+        }
+      },
+      {
+        "id": "nar_paper_map02_12146_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250042
+        }
+      },
+      {
+        "id": "nar_paper_map02_107_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250013
+        }
+      },
+      {
+        "id": "nar_paper_map02_107_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250016
+        }
+      },
+      {
+        "id": "nar_paper_map02_108_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250015
+        }
+      },
+      {
+        "id": "nar_paper_map02_109_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250017
+        }
+      },
+      {
+        "id": "nar_paper_map02_110_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250019
+        }
+      },
+      {
+        "id": "nar_paper_map02_111_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250022
+        }
+      },
+      {
+        "id": "nar_paper_map02_112_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250037
+        }
+      },
+      {
+        "id": "nar_paper_map02_128_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250041
+        }
+      },
+      {
+        "id": "nar_paper_map02_12137_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23200080006
+        }
+      },
+      {
+        "id": "nar_paper_map02_12143_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23200080007
+        }
+      },
+      {
+        "id": "nar_paper_map02_12145_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23200080015
+        }
+      },
+      {
+        "id": "nar_paper_map02_research1_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l2m3"
+        }
+      },
+      {
+        "id": "nar_paper_map02_research1_2_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l2m3"
+        }
+      },
+      {
+        "id": "nar_paper_map02_13001_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25000130001
+        }
+      },
+      {
+        "id": "nar_paper_map02_13001_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25000130002
+        }
+      },
+      {
+        "id": "nar_paper_map02_13001_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25000130003
+        }
+      },
+      {
+        "id": "nar_paper_map02_14003_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300038
+        }
+      },
+      {
+        "id": "nar_paper_map02_14004_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300030
+        }
+      },
+      {
+        "id": "nar_paper_map02_14005_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300039
+        }
+      },
+      {
+        "id": "nar_paper_map02_14007_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300042
+        }
+      },
+      {
+        "id": "nar_paper_map02_14013_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300044
+        }
+      },
+      {
+        "id": "nar_paper_map02_14013_2",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300045
+        }
+      },
+      {
+        "id": "nar_paper_map02_14014_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300046
+        }
+      },
+      {
+        "id": "nar_paper_map02_14017_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340039
+        }
+      },
+      {
+        "id": "nar_paper_map02_14018_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340040
+        }
+      },
+      {
+        "id": "nar_paper_map02_14019_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340035
+        }
+      },
+      {
+        "id": "nar_paper_map02_14020_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340041
+        }
+      },
+      {
+        "id": "nar_paper_map02_14021_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340042
+        }
+      },
+      {
+        "id": "nar_paper_map02_14023_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340043
+        }
+      },
+      {
+        "id": "nar_paper_map02_14025_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340044
+        }
+      },
+      {
+        "id": "nar_paper_map02_14025_2",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340045
+        }
+      },
+      {
+        "id": "nar_paper_map02_14025_3",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340046
+        }
+      },
+      {
+        "id": "nar_paper_map02_14026_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340037
+        }
+      },
+      {
+        "id": "nar_paper_map02_14027_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340047
+        }
+      },
+      {
+        "id": "nar_paper_map02_14028_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340038
+        }
+      },
+      {
+        "id": "nar_paper_map02_14029_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340048
+        }
+      },
+      {
+        "id": "nar_paper_map02_14030_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340049
+        }
+      },
+      {
+        "id": "nar_paper_map02_14031_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340050
+        }
+      },
+      {
+        "id": "nar_document_v1d4_6_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m17"
+        }
+      },
+      {
+        "id": "nar_paper_map02_research7_13_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m17",
+          "interaction": {
+            "pointId": 23100300002,
+            "stageId": "objective_gm02m17_7_001"
+          }
+        }
+      },
+      {
+        "id": "nar_document_v1d4_7_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m17"
+        }
+      },
+      {
+        "id": "nar_document_v1d4_8_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m18",
+          "interaction": {
+            "pointId": 23100300005,
+            "stageId": "objective_gm02m18_7_001"
+          }
+        }
+      },
+      {
+        "id": "nar_document_v1d4_9_1",
+        "icon": "prts_read_appliance",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m18",
+          "interaction": {
+            "pointId": 23100300004,
+            "stageId": "objective_gm02m18_6_001"
+          }
+        }
+      },
+      {
+        "id": "nar_document_v1d4_10_1",
+        "icon": "prts_read_appliance",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m19",
+          "interaction": {
+            "pointId": 23100300001,
+            "stageId": "objective_gm02m19_7_001"
+          }
+        }
+      },
+      {
+        "id": "nar_document_v1d4_11_1",
+        "icon": "prts_c13m3_letter",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm02m19",
+          "interaction": {
+            "pointId": 23100300006,
+            "stageId": "objective_gm02m19_8_001"
+          }
+        }
+      }
+    ],
+    "digital": [
+      {
+        "id": "nar_sm1l1m4_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m4",
+          "questId": "sm1l1m4_q#9"
+        }
+      },
+      {
+        "id": "nar_sm1l1m4_2",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m4",
+          "questId": "sm1l1m4_q#9"
+        }
+      },
+      {
+        "id": "nar_sm1l1m4_hatman_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m4"
+        }
+      },
+      {
+        "id": "nar_sm1l1m5_hatman_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m5"
+        }
+      },
+      {
+        "id": "nar_sm1l1m5_Alexander_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m5"
+        }
+      },
+      {
+        "id": "nar_sm1l1m5_Hans_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m5"
+        }
+      },
+      {
+        "id": "nar_sm1l1m6_Hans_doc",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m6"
+        }
+      },
+      {
+        "id": "nar_sm1l1m6_Hatman_doc",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m6"
+        }
+      },
+      {
+        "id": "nar_sm1l1m6_Alexander_doc",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m6"
+        }
+      },
+      {
+        "id": "nar_col_lv003_9d1",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300002655
+        }
+      },
+      {
+        "id": "nar_gm01m9_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400140017
+        }
+      },
+      {
+        "id": "nar_digital_map01_4_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330019
+        }
+      },
+      {
+        "id": "nar_digital_map01_11_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330003
+        }
+      },
+      {
+        "id": "nar_digital_map01_14_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330182
+        }
+      },
+      {
+        "id": "nar_digital_map01_15_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330183
+        }
+      },
+      {
+        "id": "nar_digital_map01_84_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230002
+        }
+      },
+      {
+        "id": "nar_digital_map01_90_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230029
+        }
+      },
+      {
+        "id": "nar_digital_map01_130_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230094
+        }
+      },
+      {
+        "id": "nar_digital_map01_98_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230045
+        }
+      },
+      {
+        "id": "nar_digital_map01_29_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090001
+        }
+      },
+      {
+        "id": "nar_digital_map01_29_2",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090002
+        }
+      },
+      {
+        "id": "nar_digital_map01_29_3",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090003
+        }
+      },
+      {
+        "id": "nar_digital_map01_32_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090005
+        }
+      },
+      {
+        "id": "nar_digital_map01_33_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090007
+        }
+      },
+      {
+        "id": "nar_digital_map01_34_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090009
+        }
+      },
+      {
+        "id": "nar_digital_map01_35_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090042
+        }
+      },
+      {
+        "id": "nar_digital_map01_36_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090040
+        }
+      },
+      {
+        "id": "nar_digital_map01_38_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090016
+        }
+      },
+      {
+        "id": "nar_digital_map01_40_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090022
+        }
+      },
+      {
+        "id": "nar_digital_map01_41_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090023
+        }
+      },
+      {
+        "id": "nar_digital_map01_43_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090031
+        }
+      },
+      {
+        "id": "nar_digital_map01_26_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140042
+        }
+      },
+      {
+        "id": "nar_digital_map01_64_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140006
+        }
+      },
+      {
+        "id": "nar_digital_map01_76_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140050
+        }
+      },
+      {
+        "id": "nar_digital_map01_77_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140022
+        }
+      },
+      {
+        "id": "nar_digital_map01_78_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140066
+        }
+      },
+      {
+        "id": "nar_digital_map01_79_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140063
+        }
+      },
+      {
+        "id": "nar_digital_map01_80_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140064
+        }
+      },
+      {
+        "id": "nar_digital_map01_101_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_101_2",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_103_1",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_103_2",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_103_3",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_103_4",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_104_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_104_2",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l7m1"
+        }
+      },
+      {
+        "id": "nar_digital_map01_125_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l5m2"
+        }
+      },
+      {
+        "id": "nar_digital_map01_126_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l5m2",
+          "questId": "sm1l5m2_q#4"
+        }
+      },
+      {
+        "id": "nar_digital_map01_research1_1_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m12"
+        }
+      },
+      {
+        "id": "nar_paper_map01_research1_2_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m14"
+        }
+      },
+      {
+        "id": "nar_report_map01_research1_10_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m13"
+        }
+      },
+      {
+        "id": "nar_digital_map01_research1_16_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m15"
+        }
+      },
+      {
+        "id": "nar_collection_map01_research2_2_1",
+        "icon": "prts_read_bag",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m9d2"
+        }
+      },
+      {
+        "id": "nar_digital_map02_17_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350025
+        }
+      },
+      {
+        "id": "nar_digital_map02_18_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350026
+        }
+      },
+      {
+        "id": "nar_digital_map02_20_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350028
+        }
+      },
+      {
+        "id": "nar_digital_map02_10001_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420082
+        }
+      },
+      {
+        "id": "nar_digital_map02_10002_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420081
+        }
+      },
+      {
+        "id": "nar_digital_map02_11125_1",
+        "icon": "prts_sm2l3m5_madina_f",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l3m6"
+        }
+      },
+      {
+        "id": "nar_digital_map02_11126_1",
+        "icon": "prts_sm2l3m4_bamboobell",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l3m6"
+        }
+      },
+      {
+        "id": "nar_digital_map02_11127_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l3m6"
+        }
+      },
+      {
+        "id": "nar_digital_map02_100_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250004
+        }
+      },
+      {
+        "id": "nar_digital_map02_12138_1",
+        "icon": "prts_f1m19d1_pic01",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_12139_1",
+        "icon": "prts_f1m19d1_pic02",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_12140_1",
+        "icon": "prts_f1m19d1_pic03",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_12141_1",
+        "icon": "prts_f1m19d1_pic04",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_12142_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23200080005
+        }
+      },
+      {
+        "id": "nar_digital_map02_research1_3_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l2m3"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13002_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13003_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13004_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13004_2",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13004_3",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_13004_4",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l6m1"
+        }
+      },
+      {
+        "id": "nar_digital_map02_14009_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300032
+        }
+      },
+      {
+        "id": "nar_digital_map02_14001_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300033
+        }
+      },
+      {
+        "id": "nar_digital_map02_14001_2",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300034
+        }
+      },
+      {
+        "id": "nar_digital_map02_14001_3",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300035
+        }
+      },
+      {
+        "id": "nar_digital_map02_14002_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300037
+        }
+      },
+      {
+        "id": "nar_digital_map02_14006_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300031
+        }
+      },
+      {
+        "id": "nar_digital_map02_14010_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300041
+        }
+      },
+      {
+        "id": "nar_digital_map02_14011_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300043
+        }
+      },
+      {
+        "id": "nar_digital_map02_14016_1",
+        "icon": "prts_read_pad",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300047
+        }
+      },
+      {
+        "id": "nar_digital_map02_14024_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340036
+        }
+      }
+    ],
+    "collection": [
+      {
+        "id": "nar_col_gm01m17",
+        "icon": "prts_collection_6",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m17"
+        }
+      },
+      {
+        "id": "nar_e1m7_1",
+        "icon": "prts_collection_ajipainting",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "e1m7"
+        }
+      },
+      {
+        "id": "nar_sm1l1m2_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m2",
+          "questId": "sm1l1m2_q#1"
+        }
+      },
+      {
+        "id": "nar_sm1l1m2_2",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m2",
+          "questId": "sm1l1m2_q#1"
+        }
+      },
+      {
+        "id": "nar_sm1l1m2_3",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100180021
+        }
+      },
+      {
+        "id": "nar_sm1l1m2_4",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l1m2"
+        }
+      },
+      {
+        "id": "nar_c13m3_2",
+        "icon": "prts_c13m3_letter",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c13m3"
+        }
+      },
+      {
+        "id": "nar_sm1l5m2_1",
+        "icon": "prts_sm1l5m2_avywencard",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l5m2"
+        }
+      },
+      {
+        "id": "nar_f1m4d3_1",
+        "icon": "prts_f1m4_painting",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m4d3"
+        }
+      },
+      {
+        "id": "nar_f1m4d3_2",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m4d3"
+        }
+      },
+      {
+        "id": "nar_f1m4d3_3",
+        "icon": "prts_f1m4_can",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m4d3"
+        }
+      },
+      {
+        "id": "nar_002_settlement",
+        "icon": "prts_002_settlement_sns",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m4d1",
+          "questId": "f1m4d1_q#11",
+          "special": {
+            "npcId": "suosi_map01",
+            "dialogOptionId": "option_dlg_map01_lv002_env_8_1_001",
+            "bakerChatId": "sns_chat_nfm_0_1",
+            "bakerDialogId": "sns_f1m4d1_4"
+          }
+        }
+      },
+      {
+        "id": "nar_collection_map01_10_1",
+        "icon": "prts_collection_lottery",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330123
+        }
+      },
+      {
+        "id": "nar_collection_map01_82_1",
+        "icon": "prts_sm1l3m3_flag",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm1l3m3"
+        }
+      },
+      {
+        "id": "nar_collection_map01_100_1",
+        "icon": "prts_c17m3_paintcan",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c17m3"
+        }
+      },
+      {
+        "id": "nar_collection_map01_129_1",
+        "icon": "prts_c16m2_notebook",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c16m4"
+        }
+      },
+      {
+        "id": "nar_collection_map02_96_1",
+        "icon": "prts_general_pic",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "sm2l1m5"
+        }
+      },
+      {
+        "id": "nar_collection_map02_68_1",
+        "icon": "prts_e6m3_zhuangfygift",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "e6m3"
+        }
+      },
+      {
+        "id": "nar_collection_map02_69_1",
+        "icon": "prts_e6m5_tangtanggift",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "e6m5"
+        }
+      },
+      {
+        "id": "nar_collection_map02_11124_1",
+        "icon": "prts_c27m2_tangtangtickets",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c27m2"
+        }
+      },
+      {
+        "id": "nar_collection_map02_95_1",
+        "icon": "prts_collection_amulet",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300130003
+        }
+      },
+      {
+        "id": "nar_collection_map02_12136_1",
+        "icon": "prts_e8m4_coin",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "e8m4"
+        }
+      },
+      {
+        "id": "nar_collection_map02_13006_1",
+        "icon": "prts_sm2l6m1_yujian",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25000130009
+        }
+      },
+      {
+        "id": "nar_collection_map02_13007_1",
+        "icon": "prts_c31m3_gift",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c31m3"
+        }
+      }
+    ],
+    "document": [
+      {
+        "id": "nar_document_v0d8_1_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_2_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_3_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_4_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_5_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_6_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_7_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_8_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_9_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_10_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_11_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_12_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_13_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_14_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_15_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_16_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_17_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_18_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_19_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_21_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_23_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_24_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_25_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_26_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_27_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_28_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_29_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_30_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_31_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_32_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_33_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_34_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_35_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_37_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_38_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_39_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v0d8_40_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d1_1_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_1_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_2_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_3_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_4_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_5_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_6_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_7_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_8_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_9_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_10_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_11_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d2_12_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d3_1_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d3_2_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d4_5_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d4_2_1",
+        "icon": "prts_centralAchive_new",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d4_3_1",
+        "icon": "prts_centralAchive_others",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_document_v1d4_4_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "auto"
+        }
+      }
+    ],
+    "report": [
+      {
+        "id": "nar_report_map01_research1_17_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_landbreakerMurder"
+        }
+      },
+      {
+        "id": "nar_report_map01_research2_5_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_f1m9d1"
+        }
+      },
+      {
+        "id": "nar_report_map01_research3_5_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_angel"
+        }
+      },
+      {
+        "id": "nar_report_map01_research4_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_006"
+        }
+      },
+      {
+        "id": "nar_report_map01_research5_5_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_002"
+        }
+      },
+      {
+        "id": "nar_report_map01_research6_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_007"
+        }
+      },
+      {
+        "id": "nar_report_map02_research2_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_WulingBussiness"
+        }
+      },
+      {
+        "id": "nar_report_map02_research3_1_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_001"
+        }
+      },
+      {
+        "id": "nar_report_map02_research4_1_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_003prts"
+        }
+      },
+      {
+        "id": "nar_report_map02_research1_4_1",
+        "icon": "prts_read_file",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_sm2l2m3"
+        }
+      },
+      {
+        "id": "nar_report_map02_research5_1_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_004prts"
+        }
+      },
+      {
+        "id": "nar_report_map02_research6_7_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_006prts"
+        }
+      },
+      {
+        "id": "nar_report_map02_research7_12_1",
+        "icon": "prts_centralAchive_basic",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_Balloon"
+        }
+      },
+      {
+        "id": "nar_report_map02_research9_1_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_007prts"
+        }
+      },
+      {
+        "id": "nar_report_map02_research12_1_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_008prts"
+        }
+      }
+    ],
+    "media": [
+      {
+        "id": "nar_col_radio_5",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "gm01m23",
+          "questId": "gm01m23_q#10"
+        }
+      },
+      {
+        "id": "nar_media_map01_117_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100050112
+        }
+      },
+      {
+        "id": "nar_media_map01_118_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100330002
+        }
+      },
+      {
+        "id": "nar_media_map01_54_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 200150047
+        }
+      },
+      {
+        "id": "nar_media_map01_120_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 300030065
+        }
+      },
+      {
+        "id": "nar_media_map01_108_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230062
+        }
+      },
+      {
+        "id": "nar_media_map01_109_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3400230093
+        }
+      },
+      {
+        "id": "nar_media_map01_45_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090032
+        }
+      },
+      {
+        "id": "nar_media_map01_45_2",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 3500090035
+        }
+      },
+      {
+        "id": "nar_media_map01_81_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2800140065
+        }
+      },
+      {
+        "id": "nar_media_map01_128_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 2100050113
+        }
+      },
+      {
+        "id": "nar_media_map02_65_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10100350007
+        }
+      },
+      {
+        "id": "nar_media_map02_64_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800070005
+        }
+      },
+      {
+        "id": "nar_media_map02_70_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420005
+        }
+      },
+      {
+        "id": "nar_media_map02_66_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 22800420054
+        }
+      },
+      {
+        "id": "nar_media_map02_71_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23300200002
+        }
+      },
+      {
+        "id": "nar_media_map02_113_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23400250038
+        }
+      },
+      {
+        "id": "nar_media_map02_12133_1",
+        "icon": "prts_listen_heart",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d2"
+        }
+      },
+      {
+        "id": "nar_media_map02_12134_1",
+        "icon": "prts_listen_heart",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d2"
+        }
+      },
+      {
+        "id": "nar_media_map02_12135_1",
+        "icon": "prts_listen_heart",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d2"
+        }
+      },
+      {
+        "id": "nar_media_map02_12148_1",
+        "icon": "prts_listen_heart",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "f1m19d2"
+        }
+      },
+      {
+        "id": "nar_media_map02_12144_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23200080012
+        }
+      },
+      {
+        "id": "nar_media_map02_13005_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 25000130005
+        }
+      },
+      {
+        "id": "nar_media_map02_14008_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 10200300036
+        }
+      },
+      {
+        "id": "nar_media_map02_14032_1",
+        "icon": "prts_listen_record",
+        "acquisition": {
+          "method": "map",
+          "pointId": 23100340034
+        }
+      }
+    ]
+  }
+}

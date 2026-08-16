@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Archives - {site}",
+    "collecting": "Collecte en cours",
+    "collectionComplete": "Terminé",
+    "collected": "Collecté",
+    "uncollected": "Non collecté",
+    "search": "Rechercher des renseignements",
+    "noResults": "Aucun renseignement correspondant",
+    "noResultsHint": "Vérifiez les termes recherchés ou les filtres de catégorie",
+    "mapSite": "Afficher dans OEM",
+    "showDetails": "Afficher les détails",
+    "source": "Source",
+    "investUnlock": "Se débloque après {mission}",
+    "centralUnlock": "Se débloque via l’histoire principale",
+    "collectionSummary": "Collecté : {items}",
+    "nonMapArchives": "Archives hors carte",
+    "missionMapInteraction": "Interagissez avec le {point} correspondant et terminez-le",
+    "pointPuzzle": "Énigme de {point}",
+    "optionalCondition": "(facultatif)",
+    "shopSystemPurchase": "Achetez-le auprès de {shop} sur la page de développement régional de {region}.",
+    "shopNpcPurchase": "Achetez-le auprès de {shop}, chez {npc}.",
+    "specialNpcDialog": "{npc} « {dialog} »",
+    "specialAcquisition": "Terminez le dialogue et lisez les messages Baker associés",
+    "method": {
+      "map": "Exploration",
+      "mission": "Mission",
+      "auto": "Progression",
+      "shop": "Boutique",
+      "invstgt": "Enquête"
+    },
+    "label": {
+      "missionSequence": "Mission",
+      "acquisitionLocation": "Emplacement",
+      "npc": "PNJ"
+    }
+  }
+}

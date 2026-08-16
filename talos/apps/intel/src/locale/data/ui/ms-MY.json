@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Arkib - {site}",
+    "collecting": "Sedang dikumpulkan",
+    "collectionComplete": "Selesai",
+    "collected": "Dikumpulkan",
+    "uncollected": "Belum dikumpulkan",
+    "search": "Cari maklumat",
+    "noResults": "Tiada maklumat yang sepadan",
+    "noResultsHint": "Semak istilah carian atau penapis kategori",
+    "mapSite": "Tunjukkan dalam OEM",
+    "showDetails": "Paparkan butiran",
+    "source": "Sumber",
+    "investUnlock": "Dibuka selepas {mission}",
+    "centralUnlock": "Dibuka melalui jalan cerita utama",
+    "collectionSummary": "Dikumpulkan: {items}",
+    "nonMapArchives": "Arkib bukan peta",
+    "missionMapInteraction": "Berinteraksi dengan {point} yang sepadan dan selesaikannya",
+    "pointPuzzle": "Teka-teki {point}",
+    "optionalCondition": "(pilihan)",
+    "shopSystemPurchase": "Beli daripada {shop} pada halaman pembangunan wilayah {region}.",
+    "shopNpcPurchase": "Beli daripada {shop} di {npc}.",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "Lengkapkan dialog dan baca mesej Baker yang berkaitan",
+    "method": {
+      "map": "Penerokaan",
+      "mission": "Misi",
+      "auto": "Kemajuan",
+      "shop": "Kedai",
+      "invstgt": "Siasatan"
+    },
+    "label": {
+      "missionSequence": "Misi",
+      "acquisitionLocation": "Lokasi",
+      "npc": "NPC"
+    }
+  }
+}

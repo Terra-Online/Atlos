@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Архив - {site}",
+    "collecting": "Сбор",
+    "collectionComplete": "Завершено",
+    "collected": "Собрано",
+    "uncollected": "Не собрано",
+    "search": "Поиск сведений",
+    "noResults": "Подходящие сведения не найдены",
+    "noResultsHint": "Проверьте поисковый запрос или фильтры категорий",
+    "mapSite": "Показать в OEM",
+    "showDetails": "Показать подробности",
+    "source": "Источник",
+    "investUnlock": "Открывается после {mission}",
+    "centralUnlock": "Открывается по основному сюжету",
+    "collectionSummary": "Собрано: {items}",
+    "nonMapArchives": "Архивы вне карты",
+    "missionMapInteraction": "Взаимодействуйте с соответствующим объектом {point} и завершите его",
+    "pointPuzzle": "Головоломка «{point}»",
+    "optionalCondition": "(необязательно)",
+    "shopSystemPurchase": "Купите у {shop} на странице развития региона {region}.",
+    "shopNpcPurchase": "Купите у {shop} через {npc}.",
+    "specialNpcDialog": "{npc}: «{dialog}»",
+    "specialAcquisition": "Завершите диалог и прочитайте связанные сообщения Baker",
+    "method": {
+      "map": "Исследование",
+      "mission": "Миссия",
+      "auto": "Прогресс",
+      "shop": "Магазин",
+      "invstgt": "Расследование"
+    },
+    "label": {
+      "missionSequence": "Миссия",
+      "acquisitionLocation": "Место",
+      "npc": "NPC"
+    }
+  }
+}

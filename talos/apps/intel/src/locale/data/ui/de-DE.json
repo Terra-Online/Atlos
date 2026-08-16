@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Intel-Archiv - {site}",
+    "collecting": "Wird gesammelt",
+    "collectionComplete": "Abgeschlossen",
+    "collected": "Gesammelt",
+    "uncollected": "Nicht gesammelt",
+    "search": "Informationen durchsuchen",
+    "noResults": "Keine passenden Informationen",
+    "noResultsHint": "Überprüfe die Suchbegriffe oder Kategoriefilter",
+    "mapSite": "In OEM anzeigen",
+    "showDetails": "Details anzeigen",
+    "source": "Quelle",
+    "investUnlock": "Wird nach {mission} freigeschaltet",
+    "centralUnlock": "Wird über die Hauptgeschichte freigeschaltet",
+    "collectionSummary": "Gesammelt: {items}",
+    "nonMapArchives": "Archive außerhalb der Karte",
+    "missionMapInteraction": "Interagiere mit dem entsprechenden {point} und schließe ihn ab",
+    "pointPuzzle": "{point}-Rätsel",
+    "optionalCondition": "(optional)",
+    "shopSystemPurchase": "Kaufe es bei {shop} auf der regionalen Entwicklungsseite von {region}.",
+    "shopNpcPurchase": "Kaufe es bei {shop} von {npc}.",
+    "specialNpcDialog": "{npc} „{dialog}“",
+    "specialAcquisition": "Schließe den Dialog ab und lies die zugehörigen Baker-Nachrichten",
+    "method": {
+      "map": "Erkundung",
+      "mission": "Mission",
+      "auto": "Fortschritt",
+      "shop": "Shop",
+      "invstgt": "Untersuchung"
+    },
+    "label": {
+      "missionSequence": "Mission",
+      "acquisitionLocation": "Ort",
+      "npc": "NPC"
+    }
+  }
+}

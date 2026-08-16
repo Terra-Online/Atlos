@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Arşiv - {site}",
+    "collecting": "Toplanıyor",
+    "collectionComplete": "Tamamlandı",
+    "collected": "Toplandı",
+    "uncollected": "Toplanmadı",
+    "search": "Bilgi ara",
+    "noResults": "Eşleşen bilgi yok",
+    "noResultsHint": "Arama terimlerini veya kategori filtrelerini kontrol edin",
+    "mapSite": "OEM'de göster",
+    "showDetails": "Ayrıntıları göster",
+    "source": "Kaynak",
+    "investUnlock": "{mission} sonrasında açılır",
+    "centralUnlock": "Ana hikâyede açılır",
+    "collectionSummary": "Toplandı: {items}",
+    "nonMapArchives": "Harita dışı arşivler",
+    "missionMapInteraction": "İlgili {point} ile etkileşime girip tamamlayın",
+    "pointPuzzle": "{point} bulmacası",
+    "optionalCondition": "(isteğe bağlı)",
+    "shopSystemPurchase": "{region} bölgesel gelişim sayfasında {shop} üzerinden satın alın.",
+    "shopNpcPurchase": "{npc} konumunda {shop} üzerinden satın alın.",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "Diyaloğu tamamlayın ve ilgili Baker mesajlarını okuyun",
+    "method": {
+      "map": "Keşif",
+      "mission": "Görev",
+      "auto": "İlerleme",
+      "shop": "Mağaza",
+      "invstgt": "Araştırma"
+    },
+    "label": {
+      "missionSequence": "Görev",
+      "acquisitionLocation": "Konum",
+      "npc": "NPC"
+    }
+  }
+}

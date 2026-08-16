@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "档案收集专题｜终末地地图集",
+    "collecting": "收集中",
+    "collectionComplete": "收集完成",
+    "collected": "已收集",
+    "uncollected": "未收集",
+    "search": "搜索档案名称",
+    "noResults": "没有匹配的档案",
+    "noResultsHint": "请检查搜索内容或分类筛选",
+    "mapSite": "点击前往点位",
+    "showDetails": "显示获取详情",
+    "source": "获取方式",
+    "investUnlock": "完成调查任务 {mission} 后自动解锁",
+    "centralUnlock": "推进主线以解锁",
+    "collectionSummary": "本次共收集：{items}",
+    "nonMapArchives": "非地图档案",
+    "missionMapInteraction": "交互并完成对应{point}",
+    "pointPuzzle": "{point}解谜",
+    "optionalCondition": "（非必要条件）",
+    "shopSystemPurchase": "在 {region} 地区建设页，于 {shop} 购买。",
+    "shopNpcPurchase": "在 {npc} 处，于 {shop} 购买。",
+    "specialNpcDialog": "{npc}「{dialog}」",
+    "specialAcquisition": "完成对话和相关 Baker 消息阅读",
+    "method": {
+      "map": "地图拾取",
+      "mission": "跟随任务",
+      "auto": "自动解锁",
+      "shop": "商店购买",
+      "invstgt": "报告摘要"
+    },
+    "label": {
+      "missionSequence": "任务序列",
+      "acquisitionLocation": "获取位置",
+      "npc": "相关 NPC"
+    }
+  }
+}

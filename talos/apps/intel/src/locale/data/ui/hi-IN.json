@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "अभिलेख - {site}",
+    "collecting": "संग्रह जारी",
+    "collectionComplete": "पूर्ण",
+    "collected": "संग्रहित",
+    "uncollected": "असंग्रहित",
+    "search": "जानकारी खोजें",
+    "noResults": "कोई मेल खाती जानकारी नहीं",
+    "noResultsHint": "खोज शब्द या श्रेणी फ़िल्टर जाँचें",
+    "mapSite": "OEM में दिखाएँ",
+    "showDetails": "विवरण दिखाएँ",
+    "source": "स्रोत",
+    "investUnlock": "{mission} के बाद अनलॉक",
+    "centralUnlock": "मुख्य कहानी से अनलॉक",
+    "collectionSummary": "संग्रहित: {items}",
+    "nonMapArchives": "गैर-मैप अभिलेख",
+    "missionMapInteraction": "संबंधित {point} से इंटरैक्ट करके उसे पूरा करें",
+    "pointPuzzle": "{point} पहेली",
+    "optionalCondition": "(वैकल्पिक)",
+    "shopSystemPurchase": "{region} क्षेत्रीय विकास पृष्ठ पर {shop} से खरीदें।",
+    "shopNpcPurchase": "{npc} के यहाँ {shop} से खरीदें।",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "संवाद पूरा करें और संबंधित Baker संदेश पढ़ें",
+    "method": {
+      "map": "अन्वेषण",
+      "mission": "मिशन",
+      "auto": "प्रगति",
+      "shop": "दुकान",
+      "invstgt": "जाँच"
+    },
+    "label": {
+      "missionSequence": "मिशन",
+      "acquisitionLocation": "स्थान",
+      "npc": "NPC"
+    }
+  }
+}

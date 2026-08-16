@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Intelarkiv - {site}",
+    "collecting": "Samlar in",
+    "collectionComplete": "Slutfört",
+    "collected": "Insamlat",
+    "uncollected": "Inte insamlat",
+    "search": "Sök information",
+    "noResults": "Ingen matchande information",
+    "noResultsHint": "Kontrollera sökorden eller kategorifiltren",
+    "mapSite": "Visa i OEM",
+    "showDetails": "Visa detaljer",
+    "source": "Källa",
+    "investUnlock": "Låses upp efter {mission}",
+    "centralUnlock": "Låses upp via huvudberättelsen",
+    "collectionSummary": "Insamlat: {items}",
+    "nonMapArchives": "Arkiv utanför kartan",
+    "missionMapInteraction": "Interagera med motsvarande {point} och slutför det",
+    "pointPuzzle": "{point}-pussel",
+    "optionalCondition": "(valfritt)",
+    "shopSystemPurchase": "Köp från {shop} på sidan för regional utveckling i {region}.",
+    "shopNpcPurchase": "Köp från {shop} hos {npc}.",
+    "specialNpcDialog": "{npc} ”{dialog}”",
+    "specialAcquisition": "Slutför dialogen och läs de relaterade Baker-meddelandena",
+    "method": {
+      "map": "Utforskning",
+      "mission": "Uppdrag",
+      "auto": "Framsteg",
+      "shop": "Butik",
+      "invstgt": "Undersökning"
+    },
+    "label": {
+      "missionSequence": "Uppdrag",
+      "acquisitionLocation": "Plats",
+      "npc": "NPC"
+    }
+  }
+}

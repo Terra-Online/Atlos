@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "คลังข้อมูล - {site}",
+    "collecting": "กำลังสะสม",
+    "collectionComplete": "เสร็จสิ้น",
+    "collected": "สะสมแล้ว",
+    "uncollected": "ยังไม่ได้สะสม",
+    "search": "ค้นหาข้อมูล",
+    "noResults": "ไม่พบข้อมูลที่ตรงกัน",
+    "noResultsHint": "ตรวจสอบคำค้นหาหรือตัวกรองหมวดหมู่",
+    "mapSite": "แสดงใน OEM",
+    "showDetails": "แสดงรายละเอียด",
+    "source": "แหล่งที่มา",
+    "investUnlock": "ปลดล็อกหลัง {mission}",
+    "centralUnlock": "ปลดล็อกผ่านเนื้อเรื่องหลัก",
+    "collectionSummary": "สะสมแล้ว: {items}",
+    "nonMapArchives": "คลังข้อมูลนอกแผนที่",
+    "missionMapInteraction": "โต้ตอบและทำ {point} ที่เกี่ยวข้องให้สำเร็จ",
+    "pointPuzzle": "ปริศนา {point}",
+    "optionalCondition": "(ไม่บังคับ)",
+    "shopSystemPurchase": "ซื้อจาก {shop} ในหน้าพัฒนาภูมิภาค {region}",
+    "shopNpcPurchase": "ซื้อจาก {shop} ที่ {npc}",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "สนทนาให้เสร็จและอ่านข้อความ Baker ที่เกี่ยวข้อง",
+    "method": {
+      "map": "การสำรวจ",
+      "mission": "ภารกิจ",
+      "auto": "ความคืบหน้า",
+      "shop": "ร้านค้า",
+      "invstgt": "การสืบสวน"
+    },
+    "label": {
+      "missionSequence": "ภารกิจ",
+      "acquisitionLocation": "ตำแหน่ง",
+      "npc": "NPC"
+    }
+  }
+}
