@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 
 const target = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const channel = process.env.DEPLOY_CHANNEL === 'beta' ? 'beta' : 'prod';
@@ -43,9 +44,49 @@ const intelFontAssetsPlugin = (): import('vite').Plugin => ({
   },
 });
 
+const INTEL_IMPORT_DEBUG_PATH_PATTERN = /^\/(?:intel\/)?i\/(OEA-0-[A-Za-z0-9_-]+)\/_debug\/?$/;
+
+const intelImportDebugPlugin = (): import('vite').Plugin => ({
+  name: 'intel-import-debug-json',
+  configureServer(server) {
+    server.middlewares.use((request, response, next) => {
+      const pathname = request.url?.split('?')[0] ?? '';
+      const match = pathname.match(INTEL_IMPORT_DEBUG_PATH_PATTERN);
+      if (!match) {
+        next();
+        return;
+      }
+
+      const sendJson = (body: unknown, statusCode: number): void => {
+        const json = JSON.stringify(body, null, 2);
+        response.statusCode = statusCode;
+        response.setHeader('content-type', 'application/json; charset=utf-8');
+        response.setHeader('cache-control', 'no-store');
+        response.end(json);
+      };
+
+      try {
+        const encoded = match[1].slice('OEA-0-'.length);
+        if (!encoded || encoded.includes('=') || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
+          throw new Error('The import token is not valid base64url.');
+        }
+        const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+        const payload = JSON.parse(gunzipSync(Buffer.from(padded, 'base64')).toString('utf8')) as unknown;
+        sendJson({ ok: true, payload }, 200);
+      } catch (error) {
+        sendJson({
+          ok: false,
+          error: error instanceof Error ? error.message : 'The import payload could not be decoded.',
+        }, 400);
+      }
+    });
+  },
+});
+
 export default defineConfig(() => ({
   base: '/intel/',
-  plugins: [intelHtmlMetadataPlugin(), intelFontAssetsPlugin(), react(), svgr()],
+  plugins: [intelHtmlMetadataPlugin(), intelFontAssetsPlugin(), intelImportDebugPlugin(), react(), svgr()],
   resolve: {
     alias: [
       { find: '@intel', replacement: resolve(import.meta.dirname, 'src') },

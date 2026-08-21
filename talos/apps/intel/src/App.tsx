@@ -14,6 +14,11 @@ import {
   useSetMobileDrawerSnapIndex,
 } from '@main/store/uiPrefs';
 import { archiveById, intelArchives, type ArchiveCategory, type IntelArchive } from '@intel/data/types';
+import {
+  decodeIntelImportToken,
+  getIntelImportToken,
+  isIntelImportDebugLocation,
+} from '@intel/data/importContract';
 import { useIntelCollection } from '@intel/state/collection';
 import ArchiveProgressSyncHost from '@intel/state/ArchiveProgressSyncHost';
 import IntelCard from '@intel/components/intelCard/intelCard';
@@ -27,6 +32,7 @@ import PopoverTooltip from '@main/component/popover/popover';
 import EmptyStateIcon from '@main/assets/images/UI/observator_6.webp';
 import filterStyles from '@intel/components/categoryFilter/categoryFilter.module.scss';
 import cardStyles from '@intel/components/intelCard/intelCard.module.scss';
+import Banner from '@main/component/banner/banner';
 
 const CATEGORY_ORDER: ArchiveCategory[] = ['paper', 'digital', 'collection', 'document', 'report', 'media'];
 const CATEGORY_GROUPS: Array<{ id: 'intel' | 'central' | 'media'; categories: ArchiveCategory[] }> = [
@@ -36,6 +42,25 @@ const CATEGORY_GROUPS: Array<{ id: 'intel' | 'central' | 'media'; categories: Ar
 ];
 
 const cleanTitle = (value: string) => value.replace(/<[^>]*>/g, '').trim();
+
+const getInitialImportToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  if (isIntelImportDebugLocation(window.location)) return null;
+  return getIntelImportToken(window.location);
+};
+
+const clearImportTokenFromUrl = (): void => {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  const pathMatch = url.pathname.match(/\/i\/OEA-0-[A-Za-z0-9_-]+(?:\/_debug)?\/?$/);
+  const hadImportQuery = url.searchParams.has('import');
+  if (!pathMatch && !hadImportQuery) return;
+  if (pathMatch) {
+    url.pathname = `${url.pathname.slice(0, pathMatch.index)}\/`;
+  }
+  if (hadImportQuery) url.searchParams.delete('import');
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+};
 
 const getInitialTypeTarget = () => {
   if (typeof window === 'undefined') return null;
@@ -193,6 +218,14 @@ function App() {
   const { isMobile } = useDevice();
   const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
   const { collectedIds, toggle, applyCollectedState, isReady } = useIntelCollection(intelArchives);
+  const [importToken] = useState<string | null>(getInitialImportToken);
+  const [importStatus, setImportStatus] = useState<'none' | 'pending' | 'success' | 'error'>(
+    () => importToken ? 'pending' : 'none',
+  );
+  const [importCount, setImportCount] = useState<number | null>(null);
+  const [selectIncompleteCategories, setSelectIncompleteCategories] = useState(false);
+  const [bannerSchema, setBannerSchema] = useState<'light' | 'dark'>('light');
+  const didHandleImportRef = useRef(false);
   const [areUiPrefsReady, setAreUiPrefsReady] = useState(() => useUiPrefsStore.persist.hasHydrated());
   const [categories, setCategories] = useState<ArchiveCategory[]>([]);
   const [query, setQuery] = useState('');
@@ -217,6 +250,15 @@ function App() {
   }, [isMobile, setMobileDrawerSnapIndex]);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const readTheme = () => setBannerSchema(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    readTheme();
+    const observer = new MutationObserver(readTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const hasSearchQuery = query.trim().length > 0;
     if (isMobile && !hadSearchQueryRef.current && hasSearchQuery) {
       setMobileDrawerSnapIndex(1);
@@ -232,9 +274,40 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!areUiPrefsReady || !isReady || collectedAtLoad) return;
+    if (!importToken || !isReady || didHandleImportRef.current) return;
+    didHandleImportRef.current = true;
+
+    const knownArchiveIds = new Set(intelArchives.map((archive) => archive.id));
+    void decodeIntelImportToken(importToken, knownArchiveIds)
+      .then(({ payload }) => {
+        const importedIds = new Set([...payload.collected, ...payload.notCollected]);
+        const importedCollectedIds = new Set(payload.collected);
+        const importedArchives = intelArchives.filter((archive) => importedIds.has(archive.id));
+        applyCollectedState(importedArchives, importedCollectedIds);
+        // Keep the initial card snapshot aligned with the state written by the
+        // import. This prevents the first render after import from using the
+        // pre-import hydration snapshot.
+        const nextCollectedIds = new Set(collectedIds);
+        importedArchives.forEach((archive) => {
+          if (importedCollectedIds.has(archive.id)) nextCollectedIds.add(archive.id);
+          else nextCollectedIds.delete(archive.id);
+        });
+        setCollectedAtLoad(nextCollectedIds);
+        setImportCount(payload.collected.length);
+        setSelectIncompleteCategories(true);
+        setImportStatus('success');
+        clearImportTokenFromUrl();
+      })
+      .catch(() => {
+        setImportStatus('error');
+        clearImportTokenFromUrl();
+      });
+  }, [applyCollectedState, collectedIds, importToken, isReady]);
+
+  useEffect(() => {
+    if (!areUiPrefsReady || !isReady || collectedAtLoad || importStatus === 'pending') return;
     setCollectedAtLoad(new Set(collectedIds));
-  }, [areUiPrefsReady, collectedAtLoad, collectedIds, isReady]);
+  }, [areUiPrefsReady, collectedAtLoad, collectedIds, importStatus, isReady]);
 
   useEffect(() => {
     if (!collectedAtLoad || !typeTargetId || didScrollToTypeTargetRef.current) return;
@@ -263,6 +336,12 @@ function App() {
       collected: archives.filter((archive) => collectedIds.has(archive.id)).length,
     }];
   })) as Record<ArchiveCategory, { total: number; collected: number }>, [collectedIds]);
+
+  useEffect(() => {
+    if (!selectIncompleteCategories || !collectedAtLoad) return;
+    setCategories(CATEGORY_ORDER.filter((categoryId) => stats[categoryId].collected < stats[categoryId].total));
+    setSelectIncompleteCategories(false);
+  }, [collectedAtLoad, selectIncompleteCategories, stats]);
 
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const visible = useMemo(() => intelArchives.filter((archive) => {
@@ -419,6 +498,18 @@ function App() {
 
   return (
     <IntelCardsExpansionScope sidebarWidth={sidebarWidth}>
+      <Banner
+        open={importStatus !== 'none'}
+        content={
+          importStatus === 'pending'
+            ? tUI('intel.importPending')
+            : importStatus === 'success'
+              ? tUI('intel.importSuccess').replace('{count}', String(importCount ?? 0))
+              : tUI('intel.importError')
+        }
+        onClose={() => setImportStatus('none')}
+        schema={bannerSchema}
+      />
       <ArchiveProgressSyncHost />
       <SideBarFrame
         lockedOpen

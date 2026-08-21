@@ -113,7 +113,7 @@ $card-motion-curve: cubic-bezier(0.22, 1, 0.36, 1);
       align-items: stretch;
 
       @media (width <= 768px) {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   }

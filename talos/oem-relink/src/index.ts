@@ -220,6 +220,9 @@ const buildPreviewImageUrl = (targetOrigin: string): string =>
 	new URL('/og_preview.jpg', targetOrigin).toString();
 
 const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
+const INTEL_IMPORT_PREFIX = 'OEA-0-';
+const INTEL_IMPORT_PATH_PATTERN = /^\/i\/(OEA-0-[A-Za-z0-9_-]+)(?:\/_debug)?\/?$/;
+const INTEL_IMPORT_DEBUG_PATH_PATTERN = /^\/i\/OEA-0-[A-Za-z0-9_-]+\/_debug\/?$/;
 
 const getPointPreviewToken = (requestUrl: URL): string | null => {
 	const queryToken = requestUrl.searchParams.get('x')?.trim();
@@ -228,6 +231,57 @@ const getPointPreviewToken = (requestUrl: URL): string | null => {
 	if (pathToken && POINT_TOKEN_PATTERN.test(pathToken)) return pathToken;
 	return null;
 };
+
+const getIntelImportToken = (requestUrl: URL): string | null => {
+	const pathMatch = requestUrl.pathname.match(INTEL_IMPORT_PATH_PATTERN);
+	if (pathMatch) return pathMatch[1];
+
+	if (requestUrl.pathname !== '/i' && requestUrl.pathname !== '/i/') {
+		return null;
+	}
+
+	const queryToken = requestUrl.searchParams.get('import')?.trim();
+	return queryToken?.startsWith(INTEL_IMPORT_PREFIX) ? queryToken : null;
+};
+
+const isIntelImportDebugRequest = (requestUrl: URL): boolean => (
+	INTEL_IMPORT_DEBUG_PATH_PATTERN.test(requestUrl.pathname)
+);
+
+const decodeIntelImportDebugPayload = async (token: string): Promise<unknown> => {
+	if (!token.startsWith(INTEL_IMPORT_PREFIX)) {
+		throw new Error('The import token has an invalid prefix.');
+	}
+
+	const encoded = token.slice(INTEL_IMPORT_PREFIX.length);
+	if (!encoded || encoded.includes('=') || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
+		throw new Error('The import token is not valid base64url.');
+	}
+
+	const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+	const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+	const compressed = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+	const compressedStream = new ReadableStream<Uint8Array>({
+		start(controller) {
+			controller.enqueue(compressed);
+			controller.close();
+		},
+	});
+	const stream = compressedStream.pipeThrough(new DecompressionStream('gzip'));
+	const json = await new Response(stream).text();
+	return JSON.parse(json) as unknown;
+};
+
+const jsonResponse = (body: unknown, status = 200): Response => new Response(
+	JSON.stringify(body, null, 2),
+	{
+		status,
+		headers: {
+			'content-type': 'application/json; charset=utf-8',
+			'cache-control': 'no-store',
+		},
+	},
+);
 
 const resolveTargetKind = (targetOrigin: string): 'cn' | 'org' => {
 	const targetUrl = new URL(targetOrigin);
@@ -393,12 +447,19 @@ const resolveTargetOrigin = (
 };
 
 const buildRedirectUrl = (requestUrl: URL, targetOrigin: string): string => {
+	const intelImportToken = getIntelImportToken(requestUrl);
+	if (intelImportToken) {
+		const targetUrl = new URL('/intel', targetOrigin);
+		targetUrl.searchParams.set('import', intelImportToken);
+		return targetUrl.toString();
+	}
+
 	const targetUrl = new URL(requestUrl.pathname + requestUrl.search, targetOrigin);
 	return targetUrl.toString();
 };
 
 export default {
-	fetch(request: Request): Response {
+	async fetch(request: Request): Promise<Response> {
 		const requestUrl = new URL(request.url);
 		const userAgent = request.headers.get('user-agent') ?? '';
 		const isDebugRequest =
@@ -426,6 +487,8 @@ export default {
 						hostDecision,
 						decision: target,
 						isSocialPreview,
+						isIntelImport: Boolean(getIntelImportToken(requestUrl)),
+						isIntelImportDebug: isIntelImportDebugRequest(requestUrl),
 						redirectUrl,
 						country,
 						profile: debugProfile,
@@ -456,6 +519,26 @@ export default {
 		}
 
 		const hostReason = `host=${hostDecision.key}; ${target.reason}`;
+
+		if (isIntelImportDebugRequest(requestUrl)) {
+			const intelImportToken = getIntelImportToken(requestUrl);
+			try {
+				const payload = await decodeIntelImportDebugPayload(intelImportToken ?? '');
+				return jsonResponse({
+					ok: true,
+					worker: 'oem-relink',
+					version: WORKER_VERSION,
+					payload,
+				});
+			} catch (error) {
+				return jsonResponse({
+					ok: false,
+					worker: 'oem-relink',
+					version: WORKER_VERSION,
+					error: error instanceof Error ? error.message : 'The import payload could not be decoded.',
+				}, 400);
+			}
+		}
 
 		if (isSocialPreview) {
 			const pointPreview = resolvePointPreviewForTarget(requestUrl, target.origin);
