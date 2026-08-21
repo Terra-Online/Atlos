@@ -437,8 +437,7 @@
         "category": {
             "main": "poi",
             "sub": "exploration"
-        },
-        "noFrame": true
+        }
     },
     "rift_pillars_brace": {
         "key": "rift_pillars_brace",

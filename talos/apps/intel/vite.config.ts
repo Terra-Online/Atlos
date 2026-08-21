@@ -44,7 +44,11 @@ const intelFontAssetsPlugin = (): import('vite').Plugin => ({
   },
 });
 
-const INTEL_IMPORT_DEBUG_PATH_PATTERN = /^\/(?:intel\/)?i\/(OEA-0-[A-Za-z0-9_-]+)\/_debug\/?$/;
+const INTEL_IMPORT_PREFIXES = ['OEA-0-', 'MAE-0-'] as const;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const INTEL_IMPORT_DEBUG_PATH_PATTERN = new RegExp(
+  `^\\/(?:intel\\/)?i\\/((?:${INTEL_IMPORT_PREFIXES.map(escapeRegex).join('|')})[A-Za-z0-9_-]+)\\/_debug\\/?$`,
+);
 
 const intelImportDebugPlugin = (): import('vite').Plugin => ({
   name: 'intel-import-debug-json',
@@ -66,7 +70,10 @@ const intelImportDebugPlugin = (): import('vite').Plugin => ({
       };
 
       try {
-        const encoded = match[1].slice('OEA-0-'.length);
+        const token = match[1];
+        const prefix = INTEL_IMPORT_PREFIXES.find((candidate) => token.startsWith(candidate));
+        if (!prefix) throw new Error('The import token has an invalid prefix.');
+        const encoded = token.slice(prefix.length);
         if (!encoded || encoded.includes('=') || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
           throw new Error('The import token is not valid base64url.');
         }

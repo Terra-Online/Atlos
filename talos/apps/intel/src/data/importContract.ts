@@ -1,4 +1,4 @@
-export const INTEL_IMPORT_PREFIX = 'OEA-0-';
+export const INTEL_IMPORT_PREFIXES = ['OEA-0-', 'MAE-0-'] as const;
 
 const MAX_TOKEN_LENGTH = 64 * 1024;
 const MAX_DECOMPRESSED_BYTES = 1024 * 1024;
@@ -39,7 +39,14 @@ const fail = (code: IntelImportErrorCode, message: string): never => {
   throw new IntelImportError(code, message);
 };
 
-const INTEL_IMPORT_PATH_PATTERN = /\/i\/(OEA-0-[A-Za-z0-9_-]+)(?:\/(_debug))?\/?$/;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const INTEL_IMPORT_PATH_PATTERN = new RegExp(
+  `/i/((?:${INTEL_IMPORT_PREFIXES.map(escapeRegex).join('|')})[A-Za-z0-9_-]+)(?:/(_debug))?/?$`,
+);
+
+export const getIntelImportPrefix = (token: string): typeof INTEL_IMPORT_PREFIXES[number] | null => (
+  INTEL_IMPORT_PREFIXES.find((prefix) => token.startsWith(prefix)) ?? null
+);
 
 export const getIntelImportToken = (location: Pick<Location, 'pathname' | 'search'>): string | null => {
   const value = new URLSearchParams(location.search).get('import')?.trim() ?? '';
@@ -154,14 +161,15 @@ export const decodeIntelImportToken = async (
   token: string,
   knownArchiveIds: ReadonlySet<string>,
 ): Promise<DecodedIntelImport> => {
-  if (!token.startsWith(INTEL_IMPORT_PREFIX)) {
-    fail('invalid-token', 'The import token has an invalid prefix.');
+  const prefix = getIntelImportPrefix(token);
+  if (!prefix) {
+    throw new IntelImportError('invalid-token', 'The import token has an invalid prefix.');
   }
   if (token.length > MAX_TOKEN_LENGTH) {
     fail('invalid-token', 'The import token is too large.');
   }
 
-  const bytes = decodeBase64Url(token.slice(INTEL_IMPORT_PREFIX.length));
+  const bytes = decodeBase64Url(token.slice(prefix.length));
   const jsonBytes = await gunzip(bytes);
   let decoded: unknown;
   try {

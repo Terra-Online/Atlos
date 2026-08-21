@@ -220,9 +220,15 @@ const buildPreviewImageUrl = (targetOrigin: string): string =>
 	new URL('/og_preview.jpg', targetOrigin).toString();
 
 const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
-const INTEL_IMPORT_PREFIX = 'OEA-0-';
-const INTEL_IMPORT_PATH_PATTERN = /^\/i\/(OEA-0-[A-Za-z0-9_-]+)(?:\/_debug)?\/?$/;
-const INTEL_IMPORT_DEBUG_PATH_PATTERN = /^\/i\/OEA-0-[A-Za-z0-9_-]+\/_debug\/?$/;
+const INTEL_IMPORT_PREFIXES = ['OEA-0-', 'MAE-0-'] as const;
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const INTEL_IMPORT_PREFIX_PATTERN = INTEL_IMPORT_PREFIXES.map(escapeRegex).join('|');
+const INTEL_IMPORT_PATH_PATTERN = new RegExp(`^/i/((?:${INTEL_IMPORT_PREFIX_PATTERN})[A-Za-z0-9_-]+)(?:/_debug)?/?$`);
+const INTEL_IMPORT_DEBUG_PATH_PATTERN = new RegExp(`^/i/(?:${INTEL_IMPORT_PREFIX_PATTERN})[A-Za-z0-9_-]+/_debug/?$`);
+
+const getIntelImportPrefix = (token: string): typeof INTEL_IMPORT_PREFIXES[number] | null => (
+	INTEL_IMPORT_PREFIXES.find((prefix) => token.startsWith(prefix)) ?? null
+);
 
 const getPointPreviewToken = (requestUrl: URL): string | null => {
 	const queryToken = requestUrl.searchParams.get('x')?.trim();
@@ -241,7 +247,7 @@ const getIntelImportToken = (requestUrl: URL): string | null => {
 	}
 
 	const queryToken = requestUrl.searchParams.get('import')?.trim();
-	return queryToken?.startsWith(INTEL_IMPORT_PREFIX) ? queryToken : null;
+	return queryToken && getIntelImportPrefix(queryToken) ? queryToken : null;
 };
 
 const isIntelImportDebugRequest = (requestUrl: URL): boolean => (
@@ -249,11 +255,12 @@ const isIntelImportDebugRequest = (requestUrl: URL): boolean => (
 );
 
 const decodeIntelImportDebugPayload = async (token: string): Promise<unknown> => {
-	if (!token.startsWith(INTEL_IMPORT_PREFIX)) {
+	const prefix = getIntelImportPrefix(token);
+	if (!prefix) {
 		throw new Error('The import token has an invalid prefix.');
 	}
 
-	const encoded = token.slice(INTEL_IMPORT_PREFIX.length);
+	const encoded = token.slice(prefix.length);
 	if (!encoded || encoded.includes('=') || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
 		throw new Error('The import token is not valid base64url.');
 	}

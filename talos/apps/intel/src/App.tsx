@@ -17,6 +17,7 @@ import { archiveById, intelArchives, type ArchiveCategory, type IntelArchive } f
 import {
   decodeIntelImportToken,
   getIntelImportToken,
+  INTEL_IMPORT_PREFIXES,
   isIntelImportDebugLocation,
 } from '@intel/data/importContract';
 import { useIntelCollection } from '@intel/state/collection';
@@ -42,6 +43,10 @@ const CATEGORY_GROUPS: Array<{ id: 'intel' | 'central' | 'media'; categories: Ar
 ];
 
 const cleanTitle = (value: string) => value.replace(/<[^>]*>/g, '').trim();
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const INTEL_IMPORT_PATH_PATTERN = new RegExp(
+  `/i/(?:${INTEL_IMPORT_PREFIXES.map(escapeRegex).join('|')})[A-Za-z0-9_-]+(?:/_debug)?/?$`,
+);
 
 const getInitialImportToken = (): string | null => {
   if (typeof window === 'undefined') return null;
@@ -52,7 +57,7 @@ const getInitialImportToken = (): string | null => {
 const clearImportTokenFromUrl = (): void => {
   if (typeof window === 'undefined') return;
   const url = new URL(window.location.href);
-  const pathMatch = url.pathname.match(/\/i\/OEA-0-[A-Za-z0-9_-]+(?:\/_debug)?\/?$/);
+  const pathMatch = url.pathname.match(INTEL_IMPORT_PATH_PATTERN);
   const hadImportQuery = url.searchParams.has('import');
   if (!pathMatch && !hadImportQuery) return;
   if (pathMatch) {

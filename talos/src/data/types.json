@@ -91,9 +91,7 @@
             },
             "Pressure Plate": {},
             "Wooden Box": {},
-            "Blight Core": {
-                "noFrame": true
-            }
+            "Blight Core": {}
         },
         "combat": {
             "Rift: Pillar's Brace": {
