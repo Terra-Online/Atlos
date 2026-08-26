@@ -1,0 +1,56 @@
+/**
+ * Minimal replacement for the Leaflet base CSS our DOM structure relies on.
+ * MapLibre's own stylesheet is imported separately by talosMap.ts.
+ */
+/* stylelint-disable selector-class-pattern -- kebab-case class names are a
+   Leaflet/MapLibre DOM contract referenced from TS; they cannot be renamed. */
+.talos-overlay-root {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* z-index is set inline in talosMap.ts (stacking: grid ::before 1 < canvas 2 < overlay 3) */
+}
+
+.leaflet-container {
+    overflow: hidden;
+    position: relative;
+    touch-action: none;
+    outline: 0;
+}
+
+.leaflet-pane {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.leaflet-marker-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0;
+    margin: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
+}
+
+.leaflet-image-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+/* Zoom-animation transitions (class toggled by TalosMap during animated
+ * programmatic zooms; cluster.scss adds its own overrides on top). */
+.leaflet-zoom-anim .leaflet-marker-icon,
+.leaflet-zoom-anim .leaflet-image-layer {
+    transition: transform 0.25s cubic-bezier(0, 0, 0.25, 1);
+}
+
+.leaflet-dragging .leaflet-marker-icon {
+    pointer-events: none;
+}

@@ -1,7 +1,7 @@
 /**
  * useMapMultiSelect — Cmd/Ctrl + drag to lasso-select markers on the map.
  *
- * Gesture layer only — fires lightweight Leaflet events:
+ * Gesture layer only — fires lightweight map events:
  *   talos:lassoHighlight  – on every pointer-move with current bounds
  *   talos:lassoSelect     – on pointer-up with final bounds + collected ids
  *   talos:lassoClear      – on cancel (mod key released mid-drag)
@@ -13,7 +13,16 @@
  */
 
 import { useEffect, useRef } from 'react';
-import L from 'leaflet';
+import {
+    latLng,
+    latLngBounds,
+    point,
+    type CompatLayer,
+    type CompatMarker,
+    type LatLng,
+    type LatLngBounds,
+    type TalosMap,
+} from '@/component/mapCore/engine';
 import { useMarkerStore } from '@/store/marker';
 import { commitPointProgress } from '@/store/history';
 import { isModKeyPressed } from './shortcuts';
@@ -37,7 +46,7 @@ export function isLassoSelected(id: string): boolean {
 
 export interface LassoContext {
     markerDataDict: Record<string, IMarkerData>;
-    markerDict: Record<string, L.Layer>;
+    markerDict: Record<string, CompatLayer>;
     /** CSS selector to find the inner wrapper element (e.g. `.markerInner, .noFrameInner`) */
     innerSelector: string;
     /** Hashed CSS class name for the `selected` state (toggled on/off) */
@@ -54,7 +63,7 @@ export interface LassoContext {
  * Registers map-level event listeners that resolve which markers fall inside
  * a lasso rectangle and apply / remove the `.selected` CSS class in real time.
  */
-export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
+export function registerLassoHandler(map: TalosMap, ctx: LassoContext) {
     /** Set of marker IDs currently highlighted by the lasso */
     let currentHighlighted = new Set<string>();
 
@@ -67,7 +76,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const setVisualSelected = (id: string, selected: boolean) => {
         const layer = ctx.markerDict[id];
         if (!layer) return;
-        const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
+        const el = (layer as CompatMarker).getElement?.() as HTMLElement | null;
         if (!el) return;
         const inner = el.querySelector(ctx.innerSelector);
         if (inner) inner.classList.toggle(ctx.selectedClassName, selected);
@@ -77,7 +86,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const resetToNormal = (id: string) => {
         const layer = ctx.markerDict[id];
         if (!layer) return;
-        const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
+        const el = (layer as CompatMarker).getElement?.() as HTMLElement | null;
         if (!el) return;
         const inner = el.querySelector(ctx.innerSelector);
         if (inner) {
@@ -86,7 +95,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     };
 
     /** Determine visible markers in bounds, respecting filter + subregion + hidden state */
-    const getMarkersInBounds = (bounds: L.LatLngBounds): string[] => {
+    const getMarkersInBounds = (bounds: LatLngBounds): string[] => {
         const activeKeys = new Set(ctx.getActiveFilterKeys());
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set<string>();
@@ -97,8 +106,8 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
             if (!ctx.isSubregionVisible(data.subregId)) continue;
             if (completedIds.has(id)) continue;
 
-            const latLng = L.latLng(data.pos[0], data.pos[1]);
-            if (bounds.contains(latLng)) result.push(id);
+            const markerLatLng = latLng(data.pos[0], data.pos[1]);
+            if (bounds.contains(markerLatLng)) result.push(id);
         }
         return result;
     };
@@ -115,7 +124,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
 
     // ── talos:lassoHighlight — live visual feedback during drag ──
     const onLassoHighlight = (evt: unknown) => {
-        const { bounds, deselect } = evt as { bounds: L.LatLngBounds; deselect: boolean };
+        const { bounds, deselect } = evt as { bounds: LatLngBounds; deselect: boolean };
         ensureLassoStarted();
 
         const idsInBounds = getMarkersInBounds(bounds);
@@ -137,7 +146,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
                     if (wasChecked) {
                         const layer = ctx.markerDict[id];
                         if (layer) {
-                            const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
+                            const el = (layer as CompatMarker).getElement?.() as HTMLElement | null;
                             const inner = el?.querySelector(ctx.innerSelector);
                             if (inner) {
                                 inner.classList.toggle(ctx.selectedClassName, wasSelected);
@@ -175,7 +184,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     // ── talos:lassoSelect — final selection on pointer-up ──
     const onLassoSelect = (evt: unknown) => {
         const { bounds, collected, deselect } = evt as {
-            bounds: L.LatLngBounds;
+            bounds: LatLngBounds;
             collected: string[];
             deselect: boolean;
         };
@@ -213,10 +222,10 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
 
 // ─── Hook ────────────────────────────────────────────────────
 
-export function useMapMultiSelect(map: L.Map | undefined) {
+export function useMapMultiSelect(map: TalosMap | undefined) {
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const startPx = useRef<{ x: number; y: number } | null>(null);
-    const startLatLng = useRef<L.LatLng | null>(null);
+    const startLatLng = useRef<LatLng | null>(null);
     const dragging = useRef(false);
     /** Whether the current drag is in deselect mode (shift held) */
     const deselectMode = useRef(false);
@@ -284,7 +293,7 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             const py = e.clientY - rect.top;
 
             startPx.current = { x: px, y: py };
-            startLatLng.current = map.containerPointToLatLng(L.point(px, py));
+            startLatLng.current = map.containerPointToLatLng(point(px, py));
             dragging.current = true;
             deselectMode.current = e.shiftKey;
 
@@ -306,8 +315,8 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             updateOverlayRect(startPx.current.x, startPx.current.y, curX, curY);
 
             // Compute geographic bounds for marker hit-testing
-            const currentLatLng = map.containerPointToLatLng(L.point(curX, curY));
-            const bounds = L.latLngBounds(startLatLng.current, currentLatLng);
+            const currentLatLng = map.containerPointToLatLng(point(curX, curY));
+            const bounds = latLngBounds(startLatLng.current, currentLatLng);
 
             // Fire live highlight event so markers get visual feedback
             map.fire('talos:lassoHighlight', { bounds, deselect: deselectMode.current });
@@ -326,8 +335,8 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             const endX = e.clientX - rect.left;
             const endY = e.clientY - rect.top;
 
-            const endLatLng = map.containerPointToLatLng(L.point(endX, endY));
-            const bounds = L.latLngBounds(startLatLng.current, endLatLng);
+            const endLatLng = map.containerPointToLatLng(point(endX, endY));
+            const bounds = latLngBounds(startLatLng.current, endLatLng);
 
             // Fadeout overlay
             fadeOutOverlay();

@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import 'leaflet/dist/leaflet.css';
 import styles from './Map.module.scss';
 import { useMap } from './useMap';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { useLabel } from './useLabel';
 import { useLink } from './useLink';
 import { UsePreview } from './usePreview';
@@ -10,7 +9,7 @@ import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import { isMapOverdragged, toMapBounds } from './mapOverdrag';
 
 interface MapProps {
-    onMapReady?: (mapInstance: L.Map) => void;
+    onMapReady?: (mapInstance: TalosMap) => void;
 }
 
 const Map: React.FC<MapProps> = ({ onMapReady }) => {

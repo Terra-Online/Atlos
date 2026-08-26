@@ -1,7 +1,7 @@
 import { REGION_DICT } from '@/data/map';
 import { IMarkerData, MARKER_TYPE_DICT, loadRegionMarkers } from '@/data/marker';
 import LOGGER from '@/utils/log';
-import L from 'leaflet';
+import { CompatLayer, CompatLayerGroup, CompatMarker, TalosMap, layerGroup } from '@/component/mapCore/engine';
 import {
     emitPreviewLeave,
     getMarkerLayer,
@@ -21,16 +21,16 @@ import type { LayerType } from '@/store/layer';
 const LOCATOR_PROXIMITY_XZ_METERS = 20;
 const LOCATOR_PROXIMITY_Y_METERS = 6;
 
-// leaflet renderer
+// map renderer
 export class MarkerLayer {
     /**
      * 绑定的地图实例
      */
-    map: L.Map;
+    map: TalosMap;
     /**
      * 子区域到存放该区域marker的LayerGroup映射
      */
-    layerSubregionDict: Record<string, L.LayerGroup> = {};
+    layerSubregionDict: Record<string, CompatLayerGroup> = {};
 
     private clusterLayer: ClusterLayer;
     private activeFilterKeys: string[] = [];
@@ -38,7 +38,7 @@ export class MarkerLayer {
     /**
      * marker唯一id到marker Layer映射
      */
-    markerDict: Record<string, L.Layer> = {};
+    markerDict: Record<string, CompatLayer> = {};
 
     /**
      * marker唯一id到markerData映射
@@ -73,7 +73,7 @@ export class MarkerLayer {
     private _destroyLasso?: () => void;
 
     constructor(
-        map: L.Map,
+        map: TalosMap,
         onSwitchCurrentMarker?: (marker: IMarkerData) => void,
     ) {
         this.map = map;
@@ -92,9 +92,7 @@ export class MarkerLayer {
         this.layerSubregionDict = Object.values(REGION_DICT).reduce(
             (acc, region) => {
             region.subregions.forEach((subregion) => {
-                acc[subregion] = new L.LayerGroup([], {
-                    pane: 'markerPane',
-                });
+                acc[subregion] = layerGroup([], { pane: 'markerPane' });
             });
             return acc;
             },
@@ -144,7 +142,7 @@ export class MarkerLayer {
 
     private getMarkerInnerElement(id: string): HTMLElement | null {
         const layer = this.markerDict[id];
-        if (!(layer instanceof L.Marker)) return null;
+        if (!(layer instanceof CompatMarker)) return null;
         const markerRoot = layer.getElement();
         if (!markerRoot) return null;
         return markerRoot.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
@@ -400,7 +398,7 @@ export class MarkerLayer {
 
         // 更新所有 marker 的 checked 类
         Object.entries(this.markerDict).forEach(([id, layer]) => {
-            if (!(layer instanceof L.Marker)) return;
+            if (!(layer instanceof CompatMarker)) return;
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             if (!markerRoot) return;
             const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
@@ -444,7 +442,6 @@ export class MarkerLayer {
                         emitPreviewLeave(id);
                         // 延迟移除，等待淡出动画完成
                         this.pendingRemovalTimers[id] = window.setTimeout(() => {
-                            // @ts-expect-error leaflet官方文档支持从layerGroup中移除
                             layer.remove(parent);
                             delete this.pendingRemovalTimers[id];
                         }, 160);
@@ -463,7 +460,7 @@ export class MarkerLayer {
         changedSelectedPoints.forEach(({id, selected}) => {
             const layer = this.markerDict[id];
             if (!layer) return;
-            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
+            const markerRoot = (layer as CompatMarker).getElement?.() as HTMLElement | null;
             if (!markerRoot) return;
             const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
@@ -583,7 +580,7 @@ export class MarkerLayer {
             const forceVisible = this.checkedVisibleOverrideIds.has(id);
             const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
                 && (!completedMarkerIds.has(id) || forceVisible);
-            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
+            const markerRoot = (layer as CompatMarker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 
             if (shouldShow) {
@@ -604,7 +601,6 @@ export class MarkerLayer {
                     clearTimeout(this.pendingRemovalTimers[id]);
                 }
                 this.pendingRemovalTimers[id] = window.setTimeout(() => {
-                    // @ts-expect-error leaflet官方文档支持从layerGroup中移除，这里的Map类型要求是错误的
                     layer.remove(parent);
                     delete this.pendingRemovalTimers[id];
                 }, 160);

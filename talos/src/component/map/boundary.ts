@@ -1,11 +1,19 @@
-import L from 'leaflet';
+import {
+    TalosMap,
+    CompatLayer,
+    CompatLayerGroup,
+    layerGroup,
+    polygon,
+    rectangle,
+    latLngBounds,
+} from '@/component/mapCore/engine';
 import { REGION_DICT, SUBREGION_DICT, IMapRegion } from '@/data/map';
 
 export class SubregionBoundaryManager {
-    private map: L.Map;
-    private boundariesLayer?: L.LayerGroup;
+    private map: TalosMap;
+    private boundariesLayer?: CompatLayerGroup;
 
-    constructor(map: L.Map) {
+    constructor(map: TalosMap) {
         this.map = map;
     }
 
@@ -19,7 +27,7 @@ export class SubregionBoundaryManager {
             return; // don't show any without subregion config
         }
 
-        const boundaryLayers: L.Layer[] = [];
+        const boundaryLayers: CompatLayer[] = [];
 
         config.subregions.forEach(subregionId => {
             const subregion = SUBREGION_DICT[subregionId];
@@ -35,7 +43,7 @@ export class SubregionBoundaryManager {
         });
 
         if (boundaryLayers.length > 0) {
-            this.boundariesLayer = L.layerGroup(boundaryLayers);
+            this.boundariesLayer = layerGroup(boundaryLayers);
             this.boundariesLayer.addTo(this.map);
             
             this.toggleBoundaryVisibility(boundaryLayers, true);
@@ -50,7 +58,7 @@ export class SubregionBoundaryManager {
         
         const boundariesLayerToBeRemoved = this.boundariesLayer;
         
-        const layers: L.Layer[] = [];
+        const layers: CompatLayer[] = [];
         this.boundariesLayer.eachLayer(layer => layers.push(layer));
         
         this.toggleBoundaryVisibility(layers, true);
@@ -62,48 +70,53 @@ export class SubregionBoundaryManager {
         }, 300); // equal to the CSS transition duration
     }
 
-    private toggleBoundaryVisibility(layers: L.Layer[], hidden: boolean) {
+    private toggleBoundaryVisibility(layers: CompatLayer[], hidden: boolean) {
         layers.forEach(layer => {
-            const element = (layer as L.Polygon | L.Rectangle).getElement?.() as SVGElement | undefined;
+            const element = layer.getElement();
             element?.classList.toggle('boundary-hidden', hidden);
         });
     }
 
-    private createPolygonBoundary(polygonData: number[][][], config: IMapRegion): L.Layer[] {
-        const polygonPoints = polygonData.map((polygon) => {
-            return polygon.map(([x, y]) => {
+    private createPolygonBoundary(polygonData: number[][][], config: IMapRegion): CompatLayer[] {
+        const boundaryLayers: CompatLayer[] = [];
+
+        // 引擎的 polygon() 只接受单环（flat）坐标数组；逐环创建 fill+stroke 以保持多环渲染
+        polygonData.forEach((ring) => {
+            const polygonPoints = ring.map(([x, y]) => {
                 return this.map.unproject([x, y], config.maxZoom);
             });
+
+            const fillLayer = polygon(polygonPoints, {
+                color: 'transparent',
+                fillOpacity: 0.2,
+                className: 'subregion-boundary-fill',
+            });
+
+            const strokeLayer = polygon(polygonPoints, {
+                weight: 2,
+                opacity: 0.8,
+                fill: false,
+                className: 'subregion-boundary-stroke',
+            });
+
+            boundaryLayers.push(fillLayer, strokeLayer);
         });
 
-        const fillLayer = L.polygon(polygonPoints, {
-            color: 'transparent',
-            fillOpacity: 0.2,
-            className: 'subregion-boundary-fill',
-        });
-
-        const strokeLayer = L.polygon(polygonPoints, {
-            weight: 2,
-            opacity: 0.8,
-            fill: false,
-            className: 'subregion-boundary-stroke',
-        });
-
-        return [fillLayer, strokeLayer];
+        return boundaryLayers;
     }
 
-    private createRectangleBoundary(bounds: number[][], config: IMapRegion): L.Layer[] {
+    private createRectangleBoundary(bounds: number[][], config: IMapRegion): CompatLayer[] {
         const [[x1, y1], [x2, y2]] = bounds;
         const sw = this.map.unproject([x1, y2], config.maxZoom);
         const ne = this.map.unproject([x2, y1], config.maxZoom);
 
-        const fillLayer = L.rectangle(L.latLngBounds(sw, ne), {
+        const fillLayer = rectangle(latLngBounds(sw, ne), {
             color: 'transparent',
             fillOpacity: 0.2,
             className: 'subregion-boundary-fill',
         });
 
-        const strokeLayer = L.rectangle(L.latLngBounds(sw, ne), {
+        const strokeLayer = rectangle(latLngBounds(sw, ne), {
             weight: 2,
             opacity: 0.8,
             fill: false,

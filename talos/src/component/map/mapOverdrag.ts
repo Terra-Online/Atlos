@@ -1,42 +1,15 @@
-import L from 'leaflet';
-
-interface BoundsAwareMap extends L.Map {
-    _limitCenter(
-        center: L.LatLng,
-        zoom: number,
-        bounds: L.LatLngBounds,
-    ): L.LatLng;
-}
+import { LatLngBounds, Point, type TalosMap } from '@/component/mapCore/engine';
 
 export const toMapBounds = (
-    bounds: L.Map['options']['maxBounds'],
-): L.LatLngBounds | null => {
-    if (!bounds) return null;
-    if (bounds instanceof L.LatLngBounds) return bounds;
-
-    return Array.isArray(bounds) && bounds.length === 2
-        ? L.latLngBounds(bounds[0], bounds[1])
-        : null;
-};
+    bounds: TalosMap['options']['maxBounds'],
+): LatLngBounds | null => bounds ?? null;
 
 /**
- * Use Leaflet's own center constraint instead of checking all view corners.
- * At low zoom a legal viewport can be larger than maxBounds.
+ * 直接读取引擎的橡皮筋过界偏移量（触控板视觉过界），
+ * 替代 Leaflet 时代基于 _limitCenter 的私有接口检测。
  */
 export const isMapOverdragged = (
-    map: L.Map,
-    bounds: L.LatLngBounds,
-): boolean => {
-    const constrainedMap = map as BoundsAwareMap;
-    const center = map.getCenter();
-    const constrainedCenter = constrainedMap._limitCenter(
-        center,
-        map.getZoom(),
-        bounds,
-    );
-    return (
-        map
-            .project(center, map.getZoom())
-            .distanceTo(map.project(constrainedCenter, map.getZoom())) > 1
-    );
-};
+    map: TalosMap,
+    // 保留参数以维持调用签名；判定已改由引擎偏移量完成。
+    _bounds: LatLngBounds,
+): boolean => map.getOverdragOffset().distanceTo(new Point(0, 0)) > 1;

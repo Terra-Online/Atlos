@@ -1,7 +1,7 @@
 import { GuideTooltip } from '@/component/userGuide/tooltip/tooltip';
 import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { i18nInitPromise } from '@/locale';
 import {
     useIsUserGuideOpen,
@@ -31,7 +31,7 @@ import { useAppViewport, useDevice } from '@/utils/device';
 import useRegion from '@/store/region';
 
 interface UserGuideProps {
-    map?: L.Map;
+    map?: TalosMap;
     visible?: boolean;
     onReady?: () => void;
 }

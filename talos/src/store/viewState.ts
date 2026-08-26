@@ -2,13 +2,13 @@
 import { IMapView } from '@/component/mapCore/type';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { useUiPrefsStore } from './uiPrefs';
 import { createConditionalStorage } from '@/utils/storage';
 
 interface IViewStateStore {
     viewStates: Record<string, IMapView>;
-    saveViewState: (region: string, map: L.Map) => void;
+    saveViewState: (region: string, map: TalosMap) => void;
     getViewState: (region: string) => IMapView | undefined;
     clearAllViewStates: () => void;
 }

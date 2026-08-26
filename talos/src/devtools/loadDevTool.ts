@@ -1,9 +1,9 @@
-import type L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 
 declare global {
     interface Window {
         __TALOS_DEV__?: {
-            map?: L.Map;
+            map?: TalosMap;
             mapCore?: unknown;
         };
     }
@@ -32,7 +32,7 @@ const hasMarkToolFlag = (): boolean => hasFlag('markTool');
 
 export const isRecordToolEnabled = (): boolean => import.meta.env.DEV && hasFlag('recordTool');
 
-const waitForMap = async (): Promise<L.Map | null> => {
+const waitForMap = async (): Promise<TalosMap | null> => {
     const deadline = Date.now() + 10_000;
     while (Date.now() < deadline) {
         const map = window.__TALOS_DEV__?.map;
@@ -42,11 +42,11 @@ const waitForMap = async (): Promise<L.Map | null> => {
     return null;
 };
 
-const readBootstrap = (mod: unknown, key: string): ((map: L.Map) => void) | null => {
+const readBootstrap = (mod: unknown, key: string): ((map: TalosMap) => void) | null => {
     if (!mod || typeof mod !== 'object') return null;
     const candidate = (mod as Record<string, unknown>)[key];
     if (typeof candidate !== 'function') return null;
-    return candidate as (map: L.Map) => void;
+    return candidate as (map: TalosMap) => void;
 };
 
 export const loadLabelTool = async (): Promise<void> => {

@@ -2,7 +2,7 @@ import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import { useEffect, useMemo, useState } from 'react';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import {
     useSetSidebarOpen,
     useToggleMarkFilterExpanded,
@@ -26,7 +26,7 @@ export type GuideStep = Step & {
     disableAutoScroll?: boolean;
 };
 
-export const useDesktopGuideSteps = (map?: L.Map) => {
+export const useDesktopGuideSteps = (map?: TalosMap) => {
     const t = useTranslateUI();
     const setSidebarOpen = useSetSidebarOpen();
     const toggleMarkFilterExpanded = useToggleMarkFilterExpanded();

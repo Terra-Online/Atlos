@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import type { Map as LeafletMap } from 'leaflet';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { useTranslateUI } from '@/locale';
 import Icon from '../../assets/images/UI/observator_6.webp';
 import {
@@ -36,72 +35,12 @@ type SvgElementInstanceLike = Element & {
 
 type StateListener = (active: boolean) => void;
 type ViewportListener = () => void;
-type LeafletWithMutableDocument = typeof L & {
-    DomEvent?: {
-        _pointers?: Record<number, PointerEvent>;
-        _pointersCount?: number;
-    };
-    Draggable?: {
-        prototype?: LeafletDraggablePrototype;
-        _dragging?: LeafletDraggableInstance | false;
-    };
-    Browser?: {
-        touch?: boolean;
-    };
-};
-
-type LeafletPointLikeEvent = Event & {
-    touches?: TouchList;
-    which?: number;
-    button?: number;
-    shiftKey?: boolean;
-    clientX?: number;
-    clientY?: number;
-    srcElement?: EventTarget | null;
-};
-
 type SvgElementInstanceConstructor = {
     new(): SvgElementInstanceLike;
 };
 
 type WindowWithSvgElementInstance = Window & {
     SVGElementInstance?: SvgElementInstanceConstructor;
-};
-
-type LeafletDraggableInstance = {
-    _enabled?: boolean;
-    _moved?: boolean;
-    _moving?: boolean;
-    _element?: HTMLElement;
-    _dragStartTarget?: HTMLElement;
-    _preventOutline?: boolean;
-    _startPoint?: L.Point;
-    _startPos?: L.Point;
-    _parentScale?: {
-        x: number;
-        y: number;
-    };
-    _newPos?: L.Point;
-    _lastEvent?: Event;
-    _lastTarget?: Element | null;
-    options?: {
-        clickTolerance?: number;
-    };
-    _updatePosition?: () => void;
-    fire?: (type: string, data?: unknown) => LeafletDraggableInstance;
-    _onDown?: (event: LeafletPointLikeEvent) => void;
-    _onMove?: (event: LeafletPointLikeEvent) => void;
-    _onUp?: (event?: LeafletPointLikeEvent) => void;
-    finishDrag?: (noInertia?: boolean) => void;
-    __talosDragDocument?: Document | null;
-    __talosDragWindow?: Window | null;
-    __talosDragWasMouse?: boolean;
-    __talosDragCleanup?: (() => void) | null;
-    __talosOutlineCleanup?: (() => void) | null;
-};
-
-type LeafletDraggablePrototype = LeafletDraggableInstance & {
-    __talosPatched?: boolean;
 };
 
 type NodeLike = {
@@ -445,267 +384,251 @@ const eventWindow = (event?: Event, fallback?: HTMLElement | null) => (
     eventDocument(event, fallback)?.defaultView ?? window
 );
 
-const getSizedParentNodeForDocument = (element: HTMLElement, targetDocument: Document) => {
-    let current: HTMLElement | null = element;
-    do {
-        current = current.parentElement;
-    } while (current && (!current.offsetWidth || !current.offsetHeight) && current !== targetDocument.body);
-    return current ?? targetDocument.body;
+// ---------------------------------------------------------------------------
+// PiP 地图拖拽转发
+//
+// 旧实现 monkeypatch L.Draggable 原型，把 PiP document 内的指针事件接进
+// Leaflet 的拖拽状态机。迁移后改为独立实现：在地图容器上以捕获阶段监听
+// mousedown/touchstart，仅当事件发生在 PiP document 时接管（阻断 MapLibre
+// 原生 dragPan，避免双重平移），随后用 jumpToGame 同步驱动相机，并通过
+// beginCameraGesture/endCameraGesture 把整次拖拽合并成一对
+// movestart/moveend（与原生拖拽一致）。
+// ---------------------------------------------------------------------------
+
+const PIP_DRAG_CLICK_TOLERANCE = 3;
+
+type PipDragSession = {
+    map: TalosMap;
+    container: HTMLElement;
+    targetDocument: Document;
+    targetWindow: Window;
+    isTouch: boolean;
+    startClientX: number;
+    startClientY: number;
+    lastClientX: number;
+    lastClientY: number;
+    moved: boolean;
+    lastTarget: Element | null;
+    restoreOutline: (() => void) | null;
+    cleanupGuards: () => void;
+    onMove: (event: Event) => void;
+    onUp: (event: Event) => void;
+};
+
+let pipDragSession: PipDragSession | null = null;
+const pipDragForwardingContainers = new WeakSet<HTMLElement>();
+
+const preventEventDefault = (event: Event) => {
+    event.preventDefault();
 };
 
 const disableScopedTextSelection = (targetWindow: Window) => {
-    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
+    targetWindow.addEventListener('selectstart', preventEventDefault);
     return () => {
-        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
+        targetWindow.removeEventListener('selectstart', preventEventDefault);
     };
 };
 
 const disableScopedImageDrag = (targetWindow: Window) => {
-    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
+    targetWindow.addEventListener('dragstart', preventEventDefault);
     return () => {
-        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
+        targetWindow.removeEventListener('dragstart', preventEventDefault);
     };
 };
 
-const preventScopedOutline = (draggable: LeafletDraggableInstance, targetWindow: Window) => {
-    let element = draggable._element;
-    if (!draggable._preventOutline || !element) return;
-
-    while (element.tabIndex === -1 && element.parentElement) {
+// 拖拽期间隐藏焦点 outline（keydown 或拖拽结束时恢复），与旧补丁一致
+const preventScopedOutline = (container: HTMLElement, targetWindow: Window): (() => void) | null => {
+    let element: HTMLElement | null = container;
+    while (element && element.tabIndex === -1 && element.parentElement) {
         element = element.parentElement;
     }
-    if (!element.style) return;
+    if (!element?.style) return null;
 
     const outlineElement = element;
-    draggable.__talosOutlineCleanup?.();
     const previousOutline = outlineElement.style.outlineStyle;
     outlineElement.style.outlineStyle = 'none';
 
     const restoreOutline = () => {
         outlineElement.style.outlineStyle = previousOutline;
-        L.DomEvent.off(targetWindow as unknown as HTMLElement, 'keydown', restoreOutline);
-        if (draggable.__talosOutlineCleanup === restoreOutline) {
-            draggable.__talosOutlineCleanup = null;
-        }
+        targetWindow.removeEventListener('keydown', restoreOutline);
     };
-
-    draggable.__talosOutlineCleanup = restoreOutline;
-    L.DomEvent.on(targetWindow as unknown as HTMLElement, 'keydown', restoreOutline);
+    targetWindow.addEventListener('keydown', restoreOutline);
+    return restoreOutline;
 };
 
-const cleanupScopedDragGuards = (draggable: LeafletDraggableInstance) => {
-    draggable.__talosDragCleanup?.();
-    draggable.__talosDragCleanup = null;
-    draggable.__talosOutlineCleanup?.();
-    draggable.__talosOutlineCleanup = null;
+// 越过 clickTolerance 后正式开始拖拽：class 与事件对齐原生拖拽语义
+const startPipDrag = (session: PipDragSession, event: Event) => {
+    session.moved = true;
+    session.map.beginCameraGesture(false);
+    session.container.classList.add('leaflet-dragging');
+    session.targetDocument.body.classList.add('leaflet-dragging');
+    session.map.fire('dragstart');
+
+    const rawTarget = event.target;
+    const target = isElement(rawTarget) ? rawTarget : null;
+    const svgElementInstance = (session.targetWindow as WindowWithSvgElementInstance).SVGElementInstance;
+    session.lastTarget = svgElementInstance && target instanceof svgElementInstance
+        ? (target.correspondingUseElement ?? null)
+        : target;
+    session.lastTarget?.classList.add('leaflet-drag-target');
 };
 
-const installLeafletDraggableDocumentPatch = () => {
-    const leaflet = L as LeafletWithMutableDocument;
-    const draggablePrototype = leaflet.Draggable?.prototype;
-    if (!draggablePrototype || draggablePrototype.__talosPatched) return;
+const handlePipDragMove = (session: PipDragSession, event: Event) => {
+    const touchEvent = session.isTouch ? (event as TouchEvent) : null;
+    if (touchEvent && touchEvent.touches.length > 1) {
+        // 多点触摸：标记为已移动（等价旧补丁的点击抑制语义），不再平移
+        session.moved = true;
+        return;
+    }
 
-    const originalOnDown = draggablePrototype._onDown;
-    const originalOnMove = draggablePrototype._onMove;
-    const originalOnUp = draggablePrototype._onUp;
-    const originalFinishDrag = draggablePrototype.finishDrag;
-    if (!originalOnDown || !originalOnMove || !originalOnUp || !originalFinishDrag) return;
+    const pointer = touchEvent ? touchEvent.touches[0] : (event as MouseEvent);
+    if (!pointer || typeof pointer.clientX !== 'number' || typeof pointer.clientY !== 'number') return;
 
-    draggablePrototype._onDown = function patchedOnDown(this: LeafletDraggableInstance, event: LeafletPointLikeEvent) {
-        const isPipDrag = eventDocument(event, this._dragStartTarget) === getPictureInPictureDocument();
-        if (!isPipDrag) {
-            originalOnDown.call(this, event);
-            return;
-        }
+    const totalX = pointer.clientX - session.startClientX;
+    const totalY = pointer.clientY - session.startClientY;
+    if (!totalX && !totalY) return;
 
-        if (!this._enabled) return;
-        this._moved = false;
+    if (!session.moved) {
+        if (Math.abs(totalX) + Math.abs(totalY) < PIP_DRAG_CLICK_TOLERANCE) return;
+        startPipDrag(session, event);
+    }
 
-        if (!this._element || L.DomUtil.hasClass(this._element, 'leaflet-zoom-anim')) return;
+    event.preventDefault();
 
-        if (event.touches && event.touches.length !== 1) {
-            if (leaflet.Draggable?._dragging === this) {
-                this.finishDrag?.();
-            }
-            return;
-        }
+    const deltaX = pointer.clientX - session.lastClientX;
+    const deltaY = pointer.clientY - session.lastClientY;
+    session.lastClientX = pointer.clientX;
+    session.lastClientY = pointer.clientY;
+    if (!deltaX && !deltaY) return;
 
-        if (
-            leaflet.Draggable?._dragging ||
-            event.shiftKey ||
-            (event.which !== 1 && event.button !== 1 && !event.touches)
-        ) {
-            return;
-        }
+    // 指针与地图内容同向移动：相机中心按反向屏幕像素平移
+    const centerPoint = session.map.latLngToContainerPoint(session.map.getCenter());
+    const nextCenter = session.map.containerPointToLatLng([
+        centerPoint.x - deltaX,
+        centerPoint.y - deltaY,
+    ]);
+    session.map.jumpToGame(nextCenter, session.map.getZoom());
+    session.map.fire('drag');
+};
 
-        const targetDocument = eventDocument(event, this._dragStartTarget);
-        const targetWindow = eventWindow(event, this._dragStartTarget);
-        if (!targetDocument || !leaflet.Draggable) return;
+// 结束拖拽（noInertia 保留在 dragend payload 中，与旧补丁一致）
+const finishPipDrag = (noInertia?: boolean) => {
+    const session = pipDragSession;
+    if (!session) return;
+    pipDragSession = null;
 
-        const first = event.touches ? event.touches[0] : event;
-        if (typeof first?.clientX !== 'number' || typeof first.clientY !== 'number') return;
+    session.targetDocument.removeEventListener('mousemove', session.onMove);
+    session.targetDocument.removeEventListener('touchmove', session.onMove);
+    session.targetDocument.removeEventListener('mouseup', session.onUp);
+    session.targetDocument.removeEventListener('touchend', session.onUp);
+    session.targetDocument.removeEventListener('touchcancel', session.onUp);
+    session.cleanupGuards();
+    session.restoreOutline?.();
 
-        cleanupScopedDragGuards(this);
-        this.__talosDragDocument = targetDocument;
-        this.__talosDragWindow = targetWindow;
-        this.__talosDragWasMouse = event.type === 'mousedown';
-        leaflet.Draggable._dragging = this;
+    session.container.classList.remove('leaflet-dragging');
+    session.targetDocument.body.classList.remove('leaflet-dragging');
+    session.lastTarget?.classList.remove('leaflet-drag-target');
+    session.lastTarget = null;
 
-        preventScopedOutline(this, targetWindow);
-        const restoreImageDrag = disableScopedImageDrag(targetWindow);
-        const restoreTextSelection = disableScopedTextSelection(targetWindow);
-        this.__talosDragCleanup = () => {
+    if (session.moved) {
+        const distance = Math.hypot(
+            session.lastClientX - session.startClientX,
+            session.lastClientY - session.startClientY,
+        );
+        session.map.fire('dragend', { noInertia, distance });
+        session.map.endCameraGesture(false);
+
+        // 与 Leaflet 一致：拖拽结束后紧跟的 click 不再派发到地图
+        const suppressClick = (clickEvent: Event) => {
+            clickEvent.stopImmediatePropagation();
+            session.container.removeEventListener('click', suppressClick, true);
+        };
+        session.container.addEventListener('click', suppressClick, true);
+    }
+};
+
+const beginPipDrag = (map: TalosMap, container: HTMLElement, event: MouseEvent | TouchEvent) => {
+    const pipDocument = getPictureInPictureDocument();
+    // 非 PiP 文档的事件交给 MapLibre 原生 dragPan
+    if (!pipDocument || eventDocument(event, container) !== pipDocument) return;
+
+    // 拖拽被禁用时不接管（原生 dragPan 同样处于禁用态，无需阻断）
+    if (!map.dragging.isEnabled()) return;
+    // 动画缩放期间不启动拖拽（等价旧补丁的 leaflet-zoom-anim 检查）
+    if (container.classList.contains('leaflet-zoom-anim')) {
+        event.stopImmediatePropagation();
+        return;
+    }
+
+    const touches = (event as TouchEvent).touches;
+    if (touches && touches.length !== 1) {
+        // 多点触摸：结束进行中的拖拽，交给原生捏合手势
+        finishPipDrag(true);
+        return;
+    }
+
+    if (pipDragSession || event.shiftKey
+        || (!touches && (event as MouseEvent).which !== 1 && (event as MouseEvent).button !== 1)) {
+        // 与旧补丁一致：这些情况不启动拖拽，同时阻断原生 handler 保持行为一致
+        event.stopImmediatePropagation();
+        return;
+    }
+
+    const first = touches ? touches[0] : (event as MouseEvent);
+    if (typeof first?.clientX !== 'number' || typeof first.clientY !== 'number') return;
+
+    event.stopImmediatePropagation();
+    finishPipDrag(true); // 防御：清理残留会话
+
+    const targetWindow = eventWindow(event, container);
+    const restoreImageDrag = disableScopedImageDrag(targetWindow);
+    const restoreTextSelection = disableScopedTextSelection(targetWindow);
+
+    const session: PipDragSession = {
+        map,
+        container,
+        targetDocument: pipDocument,
+        targetWindow,
+        isTouch: Boolean(touches),
+        startClientX: first.clientX,
+        startClientY: first.clientY,
+        lastClientX: first.clientX,
+        lastClientY: first.clientY,
+        moved: false,
+        lastTarget: null,
+        restoreOutline: preventScopedOutline(container, targetWindow),
+        cleanupGuards: () => {
             restoreImageDrag();
             restoreTextSelection();
-        };
-
-        if (this._moving) return;
-
-        this.fire?.('down');
-
-        const sizedParent = getSizedParentNodeForDocument(this._element, targetDocument);
-
-        this._startPoint = new L.Point(first.clientX, first.clientY);
-        this._startPos = L.DomUtil.getPosition(this._element);
-        this._parentScale = L.DomUtil.getScale(sizedParent);
-
-        L.DomEvent.on(
-            targetDocument as unknown as HTMLElement,
-            this.__talosDragWasMouse ? 'mousemove' : 'touchmove',
-            this._onMove as (moveEvent: Event) => void,
-            this,
-        );
-        L.DomEvent.on(
-            targetDocument as unknown as HTMLElement,
-            this.__talosDragWasMouse ? 'mouseup' : 'touchend touchcancel',
-            this._onUp as (upEvent: Event) => void,
-            this,
-        );
+        },
+        onMove: () => undefined,
+        onUp: () => undefined,
     };
+    session.onMove = (moveEvent) => handlePipDragMove(session, moveEvent);
+    session.onUp = () => finishPipDrag();
+    pipDragSession = session;
 
-    draggablePrototype._onMove = function patchedOnMove(this: LeafletDraggableInstance, event: LeafletPointLikeEvent) {
-        if (!this.__talosDragDocument) {
-            originalOnMove.call(this, event);
-            return;
-        }
-
-        if (!this._enabled || !this._startPoint || !this._startPos || !this._parentScale) return;
-
-        if (event.touches && event.touches.length > 1) {
-            this._moved = true;
-            return;
-        }
-
-        const first = event.touches && event.touches.length === 1 ? event.touches[0] : event;
-        if (typeof first?.clientX !== 'number' || typeof first.clientY !== 'number') return;
-        const offset = new L.Point(first.clientX, first.clientY).subtract(this._startPoint);
-
-        if (!offset.x && !offset.y) return;
-        if (Math.abs(offset.x) + Math.abs(offset.y) < (this.options?.clickTolerance ?? 3)) return;
-
-        offset.x /= this._parentScale.x;
-        offset.y /= this._parentScale.y;
-
-        L.DomEvent.preventDefault(event);
-
-        const targetDocument = this.__talosDragDocument ?? eventDocument(event, this._dragStartTarget);
-        const targetWindow = this.__talosDragWindow ?? eventWindow(event, this._dragStartTarget);
-
-        if (!this._moved) {
-            this.fire?.('dragstart');
-            this._moved = true;
-
-            if (targetDocument) {
-                L.DomUtil.addClass(targetDocument.body, 'leaflet-dragging');
-            }
-
-            const rawTarget = event.target || event.srcElement;
-            const target = isElement(rawTarget) ? rawTarget : null;
-            const svgElementInstance = (targetWindow as WindowWithSvgElementInstance).SVGElementInstance;
-            if (svgElementInstance && target instanceof svgElementInstance) {
-                this._lastTarget = target.correspondingUseElement;
-            } else {
-                this._lastTarget = target;
-            }
-            if (this._lastTarget) {
-                L.DomUtil.addClass(this._lastTarget as HTMLElement, 'leaflet-drag-target');
-            }
-        }
-
-        this._newPos = this._startPos.add(offset);
-        this._moving = true;
-        this._lastEvent = event;
-        this._updatePosition?.();
-    };
-
-    draggablePrototype._onUp = function patchedOnUp(this: LeafletDraggableInstance, event?: LeafletPointLikeEvent) {
-        if (!this.__talosDragDocument) {
-            originalOnUp.call(this, event);
-            return;
-        }
-
-        if (!this._enabled) return;
-        this.finishDrag?.();
-    };
-
-    draggablePrototype.finishDrag = function patchedFinishDrag(this: LeafletDraggableInstance, noInertia?: boolean) {
-        if (!this.__talosDragDocument) {
-            originalFinishDrag.call(this, noInertia);
-            return;
-        }
-
-        const targetDocument = this.__talosDragDocument ?? this._dragStartTarget?.ownerDocument ?? openerDocument;
-        if (targetDocument) {
-            L.DomUtil.removeClass(targetDocument.body, 'leaflet-dragging');
-        }
-
-        if (this._lastTarget) {
-            L.DomUtil.removeClass(this._lastTarget as HTMLElement, 'leaflet-drag-target');
-            this._lastTarget = null;
-        }
-
-        const listenerDocument = (targetDocument ?? document) as unknown as HTMLElement;
-        L.DomEvent.off(listenerDocument, 'mousemove touchmove', this._onMove as (moveEvent: Event) => void, this);
-        L.DomEvent.off(listenerDocument, 'mouseup touchend touchcancel', this._onUp as (upEvent: Event) => void, this);
-        cleanupScopedDragGuards(this);
-
-        const fireDragend = Boolean(this._moved && this._moving && this._newPos && this._startPos);
-
-        this._moving = false;
-        if (leaflet.Draggable) {
-            leaflet.Draggable._dragging = false;
-        }
-
-        if (fireDragend) {
-            this.fire?.('dragend', {
-                noInertia,
-                distance: this._newPos?.distanceTo(this._startPos as L.Point) ?? 0,
-            });
-        }
-
-        this.__talosDragDocument = null;
-        this.__talosDragWindow = null;
-        this.__talosDragWasMouse = false;
-    };
-
-    draggablePrototype.__talosPatched = true;
+    if (session.isTouch) {
+        // touchmove 需要 passive: false 才能 preventDefault
+        pipDocument.addEventListener('touchmove', session.onMove, { passive: false });
+        pipDocument.addEventListener('touchend', session.onUp);
+        pipDocument.addEventListener('touchcancel', session.onUp);
+    } else {
+        pipDocument.addEventListener('mousemove', session.onMove);
+        pipDocument.addEventListener('mouseup', session.onUp);
+    }
 };
 
-installLeafletDraggableDocumentPatch();
+// 每个地图容器只安装一次（WeakSet 防重，UIOverlay 与 Scale 都会触发 hook）
+const installPipDragForwarding = (map: TalosMap) => {
+    const container = map.getContainer();
+    if (pipDragForwardingContainers.has(container)) return;
+    pipDragForwardingContainers.add(container);
 
-const resetLeafletDragState = () => {
-    const leaflet = L as LeafletWithMutableDocument;
-    const activeDraggable = leaflet.Draggable?._dragging;
-    if (activeDraggable) {
-        activeDraggable.finishDrag?.(true);
-    }
-    if (leaflet.Draggable) {
-        leaflet.Draggable._dragging = false;
-    }
-    if (leaflet.DomEvent) {
-        leaflet.DomEvent._pointers = {};
-        leaflet.DomEvent._pointersCount = 0;
-    }
+    const onMouseDown = (event: MouseEvent) => beginPipDrag(map, container, event);
+    const onTouchStart = (event: TouchEvent) => beginPipDrag(map, container, event);
+    container.addEventListener('mousedown', onMouseDown, true);
+    container.addEventListener('touchstart', onTouchStart, true);
 };
 
 const mountPlaceholder = () => {
@@ -727,7 +650,7 @@ export const closeAppPictureInPicture = () => {
     documentResourceMirrorCleanup?.();
     documentResourceMirrorCleanup = null;
     waitForMirroredStyles = null;
-    resetLeafletDragState();
+    finishPipDrag(true); // 结束未完成的 PiP 拖拽（等价旧 resetLeafletDragState）
     pipWindow?.removeEventListener('resize', handlePictureInPictureResize);
 
     if (root && originalParent && restoreAnchor?.parentNode === originalParent) {
@@ -797,7 +720,7 @@ export const toggleAppPictureInPicture = () => (
     isAppPictureInPictureActive() ? Promise.resolve(closeAppPictureInPicture()).then(() => false) : openAppPictureInPicture()
 );
 
-export const useAppPictureInPicture = (map?: LeafletMap) => {
+export const useAppPictureInPicture = (map?: TalosMap) => {
     const supported = useMemo(() => isDocumentPictureInPictureSupported(), []);
     const [active, setActive] = useState(isAppPictureInPictureActive);
 
@@ -808,6 +731,11 @@ export const useAppPictureInPicture = (map?: LeafletMap) => {
             map?.invalidateSize();
         });
     }, [active, map]);
+    // 安装 PiP 拖拽转发（每容器幂等一次）
+    useEffect(() => {
+        if (!map) return;
+        installPipDragForwarding(map);
+    }, [map]);
 
     useEffect(() => subscribeAppViewport(() => {
         requestAnimationFrame(() => {

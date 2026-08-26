@@ -1,4 +1,4 @@
-import L, { divIcon } from 'leaflet';
+import { CompatMarker, divIcon, type CompatIcon, type CompatLayer } from '@/component/mapCore/engine';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/utils/resource';
@@ -23,7 +23,7 @@ interface MarkerStateHandlers {
 }
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
-    Record<string, L.Icon | L.DivIcon>
+    Record<string, CompatIcon>
 >((acc, typeInfo: IMarkerType) => {
     // Prefer explicit icon field (files dataset maps icon names, not type keys)
     const iconUrl = getItemIconUrl(typeInfo.icon ?? typeInfo.key, 'webp');
@@ -55,7 +55,7 @@ const ensureMarkerTypeFilterSelected = (typeKey: string): void => {
     markerStore.setFilter([...markerStore.filter, typeKey]);
 };
 
-const getMarkerInnerElement = (layer: L.Marker): HTMLElement | null => {
+const getMarkerInnerElement = (layer: CompatMarker): HTMLElement | null => {
     const markerRoot = layer.getElement?.() as HTMLElement | null;
     return markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) ?? null;
 };
@@ -70,11 +70,11 @@ export const getMarkerRelativeTier = (markerData: IMarkerData, currentLayer: Lay
     markerData.tier - getLayerTier(currentLayer);
 
 export const syncMarkerTierAttribute = (
-    layer: L.Layer,
+    layer: CompatLayer,
     markerData: IMarkerData,
     currentLayer: LayerType = useLayerStore.getState().currentLayer,
 ): void => {
-    if (!(layer instanceof L.Marker)) return;
+    if (!(layer instanceof CompatMarker)) return;
     const inner = getMarkerInnerElement(layer);
     if (!inner) return;
 
@@ -103,14 +103,14 @@ const switchToMarkerLayer = (markerData: IMarkerData): void => {
     layerStore.setCurrentLayer(targetLayer);
 };
 
-export const syncMarkerCollectedStacking = (layer: L.Marker, collected: boolean): void => {
+export const syncMarkerCollectedStacking = (layer: CompatMarker, collected: boolean): void => {
     const markerRoot = layer.getElement?.() as HTMLElement | null;
     if (!markerRoot) return;
     markerRoot.classList.toggle(styles.completedMarker, collected);
     markerRoot.classList.toggle(styles.incompleteMarker, !collected);
 };
 
-const syncMarkerStateClasses = (layer: L.Marker, markerId: string): void => {
+const syncMarkerStateClasses = (layer: CompatMarker, markerId: string): void => {
     const inner = getMarkerInnerElement(layer);
     if (!inner) return;
     const markerStore = useMarkerStore.getState();
@@ -128,7 +128,7 @@ const checkSingleMarker = (id: string): void => {
     useMarkerStore.getState().setTemporarySelected(id, false);
 };
 
-const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handlers?: MarkerStateHandlers): void => {
+const handleMarkerClickState = (markerData: IMarkerData, layer: CompatMarker, handlers?: MarkerStateHandlers): void => {
     const filterWasActive = useMarkerStore.getState().filter.includes(markerData.type);
     ensureMarkerTypeFilterSelected(markerData.type);
 
@@ -181,7 +181,7 @@ export const emitPreviewLeave = (markerId: string): void => {
     }));
 };
 
-const attachPreviewLifecycle = (layer: L.Marker, markerData: IMarkerData): void => {
+const attachPreviewLifecycle = (layer: CompatMarker, markerData: IMarkerData): void => {
     layer.on('mouseover', () => {
         emitPreviewEnter(markerData);
     });
@@ -197,10 +197,10 @@ const RENDERER_DICT: Record<
         markerData: IMarkerData,
         onClick?: (markerData: IMarkerData) => void,
         handlers?: MarkerStateHandlers,
-    ) => L.Marker
+    ) => CompatMarker
 > = {
     __DEFAULT: (markerData, onClick, handlers) => {
-        const layer = new L.Marker(markerData.pos, {
+        const layer = new CompatMarker(markerData.pos, {
             icon: MARKER_ICON_DICT[markerData.type],
             alt: markerData.type,
         });
@@ -222,7 +222,7 @@ const RENDERER_DICT: Record<
             inner.addEventListener('animationend', onAnimationEnd);
         });
         
-        layer.addEventListener('click', (e) => {
+        layer.addEventListener('click', (e: { originalEvent: MouseEvent }) => {
             e.originalEvent.stopPropagation();
             switchToMarkerLayer(markerData);
             handleMarkerClickState(markerData, layer, handlers);
@@ -258,7 +258,7 @@ const RENDERER_DICT: Record<
                    </div>`,
         });
         
-        const layer = new L.Marker(markerData.pos, {
+        const layer = new CompatMarker(markerData.pos, {
             icon: markerIcon,
             alt: markerData.type,
         });
@@ -279,7 +279,7 @@ const RENDERER_DICT: Record<
             inner.addEventListener('animationend', onAnimationEnd);
         });
             
-        layer.addEventListener('click', (e) => {
+        layer.addEventListener('click', (e: { originalEvent: MouseEvent }) => {
             e.originalEvent.stopPropagation();
             switchToMarkerLayer(markerData);
             handleMarkerClickState(markerData, layer, handlers);

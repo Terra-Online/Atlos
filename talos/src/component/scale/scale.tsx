@@ -1,9 +1,9 @@
 import { useDevice } from '@/utils/device';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import ScaleDesktop from './scale.desktop';
 import ScaleMobile from './scale.mobile';
 
-const Scale = ({ map }: { map: L.Map }) => {
+const Scale = ({ map }: { map: TalosMap }) => {
     const { isMobile } = useDevice();
     return isMobile ? <ScaleMobile map={map} /> : <ScaleDesktop map={map} />;
 };

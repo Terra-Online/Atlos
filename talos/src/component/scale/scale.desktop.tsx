@@ -6,7 +6,7 @@ import React, {
     useMemo,
 } from 'react';
 import styles from './scale.module.scss';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { useAppPictureInPicture } from './pip';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
@@ -14,7 +14,7 @@ import { useTranslateUI } from '@/locale';
 const calculateScale = (current: number, min: number, max: number) =>
     Math.max(0, Math.min(1, (current - min) / (max - min)));
 
-const ScaleDesktop = ({ map }: { map: L.Map }) => {
+const ScaleDesktop = ({ map }: { map: TalosMap }) => {
     const tUI = useTranslateUI();
     const [zoomLevel, setZoomLevel] = useState(map?.getZoom() || 0);
     const [zoomBounds, setZoomBounds] = useState({
@@ -121,17 +121,7 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
         const handleZoomStart = () => {
             isZoomingRef.current = true;
         };
-        const handleZoomAnim = (e: L.ZoomAnimEvent) => {
-            if (isZoomingRef.current) {
-                const currentZoom = e.zoom;
-                const scale = calculateScale(
-                    currentZoom,
-                    map.getMinZoom(),
-                    map.getMaxZoom(),
-                );
-                updateScalerUI(scale);
-            }
-        };
+        // TalosMap 的 'zoom' 在动画期间每帧触发，同时覆盖旧 zoomanim 的比例尺刷新用途
         const handleZoom = () => {
             const currentZoom = map.getZoom();
             setZoomLevel(currentZoom);
@@ -160,7 +150,6 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
 
         // Listen & Release
         map.on('zoomstart', handleZoomStart);
-        map.on('zoomanim', handleZoomAnim);
         map.on('zoomend', handleZoomEnd);
         map.on('zoom', handleZoom);
         map.on('talos:regionSwitched', handleRegionSwitched);
@@ -170,7 +159,6 @@ const ScaleDesktop = ({ map }: { map: L.Map }) => {
                 cancelAnimationFrame(animationFrameRef.current);
             }
             map.off('zoomstart', handleZoomStart);
-            map.off('zoomanim', handleZoomAnim);
             map.off('zoomend', handleZoomEnd);
             map.off('zoom', handleZoom);
             map.off('talos:regionSwitched', handleRegionSwitched);

@@ -17,7 +17,7 @@ import { useMarkerStore } from '@/store/marker';
 import { useUserRecordStore } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { exportMarkerData, importMarkerData } from '@/utils/storage';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 /** Build a map of id → hotkey string from config (only entries with a hotkey) */
 function hotkeyFor(id: string): string {
     const cfg = getShortcutConfig().find((s) => s.id === id);
@@ -29,7 +29,7 @@ interface UIShortcutActions {
 }
 
 export function useKeyboardShortcuts(
-    mapInstance: L.Map | undefined,
+    mapInstance: TalosMap | undefined,
     shortcutDocument: Document,
     { showUI }: UIShortcutActions,
 ) {

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import L from 'leaflet';
+import { CompatMarker, divIcon, layerGroup, type CompatLayerGroup, type TalosMap } from '@/component/mapCore/engine';
 import { createRoot, type Root } from 'react-dom/client';
 import styles from './labelTool.module.scss';
 import useRegion from '@/store/region';
@@ -14,11 +14,10 @@ import { useTriggerlabelName } from '@/store/uiPrefs';
 
 const ZOOM_THRESHOLD = 0.25;
 
-const ensurePane = (map: L.Map, name: string, zIndex: number) => {
+const ensurePane = (map: TalosMap, name: string, zIndex: number) => {
     const existing = map.getPane(name);
     if (existing) return;
-    const pane = map.createPane(name);
-    pane.style.zIndex = String(zIndex);
+    map.createPane(name, zIndex);
 };
 
 const makeDivIcon = (text: string, type: 'sub' | 'site') => {
@@ -29,7 +28,7 @@ const makeDivIcon = (text: string, type: 'sub' | 'site') => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
     const cls = type === 'site' ? styles.mapLabelSite : styles.mapLabel;
-    return L.divIcon({
+    return divIcon({
         className: '',
         html: `<div class="${cls}" draggable="false">${safe}</div>`,
         iconSize: [0, 0],
@@ -41,7 +40,7 @@ const isOverElement = (el: HTMLElement, x: number, y: number): boolean => {
     return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 };
 
-export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
+export const LabelTool: React.FC<{ map: TalosMap }> = ({ map }) => {
     const currentRegionKey = useRegion((s) => s.currentRegionKey) ?? DEFAULT_REGION;
     const regionCode = useMemo(() => mapRegionKeyToLocaleCode(currentRegionKey), [currentRegionKey]);
     const maxZoom = REGION_DICT[currentRegionKey]?.maxZoom ?? REGION_DICT[DEFAULT_REGION].maxZoom;
@@ -92,8 +91,8 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const [dragging, setDragging] = useState<PlaceItem | null>(null);
     const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null);
 
-    const previewMarkerRef = useRef<L.Marker | null>(null);
-    const editLayerRef = useRef<L.LayerGroup | null>(null);
+    const previewMarkerRef = useRef<CompatMarker | null>(null);
+    const editLayerRef = useRef<CompatLayerGroup | null>(null);
 
     useEffect(() => {
         const onZoom = () => setZoom(map.getZoom());
@@ -126,7 +125,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
         ensurePane(map, 'talos-label-tool-edit', 801);
 
         if (!editLayerRef.current) {
-            editLayerRef.current = L.layerGroup([], { pane: 'talos-label-tool-edit' });
+            editLayerRef.current = layerGroup([], { pane: 'talos-label-tool-edit' });
         }
 
         // MapCore clears layers when switching region; re-add ours if needed.
@@ -172,7 +171,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
             const place = idToPlace.get(label.id);
             const text = place?.label ?? (label.type === 'site' ? label.site : label.sub);
 
-            const m = L.marker(latLng, {
+            const m = new CompatMarker(latLng, {
                 pane: 'talos-label-tool-edit',
                 draggable: true,
                 icon: makeDivIcon(text, label.type),
@@ -207,7 +206,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
 
             const latLng = map.mouseEventToLatLng(e as unknown as MouseEvent);
             if (!previewMarkerRef.current) {
-                previewMarkerRef.current = L.marker(latLng, {
+                previewMarkerRef.current = new CompatMarker(latLng, {
                     pane: 'talos-label-tool-preview',
                     interactive: false,
                     icon: makeDivIcon(dragging.label, dragging.kind === 'site' ? 'site' : 'sub'),
@@ -384,7 +383,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
 
 let toolRoot: Root | null = null;
 
-export const bootstrapLabelTool = (map: L.Map): void => {
+export const bootstrapLabelTool = (map: TalosMap): void => {
     if (document.getElementById('talos-label-tool-root')) return;
 
     const container = document.createElement('div');

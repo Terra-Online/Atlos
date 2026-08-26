@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
-import L from 'leaflet';
+import {
+    TalosMap,
+    CompatLayerGroup,
+    CompatMarker,
+    layerGroup,
+    divIcon,
+} from '@/component/mapCore/engine';
 import type { AnyLabel } from '@/data/map/label/types';
 import { useTranslate, useLocale } from '@/locale';
 import { mapRegionKeyToLocaleCode } from '@/data/map/label/placeIndex';
@@ -16,7 +22,7 @@ const escapeHtml = (s: string): string => s
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
-const ensurePane = (map: L.Map): string => {
+const ensurePane = (map: TalosMap): string => {
     const paneName = 'labels';
     const existing = map.getPane(paneName);
     if (existing) return paneName;
@@ -62,9 +68,9 @@ const resolveLabelText = (t: <T = string>(key: string) => T, regionCode: string,
 };
 
 const renderLabels = (
-    map: L.Map,
+    map: TalosMap,
     pane: string,
-    layer: L.LayerGroup,
+    layer: CompatLayerGroup,
     labels: AnyLabel[],
     zoom: number,
     maxZoom: number,
@@ -83,7 +89,7 @@ const renderLabels = (
     // 淡出旧标签
     if (currentType !== null && layer.getLayers().length > 0) {
         layer.eachLayer((marker) => {
-            const element = (marker as L.Marker).getElement();
+            const element = (marker as CompatMarker).getElement();
             if (element) {
                 element.style.animation = 'fadeOut 0.2s ease-in-out';
             }
@@ -106,10 +112,10 @@ const renderLabels = (
             const latLng = map.unproject([x, y], maxZoom);
             const text = resolveLabelText(t, regionCode, structure, label);
 
-            const marker = L.marker(latLng, {
+            const marker = new CompatMarker(latLng, {
                 pane,
                 interactive: false,
-                icon: L.divIcon({
+                icon: divIcon({
                     className: styles.label,
                     html: `<div class="${label.type === 'site' ? styles.innerSite : styles.innerSub}">${escapeHtml(text)}</div>`,
                     iconSize: [0, 0],
@@ -122,7 +128,7 @@ const renderLabels = (
     return showType;
 };
 
-export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
+export const useLabel = (map: TalosMap | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
     const t = useTranslate();
     // Force effects/memos to react to locale changes even if `t` is referentially stable.
     const locale = useLocale();
@@ -139,7 +145,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
     const labelMap = useLabelStore(useMemo(() => (regionCode ? selectLabelMapForRegion(regionCode) : () => undefined), [regionCode]));
     const labels = useMemo(() => (labelMap ? Object.values(labelMap) : []), [labelMap]);
 
-    const layerRef = useRef<L.LayerGroup | null>(null);
+    const layerRef = useRef<CompatLayerGroup | null>(null);
     const paneRef = useRef<string | null>(null);
     const currentLabelTypeRef = useRef<AnyLabel['type'] | null>(null);
 
@@ -178,7 +184,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
         paneRef.current = pane;
 
         if (!layerRef.current) {
-            layerRef.current = L.layerGroup([], { pane });
+            layerRef.current = layerGroup([], { pane });
         }
         if (!map.hasLayer(layerRef.current)) {
             layerRef.current.addTo(map);

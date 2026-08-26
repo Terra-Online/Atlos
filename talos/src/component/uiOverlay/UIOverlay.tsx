@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import styles from './UIOverlay.module.scss';
 
 import LanguageModal from '@/component/language/language';
@@ -48,7 +48,7 @@ import { shouldSuppressInitialAutoOverlays } from '@/utils/urlState';
 const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
 
 interface UIOverlayProps {
-    map?: L.Map;
+    map?: TalosMap;
     isSidebarOpen: boolean;
     visible?: boolean;
     showVisibilityControl?: boolean;

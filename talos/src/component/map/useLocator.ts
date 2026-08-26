@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+import {
+    CompatLayerGroup,
+    CompatMarker,
+    LatLng,
+    divIcon,
+    latLng,
+    layerGroup,
+    type TalosMap,
+} from '@/component/mapCore/engine';
 import useRegion from '@/store/region';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
@@ -34,11 +42,10 @@ type TrackerConfig = {
 const LOCATOR_PANE = 'talos-endfield-tracker-pane';
 const LOCATOR_LAYER_Z_INDEX = 640;
 
-const ensureTrackerPane = (map: L.Map): string => {
+const ensureTrackerPane = (map: TalosMap): string => {
     const existing = map.getPane(LOCATOR_PANE);
     if (existing) return LOCATOR_PANE;
-    const pane = map.createPane(LOCATOR_PANE);
-    pane.style.zIndex = String(LOCATOR_LAYER_Z_INDEX);
+    const pane = map.createPane(LOCATOR_PANE, LOCATOR_LAYER_Z_INDEX);
     pane.style.pointerEvents = 'none';
     return LOCATOR_PANE;
 };
@@ -52,17 +59,17 @@ const parseTrackerConfig = (): TrackerConfig | null => {
 
 const convertGamePosition = (
     locator: EFLocatorPosition,
-): { latLng: L.LatLng; mapX: number; mapZ: number; mode: string } => {
+): { latLng: LatLng; mapX: number; mapZ: number; mode: string } => {
     return {
-        latLng: L.latLng(locator.mapZ, locator.mapX),
+        latLng: latLng(locator.mapZ, locator.mapX),
         mapX: locator.mapX,
         mapZ: locator.mapZ,
         mode: locator.mode,
     };
 };
 
-const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
-    const icon = L.divIcon({
+const createTrackerMarker = (pane: string, latLng: LatLng): CompatMarker => {
+    const icon = divIcon({
         className: styles.trackerMarkerIcon,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
@@ -73,7 +80,7 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
         `,
     });
 
-    return L.marker(latLng, {
+    return new CompatMarker(latLng, {
         icon,
         pane,
         keyboard: false,
@@ -82,17 +89,17 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
     });
 };
 
-const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
+const setTrackerBearing = (marker: CompatMarker, angleDeg: number): void => {
     marker.getElement()?.style.setProperty('--tracker-bearing', `${angleDeg}deg`);
 };
 
-const stopTrackerPulse = (marker: L.Marker): void => {
+const stopTrackerPulse = (marker: CompatMarker): void => {
     marker.getElement()
         ?.querySelector(`.${styles.pulsing}`)
         ?.classList.remove(styles.pulsing);
 };
 
-const calculateTrackerBearing = (map: L.Map, from: L.LatLng, to: L.LatLng): number | null => {
+const calculateTrackerBearing = (map: TalosMap, from: LatLng, to: LatLng): number | null => {
     const fromPoint = map.latLngToLayerPoint(from);
     const toPoint = map.latLngToLayerPoint(to);
     const dx = toPoint.x - fromPoint.x;
@@ -107,8 +114,8 @@ const lerp = (from: number, to: number, alpha: number): number => from + (to - f
 type AnimationState = {
     rafId: number | null;
     running: boolean;
-    from: L.LatLng | null;
-    to: L.LatLng | null;
+    from: LatLng | null;
+    to: LatLng | null;
     startTime: number;
     keepCentered: boolean;
 };
@@ -171,7 +178,7 @@ const errKind = (error: EFBackendError): UpKind | null => {
     return code === null ? null : UP_KIND[code] ?? null;
 };
 
-const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
+const hasLocatorPositionChanged = (from: LatLng, to: LatLng): boolean => (
     Math.abs(from.lat - to.lat) > LOCATOR_POSITION_EPSILON
     || Math.abs(from.lng - to.lng) > LOCATOR_POSITION_EPSILON
 );
@@ -185,19 +192,19 @@ const showErr = (error: EFBackendError): void => {
     }
 };
 
-export function useLocator(map: L.Map | undefined): void {
+export function useLocator(map: TalosMap | undefined): void {
     const [configVersion, setConfigVersion] = useState(0);
     const trackerRunningRef = useRef(false);
     const pollTimerRef = useRef<number | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
     const socketTicketRef = useRef<string | null>(null);
     const socketReconnectAttemptRef = useRef(0);
-    const trackerLayerRef = useRef<L.LayerGroup | null>(null);
-    const markerRef = useRef<L.Marker | null>(null);
+    const trackerLayerRef = useRef<CompatLayerGroup | null>(null);
+    const markerRef = useRef<CompatMarker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
     const lastSyncedSubregionRef = useRef<string | null>(null);
     const lastSceneKeyRef = useRef<string | null>(null);
-    const pendingLocatorFocusRef = useRef<L.LatLng | null>(null);
+    const pendingLocatorFocusRef = useRef<LatLng | null>(null);
     const currentLocatorRegionRef = useRef<string | null>(null);
     const programmaticViewChangeRef = useRef(false);
     const programmaticViewTimeoutRef = useRef<number | null>(null);
@@ -312,20 +319,19 @@ export function useLocator(map: L.Map | undefined): void {
             }
         };
 
-        const focusLocatorPosition = (target: L.LatLng) => {
+        const focusLocatorPosition = (target: LatLng) => {
             releaseProgrammaticViewChange();
             programmaticViewChangeRef.current = true;
             const targetZoom = Math.min(LOCATOR_TARGET_ZOOM, map.getMaxZoom());
             map.once('moveend', releaseProgrammaticViewChange);
             programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1500);
             map.flyTo(target, targetZoom, {
-                animate: true,
                 duration: 0.9,
             });
             useLocatorStore.getState().setViewMode('tracking');
         };
 
-        const panLocatorIntoCenterBand = (target: L.LatLng) => {
+        const panLocatorIntoCenterBand = (target: LatLng) => {
             if (useLocatorStore.getState().viewMode !== 'tracking') return;
             if (!isLocatorRegionVisible()) return;
 
@@ -351,7 +357,7 @@ export function useLocator(map: L.Map | undefined): void {
             });
         };
 
-        const keepLocatorAtCenter = (target: L.LatLng) => {
+        const keepLocatorAtCenter = (target: LatLng) => {
             if (useLocatorStore.getState().viewMode !== 'tracking') return;
             if (!isLocatorRegionVisible()) return;
 
@@ -389,7 +395,7 @@ export function useLocator(map: L.Map | undefined): void {
         const returnToCurrentPosition = () => {
             const lastPosition = useLocatorStore.getState().lastPosition;
             if (!lastPosition) return;
-            const target = L.latLng(lastPosition.lat, lastPosition.lng);
+            const target = latLng(lastPosition.lat, lastPosition.lng);
             const regionKey = lastPosition.regionKey;
             const subregionKey = lastPosition.subregionKey;
             currentLocatorRegionRef.current = regionKey ?? null;
@@ -414,7 +420,7 @@ export function useLocator(map: L.Map | undefined): void {
             consumePendingLocatorFocus();
         };
 
-        const setTargetPosition = (target: L.LatLng, options?: { keepCentered?: boolean }) => {
+        const setTargetPosition = (target: LatLng, options?: { keepCentered?: boolean }) => {
             const marker = markerRef.current;
             if (!marker) return;
 
@@ -470,7 +476,7 @@ export function useLocator(map: L.Map | undefined): void {
                 const durationMs = LOCATOR_MOVE_ANIMATION_MS;
                 const t = Math.min(1, (now - anim.startTime) / durationMs);
                 const eased = 1 - (1 - t) ** 3;
-                const next = L.latLng(
+                const next = latLng(
                     lerp(anim.from.lat, anim.to.lat, eased),
                     lerp(anim.from.lng, anim.to.lng, eased),
                 );
@@ -499,7 +505,7 @@ export function useLocator(map: L.Map | undefined): void {
             }
 
             const pane = ensureTrackerPane(map);
-            const trackerLayer = L.layerGroup();
+            const trackerLayer = layerGroup();
             trackerLayer.addTo(map);
             trackerLayerRef.current = trackerLayer;
 

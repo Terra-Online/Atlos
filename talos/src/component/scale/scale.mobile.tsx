@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import styles from './scale.module.scss';
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 const calcScale = (z: number, min: number, max: number) => clamp((z - min) / (max - min), 0, 1);
+// 与迁移前地图配置（zoomSnap: 0.25）一致；TalosMap 无 zoomSnap 选项，这里用常量
+const ZOOM_SNAP = 0.25;
 
-const ScaleMobile = ({ map }: { map: L.Map }) => {
+const ScaleMobile = ({ map }: { map: TalosMap }) => {
     const [zoomLevel, setZoomLevel] = useState(map?.getZoom() ?? 0);
     const [bounds, setBounds] = useState({
         min: map?.getMinZoom() ?? 0,
@@ -33,11 +35,9 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     const snapZoom = useCallback(
         (z: number) => {
             const clamped = clamp(z, bounds.min, bounds.max);
-            const snap = map?.options?.zoomSnap ?? 0;
-            if (snap <= 0) return clamped;
-            return clamp(Math.round(clamped / snap) * snap, bounds.min, bounds.max);
+            return clamp(Math.round(clamped / ZOOM_SNAP) * ZOOM_SNAP, bounds.min, bounds.max);
         },
-        [map, bounds]
+        [bounds]
     );
 
     const cancelPendingZoom = useCallback(() => {

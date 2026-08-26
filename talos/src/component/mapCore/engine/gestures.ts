@@ -1,9 +1,29 @@
-import L from 'leaflet';
+/**
+ * Port of the Leaflet SmoothWheelZoom gesture router onto TalosMap/MapLibre.
+ *
+ * Semantics preserved from the Leaflet implementation:
+ * - wheel scroll zooms continuously around the cursor anchor (0.003 zoom/px),
+ *   trackpad pinch (ctrl+wheel) zooms faster (0.01 zoom/px),
+ * - two-axis trackpad scroll pans instead of zooming (routed by
+ *   `trackpad-input`), with rubber-band overdrag resistance beyond maxBounds,
+ * - optional zoom inertia tail,
+ * - one movestart/zoomstart ... zoomend/moveend event pair per gesture,
+ * - trackpad pan synthesizes dragstart/drag/dragend like a mouse drag.
+ *
+ * What changed vs Leaflet: the camera is written per frame with
+ * TalosMap.jumpToGame (MapLibre natively renders fractional zooms without
+ * tile rebuilds), and visual overdrag beyond maxBounds is applied as a CSS
+ * translate on the map container (MapLibre hard-clamps the camera itself).
+ */
 import {
     WHEEL_GESTURE_IDLE_MS,
     WheelInputRouter,
     type WheelGestureMode,
 } from 'trackpad-input';
+
+import { Point } from './point';
+import { LatLng, toLatLngBounds } from './latlng';
+import type { TalosMap } from './talosMap';
 
 const ZOOM_PER_WHEEL_PIXEL = 0.003;
 const TRACKPAD_PINCH_ZOOM_PER_PIXEL = 0.01;
@@ -12,116 +32,29 @@ const INERTIA_MAX_STEP = 0.008;
 const INERTIA_FRICTION_PER_FRAME = 0.72;
 const INERTIA_STOP_THRESHOLD = 0.00025;
 const FRAME_DURATION = 1000 / 60;
-const TRACKPAD_OVERDRAG_MAX_PX = 96;
-const TRACKPAD_OVERDRAG_RESISTANCE = 0.65;
-const TRACKPAD_OVERDRAG_SETTLE_THRESHOLD_PX = 80;
-const TRACKPAD_OVERDRAG_SETTLE_MS = 48;
+const OVERDRAG_MAX_PX = 96;
+const OVERDRAG_RESISTANCE = 0.65;
+const OVERDRAG_SETTLE_THRESHOLD_PX = 80;
+const OVERDRAG_SETTLE_MS = 48;
+const OVERDRAG_SETTLE_ANIMATION_MS = 120;
 
-interface ContinuousZoomEventData {
-    pinch: true;
-    round: false;
-}
-
-const CONTINUOUS_ZOOM_EVENT_DATA: ContinuousZoomEventData = {
-    pinch: true,
-    round: false,
+/** Leaflet DomEvent.getWheelDelta equivalent. */
+const getWheelDelta = (event: WheelEvent): number => {
+    const delta =
+        event.deltaMode === 1
+            ? event.deltaY * 20
+            : event.deltaMode === 2
+              ? event.deltaY * 60
+              : event.deltaY;
+    return -delta;
 };
 
-export interface SmoothWheelZoomOptions {
+export interface SmoothGesturesOptions {
     enableInertia?: boolean;
 }
 
-interface ContinuousZoomMap extends L.Map {
-    _animatingZoom?: boolean;
-    _getMapPanePos(): L.Point;
-    _getNewPixelOrigin(center: L.LatLng, zoom: number): L.Point;
-    _latLngToNewLayerPoint(
-        latLng: L.LatLng,
-        zoom: number,
-        center: L.LatLng,
-    ): L.Point;
-    _limitCenter(
-        center: L.LatLng,
-        zoom: number,
-        bounds: L.LatLngBounds,
-    ): L.LatLng;
-    _limitZoom(zoom: number): number;
-    _move(center: L.LatLng, zoom: number, data?: ContinuousZoomEventData): this;
-    _moveEnd(zoomChanged: boolean): this;
-    _moveStart(zoomChanged: boolean, noMoveStart: boolean): this;
-    _onZoomTransitionEnd?(): void;
-    _rawPanBy(offset: L.Point): void;
-    _stop(): this;
-}
-
-interface SubpixelMarker {
-    _icon?: HTMLElement;
-    _latlng: L.LatLng;
-    _map?: ContinuousZoomMap;
-    _setPos(point: L.Point): void;
-}
-
-interface MarkerZoomAnimation {
-    center: L.LatLng;
-    zoom: number;
-}
-
-let subpixelMarkerPositioningInstalled = false;
-
-const installSubpixelPixelOrigin = (map: ContinuousZoomMap) => {
-    // Keep map coordinates and tile transforms in the same subpixel space.
-    // Leaflet's default rounding is what makes a fixed zoom anchor wander.
-    map._getNewPixelOrigin = function (center, zoom) {
-        return this.project(center, zoom)
-            .subtract(this.getSize().divideBy(2))
-            .add(this._getMapPanePos());
-    };
-
-    // Leaflet rounds the projected LatLng before subtracting the pixel
-    // origin. Markers, labels, tooltips, and cluster animations all use this
-    // conversion, so that rounding makes every overlay jump independently of
-    // the already-smooth tile layer during fractional zoom.
-    map.latLngToLayerPoint = function (latLng) {
-        return this.project(latLng, this.getZoom()).subtract(
-            this.getPixelOrigin(),
-        );
-    };
-};
-
-const installSubpixelMarkerPositioning = () => {
-    if (subpixelMarkerPositioningInstalled) return;
-    subpixelMarkerPositioningInstalled = true;
-
-    const markerPrototype = L.Marker.prototype as unknown as SubpixelMarker & {
-        _animateZoom(event: MarkerZoomAnimation): void;
-        update(): SubpixelMarker;
-    };
-
-    markerPrototype.update = function () {
-        if (this._icon && this._map) {
-            this._setPos(this._map.latLngToLayerPoint(this._latlng));
-        }
-        return this;
-    };
-    markerPrototype._animateZoom = function (event) {
-        if (!this._map) return;
-        this._setPos(
-            this._map._latLngToNewLayerPoint(
-                this._latlng,
-                event.zoom,
-                event.center,
-            ),
-        );
-    };
-};
-
-/**
- * Leaflet's built-in wheel handler debounces input and starts a fixed CSS
- * transition. This handler applies zoom on the next paint, routes precise
- * two-axis trackpad scrolling to pan, and can add a short zoom inertia tail.
- */
-export class SmoothWheelZoom {
-    private readonly map: ContinuousZoomMap;
+export class SmoothGestures {
+    private readonly map: TalosMap;
     private readonly container: HTMLElement;
     private readonly inertiaEnabled: boolean;
     private readonly wheelInputRouter: WheelInputRouter<WheelEvent>;
@@ -130,22 +63,22 @@ export class SmoothWheelZoom {
     private endTimer: number | null = null;
     private panTailTimer: number | null = null;
     private targetZoom: number | null = null;
-    private anchorPoint: L.Point | null = null;
-    private anchorLatLng: L.LatLng | null = null;
+    private anchorPoint: Point | null = null;
+    private anchorLatLng: LatLng | null = null;
     private zoomVelocity = 0;
     private lastZoomInputTime: number | null = null;
     private inertiaStep = 0;
     private lastFrameTime: number | null = null;
-    private pendingPanOffset = L.point(0, 0);
-    private panRawCenterPoint: L.Point | null = null;
+    private pendingPanOffset = new Point(0, 0);
+    private panRawCenterPoint: Point | null = null;
     private gestureMode: WheelGestureMode | null = null;
     private gestureActive = false;
     private trackpadDragging = false;
     private overdragSettling = false;
     private disposed = false;
 
-    constructor(map: L.Map, options: SmoothWheelZoomOptions = {}) {
-        this.map = map as ContinuousZoomMap;
+    constructor(map: TalosMap, options: SmoothGesturesOptions = {}) {
+        this.map = map;
         this.container = map.getContainer();
         this.inertiaEnabled = options.enableInertia ?? true;
         this.wheelInputRouter = new WheelInputRouter<WheelEvent>({
@@ -153,22 +86,15 @@ export class SmoothWheelZoom {
             onZoom: (event) => this.handleRoutedWheel('zoom', event),
         });
 
-        installSubpixelPixelOrigin(this.map);
-        installSubpixelMarkerPositioning();
-
-        map.scrollWheelZoom.disable();
         this.container.addEventListener('wheel', this.handleWheel, {
             passive: false,
         });
-        map.once('unload', this.dispose);
     }
 
     dispose = () => {
         if (this.disposed) return;
         this.disposed = true;
-
         this.container.removeEventListener('wheel', this.handleWheel);
-        this.map.off('unload', this.dispose);
         this.clearScheduledWork();
     };
 
@@ -176,7 +102,6 @@ export class SmoothWheelZoom {
         event.preventDefault();
         event.stopPropagation();
 
-        this.finishLeafletZoomAnimation();
         const gestureMode = this.wheelInputRouter.route(event);
         if (gestureMode === 'pending' && this.overdragSettling) {
             this.clearOverdragSettlement();
@@ -214,8 +139,15 @@ export class SmoothWheelZoom {
         this.handleZoom(event);
     }
 
+    private limitZoom(zoom: number): number {
+        return Math.max(
+            this.map.getMinZoom(),
+            Math.min(this.map.getMaxZoom(), zoom),
+        );
+    }
+
     private handleZoom(event: WheelEvent) {
-        const wheelDelta = L.DomEvent.getWheelDelta(event);
+        const wheelDelta = getWheelDelta(event);
         if (!wheelDelta) return;
 
         const zoomDelta =
@@ -223,7 +155,7 @@ export class SmoothWheelZoom {
                 ? -event.deltaY * TRACKPAD_PINCH_ZOOM_PER_PIXEL
                 : wheelDelta * ZOOM_PER_WHEEL_PIXEL;
         const currentTarget = this.targetZoom ?? this.map.getZoom();
-        const nextTarget = this.map._limitZoom(currentTarget + zoomDelta);
+        const nextTarget = this.limitZoom(currentTarget + zoomDelta);
 
         this.updateAnchor(event);
         this.targetZoom = nextTarget;
@@ -257,7 +189,7 @@ export class SmoothWheelZoom {
     }
 
     private handleTrackpadPan(event: WheelEvent) {
-        const offset = L.point(event.deltaX, event.deltaY);
+        const offset = new Point(event.deltaX, event.deltaY);
         if (offset.x === 0 && offset.y === 0) {
             if (this.gestureActive && !this.overdragSettling) {
                 this.scheduleGestureEnd();
@@ -281,9 +213,8 @@ export class SmoothWheelZoom {
 
     private startGesture(zoomChanged: boolean) {
         if (this.gestureActive) return;
-
-        this.map._stop();
-        this.map._moveStart(zoomChanged, false);
+        this.map.ml.stop();
+        this.map.beginCameraGesture(zoomChanged);
         this.gestureActive = true;
     }
 
@@ -297,7 +228,7 @@ export class SmoothWheelZoom {
         this.anchorLatLng = this.continuousContainerPointToLatLng(point);
     }
 
-    private continuousContainerPointToLatLng(point: L.Point) {
+    private continuousContainerPointToLatLng(point: Point) {
         const centerPoint = this.map.getSize().divideBy(2);
         const center = this.map.getCenter();
         const zoom = this.map.getZoom();
@@ -345,7 +276,7 @@ export class SmoothWheelZoom {
                 this.inertiaStep = 0;
             } else {
                 const zoomBeforeInertia = zoom;
-                zoom = this.map._limitZoom(
+                zoom = this.limitZoom(
                     zoom + this.inertiaStep * (elapsed / FRAME_DURATION),
                 );
 
@@ -384,13 +315,13 @@ export class SmoothWheelZoom {
         if (!this.gestureActive || this.gestureMode !== 'pan') return;
 
         const offset = this.pendingPanOffset;
-        this.pendingPanOffset = L.point(0, 0);
+        this.pendingPanOffset = new Point(0, 0);
 
         if (offset.x !== 0 || offset.y !== 0) {
             const overdragAmount = this.applyConstrainedPan(offset);
             this.map.fire('move').fire('drag');
 
-            if (overdragAmount >= TRACKPAD_OVERDRAG_SETTLE_THRESHOLD_PX) {
+            if (overdragAmount >= OVERDRAG_SETTLE_THRESHOLD_PX) {
                 this.beginOverdragSettlement();
             }
         }
@@ -405,7 +336,7 @@ export class SmoothWheelZoom {
         }
     };
 
-    private applyConstrainedPan(offset: L.Point) {
+    private applyConstrainedPan(offset: Point): number {
         const zoom = this.map.getZoom();
         const currentCenterPoint = this.map.project(this.map.getCenter(), zoom);
         this.panRawCenterPoint ??= currentCenterPoint;
@@ -413,41 +344,55 @@ export class SmoothWheelZoom {
 
         const configuredBounds = this.map.options.maxBounds;
         if (!configuredBounds) {
-            this.map._rawPanBy(offset);
+            const center = this.map.unproject(this.panRawCenterPoint, zoom);
+            this.map.jumpToGame(center, zoom);
             return 0;
         }
 
-        const maxBounds =
-            configuredBounds instanceof L.LatLngBounds
-                ? configuredBounds
-                : L.latLngBounds(configuredBounds);
+        const maxBounds = toLatLngBounds(configuredBounds);
         const rawCenter = this.map.unproject(this.panRawCenterPoint, zoom);
-        const limitedCenter = this.map._limitCenter(rawCenter, zoom, maxBounds);
+        const limitedCenter = this.map.limitCenter(rawCenter, zoom, maxBounds);
         const limitedCenterPoint = this.map.project(limitedCenter, zoom);
         const rawOverdrag = this.panRawCenterPoint.subtract(limitedCenterPoint);
-        const visualOverdrag = L.point(
+        const visualOverdrag = new Point(
             this.resistOverdrag(rawOverdrag.x),
             this.resistOverdrag(rawOverdrag.y),
         );
-        const visualCenterPoint = limitedCenterPoint.add(visualOverdrag);
-        const visualOffset = visualCenterPoint.subtract(currentCenterPoint);
 
-        if (visualOffset.x !== 0 || visualOffset.y !== 0) {
-            this.map._rawPanBy(visualOffset);
-        }
-
+        // Camera goes to the clamped center; the resisted overdrag is applied
+        // visually as a container translate (MapLibre hard-clamps the camera).
+        this.map.jumpToGame(limitedCenter, zoom);
+        this.applyVisualOverdrag(visualOverdrag);
         return Math.max(Math.abs(visualOverdrag.x), Math.abs(visualOverdrag.y));
     }
 
-    private resistOverdrag(value: number) {
+    private applyVisualOverdrag(overdrag: Point) {
+        this.map.setOverdragOffset(overdrag);
+        if (overdrag.x === 0 && overdrag.y === 0) {
+            this.container.style.transform = '';
+        } else {
+            this.container.style.transform = `translate(${-overdrag.x}px, ${-overdrag.y}px)`;
+        }
+    }
+
+    private settleVisualOverdrag() {
+        if (this.container.style.transform === '') return;
+        this.container.style.transition = `transform ${OVERDRAG_SETTLE_ANIMATION_MS}ms ease-out`;
+        this.container.style.transform = '';
+        this.map.setOverdragOffset(new Point(0, 0));
+        window.setTimeout(() => {
+            this.container.style.transition = '';
+        }, OVERDRAG_SETTLE_ANIMATION_MS + 20);
+    }
+
+    private resistOverdrag(value: number): number {
         if (value === 0) return 0;
 
         const magnitude =
-            TRACKPAD_OVERDRAG_MAX_PX *
+            OVERDRAG_MAX_PX *
             (1 -
                 Math.exp(
-                    (-Math.abs(value) * TRACKPAD_OVERDRAG_RESISTANCE) /
-                        TRACKPAD_OVERDRAG_MAX_PX,
+                    (-Math.abs(value) * OVERDRAG_RESISTANCE) / OVERDRAG_MAX_PX,
                 ));
         return Math.sign(value) * magnitude;
     }
@@ -460,7 +405,7 @@ export class SmoothWheelZoom {
         if (this.endTimer !== null) window.clearTimeout(this.endTimer);
         this.endTimer = window.setTimeout(
             this.handleGestureEnd,
-            TRACKPAD_OVERDRAG_SETTLE_MS,
+            OVERDRAG_SETTLE_MS,
         );
     }
 
@@ -494,17 +439,14 @@ export class SmoothWheelZoom {
 
         const configuredBounds = this.map.options.maxBounds;
         if (configuredBounds) {
-            const maxBounds =
-                configuredBounds instanceof L.LatLngBounds
-                    ? configuredBounds
-                    : L.latLngBounds(configuredBounds);
-            center = this.map._limitCenter(center, zoom, maxBounds);
+            center = this.map.limitCenter(
+                center,
+                zoom,
+                toLatLngBounds(configuredBounds),
+            );
         }
 
-        // This is the same signal Leaflet uses during pinch zoom. GridLayer
-        // keeps the current tile level and updates its transform instead of
-        // rebuilding and pruning the tile grid for every fractional step.
-        this.map._move(center, zoom, CONTINUOUS_ZOOM_EVENT_DATA);
+        this.map.jumpToGame(center, zoom);
     }
 
     private scheduleGestureEnd() {
@@ -546,23 +488,20 @@ export class SmoothWheelZoom {
             this.panFrame = null;
         }
 
+        this.settleVisualOverdrag();
+
         if (!this.gestureActive) {
             this.resetVisualState();
             return;
         }
 
         const wasTrackpadDrag = this.trackpadDragging;
+        const zoomChanged = this.gestureMode === 'zoom';
         this.gestureActive = false;
         this.trackpadDragging = false;
         if (wasTrackpadDrag) this.map.fire('dragend');
-        this.map._moveEnd(this.gestureMode === 'zoom');
+        this.map.endCameraGesture(zoomChanged);
         this.resetVisualState();
-    }
-
-    private finishLeafletZoomAnimation() {
-        if (this.map._animatingZoom) {
-            this.map._onZoomTransitionEnd?.();
-        }
     }
 
     private resetVisualState() {
@@ -573,7 +512,7 @@ export class SmoothWheelZoom {
         this.lastZoomInputTime = null;
         this.inertiaStep = 0;
         this.lastFrameTime = null;
-        this.pendingPanOffset = L.point(0, 0);
+        this.pendingPanOffset = new Point(0, 0);
         this.panRawCenterPoint = null;
         this.gestureMode = null;
         this.trackpadDragging = false;
@@ -592,14 +531,232 @@ export class SmoothWheelZoom {
             window.clearTimeout(this.endTimer);
             this.endTimer = null;
         }
+        this.settleVisualOverdrag();
         this.clearOverdragSettlement();
-        this.gestureActive = false;
+        if (this.gestureActive) {
+            this.gestureActive = false;
+            this.map.endCameraGesture(this.gestureMode === 'zoom');
+        }
         this.resetVisualState();
         this.wheelInputRouter.dispose();
     }
 }
 
-export const enableSmoothWheelZoom = (
-    map: L.Map,
-    options?: SmoothWheelZoomOptions,
-) => new SmoothWheelZoom(map, options);
+export const enableSmoothGestures = (
+    map: TalosMap,
+    options?: SmoothGesturesOptions,
+): SmoothGestures => {
+    const gestures = new SmoothGestures(map, options);
+    map.setDragController(new DragPanController(map));
+    return gestures;
+};
+
+// ---------------------------------------------------------------------------
+// Mouse/touch drag pan (replaces maplibre dragPan)
+// ---------------------------------------------------------------------------
+
+const DRAG_CLICK_TOLERANCE_PX = 3;
+const DRAG_INERTIA_MAX_SPEED = 1250; // px/s (Leaflet inertiaMaxSpeed)
+const DRAG_INERTIA_DECELERATION = 3000; // px/s² (Leaflet inertiaDeceleration)
+const DRAG_INERTIA_MIN_SPEED = 40; // px/s — below this, no inertia tail
+
+/**
+ * Why not maplibre dragPan: our maxBounds enforcement is custom (native
+ * maxBounds would also force-cover the viewport at low zoom), and clamping a
+ * native drag mid-flight via jumpTo cancels the gesture. Driving the camera
+ * ourselves per frame gives exact Leaflet semantics: hard edge clamp while
+ * dragging, dragstart/drag/dragend events, click suppression, inertia tail.
+ */
+export class DragPanController {
+    private readonly map: TalosMap;
+    private readonly container: HTMLElement;
+    private enabled = true;
+    private activePointerId: number | null = null;
+    private dragging = false;
+    private startClient = new Point(0, 0);
+    private lastClient = new Point(0, 0);
+    private rawCenterPoint: Point | null = null;
+    private lastMoveTime = 0;
+    private velocity = new Point(0, 0); // px/ms, content-following direction
+    private inertiaFrame: number | null = null;
+    private disposed = false;
+
+    constructor(map: TalosMap) {
+        this.map = map;
+        this.container = map.getContainer();
+        this.container.addEventListener('pointerdown', this.handlePointerDown);
+    }
+
+    dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.container.removeEventListener('pointerdown', this.handlePointerDown);
+        this.detachMoveListeners();
+        this.stopInertia();
+    }
+
+    setEnabled(enabled: boolean) {
+        this.enabled = enabled;
+        if (!enabled && this.dragging) this.finishDrag(true);
+    }
+
+    isEnabled(): boolean {
+        return this.enabled;
+    }
+
+    private handlePointerDown = (down: PointerEvent) => {
+        if (!this.enabled || this.activePointerId !== null) return;
+        if (down.pointerType === 'mouse' && down.button !== 0) return;
+        // Only primary touch; multi-touch belongs to pinch zoom.
+        if (down.pointerType !== 'mouse' && !down.isPrimary) return;
+
+        this.activePointerId = down.pointerId;
+        this.startClient = new Point(down.clientX, down.clientY);
+        this.lastClient = this.startClient;
+        this.rawCenterPoint = null;
+        this.velocity = new Point(0, 0);
+        this.lastMoveTime = down.timeStamp;
+
+        const target = this.container.ownerDocument;
+        target.addEventListener('pointermove', this.handlePointerMove);
+        target.addEventListener('pointerup', this.handlePointerUp);
+        target.addEventListener('pointercancel', this.handlePointerUp);
+    };
+
+    private detachMoveListeners() {
+        const target = this.container.ownerDocument;
+        target.removeEventListener('pointermove', this.handlePointerMove);
+        target.removeEventListener('pointerup', this.handlePointerUp);
+        target.removeEventListener('pointercancel', this.handlePointerUp);
+    }
+
+    private handlePointerMove = (move: PointerEvent) => {
+        if (move.pointerId !== this.activePointerId) return;
+
+        // Block text selection / native image drag while panning (safe here:
+        // canceling a pointermove never suppresses the trailing click).
+        move.preventDefault();
+
+        const current = new Point(move.clientX, move.clientY);
+        const totalDelta = current.subtract(this.startClient);
+
+        if (!this.dragging) {
+            if (Math.max(Math.abs(totalDelta.x), Math.abs(totalDelta.y)) < DRAG_CLICK_TOLERANCE_PX) {
+                return;
+            }
+            this.startDrag();
+        }
+
+        // Pointer delta moves the cursor; the content follows the pointer, so
+        // the center moves the opposite way.
+        const delta = current.subtract(this.lastClient);
+        this.lastClient = current;
+
+        const elapsed = Math.max(1, move.timeStamp - this.lastMoveTime);
+        this.lastMoveTime = move.timeStamp;
+        this.velocity = new Point(delta.x / elapsed, delta.y / elapsed);
+
+        const zoom = this.map.getZoom();
+        this.rawCenterPoint ??= this.map.project(this.map.getCenter(), zoom);
+        this.rawCenterPoint = this.rawCenterPoint.subtract(delta);
+        this.panToRawCenter(zoom);
+        this.map.fire('drag');
+    };
+
+    private panToRawCenter(zoom: number) {
+        if (this.rawCenterPoint === null) return;
+        const bounds = this.map.options.maxBounds;
+        const rawCenter = this.map.unproject(this.rawCenterPoint, zoom);
+        const center = bounds
+            ? this.map.limitCenter(rawCenter, zoom, toLatLngBounds(bounds))
+            : rawCenter;
+        this.map.jumpToGame(center, zoom);
+    }
+
+    private handlePointerUp = (up: PointerEvent) => {
+        if (up.pointerId !== this.activePointerId) return;
+        this.activePointerId = null;
+        this.detachMoveListeners();
+        if (this.dragging) this.finishDrag(false);
+    };
+
+    private startDrag() {
+        this.dragging = true;
+        this.map.ml.stop();
+        this.stopInertia();
+        this.container.classList.add('leaflet-dragging');
+        this.map.beginCameraGesture(false);
+        this.map.fire('dragstart');
+    }
+
+    private finishDrag(hard: boolean) {
+        this.dragging = false;
+        this.container.classList.remove('leaflet-dragging');
+
+        const speed = this.velocity.distanceTo(new Point(0, 0)) * 1000; // px/s
+        if (!hard && speed > DRAG_INERTIA_MIN_SPEED) {
+            this.startInertia();
+            // Gesture ends (moveend fires) when the inertia tail settles.
+            return;
+        }
+
+        this.map.fire('dragend');
+        this.map.endCameraGesture(false);
+        if (!hard) this.suppressClickOnce();
+    }
+
+    /** Leaflet-style inertia tail: speed decays linearly at
+     *  DRAG_INERTIA_DECELERATION until it hits zero. */
+    private startInertia() {
+        const startSpeed = Math.min(
+            this.velocity.distanceTo(new Point(0, 0)) * 1000,
+            DRAG_INERTIA_MAX_SPEED,
+        );
+        const speedLength = this.velocity.distanceTo(new Point(0, 0)) || 1;
+        const direction = this.velocity.divideBy(speedLength);
+        let startTime: number | null = null;
+        let lastTime: number | null = null;
+
+        const step = (timestamp: number) => {
+            this.inertiaFrame = null;
+            if (startTime === null) startTime = timestamp;
+            const elapsed = lastTime === null ? FRAME_DURATION : Math.min(50, timestamp - lastTime);
+            lastTime = timestamp;
+
+            const speed = startSpeed - DRAG_INERTIA_DECELERATION * ((timestamp - startTime) / 1000);
+            if (speed <= 0) {
+                this.map.fire('dragend');
+                this.map.endCameraGesture(false);
+                this.suppressClickOnce();
+                return;
+            }
+
+            const delta = direction.multiplyBy((speed * elapsed) / 1000);
+            const zoom = this.map.getZoom();
+            this.rawCenterPoint ??= this.map.project(this.map.getCenter(), zoom);
+            this.rawCenterPoint = this.rawCenterPoint.subtract(delta);
+            this.panToRawCenter(zoom);
+            this.map.fire('drag');
+            this.inertiaFrame = requestAnimationFrame(step);
+        };
+        this.inertiaFrame = requestAnimationFrame(step);
+    }
+
+    private stopInertia() {
+        if (this.inertiaFrame !== null) {
+            cancelAnimationFrame(this.inertiaFrame);
+            this.inertiaFrame = null;
+        }
+    }
+
+    private suppressClickOnce() {
+        const suppress = (event: Event) => {
+            event.stopImmediatePropagation();
+            this.container.removeEventListener('click', suppress, true);
+        };
+        this.container.addEventListener('click', suppress, true);
+        window.setTimeout(() => {
+            this.container.removeEventListener('click', suppress, true);
+        }, 0);
+    }
+}

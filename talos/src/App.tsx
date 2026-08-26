@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
-import L from 'leaflet';
+import type { LatLngBounds, TalosMap } from '@/component/mapCore/engine';
 
 import './styles/global.scss';
 
@@ -28,7 +28,7 @@ const UserGuide = lazy(() => import('@/component/userGuide/UserGuide'));
 declare global {
     interface Window {
         __TALOS_DEV__?: {
-            map?: L.Map;
+            map?: TalosMap;
             mapCore?: unknown;
         };
     }
@@ -39,7 +39,7 @@ function App() {
     const isSidebarOpen = useSidebarOpen();
     const sidebarWidth = useSidebarWidth();
     const { isDesktop } = useDevice();
-    const [mapInstance, setMapInstance] = useState<L.Map | undefined>(
+    const [mapInstance, setMapInstance] = useState<TalosMap | undefined>(
         undefined,
     );
     const {
@@ -88,11 +88,11 @@ function App() {
         const dx = opening ? -sidebarWidth / 2 : sidebarWidth / 2;
 
         // Temporarily remove maxBounds so the pan is not clipped.
-        // Passing invalid bounds to setMaxBounds removes the constraint and
+        // Passing null to setMaxBounds removes the constraint and
         // de-registers the internal _panInsideMaxBounds handler.
-        const savedBounds = mapInstance.options.maxBounds as L.LatLngBounds | undefined;
+        const savedBounds = mapInstance.options.maxBounds as LatLngBounds | undefined;
         if (savedBounds) {
-            mapInstance.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
+            mapInstance.setMaxBounds(null);
         }
 
         mapInstance.panBy([dx, 0], { animate: true, duration: 0.3 });
@@ -109,7 +109,7 @@ function App() {
         // no-op: components read from store directly
     };
 
-    const handleMapReady = (map: L.Map) => {
+    const handleMapReady = (map: TalosMap) => {
         setMapInstance(map);
 
         if (import.meta.env.DEV) {

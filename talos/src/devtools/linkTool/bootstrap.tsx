@@ -1,10 +1,10 @@
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import { createRoot, Root } from 'react-dom/client';
 import { LinkToolUI } from './LinkToolUI';
 
 let toolRoot: Root | null = null;
 
-export const bootstrapLinkTool = (map: L.Map): void => {
+export const bootstrapLinkTool = (map: TalosMap): void => {
     // Create container for React UI
     const container = document.createElement('div');
     container.id = 'link-tool-container';

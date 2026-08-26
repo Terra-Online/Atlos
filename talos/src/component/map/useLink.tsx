@@ -1,5 +1,16 @@
 import React, { useEffect, useMemo, useRef, useCallback } from 'react';
-import L from 'leaflet';
+import {
+    TalosMap,
+    CompatLayerGroup,
+    CompatImageOverlay,
+    CompatRectangle,
+    LatLngBounds,
+    layerGroup,
+    imageOverlay,
+    rectangle,
+    latLng,
+    latLngBounds,
+} from '@/component/mapCore/engine';
 import type { MapLink, GlobalLinkConfig } from '@/data/map/link';
 import { mapRegionKeyToLinkCode } from '@/data/map/link';
 import { useLinkStore } from '@/store/link';
@@ -28,7 +39,7 @@ const LINK_IMAGES: Record<string, string> = {
 // Delay before hiding tooltip (allows user to move mouse to tooltip)
 const TOOLTIP_HIDE_DELAY = 200;
 
-const ensurePane = (map: L.Map): string => {
+const ensurePane = (map: TalosMap): string => {
     const paneName = 'links';
     const existing = map.getPane(paneName);
     if (existing) return paneName;
@@ -42,7 +53,7 @@ const ensurePane = (map: L.Map): string => {
 
 interface HoveredLinkInfo {
     linkId: string;
-    bounds: L.LatLngBounds;
+    bounds: LatLngBounds;
 }
 
 interface UseLinkResult {
@@ -51,11 +62,11 @@ interface UseLinkResult {
 
 /**
  * Hook for rendering link areas on the map
- * Uses L.imageOverlay for smooth zoom scaling (like tile layers)
+ * Uses imageOverlay for smooth zoom scaling (like tile layers)
  * Returns a tooltip component that uses the native Popover API
  */
 export const useLink = (
-    map: L.Map | null,
+    map: TalosMap | null,
     mapRegionKey: string | null | undefined,
     maxZoom: number | null | undefined
 ): UseLinkResult => {
@@ -79,17 +90,17 @@ export const useLink = (
 
     const links: MapLink[] = useMemo(() => (linkMap ? Object.values(linkMap) : []), [linkMap]);
 
-    const layerRef = useRef<L.LayerGroup | null>(null);
+    const layerRef = useRef<CompatLayerGroup | null>(null);
     const paneRef = useRef<string | null>(null);
-    const overlaysRef = useRef<Map<string, L.ImageOverlay>>(new Map());
-    const hitAreasRef = useRef<Map<string, L.Rectangle>>(new Map());
+    const overlaysRef = useRef<Map<string, CompatImageOverlay>>(new Map());
+    const hitAreasRef = useRef<Map<string, CompatRectangle>>(new Map());
 
     const hoveredLinkRef = useRef<HoveredLinkInfo | null>(null);
     const popoverRef = useRef<HTMLDivElement | null>(null);
     const hideTimeoutRef = useRef<number | undefined>(undefined);
 
     // Position and show the popover
-    const showPopover = useCallback((bounds: L.LatLngBounds) => {
+    const showPopover = useCallback((bounds: LatLngBounds) => {
         if (!map || !popoverRef.current) return;
 
         // Clear any pending hide
@@ -99,7 +110,7 @@ export const useLink = (
         }
 
         const popover = popoverRef.current as HTMLElement & { showPopover?: () => void };
-        const topCenter = L.latLng(bounds.getNorth(), bounds.getCenter().lng);
+        const topCenter = latLng(bounds.getNorth(), bounds.getCenter().lng);
         const point = map.latLngToContainerPoint(topCenter);
 
         // Get map container position for absolute positioning within document
@@ -163,7 +174,7 @@ export const useLink = (
 
         // Ensure layer exists and is added to map
         if (!layerRef.current) {
-            layerRef.current = L.layerGroup([], { pane: paneRef.current });
+            layerRef.current = layerGroup([], { pane: paneRef.current });
         }
         
         if (!map.hasLayer(layerRef.current)) {
@@ -193,26 +204,27 @@ export const useLink = (
             // Convert pixel coordinates to lat/lng
             const southWest = map.unproject([Math.min(x1, x2), Math.max(y1, y2)], maxZoom);
             const northEast = map.unproject([Math.max(x1, x2), Math.min(y1, y2)], maxZoom);
-            const bounds = L.latLngBounds(southWest, northEast);
+            const bounds = latLngBounds(southWest, northEast);
 
             const pane = paneRef.current;
             const imageUrl = LINK_IMAGES[link.id];
 
             if (imageUrl) {
                 // Create image overlay - this scales smoothly with map zoom like tiles
-                const imageOverlay = L.imageOverlay(imageUrl, bounds, {
+                const linkOverlay = imageOverlay(imageUrl, bounds, {
                     pane,
                     interactive: false, // Hit detection handled by rectangle below
                     className: 'link-image-overlay',
                 });
-                layer.addLayer(imageOverlay);
-                overlaysRef.current.set(link.id, imageOverlay);
+                layer.addLayer(linkOverlay);
+                overlaysRef.current.set(link.id, linkOverlay);
             }
 
             // Create invisible rectangle for hit detection
-            const hitArea = L.rectangle(bounds, {
+            const hitArea = rectangle(bounds, {
                 pane,
                 interactive: true,
+                // 引擎支持 stroke:false 与 pointer-events:all——透明热区照常接收 hover
                 stroke: false,
                 fill: true,
                 fillOpacity: 0,

@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import L from 'leaflet';
+import { CompatMarker, icon, latLng, layerGroup, type CompatIcon, type CompatLayerGroup, type TalosMap, type TalosMouseEvent } from '@/component/mapCore/engine';
 import { createRoot, type Root } from 'react-dom/client';
 
 import { MARKER_TYPE_DICT } from '@/data/marker';
@@ -29,12 +29,12 @@ const typeOptions: MarkerTypeOption[] = Object.values(MARKER_TYPE_DICT as Record
     .map((item) => ({ key: item.key, name: item.name, noFrame: item.noFrame }))
     .sort((a, b) => (a.name ?? a.key).localeCompare(b.name ?? b.key));
 
-const createMarkerIcon = (type: string, noFrame?: boolean): L.Icon => {
+const createMarkerIcon = (type: string, noFrame?: boolean): CompatIcon => {
     const iconUrl = getItemIconUrl(type, 'webp');
     const iconSize = noFrame ? 44 : 32;
     const iconAnchor = iconSize / 2;
 
-    return L.icon({
+    return icon({
         iconUrl,
         iconSize: [iconSize, iconSize],
         iconAnchor: [iconAnchor, iconAnchor],
@@ -42,7 +42,7 @@ const createMarkerIcon = (type: string, noFrame?: boolean): L.Icon => {
     });
 };
 
-const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
+const MarkTool: React.FC<{ map: TalosMap }> = ({ map }) => {
     const currentRegionKey = useRegion((s) => s.currentRegionKey);
     const currentSubregionKey = useRegion((s) => s.currentSubregionKey);
 
@@ -51,7 +51,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const [markersByRegion, setMarkersByRegion] = useState<RegionMarkers>({});
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
-    const layerRef = useRef<L.LayerGroup | null>(null);
+    const layerRef = useRef<CompatLayerGroup | null>(null);
 
     useEffect(() => {
         if (currentSubregionKey) {
@@ -67,7 +67,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
 
     useEffect(() => {
         if (!layerRef.current) {
-            layerRef.current = L.layerGroup().addTo(map);
+            layerRef.current = layerGroup().addTo(map);
         }
 
         const onRegionSwitched = () => {
@@ -96,12 +96,12 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
         currentMarkers.forEach((marker, index) => {
             const typeInfo = MARKER_TYPE_DICT[marker.type] as MarkerTypeOption | undefined;
             const icon = createMarkerIcon(marker.type, typeInfo?.noFrame);
-            const leafletMarker = L.marker([marker.pos[0], marker.pos[1]], {
+            const compatMarker = new CompatMarker([marker.pos[0], marker.pos[1]], {
                 icon,
                 alt: marker.type,
             });
 
-            leafletMarker.on('click', (e: L.LeafletMouseEvent) => {
+            compatMarker.on('click', (e: { originalEvent: MouseEvent }) => {
                 e.originalEvent.stopPropagation();
                 if (!currentRegion) return;
                 setMarkersByRegion((prev) => ({
@@ -110,12 +110,13 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
                 }));
             });
 
-            layer.addLayer(leafletMarker);
+            layer.addLayer(compatMarker);
         });
     }, [currentMarkers, currentRegion]);
 
     useEffect(() => {
-        const handleMapClick = (e: L.LeafletMouseEvent) => {
+        const handleMapClick = (event?: unknown) => {
+            const e = event as TalosMouseEvent;
             if (!currentRegion) return;
             const trimmedSubregion = subregionId.trim();
             if (!selectedType || !trimmedSubregion) return;
@@ -125,7 +126,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
             setMarkersByRegion((prev) => {
                 const regionMarkers = prev[currentRegion] ?? [];
                 const hitIndex = regionMarkers.findIndex((item) => {
-                    const markerPoint = map.latLngToContainerPoint(L.latLng(item.pos[0], item.pos[1]));
+                    const markerPoint = map.latLngToContainerPoint(latLng(item.pos[0], item.pos[1]));
                     return markerPoint.distanceTo(clickPoint) <= 10;
                 });
 
@@ -252,7 +253,7 @@ const MarkTool: React.FC<{ map: L.Map }> = ({ map }) => {
 
 let toolRoot: Root | null = null;
 
-export const bootstrapMarkTool = (map: L.Map): void => {
+export const bootstrapMarkTool = (map: TalosMap): void => {
     if (document.getElementById('talos-mark-tool-root')) return;
 
     const container = document.createElement('div');

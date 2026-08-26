@@ -1,5 +1,5 @@
 import type { MapCore } from '@/component/mapCore/map';
-import type { Map as LeafletMap } from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
@@ -22,7 +22,7 @@ const wait = (ms: number) =>
         window.setTimeout(resolve, ms);
     });
 
-const waitForMoveEnd = (map: LeafletMap, timeoutMs = 1400): Promise<void> =>
+const waitForMoveEnd = (map: TalosMap, timeoutMs = 1400): Promise<void> =>
     new Promise((resolve) => {
         let done = false;
         let timeoutId = 0;
@@ -88,7 +88,6 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     const [lat, lng] = markerData.pos;
     const moving = waitForMoveEnd(mapCore.map);
     mapCore.map.flyTo([lat, lng], targetZoom, {
-        animate: true,
         duration: 0.9,
     });
     await moving;

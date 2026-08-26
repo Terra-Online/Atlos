@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
 import { getAppViewport } from '@/component/scale/pip';
@@ -55,7 +55,7 @@ const selectPreviewImage = (images: UGCImage[]): UGCImage | null => (
         })[0] ?? null
 );
 
-export const UseRecordToolPreview = (map: L.Map | null): UsePreviewResult => {
+export const UseRecordToolPreview = (map: TalosMap | null): UsePreviewResult => {
     const tGame = useTranslateGame();
     const viewport = useAppViewport();
     const requestTokenRef = useRef(0);
@@ -238,7 +238,7 @@ export const UseRecordToolPreview = (map: L.Map | null): UsePreviewResult => {
     return { PreviewElement };
 };
 
-export default function RecordToolPreview({ map }: { map: L.Map | null }) {
+export default function RecordToolPreview({ map }: { map: TalosMap | null }) {
     const { PreviewElement } = UseRecordToolPreview(map);
     return <>{PreviewElement}</>;
 }

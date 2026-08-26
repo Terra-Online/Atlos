@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import L from 'leaflet';
+import { latLng, latLngBounds, rectangle, type CompatRectangle, type LatLng, type TalosMap, type TalosMouseEvent } from '@/component/mapCore/engine';
 import { useLinkStore, selectGlobalConfig } from '@/store/link';
 import { mapRegionKeyToLinkCode, roundBounds } from '@/data/map/link';
 import type { MapLink, LinkTarget, LinkBounds, GlobalLinkConfig } from '@/data/map/link';
@@ -7,7 +7,7 @@ import { REGION_DICT } from '@/data/map';
 import useRegion from '@/store/region';
 
 interface LinkToolUIProps {
-    map: L.Map;
+    map: TalosMap;
 }
 
 type DrawMode = 'idle' | 'drawing';
@@ -30,8 +30,8 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
         rightLink: { titleKey: '', url: '' },
     });
 
-    const drawRectRef = useRef<L.Rectangle | null>(null);
-    const startPointRef = useRef<L.LatLng | null>(null);
+    const drawRectRef = useRef<CompatRectangle | null>(null);
+    const startPointRef = useRef<LatLng | null>(null);
 
     const { current: linkData, upsertLink, removeLink, updateConfig } = useLinkStore();
     const globalConfig = useLinkStore(selectGlobalConfig);
@@ -75,15 +75,17 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
     useEffect(() => {
         if (mode !== 'drawing') return;
 
-        const onMouseDown = (e: L.LeafletMouseEvent) => {
+        const onMouseDown = (event?: unknown) => {
+            const e = event as TalosMouseEvent;
             startPointRef.current = e.latlng;
-            drawRectRef.current = L.rectangle(
-                L.latLngBounds(e.latlng, e.latlng),
+            drawRectRef.current = rectangle(
+                latLngBounds(e.latlng, e.latlng),
                 { color: '#2196F3', weight: 2, fillOpacity: 0.3 }
             ).addTo(map);
         };
 
-        const onMouseMove = (e: L.LeafletMouseEvent) => {
+        const onMouseMove = (event?: unknown) => {
+            const e = event as TalosMouseEvent;
             if (!startPointRef.current || !drawRectRef.current) return;
             
             // Calculate square bounds (1:1 aspect ratio)
@@ -99,8 +101,8 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
             const latDir = current.lat >= start.lat ? 1 : -1;
             const lngDir = current.lng >= start.lng ? 1 : -1;
             
-            const corner = L.latLng(start.lat + size * latDir, start.lng + size * lngDir);
-            drawRectRef.current.setBounds(L.latLngBounds(start, corner));
+            const corner = latLng(start.lat + size * latDir, start.lng + size * lngDir);
+            drawRectRef.current.setBounds(latLngBounds(start, corner));
         };
 
         const onMouseUp = () => {

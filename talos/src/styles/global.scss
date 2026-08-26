@@ -9,10 +9,6 @@
 @use './embed' as *;
 @use './themeTransition';
 
-/* Import Leaflet MarkerCluster styles */
-@import 'leaflet.markercluster/dist/MarkerCluster.css';
-@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-
 @media only screen and (min-width: $desktoper-bp) {
     html {
         font-size: 18px;

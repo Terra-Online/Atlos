@@ -8,7 +8,7 @@ import { useMarker } from './useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
 import { useCurrentLayer } from '@/store/layer';
 import { registerSharedPointMapCore } from '@/utils/navigation';
-import L from 'leaflet';
+import type { TalosMap } from '@/component/mapCore/engine';
 
 // Hook for map initialization and region management
 export function useMap(ele: HTMLDivElement | null) {
@@ -23,7 +23,7 @@ export function useMap(ele: HTMLDivElement | null) {
     const triggerCluster = useTriggerCluster();
     const currentLayer = useCurrentLayer();
     const mapRef = useRef<MapCore | null>(null);
-    const [LMap, setLMap] = useState<L.Map | null>(null);
+    const [LMap, setLMap] = useState<TalosMap | null>(null);
     const [mapInitialized, setMapInitialized] = useState(false);
 
     // initMap
