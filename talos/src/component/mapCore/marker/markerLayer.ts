@@ -570,9 +570,9 @@ export class MarkerLayer {
             const parent = this.layerSubregionDict[markerData.subregId];
 
             if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
-                if (parent?.hasLayer(layer)) {
-                    parent.removeLayer(layer);
-                }
+                // 聚合层管理的类型完全交由 clusterLayer 的 diff 决定显隐。
+                // 不要在这里抢先移除——否则每次 filter 刷新都会"先全删再等
+                // 下一帧加回"，造成所有点位闪动一次。
                 return;
             }
 

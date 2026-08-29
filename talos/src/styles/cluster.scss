@@ -8,6 +8,13 @@
     box-shadow: none !important;
 }
 
+/* spiderfy 连接线：描画/收回动画（原版 MarkerCluster.css 的
+   .leaflet-cluster-anim .leaflet-cluster-spider-leg 规则等价物） */
+/* stylelint-disable-next-line selector-class-pattern */
+.leaflet-cluster-spider-leg {
+    transition: stroke-dashoffset 0.2s ease-out, stroke-opacity 0.2s ease-out;
+}
+
 /* MapLibre's own class name; cannot be camelCase. */
 /* stylelint-disable-next-line selector-class-pattern */
 .maplibregl-canvas {

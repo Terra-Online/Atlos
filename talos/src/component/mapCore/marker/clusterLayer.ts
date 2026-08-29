@@ -1,4 +1,11 @@
-import Supercluster from 'supercluster';
+import {
+    buildClusterTree,
+    getExpansionZoom,
+    getLeafIds,
+    visibleAtLevel,
+    type ClusterTree,
+    type LmcCluster,
+} from './lmcGrid';
 import {
     CompatLayer,
     CompatLayerGroup,
@@ -40,37 +47,61 @@ const MAX_CLUSTER_RADIUS_PX = 60;
 const CLUSTER_FLY_DURATION_S = 0.3;
 /** zoomToShowLayer 的兜底超时（与原 1200ms 一致） */
 const ZOOM_TO_SHOW_TIMEOUT_MS = 1200;
-/** spiderfy 环形排布半径（屏幕像素，25px 起步） */
-const SPIDERFY_BASE_RADIUS_PX = 25;
-/** spiderfy 相邻 marker 的目标弧长间距（屏幕像素） */
-const SPIDERFY_LEAF_SPACING_PX = 28;
+// --- 以下常量与布局算法逐行移植自 leaflet.markercluster@1.5.3
+//     src/MarkerCluster.Spiderfier.js（MIT, © Dave Leaver） ---
+const SPIDERFY_ANIMATION_MS = 200; // 原版 setTimeout 时长
+const SPIDERFY_CIRCLE_FOOT_SEPARATION = 25; // _circleFootSeparation
+const SPIDERFY_CIRCLE_START_ANGLE = 0; // _circleStartAngle
+const SPIDERFY_SPIRAL_FOOT_SEPARATION = 28; // _spiralFootSeparation
+const SPIDERFY_SPIRAL_LENGTH_START = 11; // _spiralLengthStart
+const SPIDERFY_SPIRAL_LENGTH_FACTOR = 5; // _spiralLengthFactor
+const SPIDERFY_CIRCLE_SPIRAL_SWITCHOVER = 9; // _circleSpiralSwitchover：>=9 个用螺旋
+const SPIDERFY_MIN_LEG_LENGTH = 35; // 原版 legLength 下限
+const SPIDERFY_CLUSTER_OPACITY = 0.3; // 展开期间簇图标淡出到 0.3
+const SPIDERFY_MARKER_ZINDEX = 1000000; // 原版 setZIndexOffset(1000000)
+const SPIDER_LEG_STYLE = { weight: 1.5, color: '#222', opacity: 0.5 }; // spiderLegPolylineOptions 默认值
 
-/**
- * supercluster 内部按墨卡托经纬度工作，且 v9 会把归一化坐标量化为 Int32。
- * game lat/lng 是 CRS.Simple 数值（量级远超常规角度），直接喂食会被墨卡托
- * latY 截断/缠绕。这里把 game 单位等比缩放到原点附近的小角度区间：
- * 小角度下墨卡托近似线性（聚合半径各向同性），Int32 量化误差 < 0.001 game 单位。
- */
-const SUPERCLUSTER_DEG_PER_GAME_UNIT = 360 / 2 ** 20;
-/**
- * 半径换算：屏幕 px = game 单位 * 2^zoom，supercluster 归一化半径 = radius / (extent * 2^zoom)，
- * 两者随 zoom 同步缩放，因此 radius = 60 * extent * 缩放比 / 360 即可保持 60 屏幕 px 语义。
- */
-const SUPERCLUSTER_RADIUS = (MAX_CLUSTER_RADIUS_PX * 512 * SUPERCLUSTER_DEG_PER_GAME_UNIT) / 360;
-/** supercluster 索引的最大聚合层级（保持默认 16；>=2 的缩放级别由渲染层直接展示叶子） */
-const SUPERCLUSTER_MAX_ZOOM = 16;
-/** 全量 bbox（喂食坐标已缩放到原点附近，该范围必然覆盖全部点位） */
-const WORLD_BBOX: [number, number, number, number] = [-180, -90, 180, 90];
+/** 原版 _generatePointsCircle：周长 = 25*(2+count)，半径 = 周长/2π（下限 35） */
+const generatePointsCircle = (count: number, center: Point): Point[] => {
+    const circumference = SPIDERFY_CIRCLE_FOOT_SEPARATION * (2 + count);
+    const legLength = Math.max(circumference / (Math.PI * 2), SPIDERFY_MIN_LEG_LENGTH);
+    const angleStep = (Math.PI * 2) / count;
+    // 原版 hack：circle 布局前 center.y += 10
+    const adjustedCenterY = center.y + 10;
+    const positions: Point[] = [];
+    for (let i = 0; i < count; i++) {
+        const angle = SPIDERFY_CIRCLE_START_ANGLE + i * angleStep;
+        positions.push(
+            new Point(
+                Math.round(center.x + legLength * Math.cos(angle)),
+                Math.round(adjustedCenterY + legLength * Math.sin(angle)),
+            ),
+        );
+    }
+    return positions;
+};
 
-type ManagedPointProps = { markerId: string };
+/** 原版 _generatePointsSpiral（含 i*0.0005 修正项与首位置跳过） */
+const generatePointsSpiral = (count: number, center: Point): Point[] => {
+    let legLength = SPIDERFY_SPIRAL_LENGTH_START;
+    const separation = SPIDERFY_SPIRAL_FOOT_SEPARATION;
+    const lengthFactor = SPIDERFY_SPIRAL_LENGTH_FACTOR * Math.PI * 2;
+    let angle = 0;
+    const positions: Point[] = new Array<Point>(count);
 
-/** supercluster 输出的 feature 属性（聚合或叶子） */
-interface ManagedFeatureProps {
-    markerId?: string;
-    cluster?: boolean;
-    cluster_id?: number;
-    point_count?: number;
-}
+    // 索引越大离簇心越近；跳过首个位置避免压在簇图标下
+    for (let i = count; i >= 0; i--) {
+        if (i < count) {
+            positions[i] = new Point(
+                Math.round(center.x + legLength * Math.cos(angle)),
+                Math.round(center.y + legLength * Math.sin(angle)),
+            );
+        }
+        angle += separation / legLength + i * 0.0005;
+        legLength += lengthFactor / angle;
+    }
+    return positions;
+};
 
 /** 每个受管理类型的聚合运行时状态（替代原 L.MarkerClusterGroup） */
 interface TypeClusterRuntime {
@@ -78,8 +109,8 @@ interface TypeClusterRuntime {
     iconUrl: string;
     hasSubIcon: boolean;
     subIconUrl: string;
-    /** supercluster 聚合索引（索引不可变，成员变化时整体 load 重建） */
-    index: Supercluster<ManagedPointProps, Supercluster.AnyProps>;
+    /** LMC 聚合树（成员变化时整体重建） */
+    tree: ClusterTree;
     /** 当前由聚合管理的 marker id 集合（等价原 clusterGroup.hasLayer） */
     managedIds: Set<string>;
     /** 承载聚合 marker 的图层组（挂载在地图上） */
@@ -102,7 +133,17 @@ interface SpiderfyState {
         markerId: string;
         marker: CompatMarker;
         originalLatLng: LatLng;
+        /** 环形排布位置（game latlng；legs 终点、相机跟随的依据） */
+        ringLatLng: LatLng;
+        /** 该叶子的连接线（markercluster 的 _spiderLeg 等价物） */
+        leg?: SVGPathElement;
     }>;
+    /** 簇中心（收回动画目标、legs 起点） */
+    centerLatLng: LatLng;
+    /** 连接线所在的 SVG 容器 */
+    svg?: SVGSVGElement;
+    /** render 订阅的取消函数（缩放/平移时 legs 跟随相机） */
+    unsubscribeRender?: () => void;
 }
 
 interface ClusterLayerDeps {
@@ -125,9 +166,21 @@ export class ClusterLayer {
     private scheduledRenderFrame: number | null = null;
     private spiderfied: SpiderfyState | null = null;
 
+    /** zoomend 渲染时间戳：同一次缩放动作后紧跟的 moveend 不再重复渲染
+     *  （moveend 的非动画渲染会立刻移除 zoomend 刚飞出的元素，吞掉合并动画） */
+    private zoomEndRenderedAt = 0;
+
     private readonly handleViewChange = () => {
         if (!this.enabled) return;
-        this.renderAllTypes();
+        if (performance.now() - this.zoomEndRenderedAt < 50) return;
+        this.renderAllTypes(false);
+    };
+
+    /** zoomend：重算并播放聚合分裂/合并动画（Leaflet.markercluster 语义） */
+    private readonly handleZoomEnd = () => {
+        if (!this.enabled) return;
+        this.zoomEndRenderedAt = performance.now();
+        this.renderAllTypes(true);
     };
 
     private readonly handleZoomStart = () => {
@@ -153,18 +206,12 @@ export class ClusterLayer {
         const hasSubIcon = Boolean(type.subIcon);
         const subIconUrl = hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
 
-        const index = new Supercluster<ManagedPointProps, Supercluster.AnyProps>({
-            radius: SUPERCLUSTER_RADIUS,
-            maxZoom: SUPERCLUSTER_MAX_ZOOM,
-        });
-        index.load([]);
-
         this.clusterGroupsByType[type.key] = {
             type,
             iconUrl,
             hasSubIcon,
             subIconUrl,
-            index,
+            tree: buildClusterTree({ markerIds: [], getLatLng: () => new LatLng(0, 0), radius: MAX_CLUSTER_RADIUS_PX }),
             managedIds: new Set(),
             group: layerGroup([], { pane: 'markerPane' }),
             clusterMarkers: new Map(),
@@ -208,7 +255,7 @@ export class ClusterLayer {
         if (this.enabled) return;
         this.enabled = true;
         const map = this.deps.map;
-        map.on('zoomend', this.handleViewChange);
+        map.on('zoomend', this.handleZoomEnd);
         map.on('moveend', this.handleViewChange);
         map.on('zoomstart', this.handleZoomStart);
         map.on('click', this.handleMapClick);
@@ -219,7 +266,7 @@ export class ClusterLayer {
         if (!this.enabled) return;
         this.enabled = false;
         const map = this.deps.map;
-        map.off('zoomend', this.handleViewChange);
+        map.off('zoomend', this.handleZoomEnd);
         map.off('moveend', this.handleViewChange);
         map.off('zoomstart', this.handleZoomStart);
         map.off('click', this.handleMapClick);
@@ -293,6 +340,14 @@ export class ClusterLayer {
 
     isTypeManaged(typeKey: string) {
         return Boolean(this.clusterGroupsByType[typeKey]);
+    }
+
+    /** marker 当前是否处于 spiderfy 展开状态（filterMarker 等需豁免） */
+    isSpiderfiedLeaf(markerId: string): boolean {
+        return (
+            this.spiderfied?.entries.some((entry) => entry.markerId === markerId) ??
+            false
+        );
     }
 
     async showMarker(markerId: string): Promise<boolean> {
@@ -432,53 +487,46 @@ export class ClusterLayer {
      * zoom 1.5 应仍聚合（1.5 < 2），round(1.5)=2 会错误地短路为全叶子。
      */
     private getClusterZoom(): number {
-        return Math.max(0, Math.floor(this.deps.map.getZoom()));
+        // 与 Leaflet.markercluster 一致：聚合树最深到 disableClusteringAtZoom-1，
+        // 视口缩放取 round 后截断到该层级（其 _zoom = Math.round(map zoom)）。
+        return Math.max(
+            0,
+            Math.min(
+                Math.round(this.deps.map.getZoom()),
+                DISABLE_CLUSTERING_AT_ZOOM - 1,
+            ),
+        );
     }
 
-    /** 当前视野 bbox（外扩一个聚合半径），换算为 supercluster 喂食坐标 */
-    private getPaddedViewBbox(): [number, number, number, number] {
+    /** 当前视野 bbox（外扩一个聚合半径），game latlng 单位 */
+    private getPaddedViewBbox(): { west: number; south: number; east: number; north: number } {
         const map = this.deps.map;
         const size = map.getSize();
         const topLeft = map.containerPointToLatLng(new Point(-MAX_CLUSTER_RADIUS_PX, -MAX_CLUSTER_RADIUS_PX));
         const bottomRight = map.containerPointToLatLng(
             new Point(size.x + MAX_CLUSTER_RADIUS_PX, size.y + MAX_CLUSTER_RADIUS_PX),
         );
-        const west = Math.min(topLeft.lng, bottomRight.lng) * SUPERCLUSTER_DEG_PER_GAME_UNIT;
-        const east = Math.max(topLeft.lng, bottomRight.lng) * SUPERCLUSTER_DEG_PER_GAME_UNIT;
-        const south = Math.min(topLeft.lat, bottomRight.lat) * SUPERCLUSTER_DEG_PER_GAME_UNIT;
-        const north = Math.max(topLeft.lat, bottomRight.lat) * SUPERCLUSTER_DEG_PER_GAME_UNIT;
-        return [west, south, east, north];
+        return {
+            west: Math.min(topLeft.lng, bottomRight.lng),
+            east: Math.max(topLeft.lng, bottomRight.lng),
+            south: Math.min(topLeft.lat, bottomRight.lat),
+            north: Math.max(topLeft.lat, bottomRight.lat),
+        };
     }
 
-    /** supercluster 喂食坐标 → game latlng */
-    private fedCoordinatesToLatLng(coordinates: number[]): LatLng {
-        return new LatLng(
-            coordinates[1] / SUPERCLUSTER_DEG_PER_GAME_UNIT,
-            coordinates[0] / SUPERCLUSTER_DEG_PER_GAME_UNIT,
-        );
-    }
-
-    /** 成员变化后整体重建 supercluster 索引 */
+    /** 成员变化后整体重建 LMC 聚合树 */
     private rebuildIndex(state: TypeClusterRuntime) {
         const markerDict = this.deps.getMarkerDict();
-        const features: Array<Supercluster.PointFeature<ManagedPointProps>> = [];
-        state.managedIds.forEach((id) => {
-            const layer = markerDict[id];
-            if (!(layer instanceof CompatMarker)) return;
-            const { lat, lng } = layer.getLatLng();
-            features.push({
-                type: 'Feature',
-                properties: { markerId: id },
-                geometry: {
-                    type: 'Point',
-                    coordinates: [
-                        lng * SUPERCLUSTER_DEG_PER_GAME_UNIT,
-                        lat * SUPERCLUSTER_DEG_PER_GAME_UNIT,
-                    ],
-                },
-            });
+        const getLatLng = (markerId: string): LatLng => {
+            const layer = markerDict[markerId];
+            if (layer instanceof CompatMarker) return layer.getLatLng();
+            return new LatLng(0, 0);
+        };
+        state.tree = buildClusterTree({
+            markerIds: [...state.managedIds],
+            getLatLng,
+            radius: MAX_CLUSTER_RADIUS_PX,
         });
-        state.index.load(features);
     }
 
     private scheduleRender() {
@@ -495,15 +543,15 @@ export class ClusterLayer {
         this.scheduledRenderFrame = null;
     }
 
-    private renderAllTypes() {
+    private renderAllTypes(animate = false) {
         if (!this.enabled) return;
         Object.entries(this.clusterGroupsByType).forEach(([typeKey, state]) => {
-            this.renderType(typeKey, state);
+            this.renderType(typeKey, state, animate);
         });
     }
 
     /** 重算当前 bbox/zoom 的聚合结果，并对聚合 marker / 叶子 marker 做增量 diff */
-    private renderType(typeKey: string, state: TypeClusterRuntime) {
+    private renderType(typeKey: string, state: TypeClusterRuntime, animate = false) {
         if (!this.enabled) return;
         // spiderfy 期间保持环形排布，不参与重渲染
         if (this.spiderfied?.typeKey === typeKey) return;
@@ -518,73 +566,130 @@ export class ClusterLayer {
         const markerDataDict = this.deps.getMarkerDataDict();
         const layerSubregionDict = this.deps.getLayerSubregionDict();
 
-        const zoom = this.getClusterZoom();
+        // 动画快照：diff 前的屏幕位置（叶子 + 聚合簇）
+        const prevLeafPoints = new Map<string, Point>();
+        const prevClusterPoints = new Map<number, Point>();
+        const prevClusterOfMarker = new Map(state.clusterIdByMarkerId);
+        if (animate) {
+            state.visibleLeafIds.forEach((id) => {
+                const layer = markerDict[id];
+                if (layer instanceof CompatMarker) {
+                    const point = layer.getContainerPoint();
+                    if (point) prevLeafPoints.set(id, point);
+                }
+            });
+            state.clusterMarkers.forEach((marker, clusterId) => {
+                const point = marker.getContainerPoint();
+                if (point) prevClusterPoints.set(clusterId, point);
+            });
+        }
+
+        // LMC 语义：zoom >= 2 全部叶子（disableClusteringAtZoom）；否则显示
+        // min(round(视口zoom), 1) 层级的聚合树节点。
+        const rawZoom = this.deps.map.getZoom();
         const nextClusterIds = new Set<number>();
         const nextClusterIdByMarkerId = new Map<string, number>();
         const nextLeafIds = new Set<string>();
 
-        if (this.deps.map.getZoom() >= DISABLE_CLUSTERING_AT_ZOOM) {
-            // disableClusteringAtZoom: 2 —— game zoom >= 2 时直接展示叶子
-            state.managedIds.forEach((id) => nextLeafIds.add(id));
-        } else {
-            const features = state.index.getClusters(this.getPaddedViewBbox(), zoom);
-            features.forEach((feature) => {
-                const props = feature.properties as ManagedFeatureProps | null;
-                if (!props) return;
-                if (props.cluster && props.cluster_id !== undefined) {
-                    const clusterId = props.cluster_id;
-                    nextClusterIds.add(clusterId);
-                    const count = props.point_count ?? 0;
-                    const latlng = this.fedCoordinatesToLatLng(feature.geometry.coordinates);
+        {
+            const bbox = this.getPaddedViewBbox();
+            const inBounds = (latlng: LatLng) =>
+                latlng.lng >= bbox.west &&
+                latlng.lng <= bbox.east &&
+                latlng.lat >= bbox.south &&
+                latlng.lat <= bbox.north;
 
-                    let clusterMarker = state.clusterMarkers.get(clusterId);
+            if (rawZoom >= DISABLE_CLUSTERING_AT_ZOOM) {
+                state.managedIds.forEach((id) => nextLeafIds.add(id));
+            } else {
+                const { clusters, leafIds } = visibleAtLevel(state.tree, this.getClusterZoom());
+                clusters.forEach((cluster) => {
+                    if (!inBounds(cluster.wLatLng)) return;
+                    nextClusterIds.add(cluster.id);
+                    const count = cluster.childCount;
+
+                    let clusterMarker = state.clusterMarkers.get(cluster.id);
                     if (!clusterMarker) {
-                        clusterMarker = this.createClusterMarker(typeKey, state, clusterId, count, latlng);
-                        state.clusterMarkers.set(clusterId, clusterMarker);
+                        clusterMarker = this.createClusterMarker(typeKey, state, cluster.id, count, cluster.wLatLng);
+                        state.clusterMarkers.set(cluster.id, clusterMarker);
                     } else {
-                        clusterMarker.setLatLng(latlng);
-                        this.updateClusterCount(state, clusterId, clusterMarker, count);
+                        clusterMarker.setLatLng(cluster.wLatLng);
+                        this.updateClusterCount(state, cluster.id, clusterMarker, count);
                     }
                     if (!state.group.hasLayer(clusterMarker)) {
                         state.group.addLayer(clusterMarker);
                     }
+                    // 簇保持可见：作废其可能待决的飞出移除
+                    this.cancelRetire(clusterMarker);
 
                     // 记录叶子归属（getVisibleParent 等价物用）
-                    const leaves = state.index.getLeaves(clusterId, Number.POSITIVE_INFINITY);
-                    leaves.forEach((leaf) => {
-                        const leafId = (leaf.properties as ManagedFeatureProps | null)?.markerId;
-                        if (leafId) nextClusterIdByMarkerId.set(leafId, clusterId);
+                    getLeafIds(cluster).forEach((leafId) => {
+                        nextClusterIdByMarkerId.set(leafId, cluster.id);
                     });
-                } else if (props.markerId) {
-                    nextLeafIds.add(props.markerId);
-                }
-            });
+                });
+                leafIds.forEach((id) => nextLeafIds.add(id));
+            }
         }
 
         // 移除不再存在的聚合 marker
+        const removedClusterMarkers: Array<{ clusterId: number; marker: CompatMarker }> = [];
         state.clusterMarkers.forEach((marker, clusterId) => {
             if (nextClusterIds.has(clusterId)) return;
-            state.group.removeLayer(marker);
+            removedClusterMarkers.push({ clusterId, marker });
             state.clusterMarkers.delete(clusterId);
             state.clusterCounts.delete(clusterId);
         });
 
-        // 叶子 diff：不再是叶子的从父组移除；新叶子加回其 subregion 父组
+        // 叶子 diff：不再是叶子的从父组移除；新叶子加回其 subregion 父组。
+        // 移除候选 = 已跟踪叶子 ∪ 该类型实际还挂在父组上的 marker
+        // （聚合开关切换等时刻有未跟踪的挂载，markerLayer 不再抢先移除）。
+        const removedLeafIds: string[] = [];
         state.visibleLeafIds.forEach((id) => {
+            if (nextLeafIds.has(id)) return;
+            removedLeafIds.push(id);
+        });
+        const markerTypeMap = this.deps.getMarkerTypeMap();
+        (markerTypeMap[typeKey] ?? []).forEach((id) => {
             if (nextLeafIds.has(id)) return;
             const layer = markerDict[id];
             const data = markerDataDict[id];
             const parentGroup = data ? layerSubregionDict[data.subregId] : undefined;
-            if (layer && parentGroup?.hasLayer(layer)) {
-                parentGroup.removeLayer(layer);
+            if (
+                layer &&
+                parentGroup?.hasLayer(layer) &&
+                !removedLeafIds.includes(id) &&
+                !this.isSpiderfiedLeaf(id)
+            ) {
+                removedLeafIds.push(id);
             }
         });
+
+        // 新簇若接收了飞入成员，保持在最终位置淡入（不再从质心滑动）——
+        // 视觉重心由飞入的子元素承担（markercluster 合并语义）。
+        let absorbedClusterIds = new Set<number>();
+        if (animate && (removedClusterMarkers.length > 0 || removedLeafIds.length > 0)) {
+            absorbedClusterIds = this.flyOutRemoved(state, removedClusterMarkers, removedLeafIds, nextClusterIdByMarkerId);
+        } else {
+            removedClusterMarkers.forEach(({ marker }) => state.group.removeLayer(marker));
+            removedLeafIds.forEach((id) => {
+                const layer = markerDict[id];
+                const data = markerDataDict[id];
+                const parentGroup = data ? layerSubregionDict[data.subregId] : undefined;
+                if (layer && parentGroup?.hasLayer(layer)) {
+                    parentGroup.removeLayer(layer);
+                }
+            });
+        }
         nextLeafIds.forEach((id) => {
             const layer = markerDict[id];
             const data = markerDataDict[id];
             if (!layer || !data) return;
             const parentGroup = layerSubregionDict[data.subregId];
             // 不依赖 visibleLeafIds 判断：filterMarker 可能已同步清空父组，这里幂等补回
+            if (!(layer instanceof CompatMarker)) return;
+            // 叶子重新可见：作废其待决的飞出移除，并清掉可能残留的淡出 class
+            this.cancelRetire(layer);
+            this.clearDisappearing(layer);
             if (parentGroup && !parentGroup.hasLayer(layer)) {
                 parentGroup.addLayer(layer);
             }
@@ -592,6 +697,200 @@ export class ClusterLayer {
 
         state.clusterIdByMarkerId = nextClusterIdByMarkerId;
         state.visibleLeafIds = nextLeafIds;
+
+        if (animate) {
+            this.playMorphAnimations(state, nextClusterIds, nextLeafIds, {
+                prevLeafPoints,
+                prevClusterPoints,
+                prevClusterOfMarker,
+            }, absorbedClusterIds);
+        }
+    }
+
+    /**
+     * 合并动画：被吸收的簇/叶子飞入其新归属簇的位置并淡出，动画结束后移除。
+     * 返回接收了飞入成员的簇 id 集合（这些簇在最终位置淡入，不再滑动）。
+     */
+    /** 延迟移除令牌：marker 每次重新挂载/重新动画都会使旧令牌失效，
+     *  杜绝快速连续缩放时旧定时器误删已恢复的可见点位。 */
+    private retireTokens = new WeakMap<CompatMarker, number>();
+
+    private scheduleRetire(marker: CompatMarker, removeFn: () => void) {
+        const token = (this.retireTokens.get(marker) ?? 0) + 1;
+        this.retireTokens.set(marker, token);
+        window.setTimeout(() => {
+            if (this.retireTokens.get(marker) === token) removeFn();
+        }, MARKER_FADE_DURATION_MS + 160);
+    }
+
+    private cancelRetire(marker: CompatMarker) {
+        this.retireTokens.set(marker, (this.retireTokens.get(marker) ?? 0) + 1);
+    }
+
+    private clearDisappearing(marker: CompatMarker) {
+        const inner = marker.getElement().querySelector<HTMLElement>(
+            `.${styles.markerInner}, .${styles.noFrameInner}`,
+        );
+        inner?.classList.remove(styles.disappearing, styles.appearing);
+    }
+
+    private flyOutRemoved(
+        state: TypeClusterRuntime,
+        removedClusterMarkers: Array<{ clusterId: number; marker: CompatMarker }>,
+        removedLeafIds: string[],
+        nextClusterIdByMarkerId: Map<string, number>,
+    ): Set<number> {
+        const absorbedClusterIds = new Set<number>();
+        const markerDict = this.deps.getMarkerDict();
+        const markerDataDict = this.deps.getMarkerDataDict();
+        const layerSubregionDict = this.deps.getLayerSubregionDict();
+
+        const absorbingPoint = (clusterId: number | undefined): Point | undefined => {
+            if (clusterId === undefined) return undefined;
+            const marker = state.clusterMarkers.get(clusterId);
+            return marker?.getContainerPoint() ?? undefined;
+        };
+
+        const fadeOut = (marker: CompatMarker) => {
+            const inner = marker.getElement().querySelector<HTMLElement>(
+                `.${styles.markerInner}, .${styles.noFrameInner}`,
+            );
+            inner?.classList.add(styles.disappearing);
+        };
+
+        // 被吸收的簇：任一成员的新归属簇即合并目标；找不到（视口外等）原地淡出
+        removedClusterMarkers.forEach(({ clusterId, marker }) => {
+            let target: Point | undefined;
+            let absorbingId: number | undefined;
+            const cluster = state.tree.byId.get(clusterId);
+            const leaves = cluster ? getLeafIds(cluster) : [];
+            for (const memberId of leaves) {
+                const ownerId = nextClusterIdByMarkerId.get(memberId);
+                const point = absorbingPoint(ownerId);
+                if (point) {
+                    target = point;
+                    absorbingId = ownerId;
+                    break;
+                }
+            }
+
+            fadeOut(marker);
+            if (target) {
+                marker.animatePositionTo(target);
+                if (absorbingId !== undefined) absorbedClusterIds.add(absorbingId);
+            }
+            this.scheduleRetire(marker, () => {
+                if (state.group.hasLayer(marker)) state.group.removeLayer(marker);
+            });
+        });
+
+        // 被吸收的叶子：飞入新归属簇
+        removedLeafIds.forEach((id) => {
+            const layer = markerDict[id];
+            const data = markerDataDict[id];
+            if (!(layer instanceof CompatMarker)) return;
+            const parentGroup = data ? layerSubregionDict[data.subregId] : undefined;
+            const absorbingId = nextClusterIdByMarkerId.get(id);
+            const target = absorbingPoint(absorbingId);
+            if (target) {
+                fadeOut(layer);
+                layer.animatePositionTo(target);
+                if (absorbingId !== undefined) absorbedClusterIds.add(absorbingId);
+                this.scheduleRetire(layer, () => {
+                    if (parentGroup?.hasLayer(layer)) parentGroup.removeLayer(layer);
+                });
+            } else if (parentGroup?.hasLayer(layer)) {
+                parentGroup.removeLayer(layer);
+            }
+        });
+
+        return absorbedClusterIds;
+    }
+
+    /** zoomend 后的聚合形态动画（markercluster 分裂/合并语义）：
+     *  持续存在的簇从旧位置滑到新位置；新簇从成员旧位置质心聚合而来；
+     *  新展开的叶子从旧簇位置飞出。 */
+    private playMorphAnimations(
+        state: TypeClusterRuntime,
+        nextClusterIds: Set<number>,
+        nextLeafIds: Set<string>,
+        prev: {
+            prevLeafPoints: Map<string, Point>;
+            prevClusterPoints: Map<number, Point>;
+            prevClusterOfMarker: Map<string, number>;
+        },
+        absorbedClusterIds: Set<number>,
+    ) {
+        const markerDict = this.deps.getMarkerDict();
+        const { prevLeafPoints, prevClusterPoints, prevClusterOfMarker } = prev;
+
+        nextClusterIds.forEach((clusterId) => {
+            const clusterMarker = state.clusterMarkers.get(clusterId);
+            if (!clusterMarker) return;
+
+            const sameClusterPrev = prevClusterPoints.get(clusterId);
+            if (sameClusterPrev && !absorbedClusterIds.has(clusterId)) {
+                clusterMarker.animatePositionFrom(sameClusterPrev);
+                return;
+            }
+
+            if (absorbedClusterIds.has(clusterId)) {
+                // 合并目标簇：钉在最终位置，淡入交给飞入的子元素
+                const inner = clusterMarker.getElement().querySelector<HTMLElement>(
+                    `.${styles.markerInner}, .${styles.noFrameInner}`,
+                );
+                inner?.classList.add(styles.appearing);
+                const clearAppearing = (event: AnimationEvent) => {
+                    if (event.target !== inner) return;
+                    inner?.classList.remove(styles.appearing);
+                    inner?.removeEventListener('animationend', clearAppearing);
+                };
+                inner?.addEventListener('animationend', clearAppearing);
+                return;
+            }
+
+            // 新簇：从成员旧位置的质心聚合
+            const cluster = state.tree.byId.get(clusterId);
+            const leaves = cluster ? getLeafIds(cluster) : [];
+            const memberPoints: Point[] = [];
+            leaves.forEach((leafId) => {
+                const prevLeaf = prevLeafPoints.get(leafId);
+                if (prevLeaf) {
+                    memberPoints.push(prevLeaf);
+                    return;
+                }
+                const prevClusterId = prevClusterOfMarker.get(leafId);
+                const prevClusterPoint =
+                    prevClusterId !== undefined
+                        ? prevClusterPoints.get(prevClusterId)
+                        : undefined;
+                if (prevClusterPoint) memberPoints.push(prevClusterPoint);
+            });
+            if (memberPoints.length === 0) return;
+            const centroid = new Point(
+                memberPoints.reduce((sum, p) => sum + p.x, 0) / memberPoints.length,
+                memberPoints.reduce((sum, p) => sum + p.y, 0) / memberPoints.length,
+            );
+            clusterMarker.animatePositionFrom(centroid);
+        });
+
+        nextLeafIds.forEach((id) => {
+            const layer = markerDict[id];
+            if (!(layer instanceof CompatMarker)) return;
+            const prevLeaf = prevLeafPoints.get(id);
+            if (prevLeaf) {
+                layer.animatePositionFrom(prevLeaf);
+                return;
+            }
+            const prevClusterId = prevClusterOfMarker.get(id);
+            const prevClusterPoint =
+                prevClusterId !== undefined
+                    ? prevClusterPoints.get(prevClusterId)
+                    : undefined;
+            if (prevClusterPoint) {
+                layer.animatePositionFrom(prevClusterPoint);
+            }
+        });
     }
 
     private clearRenderedState(state: TypeClusterRuntime) {
@@ -689,17 +988,20 @@ export class ClusterLayer {
         if (!this.enabled) return;
         const state = this.clusterGroupsByType[typeKey];
         const clusterMarker = state?.clusterMarkers.get(clusterId);
-        if (!state || !clusterMarker) return;
+        const cluster = state?.tree.byId.get(clusterId);
+        if (!state || !clusterMarker || !cluster) return;
 
         const map = this.deps.map;
-        const expansionZoom = state.index.getClusterExpansionZoom(clusterId);
-        const targetZoom = Math.min(expansionZoom, map.getMaxZoom());
-        if (targetZoom <= map.getZoom()) {
-            // 已到最大缩放仍无法展开（多点重叠）→ 简化 spiderfy
+        const expansionZoom = getExpansionZoom(cluster);
+        // 原版 _zoomOrSpiderfy（本应用配置 disableClusteringAtZoom: 2，聚合树最深
+        // 到 level 1）：簇的点位若在整个 level 1 都拆不开 → 点击直接 spiderfy；
+        // 只有"下一级就散开"的簇才拉近视角（zoomToBoundsOnClick）。实测参考版
+        // 在 zoom 0.5/1.2 点击簇均为直接展开。
+        if (expansionZoom > DISABLE_CLUSTERING_AT_ZOOM - 1) {
             this.spiderfyCluster(typeKey, state, clusterId, clusterMarker.getLatLng());
             return;
         }
-        map.flyTo(clusterMarker.getLatLng(), targetZoom, { duration: CLUSTER_FLY_DURATION_S });
+        map.flyTo(clusterMarker.getLatLng(), expansionZoom, { duration: CLUSTER_FLY_DURATION_S });
     }
 
     /**
@@ -715,13 +1017,13 @@ export class ClusterLayer {
             return;
         }
 
-        const clusterId = clusterFeature.properties.cluster_id;
-        const expansionZoom = state.index.getClusterExpansionZoom(clusterId);
+        const clusterId = clusterFeature.id;
+        const expansionZoom = getExpansionZoom(clusterFeature);
         const targetZoom = Math.min(expansionZoom, map.getMaxZoom());
-        const clusterLatLng = this.fedCoordinatesToLatLng(clusterFeature.geometry.coordinates);
+        const clusterLatLng = clusterFeature.wLatLng;
 
-        if (targetZoom <= map.getZoom()) {
-            // 已处于最大缩放仍被聚合 → 直接 spiderfy
+        if (expansionZoom > DISABLE_CLUSTERING_AT_ZOOM - 1 || targetZoom <= map.getZoom()) {
+            // 无法在可见聚合层级内拆分（重合/过近）或已到顶 → 直接 spiderfy
             this.spiderfyCluster(state.type.key, state, clusterId, clusterLatLng);
             callback();
             return;
@@ -735,8 +1037,8 @@ export class ClusterLayer {
                 this.spiderfyCluster(
                     state.type.key,
                     state,
-                    stillClustered.properties.cluster_id,
-                    this.fedCoordinatesToLatLng(stillClustered.geometry.coordinates),
+                    stillClustered.id,
+                    stillClustered.wLatLng,
                 );
             }
             callback();
@@ -747,26 +1049,14 @@ export class ClusterLayer {
     private findClusterContaining(
         state: TypeClusterRuntime,
         markerId: string,
-    ): Supercluster.ClusterFeature<Supercluster.AnyProps> | null {
+    ): LmcCluster | null {
         if (state.managedIds.size === 0) return null;
-        const zoom = this.getClusterZoom();
-        if (zoom >= DISABLE_CLUSTERING_AT_ZOOM) return null;
+        if (this.deps.map.getZoom() >= DISABLE_CLUSTERING_AT_ZOOM) return null;
 
-        const features = state.index.getClusters(WORLD_BBOX, zoom);
-        for (const feature of features) {
-            const props = feature.properties as ManagedFeatureProps | null;
-            if (!props) continue;
-            if (props.cluster && props.cluster_id !== undefined) {
-                const leaves = state.index.getLeaves(props.cluster_id, Number.POSITIVE_INFINITY);
-                const contains = leaves.some(
-                    (leaf) => (leaf.properties as ManagedFeatureProps | null)?.markerId === markerId,
-                );
-                if (contains) {
-                    return feature as Supercluster.ClusterFeature<Supercluster.AnyProps>;
-                }
-            } else if (props.markerId === markerId) {
-                return null;
-            }
+        const { clusters, leafIds } = visibleAtLevel(state.tree, this.getClusterZoom());
+        if (leafIds.includes(markerId)) return null;
+        for (const cluster of clusters) {
+            if (getLeafIds(cluster).includes(markerId)) return cluster;
         }
         return null;
     }
@@ -775,78 +1065,194 @@ export class ClusterLayer {
      * 简化 spiderfy：将聚合的叶子 marker 以聚合点为中心环形排布
      * （半径 25px 起步，screen px 通过 containerPointToLatLng 转回 game latlng）。
      */
+    /**
+     * spiderfy（逐行移植自 leaflet.markercluster 的 Spiderfier）：
+     * <9 个用 circle 布局（周长 25·(2+n)，半径下限 35，center.y+10 hack），
+     * >=9 个用 spiral 布局；legs 用 stroke-dashoffset 描画动画（CSS transition）。
+     */
     private spiderfyCluster(typeKey: string, state: TypeClusterRuntime, clusterId: number, center: LatLng) {
         const map = this.deps.map;
         const markerDict = this.deps.getMarkerDict();
         const markerDataDict = this.deps.getMarkerDataDict();
         const layerSubregionDict = this.deps.getLayerSubregionDict();
 
+        // 原版 guard（Spiderfier.js spiderfy()）：已展开的簇再次点击无效果
+        if (
+            this.spiderfied?.clusterId === clusterId &&
+            this.spiderfied.typeKey === typeKey
+        ) {
+            return;
+        }
+
         this.unspiderfy();
 
-        const leaves = state.index.getLeaves(clusterId, Number.POSITIVE_INFINITY);
-        if (leaves.length === 0) return;
+        const cluster = state.tree.byId.get(clusterId);
+        const leafIds = cluster ? getLeafIds(cluster) : [];
+        if (leafIds.length === 0) return;
 
         const centerPoint = map.latLngToContainerPoint(center);
-        const radius = Math.max(
-            SPIDERFY_BASE_RADIUS_PX,
-            (leaves.length * SPIDERFY_LEAF_SPACING_PX) / (2 * Math.PI),
-        );
+        const positions =
+            leafIds.length >= SPIDERFY_CIRCLE_SPIRAL_SWITCHOVER
+                ? generatePointsSpiral(leafIds.length, centerPoint)
+                : generatePointsCircle(leafIds.length, centerPoint);
+
+        const clusterMarker = state.clusterMarkers.get(clusterId);
+
+        // legs SVG（overlayPane：瓦片之上、marker 之下）
+        const overlayPane = map.getPane('overlayPane');
+        let svg: SVGSVGElement | undefined;
+        if (overlayPane) {
+            svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'marker-cluster-spider-svg');
+            svg.style.position = 'absolute';
+            svg.style.inset = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.overflow = 'visible';
+            svg.style.pointerEvents = 'none';
+            overlayPane.appendChild(svg);
+        }
+
         const entries: SpiderfyState['entries'] = [];
 
-        leaves.forEach((leaf, leafIndex) => {
-            const markerId = (leaf.properties as ManagedFeatureProps | null)?.markerId;
-            if (!markerId) return;
+        leafIds.forEach((markerId, leafIndex) => {
             const layer = markerDict[markerId];
             const data = markerDataDict[markerId];
-            if (!(layer instanceof CompatMarker) || !data) return;
+            const position = positions[leafIndex];
+            if (!(layer instanceof CompatMarker) || !data || !position) return;
 
-            const angle = (leafIndex / leaves.length) * Math.PI * 2 - Math.PI / 2;
-            const point = new Point(
-                centerPoint.x + radius * Math.cos(angle),
-                centerPoint.y + radius * Math.sin(angle),
-            );
-            const latlng = map.containerPointToLatLng(point);
             const parentGroup = layerSubregionDict[data.subregId];
+            const ringLatLng = map.containerPointToLatLng(position);
 
-            entries.push({ markerId, marker: layer, originalLatLng: layer.getLatLng() });
-            layer.setLatLng(latlng);
+            // leg（原版是 L.Polyline，spiderLegPolylineOptions 默认值）
+            let leg: SVGPathElement | undefined;
+            if (svg) {
+                leg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                leg.setAttribute('class', 'leaflet-cluster-spider-leg');
+                leg.setAttribute('stroke', SPIDER_LEG_STYLE.color);
+                leg.setAttribute('stroke-width', String(SPIDER_LEG_STYLE.weight));
+                leg.setAttribute('fill', 'none');
+                leg.setAttribute('stroke-opacity', '0');
+                leg.setAttribute(
+                    'd',
+                    `M ${centerPoint.x} ${centerPoint.y} L ${position.x} ${position.y}`,
+                );
+                const legLength = leg.getTotalLength() + 0.1;
+                leg.style.strokeDasharray = String(legLength);
+                leg.style.strokeDashoffset = String(legLength);
+                svg.appendChild(leg);
+            }
+
+            entries.push({
+                markerId,
+                marker: layer,
+                originalLatLng: layer.getLatLng(),
+                ringLatLng,
+                leg,
+            });
+
+            // 原版：zIndexOffset 提到最高；初始位置钉在簇心，随后 CSS transition 飞出
+            layer.getElement().style.zIndex = String(SPIDERFY_MARKER_ZINDEX);
+            // 作废该叶子可能待决的飞出移除定时器（上一次缩小时遗留的，
+            // 否则 spiderfy 动画播完即被旧定时器移除）
+            this.cancelRetire(layer);
+            this.clearDisappearing(layer);
             if (parentGroup && !parentGroup.hasLayer(layer)) {
                 parentGroup.addLayer(layer);
             }
+            layer.setLatLng(ringLatLng);
+            layer.animatePositionFrom(centerPoint, SPIDERFY_ANIMATION_MS);
         });
 
-        if (entries.length === 0) return;
-
-        // 隐藏被展开的聚合 marker（取消 spiderfy 后的重渲染会恢复）
-        const clusterMarker = state.clusterMarkers.get(clusterId);
-        if (clusterMarker && state.group.hasLayer(clusterMarker)) {
-            state.group.removeLayer(clusterMarker);
+        if (entries.length === 0) {
+            svg?.remove();
+            return;
         }
 
-        this.spiderfied = { typeKey, clusterId, entries };
+        // 原版：簇图标淡出到 0.3（不隐藏）
+        if (clusterMarker && state.group.hasLayer(clusterMarker)) {
+            clusterMarker.getElement().style.opacity = String(SPIDERFY_CLUSTER_OPACITY);
+        }
+
+        this.spiderfied = { typeKey, clusterId, centerLatLng: center, entries, svg };
+
+        // legs 描画动画 + 透明度（force reflow 后触发 CSS transition）
+        void svg?.getBoundingClientRect();
+        entries.forEach(({ leg }) => {
+            if (!leg) return;
+            leg.style.strokeDashoffset = '0';
+            leg.setAttribute('stroke-opacity', String(SPIDER_LEG_STYLE.opacity));
+        });
+
+        // 相机移动时 legs 跟随（叶子 latlng 已替换为环形位置，随渲染循环移动）
+        this.spiderfied.unsubscribeRender = map.onRender(() => {
+            const current = this.spiderfied;
+            if (!current) return;
+            const centerNow = map.latLngToContainerPoint(current.centerLatLng);
+            current.entries.forEach(({ leg, ringLatLng }) => {
+                if (!leg) return;
+                const end = map.latLngToContainerPoint(ringLatLng);
+                leg.setAttribute('d', `M ${centerNow.x} ${centerNow.y} L ${end.x} ${end.y}`);
+            });
+        });
     }
 
-    /** 取消 spiderfy：恢复叶子原位并重新渲染（地图 click 或 zoom 变化时触发） */
+    /** 取消 spiderfy（逐行移植 _animationUnspiderfy）：叶子收回簇心、legs 反描画、
+     *  200ms 后恢复原位；仅剩 <=1 个子点时保留其在地图上。 */
     private unspiderfy() {
         const current = this.spiderfied;
         if (!current) return;
         this.spiderfied = null;
 
+        current.unsubscribeRender?.();
+
+        const map = this.deps.map;
         const markerDataDict = this.deps.getMarkerDataDict();
         const layerSubregionDict = this.deps.getLayerSubregionDict();
-        current.entries.forEach(({ markerId, marker, originalLatLng }) => {
-            marker.setLatLng(originalLatLng);
-            const data = markerDataDict[markerId];
-            const parentGroup = data ? layerSubregionDict[data.subregId] : undefined;
-            if (parentGroup?.hasLayer(marker)) {
-                parentGroup.removeLayer(marker);
+        const centerPoint = map.latLngToContainerPoint(current.centerLatLng);
+
+        // 簇图标恢复不透明
+        const state = this.clusterGroupsByType[current.typeKey];
+        const clusterMarker = state?.clusterMarkers.get(current.clusterId);
+        if (clusterMarker) {
+            clusterMarker.getElement().style.opacity = '1';
+        }
+
+        // 叶子飞回簇心 + legs 反描画（stroke-dashoffset 回到全长 + 淡出）
+        current.entries.forEach(({ marker, leg }) => {
+            marker.animatePositionTo(centerPoint, SPIDERFY_ANIMATION_MS);
+            if (leg) {
+                const legLength = leg.getTotalLength() + 0.1;
+                leg.style.strokeDashoffset = String(legLength);
+                leg.setAttribute('stroke-opacity', '0');
             }
         });
-
-        const state = this.clusterGroupsByType[current.typeKey];
-        if (state) {
-            this.renderType(current.typeKey, state);
+        if (current.svg) {
+            const svg = current.svg;
+            window.setTimeout(() => svg.remove(), SPIDERFY_ANIMATION_MS + 60);
         }
+
+        window.setTimeout(() => {
+            const keepOnMap = current.entries.length <= 1;
+            current.entries.forEach(({ markerId, marker, originalLatLng }) => {
+                // 该 marker 已进入新的 spiderfy：跳过恢复（旧 spiderfy 的延迟
+                // 恢复若落在新 spiderfy 挂载之后，会把新展开的点从 DOM 移除）
+                if (this.spiderfied?.entries.some((e) => e.markerId === markerId)) {
+                    return;
+                }
+                marker.getElement().style.zIndex = '';
+                marker.setLatLng(originalLatLng);
+                const data = markerDataDict[markerId];
+                const parentGroup = data ? layerSubregionDict[data.subregId] : undefined;
+                if (!keepOnMap && parentGroup?.hasLayer(marker)) {
+                    parentGroup.removeLayer(marker);
+                }
+            });
+
+            if (state) {
+                this.renderType(current.typeKey, state);
+            }
+        }, SPIDERFY_ANIMATION_MS + 60);
     }
 
     /** getVisibleParent 等价物：被聚合 → 返回其聚合 marker；否则返回自身（供 fade 动画找 DOM） */
@@ -995,7 +1401,7 @@ export class ClusterLayer {
             state.clusterCounts.clear();
             state.clusterIdByMarkerId.clear();
             state.visibleLeafIds.clear();
-            state.index.load([]);
+            this.rebuildIndex(state);
             if (map.hasLayer(state.group)) {
                 map.removeLayer(state.group);
             }

@@ -35,6 +35,12 @@
     user-select: none;
     -webkit-user-drag: none;
     will-change: transform;
+
+    /* -webkit-user-drag does not inherit onto child <img> elements */
+    img {
+        -webkit-user-drag: none;
+        user-select: none;
+    }
 }
 
 .leaflet-image-layer {

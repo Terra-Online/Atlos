@@ -72,6 +72,7 @@ export const createIconElement = (iconDef: CompatIcon): HTMLElement => {
         const { iconUrl, iconSize, iconAnchor, className } = iconDef.options;
         const image = document.createElement('img');
         image.src = iconUrl;
+        image.draggable = false;
         image.style.width = '100%';
         image.style.height = '100%';
         element.appendChild(image);

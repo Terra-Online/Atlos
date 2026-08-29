@@ -35,8 +35,34 @@ const FRAME_DURATION = 1000 / 60;
 const OVERDRAG_MAX_PX = 96;
 const OVERDRAG_RESISTANCE = 0.65;
 const OVERDRAG_SETTLE_THRESHOLD_PX = 80;
+
+/** Shared rubber-band resistance curve (asymptotes at OVERDRAG_MAX_PX). */
+const resistOverdrag = (value: number): number => {
+    if (value === 0) return 0;
+    const magnitude =
+        OVERDRAG_MAX_PX *
+        (1 - Math.exp((-Math.abs(value) * OVERDRAG_RESISTANCE) / OVERDRAG_MAX_PX));
+    return Math.sign(value) * magnitude;
+};
 const OVERDRAG_SETTLE_MS = 48;
-const OVERDRAG_SETTLE_ANIMATION_MS = 120;
+
+/**
+ * Leaflet DomEvent.getWheelDelta 的 wheelPxFactor 移植：
+ * Windows Chrome 下为 2×devicePixelRatio，macOS 3×，Linux Chrome 1×
+ * （Leaflet #7403/#4538）。漏掉它会让滚轮步长在 DPR≥1 的机器上大 2~3 倍。
+ */
+const wheelPxFactor = (() => {
+    const platform = navigator.platform?.toLowerCase() ?? '';
+    const isMac = platform.includes('mac');
+    const isLinux = platform.includes('linux');
+    const isChrome =
+        /chrome|chromium|crios/i.test(navigator.userAgent) &&
+        !/edg/i.test(navigator.userAgent);
+    const dpr = window.devicePixelRatio || 1;
+    if (isLinux && isChrome) return dpr;
+    if (isMac) return dpr * 3;
+    return dpr > 0 ? 2 * dpr : 1;
+})();
 
 /** Leaflet DomEvent.getWheelDelta equivalent. */
 const getWheelDelta = (event: WheelEvent): number => {
@@ -45,7 +71,7 @@ const getWheelDelta = (event: WheelEvent): number => {
             ? event.deltaY * 20
             : event.deltaMode === 2
               ? event.deltaY * 60
-              : event.deltaY;
+              : event.deltaY / wheelPxFactor;
     return -delta;
 };
 
@@ -367,34 +393,15 @@ export class SmoothGestures {
     }
 
     private applyVisualOverdrag(overdrag: Point) {
-        this.map.setOverdragOffset(overdrag);
-        if (overdrag.x === 0 && overdrag.y === 0) {
-            this.container.style.transform = '';
-        } else {
-            this.container.style.transform = `translate(${-overdrag.x}px, ${-overdrag.y}px)`;
-        }
+        this.map.setVisualOverdrag(overdrag);
     }
 
     private settleVisualOverdrag() {
-        if (this.container.style.transform === '') return;
-        this.container.style.transition = `transform ${OVERDRAG_SETTLE_ANIMATION_MS}ms ease-out`;
-        this.container.style.transform = '';
-        this.map.setOverdragOffset(new Point(0, 0));
-        window.setTimeout(() => {
-            this.container.style.transition = '';
-        }, OVERDRAG_SETTLE_ANIMATION_MS + 20);
+        this.map.settleVisualOverdrag();
     }
 
     private resistOverdrag(value: number): number {
-        if (value === 0) return 0;
-
-        const magnitude =
-            OVERDRAG_MAX_PX *
-            (1 -
-                Math.exp(
-                    (-Math.abs(value) * OVERDRAG_RESISTANCE) / OVERDRAG_MAX_PX,
-                ));
-        return Math.sign(value) * magnitude;
+        return resistOverdrag(value);
     }
 
     private beginOverdragSettlement() {
@@ -597,7 +604,13 @@ export class DragPanController {
 
     setEnabled(enabled: boolean) {
         this.enabled = enabled;
-        if (!enabled && this.dragging) this.finishDrag(true);
+        if (enabled) return;
+        // Full cancel: a lasso (mod+drag) that disables dragging mid-gesture
+        // must stop any pointer already being tracked.
+        this.activePointerId = null;
+        this.detachMoveListeners();
+        this.stopInertia();
+        if (this.dragging) this.finishDrag(true);
     }
 
     isEnabled(): boolean {
@@ -667,10 +680,25 @@ export class DragPanController {
         if (this.rawCenterPoint === null) return;
         const bounds = this.map.options.maxBounds;
         const rawCenter = this.map.unproject(this.rawCenterPoint, zoom);
-        const center = bounds
-            ? this.map.limitCenter(rawCenter, zoom, toLatLngBounds(bounds))
-            : rawCenter;
-        this.map.jumpToGame(center, zoom);
+        if (!bounds) {
+            this.map.jumpToGame(rawCenter, zoom);
+            return;
+        }
+        // Hard-clamp the camera, then show the overflow as a resisted visual
+        // offset (rubber band). Released by settleVisualOverdrag → bounce-back.
+        const limitedCenter = this.map.limitCenter(
+            rawCenter,
+            zoom,
+            toLatLngBounds(bounds),
+        );
+        const limitedPoint = this.map.project(limitedCenter, zoom);
+        const rawOverdrag = this.rawCenterPoint.subtract(limitedPoint);
+        const visualOverdrag = new Point(
+            resistOverdrag(rawOverdrag.x),
+            resistOverdrag(rawOverdrag.y),
+        );
+        this.map.jumpToGame(limitedCenter, zoom);
+        this.map.setVisualOverdrag(visualOverdrag);
     }
 
     private handlePointerUp = (up: PointerEvent) => {
@@ -700,6 +728,8 @@ export class DragPanController {
             return;
         }
 
+        // Bounce back from any rubber-band overdrag.
+        this.map.settleVisualOverdrag();
         this.map.fire('dragend');
         this.map.endCameraGesture(false);
         if (!hard) this.suppressClickOnce();
@@ -725,6 +755,8 @@ export class DragPanController {
 
             const speed = startSpeed - DRAG_INERTIA_DECELERATION * ((timestamp - startTime) / 1000);
             if (speed <= 0) {
+                // Inertia done — now bounce back from any rubber-band overdrag.
+                this.map.settleVisualOverdrag();
                 this.map.fire('dragend');
                 this.map.endCameraGesture(false);
                 this.suppressClickOnce();

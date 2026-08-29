@@ -78,7 +78,6 @@ export class TalosMap implements OverlayHost {
     private gestureDepth = 0;
     private gestureZoomStarted = false;
 
-    private overdragOffset = new Point(0, 0);
     /** Game-unit zoom constraints queued before the first region activation. */
     private pendingMinZoom: number | null = null;
     private pendingMaxZoom: number | null = null;
@@ -817,19 +816,19 @@ export class TalosMap implements OverlayHost {
 
         this.ml.on('movestart', () => {
             if (this.gestureDepth > 0) return;
-            this.container.classList.add('leaflet-zoom-anim');
             this.fire('movestart');
         });
         this.ml.on('zoomstart', () => {
+            this.container.classList.add('leaflet-zoom-anim');
             if (this.gestureDepth > 0) return;
             this.fire('zoomstart');
         });
         this.ml.on('moveend', () => {
-            this.container.classList.remove('leaflet-zoom-anim');
             if (this.gestureDepth > 0) return; // coalesced at gesture end
             this.fire('moveend');
         });
         this.ml.on('zoomend', () => {
+            this.container.classList.remove('leaflet-zoom-anim');
             if (this.gestureDepth > 0) return; // coalesced at gesture end
             this.fire('zoomend');
         });
@@ -844,14 +843,58 @@ export class TalosMap implements OverlayHost {
         });
     }
 
-    // -- overdrag (trackpad rubber band state, written by gestures.ts) -------------
+    // -- overdrag (rubber-band visual offset; written by gestures.ts) -------------
 
-    setOverdragOffset(offset: Point): void {
-        this.overdragOffset = offset;
-    }
+    private overdragOffset = new Point(0, 0);
+    private overdragElements: HTMLElement[] = [];
 
     getOverdragOffset(): Point {
         return this.overdragOffset;
+    }
+
+    /**
+     * Apply the resisted overdrag as a translate on the canvas container +
+     * overlay root ONLY — never the map container itself, whose ::before grid
+     * pattern is the static background and must not move with the map.
+     */
+    setVisualOverdrag(offset: Point): void {
+        this.overdragOffset = offset;
+        if (this.overdragElements.length === 0) {
+            const canvasContainer = this.container.querySelector<HTMLElement>(
+                '.maplibregl-canvas-container',
+            );
+            this.overdragElements = [canvasContainer, this.overlayRoot].filter(
+                (el): el is HTMLElement => Boolean(el),
+            );
+        }
+        const transform =
+            offset.x === 0 && offset.y === 0
+                ? ''
+                : `translate(${-offset.x}px, ${-offset.y}px)`;
+        this.overdragElements.forEach((el) => {
+            el.style.transform = transform;
+        });
+    }
+
+    /** Animate the visual overdrag back to zero (bounce-back on release). */
+    settleVisualOverdrag(): void {
+        if (
+            this.overdragOffset.x === 0 &&
+            this.overdragOffset.y === 0 &&
+            this.overdragElements.every((el) => el.style.transform === '')
+        ) {
+            return;
+        }
+        this.overdragElements.forEach((el) => {
+            el.style.transition = 'transform 120ms ease-out';
+            el.style.transform = '';
+        });
+        this.overdragOffset = new Point(0, 0);
+        window.setTimeout(() => {
+            this.overdragElements.forEach((el) => {
+                el.style.transition = '';
+            });
+        }, 140);
     }
 
     // -- lifecycle -----------------------------------------------------------------

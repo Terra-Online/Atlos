@@ -99,6 +99,8 @@ export class CompatMarker extends CompatLayer {
     private unsubscribeRender?: () => void;
     private domDisposers: Array<() => void> = [];
     private dragDisposers: Array<() => void> = [];
+    /** While a scripted position animation plays, render-loop writes are held. */
+    private positionAnimating = false;
 
     constructor(latlng: LatLngExpression, options: CompatMarkerOptions) {
         super();
@@ -196,9 +198,86 @@ export class CompatMarker extends CompatLayer {
     }
 
     private updatePosition() {
-        if (!this.attached || !this.host) return;
+        if (!this.attached || !this.host || this.positionAnimating) return;
         const point = this.host.latLngToContainerPoint(this.latlng);
         this.element.style.transform = `translate3d(${point.x}px, ${point.y}px, 0)`;
+    }
+
+    /** Current container-pixel position (null when detached). */
+    getContainerPoint(): Point | null {
+        if (!this.host) return null;
+        return this.host.latLngToContainerPoint(this.latlng);
+    }
+
+    /**
+     * Cluster morph animation: glide from a previous screen position to the
+     * current one (Leaflet.markercluster split/merge parity). The camera is
+     * static when this runs (post zoomend), so holding render-loop writes for
+     * the duration is safe.
+     */
+    /**
+     * Merge fly-in counterpart of animatePositionFrom: glide from the current
+     * screen position to an arbitrary target (e.g. the absorbing cluster's
+     * position). The caller detaches/removes the marker when it finishes.
+     */
+    animatePositionTo(target: Point, durationMs = 300): void {
+        if (!this.attached || !this.host || this.positionAnimating) return;
+        const from = this.host.latLngToContainerPoint(this.latlng);
+        if (from.distanceTo(target) < 1) return;
+
+        this.positionAnimating = true;
+        const el = this.element;
+        el.style.transition = 'none';
+        el.style.transform = `translate3d(${from.x}px, ${from.y}px, 0)`;
+        void el.offsetWidth;
+        el.style.transition = `transform ${durationMs}ms ease-out`;
+        el.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`;
+
+        let finished = false;
+        const finish = () => {
+            if (finished) return;
+            finished = true;
+            el.removeEventListener('transitionend', onEnd);
+            window.clearTimeout(fallbackTimer);
+            el.style.transition = '';
+            this.positionAnimating = false;
+            this.updatePosition();
+        };
+        const onEnd = (event: TransitionEvent) => {
+            if (event.propertyName === 'transform') finish();
+        };
+        const fallbackTimer = window.setTimeout(finish, durationMs + 50);
+        el.addEventListener('transitionend', onEnd);
+    }
+
+    animatePositionFrom(from: Point, durationMs = 300): void {
+        if (!this.attached || !this.host || this.positionAnimating) return;
+        const target = this.host.latLngToContainerPoint(this.latlng);
+        if (from.distanceTo(target) < 1) return;
+
+        this.positionAnimating = true;
+        const el = this.element;
+        el.style.transition = 'none';
+        el.style.transform = `translate3d(${from.x}px, ${from.y}px, 0)`;
+        void el.offsetWidth; // flush so the transition actually plays
+        el.style.transition = `transform ${durationMs}ms ease-out`;
+        el.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`;
+
+        let finished = false;
+        const finish = () => {
+            if (finished) return;
+            finished = true;
+            el.removeEventListener('transitionend', onEnd);
+            window.clearTimeout(fallbackTimer);
+            el.style.transition = '';
+            this.positionAnimating = false;
+            this.updatePosition();
+        };
+        const onEnd = (event: TransitionEvent) => {
+            if (event.propertyName === 'transform') finish();
+        };
+        const fallbackTimer = window.setTimeout(finish, durationMs + 50);
+        el.addEventListener('transitionend', onEnd);
     }
 
     addTo(target: OverlayHost | CompatLayerGroup): this {
