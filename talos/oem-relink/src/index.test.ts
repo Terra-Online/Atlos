@@ -17,7 +17,7 @@ const stableManifest = {
 describe('oem-relink worker routes', () => {
     it('redirects the latest OEA package to the validated manifest URL', async () => {
         const get = vi.fn().mockResolvedValue({
-            text: async () => JSON.stringify(stableManifest),
+            text: () => Promise.resolve(JSON.stringify(stableManifest)),
         });
 
         const response = await worker.fetch(
