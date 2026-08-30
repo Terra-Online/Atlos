@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Connessione alla sincronizzazione della posizione...",
+      "connected": "Sincronizzazione della posizione connessa."
+    },
     "binding": {
       "title": "Collega account",
       "docsLead": "Proseguendo, confermi di accettare i termini sotto indicati:",
       "docsLinks": "<a href=\"{tos}\">Termini di servizio</a> · <a href=\"{privacy}\">Informativa sulla privacy</a> · <a href=\"{data}\">Checklist raccolta dati</a> · <a href=\"{disclaimer}\">Esclusione di responsabilità</a>",
       "chinaTab": "Cina (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Vai al <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>sito ufficiale</a> e assicurati di essere loggato.",
-      "UniStep0": "Vai al <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>sito ufficiale</a> e assicurati di essere loggato.",
-      "CNStep1": "Apri il <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link API Hypergryph</a> e copia la risposta completa.",
-      "UniStep1": "Apri il <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link API Gryphline</a> e copia la risposta completa.",
+      "premise": "Per abilitare questa funzione, devi prima avere un account <a href=\"{link}\">{provider}</a>.",
+      "Step0": "Vai al <a href=\"{link}\">sito ufficiale</a> e assicurati di essere loggato.",
+      "Step1": {
+        "skland": "Apri il <a href=\"{link}\">link API Hypergryph</a> e copia la risposta completa.",
+        "skport": "Apri il <a href=\"{link}\">link API Gryphline</a> e copia la risposta completa."
+      },
       "Step2": "Incolla la risposta completa, leggi i termini e collega l'account.",
       "changeBinding": "Cambia collegamento",
       "unlink": "Scollega",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Sessione di sincronizzazione scaduta. Collega di nuovo.",
+      "10002": "L'accesso al gioco è scaduto. Scollega Endfield e collegalo di nuovo.",
       "19001": "Posizione non disponibile. Accedi al gioco.",
       "19002": "La sincronizzazione posizione richiede autorizzazione prima di iniziare.",
       "noRole": "Nessun ruolo Endfield trovato in questo account.",

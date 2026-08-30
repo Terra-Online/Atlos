@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "กำลังเชื่อมต่อกับการซิงค์ตำแหน่ง...",
+      "connected": "เชื่อมต่อการซิงค์ตำแหน่งแล้ว"
+    },
     "binding": {
       "title": "ผูกบัญชี",
       "docsLead": "หากดำเนินการต่อ แสดงว่าคุณยอมรับข้อกำหนดด้านล่าง:",
       "docsLinks": "<a href=\"{tos}\">ข้อกำหนดการให้บริการ</a> · <a href=\"{privacy}\">นโยบายความเป็นส่วนตัว</a> · <a href=\"{data}\">เช็กลิสต์การเก็บข้อมูล</a> · <a href=\"{disclaimer}\">ข้อจำกัดความรับผิด</a>",
       "chinaTab": "จีน (Hypergryph)",
       "globalTab": "โกลบอล (Gryphline)",
-      "CNStep0": "ไปที่<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>เว็บไซต์ทางการ</a> และตรวจสอบว่าได้ล็อกอินแล้ว",
-      "UniStep0": "ไปที่<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>เว็บไซต์ทางการ</a> และตรวจสอบว่าได้ล็อกอินแล้ว",
-      "CNStep1": "เปิด<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>ลิงก์ API ของ Hypergryph</a> แล้วคัดลอกผลลัพธ์ทั้งหมด",
-      "UniStep1": "เปิด<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>ลิงก์ API ของ Gryphline</a> แล้วคัดลอกผลลัพธ์ทั้งหมด",
+      "premise": "คุณต้องมีบัญชี <a href=\"{link}\">{provider}</a> ก่อนจึงจะเปิดใช้ฟีเจอร์นี้ได้",
+      "Step0": "ไปที่<a href=\"{link}\">เว็บไซต์ทางการ</a> และตรวจสอบว่าได้ล็อกอินแล้ว",
+      "Step1": {
+        "skland": "เปิด<a href=\"{link}\">ลิงก์ API ของ Hypergryph</a> แล้วคัดลอกผลลัพธ์ทั้งหมด",
+        "skport": "เปิด<a href=\"{link}\">ลิงก์ API ของ Gryphline</a> แล้วคัดลอกผลลัพธ์ทั้งหมด"
+      },
       "Step2": "วางผลลัพธ์ทั้งหมด อ่านข้อกำหนด แล้วผูกบัญชี",
       "changeBinding": "เปลี่ยนการผูก",
       "unlink": "ยกเลิกการผูก",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "เซสชันซิงก์ตำแหน่งหมดอายุ กรุณาผูกใหม่",
+      "10002": "การเข้าสู่เกมหมดอายุ กรุณายกเลิกการเชื่อมโยง Endfield แล้วเชื่อมโยงใหม่",
       "19001": "ไม่พบตำแหน่ง กรุณาเข้าสู่เกม",
       "19002": "ซิงก์ตำแหน่งต้องได้รับอนุญาตก่อนเริ่ม",
       "noRole": "ไม่พบบทบาท Endfield ในบัญชีนี้",

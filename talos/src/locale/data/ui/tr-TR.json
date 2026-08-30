@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Konum senkronizasyonuna bağlanıyor...",
+      "connected": "Konum senkronizasyonu bağlandı."
+    },
     "binding": {
       "title": "Hesap Bağlama",
       "docsLead": "Devam ederek aşağıdaki tüm şartları kabul ettiğinizi onaylarsınız:",
       "docsLinks": "<a href=\"{tos}\">Hizmet Şartları</a> · <a href=\"{privacy}\">Gizlilik Politikası</a> · <a href=\"{data}\">Veri Toplama Kontrol Listesi</a> · <a href=\"{disclaimer}\">Sorumluluk Reddi</a>",
       "chinaTab": "Çin (Hypergryph)",
       "globalTab": "Küresel (Gryphline)",
-      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>Resmi web sitesine</a> gidin ve giriş yaptığınızdan emin olun.",
-      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>Resmi web sitesine</a> gidin ve giriş yaptığınızdan emin olun.",
-      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API bağlantısını</a> açın, ardından tüm yanıtı kopyalayın.",
-      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API bağlantısını</a> açın, ardından tüm yanıtı kopyalayın.",
+      "premise": "Bu özelliği etkinleştirmek için önce bir <a href=\"{link}\">{provider}</a> hesabınız olmalıdır.",
+      "Step0": "<a href=\"{link}\">Resmi web sitesine</a> gidin ve giriş yaptığınızdan emin olun.",
+      "Step1": {
+        "skland": "<a href=\"{link}\">Hypergryph API bağlantısını</a> açın, ardından tüm yanıtı kopyalayın.",
+        "skport": "<a href=\"{link}\">Gryphline API bağlantısını</a> açın, ardından tüm yanıtı kopyalayın."
+      },
       "Step2": "Yanıtın tamamını yapıştırın, şartları okuyun ve ardından hesabınızı bağlayın.",
       "changeBinding": "Bağlantıyı Değiştir",
       "unlink": "Bağlantıyı Kes",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Konum senkronizasyon oturumu sona erdi. Lütfen tekrar bağlayın.",
+      "10002": "Oyun girişinin süresi doldu. Endfield bağlantısını kaldırıp yeniden bağlayın.",
       "19001": "Konum kullanılamıyor. Lütfen oyuna giriş yapın.",
       "19002": "Konum senkronizasyonunun başlamadan önce yetkilendirmeye ihtiyacı var.",
       "noRole": "Bu hesapta hiçbir Endfield rolü bulunamadı.",

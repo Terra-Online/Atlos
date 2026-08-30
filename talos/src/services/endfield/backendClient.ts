@@ -53,6 +53,11 @@ export type EFOfficialMarksResponse = {
 export type EFPositionSocketMessage =
     | ({ type: 'position' } & EFPositionEnvelope)
     | {
+        type: 'status';
+        status: 'connecting' | 'connected' | 'reconnecting';
+        reason?: string;
+    }
+    | {
         type: 'error';
         error: {
             status?: number;

@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Menghubungkan ke sinkronisasi lokasi...",
+      "connected": "Sinkronisasi lokasi terhubung."
+    },
     "binding": {
       "title": "Tautkan Akun",
       "docsLead": "Dengan melanjutkan, Anda mengonfirmasi persetujuan terhadap syarat di bawah:",
       "docsLinks": "<a href=\"{tos}\">Syarat Layanan</a> · <a href=\"{privacy}\">Kebijakan Privasi</a> · <a href=\"{data}\">Daftar pengumpulan data</a> · <a href=\"{disclaimer}\">Pernyataan penyangkalan</a>",
       "chinaTab": "China (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Buka <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>situs resmi</a> dan pastikan Anda sudah masuk.",
-      "UniStep0": "Buka <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>situs resmi</a> dan pastikan Anda sudah masuk.",
-      "CNStep1": "Buka <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>tautan API Hypergryph</a> dan salin respons lengkap.",
-      "UniStep1": "Buka <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>tautan API Gryphline</a> dan salin respons lengkap.",
+      "premise": "Anda harus memiliki akun <a href=\"{link}\">{provider}</a> terlebih dahulu untuk mengaktifkan fitur ini.",
+      "Step0": "Buka <a href=\"{link}\">situs resmi</a> dan pastikan Anda sudah masuk.",
+      "Step1": {
+        "skland": "Buka <a href=\"{link}\">tautan API Hypergryph</a> dan salin respons lengkap.",
+        "skport": "Buka <a href=\"{link}\">tautan API Gryphline</a> dan salin respons lengkap."
+      },
       "Step2": "Tempel respons lengkap, baca syarat, lalu tautkan akun.",
       "changeBinding": "Ganti tautan",
       "unlink": "Lepas tautan",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Sesi sinkronisasi lokasi kedaluwarsa. Tautkan lagi.",
+      "10002": "Login game kedaluwarsa. Lepaskan tautan Endfield lalu tautkan lagi.",
       "19001": "Posisi tidak tersedia. Silakan masuk ke game.",
       "19002": "Sinkronisasi lokasi memerlukan otorisasi sebelum mulai.",
       "noRole": "Tidak ada peran Endfield di akun ini.",

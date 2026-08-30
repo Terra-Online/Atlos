@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Łączenie z synchronizacją lokalizacji...",
+      "connected": "Synchronizacja lokalizacji połączona."
+    },
     "binding": {
       "title": "Powiąż konto",
       "docsLead": "Kontynuując, potwierdzasz zgodę na poniższe warunki:",
       "docsLinks": "<a href=\"{tos}\">Warunki korzystania</a> · <a href=\"{privacy}\">Polityka prywatności</a> · <a href=\"{data}\">Lista zbierania danych</a> · <a href=\"{disclaimer}\">Wyłączenie odpowiedzialności</a>",
       "chinaTab": "Chiny (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Wejdź na <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>oficjalną stronę</a> i upewnij się, że jesteś zalogowany.",
-      "UniStep0": "Wejdź na <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>oficjalną stronę</a> i upewnij się, że jesteś zalogowany.",
-      "CNStep1": "Otwórz <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link API Hypergryph</a> i skopiuj pełną odpowiedź.",
-      "UniStep1": "Otwórz <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link API Gryphline</a> i skopiuj pełną odpowiedź.",
+      "premise": "Aby włączyć tę funkcję, musisz najpierw mieć konto <a href=\"{link}\">{provider}</a>.",
+      "Step0": "Wejdź na <a href=\"{link}\">oficjalną stronę</a> i upewnij się, że jesteś zalogowany.",
+      "Step1": {
+        "skland": "Otwórz <a href=\"{link}\">link API Hypergryph</a> i skopiuj pełną odpowiedź.",
+        "skport": "Otwórz <a href=\"{link}\">link API Gryphline</a> i skopiuj pełną odpowiedź."
+      },
       "Step2": "Wklej pełną odpowiedź, przeczytaj warunki i powiąż konto.",
       "changeBinding": "Zmień powiązanie",
       "unlink": "Odłącz",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Sesja synchronizacji lokalizacji wygasła. Powiąż ponownie.",
+      "10002": "Logowanie do gry wygasło. Odłącz Endfield i połącz ponownie.",
       "19001": "Pozycja niedostępna. Zaloguj się do gry.",
       "19002": "Synchronizacja lokalizacji wymaga autoryzacji przed startem.",
       "noRole": "Brak ról Endfield na tym koncie.",

@@ -28,7 +28,6 @@ import { Shortcut } from '@/component/shortcut';
 import { modKey } from '@/component/settings/shortcuts';
 import { useAuthStore } from '@/store/auth';
 import {
-    getNotificationUnreadCounts,
     subscribeNotificationLive,
     type NotificationLiveUpdate,
     type NotificationUnreadCounts,
@@ -138,27 +137,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
             return;
         }
         let disposed = false;
-        let unreadRevision = 0;
-        const syncUnread = () => {
-            const requestRevision = unreadRevision;
-            void getNotificationUnreadCounts()
-                .then((unread) => {
-                    if (!disposed && unreadRevision === requestRevision)
-                        setNotificationUnread(unread);
-                })
-                .catch(() => undefined);
-        };
-        syncUnread();
         const unsubscribe = subscribeNotificationLive({
             onUpdate: (update) => {
                 if (disposed) return;
-                unreadRevision += 1;
                 setNotificationUnread(update.unread);
                 setNotificationLiveUpdate(update);
             },
             onReady: (unread) => {
                 if (disposed) return;
-                unreadRevision += 1;
                 setNotificationUnread(unread);
             },
             onOpen: () => {

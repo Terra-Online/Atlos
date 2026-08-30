@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "स्थान सिंक से कनेक्ट हो रहा है...",
+      "connected": "स्थान सिंक कनेक्ट हो गया."
+    },
     "binding": {
       "title": "खाता लिंक",
       "docsLead": "आगे बढ़ने पर आप नीचे दिए गए नियमों से सहमत होते हैं:",
       "docsLinks": "<a href=\"{tos}\">सेवा की शर्तें</a> · <a href=\"{privacy}\">गोपनीयता नीति</a> · <a href=\"{data}\">डेटा संग्रह चेकलिस्ट</a> · <a href=\"{disclaimer}\">उत्तरदायित्व अस्वीकरण</a>",
       "chinaTab": "चीन (Hypergryph)",
       "globalTab": "ग्लोबल (Gryphline)",
-      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>आधिकारिक वेबसाइट</a> पर जाएं और सुनिश्चित करें कि आप लॉग इन हैं।",
-      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>आधिकारिक वेबसाइट</a> पर जाएं और सुनिश्चित करें कि आप लॉग इन हैं।",
-      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।",
-      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।",
+      "premise": "इस सुविधा को सक्षम करने के लिए, आपके पास पहले <a href=\"{link}\">{provider}</a> खाता होना चाहिए।",
+      "Step0": "<a href=\"{link}\">आधिकारिक वेबसाइट</a> पर जाएं और सुनिश्चित करें कि आप लॉग इन हैं।",
+      "Step1": {
+        "skland": "<a href=\"{link}\">Hypergryph API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।",
+        "skport": "<a href=\"{link}\">Gryphline API लिंक</a> खोलें और पूरा रिस्पॉन्स कॉपी करें।"
+      },
       "Step2": "पूरा रिस्पॉन्स पेस्ट करें, शर्तें पढ़ें और खाता लिंक करें।",
       "changeBinding": "लिंक बदलें",
       "unlink": "अनलिंक",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "लोकेशन सिंक सत्र समाप्त हो गया। कृपया फिर से लिंक करें।",
+      "10002": "गेम लॉगिन समाप्त हो गया। Endfield को अनलिंक करके फिर से लिंक करें।",
       "19001": "स्थान उपलब्ध नहीं है। कृपया गेम में साइन इन करें।",
       "19002": "लोकेशन सिंक शुरू करने से पहले अनुमति आवश्यक है।",
       "noRole": "इस खाते पर Endfield रोल नहीं मिले।",

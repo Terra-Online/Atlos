@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Conectando à sincronização de localização...",
+      "connected": "Sincronização de localização conectada."
+    },
     "binding": {
       "title": "Vincular conta",
       "docsLead": "Ao continuar, você confirma que concorda com os termos abaixo:",
       "docsLinks": "<a href=\"{tos}\">Termos de Serviço</a> · <a href=\"{privacy}\">Política de Privacidade</a> · <a href=\"{data}\">Checklist de coleta de dados</a> · <a href=\"{disclaimer}\">Isenção de responsabilidade</a>",
       "chinaTab": "China (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Acesse o <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
-      "UniStep0": "Acesse o <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>site oficial</a> e confirme que está logado.",
-      "CNStep1": "Abra o <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>link da API da Hypergryph</a> e copie a resposta completa.",
-      "UniStep1": "Abra o <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>link da API da Gryphline</a> e copie a resposta completa.",
+      "premise": "Você precisa ter uma conta <a href=\"{link}\">{provider}</a> primeiro para ativar este recurso.",
+      "Step0": "Acesse o <a href=\"{link}\">site oficial</a> e confirme que está logado.",
+      "Step1": {
+        "skland": "Abra o <a href=\"{link}\">link da API da Hypergryph</a> e copie a resposta completa.",
+        "skport": "Abra o <a href=\"{link}\">link da API da Gryphline</a> e copie a resposta completa."
+      },
       "Step2": "Cole a resposta completa, leia os termos e vincule sua conta.",
       "changeBinding": "Trocar vínculo",
       "unlink": "Desvincular",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Sessão de sincronização expirada. Vincule novamente.",
+      "10002": "O login do jogo expirou. Desvincule o Endfield e vincule novamente.",
       "19001": "Posição indisponível. Faça login no jogo.",
       "19002": "A sincronização de localização precisa de autorização para iniciar.",
       "noRole": "Nenhum papel de Endfield encontrado nesta conta.",

@@ -130,6 +130,7 @@ type UpKind = 'expired' | 'notInGame' | 'policy';
 
 const UP_KIND: Partial<Record<number, UpKind>> = {
     10000: 'expired',
+    10002: 'expired',
     19001: 'notInGame',
     19002: 'policy',
 };
@@ -152,10 +153,12 @@ const disableLocatorSync = (): void => {
 const errInfo = (error: EFBackendError): {
     upstreamCode?: unknown;
     upstreamMessage?: unknown;
+    upstreamStatus?: unknown;
 } | undefined => {
     const details = error.details as {
         upstreamCode?: unknown;
         upstreamMessage?: unknown;
+        upstreamStatus?: unknown;
     } | undefined;
     return details;
 };
@@ -168,7 +171,12 @@ const errCode = (error: EFBackendError): number | null => {
 
 const errKind = (error: EFBackendError): UpKind | null => {
     const code = errCode(error);
-    return code === null ? null : UP_KIND[code] ?? null;
+    if (code !== null) return UP_KIND[code] ?? null;
+    const status = Number(errInfo(error)?.upstreamStatus);
+    return error.code === 'ENDFIELD_CREDENTIAL_REJECTED'
+        || (error.code === 'ENDFIELD_POSITION_SOCKET_UNAVAILABLE' && (status === 401 || status === 403))
+        ? 'expired'
+        : null;
 };
 
 const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
@@ -178,7 +186,12 @@ const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
 
 const showErr = (error: EFBackendError): void => {
     const code = errCode(error);
-    if (code === null) return;
+    if (code === null) {
+        if (error.code === 'ENDFIELD_CREDENTIAL_REJECTED') {
+            useLocatorStore.getState().showBanner('locator.errors.10002');
+        }
+        return;
+    }
 
     if (UP_KIND[code]) {
         useLocatorStore.getState().showBanner(`locator.errors.${code}`);
@@ -226,6 +239,27 @@ export function useLocator(map: L.Map | undefined): void {
         if (!map) return;
 
         let disposed = false;
+        let connectionBannerTimer: number | null = null;
+
+        const clearConnectionBannerTimer = () => {
+            if (connectionBannerTimer === null) return;
+            window.clearTimeout(connectionBannerTimer);
+            connectionBannerTimer = null;
+        };
+
+        const showConnectionStatus = (status: 'connecting' | 'connected' | 'reconnecting') => {
+            clearConnectionBannerTimer();
+            const store = useLocatorStore.getState();
+            if (status === 'connected') {
+                store.showBanner('locator.status.connected');
+                connectionBannerTimer = window.setTimeout(() => {
+                    connectionBannerTimer = null;
+                    useLocatorStore.getState().clearBanner();
+                }, 1_500);
+                return;
+            }
+            store.showBanner('locator.status.connecting');
+        };
 
         const cleanupAnimation = () => {
             const state = animationRef.current;
@@ -251,6 +285,7 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const pauseForErr = (error: EFBackendError) => {
+            clearConnectionBannerTimer();
             showErr(error);
             cleanupPolling();
             useLocatorStore.getState().setViewMode('tracking');
@@ -262,6 +297,7 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const onNotInGame = (error: EFBackendError) => {
+            clearConnectionBannerTimer();
             showErr(error);
             cleanupPolling();
             disableLocatorSync();
@@ -506,9 +542,12 @@ export function useLocator(map: L.Map | undefined): void {
             if (disposed) return;
 
             const applyPositionUpdate = (payload: PositionResponse['data']) => {
-                if (payload.isOnline === false) return;
+                if (payload.isOnline === false) {
+                    clearConnectionBannerTimer();
+                    useLocatorStore.getState().showBanner('locator.errors.19001');
+                    return;
+                }
 
-                useLocatorStore.getState().clearBanner();
                 const locator = convertEFPosition(payload);
                 const converted = convertGamePosition(locator);
                 currentLocatorRegionRef.current = locator.regionKey;
@@ -612,8 +651,13 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             const retryExpiredCredentials = (error: EFBackendError) => {
+                clearConnectionBannerTimer();
                 showErr(error);
                 cleanupPolling();
+                if (errCode(error) === 10002) {
+                    disableLocatorSync();
+                    return;
+                }
                 trackerRunningRef.current = true;
                 scheduleNextPoll(EXPIRED_CREDENTIAL_RETRY_MS);
             };
@@ -657,6 +701,7 @@ export function useLocator(map: L.Map | undefined): void {
                     return;
                 }
 
+                showConnectionStatus('connecting');
                 let sawPosition = false;
                 const socket = openEFPositionSocket({
                     socketTicket: socketTicketRef.current,
@@ -667,6 +712,10 @@ export function useLocator(map: L.Map | undefined): void {
                     if (disposed) return;
                     try {
                         const message = JSON.parse(String(event.data)) as EFPositionSocketMessage;
+                        if (message.type === 'status') {
+                            showConnectionStatus(message.status === 'reconnecting' ? 'connecting' : message.status);
+                            return;
+                        }
                         if (message.type === 'position') {
                             sawPosition = true;
                             socketReconnectAttemptRef.current = 0;
@@ -720,6 +769,7 @@ export function useLocator(map: L.Map | undefined): void {
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
             trackerRunningRef.current = true;
+            showConnectionStatus('connecting');
             void getEFPosition({ includeBinding: true, includeSocketTicket: true })
                 .then((response) => {
                     if (disposed) return;
@@ -750,6 +800,7 @@ export function useLocator(map: L.Map | undefined): void {
 
         return () => {
             disposed = true;
+            clearConnectionBannerTimer();
             cleanupAnimation();
             cleanupPolling();
             if (socketRef.current) {

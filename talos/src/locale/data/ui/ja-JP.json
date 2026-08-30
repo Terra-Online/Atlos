@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "位置情報の同期に接続中...",
+      "connected": "位置情報の同期に接続しました！"
+    },
     "binding": {
       "title": "アカウント連携",
       "docsLead": "続行すると、次の規約と方針にすべて同意したものとみなされます。",
       "docsLinks": "<a href=\"{tos}\">利用規約</a> · <a href=\"{privacy}\">プライバシーポリシー</a> · <a href=\"{data}\">データ収集項目</a> · <a href=\"{disclaimer}\">免責事項</a>",
       "chinaTab": "中国 (Hypergryph)",
       "globalTab": "グローバル (Gryphline)",
-      "CNStep0": "<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>公式サイト</a>にアクセスし、ログイン済みであることを確認してください。",
-      "UniStep0": "<a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>公式サイト</a>にアクセスし、ログイン済みであることを確認してください。",
-      "CNStep1": "<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph APIリンク</a>を開き、レスポンス全文をコピーしてください。",
-      "UniStep1": "<a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline APIリンク</a>を開き、レスポンス全文をコピーしてください。",
+      "premise": "この機能を有効にするには、まず<a href=\"{link}\">{provider}</a>アカウントが必要です。",
+      "Step0": "<a href=\"{link}\">公式サイト</a>にアクセスし、ログイン済みであることを確認してください。",
+      "Step1": {
+        "skland": "<a href=\"{link}\">Hypergryph APIリンク</a>を開き、レスポンス全文をコピーしてください。",
+        "skport": "<a href=\"{link}\">Gryphline APIリンク</a>を開き、レスポンス全文をコピーしてください。"
+      },
       "Step2": "レスポンス全文を貼り付け、規約を確認したうえでアカウントを連携してください。",
       "changeBinding": "連携を変更",
       "unlink": "連携解除",
@@ -390,7 +396,7 @@
       "uid": "プレイヤー UID",
       "scopeTitle": "範囲",
       "scopeHint": "位置同期中に通知する周辺ポイントの種類を選択してください。",
-       "scope": {
+      "scope": {
         "balanced": {
           "title": "バランス",
           "desc": "推奨マーカーを追跡。"
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "位置同期セッションの有効期限が切れました。再連携してください。",
+      "10002": "ゲームのログインが期限切れです。Endfieldの連携を解除して再連携してください。",
       "19001": "位置情報を取得できません。ゲームにログインしてください。",
       "19002": "位置同期を開始するには許可が必要です。",
       "noRole": "このアカウントに終末地のキャラクターが見つかりません。",

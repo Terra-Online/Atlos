@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Menyambung ke penyegerakan lokasi...",
+      "connected": "Penyegerakan lokasi disambungkan."
+    },
     "binding": {
       "title": "Paut Akaun",
       "docsLead": "Dengan meneruskan, anda mengesahkan persetujuan terhadap syarat di bawah:",
       "docsLinks": "<a href=\"{tos}\">Terma Perkhidmatan</a> · <a href=\"{privacy}\">Dasar Privasi</a> · <a href=\"{data}\">Senarai semak pengumpulan data</a> · <a href=\"{disclaimer}\">Penafian Liabiliti</a>",
       "chinaTab": "China (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Pergi ke <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>laman rasmi</a> dan pastikan anda sudah log masuk.",
-      "UniStep0": "Pergi ke <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>laman rasmi</a> dan pastikan anda sudah log masuk.",
-      "CNStep1": "Buka <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>pautan API Hypergryph</a> dan salin respons penuh.",
-      "UniStep1": "Buka <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>pautan API Gryphline</a> dan salin respons penuh.",
+      "premise": "Anda perlu mempunyai akaun <a href=\"{link}\">{provider}</a> terlebih dahulu untuk mengaktifkan ciri ini.",
+      "Step0": "Pergi ke <a href=\"{link}\">laman rasmi</a> dan pastikan anda sudah log masuk.",
+      "Step1": {
+        "skland": "Buka <a href=\"{link}\">pautan API Hypergryph</a> dan salin respons penuh.",
+        "skport": "Buka <a href=\"{link}\">pautan API Gryphline</a> dan salin respons penuh."
+      },
       "Step2": "Tampal respons penuh, baca terma, kemudian pautkan akaun.",
       "changeBinding": "Tukar pautan",
       "unlink": "Nyahpaut",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Sesi segerak lokasi tamat. Sila paut semula.",
+      "10002": "Log masuk permainan tamat tempoh. Nyahpaut Endfield dan paut semula.",
       "19001": "Lokasi tidak tersedia. Sila log masuk ke permainan.",
       "19002": "Segerak lokasi memerlukan kebenaran sebelum bermula.",
       "noRole": "Tiada peranan Endfield ditemui pada akaun ini.",

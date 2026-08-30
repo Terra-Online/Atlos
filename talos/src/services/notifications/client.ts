@@ -352,6 +352,7 @@ export const subscribeNotificationLive = ({
         const liveUrl = notificationLiveUrl();
         const currentSocket = new WebSocket(liveUrl);
         socket = currentSocket;
+        let receivedUpdateSinceConnect = false;
         acknowledgedHeartbeats = 0;
         missedHeartbeats = 0;
         currentSocket.addEventListener('open', () => {
@@ -359,6 +360,7 @@ export const subscribeNotificationLive = ({
             onOpen?.();
         });
         currentSocket.addEventListener('message', (event) => {
+            if (socket !== currentSocket) return;
             if (typeof event.data !== 'string') return;
             if (event.data === pendingHeartbeatToken) {
                 pendingHeartbeatToken = null;
@@ -380,7 +382,8 @@ export const subscribeNotificationLive = ({
                 const raw = JSON.parse(event.data) as unknown;
                 if (!isRecord(raw)) return;
                 if (raw.event === 'notification.ready') {
-                    onReady?.(normalizeNotificationUnread(raw.unread));
+                    if (!receivedUpdateSinceConnect)
+                        onReady?.(normalizeNotificationUnread(raw.unread));
                     return;
                 }
                 if (raw.event !== 'notification.upserted') return;
@@ -388,6 +391,7 @@ export const subscribeNotificationLive = ({
                     raw.notification,
                 );
                 if (!notification) return;
+                receivedUpdateSinceConnect = true;
                 onUpdate({
                     notification,
                     unread: normalizeNotificationUnread(raw.unread),

@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Connexion à la synchronisation de localisation...",
+      "connected": "Synchronisation de localisation connectée."
+    },
     "binding": {
       "title": "Lier le compte",
       "docsLead": "En continuant, vous confirmez accepter les termes ci-dessous :",
       "docsLinks": "<a href=\"{tos}\">Conditions d'utilisation</a> · <a href=\"{privacy}\">Politique de confidentialité</a> · <a href=\"{data}\">Liste de collecte de données</a> · <a href=\"{disclaimer}\">Clause de non-responsabilité</a>",
       "chinaTab": "Chine (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Rendez-vous sur le <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>site officiel</a> et assurez-vous d'être connecté.",
-      "UniStep0": "Rendez-vous sur le <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>site officiel</a> et assurez-vous d'être connecté.",
-      "CNStep1": "Ouvrez le <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>lien API Hypergryph</a> et copiez la réponse complète.",
-      "UniStep1": "Ouvrez le <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>lien API Gryphline</a> et copiez la réponse complète.",
+      "premise": "Vous devez d’abord disposer d’un compte <a href=\"{link}\">{provider}</a> pour activer cette fonctionnalité.",
+      "Step0": "Rendez-vous sur le <a href=\"{link}\">site officiel</a> et assurez-vous d'être connecté.",
+      "Step1": {
+        "skland": "Ouvrez le <a href=\"{link}\">lien API Hypergryph</a> et copiez la réponse complète.",
+        "skport": "Ouvrez le <a href=\"{link}\">lien API Gryphline</a> et copiez la réponse complète."
+      },
       "Step2": "Collez la réponse complète, lisez les termes, puis liez votre compte.",
       "changeBinding": "Changer la liaison",
       "unlink": "Délier",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "La session de synchro de position a expiré. Veuillez lier à nouveau.",
+      "10002": "La connexion au jeu a expiré. Dissociez Endfield, puis liez-le à nouveau.",
       "19001": "Position indisponible. Veuillez vous connecter au jeu.",
       "19002": "La synchronisation de position nécessite une autorisation avant de démarrer.",
       "noRole": "Aucun rôle Endfield trouvé sur ce compte.",

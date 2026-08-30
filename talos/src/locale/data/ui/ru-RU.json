@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Подключение к синхронизации местоположения...",
+      "connected": "Синхронизация местоположения подключена."
+    },
     "binding": {
       "title": "Привязка аккаунта",
       "docsLead": "Продолжая, вы подтверждаете согласие со следующими условиями:",
       "docsLinks": "<a href=\"{tos}\">Условия использования</a> · <a href=\"{privacy}\">Политика конфиденциальности</a> · <a href=\"{data}\">Чек-лист сбора данных</a> · <a href=\"{disclaimer}\">Отказ от ответственности</a>",
       "chinaTab": "Китай (Hypergryph)",
       "globalTab": "Глобал (Gryphline)",
-      "CNStep0": "Перейдите на <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>официальный сайт</a> и убедитесь, что вы вошли в аккаунт.",
-      "UniStep0": "Перейдите на <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>официальный сайт</a> и убедитесь, что вы вошли в аккаунт.",
-      "CNStep1": "Откройте <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>ссылку API Hypergryph</a> и скопируйте полный ответ.",
-      "UniStep1": "Откройте <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>ссылку API Gryphline</a> и скопируйте полный ответ.",
+      "premise": "Чтобы включить эту функцию, сначала необходимо иметь аккаунт <a href=\"{link}\">{provider}</a>.",
+      "Step0": "Перейдите на <a href=\"{link}\">официальный сайт</a> и убедитесь, что вы вошли в аккаунт.",
+      "Step1": {
+        "skland": "Откройте <a href=\"{link}\">ссылку API Hypergryph</a> и скопируйте полный ответ.",
+        "skport": "Откройте <a href=\"{link}\">ссылку API Gryphline</a> и скопируйте полный ответ."
+      },
       "Step2": "Вставьте полный ответ, прочитайте условия и привяжите аккаунт.",
       "changeBinding": "Сменить привязку",
       "unlink": "Отвязать",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Сеанс синхронизации истек. Привяжите снова.",
+      "10002": "Вход в игру истек. Отвяжите Endfield и привяжите снова.",
       "19001": "Позиция недоступна. Войдите в игру.",
       "19002": "Для синхронизации требуется авторизация.",
       "noRole": "Роли Endfield в этой учетной записи не найдены.",

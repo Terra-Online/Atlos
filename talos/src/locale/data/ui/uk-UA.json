@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Підключення до синхронізації місцезнаходження...",
+      "connected": "Синхронізацію місцезнаходження підключено."
+    },
     "binding": {
       "title": "Прив'язка акаунту",
       "docsLead": "Продовжуючи, ви підтверджуєте згоду з умовами нижче:",
       "docsLinks": "<a href=\"{tos}\">Умови використання</a> · <a href=\"{privacy}\">Політика конфіденційності</a> · <a href=\"{data}\">Збір даних</a> · <a href=\"{disclaimer}\">Відмова від відповідальності</a>",
       "chinaTab": "Китай (Hypergryph)",
       "globalTab": "Глобально (Gryphline)",
-      "CNStep0": "Перейдіть на <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>офіційний сайт</a> та переконайтесь, що ви увійшли.",
-      "UniStep0": "Перейдіть на <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>офіційний сайт</a> та переконайтесь, що ви увійшли.",
-      "CNStep1": "Відкрийте <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>посилання API Hypergryph</a>, потім скопіюйте всю відповідь.",
-      "UniStep1": "Відкрийте <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>посилання API Gryphline</a>, потім скопіюйте всю відповідь.",
+      "premise": "Щоб увімкнути цю функцію, спочатку потрібно мати обліковий запис <a href=\"{link}\">{provider}</a>.",
+      "Step0": "Перейдіть на <a href=\"{link}\">офіційний сайт</a> та переконайтесь, що ви увійшли.",
+      "Step1": {
+        "skland": "Відкрийте <a href=\"{link}\">посилання API Hypergryph</a>, потім скопіюйте всю відповідь.",
+        "skport": "Відкрийте <a href=\"{link}\">посилання API Gryphline</a>, потім скопіюйте всю відповідь."
+      },
       "Step2": "Вставте всю відповідь, ознайомтеся з умовами, а потім прив'яжіть акаунт.",
       "changeBinding": "Змінити прив'язку",
       "unlink": "Відв'язати",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "Сесія синхронізації закінчилася. Будь ласка, прив'яжіть знову.",
+      "10002": "Вхід у гру закінчився. Відв’яжіть Endfield і прив’яжіть знову.",
       "19001": "Позиція недоступна. Увійдіть у гру.",
       "19002": "Для синхронізації потрібна авторизація.",
       "noRole": "На цьому акаунті не знайдено персонажів Endfield.",

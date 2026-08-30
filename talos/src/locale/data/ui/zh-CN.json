@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "正在启动位置同步…",
+      "connected": "位置同步已开启。"
+    },
     "binding": {
       "title": "绑定账号",
+      "premise": "您需要首先拥有 <a href=\"{link}\">{provider}</a> 账号，才能启用此功能。",
       "docsLead": "若继续绑定，即表明您已阅读并同意下列条款与声明：",
       "docsLinks": "<a href=\"{tos}\">使用条款</a> · <a href=\"{privacy}\">隐私权政策</a> · <a href=\"{data}\">信息收集清单</a> · <a href=\"{disclaimer}\">责任豁免声明</a>",
       "chinaTab": "国服 (Hypergryph)",
       "globalTab": "国际服 (Gryphline)",
-      "CNStep0": "前往<a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
-      "UniStep0": "前往<a href='https://endfield.gryphline.com/' target='_blank' rel='noopener noreferrer'>游戏官网</a>，登录一次或确保处于登录状态。",
-      "CNStep1": "访问<a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>鹰角网络登录态API</a>，复制网页全文。",
-      "UniStep1": "访问 <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline 登录态API</a>，复制网页全文。",
+      "Step0": "前往<a href=\"{link}\">游戏官网</a>，登录一次或确保处于登录状态。",
+      "Step1": {
+        "skland": "访问<a href=\"{link}\">鹰角网络登录态API</a>，复制网页全文。",
+        "skport": "访问 <a href=\"{link}\">Gryphline 登录态API</a>，复制网页全文。"
+      },
       "Step2": "在下方粘贴全文，阅读我们的条款与声明后，您可以绑定账号。",
       "changeBinding": "切换绑定",
       "unlink": "解除绑定",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "位置同步会话已过期，请重新绑定。",
+      "10002": "游戏登录已过期，请解除终末地绑定后重新绑定。",
       "19001": "无法获取当前位置，请确保已登录游戏。",
       "19002": "位置同步需要授权后才能开始。",
       "noRole": "未找到此账号下的终末地角色。",

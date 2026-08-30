@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "جارٍ الاتصال بمزامنة الموقع...",
+      "connected": ".تم الاتصال بمزامنة الموقع"
+    },
     "binding": {
       "title": "ربط الحساب",
       "docsLead": "بمتابعتك، أنت توافق على الشروط التالية:",
       "docsLinks": "<a href=\"{tos}\">شروط الخدمة</a> · <a href=\"{privacy}\">سياسة الخصوصية</a> · <a href=\"{data}\">قائمة جمع البيانات</a> · <a href=\"{disclaimer}\">إخلاء المسؤولية</a>",
       "chinaTab": "الصين (Hypergryph)",
       "globalTab": "عالمي (Gryphline)",
-      "CNStep0": "اذهب لـ <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وسجل دخولك.",
-      "UniStep0": "اذهب لـ <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>الموقع الرسمي</a> وسجل دخولك.",
-      "CNStep1": "افتح <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>رابط Hypergryph API</a> وانسخ النص بالكامل.",
-      "UniStep1": "افتح <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>رابط Gryphline API</a> وانسخ النص بالكامل.",
+      "premise": "يجب أن يكون لديك حساب <a href=\"{link}\">{provider}</a> أولًا لتفعيل هذه الميزة.",
+      "Step0": "اذهب لـ <a href=\"{link}\">الموقع الرسمي</a> وسجل دخولك.",
+      "Step1": {
+        "skland": "افتح <a href=\"{link}\">رابط Hypergryph API</a> وانسخ النص بالكامل.",
+        "skport": "افتح <a href=\"{link}\">رابط Gryphline API</a> وانسخ النص بالكامل."
+      },
       "Step2": "ألصق النص المنسوخ هنا لربط حسابك.",
       "changeBinding": "تغيير الربط",
       "unlink": "إلغاء الربط",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "انتهت جلسة المزامنة. يرجى الربط مجدداً.",
+      "10002": "انتهى تسجيل الدخول إلى اللعبة. أزل ربط Endfield ثم أعد ربطه.",
       "19001": "الموقع غير متاح. يرجى تسجيل الدخول للعبة.",
       "19002": "المزامنة تتطلب تصريحاً أولاً.",
       "noRole": "لم يتم العثور على شخصية Endfield بهذا الحساب.",

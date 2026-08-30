@@ -363,16 +363,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Conectando con la sincronización de ubicación...",
+      "connected": "Sincronización de ubicación conectada."
+    },
     "binding": {
       "title": "Vincular cuenta",
       "docsLead": "Al continuar, confirmas que aceptas los términos siguientes:",
       "docsLinks": "<a href=\"{tos}\">Términos de servicio</a> · <a href=\"{privacy}\">Política de privacidad</a> · <a href=\"{data}\">Lista de recopilación de datos</a> · <a href=\"{disclaimer}\">Exención de responsabilidad</a>",
       "chinaTab": "China (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Ve al <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>sitio oficial</a> y asegúrate de haber iniciado sesión.",
-      "UniStep0": "Ve al <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>sitio oficial</a> y asegúrate de haber iniciado sesión.",
-      "CNStep1": "Abre el <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>enlace de API de Hypergryph</a> y copia la respuesta completa.",
-      "UniStep1": "Abre el <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>enlace de API de Gryphline</a> y copia la respuesta completa.",
+      "premise": "Necesitas tener primero una cuenta de <a href=\"{link}\">{provider}</a> para activar esta función.",
+      "Step0": "Ve al <a href=\"{link}\">sitio oficial</a> y asegúrate de haber iniciado sesión.",
+      "Step1": {
+        "skland": "Abre el <a href=\"{link}\">enlace de API de Hypergryph</a> y copia la respuesta completa.",
+        "skport": "Abre el <a href=\"{link}\">enlace de API de Gryphline</a> y copia la respuesta completa."
+      },
       "Step2": "Pega la respuesta completa, lee los términos y vincula tu cuenta.",
       "changeBinding": "Cambiar vinculación",
       "unlink": "Desvincular",
@@ -412,6 +418,7 @@
     },
     "errors": {
       "10000": "La sesión de sincronización de ubicación caducó. Vincula de nuevo.",
+      "10002": "La sesión del juego caducó. Desvincula Endfield y vuelve a vincularlo.",
       "19001": "Posición no disponible. Inicia sesión en el juego.",
       "19002": "La sincronización de ubicación requiere autorización antes de iniciar.",
       "noRole": "No se encontraron roles de Endfield en esta cuenta.",
