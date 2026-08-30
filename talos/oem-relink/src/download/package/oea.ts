@@ -1,16 +1,5 @@
-import { WORKER_VERSION } from './version';
-
-interface R2ObjectLike {
-    text(): Promise<string>;
-}
-
-interface R2BucketLike {
-    get(key: string): Promise<R2ObjectLike | null>;
-}
-
-export interface Env {
-    OEA_PACKAGES?: R2BucketLike;
-}
+import type { Env } from '../types';
+import { WORKER_VERSION } from '../../version';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -114,7 +103,7 @@ const validateOeaStableManifest = (
     return value as unknown as OeaStableManifest;
 };
 
-const handleOeaPackage = async (
+export const handleOeaPackage = async (
     request: Request,
     env?: Env,
 ): Promise<Response | null> => {
@@ -162,24 +151,4 @@ const handleOeaPackage = async (
             headers,
         });
     }
-};
-
-type DownloadHandler = (
-    request: Request,
-    env?: Env,
-) => Promise<Response | null>;
-
-// Keep download entry points independent so new downloadable resources can
-// be added without growing the forwarding worker's routing logic.
-const DOWNLOAD_HANDLERS: readonly DownloadHandler[] = [handleOeaPackage];
-
-export const handleDownloadRequest = async (
-    request: Request,
-    env?: Env,
-): Promise<Response | null> => {
-    for (const handler of DOWNLOAD_HANDLERS) {
-        const response = await handler(request, env);
-        if (response) return response;
-    }
-    return null;
 };

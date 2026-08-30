@@ -14,6 +14,26 @@ export type HostDecision = {
     reason: string;
 };
 
+export type CountrySource = {
+    byHeader?: string;
+    byCfCountry?: string;
+};
+
+export const TARGET_CN_ORIGIN = 'https://opendfieldmap.cn';
+export const TARGET_ORG_ORIGIN = 'https://opendfieldmap.org';
+export const TARGET_CN_CDN_ORIGIN = 'https://cdn.opendfieldmap.cn';
+export const TARGET_ORG_CDN_ORIGIN = 'https://cdn.opendfieldmap.org';
+export const CDN_PREFIXES = {
+    cn: {
+        prod: '/_dev/endfield/atlos',
+        beta: '/_beta/endfield/atlos',
+    },
+    org: {
+        prod: '/_dev/endfield/atlos',
+        beta: '/_beta/endfield/atlos',
+    },
+} as const;
+
 const ROOT_SHORT_DOMAIN = 'oem.re';
 
 // Whitelist table: add new subdomains here only.
@@ -72,5 +92,44 @@ export const resolveHostDecision = (hostname: string): HostDecision => {
         key,
         rule,
         reason: 'whitelisted',
+    };
+};
+
+export const resolveTargetOrigin = (
+    country: CountrySource,
+    mode: RedirectMode,
+    hostDecision: HostDecision,
+): { origin: string; reason: string } => {
+    let baseOrigin = TARGET_ORG_ORIGIN;
+    let reason = 'mode=geo; default non-CN';
+
+    if (mode === 'org') {
+        baseOrigin = TARGET_ORG_ORIGIN;
+        reason = 'mode=org';
+    } else if (mode === 'cn') {
+        baseOrigin = TARGET_CN_ORIGIN;
+        reason = 'mode=cn';
+    } else if (country.byHeader === 'CN') {
+        baseOrigin = TARGET_CN_ORIGIN;
+        reason = 'mode=geo; cf-ipcountry=CN';
+    } else if (country.byCfCountry === 'CN') {
+        baseOrigin = TARGET_CN_ORIGIN;
+        reason = 'mode=geo; request.cf.country=CN';
+    }
+
+    const shouldPreserveSubdomain =
+        hostDecision.allowed &&
+        hostDecision.rule?.preserveSubdomain === true &&
+        hostDecision.key !== '@';
+
+    if (!shouldPreserveSubdomain) {
+        return { origin: baseOrigin, reason };
+    }
+
+    const targetUrl = new URL(baseOrigin);
+    targetUrl.hostname = `${hostDecision.key}.${targetUrl.hostname}`;
+    return {
+        origin: targetUrl.origin,
+        reason: `${reason}; preserve-subdomain=${hostDecision.key}`,
     };
 };

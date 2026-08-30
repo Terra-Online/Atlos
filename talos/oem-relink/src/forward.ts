@@ -4,26 +4,15 @@ import {
     type SeoPointPreviewLocale,
 } from './seo-preview.generated';
 import {
+    CDN_PREFIXES,
     resolveHostDecision,
-    type HostDecision,
-    type RedirectMode,
+    resolveTargetOrigin,
+    TARGET_CN_CDN_ORIGIN,
+    TARGET_ORG_CDN_ORIGIN,
+    type CountrySource,
 } from './host';
 import { WORKER_VERSION } from './version';
 
-const TARGET_CN_ORIGIN = 'https://opendfieldmap.cn';
-const TARGET_ORG_ORIGIN = 'https://opendfieldmap.org';
-const TARGET_CN_CDN_ORIGIN = 'https://cdn.opendfieldmap.cn';
-const TARGET_ORG_CDN_ORIGIN = 'https://cdn.opendfieldmap.org';
-const CDN_PREFIXES = {
-    cn: {
-        prod: '/_dev/endfield/atlos',
-        beta: '/_beta/endfield/atlos',
-    },
-    org: {
-        prod: '/_dev/endfield/atlos',
-        beta: '/_beta/endfield/atlos',
-    },
-} as const;
 const PREVIEW_TITLE = 'Open Endfield Map';
 const PREVIEW_DESCRIPTION =
     'Open Endfield Map is an open-source interactive map for Arknights: Endfield.';
@@ -35,11 +24,6 @@ const SOCIAL_PREVIEW_BOT_KEYWORDS: string[] = [
     'qzone',
     'qq/',
 ];
-
-type CountrySource = {
-    byHeader?: string;
-    byCfCountry?: string;
-};
 
 type ResolvedSeoPointPreview = SeoPointPreview & {
     image: string;
@@ -459,45 +443,6 @@ const detectCountrySource = (request: Request): CountrySource => {
         typeof cfCountry === 'string' ? cfCountry.toUpperCase() : undefined;
 
     return { byHeader, byCfCountry };
-};
-
-const resolveTargetOrigin = (
-    country: CountrySource,
-    mode: RedirectMode,
-    hostDecision: HostDecision,
-): { origin: string; reason: string } => {
-    let baseOrigin = TARGET_ORG_ORIGIN;
-    let reason = 'mode=geo; default non-CN';
-
-    if (mode === 'org') {
-        baseOrigin = TARGET_ORG_ORIGIN;
-        reason = 'mode=org';
-    } else if (mode === 'cn') {
-        baseOrigin = TARGET_CN_ORIGIN;
-        reason = 'mode=cn';
-    } else if (country.byHeader === 'CN') {
-        baseOrigin = TARGET_CN_ORIGIN;
-        reason = 'mode=geo; cf-ipcountry=CN';
-    } else if (country.byCfCountry === 'CN') {
-        baseOrigin = TARGET_CN_ORIGIN;
-        reason = 'mode=geo; request.cf.country=CN';
-    }
-
-    const shouldPreserveSubdomain =
-        hostDecision.allowed &&
-        hostDecision.rule?.preserveSubdomain === true &&
-        hostDecision.key !== '@';
-
-    if (!shouldPreserveSubdomain) {
-        return { origin: baseOrigin, reason };
-    }
-
-    const targetUrl = new URL(baseOrigin);
-    targetUrl.hostname = `${hostDecision.key}.${targetUrl.hostname}`;
-    return {
-        origin: targetUrl.origin,
-        reason: `${reason}; preserve-subdomain=${hostDecision.key}`,
-    };
 };
 
 const buildRedirectUrl = (requestUrl: URL, targetOrigin: string): string => {
