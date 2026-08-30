@@ -72,3 +72,4 @@ talos/.stylelintcache
 *.glyphs
 *.test.ts
 *.generated.ts
+!talos/oem-relink/src/index.test.ts
