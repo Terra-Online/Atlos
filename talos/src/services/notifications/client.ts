@@ -1,7 +1,9 @@
 import { getAuthBase, getAuthHeaders } from '@/services/http/authRuntime';
 import { requestJson as requestHttpJson } from '@/services/http/request';
 
-export type NotificationCategory = 'system' | 'community';
+export const NOTIFICATION_CATEGORIES = ['community', 'system'] as const;
+
+export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 export type NotificationType =
     | 'system.submission.approved'

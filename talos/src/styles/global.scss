@@ -37,6 +37,9 @@ body,
     width: 100%;
     height: 100%;
     background-color: var(--map-bg, #{$light-1});
+
+    // Keep one-finger panning available while reserving pinch for app controls.
+    touch-action: pan-x pan-y;
 }
 
 .app {

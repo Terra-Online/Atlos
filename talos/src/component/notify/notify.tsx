@@ -25,6 +25,7 @@ import {
     listNotifications,
     markAllNotificationsRead,
     markNotificationsRead,
+    NOTIFICATION_CATEGORIES,
     notificationCategoryForType,
     type NotificationCategory,
     type NotificationItem,
@@ -579,7 +580,9 @@ const NotifyModal: React.FC<NotifyProps> = ({
             publishUnread(EMPTY_UNREAD);
             return;
         }
-        void Promise.all([loadCategory('community'), loadCategory('system')]);
+        void Promise.all(
+            NOTIFICATION_CATEGORIES.map((category) => loadCategory(category)),
+        );
         // Initial loads do not consume a cursor from the captured feed state.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, sessionUid]);
@@ -612,8 +615,10 @@ const NotifyModal: React.FC<NotifyProps> = ({
         }
         if (syncVersion <= handledSyncVersionRef.current) return;
         handledSyncVersionRef.current = syncVersion;
-        void loadCategory(activeCategory);
-    }, [activeCategory, loadCategory, open, syncVersion]);
+        void Promise.all(
+            NOTIFICATION_CATEGORIES.map((category) => loadCategory(category)),
+        );
+    }, [loadCategory, open, syncVersion]);
 
     const handleRead = useCallback(
         (item: NotificationItem) => {

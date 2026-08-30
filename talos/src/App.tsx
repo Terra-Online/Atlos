@@ -60,6 +60,54 @@ function App() {
     useLocator(mapInstance);
 
     useEffect(() => {
+        // Safari gestures can start on floating UI and body-level portals, not
+        // only on Leaflet. Capture them before child handlers can hand a
+        // multi-touch sequence back to the browser.
+        const preventBrowserZoom = (event: Event) => event.preventDefault();
+        const preventMultiTouchBrowserZoom = (event: TouchEvent) => {
+            if (event.touches.length > 1) event.preventDefault();
+        };
+        const listenerOptions: AddEventListenerOptions = {
+            capture: true,
+            passive: false,
+        };
+
+        document.addEventListener(
+            'gesturestart',
+            preventBrowserZoom,
+            listenerOptions,
+        );
+        document.addEventListener(
+            'gesturechange',
+            preventBrowserZoom,
+            listenerOptions,
+        );
+        document.addEventListener(
+            'touchmove',
+            preventMultiTouchBrowserZoom,
+            listenerOptions,
+        );
+
+        return () => {
+            document.removeEventListener(
+                'gesturestart',
+                preventBrowserZoom,
+                listenerOptions,
+            );
+            document.removeEventListener(
+                'gesturechange',
+                preventBrowserZoom,
+                listenerOptions,
+            );
+            document.removeEventListener(
+                'touchmove',
+                preventMultiTouchBrowserZoom,
+                listenerOptions,
+            );
+        };
+    }, []);
+
+    useEffect(() => {
         if (shouldLoadUserGuide) return;
         if (isUserGuideOpen) {
             setShouldLoadUserGuide(true);
