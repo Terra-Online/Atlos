@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import Modal, { type ModalProps } from '@/component/modal/modal';
 import { AccessButton } from '@/component/login/access';
+import PopoverTooltip from '@/component/popover/popover';
 import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
@@ -28,6 +29,7 @@ import {
 import styles from './Locator.module.scss';
 
 const BIND_COUNTDOWN_SECONDS = 5;
+const SKLAND_DEVICE_VERIFICATION_ERROR = '需要进行设备验证';
 
 interface LocationBindingProps {
     open: boolean;
@@ -62,6 +64,8 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
+    const isSklandDeviceVerificationError = accountMode === 'skland'
+        && errorText === SKLAND_DEVICE_VERIFICATION_ERROR;
 
     const reset = useCallback(() => {
         setError('');
@@ -290,12 +294,35 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                 )}
 
                 <div
-                    className={styles.bindingError}
+                    className={classNames(styles.bindingError, isSklandDeviceVerificationError && styles.bindingErrorRich)}
                     data-removed={isErrorRemoved ? 'true' : 'false'}
-                    data-text={errorText}
+                    data-text={isSklandDeviceVerificationError ? '' : errorText}
                     aria-live="polite"
                 >
-                    {errorText}
+                    {isSklandDeviceVerificationError ? (
+                        <>
+                            <span>{SKLAND_DEVICE_VERIFICATION_ERROR}。</span>
+                            {' '}
+                            <span className={styles.policyReminder}>
+                                <PopoverTooltip
+                                    placement="top"
+                                    gap={8}
+                                    content={(
+                                        <span className={styles.deviceVerificationPopover}>
+                                            注册/登录<span className="keyword">森空岛</span> » 右上角<span className="keyword">设置</span> » 通行证与账号安全 » 账号安全管理 » 设备管理 » 关闭<span className="keyword">新设备登录身份验证</span>
+                                        </span>
+                                    )}
+                                >
+                                    <a
+                                        href="#device-verification-help"
+                                        onClick={(event) => event.preventDefault()}
+                                    >
+                                        如何解决？
+                                    </a>
+                                </PopoverTooltip>
+                            </span>
+                        </>
+                    ) : errorText}
                 </div>
 
                 <div className={styles.bindingFooter}>
