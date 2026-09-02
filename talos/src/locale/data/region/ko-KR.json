@@ -265,6 +265,18 @@
           "bureau_arsenal": "선검국 설비 창고",
           "rust_mound": "폐기 설비 적치장"
         }
+      },
+      "SF": {
+        "name": "눈 덮인 소나무 숲",
+        "short": "SF",
+        "site": {
+          "snowy_trail": "눈 내리는 산길",
+          "hoarfrost_woods": "한기 어린 안개의 소나무 숲",
+          "snowpriestess_cabin": "제사장의 오두막",
+          "hoarfrost_dale": "서리꽃 골짜기",
+          "ritual_shrine": "의식 제단",
+          "old_resting_point": "오래된 쉼터"
+        }
       }
     }
   },

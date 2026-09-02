@@ -265,6 +265,18 @@
           "bureau_arsenal": "Арсенал бюро",
           "rust_mound": "Ржавый холм"
         }
+      },
+      "SF": {
+        "name": "Снежный лес",
+        "short": "СЛ",
+        "site": {
+          "snowy_trail": "Снежная тропа",
+          "hoarfrost_woods": "Лес Изморози",
+          "snowpriestess_cabin": "Хижина снежной шаманки",
+          "hoarfrost_dale": "Долина Изморози",
+          "ritual_shrine": "Ритуальное святилище",
+          "old_resting_point": "Старое место отдыха"
+        }
       }
     }
   },

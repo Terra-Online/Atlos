@@ -265,6 +265,18 @@
           "bureau_arsenal": "Gudang Senjata Biro",
           "rust_mound": "Gundukan Karat"
         }
+      },
+      "SF": {
+        "name": "Hutan Salju",
+        "short": "HS",
+        "site": {
+          "snowy_trail": "Jalur Salju",
+          "hoarfrost_woods": "Hutan Embun Beku",
+          "snowpriestess_cabin": "Kabin sang Snowpriest",
+          "hoarfrost_dale": "Lembah Embun Beku",
+          "ritual_shrine": "Kuil Ritual",
+          "old_resting_point": "Titik Peristirahatan Lama"
+        }
       }
     }
   },

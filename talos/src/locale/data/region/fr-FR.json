@@ -265,6 +265,18 @@
           "bureau_arsenal": "Arsenal du Bureau",
           "rust_mound": "Mont rouillé"
         }
+      },
+      "SF": {
+        "name": "Forêt enneigée",
+        "short": "FE",
+        "site": {
+          "snowy_trail": "Sentier enneigé",
+          "hoarfrost_woods": "Bois du givre",
+          "snowpriestess_cabin": "Cabane de la prêtresse des neiges",
+          "hoarfrost_dale": "Val du givre",
+          "ritual_shrine": "Sanctuaire rituel",
+          "old_resting_point": "Ancien point de repos"
+        }
       }
     }
   },

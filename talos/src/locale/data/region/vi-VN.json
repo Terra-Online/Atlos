@@ -265,6 +265,18 @@
           "bureau_arsenal": "Cục Kho Vũ Khí",
           "rust_mound": "Gò Rỉ Sét"
         }
+      },
+      "SF": {
+        "name": "Rừng Tuyết",
+        "short": "RT",
+        "site": {
+          "snowy_trail": "Đường Mòn Tuyết Phủ",
+          "hoarfrost_woods": "Rừng Sương Giá",
+          "snowpriestess_cabin": "Căn Nhà Gỗ Của Nữ Tư Tế Tuyết",
+          "hoarfrost_dale": "Sương Giá Cốc",
+          "ritual_shrine": "Tế Đàn",
+          "old_resting_point": "Điểm Dừng Chân Cũ"
+        }
       }
     }
   },

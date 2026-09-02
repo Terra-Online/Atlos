@@ -96,7 +96,7 @@
           "hub_base_power_plant": "Usina de Energia da Base Central",
           "hub_west": "Base Oeste",
           "originium_byproduct_processing_center": "Centro de Processamento de Subprodutos de Originium",
-          "construction_site": "Local de Construção",
+          "construction_site": "Canteiro de Obras",
           "hub_base": "Base Central",
           "old_factory": "Fábrica Antiga",
           "aic_research_center": "Centro de Pesquisa do CAI",
@@ -264,6 +264,18 @@
           "wuling_vlr_upper_area": "FG Wuling, Área Sup.",
           "bureau_arsenal": "Arsenal do Bureau",
           "rust_mound": "Rust Mound"
+        }
+      },
+      "SF": {
+        "name": "Snowy Forest",
+        "short": "SF",
+        "site": {
+          "snowy_trail": "Snowy Trail",
+          "hoarfrost_woods": "Hoarfrost Woods",
+          "snowpriestess_cabin": "Snowpriestess's Cabin",
+          "hoarfrost_dale": "Hoarfrost Dale",
+          "ritual_shrine": "Ritual Shrine",
+          "old_resting_point": "Old Resting Point"
         }
       }
     }

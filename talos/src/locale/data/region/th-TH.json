@@ -265,6 +265,18 @@
           "bureau_arsenal": "คลังแสง​ของ​สำนัก",
           "rust_mound": "เนิน​รัส"
         }
+      },
+      "SF": {
+        "name": "ป่าขาวโพลน",
+        "short": "SF",
+        "site": {
+          "snowy_trail": "เส้นทาง​ขาวโพลน",
+          "hoarfrost_woods": "ป่า​เทียมเมฆ",
+          "snowpriestess_cabin": "กระท่อม​ของ​นักบวช​หิมะ​หญิง",
+          "hoarfrost_dale": "หุบเขา​เทียมเมฆ",
+          "ritual_shrine": "แท่น​พิธีกรรม",
+          "old_resting_point": "จุด​พัก​เก่า"
+        }
       }
     }
   },

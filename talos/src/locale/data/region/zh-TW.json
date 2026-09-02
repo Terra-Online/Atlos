@@ -265,6 +265,18 @@
           "bureau_arsenal": "選劍局器物庫",
           "rust_mound": "鏽器堆"
         }
+      },
+      "SF": {
+        "name": "雪松林",
+        "short": "雪",
+        "site": {
+          "snowy_trail": "落雪山道",
+          "hoarfrost_woods": "寒霧松林",
+          "snowpriestess_cabin": "雪祀木屋",
+          "hoarfrost_dale": "霧淞山谷",
+          "ritual_shrine": "儀式祭壇",
+          "old_resting_point": "舊落腳點"
+        }
       }
     }
   },

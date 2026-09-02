@@ -182,7 +182,7 @@
       },
       "TA": {
         "name": "実験区域",
-        "short": "TA",
+        "short": "実",
         "site": {
           "test_area_entrance": "実験区域・入口",
           "type_c_auxiliary_pillar_area_1": "丙型補杭エリア1",
@@ -208,7 +208,7 @@
       },
       "SV": {
         "name": "蔵剣谷",
-        "short": "SV",
+        "short": "剣",
         "site": {
           "leeward_trail": "山の小道",
           "west_gorge_path": "谷西の通路",
@@ -264,6 +264,18 @@
           "wuling_vlr_upper_area": "巨大な裂け目上層",
           "bureau_arsenal": "選剣局器具庫",
           "rust_mound": "廃材集積場"
+        }
+      },
+      "SF": {
+        "name": "雪松林",
+        "short": "雪",
+        "site": {
+          "snowy_trail": "雪見山道",
+          "hoarfrost_woods": "寒霧松林",
+          "snowpriestess_cabin": "雪祭司の小屋",
+          "hoarfrost_dale": "樹氷谷",
+          "ritual_shrine": "儀式祭壇",
+          "old_resting_point": "古い休憩所"
         }
       }
     }

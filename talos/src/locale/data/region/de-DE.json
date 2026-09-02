@@ -265,6 +265,18 @@
           "bureau_arsenal": "Behördenarsenal",
           "rust_mound": "Rostberg"
         }
+      },
+      "SF": {
+        "name": "Verschneiter Wald",
+        "short": "VW",
+        "site": {
+          "snowy_trail": "Verschneiter Pfad",
+          "hoarfrost_woods": "Raureifwälder",
+          "snowpriestess_cabin": "Hütte der Schneepriesterin",
+          "hoarfrost_dale": "Raureiftal",
+          "ritual_shrine": "Ritueller Schrein",
+          "old_resting_point": "Alter Rastplatz"
+        }
       }
     }
   },
