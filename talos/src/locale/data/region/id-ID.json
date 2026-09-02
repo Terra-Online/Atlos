@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Dataran Tinggi Daya",
-        "short": "PL",
+        "short": "DT",
         "site": {
           "old_dorms": "Asrama Tua",
           "originium_power_plant": "Pembangkit Listrik Originium",
@@ -21,7 +21,7 @@
       },
       "OL": {
         "name": "Lodespring Asal",
-        "short": "OL",
+        "short": "LA",
         "site": {
           "originium_passage": "Lintasan Originium",
           "cradle_of_the_ages": "Buaian Zaman",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Taman Sains Originium",
-        "short": "OP",
+        "short": "TSO",
         "site": {
           "control_center": "Pusat Kontrol",
           "route_5": "Rute 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Tambang Batu Aburrey",
-        "short": "AQ",
+        "short": "TBA",
         "site": {
           "quarry_entrance": "Pintu Masuk Tambang Batu",
           "refuse_stockpile": "Buangan Persediaan",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Terusan Lembah",
-        "short": "VP",
+        "short": "TL",
         "site": {
           "valley_fort": "Benteng Lembah",
           "arsenal": "Gudang Senjata",
@@ -182,7 +182,7 @@
       },
       "TA": {
         "name": "Area Uji Coba",
-        "short": "TA",
+        "short": "UC",
         "site": {
           "test_area_entrance": "Pintu Masuk Area Uji Coba",
           "type_c_auxiliary_pillar_area_1": "Area 1 Pilar Sokong Tipe C",
@@ -208,7 +208,7 @@
       },
       "SV": {
         "name": "Lembah Benteng Pedang",
-        "short": "SV",
+        "short": "LB",
         "site": {
           "leeward_trail": "Jalur Lindung Angin",
           "west_gorge_path": "Jalan Ngarai Barat",

@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Plateau électrique",
-        "short": "PL",
+        "short": "PE",
         "site": {
           "old_dorms": "Vieux dortoirs",
           "originium_power_plant": "Centrale électrique d'originium",
@@ -21,7 +21,7 @@
       },
       "OL": {
         "name": "Veine originelle",
-        "short": "OL",
+        "short": "VO",
         "site": {
           "originium_passage": "Passage d'originium",
           "cradle_of_the_ages": "Berceau des millénaires",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Parc des sciences de l'originium",
-        "short": "OP",
+        "short": "PS",
         "site": {
           "control_center": "Centre de contrôle",
           "route_5": "Route 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Carrière d'Aburrey",
-        "short": "AQ",
+        "short": "CA",
         "site": {
           "quarry_entrance": "Entrée de la carrière",
           "refuse_stockpile": "Pile de déchets",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Col de la Vallée",
-        "short": "VP",
+        "short": "CV",
         "site": {
           "valley_fort": "Forteresse de la Vallée",
           "arsenal": "Arsenal",
@@ -182,7 +182,7 @@
       },
       "TA": {
         "name": "Zone de test",
-        "short": "TA",
+        "short": "ZT",
         "site": {
           "test_area_entrance": "Entrée de la zone de test",
           "type_c_auxiliary_pillar_area_1": "Pilier auxiliaire de type C - Zone 1",
@@ -208,7 +208,7 @@
       },
       "SV": {
         "name": "Val du caveau des lames",
-        "short": "SV",
+        "short": "CL",
         "site": {
           "leeward_trail": "Sentier sous le vent",
           "west_gorge_path": "Chemin de la gorge occidentale",
