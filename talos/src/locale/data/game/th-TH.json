@@ -205,6 +205,9 @@
       "ethillu": "เงา​มายา",
       "rockhowler": "ร็อค​ฮา​ว​เลอร์",
       "armored_manglerbeast": "แมง​เกลอ​ร์​บี​ส​ต์​หุ้ม​เกราะ",
+      "gloomwalds_rage": "ความ​พิโรธ​แห่ง​กลู​ม​วัล​ด์",
+      "woodcraft_wanderer": "โก​เล​ม​ไม้​พเนจร",
+      "woodcraft_slug": "ทาก​งาน​ไม้",
       "nar_col_lv003_1": "จดหมาย​จาก​หุบเขา​ IV",
       "nar_col_lv003_5": "ต้นฉบับ​ที่​ฉีกขาด",
       "nar_col_lv003_6": "เรื่อง​เพ้อฝัน​ของ​ลูกเรือ",
@@ -564,7 +567,8 @@
       "landbreakers": "แลนด์​เบรก​เกอร์",
       "cangzei_pirates": "โจรสลัด​คัง​เซย",
       "blightshade": "เงา​เสื่อมโทรม",
-      "wildlife": "สัตว์ป่า"
+      "wildlife": "สัตว์ป่า",
+      "witchcraft_creation": "วัตถุ​เวทมนตร์"
     },
     "drop": {
       "young_bamboo_sprout": "หน่อไม้​อ่อน",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "เปีย​อสูร​คำราม",
       "echoing_dust": "ฝุ่น​ก้องกังวาน",
       "century_rind": "เปลือก​ร้อย​ปี",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "เกล็ด​ทอง​ส่วน​หาง",
+      "tender_moss": "มอส​นุ่มนวล"
     },
     "FileCtgr": {
       "paper": "ต้นฉบับ",

@@ -1959,7 +1959,38 @@
     },
     "tier": "Elite",
     "faction": "Wildlife",
-    "drop": "Caudal Goldscale"
+    "drop": "Caudal Goldscales"
+  },
+  "gloomwalds_rage": {
+    "key": "gloomwalds_rage",
+    "name": "Gloomwald's Rage",
+    "category": {
+      "main": "enemy",
+      "sub": "mob"
+    },
+    "tier": "Alpha",
+    "faction": "Witchcraft Creation"
+  },
+  "woodcraft_wanderer": {
+    "key": "woodcraft_wanderer",
+    "name": "Woodcraft Wanderer",
+    "category": {
+      "main": "enemy",
+      "sub": "mob"
+    },
+    "tier": "Elite",
+    "faction": "Witchcraft Creation",
+    "drop": "Tender Moss"
+  },
+  "woodcraft_slug": {
+    "key": "woodcraft_slug",
+    "name": "Woodcraft Slug",
+    "category": {
+      "main": "enemy",
+      "sub": "mob"
+    },
+    "tier": "Elite",
+    "faction": "Witchcraft Creation"
   },
   "andong": {
     "key": "andong",

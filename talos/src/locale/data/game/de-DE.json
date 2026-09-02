@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Felsenheuler",
       "armored_manglerbeast": "Gepanzerte Fetzbestie",
+      "gloomwalds_rage": "Finstereiches Zorn",
+      "woodcraft_wanderer": "Schnitzkunst-Wanderer",
+      "woodcraft_slug": "Schnitzkunst-Schnecke",
       "nar_col_lv003_1": "Brief aus Tal IV",
       "nar_col_lv003_5": "Zerrissenes Manuskript",
       "nar_col_lv003_6": "Fantasie eines Crewmitglieds",
@@ -564,7 +567,8 @@
       "landbreakers": "Landbrecher",
       "cangzei_pirates": "Cangzei-Piraten",
       "blightshade": "Verderbnisschatten",
-      "wildlife": "Fauna"
+      "wildlife": "Fauna",
+      "witchcraft_creation": "Geschöpf der Hexerei"
     },
     "drop": {
       "young_bamboo_sprout": "Junge Bambussprosse",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Heulerbestiengeflecht",
       "echoing_dust": "Echo-Staub",
       "century_rind": "Jahrhundertschale",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Goldene Schwanzschuppen",
+      "tender_moss": "Zartmoos"
     },
     "FileCtgr": {
       "paper": "Manuskripte",

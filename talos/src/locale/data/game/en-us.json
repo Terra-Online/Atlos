@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Rockhowler",
       "armored_manglerbeast": "Armored Manglerbeast",
+      "gloomwalds_rage": "Gloomwald's Rage",
+      "woodcraft_wanderer": "Woodcraft Wanderer",
+      "woodcraft_slug": "Woodcraft Slug",
       "nar_col_lv003_1": "Letter from Valley IV",
       "nar_col_lv003_5": "Torn Manuscript",
       "nar_col_lv003_6": "Crew Mate's Fantasy",
@@ -564,7 +567,8 @@
       "landbreakers": "Landbreakers",
       "cangzei_pirates": "Cangzei Pirates",
       "blightshade": "Blightshade",
-      "wildlife": "Wildlife"
+      "wildlife": "Wildlife",
+      "witchcraft_creation": "Witchcraft Creation"
     },
     "drop": {
       "young_bamboo_sprout": "Young Bamboo Sprout",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Howlerbeast Braid",
       "echoing_dust": "Echoing Dust",
       "century_rind": "Century Rind",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Caudal Goldscales",
+      "tender_moss": "Tender Moss"
     },
     "FileCtgr": {
       "paper": "Manuscripts",

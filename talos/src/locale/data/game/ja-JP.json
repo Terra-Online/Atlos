@@ -205,6 +205,9 @@
       "ethillu": "イーサルー",
       "rockhowler": "山吼獣",
       "armored_manglerbeast": "鎧裂獣",
+      "gloomwalds_rage": "樹海の怒",
+      "woodcraft_wanderer": "巡回ゴーレム",
+      "woodcraft_slug": "ムシ型ゴーレム",
       "nar_col_lv003_1": "四号谷地の外に送られた手紙",
       "nar_col_lv003_5": "破り捨てられた手書きの手紙",
       "nar_col_lv003_6": "作業員の幻想",
@@ -564,7 +567,8 @@
       "landbreakers": "ランドブレーカー",
       "cangzei_pirates": "滄賊",
       "blightshade": "蝕影",
-      "wildlife": "野生の生物"
+      "wildlife": "野生の生物",
+      "witchcraft_creation": "巫術の造物"
     },
     "drop": {
       "young_bamboo_sprout": "新筍",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "咆獣のたてがみ",
       "echoing_dust": "回響の塵埃",
       "century_rind": "百年陳皮",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "尾先の金鱗",
+      "tender_moss": "柔らかな苔"
     },
     "FileCtgr": {
       "paper": "紙の資料",

@@ -471,7 +471,7 @@
     "tuskbeast_blightshade": 7,
     "ystf_vanguard_blightshade": 45,
     "talosite": 55,
-    "talos_cap_spot": 8,
+    "talos_cap_spot": 16,
     "nar_media_map02_14032_1": 1,
     "nar_paper_map02_14019_1": 1,
     "nar_digital_map02_14024_1": 1,
@@ -524,7 +524,9 @@
     "nar_paper_map02_15023_1": 1,
     "nar_paper_map02_15021_1": 1,
     "nar_collection_map02_15020_1": 1,
-    "nar_paper_map02_15001_1": 1
+    "nar_paper_map02_15001_1": 1,
+    "woodcraft_wanderer": 2,
+    "woodcraft_slug": 5
   },
   "subregion": {
     "DJ_1": {
@@ -1608,6 +1610,7 @@
       "nar_paper_map02_15021_1": 1,
       "nar_collection_map02_15020_1": 1,
       "nar_paper_map02_15001_1": 1,
+      "talos_cap_spot": 8,
       "pink_bolete_spot": 10,
       "xiragen_spot": 3,
       "cuprium_spot": 5,
@@ -1627,12 +1630,14 @@
       "crate_iii": 8,
       "aurylene": 13,
       "crate_i": 16,
+      "woodcraft_wanderer": 2,
       "energy_alluvium": 1,
       "temporary_energy_alluvium": 2,
       "indigenous_pincerbeast": 13,
       "acid_originium_slug": 3,
       "tunneling_nidwyrm": 1,
       "tp_point": 7,
+      "woodcraft_slug": 5,
       "cratelocked": 2,
       "guiding_butterflies": 3,
       "cratesurprise": 1,
@@ -2101,7 +2106,7 @@
       "tuskbeast_blightshade": 7,
       "ystf_vanguard_blightshade": 45,
       "talosite": 55,
-      "talos_cap_spot": 8,
+      "talos_cap_spot": 16,
       "nar_media_map02_14032_1": 1,
       "nar_paper_map02_14019_1": 1,
       "nar_digital_map02_14024_1": 1,
@@ -2156,8 +2161,10 @@
       "nar_collection_map02_15020_1": 1,
       "nar_paper_map02_15001_1": 1,
       "pink_bolete_spot": 10,
+      "woodcraft_wanderer": 2,
       "indigenous_pincerbeast": 13,
-      "acid_originium_slug": 3
+      "acid_originium_slug": 3,
+      "woodcraft_slug": 5
     },
     "Dijiang": {
       "tp_point": 2,

@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Hurleroc",
       "armored_manglerbeast": "Ours à dents de sabre cuirassé",
+      "gloomwalds_rage": "Rage de Gloomwald",
+      "woodcraft_wanderer": "Vagabond sylvain",
+      "woodcraft_slug": "Limace sylvaine",
       "nar_col_lv003_1": "Lettre de la Vallée-IV",
       "nar_col_lv003_5": "Manuscrit abîmé",
       "nar_col_lv003_6": "Rêveries d'un employé",
@@ -564,7 +567,8 @@
       "landbreakers": "Brise-Terres",
       "cangzei_pirates": "Pirates cangzei",
       "blightshade": "Gangrénombre",
-      "wildlife": "Faune"
+      "wildlife": "Faune",
+      "witchcraft_creation": "Créations de magie noire"
     },
     "drop": {
       "young_bamboo_sprout": "Jeune pousse de bambou",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Tresse de hurleur",
       "echoing_dust": "Poussière résonnante",
       "century_rind": "Écorce centenaire",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Écailles d'or caudales",
+      "tender_moss": "Mousse tendre"
     },
     "FileCtgr": {
       "paper": "Manuscrits",

@@ -205,6 +205,9 @@
       "ethillu": "Éthillu",
       "rockhowler": "Aullador de roca",
       "armored_manglerbeast": "Bestia mutiladora acorazada",
+      "gloomwalds_rage": "Furia de Gloomwald",
+      "woodcraft_wanderer": "Errante de madera",
+      "woodcraft_slug": "Babosa de madera",
       "nar_col_lv003_1": "Carta desde el Valle IV",
       "nar_col_lv003_5": "Manuscrito roto",
       "nar_col_lv003_6": "Fantasía de un miembro de la tripulación",
@@ -564,7 +567,8 @@
       "landbreakers": "Rompesuelos",
       "cangzei_pirates": "Piratas Cangzei",
       "blightshade": "Sombra contaminada",
-      "wildlife": "Vida silvestre"
+      "wildlife": "Vida silvestre",
+      "witchcraft_creation": "Creación de hechicería"
     },
     "drop": {
       "young_bamboo_sprout": "Brote de bambú joven",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Trenza de Bestia aulladora",
       "echoing_dust": "Polvo resonante",
       "century_rind": "Corteza centenaria",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Escamas doradas caudales",
+      "tender_moss": "Musgo tierno"
     },
     "FileCtgr": {
       "paper": "Manuscritos",

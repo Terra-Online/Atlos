@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Rockhowler",
       "armored_manglerbeast": "Manglerbeast Berarmor",
+      "gloomwalds_rage": "Amarah Gloomwald",
+      "woodcraft_wanderer": "Pengembara Kayu",
+      "woodcraft_slug": "Siput Kayu",
       "nar_col_lv003_1": "Surat dari Lembah IV",
       "nar_col_lv003_5": "Naskah Robek",
       "nar_col_lv003_6": "Khayalan Rekan Kru",
@@ -564,7 +567,8 @@
       "landbreakers": "Landbreaker",
       "cangzei_pirates": "Perompak Cangzei",
       "blightshade": "Bayang-bayang Hawar",
-      "wildlife": "Margasatwa"
+      "wildlife": "Margasatwa",
+      "witchcraft_creation": "Makhluk Sihir"
     },
     "drop": {
       "young_bamboo_sprout": "Rebung Muda",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Jalinan Bulu Howlerbeast",
       "echoing_dust": "Debu Bergema",
       "century_rind": "Kulit Buah Seabad",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Sisik Emas Kaudal",
+      "tender_moss": "Lumut Muda"
     },
     "FileCtgr": {
       "paper": "Naskah",

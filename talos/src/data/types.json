@@ -732,7 +732,21 @@
             "Armored Manglerbeast": {
                 "tier": "Elite",
                 "faction": "Wildlife",
-                "drop": "Caudal Goldscale"
+                "drop": "Caudal Goldscales"
+            },
+
+            "Gloomwald's Rage": {
+                "tier": "Alpha",
+                "faction": "Witchcraft Creation"
+            },
+            "Woodcraft Wanderer": {
+                "tier": "Elite",
+                "faction": "Witchcraft Creation",
+                "drop": "Tender Moss"
+            },
+            "Woodcraft Slug": {
+                "tier": "Elite",
+                "faction": "Witchcraft Creation"
             }
         }
     }

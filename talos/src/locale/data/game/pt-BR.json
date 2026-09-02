@@ -205,6 +205,9 @@
             "ethillu": "Æthillu",
             "rockhowler": "Uivante Montanhês",
             "armored_manglerbeast": "Besta Mutiladora Encouraçada",
+            "gloomwalds_rage": "Fúria de Gloomwald",
+            "woodcraft_wanderer": "Andarilho da Mata",
+            "woodcraft_slug": "Lesma da Madeira",
             "nar_col_lv003_1": "Carta de Vale IV",
             "nar_col_lv003_5": "Manuscrito Rasgado",
             "nar_col_lv003_6": "Fantasia do Membro da Equipe",
@@ -564,7 +567,8 @@
             "landbreakers": "Invasores de Terras",
             "cangzei_pirates": "Piratas Cangzei",
             "blightshade": "Sombra da Praga",
-            "wildlife": "Vida Selvagem"
+            "wildlife": "Vida Selvagem",
+            "witchcraft_creation": "Criação da Feitiçaria"
         },
         "drop": {
             "young_bamboo_sprout": "Broto de Bambu Jovem",
@@ -600,7 +604,8 @@
             "howlerbeast_braid": "Trança de Bugio",
             "echoing_dust": "Poeira Ecoante",
             "century_rind": "Casca Secular",
-            "caudal_goldscale": "Caudal Goldscale"
+            "caudal_goldscales": "Escamas Douradas Caudais",
+            "tender_moss": "Musgo Tenro"
         },
         "FileCtgr": {
             "paper": "Manuscritos",

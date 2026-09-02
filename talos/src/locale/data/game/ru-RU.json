@@ -205,6 +205,9 @@
       "ethillu": "Эфирлюзия",
       "rockhowler": "Каменный ревун",
       "armored_manglerbeast": "Бронированный саблезубый зверь",
+      "gloomwalds_rage": "Ярость Мраколесья",
+      "woodcraft_wanderer": "Древесный странник",
+      "woodcraft_slug": "Древесный слизень",
       "nar_col_lv003_1": "Письмо из Долины IV",
       "nar_col_lv003_5": "Порванная рукопись",
       "nar_col_lv003_6": "Фантазии сотрудника",
@@ -564,7 +567,8 @@
       "landbreakers": "Землекрушители",
       "cangzei_pirates": "Разбойники-цанцзэй",
       "blightshade": "Моротень",
-      "wildlife": "Дикая фауна"
+      "wildlife": "Дикая фауна",
+      "witchcraft_creation": "Порождения колдовства"
     },
     "drop": {
       "young_bamboo_sprout": "Побег молодого бамбука",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Косичка воющего зверя",
       "echoing_dust": "Пыль памяти",
       "century_rind": "Вековая кожура",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Золотые хвостовые чешуйки",
+      "tender_moss": "Мягкий мох"
     },
     "FileCtgr": {
       "paper": "Рукописи",

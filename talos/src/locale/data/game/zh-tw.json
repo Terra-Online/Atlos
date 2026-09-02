@@ -205,6 +205,9 @@
       "ethillu": "表象",
       "rockhowler": "山犼獸",
       "armored_manglerbeast": "披甲裂獸",
+      "gloomwalds_rage": "幽林之怒",
+      "woodcraft_wanderer": "徘徊樹傀",
+      "woodcraft_slug": "蟲體樹傀",
       "nar_col_lv003_1": "寄往四號谷地外的信",
       "nar_col_lv003_5": "被扯碎的手寫信",
       "nar_col_lv003_6": "工人的幻想",
@@ -564,7 +567,8 @@
       "landbreakers": "裂地者",
       "cangzei_pirates": "滄賊",
       "blightshade": "蝕影",
-      "wildlife": "野外生物"
+      "wildlife": "野外生物",
+      "witchcraft_creation": "巫術造物"
     },
     "drop": {
       "young_bamboo_sprout": "新筍",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "咆獸的辮束",
       "echoing_dust": "迴響塵埃",
       "century_rind": "百年陳皮",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "尾尖金甲",
+      "tender_moss": "柔嫩苔蘚"
     },
     "FileCtgr": {
       "paper": "紙本紀錄",

@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Rockhowler",
       "armored_manglerbeast": "Gấu Nanh Dài Thiết Giáp",
+      "gloomwalds_rage": "Cơn Thịnh Nộ Của Gloomwald",
+      "woodcraft_wanderer": "Mộc Ngẫu Lãng Du",
+      "woodcraft_slug": "Mộc Ngẫu Dạng Sên",
       "nar_col_lv003_1": "Thư Từ Thung Lũng IV",
       "nar_col_lv003_5": "Bản Thảo Bị Rách",
       "nar_col_lv003_6": "Ảo Tưởng của Thuyền Viên",
@@ -564,7 +567,8 @@
       "landbreakers": "Landbreaker",
       "cangzei_pirates": "Hải Tặc Cangzei",
       "blightshade": "Bóng Nhiễm Khuẩn",
-      "wildlife": "Động Vật Hoang Dã"
+      "wildlife": "Động Vật Hoang Dã",
+      "witchcraft_creation": "Tạo Vật Phù Thuật"
     },
     "drop": {
       "young_bamboo_sprout": "Mầm Tre Non",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Bím Tóc Quái Gầm Rú",
       "echoing_dust": "Bụi Vang Vọng",
       "century_rind": "Trần Bì Trăm Năm",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Vảy Đuôi Hoàng Kim",
+      "tender_moss": "Rêu Non"
     },
     "FileCtgr": {
       "paper": "Bản Thảo",

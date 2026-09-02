@@ -205,6 +205,9 @@
       "ethillu": "Æthillu",
       "rockhowler": "Ulularocce",
       "armored_manglerbeast": "Orso dai denti a sciabola corazzato",
+      "gloomwalds_rage": "Furia di Gloomwald",
+      "woodcraft_wanderer": "Girovago del bosco",
+      "woodcraft_slug": "Lumaca del bosco",
       "nar_col_lv003_1": "Lettera da Valle IV",
       "nar_col_lv003_5": "Manoscritto strappato",
       "nar_col_lv003_6": "Fantasie di un membro del personale",
@@ -564,7 +567,8 @@
       "landbreakers": "Fenditerra",
       "cangzei_pirates": "Pirati di Cangzei",
       "blightshade": "Ombra contaminante",
-      "wildlife": "Fauna"
+      "wildlife": "Fauna",
+      "witchcraft_creation": "Creatura stregata"
     },
     "drop": {
       "young_bamboo_sprout": "Germoglio giovane di bambù",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "Treccia di bestia urlatrice",
       "echoing_dust": "Polvere echeggiante",
       "century_rind": "Scorza secolare",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "Scaglie caudali dorate",
+      "tender_moss": "Muschio tenero"
     },
     "FileCtgr": {
       "paper": "Manoscritti",

@@ -205,6 +205,9 @@
       "ethillu": "잔영",
       "rockhowler": "록하울러",
       "armored_manglerbeast": "무장 맹글러",
+      "gloomwalds_rage": "깊은 숲의 분노",
+      "woodcraft_wanderer": "배회 나무 골렘",
+      "woodcraft_slug": "벌레 나무 골렘",
       "nar_col_lv003_1": "4번 협곡 밖으로 보내는 편지",
       "nar_col_lv003_5": "찢어진 손편지",
       "nar_col_lv003_6": "작업자의 환상",
@@ -564,7 +567,8 @@
       "landbreakers": "랜드브레이커",
       "cangzei_pirates": "창적",
       "blightshade": "침식의 그림자",
-      "wildlife": "야외 생물"
+      "wildlife": "야외 생물",
+      "witchcraft_creation": "주술 피조물"
     },
     "drop": {
       "young_bamboo_sprout": "파릇파릇한 죽순",
@@ -600,7 +604,8 @@
       "howlerbeast_braid": "하울러비스트의 털 묶음",
       "echoing_dust": "메아리의 먼지",
       "century_rind": "백년 숙성 진피",
-      "caudal_goldscale": "Caudal Goldscale"
+      "caudal_goldscales": "꼬리 금갑",
+      "tender_moss": "부드러운 이끼"
     },
     "FileCtgr": {
       "paper": "문서 기록",
