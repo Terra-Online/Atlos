@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Filter Options",
+    "archiveHub": "OEM Intel Hub",
     "emptyTitle": "No filter options match.",
     "emptyDesc": "If you confirm that any point info is missing or incorrect, please contact the administrators in the our community, or submit an <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Issue</a> on our GitHub repository."
   },

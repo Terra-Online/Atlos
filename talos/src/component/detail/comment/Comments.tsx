@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
-import { LinearBlur } from 'progressive-blur';
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from './comments.module.scss';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
@@ -649,7 +649,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                 ></div>
                 <div className={styles.commentRule}>{footerText}</div>
             </div>
-            <LinearBlur
+            <AdaptiveLinearBlur
                 side="bottom"
                 strength={8}
                 falloffPercentage={100}

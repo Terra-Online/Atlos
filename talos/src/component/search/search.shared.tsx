@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LinearBlur } from 'progressive-blur';
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import SearchIcon from '../../assets/logos/search.svg?react';
 import Valley4 from '../../assets/logos/_Valley_4.svg?react';
 import Wuling from '../../assets/logos/_Wuling.svg?react';
@@ -215,13 +215,13 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
                             data-mask-top={maskTopVisible ? 'true' : 'false'}
                             data-mask-bottom={maskBottomVisible ? 'true' : 'false'}
                         >
-                            <LinearBlur
+                            <AdaptiveLinearBlur
                                 side='top'
                                 strength={8}
                                 falloffPercentage={85}
                                 className={`${styles.topBlur} ${maskTopVisible ? styles.visible : ''}`}
                             />
-                            <LinearBlur
+                            <AdaptiveLinearBlur
                                 side='bottom'
                                 strength={8}
                                 falloffPercentage={100}

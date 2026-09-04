@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Фильтры",
+    "archiveHub": "Центр архивов",
     "emptyTitle": "Нет подходящих фильтров",
     "emptyDesc": "Если вы обнаружили, что информация о точках отсутствует или содержит ошибки, пожалуйста, свяжитесь с администраторами в сообществе проекта или создайте <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Сообщить об ошибке точки'>Issue</a> в GitHub-репозитории проекта."
   },

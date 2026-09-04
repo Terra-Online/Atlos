@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LinearBlur } from "progressive-blur";
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import mobileStyles from './sideBar.mobile.module.scss';
 
 import SearchMobile from '../search/search.mobile';
@@ -7,6 +7,7 @@ import FilterListMobile from '../filterList/filterList.mobile';
 import Drawer from '../drawer/drawer';
 import { Trigger } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
+import filterStyles from '../markFilter/markFilter.module.scss';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import Detail from '../detail/detail';
@@ -34,7 +35,7 @@ import ArchivesIcon from '../../assets/images/category/archives.svg?react';
 import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_DICT, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
 import { VERSION_NEW_FILTER_GROUPS, useVersionNewMarkerCounts } from '@/data/marker/versionNew';
 import useRegion from '@/store/region';
-import { useTranslateGame, useTranslateUI } from '@/locale';
+import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
 import { useFilter, useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
 import { useAppViewport } from '@/platform/device';
@@ -69,6 +70,8 @@ const TOP_ROW_MIN_SEARCH_PX = 48;
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
   const t = useTranslateUI();
   const tGame = useTranslateGame();
+  const locale = useLocale();
+  const isCjkLocale = /^(zh|ja|ko)(-|$)/i.test(locale);
 
   const [supportOpen, setSupportOpen] = useState(false);
   const versionNewCounts = useVersionNewMarkerCounts();
@@ -436,6 +439,19 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                       <MarkFilter
                         idKey={subCategory}
                         title={String(tGame(`markerType.category.${subCategory}`))}
+                        titleSuffix={subCategory === 'archives' ? (
+                          <a
+                            className={filterStyles.filterTitleLink}
+                            href="https://oem.re/intel"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            {isCjkLocale ? '「' : '('}
+                            {String(t('markFilter.archiveHub'))}
+                            {isCjkLocale ? '」' : ')'}
+                          </a>
+                        ) : undefined}
                         icon={CategoryIcon}
                         dataCategory={subCategory}
                         key={subCategory}
@@ -530,7 +546,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
-        <LinearBlur
+        <AdaptiveLinearBlur
           side='top'
           strength={8}
           falloffPercentage={80}
@@ -538,7 +554,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         />
 
         {/* Bottom blur: visible when not at snap-0 and not scrolled to bottom */}
-        <LinearBlur
+        <AdaptiveLinearBlur
           side='bottom'
           strength={2}
           falloffPercentage={100}

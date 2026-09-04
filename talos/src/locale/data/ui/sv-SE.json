@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Filteralternativ",
+    "archiveHub": "Arkivcentrum",
     "emptyTitle": "Inga filteralternativ matchar.",
     "emptyDesc": "Om du bekräftar att information om en punkt saknas eller är felaktig, vänligen kontakta administratörerna i vår community eller skicka in ett <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Rapportera platsfel'>Ärende (Issue)</a> på vårt GitHub-arkiv."
   },

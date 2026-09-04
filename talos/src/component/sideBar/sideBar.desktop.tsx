@@ -21,6 +21,7 @@ import SearchDesktop from '../search/search.desktop';
 import Drawer from '../drawer/drawer';
 import { Trigger, TriggerBar } from '../trigger/trigger';
 import MarkFilter from '../markFilter/markFilter';
+import filterStyles from '../markFilter/markFilter.module.scss';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
 import SupportModal from '../support/support';
@@ -37,7 +38,7 @@ import { VERSION_NEW_FILTER_GROUPS, useVersionNewMarkerCounts } from '@/data/mar
 import useRegion from '@/store/region';
 import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
 import MarkBinder from '../markBinder/markBinder';
-import { useTranslateGame, useTranslateUI } from '@/locale';
+import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
 import {
     SIDEBAR_MIN_WIDTH,
     SIDEBAR_THREE_COLUMN_MIN_WIDTH,
@@ -92,6 +93,8 @@ const FOUR_COLUMN_THRESHOLD = 700;
 const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
     const tGame = useTranslateGame();
+    const locale = useLocale();
+    const isCJK = /^(zh|ja|ko)(-|$)/i.test(locale);
     const searchString = useSearchString();
     const versionNewCounts = useVersionNewMarkerCounts();
     const isOpen = useSidebarOpen();
@@ -299,6 +302,18 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         <MarkFilter
                             idKey={subCategory}
                             title={String(tGame(`markerType.category.${subCategory}`))}
+                            titleSuffix={subCategory === 'archives' ? (
+                                <a
+                                    className={`${filterStyles.filterTitleLink}`}
+                                    href="https://oem.re/intel"
+                                    target="_blank"
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    {isCJK ? '「' : '('}
+                                    {String(t('markFilter.archiveHub'))}
+                                    {isCJK ? '」' : ')'}
+                                </a>
+                            ) : undefined}
                             icon={CategoryIcon}
                             dataCategory={subCategory}
                             key={subCategory}

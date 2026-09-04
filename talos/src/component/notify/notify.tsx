@@ -40,7 +40,7 @@ import GitHubLogo from '@/assets/images/UI/media/github.svg?react';
 import DiscordLogo from '@/assets/images/UI/media/discord.svg?react';
 import SklandLogo from '@/assets/images/UI/media/skland.svg?react';
 import SkportLogo from '@/assets/images/UI/media/skport.svg?react';
-import { LinearBlur } from 'progressive-blur';
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import {
     formatNotificationMessage,
     type NotificationSubjectKind,
@@ -905,7 +905,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                             </>
                         )}
                     </div>
-                    <LinearBlur
+                    <AdaptiveLinearBlur
                         side='bottom'
                         strength={6}
                         className={`${styles.listBottomBlur} ${!isListScrolledBottom ? styles.visible : ''}`}

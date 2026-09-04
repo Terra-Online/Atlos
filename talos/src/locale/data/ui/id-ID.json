@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Opsi Filter",
+    "archiveHub": "Pusat Arsip",
     "emptyTitle": "Tidak ada opsi filter yang cocok.",
     "emptyDesc": "Jika Anda yakin ada informasi titik yang hilang atau salah, silakan hubungi administrator di komunitas kami, atau kirimkan <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Laporkan kesalahan lokasi'>Issue</a> di repositori GitHub kami."
   },

@@ -309,6 +309,7 @@
 }
 
 .commentBottomBlur {
+    --scroll-edge-fade-color: var(--detail-bg);
     position: absolute;
     left: 0;
     right: 0;

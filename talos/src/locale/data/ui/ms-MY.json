@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Pilihan Tapis",
+    "archiveHub": "Pusat Arkib",
     "emptyTitle": "Tiada pilihan tapis yang sepadan.",
     "emptyDesc": "Jika anda mengesahkan bahawa sebarang maklumat lokasi hilang atau tidak tepat, sila hubungi pentadbir dalam komuniti kami, atau hantar sebuah <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Laporkan ralat lokasi'>Issue</a> di repositori GitHub kami."
   },

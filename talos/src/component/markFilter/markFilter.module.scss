@@ -6,6 +6,8 @@
     --markfilter-title: #{$grey-1};
     --markfilter-title-shadow: #{rgba($black-0, 0.25)};
     --markfilter-accent: #{$primary-accent-5};
+    --markfilter-link: #{$primary-accent-6};
+    --markfilter-link-hover: #{$primary-accent-7};
     --markfilter-placeholder: #{$black-1};
     
     --markfilter-version-bg: #{$light-2};
@@ -17,6 +19,8 @@
     --markfilter-title: #{$light-1};
     --markfilter-title-shadow: #{rgba($black-0, 0.8)};
     --markfilter-accent: #{$primary-accent-4};
+    --markfilter-link: #{$primary-accent-4};
+    --markfilter-link-hover: #{$primary-accent-3};
     --markfilter-placeholder: #{$light-2};
 
     --markfilter-version-bg: #{$grey-2};
@@ -78,10 +82,38 @@
     > .filterTitle {
         color: var(--markfilter-title);
         text-transform: uppercase;
-        font-weight: 400;
+        font-weight: 500;
         font-size: 1rem;
         text-shadow: 0 2px 3px var(--markfilter-title-shadow);
         flex-grow: 1;
+        min-width: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+
+        > span:first-child {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
+        .filterTitleLink {
+            color: var(--markfilter-link);
+            min-width: 0;
+            margin-right: .5rem;
+            font-size: 0.875em;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            text-shadow: none;
+            transition: color .2s ease;
+
+            &:hover, &:focus-visible {
+                color: var(--markfilter-link-hover);
+            }
+        }
     }
     > .filterIcon {
         width: 3rem;
@@ -90,6 +122,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
         filter: drop-shadow(0 2px 3px var(--markfilter-title-shadow));
         > .icon {
             width: 100%;

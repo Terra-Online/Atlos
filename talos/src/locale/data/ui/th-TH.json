@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "ตัวกรอง",
+    "archiveHub": "ศูนย์คลังข้อมูล",
     "emptyTitle": "ไม่มีตัวกรองที่ตรงกัน",
     "emptyDesc": "โปรดติดต่อผู้ดูแลระบบหากคุณยืนยันว่ามีข้อมูลจุดใดที่ขาดหายไปหรือไม่ถูกต้อง กรุณาติดต่อผู้ดูแลในชุมชนของเรา หรือส่ง <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='รายงานข้อผิดพลาดตำแหน่ง'>Issue</a> ในที่เก็บ GitHub ของเรา"
   },

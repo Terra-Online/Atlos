@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Φίλτρα",
+    "archiveHub": "OEM Κέντρο Αρχείων",
     "emptyTitle": "Δεν βρέθηκαν φίλτρα.",
     "emptyDesc": "Εάν επιβεβαιώσετε ότι λείπουν ή είναι εσφαλμένες κάποιες πληροφορίες σημείων, επικοινωνήστε με τους διαχειριστές στην κοινότητά μας ή υποβάλετε ένα <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Αναφορά σφάλματος'>Issue</a> στο αποθετήριο μας στο GitHub."
   },

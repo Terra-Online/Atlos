@@ -11,6 +11,7 @@ import { useMarkFilterDragContext } from './reorderCore';
 interface MarkFilterProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>> | (() => React.ReactNode);
     title?: string;
+    titleSuffix?: React.ReactNode;
     children: React.ReactNode;
     empty?: React.ReactNode;
     // stable id for persisting expanded state
@@ -28,6 +29,7 @@ interface MarkFilterProps {
 const MarkFilter = ({
     icon: CustomIcon,
     title,
+    titleSuffix,
     children,
     empty,
     idKey,
@@ -222,7 +224,10 @@ const MarkFilter = ({
                         <DefaultFilterIcon className={styles.icon} data-ctgr={dataCategory}/>
                     )}
                 </div>
-                <div className={styles.filterTitle}>{title ?? t('markFilter.title')}</div>
+                <div className={styles.filterTitle}>
+                    <span>{title ?? t('markFilter.title')}</span>
+                    {titleSuffix}
+                </div>
                 <div className={styles.toggleIcon}>
                     <svg
                         viewBox='0 0 24 24'

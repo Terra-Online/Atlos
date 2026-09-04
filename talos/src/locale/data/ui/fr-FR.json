@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Filtres",
+    "archiveHub": "Centre des Archives",
     "emptyTitle": "Aucun filtre approprié",
     "emptyDesc": "Si vous confirmez que des informations sur un point sont manquantes ou incorrectes, veuillez contacter les administrateurs de notre communauté ou soumettre un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Signaler une erreur de localisation'>Issue</a> sur notre dépôt GitHub."
   },

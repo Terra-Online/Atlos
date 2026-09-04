@@ -400,6 +400,7 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
 
 .topBlur,
 .bottomBlur {
+    --scroll-edge-fade-color: var(--sidebar-bg);
     position: absolute;
     left: 0;
     right: 0;

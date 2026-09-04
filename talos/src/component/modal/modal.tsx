@@ -16,7 +16,7 @@ import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
 import PopoverTooltip from '@/component/popover/popover';
 
 import { useTranslateUI } from '@/locale';
-import { LinearBlur } from 'progressive-blur';
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 
 export interface ModalTabItem {
   key: string;
@@ -569,7 +569,7 @@ const Modal: React.FC<ModalProps> = ({
         
         {/* Top blur: visible when not scrolled to top */}
         {tabs.length === 0 && (
-          <LinearBlur
+          <AdaptiveLinearBlur
             side='top'
             strength={2}
             className={`${styles.topBlur} ${!isScrolledTop ? styles.visible : ''}`}
@@ -577,7 +577,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
         
         {/* Bottom blur: visible when not scrolled to bottom */}
-        <LinearBlur
+        <AdaptiveLinearBlur
           side='bottom'
           strength={2}
           className={`${styles.bottomBlur} ${!isScrolledBottom ? styles.visible : ''}`}

@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "絞り込み",
+    "archiveHub": "収集特集を見る",
     "emptyTitle": "条件に一致する項目はありません。",
     "emptyDesc": "地点情報の不足や誤りを見つけた場合は、コミュニティで管理者にご連絡いただくか、GitHub リポジトリで <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='地点情報の誤りを報告'>Issue</a> を作成してください。"
   },

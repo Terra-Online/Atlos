@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "الفلاتر",
+    "archiveHub": "مركز الأرشيف",
     "emptyTitle": "لا توجد فلاتر مطابقة.",
     "emptyDesc": "إذا لاحظت أي معلومات مفقودة أو غير صحيحة، يرجى التواصل مع المشرفين في مجتمعنا، أو تقديم <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='الإبلاغ عن خطأ'>Issue</a> على GitHub."
   },

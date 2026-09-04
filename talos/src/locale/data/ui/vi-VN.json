@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Bộ lọc",
+    "archiveHub": "Trung tâm lưu trữ",
     "emptyTitle": "Không có bộ lọc phù hợp.",
     "emptyDesc": "Nếu bạn xác nhận rằng thông tin điểm vị trí bị thiếu hoặc không chính xác, vui lòng liên hệ với quản trị viên trong cộng đồng của dự án; hoặc gửi <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Báo cáo lỗi vị trí'>Issue</a> tại GitHub Repo của dự án."
   },

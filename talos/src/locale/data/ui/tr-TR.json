@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Filtre Seçenekleri",
+    "archiveHub": "Arşiv Merkezi",
     "emptyTitle": "Eşleşen filtre yok.",
     "emptyDesc": "Herhangi bir nokta bilgisinin eksik veya hatalı olduğunu doğrularsanız, lütfen topluluğumuzdaki yöneticilerle iletişime geçin veya GitHub depomuza bir <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Sorun (Issue)</a> gönderin."
   },
