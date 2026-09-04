@@ -1,27 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadEffectiveMarkers } from './marker-data.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
-const dataDir = path.join(root, 'src/data/marker/data');
 const regionPath = path.join(root, 'src/data/map/region.json');
+const typePath = path.join(root, 'src/data/marker/type.json');
 const outputPath = path.join(root, 'src/data/marker/stats.json');
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-const normalizeRawMarker = (raw) => {
-  const marker = Array.isArray(raw)
-    ? { id: raw[0], z: raw[1], x: raw[2], y: raw[3], type: raw[5] }
-    : raw;
-
-  return {
-    ...marker,
-    z: marker?.z ?? marker?.pos?.[0] ?? 0,
-    x: marker?.x ?? marker?.pos?.[1] ?? 0,
-    y: marker?.y ?? marker?.pos?.[2] ?? 0,
-  };
-};
 
 const getPositionTypeKey = (marker) =>
   JSON.stringify([marker.type, marker.x, marker.y, marker.z]);
@@ -37,18 +25,30 @@ const stats = {
 };
 const seenPositionTypes = new Set();
 
-const files = fs
-  .readdirSync(dataDir)
+const regions = readJson(regionPath);
+const typeMap = readJson(typePath);
+const subregionIds = new Set(Object.values(regions).flatMap((region) => region.subregions ?? []));
+const effectiveMarkers = await loadEffectiveMarkers({ typeMap, subregionIds });
+const dataSubregionIds = fs
+  .readdirSync(path.join(root, 'src/data/marker/data'))
   .filter((file) => file.endsWith('.json'))
-  .sort();
+  .sort()
+  .map((file) => file.replace(/\.json$/, ''));
+const subregionOrder = [
+  ...dataSubregionIds,
+  ...[...subregionIds].filter((subregionId) => !dataSubregionIds.includes(subregionId)),
+];
+const markersBySubregion = new Map(subregionOrder.map((subregionId) => [subregionId, []]));
+for (const marker of effectiveMarkers) {
+  const list = markersBySubregion.get(marker.subregId) ?? [];
+  list.push(marker);
+  markersBySubregion.set(marker.subregId, list);
+}
 
-for (const file of files) {
-  const subregionId = file.replace(/\.json$/, '');
-  const markers = readJson(path.join(dataDir, file));
+for (const [subregionId, markers] of markersBySubregion) {
   const subregionCounts = {};
 
-  for (const rawMarker of markers) {
-    const marker = normalizeRawMarker(rawMarker);
+  for (const marker of markers) {
     const type = marker?.type || '';
     if (!type) continue;
     const positionTypeKey = getPositionTypeKey(marker);
@@ -61,7 +61,6 @@ for (const file of files) {
   stats.subregion[subregionId] = subregionCounts;
 }
 
-const regions = readJson(regionPath);
 for (const [regionKey, regionConfig] of Object.entries(regions)) {
   const regionCounts = {};
   const subregions = Array.isArray(regionConfig?.subregions)

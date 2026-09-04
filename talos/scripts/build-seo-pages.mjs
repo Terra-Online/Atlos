@@ -10,12 +10,12 @@ import {
   resolveDeployPrefix,
 } from './release-channel.js';
 import { enqueueSeoOgPublishChanges } from './seo-og-publish-queue.js';
+import { loadEffectiveMarkers } from './marker-data.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-const MARKER_DIR = path.resolve(ROOT, 'src/data/marker/data');
 const MARKER_TYPE_FILE = path.resolve(ROOT, 'src/data/marker/type.json');
 const REGION_FILE = path.resolve(ROOT, 'src/data/map/region.json');
 const R2_CONFIG_FILE = path.resolve(ROOT, 'config/config.r2.json');
@@ -352,26 +352,6 @@ function decodePointIdToken(token) {
   return id.toString();
 }
 
-function normalizeMarker(raw, subregionId) {
-  const obj = Array.isArray(raw)
-    ? { id: raw[0], z: raw[1], x: raw[2], y: raw[3], tier: raw[4], type: raw[5] }
-    : raw;
-  if (!obj || obj.type == null || obj.id == null) return null;
-  const z = obj.z ?? obj.pos?.[0] ?? 0;
-  const x = obj.x ?? obj.pos?.[1] ?? 0;
-  const y = obj.y ?? obj.pos?.[2] ?? 0;
-  return {
-    id: String(obj.id),
-    z,
-    x,
-    y,
-    tier: obj.tier ?? 0,
-    pos: [z, x],
-    subregId: obj.subregId ?? subregionId,
-    type: String(obj.type),
-  };
-}
-
 function subregionRegionMap(regionMap) {
   const map = new Map();
   for (const [regionKey, region] of Object.entries(regionMap)) {
@@ -383,19 +363,7 @@ function subregionRegionMap(regionMap) {
 }
 
 async function loadMarkers(typeMap) {
-  const files = (await safeReaddir(MARKER_DIR)).filter((file) => file.endsWith('.json'));
-  const markers = [];
-  for (const file of files) {
-    const subregionId = path.basename(file, '.json');
-    const data = await safeReadJson(path.resolve(MARKER_DIR, file), []);
-    if (!Array.isArray(data)) continue;
-    for (const raw of data) {
-      const marker = normalizeMarker(raw, subregionId);
-      if (!marker || !typeMap[marker.type]) continue;
-      markers.push(marker);
-    }
-  }
-  return markers;
+  return (await loadEffectiveMarkers({ typeMap })).filter((marker) => typeMap[marker.type]);
 }
 
 function deduplicateMarkersByPositionAndType(markers) {

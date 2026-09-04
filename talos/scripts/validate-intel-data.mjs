@@ -2,27 +2,30 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodeArchiveContract } from '../apps/intel/src/data/archiveContract.mjs';
+import { loadEffectiveMarkers } from './marker-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INTEL_SRC = path.resolve(ROOT, 'apps/intel/src');
 const GENERATED = path.resolve(INTEL_SRC, 'data/generated');
 const ICONS = path.resolve(INTEL_SRC, 'assets/archive-icons');
 const GAME_LOCALES = path.resolve(INTEL_SRC, 'locale/data/game');
-const MARKERS = path.resolve(ROOT, 'src/data/marker/data');
 const LOCALES = ['de-DE', 'en-US', 'es-ES', 'fr-FR', 'id-ID', 'it-IT', 'ja-JP', 'ko-KR', 'pt-BR', 'ru-RU', 'th-TH', 'vi-VN', 'zh-CN', 'zh-TW'];
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 const readJson = (file) => fs.readJson(path.resolve(file));
+const TYPE_MAP = await readJson(path.resolve(ROOT, 'src/data/marker/type.json'));
+const REGION_MAP = await readJson(path.resolve(ROOT, 'src/data/map/region.json'));
 const contract = decodeArchiveContract(await readJson(path.resolve(GENERATED, 'archive_contract.json')));
 
 const markerById = new Map();
-for (const file of (await fs.readdir(MARKERS)).filter((name) => name.endsWith('.json'))) {
-  const level = path.basename(file, '.json');
-  for (const row of await readJson(path.resolve(MARKERS, file))) {
-    markerById.set(String(row[0]), { level, type: String(row[5]) });
-  }
+const effectiveMarkers = await loadEffectiveMarkers({
+  typeMap: TYPE_MAP,
+  subregionIds: new Set(Object.values(REGION_MAP).flatMap((region) => region.subregions ?? [])),
+});
+for (const marker of effectiveMarkers) {
+  markerById.set(String(marker.id), { level: marker.subregId, type: String(marker.type) });
 }
 for (const row of contract.filter((item) => item.acquisition.method === 'map')) {
   const marker = markerById.get(String(row.acquisition.pointId));

@@ -2,12 +2,12 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
+import { loadEffectiveMarkers } from './marker-data.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const ROOT = path.resolve(__dirname, '..')
 
-const MARKER_DIR = path.resolve(ROOT, 'src/data/marker/data')
 const MARKER_TYPE_FILE = path.resolve(ROOT, 'src/data/marker/type.json')
 const REGION_FILE = path.resolve(ROOT, 'src/data/map/region.json')
 const LOCALE_DIR = path.resolve(ROOT, 'src/locale/data/game')
@@ -133,64 +133,15 @@ async function loadSubregionRegionMap() {
   return map
 }
 
-function normalizeMarker(marker, fallbackSubregionId) {
-  if (Array.isArray(marker)) {
-    const [id, z, x, , , type] = marker
-    return {
-      markerId: String(id ?? ''),
-      typeId: String(type ?? ''),
-      subregionId: fallbackSubregionId,
-      position: [z, x],
-    }
-  }
-
-  if (marker && typeof marker === 'object') {
-    return {
-      markerId: String(marker.id ?? ''),
-      typeId: String(marker.type ?? ''),
-      subregionId: String(marker.subregId ?? fallbackSubregionId),
-      position: marker.pos ?? [marker.z, marker.x],
-    }
-  }
-
-  return null
-}
-
 async function loadMarkers(typeMap) {
-  const files = (await safeReadDir(MARKER_DIR)).filter((f) => f.endsWith('.json'))
   const all = []
-
-  for (const file of files) {
-    const json = await readJson(path.resolve(MARKER_DIR, file))
-    if (!Array.isArray(json)) continue
-    const subregionFromFile = path.basename(file, '.json')
-
-    for (const marker of json) {
-      const normalized = normalizeMarker(marker, subregionFromFile)
-      if (!normalized) continue
-      const { typeId, markerId, position, subregionId } = normalized
-      const hasPos =
-        Array.isArray(position) &&
-        position.length >= 2 &&
-        typeof position[0] === 'number' &&
-        Number.isFinite(position[0]) &&
-        typeof position[1] === 'number' &&
-        Number.isFinite(position[1])
-
-      if (!typeId || !markerId || !typeMap[typeId] || !subregionId || !hasPos) {
-        continue
-      }
-
-      all.push({
-        markerId,
-        typeId,
-        subregionId,
-        x: position[0],
-        y: position[1],
-      })
-    }
+  const markers = await loadEffectiveMarkers({ typeMap })
+  for (const marker of markers) {
+    const { id: markerId, type: typeId, subregId: subregionId, pos: position } = marker
+    const hasPos = Array.isArray(position) && position.length >= 2 && position.every((value) => typeof value === 'number' && Number.isFinite(value))
+    if (!typeId || !markerId || !typeMap[typeId] || !subregionId || !hasPos) continue
+    all.push({ markerId, typeId, subregionId, x: position[0], y: position[1] })
   }
-
   return all
 }
 

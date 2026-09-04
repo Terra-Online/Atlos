@@ -32,6 +32,7 @@
     "build:relink-preview": "node ./scripts/build-relink-preview.mjs",
     "sync:intel-data": "node ./scripts/sync-intel-data.mjs",
     "validate:intel-data": "node ./scripts/validate-intel-data.mjs",
+    "validate:marker-overrides": "node ./scripts/validate-marker-overrides.mjs",
     "build:seo:og": "run-p build:seo:og:oss build:seo:og:r2",
     "build:seo:og:oss": "cross-env BUILD_TARGET=oss SEO_IMAGE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/oss node ./scripts/build-seo-pages.mjs",
     "build:seo:og:r2": "cross-env BUILD_TARGET=r2 SEO_IMAGE_ONLY=1 SEO_OG_OUTPUT_DIR=../seo-og/r2 node ./scripts/build-seo-pages.mjs",

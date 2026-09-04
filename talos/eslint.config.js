@@ -11,7 +11,7 @@ const commonRules = {
 };
 
 export default [
-  { ignores: ['dist', '.pages-dist', '**/*.config.js', 'scripts'] },
+  { ignores: ['dist', '.pages-dist', '**/*.config.js', 'scripts', 'src/data/marker/overrides.js'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
