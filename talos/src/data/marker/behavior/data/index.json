@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 6,
+  "encoding": "tuple-v1",
+  "layout": {
+    "records": {
+      "relation": "r",
+      "butterflyPath": "b",
+      "unlockGroup": "u",
+      "trajectory": "t"
+    },
+    "stageModes": {
+      "collinear": 0,
+      "branch": 1,
+      "multiline": 2
+    }
+  },
+  "sourceRepository": "AKEData",
+  "sourceCommit": "94b4aea78f6648f65c31affec15b82a997cfd075",
+  "generatedAt": "2026-09-04T10:34:53.035084+00:00",
+  "files": [
+    "VL_1.json",
+    "VL_2.json",
+    "VL_3.json",
+    "VL_5.json",
+    "VL_6.json",
+    "VL_7.json",
+    "WL_1.json",
+    "WL_2.json",
+    "WL_3.json",
+    "WL_4.json",
+    "WL_5.json",
+    "WL_6.json",
+    "WL_7.json",
+    "WL_8.json",
+    "WL_9.json"
+  ],
+  "stats": {
+    "butterflyV1": 50,
+    "butterflyV2": 4,
+    "butterflyRelations": 54,
+    "butterflyPaths": 53,
+    "lockedCrates": 52,
+    "coins": 378,
+    "trajectories": 188
+  },
+  "diagnostics": {
+    "v2WithoutChest": [],
+    "butterflyWithoutChest": [],
+    "ambiguousButterflyChest": [],
+    "reverseButterflyChestAmbiguous": [],
+    "missingSpline": [],
+    "noSpline": [],
+    "emptySpline": [
+      "23100030984"
+    ]
+  }
+}

@@ -65,6 +65,8 @@ export class MarkerLayer {
     private proximityPulseIds = new Set<string>();
     private proximityTemporarySelectedIds = new Set<string>();
     private proximityTemporaryVisibleIds = new Set<string>();
+    /** Marker ids temporarily revealed by a behavior relation overlay. */
+    private behaviorTemporaryVisibleIds = new Set<string>();
     private temporaryVisibleIds = new Set<string>();
     private checkedVisibleOverrideIds = new Set<string>();
     private proximityUpdateSeq = 0;
@@ -138,6 +140,7 @@ export class MarkerLayer {
     destroy() {
         this._destroyLasso?.();
         this.clearProximityReminder();
+        this.clearBehaviorTemporaryMarkers();
         Object.values(this.pulseCleanupDict).forEach((cleanup) => cleanup());
         this.pulseCleanupDict = {};
     }
@@ -221,9 +224,14 @@ export class MarkerLayer {
         idList.forEach((id) => {
             this.proximityTemporarySelectedIds.delete(id);
             if (this.proximityTemporaryVisibleIds.has(id)) {
-                this.temporaryVisibleIds.delete(id);
                 this.proximityTemporaryVisibleIds.delete(id);
-                visibilityChanged = true;
+                // A behavior relation may still own this temporary marker.
+                // Only remove the shared visibility lease when no source is
+                // keeping it visible.
+                if (!this.behaviorTemporaryVisibleIds.has(id)) {
+                    this.temporaryVisibleIds.delete(id);
+                    visibilityChanged = true;
+                }
             }
             if (!useMarkerStore.getState().selectedPoints.includes(id)) {
                 changedSelectedPoints.push({ id, selected: false });
@@ -234,6 +242,32 @@ export class MarkerLayer {
         if (changedSelectedPoints.length > 0) {
             this.updateSelectedMarkers(changedSelectedPoints);
         }
+        if (visibilityChanged) {
+            this.filterMarker(this.activeFilterKeys);
+        }
+    }
+
+    /**
+     * Remove markers revealed for the currently selected behavior relation.
+     * This only changes Leaflet visibility bookkeeping; it never touches the
+     * persisted selection or collection records.
+     */
+    clearBehaviorTemporaryMarkers(ids: Iterable<string> = this.behaviorTemporaryVisibleIds) {
+        const idList = [...ids];
+        if (idList.length === 0) return;
+
+        let visibilityChanged = false;
+        idList.forEach((id) => {
+            this.behaviorTemporaryVisibleIds.delete(id);
+            // A proximity reminder may own the same temporary marker. Keep it
+            // visible until that independent flow releases it.
+            if (this.proximityTemporaryVisibleIds.has(id)) return;
+            if (this.temporaryVisibleIds.delete(id)) {
+                visibilityChanged = true;
+            }
+        });
+
+        this.syncTemporaryVisibleMarkers();
         if (visibilityChanged) {
             this.filterMarker(this.activeFilterKeys);
         }
@@ -344,32 +378,78 @@ export class MarkerLayer {
         void showPulses();
     }
 
-    async ensureMarkerVisible(id: string, options?: { source?: 'proximity' }): Promise<boolean> {
+    async ensureMarkerVisible(
+        id: string,
+        options?: { source?: 'proximity' | 'behavior' },
+    ): Promise<boolean> {
         const markerData = this.markerDataDict[id];
         const layer = this.markerDict[id];
         if (!markerData || !layer) return false;
 
-        if (this.clusterLayer.isEnabled() && this.clusterLayer.isTypeManaged(markerData.type)) {
-            const shown = await this.clusterLayer.showMarker(id);
-            if (!shown) return false;
-        } else {
-            const parent = this.layerSubregionDict[markerData.subregId];
-            if (!parent || !this.map.hasLayer(parent)) return false;
-            if (!parent.hasLayer(layer)) {
-                layer.addTo(parent);
-            }
+        // A previous filter pass may still be waiting to remove this marker
+        // after its fade-out. Reusing the normal visibility path must cancel
+        // that timer, otherwise a newly revealed relation endpoint can vanish
+        // a frame later.
+        if (this.pendingRemovalTimers[id] !== undefined) {
+            clearTimeout(this.pendingRemovalTimers[id]);
+            delete this.pendingRemovalTimers[id];
         }
 
-        if (this.activeFilterKeys.includes(markerData.type)) {
-            this.temporaryVisibleIds.delete(id);
-            if (options?.source === 'proximity') {
-                this.proximityTemporaryVisibleIds.delete(id);
-            }
-        } else {
+        // Register the temporary visibility lease before a cluster expansion
+        // can yield. If selection changes while showMarker waits for Leaflet,
+        // the next effect can clear this lease and the stale request will not
+        // recreate it when it resumes.
+        const filteredOut = !this.activeFilterKeys.includes(markerData.type);
+        if (filteredOut) {
             this.temporaryVisibleIds.add(id);
             if (options?.source === 'proximity') {
                 this.proximityTemporaryVisibleIds.add(id);
             }
+            if (options?.source === 'behavior') {
+                this.behaviorTemporaryVisibleIds.add(id);
+            }
+        } else {
+            this.behaviorTemporaryVisibleIds.delete(id);
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.delete(id);
+            }
+            if (!this.proximityTemporaryVisibleIds.has(id)) {
+                this.temporaryVisibleIds.delete(id);
+            }
+        }
+        this.syncTemporaryVisibleMarkers();
+
+        let shown = true;
+        if (this.clusterLayer.isEnabled() && this.clusterLayer.isTypeManaged(markerData.type)) {
+            shown = await this.clusterLayer.showMarker(id);
+        } else {
+            const parent = this.layerSubregionDict[markerData.subregId];
+            if (!parent || !this.map.hasLayer(parent)) {
+                shown = false;
+            } else if (!parent.hasLayer(layer)) {
+                layer.addTo(parent);
+            }
+        }
+
+        if (!shown) {
+            if (options?.source === 'behavior') {
+                this.behaviorTemporaryVisibleIds.delete(id);
+            }
+            if (options?.source === 'proximity') {
+                this.proximityTemporaryVisibleIds.delete(id);
+            }
+            if (
+                !this.behaviorTemporaryVisibleIds.has(id) &&
+                !this.proximityTemporaryVisibleIds.has(id)
+            ) {
+                this.temporaryVisibleIds.delete(id);
+            }
+            this.syncTemporaryVisibleMarkers();
+            return false;
+        }
+
+        if (!filteredOut) {
+            this.behaviorTemporaryVisibleIds.delete(id);
         }
         this.syncTemporaryVisibleMarkers();
 
@@ -414,7 +494,10 @@ export class MarkerLayer {
                 if (isCollected) {
                     this.stopMarkerPulse(id);
                     this.proximityPulseIds.delete(id);
-                    if (!this.checkedVisibleOverrideIds.has(id)) {
+                    if (
+                        !this.checkedVisibleOverrideIds.has(id) &&
+                        !this.behaviorTemporaryVisibleIds.has(id)
+                    ) {
                         this.temporaryVisibleIds.delete(id);
                     }
                     this.syncTemporaryVisibleMarkers();
@@ -509,6 +592,7 @@ export class MarkerLayer {
 
     async changeRegion(regionId: string) {
         this.clearProximityReminder();
+        this.clearBehaviorTemporaryMarkers();
         this.currentLayer = 'M';
         this.temporaryVisibleIds.clear();
         this.proximityTemporaryVisibleIds.clear();
@@ -551,6 +635,8 @@ export class MarkerLayer {
             const markerData = this.markerDataDict[id];
             if (markerData && activeTypeSet.has(markerData.type)) {
                 this.temporaryVisibleIds.delete(id);
+                this.proximityTemporaryVisibleIds.delete(id);
+                this.behaviorTemporaryVisibleIds.delete(id);
             }
         });
         this.syncTemporaryVisibleMarkers();

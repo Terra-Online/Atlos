@@ -9,6 +9,16 @@
 @use './embed' as *;
 @use './themeTransition';
 
+// The behavior overlay is a single canvas, so one CSS shadow keeps both static
+// and animated paths legible without per-feature filter surfaces.
+.talosBehaviorOverlayPane {
+    --talos-behavior-color: #{$primary-accent-4};
+    --talos-behavior-relation-color: #{$primary-accent-2};
+    filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
 /* Import Leaflet MarkerCluster styles */
 @import 'leaflet.markercluster/dist/MarkerCluster.css';
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -102,9 +112,16 @@ button {
 }
 body {
     margin: 0;
-    font-family: 'Novecento Medium', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'HMSans_EN', 'Fedra Sans Pro', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family:
+        'Novecento Medium', 'Novecento Cyrillic DemiBold',
+        'Novecento Vietnamese Medium', 'HMSans_EN', 'Fedra Sans Pro',
+        'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic',
+        'Noto Sans Thai', sans-serif;
     font-variant-numeric: lining-nums;
-    font-feature-settings: "lnum" 1, "onum" 0, "case" 1;
+    font-feature-settings:
+        'lnum' 1,
+        'onum' 0,
+        'case' 1;
 }
 p {
     margin: 0;

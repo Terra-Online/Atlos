@@ -123,6 +123,13 @@ export const registerSharedPointMapCore = (mapCore: MapCore): void => {
     void flushPendingNavigation();
 };
 
+/**
+ * Return the live map core registered by the map component. Lightweight map
+ * overlays use this to coordinate with the existing marker layer without
+ * owning a second marker registry.
+ */
+export const getSharedPointMapCore = (): MapCore | null => mapCoreRef;
+
 export const navigateToSharedPoint = (target: SharedPointTarget): void => {
     const normalizedTarget = normalizeTarget(target);
     const regionStore = useRegion.getState();

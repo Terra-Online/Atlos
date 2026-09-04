@@ -8,6 +8,7 @@ import { useLink } from './useLink';
 import { UsePreview } from './usePreview';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import { isMapOverdragged, toMapBounds } from './mapOverdrag';
+import { useBehaviorOverlay } from './useBehaviorOverlay';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;
@@ -33,6 +34,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
     useLabel(map, currentRegion, maxZoom);
     const { linkTooltipElement } = useLink(map, currentRegion, maxZoom);
     const { PreviewElement } = UsePreview(map);
+    useBehaviorOverlay(map);
 
     useEffect(() => {
         if (!map) return;
