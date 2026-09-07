@@ -8,7 +8,7 @@ import { useLink } from './useLink';
 import { UsePreview } from './usePreview';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import { isMapOverdragged, toMapBounds } from './mapOverdrag';
-import { useBehaviorOverlay } from './useBehaviorOverlay';
+import { useBehaviorOverlay } from './behaviorOverlay/useBehaviorOverlay';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;

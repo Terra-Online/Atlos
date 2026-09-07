@@ -11,9 +11,21 @@
 
 // The behavior overlay is a single canvas, so one CSS shadow keeps both static
 // and animated paths legible without per-feature filter surfaces.
-.talosBehaviorOverlayPane {
-    --talos-behavior-color: #{$primary-accent-4};
-    --talos-behavior-relation-color: #{$primary-accent-2};
+.behaviorOverlayPane {
+    // Butterfly routes and their authored nodes.
+    --behavior-butterfly-color: #{$primary-accent-4};
+
+    // Formal marker relations and their opposite endpoint.
+    --behavior-relation-color: #{$primary-accent-2};
+
+    // Chest-to-bubble connection color.
+    --behavior-unlock-color: #{$primary-accent-1};
+
+    // Aurylene trajectory base color.
+    --behavior-aurylene-color: #{$primary-accent-3};
+
+    // Moving highlight color for Aurylene trajectories.
+    --behavior-flow-color: #{$primary-accent-7};
     filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
     transform-origin: 0 0;
     will-change: transform;
