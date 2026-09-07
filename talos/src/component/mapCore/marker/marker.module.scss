@@ -185,16 +185,16 @@
 
     &[data-tier^="B"] {color: $white-1};
     &[data-tier="B1"]::after {
-        background-color: $secondary-accent-0;
+        background-color: $secondary-accent-3;
     }
     &[data-tier="B2"]::after {
-        background-color: $secondary-accent-1;
+        background-color: $secondary-accent-4;
     }
     &[data-tier="B3"]::after {
-        background-color: $secondary-accent-2;
+        background-color: $secondary-accent-5;
     }
     &[data-tier="B4"]::after {
-        background-color: $secondary-accent-3;
+        background-color: $secondary-accent-6;
     }
 }
 

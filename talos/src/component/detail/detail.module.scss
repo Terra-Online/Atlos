@@ -4,7 +4,7 @@
 
 :root, :root[data-theme='light'] {
     --detail-bg: #{$light-1};
-    --detail-header-bg: #{$secondary-accent-1};
+    --detail-header-bg: #{$secondary-accent-4};
     --detail-title: #{$white-0};
     --detail-brakt: #{$grey-1};
     --detail-checked-deco: #{$primary-accent-6};
@@ -12,24 +12,24 @@
     --detail-text: #{$grey-1};
     --detail-prog: #{$grey-1};
     --detail-checked-prog: #{$primary-accent-6};
-    --detail-tab-bg: #{$secondary-accent-2};
-    --detail-tab-active-bg: #{$secondary-accent-0};
-    --detail-tab-collect-bg: #{$secondary-accent-3};
+    --detail-tab-bg: #{$secondary-accent-5};
+    --detail-tab-active-bg: #{$secondary-accent-3};
+    --detail-tab-collect-bg: #{$secondary-accent-6};
     --detail-tab-disabled-bg: #{$grey-3};
     --detail-full-text: #{$grey-1};
 }
 :root[data-theme='dark'] {
     --detail-bg: #{$light-1};
-    --detail-header-bg: #{$secondary-accent-1};
+    --detail-header-bg: #{$secondary-accent-4};
     --detail-title: #{$white-0};
     --detail-brakt: #{$grey-1};
     --detail-heading: #{$grey-2};
     --detail-text: #{$grey-1};
     --detail-prog: #{$grey-1};
     --detail-checked-prog: #{$primary-accent-6};
-    --detail-tab-bg: #{$secondary-accent-2};
-    --detail-tab-active-bg: #{$secondary-accent-0};
-    --detail-tab-collect-bg: #{$secondary-accent-3};
+    --detail-tab-bg: #{$secondary-accent-5};
+    --detail-tab-active-bg: #{$secondary-accent-3};
+    --detail-tab-collect-bg: #{$secondary-accent-6};
     --detail-tab-disabled-bg: #{$grey-3};
     --detail-full-text: #{$light-2};
 }

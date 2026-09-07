@@ -5,14 +5,14 @@
 :root, :root[data-theme='light'] {
     --lasso-select-border: #{$primary-accent-5};
     --lasso-select-bg: #{rgba($primary-accent-5, .2)};
-    --lasso-deselect-border: #{$secondary-accent-1};
-    --lasso-deselect-bg: #{rgba($secondary-accent-1, .2)};
+    --lasso-deselect-border: #{$secondary-accent-4};
+    --lasso-deselect-bg: #{rgba($secondary-accent-4, .2)};
 }
 :root[data-theme='dark'] {
     --lasso-select-border: #{$primary-accent-4};
     --lasso-select-bg: #{rgba($primary-accent-5, .2)};
-    --lasso-deselect-border: #{$secondary-accent-1};
-    --lasso-deselect-bg: #{rgba($secondary-accent-1, .2)};
+    --lasso-deselect-border: #{$secondary-accent-4};
+    --lasso-deselect-bg: #{rgba($secondary-accent-4, .2)};
 }
 
 .lassoOverlay {
