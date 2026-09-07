@@ -5,7 +5,7 @@ import type { ProgressManifestPayload } from '@/services/progress/bitmap';
 
 const PROGRESS_API_BASE = `${getAuthBase()}/progress/v1`;
 
-type CloudProgressMeta = Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'updatedAt'>;
+type CloudProgressMeta = Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'updatedAt' | 'retainedPointIds'>;
 
 export type CloudArchiveProgress = {
     revision: string;

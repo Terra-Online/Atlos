@@ -13,6 +13,15 @@ import {
     syncCloudProgress,
     type ProgressSyncRequestPayload,
 } from '@/services/progress';
+import {
+    acknowledgeRetainedPointIds,
+    areLocalPointsSynced,
+    arePointSetsEqual,
+    buildPointPatch,
+    getUnacknowledgedRetainedPointIds,
+    normalizePointIds,
+    splitByKnownPointIds,
+} from '@/services/progress/pointState';
 
 const MAX_DIRTY_MS = 60_000;
 const COUNT_FLUSH_THRESHOLD = 10;
@@ -20,7 +29,7 @@ const MODAL_EXIT_DURATION_MS = 325;
 const PENDING_MUTATION_STORAGE_PREFIX = 'talos-progress-pending-mutation:';
 
 type SyncReason = 'startup' | 'auto' | 'manual' | 'visibility' | 'online' | 'conflict';
-type ProgressBase = Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'pointIds'>;
+type ProgressBase = Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'pointIds' | 'retainedPointIds'>;
 type PendingProgressMutation = {
     uid: string;
     payload: ProgressSyncRequestPayload;
@@ -66,53 +75,8 @@ const persistPendingMutation = (uid: string, pending: PendingProgressMutation | 
     }
 };
 
-const normalizePointIds = (pointIds: string[]): string[] =>
-    [...new Set(pointIds.map((id) => String(id)).filter(Boolean))];
-
 const isRemoteEmpty = (progress: CloudProgress): boolean =>
     !progress.revision && progress.pointIds.length === 0;
-
-const arePointSetsEqual = (first: string[], second: string[]): boolean => {
-    if (first.length !== second.length) return false;
-    const firstSet = new Set(first.map((id) => String(id)));
-    if (firstSet.size !== second.length) return false;
-    return second.every((id) => firstSet.has(String(id)));
-};
-
-const buildPointPatch = (basePointIds: string[], nextPointIds: string[]): {
-    setPointIds: string[];
-    clearPointIds: string[];
-} => {
-    const baseSet = new Set(basePointIds.map((id) => String(id)));
-    const nextSet = new Set(nextPointIds.map((id) => String(id)));
-    const setPointIds: string[] = [];
-    const clearPointIds: string[] = [];
-
-    nextSet.forEach((id) => {
-        if (!baseSet.has(id)) setPointIds.push(id);
-    });
-    baseSet.forEach((id) => {
-        if (!nextSet.has(id)) clearPointIds.push(id);
-    });
-
-    return { setPointIds, clearPointIds };
-};
-
-const splitByKnownPointIds = (pointIds: string[], knownPointIds: Set<string>): {
-    known: string[];
-    unknown: string[];
-} => {
-    const known: string[] = [];
-    const unknown: string[] = [];
-    normalizePointIds(pointIds).forEach((pointId) => {
-        if (knownPointIds.has(pointId)) {
-            known.push(pointId);
-        } else {
-            unknown.push(pointId);
-        }
-    });
-    return { known, unknown };
-};
 
 const mergeVisibleWithLocalUnknown = (
     visiblePointIds: string[],
@@ -301,6 +265,11 @@ const ProgressSyncHost = () => {
                     const acknowledgedProgress = {
                         ...pendingResponse.progress,
                         pointIds: pendingMutation.pointIds,
+                        retainedPointIds: acknowledgeRetainedPointIds(
+                            pendingResponse.progress.retainedPointIds,
+                            base?.retainedPointIds ?? [],
+                            splitByKnownPointIds(pendingMutation.payload.setPointIds, knownPointIds).unknown,
+                        ),
                     };
                     pendingMutationRef.current = null;
                     persistPendingMutation(pendingMutation.uid, null);
@@ -332,10 +301,11 @@ const ProgressSyncHost = () => {
 
             const basePointIds = splitByKnownPointIds(base.pointIds, knownPointIds).known;
             const markerIndexChanged = Boolean(base.markerIndexHash && base.markerIndexHash !== manifest.markerIndexHash);
+            const unacknowledgedPointIds = getUnacknowledgedRetainedPointIds(retainedLocalPointIds, base.retainedPointIds);
 
             if (
                 arePointSetsEqual(basePointIds, activePoints)
-                && retainedLocalPointIds.length === 0
+                && unacknowledgedPointIds.length === 0
                 && !markerIndexChanged
                 && (reason === 'visibility' || reason === 'online' || reason === 'manual')
             ) {
@@ -347,7 +317,7 @@ const ProgressSyncHost = () => {
             }
 
             const patch = buildPointPatch(basePointIds, activePoints);
-            const setPointIds = normalizePointIds([...patch.setPointIds, ...retainedLocalPointIds]);
+            const setPointIds = normalizePointIds([...patch.setPointIds, ...unacknowledgedPointIds]);
             if (setPointIds.length === 0 && patch.clearPointIds.length === 0 && !markerIndexChanged) {
                 setStatus('synced');
                 dirtyCountRef.current = 0;
@@ -381,11 +351,18 @@ const ProgressSyncHost = () => {
             const nextProgress = {
                 ...response.progress,
                 pointIds: activePoints,
+                retainedPointIds: acknowledgeRetainedPointIds(
+                    response.progress.retainedPointIds,
+                    base.retainedPointIds ?? [],
+                    unacknowledgedPointIds,
+                ),
             };
             setBaseline(nextProgress);
             baselineRef.current = nextProgress;
             setCounts({ localPointCount: activePoints.length, remotePointCount: nextProgress.pointIds.length });
-            setStatus('synced');
+            const localStillMatches = areLocalPointsSynced(useUserRecordStore.getState().activePoints, nextProgress);
+            setStatus(localStillMatches ? 'synced' : 'dirty');
+            if (!localStillMatches) rerunRequestedRef.current = true;
             setError(null);
             dirtyCountRef.current = 0;
             clearTimers();
@@ -415,7 +392,9 @@ const ProgressSyncHost = () => {
                     setError(null);
                     dirtyCountRef.current = 0;
                     clearTimers();
-                    rerunRequestedRef.current = !remoteMatchesLocal || local.unknown.length > 0;
+                    rerunRequestedRef.current = !remoteMatchesLocal
+                        || getUnacknowledgedRetainedPointIds(local.unknown, remote.retainedPointIds).length > 0;
+                    if (rerunRequestedRef.current) setStatus('dirty');
                     return;
                 }
                 openConflict(local.known, remote);
@@ -469,7 +448,8 @@ const ProgressSyncHost = () => {
             if (isRemoteEmpty(remote)) {
                 setBaseline(remote);
                 baselineRef.current = remote;
-                if (localPointIds.length > 0 || retainedLocalPointIds.length > 0) {
+                if (localPointIds.length > 0
+                    || getUnacknowledgedRetainedPointIds(retainedLocalPointIds, remote.retainedPointIds).length > 0) {
                     inFlightRef.current = false;
                     await syncNow('startup', { forceBase: remote });
                     return;
@@ -483,7 +463,7 @@ const ProgressSyncHost = () => {
                 baselineRef.current = remote;
                 if (
                     (remote.markerIndexHash && remote.markerIndexHash !== manifestRef.current?.markerIndexHash)
-                    || retainedLocalPointIds.length > 0
+                    || getUnacknowledgedRetainedPointIds(retainedLocalPointIds, remote.retainedPointIds).length > 0
                 ) {
                     inFlightRef.current = false;
                     await syncNow('startup', { forceBase: remote });
@@ -530,6 +510,17 @@ const ProgressSyncHost = () => {
         if (!sessionUidRef.current) return;
         if (suppressLocalChangeRef.current) return;
         if (changedPoints <= 0) return;
+        const currentBaseline = baselineRef.current;
+        if (!inFlightRef.current && !pendingMutationRef.current && currentBaseline
+            && !useProgressSyncStore.getState().conflict
+            && currentBaseline.markerIndexHash === manifestRef.current?.markerIndexHash
+            && areLocalPointsSynced(useUserRecordStore.getState().activePoints, currentBaseline)) {
+            dirtyCountRef.current = 0;
+            clearTimers();
+            setStatus('synced');
+            setCounts({ localPointCount: currentBaseline.pointIds.length });
+            return;
+        }
         dirtyCountRef.current += changedPoints;
         setStatus('dirty');
         setCounts({
@@ -565,7 +556,7 @@ const ProgressSyncHost = () => {
 
     useEffect(() => {
         const unsubscribe = useUserRecordStore.subscribe((state, prevState) => {
-            if (state.updatedAt === prevState.updatedAt) return;
+            if (state.activePoints === prevState.activePoints) return;
             scheduleSync(countPointDelta(prevState.activePoints, state.activePoints));
         });
         return unsubscribe;

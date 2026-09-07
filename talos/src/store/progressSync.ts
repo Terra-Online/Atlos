@@ -16,6 +16,7 @@ export type CloudProgress = {
     markerIndexHash: string;
     updatedAt: number | null;
     pointIds: string[];
+    retainedPointIds?: string[];
 };
 
 export type ProgressConflictState = {
@@ -28,7 +29,7 @@ export type ProgressConflictState = {
 
 interface ProgressSyncStore {
     status: ProgressSyncStatus;
-    baseline: Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'pointIds'> | null;
+    baseline: Pick<CloudProgress, 'revision' | 'markerIndexHash' | 'pointIds' | 'retainedPointIds'> | null;
     lastSyncedAt: number | null;
     error: string | null;
     localPointCount: number;
@@ -58,6 +59,7 @@ export const useProgressSyncStore = create<ProgressSyncStore>()(
                         revision: progress.revision,
                         markerIndexHash: progress.markerIndexHash,
                         pointIds: progress.pointIds,
+                        retainedPointIds: progress.retainedPointIds,
                     }
                     : null,
                 lastSyncedAt: progress ? progress.updatedAt ?? Date.now() : null,

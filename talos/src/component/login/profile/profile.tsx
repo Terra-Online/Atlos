@@ -18,6 +18,7 @@ import {
 import { formatElapsedShort, parseTimestamp } from '@/lib/format/time';
 import ProgressSyncHost from '@/component/progressSync/ProgressSyncHost';
 import { requestProgressSyncNow } from '@/component/progressSync/progressSyncController';
+import { areLocalPointsSynced } from '@/services/progress/pointState';
 import { AccessButton } from '../access';
 import IdCardView, { type IdCardRenderModel } from '../idcardView';
 import { useIdCardHoverAngle } from '../useIdCardHoverAngle';
@@ -26,13 +27,6 @@ import styles from './profile.module.scss';
 const MODAL_EXIT_DURATION_MS = 325;
 const SYNC_HINT_BUSY_STATUSES = new Set(['checking', 'dirty', 'syncing']);
 const SYNC_HINT_FAILED_STATUSES = new Set(['error', 'offline', 'conflict']);
-
-const arePointSetsEqual = (first: string[], second: string[]): boolean => {
-  if (first.length !== second.length) return false;
-  const firstSet = new Set(first.map((id) => String(id)));
-  if (firstSet.size !== second.length) return false;
-  return second.every((id) => firstSet.has(String(id)));
-};
 
 interface ProfileModalProps {
   profileOpen: boolean;
@@ -84,8 +78,8 @@ const ProfileModal = ({
   const syncPointCount = Math.max(progressSync.localPointCount, progressSync.remotePointCount);
   const isProgressSyncing = progressSync.status === 'checking' || progressSync.status === 'syncing';
   const isLocalCloudSynced = progressSync.status === 'synced'
-    && progressSync.baseline !== null
-    && arePointSetsEqual(activePoints, progressSync.baseline.pointIds);
+    && progressSync.conflict === null
+    && areLocalPointsSynced(activePoints, progressSync.baseline);
   const syncButtonLabel = isProgressSyncing
     ? t('common.loading')
     : isLocalCloudSynced
