@@ -216,9 +216,21 @@ async function postAuthJson<TResponse>(
 }
 
 export const fetchSessionUser = async (): Promise<SessionUser | null> => {
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), 15_000);
+  try {
+    return await requestSessionUser(controller.signal);
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
+};
+
+const requestSessionUser = async (signal: AbortSignal, allowMigration = true): Promise<SessionUser | null> => {
   const response = await fetch(`${authBase}/auth/v1/session`, {
     method: 'GET',
     credentials: 'include',
+    cache: 'no-store',
+    signal,
     headers: {
       accept: 'application/json',
       ...getAuthHeaders(),
@@ -248,6 +260,13 @@ export const fetchSessionUser = async (): Promise<SessionUser | null> => {
     );
   }
 
+  if ((payload as { requiresCookieConfirmation?: boolean } | null)?.requiresCookieConfirmation) {
+    if (!allowMigration) {
+      throw new AuthFlowError('The browser did not retain the partitioned session cookie.', { code: 'SESSION_COOKIE_REQUIRED' });
+    }
+    return requestSessionUser(signal, false);
+  }
+
   const user = pickSessionUser(payload);
   if (!user) {
     throw new Error('Session payload does not contain user info.');
@@ -261,9 +280,12 @@ export const exchangeAuthCode = async (code: string): Promise<SessionUser> => {
     code: code.trim(),
   });
 
-  const user = pickSessionUser(payload);
-  if (!user) {
-    throw new Error('Session exchange payload does not contain user info.');
+  const user = await fetchSessionUser();
+  const expectedUser = pickSessionUser(payload);
+  if (!user || !expectedUser || user.uid !== expectedUser.uid) {
+    throw new AuthFlowError('The browser did not retain the session cookie. Partitioned cookies are required.', {
+      code: 'SESSION_COOKIE_REQUIRED',
+    });
   }
 
   return user;

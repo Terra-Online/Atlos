@@ -1,3 +1,5 @@
+import { requestSessionRevalidation } from '@/services/auth/sessionEvents';
+
 export class HttpRequestError extends Error {
     readonly status: number;
     readonly payload?: unknown;
@@ -31,6 +33,7 @@ export const requestJson = async <T,>(
     });
 
     if (!response.ok) {
+        if (response.status === 401) requestSessionRevalidation();
         if (decodeError) throw await decodeError(response);
         throw new HttpRequestError(`HTTP ${response.status}`, response.status);
     }

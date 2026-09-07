@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AuthFlowError,
   exchangeAuthCode,
-  fetchSessionUser,
   getResetPasswordPreview,
   getAuthBase,
   loginWithEmail,
@@ -19,6 +18,7 @@ import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues
 import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
 import { getCachedSession } from '@/services/cache/backend';
+import { refreshSessionUser, startSessionRefresh } from '@/services/auth/sessionLifecycle';
 
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;
@@ -133,15 +133,13 @@ export const useIdCardAuthController = () => {
 
   const syncSession = useCallback(async (options?: { silent?: boolean }) => {
     try {
-      const user = await fetchSessionUser();
+      const user = await refreshSessionUser();
       if (!user) {
-        clearSessionUser();
         return null;
       }
 
       markOnceLogin();
       setHasLoggedInBefore(true);
-      setSessionUser(user);
       if (user.needsProfileSetup) {
         setProfileName('');
         setProfileAvatar(normalizeAvatarIndex(user.avatar));
@@ -158,7 +156,9 @@ export const useIdCardAuthController = () => {
     } finally {
       setAuthReady(true);
     }
-  }, [clearSessionUser, setSessionUser]);
+  }, []);
+
+  useEffect(() => startSessionRefresh(), []);
 
   useEffect(() => {
     if (hasPendingAuthCode()) {
@@ -183,16 +183,15 @@ export const useIdCardAuthController = () => {
     window.history.replaceState({}, '', url.toString());
 
     void exchangeAuthCode(authCode)
-      .then(async (user) => {
-        const refreshedUser = (await fetchSessionUser().catch(() => null)) ?? user;
+      .then((user) => {
         markOnceLogin();
         setHasLoggedInBefore(true);
-        setSessionUser(refreshedUser);
+        setSessionUser(user);
         setAuthReady(true);
         setOpen(false);
-        if (refreshedUser.needsProfileSetup) {
+        if (user.needsProfileSetup) {
           setProfileName('');
-          setProfileAvatar(normalizeAvatarIndex(refreshedUser.avatar));
+          setProfileAvatar(normalizeAvatarIndex(user.avatar));
           setProfileError(null);
           setProfileOpen(true);
         }
