@@ -668,10 +668,16 @@ const NotifyModal: React.FC<NotifyProps> = ({
         (item: NotificationItem, readItem = item) => {
             const markerId = item.target.markerId;
             if (!markerId) return;
+            const imageTarget = item.target.submissionId?.trim();
+            const imageId = item.payload.kind === 'image' && imageTarget
+                ? imageTarget
+                : undefined;
             handleRead(readItem);
             onClose();
             onChange?.(false);
-            void navigateToMarkerId(markerId);
+            void navigateToMarkerId(markerId, {
+                content: imageId ? { kind: 'image', id: imageId } : undefined,
+            });
         },
         [handleRead, onChange, onClose],
     );
