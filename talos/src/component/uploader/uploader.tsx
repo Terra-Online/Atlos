@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, type CSSProperties } from 'react';
+import React, { memo, useCallback, useMemo, type CSSProperties } from 'react';
 import classNames from 'classnames';
 import styles from './uploader.module.scss';
 import Viewer from '../detail/viewer/viewer';
@@ -37,10 +37,10 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
     const uploadState = useUGCUpload(point, imageState);
     const actionsState = useUGCImageActions(imageState, uploadState);
     const uiState = useImageUiState(imageState, uploadState);
-    const interaction = useUploadInteraction(point, uploadState, activeDetail, actionsState.viewerOpen);
+    const interaction = useUploadInteraction(point, uploadState, activeDetail, imageState.viewerOpen);
     const carousel = useCarousel();
 
-    const { active, activeImages, selectedImageId, setSelectedImageId, show, loading, shouldOpenViewer, acknowledgeViewerOpen } = imageState;
+    const { active, activeImages, selectedImageId, setSelectedImageId, show, loading, viewerOpen, setViewerOpen } = imageState;
     const {
         uploading,
         uploadSent,
@@ -57,8 +57,6 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
         actionPending,
         recallConfirming,
         cancelRecallConfirmation,
-        viewerOpen,
-        setViewerOpen,
         handleToggleUpvote,
         handleToggleFlag,
         handleToggleRecall,
@@ -81,12 +79,6 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
     const { copiedPopupVisible, copyPointShareUrl } = usePointShareLink(point, {
         content: active && isPublic(active) ? { kind: 'image', id: active.id } : undefined,
     });
-
-    useEffect(() => {
-        if (!shouldOpenViewer || !active || active.id !== selectedImageId) return;
-        setViewerOpen(true);
-        acknowledgeViewerOpen();
-    }, [acknowledgeViewerOpen, active, selectedImageId, setViewerOpen, shouldOpenViewer]);
 
     const progressStyle = useMemo(
         () => ({ '--uploader-progress': `${Math.round(progress * 100)}%` }) as CSSProperties,
