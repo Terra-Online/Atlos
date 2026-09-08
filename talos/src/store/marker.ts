@@ -14,9 +14,18 @@ import {
     WORLD_TYPE_COUNT_MAP,
 } from '@/data/marker';
 
+export type ImageOpenRequest = {
+    markerId: string;
+    imageId: string;
+    generation: number;
+};
+
 interface IMarkerStore {
     currentActivePoint: IMarkerData | null;
     setCurrentActivePoint: (point: IMarkerData) => void;
+    imageOpenRequest: ImageOpenRequest | null;
+    openMarkerImage: (markerId: string, imageId: string) => void;
+    clearImageOpenRequest: () => void;
     filter: string[];
     points: string[];
     switchFilter: (typeKey: string) => void;
@@ -44,14 +53,31 @@ export const useMarkerStore = create<IMarkerStore>()(
     persist(
         (set, get) => ({
             currentActivePoint: null,
+            imageOpenRequest: null,
             setCurrentActivePoint: (point) => {
                 const prev = get().currentActivePoint;
                 // If user clicks the same point again, still emit an update so UI can re-open.
                 if (prev?.id === point.id) {
-                    set({ currentActivePoint: { ...point } });
+                    set({ currentActivePoint: { ...point }, imageOpenRequest: null });
                     return;
                 }
-                set({ currentActivePoint: point });
+                set({ currentActivePoint: point, imageOpenRequest: null });
+            },
+            openMarkerImage: (markerId, imageId) => {
+                const nextImageId = imageId.trim();
+                if (!nextImageId) return;
+                set((state) => ({
+                    imageOpenRequest: {
+                        markerId: String(markerId),
+                        imageId: nextImageId,
+                        generation: (state.imageOpenRequest?.generation ?? 0) + 1,
+                    },
+                }));
+            },
+            clearImageOpenRequest: () => {
+                if (get().imageOpenRequest) {
+                    set({ imageOpenRequest: null });
+                }
             },
             filter: [],
             points: [],

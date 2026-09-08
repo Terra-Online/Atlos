@@ -526,6 +526,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                 buttonType='close'
                                 onClick={(e) => {
                                     e.stopPropagation();
+                                    useMarkerStore.getState().clearImageOpenRequest();
                                     setDetailPhase('exiting');
                                 }}
                             />
