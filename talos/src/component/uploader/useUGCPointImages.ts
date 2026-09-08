@@ -54,10 +54,12 @@ export type PointImagesState = {
     loading: boolean;
     show: boolean;
     target: ReturnType<typeof resolveUGCUploadTarget>;
-    patchActiveImage: (patch: (image: UGCImage) => UGCImage) => void;
+    requestedImage: UGCImage | null;
+    setRequestedImage: React.Dispatch<React.SetStateAction<UGCImage | null>>;
+    patchImageById: (imageId: string, patch: (image: UGCImage) => UGCImage) => void;
     applyServerImage: (serverImage: UGCImageActionPatch) => void;
-    shouldOpenViewer: boolean;
-    acknowledgeViewerOpen: () => void;
+    viewerOpen: boolean;
+    setViewerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const useUGCPointImages = (point: IMarkerData): PointImagesState => {
@@ -69,7 +71,7 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
     const [publicImagesLoading, setPublicImagesLoading] = useState(true);
     const [myImagesLoading, setMyImagesLoading] = useState(Boolean(user));
     const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-    const [shouldOpenViewer, setShouldOpenViewer] = useState(false);
+    const [viewerOpen, setViewerOpen] = useState(false);
     const imageOpenRequest = useMarkerStore((state) => state.imageOpenRequest);
     const clearImageOpenRequest = useMarkerStore((state) => state.clearImageOpenRequest);
 
@@ -77,14 +79,12 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         setImages([]);
         setRequestedImage(null);
         setSelectedImageId(null);
-        setShouldOpenViewer(false);
+        setViewerOpen(false);
         if (!target) {
             setPublicImagesLoading(false);
             return;
         }
 
-        // This flag belongs to this effect run. It ignores late results from an
-        // old marker load; it does not abort the underlying HTTP request.
         let disposed = false;
         setPublicImagesLoading(true);
         void listUGCImages(point.id)
@@ -144,7 +144,6 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         [myImages, point.id],
     );
 
-    // Merge public and own records by ID so the UI has one display list.
     const activeImages = useMemo(() => {
         const merged = new Map<string, UGCImage>();
         pointImages.forEach((image) => {
@@ -209,14 +208,14 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         }
         const { imageId } = imageOpenRequest;
         setRequestedImage(null);
-        setShouldOpenViewer(false);
+        setViewerOpen(false);
         let cancelled = false;
         void getUGCImageById(point.id, imageId)
             .then((image) => {
                 if (cancelled) return;
                 setRequestedImage(image);
                 setSelectedImageId(image.id);
-                setShouldOpenViewer(true);
+                setViewerOpen(true);
                 clearImageOpenRequest();
             })
             .catch(() => {
@@ -229,17 +228,11 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         };
     }, [clearImageOpenRequest, imageOpenRequest, point.id]);
 
-    const acknowledgeViewerOpen = useCallback(() => {
-        // This only acknowledges the one-time signal; it does not close the viewer.
-        setShouldOpenViewer(false);
+    const patchImageById = useCallback((imageId: string, patch: (image: UGCImage) => UGCImage) => {
+        setImages((current) => current.map((image) => (image.id === imageId ? patch(image) : image)));
+        setMyImages((current) => current.map((image) => (image.id === imageId ? patch(image) as UGCSubmissionImage : image)));
+        setRequestedImage((current) => (current?.id === imageId ? patch(current) : current));
     }, []);
-
-    const patchActiveImage = useCallback((patch: (image: UGCImage) => UGCImage) => {
-        if (!active) return;
-        setImages((current) => current.map((image) => (image.id === active.id ? patch(image) : image)));
-        setMyImages((current) => current.map((image) => (image.id === active.id ? patch(image) as UGCSubmissionImage : image)));
-        setRequestedImage((current) => (current?.id === active.id ? patch(current) : current));
-    }, [active]);
 
     const applyServerImage = useCallback((serverImage: UGCImageActionPatch) => {
         setImages((current) => current.map((image) => (image.id === serverImage.id ? {
@@ -273,10 +266,12 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         loading,
         show: Boolean(target) || pointImages.length > 0,
         target,
-        patchActiveImage,
+        requestedImage,
+        setRequestedImage,
+        patchImageById,
         applyServerImage,
-        shouldOpenViewer,
-        acknowledgeViewerOpen,
+        viewerOpen,
+        setViewerOpen,
     };
 };
 

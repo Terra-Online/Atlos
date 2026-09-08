@@ -1,13 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import {
     recallUGCImage,
     toggleUGCImageFlag,
     toggleUGCImageUpvote,
-    type UGCImage,
     type UGCImageActionPatch,
-    type UGCSubmissionImage,
 } from '@/utils/ugcClient';
 import { getUpvoteCount, type PointImagesState } from './useUGCPointImages';
 import type { UploadState } from './useUGCUpload';
@@ -43,8 +41,6 @@ export type ImageActionsState = {
     actionPending: boolean;
     recallConfirming: boolean;
     cancelRecallConfirmation: () => void;
-    viewerOpen: boolean;
-    setViewerOpen: React.Dispatch<React.SetStateAction<boolean>>;
     handleToggleUpvote: () => void;
     handleToggleFlag: () => void;
     handleToggleRecall: () => Promise<void>;
@@ -58,7 +54,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         imageId: string;
         armedAt: number;
     } | null>(null);
-    const [viewerOpen, setViewerOpen] = useState(false);
     const cancelRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
     const upvoteTasksRef = useRef(new Map<string, ToggleTask>());
     const flagTasksRef = useRef(new Map<string, ToggleTask>());
@@ -67,20 +62,20 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         active,
         isOwnActive,
         applyServerImage,
+        patchImageById,
         setImages,
         setMyImages,
+        requestedImage,
+        setRequestedImage,
         images,
         myImages,
         selectedImageId,
         setSelectedImageId,
+        viewerOpen,
+        setViewerOpen,
     } = imageState;
 
     const { lastSubmission, setLastSubmission } = uploadState;
-
-    const patchImageById = useCallback((imageId: string, patch: (image: UGCImage) => UGCImage) => {
-        setImages((current) => current.map((image) => (image.id === imageId ? patch(image) : image)));
-        setMyImages((current) => current.map((image) => (image.id === imageId ? patch(image) as UGCSubmissionImage : image)));
-    }, [setImages, setMyImages]);
 
     const scheduleUpvoteSync = useCallback((imageId: string) => {
         const task = upvoteTasksRef.current.get(imageId);
@@ -246,11 +241,13 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         const previousSubmission = lastSubmission;
         const previousImages = images;
         const previousMyImages = myImages;
+        const previousRequestedImage = requestedImage;
         const previousSelectedImageId = selectedImageId;
         const previousViewerOpen = viewerOpen;
         setLastSubmission(null);
         setImages((current) => current.filter((image) => image.id !== active.id));
         setMyImages((current) => current.filter((image) => image.id !== active.id));
+        setRequestedImage((current) => (current?.id === active.id ? null : current));
         setSelectedImageId(null);
         setViewerOpen(false);
         setActionPending(true);
@@ -260,19 +257,18 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
             setLastSubmission(previousSubmission);
             setImages(previousImages);
             setMyImages(previousMyImages);
+            setRequestedImage(previousRequestedImage);
             setSelectedImageId(previousSelectedImageId);
             setViewerOpen(previousViewerOpen);
         } finally {
             setActionPending(false);
         }
-    }, [actionPending, active, images, isAuthenticated, isOwnActive, lastSubmission, myImages, recallConfirmation, selectedImageId, setImages, setLastSubmission, setMyImages, setSelectedImageId, viewerOpen]);
+    }, [actionPending, active, images, isAuthenticated, isOwnActive, lastSubmission, myImages, recallConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
 
     return {
         actionPending,
         recallConfirming: Boolean(active && recallConfirmation?.imageId === active.id),
         cancelRecallConfirmation,
-        viewerOpen,
-        setViewerOpen,
         handleToggleUpvote,
         handleToggleFlag,
         handleToggleRecall,
