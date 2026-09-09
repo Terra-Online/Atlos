@@ -13,7 +13,7 @@ import ShortActions, { type ShortActionItem } from './shortActions';
 import LikeIcon from '@/assets/images/UI/like.svg?react';
 import FlagIcon from '@/assets/images/UI/flag.svg?react';
 import RecallIcon from '@/assets/images/UI/recall.svg?react';
-import useUGCPointImages from './useUGCPointImages';
+import useUGCPointImages, { isPublic } from './useUGCPointImages';
 import useUGCUpload from './useUGCUpload';
 import useUGCImageActions from './useUGCImageActions';
 import useImageUiState from './useImageUiState';
@@ -37,10 +37,10 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
     const uploadState = useUGCUpload(point, imageState);
     const actionsState = useUGCImageActions(imageState, uploadState);
     const uiState = useImageUiState(imageState, uploadState);
-    const interaction = useUploadInteraction(point, uploadState, activeDetail, actionsState.viewerOpen);
+    const interaction = useUploadInteraction(point, uploadState, activeDetail, imageState.viewerOpen);
     const carousel = useCarousel();
 
-    const { active, activeImages, selectedImageId, setSelectedImageId, show, loading } = imageState;
+    const { active, activeImages, selectedImageId, setSelectedImageId, show, loading, viewerOpen, setViewerOpen } = imageState;
     const {
         uploading,
         uploadSent,
@@ -57,8 +57,6 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
         actionPending,
         recallConfirming,
         cancelRecallConfirmation,
-        viewerOpen,
-        setViewerOpen,
         handleToggleUpvote,
         handleToggleFlag,
         handleToggleRecall,
@@ -78,7 +76,9 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
         handleCarouselLayerKeyDown,
     } = carousel;
 
-    const { copiedPopupVisible, copyPointShareUrl } = usePointShareLink(point);
+    const { copiedPopupVisible, copyPointShareUrl } = usePointShareLink(point, {
+        content: active && isPublic(active) ? { kind: 'image', id: active.id } : undefined,
+    });
 
     const progressStyle = useMemo(
         () => ({ '--uploader-progress': `${Math.round(progress * 100)}%` }) as CSSProperties,

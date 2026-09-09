@@ -16,7 +16,7 @@ import {
 } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 import { getLangFromUrlCode, getLangUrlCode } from '@/utils/lang';
-import { navigateToSharedPoint } from '@/utils/navigation';
+import { navigateToSharedPoint, type MarkerNavigationOptions, type SharedPointTarget } from '@/utils/navigation';
 import { completeCurrentUserGuide } from '@/store/userGuide';
 
 // URL 參數名稱
@@ -27,6 +27,7 @@ const PARAM_REGION = 'r';
 const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
 const PARAM_POINT_TOKEN = 'x';
+const PARAM_IMAGE = 'imageId';
 const MAP_URL_PARAMS = [
     PARAM_LANG,
     PARAM_FILTER,
@@ -543,13 +544,18 @@ export const generatePointShareShortUrl = (point: Pick<IMarkerData, 'id' | 'type
     return `?${tokenParams.toString()}`;
 };
 
-export const generatePointShareUrl = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>): string => {
+export const generatePointShareUrl = (
+    point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>,
+    options: MarkerNavigationOptions = {},
+): string => {
     const tokenOrFallback = buildPointShareToken(point);
     const pointShareOrigin = getPointShareOrigin();
-    if (tokenOrFallback.startsWith('?')) {
-        return `${pointShareOrigin}/${tokenOrFallback}`;
+    const path = tokenOrFallback.startsWith('?') ? tokenOrFallback : encodeURIComponent(tokenOrFallback);
+    const url = new URL(`${pointShareOrigin}/${path}`);
+    if (options.content?.kind === 'image') {
+        url.searchParams.set(PARAM_IMAGE, options.content.id);
     }
-    return `${pointShareOrigin}/${encodeURIComponent(tokenOrFallback)}`;
+    return url.toString();
 };
 
 /**
@@ -666,42 +672,52 @@ export const applyUrlParams = async (): Promise<void> => {
     const pointIdFromToken = pointTokenParam ? decodePointIdToken(pointTokenParam) : null;
     const resolvedFromToken = pointIdFromToken ? await resolvePointShareTarget(pointIdFromToken) : null;
     const resolvedFromType = typeParam ? await resolveArchiveTypeShareTarget(typeParam) : null;
+    const imageId = params.get(PARAM_IMAGE)?.trim() || undefined;
+
+    let destination: SharedPointTarget | undefined;
 
     if (resolvedFromToken) {
         mergeFilterKeys([resolvedFromToken.point.type]);
-        navigateToSharedPoint({
+        destination = {
             regionKey: resolvedFromToken.regionKey,
             subregionKey: resolvedFromToken.point.subregId,
             pointId: resolvedFromToken.point.id,
-        });
+        };
     } else if (pointParam) {
         const resolvedFromQueryPoint = await resolvePointShareTarget(pointParam);
         if (resolvedFromQueryPoint) {
             mergeFilterKeys([resolvedFromQueryPoint.point.type]);
-            navigateToSharedPoint({
+            destination = {
                 regionKey: resolvedFromQueryPoint.regionKey,
                 subregionKey: resolvedFromQueryPoint.point.subregId,
                 pointId: resolvedFromQueryPoint.point.id,
-            });
+            };
         } else if (filterParam) {
             // Legacy 後備：舊鏈接僅在提供 f 時才嘗試按 r/s 導航。
             const fallbackRegion = useRegion.getState().currentRegionKey;
-            navigateToSharedPoint({
+            destination = {
                 regionKey: navRegion || fallbackRegion,
                 subregionKey: subregionParam || undefined,
                 pointId: pointParam,
-            });
+            };
         }
     } else if (resolvedFromType) {
         mergeFilterKeys([resolvedFromType.point.type]);
-        navigateToSharedPoint({
+        destination = {
             regionKey: resolvedFromType.regionKey,
             subregionKey: resolvedFromType.point.subregId,
             pointId: resolvedFromType.point.id,
-        });
+        };
     } else if (typeParam) {
         // ?type 找不到唯一點位時，退化為明文 f
         mergeFilterKeys([typeParam]);
+    }
+
+    if (destination) {
+        navigateToSharedPoint({
+            ...destination,
+            content: imageId ? { kind: 'image', id: imageId } : undefined,
+        });
     }
 
     // 清除地圖分享參數；僅保留認證流程必要參數，避免影響 reset password 流程。
@@ -714,6 +730,7 @@ export const applyUrlParams = async (): Promise<void> => {
         newParams.delete(PARAM_SUBREGION);
         newParams.delete(PARAM_POINT);
         newParams.delete(PARAM_POINT_TOKEN);
+        newParams.delete(PARAM_IMAGE);
 
         const preservedParams = new URLSearchParams();
         newParams.forEach((value, key) => {
