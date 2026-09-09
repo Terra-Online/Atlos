@@ -193,7 +193,10 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         setSelectedImageId(activeImages[0].id);
     }, [activeImages, selectedImageId]);
 
-    const isOwnActive = Boolean(active && pointMyImages.some((image) => image.id === active.id));
+    const isOwnActive = Boolean(active && user && (
+        pointMyImages.some((image) => image.id === active.id)
+        || active.author?.publicUid === user.uid
+    ));
     const isActivePending = Boolean(active && isPending(active));
     const pendingOwn = useMemo(
         () => pointMyImages.find(isPending) ?? null,
