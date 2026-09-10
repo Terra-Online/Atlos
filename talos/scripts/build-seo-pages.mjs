@@ -74,6 +74,7 @@ const POINT_ID_PERMUTATION_OFFSET = 11n;
 const POINT_ID_TOKEN_LENGTH = 7;
 const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
 const POINT_HTML_FILE_PATTERN = /^[0-9a-zA-Z]{7}\.html$/;
+const DEEP_LINK_QUERY_PARAMS = ['imageId', 'commentId'];
 
 const INDEXABLE_MAIN_CATEGORIES = new Set(['files']);
 const INDEXABLE_SUB_CATEGORIES = new Set(['archives', 'boss', 'valuable', 'facility']);
@@ -1343,6 +1344,20 @@ function buildPointHtml(point) {
       url: siteUrl,
     },
   };
+  const serializedSpaUrl = JSON.stringify(point.spaUrl).replace(/</g, '\\u003c');
+  const forwardDeepLinkScript = `<script>
+    (() => {
+      const target = new URL(${serializedSpaUrl});
+      const source = new URLSearchParams(window.location.search);
+      for (const key of ${JSON.stringify(DEEP_LINK_QUERY_PARAMS)}) {
+        const values = source.getAll(key);
+        if (values.length === 0) continue;
+        target.searchParams.delete(key);
+        values.forEach((value) => target.searchParams.append(key, value));
+      }
+      window.location.replace(target.toString());
+    })();
+  </script>`;
   return `<!doctype html>
 <html lang="${html(htmlLang)}">
 <head>
@@ -1363,6 +1378,7 @@ function buildPointHtml(point) {
   <meta name="twitter:description" content="${html(point.description)}" />
   <meta name="twitter:image" content="${html(point.ogImageUrl)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+  ${forwardDeepLinkScript}
   <meta http-equiv="refresh" content="0;url=${html(point.spaUrl)}" />
   <style>
     html, body { background: #fff; color: #fff; margin: 0; }

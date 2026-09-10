@@ -453,10 +453,11 @@ const buildRedirectUrl = (requestUrl: URL, targetOrigin: string): string => {
         return targetUrl.toString();
     }
 
-    const targetUrl = new URL(
-        requestUrl.pathname + requestUrl.search,
-        targetOrigin,
-    );
+    // Preserve the complete query string, including deep-link content
+    // parameters such as imageId and commentId, without decoding/re-encoding
+    // values through an intermediate object.
+    const targetUrl = new URL(requestUrl.pathname, targetOrigin);
+    targetUrl.search = requestUrl.search;
     return targetUrl.toString();
 };
 

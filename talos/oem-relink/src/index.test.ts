@@ -41,6 +41,17 @@ describe('oem-relink worker routes', () => {
         );
     });
 
+    it('preserves image and comment deep-link parameters', async () => {
+        const response = await worker.fetch(
+            new Request('https://oem.re/0oGIf3b?imageId=image%2F1&commentId=comment%2B2'),
+        );
+
+        expect(response.status).toBe(302);
+        expect(response.headers.get('location')).toBe(
+            'https://opendfieldmap.org/0oGIf3b?imageId=image%2F1&commentId=comment%2B2',
+        );
+    });
+
     it('rejects hosts outside the short-domain whitelist', async () => {
         const response = await worker.fetch(
             new Request('https://example.com/map'),
