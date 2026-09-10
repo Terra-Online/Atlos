@@ -7,6 +7,7 @@ export const PARAM_REGION = 'r';
 export const PARAM_SUBREGION = 's';
 export const PARAM_POINT = 'p';
 export const PARAM_POINT_TOKEN = 'x';
+export const PARAM_IMAGE = 'imageId';
 
 export const MAP_URL_PARAMS = [
     PARAM_LANG,
@@ -16,6 +17,7 @@ export const MAP_URL_PARAMS = [
     PARAM_SUBREGION,
     PARAM_POINT,
     PARAM_POINT_TOKEN,
+    PARAM_IMAGE,
 ] as const;
 
 export const AUTH_URL_PARAM_WHITELIST = new Set(['token', 'email', 'error', 'domain']);

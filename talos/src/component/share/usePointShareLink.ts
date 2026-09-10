@@ -2,16 +2,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { IMarkerData } from '@/data/marker';
 import { generatePointShareUrl } from '@/services/routing';
 import { copyTextToClipboard } from '@/platform/clipboard';
+import type { MarkerNavigationOptions } from '@/services/map/navigation';
 
 const COPY_POPUP_DURATION_MS = 1500;
 
-export const usePointShareLink = (point: Pick<IMarkerData, 'id' | 'type' | 'subregId'> | null | undefined) => {
+export const usePointShareLink = (
+    point: Pick<IMarkerData, 'id' | 'type' | 'subregId'> | null | undefined,
+    options: MarkerNavigationOptions = {},
+) => {
     const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
     const copyPopupTimerRef = useRef<number | null>(null);
 
     const pointShareUrl = useMemo(
-        () => (point ? generatePointShareUrl(point) : ''),
-        [point],
+        () => {
+            if (!point) return '';
+            return generatePointShareUrl(point, { content: options.content });
+        },
+        [options.content, point],
     );
 
     useEffect(() => {

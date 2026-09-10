@@ -346,6 +346,29 @@ export async function listUGCMyImages(markerId: string): Promise<UGCSubmissionIm
     return listUGCMyImagesByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
+export async function getUGCImageById(markerId: string, imageId: string): Promise<UGCImage> {
+    const scope = import.meta.env.DEV ? 'test' : 'prod';
+    const search = new URLSearchParams({
+        markerId,
+        scope,
+    });
+    const response = await fetch(
+        `${UGC_API_BASE}/images/${encodeURIComponent(imageId)}?${search.toString()}`,
+        {
+            credentials: 'include',
+            headers: getAuthHeaders(),
+        },
+    );
+    if (!response.ok) {
+        throw await readUGCError(response);
+    }
+    const payload = await response.json() as { item?: UGCImage };
+    if (!payload.item) {
+        throw new UGCClientError('Image response is missing.', 'UGC_ERROR');
+    }
+    return normalizeUGCImage(payload.item);
+}
+
 export async function listUGCMyImagesByMarkerIds(markerIds: string[]): Promise<Record<string, UGCSubmissionImage[]>> {
     const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
     const result: Record<string, UGCSubmissionImage[]> = {};

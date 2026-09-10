@@ -8,9 +8,11 @@ import {
     PARAM_REGION,
     PARAM_SUBREGION,
     PARAM_POINT_TOKEN,
+    PARAM_IMAGE,
     REGION_CODE_MAP,
     SUBREGION_TO_REGION_MAP,
 } from './protocol';
+import type { MarkerNavigationOptions } from '@/services/map/navigation';
 import { getCurrentLocale, getPointShareOrigin } from './runtime';
 import { encodePointIdToken } from './pointToken';
 import { getFilterParamValue } from './filterCodec';
@@ -67,11 +69,18 @@ export const generatePointShareShortUrl = (
 
 export const generatePointShareUrl = (
     point: Pick<IMarkerData, 'id' | 'type' | 'subregId'>,
+    options: MarkerNavigationOptions = {},
 ): string => {
     const tokenOrFallback = buildPointShareToken(point);
     const pointShareOrigin = getPointShareOrigin();
-    if (tokenOrFallback.startsWith('?')) return `${pointShareOrigin}/${tokenOrFallback}`;
-    return `${pointShareOrigin}/${encodeURIComponent(tokenOrFallback)}`;
+    const path = tokenOrFallback.startsWith('?')
+        ? tokenOrFallback
+        : encodeURIComponent(tokenOrFallback);
+    const url = new URL(`${pointShareOrigin}/${path}`);
+    if (options.content?.kind === 'image') {
+        url.searchParams.set(PARAM_IMAGE, options.content.id);
+    }
+    return url.toString();
 };
 
 export const copyShareUrl = async (): Promise<boolean> => {

@@ -81,6 +81,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             regionKey: resolvedFromToken.regionKey,
             subregionKey: resolvedFromToken.point.subregId,
             pointId: resolvedFromToken.point.id,
+            content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
         });
         return;
     }
@@ -93,12 +94,14 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
                 regionKey: resolvedFromQueryPoint.regionKey,
                 subregionKey: resolvedFromQueryPoint.point.subregId,
                 pointId: resolvedFromQueryPoint.point.id,
+                content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
             });
         } else if (state.filterParam) {
             navigateToSharedPoint({
                 regionKey: state.regionKey || useRegion.getState().currentRegionKey,
                 subregionKey: state.subregionKey || undefined,
                 pointId: state.pointId,
+                content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
             });
         }
         return;
@@ -110,6 +113,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             regionKey: resolvedFromType.regionKey,
             subregionKey: resolvedFromType.point.subregId,
             pointId: resolvedFromType.point.id,
+            content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
         });
         return;
     }

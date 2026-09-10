@@ -5,7 +5,14 @@ import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 
-export interface SharedPointTarget {
+// A marker link focuses one content item. Add a comment variant when supported.
+export type MarkerContentTarget = { kind: 'image'; id: string };
+
+export interface MarkerNavigationOptions {
+    content?: MarkerContentTarget;
+}
+
+export interface SharedPointTarget extends MarkerNavigationOptions {
     regionKey: string;
     subregionKey?: string;
     pointId: string;
@@ -43,6 +50,7 @@ const normalizeTarget = (target: SharedPointTarget): SharedPointTarget => ({
     regionKey: target.regionKey,
     subregionKey: target.subregionKey,
     pointId: String(target.pointId),
+    content: target.content,
 });
 
 const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
@@ -83,6 +91,9 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
 
     // Ensure detail panel has the focused target.
     useMarkerStore.getState().setCurrentActivePoint(markerData);
+    if (target.content?.kind === 'image') {
+        useMarkerStore.getState().openMarkerImage(markerData.id, target.content.id);
+    }
 
     const targetZoom = Math.min(TARGET_ZOOM, mapCore.map.getMaxZoom());
     const [lat, lng] = markerData.pos;
@@ -140,7 +151,7 @@ export const navigateToSharedPoint = (target: SharedPointTarget): void => {
     void flushPendingNavigation();
 };
 
-export const navigateToMarkerId = async (pointId: string): Promise<boolean> => {
+export const navigateToMarkerId = async (pointId: string, options: MarkerNavigationOptions = {}): Promise<boolean> => {
     const point = await findMarkerById(String(pointId));
     if (!point) return false;
 
@@ -153,6 +164,7 @@ export const navigateToMarkerId = async (pointId: string): Promise<boolean> => {
         regionKey,
         subregionKey: point.subregId,
         pointId: point.id,
+        content: options.content,
     });
     return true;
 };
