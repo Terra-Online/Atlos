@@ -478,66 +478,70 @@ export class MarkerLayer {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const clusterEnabled = this.clusterLayer.isEnabled();
 
-        // 更新所有 marker 的 checked 类
-        Object.entries(this.markerDict).forEach(([id, layer]) => {
-            if (!(layer instanceof L.Marker)) return;
-            const markerRoot = layer.getElement?.() as HTMLElement | null;
-            if (!markerRoot) return;
-            const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (!inner) return;
+        const changedIds = [...new Set([...prevCollected, ...newCollected])]
+            .filter((id) => prevCollected.has(id) !== newCollected.has(id));
+        this.clusterLayer.batch(() => {
+            changedIds.forEach((id) => {
+                const layer = this.markerDict[id];
+                if (!(layer instanceof L.Marker)) return;
+                const markerRoot = layer.getElement?.() as HTMLElement | null;
+                if (!markerRoot) return;
+                const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
+                if (!inner) return;
 
-            const wasCollected = prevCollected.has(id);
-            const isCollected = newCollected.has(id);
-            syncMarkerCollectedStacking(layer, isCollected);
+                const wasCollected = prevCollected.has(id);
+                const isCollected = newCollected.has(id);
+                syncMarkerCollectedStacking(layer, isCollected);
 
-            if (wasCollected !== isCollected) {
-                if (isCollected) {
-                    this.stopMarkerPulse(id);
-                    this.proximityPulseIds.delete(id);
-                    if (
-                        !this.checkedVisibleOverrideIds.has(id) &&
-                        !this.behaviorTemporaryVisibleIds.has(id)
-                    ) {
-                        this.temporaryVisibleIds.delete(id);
-                    }
-                    this.syncTemporaryVisibleMarkers();
-                    inner.classList.add(styles.checked);
-
-                    // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
-                    if (shouldHideCompleted && !this.checkedVisibleOverrideIds.has(id)) {
-                        const markerData = this.markerDataDict[id];
-                        if (!markerData) return;
-
-                        // 如果是聚合管理的类型，通知聚合层刷新
-                        if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
-                            this.clusterLayer.applyFilter(this.activeFilterKeys);
-                            return;
+                if (wasCollected !== isCollected) {
+                    if (isCollected) {
+                        this.stopMarkerPulse(id);
+                        this.proximityPulseIds.delete(id);
+                        if (
+                            !this.checkedVisibleOverrideIds.has(id) &&
+                            !this.behaviorTemporaryVisibleIds.has(id)
+                        ) {
+                            this.temporaryVisibleIds.delete(id);
                         }
+                        this.syncTemporaryVisibleMarkers();
+                        inner.classList.add(styles.checked);
 
-                        const parent = this.layerSubregionDict[markerData.subregId];
-                        if (!parent?.hasLayer(layer)) return;
+                        // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
+                        if (shouldHideCompleted && !this.checkedVisibleOverrideIds.has(id)) {
+                            const markerData = this.markerDataDict[id];
+                            if (!markerData) return;
 
-                        // 添加淡出动画类
-                        inner.classList.add(styles.disappearing);
+                            // 如果是聚合管理的类型，通知聚合层刷新
+                            if (clusterEnabled && this.clusterLayer.isTypeManaged(markerData.type)) {
+                                this.clusterLayer.applyFilter(this.activeFilterKeys);
+                                return;
+                            }
 
-                        // 取消之前的延迟移除定时器
-                        if (this.pendingRemovalTimers[id] !== undefined) {
-                            clearTimeout(this.pendingRemovalTimers[id]);
+                            const parent = this.layerSubregionDict[markerData.subregId];
+                            if (!parent?.hasLayer(layer)) return;
+
+                            // 添加淡出动画类
+                            inner.classList.add(styles.disappearing);
+
+                            // 取消之前的延迟移除定时器
+                            if (this.pendingRemovalTimers[id] !== undefined) {
+                                clearTimeout(this.pendingRemovalTimers[id]);
+                            }
+                            emitPreviewLeave(id);
+                            // 延迟移除，等待淡出动画完成
+                            this.pendingRemovalTimers[id] = window.setTimeout(() => {
+                                // @ts-expect-error leaflet官方文档支持从layerGroup中移除
+                                layer.remove(parent);
+                                delete this.pendingRemovalTimers[id];
+                            }, 160);
                         }
-                        emitPreviewLeave(id);
-                        // 延迟移除，等待淡出动画完成
-                        this.pendingRemovalTimers[id] = window.setTimeout(() => {
-                            // @ts-expect-error leaflet官方文档支持从layerGroup中移除
-                            layer.remove(parent);
-                            delete this.pendingRemovalTimers[id];
-                        }, 160);
+                    } else {
+                        this.checkedVisibleOverrideIds.delete(id);
+                        this.syncCheckedVisibleOverrides();
+                        inner.classList.remove(styles.checked);
                     }
-                } else {
-                    this.checkedVisibleOverrideIds.delete(id);
-                    this.syncCheckedVisibleOverrides();
-                    inner.classList.remove(styles.checked);
                 }
-            }
+            });
         });
     }
 
@@ -623,24 +627,26 @@ export class MarkerLayer {
 
     filterMarker(typeKeys: string[]) {
         this.activeFilterKeys = typeKeys;
-        const activeTypeSet = new Set(typeKeys);
-        this.checkedVisibleOverrideIds.forEach((id) => {
-            const markerData = this.markerDataDict[id];
-            if (!markerData || !activeTypeSet.has(markerData.type)) {
-                this.checkedVisibleOverrideIds.delete(id);
-            }
+        this.clusterLayer.batch(() => {
+            const activeTypeSet = new Set(typeKeys);
+            this.checkedVisibleOverrideIds.forEach((id) => {
+                const markerData = this.markerDataDict[id];
+                if (!markerData || !activeTypeSet.has(markerData.type)) {
+                    this.checkedVisibleOverrideIds.delete(id);
+                }
+            });
+            this.syncCheckedVisibleOverrides();
+            this.temporaryVisibleIds.forEach((id) => {
+                const markerData = this.markerDataDict[id];
+                if (markerData && activeTypeSet.has(markerData.type)) {
+                    this.temporaryVisibleIds.delete(id);
+                    this.proximityTemporaryVisibleIds.delete(id);
+                    this.behaviorTemporaryVisibleIds.delete(id);
+                }
+            });
+            this.syncTemporaryVisibleMarkers();
+            this.clusterLayer.applyFilter(typeKeys);
         });
-        this.syncCheckedVisibleOverrides();
-        this.temporaryVisibleIds.forEach((id) => {
-            const markerData = this.markerDataDict[id];
-            if (markerData && activeTypeSet.has(markerData.type)) {
-                this.temporaryVisibleIds.delete(id);
-                this.proximityTemporaryVisibleIds.delete(id);
-                this.behaviorTemporaryVisibleIds.delete(id);
-            }
-        });
-        this.syncTemporaryVisibleMarkers();
-        this.clusterLayer.applyFilter(typeKeys);
 
         const clusterEnabled = this.clusterLayer.isEnabled();
         const markerIdsSet = new Set(

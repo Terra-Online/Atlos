@@ -41,7 +41,27 @@ export class ClusterLayer {
     private pendingRemovalBatches: Record<string, { timer: number; markerIds: Set<string> }> = {};
     private pendingFadeInFrames = new Map<L.MarkerClusterGroup, number>();
 
+    private batchDepth = 0;
+    private refreshPending = false;
+
     constructor(private readonly deps: ClusterLayerDeps) {}
+
+    batch(operation: () => void) {
+        this.batchDepth++;
+        try { operation(); }
+        finally {
+            this.batchDepth--;
+            if (!this.batchDepth && this.refreshPending) {
+                this.refreshPending = false;
+                this.refreshClusters();
+            }
+        }
+    }
+
+    private requestRefresh() {
+        if (this.batchDepth) this.refreshPending = true;
+        else this.refreshClusters();
+    }
 
     registerType(type: IMarkerType) {
         if (!CLUSTER_SUBCATEGORY_WHITELIST.has(type.category.sub)) {
@@ -106,14 +126,14 @@ export class ClusterLayer {
     setActiveSubregions(subregions: string[]) {
         this.activeSubregions = new Set(subregions);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     applyFilter(typeKeys: string[]) {
         this.filterKeys = typeKeys;
         if (this.enabled) {
-            this.refreshClusters(); // 增量刷新
+            this.requestRefresh(); // 增量刷新
         } else {
             this.removeClustersFromMap();
         }
@@ -122,21 +142,21 @@ export class ClusterLayer {
     setTemporaryVisibleIds(ids: Iterable<string>) {
         this.temporaryVisibleIds = new Set(ids);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     setCheckedVisibleOverrideIds(ids: Iterable<string>) {
         this.checkedVisibleOverrideIds = new Set(ids);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     enable() {
         if (this.enabled) return;
         this.enabled = true;
-        this.refreshClusters();
+        this.requestRefresh();
     }
 
     disable() {
@@ -344,7 +364,7 @@ export class ClusterLayer {
             const visibleLayer = clusterGroup.getVisibleParent(layer);
             const markerRoot = visibleLayer?.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (inner) visibleInners.add(inner);
+            if (inner?.isConnected) visibleInners.add(inner);
         }
 
         return visibleInners;
