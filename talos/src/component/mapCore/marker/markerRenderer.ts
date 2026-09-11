@@ -1,3 +1,4 @@
+import { ViewportMarker } from '../markerViewport';
 import L, { divIcon } from 'leaflet';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
@@ -48,6 +49,16 @@ export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
         });
     return acc;
 }, {});
+
+// Store arrays are immutable snapshots. Cache membership once per snapshot,
+// avoiding an O(markers × selected/collected) scan when layers are attached.
+const membership = new WeakMap<readonly string[], ReadonlySet<string>>();
+const hasId = (ids: readonly string[], id: string): boolean => {
+    if (ids.length < 32) return ids.includes(id);
+    let index = membership.get(ids);
+    if (!index) { index = new Set(ids); membership.set(ids, index); }
+    return index.has(id);
+};
 
 const ensureMarkerTypeFilterSelected = (typeKey: string): void => {
     const markerStore = useMarkerStore.getState();
@@ -114,9 +125,9 @@ const syncMarkerStateClasses = (layer: L.Marker, markerId: string): void => {
     const inner = getMarkerInnerElement(layer);
     if (!inner) return;
     const markerStore = useMarkerStore.getState();
-    const selectedAfter = markerStore.selectedPoints.includes(markerId)
-        || markerStore.temporarySelectedPoints.includes(markerId);
-    const checkedAfter = getActivePoints().includes(markerId);
+    const selectedAfter = hasId(markerStore.selectedPoints, markerId)
+        || hasId(markerStore.temporarySelectedPoints, markerId);
+    const checkedAfter = hasId(getActivePoints(), markerId);
     inner.classList.toggle(styles.selected, selectedAfter);
     inner.classList.toggle(styles.checked, checkedAfter);
     syncMarkerCollectedStacking(layer, checkedAfter);
@@ -136,9 +147,9 @@ const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handle
     if (!inner) return;
 
     const markerStore = useMarkerStore.getState();
-    const selectedNow = markerStore.selectedPoints.includes(markerData.id)
-        || markerStore.temporarySelectedPoints.includes(markerData.id);
-    const checkedNow = getActivePoints().includes(markerData.id);
+    const selectedNow = hasId(markerStore.selectedPoints, markerData.id)
+        || hasId(markerStore.temporarySelectedPoints, markerData.id);
+    const checkedNow = hasId(getActivePoints(), markerData.id);
 
     if (!selectedNow && !checkedNow) {
         useMarkerStore.getState().setSelected(markerData.id, true);
@@ -189,6 +200,10 @@ const attachPreviewLifecycle = (layer: L.Marker, markerData: IMarkerData): void 
     layer.on('mouseout', () => {
         emitPreviewLeave(markerData.id);
     });
+    layer.on('viewporthide', () => {
+        emitPreviewLeave(markerData.id);
+        getMarkerInnerElement(layer)?.classList.remove(styles.appearing);
+    });
 };
 
 const RENDERER_DICT: Record<
@@ -200,7 +215,7 @@ const RENDERER_DICT: Record<
     ) => L.Marker
 > = {
     __DEFAULT: (markerData, onClick, handlers) => {
-        const layer = new L.Marker(markerData.pos, {
+        const layer = new ViewportMarker(markerData.pos, {
             icon: MARKER_ICON_DICT[markerData.type],
             alt: markerData.type,
         });
@@ -211,15 +226,14 @@ const RENDERER_DICT: Record<
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
             syncMarkerTierAttribute(layer, markerData);
-            // entry fade-in
-            inner.classList.add(styles.appearing);
             syncMarkerStateClasses(layer, markerData.id);
-            // 等待动画完成后移除 appearing class
-            const onAnimationEnd = () => {
-                inner.classList.remove(styles.appearing);
-                inner.removeEventListener('animationend', onAnimationEnd);
-            };
-            inner.addEventListener('animationend', onAnimationEnd);
+            // Parked DOM has no entry animation or animation listener to retain.
+            if (markerRoot?.isConnected) {
+                inner.classList.add(styles.appearing);
+                inner.addEventListener('animationend', () => {
+                    inner.classList.remove(styles.appearing);
+                }, { once: true });
+            }
         });
         
         layer.addEventListener('click', (e) => {
@@ -258,7 +272,7 @@ const RENDERER_DICT: Record<
                    </div>`,
         });
         
-        const layer = new L.Marker(markerData.pos, {
+        const layer = new ViewportMarker(markerData.pos, {
             icon: markerIcon,
             alt: markerData.type,
         });
@@ -268,15 +282,14 @@ const RENDERER_DICT: Record<
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
             if (!inner) return;
             syncMarkerTierAttribute(layer, markerData);
-            // entry fade-in
-            inner.classList.add(styles.appearing);
             syncMarkerStateClasses(layer, markerData.id);
-            // 等待动画完成后移除 appearing class
-            const onAnimationEnd = () => {
-                inner.classList.remove(styles.appearing);
-                inner.removeEventListener('animationend', onAnimationEnd);
-            };
-            inner.addEventListener('animationend', onAnimationEnd);
+            // Parked DOM has no entry animation or animation listener to retain.
+            if (markerRoot?.isConnected) {
+                inner.classList.add(styles.appearing);
+                inner.addEventListener('animationend', () => {
+                    inner.classList.remove(styles.appearing);
+                }, { once: true });
+            }
         });
             
         layer.addEventListener('click', (e) => {
@@ -314,7 +327,7 @@ export function getMarkerLayer(
     })();
     
     // add checked class (if collected)
-    if (collectedPoints?.includes(markerData.id)) {
+    if (collectedPoints && hasId(collectedPoints, markerData.id)) {
         setTimeout(() => {
             const markerRoot = layer.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);

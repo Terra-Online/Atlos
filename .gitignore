@@ -73,3 +73,6 @@ talos/.stylelintcache
 *.test.ts
 *.generated.ts
 !talos/oem-relink/src/index.test.ts
+
+# Keep the viewport lifecycle and multi-filter regression suite.
+!talos/src/component/mapCore/markerViewport.test.ts
