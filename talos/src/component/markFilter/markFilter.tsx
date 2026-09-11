@@ -3,7 +3,7 @@ import DefaultFilterIcon from '../../assets/logos/filter.svg?react';
 import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
 import { useTranslateUI } from '@/locale';
-import { useMarkFilterExpanded, useToggleMarkFilterExpanded } from '@/store/uiPrefs';
+import { useMarkFilterExpanded, useToggleMarkFilterExpanded, useLayoutVersion } from '@/store/uiPrefs';
 import { motion, useMotionValue, useDragControls } from 'motion/react';
 import { animate } from 'motion';
 import { useMarkFilterDragContext } from './reorderCore';
@@ -42,6 +42,7 @@ const MarkFilter = ({
 }: MarkFilterProps) => {
     const t = useTranslateUI();
     const isExpanded = useMarkFilterExpanded(idKey);
+    const layoutVersion = useLayoutVersion();
     const toggleExpandByKey = useToggleMarkFilterExpanded();
     const dragControls = useDragControls();
     const { register, unregister, startDrag, updateDrag, endDrag, orderOf, isDragging, draggingId } = useMarkFilterDragContext();
@@ -56,20 +57,22 @@ const MarkFilter = ({
 
     // visibility state reported by children
     const [hasReceivedFirstReport, setHasReceivedFirstReport] = useState(false);
-    const [visibleMap, setVisibleMap] = useState<Set<string>>(new Set());
+    const visibleIds = useRef(new Set<string>());
+    const [visibleCount, setVisibleCount] = useState(0);
+    const visibilityQueued = useRef(false);
+    const visibilityAlive = useRef(true);
+    useEffect(() => { visibilityAlive.current = true; return () => { visibilityAlive.current = false; }; }, []);
     const report = useCallback((id: string, visible: boolean) => {
-        setHasReceivedFirstReport(true);
-        setVisibleMap((prev) => {
-            const has = prev.has(id);
-            if (visible === has) return prev;
-            const next = new Set(prev);
-            if (visible) next.add(id);
-            else next.delete(id);
-            return next;
+        if (visible) visibleIds.current.add(id); else visibleIds.current.delete(id);
+        if (visibilityQueued.current) return;
+        visibilityQueued.current = true;
+        queueMicrotask(() => {
+            visibilityQueued.current = false;
+            if (!visibilityAlive.current) return;
+            setHasReceivedFirstReport(true);
+            setVisibleCount(visibleIds.current.size);
         });
     }, []);
-
-    const visibleCount = visibleMap.size;
 
     // Use pre-computed initialEmpty before any child has reported; switch to live data after.
     // This ensures CSS order is correct on the very first render, preventing CLS.
@@ -179,6 +182,7 @@ const MarkFilter = ({
             data-filter-variant={variant}
             className={containerClassName}
             layout
+            layoutDependency={`${effectiveExpanded}:${isEmpty}:${orderIndex}:${visibleCount}:${columns}:${binderMode}:${reorderable}:${variant}:${title}:${layoutVersion}`}
             style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: reorderable ? (isEmpty ? 1001 : 1) + orderIndex : -1, touchAction: 'pan-y' }}
             drag={isMounted && reorderable ? "y" : false}
             dragControls={isMounted && reorderable ? dragControls : undefined}

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { useUserRecord } from './userRecord';
 import useRegion from './region';
 import { useEffect, useMemo } from 'react';
+import { CollectedCountCache } from './collectedCountCache';
 import {
     getLoadedRegionMarkers,
     getLoadedSubregionMarkers,
@@ -42,6 +43,7 @@ interface IMarkerStore {
     temporarySelectedPoints: string[];
     toggleSelected: (id: string) => void;
     setSelected: (id: string, value: boolean) => void;
+    setSelectedBatch: (ids: Iterable<string>, value: boolean) => void;
     setTemporarySelected: (id: string, value: boolean) => void;
     clearTemporarySelected: (ids?: Iterable<string>) => void;
 
@@ -145,6 +147,16 @@ export const useMarkerStore = create<IMarkerStore>()(
                     }
                 });
             },
+            setSelectedBatch: (ids: Iterable<string>, value: boolean) => {
+                const next = new Set(get().selectedPoints);
+                let changed = false;
+                for (const id of ids) {
+                    if (value) { if (!next.has(id)) { next.add(id); changed = true; } }
+                    else if (next.delete(id)) changed = true;
+                }
+                // Persist and notify once for the gesture, rather than once per selected point.
+                if (changed) set({ selectedPoints: [...next] });
+            },
             setTemporarySelected: (id: string, value: boolean) => {
                 set((state) => {
                     const exists = state.temporarySelectedPoints.includes(id);
@@ -202,15 +214,20 @@ export const useSelectedPoints = () =>
 export const useToggleSelected = () =>
     useMarkerStore((state) => state.toggleSelected);
 
+const collectedCounts = new CollectedCountCache();
+let worldCountLoad: Promise<void> | undefined;
+const ensureWorldCountData = () => {
+    worldCountLoad ??= loadAllMarkers().then(() => { useMarkerStore.getState().bumpMarkerDataVersion(); }, error => { worldCountLoad = undefined; throw error; });
+    return worldCountLoad;
+};
+
 export const useWorldMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
 
     useEffect(() => {
         if (!type) return;
-        void loadAllMarkers().then(() => {
-            useMarkerStore.getState().bumpMarkerDataVersion();
-        });
+        void ensureWorldCountData();
     }, [type]);
 
     return useMemo(() => {
@@ -218,10 +235,7 @@ export const useWorldMarkerCount = (type: string | undefined) => {
         const ret = { total: 0, collected: 0 };
         if (!type) return ret;
         ret.total = WORLD_TYPE_COUNT_MAP[type] ?? 0;
-        const worldMarkers = getLoadedWorldMarkers().filter((m) => m.type === type);
-        ret.collected = worldMarkers.filter((m) =>
-            pointsRecord.includes(m.id),
-        ).length;
+        ret.collected = collectedCounts.get(pointsRecord, markerDataVersion, 'world', getLoadedWorldMarkers).get(type) ?? 0;
         return ret;
     }, [markerDataVersion, pointsRecord, type]);
 };
@@ -229,41 +243,35 @@ export const useWorldMarkerCount = (type: string | undefined) => {
 export const useRegionMarkerCount = (type: string | undefined) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
-    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
+    const collected = useMarkerStore((state) => type && currentRegion
+        ? collectedCounts.get(pointsRecord, state.markerDataVersion, `region:${currentRegion}`, () => getLoadedRegionMarkers(currentRegion)).get(type) ?? 0
+        : 0);
     return useMemo(() => {
-        void markerDataVersion;
         const ret = { total: 0, collected: 0 };
         if (!type || !currentRegion) return ret;
         // 使用预计算的区域类型统计
         const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
         ret.total = regionTypeCounts?.[type] ?? 0;
         // 计算已收集数量
-        const regionMarkers = getLoadedRegionMarkers(currentRegion).filter((m) => m.type === type);
-        ret.collected = regionMarkers.filter((m) =>
-            pointsRecord.includes(m.id),
-        ).length;
+        ret.collected = collected;
         return ret;
-    }, [markerDataVersion, pointsRecord, currentRegion, type]);
+    }, [collected, currentRegion, type]);
 };
 
 export const useMultiRegionMarkerCount = (types: string[]) => {
     const pointsRecord = useUserRecord();
     const currentRegion = useRegion((state) => state.currentRegionKey);
-    const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
+    const counts = useMarkerStore((state) => currentRegion ? collectedCounts.get(pointsRecord, state.markerDataVersion, `region:${currentRegion}`, () => getLoadedRegionMarkers(currentRegion)) : undefined);
     return useMemo(() => {
-        void markerDataVersion;
         if (!currentRegion) return types.map(() => ({ total: 0, collected: 0 }));
         const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion];
-        const allMarkers = getLoadedRegionMarkers(currentRegion);
         return types.map((type) => {
             const total = regionTypeCounts?.[type] ?? 0;
-            const collected = allMarkers.filter(
-                (m) => m.type === type && pointsRecord.includes(m.id),
-            ).length;
+            const collected = counts?.get(type) ?? 0;
             return { total, collected };
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [markerDataVersion, pointsRecord, currentRegion, types.join(',')]);
+    }, [counts, currentRegion, types.join(',')]);
 };
 
 // Get the marker count for a specific subregion (based on current active point)
@@ -278,10 +286,7 @@ export const useSubregionMarkerCount = (type?: string, subregionId?: string) => 
         const subregionTypeCounts = SUBREGION_TYPE_COUNT_MAP[subregionId];
         ret.total = subregionTypeCounts?.[type] ?? 0;
         // 计算已收集数量
-        const subregionMarkers = getLoadedSubregionMarkers(subregionId).filter((m) => m.type === type);
-        ret.collected = subregionMarkers.filter((m) =>
-            pointsRecord.includes(m.id),
-        ).length;
+        ret.collected = collectedCounts.get(pointsRecord, markerDataVersion, `subregion:${subregionId}`, () => getLoadedSubregionMarkers(subregionId)).get(type) ?? 0;
         return ret;
     }, [markerDataVersion, pointsRecord, subregionId, type]);
 };

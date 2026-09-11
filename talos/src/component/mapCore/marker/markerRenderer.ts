@@ -93,7 +93,7 @@ export const syncMarkerTierAttribute = (
     if (!markerTierLabel) {
         delete inner.dataset.tier;
     } else {
-        inner.dataset.tier = markerTierLabel;
+        if (inner.dataset.tier !== markerTierLabel) inner.dataset.tier = markerTierLabel;
     }
 
     const isCurrentTier = markerData.tier === getLayerTier(currentLayer);
@@ -230,9 +230,6 @@ const RENDERER_DICT: Record<
             // Parked DOM has no entry animation or animation listener to retain.
             if (markerRoot?.isConnected) {
                 inner.classList.add(styles.appearing);
-                inner.addEventListener('animationend', () => {
-                    inner.classList.remove(styles.appearing);
-                }, { once: true });
             }
         });
         
@@ -286,9 +283,6 @@ const RENDERER_DICT: Record<
             // Parked DOM has no entry animation or animation listener to retain.
             if (markerRoot?.isConnected) {
                 inner.classList.add(styles.appearing);
-                inner.addEventListener('animationend', () => {
-                    inner.classList.remove(styles.appearing);
-                }, { once: true });
             }
         });
             

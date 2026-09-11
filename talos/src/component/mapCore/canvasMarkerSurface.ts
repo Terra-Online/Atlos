@@ -1,15 +1,17 @@
 import L from 'leaflet';
-import { MarkerMotion, Motion, ease } from './canvasMarkerMotion';
-import { MarkerPainter, type MarkerArt, type Sprite } from './canvasMarkerPaint';
+import { MarkerMotion, MarkerMotionPool, Motion, ease } from './canvasMarkerMotion';
+import { MarkerPainter, type MarkerArt, type Sprite, type AnimatedSprite } from './canvasMarkerPaint';
 import { markerClasses as classes } from './canvasMarkerStyle';
+import { CanvasSpriteBatch } from './canvasSpriteBatch';
 
 type CanvasMarker = L.Marker;
 interface Entry {
   marker: CanvasMarker; root: HTMLElement; inner: HTMLElement; art: MarkerArt; motion: MarkerMotion;
   x: number; y: number; base: L.Point; latlng: L.LatLng; order: number; completed: boolean; opacity: number;
-  layerOpacity: Motion;
-  offsetX: Motion; offsetY: Motion;
+  offsetX?: Motion; offsetY?: Motion;
+  artDirty: boolean;
   sprite?: Sprite;
+  animatedSprite?: AnimatedSprite;
   visible?: boolean;
   stack: number;
   reveal?: Motion;
@@ -48,10 +50,12 @@ export class CanvasMarkerSurface {
   private active = new Set<Entry>();
   private moving = new Set<Entry>();
   private changed = new Set<Entry>();
+  private motionPool = new MarkerMotionPool();
+  private iconTemplates = new Map<string, HTMLElement>();
+  private pendingMotion = new Set<Entry>();
   private ghosts: Ghost[] = [];
   private clusterTransition = false;
   private sequence = 0;
-  private fontRead = false;
   private frame = 0;
   private disposed = false;
   private width = 0;
@@ -61,20 +65,25 @@ export class CanvasMarkerSurface {
   private pressed?: { entry?: Entry; x: number; y: number };
   private animation?: { start: number; from: Map<Entry, L.Point>; zoom: number; center: L.LatLng };
   private canvas = document.createElement('canvas');
-  private context = this.canvas.getContext('2d')!;
+  private context?: CanvasRenderingContext2D;
+  private batch?: CanvasSpriteBatch;
+  private pendingSwap?: { canvas: HTMLCanvasElement; batch: CanvasSpriteBatch };
+  private backendReason?: string;
   private semantic = document.createElement('div');
   private style = document.createElement('style');
   private painter: MarkerPainter;
   private observer: MutationObserver;
 
   constructor(private map: L.Map) {
+    this.batch = CanvasSpriteBatch.create(this.canvas, () => this.fallback2D('graphics context lost'));
+    if (!this.batch) { this.canvas = document.createElement('canvas'); this.context = this.canvas.getContext('2d')!; }
     this.canvas.className = 'oem-canvas-markers';
     this.canvas.setAttribute('aria-hidden', 'true');
     this.canvas.style.cssText = 'position:absolute;pointer-events:none;z-index:1;';
     // Connected compatibility nodes keep existing store mutations, links and keyboard events.
     // They are clipped and never used to paint a point or as a per-frame hit target.
     this.semantic.className = 'oem-canvas-semantics';
-    this.semantic.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;pointer-events:none;';
+    this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;content-visibility:auto;pointer-events:none;';
     this.style.textContent = '.oem-canvas-semantics *{animation:none!important;transition:none!important;will-change:auto!important;}';
     map.getPane('markerPane')!.append(this.canvas, this.semantic, this.style);
     this.painter = new MarkerPainter(window.devicePixelRatio || 1, url => {
@@ -82,13 +91,17 @@ export class CanvasMarkerSurface {
         if (entry.art.image === url || entry.art.subImage === url || entry.art.subImage
           && (url === this.painter.hoverDecoration || url === this.painter.selectedDecoration)) this.invalidate(entry);
       }
-    });
+    }, this.batch ? () => this.fallback2D('image does not allow GPU texture access') : undefined);
+    this.readOfficialStyles();
     this.observer = new MutationObserver(records => {
       for (const record of records) {
         let node: Node | null = record.target;
         while (node && node !== this.semantic) {
           const entry = this.roots.get(node);
-          if (entry) { this.changed.add(entry); break; }
+          if (entry) {
+            if (record.type === 'childList' || record.attributeName === 'src' || record.attributeName === 'data-tier') entry.artDirty = true;
+            this.changed.add(entry); break;
+          }
           node = node.parentNode;
         }
       }
@@ -119,28 +132,11 @@ export class CanvasMarkerSurface {
       const inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`);
       if (!inner) return;
       entry = { marker, root, inner, art: { image: '', subImage: '', noFrame: has(inner, 'noFrameInner'), tier: '' },
-        motion: new MarkerMotion(), x: -1000, y: -1000, base: this.map.project(marker.getLatLng(), 0), latlng: marker.getLatLng(),
-        order: this.sequence++, completed: false, stack: 1, opacity: 1, layerOpacity: new Motion(1), offsetX: new Motion(0), offsetY: new Motion(0) };
-      // Read the fixed official font/decorations once while the node is still in its native pane.
-      if (!this.fontRead) {
-        const tier = inner.dataset.tier;
-        if (!tier) inner.dataset.tier = 'L1';
-        const badge = getComputedStyle(inner, '::after');
-        // Non-default numeric OpenType features make the computed font shorthand empty.
-        this.painter.font = `${badge.fontStyle} ${badge.fontWeight} ${badge.fontSize} ${badge.fontFamily}`;
-        void document.fonts?.load(this.painter.font, '0123456789BL').then(this.fontsLoaded, () => {});
-        if (tier === undefined) delete inner.dataset.tier;
-        this.fontRead = true;
-      }
-      const sub = inner.querySelector<HTMLElement>(`.${classes.subIconContainer}`);
-      if (sub && !this.painter.hoverDecoration) {
-        const url = (pseudo: string) => getComputedStyle(sub, pseudo).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
-        this.painter.hoverDecoration = url('::before'); this.painter.selectedDecoration = url('::after');
-        this.painter.preload(this.painter.hoverDecoration); this.painter.preload(this.painter.selectedDecoration);
-      }
+        motion: this.motionPool.initial, x: NaN, y: NaN, base: this.map.project(marker.getLatLng(), 0), latlng: marker.getLatLng(), artDirty: true,
+        order: this.sequence++, completed: false, stack: 1, opacity: 1 };
       this.entries.set(marker, entry); this.roots.set(root, entry);
       this.reorder = true; this.indexDirty = true;
-      this.read(entry, performance.now());
+      this.changed.add(entry);
     }
     if (entry.latlng !== marker.getLatLng()) {
       entry.latlng = marker.getLatLng(); entry.base = this.map.project(entry.latlng, 0);
@@ -155,9 +151,9 @@ export class CanvasMarkerSurface {
         const reference = this.map.latLngToLayerPoint(entry.latlng);
         const duration = 0;
         const now = performance.now();
-        entry.offsetX.to(point.x - reference.x, now, duration, [0, 0, 0.25, 1]);
-        entry.offsetY.to(point.y - reference.y, now, duration, [0, 0, 0.25, 1]);
-        if (entry.offsetX.active(now) || entry.offsetY.active(now)) { this.active.add(entry); this.moving.add(entry); }
+        if (point.x !== reference.x || entry.offsetX) (entry.offsetX ??= new Motion(0)).to(point.x - reference.x, now, duration, [0, 0, 0.25, 1]);
+        if (point.y !== reference.y || entry.offsetY) (entry.offsetY ??= new Motion(0)).to(point.y - reference.y, now, duration, [0, 0, 0.25, 1]);
+        if (entry.offsetX?.active(now) || entry.offsetY?.active(now)) { this.active.add(entry); this.moving.add(entry); }
       }
     }
     if (root.parentNode !== this.semantic) this.semantic.appendChild(root);
@@ -165,19 +161,45 @@ export class CanvasMarkerSurface {
     // Native _setPos would create thousands of DOM transform/style invalidations here.
     this.full = true; this.request();
   }
+  getIconTemplate(icon: L.DivIcon, html: string): HTMLElement {
+    let template = this.iconTemplates.get(html);
+    if (!template) {
+      template = icon.createIcon();
+      if (this.iconTemplates.size >= 256) this.iconTemplates.delete(this.iconTemplates.keys().next().value!);
+      this.iconTemplates.set(html, template);
+    }
+    return template;
+  }
+  getSemanticPane(): HTMLElement { return this.semantic; }
+  private readOfficialStyles(): void {
+    // A tiny live probe reads CSS once. The semantic tree can then skip layout while offscreen,
+    // retaining keyboard/accessibility semantics through content-visibility:auto.
+    const probe = document.createElement('div'), sub = document.createElement('div');
+    probe.className = classes.markerInner; probe.dataset.tier = 'L1';
+    probe.style.cssText = 'position:absolute;visibility:hidden;width:32px;height:32px;pointer-events:none';
+    sub.className = classes.subIconContainer; probe.append(sub); this.map.getPane('markerPane')!.append(probe);
+    const badge = getComputedStyle(probe, '::after');
+    this.painter.font = `${badge.fontStyle} ${badge.fontWeight} ${badge.fontSize} ${badge.fontFamily}`;
+    const url = (pseudo: string) => getComputedStyle(sub, pseudo).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
+    this.painter.hoverDecoration = url('::before'); this.painter.selectedDecoration = url('::after');
+    probe.remove();
+    this.painter.preload(this.painter.hoverDecoration); this.painter.preload(this.painter.selectedDecoration);
+    void document.fonts?.load(this.painter.font, '0123456789BL').then(this.fontsLoaded, () => {});
+  }
   remove(marker: CanvasMarker, disposeEmpty = true): void {
     const entry = this.entries.get(marker);
     if (!entry) return;
+    this.batch?.release(entry);
     if (this.clusterTransition && entry.visible) {
       const now = performance.now();
-      const sprite = entry.sprite ?? (entry.motion.active(now) ? this.painter.snapshot(entry.art, entry.motion, now)
+      const sprite = entry.sprite ?? (entry.motion.paintActive(now) ? this.painter.snapshot(entry.art, entry.motion, now)
         : this.painter.sprite(entry.art, entry.motion, now));
       const base = this.map.project(this.visualPosition(marker) ?? entry.latlng, 0);
-      this.ghosts.push({ marker, sprite, base, target: base, alpha: entry.layerOpacity.value(now) * entry.motion.opacity(now), start: now });
+      this.ghosts.push({ marker, sprite, base, target: base, alpha: entry.opacity * entry.motion.opacity(now), start: NaN });
     }
     if (this.hovered === entry) this.setHovered(undefined);
     this.dirty.push(bounds(entry)); this.entries.delete(marker); this.roots.delete(entry.root);
-    this.active.delete(entry); this.moving.delete(entry); this.changed.delete(entry); this.reorder = true; this.full = true; this.indexDirty = true;
+    this.active.delete(entry); this.moving.delete(entry); this.changed.delete(entry); this.pendingMotion.delete(entry); this.reorder = true; this.full = true; this.indexDirty = true;
     // Keep the instance through an atomic cluster replacement (including an empty intermediate set).
     // unload owns final disposal; empty filter sets also reuse decoded assets on their next update.
     void disposeEmpty;
@@ -185,7 +207,7 @@ export class CanvasMarkerSurface {
   }
   visualPosition(marker: L.Marker): L.LatLng | undefined {
     const entry = this.entries.get(marker);
-    return entry && this.map.containerPointToLatLng([entry.x, entry.y]);
+    return entry && (Number.isFinite(entry.x) ? this.map.containerPointToLatLng([entry.x, entry.y]) : entry.latlng);
   }
   beginClusterTransition(): void { this.clusterTransition = true; }
   endClusterTransition(): void { this.clusterTransition = false; this.full = true; this.request(); }
@@ -193,48 +215,48 @@ export class CanvasMarkerSurface {
     const entry = this.entries.get(marker);
     if (!entry) return;
     const start = this.map.latLngToContainerPoint(origin), target = this.map.latLngToContainerPoint(entry.latlng);
-    const now = performance.now();
-    entry.offsetX.jump(start.x - target.x); entry.offsetY.jump(start.y - target.y);
-    entry.offsetX.to(0, now, 320); entry.offsetY.to(0, now, 320);
+    (entry.offsetX ??= new Motion(0)).jump(start.x - target.x); (entry.offsetY ??= new Motion(0)).jump(start.y - target.y);
     this.moving.add(entry);
-    entry.clusterUntil = now + 320;
+    entry.clusterUntil = Infinity;
     const same = this.ghosts.find(ghost => ghost.marker === marker);
-    if (same) this.ghosts = this.ghosts.filter(ghost => ghost !== same);
-    else if (introducing) { entry.reveal = new Motion(0); entry.reveal.to(1, now, 160); }
-    this.read(entry, now); this.full = true;
+    if (same) { this.batch?.release(same); this.ghosts = this.ghosts.filter(ghost => ghost !== same); }
+    else if (introducing) entry.reveal = new Motion(0);
+    this.pendingMotion.add(entry); this.changed.add(entry); this.full = true;
   }
   animateRemovedTo(marker: L.Marker, target: L.LatLng): void {
     for (const ghost of this.ghosts) if (ghost.marker === marker) ghost.target = this.map.project(target, 0);
   }
   private read(entry: Entry, now: number): void {
     const { root } = entry;
-    entry.inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`) ?? entry.inner;
+    if (entry.artDirty) entry.inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`) ?? entry.inner;
     const { inner } = entry;
     if (entry.clusterUntil && has(inner, 'appearing')) {
       // A deferred plugin fade-in must not restart when the user hovers after the expansion.
       inner.classList.remove(classes.appearing);
-      inner.dispatchEvent(new Event('animationend'));
     }
     if (entry.clusterUntil && now >= entry.clusterUntil) entry.clusterUntil = undefined;
-    const image = inner.querySelector<HTMLImageElement>('img');
-    const sub = inner.querySelector<HTMLElement>(`.${classes.subIcon}`);
-    const background = (node?: HTMLElement | null) => node?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
-    entry.art = { noFrame: has(inner, 'noFrameInner'), image: image?.src ?? background(inner.firstElementChild as HTMLElement),
-      subImage: sub instanceof HTMLImageElement ? sub.src : background(sub), tier: inner.dataset.tier ?? '',
-      count: inner.querySelector(`.${classes.clusterCount}`)?.textContent ?? undefined };
-    this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
+    if (entry.artDirty) {
+      const image = inner.querySelector<HTMLImageElement>('img');
+      const sub = inner.querySelector<HTMLElement>(`.${classes.subIcon}`);
+      const background = (node?: HTMLElement | null) => node?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
+      entry.art = { noFrame: has(inner, 'noFrameInner'), image: image?.getAttribute('src') ?? background(inner.firstElementChild as HTMLElement),
+        subImage: sub instanceof HTMLImageElement ? sub.getAttribute('src') ?? '' : background(sub), tier: inner.dataset.tier ?? '',
+        count: inner.querySelector(`.${classes.clusterCount}`)?.textContent ?? undefined };
+      this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage); entry.artDirty = false;
+    }
     const completed = has(root, 'completedMarker');
     if (entry.completed !== completed) { entry.completed = completed; this.reorder = true; }
     this.updateStack(entry);
     entry.opacity = root.style.opacity === '' ? 1 : Number(root.style.opacity);
-    entry.layerOpacity.to(entry.opacity, now, 0);
-    entry.motion.set({ selected: has(inner, 'selected'), checked: has(inner, 'checked'), offLayer: has(inner, 'offLayer'),
-      pulsing: has(inner, 'pulsing'), appearing: has(inner, 'appearing') && !(entry.clusterUntil && now < entry.clusterUntil), disappearing: has(inner, 'disappearing'),
-      hover: this.hovered === entry, focus: root.contains(document.activeElement) }, now, entry.art.noFrame, !!entry.art.count);
+    const flags = +has(inner, 'selected') | (+has(inner, 'checked') << 1) | (+has(inner, 'offLayer') << 2)
+      | (+(this.hovered === entry) << 3) | (+root.contains(document.activeElement) << 4) | (+has(inner, 'pulsing') << 5)
+      | (+(has(inner, 'appearing') && !(entry.clusterUntil && now < entry.clusterUntil)) << 6) | (+has(inner, 'disappearing') << 7);
+    entry.motion = this.motionPool.transition(entry.motion, flags, now, entry.art.noFrame, !!entry.art.count);
     this.invalidate(entry);
   }
   private invalidate(entry: Entry): void {
     entry.sprite = undefined;
+    entry.animatedSprite = undefined;
     this.dirty.push(bounds(entry)); this.active.add(entry); this.request();
   }
   private updateStack(entry: Entry): void {
@@ -243,6 +265,21 @@ export class CanvasMarkerSurface {
   }
   private request(): void {
     if (!this.frame && !this.disposed) this.frame = requestAnimationFrame(this.draw);
+  }
+  private fallback2D(reason: string): void {
+    if (!this.batch || this.disposed) return;
+    this.backendReason = reason;
+    this.pendingSwap = { canvas: this.canvas, batch: this.batch };
+    this.batch = undefined;
+    this.canvas = this.canvas.cloneNode(false) as HTMLCanvasElement;
+    this.context = this.canvas.getContext('2d')!;
+    this.full = true; this.request();
+  }
+  getRendererStats() {
+    return this.batch?.stats ?? { backend: 'canvas2d', reason: this.backendReason, instances: this.ordered.filter(entry => entry.visible).length };
+  }
+  readPixels(x: number, y: number, width: number, height: number): Uint8ClampedArray {
+    return this.batch ? this.batch.readPixels(x, y, width, height) : this.context!.getImageData(x, y, width, height).data;
   }
   private rebuildIndex(): void {
     this.grid.clear();
@@ -273,9 +310,17 @@ export class CanvasMarkerSurface {
     if (this.disposed) return;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    for (const entry of this.pendingMotion) {
+      entry.offsetX?.to(0, now, 320); entry.offsetY?.to(0, now, 320); entry.reveal?.to(1, now, 160); entry.clusterUntil = now + 320;
+    }
+    this.pendingMotion.clear();
     for (const entry of this.changed) this.read(entry, now);
     this.changed.clear();
-    if (this.ghosts.length) { this.full = true; this.ghosts = this.ghosts.filter(ghost => now < ghost.start + 320); }
+    for (const ghost of this.ghosts) if (!Number.isFinite(ghost.start)) ghost.start = now;
+    if (this.ghosts.length) {
+      this.full = true;
+      this.ghosts = this.ghosts.filter(ghost => { if (now < ghost.start + 320) return true; this.batch?.release(ghost); return false; });
+    }
     if (this.reorder) {
       this.ordered = [...this.entries.values()].sort(compareEntries);
       this.reorder = false; this.full = true;
@@ -306,84 +351,119 @@ export class CanvasMarkerSurface {
           entry.x = from ? from.x + (targetX - from.x) * progress : targetX;
           entry.y = from ? from.y + (targetY - from.y) * progress : targetY;
         } else {
-          entry.x = entry.base.x * scale - origin.x + entry.offsetX.value(now);
-          entry.y = entry.base.y * scale - origin.y + entry.offsetY.value(now);
+          entry.x = entry.base.x * scale - origin.x + (entry.offsetX?.value(now) ?? 0);
+          entry.y = entry.base.y * scale - origin.y + (entry.offsetY?.value(now) ?? 0);
         }
       }
       this.full = true;
       for (const entry of this.ordered) {
         const visible = entry.x + (entry.art.subImage ? 66 : 38) > 0 && entry.x - 38 < this.width
           && entry.y + 40 > 0 && entry.y - 54 < this.height;
-        if (entry.visible && !visible) entry.marker.fire('viewporthide');
+        if (entry.visible && !visible) { this.batch?.release(entry); entry.marker.fire('viewporthide'); }
         entry.visible = visible;
       }
       if (this.pointer && !this.pointer.buttons) this.setHovered(this.hit(this.pointer), this.pointer);
       // Include the terminal frame before retiring motion; otherwise the previous subpixel pose sticks.
-      for (const entry of this.moving) if (!entry.offsetX.active(now) && !entry.offsetY.active(now)) this.moving.delete(entry);
+      for (const entry of this.moving) if (!entry.offsetX?.active(now) && !entry.offsetY?.active(now)) this.moving.delete(entry);
     }
     for (const entry of this.active) this.dirty.push(bounds(entry));
     if (this.dirty.length > 32) this.full = true;
-    const ctx = this.context;
-    ctx.setTransform(this.painter.ratio, 0, 0, this.painter.ratio, 0, 0);
-    // Paths are NOT part of save/restore. A previous dirty union must not survive this frame.
-    ctx.beginPath();
-    let candidates: Entry[];
-    ctx.save();
-    if (this.full) {
-      ctx.clearRect(0, 0, this.width, this.height);
-      candidates = this.ordered;
-    } else {
-      // Clip the union once. Overlapping dirty rectangles never blend a point twice.
-      ctx.beginPath();
-      const found = new Set<Entry>();
-      for (const rect of this.dirty) {
-        const aligned = { x: Math.floor(rect.x), y: Math.floor(rect.y), width: Math.ceil(rect.width) + 2, height: Math.ceil(rect.height) + 2 };
-        ctx.rect(aligned.x, aligned.y, aligned.width, aligned.height);
-        for (const entry of this.query(aligned)) found.add(entry);
-      }
-      ctx.clip(); ctx.clearRect(0, 0, this.width, this.height);
-      ctx.beginPath();
-      candidates = [...found].sort(compareEntries);
+    if (this.batch && this.width > 0 && this.height > 0) {
+      try { this.paintBatch(now); }
+      catch (error) { this.fallback2D(error instanceof Error ? error.message : 'GPU raster unavailable'); }
     }
+    if (!this.batch) {
+      const ctx = this.context!;
+      ctx.setTransform(this.painter.ratio, 0, 0, this.painter.ratio, 0, 0);
+      // Paths are NOT part of save/restore. A previous dirty union must not survive this frame.
+      ctx.beginPath();
+      let candidates: Entry[];
+      ctx.save();
+      if (this.full) {
+        ctx.clearRect(0, 0, this.width, this.height);
+        candidates = this.ordered;
+      } else {
+        // Clip the union once. Overlapping dirty rectangles never blend a point twice.
+        ctx.beginPath();
+        const found = new Set<Entry>();
+        for (const rect of this.dirty) {
+          const aligned = { x: Math.floor(rect.x), y: Math.floor(rect.y), width: Math.ceil(rect.width) + 2, height: Math.ceil(rect.height) + 2 };
+          ctx.rect(aligned.x, aligned.y, aligned.width, aligned.height);
+          for (const entry of this.query(aligned)) found.add(entry);
+        }
+        ctx.clip(); ctx.clearRect(0, 0, this.width, this.height);
+        ctx.beginPath();
+        candidates = [...found].sort(compareEntries);
+      }
+      for (const entry of candidates) {
+        if (!entry.visible) continue;
+        ctx.globalAlpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
+        const sprite = entry.sprite ?? (entry.motion.paintActive(now) ? (entry.animatedSprite ??= this.painter.animation(entry.art, entry.motion)).render(now)
+          : entry.sprite = this.painter.sprite(entry.art, entry.motion, now));
+        ctx.drawImage(sprite.canvas, entry.x + sprite.x, entry.y + sprite.y, sprite.width, sprite.height);
+      }
+      if (this.ghosts.length) {
+        const origin = this.map.getPixelOrigin().add(offset), scale = this.map.getZoomScale(this.map.getZoom(), 0);
+        for (const ghost of this.ghosts) {
+          const progress = ease((now - ghost.start) / 320, [0.6, 0, 0, 1]);
+          const x = (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x;
+          const y = (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y;
+          ctx.globalAlpha = ghost.alpha * (1 - progress);
+          ctx.drawImage(ghost.sprite.canvas, x + ghost.sprite.x, y + ghost.sprite.y, ghost.sprite.width, ghost.sprite.height);
+        }
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+    }
+    if (this.pendingSwap) {
+      this.pendingSwap.canvas.replaceWith(this.canvas); this.pendingSwap.batch.dispose(); this.pendingSwap = undefined;
+    }
+    this.full = false; this.dirty = [];
     const viewport = { x: 0, y: 0, width: this.width, height: this.height };
-    for (const entry of candidates) {
-      if (!entry.visible) continue;
-      ctx.globalAlpha = entry.layerOpacity.value(now) * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
-      const sprite = entry.sprite ?? (entry.motion.active(now) ? this.painter.dynamic(entry.art, entry.motion, now)
-        : entry.sprite = this.painter.sprite(entry.art, entry.motion, now));
-      ctx.drawImage(sprite.canvas, entry.x + sprite.x, entry.y + sprite.y, sprite.width, sprite.height);
-    }
-    if (this.ghosts.length) {
-      const origin = this.map.getPixelOrigin().add(offset), scale = this.map.getZoomScale(this.map.getZoom(), 0);
-      for (const ghost of this.ghosts) {
-        const progress = ease((now - ghost.start) / 320, [0.6, 0, 0, 1]);
-        const x = (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x;
-        const y = (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y;
-        ctx.globalAlpha = ghost.alpha * (1 - progress);
-        ctx.drawImage(ghost.sprite.canvas, x + ghost.sprite.x, y + ghost.sprite.y, ghost.sprite.width, ghost.sprite.height);
-      }
-      ctx.globalAlpha = 1;
-    }
-    ctx.restore(); this.full = false; this.dirty = [];
     for (const entry of this.active) {
       if (entry.motion.state?.appearing && now >= entry.motion.fadeStart + 150) {
-        // Existing appearance cleanup listeners still receive their completion notification.
+        // The scene owns appearance cleanup; semantic nodes do not run CSS animations.
         entry.inner.classList.remove(classes.appearing);
-        entry.inner.dispatchEvent(new Event('animationend'));
       }
-      if (!entry.motion.active(now) && !entry.layerOpacity.active(now) && !entry.offsetX.active(now) && !entry.offsetY.active(now) && !entry.reveal?.active(now)) this.active.delete(entry);
+      if (!entry.motion.active(now) && !entry.offsetX?.active(now) && !entry.offsetY?.active(now) && !entry.reveal?.active(now)) this.active.delete(entry);
     }
     if (this.animation || this.ghosts.length || [...this.active].some(entry => intersects(bounds(entry), viewport))) this.request();
   };
+  private paintBatch(now: number): void {
+    const batch = this.batch!;
+    let clip: Rect | undefined, candidates = this.ordered;
+    if (!this.full && this.dirty.length) {
+      let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+      for (const rect of this.dirty) { left = Math.min(left, rect.x); top = Math.min(top, rect.y); right = Math.max(right, rect.x + rect.width); bottom = Math.max(bottom, rect.y + rect.height); }
+      clip = { x: Math.floor(left), y: Math.floor(top), width: Math.ceil(right) - Math.floor(left) + 2, height: Math.ceil(bottom) - Math.floor(top) + 2 };
+      candidates = [...this.query(clip)].sort(compareEntries);
+    }
+    batch.begin(this.canvas.width, this.canvas.height, this.painter.ratio, candidates.length + this.ghosts.length, clip);
+    for (const entry of candidates) {
+      if (!entry.visible) continue;
+      const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
+      if (alpha <= 0) continue;
+      const sprite = entry.sprite ?? (entry.motion.paintActive(now) ? (entry.animatedSprite ??= this.painter.animation(entry.art, entry.motion)).render(now)
+        : entry.sprite = this.painter.sprite(entry.art, entry.motion, now));
+      batch.add(entry, sprite, entry.x, entry.y, alpha);
+    }
+    const origin = this.map.getPixelOrigin().add(this.map.containerPointToLayerPoint(L.point(0, 0))), scale = this.map.getZoomScale(this.map.getZoom(), 0);
+    for (const ghost of this.ghosts) {
+      const progress = ease((now - ghost.start) / 320, [0.6, 0, 0, 1]);
+      batch.add(ghost, ghost.sprite, (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x,
+        (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y, ghost.alpha * (1 - progress));
+    }
+    batch.end();
+  }
   private move = (): void => {
     this.full = true;
     // Fractional wheel zoom already runs in rAF. Paint in that frame with the new tile origin.
     if (!this.animation) this.draw(performance.now());
   };
   private zoom = (event: L.ZoomAnimEvent): void => {
-    this.animation = { start: performance.now(), from: new Map(this.ordered.map(entry => [entry, L.point(entry.x, entry.y)])),
+    this.animation = { start: performance.now(), from: new Map(this.ordered.map(entry => [entry, Number.isFinite(entry.x) ? L.point(entry.x, entry.y) : this.map.latLngToContainerPoint(entry.latlng)])),
       zoom: event.zoom, center: event.center };
-    for (const entry of this.entries.values()) { entry.offsetX.jump(0); entry.offsetY.jump(0); }
+    for (const entry of this.entries.values()) { entry.offsetX?.jump(0); entry.offsetY?.jump(0); }
     this.moving.clear();
     this.request();
   };
@@ -463,14 +543,16 @@ export class CanvasMarkerSurface {
   private dispose = (): void => {
     if (this.disposed) return;
     this.disposed = true; cancelAnimationFrame(this.frame); this.observer.disconnect(); this.painter.dispose();
+    this.batch?.dispose(); this.pendingSwap?.batch.dispose();
+    this.iconTemplates.clear();
     this.map.off('move resize viewreset', this.move); this.map.off('zoomanim', this.zoom); this.map.off('zoomend', this.zoomEnd); this.map.off('unload', this.dispose);
     const container = this.map.getContainer();
     container.removeEventListener('pointermove', this.pointerMove, true); container.removeEventListener('pointerleave', this.pointerLeave);
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);
     this.semantic.removeEventListener('focusin', this.focus); this.semantic.removeEventListener('focusout', this.focus);
     document.fonts?.removeEventListener('loadingdone', this.fontsLoaded);
-    this.canvas.remove(); this.semantic.remove(); this.style.remove(); container.style.cursor = '';
-    this.entries.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.animation = undefined; this.ghosts = [];
+    this.canvas.remove(); this.pendingSwap?.canvas.remove(); this.semantic.remove(); this.style.remove(); container.style.cursor = '';
+    this.entries.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.pendingMotion.clear(); this.animation = undefined; this.ghosts = [];
     surfaces.delete(this.map);
   };
 }

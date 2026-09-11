@@ -3,7 +3,8 @@ import { MarkerMotion, curves, ease } from './canvasMarkerMotion';
 export interface MarkerArt {
   image: string; subImage: string; noFrame: boolean; tier: string; count?: string;
 }
-export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width: number; height: number }
+export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width: number; height: number; version?: number }
+export interface AnimatedSprite { render(now: number): Sprite }
 interface Asset { image: HTMLImageElement; ready: boolean }
 const WHITE = 'rgb(248,248,248)';
 const accent = (value: number) => `rgb(${248 + 7 * value},${248 - 52 * value},${248 - 208 * value})`;
@@ -16,18 +17,25 @@ export class MarkerPainter {
   private assets = new Map<string, Asset>();
   private sprites = new Map<string, Sprite>();
   private versions = new Map<string, number>();
-  private scratch?: Sprite;
+  private animated = new WeakMap<MarkerMotion, Map<string, AnimatedSprite>>();
+  private artKeys = new WeakMap<MarkerArt, string>();
   private disposed = false;
   hoverDecoration = '';
   selectedDecoration = '';
   font = '700 11px sans-serif';
   fontVersion = 0;
-  constructor(readonly ratio: number, private invalidate: (url: string) => void) {}
+  constructor(readonly ratio: number, private invalidate: (url: string) => void, private require2D?: () => void) {}
+  private artKey(art: MarkerArt): string {
+    let key = this.artKeys.get(art);
+    if (!key) { key = JSON.stringify(art); this.artKeys.set(art, key); }
+    return `${key}|${this.versions.get(art.image) ?? 0}|${this.versions.get(art.subImage) ?? 0}|${this.versions.get(this.hoverDecoration) ?? 0}|${this.versions.get(this.selectedDecoration) ?? 0}|${this.fontVersion}`;
+  }
   private asset(url: string): HTMLImageElement | undefined {
     if (!url) return;
     let asset = this.assets.get(url);
     if (!asset) {
       const image = new Image();
+      if (this.require2D) image.crossOrigin = 'anonymous';
       asset = { image, ready: false };
       this.assets.set(url, asset);
       image.onload = () => {
@@ -35,6 +43,17 @@ export class MarkerPainter {
         asset!.ready = true;
         this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
         this.invalidate(url);
+      };
+      image.onerror = () => {
+        if (this.disposed || !this.require2D) return;
+        // Preserve existing URL support when a host image does not grant CORS texture access.
+        const fallback = new Image(); asset!.image = fallback;
+        fallback.onload = () => {
+          if (this.disposed) return;
+          asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
+          this.require2D?.(); this.invalidate(url);
+        };
+        fallback.src = url;
       };
       image.src = url;
       if (image.complete && image.naturalWidth) asset.ready = true;
@@ -134,9 +153,7 @@ export class MarkerPainter {
   }
   sprite(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
     const state = motion.state!;
-    const key = JSON.stringify([art, state.selected, state.checked, state.offLayer, state.hover, state.focus,
-      state.disappearing, this.versions.get(art.image), this.versions.get(art.subImage),
-      this.versions.get(this.hoverDecoration), this.versions.get(this.selectedDecoration), this.font, this.fontVersion]);
+    const key = `${this.artKey(art)}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}${+state.disappearing}`;
     let sprite = this.sprites.get(key);
     if (sprite) return sprite;
     const x = art.noFrame ? -29 : -30, y = art.noFrame ? -34 : -46;
@@ -150,20 +167,31 @@ export class MarkerPainter {
     if (this.sprites.size >= 512) this.sprites.delete(this.sprites.keys().next().value!);
     this.sprites.set(key, sprite); return sprite;
   }
-  dynamic(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
-    // All components are composited before applying the group's opacity, just like CSS.
-    // Static and animated graphics take the same raster path; neither waits on a decode.
-    if (!this.scratch) {
+  animation(art: MarkerArt, motion: MarkerMotion): AnimatedSprite {
+    // A whole batch with the same motion and artwork paints once per frame, not once per point.
+    let palette = this.animated.get(motion);
+    if (!palette) this.animated.set(motion, palette = new Map<string, AnimatedSprite>());
+    const key = this.artKey(art);
+    let cached = palette.get(key);
+    if (!cached) {
       const canvas = document.createElement('canvas');
       canvas.width = Math.ceil(104 * this.ratio); canvas.height = Math.ceil(96 * this.ratio);
-      this.scratch = { canvas, x: -38, y: -54, width: 104, height: 96 };
+      const sprite: Sprite = { canvas, x: -38, y: -54, width: 104, height: 96, version: 0 };
+      const ctx = canvas.getContext('2d')!;
+      let at = NaN;
+      cached = { render: now => {
+        if (at === now) return sprite;
+        at = now; sprite.version = (sprite.version ?? 0) + 1;
+        ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
+        ctx.clearRect(0, 0, sprite.width, sprite.height);
+        ctx.translate(-sprite.x, -sprite.y); this.paint(ctx, art, motion, now);
+        return sprite;
+      } };
+      palette.set(key, cached);
     }
-    const sprite = this.scratch, ctx = sprite.canvas.getContext('2d')!;
-    ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
-    ctx.clearRect(0, 0, sprite.width, sprite.height);
-    ctx.translate(-sprite.x, -sprite.y); this.paint(ctx, art, motion, now);
-    return sprite;
+    return cached;
   }
+  dynamic(art: MarkerArt, motion: MarkerMotion, now: number): Sprite { return this.animation(art, motion).render(now); }
   preload(url: string) { this.asset(url); }
   snapshot(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
     // A disappearing representation may be mid-hover. Never cache that transient pose as rest.
@@ -175,6 +203,6 @@ export class MarkerPainter {
   dispose(): void {
     this.disposed = true;
     for (const asset of this.assets.values()) asset.image.onload = asset.image.onerror = null;
-    this.assets.clear(); this.sprites.clear(); this.versions.clear(); this.scratch = undefined;
+    this.assets.clear(); this.sprites.clear(); this.versions.clear(); this.animated = new WeakMap(); this.artKeys = new WeakMap();
   }
 }

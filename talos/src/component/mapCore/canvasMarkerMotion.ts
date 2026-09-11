@@ -21,6 +21,10 @@ export class Motion {
   private duration = 0;
   private curve: Curve = curves.presto;
   constructor(public target: number) { this.from = target; }
+  copyTo(target: Motion): void {
+    target.from = this.from; target.target = this.target; target.start = this.start;
+    target.duration = this.duration; target.curve = this.curve;
+  }
   jump(value: number): void { this.from = this.target = value; this.duration = 0; }
   value(now: number): number {
     if (!this.active(now)) return this.target;
@@ -61,7 +65,23 @@ export class MarkerMotion {
   pulseStart = 0;
   fadeStart = 0;
   state?: MarkerState;
+  flags = -1;
+  kind = 0;
+  private sampledAt = NaN;
+  private sampledOpacity = 1;
+  private sampledActive = false;
+  private sampledPaint = false;
+  fork(): MarkerMotion {
+    const copy = new MarkerMotion();
+    this.channels.forEach((channel, index) => channel.copyTo(copy.channels[index]));
+    copy.pulseStart = this.pulseStart; copy.fadeStart = this.fadeStart;
+    copy.state = this.state; copy.flags = this.flags; copy.kind = this.kind;
+    return copy;
+  }
   set(next: MarkerState, now: number, noFrame: boolean, cluster = false): void {
+    this.sampledAt = NaN; this.kind = +noFrame | (+cluster << 1);
+    this.flags = +next.selected | (+next.checked << 1) | (+next.offLayer << 2) | (+next.hover << 3)
+      | (+next.focus << 4) | (+next.pulsing << 5) | (+next.appearing << 6) | (+next.disappearing << 7);
     const previous = this.state;
     const duration = previous ? 150 : 0;
     this.alpha.to(next.checked && !noFrame ? 0.3 : 1, now, duration, curves.easeIn);
@@ -89,13 +109,53 @@ export class MarkerMotion {
     this.state = next;
   }
   opacity(now: number): number {
+    this.sample(now); return this.sampledOpacity;
+  }
+  private sample(now: number): void {
+    if (this.sampledAt === now) return;
+    this.sampledAt = now;
     const state = this.state;
-    if (state?.disappearing) return (state.checked && !state.offLayer ? 0.3 : 1) * (1 - ease((now - this.fadeStart) / 150, curves.easeIn));
-    if (state?.appearing && now < this.fadeStart + 150) return (state.checked && !state.offLayer ? 0.3 : 1) * ease((now - this.fadeStart) / 150, curves.easeOut);
-    return this.alpha.value(now);
+    this.sampledOpacity = state?.disappearing ? (state.checked && !state.offLayer ? 0.3 : 1) * (1 - ease((now - this.fadeStart) / 150, curves.easeIn))
+      : state?.appearing && now < this.fadeStart + 150 ? (state.checked && !state.offLayer ? 0.3 : 1) * ease((now - this.fadeStart) / 150, curves.easeOut)
+      : this.alpha.value(now);
+    this.sampledPaint = !!state?.pulsing || this.channels.some((channel, index) => index !== 0 && channel.active(now));
+    this.sampledActive = this.sampledPaint || this.alpha.active(now)
+      || (!!(state?.appearing || state?.disappearing) && now < this.fadeStart + 150);
   }
   active(now: number): boolean {
-    return !!this.state?.pulsing || (!!(this.state?.appearing || this.state?.disappearing) && now < this.fadeStart + 150)
-      || this.channels.some(channel => channel.active(now));
+    this.sample(now); return this.sampledActive;
+  }
+  paintActive(now: number): boolean { this.sample(now); return this.sampledPaint; }
+}
+
+/** Copy-on-write transition cohorts: shared poses are never mutated by another point. */
+export class MarkerMotionPool {
+  readonly initial = new MarkerMotion();
+  private at = NaN;
+  private activeTransitions = new WeakMap<MarkerMotion, Map<number, MarkerMotion>>();
+  private restTransitions = new Map<number, MarkerMotion>();
+  private states = new Map<number, MarkerState>();
+  transition(previous: MarkerMotion, flags: number, now: number, noFrame: boolean, cluster: boolean): MarkerMotion {
+    const kind = +noFrame | (+cluster << 1), targetKey = flags | (kind << 8);
+    if (previous.flags === flags && previous.kind === kind) return previous;
+    if (now !== this.at) { this.at = now; this.activeTransitions = new WeakMap(); this.restTransitions.clear(); }
+    let cache: Map<number, MarkerMotion>, key = targetKey;
+    if (previous.active(now)) {
+      let found = this.activeTransitions.get(previous);
+      if (!found) this.activeTransitions.set(previous, found = new Map<number, MarkerMotion>());
+      cache = found;
+    } else {
+      cache = this.restTransitions;
+      key |= ((previous.flags + 1) | (previous.kind << 9)) << 10;
+    }
+    let motion = cache.get(key);
+    if (motion) return motion;
+    let state = this.states.get(flags);
+    if (!state) {
+      state = { selected: !!(flags & 1), checked: !!(flags & 2), offLayer: !!(flags & 4), hover: !!(flags & 8),
+        focus: !!(flags & 16), pulsing: !!(flags & 32), appearing: !!(flags & 64), disappearing: !!(flags & 128) };
+      this.states.set(flags, state);
+    }
+    motion = previous.fork(); motion.set(state, now, noFrame, cluster); cache.set(key, motion); return motion;
   }
 }

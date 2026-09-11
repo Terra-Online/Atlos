@@ -391,14 +391,6 @@ export class ClusterLayer {
         });
         visibleInners.forEach((inner) => {
             inner.classList.add(animationClass);
-            if (animationClass !== styles.appearing) return;
-
-            const clearAppearing = (event: AnimationEvent) => {
-                if (event.target !== inner) return;
-                inner.classList.remove(styles.appearing);
-                inner.removeEventListener('animationend', clearAppearing);
-            };
-            inner.addEventListener('animationend', clearAppearing);
         });
     }
 

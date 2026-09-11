@@ -70,6 +70,7 @@ export class MarkerLayer {
     private temporaryVisibleIds = new Set<string>();
     private checkedVisibleOverrideIds = new Set<string>();
     private proximityUpdateSeq = 0;
+    private markerVersion = 0;
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
     private _destroyLasso?: () => void;
@@ -128,6 +129,7 @@ export class MarkerLayer {
                 styles.disappearing,
             ],
             getActiveFilterKeys: () => this.activeFilterKeys,
+            getMarkerVersion: () => this.markerVersion,
             isSubregionVisible: (subregionId) =>
                 this.map.hasLayer(this.layerSubregionDict[subregionId]),
         });
@@ -590,6 +592,7 @@ export class MarkerLayer {
         });
 
         if (newMarkerIds.length > 0) {
+            this.markerVersion++;
             this.clusterLayer.notifyMarkersAdded(newMarkerIds);
         }
     }
