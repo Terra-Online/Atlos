@@ -144,6 +144,12 @@
     }
 }
 
+.commentActions [data-label='share'] {
+    > span {
+        transform: scale(0.85);
+    }
+}
+
 .commentActions [data-label='edit'],
 .commentActions [data-label='reply'] {
     > span {

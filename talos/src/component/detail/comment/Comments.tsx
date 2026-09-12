@@ -175,14 +175,6 @@ const CommentItem = memo(({
     const actions = useMemo<ShortActionItem[]>(() => {
         const items: ShortActionItem[] = [
             {
-                id: 'share',
-                label: copiedPopupVisible ? tUI('detail.copied') : tUI('detail.comments.copyLink'),
-                icon: <ShareIcon />,
-                tooltipVisible: copiedPopupVisible ? true : undefined,
-                disabled: !canInteract || !canModerate || comment.id.startsWith('local-comment:'),
-                onClick: () => void copyPointShareUrl(),
-            },
-            {
                 id: 'translate',
                 label: translationVisible ? tUI('detail.comments.showOriginal') : tUI('detail.comments.translate'),
                 icon: <TranslateIcon />,
@@ -253,6 +245,15 @@ const CommentItem = memo(({
             icon: <ReplyIcon />,
             disabled: !canInteract || !canModerate || actionPending,
             onClick: () => onReply(comment),
+        });
+
+        items.push({
+            id: 'share',
+            label: copiedPopupVisible ? tUI('detail.copied') : tUI('detail.comments.copyLink'),
+            icon: <ShareIcon />,
+            tooltipVisible: copiedPopupVisible ? true : undefined,
+            disabled: !canInteract || !canModerate || comment.id.startsWith('local-comment:'),
+            onClick: () => void copyPointShareUrl(),
         });
 
         return items;
