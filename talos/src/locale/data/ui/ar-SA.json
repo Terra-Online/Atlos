@@ -67,6 +67,7 @@
       "unrecall": "إلغاء التراجع"
     },
     "comments": {
+      "copyLink": "نسخ رابط التعليق",
       "placeholder": "اكتب شيئًا!",
       "submit": "نشر التعليق",
       "actions": "إجراءات التعليق",

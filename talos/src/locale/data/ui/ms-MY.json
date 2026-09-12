@@ -67,6 +67,7 @@
       "unrecall": "Batalkan pemadaman"
     },
     "comments": {
+      "copyLink": "Salin pautan komen",
       "placeholder": "Tulis sesuatu!",
       "submit": "Hantar komen",
       "actions": "Tindakan komen",

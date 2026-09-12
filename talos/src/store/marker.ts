@@ -20,7 +20,12 @@ export type ImageOpenRequest = {
     generation: number;
 };
 
+export type CommentOpenRequest = { markerId: string; commentId: string };
+
 interface IMarkerStore {
+    commentOpenRequest: CommentOpenRequest | null;
+    openMarkerComment: (markerId: string, commentId: string) => void;
+    clearCommentOpenRequest: () => void;
     currentActivePoint: IMarkerData | null;
     setCurrentActivePoint: (point: IMarkerData) => void;
     imageOpenRequest: ImageOpenRequest | null;
@@ -53,20 +58,27 @@ export const useMarkerStore = create<IMarkerStore>()(
     persist(
         (set, get) => ({
             currentActivePoint: null,
+            commentOpenRequest: null,
+            openMarkerComment: (markerId, commentId) => {
+                if (!commentId.trim()) return;
+                set({ commentOpenRequest: { markerId: String(markerId), commentId: commentId.trim() }, imageOpenRequest: null });
+            },
+            clearCommentOpenRequest: () => set({ commentOpenRequest: null }),
             imageOpenRequest: null,
             setCurrentActivePoint: (point) => {
                 const prev = get().currentActivePoint;
                 // If user clicks the same point again, still emit an update so UI can re-open.
                 if (prev?.id === point.id) {
-                    set({ currentActivePoint: { ...point }, imageOpenRequest: null });
+                    set({ currentActivePoint: { ...point }, imageOpenRequest: null, commentOpenRequest: null });
                     return;
                 }
-                set({ currentActivePoint: point, imageOpenRequest: null });
+                set({ currentActivePoint: point, imageOpenRequest: null, commentOpenRequest: null });
             },
             openMarkerImage: (markerId, imageId) => {
                 const nextImageId = imageId.trim();
                 if (!nextImageId) return;
                 set((state) => ({
+                    commentOpenRequest: null,
                     imageOpenRequest: {
                         markerId: String(markerId),
                         imageId: nextImageId,

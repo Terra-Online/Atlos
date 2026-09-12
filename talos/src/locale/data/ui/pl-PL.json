@@ -67,6 +67,7 @@
       "unrecall": "Anuluj usunięcie"
     },
     "comments": {
+      "copyLink": "Kopiuj link do komentarza",
       "placeholder": "Napisz coś!",
       "submit": "Opublikuj komentarz",
       "actions": "Akcje komentarza",

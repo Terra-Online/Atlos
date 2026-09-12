@@ -67,6 +67,7 @@
       "unrecall": "取消撤回"
     },
     "comments": {
+      "copyLink": "复制评论链接",
       "placeholder": "说些什么吧！",
       "submit": "发布留言",
       "actions": "留言操作",

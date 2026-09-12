@@ -67,6 +67,7 @@
       "unrecall": "Annuler le retrait"
     },
     "comments": {
+      "copyLink": "Copier le lien du commentaire",
       "placeholder": "Écrivez quelque chose !",
       "submit": "Publier le commentaire",
       "actions": "Actions du commentaire",

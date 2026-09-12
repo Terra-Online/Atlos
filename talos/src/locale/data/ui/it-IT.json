@@ -67,6 +67,7 @@
       "unrecall": "Annulla rimozione"
     },
     "comments": {
+      "copyLink": "Copia link del commento",
       "placeholder": "Scrivi qualcosa!",
       "submit": "Pubblica commento",
       "actions": "Azioni commento",

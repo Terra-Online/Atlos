@@ -67,6 +67,7 @@
       "unrecall": "Geri Çekmeyi İptal Et"
     },
     "comments": {
+      "copyLink": "Yorum bağlantısını kopyala",
       "placeholder": "Bir şeyler yazın!",
       "submit": "Yorum gönder",
       "actions": "Yorum işlemleri",

@@ -67,6 +67,7 @@
       "unrecall": "取消撤回"
     },
     "comments": {
+      "copyLink": "複製留言連結",
       "placeholder": "傾兩句？",
       "submit": "發布留言",
       "actions": "留言操作",

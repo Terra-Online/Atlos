@@ -14,6 +14,7 @@ export type ShortActionItem = {
     confirming?: boolean;
     iconClassName?: string;
     tooltipKey?: string;
+    tooltipVisible?: boolean;
 };
 
 type Props = {
@@ -361,7 +362,7 @@ const ShortActions = memo(({
             aria-label={ariaLabel}
         >
             {items.map((item) => (
-                <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4}>
+                <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4} visible={item.tooltipVisible}>
                     <button
                         type="button"
                         className={styles.shortActionButton}
