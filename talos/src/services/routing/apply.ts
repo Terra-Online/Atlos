@@ -10,6 +10,7 @@ import { useMarkerStore } from '@/store/marker';
 import { completeCurrentUserGuide } from '@/store/userGuide';
 import { getLangFromUrlCode } from '@/lib/i18n/lang';
 import { navigateToSharedPoint } from '@/services/map/navigation';
+import type { MarkerContentTarget } from '@/services/map/navigation';
 import { SUBREGION_TO_REGION_MAP } from './protocol';
 import { getCurrentLocale } from './runtime';
 import { decodePointIdToken } from './pointToken';
@@ -65,6 +66,11 @@ const applyRegion = (state: ParsedUrlState): void => {
 };
 
 const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
+    const content: MarkerContentTarget | undefined = state.imageId
+        ? { kind: 'image', id: state.imageId }
+        : state.commentId
+            ? { kind: 'comment', id: state.commentId }
+            : undefined;
     const pointIdFromToken = state.pointToken
         ? decodePointIdToken(state.pointToken)
         : null;
@@ -81,7 +87,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             regionKey: resolvedFromToken.regionKey,
             subregionKey: resolvedFromToken.point.subregId,
             pointId: resolvedFromToken.point.id,
-            content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
+            content,
         });
         return;
     }
@@ -94,14 +100,14 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
                 regionKey: resolvedFromQueryPoint.regionKey,
                 subregionKey: resolvedFromQueryPoint.point.subregId,
                 pointId: resolvedFromQueryPoint.point.id,
-                content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
+                content,
             });
         } else if (state.filterParam) {
             navigateToSharedPoint({
                 regionKey: state.regionKey || useRegion.getState().currentRegionKey,
                 subregionKey: state.subregionKey || undefined,
                 pointId: state.pointId,
-                content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
+                content,
             });
         }
         return;
@@ -113,7 +119,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             regionKey: resolvedFromType.regionKey,
             subregionKey: resolvedFromType.point.subregId,
             pointId: resolvedFromType.point.id,
-            content: state.imageId ? { kind: 'image', id: state.imageId } : undefined,
+            content,
         });
         return;
     }

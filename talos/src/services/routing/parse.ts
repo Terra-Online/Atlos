@@ -5,6 +5,7 @@ import {
     PARAM_POINT,
     PARAM_POINT_TOKEN,
     PARAM_IMAGE,
+    PARAM_COMMENT,
     PARAM_REGION,
     PARAM_SUBREGION,
     PARAM_TYPE,
@@ -28,6 +29,7 @@ export type ParsedUrlState = {
     pointId: string | null;
     pointToken: string | null;
     imageId: string | null;
+    commentId: string | null;
     typeKey: string | null;
     pathPointToken: string | null;
 };
@@ -58,6 +60,7 @@ export const parseUrlState = (location: UrlLocationLike): ParsedUrlState => {
         pointId: params.get(PARAM_POINT),
         pointToken: params.get(PARAM_POINT_TOKEN)?.trim() || pathPointToken,
         imageId: params.get(PARAM_IMAGE)?.trim() || null,
+        commentId: params.get(PARAM_COMMENT)?.trim() || null,
         typeKey: params.get(PARAM_TYPE)?.trim() || null,
         pathPointToken,
     };

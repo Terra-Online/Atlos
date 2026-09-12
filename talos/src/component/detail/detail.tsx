@@ -111,6 +111,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
      * @type {import('../mapContainer/store/marker.type').IMarkerData}
      */
     const currentPoint = useMarkerStore((state) => state.currentActivePoint);
+    const commentOpenRequest = useMarkerStore((state) => state.commentOpenRequest);
     const currentPointId = currentPoint?.id;
     const currentPointType = currentPoint?.type;
     const isImageUploadable = Boolean(currentPoint && resolveUGCUploadTarget(currentPoint));
@@ -393,11 +394,21 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         setActiveTab('comments');
     }, []);
 
+    useEffect(() => {
+        if (commentOpenRequest?.markerId === currentPoint?.id && commentOpenRequest) openCommentsTab();
+    }, [commentOpenRequest, currentPoint?.id, openCommentsTab]);
+
+    const openHighlightComment = useCallback(() => {
+        if (!currentPoint || !highlightComment) return;
+        useMarkerStore.getState().openMarkerComment(currentPoint.id, highlightComment.id);
+        openCommentsTab();
+    }, [currentPoint, highlightComment, openCommentsTab]);
+
     const handleHighlightCommentKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        openCommentsTab();
-    }, [openCommentsTab]);
+        openHighlightComment();
+    }, [openHighlightComment]);
 
     const isRegionTypeComplete = currentPoint
         ? regionCnt.total > 0 && regionCnt.collected >= regionCnt.total
@@ -636,7 +647,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                         className={styles.highlightCommentLink}
                                         role="button"
                                         tabIndex={0}
-                                        onClick={openCommentsTab}
+                                        onClick={openHighlightComment}
                                         onKeyDown={handleHighlightCommentKeyDown}
                                         aria-label={tUI('detail.tabs.comments')}
                                     >
@@ -711,6 +722,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                         >
                             {hasOpenedComments && (
                                 <Comments
+                                    key={currentPoint.id}
                                     point={currentPoint}
                                     pointName={pointName}
                                     active={detailPhase === 'open' && activeTab === 'comments'}

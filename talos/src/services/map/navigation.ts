@@ -5,8 +5,8 @@ import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 
-// A marker link focuses one content item. Add a comment variant when supported.
-export type MarkerContentTarget = { kind: 'image'; id: string };
+// A marker link focuses one content item.
+export type MarkerContentTarget = { kind: 'image'; id: string } | { kind: 'comment'; id: string };
 
 export interface MarkerNavigationOptions {
     content?: MarkerContentTarget;
@@ -93,6 +93,8 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     useMarkerStore.getState().setCurrentActivePoint(markerData);
     if (target.content?.kind === 'image') {
         useMarkerStore.getState().openMarkerImage(markerData.id, target.content.id);
+    } else if (target.content?.kind === 'comment') {
+        useMarkerStore.getState().openMarkerComment(markerData.id, target.content.id);
     }
 
     const targetZoom = Math.min(TARGET_ZOOM, mapCore.map.getMaxZoom());

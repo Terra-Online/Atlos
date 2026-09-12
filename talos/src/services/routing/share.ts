@@ -9,6 +9,7 @@ import {
     PARAM_SUBREGION,
     PARAM_POINT_TOKEN,
     PARAM_IMAGE,
+    PARAM_COMMENT,
     REGION_CODE_MAP,
     SUBREGION_TO_REGION_MAP,
 } from './protocol';
@@ -79,6 +80,8 @@ export const generatePointShareUrl = (
     const url = new URL(`${pointShareOrigin}/${path}`);
     if (options.content?.kind === 'image') {
         url.searchParams.set(PARAM_IMAGE, options.content.id);
+    } else if (options.content?.kind === 'comment') {
+        url.searchParams.set(PARAM_COMMENT, options.content.id);
     }
     return url.toString();
 };
