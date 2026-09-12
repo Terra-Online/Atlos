@@ -16,12 +16,13 @@ layout(location=0) in vec4 rect;
 layout(location=1) in vec4 texRect;
 layout(location=2) in vec2 meta;
 uniform vec2 viewport;
+uniform vec2 origin;
 out vec2 uv;
 out float opacity;
 flat out float page;
 void main(){
  vec2 corner=vec2(float(gl_VertexID & 1),float((gl_VertexID >> 1) & 1));
- vec2 position=rect.xy+corner*rect.zw;
+ vec2 position=rect.xy+corner*rect.zw-origin;
  gl_Position=vec4(position/viewport*vec2(2.0,-2.0)+vec2(-1.0,1.0),0.0,1.0);
  uv=texRect.xy+corner*texRect.zw;opacity=meta.x;page=meta.y;
 }`;
@@ -43,9 +44,7 @@ export class CanvasSpriteBatch {
   private slots: Slot[] = [];
   private sources = new WeakMap<HTMLCanvasElement, Slot>();
   private bindings = new WeakMap<object, Slot>();
-  private framebuffer: WebGLFramebuffer;
   private copyFramebuffer: WebGLFramebuffer;
-  private color: WebGLTexture;
   private uploadTexture: WebGLTexture;
   private uploadWidth = 0;
   private uploadHeight = 0;
@@ -53,6 +52,11 @@ export class CanvasSpriteBatch {
   private buffer: WebGLBuffer;
   private vao: WebGLVertexArrayObject;
   private viewport: WebGLUniformLocation | null;
+  private origin: WebGLUniformLocation | null;
+  private source: HTMLCanvasElement;
+  private paintX = 0;
+  private paintY = 0;
+  private skip = false;
   private data = new Float32Array(1024 * STRIDE);
   private bufferBytes = 0;
   private width = 0;
@@ -65,12 +69,16 @@ export class CanvasSpriteBatch {
 
   static create(canvas: HTMLCanvasElement, lost: () => void): CanvasSpriteBatch | undefined {
     if (typeof WebGL2RenderingContext === 'undefined' || typeof WeakRef === 'undefined') return undefined;
-    const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false });
+    const source = document.createElement('canvas');
+    const gl = source.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false });
     if (!gl) return undefined;
-    try { return new CanvasSpriteBatch(gl, lost); }
+    const output = canvas.getContext('2d');
+    if (!output) { gl.getExtension('WEBGL_lose_context')?.loseContext(); return undefined; }
+    try { return new CanvasSpriteBatch(gl, output, lost); }
     catch { gl.getExtension('WEBGL_lose_context')?.loseContext(); return undefined; }
   }
-  private constructor(private gl: WebGL2RenderingContext, private lost: () => void) {
+  private constructor(private gl: WebGL2RenderingContext, private output: CanvasRenderingContext2D, private lost: () => void) {
+    this.source = gl.canvas as HTMLCanvasElement;
     const shader = (type: number, source: string) => {
       const shader = gl.createShader(type)!;
       gl.shaderSource(shader, source); gl.compileShader(shader);
@@ -83,15 +91,15 @@ export class CanvasSpriteBatch {
     gl.deleteShader(vertex); gl.deleteShader(fragment);
     if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) throw new Error('Canvas shader link failed');
     this.viewport = gl.getUniformLocation(this.program, 'viewport');
+    this.origin = gl.getUniformLocation(this.program, 'origin');
     this.buffer = gl.createBuffer()!; this.vao = gl.createVertexArray()!;
     gl.bindVertexArray(this.vao); gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     for (const [index, size, offset] of [[0, 4, 0], [1, 4, 4], [2, 2, 8]]) {
       gl.enableVertexAttribArray(index); gl.vertexAttribPointer(index, size, gl.FLOAT, false, STRIDE * 4, offset * 4); gl.vertexAttribDivisor(index, 1);
     }
-    this.framebuffer = gl.createFramebuffer()!; this.copyFramebuffer = gl.createFramebuffer()!;
-    this.color = gl.createTexture()!; gl.bindTexture(gl.TEXTURE_2D, this.color);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.color, 0);
+    // Render only the damaged rectangle on the GPU. The visible 2D canvas retains
+    // the complete image, so unchanged pixels need neither drawing nor copying.
+    this.copyFramebuffer = gl.createFramebuffer()!;
     this.uploadTexture = gl.createTexture()!; gl.bindTexture(gl.TEXTURE_2D, this.uploadTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     this.atlas = this.allocateAtlas(1);
@@ -123,7 +131,7 @@ export class CanvasSpriteBatch {
     }
     gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, null, 0, 0);
     gl.deleteTexture(old); this.atlas = next; this.atlasDepth *= 2;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
   private slot(sprite: Sprite): Slot {
     const source = sprite.canvas;
@@ -168,7 +176,7 @@ export class CanvasSpriteBatch {
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
       gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, slot.x, slot.y, slot.page, 0, 0, source.width, source.height);
       gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       slot.version = sprite.version ?? 0; this.uploads++;
     }
     return slot;
@@ -185,19 +193,26 @@ export class CanvasSpriteBatch {
     if (this.bufferBytes !== this.data.byteLength) { gl.bufferData(gl.ARRAY_BUFFER, this.data.byteLength, gl.DYNAMIC_DRAW); this.bufferBytes = this.data.byteLength; }
     if (width !== this.width || height !== this.height) {
       this.width = width; this.height = height; this.valid = false;
-      gl.bindTexture(gl.TEXTURE_2D, this.color); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer); gl.viewport(0, 0, width, height);
-    if (dirty && this.valid) {
-      const x = Math.floor(dirty.x * ratio), y = Math.floor(dirty.y * ratio);
-      const right = Math.ceil((dirty.x + dirty.width) * ratio), bottom = Math.ceil((dirty.y + dirty.height) * ratio);
-      gl.enable(gl.SCISSOR_TEST); gl.scissor(x, height - bottom, right - x, bottom - y);
-    } else gl.disable(gl.SCISSOR_TEST);
+    const partial = dirty && this.valid;
+    this.paintX = partial ? Math.max(0, Math.min(width, Math.floor(dirty.x * ratio))) : 0;
+    this.paintY = partial ? Math.max(0, Math.min(height, Math.floor(dirty.y * ratio))) : 0;
+    const right = partial ? Math.max(0, Math.min(width, Math.ceil((dirty.x + dirty.width) * ratio))) : width;
+    const bottom = partial ? Math.max(0, Math.min(height, Math.ceil((dirty.y + dirty.height) * ratio))) : height;
+    const paintWidth = right - this.paintX, paintHeight = bottom - this.paintY;
+    this.skip = paintWidth <= 0 || paintHeight <= 0;
+    if (this.skip) return;
+    if (this.source.width !== paintWidth) this.source.width = paintWidth;
+    if (this.source.height !== paintHeight) this.source.height = paintHeight;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, paintWidth, paintHeight);
+    gl.disable(gl.SCISSOR_TEST);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(this.program); gl.uniform2f(this.viewport, width / ratio, height / ratio);
+    gl.useProgram(this.program); gl.uniform2f(this.viewport, paintWidth / ratio, paintHeight / ratio);
+    gl.uniform2f(this.origin, this.paintX / ratio, this.paintY / ratio);
     gl.bindVertexArray(this.vao);
   }
   add(key: object, sprite: Sprite, x: number, y: number, alpha: number): void {
+    if (this.skip) return;
     if (this.count * STRIDE >= this.data.length) throw new Error('Canvas instance buffer overflow');
     const previous = this.bindings.get(key);
     if (previous && previous.source.deref() !== sprite.canvas) this.release(key);
@@ -210,6 +225,7 @@ export class CanvasSpriteBatch {
     data[offset + 8] = alpha; data[offset + 9] = slot.page;
   }
   end(): void {
+    if (this.skip) return;
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
     if (this.count) {
@@ -217,28 +233,29 @@ export class CanvasSpriteBatch {
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.count); this.drawCalls = 1;
     }
     gl.disable(gl.SCISSOR_TEST);
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.framebuffer); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-    gl.blitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    if (gl.isContextLost()) throw new Error('Canvas graphics context lost');
+    const ctx = this.output;
+    // Copy replaces transparent pixels too. Clip is required: the copy composite
+    // operation otherwise clears the rest of the canvas. Integer backing-pixel
+    // coordinates avoid seams even on displays whose DPR is below our 2x floor.
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.beginPath();
+    ctx.rect(this.paintX, this.paintY, this.source.width, this.source.height); ctx.clip();
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'copy'; ctx.filter = 'none';
+    ctx.drawImage(this.source, this.paintX, this.paintY); ctx.restore();
     this.valid = true;
   }
   readPixels(x: number, y: number, width: number, height: number): Uint8ClampedArray {
-    const gl = this.gl, pixels = new Uint8Array(width * height * 4), result = new Uint8ClampedArray(pixels.length);
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.framebuffer);
-    gl.readPixels(x, this.height - y - height, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    for (let row = 0; row < height; row++) result.set(pixels.subarray((height - row - 1) * width * 4, (height - row) * width * 4), row * width * 4);
-    // Match getImageData's unpremultiplied representation for diagnostics.
-    for (let i = 0; i < result.length; i += 4) if (result[i + 3] && result[i + 3] !== 255) {
-      const factor = 255 / result[i + 3]; result[i] *= factor; result[i + 1] *= factor; result[i + 2] *= factor;
-    }
-    return result;
+    return this.output.getImageData(x, y, width, height).data;
   }
-  get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads, atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4, error: this.gl.getError() }; }
+  get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads,
+    presentedPixels: this.skip ? 0 : this.source.width * this.source.height, viewportPixels: this.width * this.height,
+    atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4, error: this.gl.getError() }; }
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
     const gl = this.gl; gl.canvas.removeEventListener('webglcontextlost', this.contextLost);
-    gl.deleteTexture(this.atlas); gl.deleteTexture(this.color); gl.deleteTexture(this.uploadTexture); gl.deleteBuffer(this.buffer); gl.deleteVertexArray(this.vao);
-    gl.deleteProgram(this.program); gl.deleteFramebuffer(this.framebuffer); gl.deleteFramebuffer(this.copyFramebuffer);
+    gl.deleteTexture(this.atlas); gl.deleteTexture(this.uploadTexture); gl.deleteBuffer(this.buffer); gl.deleteVertexArray(this.vao);
+    gl.deleteProgram(this.program); gl.deleteFramebuffer(this.copyFramebuffer);
     this.slots = []; this.pages = []; this.data = new Float32Array(); this.sources = new WeakMap(); this.bindings = new WeakMap();
     gl.getExtension('WEBGL_lose_context')?.loseContext();
   }
