@@ -18,6 +18,36 @@ const marker = (position: L.LatLngExpression) => new ViewportMarker(position, {
   icon: L.divIcon({ className: styles.incompleteMarker, html: `<span class="${styles.markerInner}">point</span>`, iconSize: [32, 32], iconAnchor: [16, 32] }),
 });
 describe('Canvas marker lifecycle', () => {
+  it('consumes scheduled frames without cancelling them and coalesces synchronous camera draws', () => {
+    const pending = new Map<number, FrameRequestCallback>();
+    let sequence = 0;
+    const cancel = vi.fn((id: number) => { pending.delete(id); });
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      pending.set(++sequence, callback); return sequence;
+    });
+    vi.stubGlobal('cancelAnimationFrame', cancel);
+    try {
+      const point = marker([0, 0]).addTo(map);
+      expect(pending.size).toBe(1);
+      const [id, callback] = [...pending][0];
+      pending.delete(id); callback(performance.now());
+      expect(cancel).not.toHaveBeenCalled();
+      // Initial state reconciliation may schedule the next animation frame.
+      expect(pending.size).toBe(1);
+      const [nextId, nextCallback] = [...pending][0];
+      clock.mockReturnValue(2000);
+      pending.delete(nextId); nextCallback(performance.now());
+      expect(cancel).not.toHaveBeenCalled();
+      expect(pending.size).toBe(0);
+      point.setLatLng([1, 1]);
+      const queued = sequence;
+      expect(pending.size).toBe(1);
+      map.fire('move');
+      expect(cancel).toHaveBeenCalledExactlyOnceWith(queued);
+      expect(pending.size).toBe(0);
+    } finally { clock.mockRestore(); vi.unstubAllGlobals(); }
+  });
   it.each([1, 1.25, 1.5, 1.75, 2])('uses a 2x backing store at DPR %s without scaling CSS coordinates', ratio => {
     vi.stubGlobal('devicePixelRatio', ratio);
     try {

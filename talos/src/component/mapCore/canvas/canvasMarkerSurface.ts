@@ -306,8 +306,14 @@ export class CanvasMarkerSurface {
     if (stack !== entry.stack) { entry.stack = stack; this.reorder = true; }
   }
   private request(): void {
-    if (!this.frame && !this.disposed) this.frame = requestAnimationFrame(this.draw);
+    if (!this.frame && !this.disposed) this.frame = requestAnimationFrame(this.drawFrame);
   }
+  private drawFrame = (now: number): void => {
+    // The browser already consumed this request. Only an external synchronous
+    // draw (for example a camera move) needs to cancel a still-pending frame.
+    this.frame = 0;
+    this.draw(now);
+  };
   private fallback2D(reason: string): void {
     if (!this.batch || this.disposed) return;
     this.backendReason = reason;
