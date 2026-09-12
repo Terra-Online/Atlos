@@ -12,7 +12,7 @@ function cloneIcon(this: L.DivIcon, oldIcon?: HTMLElement): HTMLElement {
   return icon;
 }
 
-// Joint implementation: keep identical to Atlos/mapCore/markerViewport.ts.
+// Joint implementation: keep identical to Atlos/mapCore/canvas/markerViewport.ts.
 // Leaflet owns logical membership and semantic nodes; the instance scene paints all points.
 export class ViewportMarker extends L.Marker {
   override getPane(name?: string): HTMLElement | undefined {

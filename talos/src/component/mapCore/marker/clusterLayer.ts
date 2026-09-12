@@ -1,6 +1,6 @@
 import L from 'leaflet';
-import { createCanvasAwareClusterGroup } from '../canvasMarkerCluster';
-import type { CanvasClusterGroup } from '../clusterGroup';
+import { createCanvasAwareClusterGroup } from '../canvas/canvasMarkerCluster';
+import type { CanvasClusterGroup } from '../canvas/clusterGroup';
 import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
 import styles from './marker.module.scss';

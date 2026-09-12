@@ -60,6 +60,8 @@ export class CanvasMarkerSurface {
   private disposed = false;
   private width = 0;
   private height = 0;
+  private ratio = window.devicePixelRatio || 1;
+  private resolution?: MediaQueryList;
   private hovered?: Entry;
   private pointer?: PointerEvent;
   private pressed?: { entry?: Entry; x: number; y: number };
@@ -86,7 +88,9 @@ export class CanvasMarkerSurface {
     this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;content-visibility:auto;pointer-events:none;';
     this.style.textContent = '.oem-canvas-semantics *{animation:none!important;transition:none!important;will-change:auto!important;}';
     map.getPane('markerPane')!.append(this.canvas, this.semantic, this.style);
-    this.painter = new MarkerPainter(window.devicePixelRatio || 1, url => {
+    // Supersample small cached artwork, not the whole viewport. Integer density avoids
+    // rounding the texture bounds and then rescaling the artwork at Windows 125/150%.
+    this.painter = new MarkerPainter(Math.max(2, Math.ceil(this.ratio)), url => {
       for (const entry of this.entries.values()) {
         if (entry.art.image === url || entry.art.subImage === url || entry.art.subImage
           && (url === this.painter.hoverDecoration || url === this.painter.selectedDecoration)) this.invalidate(entry);
@@ -118,6 +122,8 @@ export class CanvasMarkerSurface {
     this.semantic.addEventListener('focusin', this.focus);
     this.semantic.addEventListener('focusout', this.focus);
     document.fonts?.addEventListener('loadingdone', this.fontsLoaded);
+    this.watchResolution();
+    window.addEventListener('resize', this.displayChanged);
     map.on('move resize viewreset', this.move);
     map.on('zoomanim', this.zoom);
     map.on('zoomend', this.zoomEnd);
@@ -171,21 +177,42 @@ export class CanvasMarkerSurface {
     return template;
   }
   getSemanticPane(): HTMLElement { return this.semantic; }
-  private readOfficialStyles(): void {
+  private readOfficialStyles(loadFonts = true): void {
     // A tiny live probe reads CSS once. The semantic tree can then skip layout while offscreen,
     // retaining keyboard/accessibility semantics through content-visibility:auto.
     const probe = document.createElement('div'), sub = document.createElement('div');
     probe.className = classes.markerInner; probe.dataset.tier = 'L1';
     probe.style.cssText = 'position:absolute;visibility:hidden;width:32px;height:32px;pointer-events:none';
     sub.className = classes.subIconContainer; probe.append(sub); this.map.getPane('markerPane')!.append(probe);
-    const badge = getComputedStyle(probe, '::after');
-    this.painter.font = `${badge.fontStyle} ${badge.fontWeight} ${badge.fontSize} ${badge.fontFamily}`;
+    // Official canvas typography is slightly smaller; retain our centered line box.
+    // Read individual fields because the shorthand is empty with OpenType features.
+    const font = (style: CSSStyleDeclaration, scale: number) => `${style.fontStyle} ${style.fontWeight} ${parseFloat(style.fontSize) * scale}px ${style.fontFamily}`;
+    this.painter.font = font(getComputedStyle(probe, '::after'), 10.5 / 11);
+    const count = document.createElement('span'); count.className = classes.clusterCount;
+    probe.classList.add(classes.clusterMarker); probe.append(count);
+    this.painter.countFont = font(getComputedStyle(count), 11.5 / 12);
     const url = (pseudo: string) => getComputedStyle(sub, pseudo).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
     this.painter.hoverDecoration = url('::before'); this.painter.selectedDecoration = url('::after');
     probe.remove();
     this.painter.preload(this.painter.hoverDecoration); this.painter.preload(this.painter.selectedDecoration);
-    void document.fonts?.load(this.painter.font, '0123456789BL').then(this.fontsLoaded, () => {});
+    if (loadFonts && document.fonts) void Promise.all([
+      document.fonts.load(this.painter.font, '0123456789BL'),
+      document.fonts.load(this.painter.countFont, '0123456789'),
+    ]).then(this.fontsLoaded, () => {});
   }
+  private watchResolution(): void {
+    this.resolution?.removeEventListener('change', this.displayChanged);
+    this.resolution = window.matchMedia?.(`(resolution: ${this.ratio}dppx)`);
+    this.resolution?.addEventListener('change', this.displayChanged);
+  }
+  private displayChanged = (): void => {
+    if (this.disposed) return;
+    this.ratio = window.devicePixelRatio || 1;
+    this.painter.setRatio(Math.max(2, Math.ceil(this.ratio)));
+    for (const entry of this.entries.values()) this.invalidate(entry);
+    this.watchResolution(); this.fontsLoaded();
+    this.full = true; this.request();
+  };
   remove(marker: CanvasMarker, disposeEmpty = true): void {
     const entry = this.entries.get(marker);
     if (!entry) return;
@@ -307,6 +334,9 @@ export class CanvasMarkerSurface {
     return found;
   }
   private draw = (now: number): void => {
+    // Some embedded browsers/emulators change DPR without a resolution event.
+    // Reconcile on the next paint as well; no polling timer or idle rendering needed.
+    if (!this.disposed && this.ratio !== (window.devicePixelRatio || 1)) this.displayChanged();
     if (this.disposed) return;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
@@ -327,10 +357,12 @@ export class CanvasMarkerSurface {
     }
     if (this.indexDirty) this.rebuildIndex();
     const size = this.map.getSize();
-    if (size.x !== this.width || size.y !== this.height) {
+    const pixelWidth = Math.ceil(size.x * this.ratio), pixelHeight = Math.ceil(size.y * this.ratio);
+    if (size.x !== this.width || size.y !== this.height || this.canvas.width !== pixelWidth || this.canvas.height !== pixelHeight) {
       this.width = size.x; this.height = size.y;
-      this.canvas.width = Math.ceil(size.x * this.painter.ratio); this.canvas.height = Math.ceil(size.y * this.painter.ratio);
-      this.canvas.style.width = `${size.x}px`; this.canvas.style.height = `${size.y}px`; this.full = true;
+      this.canvas.width = pixelWidth; this.canvas.height = pixelHeight;
+      // Keep physical pixels 1:1 even when the CSS viewport has a fractional last pixel.
+      this.canvas.style.width = `${pixelWidth / this.ratio}px`; this.canvas.style.height = `${pixelHeight / this.ratio}px`; this.full = true;
     }
     const offset = this.map.containerPointToLayerPoint(L.point(0, 0));
     L.DomUtil.setPosition(this.canvas, offset);
@@ -374,7 +406,7 @@ export class CanvasMarkerSurface {
     }
     if (!this.batch) {
       const ctx = this.context!;
-      ctx.setTransform(this.painter.ratio, 0, 0, this.painter.ratio, 0, 0);
+      ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
       // Paths are NOT part of save/restore. A previous dirty union must not survive this frame.
       ctx.beginPath();
       let candidates: Entry[];
@@ -438,7 +470,7 @@ export class CanvasMarkerSurface {
       clip = { x: Math.floor(left), y: Math.floor(top), width: Math.ceil(right) - Math.floor(left) + 2, height: Math.ceil(bottom) - Math.floor(top) + 2 };
       candidates = [...this.query(clip)].sort(compareEntries);
     }
-    batch.begin(this.canvas.width, this.canvas.height, this.painter.ratio, candidates.length + this.ghosts.length, clip);
+    batch.begin(this.canvas.width, this.canvas.height, this.ratio, candidates.length + this.ghosts.length, clip);
     for (const entry of candidates) {
       if (!entry.visible) continue;
       const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
@@ -537,6 +569,7 @@ export class CanvasMarkerSurface {
   };
   private fontsLoaded = (): void => {
     if (this.disposed) return;
+    this.readOfficialStyles(false);
     this.painter.fontVersion++;
     for (const entry of this.entries.values()) if (entry.art.tier || entry.art.count) this.invalidate(entry);
   };
@@ -551,6 +584,8 @@ export class CanvasMarkerSurface {
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);
     this.semantic.removeEventListener('focusin', this.focus); this.semantic.removeEventListener('focusout', this.focus);
     document.fonts?.removeEventListener('loadingdone', this.fontsLoaded);
+    this.resolution?.removeEventListener('change', this.displayChanged);
+    window.removeEventListener('resize', this.displayChanged);
     this.canvas.remove(); this.pendingSwap?.canvas.remove(); this.semantic.remove(); this.style.remove(); container.style.cursor = '';
     this.entries.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.pendingMotion.clear(); this.animation = undefined; this.ghosts = [];
     surfaces.delete(this.map);

@@ -1,4 +1,4 @@
-import { ViewportMarker } from '../markerViewport';
+import { ViewportMarker } from '../canvas/markerViewport';
 import L, { divIcon } from 'leaflet';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 

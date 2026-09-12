@@ -22,9 +22,15 @@ export class MarkerPainter {
   private disposed = false;
   hoverDecoration = '';
   selectedDecoration = '';
-  font = '700 11px sans-serif';
+  font = '700 10.5px sans-serif';
+  countFont = '700 11.5px sans-serif';
   fontVersion = 0;
-  constructor(readonly ratio: number, private invalidate: (url: string) => void, private require2D?: () => void) {}
+  constructor(public ratio: number, private invalidate: (url: string) => void, private require2D?: () => void) {}
+  setRatio(ratio: number): void {
+    if (ratio === this.ratio) return;
+    this.ratio = ratio;
+    this.sprites.clear(); this.animated = new WeakMap();
+  }
   private artKey(art: MarkerArt): string {
     let key = this.artKeys.get(art);
     if (!key) { key = JSON.stringify(art); this.artKeys.set(art, key); }
@@ -138,7 +144,7 @@ export class MarkerPainter {
       ctx.fillText(art.tier, x + width / 2, y + (16 + metrics.fontBoundingBoxAscent - metrics.fontBoundingBoxDescent) / 2); ctx.restore();
     }
     if (art.count) {
-      ctx.save(); ctx.font = this.font.replace(/\d+(?:\.\d+)?px/, '12px');
+      ctx.save(); ctx.font = this.countFont;
       const metrics = ctx.measureText(art.count);
       const width = Math.max(18, metrics.width + 8);
       const x = (art.noFrame ? 23 : 24) - width, y = art.noFrame ? -23 : -24;
@@ -162,7 +168,7 @@ export class MarkerPainter {
     canvas.width = Math.ceil(width * this.ratio); canvas.height = Math.ceil(height * this.ratio);
     const ctx = canvas.getContext('2d')!; ctx.scale(this.ratio, this.ratio); ctx.translate(-x, -y);
     this.paint(ctx, art, motion, now);
-    sprite = { canvas, x, y, width, height };
+    sprite = { canvas, x, y, width: canvas.width / this.ratio, height: canvas.height / this.ratio };
     // Bounded instance cache, independent of point count. Eviction never removes rendered pixels.
     if (this.sprites.size >= 512) this.sprites.delete(this.sprites.keys().next().value!);
     this.sprites.set(key, sprite); return sprite;
@@ -176,7 +182,7 @@ export class MarkerPainter {
     if (!cached) {
       const canvas = document.createElement('canvas');
       canvas.width = Math.ceil(104 * this.ratio); canvas.height = Math.ceil(96 * this.ratio);
-      const sprite: Sprite = { canvas, x: -38, y: -54, width: 104, height: 96, version: 0 };
+      const sprite: Sprite = { canvas, x: -38, y: -54, width: canvas.width / this.ratio, height: canvas.height / this.ratio, version: 0 };
       const ctx = canvas.getContext('2d')!;
       let at = NaN;
       cached = { render: now => {
