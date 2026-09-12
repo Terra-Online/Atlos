@@ -67,6 +67,25 @@ export type UGCComment = {
     replies: UGCComment[];
 };
 
+export type UGCCommentContext = {
+    targetId: string;
+    path: UGCComment[];
+    replies: UGCComment[];
+    repliesTruncated: boolean;
+};
+
+export async function getUGCCommentById(markerId: string, commentId: string): Promise<UGCCommentContext> {
+    const search = new URLSearchParams({ markerId });
+    const response = await fetch(
+        `${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}?${search.toString()}`,
+        { credentials: 'include', headers: getAuthHeaders() },
+    );
+    if (!response.ok) throw await readUGCError(response);
+    const payload = await response.json() as { item?: UGCCommentContext };
+    if (!payload.item) throw new UGCClientError('Comment response is missing.', 'UGC_ERROR');
+    return { ...payload.item, path: payload.item.path.map(normalizeUGCComment), replies: payload.item.replies.map(normalizeUGCComment) };
+}
+
 export type UGCUploadSubmission = {
     id: string;
     markerId: string;
