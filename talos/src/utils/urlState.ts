@@ -28,6 +28,7 @@ const PARAM_SUBREGION = 's';
 const PARAM_POINT = 'p';
 const PARAM_POINT_TOKEN = 'x';
 const PARAM_IMAGE = 'imageId';
+const PARAM_COMMENT = 'commentId';
 const MAP_URL_PARAMS = [
     PARAM_LANG,
     PARAM_FILTER,
@@ -554,6 +555,8 @@ export const generatePointShareUrl = (
     const url = new URL(`${pointShareOrigin}/${path}`);
     if (options.content?.kind === 'image') {
         url.searchParams.set(PARAM_IMAGE, options.content.id);
+    } else if (options.content?.kind === 'comment') {
+        url.searchParams.set(PARAM_COMMENT, options.content.id);
     }
     return url.toString();
 };
@@ -673,6 +676,7 @@ export const applyUrlParams = async (): Promise<void> => {
     const resolvedFromToken = pointIdFromToken ? await resolvePointShareTarget(pointIdFromToken) : null;
     const resolvedFromType = typeParam ? await resolveArchiveTypeShareTarget(typeParam) : null;
     const imageId = params.get(PARAM_IMAGE)?.trim() || undefined;
+    const commentId = params.get(PARAM_COMMENT)?.trim() || undefined;
 
     let destination: SharedPointTarget | undefined;
 
@@ -716,7 +720,8 @@ export const applyUrlParams = async (): Promise<void> => {
     if (destination) {
         navigateToSharedPoint({
             ...destination,
-            content: imageId ? { kind: 'image', id: imageId } : undefined,
+            // If both IDs are present, imageId wins regardless of query-parameter order.
+            content: imageId ? { kind: 'image', id: imageId } : commentId ? { kind: 'comment', id: commentId } : undefined,
         });
     }
 
@@ -731,6 +736,7 @@ export const applyUrlParams = async (): Promise<void> => {
         newParams.delete(PARAM_POINT);
         newParams.delete(PARAM_POINT_TOKEN);
         newParams.delete(PARAM_IMAGE);
+        newParams.delete(PARAM_COMMENT);
 
         const preservedParams = new URLSearchParams();
         newParams.forEach((value, key) => {
