@@ -71,6 +71,7 @@ export class MarkerMotion {
   private sampledOpacity = 1;
   private sampledActive = false;
   private sampledPaint = false;
+  private sampledPulseOnly = false;
   fork(): MarkerMotion {
     const copy = new MarkerMotion();
     this.channels.forEach((channel, index) => channel.copyTo(copy.channels[index]));
@@ -118,7 +119,9 @@ export class MarkerMotion {
     this.sampledOpacity = state?.disappearing ? (state.checked && !state.offLayer ? 0.3 : 1) * (1 - ease((now - this.fadeStart) / 150, curves.easeIn))
       : state?.appearing && now < this.fadeStart + 150 ? (state.checked && !state.offLayer ? 0.3 : 1) * ease((now - this.fadeStart) / 150, curves.easeOut)
       : this.alpha.value(now);
-    this.sampledPaint = !!state?.pulsing || this.channels.some((channel, index) => index !== 0 && channel.active(now));
+    const changingArtwork = this.channels.some((channel, index) => index !== 0 && index !== 3 && index !== 4 && channel.active(now));
+    this.sampledPulseOnly = !!state?.pulsing && !changingArtwork;
+    this.sampledPaint = !!state?.pulsing || changingArtwork || this.ringAlpha.active(now) || this.ringOffset.active(now);
     this.sampledActive = this.sampledPaint || this.alpha.active(now)
       || (!!(state?.appearing || state?.disappearing) && now < this.fadeStart + 150);
   }
@@ -126,6 +129,7 @@ export class MarkerMotion {
     this.sample(now); return this.sampledActive;
   }
   paintActive(now: number): boolean { this.sample(now); return this.sampledPaint; }
+  pulseOnly(now: number): boolean { this.sample(now); return this.sampledPulseOnly; }
 }
 
 /** Copy-on-write transition cohorts: shared poses are never mutated by another point. */

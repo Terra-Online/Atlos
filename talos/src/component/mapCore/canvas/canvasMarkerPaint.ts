@@ -5,8 +5,11 @@ export interface MarkerArt {
 }
 export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width: number; height: number; version?: number }
 export interface AnimatedSprite { render(now: number): Sprite }
+export interface PulseLayers { underlay?: Sprite; overlay: Sprite }
+type PaintLayer = 'all' | 'underlay' | 'overlay';
 interface Asset { image: HTMLImageElement; ready: boolean }
 const WHITE = 'rgb(248,248,248)';
+const FRAME_ART: MarkerArt = { image: '', subImage: '', noFrame: false, tier: '' };
 const accent = (value: number) => `rgb(${248 + 7 * value},${248 - 52 * value},${248 - 208 * value})`;
 const tiers: Record<string, string> = {
   L1: '#fdff95', L2: '#ffe524', L3: '#ff8b38', B1: '#3262c9', B2: '#1d48bd', B3: '#3427bc', B4: '#431dbe',
@@ -18,6 +21,9 @@ export class MarkerPainter {
   private sprites = new Map<string, Sprite>();
   private versions = new Map<string, number>();
   private animated = new WeakMap<MarkerMotion, Map<string, AnimatedSprite>>();
+  private pulses = new WeakMap<MarkerMotion, { key: string; animation: AnimatedSprite }>();
+  private framePulses = new Map<string, AnimatedSprite>();
+  private pulseFrame = NaN;
   private artKeys = new WeakMap<MarkerArt, string>();
   private disposed = false;
   hoverDecoration = '';
@@ -29,7 +35,7 @@ export class MarkerPainter {
   setRatio(ratio: number): void {
     if (ratio === this.ratio) return;
     this.ratio = ratio;
-    this.sprites.clear(); this.animated = new WeakMap();
+    this.sprites.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear();
   }
   private artKey(art: MarkerArt): string {
     let key = this.artKeys.get(art);
@@ -81,12 +87,12 @@ export class MarkerPainter {
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
   }
-  paint(ctx: CanvasRenderingContext2D, art: MarkerArt, motion: MarkerMotion, now: number): void {
+  paint(ctx: CanvasRenderingContext2D, art: MarkerArt, motion: MarkerMotion, now: number, layer: PaintLayer = 'all'): void {
     const state = motion.state!;
     ctx.save();
     ctx.imageSmoothingQuality = 'high';
     ctx.translate(0, art.noFrame ? motion.shift.value(now) : -16);
-    if (!art.noFrame) {
+    if (!art.noFrame && layer !== 'overlay') {
       // Both official shadowed discs are retained, including their separate shadows.
       // Canvas shadows use backing pixels, unlike paths transformed by the DPR matrix.
       ctx.save(); ctx.shadowColor = '#000'; ctx.shadowBlur = 10 * this.ratio;
@@ -95,7 +101,8 @@ export class MarkerPainter {
       ctx.restore();
       this.circle(ctx, 17, undefined, accent(motion.border.value(now)));
     }
-    if (!art.noFrame || state.pulsing) {
+    if (layer === 'underlay') { ctx.restore(); return; }
+    if (layer === 'all' && (!art.noFrame || state.pulsing)) {
       const pulse = ease(((now - motion.pulseStart) % 1150) / 1150, curves.easeOut);
       const alpha = state.pulsing ? 0.95 * (1 - pulse) : motion.ringAlpha.value(now);
       const radius = (art.noFrame ? 13 : 14) + 1 + (state.pulsing ? 4 + 10 * pulse : motion.ringOffset.value(now));
@@ -158,8 +165,12 @@ export class MarkerPainter {
     ctx.restore();
   }
   sprite(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
+    return this.cachedSprite(art, motion, now, 'all');
+  }
+  private cachedSprite(art: MarkerArt, motion: MarkerMotion, now: number, layer: PaintLayer): Sprite {
     const state = motion.state!;
-    const key = `${this.artKey(art)}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}${+state.disappearing}`;
+    const key = layer === 'underlay' ? `underlay|${motion.border.target}|${motion.background.target}`
+      : `${layer}|${this.artKey(art)}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}${+state.disappearing}`;
     let sprite = this.sprites.get(key);
     if (sprite) return sprite;
     const x = art.noFrame ? -29 : -30, y = art.noFrame ? -34 : -46;
@@ -167,11 +178,47 @@ export class MarkerPainter {
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(width * this.ratio); canvas.height = Math.ceil(height * this.ratio);
     const ctx = canvas.getContext('2d')!; ctx.scale(this.ratio, this.ratio); ctx.translate(-x, -y);
-    this.paint(ctx, art, motion, now);
+    this.paint(ctx, art, motion, now, layer);
     sprite = { canvas, x, y, width: canvas.width / this.ratio, height: canvas.height / this.ratio };
     // Bounded instance cache, independent of point count. Eviction never removes rendered pixels.
     if (this.sprites.size >= 512) this.sprites.delete(this.sprites.keys().next().value!);
     this.sprites.set(key, sprite); return sprite;
+  }
+  pulseLayers(art: MarkerArt, motion: MarkerMotion, now: number): PulseLayers {
+    // Keep the authored order: shadow/frame, ring, then image/arrow/badges.
+    // The caller only uses these layers at group opacity 1 and a settled pose.
+    return { underlay: art.noFrame ? undefined : this.cachedSprite(FRAME_ART, motion, now, 'underlay'),
+      overlay: this.cachedSprite(art, motion, now, 'overlay') };
+  }
+  beginFrame(now: number): void {
+    if (this.pulseFrame !== now) { this.pulseFrame = now; this.framePulses.clear(); }
+  }
+  pulse(motion: MarkerMotion, now: number): Sprite {
+    this.beginFrame(now);
+    const start = motion.pulseStart, noFrame = !!(motion.kind & 1), key = `${+noFrame}:${start}`;
+    // Hover/floor variants can share the same ring clock without sharing their
+    // mutable artwork state. The per-frame index retains no historical cohorts.
+    const owned = this.pulses.get(motion);
+    let cached = this.framePulses.get(key) ?? (owned?.key === key ? owned.animation : undefined);
+    if (!cached) {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = Math.ceil(64 * this.ratio);
+      const sprite: Sprite = { canvas, x: -32, y: -32, width: canvas.width / this.ratio, height: canvas.height / this.ratio, version: 0 };
+      const ctx = canvas.getContext('2d')!;
+      let at = NaN;
+      cached = { render: time => {
+        if (at === time) return sprite;
+        at = time; sprite.version = (sprite.version ?? 0) + 1;
+        ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
+        ctx.clearRect(0, 0, sprite.width, sprite.height); ctx.translate(32, 32);
+        const phase = ease(((time - start) % 1150) / 1150, curves.easeOut);
+        this.circle(ctx, (noFrame ? 18 : 19) + 10 * phase, undefined, `rgba(248,248,248,${0.95 * (1 - phase)})`);
+        return sprite;
+      } };
+    }
+    if (owned?.animation !== cached || owned?.key !== key) this.pulses.set(motion, { key, animation: cached });
+    this.framePulses.set(key, cached);
+    return cached.render(now);
   }
   animation(art: MarkerArt, motion: MarkerMotion): AnimatedSprite {
     // A whole batch with the same motion and artwork paints once per frame, not once per point.
@@ -209,6 +256,6 @@ export class MarkerPainter {
   dispose(): void {
     this.disposed = true;
     for (const asset of this.assets.values()) asset.image.onload = asset.image.onerror = null;
-    this.assets.clear(); this.sprites.clear(); this.versions.clear(); this.animated = new WeakMap(); this.artKeys = new WeakMap();
+    this.assets.clear(); this.sprites.clear(); this.versions.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear(); this.artKeys = new WeakMap();
   }
 }
