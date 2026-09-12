@@ -16,7 +16,7 @@ import {
 } from '@/data/marker';
 import { SUBREGION_DICT } from '@/data/map';
 import { formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
-import { navigateToMarkerId } from '@/utils/navigation';
+import { navigateToMarkerId, type MarkerContentTarget } from '@/utils/navigation';
 import { useDevice } from '@/utils/device';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { AccessButton } from '@/component/login/access';
@@ -668,15 +668,16 @@ const NotifyModal: React.FC<NotifyProps> = ({
         (item: NotificationItem, readItem = item) => {
             const markerId = item.target.markerId;
             if (!markerId) return;
-            const imageTarget = item.target.submissionId?.trim();
-            const imageId = item.payload.kind === 'image' && imageTarget
-                ? imageTarget
+            const submissionId = item.target.submissionId?.trim();
+            const kind = item.payload.kind;
+            const content: MarkerContentTarget | undefined = submissionId && (kind === 'image' || kind === 'comment')
+                ? { kind, id: submissionId }
                 : undefined;
             handleRead(readItem);
             onClose();
             onChange?.(false);
             void navigateToMarkerId(markerId, {
-                content: imageId ? { kind: 'image', id: imageId } : undefined,
+                content,
             });
         },
         [handleRead, onChange, onClose],
