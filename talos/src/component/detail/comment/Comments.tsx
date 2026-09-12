@@ -332,6 +332,8 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         visible: replyVisible,
     } = useReplyQuote(COMMENT_REPLY_QUOTE_TRANSITION_MS);
     const loadFailedText = tUI('detail.comments.loadFailed');
+    const loadFailedTextRef = useRef(loadFailedText);
+    loadFailedTextRef.current = loadFailedText;
 
     const setCommentActionPending = useCallback((commentId: string, pending: boolean) => {
         setActionPendingIds((current) => {
@@ -430,7 +432,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             .catch(() => {
                 if (!disposed) {
                     setComments([]);
-                    setError(loadFailedText);
+                    setError(loadFailedTextRef.current);
                 }
             })
             .finally(() => {
@@ -440,7 +442,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         return () => {
             disposed = true;
         };
-    }, [loadFailedText, point.id]);
+    }, [point.id]);
 
     useEffect(() => {
         clearReply();
