@@ -68,7 +68,7 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
         iconAnchor: [14, 14],
         html: `
             <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
-                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" alt="" />
+                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" />
             </div>
         `,
     });
@@ -83,7 +83,10 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
 };
 
 const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
-    marker.getElement()?.style.setProperty('--tracker-bearing', `${angleDeg}deg`);
+    // Rotate only the image. An inherited custom property on the marker root
+    // unnecessarily invalidates descendant styles for every heading update.
+    const image = marker.getElement()?.querySelector<HTMLElement>(`.${styles.trackerMarkerImage}`);
+    if (image) image.style.transform = `rotate(${angleDeg}deg)`;
 };
 
 const stopTrackerPulse = (marker: L.Marker): void => {
