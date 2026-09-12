@@ -20,7 +20,7 @@ export const MAP_URL_PARAMS = [
     PARAM_IMAGE,
 ] as const;
 
-export const AUTH_URL_PARAM_WHITELIST = new Set(['token', 'email', 'error', 'domain']);
+export const AUTH_URL_PARAM_WHITELIST = new Set(['auth_code', 'token', 'email', 'error', 'domain']);
 
 export const REGION_CODE_MAP: Record<string, string> = {
     Valley_4: 'VL',

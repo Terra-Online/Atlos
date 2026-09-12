@@ -10,9 +10,9 @@ const getLocalAuthBase = (): string => {
 };
 
 export const getAuthBase = (): string => {
-    if (import.meta.env.PROD) return PROD_AUTH_BASE;
     const envBase = (import.meta.env.VITE_AUTH_BASE as string | undefined)?.trim();
     if (envBase) return envBase.replace(/\/$/, '');
+    if (import.meta.env.PROD) return PROD_AUTH_BASE;
     return getLocalAuthBase().replace(/\/$/, '');
 };
 
