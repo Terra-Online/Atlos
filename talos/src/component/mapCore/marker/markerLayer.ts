@@ -18,8 +18,7 @@ import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
 import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/services/endfield';
 import type { LayerType } from '@/store/layer';
 
-const LOCATOR_PROXIMITY_XZ_METERS = 20;
-const LOCATOR_PROXIMITY_Y_METERS = 6;
+import { ProximityIndex } from '@/component/locator/proximityIndex';
 
 // leaflet renderer
 export class MarkerLayer {
@@ -71,6 +70,8 @@ export class MarkerLayer {
     private checkedVisibleOverrideIds = new Set<string>();
     private proximityUpdateSeq = 0;
     private markerVersion = 0;
+    private proximityIndex?: { key: string; index: ProximityIndex<IMarkerData> };
+    private proximityPending = new Set<string>();
 
     /** Teardown function returned by registerLassoHandler — removes map listeners. */
     private _destroyLasso?: () => void;
@@ -310,6 +311,16 @@ export class MarkerLayer {
             return;
         }
 
+        const indexKey = JSON.stringify([this.markerVersion, currentRegion, locatorProfile ?? null]);
+        if (this.proximityIndex?.key !== indexKey) {
+            const index = new ProximityIndex<IMarkerData>();
+            for (const marker of Object.values(this.markerDataDict)) {
+                if (activeSubregions.has(marker.subregId)) {
+                    index.add(marker, convertMapMarkerToEFGamePosition(marker, currentRegion, locatorProfile));
+                }
+            }
+            this.proximityIndex = { key: indexKey, index };
+        }
         const markerStore = useMarkerStore.getState();
         const collected = new Set(getActivePoints());
         const selected = new Set([
@@ -318,8 +329,10 @@ export class MarkerLayer {
         ]);
         const nextPulseIds = new Set<string>();
 
-        Object.values(this.markerDataDict).forEach((markerData) => {
-            if (!activeSubregions.has(markerData.subregId)) return;
+        const temporaryAdded: string[] = [];
+        const selectionAdded: { id: string; selected: boolean }[] = [];
+        const permanentSelected = new Set(markerStore.selectedPoints);
+        this.proximityIndex.index.query(position).forEach((markerData) => {
             if (subregionKey && markerData.subregId !== subregionKey) return;
             if (!activeTypeKeys.has(markerData.type)) return;
 
@@ -328,24 +341,19 @@ export class MarkerLayer {
                 return;
             }
 
-            const markerGamePosition = convertMapMarkerToEFGamePosition(markerData, currentRegion, locatorProfile);
-            const inRange = Math.abs(markerGamePosition.x - position.x) < LOCATOR_PROXIMITY_XZ_METERS
-                && Math.abs(markerGamePosition.z - position.z) < LOCATOR_PROXIMITY_XZ_METERS
-                && Math.abs(markerGamePosition.y - position.y) < LOCATOR_PROXIMITY_Y_METERS;
-
-            if (!inRange) return;
-
             nextPulseIds.add(markerData.id);
-            if (!markerStore.selectedPoints.includes(markerData.id)) {
-                useMarkerStore.getState().setTemporarySelected(markerData.id, true);
+            if (!permanentSelected.has(markerData.id)) {
+                if (!selected.has(markerData.id)) temporaryAdded.push(markerData.id);
                 this.proximityTemporarySelectedIds.add(markerData.id);
             }
             if (!selected.has(markerData.id)) {
                 selected.add(markerData.id);
-                this.updateSelectedMarkers([{ id: markerData.id, selected: true }]);
+                selectionAdded.push({ id: markerData.id, selected: true });
             }
         });
 
+        markerStore.setTemporarySelectedBatch(temporaryAdded);
+        if (selectionAdded.length) this.updateSelectedMarkers(selectionAdded);
         this.clearProximityTemporaryMarkers(
             [...this.proximityTemporarySelectedIds].filter((id) => !nextPulseIds.has(id)),
         );
@@ -356,28 +364,25 @@ export class MarkerLayer {
             }
         });
 
-        const seq = ++this.proximityUpdateSeq;
         this.proximityPulseIds = nextPulseIds;
-
-        const showPulses = async () => {
-            for (const id of nextPulseIds) {
-                if (seq !== this.proximityUpdateSeq) return;
-                if (collected.has(id)) continue;
-                if (!this.pulseCleanupDict[id]) {
-                    await this.ensureMarkerVisible(id, { source: 'proximity' });
+        // One visibility request per point; fresh position packets must not cancel
+        // an in-flight cluster reveal or start another 20-attempt DOM wait.
+        for (const id of nextPulseIds) {
+            if (this.pulseCleanupDict[id] || this.proximityPending.has(id)) continue;
+            const seq = this.proximityUpdateSeq;
+            this.proximityPending.add(id);
+            void (async () => {
+                try {
+                    const shown = await this.ensureMarkerVisible(id, { source: 'proximity' });
+                    if (shown && seq === this.proximityUpdateSeq && this.proximityPulseIds.has(id)
+                        && !getActivePoints().includes(id)) this.startMarkerPulse(id);
+                } catch (error) {
+                    LOGGER.error('Unable to reveal proximity marker', error);
+                } finally {
+                    this.proximityPending.delete(id);
                 }
-                if (seq !== this.proximityUpdateSeq) return;
-                if (getActivePoints().includes(id)) {
-                    this.stopMarkerPulse(id);
-                    continue;
-                }
-                if (!this.pulseCleanupDict[id]) {
-                    this.startMarkerPulse(id);
-                }
-            }
-        };
-
-        void showPulses();
+            })();
+        }
     }
 
     async ensureMarkerVisible(

@@ -45,6 +45,7 @@ interface IMarkerStore {
     setSelected: (id: string, value: boolean) => void;
     setSelectedBatch: (ids: Iterable<string>, value: boolean) => void;
     setTemporarySelected: (id: string, value: boolean) => void;
+    setTemporarySelectedBatch: (ids: Iterable<string>) => void;
     clearTemporarySelected: (ids?: Iterable<string>) => void;
 
     markerDataVersion: number;
@@ -158,32 +159,22 @@ export const useMarkerStore = create<IMarkerStore>()(
                 if (changed) set({ selectedPoints: [...next] });
             },
             setTemporarySelected: (id: string, value: boolean) => {
-                set((state) => {
-                    const exists = state.temporarySelectedPoints.includes(id);
-                    if (value) {
-                        return exists
-                            ? {}
-                            : { temporarySelectedPoints: [...state.temporarySelectedPoints, id] };
-                    }
-                    return exists
-                        ? { temporarySelectedPoints: state.temporarySelectedPoints.filter((x) => x !== id) }
-                        : {};
-                });
+                const current = get().temporarySelectedPoints;
+                if (current.includes(id) === value) return;
+                set({ temporarySelectedPoints: value ? [...current, id] : current.filter((x) => x !== id) });
+            },
+            setTemporarySelectedBatch: (ids: Iterable<string>) => {
+                const current = get().temporarySelectedPoints;
+                const next = new Set(current);
+                for (const id of ids) next.add(id);
+                if (next.size !== current.length) set({ temporarySelectedPoints: [...next] });
             },
             clearTemporarySelected: (ids?: Iterable<string>) => {
-                set((state) => {
-                    if (!ids) {
-                        return state.temporarySelectedPoints.length > 0
-                            ? { temporarySelectedPoints: [] }
-                            : {};
-                    }
-                    const idSet = new Set(ids);
-                    if (idSet.size === 0) return {};
-                    const next = state.temporarySelectedPoints.filter((id) => !idSet.has(id));
-                    return next.length !== state.temporarySelectedPoints.length
-                        ? { temporarySelectedPoints: next }
-                        : {};
-                });
+                const current = get().temporarySelectedPoints;
+                if (!current.length) return;
+                const remove = ids ? new Set(ids) : null;
+                const next = remove ? current.filter((id) => !remove.has(id)) : [];
+                if (next.length !== current.length) set({ temporarySelectedPoints: next });
             },
             markerDataVersion: 0,
             bumpMarkerDataVersion: () => {

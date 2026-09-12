@@ -76,3 +76,8 @@ talos/.stylelintcache
 
 # Keep the viewport lifecycle and multi-filter regression suite.
 !talos/src/component/mapCore/markerViewport.test.ts
+
+# Performance regression coverage.
+!talos/src/component/locator/proximityIndex.test.ts
+!talos/src/component/mapCore/marker/markerLayer.proximity.test.ts
+!talos/src/store/marker.proximity.test.ts

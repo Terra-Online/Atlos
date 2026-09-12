@@ -20,7 +20,7 @@ export function useMarker(
     currentRegion: string,
     mapInitialized: boolean,
 ) {
-    const { filter } = useMarkerStore();
+    const filter = useMarkerStore((state) => state.filter);
     const collectedPoints = useUserRecord();
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
     const temporarySelectedPoints = useMarkerStore((state) => state.temporarySelectedPoints);
