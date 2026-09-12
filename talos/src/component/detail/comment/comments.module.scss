@@ -58,6 +58,7 @@
 .commentNode {
     position: relative;
     margin: 0;
+
 }
 
 .replyNode {
@@ -94,7 +95,8 @@
         transition: background 0.2s $standard-curve;
         cursor: none;
     }
-    &:is(&:hover,:focus-within)::after {
+    &:is(&:hover,:focus-within)::after,
+    .commentNode[data-highlighted='true'] > &::after {
         background: var(--comment-hover);
     }
 }

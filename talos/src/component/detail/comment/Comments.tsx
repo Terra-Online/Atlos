@@ -22,6 +22,7 @@ import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import SubmitIcon from '@/assets/logos/submit.svg?react';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
+import { useCommentLink } from './useCommentLink';
 
 import {
     flatDisplay,
@@ -73,12 +74,14 @@ type CommentExcerptProps = {
     comment: UGCComment;
     displayDepth?: number;
     actions?: React.ReactNode;
+    highlighted?: boolean;
 };
 
 export const CommentExcerpt = memo(({
     comment,
     displayDepth = 0,
     actions,
+    highlighted,
 }: CommentExcerptProps) => {
     const tUI = useTranslateUI();
     const locale = useLocale();
@@ -92,6 +95,8 @@ export const CommentExcerpt = memo(({
 
     return (
         <div
+            data-comment-id={comment.id}
+            data-highlighted={highlighted ? 'true' : undefined}
             className={classNames(styles.commentNode, { [styles.replyNode]: displayDepth > 0 })}
             style={{ '--comment-display-depth': displayDepth } as React.CSSProperties}
         >
@@ -122,6 +127,7 @@ export const CommentExcerpt = memo(({
 });
 
 type CommentItemProps = {
+    highlighted: boolean;
     comment: UGCComment;
     displayDepth: number;
     isOwn: boolean;
@@ -140,6 +146,7 @@ type CommentItemProps = {
 };
 
 const CommentItem = memo(({
+    highlighted,
     comment,
     displayDepth,
     isOwn,
@@ -258,6 +265,7 @@ const CommentItem = memo(({
 
     return (
         <CommentExcerpt
+            highlighted={highlighted}
             comment={comment}
             displayDepth={displayDepth}
             actions={(
@@ -280,7 +288,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const user = useAuthStore((state) => state.sessionUser);
     const isAuthenticated = Boolean(user);
     const [comments, setComments] = useState<UGCComment[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const [editTarget, setEditTarget] = useState<UGCComment | null>(null);
     const [recallConfirmation, setRecallConfirmation] = useState<{
@@ -595,6 +603,9 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         ? linkTpl(tUI('detail.comments.ruleOnly'), ruleUrl)
         : linkTpl(tUI('detail.comments.emptyWithRule'), ruleUrl);
     const displayComments = useMemo(() => flatDisplay(commentsWithSubmissions), [commentsWithSubmissions]);
+    const { highlightedId } = useCommentLink({
+        markerId: point.id, active, loading, comments: commentsWithSubmissions, setComments, listRef: commentListRef,
+    });
     const replyQuoteShown = Boolean(renderedReply && replyVisible);
     const replyQuoteText = renderedReply
         ? commentText(renderedReply)
@@ -616,6 +627,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             >
                 {displayComments.map(({ comment, displayDepth }) => (
                     <CommentItem
+                        highlighted={highlightedId === comment.id}
                         key={comment.id}
                         comment={comment}
                         displayDepth={displayDepth}
