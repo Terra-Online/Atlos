@@ -22,6 +22,8 @@ import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import SubmitIcon from '@/assets/logos/submit.svg?react';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
+import ShareIcon from '@/assets/images/UI/share.svg?react';
+import { usePointShareLink } from '@/utils/shareLink';
 import { useCommentLink } from './useCommentLink';
 
 import {
@@ -127,6 +129,7 @@ export const CommentExcerpt = memo(({
 });
 
 type CommentItemProps = {
+    point: IMarkerData;
     highlighted: boolean;
     comment: UGCComment;
     displayDepth: number;
@@ -146,6 +149,7 @@ type CommentItemProps = {
 };
 
 const CommentItem = memo(({
+    point,
     highlighted,
     comment,
     displayDepth,
@@ -167,8 +171,17 @@ const CommentItem = memo(({
     const canModerate = isVisible(comment.status);
     const canEdit = canModerate || isReviewing(comment.status);
     const translationVisible = isTransShown(comment);
+    const { copyPointShareUrl, copiedPopupVisible } = usePointShareLink(point, { content: { kind: 'comment', id: comment.id } });
     const actions = useMemo<ShortActionItem[]>(() => {
         const items: ShortActionItem[] = [
+            {
+                id: 'share',
+                label: copiedPopupVisible ? tUI('detail.copied') : tUI('detail.comments.copyLink'),
+                icon: <ShareIcon />,
+                tooltipVisible: copiedPopupVisible ? true : undefined,
+                disabled: !canInteract || !canModerate || comment.id.startsWith('local-comment:'),
+                onClick: () => void copyPointShareUrl(),
+            },
             {
                 id: 'translate',
                 label: translationVisible ? tUI('detail.comments.showOriginal') : tUI('detail.comments.translate'),
@@ -244,6 +257,8 @@ const CommentItem = memo(({
 
         return items;
     }, [
+        copiedPopupVisible,
+        copyPointShareUrl,
         actionPending,
         canInteract,
         canEdit,
@@ -627,6 +642,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             >
                 {displayComments.map(({ comment, displayDepth }) => (
                     <CommentItem
+                        point={point}
                         highlighted={highlightedId === comment.id}
                         key={comment.id}
                         comment={comment}

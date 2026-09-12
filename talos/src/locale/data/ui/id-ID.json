@@ -67,6 +67,7 @@
       "unrecall": "Batalkan penghapusan"
     },
     "comments": {
+      "copyLink": "Salin tautan komentar",
       "placeholder": "Tulis sesuatu !",
       "submit": "Kirim komentar",
       "actions": "Aksi komentar",

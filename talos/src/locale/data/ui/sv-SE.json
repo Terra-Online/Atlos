@@ -67,6 +67,7 @@
       "unrecall": "Avbryt borttagning"
     },
     "comments": {
+      "copyLink": "Kopiera kommentarlänk",
       "placeholder": "Skriv något!",
       "submit": "Publicera kommentar",
       "actions": "Kommentarsåtgärder",

@@ -67,6 +67,7 @@
       "unrecall": "取り下げ申請を取り消す"
     },
     "comments": {
+      "copyLink": "コメントのリンクをコピー",
       "placeholder": "何か書いてみましょう！",
       "submit": "コメントを投稿",
       "actions": "コメントの操作",

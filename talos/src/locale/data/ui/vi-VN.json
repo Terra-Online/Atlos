@@ -67,6 +67,7 @@
       "unrecall": "Hủy yêu cầu gỡ"
     },
     "comments": {
+      "copyLink": "Sao chép liên kết bình luận",
       "placeholder": "Viết gì đó đi!",
       "submit": "Đăng bình luận",
       "actions": "Thao tác bình luận",

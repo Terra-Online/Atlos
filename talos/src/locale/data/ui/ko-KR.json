@@ -67,6 +67,7 @@
       "unrecall": "철회 요청 취소"
     },
     "comments": {
+      "copyLink": "댓글 링크 복사",
       "placeholder": "무언가를 남겨 보세요!",
       "submit": "댓글 게시",
       "actions": "댓글 작업",

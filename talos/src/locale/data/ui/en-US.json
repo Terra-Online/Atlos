@@ -67,6 +67,7 @@
       "unrecall": "Cancel Recall"
     },
     "comments": {
+      "copyLink": "Copy comment link",
       "placeholder": "Type something?",
       "submit": "Submit",
       "actions": "Comment actions",
