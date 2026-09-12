@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useMemo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from './markBinder.module.scss';
@@ -8,6 +8,7 @@ import { useTranslateGame } from '@/locale';
 import { useMultiRegionMarkerCount, useFilter, useSearchString, useMarkerStore } from '@/store/marker';
 import MarkSelector from '../markSelector/markSelector';
 import { MarkVisibilityContext } from '../markFilter/visibilityContext';
+import { useLayoutVersion } from '@/store/uiPrefs';
 
 interface MarkBinderProps {
     group: BinderGroup;
@@ -20,6 +21,7 @@ type StyleVars = CSSProperties & {
 const MarkBinder = ({ group }: MarkBinderProps) => {
     const tGame = useTranslateGame();
     const filter = useFilter();
+    const layoutVersion = useLayoutVersion();
     const searchString = useSearchString();
     const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
 
@@ -153,10 +155,11 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
             {!shouldCollapseChildren && (
                 <div className={styles.binderChildren} onClick={(e) => e.stopPropagation()}>
-                    {sortedRenderedTypes.map((typeInfo) => (
+                    {sortedRenderedTypes.map((typeInfo, index) => (
                         <motion.div
                             key={typeInfo.key}
                             layout={layoutAnimReady}
+                            layoutDependency={`${index}:${layoutVersion}:${displayName}`}
                             transition={{ type: 'spring', stiffness: 400, damping: 38 }}
                         >
                             <MarkSelector typeInfo={typeInfo} />
@@ -168,4 +171,4 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     );
 };
 
-export default MarkBinder;
+export default memo(MarkBinder);

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { memo, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './markSelector.module.scss';
 import { getItemIconUrl } from '@/services/assets/resource';
@@ -11,6 +11,7 @@ import {
     useSearchString,
 } from '@/store/marker.ts';
 import { useLayoutVersion } from '@/store/uiPrefs';
+import { measureSelector } from './measureQueue';
 
 interface MarkSelectorProps {
     typeInfo: { key: string; icon?: string; category?: { main?: string; sub?: string }; main?: string; sub?: string };
@@ -118,24 +119,15 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
         const el = nameRef.current;
         const expandedEl = expandedRef.current;
         if (!el) return;
-        let raf1 = 0;
-        let raf2 = 0;
-        raf1 = window.requestAnimationFrame(() => {
-            raf2 = window.requestAnimationFrame(() => {
-                const truncated = el.scrollWidth > el.clientWidth;
+        return measureSelector(() => {
+            if (!el.isConnected) return undefined;
+            const truncated = el.scrollWidth > el.clientWidth;
+            const height = expandedEl?.scrollHeight;
+            return () => {
                 setIsTruncated(truncated);
-                if (expandedEl) {
-                    const h = expandedEl.scrollHeight;
-                    if (Number.isFinite(h) && h > 0) {
-                        setExpandedHeightPx(h);
-                    }
-                }
-            });
+                if (height && Number.isFinite(height)) setExpandedHeightPx(height);
+            };
         });
-        return () => {
-            if (raf1) window.cancelAnimationFrame(raf1);
-            if (raf2) window.cancelAnimationFrame(raf2);
-        };
     }, [displayName, layoutVersion]);
 
     // clean elevate fallback timer, avoid setState after unmount
@@ -216,4 +208,4 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
     );
 };
 
-export default MarkSelector;
+export default memo(MarkSelector);

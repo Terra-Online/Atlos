@@ -1,5 +1,6 @@
 import L from 'leaflet';
-import 'leaflet.markercluster';
+import { createCanvasAwareClusterGroup } from '../canvas/canvasMarkerCluster';
+import type { CanvasClusterGroup } from '../canvas/clusterGroup';
 import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
 import styles from './marker.module.scss';
@@ -32,16 +33,36 @@ interface ClusterLayerDeps {
 }
 
 export class ClusterLayer {
-    private readonly clusterGroupsByType: Record<string, L.MarkerClusterGroup> = {};
+    private readonly clusterGroupsByType: Record<string, CanvasClusterGroup> = {};
     private enabled = false;
     private filterKeys: string[] = [];
     private activeSubregions = new Set<string>();
     private temporaryVisibleIds = new Set<string>();
     private checkedVisibleOverrideIds = new Set<string>();
     private pendingRemovalBatches: Record<string, { timer: number; markerIds: Set<string> }> = {};
-    private pendingFadeInFrames = new Map<L.MarkerClusterGroup, number>();
+    private pendingFadeInFrames = new Map<CanvasClusterGroup, number>();
+
+    private batchDepth = 0;
+    private refreshPending = false;
 
     constructor(private readonly deps: ClusterLayerDeps) {}
+
+    batch(operation: () => void) {
+        this.batchDepth++;
+        try { operation(); }
+        finally {
+            this.batchDepth--;
+            if (!this.batchDepth && this.refreshPending) {
+                this.refreshPending = false;
+                this.refreshClusters();
+            }
+        }
+    }
+
+    private requestRefresh() {
+        if (this.batchDepth) this.refreshPending = true;
+        else this.refreshClusters();
+    }
 
     registerType(type: IMarkerType) {
         if (!CLUSTER_SUBCATEGORY_WHITELIST.has(type.category.sub)) {
@@ -54,10 +75,8 @@ export class ClusterLayer {
         const hasSubIcon = Boolean(type.subIcon);
         const subIconUrl = hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
 
-        this.clusterGroupsByType[type.key] = L.markerClusterGroup({
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true,
-            spiderfyOnMaxZoom: true,
+        this.clusterGroupsByType[type.key] = createCanvasAwareClusterGroup(this.deps.map, {
+            expandOnClick: true,
             disableClusteringAtZoom: 2,
             maxClusterRadius: 60,
             iconCreateFunction: (cluster) => {
@@ -106,14 +125,14 @@ export class ClusterLayer {
     setActiveSubregions(subregions: string[]) {
         this.activeSubregions = new Set(subregions);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     applyFilter(typeKeys: string[]) {
         this.filterKeys = typeKeys;
         if (this.enabled) {
-            this.refreshClusters(); // 增量刷新
+            this.requestRefresh(); // 增量刷新
         } else {
             this.removeClustersFromMap();
         }
@@ -122,21 +141,21 @@ export class ClusterLayer {
     setTemporaryVisibleIds(ids: Iterable<string>) {
         this.temporaryVisibleIds = new Set(ids);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     setCheckedVisibleOverrideIds(ids: Iterable<string>) {
         this.checkedVisibleOverrideIds = new Set(ids);
         if (this.enabled) {
-            this.refreshClusters();
+            this.requestRefresh();
         }
     }
 
     enable() {
         if (this.enabled) return;
         this.enabled = true;
-        this.refreshClusters();
+        this.requestRefresh();
     }
 
     disable() {
@@ -229,7 +248,7 @@ export class ClusterLayer {
 
         await new Promise<void>((resolve) => {
             const zoomToShowLayer = (
-                clusterGroup as L.MarkerClusterGroup & {
+                clusterGroup as CanvasClusterGroup & {
                     zoomToShowLayer?: (targetLayer: L.Layer, callback: () => void) => void;
                 }
             ).zoomToShowLayer;
@@ -331,7 +350,7 @@ export class ClusterLayer {
         });
     }
 
-    private getVisibleMarkerInners(clusterGroup: L.MarkerClusterGroup, markerIds: Iterable<string>) {
+    private getVisibleMarkerInners(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>) {
         const markerDict = this.deps.getMarkerDict();
         const visibleInners = new Set<HTMLElement>();
 
@@ -344,20 +363,20 @@ export class ClusterLayer {
             const visibleLayer = clusterGroup.getVisibleParent(layer);
             const markerRoot = visibleLayer?.getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (inner) visibleInners.add(inner);
+            if (inner?.isConnected) visibleInners.add(inner);
         }
 
         return visibleInners;
     }
 
-    private clearVisibleAnimation(clusterGroup: L.MarkerClusterGroup, markerIds: Iterable<string>) {
+    private clearVisibleAnimation(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>) {
         this.getVisibleMarkerInners(clusterGroup, markerIds).forEach((inner) => {
             inner.classList.remove(styles.appearing, styles.disappearing);
         });
     }
 
     private animateVisibleMarkers(
-        clusterGroup: L.MarkerClusterGroup,
+        clusterGroup: CanvasClusterGroup,
         markerIds: Iterable<string>,
         animationClass: string
     ) {
@@ -370,22 +389,12 @@ export class ClusterLayer {
         visibleInners.forEach((inner) => {
             inner.classList.remove(styles.appearing, styles.disappearing);
         });
-        // Flush once so reapplying the same class restarts the animation after rapid filter changes.
-        void visibleInners[0].offsetWidth;
         visibleInners.forEach((inner) => {
             inner.classList.add(animationClass);
-            if (animationClass !== styles.appearing) return;
-
-            const clearAppearing = (event: AnimationEvent) => {
-                if (event.target !== inner) return;
-                inner.classList.remove(styles.appearing);
-                inner.removeEventListener('animationend', clearAppearing);
-            };
-            inner.addEventListener('animationend', clearAppearing);
         });
     }
 
-    private fadeInVisibleMarkers(clusterGroup: L.MarkerClusterGroup, markerIds: Iterable<string>) {
+    private fadeInVisibleMarkers(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>) {
         this.cancelPendingFadeIn(clusterGroup);
         const frame = window.requestAnimationFrame(() => {
             this.pendingFadeInFrames.delete(clusterGroup);
@@ -394,14 +403,14 @@ export class ClusterLayer {
         this.pendingFadeInFrames.set(clusterGroup, frame);
     }
 
-    private cancelPendingFadeIn(clusterGroup: L.MarkerClusterGroup) {
+    private cancelPendingFadeIn(clusterGroup: CanvasClusterGroup) {
         const frame = this.pendingFadeInFrames.get(clusterGroup);
         if (frame === undefined) return;
         window.cancelAnimationFrame(frame);
         this.pendingFadeInFrames.delete(clusterGroup);
     }
 
-    private cancelPendingRemoval(typeKey: string, clusterGroup: L.MarkerClusterGroup) {
+    private cancelPendingRemoval(typeKey: string, clusterGroup: CanvasClusterGroup) {
         const pending = this.pendingRemovalBatches[typeKey];
         if (!pending) return false;
 
@@ -411,7 +420,7 @@ export class ClusterLayer {
         return true;
     }
 
-    private fadeOutAndRemove(clusterGroup: L.MarkerClusterGroup, typeKey: string, markerIds: string[]) {
+    private fadeOutAndRemove(clusterGroup: CanvasClusterGroup, typeKey: string, markerIds: string[]) {
         this.animateVisibleMarkers(clusterGroup, markerIds, styles.disappearing);
         markerIds.forEach(emitPreviewLeave);
 
