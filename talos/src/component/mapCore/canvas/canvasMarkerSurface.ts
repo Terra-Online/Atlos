@@ -21,6 +21,8 @@ interface Ghost { marker: L.Marker; sprite: Sprite; base: L.Point; target: L.Poi
 interface Rect { x: number; y: number; width: number; height: number }
 const surfaces = new WeakMap<L.Map, CanvasMarkerSurface>();
 const CELL = 32;
+// Internal output quality floor, independent of the physical display density.
+const MIN_CANVAS_RENDER_RATIO = 2;
 const has = (element: HTMLElement, name: string) => element.classList.contains(classes[name]);
 const bounds = (entry: Entry): Rect => ({ x: entry.x - 38, y: entry.y - 54, width: entry.art.subImage ? 104 : 76, height: 94 });
 const intersects = (a: Rect, b: Rect) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -60,7 +62,8 @@ export class CanvasMarkerSurface {
   private disposed = false;
   private width = 0;
   private height = 0;
-  private ratio = window.devicePixelRatio || 1;
+  private deviceRatio = window.devicePixelRatio || 1;
+  private renderRatio = Math.max(MIN_CANVAS_RENDER_RATIO, this.deviceRatio);
   private resolution?: MediaQueryList;
   private hovered?: Entry;
   private pointer?: PointerEvent;
@@ -88,9 +91,9 @@ export class CanvasMarkerSurface {
     this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;content-visibility:auto;pointer-events:none;';
     this.style.textContent = '.oem-canvas-semantics *{animation:none!important;transition:none!important;will-change:auto!important;}';
     map.getPane('markerPane')!.append(this.canvas, this.semantic, this.style);
-    // Supersample small cached artwork, not the whole viewport. Integer density avoids
-    // rounding the texture bounds and then rescaling the artwork at Windows 125/150%.
-    this.painter = new MarkerPainter(Math.max(2, Math.ceil(this.ratio)), url => {
+    // Both the viewport and cached artwork retain at least Retina-density pixels.
+    // Integer sprite density also avoids fractional texture-bound rounding.
+    this.painter = new MarkerPainter(Math.ceil(this.renderRatio), url => {
       for (const entry of this.entries.values()) {
         if (entry.art.image === url || entry.art.subImage === url || entry.art.subImage
           && (url === this.painter.hoverDecoration || url === this.painter.selectedDecoration)) this.invalidate(entry);
@@ -202,13 +205,14 @@ export class CanvasMarkerSurface {
   }
   private watchResolution(): void {
     this.resolution?.removeEventListener('change', this.displayChanged);
-    this.resolution = window.matchMedia?.(`(resolution: ${this.ratio}dppx)`);
+    this.resolution = window.matchMedia?.(`(resolution: ${this.deviceRatio}dppx)`);
     this.resolution?.addEventListener('change', this.displayChanged);
   }
   private displayChanged = (): void => {
     if (this.disposed) return;
-    this.ratio = window.devicePixelRatio || 1;
-    this.painter.setRatio(Math.max(2, Math.ceil(this.ratio)));
+    this.deviceRatio = window.devicePixelRatio || 1;
+    this.renderRatio = Math.max(MIN_CANVAS_RENDER_RATIO, this.deviceRatio);
+    this.painter.setRatio(Math.ceil(this.renderRatio));
     for (const entry of this.entries.values()) this.invalidate(entry);
     this.watchResolution(); this.fontsLoaded();
     this.full = true; this.request();
@@ -336,7 +340,7 @@ export class CanvasMarkerSurface {
   private draw = (now: number): void => {
     // Some embedded browsers/emulators change DPR without a resolution event.
     // Reconcile on the next paint as well; no polling timer or idle rendering needed.
-    if (!this.disposed && this.ratio !== (window.devicePixelRatio || 1)) this.displayChanged();
+    if (!this.disposed && this.deviceRatio !== (window.devicePixelRatio || 1)) this.displayChanged();
     if (this.disposed) return;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
@@ -357,12 +361,13 @@ export class CanvasMarkerSurface {
     }
     if (this.indexDirty) this.rebuildIndex();
     const size = this.map.getSize();
-    const pixelWidth = Math.ceil(size.x * this.ratio), pixelHeight = Math.ceil(size.y * this.ratio);
+    const pixelWidth = Math.ceil(size.x * this.renderRatio), pixelHeight = Math.ceil(size.y * this.renderRatio);
     if (size.x !== this.width || size.y !== this.height || this.canvas.width !== pixelWidth || this.canvas.height !== pixelHeight) {
       this.width = size.x; this.height = size.y;
       this.canvas.width = pixelWidth; this.canvas.height = pixelHeight;
-      // Keep physical pixels 1:1 even when the CSS viewport has a fractional last pixel.
-      this.canvas.style.width = `${pixelWidth / this.ratio}px`; this.canvas.style.height = `${pixelHeight / this.ratio}px`; this.full = true;
+      // Preserve the CSS coordinate space; the browser downsamples the complete scene
+      // when physical DPR is lower than our internal rendering density.
+      this.canvas.style.width = `${pixelWidth / this.renderRatio}px`; this.canvas.style.height = `${pixelHeight / this.renderRatio}px`; this.full = true;
     }
     const offset = this.map.containerPointToLayerPoint(L.point(0, 0));
     L.DomUtil.setPosition(this.canvas, offset);
@@ -406,7 +411,7 @@ export class CanvasMarkerSurface {
     }
     if (!this.batch) {
       const ctx = this.context!;
-      ctx.setTransform(this.ratio, 0, 0, this.ratio, 0, 0);
+      ctx.setTransform(this.renderRatio, 0, 0, this.renderRatio, 0, 0);
       // Paths are NOT part of save/restore. A previous dirty union must not survive this frame.
       ctx.beginPath();
       let candidates: Entry[];
@@ -470,7 +475,7 @@ export class CanvasMarkerSurface {
       clip = { x: Math.floor(left), y: Math.floor(top), width: Math.ceil(right) - Math.floor(left) + 2, height: Math.ceil(bottom) - Math.floor(top) + 2 };
       candidates = [...this.query(clip)].sort(compareEntries);
     }
-    batch.begin(this.canvas.width, this.canvas.height, this.ratio, candidates.length + this.ghosts.length, clip);
+    batch.begin(this.canvas.width, this.canvas.height, this.renderRatio, candidates.length + this.ghosts.length, clip);
     for (const entry of candidates) {
       if (!entry.visible) continue;
       const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);

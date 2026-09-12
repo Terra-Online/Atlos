@@ -18,6 +18,16 @@ const marker = (position: L.LatLngExpression) => new ViewportMarker(position, {
   icon: L.divIcon({ className: styles.incompleteMarker, html: `<span class="${styles.markerInner}">point</span>`, iconSize: [32, 32], iconAnchor: [16, 32] }),
 });
 describe('Canvas marker lifecycle', () => {
+  it.each([1, 1.25, 1.5, 1.75, 2])('uses a 2x backing store at DPR %s without scaling CSS coordinates', ratio => {
+    vi.stubGlobal('devicePixelRatio', ratio);
+    try {
+      marker([0, 0]).addTo(map); map.fire('move');
+      const canvas = host.querySelector<HTMLCanvasElement>('.oem-canvas-markers')!;
+      expect([canvas.width, canvas.height]).toEqual([1600, 1200]);
+      expect([canvas.style.width, canvas.style.height]).toEqual(['800px', '600px']);
+      expect(map.latLngToContainerPoint([0, 0])).toEqual(L.point(400, 300));
+    } finally { vi.unstubAllGlobals(); }
+  });
   it('refreshes physical resolution after a display change without replacing markers', () => {
     let changed: (() => void) | undefined;
     const remove = vi.fn();
@@ -29,14 +39,15 @@ describe('Canvas marker lifecycle', () => {
       const point = marker([0, 0]).addTo(map), node = point.getElement();
       map.fire('move');
       const canvas = host.querySelector<HTMLCanvasElement>('.oem-canvas-markers')!;
-      expect(canvas.width).toBe(1000);
-      vi.stubGlobal('devicePixelRatio', 2);
-      changed!(); map.fire('move');
       expect(canvas.width).toBe(1600);
+      expect(canvas.style.width).toBe('800px');
+      vi.stubGlobal('devicePixelRatio', 3);
+      changed!(); map.fire('move');
+      expect(canvas.width).toBe(2400);
       expect(point.getElement()).toBe(node);
       vi.stubGlobal('devicePixelRatio', 1.5);
       map.fire('move');
-      expect(canvas.width).toBe(1200);
+      expect(canvas.width).toBe(1600);
       map.remove(); removed = true;
       expect(remove).toHaveBeenCalledTimes(3);
     } finally { vi.unstubAllGlobals(); }
