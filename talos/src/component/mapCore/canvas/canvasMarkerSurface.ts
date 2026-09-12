@@ -89,8 +89,12 @@ export class CanvasMarkerSurface {
     // They are clipped and never used to paint a point or as a per-frame hit target.
     this.semantic.className = 'oem-canvas-semantics';
     this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;content-visibility:auto;pointer-events:none;';
-    this.style.textContent = '.oem-canvas-semantics *{animation:none!important;transition:none!important;will-change:auto!important;}';
-    map.getPane('markerPane')!.append(this.canvas, this.semantic, this.style);
+    // CSS animations on ::before/::after must not run alongside their Canvas copies.
+    this.style.textContent = '.oem-canvas-semantics *,.oem-canvas-semantics *::before,.oem-canvas-semantics *::after{animation:none!important;transition:none!important;will-change:auto!important;}';
+    map.getPane('markerPane')!.append(this.canvas);
+    // Keep semantic nodes under the event container, outside the animated map pane.
+    // Camera following must not move or invalidate this otherwise stationary tree.
+    map.getContainer().append(this.semantic, this.style);
     // Both the viewport and cached artwork retain at least Retina-density pixels.
     // Integer sprite density also avoids fractional texture-bound rounding.
     this.painter = new MarkerPainter(Math.ceil(this.renderRatio), url => {
@@ -267,6 +271,13 @@ export class CanvasMarkerSurface {
     }
     if (entry.clusterUntil && now >= entry.clusterUntil) entry.clusterUntil = undefined;
     if (entry.artDirty) {
+      // These connected images provide labels and URLs, not painted artwork.
+      // Give them intrinsic bounds so layout/inspection never has to infer sizes
+      // for thousands of otherwise unsized images. Canvas uses its own assets.
+      for (const image of inner.querySelectorAll('img')) {
+        if (!image.hasAttribute('width')) image.width = 1;
+        if (!image.hasAttribute('height')) image.height = 1;
+      }
       const image = inner.querySelector<HTMLImageElement>('img');
       const sub = inner.querySelector<HTMLElement>(`.${classes.subIcon}`);
       const background = (node?: HTMLElement | null) => node?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';

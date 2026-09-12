@@ -63,6 +63,18 @@ describe('Canvas marker lifecycle', () => {
     node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(clicked).toHaveBeenCalledOnce();
   });
+  it('keeps semantic events outside the moving pane while retaining the visual pane', () => {
+    const point = marker([0, 0]).addTo(map), keyPressed = vi.fn();
+    point.on('keypress', keyPressed);
+    const node = point.getElement()!, semantic = node.closest('.oem-canvas-semantics')!;
+    expect(semantic.parentElement).toBe(host);
+    expect(map.getPane('mapPane')!.contains(semantic)).toBe(false);
+    expect(host.querySelector('.oem-canvas-markers')!.parentElement).toBe(map.getPane('markerPane'));
+    node.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, key: 'Enter', keyCode: 13 }));
+    expect(keyPressed).toHaveBeenCalledOnce();
+    point.remove(); point.addTo(map);
+    expect(point.getElement()!.closest('.oem-canvas-semantics')!.parentElement).toBe(host);
+  });
   it('adds and removes filter groups without losing members or leaking surfaces', () => {
     const groups = Array.from({ length: 3 }, (_, i) => L.layerGroup([marker([i, i]), marker([1000, 1000])]));
     for (let cycle = 0; cycle < 3; cycle++) {
