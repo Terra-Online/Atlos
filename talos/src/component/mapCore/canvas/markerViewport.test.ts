@@ -53,8 +53,8 @@ describe('Canvas marker lifecycle', () => {
     try {
       marker([0, 0]).addTo(map); map.fire('move');
       const canvas = host.querySelector<HTMLCanvasElement>('.oem-canvas-markers')!;
-      expect([canvas.width, canvas.height]).toEqual([1600, 1200]);
-      expect([canvas.style.width, canvas.style.height]).toEqual(['800px', '600px']);
+      expect([canvas.width, canvas.height]).toEqual([1908, 1508]);
+      expect([canvas.style.width, canvas.style.height]).toEqual(['954px', '754px']);
       expect(map.latLngToContainerPoint([0, 0])).toEqual(L.point(400, 300));
     } finally { vi.unstubAllGlobals(); }
   });
@@ -69,15 +69,15 @@ describe('Canvas marker lifecycle', () => {
       const point = marker([0, 0]).addTo(map), node = point.getElement();
       map.fire('move');
       const canvas = host.querySelector<HTMLCanvasElement>('.oem-canvas-markers')!;
-      expect(canvas.width).toBe(1600);
-      expect(canvas.style.width).toBe('800px');
+      expect(canvas.width).toBe(1908);
+      expect(canvas.style.width).toBe('954px');
       vi.stubGlobal('devicePixelRatio', 3);
       changed!(); map.fire('move');
-      expect(canvas.width).toBe(2400);
+      expect(canvas.width).toBe(2862);
       expect(point.getElement()).toBe(node);
       vi.stubGlobal('devicePixelRatio', 1.5);
       map.fire('move');
-      expect(canvas.width).toBe(1600);
+      expect(canvas.width).toBe(1908);
       map.remove(); removed = true;
       expect(remove).toHaveBeenCalledTimes(3);
     } finally { vi.unstubAllGlobals(); }

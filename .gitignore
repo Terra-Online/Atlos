@@ -81,3 +81,10 @@ talos/.stylelintcache
 !talos/src/component/locator/proximityIndex.test.ts
 !talos/src/component/mapCore/marker/markerLayer.proximity.test.ts
 !talos/src/store/marker.proximity.test.ts
+
+# Retained Canvas rendering regression coverage.
+!talos/src/component/mapCore/canvas/canvasEfficiency.test.ts
+!talos/src/component/mapCore/canvas/canvasArtworkCache.test.ts
+
+# Local-only Canvas performance harnesses, reports and captures.
+/talos/performance/

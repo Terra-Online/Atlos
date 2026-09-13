@@ -249,7 +249,7 @@ export class CanvasSpriteBatch {
   }
   get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads,
     presentedPixels: this.skip ? 0 : this.source.width * this.source.height, viewportPixels: this.width * this.height,
-    atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4, error: this.gl.getError() }; }
+    atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4 }; }
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;

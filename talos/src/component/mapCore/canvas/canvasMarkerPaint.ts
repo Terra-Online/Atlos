@@ -1,3 +1,4 @@
+/// <reference lib="es2021.weakref" />
 import { MarkerMotion, curves, ease } from './canvasMarkerMotion';
 
 export interface MarkerArt {
@@ -19,6 +20,8 @@ const tiers: Record<string, string> = {
 export class MarkerPainter {
   private assets = new Map<string, Asset>();
   private sprites = new Map<string, Sprite>();
+  private shared?: Map<string, WeakRef<Sprite>>;
+  private sharedInsertions = 0;
   private versions = new Map<string, number>();
   private animated = new WeakMap<MarkerMotion, Map<string, AnimatedSprite>>();
   private pulses = new WeakMap<MarkerMotion, { key: string; animation: AnimatedSprite }>();
@@ -31,11 +34,13 @@ export class MarkerPainter {
   font = '700 10.5px sans-serif';
   countFont = '700 11.5px sans-serif';
   fontVersion = 0;
-  constructor(public ratio: number, private invalidate: (url: string) => void, private require2D?: () => void) {}
+  constructor(public ratio: number, private invalidate: (url: string) => void, private require2D?: () => void) {
+    if (typeof WeakRef !== 'undefined') this.shared = new Map();
+  }
   setRatio(ratio: number): void {
     if (ratio === this.ratio) return;
     this.ratio = ratio;
-    this.sprites.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear();
+    this.sprites.clear(); this.shared?.clear(); this.sharedInsertions = 0; this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear();
   }
   private artKey(art: MarkerArt): string {
     let key = this.artKeys.get(art);
@@ -171,7 +176,7 @@ export class MarkerPainter {
     const state = motion.state!;
     const key = layer === 'underlay' ? `underlay|${motion.border.target}|${motion.background.target}`
       : `${layer}|${this.artKey(art)}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}${+state.disappearing}`;
-    let sprite = this.sprites.get(key);
+    let sprite = this.sprites.get(key) ?? this.shared?.get(key)?.deref();
     if (sprite) return sprite;
     const x = art.noFrame ? -29 : -30, y = art.noFrame ? -34 : -46;
     const width = art.subImage ? 94 : art.noFrame ? 58 : 60, height = art.noFrame ? 64 : 66;
@@ -180,6 +185,15 @@ export class MarkerPainter {
     const ctx = canvas.getContext('2d')!; ctx.scale(this.ratio, this.ratio); ctx.translate(-x, -y);
     this.paint(ctx, art, motion, now, layer);
     sprite = { canvas, x, y, width: canvas.width / this.ratio, height: canvas.height / this.ratio };
+    // Entries may still own artwork evicted from the strong cache. Reuse those
+    // immutable pixels without retaining additional canvases or uploading copies.
+    if (this.shared) {
+      this.shared.set(key, new WeakRef(sprite));
+      if (++this.sharedInsertions % 256 === 0) {
+        for (const [oldKey, reference] of this.shared) if (!reference.deref()) this.shared.delete(oldKey);
+      }
+      if (this.shared.size > 2048) this.shared.delete(this.shared.keys().next().value!);
+    }
     // Bounded instance cache, independent of point count. Eviction never removes rendered pixels.
     if (this.sprites.size >= 512) this.sprites.delete(this.sprites.keys().next().value!);
     this.sprites.set(key, sprite); return sprite;
@@ -256,6 +270,6 @@ export class MarkerPainter {
   dispose(): void {
     this.disposed = true;
     for (const asset of this.assets.values()) asset.image.onload = asset.image.onerror = null;
-    this.assets.clear(); this.sprites.clear(); this.versions.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear(); this.artKeys = new WeakMap();
+    this.assets.clear(); this.sprites.clear(); this.shared?.clear(); this.sharedInsertions = 0; this.versions.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear(); this.artKeys = new WeakMap();
   }
 }
