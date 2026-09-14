@@ -6,6 +6,8 @@ Atlos (= Atlas)
 
 <p align="center">
 <img src="docs/assets/herobanner.webp" width="700" alt="Open Endfield Map">
+</p>
+<p align="center">
   <a href="https://opendfieldmap.org">Website</a> ·
   <a href="https://discord.gg/BFMAKZSUG7">Discord</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
