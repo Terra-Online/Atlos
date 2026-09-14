@@ -187,7 +187,6 @@
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.4s $standard-curve;
-    content-visibility: auto;
     &.expanded {
         grid-template-rows: 1fr;
         transition: grid-template-rows 0.4s $standard-curve;
@@ -213,6 +212,12 @@
         grid-template-columns: 1fr 1fr;
         gap: 0 0.75rem;
         width: 100%;
+
+        // Keep the animated shell in layout so rapid scrolls never expose a
+        // skipped filter surface. Only the expensive selector tree is skipped,
+        // with a stable fallback size until the browser has measured it once.
+        content-visibility: auto;
+        contain-intrinsic-size: auto 20rem;
         will-change: opacity, transform, filter;
         overflow: visible;
         &.visible {

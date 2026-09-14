@@ -92,6 +92,8 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
         let selectionUpdateRaf: number | null = null;
         let pendingSelectionClientPoint: Point | null = null;
         let pendingSelectionScrollContainer: HTMLElement | null = null;
+        let activateTargets: BoxSelectionTarget[] = [];
+        let toggleTargets: BoxSelectionTarget[] = [];
 
         const getScrollContainer = () => (
             container.querySelector<HTMLElement>('[data-sidescroll="true"]') ?? container
@@ -240,15 +242,15 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             const nextSet = new Set(initialKeys);
             const activatedKeys = new Set<string>();
 
-            targets.forEach((target) => {
-                if (target.mode !== 'activate' || !isIntersecting(target.rect, box)) return;
+            activateTargets.forEach((target) => {
+                if (!isIntersecting(target.rect, box)) return;
                 target.keys.forEach((key) => {
                     nextSet.add(key);
                     activatedKeys.add(key);
                 });
             });
-            targets.forEach((target) => {
-                if (target.mode === 'activate' || !isIntersecting(target.rect, box)) return;
+            toggleTargets.forEach((target) => {
+                if (!isIntersecting(target.rect, box)) return;
                 target.keys.forEach((key) => {
                     if (activatedKeys.has(key)) return;
                     if (nextSet.has(key)) nextSet.delete(key);
@@ -380,6 +382,8 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             initialKeys = [];
             currentOptimisticSet = new Set<string>();
             targets = [];
+            activateTargets = [];
+            toggleTargets = [];
             lastChangeSignature = '';
             pendingKeys = null;
             pendingChangeCount = 0;
@@ -408,6 +412,8 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 scrollContainer,
                 elementToContentRect: (element) => elementToContentRect(scrollContainer, element),
             });
+            activateTargets = targets.filter((target) => target.mode === 'activate');
+            toggleTargets = targets.filter((target) => target.mode !== 'activate');
             previousBodyUserSelect = document.body.style.userSelect;
             previousScrollBehavior = scrollContainer.style.scrollBehavior;
             window.addEventListener('pointermove', onPointerMove);

@@ -151,8 +151,10 @@ const MarkFilter = ({
         didDragRef.current = true;
         startDrag?.(idKey);
     };
-    const onDrag = () => {
-        updateDrag?.(idKey, y.get());
+    const onDrag = (_event: unknown, info: { offset: { y: number } }) => {
+        // Motion's offset is measured from drag start and is independent of
+        // layout projection animations triggered by a reorder.
+        updateDrag?.(idKey, info.offset.y);
     };
     const onDragEnd = () => {
         // animate back translation; flex order will finalize position
