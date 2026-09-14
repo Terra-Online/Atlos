@@ -9,9 +9,28 @@
 @use './embed' as *;
 @use './themeTransition';
 
-/* Import Leaflet MarkerCluster styles */
-@import 'leaflet.markercluster/dist/MarkerCluster.css';
-@import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+// The behavior overlay is a single canvas, so one CSS shadow keeps both static
+// and animated paths legible without per-feature filter surfaces.
+.behaviorOverlayPane {
+    // Butterfly routes and their authored nodes.
+    --behavior-butterfly-color: #{$primary-accent-4};
+
+    // Formal marker relations and their opposite endpoint.
+    --behavior-relation-color: #{$primary-accent-2};
+
+    // Chest-to-bubble connection color.
+    --behavior-unlock-color: #{$primary-accent-1};
+
+    // Aurylene trajectory base color.
+    --behavior-aurylene-color: #{$primary-accent-3};
+
+    // Moving highlight color for Aurylene trajectories.
+    --behavior-flow-color: #{$primary-accent-7};
+    filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
 
 @media only screen and (min-width: $desktoper-bp) {
     html {
@@ -102,9 +121,16 @@ button {
 }
 body {
     margin: 0;
-    font-family: 'Novecento Medium', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'HMSans_EN', 'Fedra Sans Pro', 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family:
+        'Novecento Medium', 'Novecento Cyrillic DemiBold',
+        'Novecento Vietnamese Medium', 'HMSans_EN', 'Fedra Sans Pro',
+        'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic',
+        'Noto Sans Thai', sans-serif;
     font-variant-numeric: lining-nums;
-    font-feature-settings: "lnum" 1, "onum" 0, "case" 1;
+    font-feature-settings:
+        'lnum' 1,
+        'onum' 0,
+        'case' 1;
 }
 p {
     margin: 0;

@@ -265,6 +265,18 @@
           "bureau_arsenal": "Arsenal de la Agencia",
           "rust_mound": "Montículo oxidado"
         }
+      },
+      "SF": {
+        "name": "Bosque nevado",
+        "short": "BN",
+        "site": {
+          "snowy_trail": "Sendero nevado",
+          "hoarfrost_woods": "Bosque de escarcha",
+          "snowpriestess_cabin": "Cabaña de la Sacerdotisa de la nieve",
+          "hoarfrost_dale": "Valle de escarcha",
+          "ritual_shrine": "Santuario Ritual",
+          "old_resting_point": "Antiguo lugar de descanso"
+        }
       }
     }
   },

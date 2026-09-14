@@ -265,6 +265,18 @@
           "bureau_arsenal": "Arsenale del Dipartimento",
           "rust_mound": "Tumulo della ruggine"
         }
+      },
+      "SF": {
+        "name": "Foresta innevata",
+        "short": "FI",
+        "site": {
+          "snowy_trail": "Sentiero innevato",
+          "hoarfrost_woods": "Boschi brinati",
+          "snowpriestess_cabin": "Capanna della sacerdotessa delle nevi",
+          "hoarfrost_dale": "Valle brinata",
+          "ritual_shrine": "Altare rituale",
+          "old_resting_point": "Vecchio punto di sosta"
+        }
       }
     }
   },

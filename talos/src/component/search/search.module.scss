@@ -233,6 +233,7 @@
 
     .topBlur,
     .bottomBlur {
+        --scroll-edge-fade-color: var(--search-result-bg);
         position: absolute;
         left: 0;
         right: 0;

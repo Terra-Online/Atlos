@@ -1,19 +1,19 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
-import { LinearBlur } from 'progressive-blur';
+import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from './comments.module.scss';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
-import { formatRelativeTime, parseTimestamp } from '@/utils/timeFormat';
-import { docsLink, linkTpl } from '@/utils/docsLink';
+import { formatRelativeTime, parseTimestamp } from '@/lib/format/time';
+import { docsLink, linkTpl } from '@/lib/i18n/docsLink';
 import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
     listUGCComments,
     type UGCComment,
     type UGCCommentVoteValue,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import ShortActions, { type ShortActionItem } from '@/component/uploader/shortActions';
 import TranslateIcon from '@/assets/logos/translater.svg?react';
 import LikeIcon from '@/assets/images/UI/like.svg?react';
@@ -23,7 +23,7 @@ import SubmitIcon from '@/assets/logos/submit.svg?react';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
-import { usePointShareLink } from '@/utils/shareLink';
+import { usePointShareLink } from '@/component/share/usePointShareLink';
 import { useCommentLink } from './useCommentLink';
 
 import {
@@ -680,7 +680,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                 ></div>
                 <div className={styles.commentRule}>{footerText}</div>
             </div>
-            <LinearBlur
+            <AdaptiveLinearBlur
                 side="bottom"
                 strength={8}
                 falloffPercentage={100}

@@ -1,0 +1,55 @@
+@use '@main/styles/palette.scss' as *;
+@use '@main/styles/curves.scss' as *;
+
+[data-app='intel'] {
+  --intel-sidebar-bg: #{$white-1};
+  --sidebar-bg: var(--intel-sidebar-bg);
+  --mobile-drawer-backdrop-bg: var(--intel-sidebar-bg);
+
+  :root[data-theme='dark'] & {
+    --intel-sidebar-bg: #{$black-0};
+  }
+
+  > [data-sidebar-layout='desktop'] > div {
+    backdrop-filter: none;
+  }
+
+  [data-sidebar-content='true'] {
+    position: relative;
+  }
+
+  .intelSearchBar {
+    margin-bottom: 0.5rem;
+
+    > div {
+      margin-bottom: 0;
+    }
+  }
+
+  .intelMobileTriggerBar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    align-items: center;
+    padding: 0.25rem 0;
+  }
+
+  .intelBottomTools {
+    position: absolute;
+    z-index: 180;
+    right: 0;
+    bottom: 3.25rem;
+    left: 0;
+    height: 0;
+    pointer-events: none;
+    transition: bottom 0.35s $moderato-curve;
+
+    [class*='triggerContainer'] {
+      bottom: 0.5rem;
+    }
+
+    html:not(:lang(zh-CN), :lang(zh-HK)) & {
+      bottom: 1.75rem;
+    }
+  }
+}

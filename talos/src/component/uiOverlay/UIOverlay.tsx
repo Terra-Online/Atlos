@@ -21,18 +21,17 @@ import {
 } from '@/store/uiPrefs';
 
 import { useLocale, useTranslateUI } from '@/locale';
-import { useDevice } from '@/utils/device';
-import { initTheme, cleanupTheme, toggleTheme } from '@/utils/theme';
+import { useDevice } from '@/platform/device';
+import { initTheme, cleanupTheme, toggleTheme } from '@/platform/theme';
 import { useAppPictureInPicture } from '@/component/scale/pip';
 import { Shortcut } from '@/component/shortcut';
 import { modKey } from '@/component/settings/shortcuts';
 import { useAuthStore } from '@/store/auth';
 import {
-    getNotificationUnreadCounts,
     subscribeNotificationLive,
     type NotificationLiveUpdate,
     type NotificationUnreadCounts,
-} from '@/utils/notifyClient';
+} from '@/services/notifications/client';
 
 import ToS from '../../assets/logos/tos.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
@@ -43,7 +42,7 @@ import Guide from '../../assets/logos/guide.svg?react';
 import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 import { useAnnouncementFlow } from './useAnnFlow';
-import { shouldSuppressInitialAutoOverlays } from '@/utils/urlState';
+import { shouldSuppressInitialAutoOverlays } from '@/services/routing';
 
 const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
 
@@ -138,27 +137,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
             return;
         }
         let disposed = false;
-        let unreadRevision = 0;
-        const syncUnread = () => {
-            const requestRevision = unreadRevision;
-            void getNotificationUnreadCounts()
-                .then((unread) => {
-                    if (!disposed && unreadRevision === requestRevision)
-                        setNotificationUnread(unread);
-                })
-                .catch(() => undefined);
-        };
-        syncUnread();
         const unsubscribe = subscribeNotificationLive({
             onUpdate: (update) => {
                 if (disposed) return;
-                unreadRevision += 1;
                 setNotificationUnread(update.unread);
                 setNotificationLiveUpdate(update);
             },
             onReady: (unread) => {
                 if (disposed) return;
-                unreadRevision += 1;
                 setNotificationUnread(unread);
             },
             onOpen: () => {

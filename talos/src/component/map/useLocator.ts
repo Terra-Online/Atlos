@@ -10,14 +10,14 @@ import {
     getEFPosition,
     openEFPositionSocket,
     type EFPositionSocketMessage,
-} from '@/utils/endfield/backendClient';
-import type { PositionResponse } from '@/utils/endfield/types';
-import { convertEFPosition, type EFLocatorPosition } from '@/utils/endfield/locatorTransform';
+} from '@/services/endfield';
+import type { PositionResponse } from '@/services/endfield';
+import { convertEFPosition, type EFLocatorPosition } from '@/services/endfield';
 import {
     LOCATOR_CONFIG_UPDATED_EVENT,
     readEFTrackerConf,
     saveEFTrackerConf,
-} from '@/utils/endfield/config';
+} from '@/services/endfield';
 import styles from './Locator.module.scss';
 
 type TrackerConfig = {
@@ -68,7 +68,7 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
         iconAnchor: [14, 14],
         html: `
             <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
-                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" alt="" />
+                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" />
             </div>
         `,
     });
@@ -83,7 +83,10 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
 };
 
 const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
-    marker.getElement()?.style.setProperty('--tracker-bearing', `${angleDeg}deg`);
+    // Rotate only the image. An inherited custom property on the marker root
+    // unnecessarily invalidates descendant styles for every heading update.
+    const image = marker.getElement()?.querySelector<HTMLElement>(`.${styles.trackerMarkerImage}`);
+    if (image) image.style.transform = `rotate(${angleDeg}deg)`;
 };
 
 const stopTrackerPulse = (marker: L.Marker): void => {
@@ -130,6 +133,7 @@ type UpKind = 'expired' | 'notInGame' | 'policy';
 
 const UP_KIND: Partial<Record<number, UpKind>> = {
     10000: 'expired',
+    10002: 'expired',
     19001: 'notInGame',
     19002: 'policy',
 };
@@ -152,10 +156,12 @@ const disableLocatorSync = (): void => {
 const errInfo = (error: EFBackendError): {
     upstreamCode?: unknown;
     upstreamMessage?: unknown;
+    upstreamStatus?: unknown;
 } | undefined => {
     const details = error.details as {
         upstreamCode?: unknown;
         upstreamMessage?: unknown;
+        upstreamStatus?: unknown;
     } | undefined;
     return details;
 };
@@ -168,7 +174,12 @@ const errCode = (error: EFBackendError): number | null => {
 
 const errKind = (error: EFBackendError): UpKind | null => {
     const code = errCode(error);
-    return code === null ? null : UP_KIND[code] ?? null;
+    if (code !== null) return UP_KIND[code] ?? null;
+    const status = Number(errInfo(error)?.upstreamStatus);
+    return error.code === 'ENDFIELD_CREDENTIAL_REJECTED'
+        || (error.code === 'ENDFIELD_POSITION_SOCKET_UNAVAILABLE' && (status === 401 || status === 403))
+        ? 'expired'
+        : null;
 };
 
 const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
@@ -178,7 +189,12 @@ const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
 
 const showErr = (error: EFBackendError): void => {
     const code = errCode(error);
-    if (code === null) return;
+    if (code === null) {
+        if (error.code === 'ENDFIELD_CREDENTIAL_REJECTED') {
+            useLocatorStore.getState().showBanner('locator.errors.10002');
+        }
+        return;
+    }
 
     if (UP_KIND[code]) {
         useLocatorStore.getState().showBanner(`locator.errors.${code}`);
@@ -226,6 +242,27 @@ export function useLocator(map: L.Map | undefined): void {
         if (!map) return;
 
         let disposed = false;
+        let connectionBannerTimer: number | null = null;
+
+        const clearConnectionBannerTimer = () => {
+            if (connectionBannerTimer === null) return;
+            window.clearTimeout(connectionBannerTimer);
+            connectionBannerTimer = null;
+        };
+
+        const showConnectionStatus = (status: 'connecting' | 'connected' | 'reconnecting') => {
+            clearConnectionBannerTimer();
+            const store = useLocatorStore.getState();
+            if (status === 'connected') {
+                store.showBanner('locator.status.connected');
+                connectionBannerTimer = window.setTimeout(() => {
+                    connectionBannerTimer = null;
+                    useLocatorStore.getState().clearBanner();
+                }, 1_500);
+                return;
+            }
+            store.showBanner('locator.status.connecting');
+        };
 
         const cleanupAnimation = () => {
             const state = animationRef.current;
@@ -251,6 +288,7 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const pauseForErr = (error: EFBackendError) => {
+            clearConnectionBannerTimer();
             showErr(error);
             cleanupPolling();
             useLocatorStore.getState().setViewMode('tracking');
@@ -262,6 +300,7 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const onNotInGame = (error: EFBackendError) => {
+            clearConnectionBannerTimer();
             showErr(error);
             cleanupPolling();
             disableLocatorSync();
@@ -506,9 +545,12 @@ export function useLocator(map: L.Map | undefined): void {
             if (disposed) return;
 
             const applyPositionUpdate = (payload: PositionResponse['data']) => {
-                if (payload.isOnline === false) return;
+                if (payload.isOnline === false) {
+                    clearConnectionBannerTimer();
+                    useLocatorStore.getState().showBanner('locator.errors.19001');
+                    return;
+                }
 
-                useLocatorStore.getState().clearBanner();
                 const locator = convertEFPosition(payload);
                 const converted = convertGamePosition(locator);
                 currentLocatorRegionRef.current = locator.regionKey;
@@ -612,8 +654,13 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             const retryExpiredCredentials = (error: EFBackendError) => {
+                clearConnectionBannerTimer();
                 showErr(error);
                 cleanupPolling();
+                if (errCode(error) === 10002) {
+                    disableLocatorSync();
+                    return;
+                }
                 trackerRunningRef.current = true;
                 scheduleNextPoll(EXPIRED_CREDENTIAL_RETRY_MS);
             };
@@ -657,6 +704,7 @@ export function useLocator(map: L.Map | undefined): void {
                     return;
                 }
 
+                showConnectionStatus('connecting');
                 let sawPosition = false;
                 const socket = openEFPositionSocket({
                     socketTicket: socketTicketRef.current,
@@ -667,6 +715,10 @@ export function useLocator(map: L.Map | undefined): void {
                     if (disposed) return;
                     try {
                         const message = JSON.parse(String(event.data)) as EFPositionSocketMessage;
+                        if (message.type === 'status') {
+                            showConnectionStatus(message.status === 'reconnecting' ? 'connecting' : message.status);
+                            return;
+                        }
                         if (message.type === 'position') {
                             sawPosition = true;
                             socketReconnectAttemptRef.current = 0;
@@ -720,6 +772,7 @@ export function useLocator(map: L.Map | undefined): void {
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
             trackerRunningRef.current = true;
+            showConnectionStatus('connecting');
             void getEFPosition({ includeBinding: true, includeSocketTicket: true })
                 .then((response) => {
                     if (disposed) return;
@@ -750,6 +803,7 @@ export function useLocator(map: L.Map | undefined): void {
 
         return () => {
             disposed = true;
+            clearConnectionBannerTimer();
             cleanupAnimation();
             cleanupPolling();
             if (socketRef.current) {

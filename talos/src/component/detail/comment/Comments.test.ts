@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { IMarkerData } from '@/data/marker';
-import type { UGCComment } from '@/utils/ugcClient';
+import type { UGCComment } from '@/services/ugc/client';
 
 const localeState = vi.hoisted(() => ({ current: 'en-US' }));
 
@@ -15,10 +15,10 @@ vi.mock('@/assets/logos/reply.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/edit.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/share.svg?react', () => ({ default: () => null }));
 vi.mock('progressive-blur', () => ({ LinearBlur: () => null }));
-vi.mock('@/component/login/authFlow', () => ({ getAuthBase: () => '', getAuthHeaders: () => ({}) }));
+vi.mock('@/services/http/authRuntime', () => ({ getAuthBase: () => '', getAuthHeaders: () => ({}) }));
 vi.mock('@/store/auth', () => ({ useAuthStore: () => null }));
 vi.mock('@/data/marker', () => ({ MARKER_TYPE_DICT: {} }));
-vi.mock('@/utils/urlState', () => ({ generatePointShareUrl: (_: unknown, options: { content: { id: string } }) => `https://oem.re/marker?commentId=${options.content.id}` }));
+vi.mock('@/services/routing', () => ({ generatePointShareUrl: (_: unknown, options: { content: { id: string } }) => `https://oem.re/marker?commentId=${options.content.id}` }));
 vi.mock('@/locale', () => {
     const translate = (key: string) => key === 'detail.comments.loadFailed'
         ? `${localeState.current}:${key}`
@@ -38,7 +38,7 @@ vi.mock('./useAutoTrans', () => ({ useAutoTrans: () => {} }));
 vi.mock('./useTrans', () => ({ useTrans: () => vi.fn() }));
 
 import Comments from './Comments';
-import * as client from '@/utils/ugcClient';
+import * as client from '@/services/ugc/client';
 import { useMarkerStore } from '@/store/marker';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;

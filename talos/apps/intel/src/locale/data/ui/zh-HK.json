@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "檔案收集專題｜終末地地圖集",
+    "collecting": "收集中",
+    "collectionComplete": "收集完成",
+    "collected": "已收集",
+    "uncollected": "未收集",
+    "search": "搜尋檔案名稱",
+    "noResults": "沒有符合的檔案",
+    "noResultsHint": "請檢查搜尋內容或分類篩選",
+    "mapSite": "點擊前往點位",
+    "showDetails": "顯示獲取詳情",
+    "source": "取得方式",
+    "investUnlock": "完成調查任務 {mission} 後自動解鎖",
+    "centralUnlock": "推進主線以解鎖",
+    "collectionSummary": "本次共收集：{items}",
+    "nonMapArchives": "非地圖檔案",
+    "missionMapInteraction": "互動並完成對應{point}",
+    "pointPuzzle": "{point}解謎",
+    "optionalCondition": "（非必要條件）",
+    "shopSystemPurchase": "在 {region} 地區建設頁，於 {shop} 購買。",
+    "shopNpcPurchase": "在 {npc} 處，於 {shop} 購買。",
+    "specialNpcDialog": "{npc}「{dialog}」",
+    "specialAcquisition": "完成對話和相關Baker訊息閱讀",
+    "method": {
+      "map": "地圖拾取",
+      "mission": "跟隨任務",
+      "auto": "自動解鎖",
+      "shop": "商店購買",
+      "invstgt": "報告摘要"
+    },
+    "label": {
+      "missionSequence": "任務序列",
+      "acquisitionLocation": "取得位置",
+      "npc": "相關NPC"
+    }
+  }
+}

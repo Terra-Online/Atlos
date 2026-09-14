@@ -1,4 +1,4 @@
-import type { UGCComment, UGCCommentContext } from '@/utils/ugcClient';
+import type { UGCComment, UGCCommentContext } from '@/services/ugc/client';
 import { flatList } from './commentsTree';
 
 export function mergeCommentContext(comments: UGCComment[], context: UGCCommentContext): UGCComment[] {

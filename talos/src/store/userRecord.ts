@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useUiPrefsStore } from './uiPrefs';
-import { createConditionalStorage } from '@/utils/storage';
+import { createConditionalStorage } from '@/platform/storage';
 
 interface IUserRecordStore {
     activePoints: string[];

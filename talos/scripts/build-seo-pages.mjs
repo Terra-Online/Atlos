@@ -10,12 +10,12 @@ import {
   resolveDeployPrefix,
 } from './release-channel.js';
 import { enqueueSeoOgPublishChanges } from './seo-og-publish-queue.js';
+import { loadEffectiveMarkers } from './marker-data.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-const MARKER_DIR = path.resolve(ROOT, 'src/data/marker/data');
 const MARKER_TYPE_FILE = path.resolve(ROOT, 'src/data/marker/type.json');
 const REGION_FILE = path.resolve(ROOT, 'src/data/map/region.json');
 const R2_CONFIG_FILE = path.resolve(ROOT, 'config/config.r2.json');
@@ -74,6 +74,7 @@ const POINT_ID_PERMUTATION_OFFSET = 11n;
 const POINT_ID_TOKEN_LENGTH = 7;
 const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
 const POINT_HTML_FILE_PATTERN = /^[0-9a-zA-Z]{7}\.html$/;
+const DEEP_LINK_QUERY_PARAMS = ['imageId', 'commentId'];
 
 const INDEXABLE_MAIN_CATEGORIES = new Set(['files']);
 const INDEXABLE_SUB_CATEGORIES = new Set(['archives', 'boss', 'valuable', 'facility']);
@@ -352,26 +353,6 @@ function decodePointIdToken(token) {
   return id.toString();
 }
 
-function normalizeMarker(raw, subregionId) {
-  const obj = Array.isArray(raw)
-    ? { id: raw[0], z: raw[1], x: raw[2], y: raw[3], tier: raw[4], type: raw[5] }
-    : raw;
-  if (!obj || obj.type == null || obj.id == null) return null;
-  const z = obj.z ?? obj.pos?.[0] ?? 0;
-  const x = obj.x ?? obj.pos?.[1] ?? 0;
-  const y = obj.y ?? obj.pos?.[2] ?? 0;
-  return {
-    id: String(obj.id),
-    z,
-    x,
-    y,
-    tier: obj.tier ?? 0,
-    pos: [z, x],
-    subregId: obj.subregId ?? subregionId,
-    type: String(obj.type),
-  };
-}
-
 function subregionRegionMap(regionMap) {
   const map = new Map();
   for (const [regionKey, region] of Object.entries(regionMap)) {
@@ -383,19 +364,7 @@ function subregionRegionMap(regionMap) {
 }
 
 async function loadMarkers(typeMap) {
-  const files = (await safeReaddir(MARKER_DIR)).filter((file) => file.endsWith('.json'));
-  const markers = [];
-  for (const file of files) {
-    const subregionId = path.basename(file, '.json');
-    const data = await safeReadJson(path.resolve(MARKER_DIR, file), []);
-    if (!Array.isArray(data)) continue;
-    for (const raw of data) {
-      const marker = normalizeMarker(raw, subregionId);
-      if (!marker || !typeMap[marker.type]) continue;
-      markers.push(marker);
-    }
-  }
-  return markers;
+  return (await loadEffectiveMarkers({ typeMap })).filter((marker) => typeMap[marker.type]);
 }
 
 function deduplicateMarkersByPositionAndType(markers) {
@@ -1375,6 +1344,20 @@ function buildPointHtml(point) {
       url: siteUrl,
     },
   };
+  const serializedSpaUrl = JSON.stringify(point.spaUrl).replace(/</g, '\\u003c');
+  const forwardDeepLinkScript = `<script>
+    (() => {
+      const target = new URL(${serializedSpaUrl});
+      const source = new URLSearchParams(window.location.search);
+      for (const key of ${JSON.stringify(DEEP_LINK_QUERY_PARAMS)}) {
+        const values = source.getAll(key);
+        if (values.length === 0) continue;
+        target.searchParams.delete(key);
+        values.forEach((value) => target.searchParams.append(key, value));
+      }
+      window.location.replace(target.toString());
+    })();
+  </script>`;
   return `<!doctype html>
 <html lang="${html(htmlLang)}">
 <head>
@@ -1395,6 +1378,7 @@ function buildPointHtml(point) {
   <meta name="twitter:description" content="${html(point.description)}" />
   <meta name="twitter:image" content="${html(point.ogImageUrl)}" />
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+  ${forwardDeepLinkScript}
   <meta http-equiv="refresh" content="0;url=${html(point.spaUrl)}" />
   <style>
     html, body { background: #fff; color: #fff; margin: 0; }

@@ -3,7 +3,7 @@ import {
     invalidateUGCCommentCache,
     recallUGCComment,
     type UGCComment,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import { collectIds, patchTree, removeTree } from './commentsTree';
 import { removeCommentSubmission, restoreCommentSubmission } from './commentSubmissionStore';
 

@@ -1,0 +1,15 @@
+.performanceFade {
+    background: linear-gradient(
+        to bottom,
+        var(--scroll-edge-fade-color, transparent) 0%,
+        transparent var(--scroll-edge-fade-end, 100%)
+    );
+}
+
+.performanceFade[data-side='bottom'] {
+    background: linear-gradient(
+        to top,
+        var(--scroll-edge-fade-color, transparent) 0%,
+        transparent var(--scroll-edge-fade-end, 100%)
+    );
+}

@@ -3,8 +3,8 @@ import {
     decodeProgressStatsCounts,
     getProgressMarkerIndex,
     type ProgressMarkerIndex,
-} from '@/utils/progressBitmap';
-import { fetchProgressStats } from '@/utils/progressSyncClient';
+} from '@/services/progress';
+import { fetchProgressStats } from '@/services/progress';
 
 const STATS_CACHE_TTL_MS = 60_000;
 

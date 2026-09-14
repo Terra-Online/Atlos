@@ -43,7 +43,7 @@ Top-level folders you’ll most likely interact with:
 		- `locale/` – i18n system, UI text resources
 		- `store/` – global UI state (Zustand)
 		- `styles/` – shared SCSS (palette, fonts, globals)
-		- `utils/` – helpers (device, font loader/cache, logging, resources)
+		- `lib/`, `platform/`, and `services/` – shared helpers, runtime adapters, and domain APIs
 	- `public/` – public static assets
 	- `config/` – build-time config (ignored by Git), see “Build & Deploy”
 	- `scripts/` – helper scripts (e.g. publish to OSS/CDN)
@@ -80,7 +80,7 @@ pnpm build
 ## Fonts
 - Main latin letters are displayed in Novencento Sans Wide family provided by [Synthview Type Design](https://typography.synthview.com/novecento-sans-font-family.php).
 - Variable font HMSans (weights 100–900) is used alongside region‑specific fonts.
-- Fonts are loaded dynamically using the utilities in `src/utils/fontLoader.ts` and `src/utils/fontCache.ts`.
+- Fonts are loaded dynamically using the locale services in `talos/src/locale/fontLoader.ts` and `talos/src/lib/i18n`.
 
 ## License
 

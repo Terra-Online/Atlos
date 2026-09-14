@@ -28,6 +28,7 @@ if (shouldSkipSubset) {
 } else {
   run('pnpm run subset:fonts');
 }
+run('pnpm run validate:marker-overrides');
 run('pnpm run build:marker-stats');
 run('pnpm run build:marker-diff');
 run('pnpm run build:search-index');

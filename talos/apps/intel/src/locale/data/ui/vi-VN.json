@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Hồ sơ - {site}",
+    "collecting": "Đang thu thập",
+    "collectionComplete": "Hoàn tất",
+    "collected": "Đã thu thập",
+    "uncollected": "Chưa thu thập",
+    "search": "Tìm thông tin",
+    "noResults": "Không có thông tin phù hợp",
+    "noResultsHint": "Kiểm tra từ khóa tìm kiếm hoặc bộ lọc danh mục",
+    "mapSite": "Hiển thị trong OEM",
+    "showDetails": "Hiện chi tiết",
+    "source": "Nguồn",
+    "investUnlock": "Mở khóa sau {mission}",
+    "centralUnlock": "Mở khóa qua cốt truyện chính",
+    "collectionSummary": "Đã thu thập: {items}",
+    "nonMapArchives": "Hồ sơ ngoài bản đồ",
+    "missionMapInteraction": "Tương tác và hoàn thành {point} tương ứng",
+    "pointPuzzle": "Câu đố {point}",
+    "optionalCondition": "(tùy chọn)",
+    "shopSystemPurchase": "Mua từ {shop} trong trang phát triển khu vực {region}.",
+    "shopNpcPurchase": "Mua từ {shop} tại {npc}.",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "Hoàn thành hội thoại và đọc các tin nhắn Baker liên quan",
+    "method": {
+      "map": "Khám phá",
+      "mission": "Nhiệm vụ",
+      "auto": "Tiến trình",
+      "shop": "Cửa hàng",
+      "invstgt": "Điều tra"
+    },
+    "label": {
+      "missionSequence": "Nhiệm vụ",
+      "acquisitionLocation": "Vị trí",
+      "npc": "NPC"
+    }
+  }
+}

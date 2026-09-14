@@ -10,7 +10,7 @@ import {
     UGCClientError,
     type UGCUploadSubmission,
     type UGCUploadTarget,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import type { PointImagesState } from './useUGCPointImages';
 
 export type UploadState = {

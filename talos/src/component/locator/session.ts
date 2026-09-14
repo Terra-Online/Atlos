@@ -1,12 +1,12 @@
 import { useAuthStore } from '@/store/auth';
 import { useUiPrefsStore } from '@/store/uiPrefs';
-import { getEFBindingStatus, type EFRoleOption } from '@/utils/endfield/backendClient';
+import { getEFBindingStatus, type EFRoleOption } from '@/services/endfield';
 import {
     readEFTrackerConf,
     saveEFTrackerConf,
     type EFTrackerConf,
-} from '@/utils/endfield/config';
-import { setCachedBinding } from '@/utils/backendCache';
+} from '@/services/endfield';
+import { setCachedBinding } from '@/services/cache/backend';
 import {
     inferLocatorAccountModeFromBaseUrl,
     type LocatorAccountMode,

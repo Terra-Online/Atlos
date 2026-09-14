@@ -3,5 +3,14 @@ main = "src/index.ts"
 compatibility_date = "2026-03-22"
 workers_dev = true
 
+[[r2_buckets]]
+binding = "OEA_PACKAGES"
+bucket_name = "opendfieldmap-package"
+
+# 所有入口由 Cloudflare zone 中的显式 route 管理，不在此重复声明 custom_domain，
+# 以避免部署时覆盖已有 DNS/route。当前 route 为 oem.re/*、beta.oem.re/*、
+# blog.oem.re/* 与 oea.oem.re/*；不要恢复 *.oem.re/* wildcard，否则会拦截
+# package.oem.re 的 R2 Custom Domain。
+
 [observability]
 enabled = true

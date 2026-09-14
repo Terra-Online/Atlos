@@ -87,6 +87,7 @@
     }
 
     .listBottomBlur {
+        --scroll-edge-fade-color: var(--modal-bg);
         position: absolute;
         right: 0;
         bottom: calc(-1 * var(--support-divider-height));
@@ -160,11 +161,11 @@
         }
 
         &[data-type='community.comment.reply'] {
-            --card-accent: #{$secondary-accent-2};
+            --card-accent: #{$secondary-accent-5};
         }
 
         &[data-type='community.comment.vote'] {
-            --card-accent: #{$secondary-accent-0};
+            --card-accent: #{$secondary-accent-3};
         }
 
         &[data-expandable='true'][data-expanded='false'][data-collapsing='false']:is(

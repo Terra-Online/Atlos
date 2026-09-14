@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SupportModal from '@/component/support/support';
 import { useIsUserGuideOpen } from '@/store/uiPrefs';
-import LOGGER from '@/utils/log';
+import LOGGER from '@/lib/logging/logger';
 import { SUPPORT_CONFIG } from './supportConfig';
 
 interface SupportPopupPrefs {

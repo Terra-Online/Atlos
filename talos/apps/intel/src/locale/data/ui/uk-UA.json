@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Архів - {site}",
+    "collecting": "Збирання",
+    "collectionComplete": "Завершено",
+    "collected": "Зібрано",
+    "uncollected": "Не зібрано",
+    "search": "Пошук відомостей",
+    "noResults": "Відповідних відомостей не знайдено",
+    "noResultsHint": "Перевірте пошуковий запит або фільтри категорій",
+    "mapSite": "Показати в OEM",
+    "showDetails": "Показати подробиці",
+    "source": "Джерело",
+    "investUnlock": "Відкривається після {mission}",
+    "centralUnlock": "Відкривається за основним сюжетом",
+    "collectionSummary": "Зібрано: {items}",
+    "nonMapArchives": "Позамапні архіви",
+    "missionMapInteraction": "Взаємодійте з відповідним об'єктом {point} і завершіть його",
+    "pointPuzzle": "Головоломка «{point}»",
+    "optionalCondition": "(необов'язково)",
+    "shopSystemPurchase": "Придбайте у {shop} на сторінці розвитку регіону {region}.",
+    "shopNpcPurchase": "Придбайте у {shop} через {npc}.",
+    "specialNpcDialog": "{npc}: «{dialog}»",
+    "specialAcquisition": "Завершіть діалог і прочитайте пов'язані повідомлення Baker",
+    "method": {
+      "map": "Дослідження",
+      "mission": "Місія",
+      "auto": "Прогрес",
+      "shop": "Магазин",
+      "invstgt": "Розслідування"
+    },
+    "label": {
+      "missionSequence": "Місія",
+      "acquisitionLocation": "Місце",
+      "npc": "NPC"
+    }
+  }
+}

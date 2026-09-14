@@ -1,3 +1,5 @@
+import './test-support/canvas';
+
 const values = new Map<string, string>();
 
 const storage: Storage = {

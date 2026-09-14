@@ -4,7 +4,7 @@ import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
 import { useUiPrefsStore, useHideCompletedMarkers } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/component/locator/state';
-import { LOCATOR_CONFIG_UPDATED_EVENT, readEFTrackerConf, type EFTrackerScope } from '@/utils/endfield/config';
+import { LOCATOR_CONFIG_UPDATED_EVENT, readEFTrackerConf, type EFTrackerScope } from '@/services/endfield';
 import { getLocatorReminderTypeKeys } from '@/component/locator/proximityReminder';
 import { isRecordToolEnabled } from '@/devtools/loadDevTool';
 
@@ -20,7 +20,7 @@ export function useMarker(
     currentRegion: string,
     mapInitialized: boolean,
 ) {
-    const { filter } = useMarkerStore();
+    const filter = useMarkerStore((state) => state.filter);
     const collectedPoints = useUserRecord();
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
     const temporarySelectedPoints = useMarkerStore((state) => state.temporarySelectedPoints);

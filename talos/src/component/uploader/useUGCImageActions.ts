@@ -6,7 +6,7 @@ import {
     toggleUGCImageFlag,
     toggleUGCImageUpvote,
     type UGCImageActionPatch,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import { getUpvoteCount, type PointImagesState } from './useUGCPointImages';
 import type { UploadState } from './useUGCUpload';
 

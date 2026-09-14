@@ -40,6 +40,7 @@ talos/src/assets/fonts/UD_ShinGo
 talos/src/assets/fonts/Harmony
 talos/src/assets/fonts/Novecento
 talos/src/assets/fonts/Fedra
+talos/apps/intel/src/assets/
 talos/src/assets/fonts_original/
 talos/src/assets/images/item
 talos/src/assets/images/shared
@@ -71,3 +72,19 @@ talos/.stylelintcache
 *.glyphs
 *.test.ts
 *.generated.ts
+!talos/oem-relink/src/index.test.ts
+
+# Keep the viewport lifecycle and multi-filter regression suite.
+!talos/src/component/mapCore/markerViewport.test.ts
+
+# Performance regression coverage.
+!talos/src/component/locator/proximityIndex.test.ts
+!talos/src/component/mapCore/marker/markerLayer.proximity.test.ts
+!talos/src/store/marker.proximity.test.ts
+
+# Retained Canvas rendering regression coverage.
+!talos/src/component/mapCore/canvas/canvasEfficiency.test.ts
+!talos/src/component/mapCore/canvas/canvasArtworkCache.test.ts
+
+# Local-only Canvas performance harnesses, reports and captures.
+/talos/performance/

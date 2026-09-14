@@ -7,8 +7,8 @@ import RegisterIcon from '@/assets/logos/register.svg?react';
 import parse from 'html-react-parser';
 import { type FormEvent, type KeyboardEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslateUI } from '@/locale';
-import { useDevice } from '@/utils/device';
-import { docsLinks, linksTpl } from '@/utils/docsLink';
+import { useDevice } from '@/platform/device';
+import { docsLinks, linksTpl } from '@/lib/i18n/docsLink';
 import {
   OTP_COOLDOWN_SECONDS,
   canShowSendVerificationButton,
@@ -30,7 +30,7 @@ import {
   validateSendVerificationCode,
   validateSubmit,
 } from './authState';
-import type { OAuthProvider } from '../authFlow';
+import type { OAuthProvider } from '@/services/auth';
 import styles from './access.module.scss';
 
 interface AccessProps {

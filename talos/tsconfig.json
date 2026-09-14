@@ -31,9 +31,6 @@
       "@/components/*": [
         "src/component/*"
       ],
-      "@/utils/*": [
-        "src/utils/*"
-      ],
       "@/data/*": [
         "src/data/*"
       ],

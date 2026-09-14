@@ -11,7 +11,7 @@
  * the logic layer reads it to bind handlers via react-hotkeys-hook.
  */
 
-import { isApplePlatform } from '@/utils/platform';
+import { isApplePlatform } from '@/platform/platform';
 import type { KeyChip } from '@/component/shortcut';
 
 // ─── Keyboard modifier helpers ───────────────────────────────

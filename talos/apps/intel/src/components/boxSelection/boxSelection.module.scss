@@ -1,0 +1,26 @@
+@use '@main/styles/palette.scss' as *;
+
+.selectionBox {
+  position: absolute;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border: 1px solid $primary-accent-5;
+  background: rgba($primary-accent-5, 0.2);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease-out;
+  will-change: transform, width, height, opacity;
+
+  &.hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition: none;
+  }
+
+  &.fadeOut {
+    opacity: 0;
+  }
+}

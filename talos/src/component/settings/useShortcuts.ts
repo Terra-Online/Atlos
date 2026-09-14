@@ -16,7 +16,7 @@ import { replacePointProgressFromExternal, useHistoryStore } from '@/store/histo
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecordStore } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
-import { exportMarkerData, importMarkerData } from '@/utils/storage';
+import { exportMarkerData, importMarkerData } from '@/services/markerDataTransfer';
 import L from 'leaflet';
 /** Build a map of id → hotkey string from config (only entries with a hotkey) */
 function hotkeyFor(id: string): string {

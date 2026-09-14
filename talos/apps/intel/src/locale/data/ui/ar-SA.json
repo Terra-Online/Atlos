@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "الأرشيف - {site}",
+    "collecting": "جارٍ الجمع",
+    "collectionComplete": "مكتمل",
+    "collected": "تم جمعه",
+    "uncollected": "لم يُجمع",
+    "search": "البحث في المعلومات",
+    "noResults": "لا توجد معلومات مطابقة",
+    "noResultsHint": "تحقق من كلمات البحث أو عوامل تصفية الفئات",
+    "mapSite": "عرض في OEM",
+    "showDetails": "عرض التفاصيل",
+    "source": "المصدر",
+    "investUnlock": "يُفتح بعد {mission}",
+    "centralUnlock": "يُفتح عبر القصة الرئيسية",
+    "collectionSummary": "تم جمعه: {items}",
+    "nonMapArchives": "سجلات خارج الخريطة",
+    "missionMapInteraction": "تفاعل مع {point} المقابل وأكمله",
+    "pointPuzzle": "لغز {point}",
+    "optionalCondition": "(اختياري)",
+    "shopSystemPurchase": "اشترِ من {shop} في صفحة تطوير منطقة {region}.",
+    "shopNpcPurchase": "اشترِ من {shop} لدى {npc}.",
+    "specialNpcDialog": "{npc} «{dialog}»",
+    "specialAcquisition": "أكمل الحوار واقرأ رسائل Baker ذات الصلة",
+    "method": {
+      "map": "استكشاف",
+      "mission": "مهمة",
+      "auto": "التقدم",
+      "shop": "متجر",
+      "invstgt": "تحقيق"
+    },
+    "label": {
+      "missionSequence": "المهمة",
+      "acquisitionLocation": "الموقع",
+      "npc": "NPC"
+    }
+  }
+}

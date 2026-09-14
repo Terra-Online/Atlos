@@ -1,6 +1,12 @@
 @use '../../../styles/palette.scss' as *;
 @use '../../../styles/curves.scss' as *;
 
+// Hint compositor reuse while Leaflet changes marker position transforms.
+.FrameMarkerIcon,
+.noFrameMarkerIcon {
+    will-change: transform;
+}
+
 /* TODO: more point action include:
    1. next point highlight
    2. checked point indication √
@@ -185,16 +191,16 @@
 
     &[data-tier^="B"] {color: $white-1};
     &[data-tier="B1"]::after {
-        background-color: $secondary-accent-0;
+        background-color: $secondary-accent-3;
     }
     &[data-tier="B2"]::after {
-        background-color: $secondary-accent-1;
+        background-color: $secondary-accent-4;
     }
     &[data-tier="B3"]::after {
-        background-color: $secondary-accent-2;
+        background-color: $secondary-accent-5;
     }
     &[data-tier="B4"]::after {
-        background-color: $secondary-accent-3;
+        background-color: $secondary-accent-6;
     }
 }
 

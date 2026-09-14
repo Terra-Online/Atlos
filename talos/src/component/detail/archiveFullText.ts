@@ -1,7 +1,7 @@
 import { createElement, Fragment } from 'react';
 import type { HTMLReactParserOptions } from 'html-react-parser';
 import { Element } from 'html-react-parser';
-import { getAssetsHostPrefix } from '@/utils/resource';
+import { getAssetsHostPrefix } from '@/services/assets/resource';
 
 export async function parseArchiveJsonResponse(res: Response): Promise<string | null> {
     if (!res.ok) return null;

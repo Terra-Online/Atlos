@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DESKTOPER_BREAKPOINT, DESKTOPEST_BREAKPOINT } from '@/utils/device';
+import { DESKTOPER_BREAKPOINT, DESKTOPEST_BREAKPOINT } from '@/platform/device';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 

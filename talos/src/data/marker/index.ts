@@ -2,6 +2,8 @@ import markerTypeDict from './type.json';
 import markerStats from './stats.json';
 import filesData from '../files.json';
 import { REGION_DICT } from '@/data/map';
+import manualOverrides from './manual/overrides.json';
+import { applyMarkerOverrides } from './overrides.js';
 
 export interface IMarkerData {
     id: string;
@@ -121,7 +123,11 @@ export const loadSubregionMarkers = async (subregionId: string): Promise<IMarker
     if (!Object.prototype.hasOwnProperty.call(loadPromiseMap, subregionId)) {
         loadPromiseMap[subregionId] = loader().then((mod) => {
             const rawMarkers = mod.default || [];
-            const markers = rawMarkers.map((marker) => normalizeMarker(marker, subregionId));
+            const markers = applyMarkerOverrides(
+                rawMarkers.map((marker) => normalizeMarker(marker, subregionId)),
+                manualOverrides,
+                { subregionId },
+            ) as IMarkerData[];
             loadedSubregionMarksMap[subregionId] = markers;
             return markers;
         });

@@ -1,6 +1,6 @@
 import { useEffect, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import { useMarkerStore } from '@/store/marker';
-import { getUGCCommentById, type UGCComment } from '@/utils/ugcClient';
+import { getUGCCommentById, type UGCComment } from '@/services/ugc/client';
 import { flatList, isVisible } from './commentsTree';
 import { mergeCommentContext } from './commentContext';
 

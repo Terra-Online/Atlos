@@ -22,6 +22,7 @@ const shouldSkipSubset =
   || isTruthyFlag(process.env.npm_config_skip_subset_fonts)
   || isTruthyFlag(process.env.SKIP_SUBSET_FONTS);
 const outDir = process.env.BUILD_OUT_DIR || 'dist/r2';
+const authBase = 'https://api.opendfieldmap.org';
 const passthroughArgs = args.filter(
   (arg) => !['--deploy', '--skip-prepare', '--skip-subset', '--skip-subset-fonts'].includes(arg),
 );
@@ -39,6 +40,7 @@ run('pnpm', ['exec', 'vite', 'build', ...passthroughArgs], {
   NODE_ENV: 'production',
   BUILD_TARGET: 'r2',
   BUILD_OUT_DIR: outDir,
+  VITE_AUTH_BASE: authBase,
 });
 
 run('node', ['./scripts/build-seo-pages.mjs'], {

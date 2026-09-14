@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import L from 'leaflet';
 import { useUiPrefsStore } from './uiPrefs';
-import { createConditionalStorage } from '@/utils/storage';
+import { createConditionalStorage } from '@/platform/storage';
 
 interface IViewStateStore {
     viewStates: Record<string, IMapView>;

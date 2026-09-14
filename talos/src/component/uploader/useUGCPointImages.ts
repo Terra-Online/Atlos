@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useMarkerStore } from '@/store/marker';
 import type { IMarkerData } from '@/data/marker';
-import { parseTimestamp } from '@/utils/timeFormat';
+import { parseTimestamp } from '@/lib/format/time';
 import {
     getUGCImageById,
     listUGCImages,
@@ -11,7 +11,7 @@ import {
     type UGCImage,
     type UGCImageActionPatch,
     type UGCSubmissionImage,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 
 const isPendingStatus = (status: UGCSubmissionImage['status'] | UGCImage['status']): boolean => (
     status === 'pending_openai' || status === 'pending_audit'

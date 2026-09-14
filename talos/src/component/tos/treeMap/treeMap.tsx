@@ -1,7 +1,7 @@
 // Fixed TypeScript errors
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
-import { getStorageTreeMapData, TreeMapNode } from '@/utils/storage';
+import { getStorageTreeMapData, type TreeMapNode } from '@/services/storageInspector';
 import styles from './treeMap.module.scss';
 
 type CustomHierarchyRectangularNode = d3.HierarchyRectangularNode<TreeMapNode> & {

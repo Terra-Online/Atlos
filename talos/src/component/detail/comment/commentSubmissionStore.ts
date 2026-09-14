@@ -1,11 +1,11 @@
 import type { IMarkerData } from '@/data/marker';
-import type { SessionUser } from '@/component/login/authTypes';
+import type { SessionUser } from '@/services/auth';
 import {
     invalidateUGCCommentCache,
     submitUGCComment,
     UGCClientError,
     type UGCComment,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 import {
     LOCAL_PENDING_COMMENT_PREFIX,
     appendItem,

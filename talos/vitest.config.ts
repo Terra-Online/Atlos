@@ -9,7 +9,7 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['src/**/*.test.ts'],
+        include: ['src/**/*.test.ts', 'oem-relink/src/**/*.test.ts'],
         setupFiles: ['./vitest.setup.ts'],
     },
 });

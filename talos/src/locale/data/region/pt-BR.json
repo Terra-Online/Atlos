@@ -4,7 +4,7 @@
     "sub": {
       "PL": {
         "name": "Platô de Energia",
-        "short": "PL",
+        "short": "PE",
         "site": {
           "old_dorms": "Alojamentos Antigos",
           "originium_power_plant": "Usina de Energia de Originium",
@@ -21,7 +21,7 @@
       },
       "OL": {
         "name": "Veio de Origin",
-        "short": "OL",
+        "short": "VO",
         "site": {
           "originium_passage": "Passagem de Originium",
           "cradle_of_the_ages": "Berço das Eras",
@@ -41,7 +41,7 @@
       },
       "OP": {
         "name": "Parque Científico de Originium",
-        "short": "OP",
+        "short": "PCO",
         "site": {
           "control_center": "Centro de Controle",
           "route_5": "Rota 5",
@@ -58,7 +58,7 @@
       },
       "AQ": {
         "name": "Pedreira de Aburrey",
-        "short": "AQ",
+        "short": "PA",
         "site": {
           "quarry_entrance": "Entrada da Pedreira",
           "refuse_stockpile": "Pilha de Resíduos",
@@ -74,7 +74,7 @@
       },
       "VP": {
         "name": "Garganta do Vale",
-        "short": "VP",
+        "short": "GV",
         "site": {
           "valley_fort": "Forte do Vale",
           "arsenal": "Arsenal",
@@ -86,7 +86,7 @@
       },
       "HB": {
         "name": "A Base",
-        "short": "HB",
+        "short": "AB",
         "site": {
           "logistics_platform": "Plataforma de Logística",
           "rockhill_passage": "Passagem da Montanha Rochosa",
@@ -116,7 +116,7 @@
     "sub": {
       "WL": {
         "name": "Cidade de Wuling",
-        "short": "WL",
+        "short": "CW",
         "site": {
           "bugui_grove": "Bosque de Bugui",
           "agricultural_test_site": "Local de Teste Agrícola",
@@ -151,7 +151,7 @@
         }
       },
       "JY": {
-        "name": "Jingyu Valley",
+        "name": "Vale de Jingyu",
         "short": "JY",
         "site": {
           "treadway": "Passagem",
@@ -182,7 +182,7 @@
       },
       "TA": {
         "name": "Área de Testes",
-        "short": "TA",
+        "short": "AT",
         "site": {
           "test_area_entrance": "Entrada da Área de Testes",
           "type_c_auxiliary_pillar_area_1": "Área do Pilar Auxiliar Tipo-C 1",
@@ -208,7 +208,7 @@
       },
       "SV": {
         "name": "Vale do Cofre de Espadas",
-        "short": "SV",
+        "short": "CE",
         "site": {
           "leeward_trail": "Trilha de Sotavento",
           "west_gorge_path": "Trilha do Desfiladeiro Oeste",
@@ -265,13 +265,25 @@
           "bureau_arsenal": "Arsenal do Bureau",
           "rust_mound": "Rust Mound"
         }
+      },
+      "SF": {
+        "name": "Floresta Nevada",
+        "short": "FN",
+        "site": {
+          "snowy_trail": "Trilha Nevada",
+          "hoarfrost_woods": "Bosque da Geada",
+          "snowpriestess_cabin": "Cabana da Sacerdotisa da Neve",
+          "hoarfrost_dale": "Vale da Geada",
+          "ritual_shrine": "Santuário do Ritual",
+          "old_resting_point": "Antigo Ponto de Descanso"
+        }
       }
     }
   },
   "DJ": {
     "main": "NMO Dijiang",
     "sub": {
-      "name": "OMV Dijiang",
+      "name": "NMO Dijiang",
       "site": {
         "bridge": "Ponte",
         "reception_room": "Sala da Recepção",

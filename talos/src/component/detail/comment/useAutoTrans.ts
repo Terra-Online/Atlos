@@ -1,7 +1,7 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { useAuthStore } from '@/store/auth';
-import { getTargetLang } from '@/utils/lang';
-import type { UGCComment } from '@/utils/ugcClient';
+import { getTargetLang } from '@/lib/i18n/lang';
+import type { UGCComment } from '@/services/ugc/client';
 import { flatList, isVisible } from './commentsTree';
 import {
     getCommentTranslationKey,

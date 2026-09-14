@@ -4,7 +4,7 @@ import L from 'leaflet';
 import { createRoot, type Root } from 'react-dom/client';
 
 import { MARKER_TYPE_DICT } from '@/data/marker';
-import { getItemIconUrl } from '@/utils/resource';
+import { getItemIconUrl } from '@/services/assets/resource';
 import useRegion from '@/store/region';
 
 import styles from './markTool.module.scss';

@@ -27,6 +27,7 @@
   },
   "markFilter": {
     "title": "Filteralternativ",
+    "archiveHub": "Arkivcentrum",
     "emptyTitle": "Inga filteralternativ matchar.",
     "emptyDesc": "Om du bekräftar att information om en punkt saknas eller är felaktig, vänligen kontakta administratörerna i vår community eller skicka in ett <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Rapportera platsfel'>Ärende (Issue)</a> på vårt GitHub-arkiv."
   },
@@ -364,16 +365,22 @@
     }
   },
   "locator": {
+    "status": {
+      "connecting": "Ansluter till platssynkronisering...",
+      "connected": "Platssynkronisering ansluten."
+    },
     "binding": {
       "title": "Koppla konto",
       "docsLead": "Genom att fortsätta bekräftar du att du godkänner villkoren nedan:",
       "docsLinks": "<a href=\"{tos}\">Användarvillkor</a> · <a href=\"{privacy}\">Integritetspolicy</a> · <a href=\"{data}\">Checklista för datainsamling</a> · <a href=\"{disclaimer}\">Ansvarsfriskrivning</a>",
       "chinaTab": "Kina (Hypergryph)",
       "globalTab": "Global (Gryphline)",
-      "CNStep0": "Gå till <a href='https://endfield.hypergryph.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
-      "UniStep0": "Gå till <a href='https://endfield.gryphline.com' target='_blank' rel='noopener noreferrer'>den officiella webbplatsen</a> och se till att du är inloggad.",
-      "CNStep1": "Öppna <a href='https://web-api.hypergryph.com/account/info/hg' target='_blank' rel='noopener noreferrer'>Hypergryph API-länken</a> och kopiera hela svaret.",
-      "UniStep1": "Öppna <a href='https://web-api.gryphline.com/cookie_store/account_token' target='_blank' rel='noopener noreferrer'>Gryphline API-länken</a> och kopiera hela svaret.",
+      "premise": "Du måste först ha ett <a href=\"{link}\">{provider}</a>-konto för att aktivera den här funktionen.",
+      "Step0": "Gå till <a href=\"{link}\">den officiella webbplatsen</a> och se till att du är inloggad.",
+      "Step1": {
+        "skland": "Öppna <a href=\"{link}\">Hypergryph API-länken</a> och kopiera hela svaret.",
+        "skport": "Öppna <a href=\"{link}\">Gryphline API-länken</a> och kopiera hela svaret."
+      },
       "Step2": "Klistra in hela svaret, läs villkoren och koppla kontot.",
       "changeBinding": "Byt koppling",
       "unlink": "Koppla bort",
@@ -413,6 +420,7 @@
     },
     "errors": {
       "10000": "Plats-synkningen har löpt ut. Koppla igen.",
+      "10002": "Spelinloggningen har löpt ut. Koppla från Endfield och koppla igen.",
       "19001": "Positionen är inte tillgänglig. Logga in i spelet.",
       "19002": "Plats-synk kräver godkännande innan start.",
       "noRole": "Inga Endfield-roller hittades på kontot.",

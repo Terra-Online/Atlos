@@ -5,8 +5,8 @@ import type {
     UGCCommentSubmission,
     UGCCommentVoteValue,
     UGCSubmissionStatus,
-} from '@/utils/ugcClient';
-import type { SessionUser } from '@/component/login/authTypes';
+} from '@/services/ugc/client';
+import type { SessionUser } from '@/services/auth';
 
 const MAX_DEPTH = 2;
 export const LOCAL_PENDING_COMMENT_PREFIX = 'local-comment:';

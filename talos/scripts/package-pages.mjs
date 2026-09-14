@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
 const args = process.argv.slice(2);
+const shouldSkipIntel = args.includes('--skip-intel');
 
 const getArgValue = (name, fallback = '') => {
   const withEq = args.find((arg) => arg.startsWith(`${name}=`));
@@ -105,10 +106,31 @@ const copySeoPointAliases = async () => {
   return files.length;
 };
 
+const copyIntelApp = async () => {
+  const source = path.resolve(distDir, 'intel');
+  if (!(await fs.pathExists(path.resolve(source, 'index.html')))) {
+    throw new Error(`${path.relative(ROOT, source)}/index.html does not exist. Run the Intel R2 build first.`);
+  }
+  await fs.copy(source, path.resolve(outputDir, 'intel'));
+};
+
 const writePagesConfigFiles = async () => {
+  const redirects = shouldSkipIntel
+    ? '/* /index.html 200\n'
+    : '/intel /intel/index.html 200\n/intel/* /intel/index.html 200\n/* /index.html 200\n';
+  const intelHeaders = shouldSkipIntel
+    ? []
+    : [
+        '/intel/index.html',
+        '  Cache-Control: no-cache, no-store, must-revalidate',
+        '',
+        '/intel/assets/*',
+        '  Cache-Control: public, max-age=31536000, immutable',
+        '',
+      ];
   await fs.writeFile(
     path.resolve(outputDir, '_redirects'),
-    '/* /index.html 200\n',
+    redirects,
     'utf8',
   );
 
@@ -121,6 +143,7 @@ const writePagesConfigFiles = async () => {
       '/*.html',
       '  Cache-Control: no-cache, no-store, must-revalidate',
       '',
+      ...intelHeaders,
       '/*/',
       '  Cache-Control: no-cache, no-store, must-revalidate',
       '',
@@ -158,6 +181,7 @@ await fs.emptyDir(outputDir);
 
 const rootCount = await copyRootFiles();
 const pointCount = await copySeoPointAliases();
+if (!shouldSkipIntel) await copyIntelApp();
 await writePagesConfigFiles();
 
 console.log('[package-pages] completed.');
@@ -170,3 +194,4 @@ console.log(`output: ${path.relative(ROOT, outputDir)}`);
 console.log(`dist: ${path.relative(ROOT, distDir)}`);
 console.log(`root files: ${rootCount}`);
 console.log(`seo point pages: ${pointCount}`);
+console.log(`intel: ${shouldSkipIntel ? 'skipped' : 'included'}`);

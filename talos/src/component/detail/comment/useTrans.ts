@@ -4,7 +4,7 @@ import {
     openOemAuthModal,
 } from '@/component/login/authEvents';
 import { getTargetLang } from '@/locale';
-import type { UGCComment } from '@/utils/ugcClient';
+import type { UGCComment } from '@/services/ugc/client';
 import { clearAllTrans, clearTrans, flatList } from './commentsTree';
 import { isSameLangErr } from './commentsUtils';
 import {

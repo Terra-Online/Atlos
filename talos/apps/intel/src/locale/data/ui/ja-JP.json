@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "アーカイブ｜{site}",
+    "collecting": "収集中",
+    "collectionComplete": "収集完了",
+    "collected": "収集済み",
+    "uncollected": "未収集",
+    "search": "アーカイブ名を検索",
+    "noResults": "一致するアーカイブはありません",
+    "noResultsHint": "検索内容またはカテゴリフィルターを確認してください",
+    "mapSite": "地点を表示",
+    "showDetails": "入手詳細を表示",
+    "source": "入手方法",
+    "investUnlock": "調査任務 {mission} を完了すると解放",
+    "centralUnlock": "メインストーリーを進めると解放",
+    "collectionSummary": "今回収集したもの：{items}",
+    "nonMapArchives": "マップ外アーカイブ",
+    "missionMapInteraction": "対応する{point}を調べて完了する",
+    "pointPuzzle": "{point}の謎解き",
+    "optionalCondition": "（任意）",
+    "shopSystemPurchase": "{region}地域開発ページの{shop}で購入。",
+    "shopNpcPurchase": "{npc}の{shop}で購入。",
+    "specialNpcDialog": "{npc}「{dialog}」",
+    "specialAcquisition": "会話を完了し、関連するベイカーメッセージを読む",
+    "method": {
+      "map": "マップ探索",
+      "mission": "任務報酬",
+      "auto": "システム解放",
+      "shop": "ショップ購入",
+      "invstgt": "報告概要"
+    },
+    "label": {
+      "missionSequence": "任務シーケンス",
+      "acquisitionLocation": "入手場所",
+      "npc": "関連NPC"
+    }
+  }
+}

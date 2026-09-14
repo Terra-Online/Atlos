@@ -5,8 +5,8 @@ import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
 import { getAppViewport } from '@/component/scale/pip';
 import PopoverTooltip from '@/component/popover/popover';
-import { useAppViewport } from '@/utils/device';
-import { parseTimestamp } from '@/utils/timeFormat';
+import { useAppViewport } from '@/platform/device';
+import { parseTimestamp } from '@/lib/format/time';
 import {
     listRecordToolUGCImages,
     peekRecordToolUGCImages,

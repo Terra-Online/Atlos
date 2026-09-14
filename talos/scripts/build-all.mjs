@@ -48,16 +48,33 @@ runSync('node', [
   ...(shouldSkipSubset ? ['--skip-subset'] : []),
 ]);
 
-const results = await Promise.all([
-  runAsync('oss', 'node', ['./scripts/build-oss.mjs', '--skip-prepare'], {
-    BUILD_TARGET: 'oss',
-    BUILD_OUT_DIR: 'dist/oss',
-  }),
-  runAsync('r2', 'node', ['./scripts/build-r2.mjs', '--skip-prepare'], {
-    BUILD_TARGET: 'r2',
-    BUILD_OUT_DIR: 'dist/r2',
-  }),
-]);
+runSync('node', ['./scripts/validate-intel-data.mjs']);
+
+const targets = baseEnv.DEPLOY_CHANNEL === 'beta' ? [
+  ['r2', './scripts/build-r2.mjs', 'dist/r2'],
+] : [
+  ['oss', './scripts/build-oss.mjs', 'dist/oss'],
+  ['r2', './scripts/build-r2.mjs', 'dist/r2'],
+];
+
+const mainResults = await Promise.all(targets.map(([label, script, outDir]) =>
+  runAsync(label, 'node', [script, '--skip-prepare'], {
+    BUILD_TARGET: label,
+    BUILD_OUT_DIR: outDir,
+  })));
+
+if (mainResults.some((result) => !result.ok)) {
+  console.log('\n[build:all] main build failed; Intel build skipped.');
+  process.exitCode = 1;
+} else {
+  const intelResults = await Promise.all(targets.map(([label]) =>
+    runAsync(`intel-${label}`, 'pnpm', ['--filter', '@atlos/intel', label === 'r2' ? 'build:r2' : 'build:oss'], {
+      BUILD_TARGET: label,
+    })));
+  mainResults.push(...intelResults);
+}
+
+const results = mainResults;
 
 console.log('\n[build:all] summary');
 for (const result of results) {

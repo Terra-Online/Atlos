@@ -2,6 +2,8 @@
 
 .trackerMarkerIcon {
     background: transparent;
+    contain: layout style;
+    will-change: transform;
 }
 
 .trackerMarkerInner {
@@ -16,9 +18,10 @@
     height: 100%;
     display: block;
     object-fit: contain;
-    transform: rotate(var(--tracker-bearing, 0deg));
+    transform: rotate(0deg);
     transform-origin: center;
     transition: transform 0.18s ease-out;
+    will-change: transform;
     filter: drop-shadow(0 0 3px rgba($black-0, 0.62));
 }
 

@@ -1,20 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
-import parse from 'html-react-parser';
 import Modal, { type ModalProps } from '@/component/modal/modal';
 import { AccessButton } from '@/component/login/access';
+import PopoverTooltip from '@/component/popover/popover';
 import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
-import { docsLinks as makeDocsLinks, linksTpl } from '@/utils/docsLink';
+import { docsLinks as makeDocsLinks, linksTpl } from '@/lib/i18n/docsLink';
 import {
     bindEFRole,
     exchangeEFToken,
     type EFBindingSummary,
     type EFRoleOption,
-} from '@/utils/endfield/backendClient';
-import { readEFTrackerConf } from '@/utils/endfield/config';
-import { setCachedBinding } from '@/utils/backendCache';
+} from '@/services/endfield';
+import { readEFTrackerConf } from '@/services/endfield';
+import { setCachedBinding } from '@/services/cache/backend';
 import profileStyles from '@/component/login/profile/profile.module.scss';
 import BindingIcon from '@/assets/logos/binding.svg?react';
 import {
@@ -29,6 +29,7 @@ import {
 import styles from './Locator.module.scss';
 
 const BIND_COUNTDOWN_SECONDS = 5;
+const SKLAND_DEVICE_VERIFICATION_ERROR = '需要进行设备验证';
 
 interface LocationBindingProps {
     open: boolean;
@@ -63,6 +64,8 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
+    const isSklandDeviceVerificationError = accountMode === 'skland'
+        && errorText === SKLAND_DEVICE_VERIFICATION_ERROR;
 
     const reset = useCallback(() => {
         setError('');
@@ -169,14 +172,38 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         setFlowId('');
     }, []);
 
+    const providerInfo = useMemo(() => ({
+        skland: {
+            link: 'https://www.skland.com',
+            officialLink: 'https://endfield.hypergryph.com',
+            apiLink: 'https://web-api.hypergryph.com/account/info/hg',
+        },
+        skport: {
+            link: 'https://www.skport.com',
+            officialLink: 'https://endfield.gryphline.com',
+            apiLink: 'https://web-api.gryphline.com/cookie_store/account_token',
+        },
+    } as const), []);
+
+    const providerName = accountMode === 'skport'
+        ? 'SKPORT'
+        : locale.toLowerCase().startsWith('zh-cn')
+            ? '\u68ee\u7a7a\u5c9b'
+            : locale.toLowerCase().startsWith('zh-hk')
+                ? '\u68ee\u7a7a\u5cf6'
+                : 'SKLAND';
+    const premiseText = useMemo(() => (
+        t('locator.binding.premise').replace('{provider}', providerName)
+    ), [providerName, t]);
+
     const tabItems: TabViewItem[] = useMemo(() => [
         {
             key: 'skland',
             label: t('locator.binding.chinaTab'),
             description: (
                 <ol className={styles.bindStep}>
-                    <li>{parse(t('locator.binding.CNStep0'))}</li>
-                    <li>{parse(t('locator.binding.CNStep1'))}</li>
+                    <li>{linksTpl(t('locator.binding.Step0'), { link: providerInfo.skland.officialLink })}</li>
+                    <li>{linksTpl(t('locator.binding.Step1.skland'), { link: providerInfo.skland.apiLink })}</li>
                     <li>{t('locator.binding.Step2')}</li>
                 </ol>
             ),
@@ -186,13 +213,13 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
             label: t('locator.binding.globalTab'),
             description: (
                 <ol className={styles.bindStep}>
-                    <li>{parse(t('locator.binding.UniStep0'))}</li>
-                    <li>{parse(t('locator.binding.UniStep1'))}</li>
+                    <li>{linksTpl(t('locator.binding.Step0'), { link: providerInfo.skport.officialLink })}</li>
+                    <li>{linksTpl(t('locator.binding.Step1.skport'), { link: providerInfo.skport.apiLink })}</li>
                     <li>{t('locator.binding.Step2')}</li>
                 </ol>
             ),
         },
-    ], [t]);
+    ], [providerInfo, t]);
 
     const bindLabelTemplate = enableLocatorOnBound
         ? t('locator.binding.bindWithCountdown')
@@ -267,16 +294,40 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                 )}
 
                 <div
-                    className={styles.bindingError}
+                    className={classNames(styles.bindingError, isSklandDeviceVerificationError && styles.bindingErrorRich)}
                     data-removed={isErrorRemoved ? 'true' : 'false'}
-                    data-text={errorText}
+                    data-text={isSklandDeviceVerificationError ? '' : errorText}
                     aria-live="polite"
                 >
-                    {errorText}
+                    {isSklandDeviceVerificationError ? (
+                        <>
+                            <span>{SKLAND_DEVICE_VERIFICATION_ERROR}。</span>
+                            {' '}
+                            <span className={styles.policyReminder}>
+                                <PopoverTooltip
+                                    placement="top"
+                                    gap={8}
+                                    content={(
+                                        <span className={styles.deviceVerificationPopover}>
+                                            注册/登录<span className="keyword">森空岛</span> » 右上角<span className="keyword">设置</span> » 通行证与账号安全 » 账号安全管理 » 设备管理 » 关闭<span className="keyword">新设备登录身份验证</span>
+                                        </span>
+                                    )}
+                                >
+                                    <a
+                                        href="#device-verification-help"
+                                        onClick={(event) => event.preventDefault()}
+                                    >
+                                        如何解决？
+                                    </a>
+                                </PopoverTooltip>
+                            </span>
+                        </>
+                    ) : errorText}
                 </div>
 
                 <div className={styles.bindingFooter}>
                     <div className={styles.policyReminder}>
+                        <span>{linksTpl(premiseText, { link: providerInfo[accountMode].link })}</span>
                         <span>{t('locator.binding.docsLead')}</span>
                         <span>{docsText}</span>
                     </div>

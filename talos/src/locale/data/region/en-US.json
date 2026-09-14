@@ -265,6 +265,18 @@
           "bureau_arsenal": "Bureau Arsenal",
           "rust_mound": "Rust Mound"
         }
+      },
+      "SF": {
+        "name": "Snowy Forest",
+        "short": "SF",
+        "site": {
+          "snowy_trail": "Snowy Trail",
+          "hoarfrost_woods": "Hoarfrost Woods",
+          "snowpriestess_cabin": "Snowpriestess's Cabin",
+          "hoarfrost_dale": "Hoarfrost Dale",
+          "ritual_shrine": "Ritual Shrine",
+          "old_resting_point": "Old Resting Point"
+        }
       }
     }
   },

@@ -1,4 +1,4 @@
-import { useDevice } from '@/utils/device';
+import { useDevice } from '@/platform/device';
 import Desktop from './sideBar.desktop';
 import Mobile from './sideBar.mobile';
 

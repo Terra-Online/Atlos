@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { UGCComment, UGCCommentActionPatch, UGCCommentVoteValue } from '@/utils/ugcClient';
-import { toggleUGCCommentFlag, voteUGCComment } from '@/utils/ugcClient';
+import type { UGCComment, UGCCommentActionPatch, UGCCommentVoteValue } from '@/services/ugc/client';
+import { toggleUGCCommentFlag, voteUGCComment } from '@/services/ugc/client';
 import { applyPatch, voteDelta } from './commentsTree';
 
 type Task<T> = {

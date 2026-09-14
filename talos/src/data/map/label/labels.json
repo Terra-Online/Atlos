@@ -1164,6 +1164,82 @@
             5877.982489980623,
             4918.472950622281
           ]
+        },
+        "WL/SF/snowy_trail": {
+          "id": "WL/SF/snowy_trail",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "snowy_trail",
+          "point": [
+            6972.259690615006,
+            6186.057725484845
+          ]
+        },
+        "WL/SF/hoarfrost_woods": {
+          "id": "WL/SF/hoarfrost_woods",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "hoarfrost_woods",
+          "point": [
+            7217.0054550121895,
+            6042.927314400435
+          ]
+        },
+        "WL/SF/snowpriestess_cabin": {
+          "id": "WL/SF/snowpriestess_cabin",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "snowpriestess_cabin",
+          "point": [
+            7642.638267984592,
+            6072.923457322063
+          ]
+        },
+        "WL/SF/ritual_shrine": {
+          "id": "WL/SF/ritual_shrine",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "ritual_shrine",
+          "point": [
+            7849.39073559951,
+            5638.142448875727
+          ]
+        },
+        "WL/SF/hoarfrost_dale": {
+          "id": "WL/SF/hoarfrost_dale",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "hoarfrost_dale",
+          "point": [
+            8091.723872378592,
+            6606.146755055746
+          ]
+        },
+        "WL/SF": {
+          "id": "WL/SF",
+          "type": "sub",
+          "region": "WL",
+          "sub": "SF",
+          "point": [
+            7812.330138827621,
+            6171.261853319172
+          ]
+        },
+        "WL/SF/old_resting_point": {
+          "id": "WL/SF/old_resting_point",
+          "type": "site",
+          "region": "WL",
+          "sub": "SF",
+          "site": "old_resting_point",
+          "point": [
+            7613.969241830565,
+            7065.688194241853
+          ]
         }
       }
     },

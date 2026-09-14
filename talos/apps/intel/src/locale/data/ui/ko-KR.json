@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "기록｜{site}",
+    "collecting": "수집 중",
+    "collectionComplete": "수집 완료",
+    "collected": "수집됨",
+    "uncollected": "미수집",
+    "search": "기록물 이름 검색",
+    "noResults": "일치하는 기록물이 없습니다",
+    "noResultsHint": "검색어나 카테고리 필터를 확인하세요",
+    "mapSite": "지점 보기",
+    "showDetails": "획득 상세 보기",
+    "source": "획득 방법",
+    "investUnlock": "조사 임무 {mission} 완료 후 자동 해금",
+    "centralUnlock": "메인 스토리를 진행하면 해금",
+    "collectionSummary": "이번 수집: {items}",
+    "nonMapArchives": "지도 외 기록",
+    "missionMapInteraction": "해당 {point}과 상호작용하여 완료",
+    "pointPuzzle": "{point} 퍼즐",
+    "optionalCondition": "(선택)",
+    "shopSystemPurchase": "{region} 지역 개발 페이지의 {shop}에서 구매.",
+    "shopNpcPurchase": "{npc}의 {shop}에서 구매.",
+    "specialNpcDialog": "{npc} 「{dialog}」",
+    "specialAcquisition": "대화를 완료하고 관련 베이커 메시지 읽기",
+    "method": {
+      "map": "지도 탐색",
+      "mission": "임무",
+      "auto": "자동 해금",
+      "shop": "상점",
+      "invstgt": "조사"
+    },
+    "label": {
+      "missionSequence": "임무 순서",
+      "acquisitionLocation": "획득 위치",
+      "npc": "관련 NPC"
+    }
+  }
+}

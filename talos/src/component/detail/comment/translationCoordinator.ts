@@ -3,7 +3,7 @@ import {
     transUGCComments,
     type UGCComment,
     type UGCCommentTrans,
-} from '@/utils/ugcClient';
+} from '@/services/ugc/client';
 
 const ATTEMPT_STORAGE_KEY = 'oem:comment-translation-attempts:v1';
 const MAX_ATTEMPTED_KEYS = 2_000;

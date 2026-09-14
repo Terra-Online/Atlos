@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Arquivo - {site}",
+    "collecting": "Coletando",
+    "collectionComplete": "Concluído",
+    "collected": "Coletado",
+    "uncollected": "Não coletado",
+    "search": "Pesquisar informações",
+    "noResults": "Nenhuma informação correspondente",
+    "noResultsHint": "Confira os termos da pesquisa ou os filtros de categoria",
+    "mapSite": "Mostrar no OEM",
+    "showDetails": "Exibir detalhes",
+    "source": "Fonte",
+    "investUnlock": "Desbloqueia após {mission}",
+    "centralUnlock": "Desbloqueia na história principal",
+    "collectionSummary": "Coletado: {items}",
+    "nonMapArchives": "Arquivos fora do mapa",
+    "missionMapInteraction": "Interaja com o {point} correspondente e conclua-o",
+    "pointPuzzle": "Enigma de {point}",
+    "optionalCondition": "(opcional)",
+    "shopSystemPurchase": "Compre em {shop}, na página de desenvolvimento regional de {region}.",
+    "shopNpcPurchase": "Compre em {shop} com {npc}.",
+    "specialNpcDialog": "{npc} “{dialog}”",
+    "specialAcquisition": "Conclua o diálogo e leia as mensagens relacionadas de Baker",
+    "method": {
+      "map": "Exploração",
+      "mission": "Missão",
+      "auto": "Progresso",
+      "shop": "Loja",
+      "invstgt": "Investigação"
+    },
+    "label": {
+      "missionSequence": "Missão",
+      "acquisitionLocation": "Localização",
+      "npc": "NPC"
+    }
+  }
+}

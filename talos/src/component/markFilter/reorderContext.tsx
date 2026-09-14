@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { DragContext, GetLayout, LayoutRect } from './reorderCore.tsx';
+import { getReorderTargetIndex } from './reorderMath';
 import { useMarkFilterOrder, useSetMarkFilterOrder } from '@/store/uiPrefs';
 
 function moveItem<T>(arr: T[], from: number, to: number) {
@@ -19,8 +20,8 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
   const orderRef = useRef<string[]>(order);
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const dragOriginCenterRef = useRef<number>(0);
   const dragOriginRectRef = useRef<LayoutRect | null>(null);
+  const previousDragYRef = useRef(0);
 
   const register = useCallback((id: string, getLayout: GetLayout) => {
     const m = registryRef.current;
@@ -51,82 +52,51 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
 
   const startDrag = useCallback((id: string) => {
     setDraggingId(id);
-    // capture starting center of the dragged item
+    previousDragYRef.current = 0;
+    // Capture the starting layout rect as the drag reference frame.
     const item = registryRef.current.get(id);
     if (item) {
       const r = item.getLayout();
-      dragOriginCenterRef.current = r.center;
       dragOriginRectRef.current = r;
     } else {
-      dragOriginCenterRef.current = 0;
       dragOriginRectRef.current = null;
     }
   }, []);
 
   const updateDrag = useCallback((id: string, dragY: number) => {
-  if (draggingId !== id) return;
+    if (draggingId !== id) return;
 
-  const registry = registryRef.current;
-  const originRect = dragOriginRectRef.current;
-  if (!originRect) return;
+    const registry = registryRef.current;
+    const originRect = dragOriginRectRef.current;
+    if (!originRect) return;
 
-  setOrder(prev => {
-    const currentIndex = prev.indexOf(id);
-    if (currentIndex === -1) return prev;
+    // Read the current order ref directly. Motion can call this on every
+    // pointer frame; avoiding a state updater on frames that do not cross a
+    // neighbour keeps React out of the hot path.
+    const prev = orderRef.current;
+    // Motion's y value is cumulative from drag start. Keep the original
+    // rect as the only reference frame; resetting it after a reorder would
+    // mix the cumulative offset with a new layout position and stop later
+    // swaps from crossing their neighbours' thresholds.
+    const newIndex = getReorderTargetIndex(
+      prev,
+      id,
+      dragY,
+      previousDragYRef.current,
+      originRect,
+      (targetId) => registry.get(targetId)?.getLayout(),
+    );
+    previousDragYRef.current = dragY;
+    if (newIndex < 0 || newIndex === prev.indexOf(id)) return;
 
-    const currentTop = originRect.top + dragY;
-    const currentBottom = originRect.bottom + dragY;
-
-    let newIndex = currentIndex;
-
-    if (dragY < 0 && currentIndex > 0) {
-      const upperId = prev[currentIndex - 1];
-      const upperItem = registry.get(upperId);
-      if (upperItem) {
-        const upperRect = upperItem.getLayout();
-        if (currentTop <= upperRect.top) {
-          newIndex = currentIndex - 1;
-        }
-      }
-    }
-    else if (dragY > 0 && currentIndex < prev.length - 1) {
-      const lowerId = prev[currentIndex + 1];
-      const lowerItem = registry.get(lowerId);
-      if (lowerItem) {
-        const lowerRect = lowerItem.getLayout();
-        if (currentBottom >= lowerRect.bottom) {
-          newIndex = currentIndex + 1;
-        }
-      }
-    }
-
-    const firstId = prev[0];
-    const firstRect = registry.get(firstId)?.getLayout();
-    const lastId = prev[prev.length - 1];
-    const lastRect = registry.get(lastId)?.getLayout();
-    if (firstRect && currentTop <= firstRect.top) newIndex = 0;
-    if (lastRect && currentBottom >= lastRect.bottom) newIndex = prev.length - 1;
-
-    if (newIndex !== currentIndex) {
-      const nextOrder = moveItem(prev, currentIndex, newIndex);
-
-      const newItem = registry.get(id);
-      if (newItem) {
-        const newRect = newItem.getLayout();
-        dragOriginRectRef.current = newRect;
-        dragOriginCenterRef.current = newRect.center;
-      }
-      orderRef.current = nextOrder;
-      return nextOrder;
-    }
-
-    return prev;
-  });
-}, [draggingId]);
+    const nextOrder = moveItem(prev, prev.indexOf(id), newIndex);
+    orderRef.current = nextOrder;
+    setOrder(nextOrder);
+  }, [draggingId]);
 
   const endDrag = useCallback(() => {
     setDraggingId(null);
-    dragOriginCenterRef.current = 0;
+    previousDragYRef.current = 0;
     dragOriginRectRef.current = null;
     // persist the final order after interaction ends
     setPersistedOrder(orderRef.current);

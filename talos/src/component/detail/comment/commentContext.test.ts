@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mergeCommentContext } from './commentContext';
-import type { UGCComment } from '@/utils/ugcClient';
+import type { UGCComment } from '@/services/ugc/client';
 
 const comment = (id: string, parentId: string | null = null): UGCComment => ({
     id, parentId, markerId: '1', depth: 0, content: id, createdAt: '',

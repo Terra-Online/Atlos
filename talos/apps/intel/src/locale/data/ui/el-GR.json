@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Αρχείο - {site}",
+    "collecting": "Συλλογή",
+    "collectionComplete": "Ολοκληρώθηκε",
+    "collected": "Συλλέχθηκε",
+    "uncollected": "Δεν συλλέχθηκε",
+    "search": "Αναζήτηση πληροφοριών",
+    "noResults": "Δεν βρέθηκαν σχετικές πληροφορίες",
+    "noResultsHint": "Ελέγξτε τους όρους αναζήτησης ή τα φίλτρα κατηγορίας",
+    "mapSite": "Προβολή στο OEM",
+    "showDetails": "Προβολή λεπτομερειών",
+    "source": "Πηγή",
+    "investUnlock": "Ξεκλειδώνει μετά το {mission}",
+    "centralUnlock": "Ξεκλειδώνει μέσω της κύριας ιστορίας",
+    "collectionSummary": "Συλλέχθηκε: {items}",
+    "nonMapArchives": "Αρχεία εκτός χάρτη",
+    "missionMapInteraction": "Αλληλεπιδράστε με το αντίστοιχο {point} και ολοκληρώστε το",
+    "pointPuzzle": "Γρίφος {point}",
+    "optionalCondition": "(προαιρετικό)",
+    "shopSystemPurchase": "Αγοράστε από το {shop} στη σελίδα περιφερειακής ανάπτυξης της περιοχής {region}.",
+    "shopNpcPurchase": "Αγοράστε από το {shop} στον {npc}.",
+    "specialNpcDialog": "{npc} «{dialog}»",
+    "specialAcquisition": "Ολοκληρώστε τον διάλογο και διαβάστε τα σχετικά μηνύματα Baker",
+    "method": {
+      "map": "Εξερεύνηση",
+      "mission": "Αποστολή",
+      "auto": "Πρόοδος",
+      "shop": "Κατάστημα",
+      "invstgt": "Έρευνα"
+    },
+    "label": {
+      "missionSequence": "Αποστολή",
+      "acquisitionLocation": "Τοποθεσία",
+      "npc": "NPC"
+    }
+  }
+}

@@ -8,7 +8,7 @@ import { TabView } from '@/component/tabView';
 import {
     getAnnouncementDebugMode,
     setAnnouncementLastRead,
-} from '@/utils/announcement';
+} from '@/services/announcements/client';
 
 export interface AnnItem {
     id: string;

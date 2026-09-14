@@ -27,7 +27,7 @@ import { GuideSpotlight } from './spotlight/spotlight';
 import { useDesktopGuideSteps } from './procedure/steps.desktop';
 import { useMobileGuideSteps } from './procedure/steps.mobile';
 import { DEFAULT_REGION } from '@/data/map';
-import { useAppViewport, useDevice } from '@/utils/device';
+import { useAppViewport, useDevice } from '@/platform/device';
 import useRegion from '@/store/region';
 
 interface UserGuideProps {

@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor, cleanup } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { UGCComment, UGCCommentContext } from '@/utils/ugcClient';
+import type { UGCComment, UGCCommentContext } from '@/services/ugc/client';
 
 vi.mock('@/store/marker', async () => {
     const { create } = await import('zustand');
@@ -10,9 +10,9 @@ vi.mock('@/store/marker', async () => {
         clearCommentOpenRequest: () => set({ commentOpenRequest: null }),
     })) };
 });
-vi.mock('@/utils/ugcClient', () => ({ getUGCCommentById: vi.fn(), UGCClientError: class extends Error { code = 'COMMENT_NOT_FOUND'; } }));
+vi.mock('@/services/ugc/client', () => ({ getUGCCommentById: vi.fn(), UGCClientError: class extends Error { code = 'COMMENT_NOT_FOUND'; } }));
 import { useMarkerStore } from '@/store/marker';
-import { getUGCCommentById, UGCClientError } from '@/utils/ugcClient';
+import { getUGCCommentById, UGCClientError } from '@/services/ugc/client';
 import { useCommentLink } from './useCommentLink';
 
 const target: UGCComment = { id: 'target', parentId: null, markerId: '1', depth: 0, content: 'hello', createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };

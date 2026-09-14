@@ -45,6 +45,7 @@ export interface LassoContext {
     /** All state CSS class names that should be cleared when resetting to normal */
     stateClassNames: string[];
     getActiveFilterKeys: () => string[];
+    getMarkerVersion?: () => number;
     isSubregionVisible: (subregionId: string) => boolean;
 }
 
@@ -55,6 +56,18 @@ export interface LassoContext {
  * a lasso rectangle and apply / remove the `.selected` CSS class in real time.
  */
 export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
+    const inners = new WeakMap<L.Layer, { root: HTMLElement; inner: HTMLElement }>();
+    let dataVersion = -1;
+    let records: [string, IMarkerData][] = [];
+    const getInner = (layer: L.Layer): HTMLElement | null => {
+        const root = (layer as L.Marker).getElement?.();
+        if (!root) return null;
+        const cached = inners.get(layer);
+        if (cached?.root === root && cached.inner.parentNode === root) return cached.inner;
+        const inner = root.querySelector<HTMLElement>(ctx.innerSelector);
+        if (inner) inners.set(layer, { root, inner });
+        return inner;
+    };
     /** Set of marker IDs currently highlighted by the lasso */
     let currentHighlighted = new Set<string>();
 
@@ -67,9 +80,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const setVisualSelected = (id: string, selected: boolean) => {
         const layer = ctx.markerDict[id];
         if (!layer) return;
-        const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
-        if (!el) return;
-        const inner = el.querySelector(ctx.innerSelector);
+        const inner = getInner(layer);
         if (inner) inner.classList.toggle(ctx.selectedClassName, selected);
     };
 
@@ -77,12 +88,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const resetToNormal = (id: string) => {
         const layer = ctx.markerDict[id];
         if (!layer) return;
-        const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
-        if (!el) return;
-        const inner = el.querySelector(ctx.innerSelector);
-        if (inner) {
-            ctx.stateClassNames.forEach((cls) => inner.classList.remove(cls));
-        }
+        getInner(layer)?.classList.remove(...ctx.stateClassNames);
     };
 
     /** Determine visible markers in bounds, respecting filter + subregion + hidden state */
@@ -91,14 +97,17 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set<string>();
         const result: string[] = [];
-
-        for (const [id, data] of Object.entries(ctx.markerDataDict)) {
+        const version = ctx.getMarkerVersion?.();
+        if (version === undefined || version !== dataVersion) { records = Object.entries(ctx.markerDataDict); dataVersion = version ?? -1; }
+        const south = bounds.getSouth(), north = bounds.getNorth(), west = bounds.getWest(), east = bounds.getEast();
+        const visibleRegions = new Map<string, boolean>();
+        for (const [id, data] of records) {
             if (!activeKeys.has(data.type)) continue;
-            if (!ctx.isSubregionVisible(data.subregId)) continue;
+            let visible = visibleRegions.get(data.subregId);
+            if (visible === undefined) { visible = ctx.isSubregionVisible(data.subregId); visibleRegions.set(data.subregId, visible); }
+            if (!visible) continue;
             if (completedIds.has(id)) continue;
-
-            const latLng = L.latLng(data.pos[0], data.pos[1]);
-            if (bounds.contains(latLng)) result.push(id);
+            if (data.pos[0] >= south && data.pos[0] <= north && data.pos[1] >= west && data.pos[1] <= east) result.push(id);
         }
         return result;
     };
@@ -353,20 +362,18 @@ export function useMapMultiSelect(map: L.Map | undefined) {
 
             if (isDeselect) {
                 // ── Deselect mode — reset ALL state back to normal ──
-                const prevSelected = [...markerState.selectedPoints];
-                const toRemoveSelected = collected.filter((id) => prevSelected.includes(id));
+                const prevSelected = new Set(markerState.selectedPoints);
+                const toRemoveSelected = collected.filter((id) => prevSelected.has(id));
 
-                const activePoints = getActivePoints();
+                const activePoints = new Set(getActivePoints());
                 const toRemoveChecked = collected.filter((id) =>
-                    activePoints.includes(id),
+                    activePoints.has(id),
                 );
 
                 if (toRemoveSelected.length === 0 && toRemoveChecked.length === 0) return;
 
-                toRemoveSelected.forEach((id) => {
-                    markerState.setSelected(id, false);
-                    _lassoSelectedIds.delete(id);
-                });
+                markerState.setSelectedBatch(toRemoveSelected, false);
+                toRemoveSelected.forEach((id) => _lassoSelectedIds.delete(id));
                 commitPointProgress(`Uncollect ${toRemoveChecked.length} markers`, {
                     uncollect: toRemoveChecked,
                 });
@@ -379,10 +386,8 @@ export function useMapMultiSelect(map: L.Map | undefined) {
                     (id) => !prevSelected.has(id) && !checkedIds.has(id),
                 );
 
-                normalIds.forEach((id) => {
-                    markerState.setSelected(id, true);
-                    _lassoSelectedIds.add(id);
-                });
+                markerState.setSelectedBatch(normalIds, true);
+                normalIds.forEach((id) => _lassoSelectedIds.add(id));
 
             }
         };
@@ -444,11 +449,11 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
     if (lassoIds.length === 0) return false;
 
     const markerStore = useMarkerStore.getState();
-    const activePoints = getActivePoints();
+    const activePoints = new Set(getActivePoints());
 
     // Find ids that are lasso-selected but not yet checked
     const unchecked = lassoIds.filter(
-        (id) => !activePoints.includes(id),
+        (id) => !activePoints.has(id),
     );
 
     if (unchecked.length === 0) return false;
@@ -457,9 +462,7 @@ export function batchCheckSelectedPoints(selectedIds: string[]) {
         return false;
     }
 
-    unchecked.forEach((id) => {
-        markerStore.setSelected(id, false);
-    });
+    markerStore.setSelectedBatch(unchecked, false);
 
     // Clear lasso tracking — they are now checked, batch-select lifecycle ends
     lassoIds.forEach((id) => _lassoSelectedIds.delete(id));

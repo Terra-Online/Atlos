@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslateUI } from '@/locale';
-import LOGGER from '@/utils/log';
+import LOGGER from '@/lib/logging/logger';
 import parse from 'html-react-parser';
 import Banner from '@/component/banner/banner';
 import { useAnnouncementFlowReady, useIsAnnouncementOpen, useIsUserGuideOpen } from '@/store/uiPrefs';

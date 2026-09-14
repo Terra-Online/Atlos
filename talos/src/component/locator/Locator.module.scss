@@ -256,6 +256,20 @@ ol.bindStep {
   @include prts.prts-text-effect(flex-end, left, 15%);
 }
 
+.bindingErrorRich {
+    color: var(--auth-text);
+    text-transform: none;
+}
+
+.deviceVerificationPopover {
+    white-space: normal;
+    line-height: 1.35;
+}
+
+.bindingErrorRich .policyReminder {
+    display: inline;
+}
+
 @include prts.prts-text-effect-keyframes;
 
 .bindingFooter {

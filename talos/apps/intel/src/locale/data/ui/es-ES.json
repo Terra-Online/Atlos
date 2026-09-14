@@ -1,0 +1,38 @@
+{
+  "intel": {
+    "pageTitle": "Archivo - {site}",
+    "collecting": "En progreso",
+    "collectionComplete": "Completado",
+    "collected": "Recopilado",
+    "uncollected": "Sin recopilar",
+    "search": "Buscar información",
+    "noResults": "No hay información coincidente",
+    "noResultsHint": "Revisa los términos de búsqueda o los filtros de categoría",
+    "mapSite": "Mostrar en OEM",
+    "showDetails": "Mostrar detalles",
+    "source": "Fuente",
+    "investUnlock": "Se desbloquea tras {mission}",
+    "centralUnlock": "Se desbloquea en la historia principal",
+    "collectionSummary": "Recopilado: {items}",
+    "nonMapArchives": "Archivos fuera del mapa",
+    "missionMapInteraction": "Interactúa con el {point} correspondiente y complétalo",
+    "pointPuzzle": "Acertijo de {point}",
+    "optionalCondition": "(opcional)",
+    "shopSystemPurchase": "Cómpralo en {shop}, en la página de desarrollo regional de {region}.",
+    "shopNpcPurchase": "Cómpralo en {shop} a {npc}.",
+    "specialNpcDialog": "{npc} «{dialog}»",
+    "specialAcquisition": "Completa el diálogo y lee los mensajes relacionados de Baker",
+    "method": {
+      "map": "Exploración",
+      "mission": "Misión",
+      "auto": "Progreso",
+      "shop": "Tienda",
+      "invstgt": "Investigación"
+    },
+    "label": {
+      "missionSequence": "Misión",
+      "acquisitionLocation": "Ubicación",
+      "npc": "PNJ"
+    }
+  }
+}
