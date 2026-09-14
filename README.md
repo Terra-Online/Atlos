@@ -1,4 +1,4 @@
-# Atlos
+# Atlos (Open Endfield Map, Frontend Repo)
 <ruby>
 Atlos (= Atlas)
 <rt>from Talos, an anagram trick</rt>
