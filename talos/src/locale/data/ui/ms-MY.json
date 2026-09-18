@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Selamat datang ke <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini kali pertama anda menggunakan peta ini. Kami akan memberikan anda panduan ringkas untuk membantu anda memahami pelbagai fungsi peta dengan cepat.</p><p>Anda boleh klik butang '<span class=\"keyword\">Langkau</span>' pada bila-bila masa untuk menamatkan panduan, atau mulakan semula melalui butang bantuan di bar atas.",
+    "tip": "Petua Panduan",
+    "welcome": "Selamat datang ke <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini kali pertama anda menggunakan peta ini. Jika anda menghadapi sebarang masalah, sila klik butang <span class=\"keyword\">Bantuan</span> di penjuru kanan sebelah atas. Kami akan menyediakan panduan fungsi yang terperinci.</p>",
     "sidebarToggle": "Klik untuk mengembangkan <span class=\"keyword\">bar sisi</span>.<br>Bar sisi mengandungi penapis penanda yang paling kerap anda gunakan serta suis yang berkait rapat dengan paparan penanda.",
     "search": "Anda boleh mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang disokong oleh permainan</span> dan memilihnya dalam hasil carian.",
     "filterContainer": "Penanda jenis yang sama dikumpulkan dalam satu <span class=\"keyword\">penapis</span>.<br>Klik untuk mengembangkan senarai penanda bagi jenis tersebut.",
@@ -255,7 +256,7 @@
     "pointSelect": "Klik penanda untuk memasuki <span class=\"keyword\">status dipilih</span>. Anda akan dapat melihat maklumat penanda.",
     "pointMark": "Klik penanda sekali lagi untuk menandainya sebagai selesai.",
     "detail": "Anda boleh melihat maklumat khusus tentang penanda yang dipilih, termasuk bilangan penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> semasa, dan <span class=\"keyword\">sub-wilayah</span> semasa.",
-    "pointIcon": "Mengklik ikon penanda juga boleh menandainya sebagai selesai.",
+    "pointIcon": "Mengklik ikon penanda boleh menandainya sebagai selesai.",
     "mobile": {
       "headbar": "Tetapan peta berada di <span class=\"keyword\">bar kanan atas</span>. Ketik ikon kanan atas untuk kembangkan dan lihat lebih banyak pilihan.",
       "locator": "<span class=\"keyword\">Segerak Lokasi</span> berada di penjuru kiri atas.<br>Selepas akaun dipautkan, ketikan pertama akan membuka kapsul dengan pintasan konfigurasi; ketik butang utama sekali lagi ketika terbuka untuk menukar status segerak.",

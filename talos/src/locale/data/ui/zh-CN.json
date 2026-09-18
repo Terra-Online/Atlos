@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您第一次使用本地图，我们将为您提供简短的新手引导，帮助您快速了解地图的各项功能。</p><p>您可以随时点击「<span class=\"keyword\">跳过</span>」按钮结束引导，或在顶栏的帮助按钮中重新启动引导。",
+    "tip": "指引提示",
+    "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您首次使用本地图，若您遇到任何问题，请点击右上角的<span class=\"keyword\">帮助</span>按钮，我们将为您提供详细的功能引导。</p>",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
     "filterContainer": "同类型的点位会归类在同一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
@@ -255,7 +256,7 @@
     "pointSelect": "单击点位，点位进入<span class=\"keyword\">选择状态</span>。您将可以查看点位的信息。",
     "pointMark": "再次单击点位，点位将被标记为完成。",
     "detail": "您可以查看选择点位的具体信息，包括该类型点位在<span class=\"keyword\">所有区域</span>的数量、当前<span class=\"keyword\">主区域</span>以及当前<span class=\"keyword\">子区域</span>的数量。",
-    "pointIcon": "单击点位图标也可以将其标记为完成状态。",
+    "pointIcon": "单击点位图标可以将其标记为完成状态。",
     "mobile": {
       "headbar": "与地图设置有关的开关位于<span class=\"keyword\">右上角的顶栏</span>。点击右上角图标展开查看更多选项。",
       "locator": "<span class=\"keyword\">位置同步</span>入口位于左上角。<br>绑定账号后，点击它会先展开为胶囊按钮，您可以从这里进入位置同步配置；展开后再次点击主按钮才会切换同步状态。",

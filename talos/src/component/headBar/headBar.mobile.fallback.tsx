@@ -49,6 +49,7 @@ const HeadBarMobileFallback: React.FC<HeadBarMobileFallbackProps> = ({ children,
         >
             <div
                 ref={containerRef}
+                data-guide='headbar'
                 className={`${styles.headbarMobile} ${actualExpanded ? styles.expanded : styles.collapsed} ${compact ? styles.visibilityOnly : ''}`}
             >
                 <div className={styles.headbarGrid}>

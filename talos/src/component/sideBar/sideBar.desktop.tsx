@@ -433,10 +433,10 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                 <Drawer
                     side='bottom'
                     initialSize={0}
-                    snap={[0, 150]}
+                    snap={['0rem', '9.375rem']}
                     snapThreshold={[50, 50]}
                     snapToIndex={drawerSnapIndex}
-                    handleSize={28}
+                    handleSize="1.75rem"
                     className={drawerStyles.triggerDrawer}
                     handleClassName={drawerStyles.triggerDrawerHandle}
                     contentClassName={drawerStyles.triggerDrawerContent}

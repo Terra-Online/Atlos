@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>へようこそ。<br>初めてお使いになる方に向けて、マップの主な機能を簡単にご案内します。</p><p>途中で終了するには「<span class=\"keyword\">スキップ</span>」を押してください。トップバーのヘルプから、いつでももう一度確認できます。",
+    "tip": "ガイドのヒント",
+    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>へようこそ。<br>このマップを初めてご利用になる方へ。問題が発生した場合は、右上の<span class=\"keyword\">ヘルプ</span>ボタンをクリックしてください。各機能について詳しくご案内します。</p>",
     "sidebarToggle": "クリックすると<span class=\"keyword\">サイドバー</span>が開きます。<br>よく使うマーカーの絞り込みや、マーカー表示に関する設定がまとまっています。",
     "search": "<span class=\"keyword\">ゲームが対応している言語</span>でマーカーを検索し、検索結果から選択できます。",
     "filterContainer": "同じ種類のマーカーは、1つの<span class=\"keyword\">フィルター</span>にまとめられています。<br>クリックすると、その種類のマーカー一覧が開きます。",
@@ -255,7 +256,7 @@
     "pointSelect": "マーカーをクリックすると<span class=\"keyword\">選択状態</span>になり、詳しい情報が表示されます。",
     "pointMark": "もう一度クリックすると、マーカーを完了済みにできます。",
     "detail": "選択したマーカーの情報と、同じ種類のマーカーが<span class=\"keyword\">全エリア</span>、現在の<span class=\"keyword\">メインエリア</span>、現在の<span class=\"keyword\">サブエリア</span>にそれぞれ何件あるかを確認できます。",
-    "pointIcon": "マーカーのアイコンをクリックして、完了済みにすることもできます。",
+    "pointIcon": "マーカーのアイコンをクリックして、完了済みにできます。",
     "mobile": {
       "headbar": "マップの設定は<span class=\"keyword\">右上のトップバー</span>にあります。右上のアイコンをタップすると、ほかの項目も表示されます。",
       "locator": "<span class=\"keyword\">位置同期</span>は左上にあります。<br>アカウント連携後にタップすると、まず同期設定への入口が表示されます。展開した状態でもう一度メインボタンをタップすると、同期のオン・オフが切り替わります。",

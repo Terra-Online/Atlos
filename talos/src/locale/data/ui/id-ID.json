@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Selamat datang di <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Kami akan memberikan tur panduan singkat untuk membantu Anda memahami berbagai fitur peta dengan cepat.</p><p>Anda dapat mengklik tombol '<span class=\"keyword\">Lewati</span>' kapan saja untuk mengakhiri panduan, atau memulai ulang dari tombol bantuan di bilah atas.",
+    "tip": "Tips Panduan",
+    "welcome": "Selamat datang di <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Jika Anda mengalami masalah, silakan klik tombol <span class=\"keyword\">Bantuan</span> di sudut kanan atas. Kami akan memberikan panduan fitur yang terperinci.</p>",
     "sidebarToggle": "Klik untuk memperluas <span class=\"keyword\">bilah sisi</span>.<br>Bilah sisi mencakup filter penanda yang paling sering Anda gunakan, serta sakelar yang terkait erat dengan tampilan penanda.",
     "search": "Anda dapat mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang didukung oleh game</span> dan memilihnya di hasil pencarian.",
     "filterContainer": "Penanda dengan jenis yang sama dikelompokkan dalam <span class=\"keyword\">filter</span>.<br>Klik untuk memperluas daftar penanda jenis itu.",
@@ -255,7 +256,7 @@
     "pointSelect": "Klik penanda untuk masuk ke <span class=\"keyword\">status terpilih</span>. Anda akan dapat melihat informasi penanda.",
     "pointMark": "Klik penanda lagi untuk menandainya sebagai selesai.",
     "detail": "Anda dapat melihat informasi spesifik tentang penanda yang dipilih, termasuk jumlah penanda jenis ini di <span class=\"keyword\">semua wilayah</span>, <span class=\"keyword\">wilayah utama</span> saat ini, dan <span class=\"keyword\">sub-wilayah</span> saat ini.",
-    "pointIcon": "Mengklik ikon penanda juga dapat menandainya sebagai selesai.",
+    "pointIcon": "Mengklik ikon penanda dapat menandainya sebagai selesai.",
     "mobile": {
       "headbar": "Pengaturan peta ada di <span class=\"keyword\">bilah kanan atas</span>. Ketuk ikon kanan atas untuk membuka dan melihat lebih banyak opsi.",
       "locator": "<span class=\"keyword\">Sinkron Lokasi</span> ada di pojok kiri atas.<br>Setelah akun tertaut, ketuk sekali untuk membuka kapsul berisi pintasan konfigurasi; saat kapsul terbuka, ketuk tombol utama lagi untuk menyalakan atau mematikan sinkronisasi.",

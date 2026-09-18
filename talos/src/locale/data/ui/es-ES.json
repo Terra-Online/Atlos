@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Bienvenido a <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Esta es su primera vez usando este mapa. Le proporcionaremos un breve recorrido guiado para ayudarle a comprender rápidamente las diversas funciones del mapa.</p><p>Puede hacer clic en el botón '<span class=\"keyword\">Saltar</span>' en cualquier momento para finalizar la guía, o reiniciarla desde el botón de ayuda en la barra superior.",
+    "tip": "Consejo de la guía",
+    "welcome": "Te damos la bienvenida a <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Es la primera vez que utilizas este mapa. Si encuentras algún problema, haz clic en el botón <span class=\"keyword\">Ayuda</span> de la esquina superior derecha y te ofreceremos una guía detallada de sus funciones.</p>",
     "sidebarToggle": "Haga clic para expandir la <span class=\"keyword\">barra lateral</span>.<br>La barra lateral incluye sus filtros de marcadores más utilizados, así como interruptores estrechamente relacionados con la visualización de marcadores.",
     "search": "Puede buscar marcadores para ver utilizando <span class=\"keyword\">idiomas admitidos por el juego</span> y seleccionarlos en los resultados de búsqueda.",
     "filterContainer": "Los marcadores del mismo tipo se agrupan en un <span class=\"keyword\">filtro</span>.<br>Haga clic para expandir la lista de marcadores de ese tipo.",
@@ -255,7 +256,7 @@
     "pointSelect": "Haga clic en un marcador para ingresar al <span class=\"keyword\">estado seleccionado</span>. Podrá ver la información del marcador.",
     "pointMark": "Haga clic en el marcador nuevamente para marcarlo como completado.",
     "detail": "Puede ver información específica sobre el marcador seleccionado, incluido el número de marcadores de este tipo en <span class=\"keyword\">todas las regiones</span>, la <span class=\"keyword\">región principal</span> actual y la <span class=\"keyword\">subregión</span> actual.",
-    "pointIcon": "Hacer clic en el icono del marcador también puede marcarlo como completado.",
+    "pointIcon": "Hacer clic en el icono del marcador puede marcarlo como completado.",
     "mobile": {
       "headbar": "Los ajustes del mapa están en la <span class=\"keyword\">barra superior derecha</span>. Toca el icono para desplegar y ver más opciones.",
       "locator": "<span class=\"keyword\">Sincronización de ubicación</span> está en la esquina superior izquierda.<br>Después de vincular la cuenta, al tocarlo se abre primero una cápsula con el acceso a la configuración; toca de nuevo el botón principal mientras está abierta para activar o desactivar la sincronización.",

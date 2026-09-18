@@ -150,7 +150,7 @@ const MobileFrame = ({ children, contentRef, bottomTools, onToggle, visible = tr
         initialSize={snaps[0]}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
-        handleSize={16}
+        handleSize="1rem"
         fullWidth
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}

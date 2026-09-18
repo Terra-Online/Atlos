@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Willkommen bei <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Dies ist Ihre erste Verwendung dieser Karte. Wir bieten Ihnen eine kurze Führung an, um Ihnen zu helfen, die verschiedenen Funktionen der Karte schnell zu verstehen.</p><p>Sie können jederzeit auf die Schaltfläche '<span class=\"keyword\">Überspringen</span>' klicken, um die Anleitung zu beenden, oder sie über die Hilfeschaltfläche in der oberen Leiste neu starten.",
+    "tip": "Hinweis zur Anleitung",
+    "welcome": "Willkommen bei <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Sie verwenden diese Karte zum ersten Mal. Falls Sie auf ein Problem stoßen, klicken Sie bitte oben rechts auf die Schaltfläche <span class=\"keyword\">Hilfe</span>. Dort erhalten Sie eine ausführliche Einführung in die Funktionen.</p>",
     "sidebarToggle": "Klicken Sie, um die <span class=\"keyword\">Seitenleiste</span> zu erweitern.<br>Die Seitenleiste enthält Ihre am häufigsten verwendeten Markierungsfilter sowie Schalter, die eng mit der Markierungsanzeige verbunden sind.",
     "search": "Sie können nach Markierungen suchen, die angezeigt werden sollen, indem Sie <span class=\"keyword\">vom Spiel unterstützte Sprachen</span> verwenden, und diese in den Suchergebnissen auswählen.",
     "filterContainer": "Markierungen desselben Typs sind in einem <span class=\"keyword\">Filter</span> gruppiert.<br>Klicken Sie, um die Liste der Markierungen dieses Typs zu erweitern.",
@@ -255,7 +256,7 @@
     "pointSelect": "Klicken Sie auf eine Markierung, um in den <span class=\"keyword\">ausgewählten Status</span> zu gelangen. Sie können die Informationen der Markierung anzeigen.",
     "pointMark": "Klicken Sie erneut auf die Markierung, um sie als erledigt zu markieren.",
     "detail": "Sie können spezifische Informationen zur ausgewählten Markierung anzeigen, einschließlich der Anzahl der Markierungen dieses Typs in <span class=\"keyword\">allen Regionen</span>, der aktuellen <span class=\"keyword\">Hauptregion</span> und der aktuellen <span class=\"keyword\">Unterregion</span>.",
-    "pointIcon": "Das Klicken auf das Markierungssymbol kann es auch als erledigt markieren.",
+    "pointIcon": "Das Klicken auf das Markierungssymbol kann es als erledigt markieren.",
     "mobile": {
       "headbar": "Die Karteneinstellungen findest du in der <span class=\"keyword\">Kopfleiste oben rechts</span>. Tippe rechts oben auf das Symbol, um mehr Optionen einzublenden.",
       "locator": "<span class=\"keyword\">Positionssync</span> befindet sich oben links.<br>Nach der Kontoverknüpfung öffnet ein Tippen zuerst eine Kapsel mit dem Konfig-Eintrag; tippe im geöffneten Zustand erneut auf die Haupttaste, um die Synchronisierung umzuschalten.",

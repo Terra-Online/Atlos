@@ -12,13 +12,14 @@ import { useLayoutVersion } from '@/store/uiPrefs';
 
 interface MarkBinderProps {
     group: BinderGroup;
+    mobile?: boolean;
 }
 
 type StyleVars = CSSProperties & {
     '--progress-percentage'?: string;
 };
 
-const MarkBinder = ({ group }: MarkBinderProps) => {
+const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
     const tGame = useTranslateGame();
     const filter = useFilter();
     const layoutVersion = useLayoutVersion();
@@ -75,7 +76,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
     }, [renderedTypes, group.types, counts]);
 
     // During search we still render a single matching selector instead of collapsing.
-    const shouldCollapseChildren = searchString === '' && renderedTypes.length <= 1;
+    const shouldCollapseChildren = !mobile && searchString === '' && renderedTypes.length <= 1;
 
     const showFilter = useMemo(() => {
         if (!totalTotal) return false;
@@ -154,7 +155,7 @@ const MarkBinder = ({ group }: MarkBinderProps) => {
             </div>
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
             {!shouldCollapseChildren && (
-                <div className={styles.binderChildren} onClick={(e) => e.stopPropagation()}>
+                <div className={`${styles.binderChildren} ${mobile ? styles.mobileChildren : ''}`} onClick={(e) => e.stopPropagation()}>
                     {sortedRenderedTypes.map((typeInfo, index) => (
                         <motion.div
                             key={typeInfo.key}

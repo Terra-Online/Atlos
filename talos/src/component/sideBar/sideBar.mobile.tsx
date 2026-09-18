@@ -10,6 +10,9 @@ import MarkFilter from '../markFilter/markFilter';
 import filterStyles from '../markFilter/markFilter.module.scss';
 import { MarkFilterDragProvider } from '../markFilter/reorderContext';
 import MarkSelector from '../markSelector/markSelector';
+import MarkBinder from '../markBinder/markBinder';
+import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
+import sidebarStyles from './sideBar.module.scss';
 import Detail from '../detail/detail';
 import SupportModal from '../support/support';
 
@@ -351,7 +354,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         initialSize={snap0}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
-        handleSize={16}
+        handleSize="1rem"
         fullWidth={true}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}
@@ -435,6 +438,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                   .map((subCategory) => {
                     const types: IMarkerType[] = MARKER_TYPE_TREE[subCategory] ?? [];
                     const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                    const binderData = subCategory === 'mob' || subCategory === 'archives'
+                      ? BINDER_GROUPS_BY_SUB[subCategory]
+                      : undefined;
                     return (
                       <MarkFilter
                         idKey={subCategory}
@@ -456,8 +462,22 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                         dataCategory={subCategory}
                         key={subCategory}
                         initialEmpty={emptyCategories.has(subCategory)}
+                        binderMode={Boolean(binderData)}
                       >
-                        {types.map((typeInfo) => (
+                        {binderData ? (
+                          <>
+                            <div className={sidebarStyles.binderSection}>
+                              <div className={sidebarStyles.binderColumn}>
+                                {binderData.groups.map(group => <MarkBinder key={group.id} group={group} mobile />)}
+                              </div>
+                            </div>
+                            {binderData.remaining.length > 0 && (
+                              <div className={sidebarStyles.remainingSection} style={{ gridTemplateColumns: 'var(--mark-filter-columns, repeat(2, minmax(0, 1fr)))' }}>
+                                {binderData.remaining.map(typeInfo => <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />)}
+                              </div>
+                            )}
+                          </>
+                        ) : types.map((typeInfo) => (
                           <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
                         ))}
                       </MarkFilter>

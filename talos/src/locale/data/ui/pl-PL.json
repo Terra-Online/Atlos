@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Witaj w <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>To Twoja pierwsza wizyta na tej mapie. Przeprowadzimy Cię przez krótkie wprowadzenie, aby pomóc szybko zrozumieć jej funkcje.</p><p>W dowolnym momencie możesz kliknąć przycisk „<span class=\"keyword\">Pomiń</span>”, aby zakończyć samouczek, albo uruchomić go ponownie z poziomu przycisku pomocy na górnym pasku.",
+    "tip": "Wskazówka przewodnika",
+    "welcome": "Witaj w <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Korzystasz z tej mapy po raz pierwszy. Jeśli napotkasz problem, kliknij przycisk <span class=\"keyword\">Pomoc</span> w prawym górnym rogu, a otrzymasz szczegółowy przewodnik po funkcjach.</p>",
     "sidebarToggle": "Kliknij, aby rozwinąć <span class=\"keyword\">panel boczny</span>.<br>Panel boczny zawiera najczęściej używane filtry znaczników i przełączniki powiązane z ich wyświetlaniem.",
     "search": "Możesz wyszukiwać znaczniki, używając <span class=\"keyword\">języków obsługiwanych przez grę</span>, a następnie wybierać je w wynikach wyszukiwania.",
     "filterContainer": "Znaczniki tego samego typu są zgrupowane w <span class=\"keyword\">filtrze</span>.<br>Kliknij, aby rozwinąć listę znaczników tego typu.",
@@ -255,7 +256,7 @@
     "pointSelect": "Kliknij znacznik, aby przejść do <span class=\"keyword\">stanu wybrania</span>. Będziesz mógł zobaczyć informacje o znaczniku.",
     "pointMark": "Kliknij znacznik ponownie, aby oznaczyć go jako ukończony.",
     "detail": "Możesz wyświetlić szczegółowe informacje o wybranym znaczniku, w tym liczbę znaczników tego typu we <span class=\"keyword\">wszystkich regionach</span>, w bieżącym <span class=\"keyword\">głównym regionie</span> oraz w bieżącym <span class=\"keyword\">podregionie</span>.",
-    "pointIcon": "Kliknięcie ikony znacznika również oznacza go jako ukończony.",
+    "pointIcon": "Kliknięcie ikony znacznika oznacza go jako ukończony.",
     "mobile": {
       "headbar": "Ustawienia mapy są w <span class=\"keyword\">prawym górnym pasku</span>. Stuknij ikonę w prawym górnym rogu, aby rozwinąć i zobaczyć więcej opcji.",
       "locator": "<span class=\"keyword\">Synchronizacja pozycji</span> znajduje się w lewym górnym rogu.<br>Po powiązaniu konta pierwsze stuknięcie rozwija kapsułę ze skrótem do konfiguracji; stuknij główny przycisk ponownie, gdy jest rozwinięta, aby przełączyć synchronizację.",

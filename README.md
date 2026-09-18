@@ -1,53 +1,61 @@
-# Atlos
+# Atlos (Open Endfield Map, Frontend Repo)
 <ruby>
 Atlos (= Atlas)
 <rt>from Talos, an anagram trick</rt>
-</ruby>is an open-source online map for the 3D RTSRPG game Arknights: Endfield (by Hypergryph). This repository contains the web client (codename “talos”) built with React + Vite, featuring an Endfield-esque UI, multilingual support, and a CDN‑friendly build pipeline.
+</ruby>is an open-source online map for the 3D RTSRPG game Arknights: Endfield. This repository contains the web client (codename <code>talos</code>) built with React + Vite, featuring an Endfield-esque UI, multilingual support, and a CDN‑friendly build pipeline.
 
-PRs are warmly welcome—see [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
+<p align="center">
+<img src="docs/assets/herobanner.webp" width="700" alt="Open Endfield Map">
+</p>
+<p align="center">
+  <a href="https://opendfieldmap.org">Website</a> ·
+  <a href="https://discord.gg/BFMAKZSUG7">Discord</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a>
+</p>
 
 ## Community
 
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/2PMegCX4wJ)
-[![Build](https://img.shields.io/github/actions/workflow/status/Terra-Online/Atlos/build.yml?branch=main&label=build&logo=github)](https://github.com/Terra-Online/Atlos/actions/workflows/build.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/Terra-Online/Atlos/build.yml?branch=main&label=build&logo=github&color=729af1)](https://github.com/Terra-Online/Atlos/actions/workflows/build.yml)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-3262c9.svg)](CONTRIBUTING.md)
+[![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=black")](React)
+<img src="https://img.shields.io/badge/TypeScript-6+-3178C6?logo=typescript&logoColor=white">
+<img src="https://img.shields.io/badge/Vite-7+-3427BC?logo=vite&logoColor=white">
+<img src="https://img.shields.io/badge/SCSS_Modules-CSS_Modules-CC6699?logo=sass&logoColor=white">
+<img src="https://img.shields.io/badge/i18n-22+Languages-FFC428">
 [![License](https://img.shields.io/github/license/Terra-Online/Atlos?label=license)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 Come and chat with us on **Discord**: [https://discord.gg/BFMAKZSUG7](https://discord.gg/BFMAKZSUG7)
 
-## Highlights
-
-- Modern stack: React, TypeScript, Vite, SCSS Modules;
-- Map rendering with Leaflet and custom hooks/components (verb.1, we consider to migrate current structure to Canvaskit in next version);
-- The project is well organized in our JIRA Kanban, consider joining us and take some todos!
-- Clean UI with Figma workflow;
-- Full internationalization (UI/Game), clear fallback rules;
-- CDN/OSS friendly build and publish scripts;
-
 ## Contributing
-
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - environment setup
 - coding standards & linting
 - branch/commit/PR conventions
 - translation workflow
 
-## Repository layout
+<details>
+<summary>Click to see repository layout</summary>
 
 Top-level folders you’ll most likely interact with:
-
+- `docs/` - the documentation files
 - `talos/` – the web app
-	- `src/` – application source
-		- `component/` – UI components (modal, sidebar, language selector, groups modal, etc.)
-    		- `component/map/` – map integration (Leaflet + hooks)
-		- `locale/` – i18n system, UI text resources
-		- `store/` – global UI state (Zustand)
-		- `styles/` – shared SCSS (palette, fonts, globals)
-		- `lib/`, `platform/`, and `services/` – shared helpers, runtime adapters, and domain APIs
-	- `public/` – public static assets
-	- `config/` – build-time config (ignored by Git), see “Build & Deploy”
-	- `scripts/` – helper scripts (e.g. publish to OSS/CDN)
-	- `vite.config.js` – Vite configuration
+  - `src/` – application source
+    - `assets/` - icons and logos
+    - `component/` – UI components
+    - `data/` - Game related data
+    - `locale/` – i18n system, UI text resources
+    - `store/` – global UI state (Zustand)
+    - `styles/` – shared SCSS (palette, fonts, globals)
+    - `lib/`, `platform/`, and `services/` – shared helpers, runtime adapters, and domain APIs
+  - `apps/` - standalone OEM apps separate from the main SPA, each deployed as an independent route (e.g. `oem.re/intel`)
+  - `public/` – public static assets
+  - `config/` – build-time config (ignored by Git), see “Build & Deploy”
+  - `scripts/` – helper scripts (e.g. publish to OSS/CDN)
+  - `oem-relink/` - short link service
+  - `oem-search/` - cloud-based OEM search service
+
+</details>
 
 ## Getting started
 
@@ -55,33 +63,18 @@ Requirements:
 - Node.js 20+
 - pnpm 10+
 
-Install & run (from the `talos` directory):
-
 ```bash
-# 1) Install deps
-pnpm install
-
-# 2) Start dev server
-pnpm dev
-
-# 3) Type check (optional)
-pnpm run type-check
-
-# 4) Build for production
-pnpm build
+cd talos 				# 0) Enter working menu
+pnpm install 			# 1) Install deps
+pnpm dev 				# 2) Start dev server
+pnpm run type-check 	# 3) Type check (optional)
+pnpm build 				# 4) Build for production
 ```
-
-## Internationalization (i18n)
-
-- UI language resources now live under `talos/src/locale/data/ui/`.
-- The app distinguishes between “full support” (UI + in‑game terms) and “UI‑only” languages. When game content is not available, English will be used as a fallback for those parts.
-- To add or improve translations, see the guidance in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Fonts
-- Main latin letters are displayed in Novencento Sans Wide family provided by [Synthview Type Design](https://typography.synthview.com/novecento-sans-font-family.php).
-- Variable font HMSans (weights 100–900) is used alongside region‑specific fonts.
-- Fonts are loaded dynamically using the locale services in `talos/src/locale/fontLoader.ts` and `talos/src/lib/i18n`.
 
 ## License
 
 This project is licensed under the **GNU Affero General Public License v3.0**. See [LICENSE](LICENSE) for the full text.
+
+<p align="center">
+<img src="docs/assets/brand.png" width="300" alt="Powered By Open Endfield Map">
+</p>

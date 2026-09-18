@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Bem-vindo ao <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Esta é sua primeira vez usando este mapa. Forneceremos um breve tour guiado para ajudá-lo a entender rapidamente os diversos recursos do mapa.</p><p>Você pode clicar no botão '<span class=\"keyword\">Pular</span>' a qualquer momento para encerrar o guia, ou reiniciá-lo no botão de ajuda na barra superior.",
+    "tip": "Dica do guia",
+    "welcome": "Boas-vindas ao <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Esta é a primeira vez que você usa este mapa. Se encontrar algum problema, clique no botão <span class=\"keyword\">Ajuda</span> no canto superior direito. Forneceremos um guia detalhado dos recursos.</p>",
     "sidebarToggle": "Clique para expandir a <span class=\"keyword\">barra lateral</span>.<br>A barra lateral inclui seus filtros de marcadores mais usados, bem como interruptores intimamente relacionados à exibição de marcadores.",
     "search": "Você pode pesquisar marcadores para visualizar usando <span class=\"keyword\">idiomas suportados pelo jogo</span> e selecioná-los nos resultados da pesquisa.",
     "filterContainer": "Marcadores do mesmo tipo são agrupados em um <span class=\"keyword\">filtro</span>.<br>Clique para expandir a lista de marcadores desse tipo.",
@@ -255,7 +256,7 @@
     "pointSelect": "Clique em um marcador para entrar no <span class=\"keyword\">status selecionado</span>. Você poderá visualizar as informações do marcador.",
     "pointMark": "Clique no marcador novamente para marcá-lo como concluído.",
     "detail": "Você pode visualizar informações específicas sobre o marcador selecionado, incluindo o número de marcadores desse tipo em <span class=\"keyword\">todas as regiões</span>, a <span class=\"keyword\">região principal</span> atual e a <span class=\"keyword\">sub-região</span> atual.",
-    "pointIcon": "Clicar no ícone do marcador também pode marcá-lo como concluído.",
+    "pointIcon": "Clicar no ícone do marcador pode marcá-lo como concluído.",
     "mobile": {
       "headbar": "As configurações do mapa ficam na <span class=\"keyword\">barra superior direita</span>. Toque no ícone no canto superior direito para expandir e ver mais opções.",
       "locator": "<span class=\"keyword\">Sinc. de Localização</span> fica no canto superior esquerdo.<br>Após vincular a conta, o primeiro toque expande uma cápsula com o atalho de configuração; toque novamente no botão principal enquanto ela estiver aberta para ligar ou desligar a sincronização.",

@@ -16,7 +16,7 @@ const HeadBarDesktopFallback: React.FC<HeadBarDesktopFallbackProps> = ({ childre
                 right: '1rem',
             }}
         >
-            <div className={`${styles.headbar} ${compact ? styles.visibilityOnly : ''}`}>
+            <div data-guide='headbar' className={`${styles.headbar} ${compact ? styles.visibilityOnly : ''}`}>
                 {children}
             </div>
         </div>
