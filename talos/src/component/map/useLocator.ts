@@ -242,6 +242,7 @@ export function useLocator(map: L.Map | undefined): void {
         if (!map) return;
 
         let disposed = false;
+        let pausedForPagehide = false;
         let connectionBannerTimer: number | null = null;
 
         const clearConnectionBannerTimer = () => {
@@ -285,6 +286,17 @@ export function useLocator(map: L.Map | undefined): void {
             }
             socketTicketRef.current = null;
             socketReconnectAttemptRef.current = 0;
+        };
+
+        const onPageHide = () => {
+            pausedForPagehide = true;
+            cleanupPolling();
+        };
+
+        const onPageShow = () => {
+            if (!pausedForPagehide) return;
+            pausedForPagehide = false;
+            setConfigVersion((version) => version + 1);
         };
 
         const pauseForErr = (error: EFBackendError) => {
@@ -670,6 +682,7 @@ export function useLocator(map: L.Map | undefined): void {
 
                 try {
                     const response = await getEFPosition({ includeSocketTicket: true });
+                    if (disposed || !trackerRunningRef.current) return;
                     socketTicketRef.current = response.socketTicket ?? null;
                     applyPositionUpdate(response.data);
                     if (response.data.isOnline === false) {
@@ -681,7 +694,7 @@ export function useLocator(map: L.Map | undefined): void {
                         scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
                     }
                 } catch (error) {
-                    if (disposed) return;
+                    if (disposed || !trackerRunningRef.current) return;
                     if (!(error instanceof EFBackendError)) {
                         disableLocatorSync();
                         return;
@@ -775,14 +788,14 @@ export function useLocator(map: L.Map | undefined): void {
             showConnectionStatus('connecting');
             void getEFPosition({ includeBinding: true, includeSocketTicket: true })
                 .then((response) => {
-                    if (disposed) return;
+                    if (disposed || !trackerRunningRef.current) return;
                     socketTicketRef.current = response.socketTicket ?? null;
                     applyPositionUpdate(response.data);
                     useLocatorStore.getState().setViewMode('tracking');
                     startPositionSocket();
                 })
                 .catch((error: unknown) => {
-                    if (disposed) return;
+                    if (disposed || !trackerRunningRef.current) return;
                     if (error instanceof EFBackendError) {
                         if (onUpstream(error, retryExpiredCredentials)) {
                             return;
@@ -799,10 +812,14 @@ export function useLocator(map: L.Map | undefined): void {
                 });
         };
 
+        window.addEventListener('pagehide', onPageHide);
+        window.addEventListener('pageshow', onPageShow);
         boot();
 
         return () => {
             disposed = true;
+            window.removeEventListener('pagehide', onPageHide);
+            window.removeEventListener('pageshow', onPageShow);
             clearConnectionBannerTimer();
             cleanupAnimation();
             cleanupPolling();
