@@ -1,13 +1,12 @@
 import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import {
     useToggleMarkFilterExpanded,
     useUiPrefsStore,
     useSetMobileDrawerSnapIndex,
-    useSetForceDetailOpen,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
     useSetForceHeadbarExpanded,
@@ -15,11 +14,15 @@ import {
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { applyPointProgressSilently } from '@/store/history';
 import useRegion from '@/store/region';
-import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
+import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
 export type GuideStep = Step & {
     id: string;
+    /** Intro-only step shown to first-time users before the detailed guide. */
+    intro?: boolean;
+    /** Intro tips intentionally omit the step counter and progress indicator. */
+    hideProgress?: boolean;
     onBefore?: () => void | Promise<void>;
     onNext?: () => void | Promise<void>;
     delay?: number;
@@ -30,9 +33,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
     const t = useTranslateUI();
     const toggleMarkFilterExpanded = useToggleMarkFilterExpanded();
     const switchFilter = useSwitchFilter();
-    const setCurrentActivePoint = useMarkerStore((s) => s.setCurrentActivePoint);
     const setDrawerSnapIndex = useSetMobileDrawerSnapIndex();
-    const setForceDetailOpen = useSetForceDetailOpen();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceHeadbarExpanded = useSetForceHeadbarExpanded();
@@ -43,19 +44,6 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         ? targetSubCategory
         : Object.keys(MARKER_TYPE_TREE)[0];
     const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
-
-    const [targetPoint, setTargetPoint] = useState<IMarkerData | undefined>();
-
-    useEffect(() => {
-        let cancelled = false;
-        void loadAllMarkers().then((markers) => {
-            if (cancelled) return;
-            setTargetPoint(markers.find((m) => m.type === firstType));
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [firstType]);
 
     const waitForElement = useCallback((selector: string, timeoutMs = 1200) => {
         return new Promise<Element | null>((resolve) => {
@@ -84,14 +72,21 @@ export const useMobileGuideSteps = (map?: L.Map) => {
     const steps: GuideStep[] = useMemo(() => [
         {
             id: 'MSTEP-0_welcome',
-            target: 'body',
+            target: '[data-guide="help"]',
             content: parse(t('guide.welcome')),
             placement: 'center',
             disableBeacon: true,
+            intro: true,
+            hideProgress: true,
+            onBefore: () => {
+                // The help control is inside the collapsed mobile headbar by default.
+                setForceHeadbarExpanded(true);
+            },
+            onNext: () => setForceHeadbarExpanded(null),
         },
         {
             id: 'MSTEP-1_headbar',
-            target: '[class*="headbar"]',
+            target: '[data-guide="headbar"]',
             content: parse(t('guide.mobile.headbar')),
             placement: 'bottom',
             disableBeacon: true,
@@ -365,47 +360,18 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             },
             delay: 300,
         },
-        {
-            id: 'MSTEP-23_point-select',
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointSelect')),
-            placement: 'top',
-            disableBeacon: true,
-            disableAutoScroll: true,
-            onNext: () => {
-                if (targetPoint) {
-                    setCurrentActivePoint(targetPoint);
-                    setForceDetailOpen(true);
-                }
-            },
-            delay: 300,
-        },
-        {
-            id: 'MSTEP-24_point-check',
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointMark')),
-            placement: 'top',
-            disableBeacon: true,
-            disableAutoScroll: true,
-            onNext: () => {
-                setForceDetailOpen(false);
-            },
-        },
     ], [
         t,
         map,
         toggleMarkFilterExpanded,
         switchFilter,
         setDrawerSnapIndex,
-        setCurrentActivePoint,
-        setForceDetailOpen,
         setForceRegionSubOpen,
         setForceLayerSubOpen,
         setForceHeadbarExpanded,
         setCurrentRegion,
         firstSubCategory,
         firstType,
-        targetPoint,
         scrollTypeIntoView,
     ]);
 

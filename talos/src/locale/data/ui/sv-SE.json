@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Välkommen till <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Detta är första gången du använder denna karta. Vi kommer att ge dig en kort guidad tur för att hjälpa dig att snabbt förstå kartans olika funktioner.</p><p>Du kan klicka på knappen '<span class=\"keyword\">Hoppa över</span>' när som helst för att avsluta guiden, eller starta om den från hjälpknappen i toppmenyn.",
+    "tip": "Guidetips",
+    "welcome": "Välkommen till <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Det här är första gången du använder kartan. Om du stöter på problem kan du klicka på knappen <span class=\"keyword\">Hjälp</span> uppe till höger, så får du en detaljerad guide till funktionerna.</p>",
     "sidebarToggle": "Klicka för att expandera <span class=\"keyword\">sidofältet</span>.<br>Sidofältet innehåller dina mest använda markörfilter och reglage som är nära relaterade till markörvisning.",
     "search": "Du kan söka efter markörer att visa med hjälp av <span class=\"keyword\">språk som stöds av spelet</span> och välja dem i sökresultaten.",
     "filterContainer": "Markörer av samma typ grupperas i ett <span class=\"keyword\">filter</span>.<br>Klicka för att expandera listan över markörer av den typen.",
@@ -255,7 +256,7 @@
     "pointSelect": "Klicka på en markör för att gå in i <span class=\"keyword\">valt läge</span>. Du kommer att kunna se markörens information.",
     "pointMark": "Klicka på markören igen för att markera den som klar.",
     "detail": "Du kan se specifik information om den valda markören, inklusive antalet markörer av denna typ i <span class=\"keyword\">alla regioner</span>, den nuvarande <span class=\"keyword\">huvudregionen</span> och den nuvarande <span class=\"keyword\">underregionen</span>.",
-    "pointIcon": "Att klicka på markörikonen kan också markera den som klar.",
+    "pointIcon": "Att klicka på markörikonen kan markera den som klar.",
     "mobile": {
       "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn i övre högra hörnet</span>. Klicka på ikonen uppe till höger för att expandera och se fler alternativ.",
       "locator": "<span class=\"keyword\">Platssynk</span> finns uppe till vänster.<br>När kontot är länkat öppnar första trycket en kapsel med genväg till inställningarna; tryck på huvudknappen igen medan den är öppen för att slå på eller av synken.",

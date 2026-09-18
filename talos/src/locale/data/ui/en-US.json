@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Welcome to <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>This is your first time using this map. We will provide you with a brief guided tour to help you quickly understand the various features of the map.</p><p>You can click the '<span class=\"keyword\">Skip</span>' button at any time to end the guide, or restart it from the help button in the top bar.",
+    "tip": "Guide Tip",
+    "welcome": "Welcome to <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>This is your first time using this map. If you encounter any problems, please click the <span class=\"keyword\">Help</span> button in the top-right corner, and we will provide you with a detailed guide to its features.</p>",
     "sidebarToggle": "Click to expand the <span class=\"keyword\">sidebar</span>.<br>The sidebar includes your most frequently used marker filters and switches closely related to marker display.",
     "search": "You can search for markers to view using <span class=\"keyword\">languages supported by the game</span> and select them in the search results.",
     "filterContainer": "Markers of the same type are grouped in a <span class=\"keyword\">filter</span>.<br>Click to expand the list of markers of that type.",
@@ -255,7 +256,7 @@
     "pointSelect": "Click a marker to enter <span class=\"keyword\">selected status</span>. You will be able to view the marker's information.",
     "pointMark": "Click the marker again to mark it as complete.",
     "detail": "You can view specific information about the selected marker, including the number of markers of this type in <span class=\"keyword\">all regions</span>, the current <span class=\"keyword\">main region</span>, and the current <span class=\"keyword\">sub-region</span>.",
-    "pointIcon": "Clicking the marker icon can also mark it as complete.",
+    "pointIcon": "Clicking the marker icon can mark it as complete.",
     "mobile": {
       "headbar": "Switches related to map settings are located in the <span class=\"keyword\">top-right corner header bar</span>. Click the top-right icon to expand and see more options.",
       "locator": "<span class=\"keyword\">Location Sync</span> is in the top-left corner.<br>After your account is bound, tapping it first expands a capsule with the tracking config entry; tap the main button again while expanded to toggle sync.",

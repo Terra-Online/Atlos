@@ -20,6 +20,10 @@ import { DEFAULT_REGION } from '@/data/map';
 
 export type GuideStep = Step & {
     id: string;
+    /** Intro-only step shown to first-time users before the detailed guide. */
+    intro?: boolean;
+    /** Intro tips intentionally omit the step counter and progress indicator. */
+    hideProgress?: boolean;
     onBefore?: () => void | Promise<void>;
     onNext?: () => void | Promise<void>;
     delay?: number;
@@ -62,10 +66,12 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
     const steps: GuideStep[] = useMemo(() => [
         {
             id: 'STEP-0_welcome',
-            target: 'body',
+            target: '[data-guide="help"]',
             content: parse(t('guide.welcome')),
             placement: 'center',
             disableBeacon: true,
+            intro: true,
+            hideProgress: true,
         },
         {
             id: 'STEP-1_sidebar-toggle',
@@ -220,7 +226,7 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         },
         {
             id: 'STEP-11_headbar',
-            target: '[class*="headbar"]',
+            target: '[data-guide="headbar"]',
             content: parse(t('guide.headbar')),
             placement: 'bottom',
             disableBeacon: true,
@@ -336,28 +342,11 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             placement: 'right',
             disableBeacon: true,
             disableAutoScroll: true,
-        },
-        {
-            id: 'STEP-24_point-select',
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointSelect')),
-            placement: 'top',
-            disableBeacon: true,
             onNext: () => {
                 if (targetPoint) setCurrentActivePoint(targetPoint);
                 setForceDetailOpen(true);
             },
             delay: 300,
-        },
-        {
-            id: 'STEP-25_point-check',
-            target: '.leaflet-marker-icon',
-            content: parse(t('guide.pointMark')),
-            placement: 'top',
-            disableBeacon: true,
-            onNext: () => {
-                if (targetPoint) applyPointProgressSilently({ collect: [targetPoint.id] });
-            },
         },
         {
             id: 'STEP-26_detail-container',
@@ -382,9 +371,9 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
         toggleMarkFilterExpanded,
         switchFilter,
         setDrawerSnapIndex,
+        setCurrentActivePoint,
         setForceRegionSubOpen,
         setForceLayerSubOpen,
-        setCurrentActivePoint,
         setForceDetailOpen,
         setCurrentRegion,
         map,

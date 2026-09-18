@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Bienvenue sur <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>C'est votre première utilisation de cette carte. Nous vous proposons une brève visite guidée pour vous aider à comprendre rapidement les différentes fonctionnalités de la carte.</p><p>Vous pouvez cliquer sur le bouton '<span class=\"keyword\">Ignorer</span>' à tout moment pour terminer le guide, ou le redémarrer depuis le bouton d'aide dans la barre supérieure.",
+    "tip": "Conseil du guide",
+    "welcome": "Bienvenue sur <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>C'est la première fois que vous utilisez cette carte. Si vous rencontrez un problème, cliquez sur le bouton <span class=\"keyword\">Aide</span> en haut à droite : nous vous proposerons un guide détaillé des fonctionnalités.</p>",
     "sidebarToggle": "Cliquez pour développer la <span class=\"keyword\">barre latérale</span>.<br>La barre latérale comprend vos filtres de marqueurs les plus utilisés, ainsi que des commutateurs étroitement liés à l'affichage des marqueurs.",
     "search": "Vous pouvez rechercher des marqueurs à afficher en utilisant <span class=\"keyword\">les langues prises en charge par le jeu</span> et les sélectionner dans les résultats de recherche.",
     "filterContainer": "Les marqueurs du même type sont regroupés dans un <span class=\"keyword\">filtre</span>.<br>Cliquez pour développer la liste des marqueurs de ce type.",
@@ -255,7 +256,7 @@
     "pointSelect": "Cliquez sur un marqueur pour entrer en <span class=\"keyword\">état sélectionné</span>. Vous pourrez voir les informations du marqueur.",
     "pointMark": "Cliquez à nouveau sur le marqueur pour le marquer comme terminé.",
     "detail": "Vous pouvez voir des informations spécifiques sur le marqueur sélectionné, y compris le nombre de marqueurs de ce type dans <span class=\"keyword\">toutes les régions</span>, la <span class=\"keyword\">région principale</span> actuelle et la <span class=\"keyword\">sous-région</span> actuelle.",
-    "pointIcon": "Cliquer sur l'icône du marqueur peut également le marquer comme terminé.",
+    "pointIcon": "Cliquer sur l'icône du marqueur peut le marquer comme terminé.",
     "mobile": {
       "headbar": "Les réglages de la carte sont dans la <span class=\"keyword\">barre en haut à droite</span>. Touchez l'icône en haut à droite pour dérouler et voir plus d'options.",
       "locator": "<span class=\"keyword\">Synchro position</span> se trouve en haut à gauche.<br>Une fois le compte lié, un premier appui déploie une capsule avec l’accès à la configuration ; appuyez de nouveau sur le bouton principal lorsqu’elle est ouverte pour activer ou couper la synchro.",

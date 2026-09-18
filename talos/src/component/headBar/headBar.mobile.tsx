@@ -78,6 +78,7 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children, forceExpanded =
         >
             <div
                 ref={containerRef}
+                data-guide='headbar'
                 className={`${styles.headbarMobile} ${actualExpanded ? styles.expanded : styles.collapsed} ${compact ? styles.visibilityOnly : ''}`}
             >
                 <div className={styles.headbarGrid}>

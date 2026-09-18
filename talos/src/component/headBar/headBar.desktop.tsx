@@ -38,7 +38,7 @@ const HeadBarDesktop: React.FC<HeadBarDesktopProps> = ({ children, compact = fal
                 transition: 'padding 0.3s ease',
             }}
         >
-            <div className={`${styles.headbar} ${compact ? styles.visibilityOnly : ''}`}>
+            <div data-guide='headbar' className={`${styles.headbar} ${compact ? styles.visibilityOnly : ''}`}>
                 {children}
             </div>
         </LiquidGlass>

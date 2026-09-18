@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "Chào mừng bạn đến với <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Đây là lần đầu tiên bạn sử dụng bản đồ này. Chúng tôi sẽ cung cấp một chặng đường hướng dẫn ngắn gọn để giúp bạn hiểu nhanh các tính năng khác nhau của bản đồ.</p><p>Bạn có thể nhấp vào nút '<span class=\"keyword\">Bỏ qua</span>' bất kỳ lúc nào để kết thúc hướng dẫn, hoặc khởi động lại từ nút trợ giúp trên thanh trên cùng.",
+    "tip": "Mẹo hướng dẫn",
+    "welcome": "Chào mừng bạn đến với <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Đây là lần đầu tiên bạn sử dụng bản đồ này. Nếu gặp bất kỳ vấn đề nào, vui lòng nhấp vào nút <span class=\"keyword\">Trợ giúp</span> ở góc trên bên phải; chúng tôi sẽ cung cấp hướng dẫn chi tiết về các tính năng.</p>",
     "sidebarToggle": "Nhấp để mở rộng <span class=\"keyword\">thanh bên</span>.<br>Thanh bên bao gồm các bộ lọc điểm bạn thường dùng nhất, cũng như các công tắc liên quan chặt chẽ đến hiển thị điểm.",
     "search": "Bạn có thể tìm kiếm các điểm cần xem bằng <span class=\"keyword\">ngôn ngữ được trò chơi hỗ trợ</span> và chọn chúng trong kết quả tìm kiếm.",
     "filterContainer": "Các điểm cùng loại được nhóm trong một <span class=\"keyword\">bộ lọc</span>.<br>Nhấp để mở rộng danh sách điểm thuộc loại đó.",
@@ -255,7 +256,7 @@
     "pointSelect": "Nhấp vào một điểm để vào <span class=\"keyword\">trạng thái đã chọn</span>. Bạn sẽ có thể xem thông tin của điểm.",
     "pointMark": "Nhấp vào điểm một lần nữa để đánh dấu là hoàn thành.",
     "detail": "Bạn có thể xem thông tin cụ thể về điểm đã chọn, bao gồm số lượng điểm loại này trong <span class=\"keyword\">tất cả các khu vực</span>, <span class=\"keyword\">khu vực chính</span> hiện tại và <span class=\"keyword\">khu vực con</span> hiện tại.",
-    "pointIcon": "Nhấp vào biểu tượng điểm cũng có thể đánh dấu nó là hoàn thành.",
+    "pointIcon": "Nhấp vào biểu tượng điểm có thể đánh dấu nó là hoàn thành.",
     "mobile": {
       "headbar": "Cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên bên phải</span>. Chạm vào biểu tượng ở góc trên bên phải để mở rộng và xem thêm tùy chọn.",
       "locator": "<span class=\"keyword\">Đồng bộ vị trí</span> nằm ở góc trên bên trái.<br>Sau khi liên kết tài khoản, chạm một lần sẽ mở một nút dạng capsule có lối vào cấu hình; khi đang mở, chạm lại nút chính để bật hoặc tắt đồng bộ.",

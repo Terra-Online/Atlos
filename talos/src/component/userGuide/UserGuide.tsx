@@ -1,6 +1,6 @@
 import { GuideTooltip } from '@/component/userGuide/tooltip/tooltip';
 import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import { i18nInitPromise } from '@/locale';
 import {
@@ -13,15 +13,10 @@ import {
     useSetMobileDrawerSnapIndex,
 } from '@/store/uiPrefs';
 import {
-    useUserGuideVersion,
-    useSetUserGuideVersion,
-    useUserGuideCompletedVersion,
-    useSetUserGuideCompletedVersion,
     useUserGuideStepCompleted,
     useSetUserGuideStepCompleted,
     useSetUserGuideStepCompletedBulk,
     useReplaceUserGuideStepCompleted,
-    CURRENT_USER_GUIDE_VERSION,
 } from '@/store/userGuide';
 import { GuideSpotlight } from './spotlight/spotlight';
 import { useDesktopGuideSteps } from './procedure/steps.desktop';
@@ -47,10 +42,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setDesktopDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
-    const userGuideVersion = useUserGuideVersion();
-    const setUserGuideVersion = useSetUserGuideVersion();
-    const userGuideCompletedVersion = useUserGuideCompletedVersion();
-    const setUserGuideCompletedVersion = useSetUserGuideCompletedVersion();
     const stepCompleted = useUserGuideStepCompleted();
     const setUserGuideStepCompleted = useSetUserGuideStepCompleted();
     const setUserGuideStepCompletedBulk = useSetUserGuideStepCompletedBulk();
@@ -68,6 +59,10 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const desktopSteps = useDesktopGuideSteps(map);
     const mobileSteps = useMobileGuideSteps(map);
     const steps = isMobile ? mobileSteps : desktopSteps;
+    // The first entry is a lightweight first-time hint. Detailed guidance starts
+    // at the second entry after the user opens the help control.
+    const introStep = steps[0];
+    const detailSteps = steps.slice(1);
     const helpersRef = useRef<StoreHelpers | null>(null);
     const readyNotifiedRef = useRef(false);
 
@@ -97,6 +92,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
 
     // Track transition state to prevent rapid clicks/race conditions
     const isTransitioningRef = useRef(false);
+    const introClosingRef = useRef(false);
 
     // Wait for i18n to be ready before starting guide
     useEffect(() => {
@@ -110,19 +106,20 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
 
     // Controlled step index
     const [stepIndex, setStepIndex] = useState(0);
+    const [showIntro, setShowIntro] = useState(true);
 
     const didAutoOpenRef = useRef(false);
     const wasOpenRef = useRef(false);
     const deviceMatchesInitialGuide = initialGuideDeviceRef.current === (isMobile ? 'mobile' : 'desktop');
 
-    const firstIncompleteIndex = useCallback((): number => {
-        for (let i = 0; i < steps.length; i++) {
-            const id = steps[i]?.id;
+    const firstIncompleteIndex = useCallback((candidateSteps = detailSteps): number => {
+        for (let i = 0; i < candidateSteps.length; i++) {
+            const id = candidateSteps[i]?.id;
             if (!id) continue;
             if (stepCompleted[id] !== true) return i;
         }
         return 0;
-    }, [steps, stepCompleted]);
+    }, [detailSteps, stepCompleted]);
 
     const buildAllStepsCompletionMap = useCallback(
         (completed: boolean): Record<string, boolean> => {
@@ -135,30 +132,10 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
         [steps],
     );
 
-    // Initialize/upgrade guide state.
-    // - On version bump: reset all steps to incomplete and open guide.
-    // - Completion is version-wide, so changing responsive layouts cannot reopen it.
-    // - Otherwise: ensure missing step keys default to incomplete and resume progress.
+    // Initialize guide state without version-based resets. The intro is the only
+    // automatically opened step; detailed guidance is always user-initiated via help.
     useEffect(() => {
         if (!i18nReady || !visible) return;
-
-        if (userGuideVersion !== CURRENT_USER_GUIDE_VERSION) {
-            // Atomic reset to avoid race that can cause STEP-0 to be treated as completed.
-            replaceUserGuideStepCompleted(buildAllStepsCompletionMap(false));
-            setUserGuideVersion(CURRENT_USER_GUIDE_VERSION);
-            setUserGuideCompletedVersion('');
-            didAutoOpenRef.current = true;
-            wasOpenRef.current = true; // Mark as already opened
-            setStepIndex(0);
-            setIsUserGuideOpen(true);
-            notifyReady();
-            return;
-        }
-
-        if (userGuideCompletedVersion === CURRENT_USER_GUIDE_VERSION) {
-            notifyReady();
-            return;
-        }
 
         // Ensure new steps appear as incomplete for existing users.
         const missingUpdates: Record<string, boolean> = {};
@@ -172,25 +149,27 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
         if (!didAutoOpenRef.current && deviceMatchesInitialGuide) {
             didAutoOpenRef.current = true;
             wasOpenRef.current = true; // Mark as already opened to prevent the second effect from resetting stepIndex
-            const resumeIndex = firstIncompleteIndex();
-            setStepIndex(resumeIndex);
-            setIsUserGuideOpen(true);
+            const introPending = introStep ? stepCompleted[introStep.id] !== true : false;
+            if (introPending) {
+                setShowIntro(true);
+                setStepIndex(0);
+                setIsUserGuideOpen(true);
+            } else {
+                setShowIntro(false);
+                setStepIndex(firstIncompleteIndex(detailSteps));
+            }
         }
         notifyReady();
     }, [
         i18nReady,
-        userGuideVersion,
-        userGuideCompletedVersion,
         steps,
         stepCompleted,
         setIsUserGuideOpen,
-        setUserGuideVersion,
-        setUserGuideCompletedVersion,
         setUserGuideStepCompleted,
         setUserGuideStepCompletedBulk,
-        replaceUserGuideStepCompleted,
-        buildAllStepsCompletionMap,
+        introStep,
         firstIncompleteIndex,
+        detailSteps,
         notifyReady,
         deviceMatchesInitialGuide,
         visible,
@@ -209,16 +188,36 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             return;
         }
 
-        // When opening (including via the help button), resume from the first incomplete step.
+        // When opening (including via the help button), show the intro only until
+        // it has been acknowledged; help then resumes the detailed steps.
         if (!wasOpenRef.current) {
             wasOpenRef.current = true;
-            const resumeAt = firstIncompleteIndex();
-            if (stepIndex !== resumeAt) {
+            const introPending = introStep ? stepCompleted[introStep.id] !== true : false;
+            const nextShowIntro = introPending;
+            const resumeAt = nextShowIntro ? 0 : firstIncompleteIndex(detailSteps);
+            // The help click can open Joyride in the same frame as the headbar
+            // event. Remount once layout has settled so Popper measures the
+            // first detailed target instead of the stale intro target.
+            const refreshAfterLayout = () => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => setJoyrideKey((key) => key + 1));
+                });
+            };
+            if (showIntro !== nextShowIntro) {
+                setShowIntro(nextShowIntro);
                 setStepIndex(resumeAt);
+                refreshAfterLayout();
                 return;
             }
+            if (stepIndex !== resumeAt) {
+                setStepIndex(resumeAt);
+                refreshAfterLayout();
+                return;
+            }
+            refreshAfterLayout();
         }
-        const step = steps[stepIndex];
+        const visibleSteps = showIntro && introStep ? [introStep] : detailSteps;
+        const step = visibleSteps[stepIndex];
         if (!step) {
             setCurrentTarget(null);
             return;
@@ -269,18 +268,38 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
         return () => {
             cancelled = true;
         };
-    }, [visible, isUserGuideOpen, stepIndex, steps, firstIncompleteIndex, isElementInViewport]);
+    }, [visible, isUserGuideOpen, stepIndex, showIntro, introStep, detailSteps, stepCompleted, firstIncompleteIndex, isElementInViewport]);
+
+    const activeSteps = useMemo(
+        () => (showIntro && introStep ? [introStep] : detailSteps),
+        [showIntro, introStep, detailSteps],
+    );
 
     const handleJoyrideCallback = useCallback(
         (data: CallBackProps) => {
             const { action, index, type, status } = data;
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
+                // A one-step intro finishes independently of the detailed guide.
+                // Acknowledging it must not mark the full guide as completed.
+                if ((showIntro || introClosingRef.current) && status === STATUS.FINISHED) {
+                    if (introStep?.id) setUserGuideStepCompleted(introStep.id, true);
+                    void introStep?.onNext?.();
+                    introClosingRef.current = false;
+                    setShowIntro(false);
+                    setIsUserGuideOpen(false);
+                    setStepIndex(0);
+                    isTransitioningRef.current = false;
+                    document.body.style.overflow = '';
+                    return;
+                }
+                if (showIntro && status === STATUS.SKIPPED) {
+                    void introStep?.onNext?.();
+                }
                 // FINISHED / SKIPPED: treat as fully completed so it won't auto-run again.
                 // Reset transition state
                 isTransitioningRef.current = false;
                 
-                setUserGuideCompletedVersion(CURRENT_USER_GUIDE_VERSION);
                 replaceUserGuideStepCompleted(buildAllStepsCompletionMap(true));
                 setForceDetailOpen(false);
                 setForceRegionSubOpen(false);
@@ -302,8 +321,19 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     isTransitioningRef.current = true;
 
                     // Mark current step as completed
-                    const currentStep = steps[index];
+                    const currentStep = activeSteps[index];
+                    if (!currentStep) return;
                     setUserGuideStepCompleted(currentStep.id, true);
+
+                    if (currentStep.intro) {
+                        introClosingRef.current = true;
+                        void currentStep.onNext?.();
+                        setShowIntro(false);
+                        setIsUserGuideOpen(false);
+                        setStepIndex(0);
+                        isTransitioningRef.current = false;
+                        return;
+                    }
                     
                     const proceed = () => {
                          if (currentStep.delay) {
@@ -337,7 +367,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     setStepIndex(index - 1);
                 }
             } else if (type === EVENTS.TARGET_NOT_FOUND) {
-                const step = steps[index] as unknown as { id?: string; onBefore?: () => void | Promise<void>; target?: unknown } | undefined;
+                const step = activeSteps[index] as unknown as { id?: string; onBefore?: () => void | Promise<void>; target?: unknown } | undefined;
                 const stepId = step?.id ?? String(index);
                 const prev = targetNotFoundRetriesRef.current[stepId] ?? 0;
                 const next = prev + 1;
@@ -390,7 +420,9 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             }
         },
         [
-            steps,
+            activeSteps,
+            showIntro,
+            introStep,
             isElementInViewport,
             setForceDetailOpen,
             setForceRegionSubOpen,
@@ -398,8 +430,8 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             setDesktopDrawerSnapIndex,
             setMobileDrawerSnapIndex,
             setIsUserGuideOpen,
+            setShowIntro,
             setUserGuideStepCompleted,
-            setUserGuideCompletedVersion,
             replaceUserGuideStepCompleted,
             buildAllStepsCompletionMap,
         ],
@@ -419,7 +451,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             />
             <Joyride
                 key={joyrideKey}
-                steps={steps}
+                steps={activeSteps}
                 run={isUserGuideOpen && i18nReady && visible}
                 stepIndex={stepIndex}
                 continuous={true}

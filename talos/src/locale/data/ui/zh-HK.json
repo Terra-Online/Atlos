@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "歡迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>這是您第一次使用本地圖，我們將為您提供簡短的新手引導，幫助您快速了解地圖的各項功能。</p><p>您可以隨時點擊「<span class=\"keyword\">跳過</span>」按鈕結束引導，或在頂欄的幫助按鈕中重新啟動引導。",
+    "tip": "導引說明",
+    "welcome": "歡迎使用 <span class=\"keyword\">Open Endfield Map</span>。<br>這是阁下首次使用本地圖，若有任何問題，請點擊右上角的<span class=\"keyword\">幫助</span>按鈕，我們將提供詳細的功能引導。</p>",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
     "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位於同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
@@ -255,7 +256,7 @@
     "pointSelect": "單擊點位，點位進入<span class=\"keyword\">選擇狀態</span>。您將可以查看點位的信息。",
     "pointMark": "再次單擊點位，點位將被標記為完成。",
     "detail": "您可以查看選擇點位的具體信息，包括該類型點位在<span class=\"keyword\">所有區域</span>的數量、當前<span class=\"keyword\">主區域</span>以及當前<span class=\"keyword\">子區域</span>的數量。",
-    "pointIcon": "單擊點位圖標也可以將其標記為完成狀態。",
+    "pointIcon": "單擊點位圖標可以將其標記為完成狀態。",
     "mobile": {
       "headbar": "與地圖設定相關的開關位於<span class=\"keyword\">右上角頂欄</span>。點擊右上角圖示展開以查看更多選項。",
       "locator": "<span class=\"keyword\">位置同步</span>入口位於左上角。<br>綁定帳戶後，點擊它會先展開為膠囊按鈕，並顯示同步設定入口；展開後再次點擊主按鈕才會切換同步狀態。",

@@ -227,7 +227,8 @@
     }
   },
   "guide": {
-    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>'e hoş geldiniz.<br>Haritanın özelliklerini hızlıca anlamanıza yardımcı olmak için kısa bir rehberli tur sunacağız.</p><p>Rehberi sonlandırmak için dilediğiniz zaman '<span class=\"keyword\">Geç</span>' düğmesine tıklayabilir veya üst çubuktaki yardım düğmesinden yeniden başlatabilirsiniz.",
+    "tip": "Rehber İpucu",
+    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>'e hoş geldiniz.<br>Bu haritayı ilk kez kullanıyorsunuz. Herhangi bir sorunla karşılaşırsanız sağ üst köşedeki <span class=\"keyword\">Yardım</span> düğmesine tıklayın; size özellikler hakkında ayrıntılı bir rehber sunacağız.</p>",
     "sidebarToggle": "<span class=\"keyword\">Yan çubuğu</span> genişletmek için tıklayın.<br>Yan çubuk, en sık kullandığınız filtreleri ve görüntülemeyle ilgili anahtarları içerir.",
     "search": "Oyunda desteklenen dilleri kullanarak arama yapabilirsiniz.",
     "filterContainer": "Aynı türdeki işaretçiler bir <span class=\"keyword\">filtrede</span> gruplandırılır.",
@@ -255,7 +256,7 @@
     "pointSelect": "İşaretçiyi <span class=\"keyword\">seçmek</span> için üzerine tıklayın.",
     "pointMark": "Tamamlandı olarak işaretlemek için işaretçiye tekrar tıklayın.",
     "detail": "Seçilen işaretçi hakkında daha fazla bilgi görüntüleyebilirsiniz.",
-    "pointIcon": "İşaretçi simgesine tıklamak da onu tamamlandı olarak işaretler.",
+    "pointIcon": "İşaretçi simgesine tıklamak onu tamamlandı olarak işaretler.",
     "mobile": {
       "headbar": "Harita ayarları <span class=\"keyword\">sağ üst köşededir</span>.",
       "locator": "<span class=\"keyword\">Konum Senkronizasyonu</span> sol üst köşededir.",
