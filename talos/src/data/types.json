@@ -746,7 +746,8 @@
             },
             "Woodcraft Slug": {
                 "tier": "Elite",
-                "faction": "Witchcraft Creation"
+                "faction": "Witchcraft Creation",
+                "drop": "Slug Sprig"
             }
         }
     }

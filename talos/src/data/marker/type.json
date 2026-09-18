@@ -1990,7 +1990,8 @@
       "sub": "mob"
     },
     "tier": "Elite",
-    "faction": "Witchcraft Creation"
+    "faction": "Witchcraft Creation",
+    "drop": "Slug Sprig"
   },
   "andong": {
     "key": "andong",
