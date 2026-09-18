@@ -351,7 +351,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         initialSize={snap0}
         snap={snaps}
         snapThreshold={[50, 50, 50]}
-        handleSize={16}
+        handleSize="1rem"
         fullWidth={true}
         className={mobileStyles.mobileDrawer}
         handleClassName={mobileStyles.mobileDrawerHandle}

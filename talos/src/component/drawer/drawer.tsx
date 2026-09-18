@@ -5,6 +5,7 @@ import { createLogger } from './drawer.debug';
 import styles from './drawer.module.scss';
 
 type Side = 'top' | 'bottom' | 'left' | 'right';
+export type DrawerLength = number | `${number}px` | `${number}rem`;
 
 const INTERACTIVE_SELECTOR = 'button, a, input, textarea, select, label, [role="button"], [role="link"], [contenteditable="true"]';
 const FILTER_ICON_SELECTOR = '[class*="filterIcon"]';
@@ -12,10 +13,10 @@ const DRAG_IGNORE_SELECTOR = '[data-drawer-drag-ignore="true"]';
 
 export interface DrawerProps {
 	side?: Side;
-	initialSize?: number;
-	snap?: number[];
+	initialSize?: DrawerLength;
+	snap?: DrawerLength[];
 	snapThreshold?: number | number[];
-	handleSize?: number;
+	handleSize?: DrawerLength;
 	dragDisabled?: boolean;
 	debug?: boolean;
 	onProgressChange?: (progress: number) => void;
@@ -31,6 +32,55 @@ export interface DrawerProps {
 }
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
+
+const getRootRemPx = () => {
+	if (typeof document === 'undefined') return 16;
+	return Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+};
+
+const resolveLength = (value: DrawerLength, remPx: number): number => {
+	if (typeof value === 'number') return value;
+	const match = /^(-?(?:\d+\.?\d*|\.\d+))(px|rem)$/.exec(value.trim());
+	if (!match) return 0;
+	const amount = Number.parseFloat(match[1]);
+	return match[2] === 'rem' ? amount * remPx : amount;
+};
+
+const useRootRemPx = (enabled: boolean) => {
+	const [remPx, setRemPx] = React.useState(getRootRemPx);
+
+	useEffect(() => {
+		if (!enabled) return;
+		const probe = document.createElement('span');
+		probe.setAttribute('aria-hidden', 'true');
+		probe.style.cssText = 'position:absolute;width:1rem;height:1rem;visibility:hidden;pointer-events:none;';
+		document.documentElement.appendChild(probe);
+
+		let frame = 0;
+		const update = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => {
+				setRemPx(probe.getBoundingClientRect().height || 16);
+			});
+		};
+		const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+		observer?.observe(probe);
+		const visualViewport = window.visualViewport;
+		window.addEventListener('resize', update);
+		visualViewport?.addEventListener('resize', update);
+		update();
+
+		return () => {
+			cancelAnimationFrame(frame);
+			observer?.disconnect();
+			window.removeEventListener('resize', update);
+			visualViewport?.removeEventListener('resize', update);
+			probe.remove();
+		};
+	}, [enabled]);
+
+	return remPx;
+};
 
 // Normalize and deduplicate snap points
 const normalizeSnaps = (snap: number[]) => {
@@ -126,11 +176,19 @@ export const Drawer: React.FC<DrawerProps> = ({
 	fullWidth = true,
 	snapToIndex = null,
 }) => {
+	const remPx = useRootRemPx(
+		(typeof initialSize === 'string' && initialSize.endsWith('rem'))
+		|| snap.some((value) => typeof value === 'string' && value.endsWith('rem'))
+		|| (typeof handleSize === 'string' && handleSize.endsWith('rem')),
+	);
 	const logger = useMemo(() => createLogger(debug), [debug]);
 	const renderCount = useRef(0);
 	
 	// Memoize normalized values
-	const snapsNormalized = useMemo(() => normalizeSnaps(snap), [snap]);
+	const snapsNormalized = useMemo(
+		() => normalizeSnaps(snap.map((value) => resolveLength(value, remPx))),
+		[snap, remPx],
+	);
 	const thresholdsPct = useMemo(
 		() => normalizeThreshold(snapThreshold, snapsNormalized.length),
 		[snapThreshold, snapsNormalized.length]
@@ -139,7 +197,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	const minSnap = snapsNormalized[0] ?? 0;
 	const maxSnap = snapsNormalized[snapsNormalized.length - 1] ?? 0;
 	const safeRange = Math.max(1, maxSnap - minSnap);
-	const initSize = clamp(initialSize, minSnap, maxSnap);
+	const initSize = clamp(resolveLength(initialSize, remPx), minSnap, maxSnap);
+	const resolvedHandleSize = resolveLength(handleSize, remPx);
 	
 	// Motion values
 	const size = useMotionValue(initSize);
@@ -154,6 +213,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	const isGestureRejectedRef = useRef(false);
 	const scrollElsRef = useRef<HTMLElement[]>([]);
 	const lastSnapCommandRef = useRef<number | null | undefined>(undefined);
+	const previousSnapsRef = useRef(snapsNormalized);
 	
 	// Debug: track renders
 	logger.logRender(++renderCount.current, { side, initialSize, snapToIndex, handleSize, fullWidth });
@@ -212,14 +272,29 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Imperative snap via prop
 	useEffect(() => {
 		// snapToIndex is an imperative command, not continuously controlled state.
-		// Recalculating snap sizes (for example after a mobile viewport resize) must
-		// not replay an old command and unexpectedly collapse the drawer.
-		if (Object.is(lastSnapCommandRef.current, snapToIndex)) return;
+		// Re-target the active snap when its pixel size changes with browser zoom.
+		const previousSnaps = previousSnapsRef.current;
+		const snapDimensionsChanged = previousSnaps !== snapsNormalized;
+		const idx = snapToIndex == null ? -1 : Math.trunc(snapToIndex);
+		const activeIndex = idx >= 0
+			? idx
+			: previousSnaps.reduce((best, value, index) => (
+				Math.abs(value - size.get()) < Math.abs(previousSnaps[best] - size.get()) ? index : best
+			), 0);
+		const previousTarget = previousSnaps[activeIndex];
+		const preservingActiveSnap = snapDimensionsChanged
+			&& previousTarget != null
+			&& Math.abs(size.get() - previousTarget) <= 0.5;
+
+		if (Object.is(lastSnapCommandRef.current, snapToIndex) && !preservingActiveSnap) {
+			previousSnapsRef.current = snapsNormalized;
+			return;
+		}
 		lastSnapCommandRef.current = snapToIndex;
-		if (snapToIndex == null) return;
+		previousSnapsRef.current = snapsNormalized;
 		if (isDraggingRef.current) return;
-		const idx = Math.trunc(snapToIndex);
-		const target = snapsNormalized[idx];
+		if (snapToIndex == null && !preservingActiveSnap) return;
+		const target = snapsNormalized[idx >= 0 ? idx : activeIndex];
 		if (target == null || Math.abs(size.get() - target) <= 0.5) return;
 		animate(size, target, { duration: 0.25 });
 	}, [snapToIndex, snapsNormalized, size]);
@@ -227,7 +302,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Container positioning
 	const containerStyle = useMemo<React.CSSProperties>(() => {
 		const common = {
-			'--handle-size': `${handleSize}px`,
+			'--handle-size': `${resolvedHandleSize}px`,
 			'--drawer-size': `${initSize}px`,
 			'--drawer-progress': `${(initSize - minSnap) / safeRange}`,
 		} as React.CSSProperties;
@@ -240,7 +315,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		};
 		
 		return { ...common, ...posMap[side] };
-	}, [handleSize, initSize, minSnap, safeRange, side, fullWidth]);
+	}, [resolvedHandleSize, initSize, minSnap, safeRange, side, fullWidth]);
 	
 	// Gesture handler
 	const axis: 'x' | 'y' = side === 'left' || side === 'right' ? 'x' : 'y';
