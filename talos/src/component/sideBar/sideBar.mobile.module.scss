@@ -26,6 +26,9 @@
         gap: 0.5rem;
         padding: 0;
         > .filters {
+            --mark-filter-columns: repeat(2, minmax(0, 1fr));
+            container-type: inline-size;
+            container-name: mobile-filters;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -423,5 +426,11 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
     transform: translateY(3rem);
     &.visible {
         transform: translateY(0);
+    }
+}
+
+@container mobile-filters (min-width: 25rem) {
+    .filters > [data-category] {
+        --mark-filter-columns: repeat(3, minmax(0, 1fr));
     }
 }

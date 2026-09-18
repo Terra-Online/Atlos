@@ -169,7 +169,7 @@ const MarkFilter = ({
     const scale = isDragging && !isSelfDragging ? 0.98 : 1;
     const contentColumnsStyle = binderMode
         ? undefined
-        : { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
+        : { gridTemplateColumns: `var(--mark-filter-columns, repeat(${columns}, minmax(0, 1fr)))` };
     const containerClassName = [
         styles.markFilterContainer,
         variant ? styles[variant] : '',
