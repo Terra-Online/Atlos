@@ -6,12 +6,19 @@ import { getTileResourceUrl } from '@/services/assets/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/component/map/boundary';
-import type { LayerType } from '@/store/layer';
+import { useLayerStore, type LayerType } from '@/store/layer';
+import { getRegionTileCoverage } from '@/services/map/tileCoverage';
 import { enableSmoothWheelZoom } from './smoothWheelZoom';
 import { SmoothTileLayer } from './smoothTileLayer';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
+}
+
+interface RegionSwitchWaiter {
+    regionId: string;
+    resolve: (applied: boolean) => void;
+    reject: (error: unknown) => void;
 }
 
 // Helper to convert layer type to tile suffix
@@ -53,8 +60,10 @@ export class MapCore {
     private currentLayer: LayerType = 'M';
 
     private transforming = false;
-    private switchingRegionId: string | null = null;
+    private requestedRegionId: string | null = null;
     private switchRegionPromise: Promise<void> | null = null;
+    private regionWaiters: RegionSwitchWaiter[] = [];
+    private layerRequestId = 0;
 
     constructor(ele: HTMLDivElement, options?: IMapOptions) {
         this.map = L.map(ele, {
@@ -100,27 +109,86 @@ export class MapCore {
         });
     }
 
-    async switchRegion(regionId: string): Promise<void> {
-        if (this.switchRegionPromise) {
-            if (this.switchingRegionId === regionId) {
-                return this.switchRegionPromise;
-            }
-            await this.switchRegionPromise;
+    switchRegion(regionId: string): Promise<boolean> {
+        if (!REGION_DICT[regionId]) {
+            return Promise.reject(new Error(`Region config not found for: ${regionId}`));
+        }
+        if (this.currentRegionId === regionId && !this.switchRegionPromise) {
+            return Promise.resolve(true);
         }
 
-        if (this.currentRegionId === regionId) return;
+        this.requestedRegionId = regionId;
+        const result = new Promise<boolean>((resolve, reject) => {
+            this.regionWaiters.push({ regionId, resolve, reject });
+        });
 
-        const promise = this.performSwitchRegion(regionId);
-        this.switchingRegionId = regionId;
-        this.switchRegionPromise = promise;
-
-        try {
-            await promise;
-        } finally {
-            if (this.switchRegionPromise === promise) {
+        if (!this.switchRegionPromise) {
+            this.switchRegionPromise = this.processRegionSwitches().finally(() => {
                 this.switchRegionPromise = null;
-                this.switchingRegionId = null;
+            });
+        }
+
+        return result;
+    }
+
+    private settleRegionWaiters(
+        regionId: string,
+        applied: boolean,
+        error?: unknown,
+    ) {
+        const remaining: RegionSwitchWaiter[] = [];
+        for (const waiter of this.regionWaiters) {
+            if (waiter.regionId !== regionId) {
+                remaining.push(waiter);
+            } else if (error !== undefined) {
+                waiter.reject(error);
+            } else {
+                waiter.resolve(applied);
             }
+        }
+        this.regionWaiters = remaining;
+    }
+
+    private settleSupersededRegionWaiters(currentRegionId: string) {
+        const supersededRegionIds = new Set(
+            this.regionWaiters
+                .map((waiter) => waiter.regionId)
+                .filter((regionId) => regionId !== currentRegionId),
+        );
+        supersededRegionIds.forEach((regionId) => {
+            this.settleRegionWaiters(regionId, false);
+        });
+    }
+
+    private async processRegionSwitches(): Promise<void> {
+        while (this.requestedRegionId) {
+            const regionId = this.requestedRegionId;
+            this.requestedRegionId = null;
+
+            try {
+                await this.performSwitchRegion(regionId);
+            } catch (error) {
+                this.settleRegionWaiters(regionId, false, error);
+                if (this.requestedRegionId) {
+                    this.settleSupersededRegionWaiters(this.requestedRegionId);
+                }
+                continue;
+            }
+
+            const nextRegionId = this.requestedRegionId;
+            if (nextRegionId && nextRegionId !== regionId) {
+                this.settleRegionWaiters(regionId, false);
+                this.settleSupersededRegionWaiters(nextRegionId);
+                continue;
+            }
+
+            if (nextRegionId === regionId) {
+                this.requestedRegionId = null;
+            }
+            this.settleSupersededRegionWaiters(regionId);
+            this.applyStoredLayer(regionId);
+            this.map.fire('talos:regionSwitched', { regionId });
+            this.settleRegionWaiters(regionId, true);
         }
     }
 
@@ -131,10 +199,8 @@ export class MapCore {
 
         const config = REGION_DICT[regionId];
 
-        // fallback for missing region config
-        if (!config) {
-            throw new Error(`Region config not found for: ${regionId}`);
-        }
+        // switchRegion validates this before queuing the operation.
+        if (!config) throw new Error(`Region config not found for: ${regionId}`);
 
         if (config.maxZoom === undefined) {
             throw new Error(
@@ -212,6 +278,7 @@ export class MapCore {
         // set map bounds to restrict panning
         this.map.setMaxBounds(mapBounds);
 
+        const coverage = getRegionTileCoverage(regionId);
         const tileLayer = new SmoothTileLayer(
             getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`),
             {
@@ -228,6 +295,7 @@ export class MapCore {
                 errorTileUrl:
                     'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
             },
+            coverage,
         ).addTo(this.map);
 
         // Store main tile layer reference
@@ -247,31 +315,9 @@ export class MapCore {
         //     interactive: false,
         // }).addTo(this.map);
 
-        const markerReady = this.markerLayer.changeRegion(regionId);
-
-        // Resolve when base tiles finish initial load to signal readiness
-        await Promise.all([
-            markerReady,
-            new Promise<void>((resolve) => {
-                // If the layer is already loaded (from cache), resolve on next tick
-                let resolved = false;
-                const done = () => {
-                    if (resolved) return;
-                    resolved = true;
-                    tileLayer.off('load', done);
-                    resolve();
-                };
-                tileLayer.once('load', done);
-                // Fallback: if no tiles are needed, Leaflet may not fire 'load';
-                // use a microtask to resolve quickly without arbitrary timeout
-                void Promise.resolve().then(done);
-            }),
-        ]);
-
-        // Notify external layers/tools that region switch finished.
-        // MapCore clears all layers at the start of switchRegion, so any custom overlays
-        // must re-attach after this point.
-        this.map.fire('talos:regionSwitched', { regionId });
+        // A region is ready when its map state and marker data are committed. Tile
+        // image downloads continue independently and expose Leaflet's loading events.
+        await this.markerLayer.changeRegion(regionId);
     }
     setMapView(view: IMapView) {
         if (this.transforming) return;
@@ -302,7 +348,23 @@ export class MapCore {
         this.markerLayer.disableClustering();
     }
 
-    async switchLayer(layer: LayerType): Promise<void> {
+    private applyStoredLayer(regionId: string) {
+        const configuredLayer = useLayerStore.getState().currentLayer;
+        const targetLayer = this.getAvailableLayer(regionId, configuredLayer);
+        if (targetLayer !== configuredLayer) {
+            useLayerStore.getState().setCurrentLayer(targetLayer);
+        }
+        this.applyLayer(targetLayer);
+    }
+
+    private getAvailableLayer(regionId: string, layer: LayerType): LayerType {
+        const availableLayers = REGION_DICT[regionId]?.layers as
+            | LayerType[]
+            | undefined;
+        return layer === 'M' || availableLayers?.includes(layer) ? layer : 'M';
+    }
+
+    private applyLayer(layer: LayerType) {
         if (this.currentLayer === layer) return;
 
         const config = REGION_DICT[this.currentRegionId];
@@ -357,25 +419,25 @@ export class MapCore {
                         errorTileUrl:
                             'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
                     },
+                    getRegionTileCoverage(this.currentRegionId),
+                    suffix,
                 ).addTo(this.map);
-
-                // Wait for layer tiles to load
-                await new Promise<void>((resolve) => {
-                    let resolved = false;
-                    const done = () => {
-                        if (resolved) return;
-                        resolved = true;
-                        this.layerTileLayer?.off('load', done);
-                        resolve();
-                    };
-                    this.layerTileLayer?.once('load', done);
-                    void Promise.resolve().then(done);
-                });
             }
         }
 
         this.currentLayer = layer;
         this.markerLayer.updateLayerTier(layer);
         this.map.fire('talos:layerSwitched', { layer });
+    }
+
+    async switchLayer(layer: LayerType): Promise<void> {
+        const requestId = ++this.layerRequestId;
+        await this.switchRegionPromise;
+        if (requestId !== this.layerRequestId) return;
+        const targetLayer = this.getAvailableLayer(this.currentRegionId, layer);
+        if (targetLayer !== layer) {
+            useLayerStore.getState().setCurrentLayer(targetLayer);
+        }
+        this.applyLayer(targetLayer);
     }
 }

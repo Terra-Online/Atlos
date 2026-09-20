@@ -66,7 +66,8 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
 
     const mapCore = mapCoreRef;
 
-    await mapCore.switchRegion(target.regionKey);
+    const regionApplied = await mapCore.switchRegion(target.regionKey);
+    if (regionApplied === false) return;
 
     if (target.subregionKey) {
         useRegion.getState().setCurrentSubregion(target.subregionKey);

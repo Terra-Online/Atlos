@@ -109,7 +109,8 @@ export function useMap(ele: HTMLDivElement | null) {
             const mapCore = mapRef.current;
             if (targetRegionKey !== currentRegion && mapCore) {
                 // 直接切换地图区域并等待底图加载完成，避免使用任意超时
-                await mapCore.switchRegion(targetRegionKey);
+                const regionApplied = await mapCore.switchRegion(targetRegionKey);
+                if (regionApplied === false) return;
                 // 同步更新 store 状态（不会重复切换，下面的 effect 有去重）
                 setCurrentRegion(targetRegionKey);
             }

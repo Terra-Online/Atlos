@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "pnpm run build:tile-coverage",
     "dev": "vite --mode dev",
     "dev:intel": "node ./scripts/dev-intel.mjs",
     "subset:fonts": "python3 ./scripts/subset-fonts.py",
@@ -25,6 +26,8 @@
     "test": "vitest run",
     "build:prepare": "node ./scripts/build-prepare.mjs",
     "build:marker-stats": "node ./scripts/build-marker-stats.mjs",
+    "build:tile-coverage": "node ./scripts/generate-tile-coverage.mjs",
+    "check:tile-coverage": "node ./scripts/generate-tile-coverage.mjs --check",
     "build:marker-diff": "node ./scripts/build-marker-version-new.mjs",
     "build:search-index": "node ./scripts/build-search-index.mjs",
     "build:seo": "node ./scripts/build-seo-pages.mjs",

@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 
-const TILE_FILE_RE = /^(\d+)_(\d+)(_[a-z0-9]+)?\.webp$/i;
+const TILE_FILE_RE = /^(-?\d+)_(-?\d+)(_[a-z0-9]+)?\.webp$/i;
 
 const normalizePath = (input) => input.replace(/\\/g, '/');
 
@@ -15,6 +15,14 @@ const walkFiles = async (dir, baseDir, collector) => {
     }
     collector.push(normalizePath(path.relative(baseDir, fullPath)));
   }
+};
+
+export const collectClipFiles = async (clipsDir) => {
+  const rawClipFiles = [];
+  await walkFiles(clipsDir, clipsDir, rawClipFiles);
+  return rawClipFiles
+    .filter((relativePath) => !relativePath.startsWith('_index/'))
+    .sort((a, b) => a.localeCompare(b));
 };
 
 const toRanges = (values) => {
@@ -72,6 +80,15 @@ const compressRegionCoverage = (regionCoverage) => {
   return compressedZooms;
 };
 
+export const buildCompressedTileCoverage = (clipFiles) => {
+  const rawCoverage = collectTileData(clipFiles);
+  return Object.fromEntries(
+    Object.keys(rawCoverage)
+      .sort((a, b) => a.localeCompare(b))
+      .map((region) => [region, compressRegionCoverage(rawCoverage[region])]),
+  );
+};
+
 const collectTileData = (clipFiles) => {
   const regionCoverage = {};
 
@@ -115,12 +132,7 @@ export const buildClipIndex = async ({ distDir = './dist' } = {}) => {
     };
   }
 
-  const rawClipFiles = [];
-  await walkFiles(clipsDir, clipsDir, rawClipFiles);
-
-  const clipFiles = rawClipFiles
-    .filter((relativePath) => !relativePath.startsWith('_index/'))
-    .sort((a, b) => a.localeCompare(b));
+  const clipFiles = await collectClipFiles(clipsDir);
 
   const regionCoverageRaw = collectTileData(clipFiles);
   const regions = Object.keys(regionCoverageRaw).sort((a, b) => a.localeCompare(b));
