@@ -5,18 +5,22 @@ vi.mock('@/data/marker', () => ({
     findMarkerById: vi.fn(() => Promise.resolve({ id: '1', type: 'test', subregId: 'sub' })),
     findUniqueArchiveMarkerByType: vi.fn(),
 }));
-vi.mock('@/data/map', () => ({ REGION_DICT: { Valley_4: { subregions: ['sub'] } } }));
+vi.mock('@/data/map', () => ({ REGION_DICT: { Valley_4: { subregions: ['sub'], initialZoom: 1 } } }));
 vi.mock('@/store/region', () => ({
     default: { getState: () => ({ currentRegionKey: 'Valley_4', setCurrentRegion: vi.fn() }) },
 }));
 vi.mock('@/locale', () => ({ setLocale: vi.fn() }));
 vi.mock('@/store/userGuide', () => ({ completeCurrentUserGuide: vi.fn() }));
 vi.mock('@/store/marker', () => ({ useMarkerStore: { getState: () => ({}) } }));
-vi.mock('@/services/map/navigation', () => ({ navigateToSharedPoint: vi.fn() }));
+vi.mock('@/services/map/navigation', () => ({
+    navigateToSharedPoint: vi.fn(),
+    navigateToSharedLocation: vi.fn(),
+}));
 
 import { applyUrlParams } from './apply';
 import { generatePointShareUrl } from './share';
 import { navigateToSharedPoint } from '@/services/map/navigation';
+import { navigateToSharedLocation } from '@/services/map/navigation';
 import { copyTextToClipboard } from '@/platform/clipboard';
 
 beforeEach(() => {
@@ -63,4 +67,21 @@ it('reports clipboard success and failure', async () => {
     expect(writeText).toHaveBeenCalledWith('link');
     writeText.mockRejectedValue(new Error('denied'));
     expect(await copyTextToClipboard('link')).toBe(false);
+});
+
+it('routes a valid regional coordinate only when no point target wins', async () => {
+    window.history.replaceState({}, '', '/?r=Valley_4&c=1.25%2C2.5&z=2');
+    await applyUrlParams();
+    expect(navigateToSharedLocation).toHaveBeenCalledWith({
+        regionKey: 'Valley_4',
+        center: [1.25, 2.5],
+        zoom: 2,
+    });
+    expect(window.location.search).toBe('');
+
+    vi.clearAllMocks();
+    window.history.replaceState({}, '', '/?r=Valley_4&c=1%2C2&x=0000001');
+    await applyUrlParams();
+    expect(navigateToSharedPoint).toHaveBeenCalled();
+    expect(navigateToSharedLocation).not.toHaveBeenCalled();
 });
