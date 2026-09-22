@@ -499,6 +499,7 @@ export class CanvasMarkerSurface {
       const draw = (sprite: Sprite, x: number, y: number) => ctx.drawImage(sprite.canvas, x + sprite.x, y + sprite.y, sprite.width, sprite.height);
       for (const entry of candidates) {
         if (!entry.visible) continue;
+        if (!this.painter.isArtReady(entry.art)) continue;
         const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
         ctx.globalAlpha = alpha;
         const parts = this.pulseParts(entry, now, alpha);
@@ -563,6 +564,7 @@ export class CanvasMarkerSurface {
     batch.begin(this.canvas.width, this.canvas.height, this.renderRatio, candidates.length + 2 * this.active.size + this.ghosts.length, clip);
     for (const entry of candidates) {
       if (!entry.visible) continue;
+      if (!this.painter.isArtReady(entry.art)) continue;
       const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
       if (alpha <= 0) continue;
       const parts = this.pulseParts(entry, now, alpha);
