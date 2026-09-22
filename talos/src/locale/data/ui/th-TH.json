@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "แสดงเฉพาะ {region}",
+    "showAllSubregions": "แสดงภูมิภาคย่อยทั้งหมด",
+    "highlightSameType": "ไฮไลต์จุดประเภทเดียวกันในบริเวณนี้ ({count})",
+    "clearSameTypeHighlight": "ยกเลิกไฮไลต์จุดประเภทเดียวกัน ({count})",
+    "completeSameType": "ทำจุดประเภทเดียวกันให้เสร็จ ({count})",
+    "confirmComplete": "ยืนยันการทำ {count} จุดให้เสร็จ",
+    "uncompleteSameType": "ทำเครื่องหมายจุดประเภทเดียวกันว่ายังไม่เสร็จ ({count})",
+    "sharePoint": "แชร์จุดนี้",
+    "shareLocation": "แชร์ตำแหน่งนี้",
+    "copied": "คัดลอกลิงก์แล้ว",
+    "copyFailed": "คัดลอกไม่สำเร็จ ลองอีกครั้ง",
+    "clearAllHighlights": "ล้างไฮไลต์ทั้งหมด",
+    "selectAllCategoryFilters": "เลือกทั้งหมด",
+    "deselectAllCategoryFilters": "ยกเลิกทั้งหมด",
+    "hideCompletedMarkers": "ซ่อนจุดที่เสร็จแล้ว",
+    "showCompletedMarkers": "แสดงจุดที่เสร็จแล้ว",
+    "undo": "เลิกทำ",
+    "redo": "ทำซ้ำ",
+    "scopeLabel": "กำลังแสดงเฉพาะ: {region}"
+  },
   "common": {
     "close": "ปิด",
     "skip": "ข้าม",

@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Chỉ hiển thị {region}",
+    "showAllSubregions": "Hiển thị tất cả khu vực con",
+    "highlightSameType": "Làm nổi bật cùng loại tại đây ({count})",
+    "clearSameTypeHighlight": "Bỏ nổi bật cùng loại ({count})",
+    "completeSameType": "Hoàn thành cùng loại ({count})",
+    "confirmComplete": "Xác nhận hoàn thành {count} điểm",
+    "uncompleteSameType": "Đánh dấu cùng loại là chưa hoàn thành ({count})",
+    "sharePoint": "Chia sẻ điểm này",
+    "shareLocation": "Chia sẻ vị trí này",
+    "copied": "Đã sao chép liên kết",
+    "copyFailed": "Sao chép thất bại, hãy thử lại",
+    "clearAllHighlights": "Bỏ tất cả phần nổi bật",
+    "selectAllCategoryFilters": "Chọn tất cả",
+    "deselectAllCategoryFilters": "Bỏ chọn tất cả",
+    "hideCompletedMarkers": "Ẩn điểm đã hoàn thành",
+    "showCompletedMarkers": "Hiện điểm đã hoàn thành",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "scopeLabel": "Chỉ đang hiển thị: {region}"
+  },
   "common": {
     "close": "Đóng",
     "skip": "Bỏ qua",

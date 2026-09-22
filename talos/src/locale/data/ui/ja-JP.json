@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "{region} のみ表示",
+    "showAllSubregions": "すべてのサブエリアを表示",
+    "highlightSameType": "このエリアの同種ポイントを強調（{count}）",
+    "clearSameTypeHighlight": "同種ポイントの強調を解除（{count}）",
+    "completeSameType": "同種ポイントを完了（{count}）",
+    "confirmComplete": "{count} 個のポイントの完了を確認",
+    "uncompleteSameType": "同種ポイントを未完了に戻す（{count}）",
+    "sharePoint": "このポイントを共有",
+    "shareLocation": "この場所を共有",
+    "copied": "リンクをコピーしました",
+    "copyFailed": "コピーに失敗しました。もう一度お試しください",
+    "clearAllHighlights": "すべての強調を解除",
+    "selectAllCategoryFilters": "すべて選択",
+    "deselectAllCategoryFilters": "すべて解除",
+    "hideCompletedMarkers": "完了済みマーカーを非表示",
+    "showCompletedMarkers": "完了済みマーカーを表示",
+    "undo": "元に戻す",
+    "redo": "やり直す",
+    "scopeLabel": "表示中：{region} のみ"
+  },
   "common": {
     "close": "閉じる",
     "skip": "スキップ",

@@ -465,6 +465,27 @@
       "desc": "Спільнота креслень"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Показувати лише {region}",
+    "showAllSubregions": "Показати всі підрегіони",
+    "highlightSameType": "Виділити точки цього типу тут ({count})",
+    "clearSameTypeHighlight": "Зняти виділення точок цього типу ({count})",
+    "completeSameType": "Завершити точки цього типу ({count})",
+    "confirmComplete": "Підтвердити завершення {count} точок",
+    "uncompleteSameType": "Позначити точки цього типу незавершеними ({count})",
+    "sharePoint": "Поділитися цією точкою",
+    "shareLocation": "Поділитися цим місцем",
+    "copied": "Посилання скопійовано",
+    "copyFailed": "Не вдалося скопіювати, спробуйте ще раз",
+    "clearAllHighlights": "Зняти всі виділення",
+    "selectAllCategoryFilters": "Вибрати все",
+    "deselectAllCategoryFilters": "Зняти все",
+    "hideCompletedMarkers": "Приховати завершені точки",
+    "showCompletedMarkers": "Показати завершені точки",
+    "undo": "Скасувати",
+    "redo": "Повторити",
+    "scopeLabel": "Показано лише: {region}"
+  },
   "common": {
     "close": "Закрити",
     "skip": "Пропустити",

@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "{region}만 표시",
+    "showAllSubregions": "모든 하위 지역 표시",
+    "highlightSameType": "이 지역의 같은 유형 강조 ({count})",
+    "clearSameTypeHighlight": "같은 유형 강조 해제 ({count})",
+    "completeSameType": "같은 유형 완료 ({count})",
+    "confirmComplete": "포인트 {count}개 완료 확인",
+    "uncompleteSameType": "같은 유형을 미완료로 표시 ({count})",
+    "sharePoint": "이 포인트 공유",
+    "shareLocation": "이 위치 공유",
+    "copied": "링크가 복사되었습니다",
+    "copyFailed": "복사하지 못했습니다. 다시 시도하세요",
+    "clearAllHighlights": "모든 강조 해제",
+    "selectAllCategoryFilters": "모두 선택",
+    "deselectAllCategoryFilters": "모두 해제",
+    "hideCompletedMarkers": "완료된 포인트 숨기기",
+    "showCompletedMarkers": "완료된 포인트 표시",
+    "undo": "실행 취소",
+    "redo": "다시 실행",
+    "scopeLabel": "현재 표시: {region}만"
+  },
   "common": {
     "close": "닫기",
     "skip": "건너뛰기",

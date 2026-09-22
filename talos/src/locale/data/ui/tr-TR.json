@@ -465,6 +465,27 @@
       "desc": "Taslak Paylaşım Topluluğu"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Yalnızca {region} göster",
+    "showAllSubregions": "Tüm alt bölgeleri göster",
+    "highlightSameType": "Buradaki aynı türü vurgula ({count})",
+    "clearSameTypeHighlight": "Aynı tür vurgularını kaldır ({count})",
+    "completeSameType": "Aynı türü tamamla ({count})",
+    "confirmComplete": "{count} noktanın tamamlanmasını onayla",
+    "uncompleteSameType": "Aynı türü tamamlanmamış olarak işaretle ({count})",
+    "sharePoint": "Bu noktayı paylaş",
+    "shareLocation": "Bu konumu paylaş",
+    "copied": "Bağlantı kopyalandı",
+    "copyFailed": "Kopyalama başarısız, tekrar deneyin",
+    "clearAllHighlights": "Tüm vurguları kaldır",
+    "selectAllCategoryFilters": "Tümünü seç",
+    "deselectAllCategoryFilters": "Tümünü kaldır",
+    "hideCompletedMarkers": "İşaretlenmişleri gizle",
+    "showCompletedMarkers": "İşaretlenmişleri göster",
+    "undo": "Geri al",
+    "redo": "Yinele",
+    "scopeLabel": "Yalnızca gösterilen: {region}"
+  },
   "common": {
     "close": "Kapat",
     "skip": "Atla",

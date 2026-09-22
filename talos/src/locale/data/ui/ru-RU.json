@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Показывать только {region}",
+    "showAllSubregions": "Показать все подобласти",
+    "highlightSameType": "Выделить точки этого типа здесь ({count})",
+    "clearSameTypeHighlight": "Снять выделение точек этого типа ({count})",
+    "completeSameType": "Завершить точки этого типа ({count})",
+    "confirmComplete": "Подтвердить завершение {count} точек",
+    "uncompleteSameType": "Отметить точки этого типа незавершёнными ({count})",
+    "sharePoint": "Поделиться этой точкой",
+    "shareLocation": "Поделиться этим местом",
+    "copied": "Ссылка скопирована",
+    "copyFailed": "Не удалось скопировать, попробуйте ещё раз",
+    "clearAllHighlights": "Снять все выделения",
+    "selectAllCategoryFilters": "Выбрать все",
+    "deselectAllCategoryFilters": "Снять все",
+    "hideCompletedMarkers": "Скрыть завершённые точки",
+    "showCompletedMarkers": "Показать завершённые точки",
+    "undo": "Отменить",
+    "redo": "Повторить",
+    "scopeLabel": "Показано только: {region}"
+  },
   "common": {
     "close": "Закрыть",
     "skip": "Пропустить",

@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Tunjukkan {region} sahaja",
+    "showAllSubregions": "Tunjukkan semua subrantau",
+    "highlightSameType": "Serlahkan jenis yang sama di sini ({count})",
+    "clearSameTypeHighlight": "Kosongkan serlahan jenis yang sama ({count})",
+    "completeSameType": "Lengkapkan jenis yang sama ({count})",
+    "confirmComplete": "Sahkan pelengkapan {count} titik",
+    "uncompleteSameType": "Tandakan jenis yang sama sebagai belum lengkap ({count})",
+    "sharePoint": "Kongsi titik ini",
+    "shareLocation": "Kongsi lokasi ini",
+    "copied": "Pautan disalin",
+    "copyFailed": "Gagal menyalin, cuba lagi",
+    "clearAllHighlights": "Kosongkan semua serlahan",
+    "selectAllCategoryFilters": "Pilih semua",
+    "deselectAllCategoryFilters": "Nyahpilih semua",
+    "hideCompletedMarkers": "Sembunyikan titik selesai",
+    "showCompletedMarkers": "Tunjukkan titik selesai",
+    "undo": "Buat asal",
+    "redo": "Buat semula",
+    "scopeLabel": "Hanya menunjukkan: {region}"
+  },
   "common": {
     "close": "Tutup",
     "skip": "Langkau",

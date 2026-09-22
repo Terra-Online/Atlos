@@ -138,6 +138,7 @@ export class CanvasMarkerSurface {
     container.addEventListener('pointerdown', this.pointerDown, true);
     container.addEventListener('click', this.click, true);
     container.addEventListener('dblclick', this.doubleClick, true);
+    container.addEventListener('contextmenu', this.contextMenu, true);
     this.semantic.addEventListener('focusin', this.focus);
     this.semantic.addEventListener('focusout', this.focus);
     document.fonts?.addEventListener('loadingdone', this.fontsLoaded);
@@ -614,11 +615,11 @@ export class CanvasMarkerSurface {
     }
     return hit;
   }
-  private dispatch(entry: Entry, type: string, event?: MouseEvent): void {
+  private dispatch(entry: Entry, type: string, event?: MouseEvent): boolean {
     const init: MouseEventInit = { bubbles: true, cancelable: true, clientX: event?.clientX, clientY: event?.clientY,
       screenX: event?.screenX, screenY: event?.screenY, ctrlKey: event?.ctrlKey, metaKey: event?.metaKey,
       shiftKey: event?.shiftKey, altKey: event?.altKey, button: event?.button, detail: event?.detail ?? 1 };
-    entry.inner.dispatchEvent(type.startsWith('pointer') ? new PointerEvent(type, init) : new MouseEvent(type, init));
+    return entry.inner.dispatchEvent(type.startsWith('pointer') ? new PointerEvent(type, init) : new MouseEvent(type, init));
   }
   private setHovered(entry?: Entry, event?: MouseEvent): void {
     if (entry === this.hovered) return;
@@ -656,6 +657,14 @@ export class CanvasMarkerSurface {
     const entry = this.hit(event);
     if (entry) { event.stopImmediatePropagation(); event.preventDefault(); this.dispatch(entry, 'dblclick', event); }
   };
+  private contextMenu = (event: MouseEvent): void => {
+    if (this.nativeTarget(event)) return;
+    if (event.altKey) return;
+    const entry = this.hit(event);
+    if (!entry) return;
+    event.stopImmediatePropagation(); event.preventDefault();
+    this.dispatch(entry, 'contextmenu', event);
+  };
   private focus = (event: FocusEvent): void => {
     let node = event.target as Node | null;
     while (node && node !== this.semantic) {
@@ -683,6 +692,7 @@ export class CanvasMarkerSurface {
     const container = this.map.getContainer();
     container.removeEventListener('pointermove', this.pointerMove, true); container.removeEventListener('pointerleave', this.pointerLeave);
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);
+    container.removeEventListener('contextmenu', this.contextMenu, true);
     this.semantic.removeEventListener('focusin', this.focus); this.semantic.removeEventListener('focusout', this.focus);
     document.fonts?.removeEventListener('loadingdone', this.fontsLoaded);
     this.resolution?.removeEventListener('change', this.displayChanged);

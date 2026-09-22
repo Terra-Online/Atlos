@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "只顯示 {region}",
+    "showAllSubregions": "顯示所有子地區",
+    "highlightSameType": "醒目顯示此區域同類地點（{count}）",
+    "clearSameTypeHighlight": "取消醒目顯示同類地點（{count}）",
+    "completeSameType": "完成同類地點（{count}）",
+    "confirmComplete": "確認完成 {count} 個地點",
+    "uncompleteSameType": "取消完成同類地點（{count}）",
+    "sharePoint": "分享此地點",
+    "shareLocation": "分享此位置",
+    "copied": "連結已複製",
+    "copyFailed": "複製失敗，請重試",
+    "clearAllHighlights": "清除所有醒目顯示",
+    "selectAllCategoryFilters": "選取全部",
+    "deselectAllCategoryFilters": "取消全部",
+    "hideCompletedMarkers": "隱藏已完成點位",
+    "showCompletedMarkers": "顯示已完成點位",
+    "undo": "復原",
+    "redo": "重做",
+    "scopeLabel": "只顯示：{region}"
+  },
   "common": {
     "close": "關閉",
     "skip": "跳過",

@@ -21,6 +21,7 @@ import useRegion from '@/store/region';
 
 interface MarkerStateHandlers {
     beforeCheck?: (markerData: IMarkerData, context: { filterWasActive: boolean }) => boolean;
+    onContextMenu?: (markerData: IMarkerData, originalEvent: MouseEvent) => void;
 }
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
@@ -241,6 +242,11 @@ const RENDERER_DICT: Record<
             LOGGER.debug('marker clicked', markerData);
             onClick?.(markerData);
         });
+        layer.addEventListener('contextmenu', (e) => {
+            if (e.originalEvent.altKey) return;
+            L.DomEvent.stop(e.originalEvent);
+            handlers?.onContextMenu?.(markerData, e.originalEvent);
+        });
 
         attachPreviewLifecycle(layer, markerData);
         
@@ -293,6 +299,11 @@ const RENDERER_DICT: Record<
             
             LOGGER.debug('marker clicked', markerData);
             onClick?.(markerData);
+        });
+        layer.addEventListener('contextmenu', (e) => {
+            if (e.originalEvent.altKey) return;
+            L.DomEvent.stop(e.originalEvent);
+            handlers?.onContextMenu?.(markerData, e.originalEvent);
         });
 
         attachPreviewLifecycle(layer, markerData);

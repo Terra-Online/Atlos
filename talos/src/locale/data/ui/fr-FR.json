@@ -465,6 +465,27 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Afficher uniquement {region}",
+    "showAllSubregions": "Afficher toutes les sous-régions",
+    "highlightSameType": "Surligner le même type ici ({count})",
+    "clearSameTypeHighlight": "Retirer les surlignages du même type ({count})",
+    "completeSameType": "Terminer le même type ({count})",
+    "confirmComplete": "Confirmer l’achèvement de {count} points",
+    "uncompleteSameType": "Marquer le même type comme incomplet ({count})",
+    "sharePoint": "Partager ce point",
+    "shareLocation": "Partager cet emplacement",
+    "copied": "Lien copié",
+    "copyFailed": "Échec de la copie, réessayez",
+    "clearAllHighlights": "Retirer tous les surlignages",
+    "selectAllCategoryFilters": "Tout sélectionner",
+    "deselectAllCategoryFilters": "Tout désélectionner",
+    "hideCompletedMarkers": "Masquer les points terminés",
+    "showCompletedMarkers": "Afficher les points terminés",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "scopeLabel": "Affichage limité à : {region}"
+  },
   "common": {
     "close": "Fermer",
     "skip": "Passer",

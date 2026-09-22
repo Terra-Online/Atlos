@@ -465,6 +465,27 @@
       "desc": "مجتمع مشاركة التصاميم"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "عرض {region} فقط",
+    "showAllSubregions": "عرض جميع المناطق الفرعية",
+    "highlightSameType": "تمييز النقاط من النوع نفسه هنا ({count})",
+    "clearSameTypeHighlight": "إلغاء تمييز النقاط من النوع نفسه ({count})",
+    "completeSameType": "إكمال النقاط من النوع نفسه ({count})",
+    "confirmComplete": "تأكيد إكمال {count} نقطة",
+    "uncompleteSameType": "وضع علامة غير مكتمل على النوع نفسه ({count})",
+    "sharePoint": "مشاركة هذه النقطة",
+    "shareLocation": "مشاركة هذا الموقع",
+    "copied": "تم نسخ الرابط",
+    "copyFailed": "فشل النسخ، حاول مرة أخرى",
+    "clearAllHighlights": "مسح جميع التمييزات",
+    "selectAllCategoryFilters": "تحديد الكل",
+    "deselectAllCategoryFilters": "إلغاء تحديد الكل",
+    "hideCompletedMarkers": "إخفاء العلامات المكتملة",
+    "showCompletedMarkers": "إظهار العلامات المكتملة",
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "scopeLabel": "يتم عرض فقط: {region}"
+  },
   "common": {
     "close": "إغلاق",
     "skip": "تخطي",

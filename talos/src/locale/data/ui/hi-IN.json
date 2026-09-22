@@ -465,6 +465,27 @@
       "desc": "ब्लूप्रिंट शेयरिंग समुदाय"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "केवल {region} दिखाएँ",
+    "showAllSubregions": "सभी उपक्षेत्र दिखाएँ",
+    "highlightSameType": "यहाँ समान प्रकार के बिंदु हाइलाइट करें ({count})",
+    "clearSameTypeHighlight": "समान प्रकार के हाइलाइट हटाएँ ({count})",
+    "completeSameType": "समान प्रकार के बिंदु पूरे करें ({count})",
+    "confirmComplete": "{count} बिंदु पूरे करने की पुष्टि करें",
+    "uncompleteSameType": "समान प्रकार को अधूरा चिह्नित करें ({count})",
+    "sharePoint": "यह बिंदु साझा करें",
+    "shareLocation": "यह स्थान साझा करें",
+    "copied": "लिंक कॉपी हो गया",
+    "copyFailed": "कॉपी नहीं हुआ, फिर से कोशिश करें",
+    "clearAllHighlights": "सभी हाइलाइट हटाएँ",
+    "selectAllCategoryFilters": "सभी चुनें",
+    "deselectAllCategoryFilters": "सभी हटाएँ",
+    "hideCompletedMarkers": "पूरे किए गए मार्कर छिपाएँ",
+    "showCompletedMarkers": "पूरे किए गए मार्कर दिखाएँ",
+    "undo": "पूर्ववत करें",
+    "redo": "फिर से करें",
+    "scopeLabel": "केवल यह दिख रहा है: {region}"
+  },
   "common": {
     "close": "बंद",
     "skip": "छोड़ें",

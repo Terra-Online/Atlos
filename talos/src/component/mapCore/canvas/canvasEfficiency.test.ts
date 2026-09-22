@@ -37,6 +37,15 @@ describe('Retained camera surface', () => {
     host.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: p.x, clientY: p.y - 16 }));
     expect(clicked).toHaveBeenCalledOnce();
   });
+  it('routes a canvas context menu event to the exact marker', () => {
+    const { map, host, point } = fixture(), opened = vi.fn((event: L.LeafletMouseEvent) => event.originalEvent.preventDefault());
+    point.on('contextmenu', opened);
+    const p = map.latLngToContainerPoint(point.getLatLng());
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: p.x, clientY: p.y - 16 });
+    host.dispatchEvent(event);
+    expect(opened).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
   it('updates stationary-pointer hover and emits viewport exit only once', () => {
     vi.stubGlobal('PointerEvent', MouseEvent);
     const { map, host, point } = fixture(), leave = vi.fn(), hidden = vi.fn();

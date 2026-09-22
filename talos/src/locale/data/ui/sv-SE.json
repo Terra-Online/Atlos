@@ -465,6 +465,27 @@
       "desc": "Community för ritningsdelning"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Visa endast {region}",
+    "showAllSubregions": "Visa alla delregioner",
+    "highlightSameType": "Markera samma typ här ({count})",
+    "clearSameTypeHighlight": "Ta bort markeringar av samma typ ({count})",
+    "completeSameType": "Slutför samma typ ({count})",
+    "confirmComplete": "Bekräfta att {count} punkter slutförs",
+    "uncompleteSameType": "Markera samma typ som ej slutförd ({count})",
+    "sharePoint": "Dela denna punkt",
+    "shareLocation": "Dela denna plats",
+    "copied": "Länken kopierades",
+    "copyFailed": "Kopieringen misslyckades, försök igen",
+    "clearAllHighlights": "Ta bort alla markeringar",
+    "selectAllCategoryFilters": "Välj alla",
+    "deselectAllCategoryFilters": "Avmarkera alla",
+    "hideCompletedMarkers": "Dölj slutförda punkter",
+    "showCompletedMarkers": "Visa slutförda punkter",
+    "undo": "Ångra",
+    "redo": "Gör om",
+    "scopeLabel": "Visar endast: {region}"
+  },
   "common": {
     "close": "Stäng",
     "skip": "Hoppa över",

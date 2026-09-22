@@ -465,6 +465,27 @@
       "desc": "Κοινότητα κοινοποίησης Blueprint"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Εμφάνιση μόνο: {region}",
+    "showAllSubregions": "Εμφάνιση όλων των υποπεριοχών",
+    "highlightSameType": "Επισήμανση ίδιου τύπου εδώ ({count})",
+    "clearSameTypeHighlight": "Κατάργηση επισήμανσης ίδιου τύπου ({count})",
+    "completeSameType": "Ολοκλήρωση ίδιου τύπου ({count})",
+    "confirmComplete": "Επιβεβαίωση ολοκλήρωσης {count} σημείων",
+    "uncompleteSameType": "Σήμανση ίδιου τύπου ως μη ολοκληρωμένου ({count})",
+    "sharePoint": "Κοινοποίηση αυτού του σημείου",
+    "shareLocation": "Κοινοποίηση αυτής της τοποθεσίας",
+    "copied": "Ο σύνδεσμος αντιγράφηκε",
+    "copyFailed": "Η αντιγραφή απέτυχε, δοκιμάστε ξανά",
+    "clearAllHighlights": "Κατάργηση όλων των επισημάνσεων",
+    "selectAllCategoryFilters": "Επιλογή όλων",
+    "deselectAllCategoryFilters": "Αποεπιλογή όλων",
+    "hideCompletedMarkers": "Απόκρυψη ολοκληρωμένων",
+    "showCompletedMarkers": "Εμφάνιση ολοκληρωμένων",
+    "undo": "Αναίρεση",
+    "redo": "Επανάληψη",
+    "scopeLabel": "Εμφανίζεται μόνο: {region}"
+  },
   "common": {
     "close": "Κλείσ.",
     "skip": "Παράλ.",
