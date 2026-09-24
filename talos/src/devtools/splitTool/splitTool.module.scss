@@ -1,0 +1,153 @@
+.root {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 10000;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 104px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f4f7fb;
+    background: rgba(22, 28, 38, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38);
+    font: 13px/1.4 system-ui, sans-serif;
+}
+
+.header, .footer, .toolbar, .row, .item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header {
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.title {
+    font-weight: 700;
+}
+
+.meta, .hint {
+    color: rgba(244, 247, 251, 0.64);
+    font-size: 12px;
+}
+
+.close {
+    padding: 0 4px;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.body {
+    padding: 12px;
+    overflow: auto;
+}
+
+.toolbar {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.row {
+    margin: 8px 0;
+}
+
+.row label {
+    min-width: 54px;
+    color: rgba(244, 247, 251, 0.72);
+}
+.input, .textarea {
+    box-sizing: border-box;
+    width: 100%;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+.input {
+    padding: 6px 8px;
+}
+
+.textarea {
+    min-height: 110px;
+    padding: 7px;
+    resize: vertical;
+    font: 11px/1.35 ui-monospace, monospace;
+}
+.button {
+    padding: 6px 9px;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+}
+.button:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.primary {
+    background: #327bd8;
+    border-color: #327bd8;
+}
+
+.list {
+    display: grid;
+    gap: 4px;
+    max-height: 180px;
+    overflow: auto;
+    margin: 10px 0;
+}
+
+.item {
+    padding: 6px 7px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.item:hover, .active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.swatch {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+}
+
+.itemName {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.footer {
+    justify-content: flex-end;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.empty {
+    padding: 12px 4px;
+    color: rgba(244, 247, 251, 0.52);
+    text-align: center;
+}
