@@ -277,6 +277,18 @@
           "ritual_shrine": "의식 제단",
           "old_resting_point": "오래된 쉼터"
         }
+      },
+      "SM": {
+        "name": "수명성",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "수명성 교외",
+          "suiming_city_center": "수명성 중심",
+          "tianshi_pillar_records_hall": "천사장 문서 기록관",
+          "tianshi_pillar_research_labs": "천사장 연구소",
+          "physical_training_field": "체력 훈련장",
+          "blight_monitoring_zone": "침식 관제 구역"
+        }
       }
     }
   },

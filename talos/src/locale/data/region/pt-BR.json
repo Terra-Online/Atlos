@@ -277,13 +277,25 @@
           "ritual_shrine": "Santuário do Ritual",
           "old_resting_point": "Antigo Ponto de Descanso"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Subúrbios da Cidade de Suiming",
+          "suiming_city_center": "Centro da Cidade de Suiming",
+          "tianshi_pillar_records_hall": "Sala de Registros do Pilar de Tianshi",
+          "tianshi_pillar_research_labs": "Laboratórios de Pesquisa de Pilares de Tianshi",
+          "physical_training_field": "Campo de Treinamento Físico",
+          "blight_monitoring_zone": "Zona de Monitoramento da Praga"
+        }
       }
     }
   },
   "DJ": {
     "main": "NMO Dijiang",
     "sub": {
-      "name": "NMO Dijiang",
+      "name": "OMV Dijiang",
       "site": {
         "bridge": "Ponte",
         "reception_room": "Sala da Recepção",

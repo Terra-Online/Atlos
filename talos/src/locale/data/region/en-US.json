@@ -277,6 +277,18 @@
           "ritual_shrine": "Ritual Shrine",
           "old_resting_point": "Old Resting Point"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Suiming City Suburbs",
+          "suiming_city_center": "Suiming City Center",
+          "tianshi_pillar_records_hall": "Tianshi Pillar Records Hall",
+          "tianshi_pillar_research_labs": "Tianshi Pillar Research Labs",
+          "physical_training_field": "Physical Training Field",
+          "blight_monitoring_zone": "Blight Monitoring Zone"
+        }
       }
     }
   },

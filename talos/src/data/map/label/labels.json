@@ -1240,6 +1240,61 @@
             7613.969241830565,
             7065.688194241853
           ]
+        },
+        "WL/SM": {
+          "id": "WL/SM",
+          "type": "sub",
+          "region": "WL",
+          "sub": "SM",
+          "point": [9747.3, 5787]
+        },
+        "WL/SM/suiming_city_suburbs": {
+          "id": "WL/SM/suiming_city_suburbs",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "suiming_city_suburbs",
+          "point": [9321.0061, 6143.1]
+        },
+        "WL/SM/suiming_city_center": {
+          "id": "WL/SM/suiming_city_center",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "suiming_city_center",
+          "point": [9877.1411, 5742.9553]
+        },
+        "WL/SM/tianshi_pillar_records_hall": {
+          "id": "WL/SM/tianshi_pillar_records_hall",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "tianshi_pillar_records_hall",
+          "point": [10262.0526, 5378.878]
+        },
+        "WL/SM/tianshi_pillar_research_labs": {
+          "id": "WL/SM/tianshi_pillar_research_labs",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "tianshi_pillar_research_labs",
+          "point": [9965.5473, 6194.5472]
+        },
+        "WL/SM/physical_training_field": {
+          "id": "WL/SM/physical_training_field",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "physical_training_field",
+          "point": [9421.7497, 5486.1276]
+        },
+        "WL/SM/blight_monitoring_zone": {
+          "id": "WL/SM/blight_monitoring_zone",
+          "type": "site",
+          "region": "WL",
+          "sub": "SM",
+          "site": "blight_monitoring_zone",
+          "point": [9637.0058, 5776.3007]
         }
       }
     },
