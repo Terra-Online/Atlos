@@ -69,7 +69,7 @@ it.each(['mouse', 'touch'])('allows anonymous sharing from the %s toolbar', asyn
     const share = await screen.findByRole('button', { name: 'detail.comments.copyLink' });
     fireEvent.click(share);
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://oem.re/marker?commentId=reply'));
-    await screen.findByRole('button', { name: 'detail.copied' });
+    await screen.findByRole('button', { name: 'common.copied' });
 });
 
 it('keeps copy failures silent without removing comments', async () => {

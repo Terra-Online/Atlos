@@ -54,7 +54,6 @@
     "uploadPending": "Завантажено. Очікує на перевірку.",
     "readFullText": "Натисніть, щоб прочитати повністю.",
     "share": "Копіювати посилання на цей маркер.",
-    "copied": "Посилання скопійовано",
     "collectionRateSource": "Загальний відсоток збору: {nums} – Статистика OEM Cloud",
     "viewer": {
       "author": "АВТОР",
@@ -465,6 +464,25 @@
       "desc": "Спільнота креслень"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Показувати лише {region}",
+    "showAllSubregions": "Показати всі підрегіони",
+    "highlightSameType": "Виділити точки того ж типу ({count})",
+    "clearSameTypeHighlight": "Зняти виділення ({count})",
+    "completeSameType": "Завершити точки того ж типу ({count})",
+    "confirmComplete": "Підтвердити завершення {count} точок",
+    "uncompleteSameType": "Зняти позначки виконання ({count})",
+    "sharePoint": "Поділитися цією точкою",
+    "shareLocation": "Поділитися цим місцем",
+    "clearAllHighlights": "Зняти всі виділення",
+    "selectAllCategoryFilters": "Вибрати все",
+    "deselectAllCategoryFilters": "Зняти все",
+    "hideCompletedMarkers": "Приховати завершені точки",
+    "showCompletedMarkers": "Показати завершені точки",
+    "undo": "Скасувати",
+    "redo": "Повторити",
+    "scopeLabel": "Показано лише: {region}"
+  },
   "common": {
     "close": "Закрити",
     "skip": "Пропустити",
@@ -477,7 +495,9 @@
     "enable": "Увімкнути",
     "disable": "Вимкнути",
     "expand": "Розгорнути",
-    "collapse": "Згорнути"
+    "collapse": "Згорнути",
+    "copied": "Посилання скопійовано",
+    "copyFailed": "Не вдалося скопіювати, спробуйте ще раз"
   },
   "announcement": {
     "title": "Сповіщення сайту",

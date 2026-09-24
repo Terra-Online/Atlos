@@ -417,6 +417,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                     initialEmpty={false}
                     variant="versionNew"
                     reorderable={false}
+                    typeKeys={group.types.map((typeInfo) => typeInfo.key)}
                   >
                     {group.types.map((typeInfo) => (
                       <MarkSelector
@@ -463,6 +464,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                         key={subCategory}
                         initialEmpty={emptyCategories.has(subCategory)}
                         binderMode={Boolean(binderData)}
+                        typeKeys={types.map((typeInfo) => typeInfo.key)}
                       >
                         {binderData ? (
                           <>

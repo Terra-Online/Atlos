@@ -54,7 +54,6 @@
     "uploadPending": "제출되었습니다. 검토 후 표시됩니다.",
     "readFullText": "전체 내용을 보려면 클릭하세요.",
     "share": "이 위치의 공유 링크를 복사합니다.",
-    "copied": "링크가 복사되었습니다",
     "collectionRateSource": "전체 서버 수집률은 {nums} – OEM Cloud 통계",
     "viewer": {
       "author": "작성자",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "{region}만 표시",
+    "showAllSubregions": "모든 하위 지역 표시",
+    "highlightSameType": "같은 유형 포인트 강조 ({count})",
+    "clearSameTypeHighlight": "강조 해제 ({count})",
+    "completeSameType": "같은 유형 포인트 완료 ({count})",
+    "confirmComplete": "포인트 {count}개 완료 확인",
+    "uncompleteSameType": "완료 표시 해제 ({count})",
+    "sharePoint": "이 포인트 공유",
+    "shareLocation": "이 위치 공유",
+    "clearAllHighlights": "모든 강조 해제",
+    "selectAllCategoryFilters": "모두 선택",
+    "deselectAllCategoryFilters": "모두 해제",
+    "hideCompletedMarkers": "완료된 포인트 숨기기",
+    "showCompletedMarkers": "완료된 포인트 표시",
+    "undo": "실행 취소",
+    "redo": "다시 실행",
+    "scopeLabel": "현재 표시: {region}만"
+  },
   "common": {
     "close": "닫기",
     "skip": "건너뛰기",
@@ -477,7 +495,9 @@
     "enable": "활성화",
     "disable": "비활성화",
     "expand": "펼치기",
-    "collapse": "접기"
+    "collapse": "접기",
+    "copied": "링크가 복사되었습니다",
+    "copyFailed": "복사하지 못했습니다. 다시 시도하세요"
   },
   "announcement": {
     "title": "사이트 공지",

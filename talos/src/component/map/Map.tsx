@@ -9,6 +9,7 @@ import { UsePreview } from './usePreview';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import { isMapOverdragged, toMapBounds } from './mapOverdrag';
 import { useBehaviorOverlay } from './behaviorOverlay/useBehaviorOverlay';
+import MapContextMenu from './MapContextMenu';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;
@@ -94,6 +95,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
             ></div>
             {linkTooltipElement}
             {PreviewElement}
+            {map && <MapContextMenu map={map} />}
         </>
     );
 };

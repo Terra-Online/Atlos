@@ -45,6 +45,7 @@ export function useMap(ele: HTMLDivElement | null) {
         if (!mapRef.current || !mapInitialized) return;
         const target = currentRegion ?? DEFAULT_REGION;
         if (mapRef.current.currentRegionId === target) return;
+        useMarkerStore.getState().setVisibleSubregionKey(null);
         void mapRef.current.switchRegion(target);
     }, [currentRegion, mapInitialized]);
 

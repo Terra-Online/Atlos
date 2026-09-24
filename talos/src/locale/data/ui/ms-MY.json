@@ -54,7 +54,6 @@
     "uploadPending": "Hantaran diterima. Akan dipaparkan selepas semakan.",
     "readFullText": "Klik untuk membaca teks penuh.",
     "share": "Salin pautan perkongsian untuk penanda ini.",
-    "copied": "Pautan disalin",
     "collectionRateSource": "Kadar pengumpulan seluruh pelayan ialah {nums} – Statistik daripada OEM Cloud",
     "viewer": {
       "author": "Pemuat naik",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Tunjukkan {region} sahaja",
+    "showAllSubregions": "Tunjukkan semua subrantau",
+    "highlightSameType": "Serlah titik jenis sama di sini ({count})",
+    "clearSameTypeHighlight": "Buang serlahan ({count})",
+    "completeSameType": "Lengkapkan titik jenis sama ({count})",
+    "confirmComplete": "Sahkan pelengkapan {count} titik",
+    "uncompleteSameType": "Buang tanda selesai ({count})",
+    "sharePoint": "Kongsi titik ini",
+    "shareLocation": "Kongsi lokasi ini",
+    "clearAllHighlights": "Buang semua serlahan",
+    "selectAllCategoryFilters": "Pilih semua",
+    "deselectAllCategoryFilters": "Nyahpilih semua",
+    "hideCompletedMarkers": "Sembunyikan titik selesai",
+    "showCompletedMarkers": "Tunjukkan titik selesai",
+    "undo": "Buat asal",
+    "redo": "Buat semula",
+    "scopeLabel": "Hanya menunjukkan: {region}"
+  },
   "common": {
     "close": "Tutup",
     "skip": "Langkau",
@@ -477,7 +495,9 @@
     "enable": "Dayakan",
     "disable": "Nyahdayakan",
     "expand": "Kembangkan",
-    "collapse": "Runtuhkan"
+    "collapse": "Runtuhkan",
+    "copied": "Pautan disalin",
+    "copyFailed": "Gagal menyalin, cuba lagi"
   },
   "announcement": {
     "title": "Notis Laman Web",

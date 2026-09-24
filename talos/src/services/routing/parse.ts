@@ -6,6 +6,8 @@ import {
     PARAM_POINT_TOKEN,
     PARAM_IMAGE,
     PARAM_COMMENT,
+    PARAM_COORDINATE,
+    PARAM_ZOOM,
     PARAM_REGION,
     PARAM_SUBREGION,
     PARAM_TYPE,
@@ -32,6 +34,23 @@ export type ParsedUrlState = {
     commentId: string | null;
     typeKey: string | null;
     pathPointToken: string | null;
+    coordinate: [number, number] | null;
+    zoom: number | null;
+};
+
+const parseCoordinateParam = (value: string | null): [number, number] | null => {
+    if (!value) return null;
+    const parts = value.split(',');
+    if (parts.length !== 2) return null;
+    const lat = Number(parts[0]);
+    const lng = Number(parts[1]);
+    return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : null;
+};
+
+const parseZoomParam = (value: string | null): number | null => {
+    if (!value) return null;
+    const zoom = Number(value);
+    return Number.isFinite(zoom) ? zoom : null;
 };
 
 const parseFilterParam = (value: string | null): string[] => {
@@ -63,5 +82,7 @@ export const parseUrlState = (location: UrlLocationLike): ParsedUrlState => {
         commentId: params.get(PARAM_COMMENT)?.trim() || null,
         typeKey: params.get(PARAM_TYPE)?.trim() || null,
         pathPointToken,
+        coordinate: parseCoordinateParam(params.get(PARAM_COORDINATE)),
+        zoom: parseZoomParam(params.get(PARAM_ZOOM)),
     };
 };

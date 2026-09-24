@@ -54,7 +54,6 @@
     "uploadPending": "تم الرفع. بانتظار المراجعة.",
     "readFullText": "انقر لقراءة النص الكامل.",
     "share": "انسخ رابط المشاركة لهذه العلامة.",
-    "copied": "تم النسخ",
     "collectionRateSource": "معدل الجمع على مستوى الخادم هو {nums} – إحصاءات من OEM Cloud",
     "viewer": {
       "author": "الناشر",
@@ -465,6 +464,25 @@
       "desc": "مجتمع مشاركة التصاميم"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "عرض {region} فقط",
+    "showAllSubregions": "عرض جميع المناطق الفرعية",
+    "highlightSameType": "تمييز النقاط من النوع نفسه هنا ({count})",
+    "clearSameTypeHighlight": "إلغاء التمييز ({count})",
+    "completeSameType": "إكمال نقاط النوع نفسه ({count})",
+    "confirmComplete": "تأكيد إكمال {count} نقطة",
+    "uncompleteSameType": "إزالة علامات الإكمال ({count})",
+    "sharePoint": "مشاركة هذه النقطة",
+    "shareLocation": "مشاركة هذا الموقع",
+    "clearAllHighlights": "مسح كل التمييزات",
+    "selectAllCategoryFilters": "تحديد الكل",
+    "deselectAllCategoryFilters": "إلغاء تحديد الكل",
+    "hideCompletedMarkers": "إخفاء العلامات المكتملة",
+    "showCompletedMarkers": "إظهار العلامات المكتملة",
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "scopeLabel": "يتم عرض فقط: {region}"
+  },
   "common": {
     "close": "إغلاق",
     "skip": "تخطي",
@@ -477,7 +495,9 @@
     "enable": "تفعيل",
     "disable": "تعطيل",
     "expand": "توسيع",
-    "collapse": "طي"
+    "collapse": "طي",
+    "copied": "تم نسخ الرابط",
+    "copyFailed": "فشل النسخ، حاول مرة أخرى"
   },
   "announcement": {
     "title": "إعلانات الموقع",

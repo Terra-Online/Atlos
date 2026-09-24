@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Notes: Final Words",
             "nar_paper_map02_15023_1": "Diary: Last Entry",
             "nar_paper_map02_15025_1": "Notes: Scrawled",
+            "nar_paper_map02_research11_2_1": "Quick Tour: Urban Landscape",
+            "nar_paper_map02_research11_3_1": "Signs of the Disaster",
+            "nar_paper_map02_research11_4_1": "Manual for Emergency Response to Blight Tide Disasters (Excerpt)",
+            "nar_paper_map02_research11_5_1": "Miscellaneous Morsels of Suiming: Snacks (Excerpt)",
+            "nar_paper_map02_research11_6_1": "Letter: Tucked Between the Pages",
+            "nar_paper_map02_research11_7_1": "Memo: Hastily Ripped and Posted",
+            "nar_paper_map02_research11_8_1": "Essay: My Mama",
+            "nar_paper_map02_research11_9_1": "Data Report for the 14th Prototype Tianshi Pillar Blight Resistance Test",
+            "nar_paper_map02_research11_10_1": "Notes: Probably Written by a Disciple",
+            "nar_paper_map02_research11_13_1": "Page: Torn from a Diary",
             "nar_col_lv003_9d1": "Old Photograph",
             "nar_gm01m9_1": "Jeremy's Handyterm",
             "nar_digital_map01_4_1": "Memo: Business Traveler",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Memo: Tianshi",
             "nar_digital_map02_14024_1": "Comm Log: A Sentimental One",
             "nar_digital_map02_15019_1": "A Plan",
+            "nar_digital_map02_research11_14_1": "IR: Founding of the City",
+            "nar_paper_map02_research11_11_1": "Records: Emergency Comm Log",
             "nar_sm1l1m2_3": "A Piece of Scrap Paper",
             "nar_collection_map01_10_1": "Powerful Explosive Suite Coupon",
             "nar_collection_map02_95_1": "Talisman",
@@ -625,7 +637,8 @@
             "research_006prts": "Yanese Ruins of Sword Vault Dale",
             "research_007prts": "Yinglung Pass",
             "research_008prts": "Disaster Victims' Attempts of Survival",
-            "research_009prts": "Operational Model of the Snowy Forest"
+            "research_009prts": "Operational Model of the Snowy Forest",
+            "research_gm02m27": "IR: An R&D City"
         }
     }
 }

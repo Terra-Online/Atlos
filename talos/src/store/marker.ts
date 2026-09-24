@@ -34,6 +34,8 @@ interface IMarkerStore {
     clearImageOpenRequest: () => void;
     filter: string[];
     points: string[];
+    visibleSubregionKey: string | null;
+    setVisibleSubregionKey: (subregionKey: string | null) => void;
     switchFilter: (typeKey: string) => void;
     batchToggleFilter: (typeKeys: string[]) => void;
     setFilterKeys: (typeKeys: string[], active: boolean) => void;
@@ -96,6 +98,12 @@ export const useMarkerStore = create<IMarkerStore>()(
             },
             filter: [],
             points: [],
+            visibleSubregionKey: null,
+            setVisibleSubregionKey: (subregionKey) => {
+                if (get().visibleSubregionKey !== subregionKey) {
+                    set({ visibleSubregionKey: subregionKey });
+                }
+            },
             switchFilter: (typeKey) => {
                 set((state) => {
                     const newFilter = state.filter.includes(typeKey)

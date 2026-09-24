@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Catatan: Kata-Kata Terakhir",
             "nar_paper_map02_15023_1": "Buku Harian: Entri Terakhir",
             "nar_paper_map02_15025_1": "Catatan: Coretan",
+            "nar_paper_map02_research11_2_1": "Tur Singkat: Lanskap Perkotaan",
+            "nar_paper_map02_research11_3_1": "Tanda-tanda Bencana",
+            "nar_paper_map02_research11_4_1": "Panduan Tanggap Darurat Bencana Ombak Hawar (Kutipan)",
+            "nar_paper_map02_research11_5_1": "Aneka Sajian Suiming: Camilan (Kutipan)",
+            "nar_paper_map02_research11_6_1": "Surat: Terselip di antara Halaman",
+            "nar_paper_map02_research11_7_1": "Memo: Dirobek dan Ditempel dengan Tergesa-gesa",
+            "nar_paper_map02_research11_8_1": "Esai: Mamaku",
+            "nar_paper_map02_research11_9_1": "Laporan Data Tes Resistansi Hawar Prototipe Pilar Tianshi ke-14",
+            "nar_paper_map02_research11_10_1": "Catatan: Sepertinya Ditulis oleh Seorang Murid",
+            "nar_paper_map02_research11_13_1": "Halaman: Dirobek dari Buku Harian",
             "nar_col_lv003_9d1": "Foto Tua",
             "nar_gm01m9_1": "Handyterm Jeremy",
             "nar_digital_map01_4_1": "Memo: Orang yang sedang Menempuh Perjalanan Bisnis",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Memo: Tianshi",
             "nar_digital_map02_14024_1": "Log Komunikasi: Orang yang Sentimental",
             "nar_digital_map02_15019_1": "Sebuah Rencana",
+            "nar_digital_map02_research11_14_1": "LP: Pendirian Kota",
+            "nar_paper_map02_research11_11_1": "Catatan: Log Komunikator Darurat",
             "nar_sm1l1m2_3": "Lembaran Kertas Bekas",
             "nar_collection_map01_10_1": "Kupon Set Bahan Peledak Kuat",
             "nar_collection_map02_95_1": "Jimat",
@@ -625,7 +637,8 @@
             "research_006prts": "Reruntuhan Yan di Lembah Benteng Pedang",
             "research_007prts": "Terusan Yinglung",
             "research_008prts": "Upaya Selamat Korban Bencana",
-            "research_009prts": "Model Operasional Hutan Salju"
+            "research_009prts": "Model Operasional Hutan Salju",
+            "research_gm02m27": "LP: Kota Litbang"
         }
     }
 }

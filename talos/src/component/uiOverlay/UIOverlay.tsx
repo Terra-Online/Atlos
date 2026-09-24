@@ -43,6 +43,7 @@ import SettingsIcon from '../../assets/logos/settings.svg?react';
 import AnnouncementIcon from '../../assets/logos/announce.svg?react';
 import { useAnnouncementFlow } from './useAnnFlow';
 import { shouldSuppressInitialAutoOverlays } from '@/services/routing';
+import ScopeIndicator from '@/component/scopeIndicator/ScopeIndicator';
 
 const AnnouncementModal = lazy(() => import('@/component/announcement/announcement'));
 
@@ -305,6 +306,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
                 {/* Filter List: hide on mobile (rendered inside SideBarMobile) */}
                 {!isMobile && <FilterListDesktop isSidebarOpen={isSidebarOpen} />}
+                <ScopeIndicator />
             </div>
 
             {/* Language Modal */}

@@ -54,7 +54,6 @@
     "uploadPending": "सबमिट किया गया। समीक्षा के बाद प्रदर्शित होगा।",
     "readFullText": "पूरा पाठ पढ़ने के लिए क्लिक करें।",
     "share": "इस मार्कर का साझा लिंक कॉपी करें।",
-    "copied": "लिंक कॉपी किया गया",
     "collectionRateSource": "सर्वर-व्यापी संग्रह दर {nums} है – OEM Cloud के आँकड़े",
     "viewer": {
       "author": "अपलोडकर्ता",
@@ -465,6 +464,25 @@
       "desc": "ब्लूप्रिंट शेयरिंग समुदाय"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "केवल {region} दिखाएँ",
+    "showAllSubregions": "सभी उपक्षेत्र दिखाएँ",
+    "highlightSameType": "समान प्रकार के बिंदु हाइलाइट करें ({count})",
+    "clearSameTypeHighlight": "हाइलाइट हटाएँ ({count})",
+    "completeSameType": "समान प्रकार के बिंदु पूरे करें ({count})",
+    "confirmComplete": "{count} बिंदु पूरे करने की पुष्टि करें",
+    "uncompleteSameType": "पूर्णता के चिह्न हटाएँ ({count})",
+    "sharePoint": "यह बिंदु साझा करें",
+    "shareLocation": "यह स्थान साझा करें",
+    "clearAllHighlights": "सभी हाइलाइट हटाएँ",
+    "selectAllCategoryFilters": "सभी चुनें",
+    "deselectAllCategoryFilters": "सभी हटाएँ",
+    "hideCompletedMarkers": "पूरे किए गए मार्कर छिपाएँ",
+    "showCompletedMarkers": "पूरे किए गए मार्कर दिखाएँ",
+    "undo": "पूर्ववत करें",
+    "redo": "फिर से करें",
+    "scopeLabel": "केवल यह दिख रहा है: {region}"
+  },
   "common": {
     "close": "बंद",
     "skip": "छोड़ें",
@@ -477,7 +495,9 @@
     "enable": "चालू",
     "disable": "बंद",
     "expand": "खोलें",
-    "collapse": "समेटें"
+    "collapse": "समेटें",
+    "copied": "लिंक कॉपी हो गया",
+    "copyFailed": "कॉपी नहीं हुआ, फिर से कोशिश करें"
   },
   "announcement": {
     "title": "वेबसाइट सूचना",

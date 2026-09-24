@@ -17,6 +17,7 @@ import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/component/settings/useMapMultiSelect';
 import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/services/endfield';
 import type { LayerType } from '@/store/layer';
+import { MARKER_CONTEXT_MENU_EVENT } from '@/component/map/ContextMenuEvents';
 
 import { ProximityIndex } from '@/component/locator/proximityIndex';
 
@@ -33,6 +34,7 @@ export class MarkerLayer {
 
     private clusterLayer: ClusterLayer;
     private activeFilterKeys: string[] = [];
+    private activeSubregionIds = new Set<string>();
 
     /**
      * marker唯一id到marker Layer映射
@@ -131,8 +133,7 @@ export class MarkerLayer {
             ],
             getActiveFilterKeys: () => this.activeFilterKeys,
             getMarkerVersion: () => this.markerVersion,
-            isSubregionVisible: (subregionId) =>
-                this.map.hasLayer(this.layerSubregionDict[subregionId]),
+            isSubregionVisible: (subregionId) => this.activeSubregionIds.has(subregionId),
         });
     }
 
@@ -392,6 +393,7 @@ export class MarkerLayer {
         const markerData = this.markerDataDict[id];
         const layer = this.markerDict[id];
         if (!markerData || !layer) return false;
+        if (!this.activeSubregionIds.has(markerData.subregId)) return false;
 
         // A previous filter pass may still be waiting to remove this marker
         // after its fade-out. Reusing the normal visibility path must cancel
@@ -587,6 +589,9 @@ export class MarkerLayer {
                 this.collectedPoints,
                 {
                     beforeCheck: (markerData, context) => this.prepareMarkerCheck(markerData, context),
+                    onContextMenu: (markerData, originalEvent) => {
+                        this.map.fire(MARKER_CONTEXT_MENU_EVENT, { marker: markerData, originalEvent });
+                    },
                 },
             );
             this.markerDataDict[marker.id] = marker;
@@ -617,6 +622,7 @@ export class MarkerLayer {
         });
 
         const subregions = REGION_DICT[regionId].subregions;
+        this.activeSubregionIds = new Set(subregions);
         subregions.forEach((subregion) => {
             this.layerSubregionDict[subregion].addTo(this.map);
         });
@@ -631,6 +637,15 @@ export class MarkerLayer {
         }
         this.filterMarker(this.activeFilterKeys);
         useMarkerStore.getState().bumpMarkerDataVersion();
+    }
+
+    setVisibleSubregion(regionId: string, subregionKey: string | null) {
+        const regionSubregions = REGION_DICT[regionId]?.subregions ?? [];
+        const activeSubregions = subregionKey && regionSubregions.includes(subregionKey)
+            ? [subregionKey]
+            : regionSubregions;
+        this.activeSubregionIds = new Set(activeSubregions);
+        this.clusterLayer.setActiveSubregions(activeSubregions);
     }
 
     filterMarker(typeKeys: string[]) {
@@ -681,7 +696,8 @@ export class MarkerLayer {
 
             // Check if marker should be shown: must be in filter AND not completed (if hiding completed is enabled)
             const forceVisible = this.checkedVisibleOverrideIds.has(id);
-            const shouldShow = (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
+            const shouldShow = this.activeSubregionIds.has(markerData.subregId)
+                && (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
                 && (!completedMarkerIds.has(id) || forceVisible);
             const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
             const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
@@ -739,7 +755,10 @@ export class MarkerLayer {
             : this.activeFilterKeys
         ).flatMap((key) => this.markerTypeMap[key] || []);
 
-        return visibleMarkerIds.length;
+        return visibleMarkerIds.filter((id) => {
+            const marker = this.markerDataDict[id];
+            return marker && this.activeSubregionIds.has(marker.subregId);
+        }).length;
     }
 
     /**
