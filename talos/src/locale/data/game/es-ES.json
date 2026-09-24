@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Notas: Palabras finales",
             "nar_paper_map02_15023_1": "Diario: Última entrada",
             "nar_paper_map02_15025_1": "Notas: Garabateado",
+            "nar_paper_map02_research11_2_1": "Recorrido rápido: Paisaje urbano",
+            "nar_paper_map02_research11_3_1": "Señales del desastre",
+            "nar_paper_map02_research11_4_1": "Manual de respuesta de emergencia ante desastres de Ola de plaga (extracto)",
+            "nar_paper_map02_research11_5_1": "Delicias misceláneas de Suiming: Aperitivos (Extracto)",
+            "nar_paper_map02_research11_6_1": "Carta: Escondida entre las páginas",
+            "nar_paper_map02_research11_7_1": "Memorándum: Arrancado y publicado apresuradamente",
+            "nar_paper_map02_research11_8_1": "Ensayo: Mi mamá",
+            "nar_paper_map02_research11_9_1": "Informe de datos de la 14.ª prueba de resistencia a la Plaga del prototipo de Pilar de Tianshi",
+            "nar_paper_map02_research11_10_1": "Notas: Probablemente escritas por un Discípulo",
+            "nar_paper_map02_research11_13_1": "Página: Arrancada de un diario",
             "nar_col_lv003_9d1": "Fotografía vieja",
             "nar_gm01m9_1": "Terminal portátil de Jeremy",
             "nar_digital_map01_4_1": "Memorándum: Viajero de negocios",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Nota: Tianshi",
             "nar_digital_map02_14024_1": "Registro de comunicaciones: Mensaje sentimental",
             "nar_digital_map02_15019_1": "Un plan",
+            "nar_digital_map02_research11_14_1": "I.I.: Fundación de la ciudad",
+            "nar_paper_map02_research11_11_1": "Registros: Registro de Comunicador de emergencia",
             "nar_sm1l1m2_3": "A Trozo de papel desechado",
             "nar_collection_map01_10_1": "Cupón para el Arsenal potente de explosivos",
             "nar_collection_map02_95_1": "Talismán",
@@ -625,7 +637,8 @@
             "research_006prts": "Ruinas yanesas del Valle Ocultaespadas",
             "research_007prts": "Paso de Yinglung",
             "research_008prts": "Intentos de supervivencia de víctimas del desastre",
-            "research_009prts": "Modelo operativo del Bosque Nevado"
+            "research_009prts": "Modelo operativo del Bosque Nevado",
+            "research_gm02m27": "I.I.: Una ciudad de I+D"
         }
     }
 }

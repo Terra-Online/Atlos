@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Appunti: ultime parole",
             "nar_paper_map02_15023_1": "Diario: Ultima pagina",
             "nar_paper_map02_15025_1": "Appunti: scarabocchi",
+            "nar_paper_map02_research11_2_1": "Tour rapido: Paesaggio urbano",
+            "nar_paper_map02_research11_3_1": "Segni della catastrofe",
+            "nar_paper_map02_research11_4_1": "Manuale per la risposta d'emergenza alle catastrofi da Contaminazione acquatica (estratto)",
+            "nar_paper_map02_research11_5_1": "Varie delizie di Suiming: snack (estratto)",
+            "nar_paper_map02_research11_6_1": "Lettera: nascosta tra le pagine",
+            "nar_paper_map02_research11_7_1": "Nota: strappata e affissa in fretta",
+            "nar_paper_map02_research11_8_1": "Tema: La mia mamma",
+            "nar_paper_map02_research11_9_1": "Rapporto dati sul test di resistenza alla Contaminazione del 14° prototipo della colonna Tianshi",
+            "nar_paper_map02_research11_10_1": "Appunti: Scritti probabilmente da un discepolo",
+            "nar_paper_map02_research11_13_1": "Pagina: Strappata da un diario",
             "nar_col_lv003_9d1": "Vecchia fotografia",
             "nar_gm01m9_1": "Terminale portatile di Jeremy",
             "nar_digital_map01_4_1": "Nota: Viaggio d'affari",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Nota: Tianshi",
             "nar_digital_map02_14024_1": "Registro comunicazioni: Sentimentalismo",
             "nar_digital_map02_15019_1": "Un piano",
+            "nar_digital_map02_research11_14_1": "RI: Fondazione della città",
+            "nar_paper_map02_research11_11_1": "Documenti: Registro trasmittente di emergenza",
             "nar_sm1l1m2_3": "Un pezzo di carta straccia",
             "nar_collection_map01_10_1": "Coupon per set di esplosivi ultrapotenti",
             "nar_collection_map02_95_1": "Talismano",
@@ -625,7 +637,8 @@
             "research_006prts": "Rovine yanesi della Valletta di Voltaspada",
             "research_007prts": "Valico di Yinglung",
             "research_008prts": "Tentativi di sopravvivenza",
-            "research_009prts": "Modello op. Foresta innevata"
+            "research_009prts": "Modello op. Foresta innevata",
+            "research_gm02m27": "RI: Una città di ricerca e sviluppo"
         }
     }
 }

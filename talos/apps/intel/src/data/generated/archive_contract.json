@@ -2292,7 +2292,8 @@
         "id": "nar_paper_map02_15024_1",
         "icon": "prts_c34m_manuscript",
         "acquisition": {
-          "method": "auto"
+          "method": "mission",
+          "missionId": "c34m3"
         }
       },
       {
@@ -2301,6 +2302,86 @@
         "acquisition": {
           "method": "map",
           "pointId": 36100190020
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_2_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020003
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_3_1",
+        "icon": "prts_read_oldbook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020021
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_4_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020016
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_5_1",
+        "icon": "prts_read_expensivebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020017
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_6_1",
+        "icon": "prts_read_letter",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020018
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_7_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020015
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_8_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020013
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_9_1",
+        "icon": "prts_read_notebook",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020014
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_10_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020012
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_13_1",
+        "icon": "prts_read_note",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020011
         }
       }
     ],
@@ -2986,6 +3067,29 @@
         "acquisition": {
           "method": "map",
           "pointId": 36100190025
+        }
+      },
+      {
+        "id": "nar_digital_map02_research11_14_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020027
+        }
+      },
+      {
+        "id": "nar_digital_map02_research11_12_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "auto"
+        }
+      },
+      {
+        "id": "nar_paper_map02_research11_11_1",
+        "icon": "prts_read_electronicscreen",
+        "acquisition": {
+          "method": "map",
+          "pointId": 46300020010
         }
       }
     ],
@@ -3734,6 +3838,14 @@
         "acquisition": {
           "method": "invstgt",
           "researchId": "research_008prts"
+        }
+      },
+      {
+        "id": "nar_report_map02_research11_1_1",
+        "icon": "prts_read_document",
+        "acquisition": {
+          "method": "invstgt",
+          "researchId": "research_gm02m27"
         }
       },
       {

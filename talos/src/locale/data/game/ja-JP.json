@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "最後のメモ",
             "nar_paper_map02_15023_1": "最後の手記",
             "nar_paper_map02_15025_1": "走り書きの紙切れ",
+            "nar_paper_map02_research11_2_1": "城内ガイド",
+            "nar_paper_map02_research11_3_1": "災害の前兆",
+            "nar_paper_map02_research11_4_1": "『侵蝕潮災害応急対応マニュアル（抜粋）』",
+            "nar_paper_map02_research11_5_1": "『遂明雑記・飲食編』抜粋",
+            "nar_paper_map02_research11_6_1": "『書物に挟まれていた一通の手紙』",
+            "nar_paper_map02_research11_7_1": "慌ただしく破り取られた一枚のメモ",
+            "nar_paper_map02_research11_8_1": "『わたしのママ』",
+            "nar_paper_map02_research11_9_1": "『第14回 試作型天師杭 抗侵蝕実験データレポート』",
+            "nar_paper_map02_research11_10_1": "見習いが残したと思われるメモ",
+            "nar_paper_map02_research11_13_1": "日記の断片",
             "nar_col_lv003_9d1": "古い写真",
             "nar_gm01m9_1": "ジェレミーの携帯端末",
             "nar_digital_map01_4_1": "出張者のメモ",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "天師のメッセージ",
             "nar_digital_map02_14024_1": "感慨に浸る者の通信",
             "nar_digital_map02_15019_1": "ある計画書",
+            "nar_digital_map02_research11_14_1": "築城縁起考",
+            "nar_paper_map02_research11_11_1": "残された緊急通信記録",
             "nar_sm1l1m2_3": "破れたメモ",
             "nar_collection_map01_10_1": "高威力爆発物セットの引換券",
             "nar_collection_map02_95_1": "お守り",
@@ -625,7 +637,8 @@
             "research_006prts": "蔵剣谷の炎国遺跡",
             "research_007prts": "応龍関",
             "research_008prts": "被災者たちの生存記録",
-            "research_009prts": "雪松林の運用方式"
+            "research_009prts": "雪松林の運用方式",
+            "research_gm02m27": "ある研究都市に関する調査報告"
         }
     }
 }
