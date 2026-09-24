@@ -277,6 +277,18 @@
           "ritual_shrine": "Sanctuaire rituel",
           "old_resting_point": "Ancien point de repos"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Périphérie de Suiming",
+          "suiming_city_center": "Centre-ville de Suiming",
+          "tianshi_pillar_records_hall": "Salle des archives du pilier des Tianshi",
+          "tianshi_pillar_research_labs": "Laboratoire de recherche du pilier des Tianshi",
+          "physical_training_field": "Terrain d'entraînement physique",
+          "blight_monitoring_zone": "Zone de surveillance de la Gangrène"
+        }
       }
     }
   },

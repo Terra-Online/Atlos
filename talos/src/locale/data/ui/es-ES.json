@@ -54,7 +54,6 @@
     "uploadPending": "Enviado. Se mostrará tras la revisión.",
     "readFullText": "Haz clic para leer el texto completo.",
     "share": "Copiar enlace compartible de este punto.",
-    "copied": "Enlace copiado",
     "collectionRateSource": "La tasa global de recolección es del {nums} – Estadísticas de OEM Cloud",
     "viewer": {
       "author": "Autor",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Mostrar solo {region}",
+    "showAllSubregions": "Mostrar todas las subregiones",
+    "highlightSameType": "Resaltar puntos del mismo tipo aquí ({count})",
+    "clearSameTypeHighlight": "Quitar resaltado ({count})",
+    "completeSameType": "Completar puntos del mismo tipo ({count})",
+    "confirmComplete": "Confirmar que se completen {count} puntos",
+    "uncompleteSameType": "Quitar marcas de completado ({count})",
+    "sharePoint": "Compartir este punto",
+    "shareLocation": "Compartir esta ubicación",
+    "clearAllHighlights": "Quitar todos los resaltados",
+    "selectAllCategoryFilters": "Seleccionar todos",
+    "deselectAllCategoryFilters": "Deseleccionar todos",
+    "hideCompletedMarkers": "Ocultar puntos completados",
+    "showCompletedMarkers": "Mostrar puntos completados",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "scopeLabel": "Mostrando solo: {region}"
+  },
   "common": {
     "close": "Cerrar",
     "skip": "Omitir",
@@ -477,7 +495,9 @@
     "enable": "Habilitar",
     "disable": "Deshabilitar",
     "expand": "Expandir",
-    "collapse": "Contraer"
+    "collapse": "Contraer",
+    "copied": "Enlace copiado",
+    "copyFailed": "Error al copiar, inténtalo de nuevo"
   },
   "announcement": {
     "title": "Aviso del sitio",

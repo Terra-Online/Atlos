@@ -54,7 +54,6 @@
     "uploadPending": "送信しました。審査後に公開されます。",
     "readFullText": "全文を読む。",
     "share": "この地点の共有リンクをコピー。",
-    "copied": "リンクをコピーしました",
     "collectionRateSource": "全体の収集率：{nums}（OEM Cloud の統計）",
     "viewer": {
       "author": "投稿者",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "{region} のみ表示",
+    "showAllSubregions": "すべてのサブエリアを表示",
+    "highlightSameType": "同種ポイントをハイライト（{count}）",
+    "clearSameTypeHighlight": "ハイライト解除（{count}）",
+    "completeSameType": "同種ポイントを完了（{count}）",
+    "confirmComplete": "{count} 個のポイントの完了を確認",
+    "uncompleteSameType": "完了マークを解除（{count}）",
+    "sharePoint": "このポイントを共有",
+    "shareLocation": "この場所を共有",
+    "clearAllHighlights": "すべてのハイライトを解除",
+    "selectAllCategoryFilters": "すべて選択",
+    "deselectAllCategoryFilters": "すべて解除",
+    "hideCompletedMarkers": "完了済みマーカーを非表示",
+    "showCompletedMarkers": "完了済みマーカーを表示",
+    "undo": "元に戻す",
+    "redo": "やり直す",
+    "scopeLabel": "表示中：{region} のみ"
+  },
   "common": {
     "close": "閉じる",
     "skip": "スキップ",
@@ -477,7 +495,9 @@
     "enable": "有効",
     "disable": "無効",
     "expand": "展開",
-    "collapse": "折りたたむ"
+    "collapse": "折りたたむ",
+    "copied": "リンクをコピーしました",
+    "copyFailed": "コピーに失敗しました。もう一度お試しください"
   },
   "announcement": {
     "title": "サイトからのお知らせ",

@@ -266,6 +266,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                     initialEmpty={false}
                                     variant="versionNew"
                                     reorderable={false}
+                                    typeKeys={group.types.map((typeInfo) => typeInfo.key)}
                                 >
                                     {group.types.map((typeInfo) => (
                                         <MarkSelector
@@ -320,6 +321,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                             columns={filterColumns}
                             binderMode={!!showBinder}
                             initialEmpty={emptyCategories.has(subCategory)}
+                            typeKeys={types.map((typeInfo) => typeInfo.key)}
                         >
                                             {showBinder && binderData ? (
                                                 <>

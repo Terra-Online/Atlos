@@ -54,7 +54,6 @@
     "uploadPending": "提交成功，待審核後顯示。",
     "readFullText": "點此查看全文。",
     "share": "複製此點位之分享連結。",
-    "copied": "連結已複製",
     "collectionRateSource": "全服收集率為{nums} – 統計自 OEM Cloud",
     "viewer": {
       "author": "貢獻者",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "只顯示{region}",
+    "showAllSubregions": "顯示所有子地區",
+    "highlightSameType": "高亮此區域同類地點（{count}）",
+    "clearSameTypeHighlight": "取消高亮（{count}）",
+    "completeSameType": "完成同類地點（{count}）",
+    "confirmComplete": "確認完成 {count} 個地點",
+    "uncompleteSameType": "取消完成標記（{count}）",
+    "sharePoint": "分享此地點",
+    "shareLocation": "分享此位置",
+    "clearAllHighlights": "清除所有高亮",
+    "selectAllCategoryFilters": "選取全部",
+    "deselectAllCategoryFilters": "取消全部",
+    "hideCompletedMarkers": "隱藏已完成點位",
+    "showCompletedMarkers": "顯示已完成點位",
+    "undo": "復原",
+    "redo": "重做",
+    "scopeLabel": "當前顯示:{region}"
+  },
   "common": {
     "close": "關閉",
     "skip": "跳過",
@@ -477,7 +495,9 @@
     "enable": "啟用",
     "disable": "禁用",
     "expand": "展開",
-    "collapse": "收起"
+    "collapse": "收起",
+    "copied": "連結已複製",
+    "copyFailed": "複製失敗，請重試"
   },
   "announcement": {
     "title": "網站公告",

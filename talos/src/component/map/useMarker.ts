@@ -25,6 +25,7 @@ export function useMarker(
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
     const temporarySelectedPoints = useMarkerStore((state) => state.temporarySelectedPoints);
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
+    const visibleSubregionKey = useMarkerStore((state) => state.visibleSubregionKey);
     const prefsHideCompletedMarkers = useHideCompletedMarkers();
     const locatorViewMode = useLocatorStore((state) => state.viewMode);
     const locatorPosition = useLocatorStore((state) => state.lastPosition);
@@ -64,13 +65,14 @@ export function useMarker(
     // 应用 filter 筛选
     useEffect(() => {
         const markerLayer = mapCore?.markerLayer;
+        markerLayer?.setVisibleSubregion(currentRegion, visibleSubregionKey);
         markerLayer?.filterMarker(filter);
         const currentPoints = markerLayer
             ?.getCurrentPoints(currentRegion)
             .map((point) => point.id) ?? [];
 
         useMarkerStore.setState({ points: currentPoints });
-    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints, markerDataVersion]);
+    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints, markerDataVersion, visibleSubregionKey]);
 
     // Keep production auto-clustering unless the recording tool explicitly opts out.
     useEffect(() => {

@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "마지막 노트",
             "nar_paper_map02_15023_1": "마지막 일지",
             "nar_paper_map02_15025_1": "휘갈겨 쓴 쪽지",
+            "nar_paper_map02_research11_2_1": "도시 풍경 요약",
+            "nar_paper_map02_research11_3_1": "재해의 전조",
+            "nar_paper_map02_research11_4_1": "<침식 조류 재해 응급 처치 매뉴얼(발췌)>",
+            "nar_paper_map02_research11_5_1": "<수명잡록 · 음식편> 발췌",
+            "nar_paper_map02_research11_6_1": "<책장 사이에 끼워져 있던 편지>",
+            "nar_paper_map02_research11_7_1": "급히 찢어 낸 메모 한 장",
+            "nar_paper_map02_research11_8_1": "<우리 엄마>",
+            "nar_paper_map02_research11_9_1": "<제14차 천사장 시제품 침식 내성 실험 데이터 보고>",
+            "nar_paper_map02_research11_10_1": "제자가 남긴 것으로 추정되는 노트",
+            "nar_paper_map02_research11_13_1": "찢겨 나간 일기장",
             "nar_col_lv003_9d1": "오래된 사진",
             "nar_gm01m9_1": "제레미의 휴대용 단말기",
             "nar_digital_map01_4_1": "출장 간 사람이 남긴 메시지",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "천사의 메시지",
             "nar_digital_map02_14024_1": "감회에 젖은 이의 통신",
             "nar_digital_map02_15019_1": "계획서 한 부",
+            "nar_digital_map02_research11_14_1": "도시 건설의 유래에 대한 고찰",
+            "nar_paper_map02_research11_11_1": "남겨진 긴급 통신 기록",
             "nar_sm1l1m2_3": "찢어진 쪽지 조각",
             "nar_collection_map01_10_1": "고위력 폭발물 키트 교환권",
             "nar_collection_map02_95_1": "호신부",
@@ -625,7 +637,8 @@
             "research_006prts": "장검 골짜기 염국 유적",
             "research_007prts": "응룡 관문",
             "research_008prts": "피해자들의 생존 기록",
-            "research_009prts": "눈 덮인 소나무 숲의 작동 방식"
+            "research_009prts": "눈 덮인 소나무 숲의 작동 방식",
+            "research_gm02m27": "어느 과학 연구 도시에 관한 조사 보고서"
         }
     }
 }

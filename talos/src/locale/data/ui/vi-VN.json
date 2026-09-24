@@ -54,7 +54,6 @@
     "uploadPending": "Đã gửi. Sẽ hiển thị sau khi được duyệt.",
     "readFullText": "Nhấn để đọc toàn bộ nội dung.",
     "share": "Sao chép liên kết chia sẻ cho điểm này.",
-    "copied": "Đã sao chép liên kết",
     "collectionRateSource": "Tỷ lệ thu thập toàn máy chủ là {nums} – Thống kê từ OEM Cloud",
     "viewer": {
       "author": "Người đăng",
@@ -465,6 +464,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Chỉ hiển thị {region}",
+    "showAllSubregions": "Hiển thị tất cả khu vực con",
+    "highlightSameType": "Làm nổi bật các điểm cùng loại tại đây ({count})",
+    "clearSameTypeHighlight": "Bỏ tô sáng ({count})",
+    "completeSameType": "Hoàn thành các điểm cùng loại ({count})",
+    "confirmComplete": "Xác nhận hoàn thành {count} điểm",
+    "uncompleteSameType": "Bỏ dấu hoàn thành ({count})",
+    "sharePoint": "Chia sẻ điểm này",
+    "shareLocation": "Chia sẻ vị trí này",
+    "clearAllHighlights": "Bỏ tô sáng tất cả",
+    "selectAllCategoryFilters": "Chọn tất cả",
+    "deselectAllCategoryFilters": "Bỏ chọn tất cả",
+    "hideCompletedMarkers": "Ẩn điểm đã hoàn thành",
+    "showCompletedMarkers": "Hiện điểm đã hoàn thành",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "scopeLabel": "Chỉ đang hiển thị: {region}"
+  },
   "common": {
     "close": "Đóng",
     "skip": "Bỏ qua",
@@ -477,7 +495,9 @@
     "enable": "Bật",
     "disable": "Tắt",
     "expand": "Mở rộng",
-    "collapse": "Thu gọn"
+    "collapse": "Thu gọn",
+    "copied": "Đã sao chép liên kết",
+    "copyFailed": "Sao chép thất bại, hãy thử lại"
   },
   "announcement": {
     "title": "Thông báo trang web",

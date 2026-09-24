@@ -54,7 +54,6 @@
     "uploadPending": "Uppladdningen mottagen. Visas efter granskning.",
     "readFullText": "Klicka för att läsa hela texten.",
     "share": "Kopiera delningslänken för denna markör.",
-    "copied": "Länk kopierad",
     "collectionRateSource": "Den globala insamlingsgraden är {nums} – Statistik från OEM Cloud",
     "viewer": {
       "author": "Uppladdare",
@@ -465,6 +464,25 @@
       "desc": "Community för ritningsdelning"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Visa endast {region}",
+    "showAllSubregions": "Visa alla delregioner",
+    "highlightSameType": "Markera punkter av samma typ här ({count})",
+    "clearSameTypeHighlight": "Ta bort markeringen ({count})",
+    "completeSameType": "Slutför punkter av samma typ ({count})",
+    "confirmComplete": "Bekräfta att {count} punkter slutförs",
+    "uncompleteSameType": "Ta bort slutförandemarkeringar ({count})",
+    "sharePoint": "Dela denna punkt",
+    "shareLocation": "Dela denna plats",
+    "clearAllHighlights": "Ta bort alla markeringar",
+    "selectAllCategoryFilters": "Välj alla",
+    "deselectAllCategoryFilters": "Avmarkera alla",
+    "hideCompletedMarkers": "Dölj slutförda punkter",
+    "showCompletedMarkers": "Visa slutförda punkter",
+    "undo": "Ångra",
+    "redo": "Gör om",
+    "scopeLabel": "Visar endast: {region}"
+  },
   "common": {
     "close": "Stäng",
     "skip": "Hoppa över",
@@ -477,7 +495,9 @@
     "enable": "Aktivera",
     "disable": "Inaktivera",
     "expand": "Expandera",
-    "collapse": "Komprimera"
+    "collapse": "Komprimera",
+    "copied": "Länken kopierades",
+    "copyFailed": "Kopieringen misslyckades, försök igen"
   },
   "announcement": {
     "title": "Webbplatsmeddelande",

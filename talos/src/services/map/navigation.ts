@@ -1,5 +1,5 @@
 import type { MapCore } from '@/component/mapCore/map';
-import type { Map as LeafletMap } from 'leaflet';
+import L, { type Map as LeafletMap } from 'leaflet';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
@@ -18,10 +18,20 @@ export interface SharedPointTarget extends MarkerNavigationOptions {
     pointId: string;
 }
 
+export interface SharedLocationTarget {
+    regionKey: string;
+    center: [number, number];
+    zoom?: number;
+}
+
+type PendingNavigation =
+    | { kind: 'point'; target: SharedPointTarget }
+    | { kind: 'location'; target: SharedLocationTarget };
+
 const TARGET_ZOOM = 3.0;
 
 let mapCoreRef: MapCore | null = null;
-let pendingTarget: SharedPointTarget | null = null;
+let pendingNavigation: PendingNavigation | null = null;
 let isNavigating = false;
 
 const wait = (ms: number) =>
@@ -60,7 +70,7 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     }
 
     if (!mapCoreRef) {
-        pendingTarget = target;
+        pendingNavigation = { kind: 'point', target };
         return;
     }
 
@@ -116,17 +126,50 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     }
 };
 
-const flushPendingNavigation = async (): Promise<void> => {
-    if (isNavigating || !pendingTarget || !mapCoreRef) return;
+const navigateToLocation = async (target: SharedLocationTarget): Promise<void> => {
+    const regionStore = useRegion.getState();
+    if (regionStore.currentRegionKey !== target.regionKey) {
+        regionStore.setCurrentRegion(target.regionKey);
+    }
 
-    const target = pendingTarget;
-    pendingTarget = null;
+    if (!mapCoreRef) {
+        pendingNavigation = { kind: 'location', target };
+        return;
+    }
+
+    const mapCore = mapCoreRef;
+    const regionApplied = await mapCore.switchRegion(target.regionKey);
+    if (regionApplied === false) return;
+
+    const center = L.latLng(target.center[0], target.center[1]);
+    const configuredBounds = mapCore.map.options.maxBounds;
+    if (
+        configuredBounds
+        && typeof (configuredBounds as L.LatLngBounds).contains === 'function'
+        && !(configuredBounds as L.LatLngBounds).contains(center)
+    ) return;
+
+    const region = REGION_DICT[target.regionKey];
+    const requestedZoom = target.zoom ?? region?.initialZoom ?? mapCore.map.getZoom();
+    const zoom = Math.min(
+        mapCore.map.getMaxZoom(),
+        Math.max(mapCore.map.getMinZoom(), requestedZoom),
+    );
+    mapCore.map.flyTo(center, zoom, { animate: true, duration: 0.9 });
+};
+
+const flushPendingNavigation = async (): Promise<void> => {
+    if (isNavigating || !pendingNavigation || !mapCoreRef) return;
+
+    const navigation = pendingNavigation;
+    pendingNavigation = null;
     isNavigating = true;
     try {
-        await navigateToPoint(target);
+        if (navigation.kind === 'point') await navigateToPoint(navigation.target);
+        else await navigateToLocation(navigation.target);
     } finally {
         isNavigating = false;
-        if (pendingTarget) {
+        if (pendingNavigation) {
             void flushPendingNavigation();
         }
     }
@@ -150,7 +193,24 @@ export const navigateToSharedPoint = (target: SharedPointTarget): void => {
     if (regionStore.currentRegionKey !== normalizedTarget.regionKey) {
         regionStore.setCurrentRegion(normalizedTarget.regionKey);
     }
-    pendingTarget = normalizedTarget;
+    pendingNavigation = { kind: 'point', target: normalizedTarget };
+    void flushPendingNavigation();
+};
+
+export const navigateToSharedLocation = (target: SharedLocationTarget): void => {
+    const normalizedTarget: SharedLocationTarget = {
+        regionKey: target.regionKey,
+        center: [Number(target.center[0]), Number(target.center[1])],
+        zoom: target.zoom,
+    };
+    if (!Number.isFinite(normalizedTarget.center[0]) || !Number.isFinite(normalizedTarget.center[1])) {
+        return;
+    }
+    const regionStore = useRegion.getState();
+    if (regionStore.currentRegionKey !== normalizedTarget.regionKey) {
+        regionStore.setCurrentRegion(normalizedTarget.regionKey);
+    }
+    pendingNavigation = { kind: 'location', target: normalizedTarget };
     void flushPendingNavigation();
 };
 

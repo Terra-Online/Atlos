@@ -1,0 +1,22 @@
+.markerHeader {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+
+    strong,
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        letter-spacing: 0;
+    }
+
+    strong {
+        font-size: 0.875rem;
+    }
+
+    span {
+        font-size: 0.75rem;
+        opacity: 0.65;
+    }
+}
