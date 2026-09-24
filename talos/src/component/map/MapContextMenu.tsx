@@ -17,6 +17,7 @@ import {
     highlightSameType,
     resolveMarkerBulkTargets,
     setSameTypeCompleted,
+    type MarkerBulkOptions,
 } from '@/services/map/markerBulkActions';
 import { commitMarkerSelection, useHistoryStore } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
@@ -27,7 +28,7 @@ import {
     type MarkerContextMenuPayload,
 } from './ContextMenuEvents';
 import { emitPreviewLeave } from '@/component/mapCore/marker/markerRenderer';
-import { getSubregionLabel } from './subregionLabel';
+import { getSubregionLabel } from '@/services/map/subregionLabel';
 import styles from './MapContextMenu.module.scss';
 
 type MenuTarget = { subregionKey: string | null } & (
@@ -93,6 +94,10 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
 
     useEffect(() => {
         const close = () => closeMenu();
+        const mapContainer = map.getContainer();
+        const preserveNativeContextMenu = (event: MouseEvent) => {
+            if (event.altKey) event.stopImmediatePropagation();
+        };
         const onMarkerContext = (leafletEvent: L.LeafletEvent) => {
             const event = leafletEvent as L.LeafletEvent & MarkerContextMenuPayload;
             if (event.originalEvent.altKey) return;
@@ -130,11 +135,15 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
             });
         };
 
+        // Leaflet prevents the browser menu before firing its contextmenu event.
+        // Capture Alt/Option first so the native menu remains reachable.
+        mapContainer.addEventListener('contextmenu', preserveNativeContextMenu, true);
         map.on(MARKER_CONTEXT_MENU_EVENT, onMarkerContext);
         map.on('contextmenu', onMapContext);
         map.on('click movestart zoomstart', close);
         map.on('talos:regionSwitched' as string, close);
         return () => {
+            mapContainer.removeEventListener('contextmenu', preserveNativeContextMenu, true);
             map.off(MARKER_CONTEXT_MENU_EVENT, onMarkerContext);
             map.off('contextmenu', onMapContext);
             map.off('click movestart zoomstart', close);
@@ -155,13 +164,14 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
     const markerScope = useMemo(() => target?.kind === 'marker' && target.subregionKey
         ? { kind: 'subregion' as const, id: target.subregionKey }
         : null, [target]);
+    const markerBulkOptions: MarkerBulkOptions = useMemo(() => ({ treatArchivesAsSameType: true }), []);
     const bulkTargets = useMemo(() => {
         void activePoints;
         void selectedPoints;
         return target?.kind === 'marker' && markerScope
-            ? resolveMarkerBulkTargets(target.marker, markerScope)
+            ? resolveMarkerBulkTargets(target.marker, markerScope, markerBulkOptions)
             : null;
-    }, [activePoints, markerScope, selectedPoints, target]);
+    }, [activePoints, markerBulkOptions, markerScope, selectedPoints, target]);
 
     const translate = useCallback((key: string, values: Record<string, string | number> = {}) => {
         const value = String(tUI(`contextMenu.${key}`) || key);
@@ -179,9 +189,9 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
     if (!target) return <AnimatePresence />;
 
     const copyLabel = copyState === 'copied'
-        ? translate('copied')
+        ? String(tUI('common.copied') || 'Link copied')
         : copyState === 'failed'
-            ? translate('copyFailed')
+            ? String(tUI('common.copyFailed') || 'Copy failed, try again')
             : target.kind === 'marker'
                 ? translate('sharePoint')
                 : translate('shareLocation');
@@ -214,13 +224,13 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
                         id: 'highlight-same',
                         label: translate('highlightSameType', { count: bulkTargets?.selectableIds.length ?? 0 }),
                         disabled: !bulkTargets?.selectableIds.length,
-                        onSelect: () => { if (markerScope) highlightSameType(target.marker, markerScope); },
+                        onSelect: () => { if (markerScope) highlightSameType(target.marker, markerScope, markerBulkOptions); },
                     },
                     {
                         id: 'clear-same-highlight',
                         label: translate('clearSameTypeHighlight', { count: bulkTargets?.selectedIds.length ?? 0 }),
                         disabled: !bulkTargets?.selectedIds.length,
-                        onSelect: () => { if (markerScope) clearSameTypeHighlight(target.marker, markerScope); },
+                        onSelect: () => { if (markerScope) clearSameTypeHighlight(target.marker, markerScope, markerBulkOptions); },
                     },
                 ],
             },
@@ -240,14 +250,14 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
                                 setConfirmingComplete(true);
                                 return;
                             }
-                            if (markerScope) setSameTypeCompleted(target.marker, markerScope, true);
+                            if (markerScope) setSameTypeCompleted(target.marker, markerScope, true, markerBulkOptions);
                         },
                     },
                     {
                         id: 'uncomplete-same',
                         label: translate('uncompleteSameType', { count: bulkTargets?.completedIds.length ?? 0 }),
                         disabled: !bulkTargets?.completedIds.length,
-                        onSelect: () => { if (markerScope) setSameTypeCompleted(target.marker, markerScope, false); },
+                        onSelect: () => { if (markerScope) setSameTypeCompleted(target.marker, markerScope, false, markerBulkOptions); },
                     },
                 ],
             },

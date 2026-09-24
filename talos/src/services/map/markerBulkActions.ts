@@ -6,6 +6,7 @@ import {
 import { commitMarkerSelection, commitPointProgress } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
 import { getActivePoints } from '@/store/userRecord';
+import { MARKER_TYPE_DICT } from '@/data/marker';
 
 export type MarkerBulkScope =
     | { kind: 'subregion'; id: string }
@@ -19,6 +20,21 @@ export type MarkerBulkTargets = {
     selectableIds: string[];
 };
 
+export type MarkerBulkOptions = {
+    treatArchivesAsSameType?: boolean;
+};
+
+const isArchiveType = (typeKey: string): boolean => MARKER_TYPE_DICT[typeKey]?.category?.main === 'files';
+
+const matchesBulkType = (
+    markerType: string,
+    targetType: string,
+    options?: MarkerBulkOptions,
+): boolean => (
+    markerType === targetType
+    || Boolean(options?.treatArchivesAsSameType && isArchiveType(targetType) && isArchiveType(markerType))
+);
+
 const getScopeMarkers = (scope: MarkerBulkScope): IMarkerData[] => (
     scope.kind === 'subregion'
         ? getLoadedSubregionMarkers(scope.id)
@@ -28,9 +44,10 @@ const getScopeMarkers = (scope: MarkerBulkScope): IMarkerData[] => (
 export const resolveMarkerBulkTargets = (
     point: Pick<IMarkerData, 'type'>,
     scope: MarkerBulkScope,
+    options?: MarkerBulkOptions,
 ): MarkerBulkTargets => {
     const allIds = getScopeMarkers(scope)
-        .filter((marker) => marker.type === point.type)
+        .filter((marker) => matchesBulkType(marker.type, point.type, options))
         .map((marker) => marker.id);
     const completed = new Set(getActivePoints());
     const selected = new Set(useMarkerStore.getState().selectedPoints);
@@ -44,12 +61,18 @@ export const resolveMarkerBulkTargets = (
 export const highlightSameType = (
     point: Pick<IMarkerData, 'type'>,
     scope: MarkerBulkScope,
+    options?: MarkerBulkOptions,
 ): number => {
     const markerStore = useMarkerStore.getState();
-    if (!markerStore.filter.includes(point.type)) {
-        markerStore.setFilter([...markerStore.filter, point.type]);
+    const scopeMarkers = getScopeMarkers(scope);
+    const filterTypes = options?.treatArchivesAsSameType && isArchiveType(point.type)
+        ? [...new Set(scopeMarkers.filter((marker) => isArchiveType(marker.type)).map((marker) => marker.type))]
+        : [point.type];
+    const missingFilterTypes = filterTypes.filter((typeKey) => !markerStore.filter.includes(typeKey));
+    if (missingFilterTypes.length > 0) {
+        markerStore.setFilter([...markerStore.filter, ...missingFilterTypes]);
     }
-    const { selectableIds } = resolveMarkerBulkTargets(point, scope);
+    const { selectableIds } = resolveMarkerBulkTargets(point, scope, options);
     return commitMarkerSelection(
         `Highlight ${selectableIds.length} markers of type ${point.type}`,
         { select: selectableIds },
@@ -59,8 +82,9 @@ export const highlightSameType = (
 export const clearSameTypeHighlight = (
     point: Pick<IMarkerData, 'type'>,
     scope: MarkerBulkScope,
+    options?: MarkerBulkOptions,
 ): number => {
-    const { selectedIds } = resolveMarkerBulkTargets(point, scope);
+    const { selectedIds } = resolveMarkerBulkTargets(point, scope, options);
     return commitMarkerSelection(
         `Clear ${selectedIds.length} highlighted markers of type ${point.type}`,
         { deselect: selectedIds },
@@ -71,8 +95,9 @@ export const setSameTypeCompleted = (
     point: Pick<IMarkerData, 'type'>,
     scope: MarkerBulkScope,
     completed: boolean,
+    options?: MarkerBulkOptions,
 ): number => {
-    const targets = resolveMarkerBulkTargets(point, scope);
+    const targets = resolveMarkerBulkTargets(point, scope, options);
     const ids = completed ? targets.incompleteIds : targets.completedIds;
     if (ids.length === 0) return 0;
 

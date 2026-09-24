@@ -54,7 +54,6 @@
     "uploadPending": "Отправлено. Будет отображено после проверки.",
     "readFullText": "Нажмите, чтобы прочитать полностью.",
     "share": "Скопировать ссылку для этой точки.",
-    "copied": "Ссылка скопирована",
     "collectionRateSource": "Общий процент сбора: {nums} – Статистика OEM Cloud",
     "viewer": {
       "author": "Автор",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Показывать только {region}",
     "showAllSubregions": "Показать все подобласти",
-    "highlightSameType": "Выделить точки этого типа здесь ({count})",
-    "clearSameTypeHighlight": "Снять выделение точек этого типа ({count})",
-    "completeSameType": "Завершить точки этого типа ({count})",
+    "highlightSameType": "Выделить точки того же типа ({count})",
+    "clearSameTypeHighlight": "Снять выделение ({count})",
+    "completeSameType": "Завершить точки того же типа ({count})",
     "confirmComplete": "Подтвердить завершение {count} точек",
-    "uncompleteSameType": "Отметить точки этого типа незавершёнными ({count})",
+    "uncompleteSameType": "Снять отметки выполнения ({count})",
     "sharePoint": "Поделиться этой точкой",
     "shareLocation": "Поделиться этим местом",
-    "copied": "Ссылка скопирована",
-    "copyFailed": "Не удалось скопировать, попробуйте ещё раз",
     "clearAllHighlights": "Снять все выделения",
     "selectAllCategoryFilters": "Выбрать все",
     "deselectAllCategoryFilters": "Снять все",
@@ -498,7 +495,9 @@
     "enable": "Включить",
     "disable": "Отключить",
     "expand": "Развернуть",
-    "collapse": "Свернуть"
+    "collapse": "Свернуть",
+    "copied": "Ссылка скопирована",
+    "copyFailed": "Не удалось скопировать, попробуйте ещё раз"
   },
   "announcement": {
     "title": "Уведомление сайта",

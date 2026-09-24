@@ -54,7 +54,6 @@
     "uploadPending": "Uploaded. Waiting for review.",
     "readFullText": "Click to read full text.",
     "share": "Copy shareable link for this marker.",
-    "copied": "Link copied",
     "collectionRateSource": "Global collection rate is {nums} – Statistics from OEM Cloud",
     "viewer": {
       "author": "AUTHOR",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Show only {region}",
     "showAllSubregions": "Show all subregions",
-    "highlightSameType": "Highlight same type here ({count})",
-    "clearSameTypeHighlight": "Clear same-type highlights ({count})",
-    "completeSameType": "Complete same type ({count})",
+    "highlightSameType": "Highlight same-type points here ({count})",
+    "clearSameTypeHighlight": "Clear highlights ({count})",
+    "completeSameType": "Complete same-type points ({count})",
     "confirmComplete": "Confirm completion of {count} points",
-    "uncompleteSameType": "Mark same type incomplete ({count})",
+    "uncompleteSameType": "Clear completion marks ({count})",
     "sharePoint": "Share this point",
     "shareLocation": "Share this location",
-    "copied": "Link copied",
-    "copyFailed": "Copy failed, try again",
     "clearAllHighlights": "Clear all highlights",
     "selectAllCategoryFilters": "Select all",
     "deselectAllCategoryFilters": "Deselect all",
@@ -498,7 +495,9 @@
     "enable": "Enable",
     "disable": "Disable",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "copied": "Link copied",
+    "copyFailed": "Copy failed, try again"
   },
   "announcement": {
     "title": "Website Notice",

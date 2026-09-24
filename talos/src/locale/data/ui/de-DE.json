@@ -54,7 +54,6 @@
     "uploadPending": "Eingereicht. Wird nach Prüfung angezeigt.",
     "readFullText": "Klicken Sie, um den vollständigen Text zu lesen.",
     "share": "Freigabelink für diesen Punkt kopieren.",
-    "copied": "Link kopiert",
     "collectionRateSource": "Die globale Sammelrate beträgt {nums} – Statistik von OEM Cloud",
     "viewer": {
       "author": "Autor",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Nur {region} anzeigen",
     "showAllSubregions": "Alle Unterregionen anzeigen",
-    "highlightSameType": "Gleichen Typ hier hervorheben ({count})",
-    "clearSameTypeHighlight": "Hervorhebungen gleichen Typs entfernen ({count})",
-    "completeSameType": "Gleichen Typ abschließen ({count})",
+    "highlightSameType": "Punkte gleichen Typs hervorheben ({count})",
+    "clearSameTypeHighlight": "Hervorhebung entfernen ({count})",
+    "completeSameType": "Punkte gleichen Typs abschließen ({count})",
     "confirmComplete": "Abschluss von {count} Punkten bestätigen",
-    "uncompleteSameType": "Gleichen Typ als unvollständig markieren ({count})",
+    "uncompleteSameType": "Abschlussmarkierungen entfernen ({count})",
     "sharePoint": "Diesen Punkt teilen",
     "shareLocation": "Diesen Ort teilen",
-    "copied": "Link kopiert",
-    "copyFailed": "Kopieren fehlgeschlagen, erneut versuchen",
     "clearAllHighlights": "Alle Hervorhebungen entfernen",
     "selectAllCategoryFilters": "Alle auswählen",
     "deselectAllCategoryFilters": "Alle abwählen",
@@ -498,7 +495,9 @@
     "enable": "Aktivieren",
     "disable": "Deaktivieren",
     "expand": "Erweitern",
-    "collapse": "Einklappen"
+    "collapse": "Einklappen",
+    "copied": "Link kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen, erneut versuchen"
   },
   "announcement": {
     "title": "Website-Mitteilung",

@@ -1,0 +1,97 @@
+@use '@/styles/palette.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --scope-indicator-bg: #{rgba($grey-1, 0.8)};
+    --scope-indicator-fg: #{$white-1};
+    --scope-indicator-muted: #{rgba($white-1, 0.8)};
+    --scope-indicator-hover: #{rgba($white-0, 0.2)};
+    --scope-indicator-active: #{rgba($primary-accent-4, 0.3)};
+}
+
+:root[data-theme='dark'] {
+    --scope-indicator-bg: #{rgba($black-1, 0.8)};
+    --scope-indicator-fg: #{$white-2};
+    --scope-indicator-muted: #{rgba($white-2, 0.7)};
+    --scope-indicator-hover: #{rgba($white-0, 0.2)};
+    --scope-indicator-active: #{rgba($primary-accent-4, 0.3)};
+}
+
+.indicator {
+    position: absolute;
+    bottom: 5rem;
+    left: 1rem;
+    z-index: 510;
+    display: inline-flex;
+    align-items: center;
+    max-width: min(20rem, calc(100vw - 2rem));
+    min-height: 1.75rem;
+    padding: 1.5px 6px 0 8px;
+    gap: 5px;
+    border-radius: 5px;
+    background: var(--scope-indicator-bg);
+    color: var(--scope-indicator-muted);
+    box-shadow: 0 1px 4px rgba($black-0, 0.5);
+    backdrop-filter: blur(4px);
+    font-size: 0.75rem;
+    pointer-events: auto;
+    font-weight: 600;
+    font-family: 'HMSans_EN', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+
+    span,
+    button {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    button {
+        min-width: 0;
+        padding: 0.16rem 0.3rem;
+        border: 0;
+        border-radius: 3px;
+        background: transparent;
+        color: var(--scope-indicator-fg);
+        font: inherit;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: 0;
+        cursor: pointer;
+        outline: 0;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        font-family: "Novecento DemiBold", "Novecento Cyrillic DemiBold", "Novecento Vietnamese DemiBold", "UD_ShinGo DemiBold", "Noto Sans SC", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+        transform: translateY(-1px);
+        font-feature-settings: 'case' 1;
+
+        &:hover,
+        &:focus-visible {
+            background: var(--scope-indicator-hover);
+            box-shadow: 0 2px 5px rgba($black-0, 0.1);
+        }
+
+        &:focus-visible {
+            background: var(--scope-indicator-active);
+            box-shadow: 0 1px 3px rgba($black-0, 0.12);
+        }
+
+        &:active {
+            background: var(--scope-indicator-active);
+            box-shadow: 0 1px 3px rgba($black-0, 0.12);
+        }
+    }
+}
+
+@media screen and (width <= 768px) {
+    .indicator {
+        bottom: auto;
+        top: 0.75rem;
+        left: 50%;
+        max-width: calc(100vw - 6rem);
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .indicator button {
+        transition: none;
+    }
+}

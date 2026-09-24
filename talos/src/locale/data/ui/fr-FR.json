@@ -54,7 +54,6 @@
     "uploadPending": "Envoi reçu. Affichage après vérification.",
     "readFullText": "Cliquez pour lire le texte complet.",
     "share": "Copier le lien partageable de ce point.",
-    "copied": "Lien copié",
     "collectionRateSource": "Le taux de collecte global est de {nums} – Statistiques d’OEM Cloud",
     "viewer": {
       "author": "Auteur",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Afficher uniquement {region}",
     "showAllSubregions": "Afficher toutes les sous-régions",
-    "highlightSameType": "Surligner le même type ici ({count})",
-    "clearSameTypeHighlight": "Retirer les surlignages du même type ({count})",
-    "completeSameType": "Terminer le même type ({count})",
+    "highlightSameType": "Surligner les points du même type ici ({count})",
+    "clearSameTypeHighlight": "Retirer le surlignage ({count})",
+    "completeSameType": "Terminer les points du même type ({count})",
     "confirmComplete": "Confirmer l’achèvement de {count} points",
-    "uncompleteSameType": "Marquer le même type comme incomplet ({count})",
+    "uncompleteSameType": "Retirer les marques de complétion ({count})",
     "sharePoint": "Partager ce point",
     "shareLocation": "Partager cet emplacement",
-    "copied": "Lien copié",
-    "copyFailed": "Échec de la copie, réessayez",
     "clearAllHighlights": "Retirer tous les surlignages",
     "selectAllCategoryFilters": "Tout sélectionner",
     "deselectAllCategoryFilters": "Tout désélectionner",
@@ -498,7 +495,9 @@
     "enable": "Activer",
     "disable": "Désactiver",
     "expand": "Développer",
-    "collapse": "Réduire"
+    "collapse": "Réduire",
+    "copied": "Lien copié",
+    "copyFailed": "Échec de la copie, réessayez"
   },
   "announcement": {
     "title": "Avis du site",

@@ -249,7 +249,7 @@ const CommentItem = memo(({
 
         items.push({
             id: 'share',
-            label: copiedPopupVisible ? tUI('detail.copied') : tUI('detail.comments.copyLink'),
+            label: copiedPopupVisible ? tUI('common.copied') : tUI('detail.comments.copyLink'),
             icon: <ShareIcon />,
             tooltipVisible: copiedPopupVisible ? true : undefined,
             disabled: !canInteract || !canModerate || comment.id.startsWith('local-comment:'),

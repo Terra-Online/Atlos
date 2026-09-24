@@ -54,7 +54,6 @@
     "uploadPending": "تم الرفع. بانتظار المراجعة.",
     "readFullText": "انقر لقراءة النص الكامل.",
     "share": "انسخ رابط المشاركة لهذه العلامة.",
-    "copied": "تم النسخ",
     "collectionRateSource": "معدل الجمع على مستوى الخادم هو {nums} – إحصاءات من OEM Cloud",
     "viewer": {
       "author": "الناشر",
@@ -469,15 +468,13 @@
     "onlySubregion": "عرض {region} فقط",
     "showAllSubregions": "عرض جميع المناطق الفرعية",
     "highlightSameType": "تمييز النقاط من النوع نفسه هنا ({count})",
-    "clearSameTypeHighlight": "إلغاء تمييز النقاط من النوع نفسه ({count})",
-    "completeSameType": "إكمال النقاط من النوع نفسه ({count})",
+    "clearSameTypeHighlight": "إلغاء التمييز ({count})",
+    "completeSameType": "إكمال نقاط النوع نفسه ({count})",
     "confirmComplete": "تأكيد إكمال {count} نقطة",
-    "uncompleteSameType": "وضع علامة غير مكتمل على النوع نفسه ({count})",
+    "uncompleteSameType": "إزالة علامات الإكمال ({count})",
     "sharePoint": "مشاركة هذه النقطة",
     "shareLocation": "مشاركة هذا الموقع",
-    "copied": "تم نسخ الرابط",
-    "copyFailed": "فشل النسخ، حاول مرة أخرى",
-    "clearAllHighlights": "مسح جميع التمييزات",
+    "clearAllHighlights": "مسح كل التمييزات",
     "selectAllCategoryFilters": "تحديد الكل",
     "deselectAllCategoryFilters": "إلغاء تحديد الكل",
     "hideCompletedMarkers": "إخفاء العلامات المكتملة",
@@ -498,7 +495,9 @@
     "enable": "تفعيل",
     "disable": "تعطيل",
     "expand": "توسيع",
-    "collapse": "طي"
+    "collapse": "طي",
+    "copied": "تم نسخ الرابط",
+    "copyFailed": "فشل النسخ، حاول مرة أخرى"
   },
   "announcement": {
     "title": "إعلانات الموقع",

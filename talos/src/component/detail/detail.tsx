@@ -673,7 +673,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip
-                                    content={tUI('detail.copied')}
+                                    content={tUI('common.copied')}
                                     placement="top"
                                     gap={4}
                                     visible={copiedPopupVisible}

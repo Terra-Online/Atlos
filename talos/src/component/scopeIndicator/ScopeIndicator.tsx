@@ -1,29 +1,32 @@
 import { useTranslateGame, useTranslateUI } from '@/locale';
 import { useMarkerStore } from '@/store/marker';
-import { getSubregionLabel } from './subregionLabel';
-import styles from './SubregionScopeIndicator.module.scss';
+import { getSubregionLabel } from '@/services/map/subregionLabel';
+import styles from './ScopeIndicator.module.scss';
 
-const SubregionScopeIndicator = () => {
+const ScopeIndicator = () => {
     const tUI = useTranslateUI();
     const tGame = useTranslateGame();
     const visibleSubregionKey = useMarkerStore((state) => state.visibleSubregionKey);
     if (!visibleSubregionKey) return null;
 
     const regionName = getSubregionLabel(visibleSubregionKey, (key) => String(tGame(key)));
-    const label = String(tUI('contextMenu.scopeLabel') || '{region}').replace('{region}', regionName);
+    const scopeLabel = String(tUI('contextMenu.scopeLabel') || '{region}');
+    const [prefix, suffix = ''] = scopeLabel.split('{region}');
+    const clearScopeLabel = String(tUI('contextMenu.showAllSubregions'));
+
     return (
         <div className={styles.indicator} role="status">
-            <span>{label}</span>
+            {prefix && <span>{prefix}</span>}
             <button
                 type="button"
-                aria-label={String(tUI('contextMenu.showAllSubregions'))}
-                title={String(tUI('contextMenu.showAllSubregions'))}
+                aria-label={clearScopeLabel}
                 onClick={() => useMarkerStore.getState().setVisibleSubregionKey(null)}
             >
-                ×
+                {regionName}
             </button>
+            {suffix && <span>{suffix}</span>}
         </div>
     );
 };
 
-export default SubregionScopeIndicator;
+export default ScopeIndicator;

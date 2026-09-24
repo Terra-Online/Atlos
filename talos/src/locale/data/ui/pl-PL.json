@@ -54,7 +54,6 @@
     "uploadPending": "Przesłano. Zostanie wyświetlone po weryfikacji.",
     "readFullText": "Kliknij, aby przeczytać pełny tekst.",
     "share": "Skopiuj link udostępniania tego znacznika.",
-    "copied": "Link skopiowany",
     "collectionRateSource": "Globalny wskaźnik zbierania wynosi {nums} – Statystyki z OEM Cloud",
     "viewer": {
       "author": "Autor",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Pokaż tylko {region}",
     "showAllSubregions": "Pokaż wszystkie podregiony",
-    "highlightSameType": "Wyróżnij ten sam typ tutaj ({count})",
-    "clearSameTypeHighlight": "Usuń wyróżnienia tego samego typu ({count})",
-    "completeSameType": "Ukończ ten sam typ ({count})",
+    "highlightSameType": "Wyróżnij punkty tego samego typu ({count})",
+    "clearSameTypeHighlight": "Usuń wyróżnienie ({count})",
+    "completeSameType": "Ukończ punkty tego samego typu ({count})",
     "confirmComplete": "Potwierdź ukończenie {count} punktów",
-    "uncompleteSameType": "Oznacz ten sam typ jako nieukończony ({count})",
+    "uncompleteSameType": "Usuń oznaczenia ukończenia ({count})",
     "sharePoint": "Udostępnij ten punkt",
     "shareLocation": "Udostępnij tę lokalizację",
-    "copied": "Link skopiowany",
-    "copyFailed": "Kopiowanie nie powiodło się, spróbuj ponownie",
     "clearAllHighlights": "Usuń wszystkie wyróżnienia",
     "selectAllCategoryFilters": "Zaznacz wszystko",
     "deselectAllCategoryFilters": "Odznacz wszystko",
@@ -498,7 +495,9 @@
     "enable": "Włącz",
     "disable": "Wyłącz",
     "expand": "Rozwiń",
-    "collapse": "Zwiń"
+    "collapse": "Zwiń",
+    "copied": "Link skopiowany",
+    "copyFailed": "Kopiowanie nie powiodło się, spróbuj ponownie"
   },
   "announcement": {
     "title": "Powiadomienie strony",

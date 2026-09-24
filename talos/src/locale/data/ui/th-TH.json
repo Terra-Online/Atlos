@@ -54,7 +54,6 @@
     "uploadPending": "ส่งเรียบร้อยแล้ว จะแสดงหลังการตรวจสอบ",
     "readFullText": "คลิกเพื่ออ่านข้อความเต็ม",
     "share": "คัดลอกลิงก์แชร์ของจุดนี้",
-    "copied": "คัดลอกลิงก์แล้ว",
     "collectionRateSource": "อัตราการเก็บสะสมทั่วทั้งเซิร์ฟเวอร์คือ {nums} – สถิติจาก OEM Cloud",
     "viewer": {
       "author": "ผู้โพสต์",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "แสดงเฉพาะ {region}",
     "showAllSubregions": "แสดงภูมิภาคย่อยทั้งหมด",
-    "highlightSameType": "ไฮไลต์จุดประเภทเดียวกันในบริเวณนี้ ({count})",
-    "clearSameTypeHighlight": "ยกเลิกไฮไลต์จุดประเภทเดียวกัน ({count})",
+    "highlightSameType": "ไฮไลต์จุดประเภทเดียวกันที่นี่ ({count})",
+    "clearSameTypeHighlight": "ยกเลิกไฮไลต์ ({count})",
     "completeSameType": "ทำจุดประเภทเดียวกันให้เสร็จ ({count})",
     "confirmComplete": "ยืนยันการทำ {count} จุดให้เสร็จ",
-    "uncompleteSameType": "ทำเครื่องหมายจุดประเภทเดียวกันว่ายังไม่เสร็จ ({count})",
+    "uncompleteSameType": "ยกเลิกเครื่องหมายเสร็จสิ้น ({count})",
     "sharePoint": "แชร์จุดนี้",
     "shareLocation": "แชร์ตำแหน่งนี้",
-    "copied": "คัดลอกลิงก์แล้ว",
-    "copyFailed": "คัดลอกไม่สำเร็จ ลองอีกครั้ง",
     "clearAllHighlights": "ล้างไฮไลต์ทั้งหมด",
     "selectAllCategoryFilters": "เลือกทั้งหมด",
     "deselectAllCategoryFilters": "ยกเลิกทั้งหมด",
@@ -498,7 +495,9 @@
     "enable": "เปิดใช้งาน",
     "disable": "ปิดใช้งาน",
     "expand": "ขยาย",
-    "collapse": "ยุบ"
+    "collapse": "ยุบ",
+    "copied": "คัดลอกลิงก์แล้ว",
+    "copyFailed": "คัดลอกไม่สำเร็จ ลองอีกครั้ง"
   },
   "announcement": {
     "title": "ประกาศเว็บไซต์",

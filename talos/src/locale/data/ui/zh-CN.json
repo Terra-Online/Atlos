@@ -54,7 +54,6 @@
     "uploadPending": "已提交，等待审核后展示。",
     "readFullText": "点此查看全文。",
     "share": "复制此点位的分享链接。",
-    "copied": "链接已复制",
     "collectionRateSource": "全服收集率为{nums} – 统计自 OEM Cloud",
     "viewer": {
       "author": "作者",
@@ -466,25 +465,23 @@
     }
   },
   "contextMenu": {
-    "onlySubregion": "仅显示 {region}",
+    "onlySubregion": "仅显示{region}",
     "showAllSubregions": "显示全部子地区",
     "highlightSameType": "高亮此区域同类点（{count}）",
-    "clearSameTypeHighlight": "取消高亮同类点（{count}）",
+    "clearSameTypeHighlight": "取消高亮（{count}）",
     "completeSameType": "完成同类点（{count}）",
     "confirmComplete": "确认完成 {count} 个点位",
-    "uncompleteSameType": "取消完成同类点（{count}）",
+    "uncompleteSameType": "取消完成标记（{count}）",
     "sharePoint": "分享此点位",
     "shareLocation": "分享此位置",
-    "copied": "链接已复制",
-    "copyFailed": "复制失败，请重试",
-    "clearAllHighlights": "清除全部高亮",
+    "clearAllHighlights": "清除全部高亮点",
     "selectAllCategoryFilters": "选中全部",
     "deselectAllCategoryFilters": "取消全部",
     "hideCompletedMarkers": "隐藏已完成点位",
     "showCompletedMarkers": "显示已完成点位",
     "undo": "撤销",
     "redo": "重做",
-    "scopeLabel": "仅显示：{region}"
+    "scopeLabel": "当前显示:{region}"
   },
   "common": {
     "close": "关闭",
@@ -498,7 +495,9 @@
     "enable": "启用",
     "disable": "禁用",
     "expand": "展开",
-    "collapse": "收起"
+    "collapse": "收起",
+    "copied": "链接已复制",
+    "copyFailed": "复制失败，请重试"
   },
   "announcement": {
     "title": "网站公告",

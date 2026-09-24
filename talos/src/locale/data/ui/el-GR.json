@@ -54,7 +54,6 @@
     "uploadPending": "Η υποβολή ελήφθη. Θα εμφανιστεί μετά τον έλεγχο.",
     "readFullText": "Κλικ για ανάγνωση ολόκληρου του κειμένου.",
     "share": "Αντιγραφή συνδέσμου κοινοποίησης για αυτό το σημείο.",
-    "copied": "Ο σύνδεσμος αντιγράφηκε",
     "collectionRateSource": "Το συνολικό ποσοστό συλλογής είναι {nums} – Στατιστικά από το OEM Cloud",
     "viewer": {
       "author": "Αποστολέας",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Εμφάνιση μόνο: {region}",
     "showAllSubregions": "Εμφάνιση όλων των υποπεριοχών",
-    "highlightSameType": "Επισήμανση ίδιου τύπου εδώ ({count})",
-    "clearSameTypeHighlight": "Κατάργηση επισήμανσης ίδιου τύπου ({count})",
-    "completeSameType": "Ολοκλήρωση ίδιου τύπου ({count})",
+    "highlightSameType": "Επισήμανση σημείων ίδιου τύπου ({count})",
+    "clearSameTypeHighlight": "Κατάργηση επισήμανσης ({count})",
+    "completeSameType": "Ολοκλήρωση σημείων ίδιου τύπου ({count})",
     "confirmComplete": "Επιβεβαίωση ολοκλήρωσης {count} σημείων",
-    "uncompleteSameType": "Σήμανση ίδιου τύπου ως μη ολοκληρωμένου ({count})",
+    "uncompleteSameType": "Αφαίρεση σημάνσεων ολοκλήρωσης ({count})",
     "sharePoint": "Κοινοποίηση αυτού του σημείου",
     "shareLocation": "Κοινοποίηση αυτής της τοποθεσίας",
-    "copied": "Ο σύνδεσμος αντιγράφηκε",
-    "copyFailed": "Η αντιγραφή απέτυχε, δοκιμάστε ξανά",
     "clearAllHighlights": "Κατάργηση όλων των επισημάνσεων",
     "selectAllCategoryFilters": "Επιλογή όλων",
     "deselectAllCategoryFilters": "Αποεπιλογή όλων",
@@ -498,7 +495,9 @@
     "enable": "Ενεργό",
     "disable": "Ανενεργό",
     "expand": "Άνοιγμα",
-    "collapse": "Κλείσιμο"
+    "collapse": "Κλείσιμο",
+    "copied": "Ο σύνδεσμος αντιγράφηκε",
+    "copyFailed": "Η αντιγραφή απέτυχε, δοκιμάστε ξανά"
   },
   "announcement": {
     "title": "Ανακοίνωση Ιστότοπου",

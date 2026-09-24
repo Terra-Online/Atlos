@@ -54,7 +54,6 @@
     "uploadPending": "Yüklendi. İnceleme bekleniyor.",
     "readFullText": "Tam metni okumak için tıklayın.",
     "share": "Bu işaretçi için paylaşılabilir bağlantıyı kopyala.",
-    "copied": "Bağlantı kopyalandı",
     "collectionRateSource": "Sunucu genelindeki toplama oranı {nums} – OEM Cloud istatistikleri",
     "viewer": {
       "author": "YAZAR",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Yalnızca {region} göster",
     "showAllSubregions": "Tüm alt bölgeleri göster",
-    "highlightSameType": "Buradaki aynı türü vurgula ({count})",
-    "clearSameTypeHighlight": "Aynı tür vurgularını kaldır ({count})",
-    "completeSameType": "Aynı türü tamamla ({count})",
+    "highlightSameType": "Aynı tür noktaları vurgula ({count})",
+    "clearSameTypeHighlight": "Vurguyu kaldır ({count})",
+    "completeSameType": "Aynı tür noktaları tamamla ({count})",
     "confirmComplete": "{count} noktanın tamamlanmasını onayla",
-    "uncompleteSameType": "Aynı türü tamamlanmamış olarak işaretle ({count})",
+    "uncompleteSameType": "Tamamlanma işaretlerini kaldır ({count})",
     "sharePoint": "Bu noktayı paylaş",
     "shareLocation": "Bu konumu paylaş",
-    "copied": "Bağlantı kopyalandı",
-    "copyFailed": "Kopyalama başarısız, tekrar deneyin",
     "clearAllHighlights": "Tüm vurguları kaldır",
     "selectAllCategoryFilters": "Tümünü seç",
     "deselectAllCategoryFilters": "Tümünü kaldır",
@@ -498,7 +495,9 @@
     "enable": "Etkinleştir",
     "disable": "Devre Dışı Bırak",
     "expand": "Genişlet",
-    "collapse": "Daralt"
+    "collapse": "Daralt",
+    "copied": "Bağlantı kopyalandı",
+    "copyFailed": "Kopyalama başarısız, tekrar deneyin"
   },
   "announcement": {
     "title": "Site Bildirimi",

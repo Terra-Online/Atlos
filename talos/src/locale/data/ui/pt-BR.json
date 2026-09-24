@@ -54,7 +54,6 @@
     "uploadPending": "Enviado. Será exibido após revisão.",
     "readFullText": "Clique para ler o texto completo.",
     "share": "Copiar link compartilhável deste ponto.",
-    "copied": "Link copiado",
     "collectionRateSource": "A taxa global de coleta é {nums} – Estatísticas do OEM Cloud",
     "viewer": {
       "author": "Autor",
@@ -468,15 +467,13 @@
   "contextMenu": {
     "onlySubregion": "Mostrar apenas {region}",
     "showAllSubregions": "Mostrar todas as sub-regiões",
-    "highlightSameType": "Destacar o mesmo tipo aqui ({count})",
-    "clearSameTypeHighlight": "Remover destaques do mesmo tipo ({count})",
-    "completeSameType": "Concluir o mesmo tipo ({count})",
+    "highlightSameType": "Destacar pontos do mesmo tipo aqui ({count})",
+    "clearSameTypeHighlight": "Remover destaque ({count})",
+    "completeSameType": "Concluir pontos do mesmo tipo ({count})",
     "confirmComplete": "Confirmar a conclusão de {count} pontos",
-    "uncompleteSameType": "Marcar o mesmo tipo como incompleto ({count})",
+    "uncompleteSameType": "Remover marcas de conclusão ({count})",
     "sharePoint": "Compartilhar este ponto",
     "shareLocation": "Compartilhar esta localização",
-    "copied": "Link copiado",
-    "copyFailed": "Falha ao copiar, tente novamente",
     "clearAllHighlights": "Remover todos os destaques",
     "selectAllCategoryFilters": "Selecionar todos",
     "deselectAllCategoryFilters": "Desmarcar todos",
@@ -498,7 +495,9 @@
     "enable": "Ativar",
     "disable": "Desativar",
     "expand": "Expandir",
-    "collapse": "Recolher"
+    "collapse": "Recolher",
+    "copied": "Link copiado",
+    "copyFailed": "Falha ao copiar, tente novamente"
   },
   "announcement": {
     "title": "Aviso do site",
