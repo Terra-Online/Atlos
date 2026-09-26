@@ -403,6 +403,10 @@
           "title": "Seimbang",
           "desc": "Lacak titik yang dipilih OEM."
         },
+        "gatherSpot": {
+          "title": "Titik Kumpul",
+          "desc": "Lacak titik kumpul saja."
+        },
         "collection": {
           "title": "Koleksi",
           "desc": "Lacak titik di <span class=\"keyword\">koleksi</span>/<span class=\"keyword\">eksplorasi</span>/<span class=\"keyword\">arsip</span>."

@@ -403,6 +403,10 @@
           "title": "Equilibrado",
           "desc": "Rastrear pontos escolhidos pela OEM."
         },
+        "gatherSpot": {
+          "title": "Ponto de Coleta",
+          "desc": "Rastrear apenas pontos de coleta."
+        },
         "collection": {
           "title": "Coletáveis",
           "desc": "Rastrear pontos em <span class=\"keyword\">coleção</span>/<span class=\"keyword\">exploração</span>/<span class=\"keyword\">arquivos</span>."

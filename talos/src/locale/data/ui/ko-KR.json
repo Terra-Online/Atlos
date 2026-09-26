@@ -403,6 +403,10 @@
           "title": "균형",
           "desc": "추천 포인트를 추적합니다."
         },
+        "gatherSpot": {
+          "title": "채집",
+          "desc": "채집 포인트만 추적합니다."
+        },
         "collection": {
           "title": "수집물",
           "desc": "<span class=\"keyword\">수집</span>/<span class=\"keyword\">탐색</span>/<span class=\"keyword\">아카이브</span> 관련 포인트를 추적합니다."

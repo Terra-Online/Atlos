@@ -403,6 +403,10 @@
           "title": "Ισορροπημένο",
           "desc": "Παρακολούθηση σημείων που επέλεξε το OEM."
         },
+        "gatherSpot": {
+          "title": "Σημεία συλλογής",
+          "desc": "Παρακολούθηση μόνο σημείων συλλογής."
+        },
         "collection": {
           "title": "Συλλεκτικά",
           "desc": "Παρακολούθηση σημείων σε <span class=\"keyword\">συλλογή</span>/<span class=\"keyword\">εξερεύνηση</span>/<span class=\"keyword\">αρχείο</span>."

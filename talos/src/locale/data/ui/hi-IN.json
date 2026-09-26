@@ -403,6 +403,10 @@
           "title": "संतुलित",
           "desc": "OEM द्वारा चुने गए पॉइंट ट्रैक करें।"
         },
+        "gatherSpot": {
+          "title": "संग्रह स्थल",
+          "desc": "केवल संग्रह स्थलों को ट्रैक करें।"
+        },
         "collection": {
           "title": "कलेक्टिबल्स",
           "desc": "<span class=\"keyword\">कलेक्शन</span>/<span class=\"keyword\">एक्सप्लोरेशन</span>/<span class=\"keyword\">आर्काइव</span> के पॉइंट ट्रैक करें।"

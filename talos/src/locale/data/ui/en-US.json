@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Copy comment link",
+      "emojiPicker": "Choose an emoji",
       "placeholder": "Type something?",
       "submit": "Submit",
       "actions": "Comment actions",
@@ -402,6 +403,10 @@
         "balanced": {
           "title": "Balanced",
           "desc": "Track point sets selected by OEM."
+        },
+        "gatherSpot": {
+          "title": "Gather Spot",
+          "desc": "Track Gather Spot points only."
         },
         "collection": {
           "title": "Collectibles",

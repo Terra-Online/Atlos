@@ -403,6 +403,10 @@
           "title": "Équilibré",
           "desc": "Suivre les points sélectionnés par OEM."
         },
+        "gatherSpot": {
+          "title": "Point de collecte",
+          "desc": "Suivre uniquement les points de collecte."
+        },
         "collection": {
           "title": "Collectibles",
           "desc": "Suivre les points en <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."

@@ -403,6 +403,10 @@
           "title": "Ausgewogen",
           "desc": "Punkte verfolgen, die OEM ausgewählt hat."
         },
+        "gatherSpot": {
+          "title": "Sammelstelle",
+          "desc": "Nur Sammelstellen verfolgen."
+        },
         "collection": {
           "title": "Sammlungen",
           "desc": "Punkte in <span class=\"keyword\">Sammlung</span>/<span class=\"keyword\">Erkundung</span>/<span class=\"keyword\">Archiv</span> verfolgen."

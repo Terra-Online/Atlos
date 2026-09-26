@@ -403,6 +403,10 @@
           "title": "バランス",
           "desc": "推奨マーカーを追跡。"
         },
+        "gatherSpot": {
+          "title": "調べる",
+          "desc": "採集ポイントのみを追跡します。"
+        },
         "collection": {
           "title": "収集物",
           "desc": "<span class=\"keyword\">収集</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">アーカイブ</span>関連のポイントを追跡します。"

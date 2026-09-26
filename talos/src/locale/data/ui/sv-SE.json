@@ -403,6 +403,10 @@
           "title": "Balanserad",
           "desc": "Spåra punkter valda av OEM."
         },
+        "gatherSpot": {
+          "title": "Samlingsplatser",
+          "desc": "Spåra endast samlingsplatser."
+        },
         "collection": {
           "title": "Samlarobjekt",
           "desc": "Spåra punkter i <span class=\"keyword\">samling</span>/<span class=\"keyword\">utforskning</span>/<span class=\"keyword\">arkiv</span>."

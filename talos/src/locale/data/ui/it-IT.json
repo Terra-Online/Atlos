@@ -403,6 +403,10 @@
           "title": "Bilanciato",
           "desc": "Traccia i punti selezionati da OEM."
         },
+        "gatherSpot": {
+          "title": "Punto di raccolta",
+          "desc": "Traccia solo i punti di raccolta."
+        },
         "collection": {
           "title": "Collezionabili",
           "desc": "Traccia i punti in <span class=\"keyword\">collezione</span>/<span class=\"keyword\">esplorazione</span>/<span class=\"keyword\">archivio</span>."

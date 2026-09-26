@@ -403,6 +403,10 @@
           "title": "Dengeli",
           "desc": "OEM tarafından seçilen noktaları izleyin."
         },
+        "gatherSpot": {
+          "title": "Toplama Noktaları",
+          "desc": "Yalnızca toplama noktalarını izleyin."
+        },
         "collection": {
           "title": "Koleksiyonlar",
           "desc": "<span class=\"keyword\">Koleksiyon</span>/<span class=\"keyword\">Keşif</span> noktalarını izleyin."

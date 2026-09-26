@@ -403,6 +403,10 @@
           "title": "Cân bằng",
           "desc": "Theo dõi điểm do OEM chọn."
         },
+        "gatherSpot": {
+          "title": "Điểm Thu Thập",
+          "desc": "Chỉ theo dõi điểm thu thập."
+        },
         "collection": {
           "title": "Vật phẩm",
           "desc": "Theo dõi điểm trong <span class=\"keyword\">sưu tầm</span>/<span class=\"keyword\">khám phá</span>/<span class=\"keyword\">lưu trữ</span>."

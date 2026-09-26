@@ -403,6 +403,10 @@
           "title": "สมดุล",
           "desc": "ติดตามจุดที่ OEM เลือก"
         },
+        "gatherSpot": {
+          "title": "จุดรวบรวม",
+          "desc": "ติดตามเฉพาะจุดรวบรวม"
+        },
         "collection": {
           "title": "ของสะสม",
           "desc": "ติดตามจุดใน <span class=\"keyword\">สะสม</span>/<span class=\"keyword\">สำรวจ</span>/<span class=\"keyword\">คลังข้อมูล</span>."

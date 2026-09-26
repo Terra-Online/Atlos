@@ -403,6 +403,10 @@
           "title": "平衡",
           "desc": "追蹤 OEM 為你選擇的點位。"
         },
+        "gatherSpot": {
+          "title": "採集點",
+          "desc": "只追蹤採集點。"
+        },
         "collection": {
           "title": "收集物",
           "desc": "追蹤位於<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">檔案</span>中的點位。"

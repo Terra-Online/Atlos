@@ -403,6 +403,10 @@
           "title": "متوازن",
           "desc": "تتبع النقاط الموصى بها من OEM."
         },
+        "gatherSpot": {
+          "title": "نقاط التجميع",
+          "desc": "تتبع نقاط التجميع فقط."
+        },
         "collection": {
           "title": "مقتنيات",
           "desc": "تتبع نقاط <span class=\"keyword\">المقتنيات</span>، <span class=\"keyword\">الاستكشاف</span>، و<span class=\"keyword\">الأرشيف</span>."

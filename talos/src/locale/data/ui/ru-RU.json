@@ -403,6 +403,10 @@
           "title": "Сбаланс.",
           "desc": "Отслеживать точки, выбранные OEM."
         },
+        "gatherSpot": {
+          "title": "Собрать",
+          "desc": "Отслеживать только точки сбора."
+        },
         "collection": {
           "title": "Коллекции",
           "desc": "Отслеживать точки из <span class=\"keyword\">коллекции</span>/<span class=\"keyword\">исследования</span>/<span class=\"keyword\">архива</span>."

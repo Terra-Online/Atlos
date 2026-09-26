@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "复制评论链接",
+      "emojiPicker": "选择表情",
       "placeholder": "说些什么吧！",
       "submit": "发布留言",
       "actions": "留言操作",
@@ -402,6 +403,10 @@
         "balanced": {
           "title": "平衡",
           "desc": "追踪 OEM 为您选择的点位。"
+        },
+        "gatherSpot": {
+          "title": "采集点",
+          "desc": "仅追踪采集点。"
         },
         "collection": {
           "title": "收集物",
