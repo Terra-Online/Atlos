@@ -402,12 +402,7 @@ export default defineConfig({
                     if (!id.includes('/node_modules/')) return undefined;
 
                     // 手动归并 React 核心运行时，确保它们在同一个 chunk
-                    if (
-                        id.includes('/react/') ||
-                        id.includes('/react-dom/') ||
-                        id.includes('/scheduler/') ||
-                        id.includes('/react-is/')
-                    ) {
+                    if (/\/node_modules\/(react|react-dom|scheduler|react-is)\//.test(id)) {
                         return 'vendor-react';
                     }
 
