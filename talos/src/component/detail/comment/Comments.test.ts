@@ -1,5 +1,6 @@
 import { createElement } from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { IMarkerData } from '@/data/marker';
 import type { UGCComment } from '@/services/ugc/client';
@@ -11,6 +12,7 @@ vi.mock('@/assets/images/UI/like.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/flag.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/recall.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/logos/submit.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/logos/emoji.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/logos/reply.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/edit.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/share.svg?react', () => ({ default: () => null }));
@@ -49,6 +51,7 @@ beforeEach(() => {
     useMarkerStore.setState({ commentOpenRequest: null });
     vi.spyOn(client, 'listUGCComments').mockResolvedValue([comment]);
     vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+    vi.stubGlobal('DragEvent', class extends Event {});
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: vi.fn() });
     writeText = vi.fn().mockResolvedValue(undefined);
@@ -110,4 +113,115 @@ it('keeps a linked comment loaded when the locale changes', async () => {
 
     await waitFor(() => expect(client.listUGCComments).toHaveBeenCalledTimes(1));
     expect(screen.getByText(comment.content)).toBeTruthy();
+});
+
+it('opens the emoji picker after a hover delay with 38 choices', () => {
+    vi.useFakeTimers();
+    try {
+        render(createElement(Comments, { point, pointName: 'Marker' }));
+        const button = screen.getByRole('button', { name: 'detail.comments.emojiPicker' });
+        const root = button.parentElement;
+        if (!root) throw new Error('Emoji picker root missing');
+
+        fireEvent.pointerEnter(root);
+        expect(screen.queryByRole('grid')).toBeNull();
+        act(() => {
+            vi.advanceTimersByTime(200);
+        });
+        expect(screen.getByRole('grid')).toBeTruthy();
+        expect(screen.getAllByRole('gridcell')).toHaveLength(38);
+    } finally {
+        vi.useRealTimers();
+    }
+});
+
+it('renders a selected emoji inline and keeps the comment submit enabled', async () => {
+    render(createElement(Comments, { point, pointName: 'Marker' }));
+    const input = await screen.findByRole('textbox');
+
+    fireEvent.click(screen.getByRole('button', { name: 'detail.comments.emojiPicker' }));
+    const emoji = screen.getAllByRole('gridcell')[0];
+    fireEvent.click(emoji);
+
+    await waitFor(() => {
+        expect(input.querySelector('img[alt=":sns_001:"]')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'detail.comments.submit' }).getAttribute('disabled')).toBeNull();
+    });
+    expect(input.parentElement?.querySelector('[aria-haspopup="grid"]')).toBeTruthy();
+});
+
+it('keeps the emoji picker open while selecting multiple emojis', async () => {
+    render(createElement(Comments, { point, pointName: 'Marker' }));
+    await screen.findByRole('textbox');
+
+    fireEvent.click(screen.getByRole('button', { name: 'detail.comments.emojiPicker' }));
+    const choices = screen.getAllByRole('gridcell');
+    fireEvent.click(choices[0]);
+    fireEvent.click(choices[1]);
+
+    expect(screen.getByRole('grid')).toBeTruthy();
+    await waitFor(() => {
+        expect(screen.getByRole('textbox').querySelectorAll('img')).toHaveLength(2);
+    });
+});
+
+it('plays the picker close animation before unmounting it', () => {
+    vi.useFakeTimers();
+    try {
+        render(createElement(Comments, { point, pointName: 'Marker' }));
+        const button = screen.getByRole('button', { name: 'detail.comments.emojiPicker' });
+        const root = button.parentElement;
+        if (!root) throw new Error('Emoji picker root missing');
+
+        fireEvent.click(button);
+        expect(screen.getByRole('grid').getAttribute('data-open')).toBe('true');
+
+        fireEvent.pointerLeave(root);
+        act(() => {
+            vi.advanceTimersByTime(120);
+        });
+        expect(screen.getByRole('grid', { hidden: true }).getAttribute('data-open')).toBe('false');
+
+        act(() => {
+            vi.advanceTimersByTime(180);
+        });
+        expect(screen.queryByRole('grid', { hidden: true })).toBeNull();
+    } finally {
+        vi.useRealTimers();
+    }
+});
+
+it('parses markdown and emoji in pasted comment text', async () => {
+    render(createElement(Comments, { point, pointName: 'Marker' }));
+    const input = await screen.findByRole('textbox');
+    const pasted = '**bold** *italic* __underline__ ~~strike~~ `code` [link](https://example.com) :sns_011:';
+    const clipboardData = {
+        getData: (type: string) => type === 'text/plain' ? pasted : '',
+    };
+
+    userEvent.click(input);
+    fireEvent.paste(input, { clipboardData });
+
+    await waitFor(() => {
+        expect(input.querySelector('strong')?.textContent).toBe('bold');
+        expect(input.querySelector('em')?.textContent).toBe('italic');
+        expect(input.querySelector('[class*="commentEditorUnderline"]')?.textContent).toBe('underline');
+        expect(input.querySelector('[class*="commentEditorStrikethrough"]')?.textContent).toBe('strike');
+        expect(input.querySelector('code')?.textContent).toBe('code');
+        expect(input.querySelector('a[href="https://example.com"]')?.textContent).toBe('link');
+        expect(input.querySelector('img[alt=":sns_011:"]')).toBeTruthy();
+    });
+});
+
+it('renders emoji tokens in loaded comments', async () => {
+    vi.mocked(client.listUGCComments).mockResolvedValue([{
+        ...comment,
+        content: 'Hello :sns_011: :unknown: ***bold italic***',
+    }]);
+    render(createElement(Comments, { point, pointName: 'Marker' }));
+
+    expect(await screen.findByRole('img', { name: ':sns_011:' })).toBeTruthy();
+    expect(screen.getByText(/Hello/)).toBeTruthy();
+    expect(screen.getByText(/:unknown:/)).toBeTruthy();
+    expect(screen.getByText('bold italic').closest('strong')?.querySelector('em')).toBeTruthy();
 });

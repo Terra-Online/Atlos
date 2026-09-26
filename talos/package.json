@@ -76,6 +76,8 @@
     "defaults"
   ],
   "dependencies": {
+    "@lexical/link": "^0.51.0",
+    "@lexical/react": "^0.51.0",
     "@orama/orama": "^3.1.18",
     "@orama/tokenizers": "^3.1.18",
     "@smithy/node-http-handler": "4.4.7",
@@ -93,6 +95,7 @@
     "html-react-parser": "^5.2.8",
     "intl-messageformat": "^11.2.13",
     "leaflet": "^1.9.4",
+    "lexical": "^0.51.0",
     "liquid-glass-react-positioning": "^1.1.1",
     "lucide-react": "^0.468.0",
     "motion": "^12.9.4",

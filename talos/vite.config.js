@@ -292,6 +292,10 @@ export default defineConfig({
                     src: 'src/assets/images/category',
                     dest: 'assets/images',
                 },
+                {
+                    src: 'src/assets/images/emoji',
+                    dest: 'assets/images',
+                },
             ]
                 .filter((target) => existsSync(target.src))
                 .concat(getMapClipTargets()), // 只包含存在的源路径

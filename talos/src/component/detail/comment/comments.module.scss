@@ -9,7 +9,8 @@
     --comment-hover: #{rgba($primary-accent-4, 0.2)};
     --comment-input-bg: #{$white-0};
     --comment-submit: #{$grey-1};
-    --comment-submit-active: #{$primary-accent-5};
+    --comment-submit-active: #{$secondary-accent-4};
+    --comment-link: #{$primary-accent-6};
 }
 
 :root[data-theme='dark'] {
@@ -20,7 +21,8 @@
     --comment-hover: #{rgba($primary-accent-4, 0.2)};
     --comment-input-bg: #{$white-0};
     --comment-submit: #{$grey-1};
-    --comment-submit-active: #{$primary-accent-5};
+    --comment-submit-active: #{$secondary-accent-4};
+    --comment-link: #{$primary-accent-6};
 }
 
 .commentsPanel {
@@ -208,7 +210,7 @@
 .commentBody {
     font-family: 'HMSans_EN', "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     letter-spacing: -.2px;
-    font-weight: 600;
+    font-weight: 500;
     min-width: 0;
     max-width: 100%;
     color: var(--comment-text);
@@ -216,6 +218,9 @@
     overflow-wrap: anywhere;
     white-space: pre-wrap;
     hyphens: auto;
+    > strong {
+        font-weight: 700;
+    }
 
     &[data-translation-note]::after {
         display: inline-block;
@@ -234,6 +239,29 @@
     &[data-translation-status='translating']::after {
         animation: pendingTrans 1s $standard-curve infinite alternate;
     }
+}
+
+.commentEmoji {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0 0.08em;
+    vertical-align: -0.35rem;
+    object-fit: contain;
+}
+
+.commentMarkdownLink {
+    color: $primary-accent-6;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+}
+
+.commentMarkdownCode {
+    padding: 0 0.2em;
+    border-radius: 0.2rem;
+    background: var(--comment-hover);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
 }
 
 @keyframes pendingTrans {
@@ -366,10 +394,13 @@
 }
 
 .commentInputRow {
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(2rem, auto);
+    grid-template-areas: 'editor emoji submit';
     align-items: center;
-    gap: 0.625rem;
+    gap: 0 0.5rem;
     min-width: 0;
 }
 
@@ -412,10 +443,17 @@
 }
 
 .commentInput {
+    grid-area: editor;
     font-family: 'Fedra Sans Pro', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-size: 0.9125rem;
     letter-spacing: -.2px;
     font-weight: 500;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    display: block;
+    margin: 0;
     width: 100%;
     min-width: 0;
     height: 2rem;
@@ -425,35 +463,199 @@
     padding: 0.35rem 0;
     border: 0;
     outline: none;
-    resize: none;
     overflow-y: hidden;
     background: transparent;
+    position: relative;
     color: var(--comment-text);
-    line-height: 1.35;
-    transition: height 0.18s $standard-curve, opacity 0.18s ease;
+    caret-color: var(--comment-text);
+    transition: height 0.18s $standard-curve;
 
-    &::placeholder {
-        user-select: none;
-        color: var(--comment-muted);
-        font-style: italic;
-        transition:
-            opacity 0.3s,
-            filter 0.2s;
-        will-change: opacity, filter;
+    > p {
+        margin: 0;
     }
 
-    &:focus::placeholder {
-        opacity: 0;
-        filter: blur(6px);
-    }
-
-    &:disabled {
+    &[contenteditable='false'] {
         cursor: default;
         opacity: 0.6;
     }
 }
 
+.commentEditorUnderline {
+    text-decoration-line: underline;
+}
+
+.commentEditorItalic {
+    font-style: italic;
+}
+
+.commentEditorStrikethrough {
+    text-decoration-line: line-through;
+}
+
+.commentEditorUnderlineStrikethrough {
+    text-decoration-line: underline line-through;
+}
+
+.commentInput + [aria-hidden='true'] {
+    grid-area: editor;
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.2s, filter 0.15s;
+    will-change: opacity, filter;
+}
+
+.commentInput a {
+    color: $primary-accent-6;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+}
+
+.commentInput:focus + [aria-hidden='true'] {
+    opacity: 0;
+    filter: blur(6px);
+}
+
+.commentInputPlaceholder {
+    display: block;
+    font-family: 'Fedra Sans Pro', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 0.9125rem;
+    letter-spacing: -.2px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--comment-muted);
+    font-style: italic;
+}
+
+.commentEditorLoading {
+    grid-area: editor;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    height: 2rem;
+}
+
+.commentEmojiDecorator {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0 0.08em;
+    line-height: 0;
+    vertical-align: -0.35rem;
+
+    .commentEmoji {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        vertical-align: initial;
+    }
+}
+
+.commentEmojiPickerRoot {
+    grid-area: emoji;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.commentEmojiButton {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--comment-submit);
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        fill: currentcolor;
+        stroke-width: 2;
+        filter: drop-shadow(0 2px 2px rgba($black-0, 0.25));
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+        color: var(--comment-submit-active);
+        transform: translateY(-1px);
+        outline: none;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
+    }
+}
+
+.commentEmojiPicker {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 0.5rem);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: repeat(8, minmax(1.25rem, 1fr));
+    grid-template-rows: repeat(5, 1.75rem);
+    gap: 0.3rem;
+    width: min(18rem, calc(100vw - 2rem));
+    padding: 0.65rem;
+    box-sizing: border-box;
+    background: var(--comment-input-bg);
+    border-radius: 0.875rem;
+    box-shadow: 0 0.5rem 1rem rgba($black-0, 0.18);
+    transform-origin: bottom right;
+    animation: commentEmojiPickerOut 180ms $standard-curve both;
+    pointer-events: none;
+
+    &[data-open='true'] {
+        animation-name: commentEmojiPickerIn;
+        pointer-events: auto;
+    }
+}
+
+.commentEmojiOption {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+
+    img {
+        width: 1.25rem;
+        height: 1.25rem;
+        object-fit: contain;
+    }
+
+    &:hover,
+    &:focus-visible {
+        background: var(--comment-hover);
+        transform: translateY(-1px);
+        outline: none;
+    }
+}
+
 .commentSubmit {
+    grid-area: submit;
     width: 1.25rem;
     height: 1.25rem;
     padding: 0;
@@ -481,5 +683,29 @@
     &:disabled {
         cursor: default;
         opacity: 0.5;
+    }
+}
+
+@keyframes commentEmojiPickerIn {
+    from {
+        opacity: 0;
+        transform: translateY(0.35rem) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes commentEmojiPickerOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(0.35rem) scale(0.96);
     }
 }

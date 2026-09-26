@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from './comments.module.scss';
@@ -20,6 +20,7 @@ import LikeIcon from '@/assets/images/UI/like.svg?react';
 import FlagIcon from '@/assets/images/UI/flag.svg?react';
 import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import SubmitIcon from '@/assets/logos/submit.svg?react';
+import EmojiIcon from '@/assets/logos/emoji.svg?react';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
@@ -55,6 +56,11 @@ import { useRecall } from './useRecall';
 import { useReplyQuote } from './useReplyQuote';
 import { useTrans } from './useTrans';
 import { useAutoTrans } from './useAutoTrans';
+import { CommentContent } from './emoji';
+import type { CommentEditorHandle } from './commentEditor';
+import { COMMENT_EMOJI_IDS, commentEmojiToken, getCommentEmojiUrl } from './emojiData';
+
+const CommentEditor = lazy(() => import('./commentEditor'));
 
 type Props = {
     point: IMarkerData;
@@ -67,6 +73,9 @@ const COMMENT_TOGGLE_SYNC_DELAY_MS = 300;
 const COMMENT_REPLY_QUOTE_TRANSITION_MS = 180;
 const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
 const RECALL_CONFIRM_EXPIRE_MS = 5_000;
+const COMMENT_EMOJI_HOVER_DELAY_MS = 200;
+const COMMENT_EMOJI_CLOSE_DELAY_MS = 120;
+const COMMENT_EMOJI_ANIMATION_MS = 180;
 
 const CommentAvatar = memo(({ comment }: { comment: UGCComment }) => (
     <span className={styles.commentAvatar} data-avt={avatarIndex(comment)} aria-hidden="true"></span>
@@ -121,7 +130,7 @@ export const CommentExcerpt = memo(({
                     data-translation-note={note || undefined}
                     data-translation-status={comment.translationStatus || undefined}
                 >
-                    {commentText(comment)}
+                    <CommentContent content={commentText(comment)} />
                 </p>
             </article>
         </div>
@@ -313,9 +322,16 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     } | null>(null);
     const [actionPendingIds, setActionPendingIds] = useState<Set<string>>(() => new Set());
     const [error, setError] = useState('');
+    const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+    const [emojiPickerMounted, setEmojiPickerMounted] = useState(false);
     const clearRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
-    const inputRef = useRef<HTMLTextAreaElement | null>(null);
+    const inputRef = useRef<CommentEditorHandle | null>(null);
+    const inputSurfaceRef = useRef<HTMLDivElement | null>(null);
     const inputBarRef = useRef<HTMLDivElement | null>(null);
+    const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+    const emojiOpenTimerRef = useRef<number | null>(null);
+    const emojiCloseTimerRef = useRef<number | null>(null);
+    const emojiUnmountTimerRef = useRef<number | null>(null);
     const commentsPanelRef = useRef<HTMLElement | null>(null);
     const commentListRef = useRef<HTMLDivElement | null>(null);
     const handledSubmissionErrorRef = useRef(0);
@@ -335,6 +351,56 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const loadFailedText = tUI('detail.comments.loadFailed');
     const loadFailedTextRef = useRef(loadFailedText);
     loadFailedTextRef.current = loadFailedText;
+
+    const clearEmojiTimers = useCallback(() => {
+        if (emojiOpenTimerRef.current !== null) {
+            window.clearTimeout(emojiOpenTimerRef.current);
+            emojiOpenTimerRef.current = null;
+        }
+        if (emojiCloseTimerRef.current !== null) {
+            window.clearTimeout(emojiCloseTimerRef.current);
+            emojiCloseTimerRef.current = null;
+        }
+        if (emojiUnmountTimerRef.current !== null) {
+            window.clearTimeout(emojiUnmountTimerRef.current);
+            emojiUnmountTimerRef.current = null;
+        }
+    }, []);
+
+    const closeEmojiPicker = useCallback(() => {
+        clearEmojiTimers();
+        setEmojiPickerOpen(false);
+        emojiUnmountTimerRef.current = window.setTimeout(() => {
+            emojiUnmountTimerRef.current = null;
+            setEmojiPickerMounted(false);
+        }, COMMENT_EMOJI_ANIMATION_MS);
+    }, [clearEmojiTimers]);
+
+    const openEmojiPicker = useCallback((immediate = false) => {
+        clearEmojiTimers();
+        if (immediate) {
+            setEmojiPickerMounted(true);
+            setEmojiPickerOpen(true);
+            return;
+        }
+        emojiOpenTimerRef.current = window.setTimeout(() => {
+            emojiOpenTimerRef.current = null;
+            setEmojiPickerMounted(true);
+            setEmojiPickerOpen(true);
+        }, COMMENT_EMOJI_HOVER_DELAY_MS);
+    }, [clearEmojiTimers]);
+
+    const scheduleEmojiClose = useCallback(() => {
+        if (emojiOpenTimerRef.current !== null) {
+            window.clearTimeout(emojiOpenTimerRef.current);
+            emojiOpenTimerRef.current = null;
+        }
+        if (emojiCloseTimerRef.current !== null) window.clearTimeout(emojiCloseTimerRef.current);
+        emojiCloseTimerRef.current = window.setTimeout(() => {
+            emojiCloseTimerRef.current = null;
+            closeEmojiPicker();
+        }, COMMENT_EMOJI_CLOSE_DELAY_MS);
+    }, [closeEmojiPicker]);
 
     const setCommentActionPending = useCallback((commentId: string, pending: boolean) => {
         setActionPendingIds((current) => {
@@ -370,14 +436,14 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const submittingCommentIds = useMemo(() => (
         new Set(submissionSnapshot.submittingIds)
     ), [submissionSnapshot]);
-    const { blurVisible, updateBlur } = useInputLayout({
+    const { blurVisible, updateBlur, resizeInput } = useInputLayout({
         comments: commentsWithSubmissions,
         error,
         inputValue,
         loading,
         rendered: renderedReply,
         visible: replyVisible,
-        inputRef,
+        inputRef: inputSurfaceRef,
         inputBarRef,
         listRef: commentListRef,
         panelRef: commentsPanelRef,
@@ -450,7 +516,30 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         setEditTarget(null);
         setInputValue('');
         setRecallConfirmation(null);
-    }, [clearReply, point.id]);
+        closeEmojiPicker();
+    }, [clearReply, closeEmojiPicker, point.id]);
+
+    useEffect(() => () => clearEmojiTimers(), [clearEmojiTimers]);
+
+    useEffect(() => {
+        if (!emojiPickerOpen) return undefined;
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const target = event.target;
+            if (!(target instanceof Node) || !emojiPickerRef.current?.contains(target)) {
+                closeEmojiPicker();
+            }
+        };
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') closeEmojiPicker();
+        };
+        document.addEventListener('pointerdown', handlePointerDown, true);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown, true);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [closeEmojiPicker, emojiPickerOpen]);
 
     useEffect(() => {
         if (!recallConfirmation) return undefined;
@@ -484,10 +573,14 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         setEditTarget(comment);
         setInputValue(comment.content);
         window.requestAnimationFrame(() => {
-            inputRef.current?.focus();
-            inputRef.current?.setSelectionRange(comment.content.length, comment.content.length);
+            inputRef.current?.focusEnd();
         });
     }, [clearReply]);
+
+    const handleEmojiSelect = useCallback((id: string) => {
+        if (inputDisabled) return;
+        inputRef.current?.insertEmoji(id);
+    }, [inputDisabled]);
 
     const executeRecall = useCallback((comment: UGCComment) => {
         if (editTarget?.id === comment.id) {
@@ -572,7 +665,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         clearReply();
     }, [clearReply, comments, editTarget, inputValue, patchComment, point, replyTarget, requireAuth, setCommentActionPending, tUI, user]);
 
-    const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         if (
             event.key === 'Backspace'
             && !event.nativeEvent.isComposing
@@ -585,13 +678,8 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             } else {
                 clearReply();
             }
-            return;
         }
-
-        if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
-        event.preventDefault();
-        void handleSubmit();
-    }, [clearReply, editTarget, handleSubmit, inputValue.length, replyTarget]);
+    }, [clearReply, editTarget, inputValue.length, replyTarget]);
 
     const handleVote = useCallback((comment: UGCComment, value: 1 | -1) => {
         if (!requireAuth()) return;
@@ -700,21 +788,82 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                         aria-hidden={!replyQuoteShown}
                     >
                         <div className={styles.commentReplyQuote}>
-                            {replyQuoteText}
+                            <CommentContent content={replyQuoteText} />
                         </div>
                     </div>
                     <div className={styles.commentInputRow}>
-                        <textarea
-                            ref={inputRef}
-                            className={styles.commentInput}
-                            value={inputValue}
-                            maxLength={COMMENT_MAX_LENGTH}
-                            placeholder={tUI('detail.comments.placeholder')}
-                            disabled={inputDisabled}
-                            onChange={(event) => setInputValue(event.target.value)}
-                            onKeyDown={handleKeyDown}
-                            rows={1}
-                        />
+                        <Suspense fallback={(
+                            <div className={styles.commentEditorLoading} aria-hidden="true">
+                                <span className={styles.commentInputPlaceholder}>
+                                    {tUI('detail.comments.placeholder')}
+                                </span>
+                            </div>
+                        )}>
+                            <CommentEditor
+                                ref={inputRef}
+                                editorElementRef={inputSurfaceRef}
+                                value={inputValue}
+                                maxLength={COMMENT_MAX_LENGTH}
+                                placeholder={tUI('detail.comments.placeholder')}
+                                disabled={inputDisabled}
+                                onEditorReady={resizeInput}
+                                onChange={setInputValue}
+                                onSubmit={() => void handleSubmit()}
+                                onKeyDown={handleKeyDown}
+                            />
+                        </Suspense>
+                        <div
+                            ref={emojiPickerRef}
+                            className={styles.commentEmojiPickerRoot}
+                            onPointerEnter={() => openEmojiPicker()}
+                            onPointerLeave={scheduleEmojiClose}
+                            onFocusCapture={() => openEmojiPicker(true)}
+                            onBlurCapture={scheduleEmojiClose}
+                        >
+                            <button
+                                type="button"
+                                className={styles.commentEmojiButton}
+                                disabled={inputDisabled}
+                                aria-label={tUI('detail.comments.emojiPicker')}
+                                aria-expanded={emojiPickerOpen}
+                                aria-haspopup="grid"
+                                onPointerDown={(event) => event.preventDefault()}
+                                onClick={() => {
+                                    openEmojiPicker(true);
+                                }}
+                            >
+                                <EmojiIcon aria-hidden="true" />
+                            </button>
+                            {emojiPickerMounted && (
+                                <div
+                                    className={styles.commentEmojiPicker}
+                                    data-open={emojiPickerOpen ? 'true' : 'false'}
+                                    aria-hidden={!emojiPickerOpen}
+                                    role="grid"
+                                    aria-label={tUI('detail.comments.emojiPicker')}
+                                >
+                                    {COMMENT_EMOJI_IDS.map((id) => (
+                                        <button
+                                            key={id}
+                                            type="button"
+                                            className={styles.commentEmojiOption}
+                                            role="gridcell"
+                                            aria-label={commentEmojiToken(id)}
+                                            title={commentEmojiToken(id)}
+                                            tabIndex={emojiPickerOpen ? 0 : -1}
+                                            onPointerDown={(event) => event.preventDefault()}
+                                            onClick={() => handleEmojiSelect(id)}
+                                        >
+                                            <img
+                                                src={getCommentEmojiUrl(id)}
+                                                alt=""
+                                                draggable={false}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <button
                             type="button"
                             className={styles.commentSubmit}
