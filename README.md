@@ -10,6 +10,7 @@ Atlos (= Atlas)
 <p align="center">
   <a href="https://opendfieldmap.org">Website</a> ·
   <a href="https://discord.gg/BFMAKZSUG7">Discord</a> ·
+  <a href="https://crowdin.com/project/oem">Help translate</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
@@ -22,12 +23,21 @@ Atlos (= Atlas)
 <img src="https://img.shields.io/badge/TypeScript-6+-3178C6?logo=typescript&logoColor=white">
 <img src="https://img.shields.io/badge/Vite-7+-3427BC?logo=vite&logoColor=white">
 <img src="https://img.shields.io/badge/SCSS_Modules-CSS_Modules-CC6699?logo=sass&logoColor=white">
-<img src="https://img.shields.io/badge/i18n-22+Languages-FFC428">
+[![i18n: 22+ Languages](https://img.shields.io/badge/i18n-22+Languages-FFC428)](https://crowdin.com/project/oem)
 [![License](https://img.shields.io/github/license/Terra-Online/Atlos?label=license)](LICENSE)
 
 Come and chat with us on **Discord**: [https://discord.gg/BFMAKZSUG7](https://discord.gg/BFMAKZSUG7)
 
+## Localization
+
+Atlos UI translations are maintained with [Crowdin](https://crowdin.com/project/oem). Every shipped language is kept fully translated when a feature lands; Latin is still in progress.
+
+When a feature adds English source strings, maintainers also create a sanity-checked, AI-assisted initial translation for every shipped locale in the same pull request. After the change reaches `main`, the GitHub integration sends the source and newly seeded translations to Crowdin. From then on, Crowdin is the community source of truth for review and correction, and it returns accepted changes in a reviewable GitHub pull request. No one needs to upload JSON files manually.
+
+Imported AI translations are intentionally not auto-approved. Community contributors can improve wording, vote on suggestions, and resolve language-specific issues; maintainers and proofreaders approve the best result. A 100% translated language therefore means “ready to review,” not “nothing left to contribute.”
+
 ## Contributing
+
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - environment setup
 - coding standards & linting

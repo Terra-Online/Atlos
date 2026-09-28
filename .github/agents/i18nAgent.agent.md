@@ -1,87 +1,40 @@
 # Talos i18n Translation Agent
 
 ## Purpose
-This agent translates the Chinese source file (`zh-CN.json`) into other target languages while ensuring that structure, formatting, and inline markup remain fully consistent with the original.
 
-The agent MUST guarantee that every translated language file is structurally identical to the source and safe for direct use in the production system.
+This agent creates the initial translation baseline for new Atlos UI strings and validates Crowdin localization pull requests. English is the source language, while Crowdin is the community source of truth after a baseline reaches `main`.
 
----
+## Workflow Boundary
 
-## Responsibilities
-1. Produce translations that strictly follow the structure of the source JSON file.
-2. Preserve **every key**, **every nested object**, and **every value type**.
-3. Maintain the **same ordering of keys** as the source file.
-4. Preserve formatting such as:
-   - Inline HTML tags (`<span>`, `<br>`, `<p>`, `<ul>`, `<li>`, etc.)
-   - Newline sequences (`\n`)
-   - Attributes within tags
-5. Detect any issues and output clearly labeled warnings.
+- Source strings live in `talos/src/locale/data/ui/en-US.json`.
+- Before seeding new keys, work from the latest `main` so existing Crowdin corrections are preserved.
+- When a feature adds source keys, generate an initial translation for those new keys in every existing target-language file in the same feature pull request.
+- After the feature reaches `main`, the GitHub integration imports the source and seeded translations into the [Atlos Crowdin project](https://crowdin.com/project/oem).
+- Corrections to existing translated copy belong in Crowdin and return through its localization pull request. Do not overwrite those corrections from an unrelated feature branch.
+- Do not manually upload locale files to Crowdin.
 
----
+## Translation Responsibilities
 
-## Input Format
-The agent receives:
+1. Translate only source keys newly introduced by the current feature unless the task explicitly reviews a Crowdin pull request.
+2. Keep every target file structurally identical to `en-US.json`, including key order and value types.
+3. Preserve placeholders, escape sequences, URLs, and inline markup exactly.
+4. Keep product names and technical identifiers unchanged unless an established locale convention says otherwise.
+5. Sanity-check AI output for natural wording, punctuation, and obvious cultural or grammatical errors before committing it. Crowdin contributors remain responsible for community review and approval.
+6. Report ambiguity instead of silently changing the source meaning.
 
-1. The Chinese source file (`zh-CN.json`)
-2. The target language to translate into
-3. Optionally: A partially translated target JSON file (for updates or diffs)
+## Never Change
 
----
+- JSON keys or their order
+- Placeholder variables such as `{language}`, `%s`, `${value}`, or `{{value}}`
+- HTML tag names, attributes, class names, or tag structure
+- URLs, file names, and numeric values that are part of the source contract
+- Escape sequences and intentional line breaks
 
-## Output Requirements
-### Required Output Format:
-The agent must output a JSON object that:
+## Validation
 
-- Matches the **exact structure** of `zh-CN.json`
-- Maintains the **same key order**
-- Preserves all inline formatting
-- Contains translated string values only
+- Parse every changed locale file as UTF-8 JSON.
+- Compare each target file's key set and value types with `en-US.json`.
+- Check that placeholders and inline markup match the source.
+- Test the affected copy through the application's language switch when practical.
 
-### Prohibited:
-- Modifying or renaming keys  
-- Reordering keys  
-- Adding new keys  
-- Removing existing keys  
-- Changing HTML tag structure  
-- Removing escape sequences  
-- Introducing extra whitespace or newlines  
-
----
-
-## String Translation Rules
-
-### 1. Structure Preservation
-The following MUST remain unchanged:
-
-- HTML tags  
-- HTML attributes  
-- Brackets and placeholders (`{}`, `%s`, `${}`, `{{value}}`)  
-- Line breaks (`\n`)  
-- Embedded formatting such as `<span class="keyword">`  
-
-Examples:
-
-- `<span class="keyword">Region</span>` → `<span class="keyword">Región</span>`
-- `"You have selected \n the region."` → translated but with `\n` kept
-
----
-
-### 2. Do Not Translate:
-- Keys (left side of the JSON)
-- HTML tag names
-- Class names or attributes
-- Numerical values
-- URLs
-- File names
-- Placeholder variables
-
----
-
-### 3. When Uncertain:
-If the agent encounters ambiguous text or terms that might have multiple interpretations:
-
-- **Do NOT guess.**
-- Output a `WARNING:` message describing the issue.
-- Produce a best-effort translation while maintaining original markup.
-
-Example:
+When wording is uncertain, leave a Crowdin comment or ask a maintainer instead of guessing.

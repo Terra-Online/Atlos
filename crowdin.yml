@@ -1,3 +1,23 @@
+pull_request_title: "chore(i18n): sync translations from Crowdin"
+
 files:
   - source: talos/src/locale/data/ui/en-US.json
     translation: talos/src/locale/data/ui/%locale%.json
+    languages_mapping:
+      locale:
+        ar: ar-SA
+        de: de-DE
+        el: el-GR
+        fr: fr-FR
+        hi: hi-IN
+        id: id-ID
+        it: it-IT
+        ja: ja-JP
+        ko: ko-KR
+        ms: ms-MY
+        pl: pl-PL
+        ru: ru-RU
+        th: th-TH
+        tr: tr-TR
+        uk: uk-UA
+        vi: vi-VN
