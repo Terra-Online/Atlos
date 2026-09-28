@@ -1,5 +1,28 @@
 pull_request_title: "chore(i18n): sync translations from Crowdin"
 
+export_languages:
+  - ar
+  - de
+  - el
+  - es-ES
+  - fr
+  - hi
+  - id
+  - it
+  - ja
+  - ko
+  - ms
+  - pl
+  - pt-BR
+  - ru
+  - sv-SE
+  - th
+  - tr
+  - uk
+  - vi
+  - zh-CN
+  - zh-HK
+
 files:
   - source: /talos/src/locale/data/ui/en-US.json
     translation: /talos/src/locale/data/ui/%locale%.json
