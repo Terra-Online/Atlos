@@ -10,6 +10,8 @@ import {
     PARAM_POINT_TOKEN,
     PARAM_IMAGE,
     PARAM_COMMENT,
+    PARAM_COORDINATE,
+    PARAM_ZOOM,
     REGION_CODE_MAP,
     SUBREGION_TO_REGION_MAP,
 } from './protocol';
@@ -83,6 +85,25 @@ export const generatePointShareUrl = (
     } else if (options.content?.kind === 'comment') {
         url.searchParams.set(PARAM_COMMENT, options.content.id);
     }
+    return url.toString();
+};
+
+const formatCoordinate = (value: number): string => Number(value.toFixed(5)).toString();
+const formatZoom = (value: number): string => Number(value.toFixed(2)).toString();
+
+export const generateLocationShareUrl = (location: {
+    lat: number;
+    lng: number;
+    zoom: number;
+}): string => {
+    const url = new URL(`${getPointShareOrigin()}/`);
+    const regionKey = useRegion.getState().currentRegionKey;
+    url.searchParams.set(PARAM_REGION, REGION_CODE_MAP[regionKey] || regionKey);
+    url.searchParams.set(
+        PARAM_COORDINATE,
+        `${formatCoordinate(location.lat)},${formatCoordinate(location.lng)}`,
+    );
+    url.searchParams.set(PARAM_ZOOM, formatZoom(location.zoom));
     return url.toString();
 };
 

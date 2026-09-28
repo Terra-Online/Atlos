@@ -54,7 +54,6 @@
     "uploadPending": "Η υποβολή ελήφθη. Θα εμφανιστεί μετά τον έλεγχο.",
     "readFullText": "Κλικ για ανάγνωση ολόκληρου του κειμένου.",
     "share": "Αντιγραφή συνδέσμου κοινοποίησης για αυτό το σημείο.",
-    "copied": "Ο σύνδεσμος αντιγράφηκε",
     "collectionRateSource": "Το συνολικό ποσοστό συλλογής είναι {nums} – Στατιστικά από το OEM Cloud",
     "viewer": {
       "author": "Αποστολέας",
@@ -69,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Αντιγραφή συνδέσμου σχολίου",
+      "emojiPicker": "Επιλογή emoji",
       "placeholder": "Γράψτε κάτι!",
       "submit": "Δημοσίευση σχολίου",
       "actions": "Ενέργειες σχολίου",
@@ -404,6 +404,10 @@
           "title": "Ισορροπημένο",
           "desc": "Παρακολούθηση σημείων που επέλεξε το OEM."
         },
+        "gatherSpot": {
+          "title": "Σημεία συλλογής",
+          "desc": "Παρακολούθηση μόνο σημείων συλλογής."
+        },
         "collection": {
           "title": "Συλλεκτικά",
           "desc": "Παρακολούθηση σημείων σε <span class=\"keyword\">συλλογή</span>/<span class=\"keyword\">εξερεύνηση</span>/<span class=\"keyword\">αρχείο</span>."
@@ -465,6 +469,25 @@
       "desc": "Κοινότητα κοινοποίησης Blueprint"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Εμφάνιση μόνο: {region}",
+    "showAllSubregions": "Εμφάνιση όλων των υποπεριοχών",
+    "highlightSameType": "Επισήμανση σημείων ίδιου τύπου ({count})",
+    "clearSameTypeHighlight": "Κατάργηση επισήμανσης ({count})",
+    "completeSameType": "Ολοκλήρωση σημείων ίδιου τύπου ({count})",
+    "confirmComplete": "Επιβεβαίωση ολοκλήρωσης {count} σημείων",
+    "uncompleteSameType": "Αφαίρεση σημάνσεων ολοκλήρωσης ({count})",
+    "sharePoint": "Κοινοποίηση αυτού του σημείου",
+    "shareLocation": "Κοινοποίηση αυτής της τοποθεσίας",
+    "clearAllHighlights": "Κατάργηση όλων των επισημάνσεων",
+    "selectAllCategoryFilters": "Επιλογή όλων",
+    "deselectAllCategoryFilters": "Αποεπιλογή όλων",
+    "hideCompletedMarkers": "Απόκρυψη ολοκληρωμένων",
+    "showCompletedMarkers": "Εμφάνιση ολοκληρωμένων",
+    "undo": "Αναίρεση",
+    "redo": "Επανάληψη",
+    "scopeLabel": "Εμφανίζεται μόνο: {region}"
+  },
   "common": {
     "close": "Κλείσ.",
     "skip": "Παράλ.",
@@ -477,7 +500,9 @@
     "enable": "Ενεργό",
     "disable": "Ανενεργό",
     "expand": "Άνοιγμα",
-    "collapse": "Κλείσιμο"
+    "collapse": "Κλείσιμο",
+    "copied": "Ο σύνδεσμος αντιγράφηκε",
+    "copyFailed": "Η αντιγραφή απέτυχε, δοκιμάστε ξανά"
   },
   "announcement": {
     "title": "Ανακοίνωση Ιστότοπου",

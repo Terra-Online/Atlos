@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Notizen: Letzte Worte",
             "nar_paper_map02_15023_1": "Tagebuch: Letzter Eintrag",
             "nar_paper_map02_15025_1": "Notizen: Hingeschmiert",
+            "nar_paper_map02_research11_2_1": "Kurzer Rundgang: Städtische Landschaft",
+            "nar_paper_map02_research11_3_1": "Anzeichen der Katastrophe",
+            "nar_paper_map02_research11_4_1": "Handbuch der Krisenreaktion im Falle einer Verderbnisflut-Katastrophe (Auszug)",
+            "nar_paper_map02_research11_5_1": "Allerlei Leckerbissen aus Suiming: Snacks (Auszug)",
+            "nar_paper_map02_research11_6_1": "Brief, der zwischen den Seiten steckte",
+            "nar_paper_map02_research11_7_1": "Notiz: Hastig rausgerissen und niedergekritzelt",
+            "nar_paper_map02_research11_8_1": "Aufsatz: Meine Mama",
+            "nar_paper_map02_research11_9_1": "Datenbericht zum 14. Test der Verderbnis-Resistenz des Tianshi-Säulen-Prototyps",
+            "nar_paper_map02_research11_10_1": "Notizen: Vermutlich von einem Schüler verfasst",
+            "nar_paper_map02_research11_13_1": "Aus einem Tagebuch gerissene Seite",
             "nar_col_lv003_9d1": "Altes Foto",
             "nar_gm01m9_1": "Jeremys Mobilterminal",
             "nar_digital_map01_4_1": "Memo: Geschäftsreise",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Notiz: Tianshi",
             "nar_digital_map02_14024_1": "Kommunikationslog: Sentimentalität",
             "nar_digital_map02_15019_1": "Ein Plan",
+            "nar_digital_map02_research11_14_1": "UB: Die Gründung der Stadt",
+            "nar_paper_map02_research11_11_1": "Aufzeichnungen: Notfall-Funkgerät-Log",
             "nar_sm1l1m2_3": "Ein Stück Schmierpapier",
             "nar_collection_map01_10_1": "Gutschein für Hochwirksamen Sprengstoff",
             "nar_collection_map02_95_1": "Talisman",
@@ -625,7 +637,8 @@
             "research_006prts": "Yanesische Ruinen im Tal des Schwertverlieses",
             "research_007prts": "Yinglung-Pass",
             "research_008prts": "Überlebensversuche der Katastrophenopfer",
-            "research_009prts": "Die Systeme des Verschneiten Waldes"
+            "research_009prts": "Die Systeme des Verschneiten Waldes",
+            "research_gm02m27": "UB: Eine Stadt der F&E"
         }
     }
 }

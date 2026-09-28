@@ -292,6 +292,10 @@ export default defineConfig({
                     src: 'src/assets/images/category',
                     dest: 'assets/images',
                 },
+                {
+                    src: 'src/assets/images/emoji',
+                    dest: 'assets/images',
+                },
             ]
                 .filter((target) => existsSync(target.src))
                 .concat(getMapClipTargets()), // 只包含存在的源路径
@@ -398,12 +402,7 @@ export default defineConfig({
                     if (!id.includes('/node_modules/')) return undefined;
 
                     // 手动归并 React 核心运行时，确保它们在同一个 chunk
-                    if (
-                        id.includes('/react/') ||
-                        id.includes('/react-dom/') ||
-                        id.includes('/scheduler/') ||
-                        id.includes('/react-is/')
-                    ) {
+                    if (/\/node_modules\/(react|react-dom|scheduler|react-is)\//.test(id)) {
                         return 'vendor-react';
                     }
 

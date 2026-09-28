@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Note : derniers mots",
             "nar_paper_map02_15023_1": "Journal : dernière entrée",
             "nar_paper_map02_15025_1": "Note griffonnée",
+            "nar_paper_map02_research11_2_1": "Visite rapide : paysage urbain",
+            "nar_paper_map02_research11_3_1": "Signes de la catastrophe",
+            "nar_paper_map02_research11_4_1": "Manuel de réponse d'urgence aux catastrophes de Marée gangrénée (extrait)",
+            "nar_paper_map02_research11_5_1": "Fragments divers de Suiming : les en-cas (extrait)",
+            "nar_paper_map02_research11_6_1": "Lettre coincée entre deux pages",
+            "nar_paper_map02_research11_7_1": "Mémo déchiré à la hâte et affiché",
+            "nar_paper_map02_research11_8_1": "Rédaction : Ma maman",
+            "nar_paper_map02_research11_9_1": "Rapport de données suite au test de résistance à la Gangrène du pilier des Tianshi, 14e prototype",
+            "nar_paper_map02_research11_10_1": "Notes sans doute rédigées par un disciple",
+            "nar_paper_map02_research11_13_1": "Page arrachée à un journal",
             "nar_col_lv003_9d1": "Vieille photo",
             "nar_gm01m9_1": "Terminal mobile de Jeremy",
             "nar_digital_map01_4_1": "Note d'un homme d'affaires",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Mémo : Tianshi",
             "nar_digital_map02_14024_1": "Journal de communication : que d'émotions",
             "nar_digital_map02_15019_1": "Un plan",
+            "nar_digital_map02_research11_14_1": "RE : Fondation de la ville",
+            "nar_paper_map02_research11_11_1": "Archives : journal de communicateur d'urgence",
             "nar_sm1l1m2_3": "Un bout de papier",
             "nar_collection_map01_10_1": "Bon pour une gamme d'explosifs puissants",
             "nar_collection_map02_95_1": "Talisman",
@@ -625,7 +637,8 @@
             "research_006prts": "Ruines yanaises du Val du caveau des lames",
             "research_007prts": "Col de Yinglung",
             "research_008prts": "Tentatives de survie des victimes du désastre",
-            "research_009prts": "Modèle opérationnel de la forêt enneigée"
+            "research_009prts": "Modèle opérationnel de la forêt enneigée",
+            "research_gm02m27": "RE : Une ville de R&D"
         }
     }
 }

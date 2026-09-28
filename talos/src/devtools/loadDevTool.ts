@@ -15,10 +15,12 @@ const hasFlag = (flag: string): boolean => {
     try {
         if (typeof window === 'undefined') return false;
         const initialParams = new URLSearchParams(initialSearch);
-        if (initialParams.get(flag) === '1') return true;
+        const initialValue = initialParams.get(flag);
+        if (initialValue === '' || initialValue === '1') return true;
 
         const currentParams = new URLSearchParams(window.location.search);
-        return currentParams.get(flag) === '1';
+        const currentValue = currentParams.get(flag);
+        return currentValue === '' || currentValue === '1';
     } catch {
         return false;
     }
@@ -29,6 +31,8 @@ const hasLabelToolFlag = (): boolean => hasFlag('labelTool');
 const hasLinkToolFlag = (): boolean => hasFlag('linkTool');
 
 const hasMarkToolFlag = (): boolean => hasFlag('markTool');
+
+const hasSplitToolFlag = (): boolean => hasFlag('splitTool');
 
 export const isRecordToolEnabled = (): boolean => import.meta.env.DEV && hasFlag('recordTool');
 
@@ -97,8 +101,25 @@ export const loadMarkTool = async (): Promise<void> => {
     }
 };
 
+export const loadSplitTool = async (): Promise<void> => {
+    if (!import.meta.env.DEV) return;
+    if (!hasSplitToolFlag()) return;
+
+    const map = await waitForMap();
+    if (!map) return;
+
+    try {
+        const mod: unknown = await import('./splitTool/bootstrap');
+        const bootstrap = readBootstrap(mod, 'bootstrapSplitTool');
+        if (bootstrap) bootstrap(map);
+    } catch (e) {
+        console.error('[SplitTool] Failed to load:', e);
+    }
+};
+
 export const loadDevTools = (): void => {
     void loadLabelTool();
     void loadLinkTool();
     void loadMarkTool();
+    void loadSplitTool();
 };

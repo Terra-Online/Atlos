@@ -277,6 +277,18 @@
           "ritual_shrine": "Tế Đàn",
           "old_resting_point": "Điểm Dừng Chân Cũ"
         }
+      },
+      "SM": {
+        "name": "Tuy Minh",
+        "short": "TM",
+        "site": {
+          "suiming_city_suburbs": "Ngoại Ô Thành Phố Tuy Minh",
+          "suiming_city_center": "Trung Tâm Thành Phố Tuy Minh",
+          "tianshi_pillar_records_hall": "Thư Khố Cột Thiên Sư",
+          "tianshi_pillar_research_labs": "Phòng Nghiên Cứu Cột Thiên Sư",
+          "physical_training_field": "Sân Rèn Luyện Thể Chất",
+          "blight_monitoring_zone": "Khu Giám Sát Nhiễm Khuẩn"
+        }
       }
     }
   },

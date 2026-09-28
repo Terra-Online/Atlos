@@ -4,9 +4,17 @@ import styles from './markFilter.module.scss';
 import { MarkVisibilityContext } from './visibilityContext';
 import { useTranslateUI } from '@/locale';
 import { useMarkFilterExpanded, useToggleMarkFilterExpanded, useLayoutVersion } from '@/store/uiPrefs';
-import { motion, useMotionValue, useDragControls } from 'motion/react';
+import { AnimatePresence, motion, useMotionValue, useDragControls } from 'motion/react';
 import { animate } from 'motion';
 import { useMarkFilterDragContext } from './reorderCore';
+import { commitMarkerFilter } from '@/store/history';
+import ContextMenu, { type ContextMenuGroup } from '@/component/contextMenu/ContextMenu';
+
+type FilterContextMenuTarget = {
+    ownerDocument: Document;
+    position: { x: number; y: number };
+    restoreFocus: HTMLElement | null;
+};
 
 interface MarkFilterProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>> | (() => React.ReactNode);
@@ -24,6 +32,7 @@ interface MarkFilterProps {
     initialEmpty?: boolean;
     variant?: 'versionNew';
     reorderable?: boolean;
+    typeKeys: string[];
 }
 
 const MarkFilter = ({
@@ -39,6 +48,7 @@ const MarkFilter = ({
     initialEmpty = false,
     variant,
     reorderable = true,
+    typeKeys,
 }: MarkFilterProps) => {
     const t = useTranslateUI();
     const isExpanded = useMarkFilterExpanded(idKey);
@@ -48,6 +58,7 @@ const MarkFilter = ({
     const { register, unregister, startDrag, updateDrag, endDrag, orderOf, isDragging, draggingId } = useMarkFilterDragContext();
     const containerRef = useRef<HTMLDivElement | null>(null);
     const y = useMotionValue(0);
+    const [contextMenuTarget, setContextMenuTarget] = useState<FilterContextMenuTarget | null>(null);
 
     const isSelfDragging = draggingId === idKey;
     const orderIndex = orderOf(idKey);
@@ -104,6 +115,46 @@ const MarkFilter = ({
     };
 
     const contextValue = useMemo(() => ({ report }), [report]);
+    const closeContextMenu = useCallback(() => {
+        setContextMenuTarget((current) => {
+            current?.restoreFocus?.focus({ preventScroll: true });
+            return null;
+        });
+    }, []);
+    const openCategoryContextMenu = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.altKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const target = event.target instanceof HTMLElement ? event.target : null;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const hasPointerPosition = event.clientX !== 0 || event.clientY !== 0;
+        setContextMenuTarget({
+            ownerDocument: event.currentTarget.ownerDocument,
+            position: hasPointerPosition
+                ? { x: event.clientX, y: event.clientY }
+                : { x: rect.left, y: rect.bottom },
+            restoreFocus: target,
+        });
+    }, []);
+    const contextMenuGroups = useMemo<ContextMenuGroup[]>(() => [{
+        id: 'filter',
+        items: [
+            {
+                id: 'select-category-filters',
+                label: String(t('contextMenu.selectAllCategoryFilters')),
+                onSelect: () => {
+                    commitMarkerFilter(`Show all filters in ${idKey}`, { activate: typeKeys });
+                },
+            },
+            {
+                id: 'deselect-category-filters',
+                label: String(t('contextMenu.deselectAllCategoryFilters')),
+                onSelect: () => {
+                    commitMarkerFilter(`Hide all filters in ${idKey}`, { deactivate: typeKeys });
+                },
+            },
+        ],
+    }], [idKey, t, typeKeys]);
 
     // lazy render: don't render children of auto-collapsed empty filters until first explicit expand
     const [hasEverExpanded, setHasEverExpanded] = useState(() => isExpanded && !initialEmpty);
@@ -194,6 +245,7 @@ const MarkFilter = ({
             onDragStart={onDragStart}
             onDrag={onDrag}
             onDragEnd={onDragEnd}
+            onContextMenu={openCategoryContextMenu}
             animate={{ scale }}
             transition={{
                 layout: layoutAnimReady
@@ -269,6 +321,17 @@ const MarkFilter = ({
                 </div>
             </div>
         </motion.div>
+        <AnimatePresence>
+            {contextMenuTarget && (
+                <ContextMenu
+                    key={`${contextMenuTarget.position.x}:${contextMenuTarget.position.y}`}
+                    ownerDocument={contextMenuTarget.ownerDocument}
+                    position={contextMenuTarget.position}
+                    groups={contextMenuGroups}
+                    onDismiss={closeContextMenu}
+                />
+            )}
+        </AnimatePresence>
         </MarkVisibilityContext.Provider>
     );
 };

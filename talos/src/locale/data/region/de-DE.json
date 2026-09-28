@@ -277,6 +277,18 @@
           "ritual_shrine": "Ritueller Schrein",
           "old_resting_point": "Alter Rastplatz"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Vorstadt von Suiming",
+          "suiming_city_center": "Stadtzentrum von Suiming",
+          "tianshi_pillar_records_hall": "Tianshi-Säulen-Aktenarchiv",
+          "tianshi_pillar_research_labs": "Tianshi-Säulen-Forschungslabors",
+          "physical_training_field": "Sportplatz",
+          "blight_monitoring_zone": "Verderbnis-Überwachungszone"
+        }
       }
     }
   },

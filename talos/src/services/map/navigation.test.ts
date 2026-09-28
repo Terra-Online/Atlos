@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { waitFor } from '@testing-library/react';
+import L from 'leaflet';
 import type { IMarkerData } from '@/data/marker';
 import type { MapCore } from '@/component/mapCore/map';
 
@@ -16,7 +17,7 @@ vi.mock('@/store/region', () => ({
 }));
 
 import { useMarkerStore } from '@/store/marker';
-import { navigateToMarkerId, registerSharedPointMapCore } from './navigation';
+import { navigateToMarkerId, navigateToSharedLocation, registerSharedPointMapCore } from './navigation';
 
 const point = { id: '1', type: 'test', subregId: 'sub', pos: [1, 2] } as IMarkerData;
 
@@ -68,4 +69,35 @@ it('keeps image and comment requests mutually exclusive', () => {
     expect(useMarkerStore.getState().imageOpenRequest).toBeNull();
     store.openMarkerImage('1', 'image');
     expect(useMarkerStore.getState().commentOpenRequest).toBeNull();
+});
+
+it('waits for the region and centers a valid shared location with clamped zoom', async () => {
+    const flyTo = vi.fn();
+    registerSharedPointMapCore({
+        switchRegion: () => Promise.resolve(true),
+        markerLayer: {},
+        map: {
+            options: {
+                maxBounds: {
+                    contains: () => true,
+                },
+            },
+            getMinZoom: () => 0,
+            getMaxZoom: () => 3,
+            getZoom: () => 1,
+            flyTo,
+        },
+    } as unknown as MapCore);
+
+    navigateToSharedLocation({
+        regionKey: 'Valley_4',
+        center: [10, 20],
+        zoom: 9,
+    });
+
+    await waitFor(() => expect(flyTo).toHaveBeenCalledWith(
+        L.latLng(10, 20),
+        3,
+        { animate: true, duration: 0.9 },
+    ));
 });

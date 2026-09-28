@@ -44,6 +44,7 @@ talos/apps/intel/src/assets/
 talos/src/assets/fonts_original/
 talos/src/assets/images/item
 talos/src/assets/images/shared
+talos/src/assets/images/emoji
 talos/src/assets/images/marker
 talos/src/locale/data/ui/*.fixed.json
 talos/src/locale/data/ui/reports

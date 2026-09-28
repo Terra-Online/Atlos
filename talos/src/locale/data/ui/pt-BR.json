@@ -54,7 +54,6 @@
     "uploadPending": "Enviado. Será exibido após revisão.",
     "readFullText": "Clique para ler o texto completo.",
     "share": "Copiar link compartilhável deste ponto.",
-    "copied": "Link copiado",
     "collectionRateSource": "A taxa global de coleta é {nums} – Estatísticas do OEM Cloud",
     "viewer": {
       "author": "Autor",
@@ -69,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Copiar link do comentário",
+      "emojiPicker": "Escolher um emoji",
       "placeholder": "Escreva algo!",
       "submit": "Publicar comentário",
       "actions": "Ações do comentário",
@@ -404,6 +404,10 @@
           "title": "Equilibrado",
           "desc": "Rastrear pontos escolhidos pela OEM."
         },
+        "gatherSpot": {
+          "title": "Ponto de Coleta",
+          "desc": "Rastrear apenas pontos de coleta."
+        },
         "collection": {
           "title": "Coletáveis",
           "desc": "Rastrear pontos em <span class=\"keyword\">coleção</span>/<span class=\"keyword\">exploração</span>/<span class=\"keyword\">arquivos</span>."
@@ -465,6 +469,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Mostrar apenas {region}",
+    "showAllSubregions": "Mostrar todas as sub-regiões",
+    "highlightSameType": "Destacar pontos do mesmo tipo aqui ({count})",
+    "clearSameTypeHighlight": "Remover destaque ({count})",
+    "completeSameType": "Concluir pontos do mesmo tipo ({count})",
+    "confirmComplete": "Confirmar a conclusão de {count} pontos",
+    "uncompleteSameType": "Remover marcas de conclusão ({count})",
+    "sharePoint": "Compartilhar este ponto",
+    "shareLocation": "Compartilhar esta localização",
+    "clearAllHighlights": "Remover todos os destaques",
+    "selectAllCategoryFilters": "Selecionar todos",
+    "deselectAllCategoryFilters": "Desmarcar todos",
+    "hideCompletedMarkers": "Ocultar pontos concluídos",
+    "showCompletedMarkers": "Mostrar pontos concluídos",
+    "undo": "Desfazer",
+    "redo": "Refazer",
+    "scopeLabel": "Mostrando apenas: {region}"
+  },
   "common": {
     "close": "Fechar",
     "skip": "Pular",
@@ -477,7 +500,9 @@
     "enable": "Ativar",
     "disable": "Desativar",
     "expand": "Expandir",
-    "collapse": "Recolher"
+    "collapse": "Recolher",
+    "copied": "Link copiado",
+    "copyFailed": "Falha ao copiar, tente novamente"
   },
   "announcement": {
     "title": "Aviso do site",

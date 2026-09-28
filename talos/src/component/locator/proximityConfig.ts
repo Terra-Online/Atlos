@@ -35,6 +35,7 @@ export const LOCATOR_REMINDER_STRATEGIES = {
             'mob.*',
         ],
         exclude: [
+            'collection.gather',
             'collection.protocol_dl',
             'collection.protocol_dl_ii',
             'collection.gear_template',
@@ -43,6 +44,12 @@ export const LOCATOR_REMINDER_STRATEGIES = {
             'exploration.blight_core',
             ...COMMON_MOB_RULES,
         ],
+    },
+    gatherSpot: {
+        include: [
+            'collection.gather',
+        ],
+        exclude: [],
     },
     collection: {
         include: [
@@ -54,6 +61,7 @@ export const LOCATOR_REMINDER_STRATEGIES = {
             'exploration.pressure_plate',
             'exploration.wooden_box',
             'exploration.blight_core',
+            'collection.gather',
         ],
     },
     manual: {

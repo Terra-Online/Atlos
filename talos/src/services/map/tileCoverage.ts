@@ -1,77 +1,54 @@
-import { getTileResourceUrl } from '@/services/assets/resource';
+import tileCoverageData from '@/data/map/tileCoverage.json';
+
+export type ZoomTileCoverage = Record<string, Record<string, number[]>>;
 
 export interface RegionTileCoverage {
-  version: number;
-  generatedAt: string;
-  region: string;
-  zooms: Record<string, Record<string, Record<string, number[]>>>;
+    zooms: Record<string, ZoomTileCoverage>;
 }
 
-const regionCoveragePromises = new Map<string, Promise<RegionTileCoverage | null>>();
+interface TileCoverageData {
+    version: number;
+    regions: Record<string, Record<string, ZoomTileCoverage>>;
+}
 
-const fetchRegionTileCoverage = async (regionId: string): Promise<RegionTileCoverage | null> => {
-  const url = getTileResourceUrl(`/clips/_index/coverage/${regionId}.v1.json`);
+const coverageData = tileCoverageData as TileCoverageData;
 
-  try {
-    const response = await fetch(url, { method: 'GET', cache: 'force-cache' });
-    if (!response.ok) return null;
-    return (await response.json()) as RegionTileCoverage;
-  } catch {
-    return null;
-  }
-};
-
-export const getRegionTileCoverage = async (regionId: string): Promise<RegionTileCoverage | null> => {
-  if (!regionCoveragePromises.has(regionId)) {
-    regionCoveragePromises.set(regionId, fetchRegionTileCoverage(regionId));
-  }
-
-  const promise = regionCoveragePromises.get(regionId);
-  return promise ?? null;
+export const getRegionTileCoverage = (regionId: string): RegionTileCoverage => {
+    const zooms = coverageData.regions[regionId];
+    if (!zooms) {
+        throw new Error(`Tile coverage not found for region: ${regionId}`);
+    }
+    return { zooms };
 };
 
 const isXInRanges = (x: number, ranges: number[]) => {
-  let left = 0;
-  let right = Math.floor(ranges.length / 2) - 1;
+    let left = 0;
+    let right = Math.floor(ranges.length / 2) - 1;
 
-  while (left <= right) {
-    const middle = Math.floor((left + right) / 2);
-    const start = ranges[middle * 2];
-    const end = ranges[middle * 2 + 1];
+    while (left <= right) {
+        const middle = Math.floor((left + right) / 2);
+        const start = ranges[middle * 2];
+        const end = ranges[middle * 2 + 1];
 
-    if (x < start) {
-      right = middle - 1;
-      continue;
+        if (x < start) {
+            right = middle - 1;
+        } else if (x > end) {
+            left = middle + 1;
+        } else {
+            return true;
+        }
     }
 
-    if (x > end) {
-      left = middle + 1;
-      continue;
-    }
-
-    return true;
-  }
-
-  return false;
+    return false;
 };
 
 export const hasTileInCoverage = (
-  coverage: RegionTileCoverage | null,
-  zoom: number,
-  x: number,
-  y: number,
-  suffix: string,
+    coverage: RegionTileCoverage,
+    zoom: number,
+    x: number,
+    y: number,
+    suffix: string,
 ): boolean => {
-  if (!coverage) return true;
-
-  const zoomData = coverage.zooms[String(zoom)];
-  if (!zoomData) return false;
-
-  const layerData = zoomData[suffix];
-  if (!layerData) return false;
-
-  const rowRanges = layerData[String(y)];
-  if (!rowRanges || rowRanges.length === 0) return false;
-
-  return isXInRanges(x, rowRanges);
+    const rowRanges = coverage.zooms[String(zoom)]?.[suffix]?.[String(y)];
+    return Boolean(rowRanges?.length && isXInRanges(x, rowRanges));
 };

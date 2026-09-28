@@ -277,6 +277,18 @@
           "ritual_shrine": "Kuil Ritual",
           "old_resting_point": "Titik Peristirahatan Lama"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Pinggiran Kota Suiming",
+          "suiming_city_center": "Pusat Kota Suiming",
+          "tianshi_pillar_records_hall": "Aula Catatan Pilar Tianshi",
+          "tianshi_pillar_research_labs": "Lab Penelitian Pilar Tianshi",
+          "physical_training_field": "Lapangan Latihan Fisik",
+          "blight_monitoring_zone": "Zona Pantau Hawar"
+        }
       }
     }
   },

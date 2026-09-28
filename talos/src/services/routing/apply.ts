@@ -5,11 +5,12 @@ import {
     type IMarkerData,
     MARKER_TYPE_DICT,
 } from '@/data/marker';
+import { REGION_DICT } from '@/data/map';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
 import { completeCurrentUserGuide } from '@/store/userGuide';
 import { getLangFromUrlCode } from '@/lib/i18n/lang';
-import { navigateToSharedPoint } from '@/services/map/navigation';
+import { navigateToSharedLocation, navigateToSharedPoint } from '@/services/map/navigation';
 import type { MarkerContentTarget } from '@/services/map/navigation';
 import { SUBREGION_TO_REGION_MAP } from './protocol';
 import { getCurrentLocale } from './runtime';
@@ -65,7 +66,7 @@ const applyRegion = (state: ParsedUrlState): void => {
     }
 };
 
-const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
+const applyPointDestination = async (state: ParsedUrlState): Promise<boolean> => {
     const content: MarkerContentTarget | undefined = state.imageId
         ? { kind: 'image', id: state.imageId }
         : state.commentId
@@ -89,7 +90,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             pointId: resolvedFromToken.point.id,
             content,
         });
-        return;
+        return true;
     }
 
     if (state.pointId) {
@@ -110,7 +111,7 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
                 content,
             });
         }
-        return;
+        return Boolean(resolvedFromQueryPoint || state.filterParam);
     }
 
     if (resolvedFromType) {
@@ -121,10 +122,20 @@ const applyPointDestination = async (state: ParsedUrlState): Promise<void> => {
             pointId: resolvedFromType.point.id,
             content,
         });
-        return;
+        return true;
     }
 
     if (state.typeKey) mergeFilterKeys([state.typeKey]);
+    return false;
+};
+
+const applyLocationDestination = (state: ParsedUrlState): void => {
+    if (!state.coordinate || !state.regionKey || !REGION_DICT[state.regionKey]) return;
+    navigateToSharedLocation({
+        regionKey: state.regionKey,
+        center: state.coordinate,
+        zoom: state.zoom ?? REGION_DICT[state.regionKey].initialZoom,
+    });
 };
 
 export const applyUrlParams = async (): Promise<void> => {
@@ -137,7 +148,8 @@ export const applyUrlParams = async (): Promise<void> => {
     await applyLanguage(state);
     mergeFilterKeys(state.filterKeys);
     applyRegion(state);
-    await applyPointDestination(state);
+    const appliedPointDestination = await applyPointDestination(state);
+    if (!appliedPointDestination) applyLocationDestination(state);
 
     if (state.hasSearchParams || state.pathPointToken) {
         window.history.replaceState(

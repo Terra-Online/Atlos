@@ -42,6 +42,7 @@ import {
     useUserRecord,
 } from '@/store/userRecord.ts';
 import { commitPointProgress } from '@/store/history';
+import { resolveMarkerBulkTargets } from '@/services/map/markerBulkActions';
 import classNames from 'classnames';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
 
@@ -463,9 +464,10 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
             useMarkerStore.getState().bumpMarkerDataVersion();
         }
 
-        const typeMarkerIds = regionMarkers
-            .filter((marker) => marker.type === currentPoint.type)
-            .map((marker) => marker.id);
+        const typeMarkerIds = resolveMarkerBulkTargets(
+            currentPoint,
+            { kind: 'region', id: currentRegion },
+        ).allIds;
         if (typeMarkerIds.length === 0) return;
 
         commitPointProgress(`Collect ${typeMarkerIds.length} markers of type ${currentPoint.type}`, {
@@ -671,7 +673,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip
-                                    content={tUI('detail.copied')}
+                                    content={tUI('common.copied')}
                                     placement="top"
                                     gap={4}
                                     visible={copiedPopupVisible}

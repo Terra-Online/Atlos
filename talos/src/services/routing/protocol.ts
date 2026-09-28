@@ -9,6 +9,8 @@ export const PARAM_POINT = 'p';
 export const PARAM_POINT_TOKEN = 'x';
 export const PARAM_IMAGE = 'imageId';
 export const PARAM_COMMENT = 'commentId';
+export const PARAM_COORDINATE = 'c';
+export const PARAM_ZOOM = 'z';
 
 export const MAP_URL_PARAMS = [
     PARAM_LANG,
@@ -20,6 +22,8 @@ export const MAP_URL_PARAMS = [
     PARAM_POINT_TOKEN,
     PARAM_IMAGE,
     PARAM_COMMENT,
+    PARAM_COORDINATE,
+    PARAM_ZOOM,
 ] as const;
 
 export const AUTH_URL_PARAM_WHITELIST = new Set(['auth_code', 'token', 'email', 'error', 'domain']);

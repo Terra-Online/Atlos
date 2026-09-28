@@ -277,6 +277,18 @@
           "ritual_shrine": "Altare rituale",
           "old_resting_point": "Vecchio punto di sosta"
         }
+      },
+      "SM": {
+        "name": "Suiming",
+        "short": "SM",
+        "site": {
+          "suiming_city_suburbs": "Periferia di Suiming",
+          "suiming_city_center": "Centro di Suiming",
+          "tianshi_pillar_records_hall": "Sala degli archivi della colonna Tianshi",
+          "tianshi_pillar_research_labs": "Laboratori di ricerca della colonna Tianshi",
+          "physical_training_field": "Campo di addestramento fisico",
+          "blight_monitoring_zone": "Zona di monitoraggio contaminazione"
+        }
       }
     }
   },

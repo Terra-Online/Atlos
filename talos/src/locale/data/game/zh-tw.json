@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "最後的筆記",
             "nar_paper_map02_15023_1": "最後的日誌",
             "nar_paper_map02_15025_1": "字跡潦草的紙條",
+            "nar_paper_map02_research11_2_1": "城中風貌速覽",
+            "nar_paper_map02_research11_3_1": "災害的前兆",
+            "nar_paper_map02_research11_4_1": "《侵蝕潮災害緊急應變手冊（節選）》",
+            "nar_paper_map02_research11_5_1": "《遂明雜俎·飲食篇》節選",
+            "nar_paper_map02_research11_6_1": "《一份夾在書頁裡的信件》",
+            "nar_paper_map02_research11_7_1": "一頁匆忙撕下的便箋",
+            "nar_paper_map02_research11_8_1": "《我的媽媽》",
+            "nar_paper_map02_research11_9_1": "《第十四次試做型天師樁抗侵蝕實驗數據簡報》",
+            "nar_paper_map02_research11_10_1": "疑似學徒留下的筆記",
+            "nar_paper_map02_research11_13_1": "一張日記殘頁",
             "nar_col_lv003_9d1": "老照片",
             "nar_gm01m9_1": "傑里米的便攜式終端",
             "nar_digital_map01_4_1": "出差者的留言",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "天師的留言",
             "nar_digital_map02_14024_1": "感慨者的通訊",
             "nar_digital_map02_15019_1": "一份計劃書",
+            "nar_digital_map02_research11_14_1": "建城緣由考",
+            "nar_paper_map02_research11_11_1": "遺留的緊急通訊紀錄",
             "nar_sm1l1m2_3": "一張殘破的紙片",
             "nar_collection_map01_10_1": "高威力爆炸物組合兌換券",
             "nar_collection_map02_95_1": "護身符",
@@ -625,7 +637,8 @@
             "research_006prts": "藏劍谷炎國遺跡",
             "research_007prts": "應龍關",
             "research_008prts": "受災者的求生經歷",
-            "research_009prts": "雪松林的運作模式"
+            "research_009prts": "雪松林的運作模式",
+            "research_gm02m27": "關於某科研城市的調查報告"
         }
     }
 }

@@ -1,6 +1,6 @@
-export type EFTrackerScope = 'balanced' | 'collection' | 'manual';
+export type EFTrackerScope = 'balanced' | 'gatherSpot' | 'collection' | 'manual';
 
-export const EF_TRACKER_SCOPES: readonly EFTrackerScope[] = ['balanced', 'collection', 'manual'];
+export const EF_TRACKER_SCOPES: readonly EFTrackerScope[] = ['balanced', 'gatherSpot', 'collection', 'manual'];
 
 export type EFTrackerConf = {
     enabled: boolean;

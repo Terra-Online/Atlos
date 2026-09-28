@@ -54,7 +54,6 @@
     "uploadPending": "Uploaded. Waiting for review.",
     "readFullText": "Click to read full text.",
     "share": "Copy shareable link for this marker.",
-    "copied": "Link copied",
     "collectionRateSource": "Global collection rate is {nums} – Statistics from OEM Cloud",
     "viewer": {
       "author": "AUTHOR",
@@ -69,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Copy comment link",
+      "emojiPicker": "Choose an emoji",
       "placeholder": "Type something?",
       "submit": "Submit",
       "actions": "Comment actions",
@@ -404,6 +404,10 @@
           "title": "Balanced",
           "desc": "Track point sets selected by OEM."
         },
+        "gatherSpot": {
+          "title": "Gather Spot",
+          "desc": "Track Gather Spot points only."
+        },
         "collection": {
           "title": "Collectibles",
           "desc": "Track points in <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
@@ -465,6 +469,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Show only {region}",
+    "showAllSubregions": "Show all subregions",
+    "highlightSameType": "Highlight same-type points here ({count})",
+    "clearSameTypeHighlight": "Clear highlights ({count})",
+    "completeSameType": "Complete same-type points ({count})",
+    "confirmComplete": "Confirm completion of {count} points",
+    "uncompleteSameType": "Clear completion marks ({count})",
+    "sharePoint": "Share this point",
+    "shareLocation": "Share this location",
+    "clearAllHighlights": "Clear all highlights",
+    "selectAllCategoryFilters": "Select all",
+    "deselectAllCategoryFilters": "Deselect all",
+    "hideCompletedMarkers": "Hide completed markers",
+    "showCompletedMarkers": "Show completed markers",
+    "undo": "Undo",
+    "redo": "Redo",
+    "scopeLabel": "Showing only: {region}"
+  },
   "common": {
     "close": "Close",
     "skip": "Skip",
@@ -477,7 +500,9 @@
     "enable": "Enable",
     "disable": "Disable",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "copied": "Link copied",
+    "copyFailed": "Copy failed, try again"
   },
   "announcement": {
     "title": "Website Notice",

@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Ghi Chú: Lời Cuối",
             "nar_paper_map02_15023_1": "Nhật Ký: Những Dòng Cuối Cùng",
             "nar_paper_map02_15025_1": "Ghi Chú: Viết Vội",
+            "nar_paper_map02_research11_2_1": "Chuyến Tham Quan Nhanh: Cảnh Quan Đô Thị",
+            "nar_paper_map02_research11_3_1": "Dấu Hiệu Báo Trước Thảm Họa",
+            "nar_paper_map02_research11_4_1": "Cẩm Nang Ứng Phó Khẩn Cấp Với Thảm Họa Triều Nhiễm Khuẩn (Trích Đoạn)",
+            "nar_paper_map02_research11_5_1": "Tạp Lục Tuy Minh: Quà Vặt (Trích Đoạn)",
+            "nar_paper_map02_research11_6_1": "Lá Thư: Kẹp Giữa Những Trang Sách",
+            "nar_paper_map02_research11_7_1": "Ghi Chú: Vội Vàng Xé Ra Và Dán Lên",
+            "nar_paper_map02_research11_8_1": "Bài Văn: Mẹ Của Em",
+            "nar_paper_map02_research11_9_1": "Báo Cáo Dữ Liệu Thử Nghiệm Khả Năng Kháng Nhiễm Khuẩn Của Nguyên Mẫu Cột Thiên Sư Thứ 14",
+            "nar_paper_map02_research11_10_1": "Ghi Chú: Có Lẽ Do Một Học Trò Viết",
+            "nar_paper_map02_research11_13_1": "Trang Giấy: Xé Ra Từ Một Cuốn Nhật Ký",
             "nar_col_lv003_9d1": "Bức Ảnh Cũ",
             "nar_gm01m9_1": "Thiết Bị Cầm Tay Của Jeremy",
             "nar_digital_map01_4_1": "Ghi chú: Thương Nhân Lang Thang",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Ghi Chú: Thiên Sư",
             "nar_digital_map02_14024_1": "Nhật Ký Liên Lạc: Người Đa Cảm",
             "nar_digital_map02_15019_1": "Một Bản Kế Hoạch",
+            "nar_digital_map02_research11_14_1": "BCĐT: Quá Trình Thành Lập Thành Phố",
+            "nar_paper_map02_research11_11_1": "Hồ Sơ: Nhật Ký Máy Liên Lạc Khẩn Cấp",
             "nar_sm1l1m2_3": "Mảnh Giấy Vụn",
             "nar_collection_map01_10_1": "Phiếu Giảm Giá Bộ Thuốc Nổ Uy Lực",
             "nar_collection_map02_95_1": "Bùa hộ mệnh",
@@ -625,7 +637,8 @@
             "research_006prts": "Di Chỉ Người Viêm ở Cốc Tàng Kiếm",
             "research_007prts": "Đèo Yinglung",
             "research_008prts": "Những Nỗ Lực Sinh Tồn Của Các Nạn Nhân Thảm Họa",
-            "research_009prts": "Mô Hình Vận Hành Của Rừng Tuyết"
+            "research_009prts": "Mô Hình Vận Hành Của Rừng Tuyết",
+            "research_gm02m27": "BCĐT: Thành Phố Nghiên Cứu & Phát Triển"
         }
     }
 }

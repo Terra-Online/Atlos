@@ -9,7 +9,7 @@ type Args = {
     loading: boolean;
     rendered: unknown;
     visible: boolean;
-    inputRef: React.RefObject<HTMLTextAreaElement | null>;
+    inputRef: React.RefObject<HTMLDivElement | null>;
     inputBarRef: React.RefObject<HTMLDivElement | null>;
     listRef: React.RefObject<HTMLDivElement | null>;
     panelRef: React.RefObject<HTMLElement | null>;
@@ -49,11 +49,11 @@ export const useInputLayout = ({
         const minHeight = cssPx(style.minHeight);
         const maxHeight = cssPx(style.maxHeight);
         input.style.height = `${minHeight}px`;
-        const contentHeight = input.value.length === 0 ? minHeight : input.scrollHeight;
+        const contentHeight = inputValue.length === 0 ? minHeight : input.scrollHeight;
         const nextHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight || contentHeight);
         input.style.height = `${nextHeight}px`;
         input.style.overflowY = input.scrollHeight > nextHeight + 1 ? 'auto' : 'hidden';
-    }, [inputRef]);
+    }, [inputRef, inputValue]);
 
     useEffect(() => {
         const list = listRef.current;
@@ -101,5 +101,6 @@ export const useInputLayout = ({
     return {
         blurVisible,
         updateBlur,
+        resizeInput,
     };
 };

@@ -454,6 +454,16 @@
             "nar_paper_map02_15022_1": "Notas: Palavras Finais",
             "nar_paper_map02_15023_1": "Diário: Última Entrada",
             "nar_paper_map02_15025_1": "Notas: Rabiscadas",
+            "nar_paper_map02_research11_2_1": "Visita Rápida: Paisagem Urbana",
+            "nar_paper_map02_research11_3_1": "Sinais do Desastre",
+            "nar_paper_map02_research11_4_1": "Manual de Resposta a Emergências de Desastres de Maré de Praga (Trecho)",
+            "nar_paper_map02_research11_5_1": "Guloseimas de Suiming: Petiscos (Trecho)",
+            "nar_paper_map02_research11_6_1": "Carta: Dobrada Entre as Páginas",
+            "nar_paper_map02_research11_7_1": "Memo: Rasgado e Postado às Pressas",
+            "nar_paper_map02_research11_8_1": "Ensaio: Minha Mãe",
+            "nar_paper_map02_research11_9_1": "Relatório de Dados do Teste de Resistência à Praga do 14º Protótipo de Pilar de Tianshi",
+            "nar_paper_map02_research11_10_1": "Notas: Provavelmente Escritas por um Discípulo",
+            "nar_paper_map02_research11_13_1": "Página: Arrancada de um Diário",
             "nar_col_lv003_9d1": "Fotografia Antiga",
             "nar_gm01m9_1": "Terminal Portátil de Jeremy",
             "nar_digital_map01_4_1": "Memo: Viajante de Negócios",
@@ -501,6 +511,8 @@
             "nar_digital_map02_14016_1": "Memo: Tianshi",
             "nar_digital_map02_14024_1": "Log de Comunicação: Uma Pessoa Sentimental",
             "nar_digital_map02_15019_1": "Um Plano",
+            "nar_digital_map02_research11_14_1": "RI: Fundação da Cidade",
+            "nar_paper_map02_research11_11_1": "Registros: Log do Comunicador de Emergência",
             "nar_sm1l1m2_3": "Um Pedaço de Papel de Rascunho",
             "nar_collection_map01_10_1": "Cupom de Conjunto Explosivo Poderoso",
             "nar_collection_map02_95_1": "Talismã",
@@ -625,7 +637,8 @@
             "research_006prts": "Ruínas Yanesas no Vale do Cofre de Espadas",
             "research_007prts": "Passagem de Yinglung",
             "research_008prts": "Tentativas de Sobrevivência das Vítimas do Desastre",
-            "research_009prts": "Modelo Operacional da Floresta Nevada"
+            "research_009prts": "Modelo Operacional da Floresta Nevada",
+            "research_gm02m27": "RI: Uma Cidade de P&D"
         }
     }
 }

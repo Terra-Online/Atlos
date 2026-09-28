@@ -54,7 +54,6 @@
     "uploadPending": "Terkirim. Akan ditampilkan setelah ditinjau.",
     "readFullText": "Klik untuk membaca teks lengkap.",
     "share": "Salin tautan yang dapat dibagikan untuk titik ini.",
-    "copied": "Tautan disalin",
     "collectionRateSource": "Tingkat koleksi global adalah {nums} – Statistik dari OEM Cloud",
     "viewer": {
       "author": "Pengunggah",
@@ -69,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Salin tautan komentar",
+      "emojiPicker": "Pilih emoji",
       "placeholder": "Tulis sesuatu !",
       "submit": "Kirim komentar",
       "actions": "Aksi komentar",
@@ -404,6 +404,10 @@
           "title": "Seimbang",
           "desc": "Lacak titik yang dipilih OEM."
         },
+        "gatherSpot": {
+          "title": "Titik Kumpul",
+          "desc": "Lacak titik kumpul saja."
+        },
         "collection": {
           "title": "Koleksi",
           "desc": "Lacak titik di <span class=\"keyword\">koleksi</span>/<span class=\"keyword\">eksplorasi</span>/<span class=\"keyword\">arsip</span>."
@@ -465,6 +469,25 @@
       "desc": "Blueprint Sharing Community"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "Tampilkan hanya {region}",
+    "showAllSubregions": "Tampilkan semua subwilayah",
+    "highlightSameType": "Sorot titik dengan jenis sama di sini ({count})",
+    "clearSameTypeHighlight": "Hapus sorotan ({count})",
+    "completeSameType": "Selesaikan titik dengan jenis sama ({count})",
+    "confirmComplete": "Konfirmasi penyelesaian {count} titik",
+    "uncompleteSameType": "Hapus tanda selesai ({count})",
+    "sharePoint": "Bagikan titik ini",
+    "shareLocation": "Bagikan lokasi ini",
+    "clearAllHighlights": "Hapus semua sorotan",
+    "selectAllCategoryFilters": "Pilih semua",
+    "deselectAllCategoryFilters": "Batalkan semua",
+    "hideCompletedMarkers": "Sembunyikan titik selesai",
+    "showCompletedMarkers": "Tampilkan titik selesai",
+    "undo": "Urungkan",
+    "redo": "Ulangi",
+    "scopeLabel": "Hanya menampilkan: {region}"
+  },
   "common": {
     "close": "Tutup",
     "skip": "Lewati",
@@ -477,7 +500,9 @@
     "enable": "Aktifkan",
     "disable": "Nonaktifkan",
     "expand": "Perluas",
-    "collapse": "Lipat"
+    "collapse": "Lipat",
+    "copied": "Tautan disalin",
+    "copyFailed": "Gagal menyalin, coba lagi"
   },
   "announcement": {
     "title": "Pemberitahuan Situs",

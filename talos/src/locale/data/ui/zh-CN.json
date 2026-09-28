@@ -54,7 +54,6 @@
     "uploadPending": "已提交，等待审核后展示。",
     "readFullText": "点此查看全文。",
     "share": "复制此点位的分享链接。",
-    "copied": "链接已复制",
     "collectionRateSource": "全服收集率为{nums} – 统计自 OEM Cloud",
     "viewer": {
       "author": "作者",
@@ -69,6 +68,7 @@
     },
     "comments": {
       "copyLink": "复制评论链接",
+      "emojiPicker": "选择表情",
       "placeholder": "说些什么吧！",
       "submit": "发布留言",
       "actions": "留言操作",
@@ -404,6 +404,10 @@
           "title": "平衡",
           "desc": "追踪 OEM 为您选择的点位。"
         },
+        "gatherSpot": {
+          "title": "采集点",
+          "desc": "仅追踪采集点。"
+        },
         "collection": {
           "title": "收集物",
           "desc": "追踪所有位于<span class=\"keyword\">收集物</span>/<span class=\"keyword\">探索</span>/<span class=\"keyword\">档案</span>中的点位。"
@@ -465,6 +469,25 @@
       "desc": "蓝图分享社区"
     }
   },
+  "contextMenu": {
+    "onlySubregion": "仅显示{region}",
+    "showAllSubregions": "显示全部子地区",
+    "highlightSameType": "高亮此区域同类点（{count}）",
+    "clearSameTypeHighlight": "取消高亮（{count}）",
+    "completeSameType": "完成同类点（{count}）",
+    "confirmComplete": "确认完成 {count} 个点位",
+    "uncompleteSameType": "取消完成标记（{count}）",
+    "sharePoint": "分享此点位",
+    "shareLocation": "分享此位置",
+    "clearAllHighlights": "清除全部高亮点",
+    "selectAllCategoryFilters": "选中全部",
+    "deselectAllCategoryFilters": "取消全部",
+    "hideCompletedMarkers": "隐藏已完成点位",
+    "showCompletedMarkers": "显示已完成点位",
+    "undo": "撤销",
+    "redo": "重做",
+    "scopeLabel": "当前显示:{region}"
+  },
   "common": {
     "close": "关闭",
     "skip": "跳过",
@@ -477,7 +500,9 @@
     "enable": "启用",
     "disable": "禁用",
     "expand": "展开",
-    "collapse": "收起"
+    "collapse": "收起",
+    "copied": "链接已复制",
+    "copyFailed": "复制失败，请重试"
   },
   "announcement": {
     "title": "网站公告",

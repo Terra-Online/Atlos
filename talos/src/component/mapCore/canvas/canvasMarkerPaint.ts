@@ -55,11 +55,16 @@ export class MarkerPainter {
       if (this.require2D) image.crossOrigin = 'anonymous';
       asset = { image, ready: false };
       this.assets.set(url, asset);
-      image.onload = () => {
+      const markReady = () => {
         if (this.disposed) return;
         asset!.ready = true;
         this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
         this.invalidate(url);
+      };
+      image.onload = () => {
+        // Do not expose the asset to the first paint until the browser has
+        // decoded it. This avoids a synchronous decode during canvas drawing.
+        void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(markReady);
       };
       image.onerror = () => {
         if (this.disposed || !this.require2D) return;
@@ -67,8 +72,11 @@ export class MarkerPainter {
         const fallback = new Image(); asset!.image = fallback;
         fallback.onload = () => {
           if (this.disposed) return;
-          asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
-          this.require2D?.(); this.invalidate(url);
+          void (fallback.decode?.() ?? Promise.resolve()).catch(() => {}).then(() => {
+            if (this.disposed) return;
+            asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
+            this.require2D?.(); this.invalidate(url);
+          });
         };
         fallback.src = url;
       };
@@ -77,6 +85,8 @@ export class MarkerPainter {
     }
     return asset.ready ? asset.image : undefined;
   }
+  isReady(url: string): boolean { return !url || this.assets.get(url)?.ready === true; }
+  isArtReady(art: MarkerArt): boolean { return this.isReady(art.image) && this.isReady(art.subImage); }
   private image(ctx: CanvasRenderingContext2D, url: string, x: number, y: number, width: number, height: number, contain: boolean) {
     const image = this.asset(url);
     if (!image) return;

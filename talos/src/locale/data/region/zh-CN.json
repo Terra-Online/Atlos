@@ -277,6 +277,18 @@
           "ritual_shrine": "仪式祭坛",
           "old_resting_point": "旧落脚点"
         }
+      },
+      "SM": {
+        "name": "遂明",
+        "short": "遂",
+        "site": {
+          "suiming_city_suburbs": "遂明城郊外",
+          "suiming_city_center": "遂明城中心",
+          "tianshi_pillar_records_hall": "天师桩档案馆",
+          "tianshi_pillar_research_labs": "天师桩研究所",
+          "physical_training_field": "体能训练场",
+          "blight_monitoring_zone": "侵蚀监控区"
+        }
       }
     }
   },

@@ -378,7 +378,7 @@ const Viewer: React.FC<ViewerProps> = ({
                         )}
                         {!recallOnly && (
                             <PopoverTooltip
-                                content={shareCopied ? tUI('detail.copied') : tUI('detail.viewer.share')}
+                                content={shareCopied ? tUI('common.copied') : tUI('detail.viewer.share')}
                                 placement="top"
                                 gap={4}
                                 visible={shareCopied ? true : undefined}

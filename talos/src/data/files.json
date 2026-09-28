@@ -1019,6 +1019,56 @@
                 "icon": "prts_c34m_manuscript",
                 "ctgr": "paper"
             },
+            "nar_paper_map02_research11_2_1": {
+                "icon": "prts_read_oldbook",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_3_1": {
+                "icon": "prts_read_oldbook",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_4_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_5_1": {
+                "icon": "prts_read_expensivebook",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_6_1": {
+                "icon": "prts_read_letter",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_7_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_8_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_9_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_10_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_13_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_gm02m27"
+            },
             "nar_col_lv003_9d1": {
                 "icon": "prts_general_pic",
                 "ctgr": "digital"
@@ -1216,6 +1266,16 @@
             "nar_digital_map02_15019_1": {
                 "icon": "prts_read_pad",
                 "ctgr": "digital"
+            },
+            "nar_digital_map02_research11_14_1": {
+                "icon": "prts_read_electronicscreen",
+                "ctgr": "digital",
+                "rsch": "research_gm02m27"
+            },
+            "nar_paper_map02_research11_11_1": {
+                "icon": "prts_read_electronicscreen",
+                "ctgr": "digital",
+                "rsch": "research_gm02m27"
             },
             "nar_sm1l1m2_3": {
                 "icon": "prts_read_note",
