@@ -122,7 +122,7 @@
     "fullSupportHint": "ترجمة كاملة للواجهة ومحتوى اللعبة.",
     "uiOnly": "ترجمة الواجهة فقط",
     "uiOnlyHint": "ترجمة للواجهة فقط، سيُعرض محتوى اللعبة بالإنجليزية.",
-    "fyi": "إذا لم تكن لغتك متاحة بعد، يمكنك التواصل مع مشرف الموقع عبر <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>، أو زيارة GitHub للمشاركة في مشروع الترجمة مفتوح المصدر. يمكنك طلب إضافة لغتك والمساعدة في ترجمة قسم WIKI. نقدر مساهماتكم ونتطلع إليها.\nيمكنك أيضاً النقر لعرض قائمة المساهمين في الترجمة.",
+    "fyi": "يمكنك زيارة <a href=\"https://crowdin.com/project/oem\">Crowdin</a> للمشاركة في مشروع الترجمة الخاص بنا أو طلب ترجمة للغتك؛ كما يمكنك التواصل مع مسؤولي الموقع عبر البريد الإلكتروني <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "الإنجليزية",
       "zh-CN": "الصينية المبسطة",

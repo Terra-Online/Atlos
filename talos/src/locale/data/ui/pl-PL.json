@@ -122,7 +122,7 @@
     "fullSupportHint": "Pełne tłumaczenia interfejsu oraz treści w grze.",
     "uiOnly": "Języki tylko dla UI",
     "uiOnlyHint": "Tylko tłumaczenie interfejsu; treści w grze będą wyświetlane po angielsku.",
-    "fyi": "Jeśli Twojego języka nie ma jeszcze na tej stronie, możesz skontaktować się z administratorem przez e-mail <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> lub odwiedzić GitHub, aby wziąć udział w naszym otwartoźródłowym projekcie tłumaczeń. Możesz poprosić o dodanie wpisów tłumaczeń dla swojego języka i pomóc w tłumaczeniu oraz lokalizacji sekcji WIKI zgodnie z naszymi wytycznymi. Z góry dziękujemy i czekamy na Twoje wsparcie.\nMożesz też kliknąć, aby zobaczyć listę współtwórców tłumaczeń.",
+    "fyi": "Możesz odwiedzić <a href=\"https://crowdin.com/project/oem\">Crowdin</a>, aby wziąć udział w naszym projekcie tłumaczeniowym lub poprosić o tłumaczenie na swój język; możesz też skontaktować się z administratorami strony, pisząc na adres <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Angielski",
       "zh-CN": "Chiński (uproszczony)",

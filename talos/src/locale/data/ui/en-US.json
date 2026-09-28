@@ -122,7 +122,7 @@
     "fullSupportHint": "Complete translations for both UI and in-game content.",
     "uiOnly": "UI-Only Languages",
     "uiOnlyHint": "UI translations only, in-game content will be displayed in English.",
-    "fyi": "If your language is not yet available on this website, you can contact the site administrator via email at <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, or visit GitHub to participate in our open-source translation project. You can request translation entries for your language and assist with translating and localizing the WIKI section according to our guidelines. We sincerely appreciate and look forward to your contributions.\nYou can also click to view the list of translation contributors.",
+    "fyi": "You can visit <a href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
@@ -413,7 +413,7 @@
           "desc": "Track points in <span class=\"keyword\">collection</span>/<span class=\"keyword\">exploration</span>/<span class=\"keyword\">archives</span>."
         },
         "manual": {
-          "title": " Craft Manual",
+          "title": "Craft Manual",
           "desc": "Track points from the manual, including enemies and rare plants."
         }
       },

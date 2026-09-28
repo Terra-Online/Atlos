@@ -122,7 +122,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk kedua-dua UI dan kandungan dalam permainan.",
     "uiOnly": "Bahasa UI Sahaja",
     "uiOnlyHint": "Terjemahan UI sahaja, kandungan dalam permainan akan dipaparkan dalam bahasa Inggeris.",
-    "fyi": "Jika bahasa anda belum tersedia di laman web ini, anda boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, atau melawat GitHub untuk menyertai projek terjemahan sumber terbuka kami. Anda boleh memohon entri terjemahan untuk bahasa anda dan membantu menterjemah serta melokalkan bahagian WIKI mengikut garis panduan kami. Kami amat menghargai dan menantikan sumbangan anda.\nAnda juga boleh klik untuk melihat senarai penyumbang terjemahan.",
+    "fyi": "Anda boleh melawat <a href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk menyertai projek terjemahan kami atau memohon terjemahan bagi bahasa anda; anda juga boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
