@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "Tìm kiếm toàn cục...",
-    "results": "{count} kết quả",
+    "results": "{count, plural, one {# kết quả} other {# kết quả}}",
     "locatedAt": "Tìm thấy tại",
     "distributeAt": "Phân phối tại"
   },
@@ -173,8 +173,8 @@
       "needsReview": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn đang chờ kiểm duyệt thủ công.",
       "removeResolved": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> mà bạn đã thu hồi đã được xử lý.",
       "reply": "Có câu trả lời mới cho <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn.",
-      "vote": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn đã nhận được {count} lượt thích.",
-      "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn có {count} cập nhật liên quan."
+      "vote": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn đã nhận được {count, plural, one {# lượt thích} other {# lượt thích}}.",
+      "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> của bạn có {count, plural, one {# cập nhật liên quan} other {# cập nhật liên quan}}."
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "Đồng bộ với OEM Cloud",
     "already": "Đã đồng bộ với đám mây",
     "done": "Đã đồng bộ - {times} trước",
-    "syncing": "Đang đồng bộ {count} điểm",
+    "syncing": "{count, plural, one {Đang đồng bộ # điểm} other {Đang đồng bộ # điểm}}",
     "failed": "Đồng bộ thất bại ({reason})",
     "offline": "Ngoại tuyến",
     "dataConflict": "Xung đột dữ liệu",

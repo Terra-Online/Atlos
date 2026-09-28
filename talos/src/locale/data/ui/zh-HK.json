@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "全域搜尋…",
-    "results": "{count} 個結果",
+    "results": "{count, plural, one {# 個結果} other {# 個結果}}",
     "locatedAt": "位於",
     "distributeAt": "分佈於"
   },
@@ -173,8 +173,8 @@
       "needsReview": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>正待人工審核。",
       "removeResolved": "你撤回的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>已完成處理。",
       "reply": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>有一則新回覆。",
-      "vote": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>新獲 {count} 個讚好。",
-      "multiple": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>有 {count} 條狀態更新。"
+      "vote": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>新獲{count, plural, one {# 個讚好} other {# 個讚好}}。",
+      "multiple": "你的<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>有{count, plural, one {# 條狀態更新} other {# 條狀態更新}}。"
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "立即同步進度",
     "already": "本機進度已與雲端一致",
     "done": "已於 {times} 前同步",
-    "syncing": "同步中： {count} 個點位",
+    "syncing": "{count, plural, one {同步中：# 個點位} other {同步中：# 個點位}}",
     "failed": "同步失敗（{reason}）",
     "offline": "已離線",
     "dataConflict": "進度衝突",

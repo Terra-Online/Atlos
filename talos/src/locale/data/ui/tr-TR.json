@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "Genel arama...",
-    "results": "{count} sonuç",
+    "results": "{count, plural, one {# sonuç} other {# sonuç}}",
     "locatedAt": "Bulunduğu yer",
     "distributeAt": "Dağıldığı yer"
   },
@@ -173,8 +173,8 @@
       "needsReview": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> manuel inceleme bekliyor.",
       "removeResolved": "Geri çektiğiniz <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> işlendi.",
       "reply": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> için yeni bir yanıt eklendi.",
-      "vote": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {count} beğeni aldı.",
-      "multiple": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> için {count} ilgili güncelleme var."
+      "vote": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {count, plural, one {# beğeni} other {# beğeni}} aldı.",
+      "multiple": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> için {count, plural, one {# ilgili güncelleme} other {# ilgili güncelleme}} var."
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "Verileri OEM Cloud ile Senkronize Et",
     "already": "Her şey güncel",
     "done": "Buluta Senkronize Edildi: {times} önce",
-    "syncing": "Senkronize ediliyor: {count} nokta",
+    "syncing": "{count, plural, one {Senkronize ediliyor: # nokta} other {Senkronize ediliyor: # nokta}}",
     "failed": "Senkronizasyon Başarısız ({reason})",
     "offline": "Çevrimdışı",
     "dataConflict": "Veri Çakışması",

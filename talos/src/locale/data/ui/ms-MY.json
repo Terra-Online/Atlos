@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "Carian global...",
-    "results": "{count} hasil",
+    "results": "{count, plural, one {# hasil} other {# hasil}}",
     "locatedAt": "Ditemukan di",
     "distributeAt": "Didistribusikan di"
   },
@@ -173,8 +173,8 @@
       "needsReview": "<subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag> sedang menunggu semakan manual.",
       "removeResolved": "<subjectTag>{subject}</subjectTag> yang anda tarik balik <pointTag>{point}</pointTag> telah diproses.",
       "reply": "Balasan baharu telah ditambahkan pada <subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag>.",
-      "vote": "<subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag> menerima {count} tanda suka.",
-      "multiple": "Terdapat {count} kemas kini berkaitan untuk <subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag>."
+      "vote": "<subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag> menerima {count, plural, one {# tanda suka} other {# tanda suka}}.",
+      "multiple": "Terdapat {count, plural, one {# kemas kini berkaitan} other {# kemas kini berkaitan}} untuk <subjectTag>{subject}</subjectTag> anda <pointTag>{point}</pointTag>."
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "Segerak ke OEM Cloud",
     "already": "Selari dengan Awan",
     "done": "Disegerakkan - {times} yang lalu",
-    "syncing": "Menyegerak {count} titik",
+    "syncing": "{count, plural, one {Menyegerak # titik} other {Menyegerak # titik}}",
     "failed": "Gagal disegerakkan ({reason})",
     "offline": "Luar talian",
     "dataConflict": "Konflik Data",

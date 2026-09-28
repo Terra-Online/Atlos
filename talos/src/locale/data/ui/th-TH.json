@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "ค้นหาทั่วทั้งระบบ...",
-    "results": "{count} ผลลัพธ์",
+    "results": "{count, plural, one {# ผลลัพธ์} other {# ผลลัพธ์}}",
     "locatedAt": "พบใน",
     "distributeAt": "กระจายใน"
   },
@@ -173,8 +173,8 @@
       "needsReview": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณกำลังรอการตรวจสอบโดยเจ้าหน้าที่",
       "removeResolved": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ที่คุณถอนถูกดำเนินการแล้ว",
       "reply": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณได้รับการตอบกลับใหม่",
-      "vote": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณได้รับการถูกใจ {count} ครั้ง",
-      "multiple": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณมีการอัปเดตที่เกี่ยวข้อง {count} รายการ"
+      "vote": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณได้รับ{count, plural, one {การถูกใจ # ครั้ง} other {การถูกใจ # ครั้ง}}",
+      "multiple": "<subjectTag>{subject}</subjectTag><pointTag>{point}</pointTag>ของคุณมี{count, plural, one {การอัปเดตที่เกี่ยวข้อง # รายการ} other {การอัปเดตที่เกี่ยวข้อง # รายการ}}"
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "ซิงค์ข้อมูลกับ OEM Cloud",
     "already": "ข้อมูลตรงกับคลาวด์แล้ว",
     "done": "ซิงค์แล้ว - เมื่อ {times} ที่แล้ว",
-    "syncing": "กำลังซิงค์ {count} จุด",
+    "syncing": "{count, plural, one {กำลังซิงค์ # จุด} other {กำลังซิงค์ # จุด}}",
     "failed": "ซิงค์ล้มเหลว ({reason})",
     "offline": "ออฟไลน์",
     "dataConflict": "ข้อมูลขัดแย้งกัน",

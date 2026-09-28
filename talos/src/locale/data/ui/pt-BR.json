@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, comment {Seu} other {Sua}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> aguarda análise manual.",
       "removeResolved": "{kind, select, comment {Seu} other {Sua}} <subjectTag>{subject}</subjectTag> {kind, select, comment {retirado} other {retirada}} <pointTag>{point}</pointTag> foi {kind, select, comment {processado} other {processada}}.",
       "reply": "Uma nova resposta foi adicionada {kind, select, comment {ao seu} other {à sua}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>.",
-      "vote": "{kind, select, comment {Seu} other {Sua}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> recebeu {count, plural, one {# curtida} other {# curtidas}}.",
-      "multiple": "{kind, select, comment {Seu} other {Sua}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> tem {count, plural, one {# atualização relacionada} other {# atualizações relacionadas}}."
+      "vote": "O item <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> recebeu {count, plural, one {# curtida} other {# curtidas}}.",
+      "multiple": "O item <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> tem {count, plural, one {# atualização relacionada} other {# atualizações relacionadas}}."
     }
   },
   "tos": {

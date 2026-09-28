@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "Pencarian keseluruhan...",
-    "results": "{count} hasil",
+    "results": "{count, plural, one {# hasil} other {# hasil}}",
     "locatedAt": "Ditemukan di",
     "distributeAt": "Didistribusikan di"
   },
@@ -173,8 +173,8 @@
       "needsReview": "<subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag> sedang menunggu peninjauan manual.",
       "removeResolved": "<subjectTag>{subject}</subjectTag> yang Anda tarik <pointTag>{point}</pointTag> telah diproses.",
       "reply": "Balasan baru ditambahkan ke <subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag>.",
-      "vote": "<subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag> menerima {count} suka.",
-      "multiple": "Ada {count} pembaruan terkait untuk <subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag>."
+      "vote": "<subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag> menerima {count, plural, one {# suka} other {# suka}}.",
+      "multiple": "Ada {count, plural, one {# pembaruan terkait} other {# pembaruan terkait}} untuk <subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag>."
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "Sinkronkan ke OEM Cloud",
     "already": "Sesuai dengan Cloud",
     "done": "Tersinkronisasi - {times} yang lalu",
-    "syncing": "Menyinkronkan {count} titik",
+    "syncing": "{count, plural, one {Menyinkronkan # titik} other {Menyinkronkan # titik}}",
     "failed": "Gagal menyinkronkan ({reason})",
     "offline": "Offline",
     "dataConflict": "Konflik Data",

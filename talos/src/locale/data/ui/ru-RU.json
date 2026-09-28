@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, image {Ваше} other {Ваш}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ожидает ручной проверки.",
       "removeResolved": "{kind, select, image {Ваше отозванное} other {Ваш отозванный}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, image {обработано} other {обработан}}.",
       "reply": "К вашему <subjectTag>{kind, select, image {изображению} comment {комментарию} submission {материалу} other {{subject}}}</subjectTag> <pointTag>{point}</pointTag> добавлен новый ответ.",
-      "vote": "{kind, select, image {Ваше} other {Ваш}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, image {получило} other {получил}} {count, plural, one {# отметку «Нравится»} few {# отметки «Нравится»} many {# отметок «Нравится»} other {# отметки «Нравится»}}.",
-      "multiple": "Для вашего <subjectTag>{kind, select, image {изображения} comment {комментария} submission {материала} other {{subject}}}</subjectTag> <pointTag>{point}</pointTag> есть {count, plural, one {# связанное обновление} few {# связанных обновления} many {# связанных обновлений} other {# связанного обновления}}."
+      "vote": "Объект <subjectTag>«{subject}»</subjectTag> <pointTag>{point}</pointTag> получил {count, plural, one {# отметку «Нравится»} few {# отметки «Нравится»} many {# отметок «Нравится»} other {# отметки «Нравится»}}.",
+      "multiple": "У объекта <subjectTag>«{subject}»</subjectTag> <pointTag>{point}</pointTag> {count, plural, one {есть # связанное обновление} few {есть # связанных обновления} many {есть # связанных обновлений} other {есть # связанного обновления}}."
     }
   },
   "tos": {

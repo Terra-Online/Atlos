@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, image {Ваше} other {Ваш}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> очікує на ручну перевірку.",
       "removeResolved": "{kind, select, image {Ваше відкликане} other {Ваш відкликаний}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, image {опрацьоване} other {опрацьований}}.",
       "reply": "До вашого <subjectTag>{kind, select, image {зображення} comment {коментаря} submission {матеріалу} other {{subject}}}</subjectTag> <pointTag>{point}</pointTag> додано нову відповідь.",
-      "vote": "{kind, select, image {Ваше} other {Ваш}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, image {отримало} other {отримав}} {count, plural, one {# вподобання} few {# вподобання} many {# вподобань} other {# вподобання}}.",
-      "multiple": "Для вашого <subjectTag>{kind, select, image {зображення} comment {коментаря} submission {матеріалу} other {{subject}}}</subjectTag> <pointTag>{point}</pointTag> є {count, plural, one {# пов’язане оновлення} few {# пов’язані оновлення} many {# пов’язаних оновлень} other {# пов’язаного оновлення}}."
+      "vote": "Об’єкт <subjectTag>«{subject}»</subjectTag> <pointTag>{point}</pointTag> отримав {count, plural, one {# вподобання} few {# вподобання} many {# вподобань} other {# вподобання}}.",
+      "multiple": "Об’єкт <subjectTag>«{subject}»</subjectTag> <pointTag>{point}</pointTag> має {count, plural, one {# пов’язане оновлення} few {# пов’язані оновлення} many {# пов’язаних оновлень} other {# пов’язаного оновлення}}."
     }
   },
   "tos": {
