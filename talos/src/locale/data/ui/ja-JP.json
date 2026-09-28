@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "マップ全体を検索…",
-    "results": "{count} 件の結果",
+    "results": "{count, plural, one {# 件の結果} other {# 件の結果}}",
     "locatedAt": "場所",
     "distributeAt": "分布エリア"
   },
@@ -173,8 +173,8 @@
       "needsReview": "<subjectTag>{subject}</subjectTag>{hasPoint, select, yes {<pointTag>{point}</pointTag>} other {}}は手動審査待ちです。",
       "removeResolved": "取り下げを申請した<subjectTag>{subject}</subjectTag>{hasPoint, select, yes {<pointTag>{point}</pointTag>} other {}}は処理が完了しました。",
       "reply": "<subjectTag>{subject}</subjectTag>{hasPoint, select, yes {<pointTag>{point}</pointTag>} other {}}に新しい返信があります。",
-      "vote": "<subjectTag>{subject}</subjectTag>{hasPoint, select, yes {<pointTag>{point}</pointTag>} other {}}に{count}件の「いいね」が付きました。",
-      "multiple": "<subjectTag>{subject}</subjectTag>{hasPoint, select, yes {<pointTag>{point}</pointTag>} other {}}に{count}件の更新があります。"
+      "vote": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>に{count, plural, one {#件の「いいね」} other {#件の「いいね」}}が付きました。",
+      "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>に{count, plural, one {#件の更新} other {#件の更新}}があります。"
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "進捗を OEM Cloud に同期",
     "already": "進捗は最新です",
     "done": "クラウド同期済み · {times}前",
-    "syncing": "{count}件のマーカーを同期中",
+    "syncing": "{count, plural, one {#件のマーカーを同期中} other {#件のマーカーを同期中}}",
     "failed": "同期に失敗しました（{reason}）",
     "offline": "オフライン",
     "dataConflict": "データ競合",

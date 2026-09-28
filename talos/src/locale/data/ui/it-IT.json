@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, image {La tua} other {Il tuo}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> è in attesa di revisione manuale.",
       "removeResolved": "{kind, select, image {La tua} other {Il tuo}} <subjectTag>{subject}</subjectTag> {kind, select, image {ritirata} other {ritirato}} <pointTag>{point}</pointTag> è {kind, select, image {stata elaborata} other {stato elaborato}}.",
       "reply": "È stata aggiunta una nuova risposta {kind, select, image {alla tua} other {al tuo}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>.",
-      "vote": "{kind, select, image {La tua} other {Il tuo}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha ricevuto {count} Mi piace.",
-      "multiple": "{kind, select, image {La tua} other {Il tuo}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha {count, plural, one {# aggiornamento correlato} other {# aggiornamenti correlati}}."
+      "vote": "L'elemento <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha ricevuto {count, plural, one {# Mi piace} other {# Mi piace}}.",
+      "multiple": "L'elemento <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha {count, plural, one {# aggiornamento correlato} other {# aggiornamenti correlati}}."
     }
   },
   "tos": {

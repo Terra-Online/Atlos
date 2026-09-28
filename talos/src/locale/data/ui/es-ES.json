@@ -173,7 +173,7 @@
       "needsReview": "Tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> está pendiente de revisión manual.",
       "removeResolved": "Tu <subjectTag>{subject}</subjectTag> {kind, select, comment {retirado} other {retirada}} <pointTag>{point}</pointTag> se ha procesado.",
       "reply": "Se ha añadido una nueva respuesta a tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>.",
-      "vote": "Tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha recibido {count} Me gusta.",
+      "vote": "Tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha recibido {count, plural, one {# Me gusta} other {# Me gusta}}.",
       "multiple": "Tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> tiene {count, plural, one {# actualización relacionada} other {# actualizaciones relacionadas}}."
     }
   },

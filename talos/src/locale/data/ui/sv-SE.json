@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "Sök...",
-    "results": "{count} resultat",
+    "results": "{count, plural, one {# resultat} other {# resultat}}",
     "locatedAt": "Hittat i",
     "distributeAt": "Distribuerat i"
   },
@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, submission {Ditt} other {Din}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> väntar på manuell granskning.",
       "removeResolved": "{kind, select, submission {Ditt} other {Din}} återkallade <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> har behandlats.",
       "reply": "Ett nytt svar har lagts till i {kind, select, submission {ditt} other {din}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>.",
-      "vote": "{kind, select, submission {Ditt} other {Din}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> fick {count, plural, one {# gilla-markering} other {# gilla-markeringar}}.",
-      "multiple": "{kind, select, submission {Ditt} other {Din}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> har {count, plural, one {# relaterad uppdatering} other {# relaterade uppdateringar}}."
+      "vote": "Ditt objekt <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> fick {count, plural, one {# gilla-markering} other {# gilla-markeringar}}.",
+      "multiple": "Ditt objekt <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> har {count, plural, one {# relaterad uppdatering} other {# relaterade uppdateringar}}."
     }
   },
   "tos": {

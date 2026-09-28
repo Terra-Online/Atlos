@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "खोजें...",
-    "results": "{count} परिणाम",
+    "results": "{count, plural, one {# परिणाम} other {# परिणाम}}",
     "locatedAt": "यहाँ स्थित",
     "distributeAt": "यहाँ वितरित"
   },
@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, submission {आपका} other {आपकी}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> मैन्युअल समीक्षा की प्रतीक्षा में है।",
       "removeResolved": "आपके द्वारा वापस {kind, select, submission {लिया गया} other {ली गई}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> संसाधित कर {kind, select, submission {दिया गया} other {दी गई}} है।",
       "reply": "{kind, select, submission {आपके} other {आपकी}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> पर नया उत्तर आया है।",
-      "vote": "{kind, select, submission {आपके} other {आपकी}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> को {count, plural, one {# लाइक मिला है} other {# लाइक मिले हैं}}।",
-      "multiple": "{kind, select, submission {आपके} other {आपकी}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> के लिए {count, plural, one {# संबंधित अपडेट है} other {# संबंधित अपडेट हैं}}।"
+      "vote": "आपके आइटम <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> को {count, plural, one {# लाइक मिला है} other {# लाइक मिले हैं}}।",
+      "multiple": "आपके आइटम <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> के लिए {count, plural, one {# संबंधित अपडेट है} other {# संबंधित अपडेट हैं}}।"
     }
   },
   "tos": {

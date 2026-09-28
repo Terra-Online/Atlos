@@ -174,7 +174,7 @@
       "removeResolved": "Dein {kind, select, image {zurückgezogenes} other {zurückgezogener}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> wurde bearbeitet.",
       "reply": "Zu deinem <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> wurde eine neue Antwort hinzugefügt.",
       "vote": "Dein <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> hat {count, plural, one {# Like} other {# Likes}} erhalten.",
-      "multiple": "Es gibt {count, plural, one {# zugehörige Aktualisierung} other {# zugehörige Aktualisierungen}} für {kind, select, image {dein} other {deinen}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>."
+      "multiple": "Für <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> gibt es {count, plural, one {# zugehörige Aktualisierung} other {# zugehörige Aktualisierungen}}."
     }
   },
   "tos": {

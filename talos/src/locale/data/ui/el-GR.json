@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, comment {Το} other {Η}} <subjectTag>{subject}</subjectTag> σας <pointTag>{point}</pointTag> αναμένει μη αυτόματο έλεγχο.",
       "removeResolved": "{kind, select, comment {Το} other {Η}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> που αποσύρατε διεκπεραιώθηκε.",
       "reply": "Προστέθηκε νέα απάντηση {kind, select, comment {στο} other {στην}} <subjectTag>{subject}</subjectTag> σας <pointTag>{point}</pointTag>.",
-      "vote": "{kind, select, comment {Το} other {Η}} <subjectTag>{subject}</subjectTag> σας <pointTag>{point}</pointTag> έλαβε {count, plural, one {# επισήμανση «Μου αρέσει»} other {# επισημάνσεις «Μου αρέσει»}}.",
-      "multiple": "{kind, select, comment {Το} other {Η}} <subjectTag>{subject}</subjectTag> σας <pointTag>{point}</pointTag> έχει {count, plural, one {# σχετική ενημέρωση} other {# σχετικές ενημερώσεις}}."
+      "vote": "Το στοιχείο σας <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> έλαβε {count, plural, one {# επισήμανση «Μου αρέσει»} other {# επισημάνσεις «Μου αρέσει»}}.",
+      "multiple": "Το στοιχείο σας <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> έχει {count, plural, one {# σχετική ενημέρωση} other {# σχετικές ενημερώσεις}}."
     }
   },
   "tos": {

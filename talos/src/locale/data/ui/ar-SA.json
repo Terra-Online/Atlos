@@ -173,8 +173,8 @@
       "needsReview": "{kind, select, comment {ينتظر} other {تنتظر}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, comment {الخاص بك} other {الخاصة بك}} المراجعة اليدوية.",
       "removeResolved": "تمت معالجة <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, comment {الذي} other {التي}} سحبته.",
       "reply": "تمت إضافة رد جديد إلى <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, comment {الخاص بك} other {الخاصة بك}}.",
-      "vote": "{kind, select, comment {تلقى} other {تلقت}} <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, comment {الخاص بك} other {الخاصة بك}} {count, plural, zero {لا إعجابات} one {إعجابًا واحدًا} two {إعجابين} few {# إعجابات} many {# إعجابًا} other {# إعجاب}}.",
-      "multiple": "{count, plural, zero {لا توجد تحديثات مرتبطة} one {يوجد تحديث واحد مرتبط} two {يوجد تحديثان مرتبطان} few {توجد # تحديثات مرتبطة} many {يوجد # تحديثًا مرتبطًا} other {يوجد # تحديث مرتبط}} بشأن <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {kind, select, comment {الخاص بك} other {الخاصة بك}}."
+      "vote": "حصل <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> على {count, plural, zero {لا إعجابات} one {إعجاب واحد} two {إعجابين} few {# إعجابات} many {# إعجابًا} other {# إعجاب}}.",
+      "multiple": "لدى <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> {count, plural, zero {لا تحديثات مرتبطة} one {تحديث واحد مرتبط} two {تحديثان مرتبطان} few {# تحديثات مرتبطة} many {# تحديثًا مرتبطًا} other {# تحديث مرتبط}}."
     }
   },
   "tos": {

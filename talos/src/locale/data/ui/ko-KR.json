@@ -21,7 +21,7 @@
   },
   "search": {
     "placeholder": "전체 검색…",
-    "results": "{count} 건의 결과",
+    "results": "{count, plural, one {#건의 결과} other {#건의 결과}}",
     "locatedAt": "위치",
     "distributeAt": "분포"
   },
@@ -173,8 +173,8 @@
       "needsReview": "{hasPoint, select, yes {<pointTag>{point}</pointTag>의 } other {}}<subjectTag>{subject}</subjectTag>{kind, select, comment {은} other {는}} 수동 검토를 기다리고 있습니다.",
       "removeResolved": "철회한 {hasPoint, select, yes {<pointTag>{point}</pointTag>의 } other {}}<subjectTag>{subject}</subjectTag>{kind, select, comment {이} other {가}} 처리되었습니다.",
       "reply": "{hasPoint, select, yes {<pointTag>{point}</pointTag>의 } other {}}<subjectTag>{subject}</subjectTag>에 새 답글이 추가되었습니다.",
-      "vote": "{hasPoint, select, yes {<pointTag>{point}</pointTag>의 } other {}}<subjectTag>{subject}</subjectTag>{kind, select, comment {이} other {가}} 좋아요 {count}개를 받았습니다.",
-      "multiple": "{hasPoint, select, yes {<pointTag>{point}</pointTag>의 } other {}}<subjectTag>{subject}</subjectTag>에 관련 업데이트가 {count}개 있습니다."
+      "vote": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> 항목이 {count, plural, one {좋아요 #개} other {좋아요 #개}}를 받았습니다.",
+      "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> 항목에 {count, plural, one {관련 업데이트 #개가} other {관련 업데이트 #개가}} 있습니다."
     }
   },
   "tos": {
@@ -440,7 +440,7 @@
     "now": "OEM Cloud에 데이터 동기화",
     "already": "클라우드와 동기화됨",
     "done": "클라우드 동기화 완료 · {times} 전",
-    "syncing": "{count}개의 포인트 동기화 중",
+    "syncing": "{count, plural, one {포인트 #개 동기화 중} other {포인트 #개 동기화 중}}",
     "failed": "동기화 실패 ({reason})",
     "offline": "오프라인",
     "dataConflict": "동기화 충돌",
