@@ -122,7 +122,7 @@
     "fullSupportHint": "Hem arayüz hem de oyun içi içerikler için tam çeviriler.",
     "uiOnly": "Yalnızca Arayüz Dilleri",
     "uiOnlyHint": "Sadece arayüz çevirileri, oyun içi içerikler İngilizce olarak görüntülenecektir.",
-    "fyi": "Diliniz henüz bu web sitesinde mevcut değilse, <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> adresi üzerinden e-posta ile site yöneticisiyle iletişime geçebilir veya açık kaynak kodlu çeviri projemize katılmak için GitHub'ı ziyaret edebilirsiniz. Katkılarınızı içtenlikle takdir ediyor ve bekliyoruz.",
+    "fyi": "Çeviri projemize katılmak veya diliniz için çeviri talep etmek üzere <a href=\"https://crowdin.com/project/oem\">Crowdin</a>'i ziyaret edebilirsiniz; ayrıca <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> adresine e-posta göndererek site yöneticileriyle iletişime geçebilirsiniz.",
     "names": {
       "en-US": "İngilizce",
       "zh-CN": "Basitleştirilmiş Çince",

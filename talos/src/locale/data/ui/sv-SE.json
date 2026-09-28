@@ -122,7 +122,7 @@
     "fullSupportHint": "Fullständiga översättningar för både UI och innehåll i spelet.",
     "uiOnly": "Endast UI-språk",
     "uiOnlyHint": "Endast UI-översättningar, innehåll i spelet visas på engelska.",
-    "fyi": "Om ditt språk inte är tillgängligt på denna webbplats än kan du kontakta webbplatsadministratören via e-post på <a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a>, eller besöka GitHub för att delta i vårt översättningsprojekt med öppen källkod. Du kan begära översättningsposter för ditt språk och hjälpa till med att översätta och lokalisera WIKI-sektionen enligt våra riktlinjer. Vi uppskattar verkligen och ser fram emot dina bidrag.\nDu kan också klicka för att se listan över översättningsbidragsgivare.",
+    "fyi": "Du kan besöka <a href=\"https://crowdin.com/project/oem\">Crowdin</a> för att delta i vårt översättningsprojekt eller begära en översättning till ditt språk; du kan också kontakta webbplatsens administratörer via e-post på <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Engelska",
       "zh-CN": "Förenklad kinesiska",

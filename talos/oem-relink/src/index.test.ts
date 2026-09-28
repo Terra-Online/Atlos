@@ -15,6 +15,17 @@ const stableManifest = {
 };
 
 describe('oem-relink worker routes', () => {
+    it('redirects the translation subdomain to Crowdin', async () => {
+        const response = await worker.fetch(
+            new Request('https://translate.oem.re/'),
+        );
+
+        expect(response.status).toBe(302);
+        expect(response.headers.get('location')).toBe(
+            'https://crowdin.com/project/oem',
+        );
+    });
+
     it('redirects the latest OEA package to the validated manifest URL', async () => {
         const get = vi.fn().mockResolvedValue({
             text: () => Promise.resolve(JSON.stringify(stableManifest)),

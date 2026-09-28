@@ -122,7 +122,7 @@
     "fullSupportHint": "UIとゲーム内コンテンツの両方に完全な翻訳を提供。",
     "uiOnly": "UIのみ対応",
     "uiOnlyHint": "UIのみ翻訳されています。ゲーム内コンテンツは英語で表示されます。",
-    "fyi": "お使いの言語がまだ用意されていない場合は、<a class='embed' href=\"mailto:translate@opendfieldmap.org?subject=%5BOEM%20Translation%5D\">translate@opendfieldmap.org</a> までご連絡いただくか、GitHub のオープンソース翻訳プロジェクトにご参加ください。新しい言語の追加を提案したり、ガイドラインに沿って WIKI の翻訳・ローカライズに協力したりできます。皆さまのご参加をお待ちしています。\n翻訳コントリビューターの一覧もこちらから確認できます。",
+    "fyi": "翻訳プロジェクトへの参加や、お使いの言語への翻訳リクエストは <a href=\"https://crowdin.com/project/oem\">Crowdin</a> から行えます。また、<a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 宛てのメールでサイト管理者にお問い合わせいただけます。",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡体字中国語",
