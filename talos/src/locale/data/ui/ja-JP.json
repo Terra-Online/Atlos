@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "コメントのリンクをコピー",
+      "emojiPicker": "絵文字を選択",
       "placeholder": "何か書いてみましょう！",
       "submit": "コメントを投稿",
       "actions": "コメントの操作",

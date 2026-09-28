@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "複製留言連結",
+      "emojiPicker": "選擇表情符號",
       "placeholder": "傾兩句？",
       "submit": "發布留言",
       "actions": "留言操作",

@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Salin pautan komen",
+      "emojiPicker": "Pilih emoji",
       "placeholder": "Tulis sesuatu!",
       "submit": "Hantar komen",
       "actions": "Tindakan komen",

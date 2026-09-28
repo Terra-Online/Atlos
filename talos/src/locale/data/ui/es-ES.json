@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Copiar enlace del comentario",
+      "emojiPicker": "Elegir un emoji",
       "placeholder": "¡Di algo!",
       "submit": "Publicar comentario",
       "actions": "Acciones del comentario",

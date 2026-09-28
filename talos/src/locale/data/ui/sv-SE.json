@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Kopiera kommentarlänk",
+      "emojiPicker": "Välj en emoji",
       "placeholder": "Skriv något!",
       "submit": "Publicera kommentar",
       "actions": "Kommentarsåtgärder",

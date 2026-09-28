@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "نسخ رابط التعليق",
+      "emojiPicker": "اختيار رمز تعبيري",
       "placeholder": "اكتب شيئًا!",
       "submit": "نشر التعليق",
       "actions": "إجراءات التعليق",

@@ -68,6 +68,7 @@
     },
     "comments": {
       "copyLink": "Yorum bağlantısını kopyala",
+      "emojiPicker": "Emoji seç",
       "placeholder": "Bir şeyler yazın!",
       "submit": "Yorum gönder",
       "actions": "Yorum işlemleri",
