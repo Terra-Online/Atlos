@@ -30,9 +30,11 @@ Come and chat with us on **Discord**: [https://discord.gg/BFMAKZSUG7](https://di
 
 ## Localization
 
-Atlos UI translations are maintained with [Crowdin](https://crowdin.com/project/oem). Every shipped language is kept fully seeded when a feature lands; Latin is still in progress.
+Atlos UI translations are maintained with [Crowdin](https://crowdin.com/project/oem). Every shipped language is kept fully translated when a feature lands; Latin is still in progress.
 
-When a feature adds English source strings, maintainers also create an AI-assisted initial translation for every shipped locale in the same pull request. After the change reaches `main`, the GitHub integration sends the source and newly seeded translations to Crowdin. From then on, Crowdin is the community source of truth for review and correction, and it returns accepted changes in a reviewable GitHub pull request. No one needs to upload JSON files manually.
+When a feature adds English source strings, maintainers also create a sanity-checked, AI-assisted initial translation for every shipped locale in the same pull request. After the change reaches `main`, the GitHub integration sends the source and newly seeded translations to Crowdin. From then on, Crowdin is the community source of truth for review and correction, and it returns accepted changes in a reviewable GitHub pull request. No one needs to upload JSON files manually.
+
+Imported AI translations are intentionally not auto-approved. Community contributors can improve wording, vote on suggestions, and resolve language-specific issues; maintainers and proofreaders approve the best result. A 100% translated language therefore means “ready to review,” not “nothing left to contribute.”
 
 ## Contributing
 

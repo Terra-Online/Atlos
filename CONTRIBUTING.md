@@ -78,7 +78,7 @@ Before marking a PR ready for review:
 - [ ] No introduction of secret values (config.json remains Git‑ignored).
 - [ ] i18n keys added have defaults/fallbacks.
 - [ ] UI changes tested in light & dark theme.
-- [ ] New UI keys have reviewed, AI-assisted initial translations in every existing target locale.
+- [ ] New UI keys have sanity-checked, AI-assisted initial translations in every existing target locale.
 - [ ] Added/updated docs if behavior changed.
 
 ## 8. Internationalization Workflow
@@ -92,8 +92,8 @@ Before marking a PR ready for review:
   3. Use AI to create an initial translation for the new key in every existing target-language JSON file, then review placeholders, markup, product names, and obvious wording issues.
   4. Confirm every target file has the same key set as `en-US.json`. If a language is UI‑only, also confirm fallback logic still works.
   5. Test language switching via `LanguageModal`.
-  6. After the pull request reaches `main`, let the GitHub integration import the source and newly added translations into Crowdin.
-  7. Make later community corrections in Crowdin and let its localization pull request return them to `main`.
+  6. After the pull request reaches `main`, let the GitHub integration import the source and newly added translations into Crowdin without auto-approving them.
+  7. Make later community corrections and votes in Crowdin, let maintainers or proofreaders approve the best result, then let the localization pull request return accepted changes to `main`.
 
 Do not manually upload locale files. Feature pull requests may edit target-language JSON to seed newly added keys, but corrections to existing translated copy should go through Crowdin so community work is not overwritten.
 
@@ -130,7 +130,7 @@ Future additions may include unit tests for utilities & integration smoke tests.
 
 ## 14. Adding Translations
 
-For a new feature, maintainers add the English source and reviewed, AI-assisted initial translations for every shipped locale in the feature pull request. Keep the JSON structure aligned with `en-US.json`, preserve placeholders and inline HTML exactly, and let the GitHub integration import the merged baseline into Crowdin.
+For a new feature, maintainers add the English source and sanity-checked, AI-assisted initial translations for every shipped locale in the feature pull request. Keep the JSON structure aligned with `en-US.json`, preserve placeholders and inline HTML exactly, and let the GitHub integration import the merged baseline into Crowdin without auto-approving it.
 
 For community maintenance:
 

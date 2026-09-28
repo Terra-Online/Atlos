@@ -19,7 +19,7 @@ This agent creates the initial translation baseline for new Atlos UI strings and
 2. Keep every target file structurally identical to `en-US.json`, including key order and value types.
 3. Preserve placeholders, escape sequences, URLs, and inline markup exactly.
 4. Keep product names and technical identifiers unchanged unless an established locale convention says otherwise.
-5. Review AI output for natural wording, punctuation, and obvious cultural or grammatical errors before committing it.
+5. Sanity-check AI output for natural wording, punctuation, and obvious cultural or grammatical errors before committing it. Crowdin contributors remain responsible for community review and approval.
 6. Report ambiguity instead of silently changing the source meaning.
 
 ## Never Change
