@@ -1,0 +1,3 @@
+files:
+  - source: talos/src/locale/data/ui/en-US.json
+    translation: talos/src/locale/data/ui/%locale%.json
