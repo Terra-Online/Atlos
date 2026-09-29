@@ -120,8 +120,8 @@
     "current": "現時",
     "fullSupport": "完整支援的語言",
     "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
-    "uiOnly": "只支援介面翻譯的語言",
-    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
+    "uiOnly": "僅支援介面翻譯的語言",
+    "uiOnlyHint": "僅提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
     "fyi": "阁下可前往 <a href=\"https://crowdin.com/project/oem\">Crowdin</a> 參與我們的翻譯項目，或為你的語言申請翻譯；亦可透過電郵 <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 聯絡本站管理員。",
     "names": {
       "en-US": "英語",
@@ -303,7 +303,7 @@
       "ghRegis": "使用 GitHub 註冊",
       "connecting": "連線中...",
       "resetLink": "請輸入需要重設密碼的電郵，我們将向阁下已註冊的信箱寄送一封包含密碼重設連結的郵件。<br><br>確認發送後，請檢查收件匣與垃圾郵件夾。",
-      "resetRequire": "請輸入您的新密碼並正確重複一次。<br><br>我們即將為閣下進行密碼重設。",
+      "resetRequire": "請輸入新密碼並正確重複一次。<br><br>我們即將為你重設密碼。",
       "backTo": "返回",
       "signIn": "登入",
       "switchToRegisterPrefix": "尚無帳戶？",
@@ -311,7 +311,7 @@
       "switchToLoginPrefix": "若已有帳戶，",
       "switchToLoginAction": "請點此登入。",
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
-      "ackLink": "<a href=\"{privacy}\">私隱政策</a>與<a href=\"{tos}\">使用條款</a>。",
+      "ackLink": "<a href=\"{privacy}\">私隱政策</a>及<a href=\"{tos}\">使用條款</a>。",
       "hints": {
         "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
@@ -421,7 +421,7 @@
       "trackPoints": "追蹤點位",
       "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
-      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 與其他條款。"
+      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 及其他條款。"
     },
     "errors": {
       "10000": "位置同步工作階段已過期，請重新綁定。",
