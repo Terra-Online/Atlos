@@ -29,7 +29,7 @@
     "title": "篩選項目",
     "archiveHub": "收集專題",
     "emptyTitle": "沒有符合條件的篩選項目。",
-    "emptyDesc": "如果您確認點位資訊缺失或有誤，請於項目社群中聯絡管理員；或到本項目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='報告點位錯誤'>Issue</a>。"
+    "emptyDesc": "若您確認點位資訊缺失或有誤，請於項目社羣中聯絡管理員；或到本項目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='報告點位錯誤'>Issue</a>。"
   },
   "detail": {
     "stat": {
@@ -49,7 +49,7 @@
       "comments": "留言區"
     },
     "noInfo": "暫無資訊，使用 {paste} / {click} 上載點位截圖",
-    "communityRule": "上載前，請詳閱並遵循 <a href=\"{link}\">OEM 社群守則</a>",
+    "communityRule": "上載前，請詳閱並遵循<a href=\"{link}\">社羣守則</a>",
     "uploading": "上載中…",
     "uploadPending": "提交成功，待審核後顯示。",
     "readFullText": "點此查看全文。",
@@ -85,8 +85,8 @@
       "undoEdit": "撤銷編輯",
       "recall": "撤回此留言",
       "reviewing": "審核中",
-      "emptyWithRule": "暫無留言。發布內容請遵循<a href=\"{link}\">社群守則</a>。",
-      "ruleOnly": "發布內容請遵循<a href=\"{link}\">社群守則</a>。",
+      "emptyWithRule": "暫無留言。發布內容請遵循<a href=\"{link}\">社羣守則</a>。",
+      "ruleOnly": "發布內容請遵循<a href=\"{link}\">社羣守則</a>。",
       "loadFailed": "留言載入失敗。",
       "submitFailed": "留言發布失敗。",
       "editFailed": "留言編輯失敗。"
@@ -151,7 +151,7 @@
   "notification": {
     "title": "推播通知",
     "tabs": {
-      "community": "互動通知",
+      "community": "互動訊息",
       "system": "覆核結果"
     },
     "markAllRead": "全部標記為已讀",
@@ -178,11 +178,11 @@
     }
   },
   "tos": {
-    "title": "協議與儲存",
+    "title": "協議及儲存",
     "calculating": "正在計算儲存占用…",
     "policy": "<p>我們使用 Cookies 儲存您的自動登入資訊；使用 LocalStorage 儲存您的介面偏好設定與標記進度；使用 CacheStorage 儲存您語言使用的字型資料以及圖片資源。這些檔案允許您日後更快速地存取網站，並保障網站離線時的可用性；刪除網站的本機儲存空間可以節省您的裝置空間。但是您再次存取時<span class=\"keyword\">可能需要更長的時間載入</span>這些檔案；如果您停用網站儲存，那麼網站<span class=\"keyword\">將無法自動記錄您的資料</span>供您下次使用。</p><p>我們不會向伺服器回報您的資料，您不需要擔心隱私問題。</p><p>您可以自行決定是否啟用本機儲存。</p>",
     "filtersAndMarkers": "篩選器與標記資料",
-    "warning": "<p><strong>警告：</strong> 若您刪除已保存的資料，您的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能比平常更久。</p><p>若您確認，請再次點擊刪除按鈕。</p>",
+    "warning": "<p><strong>警告：</strong> 若刪除已保存的資料，閣下的自動登入憑據、UI 設定與標記進度將會遺失；下次載入網站可能較平時更久。</p><p>若確認，請再次點擊刪除按鈕。</p>",
     "export": "匯出資料",
     "import": "匯入資料"
   },
