@@ -1,4 +1,6 @@
-pull_request_title: "chore(i18n): sync translations from Crowdin"
+"project_id_env": "CROWDIN_PROJECT_ID"
+"api_token_env": "CROWDIN_PERSONAL_TOKEN"
+"preserve_hierarchy": true
 
 export_languages:
   - ar
@@ -26,6 +28,8 @@ export_languages:
 files:
   - source: /talos/src/locale/data/ui/en-US.json
     translation: /talos/src/locale/data/ui/%locale%.json
+    excluded_target_languages:
+      - la-LA
     languages_mapping:
       locale:
         ar: ar-SA
