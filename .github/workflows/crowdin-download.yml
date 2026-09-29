@@ -1,0 +1,56 @@
+name: Download translations from Crowdin
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crowdin-sync
+  cancel-in-progress: false
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Create OEM Automata token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.CROWDIN_APP_ID }}
+          private-key: ${{ secrets.CROWDIN_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Download translations and update pull request
+        uses: crowdin/github-action@v3
+        with:
+          upload_sources: false
+          upload_translations: false
+          download_sources: false
+          download_translations: true
+          crowdin_branch_name: main
+          localization_branch_name: l10n/crowdin
+          push_translations: true
+          create_pull_request: true
+          commit_message: "chore(i18n): sync translations from Crowdin"
+          pull_request_title: "chore(i18n): sync translations from Crowdin"
+          pull_request_body: |
+            Automated export of community translations from Crowdin.
+
+            Source project: https://translate.oem.re
+          pull_request_base_branch_name: main
+          user: auto
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
