@@ -120,8 +120,8 @@
     "current": "現時",
     "fullSupport": "完整支援的語言",
     "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
-    "uiOnly": "只支援介面翻譯的語言",
-    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
+    "uiOnly": "僅支援介面翻譯的語言",
+    "uiOnlyHint": "僅提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
     "fyi": "阁下可前往 <a href=\"https://crowdin.com/project/oem\">Crowdin</a> 參與我們的翻譯項目，或為你的語言申請翻譯；亦可透過電郵 <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 聯絡本站管理員。",
     "names": {
       "en-US": "英語",
@@ -303,7 +303,7 @@
       "ghRegis": "使用 GitHub 註冊",
       "connecting": "連線中...",
       "resetLink": "請輸入需要重設密碼的電郵，我們将向阁下已註冊的信箱寄送一封包含密碼重設連結的郵件。<br><br>確認發送後，請檢查收件匣與垃圾郵件夾。",
-      "resetRequire": "請輸入您的新密碼並正確重複一次。<br><br>我們即將為閣下進行密碼重設。",
+      "resetRequire": "請輸入新密碼並正確重複一次。<br><br>我們即將為你重設密碼。",
       "backTo": "返回",
       "signIn": "登入",
       "switchToRegisterPrefix": "尚無帳戶？",
@@ -311,7 +311,7 @@
       "switchToLoginPrefix": "若已有帳戶，",
       "switchToLoginAction": "請點此登入。",
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
-      "ackLink": "<a href=\"{privacy}\">私隱政策</a>與<a href=\"{tos}\">使用條款</a>。",
+      "ackLink": "<a href=\"{privacy}\">私隱政策</a>及<a href=\"{tos}\">使用條款</a>。",
       "hints": {
         "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
@@ -362,7 +362,7 @@
       "returnHint": "點擊 Logo 以返回目前分頁",
       "enterMode": "開啟畫中畫模式",
       "exitMode": "退出畫中畫模式",
-      "unsupported": "目前瀏覽器不支援文件畫中畫"
+      "unsupported": "此瀏覽器不支援畫中畫模式"
     }
   },
   "locator": {
@@ -372,7 +372,7 @@
     },
     "binding": {
       "title": "綁定帳户",
-      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款與聲明：",
+      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款及聲明：",
       "docsLinks": "<a href=\"{tos}\">使用條款</a> · <a href=\"{privacy}\">私隱政策</a> · <a href=\"{data}\">資料收集清單</a> · <a href=\"{disclaimer}\">免責聲明</a>",
       "chinaTab": "國服 (Hypergryph)",
       "globalTab": "國際服 (Gryphline)",
@@ -421,11 +421,11 @@
       "trackPoints": "追蹤點位",
       "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
-      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 與其他條款。"
+      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 及其他條款。"
     },
     "errors": {
       "10000": "位置同步工作階段已過期，請重新綁定。",
-      "10002": "遊戲登入已過期，請解除終末地綁定後重新綁定。",
+      "10002": "遊戲登入已過期，請解除綁定後重新綁定。",
       "19001": "無法取得位置，請確認已登入遊戲。",
       "19002": "位置同步需要授權後才能開始。",
       "noRole": "此帳戶下未找到終末地角色。",
@@ -481,7 +481,7 @@
     "shareLocation": "分享此位置",
     "clearAllHighlights": "清除所有高亮",
     "selectAllCategoryFilters": "選取全部",
-    "deselectAllCategoryFilters": "取消全部",
+    "deselectAllCategoryFilters": "全不選",
     "hideCompletedMarkers": "隱藏已完成點位",
     "showCompletedMarkers": "顯示已完成點位",
     "undo": "復原",
@@ -517,7 +517,7 @@
     "org": "<span class=\"keyword\">海外用戶</span>推薦使用全球鏡像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，訪問更快捷穩定。"
   },
   "support": {
-    "title": "支持我們",
+    "title": "贊助我們",
     "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上載）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
     "patreon": "買一份日誌（Patreon）",
     "kofi": "買一杯咖啡（Ko-fi）",
