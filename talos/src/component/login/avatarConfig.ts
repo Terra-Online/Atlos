@@ -26,6 +26,3 @@ export const normalizeAvatarIndex = (value: unknown): number => {
 
   return normalized;
 };
-
-export const getNextAvatarIndex = (current: number): number =>
-  current >= AVATAR_MAX_INDEX ? 1 : current + 1;

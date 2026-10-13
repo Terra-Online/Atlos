@@ -342,6 +342,7 @@
       }
     },
     "profile": {
+      "userCenter": "用户中心",
       "title": "信息档案",
       "avatarHint": "打开资料操作",
       "nameEditHint": "编辑用户名",

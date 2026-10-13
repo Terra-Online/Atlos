@@ -37,7 +37,6 @@ interface ProfileModalProps {
   isSavingProfile: boolean;
   cardProfile: IdCardRenderModel;
   profileAvatar: number;
-  onAvatarCycle: () => void;
   handleCloseProfile: () => Promise<void>;
   handleSaveProfile: () => Promise<void>;
   handleLogout: () => Promise<void>;
@@ -52,7 +51,6 @@ const ProfileModal = ({
   isSavingProfile,
   cardProfile,
   profileAvatar,
-  onAvatarCycle,
   handleCloseProfile,
   handleSaveProfile,
   handleLogout,
@@ -226,8 +224,8 @@ const ProfileModal = ({
             cardRef={cardRef}
             onCardMouseMove={handleCardMouseMove}
             onCardMouseLeave={handleCardMouseLeave}
-            onAvatarClick={onAvatarCycle}
-            avatarAriaLabel={t('idcard.profile.avatarHint')}
+            onAvatarClick={() => window.location.assign('/me/')}
+            avatarAriaLabel={t('idcard.profile.userCenter')}
             avatarIndex={profileAvatar}
             editableName
             nameValue={profileName}
@@ -291,6 +289,13 @@ const ProfileModal = ({
               label={isSavingProfile
                 ? t('idcard.profile.saving')
                 : t('idcard.profile.save')}
+            />
+            <AccessButton
+              onClick={() => {
+                window.location.assign('/me/');
+              }}
+              disabled={isSavingProfile}
+              label={t('idcard.profile.userCenter')}
             />
             <AccessButton
               onClick={() => {

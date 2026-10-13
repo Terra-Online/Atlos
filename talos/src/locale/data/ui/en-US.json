@@ -342,6 +342,7 @@
       }
     },
     "profile": {
+      "userCenter": "User center",
       "title": "Profile",
       "avatarHint": "Open profile info",
       "nameEditHint": "Edit username",

@@ -342,6 +342,7 @@
       }
     },
     "profile": {
+      "userCenter": "用戶中心",
       "title": "資訊檔案",
       "avatarHint": "開啟資訊檔案",
       "nameEditHint": "編輯暱稱",
