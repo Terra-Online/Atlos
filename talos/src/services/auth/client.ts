@@ -60,7 +60,7 @@ const mapRoleToGroupCode = (role?: string): SessionUser['groupCode'] => {
   return undefined;
 };
 
-const pickSessionUser = (payload: unknown): SessionUser | null => {
+export const pickSessionUser = (payload: unknown): SessionUser | null => {
   if (!payload || typeof payload !== 'object') return null;
   const root = payload as Record<string, unknown>;
 
