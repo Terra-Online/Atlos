@@ -1,0 +1,14 @@
+{
+    "name": "@atlos/user-hub",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite --host 0.0.0.0",
+        "type-check": "tsc --noEmit",
+        "build": "vite build",
+        "build:oss": "cross-env BUILD_TARGET=oss vite build",
+        "build:r2": "cross-env BUILD_TARGET=r2 vite build",
+        "build:r2:beta": "cross-env BUILD_TARGET=r2 DEPLOY_CHANNEL=beta vite build"
+    }
+}

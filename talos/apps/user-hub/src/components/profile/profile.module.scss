@@ -1,0 +1,107 @@
+@use '@main/styles/palette' as *;
+@use '@main/styles/curves' as *;
+
+:root,
+:root[data-theme='light'] {
+    --profile-input-border: #{$grey-3};
+    --profile-input-bg: #{$white-1};
+    --profile-input-text: #{$grey-1};
+    --profile-focus: #{$primary-accent-6};
+    --profile-error: #{$primary-accent-7};
+}
+
+:root[data-theme='dark'] {
+    --profile-input-border: #{$grey-2};
+    --profile-input-bg: #{$black-1};
+    --profile-input-text: #{$light-1};
+    --profile-focus: #{$primary-accent-4};
+    --profile-error: #{$primary-accent-5};
+}
+
+.section h2 {
+    margin: 0 0 24px;
+    font-family:
+        'Novecento DemiBold', 'Novecento Cyrillic DemiBold',
+        'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular',
+        'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+}
+.name {
+    display: grid;
+    gap: 10px;
+    max-width: 26rem;
+    font-family:
+        'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans SC',
+        'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 18px;
+    input {
+        width: 100%;
+        border: 0;
+        border-bottom: 2px solid var(--profile-input-border);
+        padding: 10px 12px;
+        background: var(--profile-input-bg);
+        color: var(--profile-input-text);
+        font: inherit;
+        border-radius: 3px;
+        &:focus-visible {
+            outline: 2px solid var(--profile-focus);
+            outline-offset: 2px;
+        }
+    }
+}
+.avatars {
+    margin: 24px 0 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    legend {
+        font-family:
+            'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans SC',
+            'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-size: 18px;
+    }
+}
+.grid {
+    display: grid;
+    grid-template-areas: none;
+    grid-template-rows: none;
+    grid-template-columns: repeat(auto-fill, 5.5rem);
+    gap: 24px;
+    padding: 40px 8px 28px;
+    &::before {
+        content: none;
+        background-image: none;
+    }
+}
+.grid > .choice {
+    grid-area: auto;
+    position: relative;
+    display: block;
+    filter: grayscale(0.9);
+    transition:
+        all 0.1s linear,
+        filter 0.3s $standard-curve;
+    input {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    &:hover,
+    &:has(input:focus-visible) {
+        filter: grayscale(0.3);
+    }
+    &[data-selected='true'] {
+        filter: grayscale(0);
+        border-color: var(--id-highlight-border);
+        outline: 3px solid var(--id-highlight-border);
+    }
+}
+.error {
+    color: var(--profile-error);
+}
