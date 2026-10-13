@@ -87,6 +87,12 @@ const intelBuildStep = (target) => ({
   args: ['--filter', '@atlos/intel', 'exec', 'vite', 'build'],
   env: { BUILD_TARGET: target },
 });
+const userHubBuildStep = (target) => ({
+  name: 'build-user-hub',
+  command: 'pnpm',
+  args: ['--filter', '@atlos/user-hub', 'exec', 'vite', 'build'],
+  env: { BUILD_TARGET: target },
+});
 
 const results = await Promise.all([
   runPipeline('cn', [
@@ -97,6 +103,7 @@ const results = await Promise.all([
       env: { BUILD_TARGET: 'oss', BUILD_OUT_DIR: 'dist/oss' },
     },
     ...(!shouldSkipIntel ? [intelBuildStep('oss')] : []),
+    userHubBuildStep('oss'),
     {
       name: 'publish',
       command: 'bash',
@@ -112,6 +119,7 @@ const results = await Promise.all([
       env: { BUILD_TARGET: 'r2', BUILD_OUT_DIR: 'dist/r2' },
     },
     ...(!shouldSkipIntel ? [intelBuildStep('r2')] : []),
+    userHubBuildStep('r2'),
     {
       name: 'publish-r2',
       command: 'pnpm',

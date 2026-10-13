@@ -38,11 +38,17 @@ export default [
   },
   ...tseslint.configs.recommendedTypeChecked,
   {
+    files: ['apps/user-hub/vite.config.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json', './oem-relink/tsconfig.json', './oem-search/tsconfig.json'],
+        project: ['./tsconfig.json', './oem-relink/tsconfig.json', './oem-search/tsconfig.json', './apps/user-hub/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

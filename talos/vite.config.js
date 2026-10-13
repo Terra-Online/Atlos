@@ -353,6 +353,12 @@ export default defineConfig({
                 ws: true,
                 rewrite: (requestPath) => requestPath.replace(/^\/intel(?=[?#]|$)/, '/intel/'),
             },
+            '/me': {
+                target: 'http://127.0.0.1:5175',
+                changeOrigin: true,
+                ws: true,
+                rewrite: (requestPath) => requestPath.replace(/^\/me(?=[?#]|$)/, '/me/'),
+            },
             '/proxy/skport-auth': {
                 target: 'https://as.gryphline.com',
                 changeOrigin: true,

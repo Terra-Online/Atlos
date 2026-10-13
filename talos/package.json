@@ -6,7 +6,8 @@
   "scripts": {
     "predev": "pnpm run build:tile-coverage",
     "dev": "vite --mode dev",
-    "dev:intel": "node ./scripts/dev-intel.mjs",
+    "dev:intel": "node ./scripts/dev-app.mjs intel",
+    "dev:user-hub": "node ./scripts/dev-app.mjs user-hub",
     "subset:fonts": "python3 ./scripts/subset-fonts.py",
     "worker:type-check": "pnpm -F oem-search type-check",
     "worker:deploy": "pnpm -F oem-search run deploy",
@@ -23,6 +24,7 @@
     "type-check:prepare": "run-p build:marker-diff build:relink-preview",
     "type-check:tsc": "tsc --noEmit",
     "type-check:intel": "pnpm --filter @atlos/intel type-check",
+    "type-check:user-hub": "pnpm --filter @atlos/user-hub type-check",
     "test": "vitest run",
     "build:prepare": "node ./scripts/build-prepare.mjs",
     "build:marker-stats": "node ./scripts/build-marker-stats.mjs",
@@ -51,6 +53,9 @@
     "build:intel": "pnpm --filter @atlos/intel build:oss",
     "build:intel:r2": "pnpm --filter @atlos/intel build:r2",
     "build:intel:r2:beta": "pnpm --filter @atlos/intel build:r2:beta",
+    "build:user-hub": "pnpm --filter @atlos/user-hub build:oss",
+    "build:user-hub:r2": "pnpm --filter @atlos/user-hub build:r2",
+    "build:user-hub:r2:beta": "pnpm --filter @atlos/user-hub build:r2:beta",
     "build:all": "node ./scripts/build-all.mjs",
     "publish:web": "node ./scripts/publish-oss.js",
     "publish:web:r2": "node ./scripts/publish-R2.js",
@@ -71,7 +76,8 @@
     "deploy:all": "node ./scripts/deploy-all.mjs",
     "preview": "vite preview --outDir dist/oss",
     "preview:r2": "vite preview --outDir dist/r2",
-    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'"
+    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'",
+    "test:user-hub": "vitest run --config apps/user-hub/vitest.config.ts"
   },
   "browserlists": [
     "defaults"

@@ -61,6 +61,10 @@ jobs:
         run: pnpm run type-check
         working-directory: ./talos
 
+      - name: Check user center
+        run: pnpm run type-check:user-hub && pnpm run test:user-hub
+        working-directory: ./talos
+
       - name: Validate locale ICU schemas
         run: pnpm run validate:locale-icu
         working-directory: ./talos
@@ -80,6 +84,10 @@ jobs:
 
       - name: Build project
         run: pnpm run build
+        working-directory: ./talos
+
+      - name: Build user center
+        run: pnpm run build:user-hub
         working-directory: ./talos
 
       - name: Upload build artifacts

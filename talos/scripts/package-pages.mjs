@@ -114,10 +114,18 @@ const copyIntelApp = async () => {
   await fs.copy(source, path.resolve(outputDir, 'intel'));
 };
 
+const copyUserHubApp = async () => {
+  const source = path.resolve(distDir, 'me');
+  if (!(await fs.pathExists(path.resolve(source, 'index.html')))) {
+    throw new Error(`${path.relative(ROOT, source)}/index.html does not exist. Run the user hub build first.`);
+  }
+  await fs.copy(source, path.resolve(outputDir, 'me'));
+};
+
 const writePagesConfigFiles = async () => {
   const redirects = shouldSkipIntel
-    ? '/* /index.html 200\n'
-    : '/intel /intel/index.html 200\n/intel/* /intel/index.html 200\n/* /index.html 200\n';
+    ? '/me /me/index.html 200\n/me/* /me/index.html 200\n/* /index.html 200\n'
+    : '/me /me/index.html 200\n/me/* /me/index.html 200\n/intel /intel/index.html 200\n/intel/* /intel/index.html 200\n/* /index.html 200\n';
   const intelHeaders = shouldSkipIntel
     ? []
     : [
@@ -146,6 +154,12 @@ const writePagesConfigFiles = async () => {
       ...intelHeaders,
       '/*/',
       '  Cache-Control: no-cache, no-store, must-revalidate',
+      '',
+      '/me/index.html',
+      '  Cache-Control: no-cache, no-store, must-revalidate',
+      '',
+      '/me/assets/*',
+      '  Cache-Control: public, max-age=31536000, immutable',
       '',
       '/sitemap*.xml',
       '  Cache-Control: no-cache, no-store, must-revalidate',
@@ -181,6 +195,7 @@ await fs.emptyDir(outputDir);
 
 const rootCount = await copyRootFiles();
 const pointCount = await copySeoPointAliases();
+await copyUserHubApp();
 if (!shouldSkipIntel) await copyIntelApp();
 await writePagesConfigFiles();
 
@@ -195,3 +210,4 @@ console.log(`dist: ${path.relative(ROOT, distDir)}`);
 console.log(`root files: ${rootCount}`);
 console.log(`seo point pages: ${pointCount}`);
 console.log(`intel: ${shouldSkipIntel ? 'skipped' : 'included'}`);
+console.log('user hub: included');
