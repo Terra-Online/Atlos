@@ -61,7 +61,7 @@ const clearImportTokenFromUrl = (): void => {
   const hadImportQuery = url.searchParams.has('import');
   if (!pathMatch && !hadImportQuery) return;
   if (pathMatch) {
-    url.pathname = `${url.pathname.slice(0, pathMatch.index)}\/`;
+    url.pathname = `${url.pathname.slice(0, pathMatch.index)}/`;
   }
   if (hadImportQuery) url.searchParams.delete('import');
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);

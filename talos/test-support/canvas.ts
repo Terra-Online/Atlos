@@ -7,7 +7,7 @@ if (typeof HTMLCanvasElement !== 'undefined') {
     if (!context) {
       context = new Proxy({ canvas: this,
         measureText: (text: string) => ({ width: text.length * 6, fontBoundingBoxAscent: 9, fontBoundingBoxDescent: 3 }),
-      } as unknown as CanvasRenderingContext2D, { get(target, key) { return Reflect.get(target, key) ?? (() => {}); } });
+      } as unknown as CanvasRenderingContext2D, { get(target, key): unknown { return Reflect.get(target, key) ?? (() => {}); } });
       contexts.set(this, context);
     }
     return context;

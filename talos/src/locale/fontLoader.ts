@@ -9,7 +9,6 @@ const toCdnUrl = (p: string): string => {
     const str = String(p);
     if (str.indexOf('://') !== -1 || str.startsWith('//')) return str;
 
-    // eslint-disable-next-line no-undef
     const base = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
     
     if (base && str.startsWith(base)) return str;

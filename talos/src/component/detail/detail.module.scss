@@ -369,14 +369,17 @@
     .collectionRateDivider {
         --collection-rate: 0;
         --collection-rate-color: var(--detail-heading);
-        --collection-rate-color: color-mix(
-            in srgb,
-            #{$primary-accent-5} calc((1 - var(--collection-rate)) * 100%),
-            var(--detail-heading)
-        );
-
         margin-bottom: 0.25rem;
         cursor: help;
+        // Custom properties accept unsupported functions, so gate the override
+        // to keep the heading-color fallback in browsers without color-mix().
+        @supports (color: color-mix(in srgb, black, white)) {
+            --collection-rate-color: color-mix(
+                in srgb,
+                #{$primary-accent-5} calc((1 - var(--collection-rate)) * 100%),
+                var(--detail-heading)
+            );
+        }
 
         &::after {
             content: none;

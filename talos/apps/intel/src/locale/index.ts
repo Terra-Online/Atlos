@@ -58,7 +58,7 @@ const deepMerge = (base: Record<string, unknown>, override: Record<string, unkno
   const result = { ...base };
   for (const [key, value] of Object.entries(override)) {
     result[key] = isObject(result[key]) && isObject(value)
-      ? deepMerge(result[key] as Record<string, unknown>, value)
+      ? deepMerge(result[key], value)
       : value;
   }
   return result;
