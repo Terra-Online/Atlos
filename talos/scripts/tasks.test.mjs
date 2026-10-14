@@ -74,6 +74,7 @@ test('rejects invalid release arguments before any work and accepts pnpm separat
         parseTask(['build', '--target=org', '--channel=beta']).target,
         'org',
     );
+    assert.equal(parseTask(['build']).target, 'org');
     for (const args of [
         ['build', '--deploy'],
         ['build', '--target', 'typo'],
@@ -201,7 +202,7 @@ test('a failed site waits for its peer and prevents the shared Worker deployment
 
 test('publish-only refuses wrong channels, missing apps, stale partial rebuilds, and source-only artifacts', async (t) => {
     const f = await fixture(t);
-    await runTask(['build', '--skip-subset'], f);
+    await runTask(['build', '--target', 'cn', '--skip-subset'], f);
     const initial = f.calls.length;
     await assert.rejects(
         runTask(
@@ -216,12 +217,18 @@ test('publish-only refuses wrong channels, missing apps, stale partial rebuilds,
         runTask(['publish', '--target', 'cn', '--only', 'server'], f),
         /ENOENT/,
     );
-    await runTask(['build', '--app', 'main', '--skip-subset'], f);
+    await runTask(
+        ['build', '--target', 'cn', '--app', 'main', '--skip-subset'],
+        f,
+    );
     await assert.rejects(
         runTask(['publish', '--target', 'cn', '--only', 'oss'], f),
         /ENOENT/,
     );
-    await runTask(['build', '--source-only', '--skip-subset'], f);
+    await runTask(
+        ['build', '--target', 'cn', '--source-only', '--skip-subset'],
+        f,
+    );
     await assert.rejects(
         runTask(['publish', '--target', 'cn', '--only', 'oss'], f),
         /Source-only/,
@@ -332,7 +339,7 @@ test('refuses source outputs, symlink escapes and unowned external packaging dir
 
 test('refuses changed resource destinations and beta overrides pointing at prod', async (t) => {
     const f = await fixture(t);
-    await runTask(['build', '--skip-subset'], f);
+    await runTask(['build', '--target', 'cn', '--skip-subset'], f);
     await assert.rejects(
         runTask(['publish', '--target', 'cn', '--only', 'oss'], {
             ...f,

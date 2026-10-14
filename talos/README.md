@@ -16,7 +16,8 @@ The main dev server proxies the selected app at `/intel/` or `/me/`.
 ## Build and check
 
 ```sh
-pnpm build                             # CN full site: main, Intel, user hub, SEO
+pnpm build                             # ORG full site: main, Intel, user hub, SEO
+pnpm build --target cn                 # CN full site
 pnpm build --target org
 pnpm build --target all                # Prepare data/fonts once for both sites
 pnpm build --target org --channel beta
@@ -31,8 +32,9 @@ pnpm format                            # Explicit source formatting
 pnpm preview --outDir dist/r2
 ```
 
-Outputs remain `dist/oss` (CN) and `dist/r2` (ORG). `--skip-subset` skips
-font subsetting in all apps; `--skip-subset-fonts` remains an alias.
+Outputs remain `dist/oss` (CN) and `dist/r2` (ORG); the default build and
+preview target is ORG. `--skip-subset` skips font subsetting in all apps;
+`--skip-subset-fonts` remains an alias.
 Builds never publish. Partial builds invalidate the full-site build receipt;
 rebuild the complete site before publishing.
 

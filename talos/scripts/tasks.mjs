@@ -33,7 +33,7 @@ Build/deploy: --skip-subset (alias --skip-subset-fonts), --skip-intel
 Publish/deploy: --skip-og (alias --skip-seo-og)
 Build/publish/package: --dist-dir PATH (single target only)
 Package: --output-dir PATH
-Defaults: build=cn/prod; deploy=all/prod; og=all/build; package=cn/prod/archive.
+Defaults: build=org/prod; deploy=all/prod; og=all/build; package=cn/prod/archive.
 Build and check never deploy. Dry-run only prints commands; it does not validate existing files.`;
 
 const schemas = {
@@ -116,7 +116,7 @@ export const parseTask = (argv, env = process.env) => {
     if (positionals.length && !['worker', 'data'].includes(command))
         throw new Error(`Unexpected arguments: ${positionals.join(' ')}`);
     const target =
-        values.target || (['deploy', 'og'].includes(command) ? 'all' : 'cn');
+        values.target || (['deploy', 'og'].includes(command) ? 'all' : 'org');
     const channel = values.channel || env.DEPLOY_CHANNEL || 'prod';
     if (!['prod', 'beta'].includes(channel))
         throw new Error(`Unknown channel: ${channel}`);

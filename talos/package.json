@@ -22,7 +22,7 @@
     "test": "node ./scripts/tasks.mjs test",
     "lint": "node ./scripts/tasks.mjs lint",
     "lint:fix": "node ./scripts/tasks.mjs lint:fix",
-    "preview": "vite preview --outDir dist/oss",
+    "preview": "vite preview --outDir dist/r2",
     "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'"
   },
   "browserlists": [
