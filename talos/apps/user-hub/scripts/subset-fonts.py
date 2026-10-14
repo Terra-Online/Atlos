@@ -83,6 +83,14 @@ def read_json(path: Path) -> dict[str, object]:
     return data
 
 
+def find_locale_file(directory: Path, locale: str) -> Path:
+    normalized = locale.casefold()
+    for path in directory.glob('*.json'):
+        if path.stem.casefold() == normalized:
+            return path
+    raise FileNotFoundError(f'Missing locale file for {locale}: {directory}')
+
+
 def collect_region_characters() -> dict[str, set[str]]:
     print('Collecting User-hub font characters by writing system...')
     region_characters: dict[str, set[str]] = {}
@@ -95,7 +103,7 @@ def collect_region_characters() -> dict[str, set[str]]:
         if not hub_ui.is_file():
             hub_ui = HUB_LOCALE_DIR / 'ui' / 'en-US.json'
         characters.update(extract_characters(read_json(hub_ui)))
-        game = read_json(MAIN_GAME_LOCALE_DIR / f'{game_locale.lower()}.json')
+        game = read_json(find_locale_file(MAIN_GAME_LOCALE_DIR, game_locale))
         characters.update(extract_characters(game['markerType']['key']))
 
         main_ui = read_json(MAIN_UI_LOCALE_DIR / f'{ui_locale}.json')
