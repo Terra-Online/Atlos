@@ -1,4 +1,4 @@
-import { HeadBar, HeadItem } from '@main/component/headbar/headbar';
+import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
