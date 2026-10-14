@@ -55,12 +55,31 @@
     "pendingShort": "待审核",
     "email": "邮箱",
     "emptyContributionsHint": "在地图中分享图片或发表评论后，你的投稿会出现在这里。",
-    "profileHint": "更换头像或修改用户名。",
+    "profileHint": "更换头像。",
     "avatar": "头像",
     "avatarChoice": "头像 {index}",
-    "nameRule": "用户名需为 1–15 位英文字母、数字、连字符或下划线。",
     "previewUnavailable": "暂无图片预览",
-    "nickname": "昵称"
+    "commentLocation": ", 于「{point}」",
+    "pointSeparator": "・",
+    "steps": {
+      "uploaded": "已上传",
+      "ai": {
+        "current": "OpenAI 审核中",
+        "complete": "OpenAI 已审核"
+      },
+      "manual": {
+        "current": "人工审核中",
+        "complete": "人工已审核"
+      },
+      "public": {
+        "current": "待公开",
+        "complete": "已公开"
+      },
+      "archived": {
+        "current": "归档中",
+        "complete": "已归档"
+      }
+    }
   },
   "common": {
     "loading": "加载中⋯"

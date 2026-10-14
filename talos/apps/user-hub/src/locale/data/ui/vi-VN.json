@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Trung tâm người dùng - {site}",
+    "title": "Trung tâm người dùng",
+    "back": "Quay lại bản đồ",
+    "refresh": "Làm mới",
+    "signOut": "Đăng xuất",
+    "navigation": "Điều hướng trung tâm người dùng",
+    "tabs": {
+      "contributions": "Trung tâm nội dung",
+      "account": "Quản lý tài khoản",
+      "profile": "Thông tin cá nhân"
+    },
+    "kinds": {
+      "all": "Tất cả",
+      "image": "Hình ảnh",
+      "comment": "Bình luận"
+    },
+    "loadError": "Không thể tải tài khoản của bạn.",
+    "actionError": "Thao tác thất bại. Vui lòng thử lại.",
+    "contributionsError": "Không thể tải nội dung đóng góp.",
+    "retry": "Thử lại",
+    "loadMore": "Tải thêm",
+    "emptyContributions": "Chưa có nội dung đóng góp.",
+    "registeredAt": "Ngày đăng ký",
+    "accountStatus": "Trạng thái tài khoản",
+    "loginMethods": "Phương thức đăng nhập",
+    "verified": "Đã xác minh",
+    "linkedAt": "Ngày liên kết",
+    "notLinked": "Chưa liên kết",
+    "link": "Liên kết",
+    "unlink": "Hủy liên kết",
+    "keepLoginMethod": "Hãy giữ ít nhất một phương thức đăng nhập. Không thể xóa phương thức đăng nhập cuối cùng.",
+    "notBound": "Chưa liên kết tài khoản Endfield.",
+    "endfieldRole": "Nhân vật Endfield",
+    "server": "Máy chủ",
+    "enabled": "Đã bật",
+    "disabled": "Đã tắt",
+    "endfieldAccount": "Tài khoản Endfield",
+    "bindFromMap": "Để liên kết tài khoản Endfield, hãy mở hộp thoại liên kết tài khoản trên bản đồ.",
+    "status": {
+      "pending_openai": "Đang xét duyệt",
+      "pending_audit": "Chờ xét duyệt thủ công",
+      "active": "Đã công khai",
+      "flagged": "Đã bị báo cáo",
+      "remove_request": "Đã yêu cầu xóa",
+      "stale": "Không khả dụng"
+    },
+    "contentHint": "Xem nội dung đã gửi và trạng thái xét duyệt.",
+    "accountHint": "Quản lý phương thức đăng nhập và tài khoản liên kết.",
+    "contentType": "Loại nội dung",
+    "content": "Nội dung",
+    "reviewStatus": "Trạng thái xét duyệt",
+    "submittedAt": "Thời gian gửi",
+    "pendingShort": "Đang xét duyệt",
+    "email": "Email",
+    "emptyContributionsHint": "Chia sẻ hình ảnh hoặc bình luận từ bản đồ. Nội dung bạn gửi sẽ xuất hiện tại đây.",
+    "profileHint": "Thay đổi ảnh đại diện của bạn.",
+    "avatar": "Ảnh đại diện",
+    "avatarChoice": "Ảnh đại diện {index}",
+    "previewUnavailable": "Không thể xem trước",
+    "commentLocation": ", tại ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Đã tải lên",
+      "ai": {
+        "current": "OpenAI đang xét duyệt",
+        "complete": "OpenAI đã xét duyệt"
+      },
+      "manual": {
+        "current": "Đang xét duyệt thủ công",
+        "complete": "Đã xét duyệt thủ công"
+      },
+      "public": {
+        "current": "Chờ công khai",
+        "complete": "Đã công khai"
+      },
+      "archived": {
+        "current": "Đang lưu trữ",
+        "complete": "Đã lưu trữ"
+      }
+    }
+  },
+  "common": {
+    "loading": "Đang tải..."
+  }
+}

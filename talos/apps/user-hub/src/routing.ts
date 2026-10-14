@@ -1,18 +1,15 @@
-export const tabs = ['contributions', 'profile', 'account'] as const;
+export const tabs = ['contributions', 'profile'] as const;
 export type Tab = (typeof tabs)[number];
 
 export const tabFromPath = (): Tab => {
     const segment = window.location.pathname
         .replace(/^\/me\/?/, '')
         .split('/')[0];
-    if (segment === 'profile') return 'profile';
-    return ['account', 'security', 'services'].includes(segment)
-        ? 'account'
-        : 'contributions';
+    return segment === 'profile' ? 'profile' : 'contributions';
 };
 
 export const pathForTab = (tab: Tab): string =>
-    tab === 'contributions' ? '/me/' : `/me/${tab}`;
+    tab === 'contributions' ? '/me/content' : `/me/${tab}`;
 
 export function navigate(tab: Tab) {
     window.history.pushState({}, '', pathForTab(tab));

@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Центр користувача - {site}",
+    "title": "Центр користувача",
+    "back": "Повернутися до карти",
+    "refresh": "Оновити",
+    "signOut": "Вийти",
+    "navigation": "Навігація центром користувача",
+    "tabs": {
+      "contributions": "Центр вмісту",
+      "account": "Керування обліковим записом",
+      "profile": "Особисті дані"
+    },
+    "kinds": {
+      "all": "Усі",
+      "image": "Зображення",
+      "comment": "Коментарі"
+    },
+    "loadError": "Не вдалося завантажити ваш обліковий запис.",
+    "actionError": "Не вдалося виконати дію. Спробуйте ще раз.",
+    "contributionsError": "Не вдалося завантажити дописи.",
+    "retry": "Спробувати ще раз",
+    "loadMore": "Завантажити ще",
+    "emptyContributions": "Дописів поки немає.",
+    "registeredAt": "Дата реєстрації",
+    "accountStatus": "Стан облікового запису",
+    "loginMethods": "Способи входу",
+    "verified": "Підтверджено",
+    "linkedAt": "Прив’язано",
+    "notLinked": "Не прив’язано",
+    "link": "Прив’язати",
+    "unlink": "Відв’язати",
+    "keepLoginMethod": "Залиште принаймні один спосіб входу. Останній спосіб входу не можна видалити.",
+    "notBound": "Обліковий запис Endfield не прив’язано.",
+    "endfieldRole": "Персонаж Endfield",
+    "server": "Сервер",
+    "enabled": "Увімкнено",
+    "disabled": "Вимкнено",
+    "endfieldAccount": "Обліковий запис Endfield",
+    "bindFromMap": "Щоб прив’язати обліковий запис Endfield, відкрийте вікно прив’язування облікового запису на карті.",
+    "status": {
+      "pending_openai": "На перевірці",
+      "pending_audit": "Очікує ручної перевірки",
+      "active": "Загальнодоступно",
+      "flagged": "Є скарги",
+      "remove_request": "Запитано видалення",
+      "stale": "Недоступно"
+    },
+    "contentHint": "Переглядайте свої дописи та перебіг їхньої перевірки.",
+    "accountHint": "Керуйте способами входу та прив’язаними обліковими записами.",
+    "contentType": "Тип вмісту",
+    "content": "Вміст",
+    "reviewStatus": "Стан",
+    "submittedAt": "Дата надсилання",
+    "pendingShort": "На перевірці",
+    "email": "Електронна пошта",
+    "emptyContributionsHint": "Додайте зображення або коментар на карті. Ваші дописи з’являться тут.",
+    "profileHint": "Змініть свій аватар.",
+    "avatar": "Аватар",
+    "avatarChoice": "Аватар {index}",
+    "previewUnavailable": "Попередній перегляд недоступний",
+    "commentLocation": ", у ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Завантажено",
+      "ai": {
+        "current": "Триває перевірка OpenAI",
+        "complete": "Перевірено OpenAI"
+      },
+      "manual": {
+        "current": "Триває ручна перевірка",
+        "complete": "Перевірено вручну"
+      },
+      "public": {
+        "current": "Очікує публікації",
+        "complete": "Опубліковано"
+      },
+      "archived": {
+        "current": "Архівування",
+        "complete": "В архіві"
+      }
+    }
+  },
+  "common": {
+    "loading": "Завантаження..."
+  }
+}

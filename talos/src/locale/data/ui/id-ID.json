@@ -122,7 +122,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk antarmuka dan konten permainan.",
     "uiOnly": "Hanya antarmuka",
     "uiOnlyHint": "Hanya terjemahan antarmuka, konten permainan akan ditampilkan dalam bahasa Inggris.",
-    "fyi": "Anda dapat mengunjungi <a href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk berpartisipasi dalam proyek penerjemahan kami atau meminta penerjemahan untuk bahasa Anda; Anda juga dapat menghubungi administrator situs melalui email di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Anda dapat mengunjungi <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk berpartisipasi dalam proyek penerjemahan kami atau meminta penerjemahan untuk bahasa Anda; Anda juga dapat menghubungi administrator situs melalui email di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Inggris",
       "zh-CN": "Tionghoa Sederhana",
@@ -348,7 +348,7 @@
       "nickName": "Nama panggilan",
       "note": "Catatan",
       "noteNickname": "Username maksimal 15 karakter (huruf, angka, tanda hubung, garis bawah).",
-      "noteUID": "UID ditetapkan saat pendaftaran dan tidak dapat diubah. Username dapat diperbarui kapan saja. Klik avatar untuk mengganti gambar.",
+      "noteUID": "UID ditetapkan saat pendaftaran dan tidak dapat diubah. Username dapat diperbarui kapan saja. Klik area avatar untuk masuk ke <a href=\"/me/\">Pusat pengguna</a>.",
       "auditLabel": "Tindakan",
       "importOfficial": "Impor dari Peta Resmi",
       "save": "Simpan",

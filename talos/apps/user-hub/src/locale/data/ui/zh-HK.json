@@ -55,12 +55,31 @@
     "pendingShort": "待審核",
     "email": "電郵",
     "emptyContributionsHint": "在地圖中分享圖片或發表評論後，你的投稿會顯示在這裏。",
-    "profileHint": "更換頭像或修改用戶名稱。",
+    "profileHint": "更換頭像。",
     "avatar": "頭像",
     "avatarChoice": "頭像 {index}",
-    "nameRule": "用戶名稱須為 1–15 位英文字母、數字、連字號或底線。",
     "previewUnavailable": "暫無圖片預覽",
-    "nickname": "暱稱"
+    "commentLocation": ", 於「{point}」",
+    "pointSeparator": "・",
+    "steps": {
+      "uploaded": "已上傳",
+      "ai": {
+        "current": "OpenAI 審核中",
+        "complete": "OpenAI 已審核"
+      },
+      "manual": {
+        "current": "人工審核中",
+        "complete": "人工已審核"
+      },
+      "public": {
+        "current": "待公開",
+        "complete": "已公開"
+      },
+      "archived": {
+        "current": "封存中",
+        "complete": "已封存"
+      }
+    }
   },
   "common": {
     "loading": "載入中⋯"

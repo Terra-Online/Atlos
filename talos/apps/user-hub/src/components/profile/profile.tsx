@@ -19,35 +19,26 @@ export default function Profile({
     onSaved,
 }: {
     user: SessionUser;
-    onSaved: () => void;
+    onSaved: (user: SessionUser) => void;
 }) {
     const t = useTranslateUI();
-    const [name, setName] = useState(
-        user.needsProfileSetup ? '' : user.nickname,
-    );
     const [avatar, setAvatar] = useState(normalizeAvatarIndex(user.avatar));
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const pending = useRef(false);
     useEffect(() => {
-        setName(user.needsProfileSetup ? '' : user.nickname);
         setAvatar(normalizeAvatarIndex(user.avatar));
-    }, [user.nickname, user.avatar, user.needsProfileSetup]);
-    const submit = async (nextName = name.trim(), nextAvatar = avatar) => {
+    }, [user.avatar]);
+    const submit = async (nextAvatar: number) => {
         if (pending.current) return;
-        if (!/^[A-Za-z0-9_-]{1,15}$/.test(nextName)) {
-            setError(t('userHub.nameRule'));
-            return;
-        }
         pending.current = true;
         setSaving(true);
         setError('');
         try {
-            const updated = await saveProfile(nextName, nextAvatar);
+            const updated = await saveProfile(user.nickname, nextAvatar);
             useAuthStore.getState().setSessionUser(updated);
-            setName(updated.nickname);
             setAvatar(normalizeAvatarIndex(updated.avatar));
-            onSaved();
+            onSaved(updated);
         } catch (cause) {
             setAvatar(normalizeAvatarIndex(user.avatar));
             setError(
@@ -61,71 +52,48 @@ export default function Profile({
         }
     };
     return (
-        <section className={styles.section}>
-            <h2>{t('userHub.tabs.profile')}</h2>
-            <form
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    void submit();
-                }}
+        <section aria-label={t('userHub.tabs.profile')}>
+            <fieldset
+                disabled={saving}
+                className={styles.avatars}
+                aria-label={t('userHub.avatar')}
             >
-                <label className={styles.name}>
-                    {t('userHub.nickname')}
-                    <input
-                        value={name}
-                        maxLength={15}
-                        disabled={saving}
-                        onChange={(event) => setName(event.target.value)}
-                        onBlur={(event) => {
-                            if (
-                                event.relatedTarget instanceof
-                                    HTMLInputElement &&
-                                event.relatedTarget.name === 'avatar'
-                            )
-                                return;
-                            if (name.trim() !== user.nickname) void submit();
-                        }}
-                        autoComplete='nickname'
-                    />
-                </label>
-                <fieldset disabled={saving} className={styles.avatars}>
-                    <legend>{t('userHub.avatar')}</legend>
-                    <div className={styles.grid}>
-                        {avatars.map((index) => (
-                            <label
-                                key={index}
-                                className={styles.choice}
-                                data-selected={avatar === index}
-                            >
-                                <input
-                                    type='radio'
-                                    name='avatar'
-                                    value={index}
-                                    checked={avatar === index}
-                                    onChange={() => {
-                                        if (pending.current) return;
-                                        setAvatar(index);
-                                        void submit(name.trim(), index);
-                                    }}
-                                    aria-label={t(
-                                        'userHub.avatarChoice',
-                                    ).replace('{index}', String(index))}
-                                />
-                                <div
-                                    className={styles.avatar}
-                                    data-avt={index}
-                                    aria-hidden='true'
-                                />
-                            </label>
-                        ))}
-                    </div>
-                </fieldset>
-                {error && (
-                    <p role='alert' className={styles.error}>
-                        {error}
-                    </p>
-                )}
-            </form>
+                <div className={styles.grid}>
+                    {avatars.map((index) => (
+                        <label
+                            key={index}
+                            className={styles.choice}
+                            data-selected={avatar === index}
+                        >
+                            <input
+                                type='radio'
+                                name='avatar'
+                                value={index}
+                                checked={avatar === index}
+                                onChange={() => {
+                                    if (pending.current) return;
+                                    setAvatar(index);
+                                    void submit(index);
+                                }}
+                                aria-label={t('userHub.avatarChoice').replace(
+                                    '{index}',
+                                    String(index),
+                                )}
+                            />
+                            <div
+                                className={styles.avatar}
+                                data-avt={index}
+                                aria-hidden='true'
+                            />
+                        </label>
+                    ))}
+                </div>
+            </fieldset>
+            {error && (
+                <p role='alert' className={styles.error}>
+                    {error}
+                </p>
+            )}
         </section>
     );
 }

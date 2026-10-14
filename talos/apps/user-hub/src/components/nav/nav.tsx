@@ -12,9 +12,7 @@ export default function Nav({ active }: { active: Tab }) {
                 const hint =
                     tab === 'contributions'
                         ? t('userHub.contentHint')
-                        : tab === 'profile'
-                          ? t('userHub.profileHint')
-                          : t('userHub.accountHint');
+                        : t('userHub.profileHint');
                 return (
                     <a
                         key={tab}
@@ -37,9 +35,7 @@ export default function Nav({ active }: { active: Tab }) {
                         <span className={styles.label}>
                             {t(`userHub.tabs.${tab}`)}
                         </span>
-                        <span className={styles.description}>
-                            {hint}
-                        </span>
+                        <span className={styles.description}>{hint}</span>
                     </a>
                 );
             })}

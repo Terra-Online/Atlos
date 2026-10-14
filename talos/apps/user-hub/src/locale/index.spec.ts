@@ -49,20 +49,18 @@ it('switches app labels and Chinese font regions without changing the main catal
         expect(translateMainUI('userHub.tabs.profile', 'absent')).toBe(
             'absent',
         );
-        expect(translateMainUI('idcard.profile.userCenter')).toBe(
-            'User center',
-        );
+        expect(translateMainUI('idcard.profile.title')).toBe('Profile');
     } finally {
         await flush(() => root.unmount());
         node.remove();
     }
 });
 
-it('uses the app English fallback for languages without a catalog and preserves placeholders', async () => {
+it('loads the French catalog and preserves placeholders and missing-key fallbacks', async () => {
     await i18nInitPromise;
     await setLocale('fr-FR');
     expect(getCurrentLocale()).toBe('fr-FR');
-    expect(translateUI('userHub.tabs.contributions')).toBe('Content center');
+    expect(translateUI('userHub.tabs.contributions')).toBe('Centre de contenu');
     expect(translateUI('userHub.avatarChoice')).toBe('Avatar {index}');
     expect(translateUI('missing.key', 'missing')).toBe('missing');
 });

@@ -6,6 +6,7 @@ import App from './App';
 import type { Overview } from './types';
 
 const api = vi.hoisted(() => ({
+    clearReadCache: vi.fn(),
     getOverview: vi.fn(),
     getContributions: vi.fn(),
     saveProfile: vi.fn(),
@@ -33,13 +34,10 @@ vi.mock('@main/platform/theme', () => ({
 
 const overview: Overview = {
     user: { uid: '42', nickname: 'Tester' },
-    loginMethods: [],
-    services: { endfield: { bound: false, enabled: false } },
     contributions: {
         imageCount: 2,
         commentCount: 3,
         pendingCount: 0,
-        recent: [],
     },
 };
 
@@ -51,7 +49,7 @@ beforeEach(() => {
 
 afterEach(() => window.history.replaceState(null, '', '/'));
 
-it('opens the account page from a legacy URL and reports refresh failures', async () => {
+it('redirects the excluded account page to content and reports refresh failures', async () => {
     window.history.replaceState(null, '', '/me/security');
     const node = document.createElement('div');
     document.body.append(node);
@@ -59,9 +57,10 @@ it('opens the account page from a legacy URL and reports refresh failures', asyn
     try {
         await flush(() => root.render(createElement(App)));
         expect(node.textContent).toContain('Tester');
-        expect(node.textContent).toContain('userHub.loginMethods');
-        expect(node.textContent).toContain('userHub.endfieldAccount');
-        expect(api.getContributions).not.toHaveBeenCalled();
+        expect(window.location.pathname).toBe('/me/content');
+        expect(node.textContent).not.toContain('userHub.loginMethods');
+        expect(node.textContent).not.toContain('userHub.endfieldAccount');
+        expect(api.getContributions).toHaveBeenCalledOnce();
         expect(
             node.querySelector('button[aria-label="userHub.signOut"]'),
         ).toBeNull();
@@ -82,31 +81,34 @@ it('opens the account page from a legacy URL and reports refresh failures', asyn
     }
 });
 
-it('opens contributions by default and keeps the three navigation destinations distinct', async () => {
+it('opens contributions by default and keeps the two navigation destinations distinct', async () => {
     window.history.replaceState(null, '', '/me/');
     const node = document.createElement('div');
     document.body.append(node);
     const root = createRoot(node);
     try {
         await flush(() => root.render(createElement(App)));
+        expect(window.location.pathname).toBe('/me/content');
         expect(api.getContributions).toHaveBeenCalledOnce();
         expect(node.textContent).toContain('userHub.emptyContributions');
         const links = node.querySelectorAll<HTMLAnchorElement>('nav a');
-        expect(links).toHaveLength(3);
+        expect(links).toHaveLength(2);
         expect(node.querySelectorAll('[role="tab"]')).toHaveLength(2);
         expect(api.getContributions.mock.calls[0][0]).toBe('image');
-        const account = node.querySelector<HTMLAnchorElement>(
-            'nav a[href="/me/account"]',
+        expect(node.querySelector('nav a[href="/me/account"]')).toBeNull();
+        const profile = node.querySelector<HTMLAnchorElement>(
+            'nav a[href="/me/profile"]',
         );
-        await flush(() => account?.click());
-        expect(window.location.pathname).toBe('/me/account');
-        expect(account?.getAttribute('aria-current')).toBe('page');
-        expect(node.textContent).toContain('userHub.loginMethods');
+        await flush(() => profile?.click());
+        expect(window.location.pathname).toBe('/me/profile');
+        expect(profile?.getAttribute('aria-current')).toBe('page');
+        expect(node.querySelectorAll('input[name="avatar"]')).toHaveLength(39);
         expect(node.textContent).not.toContain('userHub.emptyContributions');
-        const content =
-            node.querySelector<HTMLAnchorElement>('nav a[href="/me/"]');
+        const content = node.querySelector<HTMLAnchorElement>(
+            'nav a[href="/me/content"]',
+        );
         await flush(() => content?.click());
-        expect(window.location.pathname).toBe('/me/');
+        expect(window.location.pathname).toBe('/me/content');
         expect(node.textContent).toContain('userHub.emptyContributions');
     } finally {
         await flush(() => root.unmount());
@@ -114,7 +116,7 @@ it('opens contributions by default and keeps the three navigation destinations d
     }
 });
 
-it('saves avatars immediately, rolls back a failed save and refreshes after success', async () => {
+it('saves avatars immediately, rolls back failures and updates the card without reloading UGC', async () => {
     window.history.replaceState(null, '', '/me/profile');
     const node = document.createElement('div');
     document.body.append(node);
@@ -138,47 +140,12 @@ it('saves avatars immediately, rolls back a failed save and refreshes after succ
         expect(choice?.checked).toBe(false);
         const updated = { ...overview.user, avatar: 2 };
         api.saveProfile.mockResolvedValueOnce(updated);
-        api.getOverview.mockResolvedValueOnce({ ...overview, user: updated });
         await flush(() => choice?.click());
         expect(node.querySelector('[role="alert"]')).toBeNull();
         expect(node.querySelector('[role="status"]')).toBeNull();
         expect(choice?.checked).toBe(true);
-        expect(api.getOverview).toHaveBeenCalledTimes(2);
-    } finally {
-        await flush(() => root.unmount());
-        node.remove();
-    }
-});
-
-it('saves a changed nickname on blur without a separate confirmation', async () => {
-    window.history.replaceState(null, '', '/me/profile');
-    const node = document.createElement('div');
-    document.body.append(node);
-    const root = createRoot(node);
-    try {
-        await flush(() => root.render(createElement(App)));
-        const input = node.querySelector<HTMLInputElement>(
-            'input[autocomplete="nickname"]',
-        );
-        if (!input) throw new Error('Nickname input is missing');
-        const valueProperty = Object.getOwnPropertyDescriptor(
-            HTMLInputElement.prototype,
-            'value',
-        );
-        if (!valueProperty?.set) throw new Error('Input value setter is missing');
-        const updated = { ...overview.user, nickname: 'NewName', avatar: 1 };
-        api.saveProfile.mockResolvedValueOnce(updated);
-        api.getOverview.mockResolvedValueOnce({ ...overview, user: updated });
-        await flush(() => {
-            valueProperty.set?.call(input, 'NewName');
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-        });
-        expect(api.saveProfile).not.toHaveBeenCalled();
-        await flush(() =>
-            input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })),
-        );
-        expect(api.saveProfile).toHaveBeenCalledWith('NewName', 1);
-        expect(input.value).toBe('NewName');
+        expect(api.getOverview).toHaveBeenCalledOnce();
+        expect(api.getContributions).not.toHaveBeenCalled();
     } finally {
         await flush(() => root.unmount());
         node.remove();

@@ -12,30 +12,6 @@
     --account-surface: #{$black-0};
 }
 
-.page {
-    display: grid;
-    gap: 16px;
-}
-
-.heading {
-    h2 {
-        margin: 0;
-        font-family:
-            'Novecento DemiBold', 'Novecento Cyrillic DemiBold',
-            'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular',
-            'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-size: 26px;
-        font-weight: 600;
-    }
-
-    p {
-        margin: 8px 0 0;
-        color: var(--account-muted);
-        font-size: 16px;
-        transition: color 0.35s $adagio-curve;
-    }
-}
-
 .groups {
     background: var(--account-surface);
     border-radius: 3px;
@@ -76,12 +52,6 @@
     .details dl {
         grid-template-columns: minmax(0, 1fr);
         gap: 20px;
-    }
-}
-
-@media (width > 960px) {
-    .heading {
-        padding-right: 11rem;
     }
 }
 

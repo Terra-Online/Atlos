@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "ศูนย์ผู้ใช้ - {site}",
+    "title": "ศูนย์ผู้ใช้",
+    "back": "กลับไปยังแผนที่",
+    "refresh": "รีเฟรช",
+    "signOut": "ออกจากระบบ",
+    "navigation": "การนำทางศูนย์ผู้ใช้",
+    "tabs": {
+      "contributions": "ศูนย์เนื้อหา",
+      "account": "จัดการบัญชี",
+      "profile": "ข้อมูลส่วนตัว"
+    },
+    "kinds": {
+      "all": "ทั้งหมด",
+      "image": "รูปภาพ",
+      "comment": "ความคิดเห็น"
+    },
+    "loadError": "ไม่สามารถโหลดบัญชีของคุณได้",
+    "actionError": "ดำเนินการไม่สำเร็จ โปรดลองอีกครั้ง",
+    "contributionsError": "ไม่สามารถโหลดเนื้อหาที่ส่งได้",
+    "retry": "ลองอีกครั้ง",
+    "loadMore": "โหลดเพิ่มเติม",
+    "emptyContributions": "ยังไม่มีเนื้อหาที่ส่ง",
+    "registeredAt": "วันที่ลงทะเบียน",
+    "accountStatus": "สถานะบัญชี",
+    "loginMethods": "วิธีเข้าสู่ระบบ",
+    "verified": "ยืนยันแล้ว",
+    "linkedAt": "วันที่เชื่อมโยง",
+    "notLinked": "ยังไม่ได้เชื่อมโยง",
+    "link": "เชื่อมโยง",
+    "unlink": "ยกเลิกการเชื่อมโยง",
+    "keepLoginMethod": "ต้องเก็บวิธีเข้าสู่ระบบไว้อย่างน้อยหนึ่งวิธี ไม่สามารถลบวิธีเข้าสู่ระบบวิธีสุดท้ายได้",
+    "notBound": "ยังไม่ได้เชื่อมโยงบัญชี Endfield",
+    "endfieldRole": "ตัวละคร Endfield",
+    "server": "เซิร์ฟเวอร์",
+    "enabled": "เปิดใช้งาน",
+    "disabled": "ปิดใช้งาน",
+    "endfieldAccount": "บัญชี Endfield",
+    "bindFromMap": "หากต้องการเชื่อมโยงบัญชี Endfield ให้เปิดหน้าต่างเชื่อมโยงบัญชีบนแผนที่",
+    "status": {
+      "pending_openai": "กำลังตรวจสอบ",
+      "pending_audit": "รอเจ้าหน้าที่ตรวจสอบ",
+      "active": "เผยแพร่แล้ว",
+      "flagged": "ถูกรายงาน",
+      "remove_request": "ส่งคำขอลบแล้ว",
+      "stale": "ไม่พร้อมใช้งาน"
+    },
+    "contentHint": "ดูเนื้อหาที่ส่งและสถานะการตรวจสอบ",
+    "accountHint": "จัดการวิธีเข้าสู่ระบบและบัญชีที่เชื่อมโยง",
+    "contentType": "ประเภทเนื้อหา",
+    "content": "เนื้อหา",
+    "reviewStatus": "สถานะการตรวจสอบ",
+    "submittedAt": "เวลาที่ส่ง",
+    "pendingShort": "กำลังตรวจสอบ",
+    "email": "อีเมล",
+    "emptyContributionsHint": "แชร์รูปภาพหรือความคิดเห็นจากแผนที่ เนื้อหาที่คุณส่งจะแสดงที่นี่",
+    "profileHint": "เปลี่ยนรูปโปรไฟล์ของคุณ",
+    "avatar": "รูปโปรไฟล์",
+    "avatarChoice": "รูปโปรไฟล์ {index}",
+    "previewUnavailable": "ไม่สามารถแสดงตัวอย่างได้",
+    "commentLocation": " ที่ ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "อัปโหลดแล้ว",
+      "ai": {
+        "current": "OpenAI กำลังตรวจสอบ",
+        "complete": "OpenAI ตรวจสอบแล้ว"
+      },
+      "manual": {
+        "current": "เจ้าหน้าที่กำลังตรวจสอบ",
+        "complete": "เจ้าหน้าที่ตรวจสอบแล้ว"
+      },
+      "public": {
+        "current": "รอเผยแพร่",
+        "complete": "เผยแพร่แล้ว"
+      },
+      "archived": {
+        "current": "กำลังเก็บเข้าคลัง",
+        "complete": "เก็บเข้าคลังแล้ว"
+      }
+    }
+  },
+  "common": {
+    "loading": "กำลังโหลด..."
+  }
+}

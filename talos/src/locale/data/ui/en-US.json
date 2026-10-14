@@ -122,7 +122,7 @@
     "fullSupportHint": "Complete translations for both UI and in-game content.",
     "uiOnly": "UI-Only Languages",
     "uiOnlyHint": "UI translations only, in-game content will be displayed in English.",
-    "fyi": "You can visit <a href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
@@ -342,14 +342,13 @@
       }
     },
     "profile": {
-      "userCenter": "User center",
       "title": "Profile",
       "avatarHint": "Open profile info",
       "nameEditHint": "Edit username",
       "nickName": "nickname",
       "note": "Note",
       "noteNickname": "You can use no more than 15 letters, numbers, hyphens and underscores in your username.",
-      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to switch avatar.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Action",
       "importOfficial": "Import from Official Map",
       "save": "Save Changes",

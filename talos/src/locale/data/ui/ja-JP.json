@@ -122,7 +122,7 @@
     "fullSupportHint": "UIとゲーム内コンテンツの両方に完全な翻訳を提供。",
     "uiOnly": "UIのみ対応",
     "uiOnlyHint": "UIのみ翻訳されています。ゲーム内コンテンツは英語で表示されます。",
-    "fyi": "翻訳プロジェクトへの参加や、お使いの言語への翻訳リクエストは <a href=\"https://crowdin.com/project/oem\">Crowdin</a> から行えます。また、<a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 宛てのメールでサイト管理者にお問い合わせいただけます。",
+    "fyi": "翻訳プロジェクトへの参加や、お使いの言語への翻訳リクエストは <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> から行えます。また、<a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 宛てのメールでサイト管理者にお問い合わせいただけます。",
     "names": {
       "en-US": "英語",
       "zh-CN": "簡体字中国語",
@@ -348,7 +348,7 @@
       "nickName": "ユーザー名",
       "note": "説明",
       "noteNickname": "ユーザー名には、半角英数字・ハイフン・アンダースコアを15文字まで使用できます。",
-      "noteUID": "UID はユーザー名を初めて設定したときに発行され、変更できません。ユーザー名はいつでも変更できます。アバターをクリックすると、別のアバターに切り替えられます。",
+      "noteUID": "UID はユーザー名を初めて設定したときに発行され、変更できません。ユーザー名はいつでも変更できます。アバターの領域をクリックすると、<a href=\"/me/\">ユーザーセンター</a>に移動します。",
       "auditLabel": "操作",
       "importOfficial": "公式マップから進捗を取り込む",
       "save": "変更を保存",

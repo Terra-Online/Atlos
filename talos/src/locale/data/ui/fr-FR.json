@@ -122,7 +122,7 @@
     "fullSupportHint": "Traductions complètes pour l'interface et le contenu du jeu.",
     "uiOnly": "Langues d'interface uniquement",
     "uiOnlyHint": "Traductions de l'interface uniquement, le contenu du jeu sera affiché en anglais.",
-    "fyi": "Vous pouvez vous rendre sur <a href=\"https://crowdin.com/project/oem\">Crowdin</a> pour participer à notre projet de traduction ou demander une traduction dans votre langue ; vous pouvez également contacter les administrateurs du site par e-mail à l’adresse <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Vous pouvez vous rendre sur <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> pour participer à notre projet de traduction ou demander une traduction dans votre langue ; vous pouvez également contacter les administrateurs du site par e-mail à l’adresse <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Anglais",
       "zh-CN": "Chinois simplifié",
@@ -348,7 +348,7 @@
       "nickName": "surnom",
       "note": "Note",
       "noteNickname": "Vous ne pouvez pas utiliser plus de 15 lettres, chiffres, traits d’union et traits de soulignement dans votre nom d’utilisateur.",
-      "noteUID": "L'UID est attribué lors de la première configuration et ne peut pas être modifié. Vous pouvez mettre à jour votre nom d'utilisateur à tout moment. Cliquez sur la zone de l'avatar pour changer d'avatar.",
+      "noteUID": "L'UID est attribué lors de la première configuration et ne peut pas être modifié. Vous pouvez mettre à jour votre nom d'utilisateur à tout moment. Cliquez sur la zone de l’avatar pour accéder à l’<a href=\"/me/\">espace utilisateur</a>.",
       "auditLabel": "Action",
       "importOfficial": "Importer depuis la carte officielle",
       "save": "Enregistrer",

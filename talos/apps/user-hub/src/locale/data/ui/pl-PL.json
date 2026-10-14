@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Centrum użytkownika - {site}",
+    "title": "Centrum użytkownika",
+    "back": "Wróć do mapy",
+    "refresh": "Odśwież",
+    "signOut": "Wyloguj się",
+    "navigation": "Nawigacja centrum użytkownika",
+    "tabs": {
+      "contributions": "Centrum treści",
+      "account": "Zarządzanie kontem",
+      "profile": "Dane osobowe"
+    },
+    "kinds": {
+      "all": "Wszystkie",
+      "image": "Obrazy",
+      "comment": "Komentarze"
+    },
+    "loadError": "Nie udało się wczytać Twojego konta.",
+    "actionError": "Operacja nie powiodła się. Spróbuj ponownie.",
+    "contributionsError": "Nie udało się wczytać Twoich materiałów.",
+    "retry": "Spróbuj ponownie",
+    "loadMore": "Wczytaj więcej",
+    "emptyContributions": "Nie masz jeszcze żadnych materiałów.",
+    "registeredAt": "Data rejestracji",
+    "accountStatus": "Stan konta",
+    "loginMethods": "Metody logowania",
+    "verified": "Zweryfikowano",
+    "linkedAt": "Połączono",
+    "notLinked": "Nie połączono",
+    "link": "Połącz",
+    "unlink": "Odłącz",
+    "keepLoginMethod": "Zachowaj co najmniej jedną metodę logowania. Ostatniej metody logowania nie można usunąć.",
+    "notBound": "Nie połączono konta Endfield.",
+    "endfieldRole": "Postać w Endfield",
+    "server": "Serwer",
+    "enabled": "Włączono",
+    "disabled": "Wyłączono",
+    "endfieldAccount": "Konto Endfield",
+    "bindFromMap": "Aby połączyć konto Endfield, otwórz okno łączenia kont na mapie.",
+    "status": {
+      "pending_openai": "W trakcie weryfikacji",
+      "pending_audit": "Oczekuje na ręczną weryfikację",
+      "active": "Publiczne",
+      "flagged": "Oznaczone",
+      "remove_request": "Zgłoszono do usunięcia",
+      "stale": "Niedostępne"
+    },
+    "contentHint": "Przeglądaj swoje materiały i stan ich weryfikacji.",
+    "accountHint": "Zarządzaj logowaniem i połączonymi kontami.",
+    "contentType": "Rodzaj treści",
+    "content": "Treść",
+    "reviewStatus": "Stan",
+    "submittedAt": "Data przesłania",
+    "pendingShort": "W weryfikacji",
+    "email": "E-mail",
+    "emptyContributionsHint": "Udostępnij obraz lub komentarz na mapie. Twoje materiały pojawią się tutaj.",
+    "profileHint": "Zmień swój awatar.",
+    "avatar": "Awatar",
+    "avatarChoice": "Awatar {index}",
+    "previewUnavailable": "Podgląd niedostępny",
+    "commentLocation": ", w ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Przesłano",
+      "ai": {
+        "current": "Weryfikacja OpenAI w toku",
+        "complete": "Zweryfikowano przez OpenAI"
+      },
+      "manual": {
+        "current": "Ręczna weryfikacja w toku",
+        "complete": "Zweryfikowano ręcznie"
+      },
+      "public": {
+        "current": "Oczekuje na publikację",
+        "complete": "Opublikowano"
+      },
+      "archived": {
+        "current": "Archiwizowanie",
+        "complete": "Zarchiwizowano"
+      }
+    }
+  },
+  "common": {
+    "loading": "Wczytywanie..."
+  }
+}

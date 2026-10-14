@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Central do usuário - {site}",
+    "title": "Central do usuário",
+    "back": "Voltar ao mapa",
+    "refresh": "Atualizar",
+    "signOut": "Sair",
+    "navigation": "Navegação da central do usuário",
+    "tabs": {
+      "contributions": "Central de conteúdo",
+      "account": "Gerenciamento da conta",
+      "profile": "Informações pessoais"
+    },
+    "kinds": {
+      "all": "Todos",
+      "image": "Imagens",
+      "comment": "Comentários"
+    },
+    "loadError": "Não foi possível carregar sua conta.",
+    "actionError": "A ação falhou. Tente novamente.",
+    "contributionsError": "Não foi possível carregar as contribuições.",
+    "retry": "Tentar novamente",
+    "loadMore": "Carregar mais",
+    "emptyContributions": "Nenhuma contribuição por enquanto.",
+    "registeredAt": "Cadastro",
+    "accountStatus": "Status da conta",
+    "loginMethods": "Métodos de login",
+    "verified": "Verificado",
+    "linkedAt": "Vinculado",
+    "notLinked": "Não vinculado",
+    "link": "Vincular",
+    "unlink": "Desvincular",
+    "keepLoginMethod": "Mantenha pelo menos um método de login. O último método de login não pode ser removido.",
+    "notBound": "Nenhuma conta de Endfield vinculada.",
+    "endfieldRole": "Personagem de Endfield",
+    "server": "Servidor",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
+    "endfieldAccount": "Conta de Endfield",
+    "bindFromMap": "Para vincular uma conta de Endfield, abra a janela de vinculação de conta no mapa.",
+    "status": {
+      "pending_openai": "Em análise",
+      "pending_audit": "Aguardando análise manual",
+      "active": "Público",
+      "flagged": "Sinalizado",
+      "remove_request": "Remoção solicitada",
+      "stale": "Indisponível"
+    },
+    "contentHint": "Veja suas contribuições e o status da análise.",
+    "accountHint": "Gerencie o login e as contas vinculadas.",
+    "contentType": "Tipo de conteúdo",
+    "content": "Conteúdo",
+    "reviewStatus": "Status",
+    "submittedAt": "Enviado",
+    "pendingShort": "Em análise",
+    "email": "E-mail",
+    "emptyContributionsHint": "Compartilhe uma imagem ou um comentário pelo mapa. Suas contribuições aparecerão aqui.",
+    "profileHint": "Altere seu avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Prévia indisponível",
+    "commentLocation": ", em ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Enviado",
+      "ai": {
+        "current": "Análise da OpenAI em andamento",
+        "complete": "Analisado pela OpenAI"
+      },
+      "manual": {
+        "current": "Análise manual em andamento",
+        "complete": "Analisado manualmente"
+      },
+      "public": {
+        "current": "Aguardando publicação",
+        "complete": "Publicado"
+      },
+      "archived": {
+        "current": "Arquivamento em andamento",
+        "complete": "Arquivado"
+      }
+    }
+  },
+  "common": {
+    "loading": "Carregando..."
+  }
+}

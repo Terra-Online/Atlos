@@ -55,12 +55,31 @@
     "pendingShort": "In review",
     "email": "Email",
     "emptyContributionsHint": "Share an image or comment from the map. Your submissions will appear here.",
-    "profileHint": "Change your avatar or username.",
+    "profileHint": "Change your avatar.",
     "avatar": "Avatar",
     "avatarChoice": "Avatar {index}",
-    "nameRule": "Use 1–15 letters, numbers, hyphens or underscores.",
     "previewUnavailable": "Preview unavailable",
-    "nickname": "nickname"
+    "commentLocation": ", at ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Uploaded",
+      "ai": {
+        "current": "OpenAI review in progress",
+        "complete": "Reviewed by OpenAI"
+      },
+      "manual": {
+        "current": "Manual review in progress",
+        "complete": "Manually reviewed"
+      },
+      "public": {
+        "current": "Awaiting publication",
+        "complete": "Published"
+      },
+      "archived": {
+        "current": "Archiving",
+        "complete": "Archived"
+      }
+    }
   },
   "common": {
     "loading": "Loading..."

@@ -122,7 +122,7 @@
     "fullSupportHint": "Traduções completas para a interface e conteúdo do jogo.",
     "uiOnly": "Idiomas Apenas da Interface",
     "uiOnlyHint": "Apenas traduções da interface, o conteúdo do jogo será exibido em inglês.",
-    "fyi": "Você pode acessar o <a href=\"https://crowdin.com/project/oem\">Crowdin</a> para participar do nosso projeto de tradução ou solicitar uma tradução para o seu idioma; também pode entrar em contato com os administradores do site pelo e-mail <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Você pode acessar o <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> para participar do nosso projeto de tradução ou solicitar uma tradução para o seu idioma; também pode entrar em contato com os administradores do site pelo e-mail <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Inglês",
       "zh-CN": "Chinês Simplificado",
@@ -348,7 +348,7 @@
       "nickName": "Apelido",
       "note": "Observação",
       "noteNickname": "Você pode usar no máximo 15 caracteres (letras, números, hífens e sublinhado).",
-      "noteUID": "O UID é definido no primeiro cadastro e não pode ser alterado. O nome de usuário pode ser atualizado a qualquer momento. Clique no avatar para trocar a imagem.",
+      "noteUID": "O UID é definido no primeiro cadastro e não pode ser alterado. O nome de usuário pode ser atualizado a qualquer momento. Clique na área do avatar para acessar a <a href=\"/me/\">central do usuário</a>.",
       "auditLabel": "Ação",
       "importOfficial": "Importar do Mapa Oficial",
       "save": "Salvar alterações",

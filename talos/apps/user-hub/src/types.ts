@@ -29,17 +29,28 @@ export type Contribution = {
     previewUrl?: string | null;
     status: string;
     visibility: string;
+    review?: {
+        manual: boolean;
+        published: boolean;
+        path?: {
+            key: 'uploaded' | 'ai' | 'manual' | 'public' | 'archived';
+            at: string | null;
+        }[];
+        times?: Partial<
+            Record<
+                'uploaded' | 'ai' | 'manual' | 'public' | 'archived',
+                string | null
+            >
+        >;
+    };
     createdAt: string;
 };
 
 export type Overview = {
     user: SessionUser;
-    loginMethods: LoginMethod[];
-    services: { endfield: EndfieldBinding };
     contributions: {
         imageCount: number;
         commentCount: number;
         pendingCount: number;
-        recent: Contribution[];
     };
 };

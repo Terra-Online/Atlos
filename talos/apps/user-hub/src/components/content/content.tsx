@@ -31,21 +31,7 @@ export default function Content({ revision, counts }: Props) {
 
     return (
         <section className={styles.section} aria-busy={loading}>
-            <header className={styles.heading}>
-                <h2>{t('userHub.tabs.contributions')}</h2>
-                {counts.pendingCount > 0 && (
-                    <span className={styles.pending}>
-                        {t('userHub.pendingShort')}
-                        <strong>
-                            {counts.pendingCount.toLocaleString(locale)}
-                        </strong>
-                    </span>
-                )}
-            </header>
-            <div
-                className={styles.feed}
-                ref={swipeTarget}
-            >
+            <div className={styles.feed} ref={swipeTarget}>
                 <ModalTabs
                     className={styles.filters}
                     swipeTargetRef={swipeTarget}
@@ -56,46 +42,47 @@ export default function Content({ revision, counts }: Props) {
                     }}
                     items={(['image', 'comment'] as const).map((value) => ({
                         key: value,
-                        icon: value === 'image' ? <ImageIcon /> : <CommentIcon />,
+                        icon:
+                            value === 'image' ? <ImageIcon /> : <CommentIcon />,
                         title: `${t(`userHub.kinds.${value}`)} (${totals[value].toLocaleString(locale)})`,
                     }))}
                 />
-                <Feed resetKey={kind} fadeClassName={styles.fade}>
-                    {error && (
-                        <div className={styles.error} role='alert'>
-                            <p>
-                                {t('userHub.contributionsError')} {error}
+                <Feed resetKey={kind}>
+                    <div className={styles.items}>
+                        {error && (
+                            <div className={styles.error} role='alert'>
+                                <p>
+                                    {t('userHub.contributionsError')} {error}
+                                </p>
+                                <div className={styles.more}>
+                                    <AccessButton
+                                        onClick={retry}
+                                        disabled={loading}
+                                        label={t('userHub.retry')}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {items !== null && <List items={items} kind={kind} />}
+                        {loading && items === null && (
+                            <p className={styles.loading} role='status'>
+                                {t('common.loading')}
                             </p>
-                            <div className={styles.more}>
+                        )}
+                        {cursor && !error && (
+                            <div className={styles.pagination}>
                                 <AccessButton
-                                    onClick={retry}
+                                    label={t(
+                                        loading
+                                            ? 'common.loading'
+                                            : 'userHub.loadMore',
+                                    )}
                                     disabled={loading}
-                                    label={t('userHub.retry')}
+                                    onClick={loadMore}
                                 />
                             </div>
-                        </div>
-                    )}
-                    {items !== null && (
-                        <List items={items} kind={kind} />
-                    )}
-                    {loading && items === null && (
-                        <p className={styles.loading} role='status'>
-                            {t('common.loading')}
-                        </p>
-                    )}
-                    {cursor && !error && (
-                        <div className={styles.pagination}>
-                            <AccessButton
-                                label={t(
-                                    loading
-                                        ? 'common.loading'
-                                        : 'userHub.loadMore',
-                                )}
-                                disabled={loading}
-                                onClick={loadMore}
-                            />
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </Feed>
             </div>
         </section>

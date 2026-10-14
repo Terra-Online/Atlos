@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Användarcenter - {site}",
+    "title": "Användarcenter",
+    "back": "Tillbaka till kartan",
+    "refresh": "Uppdatera",
+    "signOut": "Logga ut",
+    "navigation": "Navigering i användarcentret",
+    "tabs": {
+      "contributions": "Innehållscenter",
+      "account": "Kontohantering",
+      "profile": "Personuppgifter"
+    },
+    "kinds": {
+      "all": "Alla",
+      "image": "Bilder",
+      "comment": "Kommentarer"
+    },
+    "loadError": "Det gick inte att läsa in ditt konto.",
+    "actionError": "Åtgärden misslyckades. Försök igen.",
+    "contributionsError": "Det gick inte att läsa in bidragen.",
+    "retry": "Försök igen",
+    "loadMore": "Läs in fler",
+    "emptyContributions": "Inga bidrag ännu.",
+    "registeredAt": "Registrerad",
+    "accountStatus": "Kontostatus",
+    "loginMethods": "Inloggningsmetoder",
+    "verified": "Verifierad",
+    "linkedAt": "Länkat",
+    "notLinked": "Inte länkat",
+    "link": "Länka",
+    "unlink": "Ta bort länk",
+    "keepLoginMethod": "Behåll minst en inloggningsmetod. Den sista inloggningsmetoden kan inte tas bort.",
+    "notBound": "Inget Endfield-konto är länkat.",
+    "endfieldRole": "Endfield-karaktär",
+    "server": "Server",
+    "enabled": "Aktiverat",
+    "disabled": "Inaktiverat",
+    "endfieldAccount": "Endfield-konto",
+    "bindFromMap": "Öppna dialogrutan för kontolänkning på kartan för att länka ett Endfield-konto.",
+    "status": {
+      "pending_openai": "Under granskning",
+      "pending_audit": "Väntar på manuell granskning",
+      "active": "Offentligt",
+      "flagged": "Flaggat",
+      "remove_request": "Borttagning begärd",
+      "stale": "Inte tillgängligt"
+    },
+    "contentHint": "Se dina bidrag och deras granskningsstatus.",
+    "accountHint": "Hantera inloggning och länkade konton.",
+    "contentType": "Innehållstyp",
+    "content": "Innehåll",
+    "reviewStatus": "Status",
+    "submittedAt": "Inskickat",
+    "pendingShort": "Under granskning",
+    "email": "E-post",
+    "emptyContributionsHint": "Dela en bild eller kommentar från kartan. Dina bidrag visas här.",
+    "profileHint": "Byt din avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Förhandsvisning saknas",
+    "commentLocation": ", vid ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Uppladdat",
+      "ai": {
+        "current": "OpenAI-granskning pågår",
+        "complete": "Granskat av OpenAI"
+      },
+      "manual": {
+        "current": "Manuell granskning pågår",
+        "complete": "Manuellt granskat"
+      },
+      "public": {
+        "current": "Väntar på publicering",
+        "complete": "Publicerat"
+      },
+      "archived": {
+        "current": "Arkivering pågår",
+        "complete": "Arkiverat"
+      }
+    }
+  },
+  "common": {
+    "loading": "Läser in..."
+  }
+}

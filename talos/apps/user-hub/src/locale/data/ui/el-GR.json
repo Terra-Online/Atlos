@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Κέντρο χρήστη - {site}",
+    "title": "Κέντρο χρήστη",
+    "back": "Επιστροφή στον χάρτη",
+    "refresh": "Ανανέωση",
+    "signOut": "Αποσύνδεση",
+    "navigation": "Πλοήγηση κέντρου χρήστη",
+    "tabs": {
+      "contributions": "Κέντρο περιεχομένου",
+      "account": "Διαχείριση λογαριασμού",
+      "profile": "Προσωπικά στοιχεία"
+    },
+    "kinds": {
+      "all": "Όλα",
+      "image": "Εικόνες",
+      "comment": "Σχόλια"
+    },
+    "loadError": "Δεν ήταν δυνατή η φόρτωση του λογαριασμού σας.",
+    "actionError": "Η ενέργεια απέτυχε. Δοκιμάστε ξανά.",
+    "contributionsError": "Δεν ήταν δυνατή η φόρτωση των συνεισφορών.",
+    "retry": "Δοκιμή ξανά",
+    "loadMore": "Φόρτωση περισσότερων",
+    "emptyContributions": "Δεν υπάρχουν συνεισφορές ακόμα.",
+    "registeredAt": "Εγγραφή",
+    "accountStatus": "Κατάσταση λογαριασμού",
+    "loginMethods": "Μέθοδοι σύνδεσης",
+    "verified": "Επαληθευμένο",
+    "linkedAt": "Συνδέθηκε",
+    "notLinked": "Δεν έχει συνδεθεί",
+    "link": "Σύνδεση",
+    "unlink": "Αποσύνδεση",
+    "keepLoginMethod": "Διατηρήστε τουλάχιστον μία μέθοδο σύνδεσης. Η τελευταία μέθοδος σύνδεσης δεν μπορεί να αφαιρεθεί.",
+    "notBound": "Δεν έχει συνδεθεί λογαριασμός Endfield.",
+    "endfieldRole": "Χαρακτήρας Endfield",
+    "server": "Διακομιστής",
+    "enabled": "Ενεργό",
+    "disabled": "Ανενεργό",
+    "endfieldAccount": "Λογαριασμός Endfield",
+    "bindFromMap": "Για να συνδέσετε έναν λογαριασμό Endfield, ανοίξτε το παράθυρο σύνδεσης λογαριασμού στον χάρτη.",
+    "status": {
+      "pending_openai": "Υπό έλεγχο",
+      "pending_audit": "Σε αναμονή χειροκίνητου ελέγχου",
+      "active": "Δημόσιο",
+      "flagged": "Έχει αναφερθεί",
+      "remove_request": "Ζητήθηκε αφαίρεση",
+      "stale": "Μη διαθέσιμο"
+    },
+    "contentHint": "Δείτε τις υποβολές σας και την κατάσταση ελέγχου τους.",
+    "accountHint": "Διαχειριστείτε τη σύνδεση και τους συνδεδεμένους λογαριασμούς.",
+    "contentType": "Τύπος περιεχομένου",
+    "content": "Περιεχόμενο",
+    "reviewStatus": "Κατάσταση",
+    "submittedAt": "Υποβλήθηκε",
+    "pendingShort": "Υπό έλεγχο",
+    "email": "Email",
+    "emptyContributionsHint": "Μοιραστείτε μια εικόνα ή ένα σχόλιο από τον χάρτη. Οι υποβολές σας θα εμφανίζονται εδώ.",
+    "profileHint": "Αλλάξτε το avatar σας.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Η προεπισκόπηση δεν είναι διαθέσιμη",
+    "commentLocation": ", στο ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Μεταφορτώθηκε",
+      "ai": {
+        "current": "Έλεγχος από το OpenAI σε εξέλιξη",
+        "complete": "Ελέγχθηκε από το OpenAI"
+      },
+      "manual": {
+        "current": "Χειροκίνητος έλεγχος σε εξέλιξη",
+        "complete": "Ελέγχθηκε χειροκίνητα"
+      },
+      "public": {
+        "current": "Σε αναμονή δημοσίευσης",
+        "complete": "Δημοσιεύτηκε"
+      },
+      "archived": {
+        "current": "Αρχειοθέτηση σε εξέλιξη",
+        "complete": "Αρχειοθετήθηκε"
+      }
+    }
+  },
+  "common": {
+    "loading": "Φόρτωση..."
+  }
+}

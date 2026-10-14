@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "ユーザーセンター - {site}",
+    "title": "ユーザーセンター",
+    "back": "マップに戻る",
+    "refresh": "更新",
+    "signOut": "ログアウト",
+    "navigation": "ユーザーセンターのナビゲーション",
+    "tabs": {
+      "contributions": "コンテンツセンター",
+      "account": "アカウント管理",
+      "profile": "個人情報"
+    },
+    "kinds": {
+      "all": "すべて",
+      "image": "画像",
+      "comment": "コメント"
+    },
+    "loadError": "アカウントを読み込めませんでした。",
+    "actionError": "操作に失敗しました。もう一度お試しください。",
+    "contributionsError": "投稿を読み込めませんでした。",
+    "retry": "再試行",
+    "loadMore": "さらに読み込む",
+    "emptyContributions": "まだ投稿はありません。",
+    "registeredAt": "登録日",
+    "accountStatus": "アカウントの状態",
+    "loginMethods": "ログイン方法",
+    "verified": "認証済み",
+    "linkedAt": "連携日",
+    "notLinked": "未連携",
+    "link": "連携",
+    "unlink": "連携解除",
+    "keepLoginMethod": "ログイン方法は少なくとも1つ必要です。最後のログイン方法は削除できません。",
+    "notBound": "エンドフィールドのアカウントは連携されていません。",
+    "endfieldRole": "エンドフィールドのキャラクター",
+    "server": "サーバー",
+    "enabled": "有効",
+    "disabled": "無効",
+    "endfieldAccount": "エンドフィールドのアカウント",
+    "bindFromMap": "エンドフィールドのアカウントを連携するには、マップでアカウント連携画面を開いてください。",
+    "status": {
+      "pending_openai": "審査中",
+      "pending_audit": "手動審査待ち",
+      "active": "公開済み",
+      "flagged": "報告あり",
+      "remove_request": "削除申請中",
+      "stale": "利用不可"
+    },
+    "contentHint": "投稿と審査状況を確認できます。",
+    "accountHint": "ログイン方法と連携アカウントを管理できます。",
+    "contentType": "コンテンツの種類",
+    "content": "コンテンツ",
+    "reviewStatus": "審査状況",
+    "submittedAt": "投稿日時",
+    "pendingShort": "審査中",
+    "email": "メールアドレス",
+    "emptyContributionsHint": "マップから画像やコメントを投稿すると、ここに表示されます。",
+    "profileHint": "アバターを変更できます。",
+    "avatar": "アバター",
+    "avatarChoice": "アバター {index}",
+    "previewUnavailable": "プレビューを表示できません",
+    "commentLocation": "、場所：（{point}）",
+    "pointSeparator": "、",
+    "steps": {
+      "uploaded": "アップロード済み",
+      "ai": {
+        "current": "OpenAI による審査中",
+        "complete": "OpenAI 審査済み"
+      },
+      "manual": {
+        "current": "手動審査中",
+        "complete": "手動審査済み"
+      },
+      "public": {
+        "current": "公開待ち",
+        "complete": "公開済み"
+      },
+      "archived": {
+        "current": "アーカイブ中",
+        "complete": "アーカイブ済み"
+      }
+    }
+  },
+  "common": {
+    "loading": "読み込み中..."
+  }
+}

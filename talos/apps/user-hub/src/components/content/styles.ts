@@ -8,7 +8,5 @@ export const content = Object.assign({}, contentStyles, {
 });
 export const list = Object.assign({}, listStyles, {
     comment: `${shared.notificationCard} ${listStyles.comment}`,
-    body: shared.cardBody,
-    message: shared.cardMessage,
-    time: shared.cardTime,
+    meta: `${shared.pointName} ${listStyles.meta}`,
 });

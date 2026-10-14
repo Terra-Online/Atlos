@@ -3,11 +3,9 @@
 
 :root,
 :root[data-theme='light'] {
-    --content-surface: #{$white-1};
     --content-button-bg: #{$white-1};
     --content-text: #{$grey-1};
     --content-muted: #{$grey-2};
-    --content-accent: #{$primary-accent-6};
     --content-danger: #{$primary-accent-7};
     --content-danger-soft: #{rgba($primary-accent-7, 0.08)};
     --content-button-hover: #{$primary-accent-4};
@@ -18,11 +16,9 @@
 }
 
 :root[data-theme='dark'] {
-    --content-surface: #{$black-0};
     --content-button-bg: #{$black-1};
     --content-text: #{$light-1};
     --content-muted: #{$mid};
-    --content-accent: #{$primary-accent-4};
     --content-danger: #{$primary-accent-5};
     --content-danger-soft: #{rgba($primary-accent-5, 0.1)};
     --content-button-hover: #{$primary-accent-5};
@@ -47,53 +43,13 @@
     --notify-empty-text: var(--content-muted);
 
     --notify-list-min-height: 0px;
-    background: var(--content-surface);
     overflow: visible;
     border-radius: 3px;
-}
-.feed .fade {
-    --scroll-edge-fade-color: var(--content-surface);
-}
 
-.heading {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-
-    h2 {
-        margin: 0;
-        font-family:
-            'Novecento DemiBold', 'Novecento Cyrillic DemiBold',
-            'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular',
-            'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-size: 26px;
-        font-weight: 600;
-    }
-}
-
-.pending {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 8px;
-
-    padding: 4px 8px;
-    color: var(--content-accent);
-    border-radius: 3px;
-    background-color: var(--content-surface);
-    font-size: 14px;
-    box-shadow: 0 2px 10px rgba($black-0, 0.12);
-    transition:
-        color 0.35s $adagio-curve,
-        background-color 0.35s $adagio-curve,
-        box-shadow 0.35s $moderato-curve;
-
-    strong {
-        font-family:
-            'Fedra Sans Pro', 'HMSans_EN', 'UD_ShinGo Regular', HMSans,
-            'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-weight: 500;
+    [role='tabpanel'] {
+        // Extend only the clip bounds; the items compensate for this outset.
+        left: -16px;
+        right: -16px;
     }
 }
 
@@ -149,12 +105,11 @@
     }
 }
 
-@media (width <= 600px) {
-    .heading {
-        flex-wrap: wrap;
-    }
-}
-
-:root[data-theme='dark'] .pending {
-    box-shadow: 0 1px 4px rgba($light-2, 0.16);
+.items {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: inherit;
+    min-width: 0;
+    margin-inline: 16px;
 }

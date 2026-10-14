@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Centro de usuario - {site}",
+    "title": "Centro de usuario",
+    "back": "Volver al mapa",
+    "refresh": "Actualizar",
+    "signOut": "Desconectar",
+    "navigation": "Navegación del centro de usuario",
+    "tabs": {
+      "contributions": "Centro de contenido",
+      "account": "Gestión de la cuenta",
+      "profile": "Información personal"
+    },
+    "kinds": {
+      "all": "Todo",
+      "image": "Imágenes",
+      "comment": "Comentarios"
+    },
+    "loadError": "No se ha podido cargar tu cuenta.",
+    "actionError": "La acción ha fallado. Vuelve a intentarlo.",
+    "contributionsError": "No se han podido cargar las contribuciones.",
+    "retry": "Reintentar",
+    "loadMore": "Cargar más",
+    "emptyContributions": "Aún no hay contribuciones.",
+    "registeredAt": "Registro",
+    "accountStatus": "Estado de la cuenta",
+    "loginMethods": "Métodos de inicio de sesión",
+    "verified": "Verificado",
+    "linkedAt": "Vinculado",
+    "notLinked": "Sin vincular",
+    "link": "Vincular",
+    "unlink": "Desvincular",
+    "keepLoginMethod": "Mantén al menos un método de inicio de sesión. No se puede eliminar el último método.",
+    "notBound": "No hay ninguna cuenta de Endfield vinculada.",
+    "endfieldRole": "Personaje de Endfield",
+    "server": "Servidor",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "endfieldAccount": "Cuenta de Endfield",
+    "bindFromMap": "Para vincular una cuenta de Endfield, abre el diálogo de vinculación de cuentas en el mapa.",
+    "status": {
+      "pending_openai": "En revisión",
+      "pending_audit": "Pendiente de revisión manual",
+      "active": "Público",
+      "flagged": "Marcado",
+      "remove_request": "Retirada solicitada",
+      "stale": "No disponible"
+    },
+    "contentHint": "Consulta tus contribuciones y su estado de revisión.",
+    "accountHint": "Gestiona el inicio de sesión y las cuentas vinculadas.",
+    "contentType": "Tipo de contenido",
+    "content": "Contenido",
+    "reviewStatus": "Estado",
+    "submittedAt": "Enviado",
+    "pendingShort": "En revisión",
+    "email": "Correo electrónico",
+    "emptyContributionsHint": "Comparte una imagen o un comentario desde el mapa. Tus contribuciones aparecerán aquí.",
+    "profileHint": "Cambia tu avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Vista previa no disponible",
+    "commentLocation": ", en ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Subido",
+      "ai": {
+        "current": "Revisión de OpenAI en curso",
+        "complete": "Revisado por OpenAI"
+      },
+      "manual": {
+        "current": "Revisión manual en curso",
+        "complete": "Revisado manualmente"
+      },
+      "public": {
+        "current": "Pendiente de publicación",
+        "complete": "Publicado"
+      },
+      "archived": {
+        "current": "Archivando",
+        "complete": "Archivado"
+      }
+    }
+  },
+  "common": {
+    "loading": "Cargando..."
+  }
+}

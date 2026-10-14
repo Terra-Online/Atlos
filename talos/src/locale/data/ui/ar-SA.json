@@ -122,7 +122,7 @@
     "fullSupportHint": "ترجمة كاملة للواجهة ومحتوى اللعبة.",
     "uiOnly": "ترجمة الواجهة فقط",
     "uiOnlyHint": "ترجمة للواجهة فقط، سيُعرض محتوى اللعبة بالإنجليزية.",
-    "fyi": "يمكنك زيارة <a href=\"https://crowdin.com/project/oem\">Crowdin</a> للمشاركة في مشروع الترجمة الخاص بنا أو طلب ترجمة للغتك؛ كما يمكنك التواصل مع مسؤولي الموقع عبر البريد الإلكتروني <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "يمكنك زيارة <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> للمشاركة في مشروع الترجمة الخاص بنا أو طلب ترجمة للغتك؛ كما يمكنك التواصل مع مسؤولي الموقع عبر البريد الإلكتروني <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "الإنجليزية",
       "zh-CN": "الصينية المبسطة",
@@ -348,7 +348,7 @@
       "nickName": "اسم المستخدم",
       "note": "ملاحظة",
       "noteNickname": "يسمح بـ 15 حرفاً كحد أقصى (أحرف، أرقام، وشرطات فقط).",
-      "noteUID": "يُعين معرفك (UID) عند التسجيل ولا يمكن تغييره. انقر على صورتك لتغييرها.",
+      "noteUID": "يُعين معرفك (UID) عند التسجيل ولا يمكن تغييره. انقر على منطقة الصورة الشخصية للدخول إلى <a href=\"/me/\">مركز المستخدم</a>.",
       "auditLabel": "الإجراءات",
       "importOfficial": "استيراد من الخريطة الرسمية",
       "save": "حفظ",

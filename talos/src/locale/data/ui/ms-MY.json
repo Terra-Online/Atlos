@@ -122,7 +122,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk kedua-dua UI dan kandungan dalam permainan.",
     "uiOnly": "Bahasa UI Sahaja",
     "uiOnlyHint": "Terjemahan UI sahaja, kandungan dalam permainan akan dipaparkan dalam bahasa Inggeris.",
-    "fyi": "Anda boleh melawat <a href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk menyertai projek terjemahan kami atau memohon terjemahan bagi bahasa anda; anda juga boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Anda boleh melawat <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk menyertai projek terjemahan kami atau memohon terjemahan bagi bahasa anda; anda juga boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
@@ -348,7 +348,7 @@
       "nickName": "Nama Panggilan",
       "note": "Nota",
       "noteNickname": "Nama pengguna tidak boleh melebihi 15 aksara (hanya huruf, nombor, sempang, dan garis bawah dibenarkan).",
-      "noteUID": "UID ditetapkan pada kali pertama dan tidak boleh diubah. Namun, anda boleh mengemas kini nama pengguna pada bila-bila masa. Klik kawasan avatar untuk menukarnya.",
+      "noteUID": "UID ditetapkan pada kali pertama dan tidak boleh diubah. Namun, anda boleh mengemas kini nama pengguna pada bila-bila masa. Klik kawasan avatar untuk masuk ke <a href=\"/me/\">Pusat pengguna</a>.",
       "auditLabel": "Tindakan",
       "importOfficial": "Import daripada Peta Rasmi",
       "save": "Simpan Perubahan",

@@ -3,72 +3,27 @@
 
 :root,
 :root[data-theme='light'] {
-    --profile-input-border: #{$grey-3};
-    --profile-input-bg: #{$white-1};
-    --profile-input-text: #{$grey-1};
-    --profile-focus: #{$primary-accent-6};
     --profile-error: #{$primary-accent-7};
 }
 
 :root[data-theme='dark'] {
-    --profile-input-border: #{$grey-2};
-    --profile-input-bg: #{$black-1};
-    --profile-input-text: #{$light-1};
-    --profile-focus: #{$primary-accent-4};
     --profile-error: #{$primary-accent-5};
 }
 
-.section h2 {
-    margin: 0 0 24px;
-    font-family:
-        'Novecento DemiBold', 'Novecento Cyrillic DemiBold',
-        'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo Regular',
-        'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 26px;
-    font-weight: 600;
-}
-.name {
-    display: grid;
-    gap: 10px;
-    max-width: 26rem;
-    font-family:
-        'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans SC',
-        'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-    font-size: 18px;
-    input {
-        width: 100%;
-        border: 0;
-        border-bottom: 2px solid var(--profile-input-border);
-        padding: 10px 12px;
-        background: var(--profile-input-bg);
-        color: var(--profile-input-text);
-        font: inherit;
-        border-radius: 3px;
-        &:focus-visible {
-            outline: 2px solid var(--profile-focus);
-            outline-offset: 2px;
-        }
-    }
-}
 .avatars {
-    margin: 24px 0 0;
+    margin: 0;
     padding: 0;
     border: 0;
     min-width: 0;
-    legend {
-        font-family:
-            'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans SC',
-            'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-        font-size: 18px;
-    }
 }
 .grid {
     display: grid;
     grid-template-areas: none;
     grid-template-rows: none;
     grid-template-columns: repeat(auto-fill, 5.5rem);
-    gap: 24px;
-    padding: 40px 8px 28px;
+    gap: 24px 1rem;
+    justify-content: space-between;
+    padding: .5rem;
     &::before {
         content: none;
         background-image: none;

@@ -101,7 +101,7 @@ a:focus-visible {
     position: relative;
     height: 100dvh;
     overflow: hidden;
-    padding: 32px clamp(16px, 4vw, 64px) 24px;
+    padding: 5.5rem clamp(16px, 4vw, 64px) 24px;
     isolation: isolate;
 
     &::before {
@@ -152,6 +152,10 @@ a:focus-visible {
         overflow-y: auto;
         padding: 8px;
         margin: -8px;
+
+        &:has([role='tabpanel']) {
+            overflow: visible;
+        }
     }
 
     .hubError {
@@ -174,23 +178,24 @@ a:focus-visible {
     }
 
     @media (width <= 960px) {
+        overflow-y: auto;
+
+        .hubFrame {
+            height: auto;
+        }
+
         .hubLayout {
             grid-template-columns: minmax(0, 1fr);
-            grid-template-rows: auto minmax(0, 1fr);
-            gap: 24px;
+            grid-template-rows: auto auto;
+            flex: none;
         }
 
         .hubSidebar {
-            max-height: min(42dvh, 350px);
-            gap: 24px;
+            overflow: visible;
         }
-    }
 
-    @media (width <= 480px) {
-        padding-top: 20px;
-
-        .hubLayout {
-            gap: 24px;
+        .hubContent {
+            height: calc(100dvh - 5.5rem - 24px);
         }
     }
 }

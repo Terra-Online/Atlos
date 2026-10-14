@@ -1,19 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import {
-    getOverview,
-    isUnauthorized,
-    linkSocial,
-    unlinkAccount,
-    unlinkEndfieldBinding,
-} from './api/client';
+import { useEffect, useState } from 'react';
+import { clearReadCache, getOverview, isUnauthorized } from './api/client';
 import type { Overview } from './types';
+import type { SessionUser } from '@main/services/auth';
 import Header from './components/header/header';
 import IDCard from './components/idcard/idcard';
 import Nav from './components/nav/nav';
-import Account from './components/account/account';
 import Profile from './components/profile/profile';
 import Content from './components/content/content';
-import { tabFromPath, type Tab } from './routing';
+import { tabFromPath, pathForTab, type Tab } from './routing';
 import { translateUI, useTranslateUI } from '@hub/locale';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
 
@@ -21,9 +15,7 @@ function useAccount() {
     const [overview, setOverview] = useState<Overview | null>(null);
     const [revision, setRevision] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [acting, setActing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const pending = useRef(false);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -51,28 +43,14 @@ function useAccount() {
         return () => controller.abort();
     }, [revision]);
 
-    const refresh = () => setRevision((value) => value + 1);
-
-    const run = async (action: () => Promise<unknown>) => {
-        if (pending.current) return;
-        pending.current = true;
-        setActing(true);
-        setError(null);
-        try {
-            await action();
-            refresh();
-        } catch (cause) {
-            if (isUnauthorized(cause)) window.location.assign('/');
-            else
-                setError(
-                    cause instanceof Error
-                        ? cause.message
-                        : translateUI('userHub.actionError'),
-                );
-        } finally {
-            pending.current = false;
-            setActing(false);
-        }
+    const refresh = () => {
+        clearReadCache();
+        setRevision((value) => value + 1);
+    };
+    const updateUser = (user: SessionUser) => {
+        setOverview((previous) =>
+            previous ? { ...previous, user } : previous,
+        );
     };
 
     return {
@@ -80,9 +58,9 @@ function useAccount() {
         revision,
         loading,
         error,
-        busy: loading || acting,
+        busy: loading,
         refresh,
-        run,
+        updateUser,
     };
 }
 
@@ -94,7 +72,7 @@ export default function App() {
         main('meta.title'),
     );
     const [active, setActive] = useState<Tab>(tabFromPath);
-    const { overview, revision, loading, error, busy, refresh, run } =
+    const { overview, revision, loading, error, busy, refresh, updateUser } =
         useAccount();
 
     useEffect(() => {
@@ -102,7 +80,18 @@ export default function App() {
     }, [pageTitle]);
 
     useEffect(() => {
-        const onPopState = () => setActive(tabFromPath());
+        const onPopState = () => {
+            const tab = tabFromPath();
+            if (window.location.pathname !== pathForTab(tab)) {
+                window.history.replaceState(
+                    window.history.state,
+                    '',
+                    `${pathForTab(tab)}${window.location.search}${window.location.hash}`,
+                );
+            }
+            setActive(tab);
+        };
+        onPopState();
         window.addEventListener('popstate', onPopState);
         return () => window.removeEventListener('popstate', onPopState);
     }, []);
@@ -133,24 +122,10 @@ export default function App() {
                                     revision={revision}
                                     counts={overview.contributions}
                                 />
-                            ) : active === 'profile' ? (
+                            ) : (
                                 <Profile
                                     user={overview.user}
-                                    onSaved={refresh}
-                                />
-                            ) : (
-                                <Account
-                                    overview={overview}
-                                    busy={busy}
-                                    onLink={(provider) =>
-                                        void run(() => linkSocial(provider))
-                                    }
-                                    onUnlink={(provider) =>
-                                        void run(() => unlinkAccount(provider))
-                                    }
-                                    onUnlinkEndfield={() =>
-                                        void run(unlinkEndfieldBinding)
-                                    }
+                                    onSaved={updateUser}
                                 />
                             ))}
                     </main>

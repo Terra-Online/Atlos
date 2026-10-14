@@ -9,9 +9,10 @@ export const providerLabels: Record<Provider, string> = {
     github: 'GitHub',
 };
 
-export const formatDate = (value?: string): string => {
+export const formatDate = (
+    value?: string,
+    locale = getCurrentLocale(),
+): string => {
     const date = parseTimestamp(value);
-    return date
-        ? formatAbsoluteTime(date, { locale: getCurrentLocale() })
-        : '-';
+    return date ? formatAbsoluteTime(date, { locale }) : '-';
 };

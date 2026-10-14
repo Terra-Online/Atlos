@@ -122,7 +122,7 @@
     "fullSupportHint": "Hem arayüz hem de oyun içi içerikler için tam çeviriler.",
     "uiOnly": "Yalnızca Arayüz Dilleri",
     "uiOnlyHint": "Sadece arayüz çevirileri, oyun içi içerikler İngilizce olarak görüntülenecektir.",
-    "fyi": "Çeviri projemize katılmak veya diliniz için çeviri talep etmek üzere <a href=\"https://crowdin.com/project/oem\">Crowdin</a>'i ziyaret edebilirsiniz; ayrıca <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> adresine e-posta göndererek site yöneticileriyle iletişime geçebilirsiniz.",
+    "fyi": "Çeviri projemize katılmak veya diliniz için çeviri talep etmek üzere <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a>'i ziyaret edebilirsiniz; ayrıca <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> adresine e-posta göndererek site yöneticileriyle iletişime geçebilirsiniz.",
     "names": {
       "en-US": "İngilizce",
       "zh-CN": "Basitleştirilmiş Çince",
@@ -348,7 +348,7 @@
       "nickName": "kullanıcı adı",
       "note": "Not",
       "noteNickname": "En fazla 15 harf, rakam, tire veya alt çizgi kullanabilirsiniz.",
-      "noteUID": "UID, ilk kurulumda atanır ve değiştirilemez. Kullanıcı adınızı istediğiniz zaman güncelleyebilirsiniz.",
+      "noteUID": "UID, ilk kurulumda atanır ve değiştirilemez. Kullanıcı adınızı istediğiniz zaman güncelleyebilirsiniz. <a href=\"/me/\">Kullanıcı merkezine</a> gitmek için avatar alanına tıklayın.",
       "auditLabel": "İşlem",
       "importOfficial": "Resmi Haritadan İçe Aktar",
       "save": "Değişiklikleri Kaydet",

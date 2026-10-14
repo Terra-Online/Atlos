@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Pusat pengguna - {site}",
+    "title": "Pusat pengguna",
+    "back": "Kembali ke peta",
+    "refresh": "Muat semula",
+    "signOut": "Log keluar",
+    "navigation": "Navigasi pusat pengguna",
+    "tabs": {
+      "contributions": "Pusat kandungan",
+      "account": "Pengurusan akaun",
+      "profile": "Maklumat peribadi"
+    },
+    "kinds": {
+      "all": "Semua",
+      "image": "Imej",
+      "comment": "Komen"
+    },
+    "loadError": "Akaun anda tidak dapat dimuatkan.",
+    "actionError": "Tindakan gagal. Sila cuba lagi.",
+    "contributionsError": "Sumbangan tidak dapat dimuatkan.",
+    "retry": "Cuba lagi",
+    "loadMore": "Muat lagi",
+    "emptyContributions": "Belum ada sumbangan.",
+    "registeredAt": "Tarikh pendaftaran",
+    "accountStatus": "Status akaun",
+    "loginMethods": "Kaedah log masuk",
+    "verified": "Disahkan",
+    "linkedAt": "Tarikh dipautkan",
+    "notLinked": "Belum dipautkan",
+    "link": "Pautkan",
+    "unlink": "Nyahpaut",
+    "keepLoginMethod": "Kekalkan sekurang-kurangnya satu kaedah log masuk. Kaedah log masuk terakhir tidak boleh dibuang.",
+    "notBound": "Tiada akaun Endfield dipautkan.",
+    "endfieldRole": "Watak Endfield",
+    "server": "Pelayan",
+    "enabled": "Diaktifkan",
+    "disabled": "Dinyahaktifkan",
+    "endfieldAccount": "Akaun Endfield",
+    "bindFromMap": "Untuk memautkan akaun Endfield, buka dialog pemautan akaun pada peta.",
+    "status": {
+      "pending_openai": "Dalam semakan",
+      "pending_audit": "Menunggu semakan manual",
+      "active": "Awam",
+      "flagged": "Dilaporkan",
+      "remove_request": "Pemadaman diminta",
+      "stale": "Tidak tersedia"
+    },
+    "contentHint": "Lihat hantaran dan status semakan.",
+    "accountHint": "Urus kaedah log masuk dan akaun yang dipautkan.",
+    "contentType": "Jenis kandungan",
+    "content": "Kandungan",
+    "reviewStatus": "Status semakan",
+    "submittedAt": "Masa dihantar",
+    "pendingShort": "Dalam semakan",
+    "email": "E-mel",
+    "emptyContributionsHint": "Kongsi imej atau komen daripada peta. Hantaran anda akan dipaparkan di sini.",
+    "profileHint": "Tukar avatar anda.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Pratonton tidak tersedia",
+    "commentLocation": ", di ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Dimuat naik",
+      "ai": {
+        "current": "Semakan OpenAI sedang dijalankan",
+        "complete": "Telah disemak oleh OpenAI"
+      },
+      "manual": {
+        "current": "Semakan manual sedang dijalankan",
+        "complete": "Telah disemak secara manual"
+      },
+      "public": {
+        "current": "Menunggu penerbitan",
+        "complete": "Diterbitkan"
+      },
+      "archived": {
+        "current": "Sedang diarkibkan",
+        "complete": "Diarkibkan"
+      }
+    }
+  },
+  "common": {
+    "loading": "Memuatkan..."
+  }
+}

@@ -2,11 +2,19 @@ import { useTranslateUI } from '@hub/locale';
 import Login from './login';
 import Endfield from './endfield';
 import { formatDate } from '../../config';
-import type { Overview, Provider } from '../../types';
+import type {
+    Overview,
+    Provider,
+    LoginMethod,
+    EndfieldBinding,
+} from '../../types';
 import styles from './account.module.scss';
 
 type Props = {
-    overview: Overview;
+    overview: Overview & {
+        loginMethods: LoginMethod[];
+        services: { endfield: EndfieldBinding };
+    };
     busy: boolean;
     onLink: (provider: Exclude<Provider, 'email'>) => void;
     onUnlink: (provider: Provider) => void;
@@ -22,11 +30,7 @@ export default function Account({
 }: Props) {
     const t = useTranslateUI();
     return (
-        <div className={styles.page}>
-            <header className={styles.heading}>
-                <h2>{t('userHub.tabs.account')}</h2>
-                <p>{t('userHub.accountHint')}</p>
-            </header>
+        <div aria-label={t('userHub.tabs.account')}>
             <div className={styles.groups}>
                 <section
                     className={styles.details}
