@@ -242,13 +242,15 @@ const NOTIFICATION_HEARTBEAT_INTERVAL_MS = 50_000;
 const NOTIFICATION_HEARTBEAT_ACK_TIMEOUT_MS = 15_000;
 const NOTIFICATION_HEARTBEAT_MISSES_BEFORE_CLOSE = 2;
 const NOTIFICATION_STABLE_HEARTBEAT_COUNT = 2;
+const NOTIFICATION_AUTO_HEARTBEAT = 'OEMping1';
 
 const createMessageId = (): string => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const bytes = crypto.getRandomValues(new Uint8Array(8));
-    return Array.from(bytes)
+    const token = Array.from(bytes)
         .map((byte) => alphabet[byte % alphabet.length])
         .join('');
+    return token === NOTIFICATION_AUTO_HEARTBEAT ? createMessageId() : token;
 };
 
 const notificationLiveUrl = (): string => {
@@ -270,6 +272,7 @@ export const subscribeNotificationLive = ({
     let heartbeatTimer: number | undefined;
     let heartbeatAckTimer: number | undefined;
     let pendingHeartbeatToken: string | null = null;
+    let useNonceHeartbeat = false;
     let acknowledgedHeartbeats = 0;
     let missedHeartbeats = 0;
     let reconnectAttempt = 0;
@@ -292,7 +295,7 @@ export const subscribeNotificationLive = ({
         stopHeartbeat();
         const sendHeartbeat = () => {
             if (currentSocket.readyState !== WebSocket.OPEN) return;
-            const token = createMessageId();
+            const token = useNonceHeartbeat ? createMessageId() : NOTIFICATION_AUTO_HEARTBEAT;
             try {
                 currentSocket.send(token);
                 pendingHeartbeatToken = token;
@@ -304,6 +307,9 @@ export const subscribeNotificationLive = ({
                     )
                         return;
                     missedHeartbeats += 1;
+                    // Never reuse the static token after a timeout: its late echo
+                    // must not acknowledge the next probe. Keep existing timings.
+                    useNonceHeartbeat = true;
                     pendingHeartbeatToken = null;
                     if (
                         missedHeartbeats >=
@@ -357,6 +363,7 @@ export const subscribeNotificationLive = ({
         let receivedUpdateSinceConnect = false;
         acknowledgedHeartbeats = 0;
         missedHeartbeats = 0;
+        useNonceHeartbeat = false;
         currentSocket.addEventListener('open', () => {
             startHeartbeat(currentSocket);
             onOpen?.();
