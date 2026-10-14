@@ -122,7 +122,7 @@ const SEO_CACHE_DIR = path.resolve(ROOT, '.cache/seo');
 const SEO_PAGE_STATE_FILE = path.resolve(SEO_CACHE_DIR, `pages-${buildTarget}-${defaultLocale}.json`);
 const SEO_OG_STATE_FILE = path.resolve(SEO_CACHE_DIR, `og-${buildTarget}-${defaultLocale}.json`);
 const requestedSeoOgConcurrency = Number.parseInt(process.env.SEO_OG_CONCURRENCY || '', 10);
-const defaultSeoOgConcurrency = 12;
+const defaultSeoOgConcurrency = 16;
 const seoOgConcurrency = Number.isFinite(requestedSeoOgConcurrency) && requestedSeoOgConcurrency > 0
   ? requestedSeoOgConcurrency
   : defaultSeoOgConcurrency;
@@ -179,6 +179,10 @@ function workMapMask() {
       <rect width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" fill="url(#mask)"/>
     </svg>
   `));
+}
+
+function workMapMaskInput() {
+  return cachedRender('mask:work:raster', () => sharp(workMapMask()).png().toBuffer());
 }
 
 function rawOptions(image) {
@@ -582,10 +586,18 @@ function pointOgUrl(token) {
 }
 
 function getOgTileOffsets() {
+  // The window spans three tile widths horizontally and two vertically.
+  // One extra candidate per axis handles arbitrary marker-to-tile alignment;
+  // the previous ranges added a full empty tile on both sides.
   const offsets = [];
-  for (let y = -SAMPLE_IMAGE_HEIGHT / 2 - TILE_IMAGE_SIZE; y <= SAMPLE_IMAGE_HEIGHT / 2 + TILE_IMAGE_SIZE; y += TILE_IMAGE_SIZE) {
-    for (let x = -SAMPLE_IMAGE_WIDTH / 2 - TILE_IMAGE_SIZE; x <= SAMPLE_IMAGE_WIDTH / 2 + TILE_IMAGE_SIZE; x += TILE_IMAGE_SIZE) {
-      offsets.push([x, y]);
+  const xCount = Math.ceil(SAMPLE_IMAGE_WIDTH / TILE_IMAGE_SIZE) + 1;
+  const yCount = Math.ceil(SAMPLE_IMAGE_HEIGHT / TILE_IMAGE_SIZE) + 1;
+  for (let y = 0; y < yCount; y += 1) {
+    for (let x = 0; x < xCount; x += 1) {
+      offsets.push([
+        -SAMPLE_IMAGE_WIDTH / 2 + x * TILE_IMAGE_SIZE,
+        -SAMPLE_IMAGE_HEIGHT / 2 + y * TILE_IMAGE_SIZE,
+      ]);
     }
   }
   return offsets;
@@ -1142,7 +1154,7 @@ async function renderMapPatternSampleBackground() {
 
 async function applyWorkMapMask(buffer) {
   return sharp(buffer)
-    .composite([{ input: workMapMask(), left: 0, top: 0 }])
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
     .jpeg({ quality: 90 })
     .toBuffer();
 }
@@ -1459,7 +1471,7 @@ async function generateOgImage(point) {
   const workBackground = await toRaw(sharpFromRaw(sampleBackground)
     .resize(WORK_IMAGE_WIDTH, WORK_IMAGE_HEIGHT, { fit: 'fill' }));
   const maskedWork = await toRaw(sharpFromRaw(workBackground)
-    .composite([{ input: workMapMask(), left: 0, top: 0 }])
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
   );
   const cropped = await toRaw(sharpFromRaw(maskedWork)
     .composite([...labelInputs, ...markerInputs])
@@ -1482,7 +1494,7 @@ async function generateFallbackOgImage(point) {
   const markerInputs = await markerCompositeInputs(point, iconPath);
   const workPattern = await createMapPatternRaw();
   const maskedWork = await toRaw(sharpFromRaw(workPattern)
-    .composite([{ input: workMapMask(), left: 0, top: 0 }])
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
   );
   const cropped = await toRaw(sharpFromRaw(maskedWork)
     .composite(markerInputs)

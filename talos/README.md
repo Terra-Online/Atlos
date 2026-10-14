@@ -43,8 +43,10 @@ Run `python3 scripts/subset_fonts_test.py` for font cache regression checks
 Vite reports emitted asset sizes and gzip sizes for each app.
 OG rendering keeps map intermediates lossless in memory; use
 `SEO_OG_PIPELINE=legacy` only to compare against the previous JPEG pipeline.
-OG generation defaults to one libvips worker per task to avoid CPU oversubscription;
-override with `SEO_SHARP_CONCURRENCY` when benchmarking another host.
+OG generation defaults to 16 point workers with one libvips worker per task to
+avoid CPU oversubscription; override with `SEO_OG_CONCURRENCY` or
+`SEO_SHARP_CONCURRENCY` when benchmarking another host. The renderer caches the
+rasterized map mask and only submits tiles that can intersect the OG window.
 Marker SVGs are rasterized once and reused; set `SEO_MARKER_RASTER_CACHE=0`
 only when comparing the uncached path.
 Builds never publish. Partial builds invalidate the full-site build receipt;
