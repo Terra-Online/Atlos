@@ -1,278 +1,169 @@
-# Local Release Runbook (Dual-Server)
+# Release runbook
 
-This runbook follows the current constraints:
-- Local machine builds and packages artifacts only.
-- Remote servers publish.
-- Remote R2 host publishes `org`; remote OSS host publishes `cn`.
+Run commands from `talos/`. Configure both ignored files under `config/`
+using their templates. Local publishing needs existing OSS/R2 credentials,
+Cloudflare authentication, and the `atlos-cn` SSH alias for the server.
 
-## 1) Prepare Configs
+## Normal release
 
-Copy templates if needed:
-
-```bash
-cp config/config.template.json config/config.json
-cp config/config.r2.template.json config/config.r2.json
+```sh
+pnpm check
+pnpm deploy:all
+pnpm deploy:all --skip-og
+pnpm deploy:cn
+pnpm deploy:org
+pnpm deploy:org --channel beta
+pnpm deploy:all --dry-run
 ```
 
-Optional channel prefixes (recommended):
-- `config/config.json` -> `web.build.deployChannels.beta.ossPrefix`, `web.build.deployChannels.prod.ossPrefix`
-- `config/config.r2.json` -> `web.build.deployChannels.beta.r2Prefix`, `web.build.deployChannels.prod.r2Prefix`
+`deploy:all` prepares data and each app's fonts once, generates OG by default,
+then builds/publishes both complete sites in parallel. CN publishes OSS and
+replaces the server's `dist/`. ORG publishes R2 and packages/deploys Pages.
+Only after both sites succeed does it deploy relink. Single-site deployment
+does not deploy shared Workers; search Worker publishing remains explicit.
 
-If channel mappings are missing, scripts fallback to:
-- `prod`: use base prefix from `oss.prefix` / `r2.prefix`
-- `beta`: derive from base prefix (`_dev -> _beta`, or append `-beta`)
+`--skip-og` (alias `--skip-seo-og`) disables both generation and upload,
+including old OG output. `--skip-subset` (alias `--skip-subset-fonts`) skips
+all font pipelines. `--skip-intel` explicitly omits Intel and its Pages routes;
+the main site and user hub remain required.
 
-## 2) Package Artifacts Locally
+Deployment checks data and complete artifacts. Types, lint and tests run
+through `pnpm check` and CI. Each parallel site reports its result; a successful
+external upload remains published if its peer fails. Server replacement retains
+rollback on a failed directory swap. Dry-run prints commands/environment
+overrides without generating, validating, packaging or uploading files; it does
+not prove current artifacts are valid.
 
-CN beta package:
+## Independent publishing and recovery
 
-```bash
-pnpm release:package:cn:beta
+```sh
+pnpm build --target all
+pnpm run publish --target cn                    # OSS + server
+pnpm run publish --target cn --only oss
+pnpm run publish --target cn --only server
+pnpm run publish --target org                   # R2 + Pages
+pnpm run publish --target org --only r2
+pnpm run publish --target org --only pages
+pnpm run publish --target org --only resources
 ```
 
-ORG beta package:
+Use **`pnpm run publish`**: `pnpm publish` is pnpm's registry command.
+Publishing never rebuilds. `--dist-dir PATH` selects an extracted/offline
+artifact instead of the default target directory.
 
-```bash
-pnpm release:package:org:beta
+Complete builds write `.atlos-build.json` with target, channel, source commit
+and included apps. Publishing checks that receipt, app entrypoints/assets, SEO
+point pages, robots and sitemap. Wrong-channel, incomplete, partial-build and
+source-only CI artifacts are rejected. Builds without a receipt need a fresh
+complete build. The source commit records provenance and need not match the
+current checkout, allowing recovery from an older built artifact.
+Resource upload also checks the recorded CDN, bucket/endpoint and prefix against
+the current configuration. Restore the matching configuration or rebuild if
+they differ. Beta prefixes must differ from both configured and overridden
+production prefixes.
+
+```sh
+pnpm build --target org --channel beta
+pnpm run publish --target org --channel beta
+pnpm run publish --target org --channel beta --only resources --skip-og
 ```
 
-CN prod package:
+The CN server serves production only. CN beta offline/resource builds remain
+available with `build --target cn --channel beta` and
+`run publish --target cn --channel beta --only oss`; they cannot replace
+the production server directory.
 
-```bash
-pnpm release:package:cn:prod
+Pages always packages the complete ORG site, including Intel, user hub, point
+aliases and route/cache configuration. Do not upload a standalone app directory
+to the whole-site Pages project.
+
+## OG images and Workers
+
+```sh
+pnpm og                                      # Generate both targets
+pnpm og --target org --channel beta
+pnpm og --target cn --action publish
+pnpm og --target org --action refresh         # Refresh state of existing images
+pnpm worker search check
+pnpm worker search deploy
+pnpm worker relink check
+pnpm worker relink deploy
 ```
 
-ORG prod package:
+OG output remains `../seo-og/oss` and `../seo-og/r2`. Incremental queues,
+empty-directory deletion protection and full verification options remain in
+the transport scripts. Worker commands never publish a site; builds never
+publish a Worker.
 
-```bash
-pnpm release:package:org:prod
+## Offline packages
+
+```sh
+pnpm package --target cn --channel prod
+pnpm package --target org --channel beta
+pnpm package --target org --channel prod --skip-build
+pnpm package --target org --format pages --skip-build
 ```
 
-Artifacts are generated in `release-artifacts/`:
-- `dist-<target>-<channel>-<timestamp>-<sha>.zip`
-- `*.sha256`
-- `*.json` (metadata)
+Archive packages contain the complete artifact and receipt inside `dist/`,
+plus SHA-256 and metadata files under `release-artifacts/`. Packaging still
+prunes `clips/Jinlong`, loose files in `clips/`, and scripts under clips from
+the copy, leaving the source build intact. `--output-dir PATH` overrides the
+destination. Pages output defaults to `.pages-dist/org-prod` or
+`.pages-dist/org-beta`.
+Build and Pages destinations inside the checkout are limited to dedicated
+subdirectories of `dist/` and `.pages-dist/`. External destinations must be
+empty or contain a previous artifact marker; source directories and symlink
+escapes are rejected before a directory can be emptied.
 
-Packaging prune rules applied automatically:
-- Remove `dist/clips/Jinlong`
-- Remove script files under `dist/clips` (`.py/.sh/.js/.mjs/.ts/.bash/.zsh`)
+Transfer and extract an archive on a publishing host, then use:
 
-## 3) Transfer and Publish on R2 Host (org / R2)
-
-Transfer package (example):
-
-```bash
-scp -i "<your-key>.pem" release-artifacts/dist-org-beta-*.zip \
-  <remote-user>@<r2-host>:<remote-upload-dir>/dist.zip
+```sh
+pnpm run publish --target org --channel beta --dist-dir /path/to/extracted/dist
 ```
 
-Remote publish:
+When Node is unavailable, the low-level server-only transport remains:
+`bash scripts/deploy-cn-server.sh --skip-build --server-only --dist-dir PATH`.
+It validates ZIP/root entrypoint structure but bypasses the unified receipt
+check; prefer the unified command.
 
-```bash
-ssh -i "<your-key>.pem" <remote-user>@<r2-host>
-cd <remote-upload-dir>
-rm -rf dist && unzip dist.zip && rm dist.zip
-cd <talos-repo-dir>
-DEPLOY_CHANNEL=beta node ./scripts/publish-R2.js
-```
+## Configuration and logs
 
-For prod:
+| Target | Production | Beta |
+| --- | --- | --- |
+| CN | OSS + atlos-cn server | OSS resource/offline build only |
+| ORG Pages | oem-root, main, opendfieldmap.org | oem-root-uatenv, beta, beta.opendfieldmap.org |
 
-```bash
-DEPLOY_CHANNEL=prod node ./scripts/publish-R2.js
-```
+Pages values live in `scripts/pages-config.mjs`. Storage prefixes reuse
+`web.build.deployChannels.{prod,beta}.{ossPrefix,r2Prefix}`. Existing
+`DEPLOY_PREFIX`, `DEPLOY_PROD_PREFIX` and `DEPLOY_BETA_PREFIX` overrides
+remain; command channels override `DEPLOY_CHANNEL`.
+Set `PUBLISH_VERBOSE_SKIPS=1` for per-file skip logs. Existing retention,
+clip reconciliation, `SEO_UPLOAD_POINT_ALIASES` and OG verification behavior
+remain in the upload scripts.
 
-`publish-R2.js` does not upload point-page aliases like `<token>/index.html` by
-default because org root point pages are served by Pages. Set
-`SEO_UPLOAD_POINT_ALIASES=1` only for a manual R2 alias backfill.
+Server overrides remain `ATLOS_CN_SSH_HOST` and `ATLOS_CN_REMOTE_DIR`.
+The default remote path is `workspace/atlos-assets/_WORK_DIR/Atlos/talos`.
+Keep SSH keys in local SSH configuration. The remote account needs write access,
+Bash and unzip. Existing Pages custom domains, redirects and Access settings
+are managed in Cloudflare.
 
-## 4) Publish Pages (org / Cloudflare Pages)
+After publishing, inspect the main site, Intel, user hub, one point-share page,
+referenced assets and cache headers on the intended production/beta domain.
 
-Pages is used for the root SEO entry pages under the org domain. Build the R2 target first, then package the reduced Pages artifact:
+## Command migration
 
-```bash
-DEPLOY_CHANNEL=beta pnpm build:r2
-pnpm package:pages:org:beta
-pnpm publish:pages:org:beta
-```
+| Previous commands | Replacement |
+| --- | --- |
+| build:r2 / build:r2:beta / build:all | build --target org [--channel beta] / build --target all |
+| build:intel[:r2] / build:user-hub[:r2] | build --app intel\|user-hub --target cn\|org |
+| publish:web[:r2] / deploy:cn:server | run publish --target cn\|org [--only …] / deploy:cn |
+| publish:web:r2:resources:beta | run publish --target org --channel beta --only resources |
+| package:pages:org:* / publish:pages:org:* | package --target org --format pages / run publish --target org --only pages |
+| release:package:* | package --target cn\|org --channel prod\|beta |
+| build:seo:og:* / publish:seo:og:* | og --target … [--action build\|publish\|refresh] |
+| build:prepare / individual generators and validators | data prepare / data <task> |
+| type-check:* / test:user-hub | type-check --app … / test --app user-hub |
+| Worker aliases / build --deploy | worker search\|relink check\|deploy |
 
-For prod:
-
-```bash
-DEPLOY_CHANNEL=prod pnpm build:r2
-pnpm package:pages:org:prod
-pnpm publish:pages:org:prod
-```
-
-Projects:
-- Beta/UAT: `<cf-pages-project-beta>`, production branch `<beta-branch>`, custom domain `<public-domain-beta>`
-- Prod/root: `<cf-pages-project-prod>`, production branch `<prod-branch>`, custom domain `<public-domain-prod>`
-
-Create projects when needed:
-
-```bash
-pnpm create:pages:org:beta
-pnpm create:pages:org:prod
-```
-
-Cloudflare-side settings:
-- Add `<public-domain-beta>` to `<cf-pages-project-beta>` and `<public-domain-prod>` to `<cf-pages-project-prod>` from Pages > Custom domains.
-- If `<public-domain-prod>` is an apex domain, the zone must be on the same Cloudflare account as the Pages project.
-- To prevent direct `*.pages.dev` access, create account-level Bulk Redirects:
-  - `<cf-pages-project-beta>.pages.dev` -> `https://<public-domain-beta>` with Preserve query string, Subpath matching, Preserve path suffix, Include subdomains.
-  - `<cf-pages-project-prod>.pages.dev` -> `https://<public-domain-prod>` with the same parameters.
-- To restrict preview deployment URLs, enable the Pages Access policy under Pages > Settings > General. Pages preview deployment URLs are public by default; Access protects preview URLs, while the Bulk Redirect handles the project `*.pages.dev` domain and branch/hash aliases.
-
-## 5) Transfer and Publish on OSS Host (cn / OSS)
-
-### One-command CN dist transfer
-
-Configure an SSH host alias named `atlos-cn` in `~/.ssh/config` (configuration
-example below), then run from `Atlos/talos`:
-
-```bash
-pnpm deploy:cn:server
-```
-
-The command runs `pnpm build` and packages `dist/`. It then runs
-`pnpm publish:web` locally while uploading the archive to
-`workspace/atlos-assets/_WORK_DIR/Atlos/talos/`, validating it, and replacing
-the remote `dist/`. The command finishes only after both the OSS publish and
-the server `dist/` deployment succeed.
-
-To upload an already-built local `dist/`:
-
-```bash
-pnpm deploy:cn:server --skip-build
-```
-
-Optional overrides:
-
-```bash
-ATLOS_CN_SSH_HOST=atlos-cn \
-ATLOS_CN_REMOTE_DIR=workspace/atlos-assets/_WORK_DIR/Atlos/talos \
-pnpm deploy:cn:server
-```
-
-The equivalent CLI options are `--host` and `--remote-dir`.
-`publish:web` uses the `prod` channel by default. To publish beta instead, set
-`DEPLOY_CHANNEL=beta` for the whole command so the build and publish use the
-same channel:
-
-```bash
-DEPLOY_CHANNEL=beta pnpm deploy:cn:server
-```
-
-### SSH configuration
-
-Use a dedicated SSH key. Do not put the server password in this repository,
-the deploy script, package.json, or an environment variable.
-
-Generate a key locally:
-
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_atlos_cn -C "atlos-cn-deploy"
-```
-
-Install the public key on the server. This command asks for the server password
-once:
-
-```bash
-cat ~/.ssh/id_ed25519_atlos_cn.pub | \
-  ssh <remote-user>@<server-ip> \
-  'umask 077; mkdir -p ~/.ssh; cat >> ~/.ssh/authorized_keys'
-```
-
-Add the connection to `~/.ssh/config`:
-
-```sshconfig
-Host atlos-cn
-    HostName <server-ip>
-    User <remote-user>
-    Port 22
-    IdentityFile ~/.ssh/id_ed25519_atlos_cn
-    IdentitiesOnly yes
-```
-
-Protect the local SSH files and test the alias:
-
-```bash
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/config ~/.ssh/id_ed25519_atlos_cn
-ssh atlos-cn
-```
-
-If the server only permits password authentication, omit `IdentityFile` and
-`IdentitiesOnly`. `scp`/`ssh` will prompt interactively; never store the
-password in a file. To reuse one password-authenticated connection during the
-upload, add these optional lines to the same host entry:
-
-```sshconfig
-    ControlMaster auto
-    ControlPersist 10m
-    ControlPath ~/.ssh/control-%C
-```
-
-The remote account needs write permission for
-`workspace/atlos-assets/_WORK_DIR/Atlos/talos/` and the server needs `bash` and
-`unzip`.
-
-### Manual fallback
-
-Upload package to the OSS publishing host as `dist.zip` (FileZilla or SCP), then:
-
-```bash
-ssh <deploy-user>@<oss-host>
-cd <talos-repo-dir>
-rm -rf dist && unzip dist.zip && rm dist.zip
-DEPLOY_CHANNEL=beta pnpm publish:web
-```
-
-For prod:
-
-```bash
-DEPLOY_CHANNEL=prod pnpm publish:web
-```
-
-`publish:web` uploads point-page aliases like `<token>/index.html` by default so
-root point URLs such as `https://opendfieldmap.cn/0Q2NtmS` resolve on the OSS
-host. Set `SEO_UPLOAD_POINT_ALIASES=0` only for resource-only recovery uploads
-where those aliases should be left untouched.
-
-The `opendfieldmap.cn` nginx host must also route point-token URLs before its
-generic 404/static fallback. If the host already serves
-`/seo/points/oss/<token>.html`, the simplest rule is an internal rewrite:
-
-```nginx
-rewrite ^/([0-9A-Za-z]{7})/?$ /seo/points/oss/$1.html last;
-rewrite ^/([0-9A-Za-z]{7})/index\.html$ /seo/points/oss/$1.html last;
-```
-
-Place these rules in the `server` block before the catch-all `location /` or
-inside `location /` before `try_files`.
-
-## 6) Verification Checklist
-
-After each publish, verify:
-- Beta domains:
-  - `<public-domain-beta-org>`
-  - `<public-domain-beta-cn>`
-- Production domains:
-  - `<public-domain-prod-org>`
-  - `<public-domain-prod-cn>`
-- Key files: `index.html`, main JS asset, `manifest.json`, search docs
-- Cache headers behavior (html no-store, assets immutable)
-- Pages-only org checks:
-  - `https://<public-domain-prod-org>/<seo-token>/`
-  - `https://<cf-pages-project-prod>.pages.dev/` redirects to `https://<public-domain-prod-org>/`
-  - `https://<public-domain-beta-org>/<seo-token>/`
-  - `https://<cf-pages-project-beta>.pages.dev/` redirects to `https://<public-domain-beta-org>/`
-
-## 7) Notes
-
-- Channel switching is controlled by `DEPLOY_CHANNEL=beta|prod`.
-- Optional env overrides are supported for one-off publishing:
-  - `DEPLOY_PREFIX`
-  - `DEPLOY_BETA_PREFIX`
-  - `DEPLOY_PROD_PREFIX`
-- Keep credentials only on remote publishing machines.
+The five old build/deploy orchestrators are removed. Individual generators and
+transport implementations remain directly callable for focused maintenance.

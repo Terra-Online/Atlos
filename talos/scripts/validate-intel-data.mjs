@@ -33,10 +33,16 @@ for (const row of contract.filter((item) => item.acquisition.method === 'map')) 
   assert(marker.type === row.id, `Map archive ${row.id} points to marker type ${marker.type}.`);
 }
 
-const iconFiles = (await fs.readdir(ICONS)).filter((file) => file.endsWith('.webp'));
 const iconKeys = new Set(contract.map((row) => row.iconKey));
-assert(iconFiles.length === iconKeys.size, `Expected ${iconKeys.size} WebP icons, got ${iconFiles.length}.`);
-for (const icon of iconKeys) assert(iconFiles.includes(`${icon}.webp`), `Missing bound icon ${icon}.webp.`);
+// The public checkout does not contain the privately distributed icon assets.
+// CI still checks every data join and locale; release builds require the actual icons.
+if (process.argv.includes('--source-only')) {
+  console.log('[validate-intel-data] source-only: private icon files not checked; not a release validation.');
+} else {
+  const iconFiles = (await fs.readdir(ICONS)).filter((file) => file.endsWith('.webp'));
+  assert(iconFiles.length === iconKeys.size, `Expected ${iconKeys.size} WebP icons, got ${iconFiles.length}.`);
+  for (const icon of iconKeys) assert(iconFiles.includes(`${icon}.webp`), `Missing bound icon ${icon}.webp.`);
+}
 
 const localeKeys = [];
 for (const locale of LOCALES) {

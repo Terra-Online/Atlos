@@ -30,7 +30,7 @@ const requestedConcurrency = Number.parseInt(process.env.SEO_OG_UPLOAD_CONCURREN
 const concurrency = Number.isFinite(requestedConcurrency) && requestedConcurrency > 0
   ? requestedConcurrency
   : 40;
-const verboseSkips = process.env.PUBLISH_VERBOSE_SKIPS !== '0';
+const verboseSkips = process.env.PUBLISH_VERBOSE_SKIPS === '1';
 const forceFullVerification = process.env.SEO_OG_FORCE_VERIFY === '1';
 const publishStartedAt = Date.now();
 const OG_CACHE_CONTROL = 'public, max-age=3600, must-revalidate';

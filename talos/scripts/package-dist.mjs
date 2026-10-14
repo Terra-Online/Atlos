@@ -1,32 +1,31 @@
 import crypto from 'node:crypto';
-import { execFileSync, execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import { verifyArtifact } from './release-artifact.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-const args = process.argv.slice(2);
-
-const getArgValue = (name, fallback = '') => {
-  const withEq = args.find((arg) => arg.startsWith(`${name}=`));
-  if (withEq) return withEq.slice(name.length + 1);
-  const idx = args.indexOf(name);
-  if (idx !== -1 && idx + 1 < args.length) return args[idx + 1];
-  return fallback;
-};
-
-const hasFlag = (name) => args.includes(name);
-
-const target = getArgValue('--target', 'cn').toLowerCase();
-const channel = getArgValue('--channel', 'beta').toLowerCase();
-const skipBuild = hasFlag('--skip-build');
-const outputDirArg = getArgValue('--output-dir', path.resolve(ROOT, 'release-artifacts'));
+const { values } = parseArgs({
+  args: process.argv.slice(2).filter((arg) => arg !== '--'),
+  options: { target: { type: 'string' }, channel: { type: 'string' }, 'skip-build': { type: 'boolean' },
+    'dist-dir': { type: 'string' }, 'output-dir': { type: 'string' }, 'skip-intel': { type: 'boolean' }, help: { type: 'boolean' } },
+});
+if (values.help) {
+  console.log('Usage: package-dist.mjs --target cn|org --channel prod|beta [--skip-build] [--dist-dir PATH] [--output-dir PATH]');
+  process.exit(0);
+}
+const target = (values.target || 'cn').toLowerCase();
+const channel = (values.channel || process.env.DEPLOY_CHANNEL || 'prod').toLowerCase();
+const skipBuild = !!values['skip-build'];
+const outputDirArg = values['output-dir'] || path.resolve(ROOT, 'release-artifacts');
 const outputDir = path.resolve(ROOT, outputDirArg);
 const defaultDistDir = target === 'org' ? 'dist/r2' : 'dist/oss';
-const distDirArg = getArgValue('--dist-dir', process.env.DIST_DIR || defaultDistDir);
+const distDirArg = values['dist-dir'] || process.env.DIST_DIR || defaultDistDir;
 
 if (!['cn', 'org'].includes(target)) {
   throw new Error(`Unsupported --target: ${target}. Use cn or org.`);
@@ -43,19 +42,6 @@ const run = (command, commandArgs = [], options = {}) => {
     stdio: 'inherit',
     ...options,
   });
-};
-
-const getGitShortSha = () => {
-  try {
-    return execSync('git rev-parse --short HEAD', {
-      cwd: ROOT,
-      stdio: ['ignore', 'pipe', 'ignore'],
-    })
-      .toString()
-      .trim();
-  } catch {
-    return 'nogit';
-  }
 };
 
 const formatTimestamp = () => {
@@ -136,24 +122,13 @@ const build = () => {
     return;
   }
 
-  const env = {
-    ...process.env,
-    DEPLOY_CHANNEL: channel,
-  };
-
-  if (target === 'org') {
-    run('pnpm', ['build:r2'], { env });
-    return;
-  }
-
-  run('pnpm', ['build'], { env });
+  run(process.execPath, ['scripts/tasks.mjs', 'build', '--target', target,
+    '--channel', channel, '--dist-dir', path.resolve(ROOT, distDirArg), ...(values['skip-intel'] ? ['--skip-intel'] : [])]);
 };
 
 const packageDist = async () => {
   const distDir = path.resolve(ROOT, distDirArg);
-  if (!(await fs.pathExists(distDir))) {
-    throw new Error(`${path.relative(ROOT, distDir)} directory does not exist. Build may have failed.`);
-  }
+  const info = await verifyArtifact(distDir, { channel, skipIntel: !!values['skip-intel'] }, target);
 
   const workDir = path.resolve(ROOT, '.release-work', `${target}-${channel}-${Date.now()}`);
   const workDist = path.resolve(workDir, 'dist');
@@ -165,7 +140,7 @@ const packageDist = async () => {
 
   await fs.ensureDir(outputDir);
   const timestamp = formatTimestamp();
-  const sha = getGitShortSha();
+  const sha = info.source.slice(0, 12);
   const artifactBase = `dist-${target}-${channel}-${timestamp}-${sha}`;
   const zipPath = path.resolve(outputDir, `${artifactBase}.zip`);
 
@@ -182,6 +157,7 @@ const packageDist = async () => {
     target,
     channel,
     gitSha: sha,
+    sourceDirty: info.sourceDirty,
     timestamp,
     artifact: path.basename(zipPath),
     checksum: digest,

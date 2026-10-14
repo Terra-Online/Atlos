@@ -9,6 +9,8 @@ SSH_HOST="${ATLOS_CN_SSH_HOST:-atlos-cn}"
 REMOTE_DIR="${ATLOS_CN_REMOTE_DIR:-workspace/atlos-assets/_WORK_DIR/Atlos/talos}"
 SKIP_BUILD="${ATLOS_CN_SKIP_BUILD:-0}"
 DIST_DIR="${DIST_DIR:-dist/oss}"
+SERVER_ONLY=0
+CHANNEL="${DEPLOY_CHANNEL:-prod}"
 
 usage() {
     cat <<'EOF'
@@ -17,7 +19,9 @@ Usage: deploy-cn-server.sh [options]
 Build the CN frontend, publish it to OSS, and replace the server dist/.
 
 Options:
-  --skip-build          Publish the existing local dist without running pnpm build
+  --skip-build          Publish the existing local dist without rebuilding
+  --server-only         Replace server dist only; skip OSS publishing
+  --channel prod        Server accepts production artifacts only
   --dist-dir PATH       Local build directory (default: dist/oss)
   --host HOST           SSH host or ~/.ssh/config alias (default: atlos-cn)
   --remote-dir PATH     Remote talos directory
@@ -33,6 +37,19 @@ EOF
 
 while (($# > 0)); do
     case "$1" in
+        --server-only)
+            SERVER_ONLY=1
+            shift
+            ;;
+        --channel)
+            [[ $# -ge 2 ]] || { echo "Missing value for --channel" >&2; exit 2; }
+            CHANNEL="$2"
+            shift 2
+            ;;
+        --channel=*)
+            CHANNEL="${1#*=}"
+            shift
+            ;;
         --skip-build)
             SKIP_BUILD=1
             shift
@@ -76,7 +93,20 @@ while (($# > 0)); do
     esac
 done
 
-for command in pnpm zip unzip scp ssh; do
+if [[ "$CHANNEL" != "prod" ]]; then
+    echo "The CN server serves prod only; refusing channel: $CHANNEL" >&2
+    exit 2
+fi
+export DEPLOY_CHANNEL="$CHANNEL"
+
+commands=(zip unzip scp ssh)
+if [[ "$SKIP_BUILD" != "1" || "$SERVER_ONLY" != "1" ]]; then
+    commands+=(node)
+fi
+if [[ "$SKIP_BUILD" != "1" ]]; then
+    commands+=(pnpm)
+fi
+for command in "${commands[@]}"; do
     command -v "$command" >/dev/null 2>&1 || {
         echo "Required command not found: $command" >&2
         exit 1
@@ -92,7 +122,7 @@ cd "$ROOT"
 
 if [[ "$SKIP_BUILD" != "1" ]]; then
     echo "==> Building CN frontend"
-    pnpm build
+    node scripts/tasks.mjs build --target cn --channel "$CHANNEL" --dist-dir "$DIST_DIR"
 else
     echo "==> Skipping build; using existing dist/"
 fi
@@ -169,8 +199,14 @@ REMOTE_SCRIPT
     echo "==> Server dist deployed to ${SSH_HOST}:${REMOTE_DIR}/dist"
 }
 
+if [[ "$SERVER_ONLY" == "1" ]]; then
+    deploy_server_dist
+    echo "==> CN server dist deployment succeeded"
+    exit 0
+fi
+
 echo "==> Publishing CN dist to OSS while deploying the server dist"
-DIST_DIR="$DIST_DIR" pnpm publish:web &
+DIST_DIR="$DIST_DIR" node scripts/publish-oss.js &
 PUBLISH_PID=$!
 
 SERVER_STATUS=0
@@ -181,7 +217,7 @@ wait "$PUBLISH_PID" || PUBLISH_STATUS=$?
 
 if ((PUBLISH_STATUS != 0 || SERVER_STATUS != 0)); then
     if ((PUBLISH_STATUS != 0)); then
-        echo "publish:web failed with exit code $PUBLISH_STATUS" >&2
+        echo "OSS publish failed with exit code $PUBLISH_STATUS" >&2
     fi
     if ((SERVER_STATUS != 0)); then
         echo "Server dist deployment failed with exit code $SERVER_STATUS" >&2

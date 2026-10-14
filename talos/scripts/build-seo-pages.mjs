@@ -34,7 +34,6 @@ const LOCAL_FONT_DIR = path.resolve(os.homedir(), 'Library/Fonts');
 const HARMONY_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans.ttf');
 const HARMONY_SC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_SC.ttf');
 const HARMONY_TC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_TC.ttf');
-const THAI_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans.ttf');
 const UDSHINGO_HK_DB_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf');
 const COINBASE_DISPLAY_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Regular-web-1.32.ttf');
 const COINBASE_DISPLAY_BOLD_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Bold-web-1.32.ttf');
@@ -43,7 +42,6 @@ const NOVECENTO_SLAB_BOLD_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Novecento Sl
 const PUBLIC_OUT_DIR = process.env.SEO_PUBLIC_OUT_DIR
   ? path.resolve(ROOT, process.env.SEO_PUBLIC_OUT_DIR)
   : path.resolve(ROOT, 'public');
-const LEGACY_POINTS_OUT_DIR = path.resolve(PUBLIC_OUT_DIR, 'points');
 const SEO_OUT_DIR = path.resolve(PUBLIC_OUT_DIR, 'seo');
 const SEO_POINTS_ROOT_DIR = path.resolve(SEO_OUT_DIR, 'points');
 const SEO_OG_OUT_DIR = path.resolve(SEO_OUT_DIR, 'og');
@@ -72,7 +70,6 @@ const POINT_ID_PERMUTATION_MOD = 1n << 36n;
 const POINT_ID_PERMUTATION_MULTIPLIER = 25214903917n;
 const POINT_ID_PERMUTATION_OFFSET = 11n;
 const POINT_ID_TOKEN_LENGTH = 7;
-const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
 const POINT_HTML_FILE_PATTERN = /^[0-9a-zA-Z]{7}\.html$/;
 const DEEP_LINK_QUERY_PARAMS = ['imageId', 'commentId'];
 
@@ -163,14 +160,6 @@ function resolveDefaultOgUrlBase() {
 
 const seoOgUrlBase = (process.env.SEO_OG_URL_BASE || resolveDefaultOgUrlBase()).replace(/\/$/, '');
 
-const seoUi = langKey === 'zh'
-  ? {
-      openMap: '打开地图集',
-    }
-  : {
-      openMap: 'Open in OEM',
-    };
-
 const html = (value) => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -182,7 +171,7 @@ const xml = html;
 
 const normalize = (value) => String(value ?? '')
   .replace(/\s+/g, ' ')
-  .replace(/\u0000/g, ' ')
+  .replaceAll('\0', ' ')
   .trim();
 
 const escapeXmlAttribute = (value) => String(value ?? '')
@@ -873,7 +862,6 @@ async function markerCompositeInputs(point, iconPath) {
     const frameLeft = (size - imageSize) / 2;
     const frameTop = (size - imageSize) / 2;
     const circleLeft = frameLeft + (imageSize - iconSize) / 2;
-    const circleTop = frameTop + (imageSize - iconSize) / 2;
     const circleCenter = circleLeft + iconSize / 2;
     const fillRadius = iconSize / 2;
     const selectedGoldRadius = fillRadius + 3 * scale;

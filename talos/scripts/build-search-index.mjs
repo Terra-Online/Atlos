@@ -66,7 +66,7 @@ const normalizeBinderKey = (s) =>
 const normalize = (s) =>
   String(s ?? '')
     .replace(/\s+/g, ' ')
-    .replace(/\u0000/g, ' ')
+    .replaceAll('\0', ' ')
     .trim()
 
 const joinUniqueNormalized = (...parts) => {

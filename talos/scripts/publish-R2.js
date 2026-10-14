@@ -200,7 +200,7 @@ const getMimeType = (filePath) => {
 // Keep search docs on single PUT so the remote ETag stays comparable to local MD5.
 const MULTIPART_THRESHOLD = 64 * 1024 * 1024;
 const MAX_RETRIES = 3;
-const verboseSkips = process.env.PUBLISH_VERBOSE_SKIPS !== "0";
+const verboseSkips = process.env.PUBLISH_VERBOSE_SKIPS === "1";
 const shouldUploadSeoPointAliases = process.env.SEO_UPLOAD_POINT_ALIASES === "1";
 const seoPointAliasConcurrency = Number.parseInt(process.env.SEO_POINT_ALIAS_CONCURRENCY || "150", 10);
 const uploadProfile = process.env.R2_UPLOAD_PROFILE === "resources" ? "resources" : "full";

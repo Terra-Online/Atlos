@@ -1,26 +1,29 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+import { pagesConfig } from './pages-config.mjs';
+import { verifyArtifact, verifyOutput } from './release-artifact.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
-const args = process.argv.slice(2);
-const shouldSkipIntel = args.includes('--skip-intel');
-
-const getArgValue = (name, fallback = '') => {
-  const withEq = args.find((arg) => arg.startsWith(`${name}=`));
-  if (withEq) return withEq.slice(name.length + 1);
-  const idx = args.indexOf(name);
-  if (idx !== -1 && idx + 1 < args.length) return args[idx + 1];
-  return fallback;
-};
-
-const target = getArgValue('--target', 'org').toLowerCase();
-const channel = getArgValue('--channel', process.env.DEPLOY_CHANNEL || 'beta').toLowerCase();
-const outputDirArg = getArgValue('--output-dir', path.resolve(ROOT, '.pages-dist', `${target}-${channel}`));
-const distDirArg = getArgValue('--dist-dir', process.env.DIST_DIR || path.resolve(ROOT, 'dist/r2'));
+const { values } = parseArgs({
+  args: process.argv.slice(2).filter((arg) => arg !== '--'),
+  options: { target: { type: 'string' }, channel: { type: 'string' }, 'skip-intel': { type: 'boolean' },
+    'dist-dir': { type: 'string' }, 'output-dir': { type: 'string' }, project: { type: 'string' },
+    branch: { type: 'string' }, 'custom-domain': { type: 'string' }, help: { type: 'boolean' } },
+});
+if (values.help) {
+  console.log('Usage: package-pages.mjs --target org --channel prod|beta [--dist-dir PATH] [--output-dir PATH] [--skip-intel]');
+  process.exit(0);
+}
+const shouldSkipIntel = !!values['skip-intel'];
+const target = (values.target || 'org').toLowerCase();
+const channel = (values.channel || process.env.DEPLOY_CHANNEL || 'prod').toLowerCase();
+const outputDirArg = values['output-dir'] || path.resolve(ROOT, '.pages-dist', `${target}-${channel}`);
+const distDirArg = values['dist-dir'] || process.env.DIST_DIR || path.resolve(ROOT, 'dist/r2');
 
 if (target !== 'org') {
   throw new Error(`Unsupported Pages target: ${target}. Only org is configured.`);
@@ -30,25 +33,10 @@ if (!['beta', 'prod'].includes(channel)) {
   throw new Error(`Unsupported Pages channel: ${channel}. Use beta or prod.`);
 }
 
-const pagesDefaults = {
-  org: {
-    beta: {
-      project: 'oem-root-uatenv',
-      branch: 'beta',
-      customDomain: 'beta.opendfieldmap.org',
-    },
-    prod: {
-      project: 'oem-root',
-      branch: 'main',
-      customDomain: 'opendfieldmap.org',
-    },
-  },
-};
-
-const defaults = pagesDefaults[target][channel];
-const project = getArgValue('--project', defaults.project);
-const branch = getArgValue('--branch', defaults.branch);
-const customDomain = getArgValue('--custom-domain', defaults.customDomain);
+const defaults = pagesConfig[channel];
+const project = values.project || defaults.project;
+const branch = values.branch || defaults.branch;
+const customDomain = values['custom-domain'] || defaults.customDomain;
 
 const distDir = path.resolve(ROOT, distDirArg);
 const outputDir = path.resolve(ROOT, outputDirArg);
@@ -88,7 +76,7 @@ const copyRootFiles = async () => {
 
 const copySeoPointAliases = async () => {
   if (!(await fs.pathExists(seoPointsDir))) {
-    throw new Error(`${path.relative(ROOT, seoPointsDir)}/ does not exist. Run pnpm build:r2 first.`);
+    throw new Error(`${path.relative(ROOT, seoPointsDir)}/ does not exist. Run node scripts/tasks.mjs build --target org first.`);
   }
 
   const files = (await fs.readdir(seoPointsDir))
@@ -193,8 +181,14 @@ const writePagesConfigFiles = async () => {
   );
 };
 
-if (!(await fs.pathExists(path.resolve(distDir, 'index.html')))) {
-  throw new Error(`${path.relative(ROOT, distDir)}/index.html does not exist. Run pnpm build:r2 first.`);
+// Validate the whole site before replacing a previous Pages package.
+await verifyArtifact(distDir, { channel, skipIntel: shouldSkipIntel }, target);
+await verifyOutput(ROOT, outputDir, 'pages');
+const relativeOutput = path.relative(distDir, outputDir);
+const relativeSource = path.relative(outputDir, distDir);
+const isWithin = (relative) => relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+if (isWithin(relativeOutput) || isWithin(relativeSource)) {
+  throw new Error('Pages output and source directories must not overlap.');
 }
 
 await fs.emptyDir(outputDir);
@@ -204,6 +198,7 @@ const pointCount = await copySeoPointAliases();
 await copyUserHubApp();
 if (!shouldSkipIntel) await copyIntelApp();
 await writePagesConfigFiles();
+await fs.writeJson(path.join(outputDir, '.atlos-pages.json'), { target, channel });
 
 console.log('[package-pages] completed.');
 console.log(`project: ${project}`);
