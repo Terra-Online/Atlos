@@ -103,6 +103,7 @@ const shouldForceAllImages = process.env.SEO_FORCE_ALL_IMAGES === '1';
 const shouldRefreshOgStateOnly = process.env.SEO_OG_REFRESH_STATE_ONLY === '1';
 const shouldSkipPointFiles = process.env.SEO_SKIP_POINT_FILES === '1';
 const shouldBuildImagesOnly = process.env.SEO_IMAGE_ONLY === '1';
+const useLegacyOgPipeline = process.env.SEO_OG_PIPELINE === 'legacy';
 const shouldBuildPreviewOnly = process.env.SEO_PREVIEW_ONLY === '1';
 const shouldWriteWorkerPreview = shouldBuildPreviewOnly || process.env.SEO_WRITE_WORKER_PREVIEW === '1';
 const workerPreviewFile = process.env.SEO_PREVIEW_OUTPUT_FILE
@@ -126,12 +127,14 @@ const seoOgConcurrency = Number.isFinite(requestedSeoOgConcurrency) && requested
   ? requestedSeoOgConcurrency
   : defaultSeoOgConcurrency;
 const SEO_STATE_VERSION = 1;
-const OG_RENDER_SIGNATURE_VERSION = 4;
-const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last';
+const OG_RENDER_SIGNATURE_VERSION = 5;
+const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last-lossless-raw';
 const FILE_FINGERPRINT_VERSION = 2;
 
 const fileFingerprintCache = new Map();
 const renderCache = new Map();
+const pathExistsCache = new Map();
+const iconPathCache = new Map();
 
 // Store in-flight promises too: concurrent points share the same render work.
 function cachedRender(key, render) {
@@ -142,6 +145,44 @@ function cachedRender(key, render) {
 function markerIconInput(file, size, fit) {
   return cachedRender(`icon:${file}:${size}:${fit}`, () =>
     sharp(file).resize(size, size, { fit }).png().toBuffer());
+}
+
+function cachedPathExists(file) {
+  if (!pathExistsCache.has(file)) {
+    pathExistsCache.set(file, pathExists(file));
+  }
+  return pathExistsCache.get(file);
+}
+
+function workMapMask() {
+  return cachedRender('mask:work', () => Buffer.from(`
+    <svg width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" viewBox="0 0 ${WORK_IMAGE_WIDTH} ${WORK_IMAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mask" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+          <stop offset="0.48" stop-color="#000000" stop-opacity="0.08"/>
+          <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
+        </linearGradient>
+      </defs>
+      <rect width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" fill="url(#mask)"/>
+    </svg>
+  `));
+}
+
+function rawOptions(image) {
+  return {
+    width: image.info.width,
+    height: image.info.height,
+    channels: image.info.channels,
+  };
+}
+
+function sharpFromRaw(image) {
+  return sharp(image.data, { raw: rawOptions(image) });
+}
+
+async function toRaw(image) {
+  return image.raw().toBuffer({ resolveWithObject: true });
 }
 
 function readJsonSync(file) {
@@ -559,16 +600,22 @@ function tileSuffixForTier(tier) {
 
 async function resolveIconPath(typeInfo) {
   const key = typeInfo.icon ?? typeInfo.key;
-  const candidates = [
-    path.resolve(ITEM_DIR, `${key}.webp`),
-    path.resolve(MARKER_ICON_DIR, `${key}.webp`),
-    path.resolve(ITEM_DIR, `${typeInfo.key}.webp`),
-    path.resolve(MARKER_ICON_DIR, `${typeInfo.key}.webp`),
-  ];
-  for (const candidate of candidates) {
-    if (await pathExists(candidate)) return candidate;
-  }
-  return null;
+  const cacheKey = `${key}:${typeInfo.key}`;
+  if (iconPathCache.has(cacheKey)) return iconPathCache.get(cacheKey);
+  const result = (async () => {
+    const candidates = [
+      path.resolve(ITEM_DIR, `${key}.webp`),
+      path.resolve(MARKER_ICON_DIR, `${key}.webp`),
+      path.resolve(ITEM_DIR, `${typeInfo.key}.webp`),
+      path.resolve(MARKER_ICON_DIR, `${typeInfo.key}.webp`),
+    ];
+    for (const candidate of candidates) {
+      if (await cachedPathExists(candidate)) return candidate;
+    }
+    return null;
+  })();
+  iconPathCache.set(cacheKey, result);
+  return result;
 }
 
 async function buildHtmlSignature(point) {
@@ -1052,20 +1099,8 @@ async function renderMapPatternSampleBackground() {
 }
 
 async function applyWorkMapMask(buffer) {
-  const overlay = Buffer.from(`
-    <svg width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" viewBox="0 0 ${WORK_IMAGE_WIDTH} ${WORK_IMAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="mask" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#000000" stop-opacity="0"/>
-          <stop offset="0.48" stop-color="#000000" stop-opacity="0.08"/>
-          <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
-        </linearGradient>
-      </defs>
-      <rect width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" fill="url(#mask)"/>
-    </svg>
-  `);
   return sharp(buffer)
-    .composite([{ input: overlay, left: 0, top: 0 }])
+    .composite([{ input: workMapMask(), left: 0, top: 0 }])
     .jpeg({ quality: 90 })
     .toBuffer();
 }
@@ -1210,7 +1245,7 @@ async function addTileComposite(composites, regionKey, tileZoom, centerPixel, so
   const tileY = Math.floor((centerPixel.y + offsetY) / TILE_IMAGE_SIZE);
   const suffix = suffixOverride ?? tileSuffixForTier(sourceTier);
   const tilePath = path.resolve(CLIPS_DIR, regionKey, String(tileZoom), `${tileX}_${tileY}${suffix}.webp`);
-  if (!(await pathExists(tilePath))) return false;
+  if (!(await cachedPathExists(tilePath))) return false;
   const left = Math.round(SAMPLE_IMAGE_WIDTH / 2 + tileX * TILE_IMAGE_SIZE - centerPixel.x);
   const top = Math.round(SAMPLE_IMAGE_HEIGHT / 2 + tileY * TILE_IMAGE_SIZE - centerPixel.y);
   composites.push({ input: tilePath, left, top });
@@ -1246,7 +1281,7 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
   return inputs;
 }
 
-async function generateOgImage(point) {
+async function generateLegacyOgImage(point) {
   const region = point.region;
   const tileZoom = getOgTileZoom(region);
   const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
@@ -1311,7 +1346,7 @@ async function generateOgImage(point) {
   await fs.writeFile(point.ogImagePath, outputBuffer);
 }
 
-async function generateFallbackOgImage(point) {
+async function generateLegacyFallbackOgImage(point) {
   const iconPath = await resolveIconPath(point.typeInfo);
   const logoInput = await brandCompositeInput();
   const markerInputs = await markerCompositeInputs(point, iconPath);
@@ -1331,6 +1366,91 @@ async function generateFallbackOgImage(point) {
     .jpeg({ quality: 80 })
     .toBuffer();
   await fs.writeFile(point.ogImagePath, outputBuffer);
+}
+
+async function generateOgImage(point) {
+  if (useLegacyOgPipeline) return generateLegacyOgImage(point);
+
+  const region = point.region;
+  const tileZoom = getOgTileZoom(region);
+  const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
+  const markerCenter = tileImagePixelToOgPixel(centerPixel, centerPixel);
+  const mainTileComposites = [];
+  const layerTileComposites = [];
+  const suffix = tileSuffixForTier(point.marker.tier);
+  for (const [x, y] of getOgTileOffsets()) {
+    await addTileComposite(mainTileComposites, point.regionKey, tileZoom, centerPixel, 0, x, y, '');
+    if (suffix) {
+      await addTileComposite(layerTileComposites, point.regionKey, tileZoom, centerPixel, point.marker.tier, x, y);
+    }
+  }
+
+  const mapTileComposites = suffix
+    ? [{
+        input: await sharp({
+          create: {
+            width: SAMPLE_IMAGE_WIDTH,
+            height: SAMPLE_IMAGE_HEIGHT,
+            channels: 4,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+          },
+        })
+          .composite(mainTileComposites)
+          .modulate({ brightness: 0.5 })
+          .png()
+          .toBuffer(),
+        left: 0,
+        top: 0,
+      }, ...layerTileComposites]
+    : mainTileComposites;
+
+  const iconPath = await resolveIconPath(point.typeInfo);
+  const logoInput = await brandCompositeInput();
+  const labelInputs = await labelCompositeInputs(point, centerPixel, tileZoom);
+  const markerInputs = await markerCompositeInputs({ ...point, overlayCenter: markerCenter }, iconPath);
+  // Keep the tile stage lossless. The old pipeline encoded this intermediate
+  // as JPEG before resizing and masking, which compounded image loss.
+  const sampleBackground = await toRaw(sharp(await createMapPatternSampleBackground())
+    .composite(mapTileComposites)
+  );
+  const workBackground = await toRaw(sharpFromRaw(sampleBackground)
+    .resize(WORK_IMAGE_WIDTH, WORK_IMAGE_HEIGHT, { fit: 'fill' }));
+  const maskedWork = await toRaw(sharpFromRaw(workBackground)
+    .composite([{ input: workMapMask(), left: 0, top: 0 }])
+  );
+  const cropped = await toRaw(sharpFromRaw(maskedWork)
+    .composite([...labelInputs, ...markerInputs])
+    .extract({
+      left: 0,
+      top: WORK_IMAGE_CROP_TOP,
+      width: IMAGE_WIDTH,
+      height: IMAGE_HEIGHT,
+    }));
+  let pipeline = sharpFromRaw(cropped);
+  if (logoInput) pipeline = pipeline.composite([logoInput]);
+  await fs.writeFile(point.ogImagePath, await pipeline.jpeg({ quality: 80 }).toBuffer());
+}
+
+async function generateFallbackOgImage(point) {
+  if (useLegacyOgPipeline) return generateLegacyFallbackOgImage(point);
+
+  const iconPath = await resolveIconPath(point.typeInfo);
+  const logoInput = await brandCompositeInput();
+  const markerInputs = await markerCompositeInputs(point, iconPath);
+  const maskedWork = await toRaw(sharp(await createMapPatternBackground())
+    .composite([{ input: workMapMask(), left: 0, top: 0 }])
+  );
+  const cropped = await toRaw(sharpFromRaw(maskedWork)
+    .composite(markerInputs)
+    .extract({
+      left: 0,
+      top: WORK_IMAGE_CROP_TOP,
+      width: IMAGE_WIDTH,
+      height: IMAGE_HEIGHT,
+    }));
+  let pipeline = sharpFromRaw(cropped);
+  if (logoInput) pipeline = pipeline.composite([logoInput]);
+  await fs.writeFile(point.ogImagePath, await pipeline.jpeg({ quality: 80 }).toBuffer());
 }
 
 function buildPointHtml(point) {

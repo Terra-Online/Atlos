@@ -41,6 +41,8 @@ All apps process fonts in parallel; Intel and user-hub emit WOFF2 only.
 Run `python3 scripts/subset_fonts_test.py` for font cache regression checks
 (requires fonttools and brotli).
 Vite reports emitted asset sizes and gzip sizes for each app.
+OG rendering keeps map intermediates lossless in memory; use
+`SEO_OG_PIPELINE=legacy` only to compare against the previous JPEG pipeline.
 Builds never publish. Partial builds invalidate the full-site build receipt;
 rebuild the complete site before publishing.
 
