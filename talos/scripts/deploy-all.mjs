@@ -77,6 +77,10 @@ if (!shouldSkipIntel) {
   }
 }
 
+if (!shouldSkipSubset) {
+  runSync('pnpm', ['--filter', '@atlos/user-hub', 'subset:fonts']);
+}
+
 if (!shouldSkipOg) runSync('pnpm', ['run', 'build:seo:og']);
 
 const ossDistDir = path.resolve(ROOT, 'dist/oss');

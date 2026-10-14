@@ -123,9 +123,15 @@ const copyUserHubApp = async () => {
 };
 
 const writePagesConfigFiles = async () => {
-  const redirects = shouldSkipIntel
-    ? '/me /me/index.html 200\n/me/* /me/index.html 200\n/* /index.html 200\n'
-    : '/me /me/index.html 200\n/me/* /me/index.html 200\n/intel /intel/index.html 200\n/intel/* /intel/index.html 200\n/* /index.html 200\n';
+  // Pages rejects wildcard rewrites to index.html as potential redirect loops.
+  // Rewrite to the app directory, keeping its assets ahead of the SPA fallback.
+  // Unmatched main-site paths use Pages' built-in root SPA fallback.
+  const apps = shouldSkipIntel ? ['me'] : ['me', 'intel'];
+  const redirects = apps.flatMap((app) => [
+    `/${app} /${app}/ 302`,
+    `/${app}/assets/* /${app}/assets/:splat 200`,
+    `/${app}/* /${app}/ 200`,
+  ]).join('\n') + '\n';
   const intelHeaders = shouldSkipIntel
     ? []
     : [

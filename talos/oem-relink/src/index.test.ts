@@ -63,6 +63,28 @@ describe('oem-relink worker routes', () => {
         );
     });
 
+    it.each([
+        ['CN', 'https://opendfieldmap.cn'],
+        ['US', 'https://opendfieldmap.org'],
+    ])('preserves user-center routes for %s visitors', async (country, origin) => {
+        for (const path of [
+            '/me',
+            '/me/',
+            '/me/content',
+            '/me/profile?lang=zh-HK&returnTo=%2Fme%2Fcontent',
+        ]) {
+            const response = await worker.fetch(
+                new Request(`https://oem.re${path}`, {
+                    headers: { 'cf-ipcountry': country },
+                }),
+            );
+
+            expect(response.status).toBe(302);
+            expect(response.headers.get('location')).toBe(`${origin}${path}`);
+            expect(response.headers.get('cache-control')).toBe('no-store');
+        }
+    });
+
     it('rejects hosts outside the short-domain whitelist', async () => {
         const response = await worker.fetch(
             new Request('https://example.com/map'),

@@ -6,6 +6,20 @@ import { resolve } from 'node:path';
 
 const target = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const envDir = resolve(import.meta.dirname, '../..');
+const mainFontLoader = resolve(envDir, 'src/locale/fontLoader.ts');
+const fontAssets = resolve(import.meta.dirname, 'src/locale/fontAssets.ts');
+
+const fontAssetsPlugin = (): import('vite').Plugin => ({
+    name: 'user-hub-font-assets',
+    enforce: 'pre',
+    resolveId(source, importer) {
+        if (source !== './fontAssets' || !importer) return null;
+        const normalizedImporter = importer.replace(/\\/g, '/').split('?')[0];
+        return normalizedImporter === mainFontLoader.replace(/\\/g, '/')
+            ? fontAssets
+            : null;
+    },
+});
 const htmlMetadata =
     target === 'oss'
         ? {
@@ -40,6 +54,7 @@ export default defineConfig(({ command }) => {
         envDir,
         plugins: [
             htmlMetadataPlugin(),
+            fontAssetsPlugin(),
             react(),
             svgr(),
             ...(command === 'serve'
@@ -104,7 +119,26 @@ export default defineConfig(({ command }) => {
                 output: {
                     entryFileNames: 'assets/user-hub-[hash].js',
                     chunkFileNames: 'assets/user-hub-[name]-[hash].js',
-                    assetFileNames: 'assets/user-hub-[name]-[hash][extname]',
+                    assetFileNames(assetInfo) {
+                        const sourceNames = [
+                            ...(assetInfo.originalFileNames || []),
+                            ...(assetInfo.names || []),
+                            assetInfo.name,
+                        ]
+                            .filter(Boolean)
+                            .map((value) => String(value).replace(/\\/g, '/'));
+                        const fontSource = sourceNames.find(
+                            (value) =>
+                                /\.(?:woff2?|otf|ttf)$/i.test(value) &&
+                                value.includes('/assets/fonts/'),
+                        );
+                        const family = fontSource?.match(
+                            /\/assets\/fonts\/([^/]+)\//,
+                        )?.[1];
+                        return family
+                            ? `assets/fonts/${family}/[name]-[hash][extname]`
+                            : 'assets/user-hub-[name]-[hash][extname]';
+                    },
                 },
             },
         },
