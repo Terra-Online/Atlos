@@ -275,7 +275,7 @@ const buildSite = async (runner, options, target) => {
                       'vite',
                       'build',
                       '--logLevel',
-                      'warn',
+                      'info',
                       '--outDir',
                       dir,
                   ]
@@ -286,7 +286,7 @@ const buildSite = async (runner, options, target) => {
                       'vite',
                       'build',
                       '--logLevel',
-                      'warn',
+                      'info',
                       '--outDir',
                       path.join(dir, apps[name]),
                   ];

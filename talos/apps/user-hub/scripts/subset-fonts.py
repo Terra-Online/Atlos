@@ -13,13 +13,13 @@ Output:
   - apps/user-hub/src/assets/fonts/UD_ShinGo/*
   - apps/user-hub/src/assets/fonts/Harmony/*
 
-The processing functions, formats, font list and subset options are imported
-directly from scripts/subset-fonts.py so User-hub stays aligned with the main site.
+The processing functions, font list and subset options are imported from
+scripts/subset_fonts.py; this app only emits the WOFF2 format it consumes.
 """
 
 from __future__ import annotations
 
-import importlib.util
+import sys
 import json
 import unicodedata
 from pathlib import Path
@@ -28,7 +28,6 @@ from types import ModuleType
 
 HUB_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = HUB_DIR.parents[1]
-MAIN_SUBSET_SCRIPT = PROJECT_ROOT / 'scripts' / 'subset-fonts.py'
 HUB_LOCALE_DIR = HUB_DIR / 'src' / 'locale' / 'data'
 MAIN_GAME_LOCALE_DIR = PROJECT_ROOT / 'src' / 'locale' / 'data' / 'game'
 MAIN_UI_LOCALE_DIR = PROJECT_ROOT / 'src' / 'locale' / 'data' / 'ui'
@@ -47,12 +46,10 @@ REGION_LOCALES = {
 
 
 def load_main_pipeline() -> ModuleType:
-    spec = importlib.util.spec_from_file_location('atlos_main_subset_fonts', MAIN_SUBSET_SCRIPT)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f'Unable to load main font pipeline: {MAIN_SUBSET_SCRIPT}')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    # A normal module import lets multiprocessing workers import the same code.
+    sys.path.insert(0, str(PROJECT_ROOT / 'scripts'))
+    import subset_fonts
+    return subset_fonts
 
 
 def extract_characters(value: object) -> set[str]:
@@ -150,12 +147,7 @@ def main() -> None:
     pipeline = load_main_pipeline()
     args = pipeline.parse_args()
     region_characters = collect_region_characters()
-    # The main module is loaded from its script path, so its ProcessPool jobs
-    # cannot be imported by a spawned worker. Serial execution still calls the
-    # exact same main-site processing functions and subset options.
-    workers = 1
-    if args.workers not in (None, 1):
-        print('User-hub wrapper uses one worker while reusing the main font pipeline.')
+    workers = pipeline.resolve_worker_count(args.workers)
 
     pipeline.FONTS_DIR = OUTPUT_DIR
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -164,11 +156,13 @@ def main() -> None:
         'Processing User-hub UD_ShinGo Fonts',
         [(font_path, characters_for_font(font_path, region_characters)) for font_path in pipeline.UDSHINGO_FONTS],
         workers,
+        formats=('woff2',),
     )
     pipeline.run_font_jobs(
         'Processing User-hub Harmony Fonts',
         [(font_path, characters_for_font(font_path, region_characters)) for font_path in pipeline.HARMONY_FONTS],
         workers,
+        formats=('woff2',),
     )
     remove_non_web_outputs(pipeline)
 

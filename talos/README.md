@@ -35,6 +35,12 @@ pnpm preview --outDir dist/r2
 Outputs remain `dist/oss` (CN) and `dist/r2` (ORG); the default build and
 preview target is ORG. `--skip-subset` skips font subsetting in all apps;
 `--skip-subset-fonts` remains an alias.
+Font processing caches input signatures and output hashes under `.cache/fonts`.
+Unchanged fonts are skipped; missing or modified outputs are regenerated.
+All apps process fonts in parallel; Intel and user-hub emit WOFF2 only.
+Run `python3 scripts/subset_fonts_test.py` for font cache regression checks
+(requires fonttools and brotli).
+Vite reports emitted asset sizes and gzip sizes for each app.
 Builds never publish. Partial builds invalidate the full-site build receipt;
 rebuild the complete site before publishing.
 

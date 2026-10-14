@@ -131,6 +131,18 @@ const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last';
 const FILE_FINGERPRINT_VERSION = 2;
 
 const fileFingerprintCache = new Map();
+const renderCache = new Map();
+
+// Store in-flight promises too: concurrent points share the same render work.
+function cachedRender(key, render) {
+  if (!renderCache.has(key)) renderCache.set(key, render());
+  return renderCache.get(key);
+}
+
+function markerIconInput(file, size, fit) {
+  return cachedRender(`icon:${file}:${size}:${fit}`, () =>
+    sharp(file).resize(size, size, { fit }).png().toBuffer());
+}
 
 function readJsonSync(file) {
   try {
@@ -811,7 +823,7 @@ function labelSvg(text, labelType = 'site') {
   const tspans = lines.map((line, index) =>
     `<tspan x="${width / 2}" y="${yStart + index * lineHeight}">${escapeSvgText(line)}</tspan>`,
   ).join('');
-  return Buffer.from(`
+  return { width, height, input: Buffer.from(`
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
   <style>
@@ -846,7 +858,7 @@ function labelSvg(text, labelType = 'site') {
   ${tspans}
 </text>
     </svg>
-  `);
+  `) };
 }
 
 async function markerCompositeInputs(point, iconPath) {
@@ -923,7 +935,7 @@ async function markerCompositeInputs(point, iconPath) {
     }];
     if (iconPath) {
       inputs.push({
-        input: await sharp(iconPath).resize(Math.round(imageSize), Math.round(imageSize), { fit: 'cover' }).png().toBuffer(),
+        input: await markerIconInput(iconPath, Math.round(imageSize), 'cover'),
         left: Math.round(framedMarkerCenter.x - imageSize / 2),
         top: Math.round(framedMarkerCenter.y - imageSize / 2),
       });
@@ -935,10 +947,7 @@ async function markerCompositeInputs(point, iconPath) {
   const inputs = [];
   if (iconPath) {
     inputs.push({
-      input: await sharp(iconPath)
-        .resize(imageSize, imageSize, { fit: 'contain' })
-        .png()
-        .toBuffer(),
+      input: await markerIconInput(iconPath, imageSize, 'contain'),
       left: Math.round(markerCenter.x - imageSize / 2),
       top: Math.round(markerCenter.y - imageSize / 2),
     });
@@ -962,7 +971,11 @@ async function markerCompositeInputs(point, iconPath) {
   return inputs;
 }
 
-async function createMapPatternBackground() {
+function createMapPatternBackground() {
+  return cachedRender('pattern:work', renderMapPatternBackground);
+}
+
+async function renderMapPatternBackground() {
   const patternTileSize = 100;
   const patternSvg = await fs.readFile(MAP_PATTERN_FILE);
   const patternTile = await sharp({
@@ -998,7 +1011,11 @@ async function createMapPatternBackground() {
     .toBuffer();
 }
 
-async function createMapPatternSampleBackground() {
+function createMapPatternSampleBackground() {
+  return cachedRender('pattern:sample', renderMapPatternSampleBackground);
+}
+
+async function renderMapPatternSampleBackground() {
   const patternTileSize = 100;
   const patternSvg = await fs.readFile(MAP_PATTERN_FILE);
   const patternTile = await sharp({
@@ -1053,7 +1070,11 @@ async function applyWorkMapMask(buffer) {
     .toBuffer();
 }
 
-async function brandCompositeInput() {
+function brandCompositeInput() {
+  return cachedRender('brand', renderBrandCompositeInput);
+}
+
+async function renderBrandCompositeInput() {
   if (!(await pathExists(OBSERVATOR_LOGO_FILE))) return null;
   const logoHeight = 96;
   const logoInput = await sharp(OBSERVATOR_LOGO_FILE)
@@ -1205,10 +1226,9 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
     if (!text) continue;
     const labelPixel = maxZoomPixelToTileImagePixel(label.point, point.region, tileZoom);
     const { x, y } = tileImagePixelToOgPixel(labelPixel, centerPixel);
-    const input = labelSvg(text, label.type);
-    const metadata = await sharp(input).metadata();
-    const width = metadata.width ?? 141;
-    const height = metadata.height ?? 44;
+    const { input, width, height } = await cachedRender(
+      `label:${label.type}:${text}`, () => labelSvg(text, label.type),
+    );
     if (
       x - width / 2 < 0
       || x + width / 2 > IMAGE_WIDTH
