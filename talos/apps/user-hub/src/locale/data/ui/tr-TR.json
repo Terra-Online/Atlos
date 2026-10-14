@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Kullanıcı merkezi - {site}",
+    "title": "Kullanıcı merkezi",
+    "back": "Haritaya dön",
+    "refresh": "Yenile",
+    "signOut": "Çıkış yap",
+    "navigation": "Kullanıcı merkezi gezinme menüsü",
+    "tabs": {
+      "contributions": "İçerik merkezi",
+      "account": "Hesap yönetimi",
+      "profile": "Kişisel bilgiler"
+    },
+    "kinds": {
+      "all": "Tümü",
+      "image": "Görseller",
+      "comment": "Yorumlar"
+    },
+    "loadError": "Hesabınız yüklenemedi.",
+    "actionError": "İşlem başarısız oldu. Lütfen tekrar deneyin.",
+    "contributionsError": "Katkılar yüklenemedi.",
+    "retry": "Tekrar dene",
+    "loadMore": "Daha fazla yükle",
+    "emptyContributions": "Henüz katkı yok.",
+    "registeredAt": "Kayıt tarihi",
+    "accountStatus": "Hesap durumu",
+    "loginMethods": "Giriş yöntemleri",
+    "verified": "Doğrulandı",
+    "linkedAt": "Bağlandı",
+    "notLinked": "Bağlı değil",
+    "link": "Bağla",
+    "unlink": "Bağlantıyı kaldır",
+    "keepLoginMethod": "En az bir giriş yöntemini koruyun. Son giriş yöntemi kaldırılamaz.",
+    "notBound": "Bağlı bir Endfield hesabı yok.",
+    "endfieldRole": "Endfield karakteri",
+    "server": "Sunucu",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı",
+    "endfieldAccount": "Endfield hesabı",
+    "bindFromMap": "Bir Endfield hesabını bağlamak için haritadaki hesap bağlama penceresini açın.",
+    "status": {
+      "pending_openai": "İnceleniyor",
+      "pending_audit": "Manuel inceleme bekliyor",
+      "active": "Herkese açık",
+      "flagged": "Bildirildi",
+      "remove_request": "Kaldırılması istendi",
+      "stale": "Kullanılamıyor"
+    },
+    "contentHint": "Gönderilerinizi ve inceleme durumlarını görüntüleyin.",
+    "accountHint": "Giriş yöntemlerini ve bağlı hesapları yönetin.",
+    "contentType": "İçerik türü",
+    "content": "İçerik",
+    "reviewStatus": "Durum",
+    "submittedAt": "Gönderim tarihi",
+    "pendingShort": "İnceleniyor",
+    "email": "E-posta",
+    "emptyContributionsHint": "Haritadan bir görsel veya yorum paylaşın. Gönderileriniz burada görünecek.",
+    "profileHint": "Avatarınızı değiştirin.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Önizleme kullanılamıyor",
+    "commentLocation": ", ({point}) konumunda",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Yüklendi",
+      "ai": {
+        "current": "OpenAI incelemesi sürüyor",
+        "complete": "OpenAI tarafından incelendi"
+      },
+      "manual": {
+        "current": "Manuel inceleme sürüyor",
+        "complete": "Manuel olarak incelendi"
+      },
+      "public": {
+        "current": "Yayımlanmayı bekliyor",
+        "complete": "Yayımlandı"
+      },
+      "archived": {
+        "current": "Arşivleniyor",
+        "complete": "Arşivlendi"
+      }
+    }
+  },
+  "common": {
+    "loading": "Yükleniyor..."
+  }
+}

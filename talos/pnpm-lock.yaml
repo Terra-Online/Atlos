@@ -240,6 +240,8 @@ importers:
 
   apps/intel: {}
 
+  apps/user-hub: {}
+
   oem-relink:
     devDependencies:
       '@cloudflare/workers-types':

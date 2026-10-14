@@ -1,3 +1,4 @@
+import Feed from './feed';
 import React, {
     useCallback,
     useEffect,
@@ -35,12 +36,11 @@ import {
 import NotificationIcon from '@/assets/logos/group.svg?react';
 import CheckAllIcon from '@/assets/logos/collectall.svg?react';
 import CommunityIcon from '@/assets/logos/reply.svg?react';
-import SystemIcon from '@/assets/logos/announce.svg?react';
+import ModerationIcon from '@/assets/logos/moderator.svg?react';
 import GitHubLogo from '@/assets/images/UI/media/github.svg?react';
 import DiscordLogo from '@/assets/images/UI/media/discord.svg?react';
 import SklandLogo from '@/assets/images/UI/media/skland.svg?react';
 import SkportLogo from '@/assets/images/UI/media/skport.svg?react';
-import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import {
     formatNotificationMessage,
     type NotificationSubjectKind,
@@ -480,7 +480,6 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const readBatcherRef =
         useRef<NotificationReadBatcher<NotificationCategory> | null>(null);
     const notificationListRef = useRef<HTMLDivElement | null>(null);
-    const [isListScrolledBottom, setIsListScrolledBottom] = useState(true);
 
     const publishUnread = useCallback(
         (nextUnread: NotificationUnreadCounts) => {
@@ -735,7 +734,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
             },
             {
                 key: 'system',
-                icon: <SystemIcon />,
+                icon: <ModerationIcon />,
                 title:
                     unread.system > 0
                         ? `${t('notification.tabs.system')} (${unread.system})`
@@ -746,38 +745,6 @@ const NotifyModal: React.FC<NotifyProps> = ({
     );
     const activeFeed = feeds[activeCategory];
     const hasMessages = activeFeed.items.length > 0;
-    const updateListScrollState = useCallback(() => {
-        const list = notificationListRef.current;
-        if (!list) return;
-        const atBottom =
-            list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
-        setIsListScrolledBottom((current) =>
-            current === atBottom ? current : atBottom,
-        );
-    }, []);
-
-    useLayoutEffect(() => {
-        if (!open) return undefined;
-        const list = notificationListRef.current;
-        if (!list) return undefined;
-
-        const frame = window.requestAnimationFrame(updateListScrollState);
-        list.addEventListener('transitionend', updateListScrollState);
-        const resizeObserver = new ResizeObserver(updateListScrollState);
-        resizeObserver.observe(list);
-        return () => {
-            window.cancelAnimationFrame(frame);
-            list.removeEventListener('transitionend', updateListScrollState);
-            resizeObserver.disconnect();
-        };
-    }, [
-        activeCategory,
-        activeFeed.items,
-        expandedIds,
-        open,
-        updateListScrollState,
-    ]);
-
     useEffect(() => {
         if (!open || !sessionUser || activeFeed.loading || markingAll)
             return undefined;
@@ -842,82 +809,67 @@ const NotifyModal: React.FC<NotifyProps> = ({
             contentClassName={`${styles.notifyContent} ${hasMessages ? styles.withMessages : ''}`}
         >
             <div className={styles.notifyRoot}>
-                <div className={styles.listViewport}>
-                    <div
-                        className={styles.notificationList}
-                        role='tabpanel'
-                        ref={notificationListRef}
-                        onScroll={updateListScrollState}
-                    >
-                        {!sessionUser ? (
-                            <NotificationEmptyState>
-                                {interpolateSimpleNodes(
-                                    t('notification.guest'),
-                                    {
-                                        account: (
-                                            <button
-                                                type='button'
-                                                className={styles.emptyAction}
-                                                onClick={handleOpenAuth}
-                                            >
-                                                {t('notification.account')}
-                                            </button>
-                                        ),
-                                    },
-                                )}
-                            </NotificationEmptyState>
-                        ) : activeFeed.loading ? (
-                            <p className={styles.statusState}>
-                                {t('common.loading')}
-                            </p>
-                        ) : activeFeed.error &&
-                          activeFeed.items.length === 0 ? (
-                            <p className={styles.statusState}>
-                                {t('notification.loadError')}
-                            </p>
-                        ) : activeFeed.items.length === 0 ? (
-                            <NotificationEmptyState>
-                                {t('notification.empty')}
-                            </NotificationEmptyState>
-                        ) : (
-                            <>
-                                {activeFeed.items.map((item) => (
-                                    <NotificationCard
-                                        key={item.id}
-                                        item={item}
-                                        expanded={expandedIds.has(item.id)}
-                                        onToggle={handleToggle}
-                                        onRead={handleRead}
-                                        onNavigate={handleNavigate}
+                <Feed listRef={notificationListRef}>
+                    {!sessionUser ? (
+                        <NotificationEmptyState>
+                            {interpolateSimpleNodes(
+                                t('notification.guest'),
+                                {
+                                    account: (
+                                        <button
+                                            type='button'
+                                            className={styles.emptyAction}
+                                            onClick={handleOpenAuth}
+                                        >
+                                            {t('notification.account')}
+                                        </button>
+                                    ),
+                                },
+                            )}
+                        </NotificationEmptyState>
+                    ) : activeFeed.loading ? (
+                        <p className={styles.statusState}>
+                            {t('common.loading')}
+                        </p>
+                    ) : activeFeed.error &&
+                      activeFeed.items.length === 0 ? (
+                        <p className={styles.statusState}>
+                            {t('notification.loadError')}
+                        </p>
+                    ) : activeFeed.items.length === 0 ? (
+                        <NotificationEmptyState>
+                            {t('notification.empty')}
+                        </NotificationEmptyState>
+                    ) : (
+                        <>
+                            {activeFeed.items.map((item) => (
+                                <NotificationCard
+                                    key={item.id}
+                                    item={item}
+                                    expanded={expandedIds.has(item.id)}
+                                    onToggle={handleToggle}
+                                    onRead={handleRead}
+                                    onNavigate={handleNavigate}
+                                />
+                            ))}
+                            {activeFeed.nextCursor && (
+                                <div className={styles.loadMore}>
+                                    <AccessButton
+                                        label={t(
+                                            activeFeed.loadingMore
+                                                ? 'common.loading'
+                                                : 'notification.loadMore',
+                                        )}
+                                        disabled={activeFeed.loadingMore}
+                                        onClick={() =>
+                                            void loadCategory(activeCategory, true)
+                                        }
                                     />
-                                ))}
-                                {activeFeed.nextCursor && (
-                                    <div className={styles.loadMore}>
-                                        <AccessButton
-                                            label={
-                                                activeFeed.loadingMore
-                                                    ? t('common.loading')
-                                                    : t('notification.loadMore')
-                                            }
-                                            disabled={activeFeed.loadingMore}
-                                            onClick={() =>
-                                                void loadCategory(
-                                                    activeCategory,
-                                                    true,
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                    <AdaptiveLinearBlur
-                        side='bottom'
-                        strength={6}
-                        className={`${styles.listBottomBlur} ${!isListScrolledBottom ? styles.visible : ''}`}
-                    />
-                </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </Feed>
 
                 <div className={styles.supportDivider}>
                     <span>{t('notification.support')}</span>

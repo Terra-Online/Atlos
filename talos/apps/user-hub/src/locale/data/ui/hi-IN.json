@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "उपयोगकर्ता केंद्र - {site}",
+    "title": "उपयोगकर्ता केंद्र",
+    "back": "मानचित्र पर वापस जाएँ",
+    "refresh": "रीफ़्रेश करें",
+    "signOut": "लॉग आउट",
+    "navigation": "उपयोगकर्ता केंद्र नेविगेशन",
+    "tabs": {
+      "contributions": "सामग्री केंद्र",
+      "account": "खाता प्रबंधन",
+      "profile": "व्यक्तिगत जानकारी"
+    },
+    "kinds": {
+      "all": "सभी",
+      "image": "चित्र",
+      "comment": "टिप्पणियाँ"
+    },
+    "loadError": "आपका खाता लोड नहीं हो सका।",
+    "actionError": "कार्रवाई विफल रही। कृपया फिर से प्रयास करें।",
+    "contributionsError": "योगदान लोड नहीं हो सके।",
+    "retry": "फिर प्रयास करें",
+    "loadMore": "और लोड करें",
+    "emptyContributions": "अभी तक कोई योगदान नहीं है।",
+    "registeredAt": "पंजीकरण की तारीख",
+    "accountStatus": "खाते की स्थिति",
+    "loginMethods": "लॉग इन के तरीके",
+    "verified": "सत्यापित",
+    "linkedAt": "लिंक करने की तारीख",
+    "notLinked": "लिंक नहीं है",
+    "link": "लिंक करें",
+    "unlink": "लिंक हटाएँ",
+    "keepLoginMethod": "लॉग इन का कम से कम एक तरीका बनाए रखें। अंतिम लॉग इन तरीका हटाया नहीं जा सकता।",
+    "notBound": "कोई Endfield खाता लिंक नहीं है।",
+    "endfieldRole": "Endfield पात्र",
+    "server": "सर्वर",
+    "enabled": "सक्षम",
+    "disabled": "अक्षम",
+    "endfieldAccount": "Endfield खाता",
+    "bindFromMap": "Endfield खाता लिंक करने के लिए मानचित्र पर खाता लिंक करने का संवाद खोलें।",
+    "status": {
+      "pending_openai": "समीक्षाधीन",
+      "pending_audit": "मैन्युअल समीक्षा की प्रतीक्षा में",
+      "active": "सार्वजनिक",
+      "flagged": "रिपोर्ट किया गया",
+      "remove_request": "हटाने का अनुरोध किया गया",
+      "stale": "अनुपलब्ध"
+    },
+    "contentHint": "अपने योगदान और समीक्षा की स्थिति देखें।",
+    "accountHint": "लॉग इन के तरीकों और लिंक किए गए खातों का प्रबंधन करें।",
+    "contentType": "सामग्री का प्रकार",
+    "content": "सामग्री",
+    "reviewStatus": "समीक्षा की स्थिति",
+    "submittedAt": "जमा करने का समय",
+    "pendingShort": "समीक्षाधीन",
+    "email": "ईमेल",
+    "emptyContributionsHint": "मानचित्र से कोई चित्र या टिप्पणी साझा करें। आपके योगदान यहाँ दिखाई देंगे।",
+    "profileHint": "अपना अवतार बदलें।",
+    "avatar": "अवतार",
+    "avatarChoice": "अवतार {index}",
+    "previewUnavailable": "पूर्वावलोकन उपलब्ध नहीं है",
+    "commentLocation": ", स्थान: ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "अपलोड किया गया",
+      "ai": {
+        "current": "OpenAI समीक्षा जारी है",
+        "complete": "OpenAI समीक्षा पूरी हुई"
+      },
+      "manual": {
+        "current": "मैन्युअल समीक्षा जारी है",
+        "complete": "मैन्युअल समीक्षा पूरी हुई"
+      },
+      "public": {
+        "current": "प्रकाशन की प्रतीक्षा में",
+        "complete": "प्रकाशित"
+      },
+      "archived": {
+        "current": "संग्रह किया जा रहा है",
+        "complete": "संग्रहीत"
+      }
+    }
+  },
+  "common": {
+    "loading": "लोड हो रहा है..."
+  }
+}

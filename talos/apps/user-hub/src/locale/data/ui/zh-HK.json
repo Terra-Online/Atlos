@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "用戶中心｜{site}",
+    "title": "用戶中心",
+    "back": "返回地圖",
+    "refresh": "重新整理",
+    "signOut": "登出",
+    "navigation": "用戶中心導航",
+    "tabs": {
+      "contributions": "內容中心",
+      "account": "帳戶管理",
+      "profile": "個人資料"
+    },
+    "kinds": {
+      "all": "全部",
+      "image": "圖片",
+      "comment": "評論"
+    },
+    "loadError": "載入帳戶失敗。",
+    "actionError": "操作失敗，請重試。",
+    "contributionsError": "載入投稿紀錄失敗。",
+    "retry": "重試",
+    "loadMore": "載入更多",
+    "emptyContributions": "暫無投稿紀錄。",
+    "registeredAt": "註冊時間",
+    "accountStatus": "帳戶狀態",
+    "loginMethods": "登入方式",
+    "verified": "已驗證",
+    "linkedAt": "綁定時間",
+    "notLinked": "未綁定",
+    "link": "綁定",
+    "unlink": "解除綁定",
+    "keepLoginMethod": "至少保留一種登入方式，最後一種登入方式無法解除。",
+    "notBound": "尚未綁定 Endfield 帳戶。",
+    "endfieldRole": "Endfield 角色",
+    "server": "伺服器",
+    "enabled": "已啟用",
+    "disabled": "已停用",
+    "endfieldAccount": "Endfield 帳戶",
+    "bindFromMap": "如需綁定 Endfield 帳戶，請返回地圖開啟帳戶綁定視窗。",
+    "status": {
+      "pending_openai": "審核中",
+      "pending_audit": "待人工審核",
+      "active": "已公開",
+      "flagged": "已標記",
+      "remove_request": "移除申請",
+      "stale": "不可用"
+    },
+    "contentHint": "查看投稿和審核進度。",
+    "accountHint": "管理登入方式和遊戲帳戶。",
+    "contentType": "內容類型",
+    "content": "內容",
+    "reviewStatus": "狀態",
+    "submittedAt": "提交時間",
+    "pendingShort": "待審核",
+    "email": "電郵",
+    "emptyContributionsHint": "在地圖中分享圖片或發表評論後，你的投稿會顯示在這裏。",
+    "profileHint": "更換頭像。",
+    "avatar": "頭像",
+    "avatarChoice": "頭像 {index}",
+    "previewUnavailable": "暫無圖片預覽",
+    "commentLocation": ", 於「{point}」",
+    "pointSeparator": "・",
+    "steps": {
+      "uploaded": "已上傳",
+      "ai": {
+        "current": "OpenAI 審核中",
+        "complete": "OpenAI 已審核"
+      },
+      "manual": {
+        "current": "人工審核中",
+        "complete": "人工已審核"
+      },
+      "public": {
+        "current": "待公開",
+        "complete": "已公開"
+      },
+      "archived": {
+        "current": "封存中",
+        "complete": "已封存"
+      }
+    }
+  },
+  "common": {
+    "loading": "載入中⋯"
+  }
+}

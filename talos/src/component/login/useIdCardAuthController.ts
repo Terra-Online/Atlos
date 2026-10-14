@@ -15,7 +15,7 @@ import {
   updateProfileNickname,
 } from '@/services/auth';
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
-import { getNextAvatarIndex, normalizeAvatarIndex } from './avatarConfig';
+import { normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
 import { getCachedSession } from '@/services/cache/backend';
 import { refreshSessionUser, startSessionRefresh } from '@/services/auth/sessionLifecycle';
@@ -270,10 +270,6 @@ export const useIdCardAuthController = () => {
     openAuthModal(hasLoggedInBefore ? 'login' : 'register');
   }, [authReady, hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
 
-  const handleCycleProfileAvatar = useCallback(() => {
-    setProfileAvatar((current) => getNextAvatarIndex(current));
-  }, []);
-
   const handleOAuthClick = useCallback(async (provider: OAuthProvider) => {
     if (isSubmitting) return;
 
@@ -507,7 +503,6 @@ export const useIdCardAuthController = () => {
     openAuthModal,
     openProfileModal,
     handleAvatarClick,
-    handleCycleProfileAvatar,
     handleCloseProfile,
     handleOAuthClick,
     handleRequestVerificationCode,

@@ -1,0 +1,60 @@
+@use '@main/styles/palette' as *;
+@use '@main/styles/curves' as *;
+
+:root,
+:root[data-theme='light'] {
+    --account-muted: #{$grey-2};
+    --account-surface: #{$white-1};
+}
+
+:root[data-theme='dark'] {
+    --account-muted: #{$mid};
+    --account-surface: #{$black-0};
+}
+
+.groups {
+    background: var(--account-surface);
+    border-radius: 3px;
+    box-shadow: 0 2px 10px rgba($black-0, 0.12);
+    transition: background-color 0.35s $adagio-curve;
+}
+.details {
+    padding: 16px 20px;
+
+    dl {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin: 0;
+    }
+
+    dt {
+        margin-bottom: 4px;
+        color: var(--account-muted);
+        font-size: 15px;
+    }
+
+    dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+        font-family:
+            'Fedra Sans Pro', 'HMSans_EN', 'UD_ShinGo Regular', HMSans,
+            'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-size: 17px;
+    }
+}
+
+@media (width <= 600px) {
+    .details {
+        padding: 16px;
+    }
+
+    .details dl {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+}
+
+:root[data-theme='dark'] .groups {
+    box-shadow: 0 1px 4px rgba($light-2, 0.16);
+}

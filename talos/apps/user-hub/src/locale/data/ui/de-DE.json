@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Benutzerzentrum - {site}",
+    "title": "Benutzerzentrum",
+    "back": "Zurück zur Karte",
+    "refresh": "Aktualisieren",
+    "signOut": "Abmelden",
+    "navigation": "Navigation im Benutzerzentrum",
+    "tabs": {
+      "contributions": "Inhaltszentrum",
+      "account": "Kontoverwaltung",
+      "profile": "Persönliche Informationen"
+    },
+    "kinds": {
+      "all": "Alle",
+      "image": "Bilder",
+      "comment": "Kommentare"
+    },
+    "loadError": "Ihr Konto konnte nicht geladen werden.",
+    "actionError": "Die Aktion ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "contributionsError": "Beiträge konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "loadMore": "Mehr laden",
+    "emptyContributions": "Noch keine Beiträge.",
+    "registeredAt": "Registriert",
+    "accountStatus": "Kontostatus",
+    "loginMethods": "Anmeldemethoden",
+    "verified": "Verifiziert",
+    "linkedAt": "Verknüpft",
+    "notLinked": "Nicht verknüpft",
+    "link": "Verknüpfen",
+    "unlink": "Verknüpfung aufheben",
+    "keepLoginMethod": "Behalten Sie mindestens eine Anmeldemethode bei. Die letzte Anmeldemethode kann nicht entfernt werden.",
+    "notBound": "Kein Endfield-Konto verknüpft.",
+    "endfieldRole": "Endfield-Charakter",
+    "server": "Server",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "endfieldAccount": "Endfield-Konto",
+    "bindFromMap": "Öffnen Sie den Dialog zur Kontoverknüpfung auf der Karte, um ein Endfield-Konto zu verknüpfen.",
+    "status": {
+      "pending_openai": "Wird geprüft",
+      "pending_audit": "Warten auf manuelle Prüfung",
+      "active": "Öffentlich",
+      "flagged": "Gemeldet",
+      "remove_request": "Entfernung beantragt",
+      "stale": "Nicht verfügbar"
+    },
+    "contentHint": "Sehen Sie Ihre Beiträge und deren Prüfstatus ein.",
+    "accountHint": "Verwalten Sie Ihre Anmeldung und verknüpfte Konten.",
+    "contentType": "Inhaltstyp",
+    "content": "Inhalt",
+    "reviewStatus": "Status",
+    "submittedAt": "Eingereicht",
+    "pendingShort": "In Prüfung",
+    "email": "E-Mail",
+    "emptyContributionsHint": "Teilen Sie ein Bild oder einen Kommentar über die Karte. Ihre Beiträge erscheinen hier.",
+    "profileHint": "Ändern Sie Ihren Avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Vorschau nicht verfügbar",
+    "commentLocation": ", bei ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Hochgeladen",
+      "ai": {
+        "current": "OpenAI-Prüfung läuft",
+        "complete": "Von OpenAI geprüft"
+      },
+      "manual": {
+        "current": "Manuelle Prüfung läuft",
+        "complete": "Manuell geprüft"
+      },
+      "public": {
+        "current": "Warten auf Veröffentlichung",
+        "complete": "Veröffentlicht"
+      },
+      "archived": {
+        "current": "Wird archiviert",
+        "complete": "Archiviert"
+      }
+    }
+  },
+  "common": {
+    "loading": "Wird geladen..."
+  }
+}

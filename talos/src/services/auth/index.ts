@@ -6,6 +6,7 @@ export {
     getResetPasswordPreview,
     loginWithEmail,
     logoutUser,
+    pickSessionUser,
     registerWithEmail,
     requestPasswordReset,
     resetPasswordWithToken,

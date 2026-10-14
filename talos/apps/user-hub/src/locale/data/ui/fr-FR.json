@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Espace utilisateur - {site}",
+    "title": "Espace utilisateur",
+    "back": "Retour à la carte",
+    "refresh": "Actualiser",
+    "signOut": "Se déconnecter",
+    "navigation": "Navigation de l’espace utilisateur",
+    "tabs": {
+      "contributions": "Centre de contenu",
+      "account": "Gestion du compte",
+      "profile": "Informations personnelles"
+    },
+    "kinds": {
+      "all": "Tout",
+      "image": "Images",
+      "comment": "Commentaires"
+    },
+    "loadError": "Impossible de charger votre compte.",
+    "actionError": "L’action a échoué. Veuillez réessayer.",
+    "contributionsError": "Impossible de charger les contributions.",
+    "retry": "Réessayer",
+    "loadMore": "Charger plus",
+    "emptyContributions": "Aucune contribution pour le moment.",
+    "registeredAt": "Inscription",
+    "accountStatus": "État du compte",
+    "loginMethods": "Méthodes de connexion",
+    "verified": "Vérifié",
+    "linkedAt": "Associé",
+    "notLinked": "Non associé",
+    "link": "Associer",
+    "unlink": "Dissocier",
+    "keepLoginMethod": "Conservez au moins une méthode de connexion. La dernière méthode de connexion ne peut pas être supprimée.",
+    "notBound": "Aucun compte Endfield associé.",
+    "endfieldRole": "Personnage Endfield",
+    "server": "Serveur",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "endfieldAccount": "Compte Endfield",
+    "bindFromMap": "Pour associer un compte Endfield, ouvrez la fenêtre d’association de compte sur la carte.",
+    "status": {
+      "pending_openai": "En cours de vérification",
+      "pending_audit": "En attente de vérification manuelle",
+      "active": "Public",
+      "flagged": "Signalé",
+      "remove_request": "Suppression demandée",
+      "stale": "Indisponible"
+    },
+    "contentHint": "Consultez vos contributions et leur état de vérification.",
+    "accountHint": "Gérez votre connexion et vos comptes associés.",
+    "contentType": "Type de contenu",
+    "content": "Contenu",
+    "reviewStatus": "État",
+    "submittedAt": "Envoi",
+    "pendingShort": "En cours de vérification",
+    "email": "E-mail",
+    "emptyContributionsHint": "Partagez une image ou un commentaire depuis la carte. Vos contributions apparaîtront ici.",
+    "profileHint": "Changez votre avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Aperçu indisponible",
+    "commentLocation": ", à ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Envoyé",
+      "ai": {
+        "current": "Vérification OpenAI en cours",
+        "complete": "Vérifié par OpenAI"
+      },
+      "manual": {
+        "current": "Vérification manuelle en cours",
+        "complete": "Vérifié manuellement"
+      },
+      "public": {
+        "current": "En attente de publication",
+        "complete": "Publié"
+      },
+      "archived": {
+        "current": "Archivage en cours",
+        "complete": "Archivé"
+      }
+    }
+  },
+  "common": {
+    "loading": "Chargement..."
+  }
+}

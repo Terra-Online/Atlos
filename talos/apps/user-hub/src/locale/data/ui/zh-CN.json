@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "用户中心｜{site}",
+    "title": "用户中心",
+    "back": "返回地图",
+    "refresh": "刷新",
+    "signOut": "退出登录",
+    "navigation": "用户中心导航",
+    "tabs": {
+      "contributions": "内容中心",
+      "account": "账号管理",
+      "profile": "个人信息"
+    },
+    "kinds": {
+      "all": "全部",
+      "image": "图片",
+      "comment": "评论"
+    },
+    "loadError": "加载账户失败。",
+    "actionError": "操作失败，请重试。",
+    "contributionsError": "加载投稿记录失败。",
+    "retry": "重试",
+    "loadMore": "加载更多",
+    "emptyContributions": "暂无投稿记录。",
+    "registeredAt": "注册时间",
+    "accountStatus": "账户状态",
+    "loginMethods": "登录方式",
+    "verified": "已验证",
+    "linkedAt": "绑定时间",
+    "notLinked": "未绑定",
+    "link": "绑定",
+    "unlink": "解除绑定",
+    "keepLoginMethod": "至少保留一种登录方式，最后一种登录方式无法解除。",
+    "notBound": "尚未绑定 Endfield 账号。",
+    "endfieldRole": "Endfield 角色",
+    "server": "服务器",
+    "enabled": "已启用",
+    "disabled": "已停用",
+    "endfieldAccount": "Endfield 账号",
+    "bindFromMap": "如需绑定 Endfield 账号，请返回地图打开账号绑定窗口。",
+    "status": {
+      "pending_openai": "审核中",
+      "pending_audit": "待人工审核",
+      "active": "已公开",
+      "flagged": "已标记",
+      "remove_request": "移除申请",
+      "stale": "不可用"
+    },
+    "contentHint": "查看投稿和审核进度。",
+    "accountHint": "管理登录方式和游戏账号。",
+    "contentType": "内容类型",
+    "content": "内容",
+    "reviewStatus": "状态",
+    "submittedAt": "提交时间",
+    "pendingShort": "待审核",
+    "email": "邮箱",
+    "emptyContributionsHint": "在地图中分享图片或发表评论后，你的投稿会出现在这里。",
+    "profileHint": "更换头像。",
+    "avatar": "头像",
+    "avatarChoice": "头像 {index}",
+    "previewUnavailable": "暂无图片预览",
+    "commentLocation": ", 于「{point}」",
+    "pointSeparator": "・",
+    "steps": {
+      "uploaded": "已上传",
+      "ai": {
+        "current": "OpenAI 审核中",
+        "complete": "OpenAI 已审核"
+      },
+      "manual": {
+        "current": "人工审核中",
+        "complete": "人工已审核"
+      },
+      "public": {
+        "current": "待公开",
+        "complete": "已公开"
+      },
+      "archived": {
+        "current": "归档中",
+        "complete": "已归档"
+      }
+    }
+  },
+  "common": {
+    "loading": "加载中⋯"
+  }
+}

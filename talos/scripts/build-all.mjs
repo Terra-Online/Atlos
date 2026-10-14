@@ -64,14 +64,18 @@ const mainResults = await Promise.all(targets.map(([label, script, outDir]) =>
   })));
 
 if (mainResults.some((result) => !result.ok)) {
-  console.log('\n[build:all] main build failed; Intel build skipped.');
+  console.log('\n[build:all] main build failed; app builds skipped.');
   process.exitCode = 1;
 } else {
   const intelResults = await Promise.all(targets.map(([label]) =>
     runAsync(`intel-${label}`, 'pnpm', ['--filter', '@atlos/intel', label === 'r2' ? 'build:r2' : 'build:oss'], {
       BUILD_TARGET: label,
     })));
-  mainResults.push(...intelResults);
+  const userHubResults = await Promise.all(targets.map(([label]) =>
+    runAsync(`user-hub-${label}`, 'pnpm', ['--filter', '@atlos/user-hub', label === 'r2' ? 'build:r2' : 'build:oss'], {
+      BUILD_TARGET: label,
+    })));
+  mainResults.push(...intelResults, ...userHubResults);
 }
 
 const results = mainResults;

@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "사용자 센터 - {site}",
+    "title": "사용자 센터",
+    "back": "지도로 돌아가기",
+    "refresh": "새로고침",
+    "signOut": "로그아웃",
+    "navigation": "사용자 센터 탐색",
+    "tabs": {
+      "contributions": "콘텐츠 센터",
+      "account": "계정 관리",
+      "profile": "개인 정보"
+    },
+    "kinds": {
+      "all": "전체",
+      "image": "이미지",
+      "comment": "댓글"
+    },
+    "loadError": "계정을 불러오지 못했습니다.",
+    "actionError": "작업에 실패했습니다. 다시 시도해 주세요.",
+    "contributionsError": "게시물을 불러오지 못했습니다.",
+    "retry": "다시 시도",
+    "loadMore": "더 불러오기",
+    "emptyContributions": "아직 게시물이 없습니다.",
+    "registeredAt": "가입일",
+    "accountStatus": "계정 상태",
+    "loginMethods": "로그인 방법",
+    "verified": "인증됨",
+    "linkedAt": "연결일",
+    "notLinked": "연결되지 않음",
+    "link": "연결",
+    "unlink": "연결 해제",
+    "keepLoginMethod": "로그인 방법을 하나 이상 유지해야 합니다. 마지막 로그인 방법은 삭제할 수 없습니다.",
+    "notBound": "연결된 엔드필드 계정이 없습니다.",
+    "endfieldRole": "엔드필드 캐릭터",
+    "server": "서버",
+    "enabled": "활성화됨",
+    "disabled": "비활성화됨",
+    "endfieldAccount": "엔드필드 계정",
+    "bindFromMap": "엔드필드 계정을 연결하려면 지도에서 계정 연결 창을 열어 주세요.",
+    "status": {
+      "pending_openai": "검토 중",
+      "pending_audit": "수동 검토 대기 중",
+      "active": "공개됨",
+      "flagged": "신고됨",
+      "remove_request": "삭제 요청됨",
+      "stale": "사용 불가"
+    },
+    "contentHint": "게시물과 검토 상태를 확인하세요.",
+    "accountHint": "로그인 방법과 연결된 계정을 관리하세요.",
+    "contentType": "콘텐츠 유형",
+    "content": "콘텐츠",
+    "reviewStatus": "검토 상태",
+    "submittedAt": "게시일",
+    "pendingShort": "검토 중",
+    "email": "이메일",
+    "emptyContributionsHint": "지도에서 이미지나 댓글을 올리면 여기에 표시됩니다.",
+    "profileHint": "아바타를 변경하세요.",
+    "avatar": "아바타",
+    "avatarChoice": "아바타 {index}",
+    "previewUnavailable": "미리보기를 사용할 수 없습니다",
+    "commentLocation": ", 위치: ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "업로드됨",
+      "ai": {
+        "current": "OpenAI 검토 중",
+        "complete": "OpenAI 검토 완료"
+      },
+      "manual": {
+        "current": "수동 검토 중",
+        "complete": "수동 검토 완료"
+      },
+      "public": {
+        "current": "공개 대기 중",
+        "complete": "공개됨"
+      },
+      "archived": {
+        "current": "보관 중",
+        "complete": "보관됨"
+      }
+    }
+  },
+  "common": {
+    "loading": "불러오는 중..."
+  }
+}

@@ -1,0 +1,17 @@
+.header {
+    flex: 0 0 auto;
+}
+.host {
+    display: contents;
+    > * {
+        z-index: 500;
+    }
+    button[data-guide='refresh'] svg {
+        transform: scale(0.8);
+    }
+}
+@media (width <= 640px) {
+    .header {
+        height: 64px;
+    }
+}

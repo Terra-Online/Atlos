@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Pusat pengguna - {site}",
+    "title": "Pusat pengguna",
+    "back": "Kembali ke peta",
+    "refresh": "Muat ulang",
+    "signOut": "Keluar",
+    "navigation": "Navigasi pusat pengguna",
+    "tabs": {
+      "contributions": "Pusat konten",
+      "account": "Pengelolaan akun",
+      "profile": "Info pribadi"
+    },
+    "kinds": {
+      "all": "Semua",
+      "image": "Gambar",
+      "comment": "Komentar"
+    },
+    "loadError": "Tidak dapat memuat akun Anda.",
+    "actionError": "Tindakan gagal. Silakan coba lagi.",
+    "contributionsError": "Tidak dapat memuat kontribusi.",
+    "retry": "Coba lagi",
+    "loadMore": "Muat lebih banyak",
+    "emptyContributions": "Belum ada kontribusi.",
+    "registeredAt": "Tanggal pendaftaran",
+    "accountStatus": "Status akun",
+    "loginMethods": "Metode masuk",
+    "verified": "Terverifikasi",
+    "linkedAt": "Tanggal penautan",
+    "notLinked": "Belum ditautkan",
+    "link": "Tautkan",
+    "unlink": "Lepas tautan",
+    "keepLoginMethod": "Pertahankan setidaknya satu metode masuk. Metode masuk terakhir tidak dapat dihapus.",
+    "notBound": "Belum ada akun Endfield yang ditautkan.",
+    "endfieldRole": "Karakter Endfield",
+    "server": "Server",
+    "enabled": "Aktif",
+    "disabled": "Nonaktif",
+    "endfieldAccount": "Akun Endfield",
+    "bindFromMap": "Untuk menautkan akun Endfield, buka dialog penautan akun di peta.",
+    "status": {
+      "pending_openai": "Sedang ditinjau",
+      "pending_audit": "Menunggu tinjauan manual",
+      "active": "Publik",
+      "flagged": "Dilaporkan",
+      "remove_request": "Penghapusan diminta",
+      "stale": "Tidak tersedia"
+    },
+    "contentHint": "Lihat kiriman dan status peninjauan.",
+    "accountHint": "Kelola metode masuk dan akun tertaut.",
+    "contentType": "Jenis konten",
+    "content": "Konten",
+    "reviewStatus": "Status peninjauan",
+    "submittedAt": "Waktu pengiriman",
+    "pendingShort": "Ditinjau",
+    "email": "Email",
+    "emptyContributionsHint": "Bagikan gambar atau komentar dari peta. Kiriman Anda akan muncul di sini.",
+    "profileHint": "Ubah avatar Anda.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Pratinjau tidak tersedia",
+    "commentLocation": ", di ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Telah diunggah",
+      "ai": {
+        "current": "Sedang ditinjau OpenAI",
+        "complete": "Telah ditinjau OpenAI"
+      },
+      "manual": {
+        "current": "Sedang ditinjau secara manual",
+        "complete": "Telah ditinjau secara manual"
+      },
+      "public": {
+        "current": "Menunggu publikasi",
+        "complete": "Telah dipublikasikan"
+      },
+      "archived": {
+        "current": "Sedang diarsipkan",
+        "complete": "Telah diarsipkan"
+      }
+    }
+  },
+  "common": {
+    "loading": "Memuat..."
+  }
+}

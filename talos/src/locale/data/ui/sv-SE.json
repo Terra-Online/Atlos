@@ -122,7 +122,7 @@
     "fullSupportHint": "Fullständiga översättningar för både UI och innehåll i spelet.",
     "uiOnly": "Endast UI-språk",
     "uiOnlyHint": "Endast UI-översättningar, innehåll i spelet visas på engelska.",
-    "fyi": "Du kan besöka <a href=\"https://crowdin.com/project/oem\">Crowdin</a> för att delta i vårt översättningsprojekt eller begära en översättning till ditt språk; du kan också kontakta webbplatsens administratörer via e-post på <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Du kan besöka <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> för att delta i vårt översättningsprojekt eller begära en översättning till ditt språk; du kan också kontakta webbplatsens administratörer via e-post på <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Engelska",
       "zh-CN": "Förenklad kinesiska",
@@ -348,7 +348,7 @@
       "nickName": "Smeknamn",
       "note": "Obs",
       "noteNickname": "Du kan använda max 15 tecken (endast bokstäver, siffror, bindestreck och understreck) i ditt användarnamn.",
-      "noteUID": "UID tilldelas vid registrering och kan inte ändras. Du kan uppdatera ditt användarnamn när som helst. Klicka på avataren för att byta bild.",
+      "noteUID": "UID tilldelas vid registrering och kan inte ändras. Du kan uppdatera ditt användarnamn när som helst. Klicka på avatarområdet för att öppna <a href=\"/me/\">användarcentret</a>.",
       "auditLabel": "Åtgärder",
       "importOfficial": "Importera från den officiella kartan",
       "save": "Spara ändringar",

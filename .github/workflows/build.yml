@@ -31,6 +31,14 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install font tooling
+        run: python -m pip install fonttools brotli
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -61,6 +69,10 @@ jobs:
         run: pnpm run type-check
         working-directory: ./talos
 
+      - name: Check user center
+        run: pnpm run type-check:user-hub && pnpm run test:user-hub
+        working-directory: ./talos
+
       - name: Validate locale ICU schemas
         run: pnpm run validate:locale-icu
         working-directory: ./talos
@@ -80,6 +92,10 @@ jobs:
 
       - name: Build project
         run: pnpm run build
+        working-directory: ./talos
+
+      - name: Build user center
+        run: pnpm run build:user-hub
         working-directory: ./talos
 
       - name: Upload build artifacts

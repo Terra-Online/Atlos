@@ -122,7 +122,7 @@
     "fullSupportHint": "Cung cấp bản dịch đầy đủ cho UI và nội dung trong game.",
     "uiOnly": "Chỉ hỗ trợ UI",
     "uiOnlyHint": "Chỉ dịch UI, nội dung trong game sẽ hiển thị bằng tiếng Anh.",
-    "fyi": "Bạn có thể truy cập <a href=\"https://crowdin.com/project/oem\">Crowdin</a> để tham gia dự án dịch thuật của chúng tôi hoặc yêu cầu bản dịch cho ngôn ngữ của bạn; bạn cũng có thể liên hệ với quản trị viên trang qua email <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "Bạn có thể truy cập <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> để tham gia dự án dịch thuật của chúng tôi hoặc yêu cầu bản dịch cho ngôn ngữ của bạn; bạn cũng có thể liên hệ với quản trị viên trang qua email <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Anh",
       "zh-CN": "Trung Giản thể",
@@ -348,7 +348,7 @@
       "nickName": "Biệt danh",
       "note": "Lưu ý",
       "noteNickname": "Tên người dùng có độ dài tối đa 15 ký tự (chỉ bao gồm chữ cái, số, dấu gạch ngang và dấu gạch dưới).",
-      "noteUID": "UID được cấp một lần khi tạo tài khoản và không thể thay đổi, nhưng bạn có thể cập nhật tên người dùng bất cứ lúc nào. Nhấn vào ảnh đại diện để thay đổi ảnh mới.",
+      "noteUID": "UID được cấp một lần khi tạo tài khoản và không thể thay đổi, nhưng bạn có thể cập nhật tên người dùng bất cứ lúc nào. Nhấn vào vùng ảnh đại diện để vào <a href=\"/me/\">Trung tâm người dùng</a>.",
       "auditLabel": "Thao tác",
       "importOfficial": "Nhập từ Bản đồ chính thức",
       "save": "Lưu thay đổi",

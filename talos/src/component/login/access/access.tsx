@@ -1,3 +1,5 @@
+import { AccessButton } from './button';
+export { AccessButton } from './button';
 import Modal from '@/component/modal/modal';
 import DiscordIcon from '@/assets/images/UI/media/discordicon.svg?react';
 import GitHubIcon from '@/assets/images/UI/media/ghicon.svg?react';
@@ -48,34 +50,6 @@ interface AccessProps {
   onRequestVerificationCode?: (payload: { email: string; mode: AuthMode }) => Promise<boolean>;
   onRequestPasswordReset?: (payload: { email: string }) => Promise<boolean>;
 }
-
-interface AccessButtonProps {
-  platform?: OAuthProvider;
-  label: string;
-  disabled?: boolean;
-  onClick: () => void;
-  children?: ReactNode;
-}
-
-export const AccessButton = ({
-  platform,
-  label,
-  disabled = false,
-  onClick,
-  children,
-}: AccessButtonProps) => (
-  <button
-    type="button"
-    className={styles.oauthMethod}
-    disabled={disabled}
-    onClick={onClick}
-  >
-    <div className={styles.oauthMethodInner}>
-      {children ? <span className={styles.oauthMethodIcon} data-platform={platform}>{children}</span> : null}
-      <span className={styles.oauthMethodLabel}>{label}</span>
-    </div>
-  </button>
-);
 
 const INITIAL_TOUCHED_FIELDS: Record<AuthField, boolean> = {
   email: false,

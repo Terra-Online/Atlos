@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Центр пользователя - {site}",
+    "title": "Центр пользователя",
+    "back": "Вернуться к карте",
+    "refresh": "Обновить",
+    "signOut": "Выход",
+    "navigation": "Навигация по центру пользователя",
+    "tabs": {
+      "contributions": "Центр контента",
+      "account": "Управление аккаунтом",
+      "profile": "Личные данные"
+    },
+    "kinds": {
+      "all": "Все",
+      "image": "Изображения",
+      "comment": "Комментарии"
+    },
+    "loadError": "Не удалось загрузить ваш аккаунт.",
+    "actionError": "Не удалось выполнить действие. Попробуйте ещё раз.",
+    "contributionsError": "Не удалось загрузить публикации.",
+    "retry": "Повторить",
+    "loadMore": "Загрузить ещё",
+    "emptyContributions": "Публикаций пока нет.",
+    "registeredAt": "Дата регистрации",
+    "accountStatus": "Статус аккаунта",
+    "loginMethods": "Способы входа",
+    "verified": "Подтверждено",
+    "linkedAt": "Привязано",
+    "notLinked": "Не привязано",
+    "link": "Привязать",
+    "unlink": "Отвязать",
+    "keepLoginMethod": "Сохраните хотя бы один способ входа. Последний способ входа нельзя удалить.",
+    "notBound": "Аккаунт Endfield не привязан.",
+    "endfieldRole": "Персонаж Endfield",
+    "server": "Сервер",
+    "enabled": "Включено",
+    "disabled": "Отключено",
+    "endfieldAccount": "Аккаунт Endfield",
+    "bindFromMap": "Чтобы привязать аккаунт Endfield, откройте окно привязки аккаунта на карте.",
+    "status": {
+      "pending_openai": "На проверке",
+      "pending_audit": "Ожидает ручной проверки",
+      "active": "Общедоступно",
+      "flagged": "Есть жалобы",
+      "remove_request": "Запрошено удаление",
+      "stale": "Недоступно"
+    },
+    "contentHint": "Просматривайте свои публикации и ход их проверки.",
+    "accountHint": "Управляйте способами входа и привязанными аккаунтами.",
+    "contentType": "Тип контента",
+    "content": "Контент",
+    "reviewStatus": "Статус",
+    "submittedAt": "Дата отправки",
+    "pendingShort": "На проверке",
+    "email": "Электронная почта",
+    "emptyContributionsHint": "Добавьте изображение или комментарий на карте. Ваши публикации появятся здесь.",
+    "profileHint": "Измените свой аватар.",
+    "avatar": "Аватар",
+    "avatarChoice": "Аватар {index}",
+    "previewUnavailable": "Предпросмотр недоступен",
+    "commentLocation": ", в ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Загружено",
+      "ai": {
+        "current": "Проверка OpenAI",
+        "complete": "Проверено OpenAI"
+      },
+      "manual": {
+        "current": "Ручная проверка",
+        "complete": "Проверено вручную"
+      },
+      "public": {
+        "current": "Ожидает публикации",
+        "complete": "Опубликовано"
+      },
+      "archived": {
+        "current": "Архивирование",
+        "complete": "В архиве"
+      }
+    }
+  },
+  "common": {
+    "loading": "Загрузка..."
+  }
+}

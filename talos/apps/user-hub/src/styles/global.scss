@@ -1,0 +1,201 @@
+@use '@main/styles/fonts';
+@use '@main/styles/size' as *;
+@use '@main/styles/palette' as *;
+@use '@main/styles/curves' as *;
+@use '@main/styles/themeTransition';
+
+:root,
+:root[data-theme='light'] {
+    --hub-background: #{$light-1};
+    --hub-pattern: #{$white-3};
+    --hub-ink: #{$grey-1};
+    --hub-muted: #{$grey-2};
+    --hub-accent: #{$primary-accent-6};
+    --hub-danger: #{$primary-accent-7};
+    --hub-danger-soft: #{rgba($primary-accent-7, 0.08)};
+    --map-bg: var(--hub-background);
+    color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+    --hub-background: #{$black-0};
+    --hub-pattern: #{$grey-1};
+    --hub-ink: #{$light-1};
+    --hub-muted: #{$mid};
+    --hub-accent: #{$primary-accent-4};
+    --hub-danger: #{$primary-accent-5};
+    --hub-danger-soft: #{rgba($primary-accent-5, 0.1)};
+    color-scheme: dark;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+}
+
+html {
+    @media (min-width: $desktoper-bp) {
+        font-size: 18px;
+    }
+    @media (min-width: $desktopest-bp) {
+        font-size: 20px;
+    }
+    @media (min-width: $desktopissimo-bp) {
+        font-size: 22px;
+    }
+    background-color: var(--hub-background);
+    transition: background-color 0.35s $moderato-curve;
+}
+
+body {
+    color: var(--hub-ink);
+    font-family:
+        'HMSans_EN', HMSans, 'UD_ShinGo Regular', 'Fedra Sans Pro',
+        'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 18px;
+    font-variant-numeric: lining-nums tabular-nums;
+    line-height: 1.5;
+    transition: color 0.35s $adagio-curve;
+}
+
+* {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+button {
+    border: 0;
+    margin: 0;
+    font: inherit;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.5;
+}
+
+a {
+    color: var(--hub-accent);
+    text-underline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--hub-accent);
+    outline-offset: 3px;
+}
+
+::selection {
+    color: #{$grey-1};
+    background: #{$primary-accent-4};
+}
+
+[data-app='user-hub'] {
+    position: relative;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 5.5rem clamp(16px, 4vw, 64px) 24px;
+    isolation: isolate;
+
+    &::before {
+        position: fixed;
+        z-index: -1;
+        inset: 0;
+        background-color: var(--hub-pattern);
+        content: '';
+        mask-image: url('@main/assets/images/UI/map-pattern.svg');
+        mask-repeat: repeat;
+        mask-size: 100px;
+        pointer-events: none;
+        transition: background-color 0.35s $moderato-curve;
+    }
+
+    .hubFrame {
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+
+    .hubLayout {
+        display: grid;
+        grid-template-columns: 352px minmax(0, 1fr);
+        flex: 1 1 0;
+        min-height: 0;
+        align-items: stretch;
+        gap: 24px;
+    }
+
+    .hubSidebar {
+        display: grid;
+        min-width: 0;
+        min-height: 0;
+        align-content: start;
+        overflow-y: auto;
+        padding: 8px;
+        margin: -8px;
+        gap: 24px;
+    }
+
+    .hubContent {
+        min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 8px;
+        margin: -8px;
+
+        &:has([role='tabpanel']) {
+            overflow: visible;
+        }
+    }
+
+    .hubError {
+        margin-bottom: 20px;
+        padding: 16px 20px;
+        color: var(--hub-danger);
+        border-radius: 3px;
+        background-color: var(--hub-danger-soft);
+        overflow-wrap: anywhere;
+        transition:
+            color 0.35s $adagio-curve,
+            background-color 0.35s $adagio-curve;
+    }
+
+    .hubLoading {
+        margin: 0;
+        padding: 32px;
+        color: var(--hub-muted);
+        font-size: 17px;
+    }
+
+    @media (width <= 960px) {
+        overflow-y: auto;
+
+        .hubFrame {
+            height: auto;
+        }
+
+        .hubLayout {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            flex: none;
+        }
+
+        .hubSidebar {
+            overflow: visible;
+        }
+
+        .hubContent {
+            height: calc(100dvh - 5.5rem - 24px);
+        }
+    }
+}

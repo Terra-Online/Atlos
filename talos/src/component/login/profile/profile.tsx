@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import parse from 'html-react-parser';
 import ProfileIcon from '@/assets/logos/profile.svg?react';
 import Modal from '@/component/modal/modal';
 import { requestEndfieldBinding } from '@/component/locator';
@@ -37,7 +38,6 @@ interface ProfileModalProps {
   isSavingProfile: boolean;
   cardProfile: IdCardRenderModel;
   profileAvatar: number;
-  onAvatarCycle: () => void;
   handleCloseProfile: () => Promise<void>;
   handleSaveProfile: () => Promise<void>;
   handleLogout: () => Promise<void>;
@@ -52,7 +52,6 @@ const ProfileModal = ({
   isSavingProfile,
   cardProfile,
   profileAvatar,
-  onAvatarCycle,
   handleCloseProfile,
   handleSaveProfile,
   handleLogout,
@@ -226,7 +225,7 @@ const ProfileModal = ({
             cardRef={cardRef}
             onCardMouseMove={handleCardMouseMove}
             onCardMouseLeave={handleCardMouseLeave}
-            onAvatarClick={onAvatarCycle}
+            onAvatarClick={() => window.location.assign('/me/')}
             avatarAriaLabel={t('idcard.profile.avatarHint')}
             avatarIndex={profileAvatar}
             editableName
@@ -247,7 +246,7 @@ const ProfileModal = ({
           <div className={styles.profileNote}>
             <p>{t('idcard.profile.noteNickname')}</p>
             <p>
-              {t('idcard.profile.noteUID')}
+              {parse(t('idcard.profile.noteUID'))}
             </p>
           </div>
 

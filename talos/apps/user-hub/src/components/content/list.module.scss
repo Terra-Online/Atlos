@@ -1,0 +1,270 @@
+@use '@main/styles/palette' as *;
+@use '@main/styles/curves' as *;
+
+:root,
+:root[data-theme='light'] {
+    --contribution-text: #{$grey-1};
+    --contribution-muted: #{$grey-2};
+    --contribution-card-bg: #{$white-1};
+    --contribution-accent: #{$primary-accent-6};
+    --contribution-accent-strong: #{$primary-accent-7};
+    --contribution-muted-soft: #{rgba($grey-2, 0.08)};
+    --contribution-card-hover-bg: #{$white-3};
+    --contribution-comment-bar: #{$secondary-accent-3};
+    --contribution-node: #{$primary-accent-5};
+    --contribution-node-depth: #{$primary-accent-4};
+}
+
+:root[data-theme='dark'] {
+    --contribution-text: #{$light-1};
+    --contribution-muted: #{$mid};
+    --contribution-card-bg: #{$black-1};
+    --contribution-accent: #{$primary-accent-4};
+    --contribution-accent-strong: #{$primary-accent-3};
+    --contribution-muted-soft: #{rgba($white-2, 0.08)};
+    --contribution-card-hover-bg: #{$grey-2};
+    --contribution-comment-bar: #{$secondary-accent-1};
+    --contribution-node: #{$primary-accent-4};
+    --contribution-node-depth: #{$primary-accent-3};
+}
+
+.list {
+    --notify-text: var(--contribution-text);
+    --notify-muted: var(--contribution-muted);
+    --notify-card-bg: var(--contribution-card-bg);
+    --notify-card-hover-bg: var(--contribution-card-hover-bg);
+    --notify-keyword: var(--contribution-accent);
+    --notify-link-hover: var(--contribution-accent-strong);
+
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.list .comment {
+    --card-accent: var(--contribution-comment-bar);
+
+    &[data-status='pending_openai'],
+    &[data-status='pending_audit'] {
+        --card-accent: var(--contribution-node);
+    }
+
+    &[data-status='stale'] {
+        --card-accent: var(--contribution-muted);
+    }
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    padding: 0.75rem 1.5rem;
+    overflow: visible;
+    font-size: 1rem;
+
+    &::before {
+        top: 0.75rem;
+        bottom: 0.75rem;
+        width: 5px;
+        border-radius: 1px;
+        clip-path: none;
+    }
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.list .comment .meta {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings:
+        'lnum' 1,
+        'onum' 0;
+    letter-spacing: -5%;
+}
+
+.text {
+    display: block;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: inherit;
+    font-weight: 500;
+    line-height: 1.45;
+    unicode-bidi: plaintext;
+}
+
+.progress {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 12px;
+    margin: 0;
+    padding: .375rem;
+    list-style: none;
+}
+
+.step {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    color: var(--contribution-node);
+
+    .node {
+        position: absolute;
+        inset: 0;
+        border-radius: 3px;
+        background: currentcolor;
+        box-shadow: 0 1px 3px rgba($black-0, 0.18);
+        transform: rotate(45deg);
+    }
+
+    &[data-state='pending'] {
+        color: var(--contribution-muted);
+        opacity: 0.2;
+    }
+
+    &[data-state='complete'] {
+        opacity: 0.45;
+    }
+
+    &[data-state='current']:not([data-terminal='true']) {
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 2px solid currentcolor;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        &::before {
+            border-color: var(--contribution-node-depth);
+            transform: translateY(1.5px) rotate(45deg);
+            filter: drop-shadow(0 2px 2px rgba($black-0, 0.2));
+        }
+
+        &::after {
+            transform: rotate(45deg);
+        }
+    }
+}
+
+@media (width <= 600px) {
+    .list .comment {
+        gap: 16px;
+        padding: 0.875rem 1rem 0.875rem 1.5rem;
+    }
+
+    .progress {
+        gap: 12px;
+        padding: 8px;
+    }
+}
+
+.empty {
+    padding: 32px 0;
+    margin: 0;
+    color: var(--contribution-muted);
+}
+.images {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.image {
+    min-width: 0;
+    background: var(--contribution-card-bg);
+    border-radius: 3px;
+    padding: 0.25rem;
+    box-shadow: 0 4px 14px rgba($black-0, 0.16);
+    transition:
+        background-color 0.35s $adagio-curve,
+        box-shadow 0.2s ease;
+    &:has(.imageLink:hover),
+    &:has(.imageLink:focus-visible) {
+        box-shadow: 0 2px 6px rgba($black-0, 0.3);
+    }
+
+    .progress {
+        justify-content: center;
+        margin-top: 0.25rem;
+    }
+}
+.preview {
+    aspect-ratio: 16 / 9;
+    display: grid;
+    place-items: center;
+    background: var(--contribution-muted-soft);
+    color: var(--contribution-muted);
+    font-size: 0.75rem;
+    border-radius: 2px;
+    overflow: hidden;
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        object-fit: cover;
+        border-radius: 2px;
+        mask-image:
+            linear-gradient(
+                to right,
+                rgba($black-0, 0) 0,
+                $black-0 4px,
+                $black-0 calc(100% - 4px),
+                rgba($black-0, 0) 100%
+            ),
+            linear-gradient(
+                to bottom,
+                rgba($black-0, 0) 0,
+                $black-0 4px,
+                $black-0 calc(100% - 4px),
+                rgba($black-0, 0) 100%
+            );
+        mask-composite: intersect;
+    }
+}
+
+@media (width <= 1100px) {
+    .images {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+    }
+}
+
+:root[data-theme='dark'] .image {
+    box-shadow: 0 3px 12px rgba($light-2, 0.16);
+    &:has(.imageLink:hover),
+    &:has(.imageLink:focus-visible) {
+        box-shadow: 0 2px 6px rgba($light-2, 0.3);
+    }
+}
+
+.imageLink {
+    cursor: pointer;
+    display: block;
+    border-radius: 2px;
+}
+
+.list .comment .pointName {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.3s ease;
+    &:hover,
+    &:focus-visible {
+        color: var(--contribution-accent);
+    }
+}

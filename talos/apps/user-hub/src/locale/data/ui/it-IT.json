@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "Centro utente - {site}",
+    "title": "Centro utente",
+    "back": "Torna alla mappa",
+    "refresh": "Aggiorna",
+    "signOut": "Disconnessione",
+    "navigation": "Navigazione del centro utente",
+    "tabs": {
+      "contributions": "Centro contenuti",
+      "account": "Gestione account",
+      "profile": "Informazioni personali"
+    },
+    "kinds": {
+      "all": "Tutti",
+      "image": "Immagini",
+      "comment": "Commenti"
+    },
+    "loadError": "Impossibile caricare il tuo account.",
+    "actionError": "Operazione non riuscita. Riprova.",
+    "contributionsError": "Impossibile caricare i contributi.",
+    "retry": "Riprova",
+    "loadMore": "Carica altro",
+    "emptyContributions": "Nessun contributo per ora.",
+    "registeredAt": "Registrazione",
+    "accountStatus": "Stato dell’account",
+    "loginMethods": "Metodi di accesso",
+    "verified": "Verificato",
+    "linkedAt": "Collegato",
+    "notLinked": "Non collegato",
+    "link": "Collega",
+    "unlink": "Scollega",
+    "keepLoginMethod": "Mantieni almeno un metodo di accesso. L’ultimo metodo di accesso non può essere rimosso.",
+    "notBound": "Nessun account Endfield collegato.",
+    "endfieldRole": "Personaggio Endfield",
+    "server": "Server",
+    "enabled": "Abilitato",
+    "disabled": "Disabilitato",
+    "endfieldAccount": "Account Endfield",
+    "bindFromMap": "Per collegare un account Endfield, apri la finestra di collegamento account sulla mappa.",
+    "status": {
+      "pending_openai": "In revisione",
+      "pending_audit": "In attesa di revisione manuale",
+      "active": "Pubblico",
+      "flagged": "Segnalato",
+      "remove_request": "Rimozione richiesta",
+      "stale": "Non disponibile"
+    },
+    "contentHint": "Visualizza i tuoi contributi e il loro stato di revisione.",
+    "accountHint": "Gestisci l’accesso e gli account collegati.",
+    "contentType": "Tipo di contenuto",
+    "content": "Contenuto",
+    "reviewStatus": "Stato",
+    "submittedAt": "Inviato",
+    "pendingShort": "In revisione",
+    "email": "E-mail",
+    "emptyContributionsHint": "Condividi un’immagine o un commento dalla mappa. I tuoi contributi appariranno qui.",
+    "profileHint": "Cambia il tuo avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Anteprima non disponibile",
+    "commentLocation": ", presso ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Caricato",
+      "ai": {
+        "current": "Revisione OpenAI in corso",
+        "complete": "Revisionato da OpenAI"
+      },
+      "manual": {
+        "current": "Revisione manuale in corso",
+        "complete": "Revisionato manualmente"
+      },
+      "public": {
+        "current": "In attesa di pubblicazione",
+        "complete": "Pubblicato"
+      },
+      "archived": {
+        "current": "Archiviazione in corso",
+        "complete": "Archiviato"
+      }
+    }
+  },
+  "common": {
+    "loading": "Caricamento..."
+  }
+}

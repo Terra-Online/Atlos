@@ -44,6 +44,31 @@
   unicode-bidi: plaintext;
   overflow-wrap: break-word;
   hyphens: auto;
+
+  a {
+    position: relative;
+    color: var(--ack-link);
+    text-decoration: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 1.5px;
+      background-color: currentColor;
+      transform: scaleX(0);
+      transform-origin: right center;
+      transition: transform .3s ease;
+    }
+
+    &:hover::before,
+    &:focus-visible::before {
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+  }
 }
 
 .profileSyncHint {

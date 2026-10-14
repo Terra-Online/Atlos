@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "مركز المستخدم - {site}",
+    "title": "مركز المستخدم",
+    "back": "العودة إلى الخريطة",
+    "refresh": "تحديث",
+    "signOut": "تسجيل الخروج",
+    "navigation": "التنقل في مركز المستخدم",
+    "tabs": {
+      "contributions": "مركز المحتوى",
+      "account": "إدارة الحساب",
+      "profile": "المعلومات الشخصية"
+    },
+    "kinds": {
+      "all": "الكل",
+      "image": "الصور",
+      "comment": "التعليقات"
+    },
+    "loadError": "تعذر تحميل حسابك.",
+    "actionError": "فشل الإجراء. يرجى المحاولة مجددًا.",
+    "contributionsError": "تعذر تحميل المساهمات.",
+    "retry": "إعادة المحاولة",
+    "loadMore": "تحميل المزيد",
+    "emptyContributions": "لا توجد مساهمات بعد.",
+    "registeredAt": "تاريخ التسجيل",
+    "accountStatus": "حالة الحساب",
+    "loginMethods": "طرق تسجيل الدخول",
+    "verified": "تم التحقق",
+    "linkedAt": "تم الربط",
+    "notLinked": "غير مرتبط",
+    "link": "ربط",
+    "unlink": "إلغاء الربط",
+    "keepLoginMethod": "احتفظ بطريقة واحدة على الأقل لتسجيل الدخول. لا يمكن إزالة آخر طريقة لتسجيل الدخول.",
+    "notBound": "لا يوجد حساب Endfield مرتبط.",
+    "endfieldRole": "شخصية Endfield",
+    "server": "الخادم",
+    "enabled": "مفعّل",
+    "disabled": "معطّل",
+    "endfieldAccount": "حساب Endfield",
+    "bindFromMap": "لربط حساب Endfield، افتح نافذة ربط الحساب على الخريطة.",
+    "status": {
+      "pending_openai": "قيد المراجعة",
+      "pending_audit": "بانتظار المراجعة اليدوية",
+      "active": "عام",
+      "flagged": "تم الإبلاغ عنه",
+      "remove_request": "طُلبت الإزالة",
+      "stale": "غير متاح"
+    },
+    "contentHint": "اعرض مساهماتك وحالة مراجعتها.",
+    "accountHint": "أدر تسجيل الدخول والحسابات المرتبطة.",
+    "contentType": "نوع المحتوى",
+    "content": "المحتوى",
+    "reviewStatus": "الحالة",
+    "submittedAt": "تاريخ الإرسال",
+    "pendingShort": "قيد المراجعة",
+    "email": "البريد الإلكتروني",
+    "emptyContributionsHint": "شارك صورة أو تعليقًا من الخريطة. ستظهر مساهماتك هنا.",
+    "profileHint": "غيّر صورتك الشخصية.",
+    "avatar": "الصورة الشخصية",
+    "avatarChoice": "الصورة الشخصية {index}",
+    "previewUnavailable": "المعاينة غير متاحة",
+    "commentLocation": "، عند ({point})",
+    "pointSeparator": "، ",
+    "steps": {
+      "uploaded": "تم الرفع",
+      "ai": {
+        "current": "جارٍ إجراء مراجعة OpenAI",
+        "complete": "تمت المراجعة بواسطة OpenAI"
+      },
+      "manual": {
+        "current": "المراجعة اليدوية جارية",
+        "complete": "تمت المراجعة يدويًا"
+      },
+      "public": {
+        "current": "بانتظار النشر",
+        "complete": "تم النشر"
+      },
+      "archived": {
+        "current": "جارٍ الأرشفة",
+        "complete": "تمت الأرشفة"
+      }
+    }
+  },
+  "common": {
+    "loading": "جارٍ التحميل..."
+  }
+}

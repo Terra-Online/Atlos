@@ -1,0 +1,87 @@
+{
+  "userHub": {
+    "pageTitle": "User center - {site}",
+    "title": "User center",
+    "back": "Back to map",
+    "refresh": "Refresh",
+    "signOut": "Sign out",
+    "navigation": "User center navigation",
+    "tabs": {
+      "contributions": "Content center",
+      "account": "Account management",
+      "profile": "Personal info"
+    },
+    "kinds": {
+      "all": "All",
+      "image": "Images",
+      "comment": "Comments"
+    },
+    "loadError": "Could not load your account.",
+    "actionError": "The action failed. Please try again.",
+    "contributionsError": "Could not load contributions.",
+    "retry": "Retry",
+    "loadMore": "Load more",
+    "emptyContributions": "No contributions yet.",
+    "registeredAt": "Registered",
+    "accountStatus": "Account status",
+    "loginMethods": "Login methods",
+    "verified": "Verified",
+    "linkedAt": "Linked",
+    "notLinked": "Not linked",
+    "link": "Link",
+    "unlink": "Unlink",
+    "keepLoginMethod": "Keep at least one login method. The last login method cannot be removed.",
+    "notBound": "No Endfield account linked.",
+    "endfieldRole": "Endfield character",
+    "server": "Server",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "endfieldAccount": "Endfield account",
+    "bindFromMap": "To link an Endfield account, open the account binding dialog on the map.",
+    "status": {
+      "pending_openai": "Under review",
+      "pending_audit": "Awaiting manual review",
+      "active": "Public",
+      "flagged": "Flagged",
+      "remove_request": "Removal requested",
+      "stale": "Unavailable"
+    },
+    "contentHint": "View submissions and review status.",
+    "accountHint": "Manage sign-in and linked accounts.",
+    "contentType": "Content type",
+    "content": "Content",
+    "reviewStatus": "Status",
+    "submittedAt": "Submitted",
+    "pendingShort": "In review",
+    "email": "Email",
+    "emptyContributionsHint": "Share an image or comment from the map. Your submissions will appear here.",
+    "profileHint": "Change your avatar.",
+    "avatar": "Avatar",
+    "avatarChoice": "Avatar {index}",
+    "previewUnavailable": "Preview unavailable",
+    "commentLocation": ", at ({point})",
+    "pointSeparator": ", ",
+    "steps": {
+      "uploaded": "Uploaded",
+      "ai": {
+        "current": "OpenAI review in progress",
+        "complete": "Reviewed by OpenAI"
+      },
+      "manual": {
+        "current": "Manual review in progress",
+        "complete": "Manually reviewed"
+      },
+      "public": {
+        "current": "Awaiting publication",
+        "complete": "Published"
+      },
+      "archived": {
+        "current": "Archiving",
+        "complete": "Archived"
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading..."
+  }
+}
