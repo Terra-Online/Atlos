@@ -83,11 +83,10 @@
         box-sizing: border-box;
         overflow-x: hidden;
         overflow-y: auto;
-        padding: 0.6rem 1rem;
+        padding: 0.6rem;
     }
 
     .listBottomBlur {
-        --scroll-edge-fade-color: var(--modal-bg);
         position: absolute;
         right: 0;
         bottom: calc(-1 * var(--support-divider-height));

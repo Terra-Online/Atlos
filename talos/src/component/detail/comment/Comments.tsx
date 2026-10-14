@@ -769,6 +769,8 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                 <div className={styles.commentRule}>{footerText}</div>
             </div>
             <AdaptiveLinearBlur
+                targetRef={commentListRef}
+                visible={blurVisible}
                 side="bottom"
                 strength={8}
                 falloffPercentage={100}

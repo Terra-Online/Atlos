@@ -868,7 +868,54 @@ function getOrQueueUGCMyImages(markerId: string): Promise<UGCSubmissionImage[]> 
     });
 }
 
+// Preserve the server's 100-marker contract while bounding concurrent batches
+// across public images, personalized images, comments and private submissions.
+const UGC_BATCH_SIZE = 100;
+const UGC_BATCH_CONCURRENCY = 8;
+let activeUGCBatches = 0;
+const waitingUGCBatches: Array<() => void> = [];
+
+async function runUGCBatches<T>(requests: T[], run: (batch: T[]) => Promise<void>): Promise<void> {
+    const jobs: Promise<void>[] = [];
+    for (let index = 0; index < requests.length; index += UGC_BATCH_SIZE) {
+        const batch = requests.slice(index, index + UGC_BATCH_SIZE);
+        jobs.push((async () => {
+            if (activeUGCBatches >= UGC_BATCH_CONCURRENCY) {
+                await new Promise<void>((resolve) => waitingUGCBatches.push(resolve));
+            } else {
+                activeUGCBatches += 1;
+            }
+            try {
+                await run(batch);
+            } finally {
+                const next = waitingUGCBatches.shift();
+                if (next) next();
+                else activeUGCBatches -= 1;
+            }
+        })());
+    }
+    await Promise.all(jobs);
+}
+
+type MarkerBatchPayload<T> = { items?: T[]; partial?: boolean; failedMarkerIds?: string[] };
+
+function failedBatchMarkers<T extends { markerId: string }>(
+    payload: MarkerBatchPayload<T>, markerIds: string[],
+): Set<string> {
+    if (Array.isArray(payload.failedMarkerIds) && payload.failedMarkerIds.length > 0) {
+        return new Set(payload.failedMarkerIds.filter((id) => typeof id === 'string' && markerIds.includes(id)));
+    }
+    // Older servers cannot identify failed markers. Nonempty results can still
+    // be shown, but absent items in a partial response must not become negatives.
+    const returned = new Set((payload.items ?? []).map((item) => item.markerId));
+    return new Set(payload.partial === true ? markerIds.filter((id) => !returned.has(id)) : []);
+}
+
 async function flushUGCImageBatch(requests: PendingImageRequest[]): Promise<void> {
+    await runUGCBatches(requests, readUGCImageBatchPart);
+}
+
+async function readUGCImageBatchPart(requests: PendingImageRequest[]): Promise<void> {
     const groupedResolvers = new Map<string, PendingImageRequest[]>();
     requests.forEach((request) => {
         const bucket = groupedResolvers.get(request.markerId);
@@ -895,7 +942,8 @@ async function flushUGCImageBatch(requests: PendingImageRequest[]): Promise<void
             throw await readUGCError(response);
         }
 
-        const payload = await response.json() as { items?: UGCImage[] };
+        const payload = await response.json() as MarkerBatchPayload<UGCImage>;
+        const failedMarkers = failedBatchMarkers(payload, markerIds);
         const groupedImages = new Map<string, UGCImage[]>();
 
         markerIds.forEach((markerId) => {
@@ -910,6 +958,11 @@ async function flushUGCImageBatch(requests: PendingImageRequest[]): Promise<void
         });
 
         markerIds.forEach((markerId) => {
+            if (failedMarkers.has(markerId)) {
+                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
+                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
+                return;
+            }
             const images = groupedImages.get(markerId) ?? [];
             imageCache.set(markerId, {
                 expiresAt: Date.now() + (images.length > 0 ? PRIVATE_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS),
@@ -927,6 +980,10 @@ async function flushUGCImageBatch(requests: PendingImageRequest[]): Promise<void
 }
 
 async function flushPublicUGCImageBatch(requests: PendingImageRequest[]): Promise<void> {
+    await runUGCBatches(requests, readPublicUGCImageBatchPart);
+}
+
+async function readPublicUGCImageBatchPart(requests: PendingImageRequest[]): Promise<void> {
     const groupedResolvers = new Map<string, PendingImageRequest[]>();
     requests.forEach((request) => {
         const bucket = groupedResolvers.get(request.markerId);
@@ -952,7 +1009,8 @@ async function flushPublicUGCImageBatch(requests: PendingImageRequest[]): Promis
             throw await readUGCError(response);
         }
 
-        const payload = await response.json() as { items?: UGCImage[] };
+        const payload = await response.json() as MarkerBatchPayload<UGCImage>;
+        const failedMarkers = failedBatchMarkers(payload, markerIds);
         const groupedImages = new Map<string, UGCImage[]>();
 
         markerIds.forEach((markerId) => {
@@ -967,6 +1025,11 @@ async function flushPublicUGCImageBatch(requests: PendingImageRequest[]): Promis
         });
 
         markerIds.forEach((markerId) => {
+            if (failedMarkers.has(markerId)) {
+                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
+                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
+                return;
+            }
             const images = groupedImages.get(markerId) ?? [];
             publicImageCache.set(markerId, {
                 expiresAt: Date.now() + (images.length > 0 ? PUBLIC_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS),
@@ -984,6 +1047,10 @@ async function flushPublicUGCImageBatch(requests: PendingImageRequest[]): Promis
 }
 
 async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<void> {
+    await runUGCBatches(requests, readUGCCommentBatchPart);
+}
+
+async function readUGCCommentBatchPart(requests: PendingCommentRequest[]): Promise<void> {
     const groupedResolvers = new Map<string, PendingCommentRequest[]>();
     requests.forEach((request) => {
         const bucket = groupedResolvers.get(request.markerId);
@@ -1010,7 +1077,8 @@ async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<
             throw await readUGCError(response);
         }
 
-        const payload = await response.json() as { items?: UGCComment[] };
+        const payload = await response.json() as MarkerBatchPayload<UGCComment>;
+        const failedMarkers = failedBatchMarkers(payload, markerIds);
         const groupedComments = new Map<string, UGCComment[]>();
 
         markerIds.forEach((markerId) => {
@@ -1025,6 +1093,11 @@ async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<
         });
 
         markerIds.forEach((markerId) => {
+            if (failedMarkers.has(markerId)) {
+                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
+                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
+                return;
+            }
             const comments = groupedComments.get(markerId) ?? [];
             commentCache.set(markerId, {
                 expiresAt: Date.now() + (comments.length > 0 ? COMMENT_CACHE_POSITIVE_TTL_MS : COMMENT_CACHE_EMPTY_TTL_MS),
@@ -1042,6 +1115,10 @@ async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<
 }
 
 async function flushUGCSubmissionBatch(requests: PendingSubmissionRequest[]): Promise<void> {
+    await runUGCBatches(requests, readUGCSubmissionBatchPart);
+}
+
+async function readUGCSubmissionBatchPart(requests: PendingSubmissionRequest[]): Promise<void> {
     const groupedResolvers = new Map<string, PendingSubmissionRequest[]>();
     requests.forEach((request) => {
         const bucket = groupedResolvers.get(request.markerId);

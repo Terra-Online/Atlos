@@ -51,7 +51,7 @@
 }
 
 .modalContainer {
-    background-color: transparent;
+    background-color: var(--modal-bg);
     border-radius: 3px;
     color: var(--modal-header-text);
     display: flex;
@@ -292,7 +292,7 @@
     z-index: 1;
     padding: 0.6rem;
     max-height: 45vh;
-    background-color: var(--modal-bg);
+    background-color: transparent;
     transition: background-color .35s $adagio-curve;
     overflow: scroll;
     &::-webkit-scrollbar {
@@ -301,7 +301,6 @@
 }
 .topBlur,
 .bottomBlur {
-    --scroll-edge-fade-color: var(--modal-bg);
     position: absolute;
     left: 0;
     right: 0;

@@ -13,12 +13,10 @@ export default function Feed({
     children,
     listRef,
     resetKey,
-    fadeClassName,
 }: {
     children: ReactNode;
     listRef?: RefObject<HTMLDivElement | null>;
     resetKey?: string;
-    fadeClassName?: string;
 }) {
     const localRef = useRef<HTMLDivElement>(null);
     const ref = listRef ?? localRef;
@@ -58,15 +56,11 @@ export default function Feed({
                 {children}
             </div>
             <AdaptiveLinearBlur
+                targetRef={ref}
+                visible={!atBottom}
                 side='bottom'
                 strength={6}
-                className={[
-                    styles.listBottomBlur,
-                    !atBottom ? styles.visible : '',
-                    fadeClassName,
-                ]
-                    .filter(Boolean)
-                    .join(' ')}
+                className={`${styles.listBottomBlur} ${!atBottom ? styles.visible : ''}`}
             />
         </div>
     );
