@@ -7,6 +7,7 @@ interface AuthState {
   sessionVersion: number;
   setSessionUser: (user: SessionUser | null) => void;
   clearSessionUser: () => void;
+  beginSessionUpdate: () => number;
 }
 
 const cachedSession = getCachedSession();
@@ -14,6 +15,14 @@ const cachedSession = getCachedSession();
 export const useAuthStore = create<AuthState>((set) => ({
   sessionUser: cachedSession.hit ? cachedSession.value : null,
   sessionVersion: 0,
+  beginSessionUpdate: () => {
+    let version = 0;
+    set((state) => {
+      version = state.sessionVersion + 1;
+      return { sessionVersion: version };
+    });
+    return version;
+  },
   setSessionUser: (user) => {
     setCachedSession(user);
     set((state) => ({ sessionUser: user, sessionVersion: state.sessionVersion + 1 }));

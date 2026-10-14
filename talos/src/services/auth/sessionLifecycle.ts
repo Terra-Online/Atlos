@@ -10,13 +10,24 @@ let inFlight: { version: number; promise: Promise<SessionUser | null> } | null =
 let lastAttemptAt = Number.NEGATIVE_INFINITY;
 let lastAttemptSucceeded = false;
 let revalidationRequested = false;
+let paused = 0;
 
-export const refreshSessionUser = (): Promise<SessionUser | null> => {
-    const version = useAuthStore.getState().sessionVersion;
+export const pauseSessionRefresh = (): (() => void) => {
+    paused += 1;
+    let resumed = false;
+    return () => {
+        if (!resumed) { paused -= 1; resumed = true; }
+    };
+};
+
+export const refreshSessionUser = (expectedEmail?: string): Promise<SessionUser | null> => {
+    const version = expectedEmail
+        ? useAuthStore.getState().beginSessionUpdate()
+        : useAuthStore.getState().sessionVersion;
     if (inFlight?.version === version) return inFlight.promise;
 
     lastAttemptAt = Date.now();
-    const promise = fetchSessionUser()
+    const promise = fetchSessionUser(expectedEmail ? { retry: true, expectedEmail } : undefined)
         .then((user) => {
             const state = useAuthStore.getState();
             if (state.sessionVersion !== version) return state.sessionUser;
@@ -39,6 +50,7 @@ export const refreshSessionUser = (): Promise<SessionUser | null> => {
 };
 
 export const revalidateSession = (): void => {
+    if (paused > 0) return;
     if (typeof document === 'undefined' || document.visibilityState === 'hidden') return;
     if (lastAttemptSucceeded && !useAuthStore.getState().sessionUser) return;
     const minIntervalMs = lastAttemptSucceeded && !revalidationRequested

@@ -11,6 +11,7 @@ import {
   resetPasswordWithToken,
   sendEmailVerificationOtp,
   startOAuth,
+  type SessionUser,
   type OAuthProvider,
   updateProfileNickname,
 } from '@/services/auth';
@@ -18,7 +19,7 @@ import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues
 import { normalizeAvatarIndex } from './avatarConfig';
 import { useAuthStore } from '@/store/auth';
 import { getCachedSession } from '@/services/cache/backend';
-import { refreshSessionUser, startSessionRefresh } from '@/services/auth/sessionLifecycle';
+import { pauseSessionRefresh, refreshSessionUser, startSessionRefresh } from '@/services/auth/sessionLifecycle';
 
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;
@@ -116,6 +117,7 @@ export const useIdCardAuthController = () => {
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
   const [authReady, setAuthReady] = useState(cachedSession.hit);
   const passwordResetRequestInFlightRef = useRef(false);
+  const oauthExchangeRef = useRef<{ code: string; promise: ReturnType<typeof exchangeAuthCode>; version: number } | null>(null);
 
   const normalizeProfileNameInput = useCallback((value: string): string => {
     return value.replace(/[^A-Za-z0-9_-]/g, '');
@@ -131,37 +133,44 @@ export const useIdCardAuthController = () => {
 
   const authBase = useMemo(() => getAuthBase(), []);
 
-  const syncSession = useCallback(async (options?: { silent?: boolean }) => {
+  const showProfileSetup = useCallback((user: SessionUser) => {
+    if (!user.needsProfileSetup) return;
+    setProfileName('');
+    setProfileAvatar(normalizeAvatarIndex(user.avatar));
+    setProfileError(null);
+    setProfileOpen(true);
+  }, []);
+
+  const syncSession = useCallback(async (options?: { silent?: boolean; expectedEmail?: string; deferProfileSetup?: boolean }) => {
     try {
-      const user = await refreshSessionUser();
+      const user = await refreshSessionUser(options?.expectedEmail);
       if (!user) {
+        if (!options?.silent) throw new AuthFlowError('Session is required.', { code: 'SESSION_REQUIRED', status: 401 });
         return null;
+      }
+      if (options?.expectedEmail && user.email?.toLowerCase() !== options.expectedEmail.trim().toLowerCase()) {
+        throw new AuthFlowError('The browser did not retain the expected session.', { code: 'SESSION_COOKIE_REQUIRED' });
       }
 
       markOnceLogin();
       setHasLoggedInBefore(true);
-      if (user.needsProfileSetup) {
-        setProfileName('');
-        setProfileAvatar(normalizeAvatarIndex(user.avatar));
-        setProfileError(null);
-        setProfileOpen(true);
-      }
+      if (!options?.deferProfileSetup) showProfileSetup(user);
 
       return user;
-    } catch {
+    } catch (error) {
       if (options?.silent) {
         return null;
       }
-      throw new Error('Failed to refresh session after auth.');
+      throw error;
     } finally {
       setAuthReady(true);
     }
-  }, []);
+  }, [showProfileSetup]);
 
   useEffect(() => startSessionRefresh(), []);
 
   useEffect(() => {
-    if (hasPendingAuthCode()) {
+    if (hasPendingAuthCode() || oauthExchangeRef.current) {
       return;
     }
 
@@ -174,7 +183,17 @@ export const useIdCardAuthController = () => {
     }
 
     const url = new URL(window.location.href);
-    const authCode = url.searchParams.get('auth_code')?.trim() ?? '';
+    const authCode = url.searchParams.get('auth_code')?.trim() ?? oauthExchangeRef.current?.code ?? '';
+    const callbackError = url.searchParams.get('error');
+    if (callbackError && !authCode) {
+      url.searchParams.delete('error');
+      url.searchParams.delete('error_description');
+      window.history.replaceState({}, '', url.toString());
+      setAuthError(mapAuthErrorToHint(new AuthFlowError('OAuth sign-in failed.', { code: callbackError.toUpperCase() })));
+      setAuthReady(true);
+      setOpen(true);
+      return;
+    }
     if (!authCode) {
       return;
     }
@@ -182,26 +201,33 @@ export const useIdCardAuthController = () => {
     url.searchParams.delete('auth_code');
     window.history.replaceState({}, '', url.toString());
 
-    void exchangeAuthCode(authCode)
+    // Keep one exchange promise across repeated effects. Only session reads retry;
+    // an exchange with an unknown outcome requires a fresh OAuth attempt.
+    if (!oauthExchangeRef.current) {
+      const resume = pauseSessionRefresh();
+      oauthExchangeRef.current = { code: authCode, promise: exchangeAuthCode(authCode).finally(resume),
+        version: useAuthStore.getState().beginSessionUpdate() };
+    }
+    let active = true;
+    const exchange = oauthExchangeRef.current;
+    void exchange.promise
       .then((user) => {
+        if (!active || useAuthStore.getState().sessionVersion !== exchange.version) return;
         markOnceLogin();
         setHasLoggedInBefore(true);
         setSessionUser(user);
         setAuthReady(true);
         setOpen(false);
-        if (user.needsProfileSetup) {
-          setProfileName('');
-          setProfileAvatar(normalizeAvatarIndex(user.avatar));
-          setProfileError(null);
-          setProfileOpen(true);
-        }
+        showProfileSetup(user);
       })
       .catch((error) => {
+        if (!active || useAuthStore.getState().sessionVersion !== exchange.version) return;
         setAuthReady(true);
         setAuthError(mapAuthErrorToHint(error));
         setOpen(true);
       });
-  }, [setSessionUser]);
+    return () => { active = false; };
+  }, [setSessionUser, showProfileSetup]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -339,8 +365,6 @@ export const useIdCardAuthController = () => {
           getVerificationDigits(values.verificationCode),
         );
         successHintCode = '201';
-        markOnceLogin();
-        setHasLoggedInBefore(true);
       } else {
         if (!resetToken) {
           throw new Error('Missing reset token.');
@@ -349,12 +373,12 @@ export const useIdCardAuthController = () => {
         successHintCode = '202';
       }
 
+      const confirmedUser = mode !== 'passwordReset'
+        ? await syncSession({ expectedEmail: values.email, deferProfileSetup: true }) : null;
       setAuthError(successHintCode);
       await waitForPrtsWipeCycle();
-      if (mode !== 'passwordReset') {
-        await syncSession();
-      }
       setOpen(false);
+      if (confirmedUser) showProfileSetup(confirmedUser);
       if (mode === 'passwordReset') {
         setResetToken(null);
         setResetEmail('');
@@ -372,7 +396,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, resetToken, setActiveTab, syncSession]);
+  }, [isSubmitting, resetToken, setActiveTab, syncSession, showProfileSetup]);
 
   const handleRequestPasswordReset = useCallback(async ({
     email,

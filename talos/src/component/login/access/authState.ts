@@ -140,11 +140,11 @@ const AUTH_HINT_META: Record<AuthHintCode, AuthHintMeta> = {
   604: {
     prefix: 'AUTH',
     type: 'auth',
-    backendCodes: ['PROVIDER_CONFLICT', 'ACCOUNT_ALREADY_LINKED', 'SOCIAL_ACCOUNT_ALREADY_LINKED', 'ACCOUNT_NOT_LINKED'],
+    backendCodes: ['PROFILE_IDENTITY_CONFLICT', 'PROVIDER_CONFLICT', 'ACCOUNT_ALREADY_LINKED', 'SOCIAL_ACCOUNT_ALREADY_LINKED', 'ACCOUNT_NOT_LINKED'],
   },
-  701: { prefix: 'SYS', type: 'sys', backendCodes: ['OVERLOADED', 'INTERNAL_ERROR', 'AUTH_FLOW_FAILED'] },
+  701: { prefix: 'SYS', type: 'sys', backendCodes: ['OVERLOADED', 'INTERNAL_ERROR', 'AUTH_FLOW_FAILED', 'AUTH_PROFILE_BOOTSTRAP_FAILED'] },
   702: { prefix: 'SYS', type: 'sys', backendCodes: ['TIMEOUT'], statuses: [408, 504] },
-  703: { prefix: 'SYS', type: 'sys', backendCodes: ['MAINTENANCE'], statuses: [503] },
+  703: { prefix: 'SYS', type: 'sys', backendCodes: ['MAINTENANCE', 'DEPENDENCY_UNAVAILABLE', 'DEPENDENCY_OVERLOADED'], statuses: [503] },
   801: { prefix: 'BAN', type: 'ban', backendCodes: ['ACCOUNT_SUSPENDED_VANDALISM'] },
   802: { prefix: 'BAN', type: 'ban', backendCodes: ['ACCOUNT_SUSPENDED_ACC_DENIED'] },
 };

@@ -7,12 +7,14 @@ import { getAuthBase, getAuthHeaders } from '@/services/http/authRuntime';
 export class AuthFlowError extends Error {
   status?: number;
   code?: string;
+  retryAfterMs?: number;
 
-  constructor(message: string, options?: { status?: number; code?: string }) {
+  constructor(message: string, options?: { status?: number; code?: string; retryAfterMs?: number }) {
     super(message);
     this.name = 'AuthFlowError';
     this.status = options?.status;
     this.code = options?.code;
+    this.retryAfterMs = options?.retryAfterMs;
   }
 }
 
@@ -174,6 +176,7 @@ const pickApiErrorCode = (payload: unknown): string | undefined => {
 async function postAuthJson<TResponse>(
   path: string,
   body: Record<string, unknown>,
+  signal?: AbortSignal,
 ): Promise<TResponse> {
   const locale = getCurrentLocale();
   const requestBody = {
@@ -190,6 +193,7 @@ async function postAuthJson<TResponse>(
       'x-oem-locale': locale,
     },
     body: JSON.stringify(requestBody),
+    signal,
   });
 
   let payload: unknown = null;
@@ -215,13 +219,52 @@ async function postAuthJson<TResponse>(
   return payload as TResponse;
 }
 
-export const fetchSessionUser = async (): Promise<SessionUser | null> => {
+interface SessionCheckOptions {
+  retry?: boolean;
+  signal?: AbortSignal;
+  expectedUid?: string;
+  expectedEmail?: string;
+}
+
+export const fetchSessionUser = async (options: SessionCheckOptions = {}): Promise<SessionUser | null> => {
   const controller = new AbortController();
-  const timeout = globalThis.setTimeout(() => controller.abort(), 15_000);
+  const deadline = Date.now() + (options.retry ? 30_000 : 15_000);
+  const cancel = () => controller.abort();
+  if (options.signal?.aborted) cancel();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = globalThis.setTimeout(cancel, deadline - Date.now());
   try {
-    return await requestSessionUser(controller.signal);
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        controller.signal.throwIfAborted();
+        const user = await requestSessionUser(controller.signal);
+        if ((options.expectedUid && user?.uid !== options.expectedUid)
+          || (options.expectedEmail && user?.email?.toLowerCase() !== options.expectedEmail.trim().toLowerCase())) {
+          throw new AuthFlowError('The browser did not retain the expected session.', { code: 'SESSION_COOKIE_REQUIRED' });
+        }
+        return user;
+      } catch (error) {
+        if (controller.signal.aborted) {
+          if (options.signal?.aborted) throw error;
+          throw new AuthFlowError('Session confirmation timed out.', { status: 408, code: 'TIMEOUT' });
+        }
+        const retryable = error instanceof TypeError || (error instanceof AuthFlowError
+          && (error.status === 429 || (error.status !== undefined && error.status >= 500 && error.status <= 599)));
+        if (!options.retry || !retryable || attempt >= 2) throw error;
+        const delay = error instanceof AuthFlowError && error.retryAfterMs !== undefined
+          ? error.retryAfterMs : (attempt + 1) * 1000;
+        if (delay >= deadline - Date.now()) throw error;
+        await new Promise<void>((resolve, reject) => {
+          const abort = () => { clearTimeout(timer); controller.signal.removeEventListener('abort', abort); reject(new DOMException('Aborted', 'AbortError')); };
+          const timer = setTimeout(() => { controller.signal.removeEventListener('abort', abort); resolve(); }, delay);
+          controller.signal.addEventListener('abort', abort, { once: true });
+          if (controller.signal.aborted) abort();
+        });
+      }
+    }
   } finally {
     globalThis.clearTimeout(timeout);
+    options.signal?.removeEventListener('abort', cancel);
   }
 };
 
@@ -256,6 +299,7 @@ const requestSessionUser = async (signal: AbortSignal, allowMigration = true): P
       {
         status: response.status,
         code: pickApiErrorCode(payload),
+        retryAfterMs: parseRetryAfter(response.headers.get('retry-after')),
       },
     );
   }
@@ -275,14 +319,37 @@ const requestSessionUser = async (signal: AbortSignal, allowMigration = true): P
   return user;
 };
 
-export const exchangeAuthCode = async (code: string): Promise<SessionUser> => {
-  const payload = await postAuthJson<unknown>('/session/exchange', {
-    code: code.trim(),
-  });
+function parseRetryAfter(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(value);
+  return Number.isFinite(date) ? Math.max(0, date - Date.now()) : undefined;
+}
 
-  const user = await fetchSessionUser();
+export const exchangeAuthCode = async (code: string, signal?: AbortSignal): Promise<SessionUser> => {
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (signal?.aborted) cancel();
+  signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = setTimeout(cancel, 15_000);
+  let payload: unknown;
+  try {
+    payload = await postAuthJson<unknown>('/session/exchange', { code: code.trim() }, controller.signal);
+  } catch (error) {
+    if (controller.signal.aborted && !signal?.aborted) {
+      throw new AuthFlowError('Auth exchange timed out. Please start a new sign-in attempt.', { code: 'TIMEOUT', status: 408 });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', cancel);
+  }
+
   const expectedUser = pickSessionUser(payload);
-  if (!user || !expectedUser || user.uid !== expectedUser.uid) {
+  if (!expectedUser) throw new AuthFlowError('Invalid exchange response.', { code: 'AUTH_FLOW_FAILED' });
+  const user = await fetchSessionUser({ retry: true, signal, expectedUid: expectedUser.uid });
+  if (!user) {
     throw new AuthFlowError('The browser did not retain the session cookie. Partitioned cookies are required.', {
       code: 'SESSION_COOKIE_REQUIRED',
     });
