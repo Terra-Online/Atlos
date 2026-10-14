@@ -126,6 +126,11 @@ const defaultSeoOgConcurrency = 12;
 const seoOgConcurrency = Number.isFinite(requestedSeoOgConcurrency) && requestedSeoOgConcurrency > 0
   ? requestedSeoOgConcurrency
   : defaultSeoOgConcurrency;
+const requestedSharpConcurrency = Number.parseInt(process.env.SEO_SHARP_CONCURRENCY || '', 10);
+const defaultSharpConcurrency = 1;
+const sharpConcurrency = Number.isFinite(requestedSharpConcurrency) && requestedSharpConcurrency > 0
+  ? requestedSharpConcurrency
+  : defaultSharpConcurrency;
 const SEO_STATE_VERSION = 1;
 const OG_RENDER_SIGNATURE_VERSION = 5;
 const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last-lossless-raw';
@@ -255,6 +260,7 @@ async function configureSharpFonts() {
 
   const sharpModule = await import('sharp');
   sharp = sharpModule.default;
+  sharp.concurrency(sharpConcurrency);
 }
 
 async function readJson(file) {
@@ -1022,6 +1028,11 @@ function createMapPatternBackground() {
   return cachedRender('pattern:work', renderMapPatternBackground);
 }
 
+function createMapPatternRaw() {
+  return cachedRender('pattern:work:raw', async () =>
+    toRaw(sharp(await createMapPatternBackground())));
+}
+
 async function renderMapPatternBackground() {
   const patternTileSize = 100;
   const patternSvg = await fs.readFile(MAP_PATTERN_FILE);
@@ -1060,6 +1071,11 @@ async function renderMapPatternBackground() {
 
 function createMapPatternSampleBackground() {
   return cachedRender('pattern:sample', renderMapPatternSampleBackground);
+}
+
+function createMapPatternSampleRaw() {
+  return cachedRender('pattern:sample:raw', async () =>
+    toRaw(sharp(await createMapPatternSampleBackground())));
 }
 
 async function renderMapPatternSampleBackground() {
@@ -1410,7 +1426,8 @@ async function generateOgImage(point) {
   const markerInputs = await markerCompositeInputs({ ...point, overlayCenter: markerCenter }, iconPath);
   // Keep the tile stage lossless. The old pipeline encoded this intermediate
   // as JPEG before resizing and masking, which compounded image loss.
-  const sampleBackground = await toRaw(sharp(await createMapPatternSampleBackground())
+  const samplePattern = await createMapPatternSampleRaw();
+  const sampleBackground = await toRaw(sharpFromRaw(samplePattern)
     .composite(mapTileComposites)
   );
   const workBackground = await toRaw(sharpFromRaw(sampleBackground)
@@ -1437,7 +1454,8 @@ async function generateFallbackOgImage(point) {
   const iconPath = await resolveIconPath(point.typeInfo);
   const logoInput = await brandCompositeInput();
   const markerInputs = await markerCompositeInputs(point, iconPath);
-  const maskedWork = await toRaw(sharp(await createMapPatternBackground())
+  const workPattern = await createMapPatternRaw();
+  const maskedWork = await toRaw(sharpFromRaw(workPattern)
     .composite([{ input: workMapMask(), left: 0, top: 0 }])
   );
   const cropped = await toRaw(sharpFromRaw(maskedWork)

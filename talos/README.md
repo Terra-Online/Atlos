@@ -43,6 +43,8 @@ Run `python3 scripts/subset_fonts_test.py` for font cache regression checks
 Vite reports emitted asset sizes and gzip sizes for each app.
 OG rendering keeps map intermediates lossless in memory; use
 `SEO_OG_PIPELINE=legacy` only to compare against the previous JPEG pipeline.
+OG generation defaults to one libvips worker per task to avoid CPU oversubscription;
+override with `SEO_SHARP_CONCURRENCY` when benchmarking another host.
 Builds never publish. Partial builds invalidate the full-site build receipt;
 rebuild the complete site before publishing.
 
