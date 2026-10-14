@@ -45,6 +45,8 @@ OG rendering keeps map intermediates lossless in memory; use
 `SEO_OG_PIPELINE=legacy` only to compare against the previous JPEG pipeline.
 OG generation defaults to one libvips worker per task to avoid CPU oversubscription;
 override with `SEO_SHARP_CONCURRENCY` when benchmarking another host.
+Marker SVGs are rasterized once and reused; set `SEO_MARKER_RASTER_CACHE=0`
+only when comparing the uncached path.
 Builds never publish. Partial builds invalidate the full-site build receipt;
 rebuild the complete site before publishing.
 

@@ -131,9 +131,10 @@ const defaultSharpConcurrency = 1;
 const sharpConcurrency = Number.isFinite(requestedSharpConcurrency) && requestedSharpConcurrency > 0
   ? requestedSharpConcurrency
   : defaultSharpConcurrency;
+const useMarkerRasterCache = process.env.SEO_MARKER_RASTER_CACHE !== '0';
 const SEO_STATE_VERSION = 1;
-const OG_RENDER_SIGNATURE_VERSION = 5;
-const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last-lossless-raw';
+const OG_RENDER_SIGNATURE_VERSION = 6;
+const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last-lossless-raw-badge-topmost';
 const FILE_FINGERPRINT_VERSION = 2;
 
 const fileFingerprintCache = new Map();
@@ -150,6 +151,12 @@ function cachedRender(key, render) {
 function markerIconInput(file, size, fit) {
   return cachedRender(`icon:${file}:${size}:${fit}`, () =>
     sharp(file).resize(size, size, { fit }).png().toBuffer());
+}
+
+function markerSvgInput(key, svg) {
+  if (!useMarkerRasterCache) return Buffer.from(svg);
+  return cachedRender(`marker-svg:${key}`, () =>
+    sharp(Buffer.from(svg)).png().toBuffer());
 }
 
 function cachedPathExists(file) {
@@ -944,7 +951,7 @@ async function markerCompositeInputs(point, iconPath) {
       x: markerCenter.x,
       y: markerCenter.y - imageSize / 2,
     };
-    const svg = `
+    const frameSvg = `
       <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="0" dy="0" stdDeviation="${3.125 * scale}" flood-color="#000000" flood-opacity="0.85"/>
@@ -977,12 +984,10 @@ async function markerCompositeInputs(point, iconPath) {
           fill="rgb(255,196,40)"
           filter="url(#shadow)"
         />
-        ${tierLabel ? `<rect x="${badgeLeft}" y="${badgeTop}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/>
-        <text x="${badgeLeft + badgeWidth / 2}" y="${badgeTop + badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * scale}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text>` : ''}
       </svg>
     `;
     const inputs = [{
-      input: Buffer.from(svg),
+      input: await markerSvgInput(`frame:${tierLabel}`, frameSvg),
       left: Math.round(framedMarkerCenter.x - size / 2),
       top: Math.round(framedMarkerCenter.y - size / 2),
     }];
@@ -991,6 +996,21 @@ async function markerCompositeInputs(point, iconPath) {
         input: await markerIconInput(iconPath, Math.round(imageSize), 'cover'),
         left: Math.round(framedMarkerCenter.x - imageSize / 2),
         top: Math.round(framedMarkerCenter.y - imageSize / 2),
+      });
+    }
+    if (tierLabel) {
+      inputs.push({
+        input: await markerSvgInput(`framed-badge:${tierLabel}`, `
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="${3.125 * scale}" flood-color="#000000" flood-opacity="0.85"/>
+            </filter>
+            <rect x="${badgeLeft}" y="${badgeTop}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/>
+            <text x="${badgeLeft + badgeWidth / 2}" y="${badgeTop + badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * scale}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text>
+          </svg>
+        `),
+        left: Math.round(framedMarkerCenter.x - size / 2),
+        top: Math.round(framedMarkerCenter.y - size / 2),
       });
     }
     return inputs;
@@ -1007,7 +1027,10 @@ async function markerCompositeInputs(point, iconPath) {
   } else {
     const fallbackSize = Math.round(18 * MARKER_RENDER_SCALE);
     inputs.push({
-      input: Buffer.from(`<svg width="${fallbackSize}" height="${fallbackSize}" viewBox="0 0 ${fallbackSize} ${fallbackSize}" xmlns="http://www.w3.org/2000/svg"><rect width="${fallbackSize}" height="${fallbackSize}" fill="rgb(248,248,248)"/></svg>`),
+      input: await markerSvgInput(
+        `fallback:${fallbackSize}`,
+        `<svg width="${fallbackSize}" height="${fallbackSize}" viewBox="0 0 ${fallbackSize} ${fallbackSize}" xmlns="http://www.w3.org/2000/svg"><rect width="${fallbackSize}" height="${fallbackSize}" fill="rgb(248,248,248)"/></svg>`,
+      ),
       left: Math.round(markerCenter.x - fallbackSize / 2),
       top: Math.round(markerCenter.y - fallbackSize / 2),
     });
@@ -1016,7 +1039,10 @@ async function markerCompositeInputs(point, iconPath) {
     const badgeWidth = Math.round(Math.max(18, 8 + tierLabel.length * 8) * MARKER_RENDER_SCALE);
     const badgeHeight = Math.round(16 * MARKER_RENDER_SCALE);
     inputs.push({
-      input: Buffer.from(`<svg width="${badgeWidth}" height="${badgeHeight}" viewBox="0 0 ${badgeWidth} ${badgeHeight}" xmlns="http://www.w3.org/2000/svg"><filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1 * MARKER_RENDER_SCALE}" stdDeviation="${2 * MARKER_RENDER_SCALE}" flood-color="#000000" flood-opacity="0.65"/></filter><rect width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/><text x="${badgeWidth / 2}" y="${badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * MARKER_RENDER_SCALE}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text></svg>`),
+      input: await markerSvgInput(
+        `badge:${tierLabel}`,
+        `<svg width="${badgeWidth}" height="${badgeHeight}" viewBox="0 0 ${badgeWidth} ${badgeHeight}" xmlns="http://www.w3.org/2000/svg"><filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1 * MARKER_RENDER_SCALE}" stdDeviation="${2 * MARKER_RENDER_SCALE}" flood-color="#000000" flood-opacity="0.65"/></filter><rect width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/><text x="${badgeWidth / 2}" y="${badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * MARKER_RENDER_SCALE}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text></svg>`,
+      ),
       left: Math.round(markerCenter.x + imageSize / 2 - badgeWidth / 2),
       top: Math.round(markerCenter.y - imageSize / 2),
     });
