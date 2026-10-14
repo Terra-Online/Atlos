@@ -1,15 +1,40 @@
-.performanceFade {
-    background: linear-gradient(
-        to bottom,
-        var(--scroll-edge-fade-color, transparent) 0%,
-        transparent var(--scroll-edge-fade-end, 100%)
-    );
+@use 'sass:list';
+@use 'sass:math';
+
+@property --scroll-fade-top {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0;
 }
 
-.performanceFade[data-side='bottom'] {
-    background: linear-gradient(
-        to top,
-        var(--scroll-edge-fade-color, transparent) 0%,
-        transparent var(--scroll-edge-fade-end, 100%)
-    );
+@property --scroll-fade-bottom {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0;
+}
+
+@function edge-mask($direction, $size) {
+    $stops: ();
+    @for $i from 0 through 8 {
+        $position: math.div($i, 8);
+
+        // Smootherstep has zero slope at both ends, avoiding a visible seam
+        // where the fade meets the fully opaque content.
+        $alpha: 6 * math.pow($position, 5) - 15 * math.pow($position, 4) + 10 * math.pow($position, 3);
+        $stops: list.append($stops, rgba(0, 0, 0, $alpha) calc(#{$size} * #{$position}), comma);
+    }
+    @return linear-gradient($direction, $stops);
+}
+
+.performanceFade {
+    background: none;
+    pointer-events: none;
+}
+
+.maskTarget {
+    mask-image:
+        edge-mask(to bottom, min(50%, var(--scroll-fade-top, 0px))),
+        edge-mask(to top, min(50%, var(--scroll-fade-bottom, 0px)));
+    mask-composite: intersect;
+    mask-mode: alpha;
 }

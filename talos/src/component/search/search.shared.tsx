@@ -216,12 +216,16 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
                             data-mask-bottom={maskBottomVisible ? 'true' : 'false'}
                         >
                             <AdaptiveLinearBlur
+                                targetRef={resultPanelRef}
+                                visible={maskTopVisible}
                                 side='top'
                                 strength={8}
                                 falloffPercentage={85}
                                 className={`${styles.topBlur} ${maskTopVisible ? styles.visible : ''}`}
                             />
                             <AdaptiveLinearBlur
+                                targetRef={resultPanelRef}
+                                visible={maskBottomVisible}
                                 side='bottom'
                                 strength={8}
                                 falloffPercentage={100}

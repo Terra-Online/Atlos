@@ -570,6 +570,8 @@ const Modal: React.FC<ModalProps> = ({
         {/* Top blur: visible when not scrolled to top */}
         {tabs.length === 0 && (
           <AdaptiveLinearBlur
+            targetRef={contentRef}
+            visible={!isScrolledTop}
             side='top'
             strength={2}
             className={`${styles.topBlur} ${!isScrolledTop ? styles.visible : ''}`}
@@ -578,6 +580,8 @@ const Modal: React.FC<ModalProps> = ({
         
         {/* Bottom blur: visible when not scrolled to bottom */}
         <AdaptiveLinearBlur
+          targetRef={contentRef}
+          visible={!isScrolledBottom}
           side='bottom'
           strength={2}
           className={`${styles.bottomBlur} ${!isScrolledBottom ? styles.visible : ''}`}

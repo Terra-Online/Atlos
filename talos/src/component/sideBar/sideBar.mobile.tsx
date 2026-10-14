@@ -569,6 +569,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
         <AdaptiveLinearBlur
+          targetRef={contentRef}
+          visible={currentSnap > 0 && !isScrolledTop}
           side='top'
           strength={8}
           falloffPercentage={80}
@@ -577,6 +579,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
         {/* Bottom blur: visible when not at snap-0 and not scrolled to bottom */}
         <AdaptiveLinearBlur
+          targetRef={contentRef}
+          visible={currentSnap > 0 && !isScrolledBottom}
           side='bottom'
           strength={2}
           falloffPercentage={100}
