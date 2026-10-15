@@ -6,12 +6,15 @@ Cloudflare authentication, and the `atlos-cn` SSH alias for the server.
 
 ## Normal release
 
+Build, deploy, publish, package and OG commands default to ORG/R2. Select CN
+or all targets explicitly; `deploy:all` always deploys both sites.
+
 ```sh
 pnpm check
+pnpm deploy:org                  # ORG / R2
 pnpm deploy:all
 pnpm deploy:all --skip-og
 pnpm deploy:cn
-pnpm deploy:org
 pnpm deploy:org --channel beta
 pnpm deploy:all --dry-run
 ```
@@ -38,6 +41,7 @@ not prove current artifacts are valid.
 
 ```sh
 pnpm build --target all
+pnpm run publish                                # ORG: R2 + Pages
 pnpm run publish --target cn                    # OSS + server
 pnpm run publish --target cn --only oss
 pnpm run publish --target cn --only server
@@ -80,7 +84,8 @@ to the whole-site Pages project.
 ## OG images and Workers
 
 ```sh
-pnpm og                                      # Generate both targets
+pnpm og                                      # Generate ORG (default)
+pnpm og --target all                         # Generate both targets
 pnpm og --target org --channel beta
 pnpm og --target cn --action publish
 pnpm og --target org --action refresh         # Refresh state of existing images
@@ -98,6 +103,7 @@ publish a Worker.
 ## Offline packages
 
 ```sh
+pnpm package                                  # ORG / prod archive (default)
 pnpm package --target cn --channel prod
 pnpm package --target org --channel beta
 pnpm package --target org --channel prod --skip-build

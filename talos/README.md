@@ -33,7 +33,9 @@ pnpm preview --outDir dist/r2
 ```
 
 Outputs remain `dist/oss` (CN) and `dist/r2` (ORG); the default build and
-preview target is ORG. `--skip-subset` skips font subsetting in all apps;
+preview target is ORG. Deployment, publishing, packaging, and OG generation
+also default to ORG/R2. Select CN explicitly; build, deploy and OG also
+support `--target all` for both sites. `--skip-subset` skips font subsetting in all apps;
 `--skip-subset-fonts` remains an alias.
 Font processing caches input signatures and output hashes under `.cache/fonts`.
 Unchanged fonts are skipped; missing or modified outputs are regenerated.

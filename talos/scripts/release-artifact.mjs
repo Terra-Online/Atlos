@@ -29,7 +29,7 @@ const realPath = async (file) => {
 
 // Vite and Pages empty their destination. Inside the checkout, only dedicated
 // output trees may be emptied; external paths must be empty or an existing artifact.
-export const verifyOutput = async (root, directory, kind = 'build') => {
+export const verifyOutput = async (root, directory, kind = 'build', ownedRoot = directory) => {
     const project = await realPath(root);
     const output = await realPath(directory);
     const allowed = path.join(
@@ -54,7 +54,12 @@ export const verifyOutput = async (root, directory, kind = 'build') => {
             throw error;
         }
         const marker = kind === 'pages' ? '.atlos-pages.json' : receipt;
-        if (entries.length && !entries.includes(marker))
+        // Nested app outputs belong to the verified artifact root, unless a
+        // symlink resolves outside it. Check the real paths before trusting it.
+        const owner = await realPath(ownedRoot);
+        const owned = isWithin(owner, output) &&
+            await fs.access(path.join(owner, marker)).then(() => true, () => false);
+        if (entries.length && !entries.includes(marker) && !owned)
             throw new Error(
                 `Refusing to empty an unrelated directory: ${directory}`,
             );

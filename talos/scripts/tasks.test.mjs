@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import os from 'node:os';
 import { test } from 'node:test';
 import { ROOT } from './task-runner.mjs';
 import { parseTask, runTask } from './tasks.mjs';
@@ -74,12 +75,12 @@ test('rejects invalid release arguments before any work and accepts pnpm separat
         parseTask(['build', '--target=org', '--channel=beta']).target,
         'org',
     );
-    assert.equal(parseTask(['build']).target, 'org');
+    for (const command of ['build', 'deploy', 'publish', 'package', 'og'])
+        assert.equal(parseTask([command]).target, 'org');
     for (const args of [
         ['build', '--deploy'],
         ['build', '--target', 'typo'],
-        ['publish'],
-        ['deploy', '--channel', 'beta'],
+        ['deploy', '--target', 'all', '--channel', 'beta'],
         ['publish', '--target', 'org', '--only', 'server'],
         ['publish', '--target', 'cn', '--only', 'server', '--channel', 'beta'],
         ['build', '--channel', 'typo'],
@@ -121,7 +122,7 @@ test('full build prepares data and each font once across both targets without pu
 
 test('skip OG and subset propagate through both site pipelines and shared Worker waits for both', async (t) => {
     const f = await fixture(t);
-    await runTask(['deploy', '--skip-og', '--skip-subset-fonts'], f);
+    await runTask(['deploy', '--target', 'all', '--skip-og', '--skip-subset-fonts'], f);
     assert.equal(
         f.calls.some(({ command }) => command === 'python3'),
         false,
@@ -142,9 +143,9 @@ test('skip OG and subset propagate through both site pipelines and shared Worker
     ]);
 });
 
-test('default deploy builds OG for both targets and independent beta deploy only publishes ORG', async (t) => {
+test('explicit all-target deploy builds OG for both targets and independent beta deploy only publishes ORG', async (t) => {
     const f = await fixture(t);
-    await runTask(['deploy', '--skip-subset'], f);
+    await runTask(['deploy', '--target', 'all', '--skip-subset'], f);
     assert.equal(
         f.calls.filter(({ env }) => env.SEO_IMAGE_ONLY === '1').length,
         2,
@@ -182,7 +183,7 @@ test('a failed site waits for its peer and prevents the shared Worker deployment
         args.includes('./scripts/publish-R2.js'),
     );
     await assert.rejects(
-        runTask(['deploy', '--skip-subset', '--skip-og'], f),
+        runTask(['deploy', '--target', 'all', '--skip-subset', '--skip-og'], f),
         AggregateError,
     );
     assert.equal(
@@ -367,4 +368,33 @@ test('refuses changed resource destinations and beta overrides pointing at prod'
         ),
         AggregateError,
     );
+});
+
+test('default packaging builds the ORG artifact and never publishes', async (t) => {
+    const f = await fixture(t);
+    await runTask(['package', '--skip-subset'], f);
+    await verifyArtifact(path.join(f.root, 'dist/r2'), { channel: 'prod' }, 'org');
+    const archive = f.calls.find(({ args }) => args.includes('./scripts/package-dist.mjs'));
+    assert.equal(archive.args[archive.args.indexOf('--target') + 1], 'org');
+    assert.equal(archive.env.BUILD_TARGET, 'r2');
+    assert.equal(f.calls.some(isRemote), false);
+});
+
+test('rebuilds owned external app outputs while rejecting symlinks into unrelated directories', async (t) => {
+    const f = await fixture(t);
+    const external = await fs.mkdtemp(path.join(os.tmpdir(), 'atlos-artifact-'));
+    t.after(() => fs.rm(external, { recursive: true, force: true }));
+    const dir = path.join(external, 'site');
+    const args = ['build', '--dist-dir', dir, '--skip-subset'];
+    await runTask(args, f);
+    await runTask(args, f);
+    await verifyArtifact(dir, { channel: 'prod' }, 'org');
+    const unrelated = path.join(external, 'unrelated');
+    await f.write(path.join(unrelated, 'keep.txt'));
+    await fs.rm(path.join(dir, 'me'), { recursive: true });
+    await fs.symlink(unrelated, path.join(dir, 'me'));
+    const count = f.calls.length;
+    await assert.rejects(runTask(args, f), /unrelated directory/);
+    assert.equal(f.calls.length, count);
+    assert.equal(await fs.readFile(path.join(unrelated, 'keep.txt'), 'utf8'), 'fixture');
 });

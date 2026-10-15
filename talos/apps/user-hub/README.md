@@ -1,13 +1,12 @@
 # User center
 
 Standalone account pages under `/me/`, sharing the map's session cookies,
-language preference, fonts, and theme. Signed-out users return to the map to
-sign in. The profile dialog links to this app.
+language preference, fonts, and theme. Signed-out users sign in through the
+shared login dialog in place. The profile dialog links to this app.
 
 `/me/` opens the content center for images, comments, and review status.
-`/me/account` groups account details, login methods, and Endfield binding. The
-previous `/me/contributions`, `/me/security`, and `/me/services` URLs continue
-to open their corresponding content or account page.
+`/me/profile` edits the avatar and nickname. Previous account and service
+URLs redirect to the content center.
 
 From `talos/`:
 
@@ -15,8 +14,8 @@ From `talos/`:
 - `pnpm dev:intel`: starts the main site and Intel app. Each development command
   starts only its selected app alongside the main site.
 - `pnpm type-check --app user-hub` and `pnpm run test --app user-hub`: focused validation.
-- `pnpm build --app user-hub`: domestic build in `dist/oss/me`, using the `.cn` API.
-- `pnpm build --app user-hub --target org`: international build in `dist/r2/me`,
+- `pnpm build --app user-hub --target cn`: domestic build in `dist/oss/me`, using the `.cn` API.
+- `pnpm build --app user-hub`: international (default) build in `dist/r2/me`,
   using the `.org` API. Add `--channel beta` for the beta variant.
 
 `VITE_AUTH_BASE` in the build command environment overrides the user hub's production API

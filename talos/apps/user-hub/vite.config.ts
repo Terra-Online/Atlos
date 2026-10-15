@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { defineConfig } from 'vite';
+import { defineConfig, type UserConfig } from 'vite';
 import { resolve } from 'node:path';
 import { getDeployChannel } from '../../scripts/release-channel.js';
 import { resourceConfig } from '../../scripts/release-artifact.mjs';
@@ -149,5 +149,5 @@ export default defineConfig(async ({ command }) => {
                 },
             },
         },
-    };
+    } satisfies UserConfig;
 });

@@ -15,11 +15,11 @@ import {
     verifyOutput,
 } from './release-artifact.mjs';
 const help = `Usage: pnpm <command> [options]
-  build       --target cn|org|all [--app main|intel|user-hub]
+  build       [--target cn|org|all] [--app main|intel|user-hub]
   deploy:all  [--skip-og] [--skip-subset]
   deploy:cn / deploy:org [--channel prod|beta]
-  run publish --target cn|org [--only oss|r2|server|pages|resources]
-  package     --target cn|org [--format archive|pages] [--skip-build]
+  run publish [--target cn|org] [--only oss|r2|server|pages|resources]
+  package     [--target cn|org] [--format archive|pages] [--skip-build]
   og          [--target cn|org|all] [--action build|publish|refresh]
   worker      search|relink check|deploy
   check [--build] / lint / lint:fix / type-check / test
@@ -33,7 +33,7 @@ Build/deploy: --skip-subset (alias --skip-subset-fonts), --skip-intel
 Publish/deploy: --skip-og (alias --skip-seo-og)
 Build/publish/package: --dist-dir PATH (single target only)
 Package: --output-dir PATH
-Defaults: build=org/prod; deploy=all/prod; og=all/build; package=cn/prod/archive.
+Defaults: build/deploy/publish=org/prod; og=org/build; package=org/prod/archive.
 Build and check never deploy. Dry-run only prints commands; it does not validate existing files.`;
 
 const schemas = {
@@ -115,8 +115,7 @@ export const parseTask = (argv, env = process.env) => {
     if (values.help) return { command: 'help' };
     if (positionals.length && !['worker', 'data'].includes(command))
         throw new Error(`Unexpected arguments: ${positionals.join(' ')}`);
-    const target =
-        values.target || (['deploy', 'og'].includes(command) ? 'all' : 'org');
+    const target = values.target || 'org';
     const channel = values.channel || env.DEPLOY_CHANNEL || 'prod';
     if (!['prod', 'beta'].includes(channel))
         throw new Error(`Unknown channel: ${channel}`);
@@ -124,8 +123,6 @@ export const parseTask = (argv, env = process.env) => {
         throw new Error(`Unknown target: ${target}`);
     if (['publish', 'package'].includes(command) && target === 'all')
         throw new Error(`${command} requires a single target.`);
-    if (command === 'publish' && !values.target)
-        throw new Error('publish requires --target cn or org.');
     if (values['dist-dir'] && target === 'all')
         throw new Error('--dist-dir requires a single target.');
     const allowedApps =
@@ -228,7 +225,7 @@ const verifyBuildOutput = async (runner, options, target) => {
     await runner.local(`check build destinations for ${target}`, async () => {
         await verifyOutput(runner.root, dir);
         for (const name of appNames(options))
-            await verifyOutput(runner.root, path.join(dir, apps[name]));
+            await verifyOutput(runner.root, path.join(dir, apps[name]), 'build', dir);
     });
 };
 

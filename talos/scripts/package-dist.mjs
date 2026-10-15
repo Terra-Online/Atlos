@@ -19,7 +19,7 @@ if (values.help) {
   console.log('Usage: package-dist.mjs --target cn|org --channel prod|beta [--skip-build] [--dist-dir PATH] [--output-dir PATH]');
   process.exit(0);
 }
-const target = (values.target || 'cn').toLowerCase();
+const target = (values.target || 'org').toLowerCase();
 const channel = (values.channel || process.env.DEPLOY_CHANNEL || 'prod').toLowerCase();
 const skipBuild = !!values['skip-build'];
 const outputDirArg = values['output-dir'] || path.resolve(ROOT, 'release-artifacts');
