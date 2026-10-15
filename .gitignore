@@ -23,7 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
+.cloudflare/
 
 **/config/config.json
 **/config/config.r2.json
@@ -53,6 +53,8 @@ talos/src/data/marker/stats.json
 talos/scripts/logs/
 talos/src/data/marker/diff.generated.json
 talos/.pages-dist/
+talos/.release-work/
+talos/release-artifacts/
 talos/.cache/
 talos/locale/data
 talos/rum
@@ -75,6 +77,7 @@ talos/.stylelintcache
 *.test.ts
 *.generated.ts
 !talos/oem-relink/src/index.test.ts
+!talos/apps/intel/src/data/importContract.test.ts
 
 # Keep the viewport lifecycle and multi-filter regression suite.
 !talos/src/component/mapCore/markerViewport.test.ts
@@ -83,6 +86,7 @@ talos/.stylelintcache
 !talos/src/component/locator/proximityIndex.test.ts
 !talos/src/component/mapCore/marker/markerLayer.proximity.test.ts
 !talos/src/store/marker.proximity.test.ts
+!talos/src/store/marker.counts.test.ts
 
 # Retained Canvas rendering regression coverage.
 !talos/src/component/mapCore/canvas/canvasEfficiency.test.ts

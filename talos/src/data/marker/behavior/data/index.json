@@ -15,8 +15,8 @@
     }
   },
   "sourceRepository": "AKEData",
-  "sourceCommit": "94b4aea78f6648f65c31affec15b82a997cfd075",
-  "generatedAt": "2026-09-04T10:34:53.035084+00:00",
+  "sourceCommit": "unknown",
+  "generatedAt": "2026-10-15T04:25:39.604099+00:00",
   "files": [
     "VL_1.json",
     "VL_2.json",
@@ -25,6 +25,7 @@
     "VL_6.json",
     "VL_7.json",
     "WL_1.json",
+    "WL_10.json",
     "WL_2.json",
     "WL_3.json",
     "WL_4.json",
@@ -35,13 +36,13 @@
     "WL_9.json"
   ],
   "stats": {
-    "butterflyV1": 50,
+    "butterflyV1": 59,
     "butterflyV2": 4,
-    "butterflyRelations": 54,
-    "butterflyPaths": 53,
-    "lockedCrates": 52,
-    "coins": 378,
-    "trajectories": 188
+    "butterflyRelations": 63,
+    "butterflyPaths": 61,
+    "lockedCrates": 60,
+    "coins": 406,
+    "trajectories": 205
   },
   "diagnostics": {
     "v2WithoutChest": [],

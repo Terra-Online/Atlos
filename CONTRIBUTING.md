@@ -48,8 +48,8 @@ pnpm install --frozen-lockfile
 # Start dev server
 pnpm dev
 
-# Type check
-pnpm run type-check
+# Check data, types, lint and tests
+pnpm check
 
 # Build production bundle
 pnpm build
@@ -74,7 +74,7 @@ Node 20+ and pnpm 8+ recommended.
 
 ## 7. Pull Request Checklist
 Before marking a PR ready for review:
-- [ ] Builds (`pnpm build`) and passes type-check.
+- [ ] Passes `pnpm check --build` (use `--source-only --skip-subset` without private assets).
 - [ ] No introduction of secret values (config.json remains Git‑ignored).
 - [ ] i18n keys added have defaults/fallbacks.
 - [ ] UI changes tested in light & dark theme.
@@ -121,12 +121,19 @@ Do not manually upload locale files. Feature pull requests may edit target-langu
 - NEVER echo secret values in CI logs—mask or print length only.
 
 ## 13. Testing & Verification
-Currently lightweight (no full test suite). Recommended before PR:
+Run `pnpm check` for data contracts, app/Worker types, lint and the existing test
+suites. `pnpm check --build` also builds both site targets without repeating
+shared preparation. CI uses `--source-only --skip-subset` because private assets
+are absent from the public checkout; these artifacts cannot be published.
+Focused checks use `pnpm type-check --app <app>` and `pnpm run test --app <app>`.
+Lint fixes and Prettier formatting are separate commands.
+
+Also verify:
 - Manual verification of language switching.
 - Map renders without console errors.
 - Sidebar interactions (open/close, filter list, triggers) work.
 
-Future additions may include unit tests for utilities & integration smoke tests.
+See `talos/RELEASE.md` for independent publishing channels and command migration.
 
 ## 14. Adding Translations
 

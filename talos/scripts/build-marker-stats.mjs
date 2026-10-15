@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEffectiveMarkers } from './marker-data.mjs';
+import { deduplicateMarkersByPositionAndType } from '../src/data/marker/deduplication.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -10,9 +11,6 @@ const typePath = path.join(root, 'src/data/marker/type.json');
 const outputPath = path.join(root, 'src/data/marker/stats.json');
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-const getPositionTypeKey = (marker) =>
-  JSON.stringify([marker.type, marker.x, marker.y, marker.z]);
 
 const increment = (target, key) => {
   target[key] = (target[key] || 0) + 1;
@@ -23,7 +21,6 @@ const stats = {
   subregion: {},
   region: {},
 };
-const seenPositionTypes = new Set();
 
 const regions = readJson(regionPath);
 const typeMap = readJson(typePath);
@@ -39,7 +36,7 @@ const subregionOrder = [
   ...[...subregionIds].filter((subregionId) => !dataSubregionIds.includes(subregionId)),
 ];
 const markersBySubregion = new Map(subregionOrder.map((subregionId) => [subregionId, []]));
-for (const marker of effectiveMarkers) {
+for (const marker of deduplicateMarkersByPositionAndType(effectiveMarkers)) {
   const list = markersBySubregion.get(marker.subregId) ?? [];
   list.push(marker);
   markersBySubregion.set(marker.subregId, list);
@@ -51,9 +48,6 @@ for (const [subregionId, markers] of markersBySubregion) {
   for (const marker of markers) {
     const type = marker?.type || '';
     if (!type) continue;
-    const positionTypeKey = getPositionTypeKey(marker);
-    if (seenPositionTypes.has(positionTypeKey)) continue;
-    seenPositionTypes.add(positionTypeKey);
     increment(stats.world, type);
     increment(subregionCounts, type);
   }

@@ -1,8 +1,10 @@
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-import { defineConfig } from 'vite';
+import { defineConfig, type UserConfig } from 'vite';
 import { resolve } from 'node:path';
+import { getDeployChannel } from '../../scripts/release-channel.js';
+import { resourceConfig } from '../../scripts/release-artifact.mjs';
 
 const target = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const envDir = resolve(import.meta.dirname, '../..');
@@ -48,7 +50,15 @@ const htmlMetadataPlugin = (): import('vite').Plugin => ({
     },
 });
 
-export default defineConfig(({ command }) => {
+export default defineConfig(async ({ command }) => {
+    const assetsHost = command === 'serve'
+        ? '/me'
+        : (await resourceConfig(
+              envDir,
+              process.env,
+              { channel: getDeployChannel() },
+              target === 'r2' ? 'org' : 'cn',
+          )).assetsHost;
     return {
         base: '/me/',
         envDir,
@@ -90,11 +100,8 @@ export default defineConfig(({ command }) => {
             ],
         },
         define: {
-            // Development serves shared emoji beneath this application's Vite base.
-            // Production uses the main site's existing /assets/images/emoji files.
-            ...(command === 'serve'
-                ? { __ASSETS_HOST: JSON.stringify('/me') }
-                : {}),
+            // Shared comment rendering must use the main site's resource prefix.
+            __ASSETS_HOST: JSON.stringify(assetsHost),
             ...(command === 'build'
                 ? {
                       'import.meta.env.VITE_AUTH_BASE': JSON.stringify(
@@ -142,5 +149,5 @@ export default defineConfig(({ command }) => {
                 },
             },
         },
-    };
+    } satisfies UserConfig;
 });

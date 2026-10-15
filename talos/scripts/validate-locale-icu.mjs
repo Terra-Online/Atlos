@@ -95,6 +95,36 @@ for (const file of localeFiles) {
     }
 }
 
+// Standalone apps own their catalogs. Check their complete key and placeholder
+// contracts independently of the main site's gradual ICU migration.
+for (const app of ['intel', 'user-hub']) {
+    const directory = fileURLToPath(new URL(`../apps/${app}/src/locale/data/ui/`, import.meta.url));
+    const files = (await readdir(directory)).filter((file) => file.endsWith('.json') && !file.endsWith('.fixed.json')).sort();
+    const base = flattenStrings(JSON.parse(await readFile(path.join(directory, sourceFile), 'utf8')));
+    for (const file of files) {
+        const locale = path.basename(file, '.json');
+        const translations = flattenStrings(JSON.parse(await readFile(path.join(directory, file), 'utf8')));
+        for (const identifier of translations.keys()) {
+            if (!base.has(identifier)) errors.push(`${app}/${locale}: extra ${identifier}`);
+        }
+        for (const [identifier, template] of base) {
+            const translation = translations.get(identifier);
+            if (translation === undefined) { errors.push(`${app}/${locale}: missing ${identifier}`); continue; }
+            try {
+                // Intel App accepts either a complete localized title or a title
+                // containing {site}, which it substitutes before setting document.title.
+                const optional = app === 'intel' && identifier === 'intel.pageTitle' ? ['1:site'] : [];
+                const expected = getSchema(template, SOURCE_LOCALE).argumentsUsed.filter((argument) => !optional.includes(argument));
+                const actual = getSchema(translation, locale).argumentsUsed.filter((argument) => !optional.includes(argument));
+                if (JSON.stringify(actual) !== JSON.stringify(expected)) errors.push(`${app}/${locale}: ${identifier} uses [${actual}], expected [${expected}]`);
+            } catch (error) {
+                errors.push(`${app}/${locale}: invalid ${identifier}: ${error.message}`);
+            }
+        }
+    }
+    console.log(`Validated ${app}: ${base.size} UI keys/placeholders across ${files.length} locales.`);
+}
+
 if (errors.length > 0) {
     console.error('Crowdin ICU schema validation failed:');
     for (const error of errors) console.error(`- ${error}`);

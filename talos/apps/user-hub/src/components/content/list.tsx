@@ -3,7 +3,11 @@ import { CommentContent } from '@main/component/detail/comment/emoji';
 import { useTranslateGame } from '@main/locale';
 import { useLocale, useTranslateUI } from '@hub/locale';
 import PopoverTooltip from '@main/component/popover/popover';
-import { formatRelativeTime, parseTimestamp } from '@main/lib/format/time';
+import {
+    formatAbsoluteTime,
+    formatRelativeTime,
+    parseTimestamp,
+} from '@main/lib/format/time';
 import {
     loadAllMarkers,
     MARKER_TYPE_DICT,
@@ -90,7 +94,10 @@ function Progress({ item }: { item: Contribution }) {
                             <>
                                 {' - '}
                                 <time dateTime={date.toISOString()}>
+                                    {formatAbsoluteTime(date, { locale })}
+                                    {' ('}
                                     {formatRelativeTime(date, { locale })}
+                                    {')'}
                                 </time>
                             </>
                         ) : null}
@@ -172,11 +179,14 @@ export default function List({
                 ]
                     .filter(Boolean)
                     .join(t('userHub.pointSeparator'));
-                const href = generatePointShareUrl({
-                    id: item.markerId,
-                    type: item.poiType,
-                    subregId: marker?.subregId ?? '',
-                });
+                const href = generatePointShareUrl(
+                    {
+                        id: item.markerId,
+                        type: item.poiType,
+                        subregId: marker?.subregId ?? '',
+                    },
+                    { content: { kind, id: item.id } },
+                );
                 const [beforePoint, afterPoint] = t(
                     'userHub.commentLocation',
                 ).split('{point}');

@@ -108,7 +108,7 @@ it('does not mark publication as completed when a submission was recalled before
     ).toContain('userHub.steps.archived.complete');
 });
 
-it('uses the shared popover and relative node time, without inventing missing timestamps', async () => {
+it('shows the exact and relative node time without inventing missing timestamps', async () => {
     vi.setSystemTime(new Date('2026-05-21T03:30:31Z'));
     await render({
         status: 'active',
@@ -129,9 +129,13 @@ it('uses the shared popover and relative node time, without inventing missing ti
         `[id="${trigger?.getAttribute('aria-describedby')}"]`,
     );
     expect(tooltip?.getAttribute('role')).toBe('tooltip');
-    expect(tooltip?.textContent).toBe('userHub.steps.ai.complete - 2分钟前');
+    expect(tooltip?.textContent).toMatch(
+        /^userHub\.steps\.ai\.complete - 2026-05-21 \d{2}:28:31 \(2分钟前\)$/,
+    );
     expect(tooltip?.querySelector('br')).toBeNull();
-    expect(tooltip?.querySelector('time')?.textContent).toBe('2分钟前');
+    expect(tooltip?.querySelector('time')?.textContent).toMatch(
+        /^2026-05-21 \d{2}:28:31 \(2分钟前\)$/,
+    );
     expect(tooltip?.querySelector('time')?.getAttribute('dateTime')).toBe(
         '2026-05-21T03:28:31.000Z',
     );
@@ -184,11 +188,13 @@ it.each(paths.map((keys) => ({ keys })))(
     },
 );
 
-it('links the image and comment point label through the shared point URL', async () => {
+it('links directly to the comment or image on its point', async () => {
     await render();
     const point = node.querySelector<HTMLAnchorElement>('a');
     expect(point?.textContent).toBe('醚质・应龙关');
-    expect(point?.href).toMatch(/^https:\/\/oem.re\/[a-zA-Z0-9]{7}$/);
+    expect(point?.href).toMatch(
+        /^https:\/\/oem.re\/[a-zA-Z0-9]{7}\?commentId=comment$/,
+    );
     const href = point?.href;
     await flush(() =>
         root.render(
@@ -204,7 +210,9 @@ it('links the image and comment point label through the shared point URL', async
             }),
         ),
     );
-    expect(node.querySelector('a')?.href).toBe(href);
+    expect(node.querySelector('a')?.href).toBe(
+        href?.replace('commentId=comment', 'imageId=comment'),
+    );
     expect(node.querySelector('a img')?.getAttribute('src')).toBe(
         'https://cdn.example/photo.webp',
     );

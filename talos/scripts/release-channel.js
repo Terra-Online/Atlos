@@ -28,14 +28,14 @@ const deriveBetaPrefix = (basePrefix) => {
   return `${normalized}-beta`;
 };
 
-export const resolveDeployPrefix = ({ basePrefix, channel, target, deployChannels }) => {
+export const resolveDeployPrefix = ({ basePrefix, channel, target, deployChannels, env = process.env }) => {
   const normalizedBase = ensurePrefixLike(basePrefix);
   const normalizedChannel = SUPPORTED_CHANNELS.has(channel) ? channel : 'prod';
 
   const envSpecific =
     normalizedChannel === 'beta'
-      ? process.env.DEPLOY_BETA_PREFIX
-      : process.env.DEPLOY_PROD_PREFIX;
+      ? env.DEPLOY_BETA_PREFIX
+      : env.DEPLOY_PROD_PREFIX;
   if (envSpecific && String(envSpecific).trim()) {
     return {
       prefix: ensurePrefixLike(envSpecific),
@@ -43,9 +43,9 @@ export const resolveDeployPrefix = ({ basePrefix, channel, target, deployChannel
     };
   }
 
-  if (process.env.DEPLOY_PREFIX && String(process.env.DEPLOY_PREFIX).trim()) {
+  if (env.DEPLOY_PREFIX && String(env.DEPLOY_PREFIX).trim()) {
     return {
-      prefix: ensurePrefixLike(process.env.DEPLOY_PREFIX),
+      prefix: ensurePrefixLike(env.DEPLOY_PREFIX),
       source: 'env:DEPLOY_PREFIX',
     };
   }

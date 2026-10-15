@@ -278,6 +278,25 @@
           "old_resting_point": "จุด​พัก​เก่า"
         }
       },
+      "SP": {
+        "name": "ภาพวาดของซือ",
+        "short": "SP",
+        "site": {
+          "linglong_grotto": "ถ้ำ​หลิง​หลง",
+          "drybrush_peak": "ยอดเขา​พู่กัน​แห้ง",
+          "cormorants_rest": "ที่พัก​นก​กาน้ำ",
+          "inkrise_peak": "ยอดเขา​หมึก​ผุด",
+          "flying_white_peak": "ยอดเขา​เฟ​ย​ไป๋",
+          "pinesmoke_basin": "แอ่ง​ไอ​หมอก​สน",
+          "yuanyuan_manor": "คฤหาสน์​หยวน​หยวน",
+          "cleansing_pool": "บ่อ​ชำระล้าง",
+          "pearlveiled_brook": "ธาร​ม่าน​ไข่มุก",
+          "xiaohe_manor": "คฤหาสน์​เสี่ยว​เห​อ",
+          "raintap_grotto": "ถ้ำ​หยด​พิรุณ",
+          "meandering_hike": "เส้นทาง​เดิน​คดเคี้ยว",
+          "pavilion_of_parting": "ศาลา​แห่ง​การ​จาก​ลา"
+        }
+      },
       "SM": {
         "name": "ซุยหมิง",
         "short": "SM",

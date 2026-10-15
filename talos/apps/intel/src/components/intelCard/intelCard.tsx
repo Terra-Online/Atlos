@@ -433,8 +433,8 @@ const IntelCard = ({
     // Folding only changes presentation. The natural expanded height remains
     // valid, so toggling the whole grid must not enqueue hundreds of reads.
     syncCardSkeleton();
+    const skeleton = cardSkeletonRef.current;
     return () => {
-      const skeleton = cardSkeletonRef.current;
       if (skeleton) pendingCardMeasurements.delete(skeleton);
     };
   }, [layoutVersion, locale, syncCardSkeleton, title]);

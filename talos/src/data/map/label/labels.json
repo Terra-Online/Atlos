@@ -1246,7 +1246,10 @@
           "type": "sub",
           "region": "WL",
           "sub": "SM",
-          "point": [9747.3, 5787]
+          "point": [
+            9747.3,
+            5787
+          ]
         },
         "WL/SM/suiming_city_suburbs": {
           "id": "WL/SM/suiming_city_suburbs",
@@ -1254,7 +1257,10 @@
           "region": "WL",
           "sub": "SM",
           "site": "suiming_city_suburbs",
-          "point": [9321.0061, 6143.1]
+          "point": [
+            9321.0061,
+            6143.1
+          ]
         },
         "WL/SM/suiming_city_center": {
           "id": "WL/SM/suiming_city_center",
@@ -1262,7 +1268,10 @@
           "region": "WL",
           "sub": "SM",
           "site": "suiming_city_center",
-          "point": [9877.1411, 5742.9553]
+          "point": [
+            9877.1411,
+            5742.9553
+          ]
         },
         "WL/SM/tianshi_pillar_records_hall": {
           "id": "WL/SM/tianshi_pillar_records_hall",
@@ -1270,7 +1279,10 @@
           "region": "WL",
           "sub": "SM",
           "site": "tianshi_pillar_records_hall",
-          "point": [10262.0526, 5378.878]
+          "point": [
+            10262.0526,
+            5378.878
+          ]
         },
         "WL/SM/tianshi_pillar_research_labs": {
           "id": "WL/SM/tianshi_pillar_research_labs",
@@ -1278,7 +1290,10 @@
           "region": "WL",
           "sub": "SM",
           "site": "tianshi_pillar_research_labs",
-          "point": [9965.5473, 6194.5472]
+          "point": [
+            9965.5473,
+            6194.5472
+          ]
         },
         "WL/SM/physical_training_field": {
           "id": "WL/SM/physical_training_field",
@@ -1286,7 +1301,10 @@
           "region": "WL",
           "sub": "SM",
           "site": "physical_training_field",
-          "point": [9421.7497, 5486.1276]
+          "point": [
+            9421.7497,
+            5486.1276
+          ]
         },
         "WL/SM/blight_monitoring_zone": {
           "id": "WL/SM/blight_monitoring_zone",
@@ -1294,7 +1312,163 @@
           "region": "WL",
           "sub": "SM",
           "site": "blight_monitoring_zone",
-          "point": [9637.0058, 5776.3007]
+          "point": [
+            9637.0058,
+            5776.3007
+          ]
+        },
+        "WL/SP": {
+          "id": "WL/SP",
+          "type": "sub",
+          "region": "WL",
+          "sub": "SP",
+          "point": [
+            11012.4528,
+            3963.3962
+          ]
+        },
+        "WL/SP/linglong_grotto": {
+          "id": "WL/SP/linglong_grotto",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "linglong_grotto",
+          "point": [
+            11466.287520558924,
+            4752.6679545022225
+          ]
+        },
+        "WL/SP/drybrush_peak": {
+          "id": "WL/SP/drybrush_peak",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "drybrush_peak",
+          "point": [
+            11499.352135677811,
+            5383.384324827963
+          ]
+        },
+        "WL/SP/cormorants_rest": {
+          "id": "WL/SP/cormorants_rest",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "cormorants_rest",
+          "point": [
+            11784.545758404452,
+            4097.87160321851
+          ]
+        },
+        "WL/SP/inkrise_peak": {
+          "id": "WL/SP/inkrise_peak",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "inkrise_peak",
+          "point": [
+            11885.032726761663,
+            3371.742218356238
+          ]
+        },
+        "WL/SP/flying_white_peak": {
+          "id": "WL/SP/flying_white_peak",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "flying_white_peak",
+          "point": [
+            12679.03782158708,
+            4006.0117100982084
+          ]
+        },
+        "WL/SP/pinesmoke_basin": {
+          "id": "WL/SP/pinesmoke_basin",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "pinesmoke_basin",
+          "point": [
+            9232.04662072088,
+            3807.99310842937
+          ]
+        },
+        "WL/SP/yuanyuan_manor": {
+          "id": "WL/SP/yuanyuan_manor",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "yuanyuan_manor",
+          "point": [
+            10560.38107000454,
+            3634.682073180767
+          ]
+        },
+        "WL/SP/cleansing_pool": {
+          "id": "WL/SP/cleansing_pool",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "cleansing_pool",
+          "point": [
+            10188.600498148113,
+            4096.01318314126
+          ]
+        },
+        "WL/SP/pearlveiled_brook": {
+          "id": "WL/SP/pearlveiled_brook",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "pearlveiled_brook",
+          "point": [
+            10926.164173043358,
+            4406.60085445759
+          ]
+        },
+        "WL/SP/xiaohe_manor": {
+          "id": "WL/SP/xiaohe_manor",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "xiaohe_manor",
+          "point": [
+            11056.234559861272,
+            3503.532397127096
+          ]
+        },
+        "WL/SP/raintap_grotto": {
+          "id": "WL/SP/raintap_grotto",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "raintap_grotto",
+          "point": [
+            11440.87248944308,
+            4017.2146203699563
+          ]
+        },
+        "WL/SP/meandering_hike": {
+          "id": "WL/SP/meandering_hike",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "meandering_hike",
+          "point": [
+            10966.360531345998,
+            4729.5578473172745
+          ]
+        },
+        "WL/SP/pavilion_of_parting": {
+          "id": "WL/SP/pavilion_of_parting",
+          "type": "site",
+          "region": "WL",
+          "sub": "SP",
+          "site": "pavilion_of_parting",
+          "point": [
+            11134.727000888866,
+            5252.020943486368
+          ]
         }
       }
     },

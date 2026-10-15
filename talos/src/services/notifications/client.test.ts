@@ -22,12 +22,12 @@ describe('notification heartbeat compatibility', () => {
         vi.useFakeTimers(); Socket.instances = [];
         vi.stubGlobal('WebSocket', Socket);
         stop = subscribeNotificationLive({ onUpdate: vi.fn() });
-        Socket.instances[0]!.open();
+        Socket.instances[0].open();
     });
     afterEach(() => { stop(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
     it('uses platform echo for healthy connections without changing the interval', () => {
-        const socket = Socket.instances[0]!;
+        const socket = Socket.instances[0];
         vi.advanceTimersByTime(49_999); expect(socket.send).not.toHaveBeenCalled();
         vi.advanceTimersByTime(1); expect(socket.send).toHaveBeenLastCalledWith('OEMping1');
         socket.message('OEMping1');
@@ -37,7 +37,7 @@ describe('notification heartbeat compatibility', () => {
     });
 
     it('ignores a late static echo after timeout and retains the two-miss close policy', () => {
-        const socket = Socket.instances[0]!;
+        const socket = Socket.instances[0];
         vi.advanceTimersByTime(65_000);
         expect(socket.close).not.toHaveBeenCalled();
         vi.advanceTimersByTime(35_000);
@@ -49,7 +49,7 @@ describe('notification heartbeat compatibility', () => {
     });
 
     it('accepts a nonce acknowledgement after recovery and stays in nonce mode', () => {
-        const socket = Socket.instances[0]!;
+        const socket = Socket.instances[0];
         vi.advanceTimersByTime(100_000);
         socket.message(socket.send.mock.calls.at(-1)![0] as string);
         vi.advanceTimersByTime(50_000);

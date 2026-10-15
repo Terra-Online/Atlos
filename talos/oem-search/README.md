@@ -43,13 +43,13 @@ Before deploying Worker, prebuild docs index in the web app project root:
 
 ```bash
 cd ..
-pnpm build:search-index
+pnpm data search-index
 ```
 
 If files text should be fetched from R2 during index build:
 
 ```bash
-OEM_SEARCH_R2_BASE="https://<your-cdn-base>" pnpm build:search-index
+OEM_SEARCH_R2_BASE="https://<your-cdn-base>" pnpm data search-index
 ```
 
 2. Configure `wrangler.toml`

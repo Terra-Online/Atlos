@@ -1,55 +1,101 @@
 # talos
 
-Copy `config/config.template.json` and `config/config.r2.template.json` to `config/config.json` and `config/config.r2.json` and configure your settings. By doing this you can build this project in your local env.
+Use Node 20+ and the pinned pnpm version. Copy both config templates under
+`config/` to `config.json` and `config.r2.json`, then configure your local
+targets. Keep credentials out of Git.
 
-Generally you need `config.json` only, to enable local build. R2 version is used for CloudFlare CDN.
-
-
-### dev
-
-```shell
-    pnpm dev
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
+pnpm dev:intel
+pnpm dev:user-hub
 ```
 
-### build (R2)
+The main dev server proxies the selected app at `/intel/` or `/me/`.
 
-```shell
-pnpm build:r2
+## Build and check
+
+```sh
+pnpm build                             # ORG full site: main, Intel, user hub, SEO
+pnpm build --target cn                 # CN full site
+pnpm build --target org
+pnpm build --target all                # Prepare data/fonts once for both sites
+pnpm build --target org --channel beta
+pnpm build --app user-hub --target org  # Partial build for local inspection
+pnpm check                             # Data, types, lint, all existing tests
+pnpm check --build                      # Also build both targets; share preparation
+pnpm type-check --app intel
+pnpm run test --app user-hub
+pnpm lint
+pnpm lint:fix                           # Lint fixes only
+pnpm format                            # Explicit source formatting
+pnpm preview --outDir dist/r2
 ```
 
-Build both OSS and R2 targets in parallel after one shared prepare step:
+Outputs remain `dist/oss` (CN) and `dist/r2` (ORG); the default build and
+preview target is ORG. Deployment, publishing, packaging, and OG generation
+also default to ORG/R2. Select CN explicitly; build, deploy and OG also
+support `--target all` for both sites. `--skip-subset` skips font subsetting in all apps;
+`--skip-subset-fonts` remains an alias.
+Font processing caches input signatures and output hashes under `.cache/fonts`.
+Unchanged fonts are skipped; missing or modified outputs are regenerated.
+All apps process fonts in parallel; Intel and user-hub emit WOFF2 only.
+Run `python3 scripts/subset_fonts_test.py` for font cache regression checks
+(requires fonttools and brotli).
+Vite reports emitted asset sizes and gzip sizes for each app.
+OG rendering keeps map intermediates lossless in memory; use
+`SEO_OG_PIPELINE=legacy` only to compare against the previous JPEG pipeline.
+OG generation defaults to 16 point workers with one libvips worker per task to
+avoid CPU oversubscription; override with `SEO_OG_CONCURRENCY` or
+`SEO_SHARP_CONCURRENCY` when benchmarking another host. The renderer caches the
+rasterized map mask and only submits tiles that can intersect the OG window.
+Marker SVGs are rasterized once and reused; set `SEO_MARKER_RASTER_CACHE=0`
+only when comparing the uncached path.
+Builds never publish. Partial builds invalidate the full-site build receipt;
+rebuild the complete site before publishing.
 
-```shell
-pnpm build:all
-pnpm build:all -- --skip-subset
+Lint follows existing selector naming and CSS compatibility patterns.
+Prettier runs separately. Type-aware ESLint covers all apps and both Workers;
+Node maintenance scripts use JS correctness rules. Vite does not run lint.
+Lint and default main-site tests use tracked and new non-ignored files, keeping
+local scratch tests and generated artifacts outside the normal check.
+
+CI uses `pnpm check --build --source-only --skip-subset`: it checks public
+source contracts and compiles both targets without private icon/font/map
+assets. Source-only artifacts cannot be published. Normal local checks and
+release builds require Intel's actual icon files.
+
+## Publish
+
+```sh
+pnpm deploy:all                  # Both production sites, then relink Worker
+pnpm deploy:all --skip-og        # Skip both OG generation and upload
+pnpm deploy:cn                   # CN only: OSS and server
+pnpm deploy:org                  # ORG only: R2 and Pages
+pnpm deploy:org --channel beta
+pnpm deploy:all --dry-run        # Print without executing
 ```
 
-The isolated outputs are `dist/oss` and `dist/r2`.
+Deployment runs data and artifact checks. Run `pnpm check` separately for
+types, lint and tests. See [RELEASE.md](./RELEASE.md) for independent publishing,
+offline packages, target configuration and command migration.
 
-Build and deploy both production sites in one command:
+## Data tools
 
-```shell
-pnpm deploy:all
-pnpm deploy:all -- --skip-subset
+```sh
+pnpm data prepare
+pnpm data check
+pnpm data tile-coverage
+pnpm data sync-intel
+pnpm data fonts --app intel
+pnpm og --target org
+pnpm worker search check
+pnpm worker search deploy
 ```
 
-Skip font subsetting:
+`pnpm data --help` lists individual tasks. Unknown CLI values are rejected;
+`--` separators are accepted.
 
-```shell
-pnpm build:r2 --skip-subset
-```
-
-Include worker deploy during build prepare:
-
-```shell
-pnpm build:r2 --deploy
-```
-
-For standard web build, you can also skip font subsetting:
-
-```shell
-pnpm build --skip-subset
-```
-
-# note
-Due to legal restrictions and file size limitations, we do not upload/pre-host any map tile data used for cartographic display in this repository. If you actually need clips for local preview, contact cirisus with `cirisus@outlook.com`.
+Map tiles and other large/licensed assets are not distributed in this
+repository. For map clips for local preview, contact cirisus at
+`cirisus@outlook.com`.

@@ -5,30 +5,39 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
-const commonRules = {
-  ...js.configs.recommended.rules,
-  ...reactHooks.configs.recommended.rules,
-};
+const tsFiles = ['**/*.{ts,tsx,mts,cts}'];
+const browserFiles = ['src/**/*.{js,jsx,mjs,ts,tsx}', 'apps/*/src/**/*.{js,jsx,mjs,ts,tsx}'];
 
 export default [
-  { ignores: ['performance', 'dist', '.pages-dist', '**/*.config.js', 'scripts', 'src/data/marker/overrides.js'] },
   {
-    files: ['**/*.{js,jsx}'],
+    ignores: [
+      '**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**',
+      '.pages-dist/**', '.cache/**', '.vite/**', '**/.wrangler/**',
+      'performance/**', 'public/**', 'originData/**',
+      '**/*.generated.*', 'apps/*/src/data/generated/**',
+    ],
+  },
+  {
+    files: ['**/*.{js,jsx,mjs,cjs}', ...tsFiles],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ecmaVersion: 'latest',
       parserOptions: {
-        ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
-        sourceType: 'module',
       },
     },
+    rules: js.configs.recommended.rules,
+  },
+  // Keep typed rules off JS, including the Node maintenance scripts.
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({ ...config, files: tsFiles })),
+  {
+    files: browserFiles,
+    languageOptions: { globals: globals.browser },
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...commonRules,
+      ...reactHooks.configs.recommended.rules,
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
       'react-refresh/only-export-components': [
         'warn',
@@ -36,28 +45,21 @@ export default [
       ],
     },
   },
-  ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ['apps/user-hub/vite.config.ts'],
+    files: ['scripts/**/*.{js,mjs,cjs}', '**/*.config.{js,mjs,cjs,ts,mts,cts}'],
     languageOptions: {
       globals: globals.node,
     },
   },
   {
-    files: ['**/*.{ts,tsx}'],
+    files: tsFiles,
     languageOptions: {
-      globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.json', './oem-relink/tsconfig.json', './oem-search/tsconfig.json', './apps/user-hub/tsconfig.json'],
+        project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
     rules: {
-      ...commonRules,
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -69,7 +71,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'off',
       'no-restricted-imports': [
         'error',
         {
@@ -81,12 +83,23 @@ export default [
           ],
         },
       ],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
       'no-unused-vars': 'off',
     },
+  },
+  ...['intel', 'user-hub'].map((app) => ({
+    files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
+    languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },
+  })),
+  ...['oem-relink', 'oem-search'].map((worker) => ({
+    files: [`${worker}/src/**/*.{ts,tsx}`],
+    languageOptions: {
+      globals: globals.worker,
+      parserOptions: { project: [`./${worker}/tsconfig.json`] },
+    },
+  })),
+  {
+    files: ['**/*.{test,spec}.{js,mjs,cjs,ts,tsx}', '**/*{setup,Setup}.ts', 'test-support/**/*.ts'],
+    languageOptions: { globals: globals.node },
   },
   eslintConfigPrettier,
 ];

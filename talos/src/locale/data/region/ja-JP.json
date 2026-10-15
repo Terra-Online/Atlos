@@ -278,6 +278,25 @@
           "old_resting_point": "古い休憩所"
         }
       },
+      "SP": {
+        "name": "スーの絵",
+        "short": "絵",
+        "site": {
+          "linglong_grotto": "玲瓏窟",
+          "drybrush_peak": "渇筆峰",
+          "cormorants_rest": "落雁洲",
+          "inkrise_peak": "潤筆峰",
+          "flying_white_peak": "飛白峰",
+          "pinesmoke_basin": "松煙湖",
+          "yuanyuan_manor": "縁縁荘",
+          "cleansing_pool": "浄清池",
+          "pearlveiled_brook": "垂玉峡",
+          "xiaohe_manor": "小稲村",
+          "raintap_grotto": "雨音洞",
+          "meandering_hike": "盤山道",
+          "pavilion_of_parting": "断捨亭"
+        }
+      },
       "SM": {
         "name": "遂明",
         "short": "遂",

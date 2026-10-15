@@ -11,6 +11,7 @@ import {
 } from './release-channel.js';
 import { enqueueSeoOgPublishChanges } from './seo-og-publish-queue.js';
 import { loadEffectiveMarkers } from './marker-data.mjs';
+import { deduplicateMarkersByPositionAndType } from '../src/data/marker/deduplication.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,6 @@ const LOCAL_FONT_DIR = path.resolve(os.homedir(), 'Library/Fonts');
 const HARMONY_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans.ttf');
 const HARMONY_SC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_SC.ttf');
 const HARMONY_TC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_TC.ttf');
-const THAI_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans.ttf');
 const UDSHINGO_HK_DB_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf');
 const COINBASE_DISPLAY_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Regular-web-1.32.ttf');
 const COINBASE_DISPLAY_BOLD_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Bold-web-1.32.ttf');
@@ -43,7 +43,6 @@ const NOVECENTO_SLAB_BOLD_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Novecento Sl
 const PUBLIC_OUT_DIR = process.env.SEO_PUBLIC_OUT_DIR
   ? path.resolve(ROOT, process.env.SEO_PUBLIC_OUT_DIR)
   : path.resolve(ROOT, 'public');
-const LEGACY_POINTS_OUT_DIR = path.resolve(PUBLIC_OUT_DIR, 'points');
 const SEO_OUT_DIR = path.resolve(PUBLIC_OUT_DIR, 'seo');
 const SEO_POINTS_ROOT_DIR = path.resolve(SEO_OUT_DIR, 'points');
 const SEO_OG_OUT_DIR = path.resolve(SEO_OUT_DIR, 'og');
@@ -72,7 +71,6 @@ const POINT_ID_PERMUTATION_MOD = 1n << 36n;
 const POINT_ID_PERMUTATION_MULTIPLIER = 25214903917n;
 const POINT_ID_PERMUTATION_OFFSET = 11n;
 const POINT_ID_TOKEN_LENGTH = 7;
-const POINT_TOKEN_PATTERN = /^[0-9a-zA-Z]{7}$/;
 const POINT_HTML_FILE_PATTERN = /^[0-9a-zA-Z]{7}\.html$/;
 const DEEP_LINK_QUERY_PARAMS = ['imageId', 'commentId'];
 
@@ -106,6 +104,7 @@ const shouldForceAllImages = process.env.SEO_FORCE_ALL_IMAGES === '1';
 const shouldRefreshOgStateOnly = process.env.SEO_OG_REFRESH_STATE_ONLY === '1';
 const shouldSkipPointFiles = process.env.SEO_SKIP_POINT_FILES === '1';
 const shouldBuildImagesOnly = process.env.SEO_IMAGE_ONLY === '1';
+const useLegacyOgPipeline = process.env.SEO_OG_PIPELINE === 'legacy';
 const shouldBuildPreviewOnly = process.env.SEO_PREVIEW_ONLY === '1';
 const shouldWriteWorkerPreview = shouldBuildPreviewOnly || process.env.SEO_WRITE_WORKER_PREVIEW === '1';
 const workerPreviewFile = process.env.SEO_PREVIEW_OUTPUT_FILE
@@ -124,16 +123,84 @@ const SEO_CACHE_DIR = path.resolve(ROOT, '.cache/seo');
 const SEO_PAGE_STATE_FILE = path.resolve(SEO_CACHE_DIR, `pages-${buildTarget}-${defaultLocale}.json`);
 const SEO_OG_STATE_FILE = path.resolve(SEO_CACHE_DIR, `og-${buildTarget}-${defaultLocale}.json`);
 const requestedSeoOgConcurrency = Number.parseInt(process.env.SEO_OG_CONCURRENCY || '', 10);
-const defaultSeoOgConcurrency = 12;
+const defaultSeoOgConcurrency = 16;
 const seoOgConcurrency = Number.isFinite(requestedSeoOgConcurrency) && requestedSeoOgConcurrency > 0
   ? requestedSeoOgConcurrency
   : defaultSeoOgConcurrency;
+const requestedSharpConcurrency = Number.parseInt(process.env.SEO_SHARP_CONCURRENCY || '', 10);
+const defaultSharpConcurrency = 1;
+const sharpConcurrency = Number.isFinite(requestedSharpConcurrency) && requestedSharpConcurrency > 0
+  ? requestedSharpConcurrency
+  : defaultSharpConcurrency;
+const useMarkerRasterCache = process.env.SEO_MARKER_RASTER_CACHE !== '0';
 const SEO_STATE_VERSION = 1;
-const OG_RENDER_SIGNATURE_VERSION = 4;
-const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last';
+const OG_RENDER_SIGNATURE_VERSION = 6;
+const OG_RENDER_RECIPE = 'dim-main-overlay-target-layer-labels-last-lossless-raw-badge-topmost';
 const FILE_FINGERPRINT_VERSION = 2;
 
 const fileFingerprintCache = new Map();
+const renderCache = new Map();
+const pathExistsCache = new Map();
+const iconPathCache = new Map();
+
+// Store in-flight promises too: concurrent points share the same render work.
+function cachedRender(key, render) {
+  if (!renderCache.has(key)) renderCache.set(key, render());
+  return renderCache.get(key);
+}
+
+function markerIconInput(file, size, fit) {
+  return cachedRender(`icon:${file}:${size}:${fit}`, () =>
+    sharp(file).resize(size, size, { fit }).png().toBuffer());
+}
+
+function markerSvgInput(key, svg) {
+  if (!useMarkerRasterCache) return Buffer.from(svg);
+  return cachedRender(`marker-svg:${key}`, () =>
+    sharp(Buffer.from(svg)).png().toBuffer());
+}
+
+function cachedPathExists(file) {
+  if (!pathExistsCache.has(file)) {
+    pathExistsCache.set(file, pathExists(file));
+  }
+  return pathExistsCache.get(file);
+}
+
+function workMapMask() {
+  return cachedRender('mask:work', () => Buffer.from(`
+    <svg width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" viewBox="0 0 ${WORK_IMAGE_WIDTH} ${WORK_IMAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mask" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+          <stop offset="0.48" stop-color="#000000" stop-opacity="0.08"/>
+          <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
+        </linearGradient>
+      </defs>
+      <rect width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" fill="url(#mask)"/>
+    </svg>
+  `));
+}
+
+function workMapMaskInput() {
+  return cachedRender('mask:work:raster', () => sharp(workMapMask()).png().toBuffer());
+}
+
+function rawOptions(image) {
+  return {
+    width: image.info.width,
+    height: image.info.height,
+    channels: image.info.channels,
+  };
+}
+
+function sharpFromRaw(image) {
+  return sharp(image.data, { raw: rawOptions(image) });
+}
+
+async function toRaw(image) {
+  return image.raw().toBuffer({ resolveWithObject: true });
+}
 
 function readJsonSync(file) {
   try {
@@ -163,14 +230,6 @@ function resolveDefaultOgUrlBase() {
 
 const seoOgUrlBase = (process.env.SEO_OG_URL_BASE || resolveDefaultOgUrlBase()).replace(/\/$/, '');
 
-const seoUi = langKey === 'zh'
-  ? {
-      openMap: '打开地图集',
-    }
-  : {
-      openMap: 'Open in OEM',
-    };
-
 const html = (value) => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -182,7 +241,7 @@ const xml = html;
 
 const normalize = (value) => String(value ?? '')
   .replace(/\s+/g, ' ')
-  .replace(/\u0000/g, ' ')
+  .replaceAll('\0', ' ')
   .trim();
 
 const escapeXmlAttribute = (value) => String(value ?? '')
@@ -213,6 +272,7 @@ async function configureSharpFonts() {
 
   const sharpModule = await import('sharp');
   sharp = sharpModule.default;
+  sharp.concurrency(sharpConcurrency);
 }
 
 async function readJson(file) {
@@ -367,16 +427,6 @@ async function loadMarkers(typeMap) {
   return (await loadEffectiveMarkers({ typeMap })).filter((marker) => typeMap[marker.type]);
 }
 
-function deduplicateMarkersByPositionAndType(markers) {
-  const seen = new Set();
-  return markers.filter((marker) => {
-    const key = JSON.stringify([marker.type, marker.x, marker.y, marker.z]);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 async function loadLocaleLabels(locale) {
   const data = await safeReadJson(await resolveLocaleJsonFile(LOCALE_DIR, locale), {});
   return data?.markerType?.key && typeof data.markerType.key === 'object'
@@ -527,10 +577,18 @@ function pointOgUrl(token) {
 }
 
 function getOgTileOffsets() {
+  // The window spans three tile widths horizontally and two vertically.
+  // One extra candidate per axis handles arbitrary marker-to-tile alignment;
+  // the previous ranges added a full empty tile on both sides.
   const offsets = [];
-  for (let y = -SAMPLE_IMAGE_HEIGHT / 2 - TILE_IMAGE_SIZE; y <= SAMPLE_IMAGE_HEIGHT / 2 + TILE_IMAGE_SIZE; y += TILE_IMAGE_SIZE) {
-    for (let x = -SAMPLE_IMAGE_WIDTH / 2 - TILE_IMAGE_SIZE; x <= SAMPLE_IMAGE_WIDTH / 2 + TILE_IMAGE_SIZE; x += TILE_IMAGE_SIZE) {
-      offsets.push([x, y]);
+  const xCount = Math.ceil(SAMPLE_IMAGE_WIDTH / TILE_IMAGE_SIZE) + 1;
+  const yCount = Math.ceil(SAMPLE_IMAGE_HEIGHT / TILE_IMAGE_SIZE) + 1;
+  for (let y = 0; y < yCount; y += 1) {
+    for (let x = 0; x < xCount; x += 1) {
+      offsets.push([
+        -SAMPLE_IMAGE_WIDTH / 2 + x * TILE_IMAGE_SIZE,
+        -SAMPLE_IMAGE_HEIGHT / 2 + y * TILE_IMAGE_SIZE,
+      ]);
     }
   }
   return offsets;
@@ -558,16 +616,22 @@ function tileSuffixForTier(tier) {
 
 async function resolveIconPath(typeInfo) {
   const key = typeInfo.icon ?? typeInfo.key;
-  const candidates = [
-    path.resolve(ITEM_DIR, `${key}.webp`),
-    path.resolve(MARKER_ICON_DIR, `${key}.webp`),
-    path.resolve(ITEM_DIR, `${typeInfo.key}.webp`),
-    path.resolve(MARKER_ICON_DIR, `${typeInfo.key}.webp`),
-  ];
-  for (const candidate of candidates) {
-    if (await pathExists(candidate)) return candidate;
-  }
-  return null;
+  const cacheKey = `${key}:${typeInfo.key}`;
+  if (iconPathCache.has(cacheKey)) return iconPathCache.get(cacheKey);
+  const result = (async () => {
+    const candidates = [
+      path.resolve(ITEM_DIR, `${key}.webp`),
+      path.resolve(MARKER_ICON_DIR, `${key}.webp`),
+      path.resolve(ITEM_DIR, `${typeInfo.key}.webp`),
+      path.resolve(MARKER_ICON_DIR, `${typeInfo.key}.webp`),
+    ];
+    for (const candidate of candidates) {
+      if (await cachedPathExists(candidate)) return candidate;
+    }
+    return null;
+  })();
+  iconPathCache.set(cacheKey, result);
+  return result;
 }
 
 async function buildHtmlSignature(point) {
@@ -822,7 +886,7 @@ function labelSvg(text, labelType = 'site') {
   const tspans = lines.map((line, index) =>
     `<tspan x="${width / 2}" y="${yStart + index * lineHeight}">${escapeSvgText(line)}</tspan>`,
   ).join('');
-  return Buffer.from(`
+  return { width, height, input: Buffer.from(`
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
   <style>
@@ -857,7 +921,7 @@ function labelSvg(text, labelType = 'site') {
   ${tspans}
 </text>
     </svg>
-  `);
+  `) };
 }
 
 async function markerCompositeInputs(point, iconPath) {
@@ -873,7 +937,6 @@ async function markerCompositeInputs(point, iconPath) {
     const frameLeft = (size - imageSize) / 2;
     const frameTop = (size - imageSize) / 2;
     const circleLeft = frameLeft + (imageSize - iconSize) / 2;
-    const circleTop = frameTop + (imageSize - iconSize) / 2;
     const circleCenter = circleLeft + iconSize / 2;
     const fillRadius = iconSize / 2;
     const selectedGoldRadius = fillRadius + 3 * scale;
@@ -891,7 +954,7 @@ async function markerCompositeInputs(point, iconPath) {
       x: markerCenter.x,
       y: markerCenter.y - imageSize / 2,
     };
-    const svg = `
+    const frameSvg = `
       <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="0" dy="0" stdDeviation="${3.125 * scale}" flood-color="#000000" flood-opacity="0.85"/>
@@ -924,20 +987,33 @@ async function markerCompositeInputs(point, iconPath) {
           fill="rgb(255,196,40)"
           filter="url(#shadow)"
         />
-        ${tierLabel ? `<rect x="${badgeLeft}" y="${badgeTop}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/>
-        <text x="${badgeLeft + badgeWidth / 2}" y="${badgeTop + badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * scale}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text>` : ''}
       </svg>
     `;
     const inputs = [{
-      input: Buffer.from(svg),
+      input: await markerSvgInput(`frame:${tierLabel}`, frameSvg),
       left: Math.round(framedMarkerCenter.x - size / 2),
       top: Math.round(framedMarkerCenter.y - size / 2),
     }];
     if (iconPath) {
       inputs.push({
-        input: await sharp(iconPath).resize(Math.round(imageSize), Math.round(imageSize), { fit: 'cover' }).png().toBuffer(),
+        input: await markerIconInput(iconPath, Math.round(imageSize), 'cover'),
         left: Math.round(framedMarkerCenter.x - imageSize / 2),
         top: Math.round(framedMarkerCenter.y - imageSize / 2),
+      });
+    }
+    if (tierLabel) {
+      inputs.push({
+        input: await markerSvgInput(`framed-badge:${tierLabel}`, `
+          <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="0" stdDeviation="${3.125 * scale}" flood-color="#000000" flood-opacity="0.85"/>
+            </filter>
+            <rect x="${badgeLeft}" y="${badgeTop}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/>
+            <text x="${badgeLeft + badgeWidth / 2}" y="${badgeTop + badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * scale}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text>
+          </svg>
+        `),
+        left: Math.round(framedMarkerCenter.x - size / 2),
+        top: Math.round(framedMarkerCenter.y - size / 2),
       });
     }
     return inputs;
@@ -947,17 +1023,17 @@ async function markerCompositeInputs(point, iconPath) {
   const inputs = [];
   if (iconPath) {
     inputs.push({
-      input: await sharp(iconPath)
-        .resize(imageSize, imageSize, { fit: 'contain' })
-        .png()
-        .toBuffer(),
+      input: await markerIconInput(iconPath, imageSize, 'contain'),
       left: Math.round(markerCenter.x - imageSize / 2),
       top: Math.round(markerCenter.y - imageSize / 2),
     });
   } else {
     const fallbackSize = Math.round(18 * MARKER_RENDER_SCALE);
     inputs.push({
-      input: Buffer.from(`<svg width="${fallbackSize}" height="${fallbackSize}" viewBox="0 0 ${fallbackSize} ${fallbackSize}" xmlns="http://www.w3.org/2000/svg"><rect width="${fallbackSize}" height="${fallbackSize}" fill="rgb(248,248,248)"/></svg>`),
+      input: await markerSvgInput(
+        `fallback:${fallbackSize}`,
+        `<svg width="${fallbackSize}" height="${fallbackSize}" viewBox="0 0 ${fallbackSize} ${fallbackSize}" xmlns="http://www.w3.org/2000/svg"><rect width="${fallbackSize}" height="${fallbackSize}" fill="rgb(248,248,248)"/></svg>`,
+      ),
       left: Math.round(markerCenter.x - fallbackSize / 2),
       top: Math.round(markerCenter.y - fallbackSize / 2),
     });
@@ -966,7 +1042,10 @@ async function markerCompositeInputs(point, iconPath) {
     const badgeWidth = Math.round(Math.max(18, 8 + tierLabel.length * 8) * MARKER_RENDER_SCALE);
     const badgeHeight = Math.round(16 * MARKER_RENDER_SCALE);
     inputs.push({
-      input: Buffer.from(`<svg width="${badgeWidth}" height="${badgeHeight}" viewBox="0 0 ${badgeWidth} ${badgeHeight}" xmlns="http://www.w3.org/2000/svg"><filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1 * MARKER_RENDER_SCALE}" stdDeviation="${2 * MARKER_RENDER_SCALE}" flood-color="#000000" flood-opacity="0.65"/></filter><rect width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/><text x="${badgeWidth / 2}" y="${badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * MARKER_RENDER_SCALE}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text></svg>`),
+      input: await markerSvgInput(
+        `badge:${tierLabel}`,
+        `<svg width="${badgeWidth}" height="${badgeHeight}" viewBox="0 0 ${badgeWidth} ${badgeHeight}" xmlns="http://www.w3.org/2000/svg"><filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="${1 * MARKER_RENDER_SCALE}" stdDeviation="${2 * MARKER_RENDER_SCALE}" flood-color="#000000" flood-opacity="0.65"/></filter><rect width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight / 2}" fill="${tierBadge.background}" filter="url(#shadow)"/><text x="${badgeWidth / 2}" y="${badgeHeight * 0.74}" text-anchor="middle" font-family="Arial,sans-serif" font-size="${11 * MARKER_RENDER_SCALE}" font-weight="800" fill="${tierBadge.color}">${html(tierLabel)}</text></svg>`,
+      ),
       left: Math.round(markerCenter.x + imageSize / 2 - badgeWidth / 2),
       top: Math.round(markerCenter.y - imageSize / 2),
     });
@@ -974,7 +1053,16 @@ async function markerCompositeInputs(point, iconPath) {
   return inputs;
 }
 
-async function createMapPatternBackground() {
+function createMapPatternBackground() {
+  return cachedRender('pattern:work', renderMapPatternBackground);
+}
+
+function createMapPatternRaw() {
+  return cachedRender('pattern:work:raw', async () =>
+    toRaw(sharp(await createMapPatternBackground())));
+}
+
+async function renderMapPatternBackground() {
   const patternTileSize = 100;
   const patternSvg = await fs.readFile(MAP_PATTERN_FILE);
   const patternTile = await sharp({
@@ -1010,7 +1098,16 @@ async function createMapPatternBackground() {
     .toBuffer();
 }
 
-async function createMapPatternSampleBackground() {
+function createMapPatternSampleBackground() {
+  return cachedRender('pattern:sample', renderMapPatternSampleBackground);
+}
+
+function createMapPatternSampleRaw() {
+  return cachedRender('pattern:sample:raw', async () =>
+    toRaw(sharp(await createMapPatternSampleBackground())));
+}
+
+async function renderMapPatternSampleBackground() {
   const patternTileSize = 100;
   const patternSvg = await fs.readFile(MAP_PATTERN_FILE);
   const patternTile = await sharp({
@@ -1047,25 +1144,17 @@ async function createMapPatternSampleBackground() {
 }
 
 async function applyWorkMapMask(buffer) {
-  const overlay = Buffer.from(`
-    <svg width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" viewBox="0 0 ${WORK_IMAGE_WIDTH} ${WORK_IMAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="mask" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#000000" stop-opacity="0"/>
-          <stop offset="0.48" stop-color="#000000" stop-opacity="0.08"/>
-          <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
-        </linearGradient>
-      </defs>
-      <rect width="${WORK_IMAGE_WIDTH}" height="${WORK_IMAGE_HEIGHT}" fill="url(#mask)"/>
-    </svg>
-  `);
   return sharp(buffer)
-    .composite([{ input: overlay, left: 0, top: 0 }])
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
     .jpeg({ quality: 90 })
     .toBuffer();
 }
 
-async function brandCompositeInput() {
+function brandCompositeInput() {
+  return cachedRender('brand', renderBrandCompositeInput);
+}
+
+async function renderBrandCompositeInput() {
   if (!(await pathExists(OBSERVATOR_LOGO_FILE))) return null;
   const logoHeight = 96;
   const logoInput = await sharp(OBSERVATOR_LOGO_FILE)
@@ -1201,7 +1290,7 @@ async function addTileComposite(composites, regionKey, tileZoom, centerPixel, so
   const tileY = Math.floor((centerPixel.y + offsetY) / TILE_IMAGE_SIZE);
   const suffix = suffixOverride ?? tileSuffixForTier(sourceTier);
   const tilePath = path.resolve(CLIPS_DIR, regionKey, String(tileZoom), `${tileX}_${tileY}${suffix}.webp`);
-  if (!(await pathExists(tilePath))) return false;
+  if (!(await cachedPathExists(tilePath))) return false;
   const left = Math.round(SAMPLE_IMAGE_WIDTH / 2 + tileX * TILE_IMAGE_SIZE - centerPixel.x);
   const top = Math.round(SAMPLE_IMAGE_HEIGHT / 2 + tileY * TILE_IMAGE_SIZE - centerPixel.y);
   composites.push({ input: tilePath, left, top });
@@ -1217,10 +1306,9 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
     if (!text) continue;
     const labelPixel = maxZoomPixelToTileImagePixel(label.point, point.region, tileZoom);
     const { x, y } = tileImagePixelToOgPixel(labelPixel, centerPixel);
-    const input = labelSvg(text, label.type);
-    const metadata = await sharp(input).metadata();
-    const width = metadata.width ?? 141;
-    const height = metadata.height ?? 44;
+    const { input, width, height } = await cachedRender(
+      `label:${label.type}:${text}`, () => labelSvg(text, label.type),
+    );
     if (
       x - width / 2 < 0
       || x + width / 2 > IMAGE_WIDTH
@@ -1238,7 +1326,7 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
   return inputs;
 }
 
-async function generateOgImage(point) {
+async function generateLegacyOgImage(point) {
   const region = point.region;
   const tileZoom = getOgTileZoom(region);
   const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
@@ -1303,7 +1391,7 @@ async function generateOgImage(point) {
   await fs.writeFile(point.ogImagePath, outputBuffer);
 }
 
-async function generateFallbackOgImage(point) {
+async function generateLegacyFallbackOgImage(point) {
   const iconPath = await resolveIconPath(point.typeInfo);
   const logoInput = await brandCompositeInput();
   const markerInputs = await markerCompositeInputs(point, iconPath);
@@ -1323,6 +1411,93 @@ async function generateFallbackOgImage(point) {
     .jpeg({ quality: 80 })
     .toBuffer();
   await fs.writeFile(point.ogImagePath, outputBuffer);
+}
+
+async function generateOgImage(point) {
+  if (useLegacyOgPipeline) return generateLegacyOgImage(point);
+
+  const region = point.region;
+  const tileZoom = getOgTileZoom(region);
+  const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
+  const markerCenter = tileImagePixelToOgPixel(centerPixel, centerPixel);
+  const mainTileComposites = [];
+  const layerTileComposites = [];
+  const suffix = tileSuffixForTier(point.marker.tier);
+  for (const [x, y] of getOgTileOffsets()) {
+    await addTileComposite(mainTileComposites, point.regionKey, tileZoom, centerPixel, 0, x, y, '');
+    if (suffix) {
+      await addTileComposite(layerTileComposites, point.regionKey, tileZoom, centerPixel, point.marker.tier, x, y);
+    }
+  }
+
+  const mapTileComposites = suffix
+    ? [{
+        input: await sharp({
+          create: {
+            width: SAMPLE_IMAGE_WIDTH,
+            height: SAMPLE_IMAGE_HEIGHT,
+            channels: 4,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+          },
+        })
+          .composite(mainTileComposites)
+          .modulate({ brightness: 0.5 })
+          .png()
+          .toBuffer(),
+        left: 0,
+        top: 0,
+      }, ...layerTileComposites]
+    : mainTileComposites;
+
+  const iconPath = await resolveIconPath(point.typeInfo);
+  const logoInput = await brandCompositeInput();
+  const labelInputs = await labelCompositeInputs(point, centerPixel, tileZoom);
+  const markerInputs = await markerCompositeInputs({ ...point, overlayCenter: markerCenter }, iconPath);
+  // Keep the tile stage lossless. The old pipeline encoded this intermediate
+  // as JPEG before resizing and masking, which compounded image loss.
+  const samplePattern = await createMapPatternSampleRaw();
+  const sampleBackground = await toRaw(sharpFromRaw(samplePattern)
+    .composite(mapTileComposites)
+  );
+  const workBackground = await toRaw(sharpFromRaw(sampleBackground)
+    .resize(WORK_IMAGE_WIDTH, WORK_IMAGE_HEIGHT, { fit: 'fill' }));
+  const maskedWork = await toRaw(sharpFromRaw(workBackground)
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
+  );
+  const cropped = await toRaw(sharpFromRaw(maskedWork)
+    .composite([...labelInputs, ...markerInputs])
+    .extract({
+      left: 0,
+      top: WORK_IMAGE_CROP_TOP,
+      width: IMAGE_WIDTH,
+      height: IMAGE_HEIGHT,
+    }));
+  let pipeline = sharpFromRaw(cropped);
+  if (logoInput) pipeline = pipeline.composite([logoInput]);
+  await fs.writeFile(point.ogImagePath, await pipeline.jpeg({ quality: 80 }).toBuffer());
+}
+
+async function generateFallbackOgImage(point) {
+  if (useLegacyOgPipeline) return generateLegacyFallbackOgImage(point);
+
+  const iconPath = await resolveIconPath(point.typeInfo);
+  const logoInput = await brandCompositeInput();
+  const markerInputs = await markerCompositeInputs(point, iconPath);
+  const workPattern = await createMapPatternRaw();
+  const maskedWork = await toRaw(sharpFromRaw(workPattern)
+    .composite([{ input: await workMapMaskInput(), left: 0, top: 0 }])
+  );
+  const cropped = await toRaw(sharpFromRaw(maskedWork)
+    .composite(markerInputs)
+    .extract({
+      left: 0,
+      top: WORK_IMAGE_CROP_TOP,
+      width: IMAGE_WIDTH,
+      height: IMAGE_HEIGHT,
+    }));
+  let pipeline = sharpFromRaw(cropped);
+  if (logoInput) pipeline = pipeline.composite([logoInput]);
+  await fs.writeFile(point.ogImagePath, await pipeline.jpeg({ quality: 80 }).toBuffer());
 }
 
 function buildPointHtml(point) {

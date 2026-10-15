@@ -1069,6 +1069,128 @@
                 "ctgr": "paper",
                 "rsch": "research_gm02m27"
             },
+            "nar_paper_map02_16001_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16002_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16003_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16004_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16005_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16006_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16007_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16008_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16010_1": {
+                "icon": "prts_read_document",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16011_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16012_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16013_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16014_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16016_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16016_2": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16016_3": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16021_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_16022_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_research8_1_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research8_2_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research8_3_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research8_4_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research8_5_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research8_6_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_Tales"
+            },
+            "nar_paper_map02_research10_1_1": {
+                "icon": "prts_read_letter",
+                "ctgr": "paper",
+                "rsch": "research_010prts"
+            },
+            "nar_paper_map02_research10_2_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_010prts"
+            },
+            "nar_paper_map02_research10_3_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_010prts"
+            },
+            "nar_paper_map02_research10_4_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper",
+                "rsch": "research_010prts"
+            },
             "nar_col_lv003_9d1": {
                 "icon": "prts_general_pic",
                 "ctgr": "digital"
@@ -1378,6 +1500,10 @@
                 "ctgr": "media"
             },
             "nar_media_map02_15012_1": {
+                "icon": "prts_listen_record",
+                "ctgr": "media"
+            },
+            "nar_media_map02_16017_1": {
                 "icon": "prts_listen_record",
                 "ctgr": "media"
             }

@@ -23,7 +23,7 @@ type RegionTransform = {
     rotateClockwise90?: boolean;
 };
 
-export type RegionProfile = 'VL' | 'WL' | 'WL2' | 'WL3' | 'WL4' | 'DJ' | 'ES' | 'default';
+export type RegionProfile = 'VL' | 'WL' | 'WL10' | 'WL2' | 'WL3' | 'WL4' | 'DJ' | 'ES' | 'default';
 
 const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
     VL: {
@@ -37,6 +37,12 @@ const REGION_TRANSFORMS: Record<RegionProfile, RegionTransform> = {
         scaleZ: 0.4126650261801654,
         offsetX: 953.3837664516041,
         offsetZ: -954.8108221139345,
+    },
+    WL10: {
+        scaleX: 0.4137096391371761,
+        scaleZ: 0.4128888476500381,
+        offsetX: 954.4756325560732,
+        offsetZ: -954.2980344081047,
     },
     WL2: {
         scaleX: 0.35366404675795343,
@@ -98,14 +104,16 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
 };
 
 const SCENE_ID_TO_SUBREGION_KEY: Record<string, string> = {
+    map02_lv010: 'WL_10',
     indie_dg005: 'WL_2',
     indie_dg007: 'WL_4',
-    indie_dg016: 'WL_9',
+    indie_dg016: 'WL_16',
 };
 
 const REGION_KEY_BY_PROFILE: Record<string, string | null> = {
     VL: 'Valley_4',
     WL: 'Wuling',
+    WL10: 'Wuling',
     WL2: 'Wuling',
     WL3: 'Wuling',
     WL4: 'Wuling',
@@ -122,6 +130,7 @@ const REGION_KEY_TO_PROFILE: Record<string, RegionProfile> = {
 };
 
 const SUBREGION_KEY_TO_PROFILE: Record<string, RegionProfile> = {
+    WL_10: 'WL10',
     WL_2: 'WL3',
     WL_4: 'WL2',
     WL_16: 'WL4',
@@ -149,6 +158,7 @@ const isWL4Scene = (levelId: string): boolean => levelId === 'indie_dg016';
 
 const resolveProfileKey = (mapId: string, levelId: string): RegionProfile => {
     if (!mapId && !levelId) return 'ES';
+    if (levelId === 'map02_lv010' || mapId === 'map02_lv010') return 'WL10';
     if (mapId && isRegionProfile(mapId)) return mapId;
     if (levelId && isRegionProfile(levelId)) return levelId;
     if (isWL4Scene(levelId)) return 'WL4';
@@ -187,7 +197,7 @@ const resolveSubregionKey = (mapId: string, levelId: string): string | null => {
         return 'WL_4';
     }
     if (isWL4Scene(levelId)) {
-        return 'WL_9';
+        return 'WL_16';
     }
     return null;
 };

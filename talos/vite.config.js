@@ -5,7 +5,6 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { resolve } from 'path';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import eslint from 'vite-plugin-eslint';
 import fs, { existsSync } from 'fs';
 import Inspect from 'vite-plugin-inspect';
 import autoprefixer from 'autoprefixer';
@@ -302,12 +301,6 @@ export default defineConfig({
         }),
         cleanDistClipsPlugin(),
         cleanDistSeoPointsPlugin(),
-        eslint({
-            failOnWarning: false,
-            failOnError: true,
-            emitWarning: true,
-            emitError: true,
-        }),
         Inspect(),
     ],
     base: assetsHost,

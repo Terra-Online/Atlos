@@ -278,6 +278,25 @@
           "old_resting_point": "Điểm Dừng Chân Cũ"
         }
       },
+      "SP": {
+        "name": "Bức Tranh Của Si",
+        "short": "BT",
+        "site": {
+          "linglong_grotto": "Động Linglong",
+          "drybrush_peak": "Đỉnh Cọ Khô",
+          "cormorants_rest": "Bãi Đậu Của Cốc",
+          "inkrise_peak": "Đỉnh Mặc Thăng",
+          "flying_white_peak": "Đỉnh Phi Bạch",
+          "pinesmoke_basin": "Lòng Chảo Khói Thông",
+          "yuanyuan_manor": "Trang Viên Yuanyuan",
+          "cleansing_pool": "Hồ Thanh Tẩy",
+          "pearlveiled_brook": "Suối Màn Ngọc",
+          "xiaohe_manor": "Trang Viên Xiaohe",
+          "raintap_grotto": "Động Mưa Gõ",
+          "meandering_hike": "Lối Dạo Quanh Co",
+          "pavilion_of_parting": "Đình Biệt Ly"
+        }
+      },
       "SM": {
         "name": "Tuy Minh",
         "short": "TM",

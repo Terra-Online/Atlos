@@ -1,32 +1,32 @@
 # User center
 
 Standalone account pages under `/me/`, sharing the map's session cookies,
-language preference, fonts, and theme. Signed-out users return to the map to
-sign in. The profile dialog links to this app.
+language preference, fonts, and theme. Signed-out users sign in through the
+shared login dialog in place. The profile dialog links to this app.
 
 `/me/` opens the content center for images, comments, and review status.
-`/me/account` groups account details, login methods, and Endfield binding. The
-previous `/me/contributions`, `/me/security`, and `/me/services` URLs continue
-to open their corresponding content or account page.
+`/me/profile` edits the avatar and nickname. Previous account and service
+URLs redirect to the content center.
 
 From `talos/`:
 
 - `pnpm dev:user-hub`: starts the main site and user hub; open `http://localhost:5173/me/`. The hub Vite server runs behind the main site proxy on port 5175.
 - `pnpm dev:intel`: starts the main site and Intel app. Each development command
   starts only its selected app alongside the main site.
-- `pnpm type-check:user-hub` and `pnpm test:user-hub`: focused validation.
-- `pnpm build:user-hub`: domestic build in `dist/oss/me`, using the `.cn` API.
-- `pnpm build:user-hub:r2`: international build in `dist/r2/me`, using the
-  `.org` API. `pnpm build:user-hub:r2:beta` builds the beta variant.
+- `pnpm type-check --app user-hub` and `pnpm run test --app user-hub`: focused validation.
+- `pnpm build --app user-hub --target cn`: domestic build in `dist/oss/me`, using the `.cn` API.
+- `pnpm build --app user-hub`: international (default) build in `dist/r2/me`,
+  using the `.org` API. Add `--channel beta` for the beta variant.
 
-`VITE_AUTH_BASE` in the build command environment overrides the production API
-endpoint, matching the main build scripts. Development reads the main
+`VITE_AUTH_BASE` in the build command environment overrides the user hub's production API
+endpoint. Development reads the main
 workspace's environment files and defaults to the local Bayes instance on port
 8787 when no endpoint is configured.
 
-`build:all` and `deploy:all` include the user center after the main build. Pages
+`build` and `deploy:all` include the user center after the main build. Pages
 packaging copies `dist/r2/me` and supplies the `/me/*` fallback. Building only
-the main site does not build standalone apps.
+the main site with `--app main` does not build standalone apps and invalidates
+the complete-site build receipt.
 
 The overview, login methods, and Endfield binding come from `/me/v1/overview`.
 Contributions load separately from `/me/v1/contributions`, using the backend's

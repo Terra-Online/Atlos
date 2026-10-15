@@ -43,7 +43,7 @@ const serialized = `${JSON.stringify(payload)}\n`;
 if (checkOnly) {
   const current = await fs.readFile(outputPath, 'utf8');
   if (current !== serialized) {
-    throw new Error('Tile coverage snapshot is stale. Run pnpm run build:tile-coverage.');
+    throw new Error('Tile coverage snapshot is stale. Run pnpm data tile-coverage.');
   }
   console.log(`[tile-coverage] snapshot is current (${clipFiles.length} files scanned).`);
 } else {
