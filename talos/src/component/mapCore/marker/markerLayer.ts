@@ -10,7 +10,7 @@ import {
 } from './markerRenderer';
 import styles from './marker.module.scss';
 import { ClusterLayer } from './clusterLayer';
-import { deduplicateMarkersByPositionAndType } from './markerDedup';
+import { deduplicateMarkersByPositionAndType } from '@/data/marker/deduplication.js';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
 import { useMarkerStore } from '@/store/marker';

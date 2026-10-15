@@ -1,7 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { clearReadCache, getOverview, isUnauthorized } from './api/client';
 import type { Overview } from './types';
 import type { SessionUser } from '@main/services/auth';
+import { useAuthStore } from '@main/store/auth';
+import { Access, AccessButton } from '@main/component/login/access';
+import { notifyOemAuthModalDismissed } from '@main/component/login/authEvents';
+import { useIdCardAuthController } from '@main/component/login/useIdCardAuthController';
+import { useIdCardProfileViewModel } from '@main/component/login/useIdCardProfileViewModel';
+import ProfileModal from '@main/component/login/profile/profile';
 import Header from './components/header/header';
 import IDCard from './components/idcard/idcard';
 import Nav from './components/nav/nav';
@@ -16,6 +22,7 @@ function useAccount() {
     const [revision, setRevision] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [unauthorized, setUnauthorized] = useState(false);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -23,12 +30,17 @@ function useAccount() {
         setError(null);
         void getOverview(controller.signal)
             .then((result) => {
-                if (!controller.signal.aborted) setOverview(result);
+                if (!controller.signal.aborted) {
+                    setOverview(result);
+                    setUnauthorized(false);
+                }
             })
             .catch((cause: unknown) => {
                 if (controller.signal.aborted) return;
                 if (isUnauthorized(cause)) {
-                    window.location.assign('/');
+                    useAuthStore.getState().clearSessionUser();
+                    setOverview(null);
+                    setUnauthorized(true);
                     return;
                 }
                 setError(
@@ -45,6 +57,7 @@ function useAccount() {
 
     const refresh = () => {
         clearReadCache();
+        setUnauthorized(false);
         setRevision((value) => value + 1);
     };
     const updateUser = (user: SessionUser) => {
@@ -58,10 +71,71 @@ function useAccount() {
         revision,
         loading,
         error,
+        unauthorized,
         busy: loading,
         refresh,
         updateUser,
     };
+}
+
+function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
+    const main = useTranslateMainUI();
+    const auth = useIdCardAuthController();
+    const cardProfile = useIdCardProfileViewModel({
+        sessionUser: auth.sessionUser,
+        hasLoggedInBefore: auth.hasLoggedInBefore,
+        authReady: auth.authReady,
+    });
+    const opened = useRef(false);
+
+    useEffect(() => {
+        if (!auth.authReady || auth.sessionUser || opened.current) return;
+        opened.current = true;
+        auth.handleAvatarClick();
+    }, [auth.authReady, auth.handleAvatarClick, auth.sessionUser]);
+
+    useEffect(() => {
+        if (auth.sessionUser && !auth.open && !auth.profileOpen && !auth.isSubmitting) {
+            onAuthenticated();
+        }
+    }, [auth.sessionUser, auth.open, auth.profileOpen, auth.isSubmitting, onAuthenticated]);
+
+    return (
+        <>
+            <AccessButton
+                label={main('idcard.auth.login')}
+                onClick={auth.handleAvatarClick}
+            />
+            <Access
+                open={auth.open}
+                setOpen={auth.setOpen}
+                onDismiss={notifyOemAuthModalDismissed}
+                activeTab={auth.activeTab}
+                setActiveTab={auth.setActiveTab}
+                resetToken={auth.resetToken}
+                resetEmail={auth.resetEmail}
+                isSubmitting={auth.isSubmitting}
+                authError={auth.authError}
+                handleOAuthClick={auth.handleOAuthClick}
+                onRequestVerificationCode={auth.handleRequestVerificationCode}
+                onRequestPasswordReset={auth.handleRequestPasswordReset}
+                onAutoSubmit={auth.handleAutoSubmit}
+            />
+            <ProfileModal
+                profileOpen={auth.profileOpen}
+                setProfileOpen={auth.setProfileOpen}
+                profileName={auth.profileName}
+                setProfileName={auth.setProfileName}
+                profileError={auth.profileError}
+                isSavingProfile={auth.isSavingProfile}
+                cardProfile={cardProfile}
+                profileAvatar={auth.profileAvatar}
+                handleCloseProfile={auth.handleCloseProfile}
+                handleSaveProfile={auth.handleSaveProfile}
+                handleLogout={auth.handleLogout}
+            />
+        </>
+    );
 }
 
 export default function App() {
@@ -72,8 +146,10 @@ export default function App() {
         main('meta.title'),
     );
     const [active, setActive] = useState<Tab>(tabFromPath);
-    const { overview, revision, loading, error, busy, refresh, updateUser } =
-        useAccount();
+    const {
+        overview, revision, loading, error, unauthorized, busy, refresh,
+        updateUser,
+    } = useAccount();
 
     useEffect(() => {
         if (pageTitle) document.title = pageTitle;
@@ -116,6 +192,7 @@ export default function App() {
                                 {t('common.loading')}
                             </p>
                         )}
+                        {unauthorized && <AuthGate onAuthenticated={refresh} />}
                         {overview &&
                             (active === 'contributions' ? (
                                 <Content

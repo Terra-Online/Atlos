@@ -278,6 +278,25 @@
           "old_resting_point": "舊落腳點"
         }
       },
+      "SP": {
+        "name": "祀的畫",
+        "short": "祀",
+        "site": {
+          "linglong_grotto": "玲瓏窟",
+          "drybrush_peak": "枯筆峰",
+          "cormorants_rest": "落雁嶼",
+          "inkrise_peak": "漲墨峰",
+          "flying_white_peak": "飛白峰",
+          "pinesmoke_basin": "松煙湖",
+          "yuanyuan_manor": "緣緣莊",
+          "cleansing_pool": "浣清池",
+          "pearlveiled_brook": "珠簾澗",
+          "xiaohe_manor": "小禾莊",
+          "raintap_grotto": "聽雨窟",
+          "meandering_hike": "盤山徑",
+          "pavilion_of_parting": "捨得亭"
+        }
+      },
       "SM": {
         "name": "遂明",
         "short": "遂",

@@ -278,6 +278,25 @@
           "old_resting_point": "Vecchio punto di sosta"
         }
       },
+      "SP": {
+        "name": "Dipinto di Si",
+        "short": "DS",
+        "site": {
+          "linglong_grotto": "Grotta di Linglong",
+          "drybrush_peak": "Picco del pennello asciutto",
+          "cormorants_rest": "Riposo del cormorano",
+          "inkrise_peak": "Picco dell'inchiostro nascente",
+          "flying_white_peak": "Picco del bianco volante",
+          "pinesmoke_basin": "Bacino di Pinesmoke",
+          "yuanyuan_manor": "Tenuta di Yuanyuan",
+          "cleansing_pool": "Vasca di purificazione",
+          "pearlveiled_brook": "Ruscello velato di perle",
+          "xiaohe_manor": "Tenuta di Xiaohe",
+          "raintap_grotto": "Grotta della pioggia battente",
+          "meandering_hike": "Sentiero tortuoso",
+          "pavilion_of_parting": "Padiglione del distacco"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

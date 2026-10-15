@@ -278,6 +278,25 @@
           "old_resting_point": "Ancien point de repos"
         }
       },
+      "SP": {
+        "name": "Peinture de Si",
+        "short": "PS",
+        "site": {
+          "linglong_grotto": "Grotte de Linglong",
+          "drybrush_peak": "Pic Secpinceau",
+          "cormorants_rest": "Repos du cormoran",
+          "inkrise_peak": "Pic Diffusencre",
+          "flying_white_peak": "Pic Blanc-volant",
+          "pinesmoke_basin": "Bassin des pins fumeux",
+          "yuanyuan_manor": "Manoir Yuanyuan",
+          "cleansing_pool": "Bassin purificateur",
+          "pearlveiled_brook": "Ruisseau des rideaux de perles",
+          "xiaohe_manor": "Domaine Xiaohe",
+          "raintap_grotto": "Grotte des échos pluvieux",
+          "meandering_hike": "Sentier sinueux",
+          "pavilion_of_parting": "Pavillon des adieux"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

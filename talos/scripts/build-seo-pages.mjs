@@ -11,6 +11,7 @@ import {
 } from './release-channel.js';
 import { enqueueSeoOgPublishChanges } from './seo-og-publish-queue.js';
 import { loadEffectiveMarkers } from './marker-data.mjs';
+import { deduplicateMarkersByPositionAndType } from '../src/data/marker/deduplication.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -424,16 +425,6 @@ function subregionRegionMap(regionMap) {
 
 async function loadMarkers(typeMap) {
   return (await loadEffectiveMarkers({ typeMap })).filter((marker) => typeMap[marker.type]);
-}
-
-function deduplicateMarkersByPositionAndType(markers) {
-  const seen = new Set();
-  return markers.filter((marker) => {
-    const key = JSON.stringify([marker.type, marker.x, marker.y, marker.z]);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
 }
 
 async function loadLocaleLabels(locale) {

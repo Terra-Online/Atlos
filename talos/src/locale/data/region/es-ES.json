@@ -278,6 +278,25 @@
           "old_resting_point": "Antiguo lugar de descanso"
         }
       },
+      "SP": {
+        "name": "Pintura de Si",
+        "short": "PS",
+        "site": {
+          "linglong_grotto": "Gruta Linglong",
+          "drybrush_peak": "Pico del pincel seco",
+          "cormorants_rest": "Reposo del Cormorán",
+          "inkrise_peak": "Pico del Ascenso de la Tinta",
+          "flying_white_peak": "Pico del Blanco Volador",
+          "pinesmoke_basin": "Cuenca del Pinar Humeante",
+          "yuanyuan_manor": "Mansión Yuanyuan",
+          "cleansing_pool": "Estanque purificador",
+          "pearlveiled_brook": "Arroyo del Velo de Perlas",
+          "xiaohe_manor": "Villa Xiaohe",
+          "raintap_grotto": "Gruta de la lluvia susurrante",
+          "meandering_hike": "Caminata sinuosa",
+          "pavilion_of_parting": "Pabellón de la despedida"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

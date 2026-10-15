@@ -278,6 +278,25 @@
           "old_resting_point": "Titik Peristirahatan Lama"
         }
       },
+      "SP": {
+        "name": "Lukisan Si",
+        "short": "LS",
+        "site": {
+          "linglong_grotto": "Groto Linglong",
+          "drybrush_peak": "Puncak Kuas Kering",
+          "cormorants_rest": "Persinggahan Kormoran",
+          "inkrise_peak": "Puncak Tinta Terbit",
+          "flying_white_peak": "Puncak Putih Layang",
+          "pinesmoke_basin": "Cekungan Asap Pinus",
+          "yuanyuan_manor": "Lahan Yuanyuan",
+          "cleansing_pool": "Kolam Pemurni",
+          "pearlveiled_brook": "Sungai Tabir Mutiara",
+          "xiaohe_manor": "Lahan Xiaohe",
+          "raintap_grotto": "Groto Rintik Hujan",
+          "meandering_hike": "Jalur Pendakian Berliku",
+          "pavilion_of_parting": "Paviliun Perpisahan"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

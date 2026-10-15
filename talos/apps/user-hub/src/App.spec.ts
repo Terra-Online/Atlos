@@ -11,7 +11,41 @@ const api = vi.hoisted(() => ({
     getContributions: vi.fn(),
     saveProfile: vi.fn(),
 }));
-vi.mock('./api/client', () => ({ ...api, isUnauthorized: () => false }));
+const auth = vi.hoisted(() => ({
+    openAvatar: vi.fn(),
+    sessionUser: null as Overview['user'] | null,
+    open: true,
+}));
+vi.mock('./api/client', () => ({
+    ...api,
+    isUnauthorized: (error: unknown) =>
+        error instanceof Error && error.message === 'Unauthorized',
+}));
+vi.mock('@main/component/login/useIdCardAuthController', () => ({
+    useIdCardAuthController: () => ({
+        authReady: true,
+        sessionUser: auth.sessionUser,
+        hasLoggedInBefore: false,
+        handleAvatarClick: auth.openAvatar,
+        open: auth.open,
+        profileOpen: false,
+        isSubmitting: false,
+    }),
+}));
+vi.mock('@main/component/login/useIdCardProfileViewModel', () => ({
+    useIdCardProfileViewModel: ({ sessionUser }: { sessionUser: Overview['user'] | null }) => ({
+        displayName: sessionUser?.nickname ?? '',
+    }),
+}));
+vi.mock('@main/component/login/access', () => ({
+    Access: ({ open }: { open: boolean }) =>
+        createElement('div', { 'data-auth-open': open }),
+    AccessButton: ({ onClick }: { onClick: () => void }) =>
+        createElement('button', { onClick, 'data-auth-reopen': true }),
+}));
+vi.mock('@main/component/login/profile/profile', () => ({
+    default: () => null,
+}));
 vi.mock('@main/locale', () => ({
     useTranslateUI: () => (key: string) => key,
     translateUI: (key: string) => key,
@@ -43,8 +77,38 @@ const overview: Overview = {
 
 beforeEach(() => {
     vi.clearAllMocks();
+    auth.sessionUser = null;
+    auth.open = true;
     api.getOverview.mockResolvedValue(overview);
     api.getContributions.mockResolvedValue({ items: [], nextCursor: null });
+});
+
+it('opens the shared avatar auth flow in place after a 401 and reloads after login', async () => {
+    window.history.replaceState(null, '', '/me/');
+    api.getOverview.mockRejectedValueOnce(new Error('Unauthorized'));
+    const node = document.createElement('div');
+    document.body.append(node);
+    const root = createRoot(node);
+    try {
+        await flush(() => root.render(createElement(App)));
+        expect(window.location.pathname).toBe('/me/content');
+        expect(auth.openAvatar).toHaveBeenCalledOnce();
+        expect(node.querySelector('[data-auth-open="true"]')).not.toBeNull();
+        await flush(() =>
+            node.querySelector<HTMLButtonElement>('[data-auth-reopen]')?.click(),
+        );
+        expect(auth.openAvatar).toHaveBeenCalledTimes(2);
+
+        auth.sessionUser = overview.user;
+        auth.open = false;
+        await flush(() => root.render(createElement(App)));
+        expect(api.getOverview).toHaveBeenCalledTimes(2);
+        expect(node.textContent).toContain('Tester');
+        expect(node.querySelector('[data-auth-open]')).toBeNull();
+    } finally {
+        await flush(() => root.unmount());
+        node.remove();
+    }
 });
 
 afterEach(() => window.history.replaceState(null, '', '/'));
@@ -102,7 +166,7 @@ it('opens contributions by default and keeps the two navigation destinations dis
         await flush(() => profile?.click());
         expect(window.location.pathname).toBe('/me/profile');
         expect(profile?.getAttribute('aria-current')).toBe('page');
-        expect(node.querySelectorAll('input[name="avatar"]')).toHaveLength(39);
+        expect(node.querySelectorAll('input[name="avatar"]')).toHaveLength(40);
         expect(node.textContent).not.toContain('userHub.emptyContributions');
         const content = node.querySelector<HTMLAnchorElement>(
             'nav a[href="/me/content"]',

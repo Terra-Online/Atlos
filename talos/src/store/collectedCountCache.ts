@@ -1,4 +1,7 @@
-interface CountedPoint { id: string; type: string }
+import { deduplicateMarkersByPositionAndType } from '@/data/marker/deduplication.js';
+import type { IMarkerData } from '@/data/marker';
+
+type CountedPoint = Pick<IMarkerData, 'id' | 'type' | 'x' | 'y' | 'z'>;
 const emptyCounts: ReadonlyMap<string, number> = new Map();
 
 /** Collection arrays are immutable store snapshots; each scope is scanned once per data version. */
@@ -12,7 +15,9 @@ export class CollectedCountCache {
         let counts = snapshot.scopes.get(scope);
         if (!counts) {
             const result = new Map<string, number>();
-            for (const point of load()) if (snapshot.ids.has(point.id)) result.set(point.type, (result.get(point.type) ?? 0) + 1);
+            for (const point of deduplicateMarkersByPositionAndType(load())) {
+                if (point.type && snapshot.ids.has(point.id)) result.set(point.type, (result.get(point.type) ?? 0) + 1);
+            }
             counts = result; snapshot.scopes.set(scope, result);
         }
         return counts;

@@ -278,6 +278,25 @@
           "old_resting_point": "Старое место отдыха"
         }
       },
+      "SP": {
+        "name": "Картина Си",
+        "short": "КС",
+        "site": {
+          "linglong_grotto": "Грот Линлун",
+          "drybrush_peak": "Пик Сухой Кисти",
+          "cormorants_rest": "Привал баклана",
+          "inkrise_peak": "Пик Растекшихся Чернил",
+          "flying_white_peak": "Пик Летящей Белизны",
+          "pinesmoke_basin": "Бухта Соснового Дыма",
+          "yuanyuan_manor": "Поместье Юаньюань",
+          "cleansing_pool": "Бассейн очищения",
+          "pearlveiled_brook": "Ручей Жемчужной Вуали",
+          "xiaohe_manor": "Поместье Сяохэ",
+          "raintap_grotto": "Грот Дождевых Капель",
+          "meandering_hike": "Извилистая тропа",
+          "pavilion_of_parting": "Павильон Разлуки"
+        }
+      },
       "SM": {
         "name": "Суймин",
         "short": "СМ",

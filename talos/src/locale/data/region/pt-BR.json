@@ -278,6 +278,25 @@
           "old_resting_point": "Antigo Ponto de Descanso"
         }
       },
+      "SP": {
+        "name": "Pintura de Si",
+        "short": "PS",
+        "site": {
+          "linglong_grotto": "Gruta de Linglong",
+          "drybrush_peak": "Pico do Pincel Seco",
+          "cormorants_rest": "Descanso do Cormorão",
+          "inkrise_peak": "Pico da Ascensão da Tinta",
+          "flying_white_peak": "Pico dos Riscos Brancos",
+          "pinesmoke_basin": "Bacia de Pinesmoke",
+          "yuanyuan_manor": "Mansão Yuanyuan",
+          "cleansing_pool": "Piscina Purificadora",
+          "pearlveiled_brook": "Riacho do Véu de Pérola",
+          "xiaohe_manor": "Mansão Xiaohe",
+          "raintap_grotto": "Gruta da Bica de Chuva",
+          "meandering_hike": "Caminhada Sinuosa",
+          "pavilion_of_parting": "Pavilhão da Despedida"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

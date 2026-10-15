@@ -278,6 +278,25 @@
           "old_resting_point": "Alter Rastplatz"
         }
       },
+      "SP": {
+        "name": "Sis Gemälde",
+        "short": "SG",
+        "site": {
+          "linglong_grotto": "Linglong-Grotte",
+          "drybrush_peak": "Trockenpinselgipfel",
+          "cormorants_rest": "Kormoranrast",
+          "inkrise_peak": "Tintenlaufgipfel",
+          "flying_white_peak": "Gipfel des Fliegenden Weiß",
+          "pinesmoke_basin": "Kiefernrauch-Becken",
+          "yuanyuan_manor": "Gut Yuanyuan",
+          "cleansing_pool": "Reinigungsbecken",
+          "pearlveiled_brook": "Perlschleierbach",
+          "xiaohe_manor": "Gut Xiaohe",
+          "raintap_grotto": "Regengrotte",
+          "meandering_hike": "Gewundene Wege",
+          "pavilion_of_parting": "Pavillon des Abschieds"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",

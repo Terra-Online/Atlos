@@ -278,6 +278,25 @@
           "old_resting_point": "오래된 쉼터"
         }
       },
+      "SP": {
+        "name": "사의 그림",
+        "short": "SP",
+        "site": {
+          "linglong_grotto": "영롱굴",
+          "drybrush_peak": "고필 봉우리",
+          "cormorants_rest": "낙안서",
+          "inkrise_peak": "창묵 봉우리",
+          "flying_white_peak": "비백 봉우리",
+          "pinesmoke_basin": "송연 호수",
+          "yuanyuan_manor": "인연 마을",
+          "cleansing_pool": "완청 연못",
+          "pearlveiled_brook": "주염 계곡",
+          "xiaohe_manor": "소화 마을",
+          "raintap_grotto": "청우 동굴",
+          "meandering_hike": "반산길",
+          "pavilion_of_parting": "사덕정"
+        }
+      },
       "SM": {
         "name": "수명성",
         "short": "SM",

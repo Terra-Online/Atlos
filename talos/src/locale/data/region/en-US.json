@@ -278,6 +278,25 @@
           "old_resting_point": "Old Resting Point"
         }
       },
+      "SP": {
+        "name": "Si's Painting",
+        "short": "SP",
+        "site": {
+          "linglong_grotto": "Linglong Grotto",
+          "drybrush_peak": "Drybrush Peak",
+          "cormorants_rest": "Cormorant's Rest",
+          "inkrise_peak": "Inkrise Peak",
+          "flying_white_peak": "Flying White Peak",
+          "pinesmoke_basin": "Pinesmoke Basin",
+          "yuanyuan_manor": "Yuanyuan Manor",
+          "cleansing_pool": "Cleansing Pool",
+          "pearlveiled_brook": "Pearlveiled Brook",
+          "xiaohe_manor": "Xiaohe Manor",
+          "raintap_grotto": "Raintap Grotto",
+          "meandering_hike": "Meandering Hike",
+          "pavilion_of_parting": "Pavilion of Parting"
+        }
+      },
       "SM": {
         "name": "Suiming",
         "short": "SM",
