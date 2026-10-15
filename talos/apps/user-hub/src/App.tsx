@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { clearReadCache, getOverview, isUnauthorized } from './api/client';
 import type { Overview } from './types';
 import type { SessionUser } from '@main/services/auth';
@@ -78,9 +78,13 @@ function useAccount() {
     };
 }
 
-function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
+function AuthGate({ onAuthenticated, attemptedSession }: {
+    onAuthenticated: () => void;
+    attemptedSession: RefObject<string | null>;
+}) {
     const main = useTranslateMainUI();
     const auth = useIdCardAuthController();
+    const { authReady, sessionUser, handleAvatarClick, open, profileOpen, isSubmitting } = auth;
     const cardProfile = useIdCardProfileViewModel({
         sessionUser: auth.sessionUser,
         hasLoggedInBefore: auth.hasLoggedInBefore,
@@ -89,22 +93,28 @@ function AuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
     const opened = useRef(false);
 
     useEffect(() => {
-        if (!auth.authReady || auth.sessionUser || opened.current) return;
+        if (!authReady || sessionUser || opened.current) return;
         opened.current = true;
-        auth.handleAvatarClick();
-    }, [auth.authReady, auth.handleAvatarClick, auth.sessionUser]);
+        handleAvatarClick();
+    }, [authReady, handleAvatarClick, sessionUser]);
 
     useEffect(() => {
-        if (auth.sessionUser && !auth.open && !auth.profileOpen && !auth.isSubmitting) {
+        if (sessionUser && !open && !profileOpen && !isSubmitting &&
+            attemptedSession.current !== sessionUser.uid) {
+            // The parent retains this guard when a repeated 401 remounts the gate.
+            attemptedSession.current = sessionUser.uid;
             onAuthenticated();
         }
-    }, [auth.sessionUser, auth.open, auth.profileOpen, auth.isSubmitting, onAuthenticated]);
+    }, [sessionUser, open, profileOpen, isSubmitting, onAuthenticated, attemptedSession]);
 
     return (
         <>
             <AccessButton
                 label={main('idcard.auth.login')}
-                onClick={auth.handleAvatarClick}
+                onClick={() => {
+                    attemptedSession.current = null;
+                    handleAvatarClick();
+                }}
             />
             <Access
                 open={auth.open}
@@ -146,10 +156,15 @@ export default function App() {
         main('meta.title'),
     );
     const [active, setActive] = useState<Tab>(tabFromPath);
+    const attemptedSession = useRef<string | null>(null);
     const {
         overview, revision, loading, error, unauthorized, busy, refresh,
         updateUser,
     } = useAccount();
+
+    useEffect(() => {
+        if (overview) attemptedSession.current = null;
+    }, [overview]);
 
     useEffect(() => {
         if (pageTitle) document.title = pageTitle;
@@ -192,7 +207,7 @@ export default function App() {
                                 {t('common.loading')}
                             </p>
                         )}
-                        {unauthorized && <AuthGate onAuthenticated={refresh} />}
+                        {unauthorized && <AuthGate onAuthenticated={refresh} attemptedSession={attemptedSession} />}
                         {overview &&
                             (active === 'contributions' ? (
                                 <Content

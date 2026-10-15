@@ -105,6 +105,39 @@ it('opens the shared avatar auth flow in place after a 401 and reloads after log
         expect(api.getOverview).toHaveBeenCalledTimes(2);
         expect(node.textContent).toContain('Tester');
         expect(node.querySelector('[data-auth-open]')).toBeNull();
+
+        // A later authorization failure can recover for the same account.
+        api.getOverview.mockRejectedValueOnce(new Error('Unauthorized'));
+        await flush(() => node.querySelector<HTMLButtonElement>(
+            'button[aria-label="userHub.refresh"]',
+        )?.click());
+        expect(api.getOverview).toHaveBeenCalledTimes(4);
+        expect(node.textContent).toContain('Tester');
+    } finally {
+        await flush(() => root.unmount());
+        node.remove();
+    }
+});
+
+it('stops retrying a restored session after repeated overview 401s and permits an explicit retry', async () => {
+    api.getOverview.mockRejectedValue(new Error('Unauthorized'));
+    auth.sessionUser = overview.user;
+    auth.open = false;
+    const node = document.createElement('div');
+    document.body.append(node);
+    const root = createRoot(node);
+    try {
+        await flush(() => root.render(createElement(App)));
+        expect(api.getOverview).toHaveBeenCalledTimes(2);
+        expect(node.querySelector('[data-auth-reopen]')).not.toBeNull();
+        await flush(() => root.render(createElement(App)));
+        expect(api.getOverview).toHaveBeenCalledTimes(2);
+
+        api.getOverview.mockResolvedValue(overview);
+        await flush(() => node.querySelector<HTMLButtonElement>('[data-auth-reopen]')?.click());
+        await flush(() => root.render(createElement(App)));
+        expect(api.getOverview).toHaveBeenCalledTimes(3);
+        expect(node.textContent).toContain('Tester');
     } finally {
         await flush(() => root.unmount());
         node.remove();
