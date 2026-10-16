@@ -29,8 +29,7 @@ import BoxSelection from '@intel/components/boxSelection/boxSelection';
 import IntelHeadBar from '@intel/components/intelHeadBar/intelHeadBar';
 import IntelSidebarBrand from '@intel/components/intelSidebarBrand/intelSidebarBrand';
 import ArchiveSummary from '@intel/components/archiveSummary/archiveSummary';
-import SearchShared from '@main/component/search/search.shared';
-import SearchMobile from '@main/component/search/search.mobile';
+import SearchInput from '@main/component/search/search.input';
 import PopoverTooltip from '@main/component/popover/popover';
 import EmptyStateIcon from '@main/assets/images/UI/observator_6.webp';
 import filterStyles from '@intel/components/categoryFilter/categoryFilter.module.scss';
@@ -389,9 +388,7 @@ function App() {
         onChange={changeCategories}
       />
       <div className="intelSearchBar">
-        {isMobile
-          ? <SearchMobile external={externalSearch} />
-          : <SearchShared external={externalSearch} />}
+        <SearchInput {...externalSearch} mobile={isMobile} />
       </div>
       <div className={filterStyles.intelCtgr}>
         {CATEGORY_GROUPS.map((group, groupIndex) => {
