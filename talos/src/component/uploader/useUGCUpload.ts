@@ -4,8 +4,7 @@ import { useTranslateUI } from '@/locale';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import type { IMarkerData } from '@/data/marker';
 import {
-    listUGCImages,
-    listUGCMyImages,
+    listUGCPointImages,
     uploadUGCImage,
     UGCClientError,
     type UGCUploadSubmission,
@@ -113,21 +112,17 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
     }, [pendingLoginUpload, user]);
 
     useEffect(() => {
-        if (!lastSubmission) return;
+        if (!lastSubmission || !user) return;
         if (lastSubmission.markerId !== point.id) return;
 
-        void Promise.allSettled([
-            listUGCImages(point.id),
-            listUGCMyImages(point.id),
-        ]).then(([nextImages, nextMyImages]) => {
-            if (nextImages.status === 'fulfilled') {
-                setImages(nextImages.value);
-            }
-            if (nextMyImages.status === 'fulfilled') {
-                setMyImages(nextMyImages.value);
-            }
-        });
-    }, [lastSubmission, point.id, setImages, setMyImages]);
+        let disposed = false;
+        void listUGCPointImages(point.id, user.uid).then((result) => {
+            if (disposed) return;
+            if (result.images) setImages(result.images);
+            if (result.myImages) setMyImages(result.myImages);
+        }).catch(() => undefined);
+        return () => { disposed = true; };
+    }, [lastSubmission, point.id, setImages, setMyImages, user]);
 
     const setLastSubmission = useCallback<React.Dispatch<React.SetStateAction<UGCUploadSubmission | null>>>((value) => {
         setUploadTask(point.id, (current) => {

@@ -33,7 +33,7 @@ const UPLOAD_CLICK_KEYS: KeyChip[] = [{ label: '', type: 'left-click', size: '1u
 const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props) => {
     const tUI = useTranslateUI();
 
-    const imageState = useUGCPointImages(point);
+    const imageState = useUGCPointImages(point, activeDetail);
     const uploadState = useUGCUpload(point, imageState);
     const actionsState = useUGCImageActions(imageState, uploadState);
     const uiState = useImageUiState(imageState, uploadState);

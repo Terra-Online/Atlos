@@ -5,8 +5,8 @@ import type { IMarkerData } from '@/data/marker';
 import { parseTimestamp } from '@/lib/format/time';
 import {
     getUGCImageById,
-    listUGCImages,
-    listUGCMyImages,
+    listPublicUGCImages,
+    listUGCPointImages,
     resolveUGCUploadTarget,
     type UGCImage,
     type UGCImageActionPatch,
@@ -62,71 +62,46 @@ export type PointImagesState = {
     setViewerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const useUGCPointImages = (point: IMarkerData): PointImagesState => {
+const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesState => {
     const user = useAuthStore((state) => state.sessionUser);
     const target = useMemo(() => resolveUGCUploadTarget(point), [point]);
     const [images, setImages] = useState<UGCImage[]>([]);
     const [myImages, setMyImages] = useState<UGCSubmissionImage[]>([]);
     const [requestedImage, setRequestedImage] = useState<UGCImage | null>(null);
-    const [publicImagesLoading, setPublicImagesLoading] = useState(true);
-    const [myImagesLoading, setMyImagesLoading] = useState(Boolean(user));
+    const [loading, setLoading] = useState(true);
     const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
     const [viewerOpen, setViewerOpen] = useState(false);
     const imageOpenRequest = useMarkerStore((state) => state.imageOpenRequest);
     const clearImageOpenRequest = useMarkerStore((state) => state.clearImageOpenRequest);
 
+    const userId = user?.uid;
     useEffect(() => {
-        setImages([]);
         setRequestedImage(null);
         setSelectedImageId(null);
         setViewerOpen(false);
-        if (!target) {
-            setPublicImagesLoading(false);
-            return;
-        }
-
-        let disposed = false;
-        setPublicImagesLoading(true);
-        void listUGCImages(point.id)
-            .then((nextImages) => {
-                if (!disposed) setImages(nextImages);
-            })
-            .catch(() => {
-                if (!disposed) setImages([]);
-            })
-            .finally(() => {
-                if (!disposed) setPublicImagesLoading(false);
-            });
-
-        return () => {
-            disposed = true;
-        };
-    }, [point.id, target]);
+    }, [point.id, userId]);
 
     useEffect(() => {
+        setImages([]);
         setMyImages([]);
-        if (!target || !user) {
-            setMyImagesLoading(false);
+        if (!target || !enabled) {
+            setLoading(false);
             return;
         }
-
         let disposed = false;
-        setMyImagesLoading(true);
-        void listUGCMyImages(point.id)
-            .then((nextImages) => {
-                if (!disposed) setMyImages(nextImages);
-            })
-            .catch(() => {
-                if (!disposed) setMyImages([]);
-            })
-            .finally(() => {
-                if (!disposed) setMyImagesLoading(false);
-            });
-
-        return () => {
-            disposed = true;
-        };
-    }, [point.id, target, user]);
+        setLoading(true);
+        const request = userId
+            ? listUGCPointImages(point.id, userId)
+            : listPublicUGCImages(point.id).then((images) => ({ images, myImages: [] }));
+        void request.then((result) => {
+            if (disposed) return;
+            setImages(result.images ?? []);
+            setMyImages(result.myImages ?? []);
+        }).catch(() => undefined).finally(() => {
+            if (!disposed) setLoading(false);
+        });
+        return () => { disposed = true; };
+    }, [point.id, target, userId, enabled]);
 
     const pointImages = useMemo(() => {
         const merged = new Map(
@@ -202,8 +177,6 @@ const useUGCPointImages = (point: IMarkerData): PointImagesState => {
         () => pointMyImages.find(isPending) ?? null,
         [pointMyImages],
     );
-
-    const loading = publicImagesLoading || myImagesLoading;
 
     useEffect(() => {
         if (!imageOpenRequest || imageOpenRequest.markerId !== point.id) {

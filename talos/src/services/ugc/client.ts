@@ -365,6 +365,69 @@ export async function listUGCMyImages(markerId: string): Promise<UGCSubmissionIm
     return listUGCMyImagesByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
+export type PointImageLists = { images?: UGCImage[]; myImages?: UGCSubmissionImage[] };
+
+// Detail reads have zero private-result TTL, just like /images/mine. Public
+// results keep their existing TTL; a warm public list only needs the mine read.
+let pointImageAccount = { uid: '', pending: new Map<string, Promise<PointImageLists>>() };
+
+export function listUGCPointImages(markerId: string, userId: string): Promise<PointImageLists> {
+    if (pointImageAccount.uid !== userId) {
+        imageCache.clear();
+        pointImageAccount = { uid: userId, pending: new Map() };
+    }
+    const account = pointImageAccount;
+    const pending = account.pending.get(markerId);
+    if (pending) return pending;
+    const hadCachedImages = peekUGCImages(markerId) !== null;
+    const request = readPointImages(markerId).then((result) => {
+        if (account === pointImageAccount && !hadCachedImages && result.images && result.myImages) {
+            imageCache.set(markerId, {
+                images: result.images,
+                expiresAt: Date.now() + (result.images.length ? PRIVATE_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS),
+            });
+        }
+        return result;
+    }).finally(() => { account.pending.delete(markerId); });
+    account.pending.set(markerId, request);
+    return request;
+}
+
+async function readPointImages(markerId: string): Promise<PointImageLists> {
+    const cached = peekUGCImages(markerId);
+    if (cached) {
+        const myImages = await listUGCMyImages(markerId).catch(() => undefined);
+        return { images: cached, myImages };
+    }
+    const result: PointImageLists = {};
+    let anonymous = false;
+    await runUGCBatches([markerId], async () => {
+        const scope = import.meta.env.DEV ? 'test' : 'prod';
+        const search = new URLSearchParams({ markerId, scope, limit: '6' });
+        const response = await fetch(`${UGC_API_BASE}/point-images?${search}`, {
+            credentials: 'include', headers: getAuthHeaders(),
+        });
+        // Expired/suspended sessions can still view the public section.
+        if (response.status === 401 || response.status === 403) {
+            anonymous = true;
+            return;
+        }
+        if (!response.ok) throw await readUGCError(response);
+        const payload = await response.json() as {
+            images: MarkerBatchPayload<UGCImage> & { error?: unknown };
+            mine: { items?: UGCSubmissionImage[]; error?: unknown };
+        };
+        if (!payload.images.error && !failedBatchMarkers(payload.images, [markerId]).has(markerId)) {
+            result.images = (payload.images.items ?? []).map(normalizeUGCImage);
+        }
+        if (!payload.mine.error) result.myImages = (payload.mine.items ?? []).map(normalizeUGCSubmissionImage);
+        // Completed private results stay in the mounted detail, never in the
+        // global public preview cache or a new cross-account result cache.
+    });
+    if (anonymous) return { images: await listPublicUGCImages(markerId) };
+    return result;
+}
+
 export async function getUGCImageById(markerId: string, imageId: string): Promise<UGCImage> {
     const scope = import.meta.env.DEV ? 'test' : 'prod';
     const search = new URLSearchParams({
