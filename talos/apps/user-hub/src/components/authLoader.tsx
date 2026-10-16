@@ -8,6 +8,7 @@ import {
 import { AccessButton } from '@main/component/login/access/button';
 import { useTranslateUI } from '@hub/locale';
 import type AuthGate from './authGate';
+import { getAuthGate, loadAuthGate } from './authEntry';
 
 class LoadBoundary extends Component<
     { children: ReactNode; fallback: ReactNode },
@@ -24,15 +25,15 @@ class LoadBoundary extends Component<
 
 export default function AuthLoader(props: ComponentProps<typeof AuthGate>) {
     const t = useTranslateUI();
-    const [Gate, setGate] = useState<typeof AuthGate | null>(null);
+    const [Gate, setGate] = useState(getAuthGate);
     const [failed, setFailed] = useState(false);
     useEffect(() => {
         let active = true;
-        // This starts only after a 401. Explicit loading avoids Suspense's reveal
-        // delay on the auth controller's first session-driven modal update.
-        void import('./authGate')
-            .then((module) => {
-                if (active) setGate(() => module.default);
+        // Reuse the download started by the 401 handler, including on remount.
+        // Explicit state keeps the modal outside Suspense reveal throttling.
+        void loadAuthGate()
+            .then((component) => {
+                if (active) setGate(() => component);
             })
             .catch(() => {
                 if (active) setFailed(true);

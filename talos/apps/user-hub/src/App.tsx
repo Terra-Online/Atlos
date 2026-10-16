@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import AuthLoader from './components/authLoader';
+import { loadAuthGate } from './components/authEntry';
 import { clearReadCache, getOverview, isUnauthorized } from './api/client';
 import type { Overview } from './types';
 import type { SessionUser } from '@main/services/auth';
@@ -34,6 +35,8 @@ function useAccount() {
             .catch((cause: unknown) => {
                 if (controller.signal.aborted) return;
                 if (isUnauthorized(cause)) {
+                    // Begin the conditional download before React commits the error UI.
+                    void loadAuthGate().catch(() => undefined);
                     useAuthStore.getState().clearSessionUser();
                     setOverview(null);
                     setUnauthorized(true);
