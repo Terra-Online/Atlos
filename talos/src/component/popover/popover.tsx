@@ -4,6 +4,7 @@ import styles from './popover.module.scss';
 interface PopoverTooltipProps {
     content: React.ReactNode;
     children: React.ReactElement;
+    anchor?: 'element' | 'first-line';
     placement?: 'top' | 'bottom' | 'left' | 'right';
     disabled?: boolean;
     visible?: boolean;
@@ -19,7 +20,7 @@ const hasRenderableContent = (content: React.ReactNode): boolean => {
 const VIEWPORT_MARGIN = 4;
 const CLOSE_TRANSITION_MS = 120;
 
-type PopoverElement = HTMLDivElement & {
+type PopoverElement = HTMLSpanElement & {
     showPopover?: () => void;
     hidePopover?: () => void;
 };
@@ -138,6 +139,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     content,
     children,
     placement = 'right',
+    anchor = 'element',
     disabled = false,
     visible,
     gap = 12,
@@ -172,7 +174,9 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         const popoverRect = popover.getBoundingClientRect();
         const position = computePopoverPosition(
             placement,
-            trigger.getBoundingClientRect(),
+            anchor === 'first-line'
+                ? trigger.getClientRects()[0] ?? trigger.getBoundingClientRect()
+                : trigger.getBoundingClientRect(),
             popoverRect,
             gap,
             ownerWindow.innerWidth,
@@ -186,7 +190,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         popover.style.bottom = position.bottom === undefined ? 'auto' : `${position.bottom}px`;
         popover.style.transform = 'none';
         popover.dataset.placement = placement;
-    }, [gap, placement]);
+    }, [anchor, gap, placement]);
 
     const schedulePosition = useCallback(() => {
         if (positionFrameRef.current) {
@@ -336,7 +340,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     return (
         <>
             {childWithHandlers}
-            <div
+            <span
                 ref={popoverRef}
                 id={popoverId}
                 role="tooltip"
@@ -344,7 +348,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
                 className={`${styles.popoverTooltip} ${variant === 'image' ? styles.imgInner : styles.txtInner}`}
             >
                 {content}
-            </div>
+            </span>
         </>
     );
 };

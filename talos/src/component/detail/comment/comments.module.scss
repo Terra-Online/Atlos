@@ -395,9 +395,9 @@
 .commentInputRow {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     grid-template-rows: minmax(2rem, auto);
-    grid-template-areas: 'editor emoji submit';
+    grid-template-areas: 'editor spoiler emoji submit';
     align-items: center;
     gap: 0 0.5rem;
     min-width: 0;
@@ -706,5 +706,51 @@
     to {
         opacity: 0;
         transform: translateY(0.35rem) scale(0.96);
+    }
+}
+
+.commentSpoiler {
+    background-color: #1b1b1b;
+    border-radius: 0.15em;
+    box-decoration-break: clone;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+
+    &[data-revealed='true'] {
+        background-color: var(--comment-hover);
+        cursor: text;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-accent-6;
+        outline-offset: 2px;
+    }
+}
+
+.commentSpoilerContent {
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.25s ease;
+
+    [data-revealed='true'] > & {
+        opacity: 1;
+        pointer-events: auto;
+        user-select: text;
+    }
+}
+
+.commentSpoilerButton {
+    grid-area: spoiler;
+
+    svg {
+        fill: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .commentSpoiler,
+    .commentSpoilerContent {
+        transition: none;
     }
 }

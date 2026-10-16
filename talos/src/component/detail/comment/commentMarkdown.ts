@@ -1,6 +1,6 @@
 import { getCommentEmojiUrl } from './emojiData';
 
-export type CommentFormat = 'bold' | 'italic' | 'boldItalic' | 'underline' | 'strike' | 'code';
+export type CommentFormat = 'bold' | 'italic' | 'boldItalic' | 'underline' | 'strike' | 'code' | 'spoiler';
 
 export type CommentInlineNode =
     | string
@@ -33,6 +33,7 @@ const delimiters: Array<{ token: string; format: CommentFormat }> = [
     { token: '**', format: 'bold' },
     { token: '__', format: 'underline' },
     { token: '~~', format: 'strike' },
+    { token: '||', format: 'spoiler' },
     { token: '`', format: 'code' },
     { token: '*', format: 'italic' },
 ];
@@ -83,7 +84,7 @@ const parseInline = (source: string, depth = 0): CommentInlineNode[] => {
 
     for (let cursor = 0; cursor < source.length;) {
         const character = source[cursor];
-        if (character === '\\' && cursor + 1 < source.length && /[\\*_`[\]():~]/.test(source[cursor + 1] ?? '')) {
+        if (character === '\\' && cursor + 1 < source.length && /[\\*_`[\]():~|]/.test(source[cursor + 1] ?? '')) {
             text += source[cursor + 1];
             cursor += 2;
             continue;
@@ -157,6 +158,7 @@ const sourceDelimiters: Array<{ token: string; format: CommentFormat }> = [
     { token: '**', format: 'bold' },
     { token: '__', format: 'underline' },
     { token: '~~', format: 'strike' },
+    { token: '||', format: 'spoiler' },
     { token: '`', format: 'code' },
     { token: '*', format: 'italic' },
 ];

@@ -68,7 +68,7 @@ export type CommentEditorHandle = {
     focus: () => void;
     focusEnd: () => void;
     insertEmoji: (id: string) => void;
-    formatText: (format: TextFormatType) => void;
+    formatText: (format: TextFormatType | 'spoiler') => void;
 };
 
 type Props = {
@@ -121,12 +121,13 @@ const replaceCommentEditorContents = (
     }
 };
 
-const markerByFormat: Partial<Record<TextFormatType, string>> = {
+const markerByFormat: Partial<Record<TextFormatType | 'spoiler', string>> = {
     bold: '**',
     italic: '*',
     underline: '__',
     strikethrough: '~~',
     code: '`',
+    spoiler: '||',
 };
 
 const isWrappedByMarker = (raw: string, start: number, end: number, marker: string): boolean => {
@@ -138,7 +139,7 @@ const isWrappedByMarker = (raw: string, start: number, end: number, marker: stri
     return true;
 };
 
-const formatCommentSelection = (format: TextFormatType): void => {
+const formatCommentSelection = (format: TextFormatType | 'spoiler', maxLength: number): void => {
     const marker = markerByFormat[format];
     if (!marker) return;
 
@@ -154,6 +155,7 @@ const formatCommentSelection = (format: TextFormatType): void => {
     const nextRaw = wrapped
         ? `${raw.slice(0, start - marker.length)}${raw.slice(start, end)}${raw.slice(end + marker.length)}`
         : `${raw.slice(0, start)}${marker}${raw.slice(start, end)}${marker}${raw.slice(end)}`;
+    if (nextRaw.length > maxLength) return;
     const delta = wrapped ? -marker.length : marker.length;
     const moveSelectionOffset = (offset: number): number => (
         offset >= start ? offset + delta : offset
@@ -299,14 +301,14 @@ const CommentEditorBridge = ({
                         : null;
             if (!format) return false;
             event.preventDefault();
-            editor.update(() => formatCommentSelection(format));
+            editor.update(() => formatCommentSelection(format, maxLength));
             lastParsedRawRef.current = serializeCommentEditorState(editor.getEditorState());
             lastParsedShapeRef.current = commentSourceShape(lastParsedRawRef.current);
             editor.focus();
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [disabled, editor]);
+    ), [disabled, editor, maxLength]);
 
     useEffect(() => editor.registerCommand(
         CONTROLLED_TEXT_INSERTION_COMMAND,
@@ -444,7 +446,7 @@ const CommentEditorBridge = ({
         },
         formatText: (format) => {
             if (disabled) return;
-            editor.update(() => formatCommentSelection(format));
+            editor.update(() => formatCommentSelection(format, maxLength));
             lastParsedRawRef.current = serializeCommentEditorState(editor.getEditorState());
             lastParsedShapeRef.current = commentSourceShape(lastParsedRawRef.current);
             editor.focus();

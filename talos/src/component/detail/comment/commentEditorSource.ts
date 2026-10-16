@@ -18,17 +18,18 @@ type EmojiNodeFactory = (id: string) => LexicalNode;
 
 const lexicalFormatByCommentFormat: Record<CommentFormat, TextFormatType | null> = {
     bold: 'bold', italic: 'italic', boldItalic: null, underline: 'underline',
-    strike: 'strikethrough', code: 'code',
+    strike: 'strikethrough', code: 'code', spoiler: null,
 };
 const COMMENT_SOURCE_TOKEN_STYLE = 'opacity: 0.48';
 
-const createSourceTextNodes = (value: string, formats: TextFormatType[], token = false): LexicalNode[] => {
+const createSourceTextNodes = (value: string, formats: TextFormatType[], token = false, spoiler = false): LexicalNode[] => {
     const result: LexicalNode[] = [];
     value.split('\n').forEach((line, index, lines) => {
         if (line) {
             const node = $createTextNode(line);
             formats.forEach((format) => node.toggleFormat(format));
             if (token) node.setStyle(COMMENT_SOURCE_TOKEN_STYLE);
+            else if (spoiler) node.setStyle('background-color: var(--comment-hover); border-radius: 2px');
             result.push(node);
         }
         if (index < lines.length - 1) result.push($createLineBreakNode());
@@ -40,9 +41,10 @@ const createNodesFromSource = (
     nodes: CommentSourceNode[],
     createEmoji: EmojiNodeFactory,
     formats: TextFormatType[] = [],
+    spoiler = false,
 ): LexicalNode[] => (
     nodes.flatMap((node) => {
-        if (node.type === 'text') return createSourceTextNodes(node.value, formats);
+        if (node.type === 'text') return createSourceTextNodes(node.value, formats, false, spoiler);
         if (node.type === 'token') return createSourceTextNodes(node.value, [], true);
         if (node.type === 'emoji') return [createEmoji(node.id)];
         if (node.type === 'format') {
@@ -53,12 +55,12 @@ const createNodesFromSource = (
                     : formats;
             return [
                 ...createSourceTextNodes(node.opening, [], true),
-                ...createNodesFromSource(node.children, createEmoji, format),
+                ...createNodesFromSource(node.children, createEmoji, format, spoiler || node.format === 'spoiler'),
                 ...createSourceTextNodes(node.closing, [], true),
             ];
         }
         const link = $createLinkNode(node.href, { rel: 'nofollow noopener noreferrer', target: '_blank' });
-        link.append(...createNodesFromSource(node.children, createEmoji, formats));
+        link.append(...createNodesFromSource(node.children, createEmoji, formats, spoiler));
         return [
             ...createSourceTextNodes(node.opening, [], true),
             link,

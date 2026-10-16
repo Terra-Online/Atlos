@@ -69,6 +69,9 @@
     "comments": {
       "copyLink": "複製留言連結",
       "emojiPicker": "選擇表情符號",
+      "spoiler": "黑幕文字",
+      "spoilerHidden": "點擊以查看劇透內容",
+      "spoilerRevealed": "你知道得太多了",
       "placeholder": "傾兩句？",
       "submit": "發布留言",
       "actions": "留言操作",
