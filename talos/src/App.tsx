@@ -143,7 +143,7 @@ function App() {
             mapInstance.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
         }
 
-        mapInstance.panBy([dx, 0], { animate: true, duration: 0.3 });
+        mapInstance.panBy([dx, 0], { animate: true, duration: 0.3, easeLinearity: 0.25 });
 
         if (savedBounds) {
             mapInstance.once('moveend', () => {

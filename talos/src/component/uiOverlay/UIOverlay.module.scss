@@ -1,3 +1,5 @@
+@use '../../styles/curves.scss' as *;
+
 .uiOverlay {
     position: absolute;
     top: 0;
@@ -6,8 +8,8 @@
     height: 100%;
     pointer-events: none;
     transition:
-        left 0.3s ease-in-out,
-        width 0.3s ease-in-out;
+        left 0.3s $standard-curve,
+        width 0.3s $standard-curve;
 
     /* Sidebar open state */
     &.sidebarOpen {

@@ -56,7 +56,7 @@ $transition-speed: 0.3s;
     pointer-events: none;
     opacity: 1;
     transition: 
-        transform $transition-speed ease-in-out,
+        transform $transition-speed $standard-curve,
         opacity 0.2s ease-out;
 
     transform: translateX(calc(-1 * var(--sidebar-width, 500px)));
@@ -65,7 +65,7 @@ $transition-speed: 0.3s;
         transform: translateX(0);
         > .sidebarToggle {
             right: calc(var(--sidebar-width, 500px) - 5rem);
-            transition: 0.3s ease-in-out;
+            transition: right 0.3s $standard-curve;
         }
     }
 
@@ -390,7 +390,7 @@ $transition-speed: 0.3s;
         pointer-events: auto;
         transition:
             background-color 0.3s ease,
-            right 0.3s ease-in-out;
+            right 0.3s $standard-curve;
         svg {
             transition: all 0.2s ease;
             fill: $primary-accent-4;
