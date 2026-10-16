@@ -53,7 +53,7 @@ export default function Profile({
         }
     };
     return (
-        <section aria-label={t('userHub.tabs.profile')}>
+        <section data-font-region="profile" aria-label={t('userHub.tabs.profile')}>
             <fieldset
                 disabled={saving}
                 className={styles.avatars}

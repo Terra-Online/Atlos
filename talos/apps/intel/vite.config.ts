@@ -1,3 +1,4 @@
+import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { defineConfig } from 'vite';
@@ -7,8 +8,6 @@ import { gunzipSync } from 'node:zlib';
 const target = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const channel = process.env.DEPLOY_CHANNEL === 'beta' ? 'beta' : 'prod';
 const fontAssetPattern = /\.(?:woff2?|otf|ttf)$/i;
-const mainFontLoader = resolve(import.meta.dirname, '../../src/locale/fontLoader.ts');
-const intelFontAssets = resolve(import.meta.dirname, 'src/locale/fontAssets.ts');
 const htmlMetadata = target === 'oss'
   ? {
       lang: 'zh-CN',
@@ -31,16 +30,6 @@ const intelHtmlMetadataPlugin = (): import('vite').Plugin => ({
         .replace('%INTEL_PAGE_TITLE%', htmlMetadata.title)
         .replace('%INTEL_PAGE_DESCRIPTION%', htmlMetadata.description);
     },
-  },
-});
-
-const intelFontAssetsPlugin = (): import('vite').Plugin => ({
-  name: 'intel-font-assets',
-  enforce: 'pre',
-  resolveId(source, importer) {
-    if (source !== './fontAssets' || !importer) return null;
-    const normalizedImporter = importer.replace(/\\/g, '/').split('?')[0];
-    return normalizedImporter === mainFontLoader.replace(/\\/g, '/') ? intelFontAssets : null;
   },
 });
 
@@ -93,7 +82,7 @@ const intelImportDebugPlugin = (): import('vite').Plugin => ({
 
 export default defineConfig(() => ({
   base: '/intel/',
-  plugins: [intelHtmlMetadataPlugin(), intelFontAssetsPlugin(), intelImportDebugPlugin(), react(), svgr()],
+  plugins: [intelHtmlMetadataPlugin(), fontShardsPlugin(), intelImportDebugPlugin(), react(), svgr()],
   resolve: {
     alias: [
       { find: '@intel', replacement: resolve(import.meta.dirname, 'src') },

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+    <meta charset="UTF-8" />
+    <script type="module" src="/@vite/client"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 16px;
+        }
+        section,
+        article {
+            display: block;
+            margin: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+        .r {
+            font-family: var(--font-r, 'Atlos-pending-r'), sans-serif;
+        }
+        .h {
+            font-family: var(--font-h, 'Atlos-pending-h'), sans-serif;
+        }
+        .db {
+            font-family: var(--font-db, 'Atlos-pending-db'), sans-serif;
+        }
+        p {
+            font-size: 20px;
+        }
+        #pseudo::after {
+            content: attr(data-label);
+            font-family: var(--font-r, 'Atlos-pending-r'), sans-serif;
+        }
+    </style>
+    <body>
+        <section id="shell" data-font-region>
+            <p class="db">地图设置 用户中心</p>
+        </section>
+        <section id="detail" data-font-region>
+            <p class="r">一二龘</p>
+            <p class="h">查看评论</p>
+            <span id="pseudo" data-label="完整内容"></span
+            ><input class="r" placeholder="搜索地点" />
+        </section>
+        <article id="card"><p class="r">昵称龘</p></article>
+        <article id="cardCopy"><p class="r">昵称龘</p></article>
+        <section id="offscreen" data-font-region style="margin-top: 2000px">
+            <p class="r">远处文字</p>
+        </section>
+        <script type="module">
+            import { observeFontRegions } from '/src/locale/fontRegions.ts';
+            window.regionController = observeFontRegions(document, 'CN');
+            window.metrics = { cls: 0, frames: [] };
+            new PerformanceObserver((list) => {
+                for (const e of list.getEntries())
+                    if (!e.hadRecentInput) window.metrics.cls += e.value;
+            }).observe({ type: 'layout-shift', buffered: true });
+            let live = true;
+            function frame() {
+                if (!live) return;
+                window.metrics.frames.push(
+                    ['shell', 'detail', 'card'].map((id) => {
+                        const s = document.getElementById(id).style;
+                        return ['r', 'h', 'db'].map((f) =>
+                            s.getPropertyValue('--font-' + f),
+                        );
+                    }),
+                );
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+            window.stopSampling = () => {
+                live = false;
+            };
+            window.fixtureReady = true;
+        </script>
+    </body>
+</html>

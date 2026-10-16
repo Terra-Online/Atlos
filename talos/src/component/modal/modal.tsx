@@ -510,6 +510,7 @@ const Modal: React.FC<ModalProps> = ({
       ref={maskRef}
     >
       <div
+        data-font-region="modal"
         className={styles.modalContainer}
         data-size={size}
         data-state={phase === 'open' ? 'open' : 'closed'}

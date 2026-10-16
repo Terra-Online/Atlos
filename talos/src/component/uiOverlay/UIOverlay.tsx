@@ -213,6 +213,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
     return (
         <div
+            data-font-region="shell"
             className={`${styles.uiOverlay} ${isMobile ? styles.mobile : ''} ${layoutSidebarOpen ? styles.sidebarOpen : ''}`}
         >
             {/* Headbar */}

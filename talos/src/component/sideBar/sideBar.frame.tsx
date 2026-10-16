@@ -98,6 +98,7 @@ const DesktopFrame = ({ children, contentRef, bottomTools, headIcon, onToggle, v
   return (
     <div
       className={`${styles.sidebarContainer} ${effectiveOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}
+      data-font-region="sidebar"
       data-sidebar-layout="desktop"
       aria-hidden={!visible}
       inert={!visible}
@@ -144,7 +145,7 @@ const MobileFrame = ({ children, contentRef, bottomTools, onToggle, visible = tr
   const snaps = [64, Math.max(64, Math.round(height * 0.55)), Math.max(64, Math.round(height * 0.85))];
 
   return (
-    <div className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`} data-sidebar-layout="mobile" aria-hidden={!visible} inert={!visible}>
+    <div className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`} data-font-region="sidebar" data-sidebar-layout="mobile" aria-hidden={!visible} inert={!visible}>
       <Drawer
         side="bottom"
         initialSize={snaps[0]}

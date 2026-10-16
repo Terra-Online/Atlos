@@ -50,15 +50,21 @@ const OverflowPopoverText = ({
 
     useEffect(() => {
         let disposed = false;
-        const fonts = document.fonts;
-        if (!fonts) return undefined;
-
-        void fonts.ready.then(() => {
+        const doc = textRef.current?.ownerDocument || document;
+        const onFontRegionChange = (event: Event) => {
+            // Prepared faces are registered after load(), so FontFaceSet.ready
+            // alone does not announce the later regional activation.
+            const owner = event.target as HTMLElement | null;
+            if (owner?.contains(textRef.current)) measure();
+        };
+        doc.addEventListener('fontregionchange', onFontRegionChange);
+        void doc.fonts?.ready.then(() => {
             if (!disposed) measure();
         });
 
         return () => {
             disposed = true;
+            doc.removeEventListener('fontregionchange', onFontRegionChange);
         };
     }, [measure, text]);
 

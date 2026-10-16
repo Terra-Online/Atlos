@@ -30,7 +30,7 @@ export default function Content({ revision, counts }: Props) {
     };
 
     return (
-        <section className={styles.section} aria-busy={loading}>
+        <section data-font-region="content" className={styles.section} aria-busy={loading}>
             <div className={styles.feed} ref={swipeTarget}>
                 <ModalTabs
                     className={styles.filters}

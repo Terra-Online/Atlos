@@ -38,10 +38,10 @@ const help = `Usage: pnpm <command> [options]
   type-check [--app main|intel|user-hub|relink|search]
   run test    [--app main|intel|user-hub|relink|scripts]
   data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-diff|search-index|relink-preview|sync-intel|seo
-  data fonts  [--app main|intel|user-hub|all]
+  data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
 CI source checks/builds: --source-only (omits private Intel icons; artifact cannot be published)
-Build/deploy: --skip-subset (alias --skip-subset-fonts), --skip-intel
+Build/deploy: --skip-intel; --skip-subset/--skip-subset-fonts are accepted legacy no-ops
 Publish/deploy: --skip-og (alias --skip-seo-og)
 Build/publish/package: --dist-dir PATH (single target only)
 Package: --output-dir PATH
@@ -266,18 +266,13 @@ const verifyBuildOutput = async (runner, options, target) => {
     });
 };
 
-const fonts = async (runner, options) => {
-    if (options.skipSubset) return;
-    for (const name of appNames(options)) {
-        await runner.run(
-            'python3',
-            ['./scripts/subset-fonts.py'],
-            {},
-            name === 'main'
-                ? runner.root
-                : path.join(runner.root, 'apps', name),
-        );
-    }
+// Daily builds validate frozen artifacts; only `data fonts` regenerates them.
+const fonts = async (runner) => {
+    await runner.run('node', ['./scripts/fonts/catalog.mjs']);
+};
+const generateFonts = async (runner) => {
+    await runner.run('python3', ['./scripts/fonts/generate.py']);
+    await fonts(runner);
 };
 
 const prepare = async (runner, options) => {
@@ -286,7 +281,7 @@ const prepare = async (runner, options) => {
     }
     if (appNames(options).includes('main')) await dataTask(runner, 'prepare');
     if (appNames(options).includes('intel')) await dataTask(runner, 'intel');
-    await fonts(runner, options);
+    await fonts(runner);
 };
 
 const buildSite = async (runner, options, target) => {
@@ -337,6 +332,17 @@ const buildSite = async (runner, options, target) => {
                 ? { VITE_AUTH_BASE: runner.env.VITE_AUTH_BASE }
                 : {}),
         });
+        if (name !== 'main')
+            await runner.local(`compose shared font assets for ${name}`, async () => {
+                const source = path.join(dir, apps[name], 'assets/fonts/shards');
+                if (await fs.access(source).then(() => true, () => false)) {
+                    await fs.cp(source, path.join(dir, 'assets/fonts/shards'), { recursive: true });
+                    // Binaries are served once from the shared root. App-local
+                    // manifests retain the dependency contract for app publishes.
+                    for (const file of Object.keys(await hashFiles(source)))
+                        if (file.endsWith('.woff2')) await fs.rm(path.join(source, file));
+                }
+            });
         if (options.app && name !== 'main')
             await runner.local(`record ${name} artifact`, async () => {
                 await recordApp(
@@ -692,16 +698,14 @@ const executeTask = async (argv, dependencies = {}) => {
             break;
         case 'data':
             if (options.positionals[0] === 'fonts')
-                await fonts(runner, {
-                    app: options.app === 'all' ? undefined : options.app,
-                });
+                await generateFonts(runner);
             else await dataTask(runner, options.positionals[0]);
             break;
         case 'check':
             if (options.build) await dataTask(runner, 'prepare');
             await check(runner, options.build);
             if (options.build) {
-                await fonts(runner, options);
+                await fonts(runner);
                 await sitePipelines({ ...options, target: 'all' }, (target) =>
                     buildSite(runner, options, target),
                 );

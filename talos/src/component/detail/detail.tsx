@@ -509,6 +509,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
             {detailPhase !== 'hidden' && currentPoint && (
                 <div
                     data-state={detailPhase === 'open' ? 'open' : 'closed'}
+                    data-font-region="detail"
                     data-drawer-drag-ignore="true"
                     className={classNames(
                         styles.detailContainer,

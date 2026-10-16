@@ -65,3 +65,8 @@ declare module '*.css' {
 }
 
 export { };
+
+/** Immutable region manifests emitted by the shared font asset plugin. */
+declare global {
+    const __FONT_SHARD_MANIFESTS__: Partial<Record<'CN' | 'HK' | 'JP', string>>;
+}
