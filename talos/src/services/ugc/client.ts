@@ -403,8 +403,8 @@ async function readPointImages(markerId: string): Promise<PointImageLists> {
     let anonymous = false;
     await runUGCBatches([markerId], async () => {
         const scope = import.meta.env.DEV ? 'test' : 'prod';
-        const search = new URLSearchParams({ markerId, scope, limit: '6' });
-        const response = await fetch(`${UGC_API_BASE}/point-images?${search}`, {
+        const search = new URLSearchParams({ markerId, scope, limit: '6', includeMine: '1' });
+        const response = await fetch(`${UGC_API_BASE}/images?${search}`, {
             credentials: 'include', headers: getAuthHeaders(),
         });
         // Expired/suspended sessions can still view the public section.

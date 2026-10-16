@@ -13,13 +13,13 @@ describe('combined detail client', () => {
         expect(listUGCPointImages('m', 'a')).toBe(first);
         expect((await first).images?.[0].id).toBe('i');
         expect(fetcher).toHaveBeenCalledTimes(1);
-        expect(fetcher.mock.calls[0][0]).toContain('/point-images?');
+        expect(fetcher.mock.calls[0][0]).toContain('includeMine=1');
         fetcher.mockResolvedValueOnce(Response.json({ items: [] }));
         await listUGCPointImages('m', 'a');
         expect(fetcher.mock.calls[1][0]).toContain('/images/mine?');
         fetcher.mockResolvedValueOnce(Response.json({ images: { items: [] }, mine: { items: [] } }));
         await listUGCPointImages('m', 'b');
-        expect(fetcher.mock.calls[2][0]).toContain('/point-images?');
+        expect(fetcher.mock.calls[2][0]).toContain('includeMine=1');
     });
     it('retains pending images after public failure and retries rather than caching an empty public list', async () => {
         const { listUGCPointImages } = await import('./client');
@@ -29,11 +29,11 @@ describe('combined detail client', () => {
         expect(result.myImages?.[0].status).toBe('pending_audit');
         await listUGCPointImages('m', 'a');
         expect(fetcher).toHaveBeenCalledTimes(2);
-        expect(fetcher.mock.calls[1][0]).toContain('/point-images?');
+        expect(fetcher.mock.calls[1][0]).toContain('includeMine=1');
     });
     it('releases the shared request slot before anonymous recovery', async () => {
         const { listUGCPointImages } = await import('./client');
-        fetcher.mockImplementation((url: string) => Promise.resolve(url.includes('/point-images?')
+        fetcher.mockImplementation((url: string) => Promise.resolve(url.includes('includeMine=1')
             ? Response.json({}, { status: 401 }) : Response.json({ items: [] })));
         await Promise.all(Array.from({ length: 10 }, (_, i) => listUGCPointImages(`m${i}`, 'a')));
         expect(fetcher.mock.calls.some(([url]) => String(url).includes('publicOnly=1'))).toBe(true);
