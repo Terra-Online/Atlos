@@ -111,7 +111,7 @@ export default defineConfig(() => ({
     fs: { allow: [resolve(import.meta.dirname, '../..')] },
   },
   build: {
-    outDir: resolve(import.meta.dirname, `../../dist/${target}/intel`),
+    outDir: resolve(import.meta.dirname, `../../dist/apps/${target === 'r2' ? 'org' : 'cn'}-${channel}/intel`),
     emptyOutDir: true,
     assetsDir: 'assets',
     rollupOptions: {

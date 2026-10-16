@@ -119,7 +119,7 @@ export default defineConfig(async ({ command }) => {
             fs: { allow: [resolve(import.meta.dirname, '../..')] },
         },
         build: {
-            outDir: resolve(import.meta.dirname, `../../dist/${target}/me`),
+            outDir: resolve(import.meta.dirname, `../../dist/apps/${target === 'r2' ? 'org' : 'cn'}-${getDeployChannel()}/me`),
             emptyOutDir: true,
             assetsDir: 'assets',
             rollupOptions: {

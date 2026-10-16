@@ -57,8 +57,8 @@ artifact instead of the default target directory.
 
 Complete builds write `.atlos-build.json` with target, channel, source commit
 and included apps. Publishing checks that receipt, app entrypoints/assets, SEO
-point pages, robots and sitemap. Wrong-channel, incomplete, partial-build and
-source-only CI artifacts are rejected. Builds without a receipt need a fresh
+point pages, robots and sitemap. Whole-site publishing rejects wrong-channel,
+incomplete, main-only and source-only CI artifacts. Builds without a receipt need a fresh
 complete build. The source commit records provenance and need not match the
 current checkout, allowing recovery from an older built artifact.
 Resource upload also checks the recorded CDN, bucket/endpoint and prefix against
@@ -80,6 +80,78 @@ the production server directory.
 Pages always packages the complete ORG site, including Intel, user hub, point
 aliases and route/cache configuration. Do not upload a standalone app directory
 to the whole-site Pages project.
+
+## Publishing one app
+
+Intel and the user hub can be released without rebuilding the main site or
+changing hosting. First establish a baseline with one successful full release
+using these scripts (`pnpm deploy:org` or `pnpm deploy:cn`). Older releases do
+not have the required snapshot and remote state. A full `pnpm run publish`
+also establishes a baseline from an already-built complete artifact.
+
+```sh
+pnpm deploy:org --app intel
+pnpm deploy:org --app user-hub
+pnpm deploy:cn --app intel
+pnpm deploy:org --app intel --channel beta
+
+# Or build, inspect/test, and publish the same app artifact later:
+pnpm build --target org --app user-hub
+pnpm run publish --target org --app user-hub
+```
+
+Standalone builds go to `dist/apps/<target>-<channel>/intel` or `me`, and write
+an app receipt with file hashes. They leave `dist/r2` and `dist/oss` intact.
+`--dist-dir` selects the parent containing `intel/` or `me/` when building or
+publishing an app. `--app main` remains a local partial build; publishing main
+alone is unsupported. App publishing rejects `--only` and `--skip-intel`;
+both resources and entrypoints must be published together. It skips OG work
+and shared Worker deployment, including when targeting both sites.
+
+Each full successful publication saves the complete artifact in
+`.release-work/<target>-<channel>/published`. Remote state records its ID and
+content digest under `<resource-prefix>/_release/<target>-<channel>/state.json`.
+The snapshot is local to the publishing checkout: a different host/checkout,
+missing snapshot, changed file, changed destination, source-only build, or
+failed/transport-only last publication requires a full publish before releasing
+an app. Keep `.release-work` when retaining the ability to publish apps.
+
+App publishing verifies the snapshot against remote state and live HTML/entry
+assets, then overlays the selected app into an isolated complete artifact under
+`dist/releases/`. Other applications, main-site resources, SEO and root files
+are preserved. Previous hashed app chunks are retained for open browser sessions;
+colliding immutable filenames with different bytes are rejected. Per-app source
+versions are recorded in the composed build receipt. Runtime shared images and
+archive text must match the published baseline; changing those requires a full
+release. Pages receives the complete composed package. CN uploads the selected
+app's OSS resources first, then swaps the composed complete server directory.
+App uploads do not reconcile or prune main-site assets or tiles.
+
+Release commands take a local `.cache/release.lock` before modifying build
+outputs. Publications additionally acquire an exclusive object at
+`<resource-prefix>/_release/<target>-<channel>/lock.json`, serializing releases
+from different checkouts/hosts. R2 uses conditional PUT; OSS uses
+`x-oss-forbid-overwrite`, so the publishing credentials need bucket-versioning
+read access and the OSS bucket must have versioning **never enabled**.
+Locks never expire automatically. If a process is killed or a lock request has
+an uncertain network outcome, inspect the recorded host/PID and confirm that
+no publisher is running before removing the local lock or the exact remote
+lock object (use the existing rclone remote for R2). Never remove a live lock.
+
+Remote state becomes `publishing` before uploads begin and becomes `ready`
+only after entrypoint and entry JS/CSS HTTP/MIME/content checks succeed and the
+new snapshot is saved. A failed release may have partially updated the remote;
+it cannot serve as an app baseline. After remote mutation starts, failures also
+retain the remote lock because an interrupted SSH/upload may still be running.
+Confirm it has stopped, remove its lock, and complete a full publish to recover.
+A transport-only `--only` publication records `partial`
+and requires a full publish to reestablish a baseline.
+
+Use the unified commands for **all** releases. Direct transport scripts,
+manual Wrangler deployments and raw file uploads bypass coordination. Existing
+out-of-band HTML changes are detected, but a publisher bypassing the lock can
+still race a coordinated publication. Dry-run neither acquires locks nor checks
+the remote baseline. No command in this workflow changes hosting configuration.
 
 ## OG images and Workers
 
