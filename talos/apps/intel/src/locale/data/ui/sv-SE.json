@@ -14,6 +14,7 @@
     "investUnlock": "Låses upp efter {mission}",
     "centralUnlock": "Låses upp via huvudberättelsen",
     "collectionSummary": "Insamlat: {items}",
+    "archiveTotal": "Totalt nu: {num}",
     "importPending": "Importerar arkivförlopp...",
     "importSuccess": "Importerade {count} poster i arkivsamlingen.",
     "importError": "Länken för arkivimport är ogiltig och förloppet ändrades inte.",

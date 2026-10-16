@@ -14,6 +14,7 @@
     "investUnlock": "Wird nach {mission} freigeschaltet",
     "centralUnlock": "Wird über die Hauptgeschichte freigeschaltet",
     "collectionSummary": "Gesammelt: {items}",
+    "archiveTotal": "Aktuell gesamt: {num}",
     "importPending": "Intel-Fortschritt wird importiert...",
     "importSuccess": "{count} Intel-Sammeleinträge wurden importiert.",
     "importError": "Der Intel-Importlink ist ungültig; der Fortschritt wurde nicht geändert.",

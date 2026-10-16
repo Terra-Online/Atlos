@@ -14,6 +14,7 @@
     "investUnlock": "Unlocks after {mission}",
     "centralUnlock": "Unlocks through the main story",
     "collectionSummary": "Collected: {items}",
+    "archiveTotal": "Current total: {num}",
     "importPending": "Importing Intel progress...",
     "importSuccess": "Imported {count} Intel collection records.",
     "importError": "The Intel import link is invalid and no progress was changed.",

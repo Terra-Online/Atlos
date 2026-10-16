@@ -14,6 +14,7 @@
     "investUnlock": "Odblokowuje się po {mission}",
     "centralUnlock": "Odblokowuje się w głównej fabule",
     "collectionSummary": "Zebrane: {items}",
+    "archiveTotal": "Suma w wersji: {num}",
     "importPending": "Importowanie postępu archiwum...",
     "importSuccess": "Zaimportowano rekordy kolekcji archiwum: {count}.",
     "importError": "Link do importu archiwum jest nieprawidłowy, więc postęp nie został zmieniony.",

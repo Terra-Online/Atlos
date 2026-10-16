@@ -14,6 +14,7 @@
     "investUnlock": "Desbloqueia após {mission}",
     "centralUnlock": "Desbloqueia na história principal",
     "collectionSummary": "Coletado: {items}",
+    "archiveTotal": "Total atual: {num}",
     "importPending": "Importando o progresso do arquivo...",
     "importSuccess": "Foram importados {count} registros da coleção do arquivo.",
     "importError": "O link de importação do arquivo é inválido e o progresso não foi alterado.",

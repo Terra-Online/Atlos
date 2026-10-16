@@ -14,6 +14,7 @@
     "investUnlock": "Terbuka setelah {mission}",
     "centralUnlock": "Terbuka melalui cerita utama",
     "collectionSummary": "Terkumpul: {items}",
+    "archiveTotal": "Total versi ini: {num}",
     "importPending": "Mengimpor progres arsip...",
     "importSuccess": "Berhasil mengimpor {count} catatan koleksi arsip.",
     "importError": "Tautan impor arsip tidak valid dan progres tidak berubah.",

@@ -14,6 +14,7 @@
     "investUnlock": "調査任務 {mission} を完了すると解放",
     "centralUnlock": "メインストーリーを進めると解放",
     "collectionSummary": "今回収集したもの：{items}",
+    "archiveTotal": "現バージョン：{num}件",
     "importPending": "アーカイブの収集進捗をインポートしています…",
     "importSuccess": "{count}件のアーカイブ収集記録をインポートしました。",
     "importError": "アーカイブのインポートリンクが無効なため、進捗は変更されませんでした。",

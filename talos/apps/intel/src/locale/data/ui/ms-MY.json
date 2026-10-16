@@ -14,6 +14,7 @@
     "investUnlock": "Dibuka selepas {mission}",
     "centralUnlock": "Dibuka melalui jalan cerita utama",
     "collectionSummary": "Dikumpulkan: {items}",
+    "archiveTotal": "Jumlah versi ini: {num}",
     "importPending": "Mengimport kemajuan arkib...",
     "importSuccess": "Berjaya mengimport {count} rekod koleksi arkib.",
     "importError": "Pautan import arkib tidak sah dan kemajuan tidak berubah.",

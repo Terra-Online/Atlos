@@ -27,6 +27,7 @@ import CategoryFilter from '@intel/components/categoryFilter/categoryFilter';
 import BoxSelection from '@intel/components/boxSelection/boxSelection';
 import IntelHeadBar from '@intel/components/intelHeadBar/intelHeadBar';
 import IntelSidebarBrand from '@intel/components/intelSidebarBrand/intelSidebarBrand';
+import ArchiveSummary from '@intel/components/archiveSummary/archiveSummary';
 import SearchShared from '@main/component/search/search.shared';
 import SearchMobile from '@main/component/search/search.mobile';
 import PopoverTooltip from '@main/component/popover/popover';
@@ -160,7 +161,7 @@ const IntelCardsExpansionScope = ({
       data-cards-expanded={useUiPrefsStore.getState().intelCardsExpanded ? 'true' : 'false'}
       style={{
         '--sidebar-width': `${sidebarWidth}px`,
-        '--sidebar-id-card-padding-top': '1rem',
+        '--sidebar-id-card-padding-top': '0.75rem',
       } as CSSProperties}
     >
       {children}
@@ -429,6 +430,7 @@ function App() {
           );
         })}
       </div>
+      <ArchiveSummary />
     </div>
   );
 

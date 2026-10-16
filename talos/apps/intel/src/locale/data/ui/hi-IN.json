@@ -14,6 +14,7 @@
     "investUnlock": "{mission} के बाद अनलॉक",
     "centralUnlock": "मुख्य कहानी से अनलॉक",
     "collectionSummary": "संग्रहित: {items}",
+    "archiveTotal": "वर्तमान संस्करण में कुल: {num}",
     "importPending": "अभिलेख संग्रह की प्रगति इंपोर्ट हो रही है...",
     "importSuccess": "अभिलेख संग्रह के {count} रिकॉर्ड इंपोर्ट किए गए।",
     "importError": "अभिलेख इंपोर्ट लिंक अमान्य है और प्रगति में कोई बदलाव नहीं हुआ।",

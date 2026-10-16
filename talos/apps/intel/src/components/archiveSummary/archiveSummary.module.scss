@@ -1,0 +1,17 @@
+.summary {
+  margin-top: 0.75rem;
+  color: var(--category-filter-text);
+  font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+  cursor: help;
+  text-transform: capitalize;
+
+  :global(.keyword) {
+    font-weight: inherit;
+  }
+}
