@@ -1,3 +1,5 @@
+import { encodePointIdToken } from '@main/services/routing/pointToken';
+import { getPointShareOrigin } from '@main/services/routing/runtime';
 import {
   Fragment,
   memo,
@@ -18,40 +20,18 @@ import { useTranslateGame as useTranslateMainGame } from '@main/locale';
 import { useLayoutVersion } from '@main/store/uiPrefs';
 import styles from './intelCard.module.scss';
 
-const BASE62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const POINT_SHARE_CN_HOSTNAME = 'opendfieldmap.cn';
 const PROD_PREFIX = '/_dev/endfield/atlos';
 const R2_PREFIX = __INTEL_DEPLOY_CHANNEL__ === 'beta' ? '/_beta/endfield/atlos' : PROD_PREFIX;
 const OSS_OG_BASE = `https://cdn.opendfieldmap.cn${PROD_PREFIX}/seo/og/oss`;
 const R2_OG_BASE = `https://cdn.opendfieldmap.org${R2_PREFIX}/seo/og/r2`;
 
-const encodePointToken = (pointId: string): string | null => {
-  if (!/^\d+$/.test(pointId)) return null;
-  const modulus = 1n << 36n;
-  const id = BigInt(pointId);
-  if (id >= modulus) return null;
-  let value = (id * 25214903917n + 11n) % modulus;
-  let encoded = '';
-  while (value > 0n) {
-    encoded = BASE62[Number(value % 62n)] + encoded;
-    value /= 62n;
-  }
-  return (encoded || '0').padStart(7, '0');
-};
-
-const pointHref = (token: string) => {
-  const isCn = window.location.hostname === POINT_SHARE_CN_HOSTNAME
-    || window.location.hostname.endsWith(`.${POINT_SHARE_CN_HOSTNAME}`);
-  return `${isCn ? 'https://opendfieldmap.cn' : 'https://oem.re'}/${token}`;
-};
-
 const PointLink = ({ pointId, label }: { pointId: string; label: string }) => {
-  const token = encodePointToken(pointId);
+  const token = encodePointIdToken(pointId);
   if (!token) return null;
   return (
     <a
       className={styles.pointLink}
-      href={pointHref(token)}
+      href={`${getPointShareOrigin()}/${token}`}
       target="_blank"
       rel="noreferrer"
       onClick={(event) => event.stopPropagation()}
@@ -63,13 +43,13 @@ const PointLink = ({ pointId, label }: { pointId: string; label: string }) => {
 };
 
 const MapPreviewLink = ({ pointId, label, locale }: { pointId: string; label: string; locale: string }) => {
-  const token = encodePointToken(pointId);
+  const token = encodePointIdToken(pointId);
   if (!token) return null;
   const ogBase = locale.toLowerCase().startsWith('zh-') ? OSS_OG_BASE : R2_OG_BASE;
   return (
     <a
       className={styles.mapPreview}
-      href={pointHref(token)}
+      href={`${getPointShareOrigin()}/${token}`}
       target="_blank"
       rel="noreferrer"
       aria-label={label}

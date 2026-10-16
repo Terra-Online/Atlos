@@ -1,0 +1,60 @@
+@use './palette' as *;
+@use './curves' as *;
+
+@mixin base($prefix) {
+    position: relative;
+    display: flex;
+    min-height: 4rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 0;
+    border-radius: 3px;
+    padding: 0.5rem 0.75rem 0.55rem 1.25rem;
+    background: var(--#{$prefix}-bg);
+    color: var(--#{$prefix}-text);
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    cursor: pointer;
+    text-align: left;
+    transition:
+        background-color 0.2s ease-in,
+        color 0.2s ease-in,
+        box-shadow 0.4s $moderato-curve;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 12.5%;
+        width: 4px;
+        height: 75%;
+        border-radius: 1px;
+        background: var(--#{$prefix}-bar);
+        transition: background-color 0.4s ease;
+    }
+
+    &:hover {
+        background-color: var(--#{$prefix}-hover-bg);
+        box-shadow: 0 0 5px 1px rgba($black-0, 0.35);
+
+        &::before {
+            background-color: var(--#{$prefix}-hover-bar);
+            transition: background-color 0.2s ease;
+        }
+    }
+}
+
+@mixin selected($prefix) {
+    background-color: var(--#{$prefix}-active-bg);
+    color: var(--#{$prefix}-active-text);
+    &::before {
+        background-color: var(--#{$prefix}-active-bar);
+        transition:
+            background-color 0.4s ease-in,
+            box-shadow 0.5s ease;
+        box-shadow: 0 0 3px 0 $primary-accent-4;
+    }
+    &:hover {
+        background-color: var(--#{$prefix}-text);
+    }
+}

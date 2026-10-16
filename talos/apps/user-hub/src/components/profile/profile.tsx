@@ -1,3 +1,4 @@
+import avatarStyles from '@main/component/login/avatar.module.scss';
 import { useEffect, useRef, useState } from 'react';
 import type { SessionUser } from '@main/services/auth';
 import { useAuthStore } from '@main/store/auth';
@@ -7,7 +8,7 @@ import {
 } from '@main/component/login/avatarConfig';
 import { useTranslateUI } from '@hub/locale';
 import { saveProfile } from '../../api/client';
-import styles from './styles';
+import styles from './profile.module.scss';
 
 const avatars = Array.from(
     { length: AVATAR_MAX_INDEX },
@@ -81,7 +82,7 @@ export default function Profile({
                                 )}
                             />
                             <div
-                                className={styles.avatar}
+                                className={`${styles.avatar} ${avatarStyles.avatar}`}
                                 data-avt={index}
                                 aria-hidden='true'
                             />

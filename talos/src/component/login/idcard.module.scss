@@ -1,9 +1,8 @@
+@use './avatar' as avatar;
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 
-@use './avt' as *;
 
-$avatar-default: url('@/assets/images/UI/avt/end.webp');
 $cardbak: url('@/assets/images/UI/avt/noise.webp');
 $contour: url('@/assets/images/UI/avt/contour.webp');
 $karma-0: url('@/assets/images/UI/avt/Karma0.svg');
@@ -153,53 +152,11 @@ $karma-5: url('@/assets/images/UI/avt/Karma5.svg');
 }
 
 .idCardWrap {
-    display: grid;
-    align-items: end;
-    justify-content: start;
-    grid-template-columns: 0.5fr repeat(3, 0.47fr);
-    grid-template-rows: repeat(4, 0.4fr);
-    grid-auto-columns: 1fr;
-    grid-auto-rows: 1fr;
-    gap: 0;
-    grid-auto-flow: row;
-    grid-template-areas:
-        "avatar meta meta meta"
-        "avatar meta meta meta"
-        "avatar usrname . ."
-        "avatar usrid usrid .";
+    @include avatar.layout;
 
     > .avatarContainer {
-        grid-area: avatar;
-        width: 5.5rem;
-        height: 5.5rem;
-        padding: 0;
-        margin: 0;
-        appearance: none;
-        cursor: pointer;
-        box-sizing: border-box;
-        border: 4px solid var(--avt-border);
-        background-color: var(--avt-bg);
-        box-shadow: inset 0 0 3px 0px var(--avt-border);
-        outline: 1px solid transparent;
-        outline-offset: 3px;
-        transition: all .1s linear;
-
-        &:hover {
-            border-color: var(--id-highlight-border);
-            outline: 3px solid var(--id-highlight-border);
-        }
-
-        > .avatar {
-            width: calc(5.5rem + 28px);
-            height: calc(5.5rem + 26px);
-            transform: translate(-20px, -30px);
-            object-fit: cover;
-            background-image: $avatar-default;
-            background-position: center top;
-            background-size: cover;
-            box-sizing: border-box;
-            filter: drop-shadow(1px 2px 3px var(--avt-shadow));
-        }
+        @include avatar.frame;
+        > .avatar { @include avatar.image; }
     }
 
     > .usrName {

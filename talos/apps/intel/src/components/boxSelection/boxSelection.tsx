@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useSelectionVisibility } from '@main/component/sideBar/useSelectionVisibility';
+import { useRef, type RefObject } from 'react';
 import { useScopedBoxSelection } from '@main/component/sideBar/useScopedBoxSelection';
 import styles from './boxSelection.module.scss';
 
@@ -14,23 +15,7 @@ interface BoxSelectionProps {
 const BoxSelection = (props: BoxSelectionProps) => {
   const selectionBoxRef = useRef<HTMLDivElement | null>(null);
   const { isSelecting } = useScopedBoxSelection({ ...props, selectionBoxRef });
-  const [visible, setVisible] = useState(false);
-  const [fading, setFading] = useState(false);
-
-  useLayoutEffect(() => {
-    if (isSelecting) {
-      setVisible(true);
-      setFading(false);
-      return;
-    }
-    if (!visible) return;
-    const frame = requestAnimationFrame(() => setFading(true));
-    const timer = window.setTimeout(() => setVisible(false), 250);
-    return () => {
-      cancelAnimationFrame(frame);
-      clearTimeout(timer);
-    };
-  }, [isSelecting, visible]);
+  const { visible, fading } = useSelectionVisibility(isSelecting, 250);
 
   return (
     <div

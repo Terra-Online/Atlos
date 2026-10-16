@@ -8,7 +8,7 @@ import Feed from '@main/component/notify/feed';
 import { AccessButton } from '@main/component/login/access/button';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
-import { content as styles } from './styles';
+import styles from './content.module.scss';
 
 type Props = {
     revision: number;

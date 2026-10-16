@@ -1,3 +1,4 @@
+import { readInitialLocale, persistLocale, deepGet, createRequestGuard } from '@main/lib/i18n/runtime';
 import { create } from 'zustand';
 import {
     getFontRegionForLocale,
@@ -24,31 +25,6 @@ const loaders = new Map(
         loader,
     ]),
 );
-const STORAGE_KEY = 'talos:locale';
-
-const readInitialLocale = (): Lang => {
-    try {
-        return normalizeLang(
-            window.localStorage.getItem(STORAGE_KEY) || navigator.language,
-        );
-    } catch {
-        return normalizeLang(
-            typeof navigator === 'undefined' ? 'en-US' : navigator.language,
-        );
-    }
-};
-
-const deepGet = (value: unknown, path: string): unknown =>
-    path
-        .split('.')
-        .reduce<unknown>(
-            (current, key) =>
-                current && typeof current === 'object' && key in current
-                    ? (current as Catalog)[key]
-                    : undefined,
-            value,
-        );
-
 const resolveLoader = (locale: Lang) => {
     for (const candidate of getLocaleContentCandidates(locale)) {
         const loader = loaders.get(candidate.toLowerCase());
@@ -83,16 +59,17 @@ const loadLocale = (locale: Lang): Promise<Bundle> => {
     return promise;
 };
 
-let revision = 0;
+const beginRequest = createRequestGuard();
 const loadAndSet = async (locale: Lang) => {
-    const current = ++revision;
+    const isCurrent = beginRequest();
     const [data] = await Promise.all([
         loadLocale(locale),
         switchFontRegion(getFontRegionForLocale(locale)).catch(() => undefined),
     ]);
-    if (current !== revision) return;
+    if (!isCurrent()) return false;
     useI18nStore.setState({ locale, ...data });
     document.documentElement.lang = toBCP47(locale);
+    return true;
 };
 
 const translate = (
@@ -116,13 +93,7 @@ export const translateUI = (key: string, fallback = ''): string =>
 
 export const setLocale = async (locale: string) => {
     const normalized = normalizeLang(locale);
-    await loadAndSet(normalized);
-    if (getCurrentLocale() !== normalized) return;
-    try {
-        window.localStorage.setItem(STORAGE_KEY, normalized);
-    } catch {
-        // Language switching also works when storage is unavailable.
-    }
+    if (await loadAndSet(normalized)) persistLocale(normalized);
 };
 
 export const i18nInitPromise = loadAndSet(getCurrentLocale());

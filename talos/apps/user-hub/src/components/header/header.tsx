@@ -1,3 +1,4 @@
+import { useTheme } from '@main/platform/useTheme';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
@@ -18,23 +19,12 @@ type Props = {
 export default function Header({ busy, onRefresh }: Props) {
     const t = useTranslateUI();
     const main = useTranslateMainUI();
-    const [isDark, setIsDark] = useState(false);
+    const isDark = useTheme() === 'dark';
     const [languageOpen, setLanguageOpen] = useState(false);
 
     useEffect(() => {
         initTheme();
-        const root = document.documentElement;
-        const readTheme = () => setIsDark(root.dataset.theme === 'dark');
-        readTheme();
-        const observer = new MutationObserver(readTheme);
-        observer.observe(root, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-        return () => {
-            observer.disconnect();
-            cleanupTheme();
-        };
+        return cleanupTheme;
     }, []);
 
     const themeLabel = main(isDark ? 'headbar.lightmode' : 'headbar.darkmode');

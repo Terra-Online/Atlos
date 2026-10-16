@@ -17,7 +17,7 @@ import { generatePointShareUrl } from '@main/services/routing/share';
 import { getSubregionLabel } from '@main/services/map/subregionLabel';
 import type { Contribution } from '../../types';
 import { formatDate } from '../../config';
-import { list as styles } from './styles';
+import styles from './list.module.scss';
 
 function Preview({ item }: { item: Contribution }) {
     const t = useTranslateUI();

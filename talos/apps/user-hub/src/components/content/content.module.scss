@@ -1,3 +1,4 @@
+@use '@main/component/notify/feed' as feed;
 @use '@main/styles/palette' as *;
 @use '@main/styles/curves' as *;
 
@@ -39,6 +40,8 @@
     flex-direction: column;
 }
 .feed {
+    @include feed.root;
+
     --notify-text: var(--content-text);
     --notify-empty-text: var(--content-muted);
 
@@ -113,3 +116,5 @@
     min-width: 0;
     margin-inline: 16px;
 }
+
+.pagination { @include feed.pagination; }

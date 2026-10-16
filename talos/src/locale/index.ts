@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { UseBoundStore, StoreApi } from 'zustand';
+import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@/lib/i18n/runtime';
 import LOGGER from '@/lib/logging/logger';
 import { switchFontRegion } from '@/locale/fontLoader';
 import {
@@ -40,49 +41,6 @@ export interface II18nBundle {
     ui: Record<string, unknown>; // UI components text
 }
 
-const STORAGE_KEY = 'talos:locale';
-
-const getNavigatorLanguage = (): string | undefined => {
-    if (typeof navigator === 'undefined') return undefined;
-    return navigator.language;
-};
-
-const getStoredLocale = (): Lang | null => {
-    try {
-        if (typeof window === 'undefined' || !('localStorage' in window)) return null;
-        const saved = window.localStorage.getItem(STORAGE_KEY);
-        return saved ? normalizeLang(saved || getNavigatorLanguage()) : null;
-    } catch {
-        return null;
-    }
-};
-
-const getLanguage = () => getStoredLocale() || normalizeLang(getNavigatorLanguage());
-
-const deepGet = (obj: unknown, path: string): unknown =>
-    path.split('.').reduce<unknown>((acc, k) => {
-        if (acc && typeof acc === 'object' && k in (acc as Record<string, unknown>)) {
-            return (acc as Record<string, unknown>)[k];
-        }
-        return undefined;
-    }, obj);
-
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-    typeof v === 'object' && v !== null && !Array.isArray(v);
-
-const deepMergeObjects = (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> => {
-    const out: Record<string, unknown> = { ...base };
-    for (const [key, value] of Object.entries(override)) {
-        const baseValue = base[key];
-        if (isPlainObject(baseValue) && isPlainObject(value)) {
-            out[key] = deepMergeObjects(baseValue, value);
-        } else {
-            out[key] = value;
-        }
-    }
-    return out;
-};
-
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
 // Combine all locale files into one glob mapping to simplify logic and potential bundling
@@ -110,7 +68,7 @@ type I18nState = {
 };
 
 const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() => ({
-    locale: getLanguage(),
+    locale: readInitialLocale(),
     data: { game: {}, ui: {} },
     t: <T = string>(key: string) => {
         const { data } = useI18nStore.getState();
@@ -161,7 +119,7 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     ]);
 
     const mergedUi = fallbackUiLoader
-        ? deepMergeObjects(fallbackUiMod.default, uiMod.default)
+        ? mergeCatalogs(fallbackUiMod.default, uiMod.default)
         : uiMod.default;
     return {
         ui: mergedUi,
@@ -203,13 +161,17 @@ export async function preloadAllLanguages(current: Lang = getCurrentLocale()) {
     await preloadLocales(SUPPORTED_LANGS.filter(lang => lang !== current));
 }
 
+const beginRequest = createRequestGuard();
+
 async function loadAndSet(locale: Lang) {
+    const isCurrent = beginRequest();
     const fontRegion = getFontRegionForLocale(locale);
     void switchFontRegion(fontRegion).catch((err: unknown) => {
         LOGGER.warn('Font switch failed:', err);
     });
     const data = await loadLocaleCached(locale);
 
+    if (!isCurrent()) return false;
     useI18nStore.setState({ locale, data });
     
     // Sync document language tag for :lang() or [lang] based styles/fonts switching
@@ -221,10 +183,11 @@ async function loadAndSet(locale: Lang) {
     } catch {
         // ignore envs without document
     }
+    return true;
 }
 
 async function init() {
-    const locale = getLanguage();
+    const locale = readInitialLocale();
     await loadAndSet(locale);
 }
 
@@ -254,14 +217,7 @@ export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 
 export async function setLocale(lang: string) {
     const normalized = normalizeLang(lang);
-    await loadAndSet(normalized);
-    try {
-        if (typeof window !== 'undefined' && 'localStorage' in window) {
-            window.localStorage.setItem(STORAGE_KEY, normalized);
-        }
-    } catch {
-        // ignore storage errors (e.g., Safari private mode)
-    }
+    if (await loadAndSet(normalized)) persistLocale(normalized);
 }
 
 export const i18nInitPromise = init();

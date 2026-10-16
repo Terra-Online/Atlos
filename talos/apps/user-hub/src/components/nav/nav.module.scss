@@ -1,3 +1,4 @@
+@use '@main/styles/navigationCard' as card;
 @use '@main/styles/palette' as *;
 @use '@main/styles/curves' as *;
 
@@ -5,22 +6,22 @@
 :root[data-theme='light'] {
     --hub-nav-bg: #{$white-1};
     --hub-nav-hover-bg: #{$white-3};
-    --hub-nav-selected-bg: #{$dim-1};
+    --hub-nav-active-bg: #{$dim-1};
     --hub-nav-text: #{$grey-1};
-    --hub-nav-selected-text: #{$white-1};
+    --hub-nav-active-text: #{$white-1};
     --hub-nav-bar: #{$grey-1};
-    --hub-nav-selected-bar: #{$primary-accent-4};
+    --hub-nav-active-bar: #{$primary-accent-4};
     --hub-nav-hover-bar: #{$primary-accent-1};
 }
 
 :root[data-theme='dark'] {
     --hub-nav-bg: #{$black-1};
     --hub-nav-hover-bg: #{$grey-2};
-    --hub-nav-selected-bg: #{$light-1};
+    --hub-nav-active-bg: #{$light-1};
     --hub-nav-text: #{$light-1};
-    --hub-nav-selected-text: #{$black-1};
+    --hub-nav-active-text: #{$black-1};
     --hub-nav-bar: #{$light-1};
-    --hub-nav-selected-bar: #{$primary-accent-5};
+    --hub-nav-active-bar: #{$primary-accent-5};
     --hub-nav-hover-bar: #{$primary-accent-2};
 }
 
@@ -30,61 +31,11 @@
 }
 
 .item {
-    position: relative;
-    display: flex;
+    @include card.base('hub-nav');
     min-width: 0;
-    min-height: 4rem;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.5rem;
-    border: 0;
-    border-radius: 3px;
-    padding: 0.5rem 0.75rem 0.55rem 1.25rem;
-    background: var(--hub-nav-bg);
-    color: var(--hub-nav-text);
-    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
-    cursor: pointer;
-    text-align: left;
     text-decoration: none;
-    transition:
-        background-color 0.2s ease-in,
-        color 0.2s ease-in,
-        box-shadow 0.4s $moderato-curve;
-
-    &::before {
-        content: '';
-        position: absolute;
-        left: 0.5rem;
-        top: 12.5%;
-        width: 4px;
-        height: 75%;
-        border-radius: 1px;
-        background: var(--hub-nav-bar);
-        transition: background-color 0.4s ease;
-    }
-
-    &:hover {
-        background-color: var(--hub-nav-hover-bg);
-        box-shadow: 0 0 5px 1px rgba($black-0, 0.35);
-        &::before {
-            background-color: var(--hub-nav-hover-bar);
-            transition: background-color 0.2s ease;
-        }
-    }
-
     &[aria-current='page'] {
-        background-color: var(--hub-nav-selected-bg);
-        color: var(--hub-nav-selected-text);
-        &::before {
-            background-color: var(--hub-nav-selected-bar);
-            transition:
-                background-color 0.4s ease-in,
-                box-shadow 0.5s ease;
-            box-shadow: 0 0 3px 0 $primary-accent-4;
-        }
-        &:hover {
-            background-color: var(--hub-nav-text);
-        }
+        @include card.selected('hub-nav');
     }
 }
 

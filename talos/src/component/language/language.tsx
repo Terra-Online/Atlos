@@ -50,8 +50,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
   const freezeTimerRef = useRef<number | null>(null);
 
+  const pickRevision = useRef(0);
   const handlePick = useCallback(async (lang: string) => {
     if (!lang || lang === current) return;
+    const revision = ++pickRevision.current;
     // record last-actived
     const prevKey = current;
   const prevCurrentText = t('language.current');
@@ -61,6 +63,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       freezeTimerRef.current = null;
     }
     await setLocale(lang);
+    if (revision !== pickRevision.current) return;
     onSelected?.(lang);
     freezeTimerRef.current = window.setTimeout(() => {
       setFreeze(null);

@@ -1,3 +1,4 @@
+import avatarStyles from './avatar.module.scss';
 import type { MouseEventHandler, RefObject } from 'react';
 import styles from './idcard.module.scss';
 
@@ -67,7 +68,7 @@ const IdCardView = ({
           onClick={onAvatarClick}
           aria-label={avatarAriaLabel}
         >
-          <div className={styles.avatar} data-avt={avatarIndex}></div>
+          <div className={`${styles.avatar} ${avatarStyles.avatar}`} data-avt={avatarIndex}></div>
         </button>
 
         {editableName ? (

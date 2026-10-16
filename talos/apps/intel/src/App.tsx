@@ -1,3 +1,4 @@
+import { useTheme } from '@main/platform/useTheme';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import SideBarFrame from '@main/component/sideBar/sideBar.frame';
 import Drawer from '@main/component/drawer/drawer';
@@ -230,7 +231,7 @@ function App() {
   );
   const [importCount, setImportCount] = useState<number | null>(null);
   const [selectIncompleteCategories, setSelectIncompleteCategories] = useState(false);
-  const [bannerSchema, setBannerSchema] = useState<'light' | 'dark'>('light');
+  const bannerSchema = useTheme() === 'dark' ? 'light' : 'dark';
   const didHandleImportRef = useRef(false);
   const [areUiPrefsReady, setAreUiPrefsReady] = useState(() => useUiPrefsStore.persist.hasHydrated());
   const [categories, setCategories] = useState<ArchiveCategory[]>([]);
@@ -255,14 +256,6 @@ function App() {
     if (isMobile) setMobileDrawerSnapIndex(0);
   }, [isMobile, setMobileDrawerSnapIndex]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const readTheme = () => setBannerSchema(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    readTheme();
-    const observer = new MutationObserver(readTheme);
-    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const hasSearchQuery = query.trim().length > 0;

@@ -1,3 +1,4 @@
+import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@main/lib/i18n/runtime';
 import { create } from 'zustand';
 import type { StoreApi, UseBoundStore } from 'zustand';
 import {
@@ -42,28 +43,6 @@ interface I18nBundle {
 
 type JsonModule = { default: Record<string, unknown> };
 const localeModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/**/*.json');
-const STORAGE_KEY = 'talos:locale';
-
-const deepGet = (value: unknown, path: string): unknown => path.split('.').reduce<unknown>((current, key) => (
-  current && typeof current === 'object' && key in (current as Record<string, unknown>)
-    ? (current as Record<string, unknown>)[key]
-    : undefined
-), value);
-
-const isObject = (value: unknown): value is Record<string, unknown> => (
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-);
-
-const deepMerge = (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> => {
-  const result = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    result[key] = isObject(result[key]) && isObject(value)
-      ? deepMerge(result[key], value)
-      : value;
-  }
-  return result;
-};
-
 const resolveLoader = (namespace: 'ui' | 'game', locale: string) => {
   const candidates = getLocaleContentCandidates(locale).map((candidate) => candidate.toLowerCase());
   return Object.entries(localeModules).find(([file]) => {
@@ -71,15 +50,6 @@ const resolveLoader = (namespace: 'ui' | 'game', locale: string) => {
     const name = file.split('/').pop()?.replace(/\.json$/i, '').toLowerCase();
     return Boolean(name && candidates.includes(name));
   })?.[1];
-};
-
-const readInitialLocale = (): Lang => {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return normalizeLang(stored || navigator.language);
-  } catch {
-    return normalizeLang(typeof navigator === 'undefined' ? 'en-US' : navigator.language);
-  }
 };
 
 type I18nState = {
@@ -107,7 +77,7 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
       gameLoader?.() ?? Promise.resolve({ default: {} }),
     ]);
     return {
-      ui: englishUiLoader ? deepMerge(englishUi.default, ui.default) : ui.default,
+      ui: englishUiLoader ? mergeCatalogs(englishUi.default, ui.default) : ui.default,
       game: game.default,
     };
   })().catch((error) => {
@@ -118,13 +88,17 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
   return promise;
 };
 
+const beginRequest = createRequestGuard();
 const loadAndSet = async (locale: Lang) => {
+  const isCurrent = beginRequest();
   const [data] = await Promise.all([
     loadLocale(locale),
     switchFontRegion(getFontRegionForLocale(locale)).catch(() => undefined),
   ]);
+  if (!isCurrent()) return false;
   useI18nStore.setState({ locale, data });
   document.documentElement.lang = toBCP47(locale);
+  return true;
 };
 
 export const useLocale = () => useI18nStore((state) => state.locale);
@@ -152,12 +126,7 @@ export const translateUI = (key: string, fallback = ''): string => {
 
 export const setLocale = async (locale: string) => {
   const normalized = normalizeLang(locale);
-  await loadAndSet(normalized);
-  try {
-    window.localStorage.setItem(STORAGE_KEY, normalized);
-  } catch {
-    // Ignore unavailable storage contexts.
-  }
+  if (await loadAndSet(normalized)) persistLocale(normalized);
 };
 
 export const preloadAllLanguages = async (current: Lang = getCurrentLocale()) => {

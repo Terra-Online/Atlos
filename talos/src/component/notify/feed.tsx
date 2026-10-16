@@ -7,7 +7,7 @@ import {
     type RefObject,
 } from 'react';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
-import styles from './notify.module.scss';
+import styles from './feed.module.scss';
 
 export default function Feed({
     children,

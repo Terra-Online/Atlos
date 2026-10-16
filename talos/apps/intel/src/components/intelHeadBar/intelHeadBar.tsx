@@ -1,3 +1,4 @@
+import { useTheme } from '@main/platform/useTheme';
 import { useEffect, useState } from 'react';
 import LanguageModal from '@main/component/language/language';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
@@ -10,19 +11,13 @@ import styles from './intelHeadBar.module.scss';
 
 const IntelHeadBar = () => {
   const tUI = useTranslateUI();
-  const [isDark, setIsDark] = useState(false);
+  const isDark = useTheme() === 'dark';
   const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
     initTheme();
-    setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
     return () => cleanupTheme();
   }, []);
-
-  const handleTheme = () => {
-    toggleTheme();
-    setIsDark((current) => !current);
-  };
 
   return (
     <>
@@ -30,7 +25,7 @@ const IntelHeadBar = () => {
         <HeadBar>
           <HeadItem
             icon={Darkmode}
-            onClick={handleTheme}
+            onClick={toggleTheme}
             tooltip={isDark ? tUI('headbar.lightmode') : tUI('headbar.darkmode')}
             guideKey="dark-mode"
           />

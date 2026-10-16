@@ -74,3 +74,16 @@ it('still switches language when locale storage is unavailable', async () => {
     expect(translateUI('userHub.tabs.contributions')).toBe('内容中心');
     expect(switchFontRegion).toHaveBeenCalledWith('CN');
 });
+
+it('does not commit an earlier locale or its storage after a newer font load finishes', async () => {
+    await i18nInitPromise;
+    let release!: () => void;
+    switchFontRegion.mockImplementationOnce(() => new Promise<undefined>((resolve) => { release = () => resolve(undefined); }));
+    const older = setLocale('fr-FR');
+    await setLocale('ja-JP');
+    release();
+    await older;
+    expect(getCurrentLocale()).toBe('ja-JP');
+    expect(localStorage.getItem('talos:locale')).toBe('ja-JP');
+    expect(document.documentElement.lang).toBe('ja-JP');
+});
