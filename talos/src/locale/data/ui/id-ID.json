@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Salin tautan komentar",
       "emojiPicker": "Pilih emoji",
+      "spoilerHidden": "Klik untuk melihat spoiler",
+      "spoilerRevealed": "Sekarang kamu tahu terlalu banyak.",
       "placeholder": "Tulis sesuatu !",
       "submit": "Kirim komentar",
       "actions": "Aksi komentar",

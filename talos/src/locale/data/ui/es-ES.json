@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Copiar enlace del comentario",
       "emojiPicker": "Elegir un emoji",
+      "spoilerHidden": "Haz clic para ver el contenido con spoilers",
+      "spoilerRevealed": "Ahora sabes demasiado.",
       "placeholder": "¡Di algo!",
       "submit": "Publicar comentario",
       "actions": "Acciones del comentario",

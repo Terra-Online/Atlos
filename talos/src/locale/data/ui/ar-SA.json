@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "نسخ رابط التعليق",
       "emojiPicker": "اختيار رمز تعبيري",
+      "spoilerHidden": "انقر لعرض المحتوى الذي يكشف الأحداث",
+      "spoilerRevealed": "الآن تعرف أكثر مما ينبغي.",
       "placeholder": "اكتب شيئًا!",
       "submit": "نشر التعليق",
       "actions": "إجراءات التعليق",

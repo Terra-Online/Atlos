@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Sao chép liên kết bình luận",
       "emojiPicker": "Chọn biểu tượng cảm xúc",
+      "spoilerHidden": "Nhấp để xem nội dung tiết lộ cốt truyện",
+      "spoilerRevealed": "Giờ bạn biết quá nhiều rồi.",
       "placeholder": "Viết gì đó đi!",
       "submit": "Đăng bình luận",
       "actions": "Thao tác bình luận",

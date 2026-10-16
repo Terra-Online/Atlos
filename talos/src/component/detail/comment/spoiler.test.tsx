@@ -27,14 +27,14 @@ it('parses multiline spoilers with formatting, links and emoji while preserving 
 
 it('reveals a whole multiline spoiler on click and resets when its content changes', () => {
     const { rerender } = render(<p><CommentContent content={'||first\n**[second](https://example.com)** :sns_001:||'} /></p>);
-    const spoiler = screen.getByRole('button', { name: 'detail.comments.spoilerHidden' });
+    const spoiler = screen.getByRole('button', { name: 'Spoiler' });
     expect(spoiler.getAttribute('aria-expanded')).toBe('false');
     expect(spoiler.querySelector('[inert]')?.getAttribute('aria-hidden')).toBe('true');
     expect(screen.queryByRole('img')).toBeNull();
     expect(screen.queryByRole('link')).toBeNull();
     fireEvent.click(spoiler);
     expect(spoiler.getAttribute('aria-expanded')).toBe('true');
-    expect(spoiler.getAttribute('aria-label')).toBe('detail.comments.spoilerRevealed');
+    expect(spoiler.getAttribute('aria-label')).toBe('Spoiler');
     expect(spoiler.textContent).toBe('first\nsecond ');
     expect(spoiler.querySelector('strong')?.textContent).toBe('second');
     expect(screen.getByRole('img', { name: ':sns_001:' })).toBeTruthy();

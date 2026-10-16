@@ -19,7 +19,7 @@ const Spoiler = ({ children }: { children: ReactNode }) => {
                 role="button"
                 tabIndex={0}
                 aria-expanded={revealed}
-                aria-label={label}
+                aria-label="Spoiler"
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
                 onFocus={() => setFocused(true)}

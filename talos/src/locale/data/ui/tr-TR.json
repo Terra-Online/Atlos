@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Yorum bağlantısını kopyala",
       "emojiPicker": "Emoji seç",
+      "spoilerHidden": "Spoiler içeriğini görmek için tıklayın",
+      "spoilerRevealed": "Artık çok fazla şey biliyorsun.",
       "placeholder": "Bir şeyler yazın!",
       "submit": "Yorum gönder",
       "actions": "Yorum işlemleri",

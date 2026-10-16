@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "댓글 링크 복사",
       "emojiPicker": "이모지 선택",
+      "spoilerHidden": "클릭하여 스포일러 보기",
+      "spoilerRevealed": "이제 너무 많은 걸 알아버렸네요.",
       "placeholder": "무언가를 남겨 보세요!",
       "submit": "댓글 게시",
       "actions": "댓글 작업",

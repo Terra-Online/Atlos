@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Kopiera kommentarlänk",
       "emojiPicker": "Välj en emoji",
+      "spoilerHidden": "Klicka för att visa spoilern",
+      "spoilerRevealed": "Nu vet du för mycket.",
       "placeholder": "Skriv något!",
       "submit": "Publicera kommentar",
       "actions": "Kommentarsåtgärder",

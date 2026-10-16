@@ -69,9 +69,8 @@
     "comments": {
       "copyLink": "复制评论链接",
       "emojiPicker": "选择表情",
-      "spoiler": "黑幕文本",
       "spoilerHidden": "点击以查看剧透内容",
-      "spoilerRevealed": "你知道得太多了",
+      "spoilerRevealed": "你知道的太多了",
       "placeholder": "说些什么吧！",
       "submit": "发布留言",
       "actions": "留言操作",

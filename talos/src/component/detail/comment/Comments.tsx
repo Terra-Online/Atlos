@@ -22,7 +22,6 @@ import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import SubmitIcon from '@/assets/logos/submit.svg?react';
 import EmojiIcon from '@/assets/logos/emoji.svg?react';
 import { EyeOff } from 'lucide-react';
-import PopoverTooltip from '@/component/popover/popover';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
@@ -816,18 +815,16 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                                 onKeyDown={handleKeyDown}
                             />
                         </Suspense>
-                        <PopoverTooltip content={tUI('detail.comments.spoiler')} placement="top">
-                            <button
-                                type="button"
-                                className={classNames(styles.commentEmojiButton, styles.commentSpoilerButton)}
-                                disabled={inputDisabled}
-                                aria-label={tUI('detail.comments.spoiler')}
-                                onPointerDown={(event) => event.preventDefault()}
-                                onClick={() => inputRef.current?.formatText('spoiler')}
-                            >
-                                <EyeOff aria-hidden="true" />
-                            </button>
-                        </PopoverTooltip>
+                        <button
+                            type="button"
+                            className={classNames(styles.commentEmojiButton, styles.commentSpoilerButton)}
+                            disabled={inputDisabled}
+                            aria-label="Spoiler"
+                            onPointerDown={(event) => event.preventDefault()}
+                            onClick={() => inputRef.current?.formatText('spoiler')}
+                        >
+                            <EyeOff aria-hidden="true" />
+                        </button>
                         <div
                             ref={emojiPickerRef}
                             className={styles.commentEmojiPickerRoot}

@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "Αντιγραφή συνδέσμου σχολίου",
       "emojiPicker": "Επιλογή emoji",
+      "spoilerHidden": "Κάντε κλικ για να δείτε το σπόιλερ",
+      "spoilerRevealed": "Τώρα ξέρετε πάρα πολλά.",
       "placeholder": "Γράψτε κάτι!",
       "submit": "Δημοσίευση σχολίου",
       "actions": "Ενέργειες σχολίου",

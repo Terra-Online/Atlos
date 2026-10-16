@@ -69,6 +69,8 @@
     "comments": {
       "copyLink": "コメントのリンクをコピー",
       "emojiPicker": "絵文字を選択",
+      "spoilerHidden": "クリックしてネタバレを表示",
+      "spoilerRevealed": "君のような勘のいいガキは嫌いだよ",
       "placeholder": "何か書いてみましょう！",
       "submit": "コメントを投稿",
       "actions": "コメントの操作",
