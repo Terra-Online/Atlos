@@ -48,7 +48,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
     // These native labels keep their own glyphs across document languages.
     // Warm the existing CSS face while the closed dialog is already mounted.
     void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
-  }, []);
+  }, [open]);
 
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
