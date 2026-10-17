@@ -15,7 +15,21 @@ export function preloadFontManifests(): void {
 export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
     void loadManifest(region)
         .then(({ manifest, url }) => {
-            const parts = requirements[region]?.shell || {};
+            const metadata = requirements[region];
+            const parts = Object.fromEntries(
+                [...new Set([
+                    ...Object.keys(metadata?.ui || {}),
+                    ...Object.keys(metadata?.shell || {}),
+                ])].map((face) => [
+                    face,
+                    [
+                        ...new Set([
+                            ...(metadata?.ui?.[face as Face] || []),
+                            ...(metadata?.shell?.[face as Face] || []),
+                        ]),
+                    ],
+                ]),
+            );
             const files = Object.entries(parts).flatMap(([face, keys]) =>
                 (keys || []).flatMap((key) => {
                     const part = manifest.faces[face as Face]?.[key];
