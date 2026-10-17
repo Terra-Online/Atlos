@@ -3,7 +3,7 @@ import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
-import { useTranslateUI, setLocale } from '@hub/locale';
+import { useTranslateUI, setLocale, preloadLocale } from '@hub/locale';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
 import Refresh from '@main/assets/images/UI/refresh.svg?react';
@@ -61,6 +61,7 @@ export default function Header({ busy, onRefresh }: Props) {
                         open
                         onClose={() => setLanguageOpen(false)}
                         onChange={setLanguageOpen}
+                        prepareLocale={preloadLocale}
                         onSelected={(locale) => {
                             void setLocale(locale);
                         }}

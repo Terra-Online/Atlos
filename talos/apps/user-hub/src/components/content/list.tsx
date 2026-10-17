@@ -166,7 +166,7 @@ export default function List({
     }).join('');
     const fontRef = useFontRegion([
         { faces: ['h', 'm'], text: items.map((item) => item.content || '').join('') },
-        { faces: ['m'], text: pointText },
+        { faces: ['m'], text: pointText, localized: 'game' },
     ]);
     if (!items.length)
         return (

@@ -248,7 +248,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     const [detailPhase, setDetailPhase] = useState<DetailPhase>('hidden');
     const ref = useRef<HTMLDivElement | null>(null);
     const fontRef = useFontRegion([
-        { faces: ['db'], text: pointName },
+        { faces: ['db'], text: pointName, localized: 'game' },
         { faces: ['b'], text: '' },
         { faces: ['h', 'r'], text: '' },
     ]);

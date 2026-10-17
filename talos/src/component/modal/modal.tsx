@@ -368,7 +368,7 @@ const Modal: React.FC<ModalProps> = ({
   const contentRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
   const fontRef = useFontRegion([
-    { faces: ['db'], text: typeof title === 'string' ? title : '' },
+    { faces: ['db'], text: typeof title === 'string' ? title : '', localized: 'ui' },
     { faces: ['r'], text: '' },
     { faces: ['h', 'r'], text: '' },
     ...fontRuns,

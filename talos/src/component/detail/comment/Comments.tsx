@@ -106,8 +106,9 @@ export const CommentExcerpt = memo(({
     const authorName = comment.author?.nickname;
     const note = transNote(comment, tUI);
     const fontRef = useFontRegion([
+        { faces: ['db'], text: '' },
         { faces: ['h', 'r'], text: `${authorName || ''}${commentText(comment)}` },
-        { faces: ['r'], text: note || '' },
+        { faces: ['r'], text: note || '', localized: 'ui' },
     ]);
 
     return (

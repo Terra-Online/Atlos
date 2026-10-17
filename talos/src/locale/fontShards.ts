@@ -1,4 +1,5 @@
 import type { FontRegion } from '@/lib/i18n/lang';
+import { manifests as manifestPaths } from './fontConfig';
 
 export const faceKeys = ['b', 'db', 'm', 'r', 'h'] as const;
 export type Face = (typeof faceKeys)[number];
@@ -118,6 +119,8 @@ export const selectShards = (
 export interface TextRun {
     faces: Face[];
     text: string;
+    /** Catalog text is replaced at language commit; persistent user content is not. */
+    localized?: 'ui' | 'game';
 }
 /** Follow the existing family order per glyph, including a missing JP Harmony face. */
 export const selectRuns = (
@@ -157,10 +160,7 @@ export const loadManifest = (region: Region) => {
     let pending = manifests.get(region);
     if (!pending) {
         pending = (async () => {
-            const path =
-                typeof __FONT_SHARD_MANIFESTS__ === 'undefined'
-                    ? undefined
-                    : __FONT_SHARD_MANIFESTS__[region];
+            const path = manifestPaths[region];
             if (!path) throw new Error(`Font manifest unavailable: ${region}`);
             const url = new URL(path, document.baseURI).href;
             const response = await fetch(url);

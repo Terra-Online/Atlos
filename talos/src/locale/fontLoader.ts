@@ -11,7 +11,7 @@ const documents = new Map<
 const detectLanguage = (doc: Document): FontRegion =>
     getFontRegionForLocale(doc.documentElement.lang || navigator.language);
 
-/** Load the build-time shell requirements without blocking application boot. */
+/** Start shell requests early; locale setup controls when the UI commits. */
 export function fontLoader(
     doc: Document = document,
     initialRegion: FontRegion = detectLanguage(doc),
@@ -20,9 +20,13 @@ export function fontLoader(
         return Promise.resolve();
     const regions = createFontRegions(doc, initialRegion);
     regions.register(doc.body);
-    const language = new MutationObserver(() =>
-        regions.setRegion(detectLanguage(doc)),
-    );
+    const language = new MutationObserver(() => {
+        void regions
+            .setRegion(detectLanguage(doc))
+            .catch((error: unknown) =>
+                console.warn('Font language switch failed:', error),
+            );
+    });
     language.observe(doc.documentElement, {
         attributes: true,
         attributeFilter: ['lang'],
@@ -31,10 +35,16 @@ export function fontLoader(
     return Promise.resolve();
 }
 
-export const switchFontRegion = (region: FontRegion): Promise<void> => {
+export const switchFontRegion = (
+    region: FontRegion,
+    isCurrent?: () => boolean,
+): Promise<void> => {
     void fontLoader();
-    documents.get(document)?.regions.setRegion(region);
-    return Promise.resolve();
+    return Promise.all(
+        [...documents.values()].map((state) =>
+            state.regions.setRegion(region, isCurrent),
+        ),
+    ).then(() => undefined);
 };
 
 export function getCurrentRegion(): FontRegion {

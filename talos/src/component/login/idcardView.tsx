@@ -8,6 +8,7 @@ type KarmaLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface IdCardRenderModel {
   displayName: string;
+  nameLocalized?: boolean;
   uidLabel: 'UID' | 'GID';
   displayUid: string;
   groupText: string;
@@ -56,8 +57,9 @@ const IdCardView = ({
   const editableDisplayName = nameValue ?? profile.displayName;
 
   const fontRef = useFontRegion([
-    { faces: ['db'], text: editableDisplayName + nickName + profile.groupText },
-    { faces: ['r'], text: profile.ageText },
+    { faces: ['db'], text: editableDisplayName, localized: !editableName && profile.nameLocalized ? 'ui' : undefined },
+    { faces: ['db'], text: nickName + profile.groupText, localized: 'ui' },
+    { faces: ['r'], text: profile.ageText, localized: 'ui' },
   ]);
   const setCardRef = useCallback((element: HTMLDivElement | null) => {
     if (cardRef) cardRef.current = element;

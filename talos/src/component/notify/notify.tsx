@@ -278,8 +278,8 @@ const NotificationMessage = ({
         ? formatPointName(pointName, subregionName, locale)
         : '';
     const fontRef = useFontRegion([
-        { faces: ['h', 'm'], text: translatedSubject },
-        { faces: ['m'], text: pointLabel },
+        { faces: ['h', 'm'], text: translatedSubject, localized: 'ui' },
+        { faces: ['m'], text: pointLabel, localized: 'game' },
     ]);
     const countValue = Number(item.payload.messageCount);
     const count =

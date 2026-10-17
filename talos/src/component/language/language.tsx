@@ -7,6 +7,7 @@ import {
   LANG_NATIVE_LABELS,
   UI_ONLY_LANGS,
   getLangDisplayCode,
+  getCurrentLocale,
   preloadAllLanguages,
   setLocale,
   toBCP47,
@@ -21,13 +22,14 @@ export interface LanguageProps {
   onClose: () => void;
   onChange?: (open: boolean) => void;
   onSelected?: (lang: string) => void;
+  prepareLocale?: (lang: string) => Promise<unknown>;
 }
 
 // Match the currentLang transition duration in CSS
 const FREEZE_MS = 400;
 type LanguageItem = { key: Lang; label: string };
 
-const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected }) => {
+const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale }) => {
   const current = useLocale();
   const t: (k: string) => string = useTranslateUI();
   
@@ -42,6 +44,12 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   const groupId = useId();
 
   useEffect(() => {
+    // These native labels keep their own glyphs across document languages.
+    // Warm the existing CSS face while the closed dialog is already mounted.
+    void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     void preloadAllLanguages();
   }, [open]);
@@ -51,9 +59,11 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   const freezeTimerRef = useRef<number | null>(null);
 
   const pickRevision = useRef(0);
+  const pendingPick = useRef<string | null>(null);
   const handlePick = useCallback(async (lang: string) => {
-    if (!lang || lang === current) return;
+    if (!lang || (lang === current && pendingPick.current === null)) return;
     const revision = ++pickRevision.current;
+    pendingPick.current = lang;
     // record last-actived
     const prevKey = current;
   const prevCurrentText = t('language.current');
@@ -62,14 +72,31 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       window.clearTimeout(freezeTimerRef.current);
       freezeTimerRef.current = null;
     }
-    await setLocale(lang);
+    try {
+      // Standalone apps prepare their own catalog before shared fonts change.
+      await prepareLocale?.(lang);
+      if (revision !== pickRevision.current) return;
+      await setLocale(lang, () => revision === pickRevision.current);
+    } catch (error: unknown) {
+      if (revision === pickRevision.current) {
+        pendingPick.current = null;
+        setFreeze(null);
+      }
+      console.warn('Language preparation failed:', error);
+      return;
+    }
     if (revision !== pickRevision.current) return;
+    pendingPick.current = null;
+    if (getCurrentLocale() !== lang) {
+      setFreeze(null);
+      return;
+    }
     onSelected?.(lang);
     freezeTimerRef.current = window.setTimeout(() => {
       setFreeze(null);
       freezeTimerRef.current = null;
     }, FREEZE_MS);
-  }, [current, t, onSelected]);
+  }, [current, t, onSelected, prepareLocale]);
   useEffect(() => () => {
     if (freezeTimerRef.current) window.clearTimeout(freezeTimerRef.current);
   }, []);
@@ -110,6 +137,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       onClose={onClose}
       onChange={onChange}
       title={t('language.title')}
+      fontRuns={[{ faces: ['m'], text: '' }, { faces: ['b'], text: '' }]}
       icon={<I18nIcon aria-hidden="true" />}
       customHeight='65dvh'
     >

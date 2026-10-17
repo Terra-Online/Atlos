@@ -18,7 +18,7 @@
             font-family: var(--font-r, 'Atlos-pending-r'), sans-serif;
         }
         .h {
-            font-family: var(--font-h, 'Atlos-pending-h'), sans-serif;
+            font-family: var(--font-h, 'Atlos-pending-h'), var(--font-r, 'Atlos-pending-r'), sans-serif;
         }
         .db {
             font-family: var(--font-db, 'Atlos-pending-db'), sans-serif;
@@ -43,6 +43,7 @@
         </section>
         <article id="card"><p class="r">昵称龘</p></article>
         <article id="cardCopy"><p class="r">昵称龘</p></article>
+        <article id="fallback"><p class="h">⋯</p></article>
         <section id="offscreen" data-font-region style="margin-top: 2000px">
             <p class="r">远处文字</p>
         </section>
@@ -56,6 +57,7 @@
             window.mount('shell', [{faces: ['db'], text: '地图设置 用户中心'}]);
             window.mount('detail', [{faces: ['r'], text: '一二龘完整内容搜索地点'}, {faces: ['h'], text: '查看评论'}]);
             for (const id of ['card', 'cardCopy']) window.mount(id, [{faces: ['r'], text: '昵称龘'}]);
+            window.mount('fallback', [{faces: ['h', 'r'], text: '', localized: 'ui'}]);
             window.metrics = { cls: 0, frames: [] };
             new PerformanceObserver((list) => {
                 for (const e of list.getEntries())

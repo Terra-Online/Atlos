@@ -120,11 +120,13 @@ export const checkFonts = async (project = root) => {
     return fonts;
 };
 
+/** @returns {import('vite').Plugin} */
 export const fontShardsPlugin = (app = 'main') => {
     let fonts;
     let base;
     let building;
     let scriptBase;
+    let metadata = { manifests: {}, requirements: {} };
     const preloadEntry = '/@atlos-font-preload';
     const preloadFile = path.join(root, 'src/locale/fontPreload.ts');
     return {
@@ -148,6 +150,18 @@ export const fontShardsPlugin = (app = 'main') => {
         load(id) {
             if (id === '\0atlos-font-preload')
                 return `import ${JSON.stringify(preloadFile)};`;
+        },
+        transform(_code, id) {
+            if (
+                id.split('?')[0] === path.join(root, 'src/locale/fontConfig.ts')
+            ) {
+                // Unlike dev `define` globals, module dependencies are ready
+                // before the early entry executes, even before @vite/client.
+                return {
+                    code: `export const manifests = ${JSON.stringify(metadata.manifests)};\nexport const requirements = ${JSON.stringify(metadata.requirements)};`,
+                    map: null,
+                };
+            }
         },
         transformIndexHtml: {
             // A separate Rollup entry avoids Vite merging this into the much
@@ -197,18 +211,18 @@ export const fontShardsPlugin = (app = 'main') => {
                     joinCdnPath(base, `${shardPath}/${name}`),
                 ]),
             );
+            metadata = {
+                manifests,
+                requirements: fonts
+                    ? await requirements(fonts.manifests, app)
+                    : {},
+            };
             const existing = config.css?.postcss;
             if (typeof existing === 'string')
                 throw new Error(
                     'Font regions require inline PostCSS configuration.',
                 );
             return {
-                define: {
-                    __FONT_SHARD_MANIFESTS__: JSON.stringify(manifests),
-                    __FONT_REQUIREMENTS__: JSON.stringify(
-                        fonts ? await requirements(fonts.manifests, app) : {},
-                    ),
-                },
                 css: { postcss: { plugins: [regionFontStyles()] } },
             };
         },

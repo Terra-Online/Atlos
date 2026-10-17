@@ -36,31 +36,31 @@ export async function requirements(manifests, app) {
         const manifest = manifests[region];
         if (!manifest) continue;
         const contentLocale = locale === 'zh-HK' ? 'zh-TW' : locale;
-        const labels =
-            app === 'user-hub'
-                ? ''
-                : (
-                      await Promise.all(
-                          [
-                              `src/locale/data/game/${contentLocale}.json`,
-                              `src/locale/data/region/${contentLocale}.json`,
-                              `apps/intel/src/locale/data/game/${contentLocale}.json`,
-                          ].map(async (file) =>
-                              strings(
-                                  JSON.parse(
-                                      await fs.readFile(
-                                          path.join(root, file),
-                                          'utf8',
-                                      ),
-                                  ),
-                              ),
-                          ),
-                      )
-                  ).join('');
+        const labels = (
+            await Promise.all(
+                [
+                    `src/locale/data/game/${contentLocale}.json`,
+                    `src/locale/data/region/${contentLocale}.json`,
+                    `apps/intel/src/locale/data/game/${contentLocale}.json`,
+                ].map(async (file) =>
+                    strings(
+                        JSON.parse(
+                            await fs.readFile(path.join(root, file), 'utf8'),
+                        ),
+                    ),
+                ),
+            )
+        ).join('');
         const uiParts = Object.fromEntries(
             Object.keys(manifest.faces).map((face) => [
                 face,
                 partsForText(manifest, face, ui[region]),
+            ]),
+        );
+        const catalog = Object.fromEntries(
+            Object.keys(manifest.faces).map((face) => [
+                face,
+                partsForText(manifest, face, ui[region] + labels),
             ]),
         );
         // The main sidebar ID card uses Regular from its first render;
@@ -73,6 +73,8 @@ export async function requirements(manifests, app) {
                   : ['db', 'm', 'r', 'h'];
         // JP has no Harmony; retain its existing UD fallback.
         if (region === 'JP' && !shellFaces.includes('r')) shellFaces.push('r');
+        // Intel's acquisition labels fall through Harmony to UD Medium in JP.
+        if (region === 'JP' && app === 'intel') shellFaces.push('m');
         const shell = Object.fromEntries(
             shellFaces
                 .filter((face) => manifest.faces[face])
@@ -82,11 +84,14 @@ export async function requirements(manifests, app) {
                         manifest,
                         face,
                         ui[region] +
-                            (face === 'db' || face === 'h' ? labels : ''),
+                            (app !== 'user-hub' &&
+                            (face === 'db' || face === 'h')
+                                ? labels
+                                : ''),
                     ),
                 ]),
         );
-        result[region] = { ui: uiParts, shell };
+        result[region] = { ui: uiParts, catalog, shell };
     }
     return result;
 }

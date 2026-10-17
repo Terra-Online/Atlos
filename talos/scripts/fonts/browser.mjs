@@ -15,7 +15,12 @@ const html = fs.readFileSync(
 const server = await createServer({
     configFile: false,
     root,
-    optimizeDeps: { noDiscovery: true, entries: [], include: ['accept-language-parser'] },
+    cacheDir: '.cache/font-browser/fixture-vite',
+    optimizeDeps: {
+        noDiscovery: true,
+        entries: [],
+        include: ['accept-language-parser'],
+    },
     resolve: { alias: { '@': root + 'src' } },
     plugins: [
         {
@@ -57,6 +62,12 @@ const active = (page, id, face) =>
         });
         const errors = [];
         page.on('pageerror', (e) => errors.push(e.message));
+        // Reproduce the real dev bootstrap ordering: the font entry must work
+        // before Vite's client has installed any define globals.
+        await page.route('**/@vite/client', async (route) => {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            await route.continue();
+        });
         let requests = [];
         page.on('response', async (r) => {
             if (r.url().endsWith('.woff2'))
@@ -84,6 +95,7 @@ const active = (page, id, face) =>
             active(page, 'detail', 'h'),
             active(page, 'card', 'r'),
             active(page, 'cardCopy', 'r'),
+            active(page, 'fallback', 'r'),
         ]);
         const readyMs = Math.round(performance.now() - start);
         await page.waitForTimeout(100);
@@ -103,6 +115,29 @@ const active = (page, id, face) =>
         });
         if (partial.length)
             throw Error(`${name}: partial region activation ${partial.length}`);
+        const covered = await page.evaluate(() => {
+            const shell = document.getElementById('shell');
+            const before = shell.style.getPropertyValue('--font-db');
+            window.owners.shell.update([
+                { faces: ['db'], text: '用户中心 地图设置' },
+            ]);
+            return before === shell.style.getPropertyValue('--font-db');
+        });
+        assert(
+            covered,
+            `${name}: covered copy changes must keep the ready alias`,
+        );
+        const restored = await page.evaluate(() => {
+            const shell = document.getElementById('shell');
+            const before = shell.style.getPropertyValue('--font-db');
+            window.owners.shell.update([{ faces: ['db'], text: '鬱鱻龘' }]);
+            window.owners.shell.update([{ faces: ['db'], text: '地图设置' }]);
+            return before === shell.style.getPropertyValue('--font-db');
+        });
+        assert(
+            restored,
+            `${name}: reverting to covered copy must restore the ready alias immediately`,
+        );
         assert.doesNotMatch(state.styles[3][1], /Atlos-area/);
         const shared = await page.evaluate(() => {
             window.stopSampling();
@@ -124,12 +159,25 @@ const active = (page, id, face) =>
             await new Promise((r) => setTimeout(r, 700));
             await route.continue();
         });
-        await page.evaluate(() => window.regionController.setRegion('HK'));
-        await page.waitForTimeout(50);
+        const oldAlias = await page
+            .locator('#detail')
+            .evaluate((e) => e.style.getPropertyValue('--font-r'));
         await page.evaluate(() => {
+            void window.regionController.setRegion('HK');
+        });
+        await page.waitForTimeout(50);
+        assert.equal(
+            await page
+                .locator('#detail')
+                .evaluate((e) => e.style.getPropertyValue('--font-r')),
+            oldAlias,
+        );
+        await page.evaluate(async () => {
             document.querySelector('#detail p').textContent = '新しい名前鱻';
-            window.owners.detail.update([{faces: ['r'], text: '新しい名前鱻'}]);
-            window.regionController.setRegion('JP');
+            window.owners.detail.update([
+                { faces: ['r'], text: '新しい名前鱻' },
+            ]);
+            await window.regionController.setRegion('JP');
         });
         await active(page, 'detail', 'r');
         const jpAlias = await page
@@ -143,8 +191,15 @@ const active = (page, id, face) =>
             jpAlias,
         );
         await page.locator('#offscreen').scrollIntoViewIfNeeded();
-        assert.equal(await page.locator('#offscreen').evaluate((e) => e.style.getPropertyValue('--font-r')), '');
-        await page.evaluate(() => window.mount('offscreen', [{faces: ['r'], text: '远处文字'}]));
+        assert.equal(
+            await page
+                .locator('#offscreen')
+                .evaluate((e) => e.style.getPropertyValue('--font-r')),
+            '',
+        );
+        await page.evaluate(() =>
+            window.mount('offscreen', [{ faces: ['r'], text: '远处文字' }]),
+        );
         await active(page, 'offscreen', 'r');
         const beforeStop = await page.evaluate(() => document.fonts.size);
         await page.evaluate(() => window.regionController.stop());
@@ -187,18 +242,50 @@ const active = (page, id, face) =>
             fallback.every((v) => v.includes('pending')),
             `${name}: failed region partially activated`,
         );
-        await failed.evaluate(
-            () => {
-                document.querySelector('#detail p').textContent += '更新';
-                window.owners.detail.update([{faces: ['r'], text: '一二龘更新'}, {faces: ['h'], text: '查看评论'}]);
-            },
-        );
+        await failed.evaluate(() => window.regionController.setRegion('CN'));
         await active(failed, 'detail', 'h');
-        await failed.evaluate(() => { window.owners.detail.stop(); document.getElementById('detail').remove(); });
+        await failed.evaluate(() => {
+            document.querySelector('#detail p').textContent += '更新';
+            window.owners.detail.update([
+                { faces: ['r'], text: '一二龘更新' },
+                { faces: ['h'], text: '查看评论' },
+            ]);
+        });
+        await active(failed, 'detail', 'h');
+        let failLanguage = true;
+        await failed.route('**/HK-*.woff2', async (route) => {
+            if (failLanguage) {
+                failLanguage = false;
+                await route.abort();
+            } else await route.continue();
+        });
+        const languageFailure = await failed.evaluate(async () => {
+            const element = document.getElementById('detail');
+            const before = element.style.getPropertyValue('--font-r');
+            let rejected = false;
+            try {
+                await window.regionController.setRegion('HK');
+            } catch {
+                rejected = true;
+            }
+            return {
+                rejected,
+                preserved:
+                    element.style.getPropertyValue('--font-r') === before,
+            };
+        });
+        assert.deepEqual(languageFailure, { rejected: true, preserved: true });
+        await failed.evaluate(() => window.regionController.setRegion('HK'));
+        await active(failed, 'detail', 'h');
+        await failed.evaluate(() => {
+            window.owners.detail.stop();
+            document.getElementById('detail').remove();
+        });
         await failed.waitForTimeout(100);
         await failed.evaluate(() => window.regionController.stop());
         assert.equal(await failed.evaluate(() => document.fonts.size), 0);
         results[name].failureRetry = 'passed';
+        results[name].languageFailure = 'passed';
         results[name].languageRace = 'passed';
         results[name].explicitMount = 'passed';
         results[name].cleanup = 'passed';
@@ -210,7 +297,9 @@ const active = (page, id, face) =>
             node.className = 'r';
             document.body.append(node);
             window.adoptFonts = fonts;
-            window.adoptOwner = fonts.registerFontRegion(node, [{ faces: ['r'], text: '昵称龘' }]);
+            window.adoptOwner = fonts.registerFontRegion(node, [
+                { faces: ['r'], text: '昵称龘' },
+            ]);
         });
         await active(page, 'adopted', 'r');
         await page.evaluate(() => {
@@ -218,12 +307,17 @@ const active = (page, id, face) =>
             frame.id = 'pip';
             document.body.append(frame);
             frame.contentDocument.documentElement.lang = 'zh-CN';
-            frame.contentDocument.body.append(document.getElementById('adopted'));
+            frame.contentDocument.body.append(
+                document.getElementById('adopted'),
+            );
             window.adoptFonts.migrateFontRegions();
         });
         await page.waitForFunction(() => {
             const doc = document.getElementById('pip').contentDocument;
-            const family = doc.getElementById('adopted').style.getPropertyValue('--font-r').replaceAll('"', '');
+            const family = doc
+                .getElementById('adopted')
+                .style.getPropertyValue('--font-r')
+                .replaceAll('"', '');
             return [...doc.fonts].some((font) => font.family === family);
         });
         await page.evaluate(() => {
@@ -233,7 +327,10 @@ const active = (page, id, face) =>
             window.adoptFonts.stopFontLoader(doc);
         });
         await active(page, 'adopted', 'r');
-        await page.evaluate(() => { window.adoptOwner.stop(); window.adoptFonts.stopFontLoader(document); });
+        await page.evaluate(() => {
+            window.adoptOwner.stop();
+            window.adoptFonts.stopFontLoader(document);
+        });
         assert.equal(await page.evaluate(() => document.fonts.size), 0);
         results[name].documentAdoption = 'passed';
         await browser.close();
