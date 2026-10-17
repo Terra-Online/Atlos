@@ -3,136 +3,40 @@ import {
     loadManifest,
     prepareFonts,
     selectRuns,
-    type Face,
     type Prepared,
-    type Region,
-    type TextRun,
     type Selection,
+    type TextRun,
+    type Face,
+    type Manifest,
 } from './fontShards';
 import type { FontRegion } from '@/lib/i18n/lang';
 
-// Articles are independent content cards; portals/dialogs opt into their own
-// boundary. An explicit boundary can also be used on any non-semantic container.
-const boundarySelector =
-    '[data-font-region], [role="dialog"], [role="tooltip"], article';
-const facePattern = /^Atlos-(?:pending|area\d+-\d+)-(b|db|m|r|h)$/;
 let nextAreaId = 0;
 const pendingName = (face: Face) => `"Atlos-pending-${face}"`;
-const fontFace = (name: string): Face | undefined =>
-    name
-        .trim()
-        .replace(/^["']|["']$/g, '')
-        .match(facePattern)?.[1] as Face | undefined;
-const isVisible = (element: Element, doc: Document) => {
-    const style = doc.defaultView!.getComputedStyle(element);
-    if (
-        style.display === 'none' ||
-        style.visibility === 'hidden' ||
-        style.visibility === 'collapse'
-    )
-        return false;
-    const rect = element.getBoundingClientRect();
-    return (
-        rect.width > 0 &&
-        rect.height > 0 &&
-        rect.bottom > 0 &&
-        rect.right > 0 &&
-        rect.top < doc.defaultView!.innerHeight &&
-        rect.left < doc.defaultView!.innerWidth
+type Parts = Partial<Record<Face, string[]>>;
+const selectParts = (
+    manifest: Manifest,
+    url: string,
+    parts: Parts,
+): Selection[] =>
+    Object.entries(parts).flatMap(([face, keys]) =>
+        (keys || []).flatMap((key) => {
+            const part = manifest.faces[face as Face]?.[key];
+            return part
+                ? [
+                      {
+                          face: face as Face,
+                          url: new URL(part.file, url).href,
+                          range: manifest.maps[part.range],
+                          bytes: part.bytes,
+                      },
+                  ]
+                : [];
+        }),
     );
-};
 
-const collectText = (root: HTMLElement, doc: Document): TextRun[] => {
-    const runs: TextRun[] = [];
-    const add = (text: string, style: CSSStyleDeclaration) => {
-        const families = style.fontFamily.split(',');
-        const faces = families.flatMap((family) => fontFace(family) || []);
-        if (!faces.length || !text.trim()) return;
-        const first = families.findIndex((family) => fontFace(family));
-        // Existing Latin faces take precedence. Never count ICU argument names:
-        // this collector sees the formatted DOM, including dynamic values.
-        const visible =
-            first > 0
-                ? [...text]
-                      .filter((char) => char.codePointAt(0)! > 0x24f)
-                      .join('')
-                : text;
-        if (visible) runs.push({ faces, text: visible });
-    };
-    const visit = (element: Element) => {
-        if (element !== root && element.matches(boundarySelector)) return;
-        if (
-            ['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'CANVAS'].includes(
-                element.tagName.toUpperCase(),
-            )
-        )
-            return;
-        const style = doc.defaultView!.getComputedStyle(element);
-        if (style.display === 'none' || style.visibility === 'hidden') return;
-        if (isVisible(element, doc)) {
-            for (const child of element.childNodes)
-                if (child.nodeType === 3) add(child.textContent || '', style);
-            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                const input = element as HTMLInputElement | HTMLTextAreaElement;
-                add(input.value, style);
-                if (!input.value && input.placeholder)
-                    add(
-                        input.placeholder,
-                        doc.defaultView!.getComputedStyle(
-                            element,
-                            '::placeholder',
-                        ),
-                    );
-            }
-            if (element.tagName === 'SELECT')
-                add(
-                    (element as HTMLSelectElement).selectedOptions[0]?.text ||
-                        '',
-                    style,
-                );
-            for (const pseudo of ['::before', '::after']) {
-                const pseudoStyle = doc.defaultView!.getComputedStyle(
-                    element,
-                    pseudo,
-                );
-                let content = pseudoStyle.content;
-                if (!content || content === 'none' || content === 'normal')
-                    continue;
-                // Browsers normally expose resolved content; support attr() too.
-                content = content.replace(
-                    /attr\(([\w-]+)\)/g,
-                    (_all, attr: string) => element.getAttribute(attr) || '',
-                );
-                if (/^["']/.test(content)) content = content.slice(1, -1);
-                add(content, pseudoStyle);
-            }
-        }
-        // A display:contents parent has no box; its children can still be visible.
-        for (const child of element.children) visit(child);
-    };
-    visit(root);
-    return runs;
-};
-
-interface Area {
-    revision: number;
-    signature: string;
-    fonts: FontFace[];
-    dispose?: () => void;
-    pending?: () => void;
-    family: string;
-    binding: string;
-    variables: string[];
-    region?: Region;
-    selection?: string;
-}
-
-/** Each document owns its observers and FontFaces, including picture-in-picture. */
-export const observeFontRegions = (
-    doc: Document,
-    initialRegion: FontRegion,
-) => {
-    const areas = new Map<HTMLElement, Area>();
+/** Explicit component ownership: no DOM traversal, geometry reads or viewport listeners. */
+export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     const batches = new Map<
         string,
         {
@@ -182,269 +86,144 @@ export const observeFontRegions = (
             },
         };
     };
-    const ownStyles = new WeakMap<HTMLElement, string | null>();
     let region = initialRegion;
     let stopped = false;
-    let scheduled = false;
-    let frame = 0;
-    let allDirty = true;
-    const dirty = new Set<HTMLElement>();
-    const styleWritten = (element: HTMLElement) =>
-        ownStyles.set(element, element.getAttribute('style'));
-    const fallback = (element: HTMLElement) => {
-        for (const face of faceKeys)
-            element.style.setProperty(`--font-${face}`, pendingName(face));
-        styleWritten(element);
-    };
-    const release = (area: Area) => {
-        area.pending?.();
-        area.pending = undefined;
-        area.dispose?.();
-        area.dispose = undefined;
-        area.fonts = [];
-    };
-    const activate = (
+    const areas = new Set<{ refresh: () => void; stop: () => void }>();
+    const register = (
         element: HTMLElement,
-        area: Area,
-        prepared: Prepared,
-        lease: ReturnType<typeof leaseFonts>,
+        initialRuns: TextRun[] | null = null,
     ) => {
-        // Equal complete selections can share one loaded alias. Pending regions
-        // never refer to it; a different selection always gets another alias.
-        lease.activate(prepared);
-        area.dispose?.();
-        area.dispose = lease.release;
-        area.pending = undefined;
-        area.fonts = prepared.fonts;
-        for (const face of faceKeys)
-            element.style.setProperty(
-                `--font-${face}`,
-                prepared.families[face]
-                    ? `"${prepared.families[face]}"`
-                    : pendingName(face),
+        const originalOwner = element.getAttribute('data-font-owner');
+        element.setAttribute('data-font-owner', '');
+        let runs = initialRuns;
+        let revision = 0;
+        let disposed = false;
+        let signature = '';
+        let release: (() => void) | undefined;
+        const original = faceKeys.map((face) =>
+            element.style.getPropertyValue(`--font-${face}`),
+        );
+        const fallback = () => {
+            for (const face of faceKeys)
+                element.style.setProperty(`--font-${face}`, pendingName(face));
+        };
+        const changed = () =>
+            element.dispatchEvent(
+                new Event('fontregionchange', { bubbles: true }),
             );
-        styleWritten(element);
-        element.dispatchEvent(new Event('fontregionchange', { bubbles: true }));
-    };
-    const refresh = (element: HTMLElement) => {
-        let area = areas.get(element);
-        if (!area) {
-            area = {
-                revision: 0,
-                signature: '',
-                fonts: [],
-                family: element.style.fontFamily,
-                binding: '',
-                variables: faceKeys.map((face) =>
-                    element.style.getPropertyValue(`--font-${face}`),
-                ),
-            };
-            areas.set(element, area);
-            fallback(element);
-        }
-        // Re-evaluate the original declaration so responsive styles and class
-        // changes on a boundary keep their existing precedence.
-        if (area.binding && element.style.fontFamily !== area.binding)
-            area.family = element.style.fontFamily;
-        element.style.fontFamily = area.family;
-        const inherited = doc.defaultView!.getComputedStyle(element).fontFamily;
-        element.style.fontFamily = inherited
-            .split(',')
-            .map((family) => {
-                const face = fontFace(family);
-                return face
-                    ? `var(--font-${face}, ${pendingName(face)})`
-                    : family;
-            })
-            .join(',');
-        area.binding = element.style.fontFamily;
-        styleWritten(element);
-        const runs =
-            element === doc.body || isVisible(element, doc)
-                ? collectText(element, doc)
-                : [];
-        const signature = JSON.stringify([region, runs]);
-        if (signature === area.signature) return;
-        area.signature = signature;
-        const revision = ++area.revision;
-        area.pending?.();
-        area.pending = undefined;
-        const current = area;
-        // MutationObserver runs before paint: new content never uses an
-        // incomplete alias while its additional shards are in flight.
-        fallback(element);
-        element.dispatchEvent(new Event('fontregionchange', { bubbles: true }));
-        if (!region || !runs.length) {
-            release(area);
-            area.selection = undefined;
-            return;
-        }
-        const requestedRegion = region;
-        void (async () => {
-            const { manifest, url } = await loadManifest(requestedRegion);
-            if (
-                stopped ||
-                current.revision !== revision ||
-                !element.isConnected
-            )
-                return;
-            const selection = selectRuns(manifest, url, runs);
-            const key = JSON.stringify(
-                selection.map((part) => [part.face, part.url]),
-            );
-            if (
-                current.selection === key &&
-                current.region === requestedRegion
-            ) {
-                for (const face of faceKeys) {
-                    const font = current.fonts.find((font) =>
-                        font.family.endsWith(`-${face}`),
-                    );
+        const refresh = () => {
+            if (disposed || stopped) return;
+            const nextSignature = JSON.stringify([region, runs]);
+            if (signature === nextSignature) return;
+            signature = nextSignature;
+            const request = ++revision;
+            fallback();
+            release?.();
+            release = undefined;
+            changed();
+            if (!region) return;
+            const requestedRegion = region;
+            void (async () => {
+                const { manifest, url } = await loadManifest(requestedRegion);
+                if (disposed || request !== revision) return;
+                const preset =
+                    typeof __FONT_REQUIREMENTS__ === 'undefined'
+                        ? undefined
+                        : __FONT_REQUIREMENTS__[requestedRegion];
+                const staticParts =
+                    runs === null
+                        ? preset?.shell || {}
+                        : Object.fromEntries(
+                              [
+                                  ...new Set(
+                                      runs.flatMap(
+                                          (run) =>
+                                              run.faces.find(
+                                                  (face) =>
+                                                      manifest.faces[face],
+                                              ) || [],
+                                      ),
+                                  ),
+                              ].map((face) => [face, preset?.ui[face] || []]),
+                          );
+                const selected = [
+                    ...selectParts(manifest, url, staticParts),
+                    ...selectRuns(manifest, url, runs || []),
+                ];
+                const selection = [
+                    ...new Map(
+                        selected.map((part) => [
+                            `${part.face}:${part.url}`,
+                            part,
+                        ]),
+                    ).values(),
+                ].sort((a, b) => a.url.localeCompare(b.url));
+                const key = JSON.stringify(
+                    selection.map((part) => [part.face, part.url]),
+                );
+                const lease = leaseFonts(key, selection);
+                release = lease.release;
+                const prepared = await lease.ready;
+                if (disposed || request !== revision) {
+                    lease.release();
+                    return;
+                }
+                lease.activate(prepared);
+                // All faces are loaded before any alias is made visible.
+                for (const face of faceKeys)
                     element.style.setProperty(
                         `--font-${face}`,
-                        font ? `"${font.family}"` : pendingName(face),
+                        prepared.families[face]
+                            ? `"${prepared.families[face]}"`
+                            : pendingName(face),
                     );
-                }
-                styleWritten(element);
-                return;
-            }
-            const lease = leaseFonts(key, selection);
-            current.pending = lease.release;
-            const prepared = await lease.ready;
-            if (
-                stopped ||
-                current.revision !== revision ||
-                !element.isConnected
-            ) {
-                lease.release();
-                return;
-            }
-            activate(element, current, prepared, lease);
-            current.selection = key;
-            current.region = requestedRegion;
-        })().catch(() => {
-            if (current.revision !== revision) return;
-            release(current);
-            current.selection = undefined;
-            // Allow a later visit/content update to retry, without a retry loop.
-            current.signature = '';
-        });
-    };
-    const restore = (element: HTMLElement, area: Area) => {
-        area.revision++;
-        release(area);
-        element.style.fontFamily = area.family;
-        faceKeys.forEach((face, index) => {
-            if (area.variables[index])
-                element.style.setProperty(
-                    `--font-${face}`,
-                    area.variables[index],
-                );
-            else element.style.removeProperty(`--font-${face}`);
-        });
-        styleWritten(element);
-    };
-    const scan = () => {
-        scheduled = false;
-        if (stopped || !doc.body) return;
-        const boundaries = [
-            doc.body,
-            ...doc.body.querySelectorAll<HTMLElement>(boundarySelector),
-        ];
-        const live = new Set(boundaries);
-        for (const [element, area] of areas)
-            if (!live.has(element)) {
-                restore(element, area);
-                areas.delete(element);
-            }
-        for (const element of boundaries)
-            if (allDirty || dirty.has(element) || !areas.has(element))
-                refresh(element);
-        allDirty = false;
-        dirty.clear();
-    };
-    const schedule = () => {
-        if (scheduled || stopped) return;
-        scheduled = true;
-        queueMicrotask(scan);
-    };
-    const observer = new MutationObserver((records) => {
-        let changed = false;
-        for (const record of records) {
-            const element =
-                record.target.nodeType === 1
-                    ? (record.target as HTMLElement)
-                    : record.target.parentElement;
-            if (!element) continue;
-            if (
-                record.type === 'attributes' &&
-                record.attributeName === 'style' &&
-                ownStyles.get(element) === element.getAttribute('style')
-            )
-                continue;
-            if (
-                ['IMG', 'SVG', 'PATH', 'CANVAS'].includes(element.tagName) ||
-                element.closest('.leaflet-tile-pane')
-            )
-                continue;
-            const owner =
-                element.closest<HTMLElement>(boundarySelector) || doc.body;
-            if (owner) dirty.add(owner);
-            for (const child of element.querySelectorAll<HTMLElement>(
-                boundarySelector,
-            ))
-                dirty.add(child);
-            changed = true;
-        }
-        if (changed) schedule();
-    });
-    observer.observe(doc.documentElement, {
-        childList: true,
-        characterData: true,
-        attributes: true,
-        subtree: true,
-    });
-    const onViewport = () => {
-        if (!frame)
-            frame = doc.defaultView!.requestAnimationFrame(() => {
-                frame = 0;
-                allDirty = true;
-                schedule();
+                changed();
+            })().catch(() => {
+                if (disposed || request !== revision) return;
+                release?.();
+                release = undefined;
+                signature = ''; // The next explicit update/visit may retry.
             });
+        };
+        const area = {
+            refresh,
+            update(next: TextRun[]) {
+                runs = next;
+                refresh();
+            },
+            stop() {
+                if (disposed) return;
+                disposed = true;
+                revision++;
+                release?.();
+                faceKeys.forEach((face, index) => {
+                    if (original[index])
+                        element.style.setProperty(
+                            `--font-${face}`,
+                            original[index],
+                        );
+                    else element.style.removeProperty(`--font-${face}`);
+                });
+                if (originalOwner === null)
+                    element.removeAttribute('data-font-owner');
+                else element.setAttribute('data-font-owner', originalOwner);
+                areas.delete(area);
+            },
+        };
+        areas.add(area);
+        refresh();
+        return area;
     };
-    const rescan = () => {
-        allDirty = true;
-        schedule();
-    };
-    doc.addEventListener('input', rescan, true);
-    doc.addEventListener('scroll', onViewport, true);
-    doc.defaultView!.addEventListener('resize', onViewport);
-    // A lazy stylesheet/animation can reveal text without adding DOM nodes.
-    doc.addEventListener('load', rescan, true);
-    doc.addEventListener('transitionend', rescan, true);
-    doc.addEventListener('animationend', rescan, true);
-    schedule();
     return {
+        register,
         setRegion(next: FontRegion) {
-            if (next !== region) {
-                region = next;
-                allDirty = true;
-                schedule();
-            }
+            if (next === region) return;
+            region = next;
+            for (const area of areas) area.refresh();
         },
-        refresh: rescan,
         stop() {
             stopped = true;
-            observer.disconnect();
-            doc.removeEventListener('input', rescan, true);
-            doc.removeEventListener('scroll', onViewport, true);
-            doc.defaultView!.removeEventListener('resize', onViewport);
-            doc.removeEventListener('load', rescan, true);
-            doc.removeEventListener('transitionend', rescan, true);
-            doc.removeEventListener('animationend', rescan, true);
-            doc.defaultView!.cancelAnimationFrame(frame);
-            for (const [element, area] of areas) restore(element, area);
-            areas.clear();
+            for (const area of [...areas]) area.stop();
         },
     };
 };

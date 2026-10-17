@@ -68,5 +68,6 @@ export { };
 
 /** Immutable region manifests emitted by the shared font asset plugin. */
 declare global {
+    const __FONT_REQUIREMENTS__: Partial<Record<'CN' | 'HK' | 'JP', { ui: Partial<Record<import('./locale/fontShards').Face, string[]>>; shell: Partial<Record<import('./locale/fontShards').Face, string[]>> }>>;
     const __FONT_SHARD_MANIFESTS__: Partial<Record<'CN' | 'HK' | 'JP', string>>;
 }

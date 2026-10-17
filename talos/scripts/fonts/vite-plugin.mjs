@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { requirements } from './requirements.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -25,6 +26,7 @@ export const regionFontStyles = () => ({
             declaration.parent.type === 'atrule'
         )
             return;
+        const original = declaration.value;
         declaration.value = declaration.value.replace(
             /(['"])(UD_ShinGo (?:Bold|DemiBold|Medium|Regular)|HMSans)\1|\bHMSans\b(?![\w-])/g,
             (_match, _quote, family) => {
@@ -32,6 +34,19 @@ export const regionFontStyles = () => ({
                 return `var(--font-${face}, "Atlos-pending-${face}")`;
             },
         );
+        // Inherited font-family is already resolved. Rebind the app's body
+        // stack at explicit boundaries so local aliases isolate inherited text.
+        if (
+            declaration.parent.selector === 'body' &&
+            original !== declaration.value
+        ) {
+            declaration.parent.after(
+                declaration.parent.clone({
+                    selector: ':where([data-font-owner])',
+                    nodes: [declaration.clone()],
+                }),
+            );
+        }
     },
 });
 
@@ -105,7 +120,7 @@ export const checkFonts = async (project = root) => {
     return fonts;
 };
 
-export const fontShardsPlugin = () => {
+export const fontShardsPlugin = (app = 'main') => {
     let fonts;
     let base;
     return {
@@ -136,7 +151,12 @@ export const fontShardsPlugin = () => {
                     'Font regions require inline PostCSS configuration.',
                 );
             return {
-                define: { __FONT_SHARD_MANIFESTS__: JSON.stringify(manifests) },
+                define: {
+                    __FONT_SHARD_MANIFESTS__: JSON.stringify(manifests),
+                    __FONT_REQUIREMENTS__: JSON.stringify(
+                        fonts ? await requirements(fonts.manifests, app) : {},
+                    ),
+                },
                 css: { postcss: { plugins: [regionFontStyles()] } },
             };
         },

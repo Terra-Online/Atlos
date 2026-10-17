@@ -1,21 +1,22 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
-import { observeFontRegions } from './fontRegions';
+import { createFontRegions } from './fontRegions';
 
 const documents = new Map<
     Document,
     {
-        regions: ReturnType<typeof observeFontRegions>;
+        regions: ReturnType<typeof createFontRegions>;
         language: MutationObserver;
     }
 >();
 const detectLanguage = (doc: Document): FontRegion =>
     getFontRegionForLocale(doc.documentElement.lang || navigator.language);
 
-/** Start observing rendered regions; font downloads never block application boot. */
+/** Load the build-time shell requirements without blocking application boot. */
 export function fontLoader(doc: Document = document): Promise<void> {
     if (documents.has(doc) || !doc.fonts || typeof FontFace === 'undefined')
         return Promise.resolve();
-    const regions = observeFontRegions(doc, detectLanguage(doc));
+    const regions = createFontRegions(doc, detectLanguage(doc));
+    regions.register(doc.body);
     const language = new MutationObserver(() =>
         regions.setRegion(detectLanguage(doc)),
     );
@@ -43,3 +44,40 @@ export const stopFontLoader = (doc: Document): void => {
     state?.regions.stop();
     documents.delete(doc);
 };
+
+const owners = new Set<() => void>();
+
+/** Register actual component data, including interpolation and pseudo-element text. */
+export function registerFontRegion(
+    element: HTMLElement,
+    initialRuns: import('./fontShards').TextRun[],
+) {
+    let runs = initialRuns;
+    let doc = element.ownerDocument;
+    void fontLoader(doc);
+    let area = documents.get(doc)?.regions.register(element, runs);
+    const migrate = () => {
+        if (doc === element.ownerDocument) return;
+        area?.stop();
+        doc = element.ownerDocument;
+        void fontLoader(doc);
+        area = documents.get(doc)?.regions.register(element, runs);
+    };
+    owners.add(migrate);
+    return {
+        update(next: import('./fontShards').TextRun[]) {
+            runs = next;
+            migrate();
+            area?.update(runs);
+        },
+        stop() {
+            area?.stop();
+            owners.delete(migrate);
+        },
+    };
+}
+
+/** PiP explicitly adopts existing React nodes without remounting their refs. */
+export function migrateFontRegions() {
+    for (const migrate of owners) migrate();
+}

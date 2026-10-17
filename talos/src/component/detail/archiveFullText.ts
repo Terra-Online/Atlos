@@ -1,6 +1,6 @@
 import { createElement, Fragment } from 'react';
 import type { HTMLReactParserOptions } from 'html-react-parser';
-import { Element } from 'html-react-parser';
+import { Element, Text, htmlToDOM, type DOMNode } from 'html-react-parser';
 import { getAssetsHostPrefix } from '@/services/assets/resource';
 
 export async function parseArchiveJsonResponse(res: Response): Promise<string | null> {
@@ -87,4 +87,15 @@ export function createArchiveHtmlParserOptions(archiveJsonUrl: string): HTMLReac
             return undefined;
         },
     };
+}
+
+/** Read decoded literals from the source payload, never from the rendered page. */
+export function archiveVisibleText(html: string): string {
+    const text = (nodes: DOMNode[]): string => nodes.map((node) => {
+        if (node instanceof Text) return node.data;
+        if (node instanceof Element && !['script', 'style'].includes(node.name))
+            return text(node.children as DOMNode[]);
+        return '';
+    }).join('');
+    return text(htmlToDOM(html));
 }

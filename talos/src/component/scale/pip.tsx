@@ -1,4 +1,4 @@
-import { fontLoader, stopFontLoader } from '@/locale/fontLoader';
+import { fontLoader, stopFontLoader, migrateFontRegions } from '@/locale/fontLoader';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { Map as LeafletMap } from 'leaflet';
@@ -736,6 +736,7 @@ export const closeAppPictureInPicture = () => {
 
     if (root && originalParent && restoreAnchor?.parentNode === originalParent) {
         originalParent.insertBefore(root, restoreAnchor);
+        migrateFontRegions();
         restoreAnchor.remove();
     }
 
@@ -786,6 +787,7 @@ export const openAppPictureInPicture = async () => {
         preparePictureInPictureDocument(pipWindow);
         mountPlaceholder();
         pipWindow.document.body.append(root);
+        migrateFontRegions();
         pipWindow.addEventListener('resize', handlePictureInPictureResize);
         pipWindow.addEventListener('pagehide', closeAppPictureInPicture, { once: true });
         schedulePictureInPictureViewportSync(pipWindow);

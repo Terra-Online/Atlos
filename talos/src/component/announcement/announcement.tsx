@@ -61,6 +61,7 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
             onClose={handleClose}
             onChange={onChange}
             title={t('announcement.title')}
+            fontRuns={[{ faces: ['h', 'r'], text: announcements.map((item) => item.title).join('') + (activeItem?.content || '') }]}
             icon={<AnnouncementIcon aria-hidden="true" />}
             iconScale={0.8}
             size='full'

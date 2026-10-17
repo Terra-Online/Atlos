@@ -51,7 +51,7 @@ export default defineConfig(async ({ command }) => {
         envDir,
         plugins: [
             htmlMetadataPlugin(),
-            fontShardsPlugin(),
+            fontShardsPlugin('user-hub'),
             react(),
             svgr(),
             ...(command === 'serve'

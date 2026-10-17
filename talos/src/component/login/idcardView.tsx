@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useFontRegion } from '@/locale/useFontRegion';
 import avatarStyles from './avatar.module.scss';
 import type { MouseEventHandler, RefObject } from 'react';
 import styles from './idcard.module.scss';
@@ -53,10 +55,18 @@ const IdCardView = ({
   const cardClassName = embedded ? `${styles.idCard} ${styles.idCardEmbedded}` : styles.idCard;
   const editableDisplayName = nameValue ?? profile.displayName;
 
+  const fontRef = useFontRegion([
+    { faces: ['db'], text: editableDisplayName + nickName + profile.groupText },
+    { faces: ['r'], text: profile.ageText },
+  ]);
+  const setCardRef = useCallback((element: HTMLDivElement | null) => {
+    if (cardRef) cardRef.current = element;
+    fontRef(element);
+  }, [cardRef, fontRef]);
   return (
     <div
       className={cardClassName}
-      ref={cardRef}
+      ref={setCardRef}
       onMouseMove={onCardMouseMove}
       onMouseLeave={onCardMouseLeave}
       data-embedded={embedded ? 'true' : 'false'}

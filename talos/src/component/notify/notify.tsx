@@ -1,3 +1,4 @@
+import { useFontRegion } from '@/locale/useFontRegion';
 import Feed from './feed';
 import React, {
     useCallback,
@@ -276,6 +277,10 @@ const NotificationMessage = ({
     const pointLabel = pointName
         ? formatPointName(pointName, subregionName, locale)
         : '';
+    const fontRef = useFontRegion([
+        { faces: ['h', 'm'], text: translatedSubject },
+        { faces: ['m'], text: pointLabel },
+    ]);
     const countValue = Number(item.payload.messageCount);
     const count =
         Number.isFinite(countValue) && countValue > 0
@@ -317,7 +322,7 @@ const NotificationMessage = ({
         pointLabel ? <span className={styles.pointName}>{parts}</span> : null;
 
     return (
-        <span className={styles.messageText}>
+        <span ref={fontRef} className={styles.messageText}>
             {React.Children.toArray(
                 formatNotificationMessage({
                     template,
@@ -785,6 +790,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
 
     return (
         <Modal
+            fontRuns={[{ faces: ['m'], text: '' }]}
             open={open}
             size={isMobile ? 'full' : 'l'}
             onClose={onClose}

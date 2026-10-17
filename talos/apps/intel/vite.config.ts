@@ -82,7 +82,7 @@ const intelImportDebugPlugin = (): import('vite').Plugin => ({
 
 export default defineConfig(() => ({
   base: '/intel/',
-  plugins: [intelHtmlMetadataPlugin(), fontShardsPlugin(), intelImportDebugPlugin(), react(), svgr()],
+  plugins: [intelHtmlMetadataPlugin(), fontShardsPlugin('intel'), intelImportDebugPlugin(), react(), svgr()],
   resolve: {
     alias: [
       { find: '@intel', replacement: resolve(import.meta.dirname, 'src') },

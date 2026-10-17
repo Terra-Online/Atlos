@@ -86,3 +86,25 @@ test('build validation rejects modified immutable resources and partial diagnost
         /Incomplete frozen font manifest/,
     );
 });
+
+test('new catalog characters select existing packs and respect real cmap holes', async () => {
+    const { partsForText } = await import('./requirements.mjs');
+    const manifest = { maps: ['U+4E00', 'U+4E8C,U+9F98'], faces: { r: {
+        base: { map: 0 }, remainder: { map: 1 },
+    } } };
+    const before = JSON.stringify(manifest);
+    assert.deepEqual(partsForText(manifest, 'r', '一'), ['base']);
+    assert.deepEqual(partsForText(manifest, 'r', '一二龘'), ['base', 'remainder']);
+    assert.deepEqual(partsForText(manifest, 'r', '三'), []);
+    assert.equal(JSON.stringify(manifest), before);
+});
+
+test('inherited body stacks rebind at explicit owners without layout inspection', async () => {
+    const result = await postcss([regionFontStyles()]).process(
+        "body{margin:0;font-family:'Latin',HMSans,sans-serif}", { from: undefined },
+    );
+    const owner = result.root.nodes.find((node) => node.selector === ':where([data-font-owner])');
+    assert.equal(owner.nodes.length, 1);
+    assert.equal(owner.nodes[0].prop, 'font-family');
+    assert.equal(owner.nodes[0].value, `'Latin',var(--font-h, "Atlos-pending-h"),sans-serif`);
+});

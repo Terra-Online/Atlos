@@ -47,8 +47,15 @@
             <p class="r">远处文字</p>
         </section>
         <script type="module">
-            import { observeFontRegions } from '/src/locale/fontRegions.ts';
-            window.regionController = observeFontRegions(document, 'CN');
+            import { createFontRegions } from '/src/locale/fontRegions.ts';
+            window.regionController = createFontRegions(document, 'CN');
+            window.owners = {};
+            window.mount = (id, runs) => {
+                window.owners[id] = window.regionController.register(document.getElementById(id), runs);
+            };
+            window.mount('shell', [{faces: ['db'], text: '地图设置 用户中心'}]);
+            window.mount('detail', [{faces: ['r'], text: '一二龘完整内容搜索地点'}, {faces: ['h'], text: '查看评论'}]);
+            for (const id of ['card', 'cardCopy']) window.mount(id, [{faces: ['r'], text: '昵称龘'}]);
             window.metrics = { cls: 0, frames: [] };
             new PerformanceObserver((list) => {
                 for (const e of list.getEntries())

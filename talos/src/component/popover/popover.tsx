@@ -1,8 +1,10 @@
-import React, { useRef, useEffect, useCallback, useId } from 'react';
+import { registerFontRegion } from '@/locale/fontLoader';
+import React, { useRef, useEffect, useCallback, useId, useLayoutEffect } from 'react';
 import styles from './popover.module.scss';
 
 interface PopoverTooltipProps {
     content: React.ReactNode;
+    fontText?: string;
     children: React.ReactElement;
     anchor?: 'element' | 'first-line';
     placement?: 'top' | 'bottom' | 'left' | 'right';
@@ -137,6 +139,7 @@ const isPopoverOpen = (popover: HTMLElement): boolean => {
  */
 const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     content,
+    fontText,
     children,
     placement = 'right',
     anchor = 'element',
@@ -148,6 +151,11 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     const closeTimeoutRef = useRef<number | undefined>(undefined);
     const positionFrameRef = useRef<number | undefined>(undefined);
     const isOpenRef = useRef(false);
+    const fontOwner = useRef<ReturnType<typeof registerFontRegion>>(undefined);
+    const text = fontText ?? (typeof content === 'string' || typeof content === 'number' ? String(content) : '');
+    useLayoutEffect(() => {
+        fontOwner.current?.update([{ faces: ['h', 'r'], text }]);
+    }, [text]);
     const triggerRef = useRef<HTMLElement | null>(null);
     const popoverRef = useRef<PopoverElement | null>(null);
     const popoverId = useId();
@@ -220,6 +228,8 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             }
             popover.classList.remove(styles.popoverClose);
             isOpenRef.current = false;
+            fontOwner.current?.stop();
+            fontOwner.current = undefined;
         };
 
         if (immediate || !isPopoverOpen(popover)) {
@@ -238,6 +248,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         const popover = popoverRef.current;
         if (!popover) return;
 
+        if (!fontOwner.current) fontOwner.current = registerFontRegion(popover, [{ faces: ['h', 'r'], text }]);
         popover.classList.remove(styles.popoverClose);
         try {
             if (!isPopoverOpen(popover)) {
@@ -250,7 +261,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         isOpenRef.current = true;
         positionPopover();
         schedulePosition();
-    }, [clearCloseTimeout, disabled, hasContent, positionPopover, schedulePosition]);
+    }, [clearCloseTimeout, disabled, hasContent, positionPopover, schedulePosition, text]);
 
     // Cleanup function: ensure popover is closed
     useEffect(() => {
@@ -260,6 +271,8 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
                 window.cancelAnimationFrame(positionFrameRef.current);
             }
             hidePopover(true);
+            fontOwner.current?.stop();
+            fontOwner.current = undefined;
         };
     }, [clearCloseTimeout, hidePopover]);
 

@@ -15,7 +15,7 @@ const html = fs.readFileSync(
 const server = await createServer({
     configFile: false,
     root,
-    optimizeDeps: { noDiscovery: true, entries: [] },
+    optimizeDeps: { noDiscovery: true, entries: [], include: ['accept-language-parser'] },
     resolve: { alias: { '@': root + 'src' } },
     plugins: [
         {
@@ -103,7 +103,7 @@ const active = (page, id, face) =>
         });
         if (partial.length)
             throw Error(`${name}: partial region activation ${partial.length}`);
-        assert.match(state.styles[3][1], /Atlos-pending-r/);
+        assert.doesNotMatch(state.styles[3][1], /Atlos-area/);
         const shared = await page.evaluate(() => {
             window.stopSampling();
             const original = document
@@ -112,6 +112,7 @@ const active = (page, id, face) =>
             const copy = document
                 .getElementById('cardCopy')
                 .style.getPropertyValue('--font-r');
+            window.owners.card.stop();
             document.getElementById('card').remove();
             return original === copy;
         });
@@ -127,6 +128,7 @@ const active = (page, id, face) =>
         await page.waitForTimeout(50);
         await page.evaluate(() => {
             document.querySelector('#detail p').textContent = '新しい名前鱻';
+            window.owners.detail.update([{faces: ['r'], text: '新しい名前鱻'}]);
             window.regionController.setRegion('JP');
         });
         await active(page, 'detail', 'r');
@@ -141,6 +143,8 @@ const active = (page, id, face) =>
             jpAlias,
         );
         await page.locator('#offscreen').scrollIntoViewIfNeeded();
+        assert.equal(await page.locator('#offscreen').evaluate((e) => e.style.getPropertyValue('--font-r')), '');
+        await page.evaluate(() => window.mount('offscreen', [{faces: ['r'], text: '远处文字'}]));
         await active(page, 'offscreen', 'r');
         const beforeStop = await page.evaluate(() => document.fonts.size);
         await page.evaluate(() => window.regionController.stop());
@@ -184,17 +188,54 @@ const active = (page, id, face) =>
             `${name}: failed region partially activated`,
         );
         await failed.evaluate(
-            () => (document.querySelector('#detail p').textContent += '更新'),
+            () => {
+                document.querySelector('#detail p').textContent += '更新';
+                window.owners.detail.update([{faces: ['r'], text: '一二龘更新'}, {faces: ['h'], text: '查看评论'}]);
+            },
         );
         await active(failed, 'detail', 'h');
-        await failed.evaluate(() => document.getElementById('detail').remove());
+        await failed.evaluate(() => { window.owners.detail.stop(); document.getElementById('detail').remove(); });
         await failed.waitForTimeout(100);
         await failed.evaluate(() => window.regionController.stop());
         assert.equal(await failed.evaluate(() => document.fonts.size), 0);
         results[name].failureRetry = 'passed';
         results[name].languageRace = 'passed';
-        results[name].scroll = 'passed';
+        results[name].explicitMount = 'passed';
         results[name].cleanup = 'passed';
+        await page.evaluate(async () => {
+            const fonts = await import('/src/locale/fontLoader.ts');
+            const node = document.createElement('div');
+            node.id = 'adopted';
+            node.textContent = '昵称龘';
+            node.className = 'r';
+            document.body.append(node);
+            window.adoptFonts = fonts;
+            window.adoptOwner = fonts.registerFontRegion(node, [{ faces: ['r'], text: '昵称龘' }]);
+        });
+        await active(page, 'adopted', 'r');
+        await page.evaluate(() => {
+            const frame = document.createElement('iframe');
+            frame.id = 'pip';
+            document.body.append(frame);
+            frame.contentDocument.documentElement.lang = 'zh-CN';
+            frame.contentDocument.body.append(document.getElementById('adopted'));
+            window.adoptFonts.migrateFontRegions();
+        });
+        await page.waitForFunction(() => {
+            const doc = document.getElementById('pip').contentDocument;
+            const family = doc.getElementById('adopted').style.getPropertyValue('--font-r').replaceAll('"', '');
+            return [...doc.fonts].some((font) => font.family === family);
+        });
+        await page.evaluate(() => {
+            const doc = document.getElementById('pip').contentDocument;
+            document.body.append(doc.getElementById('adopted'));
+            window.adoptFonts.migrateFontRegions();
+            window.adoptFonts.stopFontLoader(doc);
+        });
+        await active(page, 'adopted', 'r');
+        await page.evaluate(() => { window.adoptOwner.stop(); window.adoptFonts.stopFontLoader(document); });
+        assert.equal(await page.evaluate(() => document.fonts.size), 0);
+        results[name].documentAdoption = 'passed';
         await browser.close();
         console.log(name, JSON.stringify(results[name]));
     }

@@ -1,3 +1,4 @@
+import { useFontRegion } from '@main/locale/useFontRegion';
 import { useEffect, useState } from 'react';
 import { CommentContent } from '@main/component/detail/comment/emoji';
 import { useTranslateGame } from '@main/locale';
@@ -158,12 +159,21 @@ export default function List({
             active = false;
         };
     }, [items, kind]);
+    const pointText = items.map((item) => {
+        const marker = markers[item.markerId];
+        return (game(`markerType.key.${item.poiType}`) || item.poiType)
+            + (marker ? getSubregionLabel(marker.subregId, game) : '');
+    }).join('');
+    const fontRef = useFontRegion([
+        { faces: ['h', 'm'], text: items.map((item) => item.content || '').join('') },
+        { faces: ['m'], text: pointText },
+    ]);
     if (!items.length)
         return (
             <p className={styles.empty}>{t('userHub.emptyContributions')}</p>
         );
     return (
-        <ul className={kind === 'image' ? styles.images : styles.list}>
+        <ul ref={fontRef} className={kind === 'image' ? styles.images : styles.list}>
             {items.map((item) => {
                 const pointName =
                     game(`markerType.key.${item.poiType}`) || item.poiType;

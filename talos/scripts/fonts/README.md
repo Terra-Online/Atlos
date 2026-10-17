@@ -47,27 +47,30 @@ hashed outputs. Diagnostic partial generation requires a temporary output path.
 The shared Vite plugin translates the existing CJK `font-family` entries into
 region variables while preserving preceding Latin faces and the family order. It
 leaves `@font-face` definitions intact. Main boot and each app's existing locale
-initialization start the shared observer without waiting for downloads.
+initialization start the build-time shell requests without waiting for downloads.
+`requirements.mjs` resolves catalog text to frozen shard IDs at build time; it
+never regenerates fonts. Shell faces are explicit per app. New catalog characters
+select existing residual packs. UI requirements include ICU literal branches.
 
 `prepareFonts(selection, alias)` loads every selected face without registering
-it. A region registers the complete prepared set and enables its aliases in one
-task. Different complete selections have different aliases; regions with an
-identical complete selection share loaded native faces with reference-counted
-cleanup. A later text/language request invalidates previous pending work. Failed
-regions remain in fallback and retry after the next content change or visit.
-Completed buffers are shared between regions, bounded by 64 entries / 16 MiB;
-in-flight requests are deduped.
+it. An explicit owner registers the complete set and enables its aliases in one
+task. Identical selections share reference-counted native faces. Updating text
+or language invalidates pending work; failures retain fallback until a later
+update or visit. Source buffers are shared and bounded by 64 entries / 16 MiB.
 
-`data-font-region` declares a boundary on an existing element, without adding a
-layout wrapper. Shell, sidebar, drawer, detail and modal containers declare it;
-articles, dialogs and tooltips are also automatic boundaries. Nested boundaries
-are excluded from their parent's demand. The collector reads visible DOM text,
-formatted dynamic values, input/select values, placeholders and pseudo content.
-The bubbling `fontregionchange` event lets overflow labels remeasure after
-regional activation or fallback. Viewport changes update demand; unrendered
-virtual-list items are never scanned. Original cmap holes and unsupported
-characters continue through the existing fallback stack. Picture-in-picture has
-its own observer and cleanup lifecycle.
+`useFontRegion(runs)` attaches to an existing component element. Supply actual
+formatted data and the ordered CJK faces declared by that component, including
+pseudo-element text. Ref detachment releases ownership. Static UI for its faces
+is included automatically. Modals, archive bodies, ID cards and translation
+annotations declare their data; tooltips register on opening. Fonts preserve
+existing Latin precedence and unsupported glyphs retain the original fallback.
+Body font declarations also bind at explicit owners to isolate inherited text.
+
+There is no DOM text traversal, computed-style/geometry inspection or scroll,
+image-load or animation listener in the font loader. A single attribute observer
+tracks document language, including picture-in-picture. Virtualized components
+request fonts when mounted. `fontregionchange` announces atomic activation for
+existing overflow measurements.
 
 ## Regression checks
 
@@ -82,4 +85,4 @@ The browser harness requires Playwright with Chromium, Firefox and WebKit
 installed and resolvable (an existing tool runtime can be supplied via
 `NODE_PATH`). It starts its own loopback server, uses actual generated fonts,
 and records results to `.cache/font-browser/results.json`. It checks delayed
-responses, failure/retry, language races, offscreen/scroll demand and cleanup.
+responses, failure/retry, language races, explicit mount demand without scroll scanning and cleanup.
