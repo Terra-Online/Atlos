@@ -14,6 +14,7 @@ import {
   type Lang,
 } from '@/locale';
 import { useTranslateUI } from '@/locale';
+import { preloadFontManifests } from '@/locale/fontLoader';
 import parse from 'html-react-parser';
 
 export interface LanguageProps {
@@ -43,6 +44,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   const groupId = useId();
 
   useEffect(() => {
+    if (open) preloadFontManifests();
     // These native labels keep their own glyphs across document languages.
     // Warm the existing CSS face while the closed dialog is already mounted.
     void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);

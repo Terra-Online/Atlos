@@ -1,5 +1,14 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
 import { createFontRegions } from './fontRegions';
+import { loadManifest, type Region } from './fontShards';
+
+const fontRegions: Region[] = ['CN', 'HK', 'JP'];
+
+/** Warm the small region indexes while the language picker is visible. */
+export function preloadFontManifests(): void {
+    for (const region of fontRegions)
+        void loadManifest(region).catch(() => undefined);
+}
 
 const documents = new Map<
     Document,
