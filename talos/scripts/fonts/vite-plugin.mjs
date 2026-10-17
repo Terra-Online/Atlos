@@ -123,8 +123,60 @@ export const checkFonts = async (project = root) => {
 export const fontShardsPlugin = (app = 'main') => {
     let fonts;
     let base;
+    let building;
+    let scriptBase;
+    const preloadEntry = '/@atlos-font-preload';
+    const preloadFile = path.join(root, 'src/locale/fontPreload.ts');
     return {
         name: 'atlos-font-shards',
+        configResolved(config) {
+            building = config.command === 'build';
+            scriptBase = config.base;
+        },
+        buildStart() {
+            if (fonts && building)
+                this.emitFile({
+                    type: 'chunk',
+                    id: preloadFile,
+                    name: 'font-preload',
+                    preserveSignature: 'strict',
+                });
+        },
+        resolveId(id) {
+            if (id === preloadEntry) return '\0atlos-font-preload';
+        },
+        load(id) {
+            if (id === '\0atlos-font-preload')
+                return `import ${JSON.stringify(preloadFile)};`;
+        },
+        transformIndexHtml: {
+            // A separate Rollup entry avoids Vite merging this into the much
+            // larger application entry when processing HTML module scripts.
+            order: 'post',
+            handler(_html, context) {
+                if (!fonts) return;
+                const chunk = Object.values(context.bundle || {}).find(
+                    (entry) =>
+                        entry.type === 'chunk' &&
+                        entry.facadeModuleId === preloadFile,
+                );
+                if (building && !chunk)
+                    throw new Error('Missing font preload entry.');
+                return [
+                    {
+                        tag: 'script',
+                        attrs: {
+                            type: 'module',
+                            crossorigin: '',
+                            src: chunk
+                                ? joinCdnPath(scriptBase, chunk.fileName)
+                                : preloadEntry,
+                        },
+                        injectTo: 'head-prepend',
+                    },
+                ];
+            },
+        },
         async config(config, env) {
             const sourceOnly = process.env.ATLOS_SOURCE_ONLY === '1';
             if (!sourceOnly) fonts = await checkFonts();

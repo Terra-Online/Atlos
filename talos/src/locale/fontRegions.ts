@@ -43,16 +43,36 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             ready: Promise<Prepared>;
             refs: number;
             registered: boolean;
+            parts: Set<string>;
             prepared?: Prepared;
         }
     >();
     const leaseFonts = (key: string, selection: Selection[]) => {
         let batch = batches.get(key);
         if (!batch) {
+            // A later-mounted region can reuse a fully loaded shell collection.
+            // Pending collections are excluded so extra shards cannot delay it.
+            for (const [candidateKey, candidate] of batches) {
+                if (
+                    candidate.registered &&
+                    selection.every((part) =>
+                        candidate.parts.has(`${part.face}:${part.url}`),
+                    )
+                ) {
+                    key = candidateKey;
+                    batch = candidate;
+                    break;
+                }
+            }
+        }
+        if (!batch) {
             batch = {
                 ready: prepareFonts(selection, `area${++nextAreaId}-0`),
                 refs: 0,
                 registered: false,
+                parts: new Set(
+                    selection.map((part) => `${part.face}:${part.url}`),
+                ),
             };
             batches.set(key, batch);
         }

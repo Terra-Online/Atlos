@@ -47,16 +47,19 @@ hashed outputs. Diagnostic partial generation requires a temporary output path.
 The shared Vite plugin translates the existing CJK `font-family` entries into
 region variables while preserving preceding Latin faces and the family order. It
 leaves `@font-face` definitions intact. Main boot and each app's existing locale
-initialization start the build-time shell requests without waiting for downloads.
+initialization reuse an early HTML module that starts the build-time shell
+requests independently of application startup, without waiting for downloads.
 `requirements.mjs` resolves catalog text to frozen shard IDs at build time; it
 never regenerates fonts. Shell faces are explicit per app. New catalog characters
 select existing residual packs. UI requirements include ICU literal branches.
 
 `prepareFonts(selection, alias)` loads every selected face without registering
 it. An explicit owner registers the complete set and enables its aliases in one
-task. Identical selections share reference-counted native faces. Updating text
-or language invalidates pending work; failures retain fallback until a later
-update or visit. Source buffers are shared and bounded by 64 entries / 16 MiB.
+task. Identical selections and subsets of already-ready collections share
+reference-counted native faces. Updating text or language invalidates pending
+work; failures retain fallback until a later
+update or visit. Fonts load directly from immutable URLs through the browser's
+font pipeline and resource cache, without retaining source buffers in JavaScript.
 
 `useFontRegion(runs)` attaches to an existing component element. Supply actual
 formatted data and the ordered CJK faces declared by that component, including

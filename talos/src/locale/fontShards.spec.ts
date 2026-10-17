@@ -58,15 +58,6 @@ describe('immutable font selection', () => {
         const instances: { family: string; load: () => Promise<FontFace> }[] =
             [];
         vi.stubGlobal(
-            'fetch',
-            vi.fn(() =>
-                Promise.resolve({
-                    ok: true,
-                    arrayBuffer: () => Promise.resolve(new ArrayBuffer(1)),
-                }),
-            ),
-        );
-        vi.stubGlobal(
             'FontFace',
             class {
                 constructor(public family: string) {

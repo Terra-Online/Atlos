@@ -63,12 +63,14 @@ export async function requirements(manifests, app) {
                 partsForText(manifest, face, ui[region]),
             ]),
         );
+        // The main sidebar ID card uses Regular from its first render;
+        // include it here instead of discovering it after auth loads.
         const shellFaces =
             app === 'intel'
                 ? ['db', 'r', 'h']
                 : app === 'user-hub'
                   ? ['db', 'h']
-                  : ['db', 'm', 'h'];
+                  : ['db', 'm', 'r', 'h'];
         // JP has no Harmony; retain its existing UD fallback.
         if (region === 'JP' && !shellFaces.includes('r')) shellFaces.push('r');
         const shell = Object.fromEntries(

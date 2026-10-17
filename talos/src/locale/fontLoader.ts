@@ -12,10 +12,13 @@ const detectLanguage = (doc: Document): FontRegion =>
     getFontRegionForLocale(doc.documentElement.lang || navigator.language);
 
 /** Load the build-time shell requirements without blocking application boot. */
-export function fontLoader(doc: Document = document): Promise<void> {
+export function fontLoader(
+    doc: Document = document,
+    initialRegion: FontRegion = detectLanguage(doc),
+): Promise<void> {
     if (documents.has(doc) || !doc.fonts || typeof FontFace === 'undefined')
         return Promise.resolve();
-    const regions = createFontRegions(doc, detectLanguage(doc));
+    const regions = createFontRegions(doc, initialRegion);
     regions.register(doc.body);
     const language = new MutationObserver(() =>
         regions.setRegion(detectLanguage(doc)),

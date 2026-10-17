@@ -177,48 +177,6 @@ export const loadManifest = (region: Region) => {
     return pending;
 };
 
-// Bound decoded-source retention. Live FontFaces are owned and released by regions;
-// evicted buffers can be read again from the browser's immutable HTTP cache.
-const buffers = new Map<string, Promise<ArrayBuffer>>();
-const MAX_BUFFERS = 64;
-const settled = new Map<string, number>();
-const MAX_BUFFER_BYTES = 16 * 1024 * 1024;
-let retainedBytes = 0;
-const loadBuffer = (url: string) => {
-    let pending = buffers.get(url);
-    if (!pending) {
-        pending = fetch(url).then((response) => {
-            if (!response.ok)
-                throw new Error(`Font shard HTTP ${response.status}`);
-            return response.arrayBuffer();
-        });
-        buffers.set(url, pending);
-        void pending.then(
-            (buffer) => {
-                settled.set(url, buffer.byteLength);
-                retainedBytes += buffer.byteLength;
-                while (
-                    settled.size > MAX_BUFFERS ||
-                    retainedBytes > MAX_BUFFER_BYTES
-                ) {
-                    const oldest = settled.keys().next().value!;
-                    retainedBytes -= settled.get(oldest)!;
-                    settled.delete(oldest);
-                    buffers.delete(oldest);
-                }
-            },
-            () => {
-                buffers.delete(url);
-            },
-        );
-    } else if (settled.has(url)) {
-        const bytes = settled.get(url)!;
-        settled.delete(url);
-        settled.set(url, bytes);
-    }
-    return pending;
-};
-
 export interface Prepared {
     fonts: FontFace[];
     families: Partial<Record<Face, string>>;
@@ -233,12 +191,17 @@ export const prepareFonts = async (
         selection.map(async (part) => {
             const family = `Atlos-${alias}-${part.face}`;
             families[part.face] = family;
-            const buffer = await loadBuffer(part.url);
-            const font = new FontFace(family, buffer, {
-                unicodeRange: part.range,
-                weight: part.face === 'h' ? '100 900' : 'normal',
-                style: 'normal',
-            });
+            // Native URL loading keeps fetching/decoding in the browser font
+            // pipeline and reuses its resource cache across regional aliases.
+            const font = new FontFace(
+                family,
+                `url(${JSON.stringify(part.url)})`,
+                {
+                    unicodeRange: part.range,
+                    weight: part.face === 'h' ? '100 900' : 'normal',
+                    style: 'normal',
+                },
+            );
             await font.load();
             return font;
         }),
