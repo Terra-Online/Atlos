@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "टिप्पणी का लिंक कॉपी करें",
       "emojiPicker": "इमोजी चुनें",
-      "spoilerHidden": "स्पॉइलर देखने के लिए क्लिक करें",
-      "spoilerRevealed": "अब आप बहुत कुछ जान चुके हैं।",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "कुछ लिखें !",
       "submit": "टिप्पणी पोस्ट करें",
       "actions": "टिप्पणी कार्रवाइयाँ",
@@ -124,7 +124,7 @@
     "fullSupportHint": "UI और इन-गेम सामग्री दोनों के लिए पूर्ण अनुवाद।",
     "uiOnly": "केवल-UI भाषाएँ",
     "uiOnlyHint": "केवल UI अनुवाद, इन-गेम सामग्री अंग्रेजी में प्रदर्शित की जाएगी।",
-    "fyi": "आप हमारे अनुवाद प्रोजेक्ट में भाग लेने या अपनी भाषा के लिए अनुवाद का अनुरोध करने हेतु <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> पर जा सकते हैं; आप ईमेल <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> के माध्यम से साइट व्यवस्थापकों से भी संपर्क कर सकते हैं।",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "अंग्रेज़ी",
       "zh-CN": "सरलीकृत चीनी",
@@ -350,7 +350,7 @@
       "nickName": "उपनाम",
       "note": "नोट",
       "noteNickname": "आप अपने यूज़रनेम में अधिकतम 15 अक्षर, नंबर, हाइफ़न और अंडरस्कोर का उपयोग कर सकते हैं।",
-      "noteUID": "UID रजिस्ट्रेशन के समय दिया जाता है और इसे बदला नहीं जा सकता। आप कभी भी अपना यूज़रनेम बदल सकते हैं। <a href=\"/me/\">उपयोगकर्ता केंद्र</a> में जाने के लिए अवतार क्षेत्र पर क्लिक करें।",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "कार्रवाइयां",
       "importOfficial": "आधिकारिक मानचित्र से आयात करें",
       "save": "परिवर्तन सहेजें",

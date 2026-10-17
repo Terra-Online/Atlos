@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Salin tautan komentar",
       "emojiPicker": "Pilih emoji",
-      "spoilerHidden": "Klik untuk melihat spoiler",
-      "spoilerRevealed": "Sekarang kamu tahu terlalu banyak.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Tulis sesuatu !",
       "submit": "Kirim komentar",
       "actions": "Aksi komentar",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk antarmuka dan konten permainan.",
     "uiOnly": "Hanya antarmuka",
     "uiOnlyHint": "Hanya terjemahan antarmuka, konten permainan akan ditampilkan dalam bahasa Inggris.",
-    "fyi": "Anda dapat mengunjungi <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk berpartisipasi dalam proyek penerjemahan kami atau meminta penerjemahan untuk bahasa Anda; Anda juga dapat menghubungi administrator situs melalui email di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Inggris",
       "zh-CN": "Tionghoa Sederhana",
@@ -350,7 +350,7 @@
       "nickName": "Nama panggilan",
       "note": "Catatan",
       "noteNickname": "Username maksimal 15 karakter (huruf, angka, tanda hubung, garis bawah).",
-      "noteUID": "UID ditetapkan saat pendaftaran dan tidak dapat diubah. Username dapat diperbarui kapan saja. Klik area avatar untuk masuk ke <a href=\"/me/\">Pusat pengguna</a>.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Tindakan",
       "importOfficial": "Impor dari Peta Resmi",
       "save": "Simpan",

@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "复制评论链接",
       "emojiPicker": "选择表情",
-      "spoilerHidden": "点击以查看剧透内容",
-      "spoilerRevealed": "你知道的太多了",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "说些什么吧！",
       "submit": "发布留言",
       "actions": "留言操作",
@@ -124,7 +124,7 @@
     "fullSupportHint": "网站界面及游戏内容均已提供完整翻译。",
     "uiOnly": "仅支持界面翻译的语言",
     "uiOnlyHint": "仅提供网站界面文字翻译，游戏内的用语及术语将以英文显示。",
-    "fyi": "您可前往 <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> 参与我们的翻译项目，或为您的语言申请翻译；也可以通过电子邮件 <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 联系本站管理员。",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "英语",
       "zh-CN": "简体中文",
@@ -350,7 +350,7 @@
       "nickName": "昵称",
       "note": "说明",
       "noteNickname": "您可以使用至多十五个字母、数字、连字符或下划线作为您的用户名。",
-      "noteUID": "UID 仅在首次设置用户名时分配且不可更改，但您可以随时更新自己的用户名。点击头像区域进入<a href=\"/me/\">用户中心</a>。",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "操作",
       "importOfficial": "从官方地图导入点位数据",
       "save": "保存更改",

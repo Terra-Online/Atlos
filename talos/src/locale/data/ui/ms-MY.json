@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Salin pautan komen",
       "emojiPicker": "Pilih emoji",
-      "spoilerHidden": "Klik untuk melihat spoiler",
-      "spoilerRevealed": "Sekarang anda tahu terlalu banyak.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Tulis sesuatu!",
       "submit": "Hantar komen",
       "actions": "Tindakan komen",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Terjemahan lengkap untuk kedua-dua UI dan kandungan dalam permainan.",
     "uiOnly": "Bahasa UI Sahaja",
     "uiOnlyHint": "Terjemahan UI sahaja, kandungan dalam permainan akan dipaparkan dalam bahasa Inggeris.",
-    "fyi": "Anda boleh melawat <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> untuk menyertai projek terjemahan kami atau memohon terjemahan bagi bahasa anda; anda juga boleh menghubungi pentadbir laman melalui e-mel di <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "English",
       "zh-CN": "Simplified Chinese",
@@ -350,7 +350,7 @@
       "nickName": "Nama Panggilan",
       "note": "Nota",
       "noteNickname": "Nama pengguna tidak boleh melebihi 15 aksara (hanya huruf, nombor, sempang, dan garis bawah dibenarkan).",
-      "noteUID": "UID ditetapkan pada kali pertama dan tidak boleh diubah. Namun, anda boleh mengemas kini nama pengguna pada bila-bila masa. Klik kawasan avatar untuk masuk ke <a href=\"/me/\">Pusat pengguna</a>.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Tindakan",
       "importOfficial": "Import daripada Peta Rasmi",
       "save": "Simpan Perubahan",

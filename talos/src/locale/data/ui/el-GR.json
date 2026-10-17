@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Αντιγραφή συνδέσμου σχολίου",
       "emojiPicker": "Επιλογή emoji",
-      "spoilerHidden": "Κάντε κλικ για να δείτε το σπόιλερ",
-      "spoilerRevealed": "Τώρα ξέρετε πάρα πολλά.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Γράψτε κάτι!",
       "submit": "Δημοσίευση σχολίου",
       "actions": "Ενέργειες σχολίου",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Πλήρης μετάφραση τόσο για το UI όσο και για το περιεχόμενο του παιχνιδιού.",
     "uiOnly": "Γλώσσες Μόνο για UI",
     "uiOnlyHint": "Μόνο μετάφραση διεπαφής (UI), το περιεχόμενο του παιχνιδιού θα εμφανίζεται στα Αγγλικά.",
-    "fyi": "Μπορείτε να επισκεφθείτε το <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> για να συμμετάσχετε στο μεταφραστικό μας έργο ή να ζητήσετε μετάφραση για τη γλώσσα σας· μπορείτε επίσης να επικοινωνήσετε με τους διαχειριστές του ιστότοπου μέσω email στη διεύθυνση <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Αγγλικά",
       "zh-CN": "Απλοποιημένα Κινεζικά",
@@ -350,7 +350,7 @@
       "nickName": "Ψευδώνυμο",
       "note": "Σημείωση",
       "noteNickname": "Μπορείτε να χρησιμοποιήσετε έως 15 χαρακτήρες (γράμματα, αριθμούς, παύλες και κάτω παύλες).",
-      "noteUID": "Το UID εκχωρείται κατά την εγγραφή και δεν αλλάζει. Μπορείτε να αλλάξετε το όνομα χρήστη ανά πάσα στιγμή. Κάντε κλικ στην περιοχή του avatar για να μεταβείτε στο <a href=\"/me/\">Κέντρο χρήστη</a>.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Ενέργειες",
       "importOfficial": "Εισαγωγή από τον Επίσημο Χάρτη",
       "save": "Αποθήκευση αλλαγών",

@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Yorum bağlantısını kopyala",
       "emojiPicker": "Emoji seç",
-      "spoilerHidden": "Spoiler içeriğini görmek için tıklayın",
-      "spoilerRevealed": "Artık çok fazla şey biliyorsun.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Bir şeyler yazın!",
       "submit": "Yorum gönder",
       "actions": "Yorum işlemleri",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Hem arayüz hem de oyun içi içerikler için tam çeviriler.",
     "uiOnly": "Yalnızca Arayüz Dilleri",
     "uiOnlyHint": "Sadece arayüz çevirileri, oyun içi içerikler İngilizce olarak görüntülenecektir.",
-    "fyi": "Çeviri projemize katılmak veya diliniz için çeviri talep etmek üzere <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a>'i ziyaret edebilirsiniz; ayrıca <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> adresine e-posta göndererek site yöneticileriyle iletişime geçebilirsiniz.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "İngilizce",
       "zh-CN": "Basitleştirilmiş Çince",
@@ -350,7 +350,7 @@
       "nickName": "kullanıcı adı",
       "note": "Not",
       "noteNickname": "En fazla 15 harf, rakam, tire veya alt çizgi kullanabilirsiniz.",
-      "noteUID": "UID, ilk kurulumda atanır ve değiştirilemez. Kullanıcı adınızı istediğiniz zaman güncelleyebilirsiniz. <a href=\"/me/\">Kullanıcı merkezine</a> gitmek için avatar alanına tıklayın.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "İşlem",
       "importOfficial": "Resmi Haritadan İçe Aktar",
       "save": "Değişiklikleri Kaydet",

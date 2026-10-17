@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Копіювати посилання на коментар",
       "emojiPicker": "Вибрати емодзі",
-      "spoilerHidden": "Натисніть, щоб побачити спойлер",
-      "spoilerRevealed": "Тепер ви знаєте забагато.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Напишіть щось!",
       "submit": "Опублікувати коментар",
       "actions": "Дії з коментарем",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Повний переклад UI та ігрового контенту.",
     "uiOnly": "Мови лише для UI",
     "uiOnlyHint": "Перекладено лише UI, ігровий контент буде відображатися англійською.",
-    "fyi": "Ви можете перейти на <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a>, щоб долучитися до нашого перекладацького проєкту або запросити переклад вашою мовою; також можна зв’язатися з адміністраторами сайту електронною поштою <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Англійська",
       "zh-CN": "Спрощена китайська",
@@ -350,7 +350,7 @@
       "nickName": "нікнейм",
       "note": "Примітка",
       "noteNickname": "Не більше 15 літер, цифр, дефісів та нижніх підкреслень.",
-      "noteUID": "UID призначається при першому налаштуванні та не може бути змінений. Натисніть на область аватара, щоб перейти до <a href=\"/me/\">Центру користувача</a>.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Дія",
       "importOfficial": "Імпорт з Офіційної Карти",
       "save": "Зберегти зміни",

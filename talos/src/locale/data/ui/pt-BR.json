@@ -69,8 +69,8 @@
     "comments": {
       "copyLink": "Copiar link do comentário",
       "emojiPicker": "Escolher um emoji",
-      "spoilerHidden": "Clique para revelar o spoiler",
-      "spoilerRevealed": "Agora você sabe demais.",
+      "spoilerHidden": "Click to reveal spoiler content",
+      "spoilerRevealed": "You can't handle the truth!",
       "placeholder": "Escreva algo!",
       "submit": "Publicar comentário",
       "actions": "Ações do comentário",
@@ -124,7 +124,7 @@
     "fullSupportHint": "Traduções completas para a interface e conteúdo do jogo.",
     "uiOnly": "Idiomas Apenas da Interface",
     "uiOnlyHint": "Apenas traduções da interface, o conteúdo do jogo será exibido em inglês.",
-    "fyi": "Você pode acessar o <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> para participar do nosso projeto de tradução ou solicitar uma tradução para o seu idioma; também pode entrar em contato com os administradores do site pelo e-mail <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
+    "fyi": "You can visit <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> to contribute to our translation project or request translation for your language; you can also contact the site administrators at <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a>.",
     "names": {
       "en-US": "Inglês",
       "zh-CN": "Chinês Simplificado",
@@ -350,7 +350,7 @@
       "nickName": "Apelido",
       "note": "Observação",
       "noteNickname": "Você pode usar no máximo 15 caracteres (letras, números, hífens e sublinhado).",
-      "noteUID": "O UID é definido no primeiro cadastro e não pode ser alterado. O nome de usuário pode ser atualizado a qualquer momento. Clique na área do avatar para acessar a <a href=\"/me/\">central do usuário</a>.",
+      "noteUID": "UID is assigned on first setup and cannot be changed. You can update your username any time. Click the avatar area to enter <a href=\"/me/\">User center</a>.",
       "auditLabel": "Ação",
       "importOfficial": "Importar do Mapa Oficial",
       "save": "Salvar alterações",
