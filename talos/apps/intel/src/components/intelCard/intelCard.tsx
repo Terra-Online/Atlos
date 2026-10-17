@@ -46,6 +46,7 @@ const MapPreviewLink = ({ pointId, label, locale }: { pointId: string; label: st
   const token = encodePointIdToken(pointId);
   if (!token) return null;
   const ogBase = locale.toLowerCase().startsWith('zh-') ? OSS_OG_BASE : R2_OG_BASE;
+  const imageUrl = `${ogBase}/${token}.jpg`;
   return (
     <a
       className={styles.mapPreview}
@@ -55,19 +56,51 @@ const MapPreviewLink = ({ pointId, label, locale }: { pointId: string; label: st
       aria-label={label}
       onClick={(event) => event.stopPropagation()}
     >
-      <img
-        src={`${ogBase}/${token}.jpg`}
+      <DeferredMapPreviewImage
+        src={imageUrl}
         alt=""
-        loading="lazy"
-        fetchPriority="low"
-        draggable="false"
-        referrerPolicy="no-referrer"
       />
       <span className={styles.mapPreviewLabel}>
         <span className={styles.mapPreviewText} data-label={label}>{label}</span>
         <span className={styles.mapPreviewArrow} aria-hidden="true">↗</span>
       </span>
     </a>
+  );
+};
+
+const DeferredMapPreviewImage = ({ src, alt }: { src: string; alt: string }) => {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image) return;
+    if (!('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setVisible(true);
+        observer.disconnect();
+      },
+      { rootMargin: '240px' },
+    );
+    observer.observe(image);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    <img
+      ref={imageRef}
+      src={visible ? src : undefined}
+      alt={alt}
+      loading="lazy"
+      fetchPriority="low"
+      draggable="false"
+      referrerPolicy="no-referrer"
+    />
   );
 };
 
