@@ -135,7 +135,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       onClose={onClose}
       onChange={onChange}
       title={t('language.title')}
-      fontRuns={[{ faces: ['m'], text: '' }, { faces: ['b'], text: '' }]}
+      // The modal inherits the shell's bold face. Registering a separate
+      // Bold run here starts a large current-locale shard while the user is
+      // opening the picker, which can compete with the next locale switch.
+      fontRuns={[{ faces: ['m'], text: '' }]}
       icon={<I18nIcon aria-hidden="true" />}
       customHeight='65dvh'
     >
