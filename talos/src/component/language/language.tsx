@@ -25,13 +25,14 @@ export interface LanguageProps {
   onChange?: (open: boolean) => void;
   onSelected?: (lang: string) => void;
   prepareLocale?: (lang: string) => Promise<unknown>;
+  preloadFonts?: (lang: string) => void;
 }
 
 // Match the currentLang transition duration in CSS
 const FREEZE_MS = 400;
 type LanguageItem = { key: Lang; label: string };
 
-const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale }) => {
+const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale, preloadFonts }) => {
   const current = useLocale();
   const t: (k: string) => string = useTranslateUI();
   
@@ -49,7 +50,9 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
 
   const warmLanguage = useCallback((lang: string) => {
     const region = getFontRegionForLocale(lang);
-    if (region && !preloadedRegions.current.has(region)) {
+    if (preloadFonts) {
+      preloadFonts(lang);
+    } else if (region && !preloadedRegions.current.has(region)) {
       preloadedRegions.current.add(region);
       preloadFontRegion(region);
     }

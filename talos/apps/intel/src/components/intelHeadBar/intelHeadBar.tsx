@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import LanguageModal from '@main/component/language/language';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { useTranslateUI } from '@main/locale';
+import { getFontRegionForLocale } from '@main/locale';
+import { preloadFontRegion } from '@main/locale/fontLoader';
 import { setLocale as setIntelLocale, preloadLocale } from '@intel/locale';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
@@ -43,6 +45,10 @@ const IntelHeadBar = () => {
         onClose={() => setLanguageOpen(false)}
         onChange={setLanguageOpen}
         prepareLocale={preloadLocale}
+        preloadFonts={(locale) => {
+          const region = getFontRegionForLocale(locale);
+          if (region) preloadFontRegion(region);
+        }}
         onSelected={(locale) => {
           void setIntelLocale(locale);
         }}
