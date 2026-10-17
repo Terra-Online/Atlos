@@ -9,6 +9,7 @@ import {
   getLangDisplayCode,
   getCurrentLocale,
   getFontRegionForLocale,
+  preloadLocale,
   setLocale,
   toBCP47,
   useLocale,
@@ -44,12 +45,19 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   
   const groupId = useId();
   const preloadedRegions = useRef(new Set<Exclude<ReturnType<typeof getFontRegionForLocale>, null>>());
+  const preloadedLocales = useRef(new Set<string>());
 
   const warmLanguage = useCallback((lang: string) => {
     const region = getFontRegionForLocale(lang);
-    if (!region || preloadedRegions.current.has(region)) return;
-    preloadedRegions.current.add(region);
-    preloadFontRegion(region);
+    if (region && !preloadedRegions.current.has(region)) {
+      preloadedRegions.current.add(region);
+      preloadFontRegion(region);
+    }
+    if (!preloadedLocales.current.has(lang)) {
+      preloadedLocales.current.add(lang);
+      preloadLocale(lang);
+      void prepareLocale?.(lang);
+    }
   }, []);
 
   useEffect(() => {

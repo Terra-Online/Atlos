@@ -211,4 +211,9 @@ export async function setLocale(lang: string, isCurrent?: () => boolean) {
     if (await loadAndSet(normalized, isCurrent)) persistLocale(normalized);
 }
 
+/** Warm one user-selected catalog without committing locale or fonts. */
+export function preloadLocale(lang: string): void {
+    void loadLocaleCached(normalizeLang(lang)).catch(() => undefined);
+}
+
 export const i18nInitPromise = init();
