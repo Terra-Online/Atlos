@@ -1,7 +1,6 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
 import { createFontRegions } from './fontRegions';
-import { loadManifest, type Face, type Region } from './fontShards';
-import { requirements } from './fontConfig';
+import { loadManifest, type Region } from './fontShards';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
 
@@ -13,49 +12,14 @@ export function preloadFontManifests(): void {
 
 /** Warm only the selected region's current registered areas. */
 export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
-    void loadManifest(region)
-        .then(({ manifest, url }) => {
-            const metadata = requirements[region];
-            const parts = Object.fromEntries(
-                [...new Set([
-                    ...Object.keys(metadata?.ui || {}),
-                    ...Object.keys(metadata?.shell || {}),
-                ])].map((face) => [
-                    face,
-                    [
-                        ...new Set([
-                            ...(metadata?.ui?.[face as Face] || []),
-                            ...(metadata?.shell?.[face as Face] || []),
-                        ]),
-                    ],
-                ]),
-            );
-            const files = Object.entries(parts).flatMap(([face, keys]) =>
-                (keys || []).flatMap((key) => {
-                    const part = manifest.faces[face as Face]?.[key];
-                    return part
-                        ? [{
-                              face: face as Face,
-                              key,
-                              url: new URL(part.file, url).href,
-                              range: manifest.maps[part.range],
-                          }]
-                        : [];
-                }),
-            );
-            return Promise.all(
-                files.map(({ face, key, url: file, range }) =>
-                    new FontFace(
-                        `Atlos-preload-${region}-${face}-${key}`,
-                        `url(${JSON.stringify(file)})`,
-                        {
-                            unicodeRange: range,
-                            weight: face === 'h' ? '100 900' : 'normal',
-                        },
-                    ).load(),
+    void fontLoader()
+        .then(() =>
+            Promise.all(
+                [...documents.values()].map((state) =>
+                    state.regions.preload(region),
                 ),
-            );
-        })
+            ),
+        )
         .catch(() => undefined);
 }
 

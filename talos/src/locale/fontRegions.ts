@@ -108,6 +108,13 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         };
     };
     type Lease = ReturnType<typeof leaseFonts>;
+    let warmRegion: Region | null = null;
+    let warmLeases: Lease[] = [];
+    const releaseWarm = () => {
+        warmLeases.forEach((lease) => lease.release());
+        warmLeases = [];
+        warmRegion = null;
+    };
     interface Plan {
         revision: number;
         region: FontRegion;
@@ -384,6 +391,21 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     };
     return {
         register,
+        async preload(next: Region) {
+            if (warmRegion === next && warmLeases.length) return;
+            releaseWarm();
+            const results = await Promise.allSettled(
+                [...areas].map((area) => area.prepare(next)),
+            );
+            const leases = results.flatMap((result) =>
+                result.status === 'fulfilled' && result.value.lease
+                    ? [result.value.lease]
+                    : [],
+            );
+            if (!leases.length) return;
+            warmRegion = next;
+            warmLeases = leases;
+        },
         async setRegion(next: FontRegion, isCurrent = () => true) {
             if (requested !== next) {
                 requested = next;
@@ -448,6 +470,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         stop() {
             stopped = true;
             generation++;
+            releaseWarm();
             for (const area of [...areas]) area.stop();
         },
     };
