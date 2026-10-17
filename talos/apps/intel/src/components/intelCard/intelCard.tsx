@@ -5,7 +5,6 @@ import {
   memo,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -443,9 +442,11 @@ const IntelCard = ({
     };
   }, [syncCardSkeleton]);
 
-  useLayoutEffect(() => {
-    // Folding only changes presentation. The natural expanded height remains
-    // valid, so toggling the whole grid must not enqueue hundreds of reads.
+  useEffect(() => {
+    // Keep language commits paintable. Re-measuring every card synchronously
+    // here forces hundreds of layout reads before the new catalog can appear;
+    // the existing frame-based measurement above corrects the presentation
+    // after the commit.
     syncCardSkeleton();
     const skeleton = cardSkeletonRef.current;
     return () => {
