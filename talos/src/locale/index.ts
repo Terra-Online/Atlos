@@ -146,10 +146,14 @@ async function loadAndSet(locale: Lang, valid = () => true) {
     const current = beginRequest();
     const isCurrent = () => current() && valid();
     const fontRegion = getFontRegionForLocale(locale);
-    const data = await loadLocaleCached(locale);
+    // Start catalog and font work together. The UI commit still waits for
+    // both, but a cold locale chunk must not delay the font manifest/request.
+    const dataPromise = loadLocaleCached(locale);
+    const fontsPromise = switchFontRegion(fontRegion, isCurrent);
+    const data = await dataPromise;
     if (!isCurrent()) return false;
     try {
-        await switchFontRegion(fontRegion, isCurrent);
+        await fontsPromise;
     } catch (error: unknown) {
         LOGGER.warn('Font switch failed:', error);
         if (Object.keys(useI18nStore.getState().data.ui).length) return false;
