@@ -1,6 +1,7 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
 import { createFontRegions } from './fontRegions';
-import { loadManifest, type Region } from './fontShards';
+import { loadManifest, type Face, type Region } from './fontShards';
+import { requirements } from './fontConfig';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
 
@@ -12,11 +13,24 @@ export function preloadFontManifests(): void {
 
 /** Warm only the selected region's current registered areas. */
 export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
-    void fontLoader().then(() =>
-        Promise.all(
-            [...documents.values()].map((state) => state.regions.preload(region)),
-        ),
-    ).catch(() => undefined);
+    void loadManifest(region)
+        .then(({ manifest, url }) => {
+            const parts = requirements[region]?.shell || {};
+            const files = Object.entries(parts).flatMap(([face, keys]) =>
+                (keys || []).flatMap((key) => {
+                    const part = manifest.faces[face as Face]?.[key];
+                    return part ? [new URL(part.file, url).href] : [];
+                }),
+            );
+            return Promise.all(
+                [...new Set(files)].map((file) =>
+                    fetch(file, { cache: 'force-cache' }).then((response) =>
+                        response.arrayBuffer(),
+                    ),
+                ),
+            );
+        })
+        .catch(() => undefined);
 }
 
 const documents = new Map<
