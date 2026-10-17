@@ -33,14 +33,26 @@ export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
             const files = Object.entries(parts).flatMap(([face, keys]) =>
                 (keys || []).flatMap((key) => {
                     const part = manifest.faces[face as Face]?.[key];
-                    return part ? [new URL(part.file, url).href] : [];
+                    return part
+                        ? [{
+                              face: face as Face,
+                              key,
+                              url: new URL(part.file, url).href,
+                              range: manifest.maps[part.range],
+                          }]
+                        : [];
                 }),
             );
             return Promise.all(
-                [...new Set(files)].map((file) =>
-                    fetch(file, { cache: 'force-cache' }).then((response) =>
-                        response.arrayBuffer(),
-                    ),
+                files.map(({ face, key, url: file, range }) =>
+                    new FontFace(
+                        `Atlos-preload-${region}-${face}-${key}`,
+                        `url(${JSON.stringify(file)})`,
+                        {
+                            unicodeRange: range,
+                            weight: face === 'h' ? '100 900' : 'normal',
+                        },
+                    ).load(),
                 ),
             );
         })
