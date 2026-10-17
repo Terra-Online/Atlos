@@ -11,7 +11,7 @@ import { switchFontRegion } from '@main/locale/fontLoader';
 
 type Catalog = Record<string, unknown>;
 type JsonModule = { default: Catalog };
-type Bundle = { ui: Catalog; fallback: Catalog };
+export type Bundle = { ui: Catalog; fallback: Catalog };
 type State = Bundle & { locale: Lang };
 
 const modules = import.meta.glob<JsonModule>('./data/ui/*.json');
@@ -113,6 +113,11 @@ export const setLocaleData = async (locale: string) => {
     const data = await loadLocale(normalized);
     if (!isCurrent()) return;
     useI18nStore.setState({ locale: normalized, ...data });
+};
+
+/** Apply a preloaded catalog inside the shared language commit. */
+export const applyLocaleData = (locale: string, data: Bundle) => {
+    useI18nStore.setState({ locale: normalizeLang(locale), ...data });
 };
 
 export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));

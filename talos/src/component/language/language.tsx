@@ -25,6 +25,7 @@ export interface LanguageProps {
   onChange?: (open: boolean) => void;
   onSelected?: (lang: string) => void;
   prepareLocale?: (lang: string) => Promise<unknown>;
+  commitLocale?: (lang: string, data: unknown) => void;
   preloadFonts?: (lang: string) => void;
 }
 
@@ -32,7 +33,7 @@ export interface LanguageProps {
 const FREEZE_MS = 400;
 type LanguageItem = { key: Lang; label: string };
 
-const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale, preloadFonts }) => {
+const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale, commitLocale, preloadFonts }) => {
   const current = useLocale();
   const t: (k: string) => string = useTranslateUI();
   
@@ -94,7 +95,13 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       // locale chunks on a cold cache, which makes a language switch appear
       // much slower than the old loader.
       const catalog = prepareLocale?.(lang);
-      const fonts = setLocale(lang, () => revision === pickRevision.current);
+      const fonts = setLocale(
+        lang,
+        () => revision === pickRevision.current,
+        commitLocale && catalog
+          ? async () => commitLocale(lang, await catalog)
+          : undefined,
+      );
       await Promise.all([catalog, fonts]);
       if (revision !== pickRevision.current) return;
     } catch (error: unknown) {
@@ -116,7 +123,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       setFreeze(null);
       freezeTimerRef.current = null;
     }, FREEZE_MS);
-  }, [current, t, onSelected, prepareLocale]);
+  }, [current, t, onSelected, prepareLocale, commitLocale]);
   useEffect(() => () => {
     if (freezeTimerRef.current) window.clearTimeout(freezeTimerRef.current);
   }, []);

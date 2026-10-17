@@ -36,7 +36,7 @@ export {
   type Lang,
 } from '@main/lib/i18n/lang';
 
-interface I18nBundle {
+export interface I18nBundle {
   game: Record<string, unknown>;
   ui: Record<string, unknown>;
 }
@@ -146,6 +146,11 @@ export const setLocaleData = async (locale: string) => {
   const data = await loadLocale(normalized);
   if (!isCurrent()) return;
   useI18nStore.setState({ locale: normalized, data });
+};
+
+/** Apply a preloaded catalog inside the shared language commit. */
+export const applyLocaleData = (locale: string, data: I18nBundle) => {
+  useI18nStore.setState({ locale: normalizeLang(locale), data });
 };
 
 export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));

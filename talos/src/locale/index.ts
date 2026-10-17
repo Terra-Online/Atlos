@@ -142,7 +142,11 @@ function loadLocaleCached(locale: Lang): Promise<II18nBundle> {
 
 const beginRequest = createRequestGuard();
 
-async function loadAndSet(locale: Lang, valid = () => true) {
+async function loadAndSet(
+    locale: Lang,
+    valid = () => true,
+    beforeCommit?: () => void | Promise<void>,
+) {
     const current = beginRequest();
     const isCurrent = () => current() && valid();
     const fontRegion = getFontRegionForLocale(locale);
@@ -162,6 +166,8 @@ async function loadAndSet(locale: Lang, valid = () => true) {
         LOGGER.warn('Font switch failed:', error);
         if (Object.keys(useI18nStore.getState().data.ui).length) return false;
     }
+    if (!isCurrent()) return false;
+    await beforeCommit?.();
     if (!isCurrent()) return false;
     useI18nStore.setState({ locale, data });
     
@@ -206,9 +212,14 @@ export const useLocale = () => useI18nStore((s) => s.locale);
 
 export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 
-export async function setLocale(lang: string, isCurrent?: () => boolean) {
+export async function setLocale(
+    lang: string,
+    isCurrent?: () => boolean,
+    beforeCommit?: () => void | Promise<void>,
+) {
     const normalized = normalizeLang(lang);
-    if (await loadAndSet(normalized, isCurrent)) persistLocale(normalized);
+    if (await loadAndSet(normalized, isCurrent, beforeCommit))
+        persistLocale(normalized);
 }
 
 /** Warm one user-selected catalog without committing locale or fonts. */
