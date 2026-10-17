@@ -91,11 +91,17 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
 const beginRequest = createRequestGuard();
 const loadAndSet = async (locale: Lang) => {
   const isCurrent = beginRequest();
-  const data = await loadLocale(locale);
+  const dataPromise = loadLocale(locale);
+  const fontsPromise = switchFontRegion(getFontRegionForLocale(locale), isCurrent);
+  const [dataResult, fontsResult] = await Promise.allSettled([
+    dataPromise,
+    fontsPromise,
+  ]);
+  if (dataResult.status === 'rejected') throw dataResult.reason;
+  const data = dataResult.value;
   if (!isCurrent()) return false;
-  try {
-    await switchFontRegion(getFontRegionForLocale(locale), isCurrent);
-  } catch (error: unknown) {
+  if (fontsResult.status === 'rejected') {
+    const error = fontsResult.reason;
     console.warn('Font switch failed:', error);
     if (Object.keys(useI18nStore.getState().data.ui).length) return false;
   }
