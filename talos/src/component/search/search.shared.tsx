@@ -13,6 +13,7 @@ import { useMarkerStore } from '@/store/marker.ts';
 import { formatIcuText } from '@/locale/messageFormat';
 import SearchInput, { type ExternalSearchProps } from './search.input';
 import { useAdvancedSearch } from './useAdvancedSearch';
+import { useFontRegion } from '@/locale/useFontRegion';
 
 export type { ExternalSearchProps } from './search.input';
 export interface SearchSharedProps {
@@ -75,6 +76,10 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
             clickTitle: canNavigate ? (locateText) : (selectText),
         };
     }), [results, t]);
+    const fontRef = useFontRegion([
+        { faces: ['db'], text: results.map((group) => group.displayName + group.binderName + group.selectorName).join(''), localized: 'game' },
+        { faces: ['h', 'b'], text: results.map((group) => group.snippet).join('') },
+    ]);
 
     const onResultClick = useCallback((group: (typeof clickableResults)[number]) => {
         if (group.uniquePoint) {
@@ -164,6 +169,7 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
                         <div className={styles.resultDivider} data-open={panelOpen ? 'true' : 'false'} />
                         <div
                             className={styles.searchResultShell}
+                            ref={panelOpen ? fontRef : undefined}
                             data-loading={loading ? 'true' : 'false'}
                             data-open={panelOpen ? 'true' : 'false'}
                             data-mask-top={maskTopVisible ? 'true' : 'false'}

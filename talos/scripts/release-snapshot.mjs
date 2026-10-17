@@ -332,6 +332,12 @@ export const composeApp = async (runner, options, target, source, state) => {
                 );
         }
     }
+    const shardDir = path.join(appDir, 'assets/fonts/shards');
+    if (await fs.access(shardDir).then(() => true, () => false)) {
+        for (const [file, hash] of Object.entries(await hashFiles(shardDir)))
+            if (baselineFiles[`assets/fonts/shards/${file}`] !== hash)
+                throw new Error(`Shared font changed: ${file}. Complete a full publish first.`);
+    }
     const origin = await siteUrl(runner, options, target);
     await verifyLive(runner, baseline, info, origin);
     const work = path.join(

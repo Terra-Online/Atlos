@@ -163,14 +163,18 @@ export async function preloadAllLanguages(current: Lang = getCurrentLocale()) {
 
 const beginRequest = createRequestGuard();
 
-async function loadAndSet(locale: Lang) {
-    const isCurrent = beginRequest();
+async function loadAndSet(locale: Lang, valid = () => true) {
+    const current = beginRequest();
+    const isCurrent = () => current() && valid();
     const fontRegion = getFontRegionForLocale(locale);
-    void switchFontRegion(fontRegion).catch((err: unknown) => {
-        LOGGER.warn('Font switch failed:', err);
-    });
     const data = await loadLocaleCached(locale);
-
+    if (!isCurrent()) return false;
+    try {
+        await switchFontRegion(fontRegion, isCurrent);
+    } catch (error: unknown) {
+        LOGGER.warn('Font switch failed:', error);
+        if (Object.keys(useI18nStore.getState().data.ui).length) return false;
+    }
     if (!isCurrent()) return false;
     useI18nStore.setState({ locale, data });
     
@@ -215,9 +219,9 @@ export const useLocale = () => useI18nStore((s) => s.locale);
 
 export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 
-export async function setLocale(lang: string) {
+export async function setLocale(lang: string, isCurrent?: () => boolean) {
     const normalized = normalizeLang(lang);
-    if (await loadAndSet(normalized)) persistLocale(normalized);
+    if (await loadAndSet(normalized, isCurrent)) persistLocale(normalized);
 }
 
 export const i18nInitPromise = init();

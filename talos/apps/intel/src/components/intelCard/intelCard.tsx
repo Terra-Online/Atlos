@@ -59,6 +59,7 @@ const MapPreviewLink = ({ pointId, label, locale }: { pointId: string; label: st
         src={`${ogBase}/${token}.jpg`}
         alt=""
         loading="lazy"
+        fetchPriority="low"
         draggable="false"
         referrerPolicy="no-referrer"
       />
@@ -449,7 +450,14 @@ const IntelCard = ({
         <span className={`${styles.progressBar} ${styles.progressHorizontal}`} aria-hidden="true" />
         <span className={`${styles.progressBar} ${styles.progressVertical}`} aria-hidden="true" />
         <header className={styles.header}>
-          <img src={archive.iconUrl} alt="" draggable="false" />
+          <img
+            src={archive.iconUrl}
+            alt=""
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            draggable="false"
+          />
           <div className={styles.heading}>
             <div
               className={styles.titleCell}

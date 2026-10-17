@@ -273,3 +273,9 @@
         color: var(--contribution-accent);
     }
 }
+
+// Rebind the feed family at the explicit data owner instead of inheriting an
+// already-resolved alias from the parent feed.
+.list, .images {
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+}

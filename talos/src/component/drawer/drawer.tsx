@@ -487,7 +487,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 	}[side]), [side]);
 	
 	return (
-		<div ref={containerRef} className={`${styles.drawerContainer} ${className ?? ''}`} style={{ ...containerStyle, ...style }}>
+		<div data-font-region="drawer" ref={containerRef} className={`${styles.drawerContainer} ${className ?? ''}`} style={{ ...containerStyle, ...style }}>
 			<div className={`${styles.content} ${contentClassName ?? ''}`}>{children}</div>
 			<div
 				ref={handleRef}

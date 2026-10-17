@@ -1,3 +1,4 @@
+import { useFontRegion } from '@/locale/useFontRegion';
 import React, { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
@@ -104,6 +105,11 @@ export const CommentExcerpt = memo(({
     const status = statusLabel(comment, timeLabel, tUI);
     const authorName = comment.author?.nickname;
     const note = transNote(comment, tUI);
+    const fontRef = useFontRegion([
+        { faces: ['db'], text: '' },
+        { faces: ['h', 'r'], text: `${authorName || ''}${commentText(comment)}` },
+        { faces: ['r'], text: note || '', localized: 'ui' },
+    ]);
 
     return (
         <div
@@ -113,6 +119,7 @@ export const CommentExcerpt = memo(({
             style={{ '--comment-display-depth': displayDepth } as React.CSSProperties}
         >
             <article
+                ref={fontRef}
                 className={styles.commentBubble}
                 data-short-actions-root={actions ? 'true' : undefined}
             >

@@ -169,6 +169,7 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
       onClose={onClose}
       onChange={onChange}
       title={t('tos.title')}
+      fontRuns={[{ faces: ['b'], text: '' }]}
       icon={<ToSIcon aria-hidden="true" />}
     >
       <div className={styles.storageContainer}>

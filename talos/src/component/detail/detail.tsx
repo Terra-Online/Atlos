@@ -1,3 +1,4 @@
+import { useFontRegion } from '@/locale/useFontRegion';
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
 import Button from '@/component/button/button';
@@ -12,7 +13,7 @@ import { useGlobalCollectionRate } from './useGlobalCollectionRate';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/services/assets/resource';
-import { parseArchiveJsonResponse, createArchiveHtmlParserOptions } from './archiveFullText';
+import { parseArchiveJsonResponse, createArchiveHtmlParserOptions, archiveVisibleText } from './archiveFullText';
 import { getLoadedRegionMarkers, loadRegionMarkers, MARKER_TYPE_DICT } from '@/data/marker';
 import { usePointShareLink } from '@/component/share/usePointShareLink';
 import useRegion from '@/store/region';
@@ -246,6 +247,16 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     // const noteContent = currentPoint?.status?.user?.localNote;
     const [detailPhase, setDetailPhase] = useState<DetailPhase>('hidden');
     const ref = useRef<HTMLDivElement | null>(null);
+    const fontRef = useFontRegion([
+        { faces: ['db'], text: pointName, localized: 'game' },
+        { faces: ['b'], text: '' },
+        { faces: ['h', 'r'], text: '' },
+    ]);
+    const setDetailRef = useCallback((element: HTMLDivElement | null) => {
+        ref.current = element;
+        fontRef(element);
+    }, [fontRef]);
+    const fullTextFontText = useMemo(() => archiveVisibleText(fullTextContent || ''), [fullTextContent]);
     const headerRef = useRef<HTMLDivElement | null>(null);
     const tabsRef = useRef<HTMLDivElement | null>(null);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -509,6 +520,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
             {detailPhase !== 'hidden' && currentPoint && (
                 <div
                     data-state={detailPhase === 'open' ? 'open' : 'closed'}
+                    data-font-region="detail"
                     data-drawer-drag-ignore="true"
                     className={classNames(
                         styles.detailContainer,
@@ -517,7 +529,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                         },
                         className,
                     )}
-                    ref={ref}
+                    ref={setDetailRef}
                 >
                     {/* Head */}
                     <div className={styles.detailHeader} ref={headerRef}>
@@ -737,6 +749,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         {/* Full-text modal — rendered as a portal, independent of detail visibility */}
         <Modal
             open={textModalOpen}
+            fontRuns={[{ faces: ['h', 'r'], text: fullTextFontText }]}
             title={pointName}
             size="m"
             icon={CategoryIcon ? <CategoryIcon /> : undefined}

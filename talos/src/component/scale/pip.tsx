@@ -1,3 +1,4 @@
+import { fontLoader, stopFontLoader, migrateFontRegions } from '@/locale/fontLoader';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { Map as LeafletMap } from 'leaflet';
@@ -375,6 +376,7 @@ const mirrorDocumentStyles = (source: Document, target: Document) => {
 const mirrorDocumentFonts = (source: Document, target: Document): (() => void) => {
     const addFaces = (faces: Iterable<FontFace>) => {
         for (const face of faces) {
+            if (face.family.startsWith('Atlos-')) continue;
             try {
                 target.fonts.add(face);
             } catch {
@@ -404,10 +406,12 @@ const preparePictureInPictureDocument = (pipWindow: Window) => {
     documentResourceMirrorCleanup?.();
     const styleMirror = mirrorDocumentStyles(document, pipDocument);
     const cleanupFonts = mirrorDocumentFonts(document, pipDocument);
+    void fontLoader(pipDocument);
     waitForMirroredStyles = styleMirror.waitForReady;
     documentResourceMirrorCleanup = () => {
         styleMirror.cleanup();
         cleanupFonts();
+        stopFontLoader(pipDocument);
         waitForMirroredStyles = null;
     };
     syncRootAttributes(document, pipDocument);
@@ -732,6 +736,7 @@ export const closeAppPictureInPicture = () => {
 
     if (root && originalParent && restoreAnchor?.parentNode === originalParent) {
         originalParent.insertBefore(root, restoreAnchor);
+        migrateFontRegions();
         restoreAnchor.remove();
     }
 
@@ -782,6 +787,7 @@ export const openAppPictureInPicture = async () => {
         preparePictureInPictureDocument(pipWindow);
         mountPlaceholder();
         pipWindow.document.body.append(root);
+        migrateFontRegions();
         pipWindow.addEventListener('resize', handlePictureInPictureResize);
         pipWindow.addEventListener('pagehide', closeAppPictureInPicture, { once: true });
         schedulePictureInPictureViewportSync(pipWindow);

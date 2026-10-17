@@ -383,7 +383,7 @@ const reconcileAssetObjects = async (localFiles) => {
       .map((relativePath) => toPrefixedObjectKey(prefix, relativePath))
   );
 
-  const staleObjects = remoteAssetObjects.filter((object) => !expectedSet.has(normalizeObjectKey(object.key)));
+  const staleObjects = remoteAssetObjects.filter((object) => !/(?:^|\/)assets\/fonts\/shards\//.test(normalizeObjectKey(object.key)) && !expectedSet.has(normalizeObjectKey(object.key)));
 
   if (!staleObjects.length) {
     console.log('[publish-oss] assets directory already consistent with local dist.');

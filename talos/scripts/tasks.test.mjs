@@ -183,7 +183,7 @@ test('rejects invalid release arguments before any work and accepts pnpm separat
         assert.throws(() => parseTask(args, {}));
 });
 
-test('full build prepares data and each font once across both targets without publishing', async (t) => {
+test('full build validates frozen fonts once without generating or publishing', async (t) => {
     const f = await fixture(t);
     await runTask(['build', '--target', 'all'], {
         ...f,
@@ -193,8 +193,9 @@ test('full build prepares data and each font once across both targets without pu
     assert.equal(countScript(f.calls, 'build-relink-preview.mjs'), 1);
     assert.equal(
         f.calls.filter(({ command }) => command === 'python3').length,
-        3,
+        0,
     );
+    assert.equal(countScript(f.calls, 'fonts/catalog.mjs'), 1);
     assert.equal(f.calls.filter(({ args }) => args.includes('vite')).length, 6);
     assert.equal(f.calls.some(isRemote), false);
     assert.ok(

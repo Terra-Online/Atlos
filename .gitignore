@@ -94,3 +94,5 @@ talos/.stylelintcache
 
 # Local-only Canvas performance harnesses, reports and captures.
 /talos/performance/
+# Shared full-coverage font shards are generated from private originals.
+/talos/scripts/fonts/__pycache__/

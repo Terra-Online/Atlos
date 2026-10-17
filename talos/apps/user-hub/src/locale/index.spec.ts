@@ -42,7 +42,10 @@ it('switches app labels and Chinese font regions without changing the main catal
         });
         expect(getCurrentLocale()).toBe('zh-HK');
         expect(node.textContent).toBe('個人資料');
-        expect(switchFontRegion).toHaveBeenCalledWith('HK');
+        expect(switchFontRegion).toHaveBeenCalledWith(
+            'HK',
+            expect.any(Function),
+        );
         expect(localStorage.getItem('talos:locale')).toBe('zh-HK');
         expect(document.documentElement.lang).toBe('zh-HK');
         expect(getMainLocale()).toBe('en-US');
@@ -72,18 +75,36 @@ it('still switches language when locale storage is unavailable', async () => {
     });
     await setLocale('zh-CN');
     expect(translateUI('userHub.tabs.contributions')).toBe('内容中心');
-    expect(switchFontRegion).toHaveBeenCalledWith('CN');
+    expect(switchFontRegion).toHaveBeenCalledWith('CN', expect.any(Function));
 });
 
 it('does not commit an earlier locale or its storage after a newer font load finishes', async () => {
     await i18nInitPromise;
     let release!: () => void;
-    switchFontRegion.mockImplementationOnce(() => new Promise<undefined>((resolve) => { release = () => resolve(undefined); }));
+    switchFontRegion.mockImplementationOnce(
+        () =>
+            new Promise<undefined>((resolve) => {
+                release = () => resolve(undefined);
+            }),
+    );
     const older = setLocale('fr-FR');
+    await vi.waitFor(() => expect(release).toBeTypeOf('function'));
     await setLocale('ja-JP');
     release();
     await older;
     expect(getCurrentLocale()).toBe('ja-JP');
     expect(localStorage.getItem('talos:locale')).toBe('ja-JP');
     expect(document.documentElement.lang).toBe('ja-JP');
+});
+
+it('keeps the current catalog and persisted language if target fonts fail', async () => {
+    await i18nInitPromise;
+    await setLocale('zh-CN');
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    switchFontRegion.mockRejectedValueOnce(new Error('font unavailable'));
+    await setLocale('ja-JP');
+    expect(getCurrentLocale()).toBe('zh-CN');
+    expect(document.documentElement.lang).toBe('zh-CN');
+    expect(localStorage.getItem('talos:locale')).toBe('zh-CN');
+    expect(translateUI('userHub.tabs.contributions')).toBe('内容中心');
 });

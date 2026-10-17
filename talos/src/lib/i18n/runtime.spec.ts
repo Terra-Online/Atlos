@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { createRequestGuard, deepGet, mergeCatalogs } from './runtime';
-import { indexFontAssets } from './fontAssets';
 
 describe('catalog primitives', () => {
     it('merges missing nested translations while preserving explicit values and arrays', () => {
@@ -33,17 +32,5 @@ describe('catalog primitives', () => {
         expect(third()).toBe(true);
         expect(createRequestGuard()()()).toBe(true);
         expect(third()).toBe(true);
-    });
-    it('keeps app font indexes independent and skips unavailable assets', () => {
-        const main = indexFontAssets({
-            '/repo/src/assets/fonts/Harmony/CN.woff2': '/main.woff2',
-        });
-        const app = indexFontAssets({
-            '../assets/fonts/Harmony/CN.woff2': '/app.woff2',
-        });
-        expect(main.getFontAssetUrl('Harmony/CN.woff2')).toBe('/main.woff2');
-        expect(app.getFontAssetUrls(['missing', 'Harmony/CN.woff2'])).toEqual([
-            '/app.woff2',
-        ]);
     });
 });
