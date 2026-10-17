@@ -8,7 +8,6 @@ import {
   UI_ONLY_LANGS,
   getLangDisplayCode,
   getCurrentLocale,
-  preloadAllLanguages,
   setLocale,
   toBCP47,
   useLocale,
@@ -49,15 +48,6 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
     void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    // Standalone apps provide a locale loader for the selected language. Do
-    // not speculate-load every catalog while the dialog opens: Intel renders
-    // hundreds of archive cards, so those extra catalog requests compete with
-    // the font transaction for the browser's resource queue.
-    if (!open || prepareLocale) return;
-    void preloadAllLanguages();
-  }, [open, prepareLocale]);
-  
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
   const freezeTimerRef = useRef<number | null>(null);
@@ -77,10 +67,14 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       freezeTimerRef.current = null;
     }
     try {
-      // Standalone apps prepare their own catalog before shared fonts change.
-      await prepareLocale?.(lang);
+      // Start the standalone catalog and shared font transaction together.
+      // Waiting for the catalog first leaves the font manifest behind several
+      // locale chunks on a cold cache, which makes a language switch appear
+      // much slower than the old loader.
+      const catalog = prepareLocale?.(lang);
+      const fonts = setLocale(lang, () => revision === pickRevision.current);
+      await Promise.all([catalog, fonts]);
       if (revision !== pickRevision.current) return;
-      await setLocale(lang, () => revision === pickRevision.current);
     } catch (error: unknown) {
       if (revision === pickRevision.current) {
         pendingPick.current = null;

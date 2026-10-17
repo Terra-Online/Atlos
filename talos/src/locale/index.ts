@@ -4,7 +4,6 @@ import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequest
 import LOGGER from '@/lib/logging/logger';
 import { switchFontRegion } from '@/locale/fontLoader';
 import {
-    SUPPORTED_LANGS,
     getFontRegionForLocale,
     getLocaleContentCandidates,
     hasFullSupport,
@@ -139,26 +138,6 @@ function loadLocaleCached(locale: Lang): Promise<II18nBundle> {
     });
     localeLoadPromises.set(locale, promise);
     return promise;
-}
-
-const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
-const PRELOAD_BATCH_SIZE = 3;
-
-async function preloadLocales(locales: readonly Lang[]) {
-    for (let i = 0; i < locales.length; i += PRELOAD_BATCH_SIZE) {
-        const batch = locales.slice(i, i + PRELOAD_BATCH_SIZE);
-        await Promise.allSettled(batch.map(lang => loadLocaleCached(lang)));
-        await wait(200);
-    }
-}
-
-let allPreloadingStarted = false;
-
-export async function preloadAllLanguages(current: Lang = getCurrentLocale()) {
-    if (allPreloadingStarted) return;
-    allPreloadingStarted = true;
-    await preloadLocales(SUPPORTED_LANGS.filter(lang => lang !== current));
 }
 
 const beginRequest = createRequestGuard();
