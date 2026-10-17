@@ -150,11 +150,15 @@ async function loadAndSet(locale: Lang, valid = () => true) {
     // both, but a cold locale chunk must not delay the font manifest/request.
     const dataPromise = loadLocaleCached(locale);
     const fontsPromise = switchFontRegion(fontRegion, isCurrent);
-    const data = await dataPromise;
+    const [dataResult, fontsResult] = await Promise.allSettled([
+        dataPromise,
+        fontsPromise,
+    ]);
+    if (dataResult.status === 'rejected') throw dataResult.reason;
+    const data = dataResult.value;
     if (!isCurrent()) return false;
-    try {
-        await fontsPromise;
-    } catch (error: unknown) {
+    if (fontsResult.status === 'rejected') {
+        const error = fontsResult.reason;
         LOGGER.warn('Font switch failed:', error);
         if (Object.keys(useI18nStore.getState().data.ui).length) return false;
     }
