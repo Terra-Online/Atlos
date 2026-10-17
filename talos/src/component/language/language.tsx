@@ -50,9 +50,13 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    // Standalone apps provide a locale loader for the selected language. Do
+    // not speculate-load every catalog while the dialog opens: Intel renders
+    // hundreds of archive cards, so those extra catalog requests compete with
+    // the font transaction for the browser's resource queue.
+    if (!open || prepareLocale) return;
     void preloadAllLanguages();
-  }, [open]);
+  }, [open, prepareLocale]);
   
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
