@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { UseBoundStore, StoreApi } from 'zustand';
+import { unstable_batchedUpdates } from 'react-dom';
 import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@/lib/i18n/runtime';
 import LOGGER from '@/lib/logging/logger';
 import { switchFontRegion } from '@/locale/fontLoader';
@@ -145,7 +146,10 @@ const beginRequest = createRequestGuard();
 async function loadAndSet(
     locale: Lang,
     valid = () => true,
-    beforeCommit?: () => void | Promise<void>,
+    beforeCommit?: () =>
+        | (() => void)
+        | void
+        | Promise<(() => void) | void>,
 ) {
     const current = beginRequest();
     const isCurrent = () => current() && valid();
@@ -167,19 +171,22 @@ async function loadAndSet(
         if (Object.keys(useI18nStore.getState().data.ui).length) return false;
     }
     if (!isCurrent()) return false;
-    await beforeCommit?.();
+    const commitBeforeMain = await beforeCommit?.();
     if (!isCurrent()) return false;
-    useI18nStore.setState({ locale, data });
-    
-    // Sync document language tag for :lang() or [lang] based styles/fonts switching
-    try {
-        if (typeof document !== 'undefined') {
-            const htmlLang = toBCP47(locale);
-            document.documentElement.setAttribute('lang', htmlLang);
+    unstable_batchedUpdates(() => {
+        commitBeforeMain?.();
+        useI18nStore.setState({ locale, data });
+
+        // Sync document language tag for :lang() or [lang] based styles/fonts switching
+        try {
+            if (typeof document !== 'undefined') {
+                const htmlLang = toBCP47(locale);
+                document.documentElement.setAttribute('lang', htmlLang);
+            }
+        } catch {
+            // ignore envs without document
         }
-    } catch {
-        // ignore envs without document
-    }
+    });
     return true;
 }
 
@@ -215,7 +222,10 @@ export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 export async function setLocale(
     lang: string,
     isCurrent?: () => boolean,
-    beforeCommit?: () => void | Promise<void>,
+    beforeCommit?: () =>
+        | (() => void)
+        | void
+        | Promise<(() => void) | void>,
 ) {
     const normalized = normalizeLang(lang);
     if (await loadAndSet(normalized, isCurrent, beforeCommit))

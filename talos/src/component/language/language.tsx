@@ -99,7 +99,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
         lang,
         () => revision === pickRevision.current,
         commitLocale && catalog
-          ? async () => commitLocale(lang, await catalog)
+          ? async () => {
+              const data = await catalog;
+              return () => commitLocale(lang, data);
+            }
           : undefined,
       );
       await Promise.all([catalog, fonts]);
