@@ -128,6 +128,7 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       aria-checked={current === it.key}
       aria-label={t(`language.names.${it.key}`) || (LANG_NATIVE_LABELS[it.key] || it.key)}
       onPointerEnter={() => warmLanguage(it.key)}
+      onMouseEnter={() => warmLanguage(it.key)}
       onFocus={() => warmLanguage(it.key)}
     >
       <div 
