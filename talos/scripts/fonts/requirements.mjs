@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { root, regions, uiCharacters } from './catalog.mjs';
+import { root, regions, uiCharacters } from './catalog-data.mjs';
 
 const strings = (value) =>
     typeof value === 'string'
