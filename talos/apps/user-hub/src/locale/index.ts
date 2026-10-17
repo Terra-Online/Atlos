@@ -1,5 +1,6 @@
 import { readInitialLocale, persistLocale, deepGet, createRequestGuard } from '@main/lib/i18n/runtime';
 import { create } from 'zustand';
+import { startTransition } from 'react';
 import {
     getFontRegionForLocale,
     getLocaleContentCandidates,
@@ -117,7 +118,9 @@ export const setLocaleData = async (locale: string) => {
 
 /** Apply a preloaded catalog inside the shared language commit. */
 export const applyLocaleData = (locale: string, data: Bundle) => {
-    useI18nStore.setState({ locale: normalizeLang(locale), ...data });
+    startTransition(() => {
+        useI18nStore.setState({ locale: normalizeLang(locale), ...data });
+    });
 };
 
 export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));
