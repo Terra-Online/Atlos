@@ -49,6 +49,21 @@ const digest = (files) =>
             Object.entries(files).sort(([a], [b]) => a.localeCompare(b, 'en')),
         ),
     );
+// Cloudflare Pages may rewrite HTML at the edge (for example, removing
+// preconnect hints or injecting its hidden challenge marker). Those changes
+// do not alter the app entrypoint or its asset references, so ignore only the
+// known edge-owned nodes before comparing the published document.
+export const normalizeLiveHtml = (source) =>
+    source
+        .replace(
+            /<a\b[^>]*\/cdn-cgi\/content\?[^>]*>[\s\S]*?<\/a>/gi,
+            '',
+        )
+        .replace(
+            /<!-- Cloudflare Pages Analytics -->[\s\S]*?<!-- Cloudflare Pages Analytics -->/gi,
+            '',
+        )
+        .replace(/<link\b[^>]*\brel=["']preconnect["'][^>]*>/gi, '');
 const json = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 const writeJson = (file, value) =>
     fs.writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
@@ -197,10 +212,12 @@ export const verifyLive = async (runner, dir, info, origin) => {
             signal: AbortSignal.timeout(20000),
         });
         const html = Buffer.from(await response.arrayBuffer());
+        const expected = await fs.readFile(path.join(dir, file), 'utf8');
         if (
             !response.ok ||
             !response.headers.get('content-type')?.includes('text/html') ||
-            sha256(html) !== (await hashFile(path.join(dir, file)))
+            sha256(normalizeLiveHtml(html.toString())) !==
+                sha256(normalizeLiveHtml(expected))
         )
             throw new Error(
                 `Live entrypoint differs from the release snapshot: ${url.pathname}. Complete a full publish before publishing an app.`,
