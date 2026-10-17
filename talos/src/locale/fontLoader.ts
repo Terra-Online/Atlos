@@ -10,6 +10,15 @@ export function preloadFontManifests(): void {
         void loadManifest(region).catch(() => undefined);
 }
 
+/** Warm only the selected region's current registered areas. */
+export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
+    void fontLoader().then(() =>
+        Promise.all(
+            [...documents.values()].map((state) => state.regions.preload(region)),
+        ),
+    ).catch(() => undefined);
+}
+
 const documents = new Map<
     Document,
     {

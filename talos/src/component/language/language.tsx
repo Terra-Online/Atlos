@@ -8,13 +8,14 @@ import {
   UI_ONLY_LANGS,
   getLangDisplayCode,
   getCurrentLocale,
+  getFontRegionForLocale,
   setLocale,
   toBCP47,
   useLocale,
   type Lang,
 } from '@/locale';
 import { useTranslateUI } from '@/locale';
-import { preloadFontManifests } from '@/locale/fontLoader';
+import { preloadFontManifests, preloadFontRegion } from '@/locale/fontLoader';
 import parse from 'html-react-parser';
 
 export interface LanguageProps {
@@ -42,6 +43,14 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   []);
   
   const groupId = useId();
+  const preloadedRegions = useRef(new Set<Exclude<ReturnType<typeof getFontRegionForLocale>, null>>());
+
+  const warmLanguage = useCallback((lang: string) => {
+    const region = getFontRegionForLocale(lang);
+    if (!region || preloadedRegions.current.has(region)) return;
+    preloadedRegions.current.add(region);
+    preloadFontRegion(region);
+  }, []);
 
   useEffect(() => {
     if (open) preloadFontManifests();
@@ -110,6 +119,8 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       role="radio"
       aria-checked={current === it.key}
       aria-label={t(`language.names.${it.key}`) || (LANG_NATIVE_LABELS[it.key] || it.key)}
+      onPointerEnter={() => warmLanguage(it.key)}
+      onFocus={() => warmLanguage(it.key)}
     >
       <div 
         className={styles.langOrigin}

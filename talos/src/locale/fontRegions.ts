@@ -384,6 +384,16 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     };
     return {
         register,
+        async preload(next: FontRegion) {
+            const snapshot = [...areas];
+            const results = await Promise.allSettled(
+                snapshot.map((area) => area.prepare(next)),
+            );
+            for (const result of results) {
+                if (result.status === 'fulfilled')
+                    result.value.lease?.release();
+            }
+        },
         async setRegion(next: FontRegion, isCurrent = () => true) {
             if (requested !== next) {
                 requested = next;
