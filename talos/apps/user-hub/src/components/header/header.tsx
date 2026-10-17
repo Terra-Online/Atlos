@@ -5,7 +5,7 @@ import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
 import { getFontRegionForLocale } from '@main/locale';
 import { preloadFontRegion } from '@main/locale/fontLoader';
-import { useTranslateUI, setLocale, preloadLocale } from '@hub/locale';
+import { useTranslateUI, setLocaleData, preloadLocale } from '@hub/locale';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
 import Refresh from '@main/assets/images/UI/refresh.svg?react';
@@ -69,7 +69,7 @@ export default function Header({ busy, onRefresh }: Props) {
                             if (region) preloadFontRegion(region);
                         }}
                         onSelected={(locale) => {
-                            void setLocale(locale);
+                            void setLocaleData(locale);
                         }}
                     />
                 </Suspense>

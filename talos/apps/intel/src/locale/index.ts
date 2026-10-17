@@ -139,6 +139,15 @@ export const setLocale = async (locale: string) => {
   if (await loadAndSet(normalized)) persistLocale(normalized);
 };
 
+/** Apply the app catalog after the shared language modal commits fonts. */
+export const setLocaleData = async (locale: string) => {
+  const normalized = normalizeLang(locale);
+  const isCurrent = beginRequest();
+  const data = await loadLocale(normalized);
+  if (!isCurrent()) return;
+  useI18nStore.setState({ locale: normalized, data });
+};
+
 export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));
 
 export const preloadAllLanguages = async (current: Lang = getCurrentLocale()) => {

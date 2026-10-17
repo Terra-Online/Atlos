@@ -5,7 +5,7 @@ import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { useTranslateUI } from '@main/locale';
 import { getFontRegionForLocale } from '@main/locale';
 import { preloadFontRegion } from '@main/locale/fontLoader';
-import { setLocale as setIntelLocale, preloadLocale } from '@intel/locale';
+import { setLocaleData as setIntelLocaleData, preloadLocale } from '@intel/locale';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
@@ -50,7 +50,7 @@ const IntelHeadBar = () => {
           if (region) preloadFontRegion(region);
         }}
         onSelected={(locale) => {
-          void setIntelLocale(locale);
+          void setIntelLocaleData(locale);
         }}
       />
     </>
