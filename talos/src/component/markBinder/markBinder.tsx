@@ -1,4 +1,4 @@
-import { memo, useMemo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useMemo, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from './markBinder.module.scss';
@@ -91,8 +91,9 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
     const ctx = useContext(MarkVisibilityContext);
     const idRef = useRef<string>(group.dropKey);
     const [layoutAnimReady, setLayoutAnimReady] = useState(false);
+    const layoutVersionRef = useRef(layoutVersion);
 
-    useEffect(() => {
+    const armLayoutAnimation = useCallback(() => {
         let raf1 = 0;
         let raf2 = 0;
         raf1 = requestAnimationFrame(() => {
@@ -103,6 +104,20 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
             cancelAnimationFrame(raf2);
         };
     }, []);
+
+    useEffect(() => {
+        return armLayoutAnimation();
+    }, [armLayoutAnimation]);
+
+    // A font commit can change line wrapping after Motion has captured its
+    // previous box. Disable child projection for two frames, then measure the
+    // settled boxes again. This keeps the normal expand/reorder spring intact.
+    useLayoutEffect(() => {
+        if (layoutVersionRef.current === layoutVersion) return undefined;
+        layoutVersionRef.current = layoutVersion;
+        setLayoutAnimReady(false);
+        return armLayoutAnimation();
+    }, [armLayoutAnimation, layoutVersion]);
 
     useEffect(() => {
         const stableId = idRef.current;
@@ -125,6 +140,7 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
     if (!showFilter) return null;
 
     const progressPct = totalTotal > 0 ? Math.round((totalCollected / totalTotal) * 100) : 0;
+    const renderedSignature = sortedRenderedTypes.map((typeInfo) => typeInfo.key).join(',');
 
     return (
         // All visual effects + click handler on the entire wrap
@@ -162,7 +178,7 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
                         <motion.div
                             key={typeInfo.key}
                             layout={layoutAnimReady}
-                            layoutDependency={`${index}:${layoutVersion}:${displayName}`}
+                            layoutDependency={`${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
                             transition={{ type: 'spring', stiffness: 400, damping: 38 }}
                         >
                             <MarkSelector typeInfo={typeInfo} />
