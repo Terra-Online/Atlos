@@ -249,6 +249,12 @@ export const fontShardsPlugin = (app = 'main') => {
                         Object.entries(data.shell || {}).map(([face, keys]) => [
                             face,
                             (keys || [])
+                                // Prefetch only the UI subset while the
+                                // language picker is open. Labels and prose
+                                // remain demand-driven.
+                                .filter((key) =>
+                                    (data.ui?.[face] || []).includes(key),
+                                )
                                 .map((key) => fonts.manifests[region]?.faces?.[face]?.[key])
                                 .filter(Boolean)
                                 .map((part) => new URL(part.file, manifests[region]).href),

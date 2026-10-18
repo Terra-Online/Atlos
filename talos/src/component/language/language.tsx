@@ -65,11 +65,20 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   }, []);
 
   useEffect(() => {
-    if (open) preloadFontManifests();
+    if (!open) return;
+    preloadFontManifests();
+    // The picker is the user's intent signal. Warm the locale catalogs for
+    // the three CJK regions here, but leave font bytes to the selected row so
+    // opening the picker does not start unrelated font downloads.
+    for (const lang of ['zh-CN', 'zh-HK', 'ja-JP'] as const) {
+      if (lang === current) continue;
+      preloadLocale(lang);
+      void Promise.resolve(prepareLocale?.(lang)).catch(() => undefined);
+    }
     // These native labels keep their own glyphs across document languages.
     // Warm the existing CSS face while the closed dialog is already mounted.
     void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
-  }, [open]);
+  }, [open, current, prepareLocale]);
 
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);

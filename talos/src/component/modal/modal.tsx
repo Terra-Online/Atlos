@@ -1,4 +1,5 @@
 import { useFontRegion } from '@/locale/useFontRegion';
+import type { FontScope } from '@/locale/fontLoader';
 import type { TextRun } from '@/locale/fontShards';
 import React, {
   forwardRef,
@@ -288,6 +289,8 @@ ModalTabs.displayName = 'ModalTabs';
 
 export interface ModalProps {
   fontRuns?: TextRun[];
+  /** Whether this modal blocks the atomic language switch. */
+  fontScope?: FontScope;
   open: boolean;
   title?: React.ReactNode;
   /** image slot before title */
@@ -331,6 +334,7 @@ const getModalDocument = (size: ModalProps['size']) => {
 
 const Modal: React.FC<ModalProps> = ({
   fontRuns = [],
+  fontScope = 'critical',
   open,
   title,
   icon,
@@ -372,7 +376,7 @@ const Modal: React.FC<ModalProps> = ({
     { faces: ['r'], text: '' },
     { faces: ['h', 'r'], text: '' },
     ...fontRuns,
-  ]);
+  ], { scope: fontScope });
   const setDialogRef = useCallback((element: HTMLDivElement | null) => {
     dialogRef.current = element;
     fontRef(element);

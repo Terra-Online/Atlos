@@ -281,7 +281,7 @@ const NotificationMessage = ({
     const fontRef = useFontRegion([
         { faces: ['h', 'm'], text: translatedSubject, localized: 'ui' },
         { faces: ['m'], text: pointLabel, localized: 'game' },
-    ]);
+    ], { scope: 'background' });
     const countValue = Number(item.payload.messageCount);
     const count =
         Number.isFinite(countValue) && countValue > 0
@@ -806,6 +806,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
     return (
         <Modal
             fontRuns={[{ faces: ['m'], text: '' }]}
+            fontScope="background"
             open={open}
             size={isMobile ? 'full' : 'l'}
             onClose={onClose}

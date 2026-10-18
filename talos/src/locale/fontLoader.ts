@@ -1,10 +1,16 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
-import { createFontRegions } from './fontRegions';
+import {
+    createFontRegions,
+    type FontRegionOptions,
+    type FontScope,
+} from './fontRegions';
 import { loadManifest, preloadFontBytes, type Region } from './fontShards';
 import { shellFiles } from './fontConfig';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
 const shellPrefetches = new Map<Region, Promise<void>>();
+
+export type { FontRegionOptions, FontScope };
 
 /** Start immutable shell bytes without waiting for the (larger) manifest. */
 function preloadShellFiles(region: Region): Promise<void> {
@@ -111,17 +117,18 @@ const owners = new Set<() => void>();
 export function registerFontRegion(
     element: HTMLElement,
     initialRuns: import('./fontShards').TextRun[],
+    options?: FontRegionOptions,
 ) {
     let runs = initialRuns;
     let doc = element.ownerDocument;
     void fontLoader(doc);
-    let area = documents.get(doc)?.regions.register(element, runs);
+    let area = documents.get(doc)?.regions.register(element, runs, options);
     const migrate = () => {
         if (doc === element.ownerDocument) return;
         area?.stop();
         doc = element.ownerDocument;
         void fontLoader(doc);
-        area = documents.get(doc)?.regions.register(element, runs);
+        area = documents.get(doc)?.regions.register(element, runs, options);
     };
     owners.add(migrate);
     return {

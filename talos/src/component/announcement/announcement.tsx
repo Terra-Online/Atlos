@@ -58,6 +58,7 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
     return (
         <Modal
             open={open}
+            fontScope="background"
             onClose={handleClose}
             onChange={onChange}
             title={t('announcement.title')}

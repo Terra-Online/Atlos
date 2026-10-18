@@ -251,7 +251,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         { faces: ['db'], text: pointName, localized: 'game' },
         { faces: ['b'], text: '' },
         { faces: ['h', 'r'], text: '' },
-    ]);
+    ], { scope: 'background' });
     const setDetailRef = useCallback((element: HTMLDivElement | null) => {
         ref.current = element;
         fontRef(element);
@@ -749,6 +749,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         {/* Full-text modal — rendered as a portal, independent of detail visibility */}
         <Modal
             open={textModalOpen}
+            fontScope="background"
             fontRuns={[{ faces: ['h', 'r'], text: fullTextFontText }]}
             title={pointName}
             size="m"

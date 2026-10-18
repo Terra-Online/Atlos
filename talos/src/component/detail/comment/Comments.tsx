@@ -109,7 +109,7 @@ export const CommentExcerpt = memo(({
         { faces: ['db'], text: '' },
         { faces: ['h', 'r'], text: `${authorName || ''}${commentText(comment)}` },
         { faces: ['r'], text: note || '', localized: 'ui' },
-    ]);
+    ], { scope: 'background' });
 
     return (
         <div

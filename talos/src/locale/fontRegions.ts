@@ -36,8 +36,19 @@ const selectParts = (
         }),
     );
 
-/** Explicit component ownership with a small visibility check at switch time. */
+/** Keep decoded faces warm for a few recently used collections. */
+const MAX_IDLE_BATCHES = 6;
+
+export type FontScope = 'critical' | 'background';
+
+export interface FontRegionOptions {
+    scope?: FontScope;
+}
+
+/** Component ownership is explicit; loading never inspects layout or DOM
+ * geometry to decide which font collection a region needs. */
 export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
+    let usageTick = 0;
     const batches = new Map<
         string,
         {
@@ -46,8 +57,19 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             registered: boolean;
             parts: Set<string>;
             prepared?: Prepared;
+            lastUsed: number;
         }
     >();
+    const evictIdle = () => {
+        const idle = [...batches.entries()]
+            .filter(([, entry]) => entry.refs === 0)
+            .sort(([, a], [, b]) => a.lastUsed - b.lastUsed);
+        while (idle.length > MAX_IDLE_BATCHES) {
+            const [key, entry] = idle.shift()!;
+            for (const font of entry.prepared?.fonts || []) doc.fonts.delete(font);
+            if (batches.get(key) === entry) batches.delete(key);
+        }
+    };
     const leaseFonts = (key: string, selection: Selection[]) => {
         let batch = batches.get(key);
         if (!batch) {
@@ -62,6 +84,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 ) {
                     key = candidateKey;
                     batch = candidate;
+                    candidate.lastUsed = ++usageTick;
                     break;
                 }
             }
@@ -74,10 +97,12 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 parts: new Set(
                     selection.map((part) => `${part.face}:${part.url}`),
                 ),
+                lastUsed: ++usageTick,
             };
             batches.set(key, batch);
         }
         const entry = batch;
+        entry.lastUsed = ++usageTick;
         entry.refs++;
         let released = false;
         return {
@@ -94,15 +119,15 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                     }
                     entry.prepared = prepared;
                     entry.registered = true;
+                    entry.lastUsed = ++usageTick;
                 }
             },
             release: () => {
                 if (released) return;
                 released = true;
                 if (--entry.refs === 0) {
-                    for (const font of entry.prepared?.fonts || [])
-                        doc.fonts.delete(font);
-                    if (batches.get(key) === entry) batches.delete(key);
+                    entry.lastUsed = ++usageTick;
+                    evictIdle();
                 }
             },
         };
@@ -129,6 +154,8 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         readonly ready: Promise<void>;
         /** Visible shell/UI owners keep the language transaction atomic. */
         isCritical(): boolean;
+        /** The body shell receives a second pass for deferred labels. */
+        isShell(): boolean;
         prepare(next: FontRegion): Promise<Plan>;
         retry(): void;
         commit(plan: Plan): boolean;
@@ -153,9 +180,22 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         changingLanguage = false,
     ) => {
         const preset = requirements[next];
+        const shell = preset?.shell || {};
+        const uiShell = Object.fromEntries(
+            Object.entries(shell)
+                .map(([face, keys]) => [
+                    face,
+                    (preset?.ui[face as Face] || []).filter((key) =>
+                        (keys || []).includes(key),
+                    ),
+                ])
+                .filter(([, keys]) => (keys as string[]).length),
+        ) as Parts;
         const staticParts =
             runs === null
-                ? preset?.shell || {}
+                ? changingLanguage
+                    ? uiShell
+                    : shell
                 : Object.fromEntries(
                       [
                           ...new Set(
@@ -173,7 +213,9 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                           [
                               ...new Set([
                                   ...(preset?.ui[face] || []),
-                                  ...(preset?.shell[face] || []),
+                                  ...(!changingLanguage
+                                      ? preset?.shell[face] || []
+                                      : []),
                                   // Content packs are loaded when the
                                   // localized content area is committed. A
                                   // language transaction must prepare the
@@ -214,33 +256,10 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     const register = (
         element: HTMLElement,
         initialRuns: TextRun[] | null = null,
+        options: FontRegionOptions = {},
     ) => {
-        // Content owners can contain arbitrary game text, comments, or
-        // remote prose. They are deliberately allowed to catch up after the
-        // visible shell has switched under the language overlay.
-        const regionElement =
-            element.closest<HTMLElement>('[data-font-region]');
-        const regionName =
-            regionElement?.getAttribute('data-font-region') || 'body';
-        const isVisible = () => {
-            if (regionName === 'body') return true;
-            const root = regionElement || element;
-            if (
-                root.getAttribute('aria-hidden') === 'true' ||
-                root.hasAttribute('inert') ||
-                root.getAttribute('data-state') === 'closed'
-            )
-                return false;
-            const style = doc.defaultView?.getComputedStyle(root);
-            return (
-                style?.display !== 'none' &&
-                style?.visibility !== 'hidden' &&
-                root.getClientRects().length > 0
-            );
-        };
-        const isCritical = () =>
-            !['detail', 'content', 'profile'].includes(regionName) &&
-            isVisible();
+        const isCritical = () => options.scope !== 'background';
+        const isShell = () => initialRuns === null;
         const originalOwner = element.getAttribute('data-font-owner');
         element.setAttribute('data-font-owner', '');
         let runs = initialRuns;
@@ -388,6 +407,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 return ready;
             },
             isCritical,
+            isShell,
             prepare,
             retry() {
                 if (failed) refresh();
@@ -529,38 +549,46 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 // picker so a long list or a large prose pack cannot extend
                 // the masked UI switch. Generation checks prevent a stale
                 // background result from changing a newer language.
-                const background = [...areas].filter(
-                    (area) => !snapshot.includes(area),
-                );
-                void Promise.all(
-                    background.map(async (area) => {
-                        const version = area.revision;
-                        try {
-                            const plan = await area.prepare(next);
-                            if (
-                                stopped ||
-                                request !== generation ||
-                                !isCurrent() ||
-                                !areas.has(area) ||
-                                area.revision !== version
-                            ) {
-                                plan.lease?.release();
-                                return;
+                const background = [
+                    ...new Set([
+                        ...[...areas].filter((area) => !snapshot.includes(area)),
+                        ...[...areas].filter((area) => area.isShell()),
+                    ]),
+                ];
+                // Let the locale commit and the next paint happen first. This
+                // prevents labels/content from competing with the faces needed
+                // to complete the visible language switch.
+                setTimeout(() => {
+                    void Promise.all(
+                        background.map(async (area) => {
+                            const version = area.revision;
+                            try {
+                                const plan = await area.prepare(next);
+                                if (
+                                    stopped ||
+                                    request !== generation ||
+                                    !isCurrent() ||
+                                    !areas.has(area) ||
+                                    area.revision !== version
+                                ) {
+                                    plan.lease?.release();
+                                    return;
+                                }
+                                if (area.commit(plan)) area.notify();
+                            } catch (error) {
+                                if (
+                                    !stopped &&
+                                    request === generation &&
+                                    isCurrent()
+                                )
+                                    console.warn(
+                                        'Background font region preparation failed:',
+                                        error,
+                                    );
                             }
-                            if (area.commit(plan)) area.notify();
-                        } catch (error) {
-                            if (
-                                !stopped &&
-                                request === generation &&
-                                isCurrent()
-                            )
-                                console.warn(
-                                    'Background font region preparation failed:',
-                                    error,
-                                );
-                        }
-                    }),
-                );
+                        }),
+                    );
+                }, 0);
                 return;
             }
         },
@@ -570,6 +598,10 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             warmedShells.clear();
             releaseWarm();
             for (const area of [...areas]) area.stop();
+            for (const entry of batches.values())
+                for (const font of entry.prepared?.fonts || [])
+                    doc.fonts.delete(font);
+            batches.clear();
         },
     };
 };

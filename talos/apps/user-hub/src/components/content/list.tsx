@@ -167,7 +167,7 @@ export default function List({
     const fontRef = useFontRegion([
         { faces: ['h', 'm'], text: items.map((item) => item.content || '').join('') },
         { faces: ['m'], text: pointText, localized: 'game' },
-    ]);
+    ], { scope: 'background' });
     if (!items.length)
         return (
             <p className={styles.empty}>{t('userHub.emptyContributions')}</p>

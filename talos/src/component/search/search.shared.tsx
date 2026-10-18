@@ -79,7 +79,7 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
     const fontRef = useFontRegion([
         { faces: ['db'], text: results.map((group) => group.displayName + group.binderName + group.selectorName).join(''), localized: 'game' },
         { faces: ['h', 'b'], text: results.map((group) => group.snippet).join('') },
-    ]);
+    ], { scope: 'background' });
 
     const onResultClick = useCallback((group: (typeof clickableResults)[number]) => {
         if (group.uniquePoint) {
