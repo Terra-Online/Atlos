@@ -46,6 +46,7 @@ import {
     getSidebarMaxWidth,
     useDesktopDrawerSnapIndex,
     useIncrementLayoutVersion,
+    useUiPrefsHydrated,
     useSetSidebarOpen,
     useSetSidebarWidth,
     useSetTriggerBoundary,
@@ -61,6 +62,7 @@ import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
 import { computeBinderColumns } from './binderMasonry';
 import { useDevice } from '@/platform/device';
+import { preloadSidebarIcons } from './sidebarIconPrefetch';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -112,6 +114,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDesktopDrawerSnapIndex();
+    const uiPrefsHydrated = useUiPrefsHydrated();
 
     const [supportOpen, setSupportOpen] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
@@ -124,6 +127,10 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     useEffect(() => {
         if (isOpen) setHasOpened(true);
     }, [isOpen]);
+
+    useEffect(() => {
+        if (hasOpened) preloadSidebarIcons();
+    }, [hasOpened]);
 
     const clampWidth = useCallback((startW: number, dx: number) =>
         clampSidebarWidth(startW + dx, maxWidth), [maxWidth]);
@@ -443,7 +450,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     initialSize={0}
                     snap={['0rem', '9.375rem']}
                     snapThreshold={[50, 50]}
-                    snapToIndex={drawerSnapIndex}
+                    snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
                     handleSize="1.75rem"
                     className={drawerStyles.triggerDrawer}
                     handleClassName={drawerStyles.triggerDrawerHandle}

@@ -91,6 +91,15 @@ export default function App() {
         updateUser,
     } = useAccount();
 
+    // The auth gate is only needed on the common signed-out path. Start its
+    // module request alongside overview so a 401 does not create a long tail
+    // of JS/CSS and font requests after the page has already rendered.
+    useEffect(() => {
+        if (!useAuthStore.getState().sessionUser) {
+            void loadAuthGate().catch(() => undefined);
+        }
+    }, []);
+
     useEffect(() => {
         if (overview) attemptedSession.current = null;
     }, [overview]);

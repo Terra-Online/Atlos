@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DESKTOPER_BREAKPOINT, DESKTOPEST_BREAKPOINT } from '@/platform/device';
@@ -293,6 +294,24 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
 
 export const useSidebarOpen = () => useUiPrefsStore((s) => s.sidebarOpen);
 export const useSetSidebarOpen = () => useUiPrefsStore((s) => s.setSidebarOpen);
+/**
+ * Persisted drawer commands must wait until the store has restored uiPrefs.
+ * Otherwise the drawer can execute the default command before a saved `null`
+ * or closed snap arrives, leaving the initial open animation running.
+ */
+export const useUiPrefsHydrated = (): boolean => {
+  const [hydrated, setHydrated] = useState(() => useUiPrefsStore.persist.hasHydrated());
+
+  useEffect(() => {
+    if (useUiPrefsStore.persist.hasHydrated()) {
+      setHydrated(true);
+      return;
+    }
+    return useUiPrefsStore.persist.onFinishHydration(() => setHydrated(true));
+  }, []);
+
+  return hydrated;
+};
 export const useSidebarWidth = () => useUiPrefsStore((s) => s.sidebarWidth);
 export const useSetSidebarWidth = () => useUiPrefsStore((s) => s.setSidebarWidth);
 export const useIntelSidebarWidth = () => useUiPrefsStore((s) => s.intelSidebarWidth);
