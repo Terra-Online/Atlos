@@ -38,8 +38,8 @@ describe('immutable font selection', () => {
     });
     it('reads compact manifests that use the coverage map as unicode range', () => {
         const compact = structuredClone(manifest);
-        delete compact.faces.r.base.range;
-        delete compact.faces.r.labels.range;
+        delete compact.faces.r!.base.range;
+        delete compact.faces.r!.labels.range;
         const parts = selectShards(compact, 'https://cdn.test/CN.json', {
             r: '一二',
         });
