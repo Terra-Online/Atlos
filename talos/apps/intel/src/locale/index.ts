@@ -102,7 +102,7 @@ const loadAndSet = async (locale: Lang) => {
   const data = dataResult.value;
   if (!isCurrent()) return false;
   if (fontsResult.status === 'rejected') {
-    const error = fontsResult.reason;
+    const error: unknown = fontsResult.reason;
     console.warn('Font switch failed:', error);
     if (Object.keys(useI18nStore.getState().data.ui).length) return false;
   }

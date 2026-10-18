@@ -166,7 +166,7 @@ async function loadAndSet(
     const data = dataResult.value;
     if (!isCurrent()) return false;
     if (fontsResult.status === 'rejected') {
-        const error = fontsResult.reason;
+        const error: unknown = fontsResult.reason;
         LOGGER.warn('Font switch failed:', error);
         if (Object.keys(useI18nStore.getState().data.ui).length) return false;
     }

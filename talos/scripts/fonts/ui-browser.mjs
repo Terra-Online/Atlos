@@ -183,7 +183,7 @@ try {
     await page.locator('[data-guide="language"]').click();
     await page.evaluate(() => {
         window.languageChanges = [];
-        new MutationObserver(() =>
+        new window.MutationObserver(() =>
             window.languageChanges.push(document.documentElement.lang),
         ).observe(document.documentElement, {
             attributes: true,
