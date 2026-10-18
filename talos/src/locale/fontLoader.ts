@@ -1,38 +1,50 @@
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
 import { createFontRegions } from './fontRegions';
-import { loadManifest, type Region } from './fontShards';
+import { loadManifest, preloadFontBytes, type Region } from './fontShards';
+import { shellFiles } from './fontConfig';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
+const shellPrefetches = new Map<Region, Promise<void>>();
 
-/** Warm region indexes and shell bytes while the language picker is visible. */
+/** Start immutable shell bytes without waiting for the (larger) manifest. */
+function preloadShellFiles(region: Region): Promise<void> {
+    const existing = shellPrefetches.get(region);
+    if (existing) return existing;
+    const files = Object.values(shellFiles[region] || {}).flat();
+    const pending = preloadFontBytes(files);
+    shellPrefetches.set(region, pending);
+    void pending.catch(() => shellPrefetches.delete(region));
+    return pending;
+}
+
+/** Warm region indexes while the language picker is visible.
+ *
+ * Do not start shell downloads for every locale here. The picker is opened
+ * immediately before a user chooses one target, so warming all regions makes
+ * unrelated font work compete with the selected language and with the app's
+ * current content. The row hover/focus path warms the selected region instead.
+ */
 export function preloadFontManifests(): void {
-    const current = getCurrentRegion();
     for (const region of fontRegions) {
-        void loadManifest(region)
-            .then(() => {
-                if (region === current) return;
-                return fontLoader().then(() =>
-                    Promise.all(
-                        [...documents.values()].map((state) =>
-                            state.regions.preloadShell(region),
-                        ),
-                    ),
-                );
-            })
-            .catch(() => undefined);
+        void loadManifest(region).catch(() => undefined);
     }
 }
 
 /** Warm only the selected region's current registered areas. */
 export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
-    void fontLoader()
-        .then(() =>
+    // The direct shell URLs overlap the manifest round trip. The area-aware
+    // preparation below still verifies the manifest and keeps the atomic
+    // registration contract.
+    void Promise.all([
+        preloadShellFiles(region),
+        fontLoader().then(() =>
             Promise.all(
                 [...documents.values()].map((state) =>
                     state.regions.preload(region),
                 ),
             ),
-        )
+        ),
+    ])
         .catch(() => undefined);
 }
 

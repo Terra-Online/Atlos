@@ -61,7 +61,10 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
             onClose={handleClose}
             onChange={onChange}
             title={t('announcement.title')}
-            fontRuns={[{ faces: ['h', 'r'], text: announcements.map((item) => item.title).join('') + (activeItem?.content || '') }]}
+            // The modal stays mounted for its exit animation. Closed
+            // announcements are not visible and must not make a language
+            // switch wait for their prose packs.
+            fontRuns={[{ faces: ['h', 'r'], text: open ? announcements.map((item) => item.title).join('') + (activeItem?.content || '') : '' }]}
             icon={<AnnouncementIcon aria-hidden="true" />}
             iconScale={0.8}
             size='full'

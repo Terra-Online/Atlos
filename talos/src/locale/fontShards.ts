@@ -159,6 +159,37 @@ const manifests = new Map<
     Region,
     Promise<{ manifest: Manifest; url: string }>
 >();
+const fontBytes = new Map<string, Promise<ArrayBuffer>>();
+
+const loadFontBytes = (url: string): Promise<ArrayBuffer> => {
+    let pending = fontBytes.get(url);
+    if (!pending) {
+        // The selected language is a user-visible transaction. Chromium and
+        // WebKit honor this optional hint; browsers that do not support it
+        // simply ignore the extra RequestInit field.
+        const init: RequestInit & { priority?: 'high' } = {
+            cache: 'force-cache',
+            priority: 'high',
+        };
+        pending = fetch(url, init).then((response) => {
+            if (!response.ok)
+                throw new Error(`Font shard HTTP ${response.status}`);
+            return response.arrayBuffer();
+        });
+        fontBytes.set(url, pending);
+        void pending.catch(() => {
+            if (fontBytes.get(url) === pending) fontBytes.delete(url);
+        });
+    }
+    return pending;
+};
+
+/** Warm immutable shard bytes so the later FontFace load does not requeue the URL. */
+export const preloadFontBytes = (urls: string[]): Promise<void> =>
+    Promise.all([...new Set(urls)].map((url) => loadFontBytes(url))).then(
+        () => undefined,
+    );
+
 export const loadManifest = (region: Region) => {
     let pending = manifests.get(region);
     if (!pending) {
@@ -194,11 +225,19 @@ export const prepareFonts = async (
         selection.map(async (part) => {
             const family = `Atlos-${alias}-${part.face}`;
             families[part.face] = family;
-            // Native URL loading keeps fetching/decoding in the browser font
-            // pipeline and reuses its resource cache across regional aliases.
+            let source: string | ArrayBuffer = `url(${JSON.stringify(part.url)})`;
+            const bytes = fontBytes.get(part.url);
+            if (bytes) {
+                try {
+                    source = await bytes;
+                } catch {
+                    // A failed speculative prefetch should not make the
+                    // visible area fail; FontFace can retry the URL itself.
+                }
+            }
             const font = new FontFace(
                 family,
-                `url(${JSON.stringify(part.url)})`,
+                source,
                 {
                     unicodeRange: part.range,
                     weight: part.face === 'h' ? '100 900' : 'normal',

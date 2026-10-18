@@ -153,7 +153,7 @@ export const fontShardsPlugin = (app = 'main') => {
     let base;
     let building;
     let scriptBase;
-    let metadata = { manifests: {}, requirements: {} };
+    let metadata = { manifests: {}, requirements: {}, shellFiles: {} };
     const preloadEntry = '/@atlos-font-preload';
     const preloadFile = path.join(root, 'src/locale/fontPreload.ts');
     return {
@@ -185,7 +185,7 @@ export const fontShardsPlugin = (app = 'main') => {
                 // Unlike dev `define` globals, module dependencies are ready
                 // before the early entry executes, even before @vite/client.
                 return {
-                    code: `export const manifests = ${JSON.stringify(metadata.manifests)};\nexport const requirements = ${JSON.stringify(metadata.requirements)};`,
+                    code: `export const manifests = ${JSON.stringify(metadata.manifests)};\nexport const requirements = ${JSON.stringify(metadata.requirements)};\nexport const shellFiles = ${JSON.stringify(metadata.shellFiles)};`,
                     map: null,
                 };
             }
@@ -239,12 +239,24 @@ export const fontShardsPlugin = (app = 'main') => {
                     joinCdnPath(base, `${shardPath}/${name}`),
                 ]),
             );
-            metadata = {
-                manifests,
-                requirements: fonts
-                    ? await requirements(fonts.manifests, app)
-                    : {},
-            };
+            const appRequirements = fonts
+                ? await requirements(fonts.manifests, app)
+                : {};
+            const shellFiles = Object.fromEntries(
+                Object.entries(appRequirements).map(([region, data]) => [
+                    region,
+                    Object.fromEntries(
+                        Object.entries(data.shell || {}).map(([face, keys]) => [
+                            face,
+                            (keys || [])
+                                .map((key) => fonts.manifests[region]?.faces?.[face]?.[key])
+                                .filter(Boolean)
+                                .map((part) => new URL(part.file, manifests[region]).href),
+                        ]),
+                    ),
+                ]),
+            );
+            metadata = { manifests, requirements: appRequirements, shellFiles };
             const existing = config.css?.postcss;
             if (typeof existing === 'string')
                 throw new Error(

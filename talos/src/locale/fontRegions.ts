@@ -36,7 +36,7 @@ const selectParts = (
         }),
     );
 
-/** Explicit component ownership: no DOM traversal, geometry reads or viewport listeners. */
+/** Explicit component ownership with a small visibility check at switch time. */
 export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     const batches = new Map<
         string,
@@ -127,6 +127,8 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     interface Owner {
         readonly revision: number;
         readonly ready: Promise<void>;
+        /** Visible shell/UI owners keep the language transaction atomic. */
+        isCritical(): boolean;
         prepare(next: FontRegion): Promise<Plan>;
         retry(): void;
         commit(plan: Plan): boolean;
@@ -172,7 +174,14 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                               ...new Set([
                                   ...(preset?.ui[face] || []),
                                   ...(preset?.shell[face] || []),
-                                  ...(runs.some(
+                                  // Content packs are loaded when the
+                                  // localized content area is committed. A
+                                  // language transaction must prepare the
+                                  // shared UI shell first; pulling every
+                                  // prose pack here turns a small switch into
+                                  // a full-page font download.
+                                  ...(!changingLanguage &&
+                                  runs.some(
                                       (run) =>
                                           run.localized === 'game' &&
                                           run.faces.includes(face),
@@ -206,6 +215,32 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         element: HTMLElement,
         initialRuns: TextRun[] | null = null,
     ) => {
+        // Content owners can contain arbitrary game text, comments, or
+        // remote prose. They are deliberately allowed to catch up after the
+        // visible shell has switched under the language overlay.
+        const regionElement =
+            element.closest<HTMLElement>('[data-font-region]');
+        const regionName =
+            regionElement?.getAttribute('data-font-region') || 'body';
+        const isVisible = () => {
+            if (regionName === 'body') return true;
+            const root = regionElement || element;
+            if (
+                root.getAttribute('aria-hidden') === 'true' ||
+                root.hasAttribute('inert') ||
+                root.getAttribute('data-state') === 'closed'
+            )
+                return false;
+            const style = doc.defaultView?.getComputedStyle(root);
+            return (
+                style?.display !== 'none' &&
+                style?.visibility !== 'hidden' &&
+                root.getClientRects().length > 0
+            );
+        };
+        const isCritical = () =>
+            !['detail', 'content', 'profile'].includes(regionName) &&
+            isVisible();
         const originalOwner = element.getAttribute('data-font-owner');
         element.setAttribute('data-font-owner', '');
         let runs = initialRuns;
@@ -352,6 +387,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             get ready() {
                 return ready;
             },
+            isCritical,
             prepare,
             retry() {
                 if (failed) refresh();
@@ -395,8 +431,9 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         async preload(next: Region) {
             if (warmRegion === next && warmLeases.length) return;
             releaseWarm();
+            const critical = [...areas].filter((area) => area.isCritical());
             const results = await Promise.allSettled(
-                [...areas].map((area) => area.prepare(next)),
+                critical.map((area) => area.prepare(next)),
             );
             const leases = results.flatMap((result) =>
                 result.status === 'fulfilled' && result.value.lease
@@ -434,7 +471,10 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 return;
             }
             while (!stopped && request === generation && isCurrent()) {
-                const snapshot = [...areas];
+                // The language picker masks the page while this transaction
+                // runs. Only visible shell/UI owners must be ready before the
+                // first commit; detail and remote text can catch up behind it.
+                const snapshot = [...areas].filter((area) => area.isCritical());
                 const versions = snapshot.map((area) => area.revision);
                 // Keep old aliases and native faces until the entire language
                 // transaction is ready. A failed request leaves them intact.
@@ -457,11 +497,14 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                     release();
                     throw failed.reason;
                 }
+                const currentCritical = [...areas].filter((area) =>
+                    area.isCritical(),
+                );
                 if (
-                    snapshot.length !== areas.size ||
+                    snapshot.length !== currentCritical.length ||
                     snapshot.some(
                         (area, index) =>
-                            !areas.has(area) ||
+                            !currentCritical.includes(area) ||
                             area.revision !== versions[index],
                     )
                 ) {
@@ -480,6 +523,44 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                     area.commit(plans[index]),
                 );
                 for (const area of changed) area.notify();
+
+                // Content owners use the new region after the visible commit.
+                // Their work is intentionally detached from the language
+                // picker so a long list or a large prose pack cannot extend
+                // the masked UI switch. Generation checks prevent a stale
+                // background result from changing a newer language.
+                const background = [...areas].filter(
+                    (area) => !snapshot.includes(area),
+                );
+                void Promise.all(
+                    background.map(async (area) => {
+                        const version = area.revision;
+                        try {
+                            const plan = await area.prepare(next);
+                            if (
+                                stopped ||
+                                request !== generation ||
+                                !isCurrent() ||
+                                !areas.has(area) ||
+                                area.revision !== version
+                            ) {
+                                plan.lease?.release();
+                                return;
+                            }
+                            if (area.commit(plan)) area.notify();
+                        } catch (error) {
+                            if (
+                                !stopped &&
+                                request === generation &&
+                                isCurrent()
+                            )
+                                console.warn(
+                                    'Background font region preparation failed:',
+                                    error,
+                                );
+                        }
+                    }),
+                );
                 return;
             }
         },
