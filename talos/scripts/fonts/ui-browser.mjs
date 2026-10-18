@@ -86,7 +86,7 @@ try {
     await page.waitForFunction(() => {
         const element = document.querySelector('[class*="langDisplay"]');
         return (
-            !getComputedStyle(element).fontFamily.includes('Atlos-pending') &&
+            !getComputedStyle(element).fontFamily.includes('OEM-pending') &&
             [...document.fonts].some(
                 (font) =>
                     font.family === 'Lang Origin' && font.status === 'loaded',
@@ -170,7 +170,7 @@ try {
         window.fontSampling = false;
         return window.fontFrames;
     });
-    assert(!frames.some((frame) => frame.family.includes('Atlos-pending')));
+    assert(!frames.some((frame) => frame.family.includes('OEM-pending')));
     assert.equal(navigations, 1);
     // A stale language must not commit even while its replacement catalog is
     // still downloading. Cold HK fonts make this ordering deterministic.

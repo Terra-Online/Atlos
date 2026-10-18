@@ -31,7 +31,7 @@ export const regionFontStyles = () => ({
             /(['"])(UD_ShinGo (?:Bold|DemiBold|Medium|Regular)|HMSans)\1|\bHMSans\b(?![\w-])/g,
             (_match, _quote, family) => {
                 const face = fontVariables[family || 'HMSans'];
-                return `var(--font-${face}, "Atlos-pending-${face}")`;
+                return `var(--font-${face}, "OEM-pending-${face}")`;
             },
         );
         // Inherited font-family is already resolved. Rebind the app's body

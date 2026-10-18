@@ -49,7 +49,7 @@ const active = (page, id, face) =>
             document
                 .getElementById(id)
                 .style.getPropertyValue(`--font-${face}`)
-                .includes('Atlos-area'),
+                .includes('OEM-area'),
         { id, face },
     );
 
@@ -111,7 +111,7 @@ const active = (page, id, face) =>
         }));
         const partial = state.metrics.frames.filter((frame) => {
             const a = frame[1];
-            return a[0].includes('Atlos-area') !== a[1].includes('Atlos-area');
+            return a[0].includes('OEM-area') !== a[1].includes('OEM-area');
         });
         if (partial.length)
             throw Error(`${name}: partial region activation ${partial.length}`);
@@ -138,7 +138,7 @@ const active = (page, id, face) =>
             restored,
             `${name}: reverting to covered copy must restore the ready alias immediately`,
         );
-        assert.doesNotMatch(state.styles[3][1], /Atlos-area/);
+        assert.doesNotMatch(state.styles[3][1], /OEM-area/);
         const shared = await page.evaluate(() => {
             window.stopSampling();
             const original = document

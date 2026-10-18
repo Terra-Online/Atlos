@@ -23,9 +23,9 @@ test('region variables preserve family precedence and face definitions', async (
     assert.match(result.css, /@font-face\{font-family:'HMSans'/);
     assert.match(
         result.css,
-        /'Novecento Medium','HMSans_EN',var\(--font-h, "Atlos-pending-h"\),var\(--font-r, "Atlos-pending-r"\),sans-serif/,
+        /'Novecento Medium','HMSans_EN',var\(--font-h, "OEM-pending-h"\),var\(--font-r, "OEM-pending-r"\),sans-serif/,
     );
-    assert.match(result.css, /var\(--font-b, "Atlos-pending-b"\)/);
+    assert.match(result.css, /var\(--font-b, "OEM-pending-b"\)/);
 });
 
 test('build validation rejects modified immutable resources and partial diagnostics', async (t) => {
@@ -106,5 +106,5 @@ test('inherited body stacks rebind at explicit owners without layout inspection'
     const owner = result.root.nodes.find((node) => node.selector === ':where([data-font-owner])');
     assert.equal(owner.nodes.length, 1);
     assert.equal(owner.nodes[0].prop, 'font-family');
-    assert.equal(owner.nodes[0].value, `'Latin',var(--font-h, "Atlos-pending-h"),sans-serif`);
+    assert.equal(owner.nodes[0].value, `'Latin',var(--font-h, "OEM-pending-h"),sans-serif`);
 });

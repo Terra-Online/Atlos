@@ -376,7 +376,7 @@ const mirrorDocumentStyles = (source: Document, target: Document) => {
 const mirrorDocumentFonts = (source: Document, target: Document): (() => void) => {
     const addFaces = (faces: Iterable<FontFace>) => {
         for (const face of faces) {
-            if (face.family.startsWith('Atlos-')) continue;
+            if (face.family.startsWith('OEM-')) continue;
             try {
                 target.fonts.add(face);
             } catch {

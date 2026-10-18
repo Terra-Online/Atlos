@@ -14,7 +14,7 @@ import type { FontRegion } from '@/lib/i18n/lang';
 import { manifests, requirements, type Parts } from './fontConfig';
 
 let nextAreaId = 0;
-const pendingName = (face: Face) => `"Atlos-pending-${face}"`;
+const pendingName = (face: Face) => `"OEM-pending-${face}"`;
 const selectParts = (
     manifest: Manifest,
     url: string,
