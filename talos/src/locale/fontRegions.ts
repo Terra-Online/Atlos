@@ -28,7 +28,7 @@ const selectParts = (
                       {
                           face: face as Face,
                           url: new URL(part.file, url).href,
-                          range: manifest.maps[part.range],
+                          range: manifest.maps[part.range ?? part.map],
                           bytes: part.bytes,
                       },
                   ]

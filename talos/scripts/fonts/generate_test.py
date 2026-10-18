@@ -28,6 +28,20 @@ class ShardGenerationTest(unittest.TestCase):
             union.update(points)
         self.assertEqual(union, coverage)
 
+    def test_prose_policy_keeps_custom_coverage_in_residual_packs(self):
+        layout = {
+            'base': {'CN': 'A'},
+            'labels': {'CN': '一二'},
+            'reading': {'CN': '三四'},
+            'packing': {'target': 1024, 'minimum': 2, 'maximum': 1536},
+        }
+        coverage = {65, 0x4E00, 0x4E8C, 0x4E09, 0x56DB, 0x4E94}
+        harmony = generate.partition(coverage, layout, 'CN', 'h')
+        ud = generate.partition(coverage, layout, 'CN', 'r')
+        self.assertIn('reading', harmony)
+        self.assertNotIn('reading', ud)
+        self.assertTrue({0x4E09, 0x56DB}.issubset(set().union(*ud.values())))
+
     def test_real_subsets_cover_original_disjointly_and_keep_cached_urls(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

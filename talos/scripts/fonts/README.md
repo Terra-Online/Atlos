@@ -28,14 +28,21 @@ literal branches, without argument names/selectors. Daily text changes and new
 apps never change this snapshot.
 
 The UI base remains one pack. All current map/region/Intel names beyond the UI
-base fit into one pack (about 700–800 characters per region). Reading characters
-remain adjacent in document order. The rest of the original cmap is packed by
+base fit into one terms pack (about 700–800 characters per region). Reading
+characters form the prose pack: Harmony is the preferred pack for CN/HK and UD
+faces provide the prose pack for JP. CN/HK UD faces keep those glyphs in the
+residual packs, so custom text can still use every glyph from the original cmap
+without downloading a second semantic pack. The residual cmap is packed by
 **actual character count**, targeting 1,024 characters, merging/rebalancing
 tails below 512, with a 1,536-glyph ceiling. Unicode interval width is not a
-size criterion. The four UD weights share partition boundaries so coverage maps
-can be reused; Harmony packs its actual cmap separately. This avoids tiny
-fragments from sparse CJK extensions, compatibility characters and private-use
-blocks.
+size criterion. The four UD weights share partition boundaries where their
+semantic policy is the same; Harmony packs its actual cmap separately. This
+avoids tiny fragments from sparse CJK extensions, compatibility characters and
+private-use blocks.
+
+Manifest parts use one interned coverage map for both selection and
+`unicode-range`. Older beta manifests may still contain the redundant `range`
+field and remain readable; newly generated manifests omit it.
 
 A source font change requires a deliberate layout/version update; do not edit
 the published v1 partition to accommodate new UI text. Re-running generation

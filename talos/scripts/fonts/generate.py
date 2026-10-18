@@ -21,6 +21,20 @@ ROOT = Path(__file__).resolve().parents[2]
 LAYOUT = Path(__file__).with_name('layout-v1.json')
 FACES = {'b': 'B', 'db': 'DB', 'm': 'M', 'r': 'R'}
 
+# Semantic packs describe the preferred face for their normal text path.  A
+# character omitted from a face-specific semantic pack remains in `full`, so
+# every original cmap glyph is still available to custom text and fallbacks.
+# Harmony is the primary prose face for CN/HK; JP prose uses UD faces.
+SEMANTIC_FACE_POLICY = {
+    'reading': {
+        'CN': {'h'},
+        'HK': {'h'},
+        # Japanese has no Harmony face; keep the prose pack on every UD
+        # weight because components may declare a weight-specific stack.
+        'JP': {'b', 'db', 'm', 'r'},
+    },
+}
+
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()[:20]
@@ -53,11 +67,14 @@ def source_path(region, face):
     return ROOT / 'src/assets/fonts_original/UD_ShinGo' / f'UDShinGo_{region}_{FACES[face]}.{suffix}'
 
 
-def partition(coverage, layout, region):
+def partition(coverage, layout, region, face=None):
     """Frozen semantic seeds followed by character-count packs, never sparse ranges."""
     groups = {}
     remaining = set(coverage)
     for key in ('base', 'labels', 'reading'):
+        allowed = SEMANTIC_FACE_POLICY.get(key, {}).get(region)
+        if face is not None and allowed is not None and face not in allowed:
+            continue
         points = list(dict.fromkeys(ord(char) for char in layout.get(key, {}).get(region, '')))
         points = [point for point in points if point in remaining]
         remaining.difference_update(points)
@@ -102,7 +119,32 @@ def build_face(job):
     expected = layout.get('sources', {}).get(f'{region}-{face}')
     if expected and hashlib.sha256(source).hexdigest() != expected:
         raise RuntimeError(f'Original font changed: {region}/{face}. Freeze a new layout version.')
-    signature = digest(source + b'cohort-packs-1' + json.dumps({k: v for k, v in layout.items() if k != 'sources'}, sort_keys=True).encode() + f'{fontTools.__version__}:{brotli.__version__}'.encode())
+    signature = digest(
+        source
+        + b'cohort-packs-2'
+        + json.dumps(
+            {
+                k: v
+                for k, v in layout.items()
+                if k != 'sources'
+            },
+            sort_keys=True,
+        ).encode()
+        + json.dumps(
+            {
+                'face': face,
+                'semanticFacePolicy': {
+                    group: {
+                        region: sorted(faces)
+                        for region, faces in regions.items()
+                    }
+                    for group, regions in SEMANTIC_FACE_POLICY.items()
+                },
+            },
+            sort_keys=True,
+        ).encode()
+        + f'{fontTools.__version__}:{brotli.__version__}'.encode()
+    )
     cache = output / f'.{region}-{face}.json'
     if not limit and cache.exists():
         saved = json.loads(cache.read_text())
@@ -114,7 +156,11 @@ def build_face(job):
     original = TTFont(io.BytesIO(source), recalcTimestamp=False)
     coverage = set(original.getBestCmap())
     original.close()
-    groups = shared[0] if shared else partition(coverage, layout, region)
+    groups = (
+        partition(shared[0], layout, region, face)
+        if shared
+        else partition(coverage, layout, region, face)
+    )
     parts = {}
     for i, (key, points) in enumerate(groups.items()):
         points = set(points) & coverage
@@ -141,7 +187,6 @@ def build_face(job):
         parts[key] = {
             'file': write_immutable(output, f'{region}-{face}-{key}', 'woff2', data),
             'coverage': encode_ranges(actual),
-            'range': encode_ranges(actual),
             'bytes': len(data),
             'characters': len(actual),
         }
@@ -164,7 +209,7 @@ def generate(output, workers=4, limit=0, only=None):
             font = TTFont(file, lazy=True)
             union.update(font.getBestCmap())
             font.close()
-        shared[region] = partition(union, layout, region)
+        shared[region] = union
     jobs = [(region, face, layout, str(output), limit, *([shared[region]] if face != 'h' else []))
             for region in layout['base'] for face in [*FACES, *(['h'] if region != 'JP' else [])]
             if not only or f'{region}-{face}' in only]
@@ -184,7 +229,14 @@ def generate(output, workers=4, limit=0, only=None):
             return maps.index(value)
         manifest_faces = {}
         for face, parts in region_faces.items():
-            manifest_faces[face] = {key: {'file': p['file'], 'map': intern(p['coverage']), 'range': intern(p['range']), 'bytes': p['bytes']} for key, p in parts.items()}
+            manifest_faces[face] = {
+                key: {
+                    'file': p['file'],
+                    'map': intern(p['coverage']),
+                    'bytes': p['bytes'],
+                }
+                for key, p in parts.items()
+            }
         manifest = {'version': layout['version'], 'region': region, 'packing': layout['packing'], 'maps': maps, 'faces': manifest_faces}
         data = json.dumps(manifest, separators=(',', ':')).encode()
         index[region] = write_immutable(output, region, 'json', data)

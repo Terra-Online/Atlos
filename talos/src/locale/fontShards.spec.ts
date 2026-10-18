@@ -36,6 +36,24 @@ describe('immutable font selection', () => {
         expect(covers('U+20000-20002', 0x20001)).toBe(true);
         expect(covers('U+4E00,U+4E8C', 0x4e09)).toBe(false);
     });
+    it('reads compact manifests that use the coverage map as unicode range', () => {
+        const compact = structuredClone(manifest) as Manifest;
+        delete compact.faces.r!.base!.range;
+        delete compact.faces.r!.labels!.range;
+        const parts = selectShards(compact, 'https://cdn.test/CN.json', {
+            r: '一二',
+        });
+        expect(
+            parts.find(
+                (part) => part.face === 'r' && part.url.endsWith('base.woff2'),
+            )?.range,
+        ).toBe('U+4E00');
+        expect(
+            parts.find(
+                (part) => part.face === 'r' && part.url.endsWith('rest.woff2'),
+            )?.range,
+        ).toBe('U+4E8C');
+    });
     it('follows family order per glyph and falls through an absent JP Harmony face', () => {
         expect(
             selectRuns(manifest, 'https://cdn.test/CN.json', [

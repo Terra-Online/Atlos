@@ -8,7 +8,8 @@ export type Demand = Partial<Record<Face, string>>;
 interface Part {
     file: string;
     map: number;
-    range: number;
+    /** Older beta manifests duplicated `map` as `range`; compact manifests omit it. */
+    range?: number;
     bytes: number;
 }
 export interface Manifest {
@@ -24,6 +25,8 @@ export interface Selection {
     range: string;
     bytes: number;
 }
+
+const rangeIndex = (part: Part): number => part.range ?? part.map;
 
 type Span = [number, number];
 const ranges = new Map<string, Span[]>();
@@ -108,7 +111,7 @@ export const selectShards = (
             result.push({
                 face,
                 url: new URL(part.file, url).href,
-                range: manifest.maps[part.range],
+                range: manifest.maps[rangeIndex(part)],
                 bytes: part.bytes,
             });
         }
