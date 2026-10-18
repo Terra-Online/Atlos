@@ -108,6 +108,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
   const [currentSnap, setCurrentSnap] = useState(0);
+  const [hasOpened, setHasOpened] = useState(() => (drawerSnapIndex ?? 0) > 0);
+  const hasOpenedRef = useRef(hasOpened);
   const [topRowWidth, setTopRowWidth] = useState(0);
   const [topRowHeight, setTopRowHeight] = useState(0);
   const [topRowBaseHeight, setTopRowBaseHeight] = useState(0);
@@ -132,6 +134,10 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
+    if (p > 0.02 && !hasOpenedRef.current) {
+      hasOpenedRef.current = true;
+      setHasOpened(true);
+    }
     if (p >= 0.999) onToggle?.(true);
     else if (p <= 0.001) onToggle?.(false);
 
@@ -154,6 +160,12 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       setCurrentSnap(Math.max(0, snapIndex));
     }
   };
+
+  useEffect(() => {
+    if ((drawerSnapIndex ?? 0) <= 0 || hasOpenedRef.current) return;
+    hasOpenedRef.current = true;
+    setHasOpened(true);
+  }, [drawerSnapIndex]);
 
   // Track scroll position for blur effects
   useEffect(() => {
@@ -406,7 +418,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
             <Detail inline className={mobileStyles.mobileDetail} />
 
-            <div className={mobileStyles.filters}>
+            {hasOpened && <div className={mobileStyles.filters}>
               <MarkFilterDragProvider>
                 {VERSION_NEW_FILTER_GROUPS.map((group) => (
                   <MarkFilter
@@ -486,7 +498,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                     );
                   })}
               </MarkFilterDragProvider>
-            </div>
+            </div>}
             <div className={mobileStyles.idCardContainer}>
                 <Suspense fallback={null}>
                   <IDCard />

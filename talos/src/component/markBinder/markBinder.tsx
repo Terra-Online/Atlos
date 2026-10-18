@@ -144,6 +144,8 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
                     <img
                         src={iconUrl}
                         alt={displayName}
+                        loading='lazy'
+                        decoding='async'
                         draggable="false"
                         onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';

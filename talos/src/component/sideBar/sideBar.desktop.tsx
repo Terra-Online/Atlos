@@ -115,10 +115,15 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
 
     const [supportOpen, setSupportOpen] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
+    const [hasOpened, setHasOpened] = useState(isOpen);
 
     const sidebarRef = React.useRef<HTMLDivElement>(null);
     const resizeStartX = useReactRef(0);
     const resizeStartW = useReactRef(SIDEBAR_MIN_WIDTH);
+
+    useEffect(() => {
+        if (isOpen) setHasOpened(true);
+    }, [isOpen]);
 
     const clampWidth = useCallback((startW: number, dx: number) =>
         clampSidebarWidth(startW + dx, maxWidth), [maxWidth]);
@@ -213,6 +218,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
 
     const toggleSidebar = () => {
         const newState = !isOpen;
+        if (newState) setHasOpened(true);
         setIsOpen(newState);
         if (onToggle) {
             onToggle(newState);
@@ -252,7 +258,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         draggable={'false'}
                     />
                 </div>
-                <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
+                {hasOpened && <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
                     <SearchDesktop />
                     <div className={styles.filters}>
                         <MarkFilterDragProvider>
@@ -363,7 +369,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                             <IDCard />
                         </Suspense>
                     </div>
-                </div>
+                </div>}
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>
                         {t('footer.icp')}

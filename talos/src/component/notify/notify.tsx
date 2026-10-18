@@ -53,6 +53,7 @@ import {
     type NotificationReadBatcher,
 } from './notificationRead';
 import styles from './notify.module.scss';
+import { useNearViewport } from '@/lib/dom/useNearViewport';
 
 interface NotifyProps {
     open: boolean;
@@ -485,6 +486,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const readBatcherRef =
         useRef<NotificationReadBatcher<NotificationCategory> | null>(null);
     const notificationListRef = useRef<HTMLDivElement | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const publishUnread = useCallback(
         (nextUnread: NotificationUnreadCounts) => {
@@ -750,6 +752,19 @@ const NotifyModal: React.FC<NotifyProps> = ({
     );
     const activeFeed = feeds[activeCategory];
     const hasMessages = activeFeed.items.length > 0;
+    useNearViewport({
+        rootRef: notificationListRef,
+        targetRef: loadMoreRef,
+        enabled: Boolean(
+            open &&
+                sessionUser &&
+                activeFeed.nextCursor &&
+                !activeFeed.loading &&
+                !activeFeed.loadingMore &&
+                !activeFeed.error,
+        ),
+        onNear: () => void loadCategory(activeCategory, true),
+    });
     useEffect(() => {
         if (!open || !sessionUser || activeFeed.loading || markingAll)
             return undefined;
@@ -859,19 +874,22 @@ const NotifyModal: React.FC<NotifyProps> = ({
                                 />
                             ))}
                             {activeFeed.nextCursor && (
-                                <div className={styles.loadMore}>
-                                    <AccessButton
-                                        label={t(
-                                            activeFeed.loadingMore
-                                                ? 'common.loading'
-                                                : 'notification.loadMore',
-                                        )}
-                                        disabled={activeFeed.loadingMore}
-                                        onClick={() =>
-                                            void loadCategory(activeCategory, true)
-                                        }
-                                    />
-                                </div>
+                                <>
+                                    <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
+                                    <div className={styles.loadMore}>
+                                        <AccessButton
+                                            label={t(
+                                                activeFeed.loadingMore
+                                                    ? 'common.loading'
+                                                    : 'notification.loadMore',
+                                            )}
+                                            disabled={activeFeed.loadingMore}
+                                            onClick={() =>
+                                                void loadCategory(activeCategory, true)
+                                            }
+                                        />
+                                    </div>
+                                </>
                             )}
                         </>
                     )}

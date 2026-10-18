@@ -315,6 +315,11 @@
     .loadMore {
         @include feed.pagination;
     }
+    .loadMoreSentinel {
+        width: 100%;
+        height: 1px;
+        pointer-events: none;
+    }
     /* Footer */
     .supportDivider {
         position: relative;
