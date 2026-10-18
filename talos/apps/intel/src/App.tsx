@@ -23,7 +23,7 @@ import {
 } from '@intel/data/importContract';
 import { useIntelCollection } from '@intel/state/collection';
 import ArchiveProgressSyncHost from '@intel/state/ArchiveProgressSyncHost';
-import IntelCard from '@intel/components/intelCard/intelCard';
+import VirtualIntelCard from '@intel/components/intelCard/virtualIntelCard';
 import CategoryFilter from '@intel/components/categoryFilter/categoryFilter';
 import BoxSelection from '@intel/components/boxSelection/boxSelection';
 import IntelHeadBar from '@intel/components/intelHeadBar/intelHeadBar';
@@ -222,6 +222,9 @@ function App() {
     : pageTitleTemplate;
   const sidebarWidth = useIntelSidebarWidth();
   const { isMobile } = useDevice();
+  const cardsExpanded = useIntelCardsExpanded();
+  const [virtualizationReady, setVirtualizationReady] = useState(false);
+  const previousCardsExpandedRef = useRef(cardsExpanded);
   const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
   const { collectedIds, toggle, applyCollectedState, isReady } = useIntelCollection(intelArchives);
   const [importToken] = useState<string | null>(getInitialImportToken);
@@ -242,6 +245,15 @@ function App() {
   const suppressContentClickRef = useRef(false);
   const didScrollToTypeTargetRef = useRef(false);
   const hadSearchQueryRef = useRef(false);
+
+  useEffect(() => {
+    previousCardsExpandedRef.current = cardsExpanded;
+    setVirtualizationReady(false);
+    const settleDelay = cardsExpanded ? 350 : 950;
+    const timer = window.setTimeout(() => setVirtualizationReady(true), settleDelay);
+    return () => window.clearTimeout(timer);
+  }, [cardsExpanded]);
+  const cardsExpansionSettling = previousCardsExpandedRef.current !== cardsExpanded;
 
   const toggleArchive = useCallback((archive: IntelArchive) => {
     toggle(archive);
@@ -475,7 +487,7 @@ function App() {
               </PopoverTooltip>
               <div className={cardStyles.grid}>
                 {categoryArchives.map((archive, archiveIndex) => (
-                  <IntelCard
+                  <VirtualIntelCard
                     key={archive.id}
                     archive={archive}
                     collected={collectedIds.has(archive.id)}
@@ -483,6 +495,8 @@ function App() {
                     stackOrder={visible.length - stackOffset - categoryStackOffset - archiveIndex}
                     onToggle={toggleArchive}
                     onTypeTargetHover={dismissTypeTarget}
+                    virtualize={virtualizationReady && !cardsExpansionSettling}
+                    rootRef={contentSelectionRef}
                   />
                 ))}
               </div>

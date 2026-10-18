@@ -9,6 +9,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type Ref,
   type ReactNode,
   type TransitionEvent,
 } from 'react';
@@ -252,13 +253,15 @@ const AcquisitionDetails = ({
   }
 };
 
-interface ArchiveCardProps {
+export interface ArchiveCardProps {
   archive: IntelArchive;
   collected: boolean;
   isTypeTarget: boolean;
   stackOrder: number;
   onToggle: (archive: IntelArchive) => void;
   onTypeTargetHover: (archiveId: string) => void;
+  virtualRef?: Ref<HTMLDivElement>;
+  onHeightMeasured?: (height: number) => void;
 }
 
 interface IntelTitleStyle extends CSSProperties {
@@ -268,6 +271,7 @@ interface IntelTitleStyle extends CSSProperties {
 interface PendingCardMeasurement {
   card: HTMLElement;
   canMeasure: () => boolean;
+  onMeasured?: (height: number) => void;
 }
 
 const pendingCardMeasurements = new Map<HTMLElement, PendingCardMeasurement>();
@@ -301,10 +305,12 @@ const scheduleCardMeasurement = (
   skeleton: HTMLElement,
   card: HTMLElement,
   canMeasure: () => boolean,
+  onMeasured?: (height: number) => void,
 ) => {
   pendingCardMeasurements.set(skeleton, {
     card,
     canMeasure,
+    onMeasured,
   });
   if (cardMeasurementFrame) return;
   cardMeasurementFrame = window.requestAnimationFrame(() => {
@@ -320,16 +326,17 @@ const scheduleCardMeasurement = (
       targetSkeleton.dataset.measuring = 'true';
     });
 
-    const measurements = entries.map(([targetSkeleton, { card }]) => ({
+    const measurements = entries.map(([targetSkeleton, { card, onMeasured }]) => ({
       skeleton: targetSkeleton,
       height: Math.ceil(card.getBoundingClientRect().height) + 1,
+      onMeasured,
     }));
 
     entries.forEach(([targetSkeleton]) => {
       delete targetSkeleton.dataset.measuring;
     });
 
-    measurements.forEach(({ skeleton: targetSkeleton, height }) => {
+    measurements.forEach(({ skeleton: targetSkeleton, height, onMeasured }) => {
       if (height <= 0) return;
       const previousHeight = Number.parseFloat(
         targetSkeleton.style.getPropertyValue('--intel-card-expanded-height'),
@@ -338,6 +345,7 @@ const scheduleCardMeasurement = (
         targetSkeleton.style.setProperty('--intel-card-expanded-height', `${height}px`);
       }
       targetSkeleton.dataset.heightReady = 'true';
+      onMeasured?.(height);
     });
 
     window.requestAnimationFrame(() => {
@@ -359,6 +367,8 @@ const IntelCard = ({
   stackOrder,
   onToggle,
   onTypeTargetHover,
+  virtualRef,
+  onHeightMeasured,
 }: ArchiveCardProps) => {
   const tUI = useTranslateUI();
   const tGame = useTranslateGame();
@@ -383,8 +393,8 @@ const IntelCard = ({
     const skeleton = cardSkeletonRef.current;
     const card = cardRef.current;
     if (!skeleton || !card || !canMeasureCard()) return;
-    scheduleCardMeasurement(skeleton, card, canMeasureCard);
-  }, [canMeasureCard]);
+    scheduleCardMeasurement(skeleton, card, canMeasureCard, onHeightMeasured);
+  }, [canMeasureCard, onHeightMeasured]);
   const toggleCard = () => onToggle(archive);
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -463,7 +473,11 @@ const IntelCard = ({
 
   return (
     <div
-      ref={cardSkeletonRef}
+      ref={(element) => {
+        cardSkeletonRef.current = element;
+        if (typeof virtualRef === 'function') virtualRef(element);
+        else if (virtualRef) virtualRef.current = element;
+      }}
       className={styles.cardSkeleton}
       style={{ zIndex: stackOrder }}
     >
