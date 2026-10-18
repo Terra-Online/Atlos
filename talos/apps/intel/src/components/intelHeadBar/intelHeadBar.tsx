@@ -1,8 +1,11 @@
+import { useTheme } from '@main/platform/useTheme';
 import { useEffect, useState } from 'react';
 import LanguageModal from '@main/component/language/language';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { useTranslateUI } from '@main/locale';
-import { setLocale as setIntelLocale } from '@intel/locale';
+import { getFontRegionForLocale } from '@main/locale';
+import { preloadFontRegion } from '@main/locale/fontLoader';
+import { applyLocaleData as applyIntelLocaleData, preloadLocale, type I18nBundle } from '@intel/locale';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
@@ -10,19 +13,13 @@ import styles from './intelHeadBar.module.scss';
 
 const IntelHeadBar = () => {
   const tUI = useTranslateUI();
-  const [isDark, setIsDark] = useState(false);
+  const isDark = useTheme() === 'dark';
   const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
     initTheme();
-    setIsDark(document.documentElement.getAttribute('data-theme') === 'dark');
     return () => cleanupTheme();
   }, []);
-
-  const handleTheme = () => {
-    toggleTheme();
-    setIsDark((current) => !current);
-  };
 
   return (
     <>
@@ -30,7 +27,7 @@ const IntelHeadBar = () => {
         <HeadBar>
           <HeadItem
             icon={Darkmode}
-            onClick={handleTheme}
+            onClick={toggleTheme}
             tooltip={isDark ? tUI('headbar.lightmode') : tUI('headbar.darkmode')}
             guideKey="dark-mode"
           />
@@ -47,8 +44,13 @@ const IntelHeadBar = () => {
         open={languageOpen}
         onClose={() => setLanguageOpen(false)}
         onChange={setLanguageOpen}
-        onSelected={(locale) => {
-          void setIntelLocale(locale);
+        prepareLocale={preloadLocale}
+        commitLocale={(locale, data) => {
+          applyIntelLocaleData(locale, data as I18nBundle);
+        }}
+        preloadFonts={(locale) => {
+          const region = getFontRegionForLocale(locale);
+          if (region) preloadFontRegion(region);
         }}
       />
     </>

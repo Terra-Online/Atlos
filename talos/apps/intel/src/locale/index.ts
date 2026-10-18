@@ -1,5 +1,7 @@
+import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@main/lib/i18n/runtime';
 import { create } from 'zustand';
 import type { StoreApi, UseBoundStore } from 'zustand';
+import { startTransition } from 'react';
 import {
   SUPPORTED_LANGS,
   getFontRegionForLocale,
@@ -35,35 +37,13 @@ export {
   type Lang,
 } from '@main/lib/i18n/lang';
 
-interface I18nBundle {
+export interface I18nBundle {
   game: Record<string, unknown>;
   ui: Record<string, unknown>;
 }
 
 type JsonModule = { default: Record<string, unknown> };
 const localeModules: Record<string, () => Promise<JsonModule>> = import.meta.glob<JsonModule>('./data/**/*.json');
-const STORAGE_KEY = 'talos:locale';
-
-const deepGet = (value: unknown, path: string): unknown => path.split('.').reduce<unknown>((current, key) => (
-  current && typeof current === 'object' && key in (current as Record<string, unknown>)
-    ? (current as Record<string, unknown>)[key]
-    : undefined
-), value);
-
-const isObject = (value: unknown): value is Record<string, unknown> => (
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-);
-
-const deepMerge = (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> => {
-  const result = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    result[key] = isObject(result[key]) && isObject(value)
-      ? deepMerge(result[key], value)
-      : value;
-  }
-  return result;
-};
-
 const resolveLoader = (namespace: 'ui' | 'game', locale: string) => {
   const candidates = getLocaleContentCandidates(locale).map((candidate) => candidate.toLowerCase());
   return Object.entries(localeModules).find(([file]) => {
@@ -71,15 +51,6 @@ const resolveLoader = (namespace: 'ui' | 'game', locale: string) => {
     const name = file.split('/').pop()?.replace(/\.json$/i, '').toLowerCase();
     return Boolean(name && candidates.includes(name));
   })?.[1];
-};
-
-const readInitialLocale = (): Lang => {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return normalizeLang(stored || navigator.language);
-  } catch {
-    return normalizeLang(typeof navigator === 'undefined' ? 'en-US' : navigator.language);
-  }
 };
 
 type I18nState = {
@@ -107,7 +78,7 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
       gameLoader?.() ?? Promise.resolve({ default: {} }),
     ]);
     return {
-      ui: englishUiLoader ? deepMerge(englishUi.default, ui.default) : ui.default,
+      ui: englishUiLoader ? mergeCatalogs(englishUi.default, ui.default) : ui.default,
       game: game.default,
     };
   })().catch((error) => {
@@ -118,13 +89,27 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
   return promise;
 };
 
+const beginRequest = createRequestGuard();
 const loadAndSet = async (locale: Lang) => {
-  const [data] = await Promise.all([
-    loadLocale(locale),
-    switchFontRegion(getFontRegionForLocale(locale)).catch(() => undefined),
+  const isCurrent = beginRequest();
+  const dataPromise = loadLocale(locale);
+  const fontsPromise = switchFontRegion(getFontRegionForLocale(locale), isCurrent);
+  const [dataResult, fontsResult] = await Promise.allSettled([
+    dataPromise,
+    fontsPromise,
   ]);
+  if (dataResult.status === 'rejected') throw dataResult.reason;
+  const data = dataResult.value;
+  if (!isCurrent()) return false;
+  if (fontsResult.status === 'rejected') {
+    const error: unknown = fontsResult.reason;
+    console.warn('Font switch failed:', error);
+    if (Object.keys(useI18nStore.getState().data.ui).length) return false;
+  }
+  if (!isCurrent()) return false;
   useI18nStore.setState({ locale, data });
   document.documentElement.lang = toBCP47(locale);
+  return true;
 };
 
 export const useLocale = () => useI18nStore((state) => state.locale);
@@ -152,13 +137,26 @@ export const translateUI = (key: string, fallback = ''): string => {
 
 export const setLocale = async (locale: string) => {
   const normalized = normalizeLang(locale);
-  await loadAndSet(normalized);
-  try {
-    window.localStorage.setItem(STORAGE_KEY, normalized);
-  } catch {
-    // Ignore unavailable storage contexts.
-  }
+  if (await loadAndSet(normalized)) persistLocale(normalized);
 };
+
+/** Apply the app catalog after the shared language modal commits fonts. */
+export const setLocaleData = async (locale: string) => {
+  const normalized = normalizeLang(locale);
+  const isCurrent = beginRequest();
+  const data = await loadLocale(normalized);
+  if (!isCurrent()) return;
+  useI18nStore.setState({ locale: normalized, data });
+};
+
+/** Apply a preloaded catalog inside the shared language commit. */
+export const applyLocaleData = (locale: string, data: I18nBundle) => {
+  startTransition(() => {
+    useI18nStore.setState({ locale: normalizeLang(locale), data });
+  });
+};
+
+export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));
 
 export const preloadAllLanguages = async (current: Lang = getCurrentLocale()) => {
   await Promise.allSettled(SUPPORTED_LANGS.filter((locale) => locale !== current).map(loadLocale));

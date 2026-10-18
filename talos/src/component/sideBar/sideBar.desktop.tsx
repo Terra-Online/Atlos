@@ -46,6 +46,7 @@ import {
     getSidebarMaxWidth,
     useDesktopDrawerSnapIndex,
     useIncrementLayoutVersion,
+    useUiPrefsHydrated,
     useSetSidebarOpen,
     useSetSidebarWidth,
     useSetTriggerBoundary,
@@ -61,6 +62,7 @@ import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from './selectionLayer';
 import { computeBinderColumns } from './binderMasonry';
 import { useDevice } from '@/platform/device';
+import { preloadSidebarIcons } from './sidebarIconPrefetch';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -112,13 +114,23 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDesktopDrawerSnapIndex();
+    const uiPrefsHydrated = useUiPrefsHydrated();
 
     const [supportOpen, setSupportOpen] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
+    const [hasOpened, setHasOpened] = useState(isOpen);
 
     const sidebarRef = React.useRef<HTMLDivElement>(null);
     const resizeStartX = useReactRef(0);
     const resizeStartW = useReactRef(SIDEBAR_MIN_WIDTH);
+
+    useEffect(() => {
+        if (isOpen) setHasOpened(true);
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (hasOpened) preloadSidebarIcons();
+    }, [hasOpened]);
 
     const clampWidth = useCallback((startW: number, dx: number) =>
         clampSidebarWidth(startW + dx, maxWidth), [maxWidth]);
@@ -213,6 +225,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
 
     const toggleSidebar = () => {
         const newState = !isOpen;
+        if (newState) setHasOpened(true);
         setIsOpen(newState);
         if (onToggle) {
             onToggle(newState);
@@ -252,7 +265,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         draggable={'false'}
                     />
                 </div>
-                <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
+                {hasOpened && <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
                     <SearchDesktop />
                     <div className={styles.filters}>
                         <MarkFilterDragProvider>
@@ -363,7 +376,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                             <IDCard />
                         </Suspense>
                     </div>
-                </div>
+                </div>}
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>
                         {t('footer.icp')}
@@ -437,7 +450,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     initialSize={0}
                     snap={['0rem', '9.375rem']}
                     snapThreshold={[50, 50]}
-                    snapToIndex={drawerSnapIndex}
+                    snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
                     handleSize="1.75rem"
                     className={drawerStyles.triggerDrawer}
                     handleClassName={drawerStyles.triggerDrawerHandle}

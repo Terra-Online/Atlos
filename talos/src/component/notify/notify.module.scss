@@ -1,3 +1,4 @@
+@use './feed' as feed;
 @use '../../styles/palette.scss' as *;
 @use '../../styles/curves.scss' as *;
 @use '../../styles/size.scss' as *;
@@ -48,109 +49,9 @@
 }
 
 .notifyRoot {
-    --support-divider-height: 1.5px;
-
-    min-height: 0;
-    height: 100%;
-    max-height: 100%;
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    color: var(--notify-text);
-    font-family:
-        'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic',
-        'Noto Sans Thai', sans-serif;
-    letter-spacing: 0;
-
-    .listViewport {
-        position: relative;
-        min-width: 0;
-        min-height: var(--notify-list-min-height);
-        flex: 1 1 0;
-        overflow: visible;
-        transition: min-height 0.3s $standard-curve;
-    }
-
-    .notificationList {
-        position: absolute;
-        inset: 0;
-        min-width: 0;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        box-sizing: border-box;
-        overflow-x: hidden;
-        overflow-y: auto;
-        padding: 0.6rem;
-    }
-
-    .listBottomBlur {
-        position: absolute;
-        right: 0;
-        bottom: calc(-1 * var(--support-divider-height));
-        left: 0;
-        z-index: 2;
-        height: 2.25rem;
-        pointer-events: none;
-        opacity: 0;
-        transform: scaleY(0);
-        transform-origin: center bottom;
-        transition:
-            opacity 0.2s ease,
-            transform 0.25s $moderato-curve;
-
-        &.visible {
-            opacity: 1;
-            transform: scaleY(1);
-        }
-    }
-
+    @include feed.root;
     .notificationCard {
-        --card-accent: #{$primary-accent-7};
-
-        position: relative;
-        width: 100%;
-        flex: 0 0 auto;
-        color: var(--notify-text);
-        background: var(--notify-card-bg);
-        border: 0;
-        border-radius: 3px;
-        box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
-        overflow: clip;
-        transition:
-            background-color 0.2s ease-in,
-            opacity 0.2s $moderato-curve;
-
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0.6rem;
-            top: 0.55rem;
-            bottom: 0.55rem;
-            width: 1rem;
-            background-color: var(--card-accent);
-            clip-path: polygon(0 0, 4px 0, 4px 100%, 0 100%);
-            pointer-events: none;
-            transition:
-                background-color 0.3s ease,
-                clip-path 0.25s ease;
-        }
-
-        &[data-unread='false'] {
-            opacity: 0.8;
-        }
-
-        &:hover {
-            background: var(--notify-card-hover-bg);
-        }
-
-        &:focus-visible {
-            outline: 2px solid var(--card-accent);
-            outline-offset: 2px;
-        }
-
+        @include feed.card;
         &[data-type='system.submission.approved'] {
             --card-accent: #1A673C;
         }
@@ -231,6 +132,7 @@
         }
 
         .messageText {
+            font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
             unicode-bidi: plaintext;
 
             .keyword {
@@ -261,12 +163,7 @@
         }
 
         .pointName {
-            color: var(--notify-muted);
-            font-family:
-                'Fedra Sans Pro', 'UD_ShinGo Medium', 'Noto Sans Arabic',
-                'Noto Sans Thai', sans-serif;
-            font-size: 0.8em;
-            font-weight: 500;
+            @include feed.metadata;
         }
 
         .cardTime {
@@ -416,8 +313,12 @@
         font-size: 0.95rem;
     }
     .loadMore {
-        width: min(60%, 18rem);
-        margin: 0.25rem auto 0.75rem;
+        @include feed.pagination;
+    }
+    .loadMoreSentinel {
+        width: 100%;
+        height: 1px;
+        pointer-events: none;
     }
     /* Footer */
     .supportDivider {
@@ -517,10 +418,6 @@
     }
 
     .notifyRoot {
-        .notificationList {
-            padding-inline: 0.5rem;
-        }
-
         .notificationCard .cardTime {
             white-space: normal;
         }

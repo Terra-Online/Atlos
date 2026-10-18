@@ -3,7 +3,19 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { createRunner } from './task-runner.mjs';
+import { randomUUID } from 'node:crypto';
+import { createRunner, ROOT } from './task-runner.mjs';
+import { withLocalLock, createReleaseStore } from './release-store.mjs';
+import {
+    appReceipt,
+    recordApp,
+    composeApp,
+    saveSnapshot,
+    hashFiles,
+    verifyReferences,
+    verifyLive,
+    siteUrl,
+} from './release-snapshot.mjs';
 import { check, dataTask, lint, test, typeCheck } from './checks.mjs';
 import { pagesConfig } from './pages-config.mjs';
 import {
@@ -17,8 +29,8 @@ import {
 const help = `Usage: pnpm <command> [options]
   build       [--target cn|org|all] [--app main|intel|user-hub]
   deploy:all  [--skip-og] [--skip-subset]
-  deploy:cn / deploy:org [--channel prod|beta]
-  run publish [--target cn|org] [--only oss|r2|server|pages|resources]
+  deploy:cn / deploy:org [--channel prod|beta] [--app intel|user-hub]
+  run publish [--target cn|org] [--only oss|r2|server|pages|resources] [--app intel|user-hub]
   package     [--target cn|org] [--format archive|pages] [--skip-build]
   og          [--target cn|org|all] [--action build|publish|refresh]
   worker      search|relink check|deploy
@@ -26,10 +38,10 @@ const help = `Usage: pnpm <command> [options]
   type-check [--app main|intel|user-hub|relink|search]
   run test    [--app main|intel|user-hub|relink|scripts]
   data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-diff|search-index|relink-preview|sync-intel|seo
-  data fonts  [--app main|intel|user-hub|all]
+  data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
 CI source checks/builds: --source-only (omits private Intel icons; artifact cannot be published)
-Build/deploy: --skip-subset (alias --skip-subset-fonts), --skip-intel
+Build/deploy: --skip-intel; --skip-subset/--skip-subset-fonts are accepted legacy no-ops
 Publish/deploy: --skip-og (alias --skip-seo-og)
 Build/publish/package: --dist-dir PATH (single target only)
 Package: --output-dir PATH
@@ -48,6 +60,7 @@ const schemas = {
         'source-only',
     ],
     deploy: [
+        'app',
         'target',
         'channel',
         'skip-subset',
@@ -57,6 +70,7 @@ const schemas = {
         'skip-intel',
     ],
     publish: [
+        'app',
         'target',
         'channel',
         'only',
@@ -138,6 +152,14 @@ export const parseTask = (argv, env = process.env) => {
     if (values.app && values['skip-intel'])
         throw new Error('--app and --skip-intel cannot be combined.');
     const only = values.only || 'all';
+    if (['deploy', 'publish'].includes(command) && values.app) {
+        if (!['intel', 'user-hub'].includes(values.app))
+            throw new Error('App publishing supports intel or user-hub only.');
+        if (only !== 'all')
+            throw new Error(
+                'App publishing requires both resources and site entrypoints; --only is not supported.',
+            );
+    }
     if (command === 'publish') {
         const allowed =
             target === 'cn'
@@ -197,14 +219,24 @@ export const parseTask = (argv, env = process.env) => {
             values['skip-subset-fonts'] ||
             env.SKIP_SUBSET_FONTS === '1'
         ),
-        skipOg: !!(values['skip-og'] || values['skip-seo-og']),
+        skipOg: !!(
+            values['skip-og'] ||
+            values['skip-seo-og'] ||
+            (['deploy', 'publish'].includes(command) && values.app)
+        ),
         dryRun: !!values['dry-run'],
         sourceOnly: !!values['source-only'],
     };
 };
 
 const distPath = (runner, options, target) =>
-    path.resolve(runner.root, options.distDir || `dist/${targets[target]}`);
+    path.resolve(
+        runner.root,
+        options.distDir ||
+            (options.app && options.app !== 'main'
+                ? `dist/apps/${target}-${options.channel}`
+                : `dist/${targets[target]}`),
+    );
 const appNames = (options) =>
     options.app
         ? [options.app]
@@ -225,22 +257,22 @@ const verifyBuildOutput = async (runner, options, target) => {
     await runner.local(`check build destinations for ${target}`, async () => {
         await verifyOutput(runner.root, dir);
         for (const name of appNames(options))
-            await verifyOutput(runner.root, path.join(dir, apps[name]), 'build', dir);
+            await verifyOutput(
+                runner.root,
+                path.join(dir, apps[name]),
+                'build',
+                dir,
+            );
     });
 };
 
-const fonts = async (runner, options) => {
-    if (options.skipSubset) return;
-    for (const name of appNames(options)) {
-        await runner.run(
-            'python3',
-            ['./scripts/subset-fonts.py'],
-            {},
-            name === 'main'
-                ? runner.root
-                : path.join(runner.root, 'apps', name),
-        );
-    }
+// Daily builds validate frozen artifacts; only `data fonts` regenerates them.
+const fonts = async (runner) => {
+    await runner.run('node', ['./scripts/fonts/catalog.mjs']);
+};
+const generateFonts = async (runner) => {
+    await runner.run('python3', ['./scripts/fonts/generate.py']);
+    await fonts(runner);
 };
 
 const prepare = async (runner, options) => {
@@ -249,7 +281,7 @@ const prepare = async (runner, options) => {
     }
     if (appNames(options).includes('main')) await dataTask(runner, 'prepare');
     if (appNames(options).includes('intel')) await dataTask(runner, 'intel');
-    await fonts(runner, options);
+    await fonts(runner);
 };
 
 const buildSite = async (runner, options, target) => {
@@ -260,11 +292,16 @@ const buildSite = async (runner, options, target) => {
         `resolve ${target}/${options.channel} resources`,
         () => resourceConfig(runner.root, runner.env, options, target),
     );
-    // A failed or partial rebuild must not leave a previous full-site receipt valid.
+    // Standalone apps build outside the complete artifact. Main-only builds
+    // still invalidate the full-site receipt because Vite empties that root.
     await runner.local(`invalidate ${path.join(dir, receipt)}`, () =>
         fs.rm(path.join(dir, receipt), { force: true }),
     );
     for (const name of appNames(options)) {
+        if (options.app && name !== 'main')
+            await runner.local(`invalidate ${name} app receipt`, () =>
+                fs.rm(path.join(dir, apps[name], appReceipt), { force: true }),
+            );
         const args =
             name === 'main'
                 ? [
@@ -295,6 +332,40 @@ const buildSite = async (runner, options, target) => {
                 ? { VITE_AUTH_BASE: runner.env.VITE_AUTH_BASE }
                 : {}),
         });
+        if (name !== 'main')
+            await runner.local(`compose shared font assets for ${name}`, async () => {
+                const source = path.join(dir, apps[name], 'assets/fonts/shards');
+                if (await fs.access(source).then(() => true, () => false)) {
+                    await fs.cp(source, path.join(dir, 'assets/fonts/shards'), { recursive: true });
+                    // Binaries are served once from the shared root. App-local
+                    // manifests retain the dependency contract for app publishes.
+                    for (const file of Object.keys(await hashFiles(source)))
+                        if (file.endsWith('.woff2')) await fs.rm(path.join(source, file));
+                }
+            });
+        if (options.app && name !== 'main')
+            await runner.local(`record ${name} artifact`, async () => {
+                await recordApp(
+                    dir,
+                    {
+                        target,
+                        channel: options.channel,
+                        resources,
+                        source: execFileSync('git', ['rev-parse', 'HEAD'], {
+                            cwd: runner.root,
+                            encoding: 'utf8',
+                        }).trim(),
+                        sourceDirty: !!execFileSync(
+                            'git',
+                            ['status', '--porcelain'],
+                            { cwd: runner.root, encoding: 'utf8' },
+                        ).trim(),
+                        sourceOnly: !!options.sourceOnly,
+                        builtAt: new Date().toISOString(),
+                    },
+                    name,
+                );
+            });
         if (name === 'main')
             await runner.run('node', ['./scripts/build-seo-pages.mjs'], {
                 ...env,
@@ -369,29 +440,34 @@ const packagePages = async (runner, options) => {
     );
 };
 
-const publish = async (runner, options, target) => {
+const verifyPublish = async (runner, options, target, dir) => {
+    const info = await verifyArtifact(dir, options, target);
+    if (!['server', 'pages'].includes(options.only)) {
+        const resources = await resourceConfig(
+            runner.root,
+            runner.env,
+            options,
+            target,
+        );
+        if (JSON.stringify(resources) !== JSON.stringify(info.resources))
+            throw new Error(
+                'Artifact resource destination differs from the current configuration. Rebuild or restore the matching publishing configuration.',
+            );
+    }
+    return info;
+};
+
+const publishTransports = async (runner, options, target) => {
     const dir = distPath(runner, options, target);
     await runner.local(
         `verify ${target}/${options.channel} full-site artifact in ${dir}`,
-        async () => {
-            const info = await verifyArtifact(dir, options, target);
-            if (!['server', 'pages'].includes(options.only)) {
-                const resources = await resourceConfig(
-                    runner.root,
-                    runner.env,
-                    options,
-                    target,
-                );
-                if (
-                    JSON.stringify(resources) !== JSON.stringify(info.resources)
-                )
-                    throw new Error(
-                        'Artifact resource destination differs from the current configuration. Rebuild or restore the matching publishing configuration.',
-                    );
-            }
-        },
+        () => verifyPublish(runner, options, target, dir),
     );
-    const env = { ...targetEnv(options, target), DIST_DIR: dir };
+    const env = {
+        ...targetEnv(options, target),
+        DIST_DIR: dir,
+        PUBLISH_APP_PATH: options.app ? apps[options.app] : '',
+    };
     if (target === 'cn') {
         if (options.only === 'oss')
             await runner.run('node', ['./scripts/publish-oss.js'], env);
@@ -436,6 +512,81 @@ const publish = async (runner, options, target) => {
     }
 };
 
+const publish = async (runner, options, target) => {
+    let dir = distPath(runner, options, target);
+    if (runner.dryRun) {
+        console.log(
+            `[release] acquire remote lock, ${options.app ? 'verify published baseline and compose app' : 'validate full artifact'}, publish and save verified snapshot`,
+        );
+        await publishTransports(
+            runner,
+            options.app
+                ? {
+                      ...options,
+                      distDir: path.join(
+                          runner.root,
+                          'dist/releases',
+                          `${target}-${options.channel}-COMPOSED`,
+                      ),
+                  }
+                : options,
+            target,
+        );
+        return;
+    }
+    // Reject invalid artifacts before contacting storage or acquiring a remote lock.
+    if (!options.app) await verifyPublish(runner, options, target, dir);
+    const store = await (runner.releaseStore || createReleaseStore)(
+        runner,
+        options,
+        target,
+    );
+    const release = await store.acquire();
+    let mutationStarted = false;
+    try {
+        if (options.app)
+            dir = await composeApp(
+                runner,
+                options,
+                target,
+                dir,
+                await store.read(),
+            );
+        const info = await verifyArtifact(dir, options, target);
+        const origin = await siteUrl(runner, options, target);
+        await verifyReferences(dir, info, origin);
+        const id = randomUUID();
+        // Once any remote mutation starts, a failed or partial transport must not
+        // leave the previous baseline eligible for another standalone app publish.
+        mutationStarted = true;
+        await store.write({ status: 'publishing', id });
+        await publishTransports(runner, { ...options, distDir: dir }, target);
+        if (options.only === 'all') {
+            await verifyLive(runner, dir, info, origin);
+            const state = await saveSnapshot(
+                runner,
+                options,
+                target,
+                dir,
+                id,
+                await hashFiles(dir),
+            );
+            await store.write(state);
+        } else {
+            await store.write({ status: 'partial', id });
+        }
+        mutationStarted = false;
+    } finally {
+        // A failed SSH/upload request may still be running remotely. Retain the
+        // lock until an operator confirms it has stopped before a full recovery.
+        if (mutationStarted)
+            console.error(
+                '[release] Publication did not complete. Remote lock retained; verify no publisher is running before removing it and completing a full publish.',
+            );
+        else await release();
+    }
+};
+
 // allSettled waits for both sites before reporting partial success or deploying the shared Worker.
 const sitePipelines = async (options, action) => {
     const names = targetNames(options);
@@ -454,7 +605,7 @@ const sitePipelines = async (options, action) => {
         );
 };
 
-export const runTask = async (argv, dependencies = {}) => {
+const executeTask = async (argv, dependencies = {}) => {
     const options = parseTask(argv, dependencies.env);
     if (options.command === 'help') {
         console.log(help);
@@ -468,6 +619,8 @@ export const runTask = async (argv, dependencies = {}) => {
         },
         dryRun: options.dryRun,
     });
+    runner.releaseStore = dependencies.releaseStore;
+    runner.fetch = dependencies.fetch || globalThis.fetch;
     switch (options.command) {
         case 'build':
         case 'deploy':
@@ -481,7 +634,11 @@ export const runTask = async (argv, dependencies = {}) => {
                 if (options.command === 'deploy')
                     await publish(runner, options, target);
             });
-            if (options.command === 'deploy' && options.target === 'all')
+            if (
+                options.command === 'deploy' &&
+                options.target === 'all' &&
+                !options.app
+            )
                 await runner.run('pnpm', [
                     '--filter',
                     'oem-relink',
@@ -541,16 +698,14 @@ export const runTask = async (argv, dependencies = {}) => {
             break;
         case 'data':
             if (options.positionals[0] === 'fonts')
-                await fonts(runner, {
-                    app: options.app === 'all' ? undefined : options.app,
-                });
+                await generateFonts(runner);
             else await dataTask(runner, options.positionals[0]);
             break;
         case 'check':
             if (options.build) await dataTask(runner, 'prepare');
             await check(runner, options.build);
             if (options.build) {
-                await fonts(runner, options);
+                await fonts(runner);
                 await sitePipelines({ ...options, target: 'all' }, (target) =>
                     buildSite(runner, options, target),
                 );
@@ -567,6 +722,19 @@ export const runTask = async (argv, dependencies = {}) => {
             await lint(runner, options.command === 'lint:fix');
             break;
     }
+};
+
+export const runTask = async (argv, dependencies = {}) => {
+    const options = parseTask(argv, dependencies.env);
+    const locksOutput =
+        ['build', 'deploy', 'publish', 'package'].includes(options.command) ||
+        (options.command === 'check' && options.build);
+    if (!options.dryRun && locksOutput) {
+        return withLocalLock(dependencies.root || ROOT, () =>
+            executeTask(argv, dependencies),
+        );
+    }
+    return executeTask(argv, dependencies);
 };
 
 if (

@@ -46,7 +46,7 @@ A test may be corrected when evidence shows that it conflicts with an explicitly
 
 ## Commits and Tool Selection
 
-Periodically organize changes into local commits at coherent work milestones. Separate commits by logical purpose and keep their diffs easy to review. Avoid combining unrelated changes or creating a fragmented commit for every tiny edit. Commit messages should accurately explain the purpose of the change. Before committing, inspect the staged diff, ensure it contains only the current task's changes, and complete the necessary validation for that commit.
+Periodically organize changes into local commits at coherent work milestones. Separate commits by logical purpose and keep their diffs easy to review. Avoid combining unrelated changes or creating a fragmented commit for every tiny edit. Commit messages should accurately explain the purpose of the change. Group one complete feature or fix, including its implementation, focused validation, and directly related documentation, into one commit once the work is stable; do not create intermediate commits for partial experiments or single-file adjustments. Before committing, inspect the staged diff, ensure it contains only the current task's changes, and complete the necessary validation for that commit.
 
 Commit cleanup should normally be limited to local commits created for the current task. Do not rewrite the user's existing or shared history without authorization. **Do not push to a remote unless the user explicitly authorizes it.** Permission to create local commits is not permission to push, and using another tool does not bypass this restriction.
 

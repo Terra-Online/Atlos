@@ -1,3 +1,4 @@
+@use '@main/component/login/avatar' as avatar;
 @use '@main/styles/palette' as *;
 @use '@main/styles/curves' as *;
 
@@ -17,6 +18,13 @@
     min-width: 0;
 }
 .grid {
+    @include avatar.layout;
+
+    > .choice {
+        @include avatar.frame;
+        > .avatar { @include avatar.image; }
+    }
+
     display: grid;
     grid-template-areas: none;
     grid-template-rows: none;

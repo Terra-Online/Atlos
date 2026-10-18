@@ -1,231 +1,150 @@
-// dynamic font loader - Automatically switch between Simplified and Traditional Chinese font files based on document language
-
-import { getFontAssetUrl } from './fontAssets';
 import { getFontRegionForLocale, type FontRegion } from '@/lib/i18n/lang';
+import {
+    createFontRegions,
+    type FontRegionOptions,
+    type FontScope,
+} from './fontRegions';
+import { loadManifest, preloadFontBytes, type Region } from './fontShards';
+import { shellFiles } from './fontConfig';
 
+const fontRegions: Region[] = ['CN', 'HK', 'JP'];
+const shellPrefetches = new Map<Region, Promise<void>>();
 
-// Build CDN URL with base and normalize dev paths to production paths
-const toCdnUrl = (p: string): string => {
-    const str = String(p);
-    if (str.indexOf('://') !== -1 || str.startsWith('//')) return str;
+export type { FontRegionOptions, FontScope };
 
-    const base = (typeof __ASSETS_HOST !== 'undefined' && __ASSETS_HOST) ? String(__ASSETS_HOST) : '';
-    
-    if (base && str.startsWith(base)) return str;
-
-    // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
-    // Dev: keep /src/ prefix; Prod: normalize to /assets/ and prepend CDN
-    if (!base) return p; // Dev mode: return original path as-is
-    const normalized = p.replace(/^\/src\/assets/i, '/assets');
-    const baseEnds = base.endsWith('/');
-    const pathStarts = normalized.startsWith('/');
-    if (baseEnds && pathStarts) return base + normalized.slice(1);
-    if (!baseEnds && !pathStarts) return `${base}/${normalized}`;
-    return base + normalized;
-};
-
-type FontWeight = 'Bold' | 'DemiBold' | 'Medium' | 'Regular';
-
-interface FontDefinition {
-    family: string;
-    weight: FontWeight;
-    cnFiles?: {
-        woff2?: string;
-        woff?: string;
-        otf?: string;
-        ttf?: string;
-    };
-    hkFiles?: {
-        woff2?: string;
-        woff?: string;
-        otf?: string;
-        ttf?: string;
-    };
-    jpFiles?: {
-        woff2?: string;
-        woff?: string;
-        otf?: string;
-        ttf?: string;
-    };
+/** Start immutable shell bytes without waiting for the (larger) manifest. */
+function preloadShellFiles(region: Region): Promise<void> {
+    const existing = shellPrefetches.get(region);
+    if (existing) return existing;
+    const files = Object.values(shellFiles[region] || {}).flat();
+    const pending = preloadFontBytes(files);
+    shellPrefetches.set(region, pending);
+    void pending.catch(() => shellPrefetches.delete(region));
+    return pending;
 }
-// font path configs
-const fontDefinitions: FontDefinition[] = [
-    {
-        family: 'UD_ShinGo Bold',
-        weight: 'Bold',
-        cnFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_B.otf'),
-        },
-        hkFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.woff'),
-            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_B.ttf'),
-        },
-        jpFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_B.otf'),
-        }
-    },
-    {
-        family: 'UD_ShinGo DemiBold',
-        weight: 'DemiBold',
-        cnFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_DB.otf'),
-        },
-        hkFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.woff'),
-            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_DB.ttf'),
-        },
-        jpFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_DB.otf'),
-        }
-    },
-    {
-        family: 'UD_ShinGo Medium',
-        weight: 'Medium',
-        cnFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_M.otf'),
-        },
-        hkFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.woff'),
-            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_M.ttf'),
-        },
-        jpFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_M.otf'),
-        }
-    },
-    {
-        family: 'UD_ShinGo Regular',
-        weight: 'Regular',
-        cnFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_CN_R.otf'),
-        },
-        hkFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.woff'),
-            ttf: getFontAssetUrl('UD_ShinGo/UDShinGo_HK_R.ttf'),
-        },
-        jpFiles: {
-            woff2: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.woff2'),
-            woff: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.woff'),
-            otf: getFontAssetUrl('UD_ShinGo/UDShinGo_JP_R.otf'),
-        }
-    },
-    {
-        family: 'HMSans',
-        weight: 'Regular',
-        cnFiles: {
-            woff2: getFontAssetUrl('Harmony/HMSans_SC.woff2'),
-            woff: getFontAssetUrl('Harmony/HMSans_SC.woff'),
-        },
-        hkFiles: {
-            woff2: getFontAssetUrl('Harmony/HMSans_TC.woff2'),
-            woff: getFontAssetUrl('Harmony/HMSans_TC.woff'),
-        }
-    },
-];
 
-const detectDocumentLanguage = (): FontRegion => {
-    const htmlLang = document.documentElement.lang || document.documentElement.getAttribute('lang') || '';
-    if (htmlLang) return getFontRegionForLocale(htmlLang);
-    return getFontRegionForLocale(navigator.language || '');
-};
-
-const loadedFonts = new Set<FontFace>();
-const regionFontPromises = new Map<Exclude<FontRegion, null>, Promise<FontFace[]>>();
-let activeRegion: FontRegion | undefined;
-let loadGeneration = 0;
-let languageObserver: MutationObserver | null = null;
-
-async function loadFonts(region: FontRegion): Promise<void> {
-    if (activeRegion === region) return;
-    const generation = ++loadGeneration;
-
-    if (region === null) {
-        loadedFonts.forEach((font) => document.fonts.delete(font));
-        loadedFonts.clear();
-        activeRegion = null;
-        return;
+/** Warm region indexes while the language picker is visible.
+ *
+ * Do not start shell downloads for every locale here. The picker is opened
+ * immediately before a user chooses one target, so warming all regions makes
+ * unrelated font work compete with the selected language and with the app's
+ * current content. The row hover/focus path warms the selected region instead.
+ */
+export function preloadFontManifests(): void {
+    for (const region of fontRegions) {
+        void loadManifest(region).catch(() => undefined);
     }
+}
 
-    let regionPromise = regionFontPromises.get(region);
-    if (!regionPromise) {
-        regionPromise = Promise.all(fontDefinitions.map(async (definition) => {
-            const files = region === 'CN'
-                ? definition.cnFiles
-                : region === 'HK'
-                    ? definition.hkFiles
-                    : definition.jpFiles;
-            const fileRaw = files?.woff2 || files?.woff || files?.ttf || files?.otf;
-            if (!fileRaw) return null;
+/** Warm only the selected region's current registered areas. */
+export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
+    // The direct shell URLs overlap the manifest round trip. The area-aware
+    // preparation below still verifies the manifest and keeps the atomic
+    // registration contract.
+    void Promise.all([
+        preloadShellFiles(region),
+        fontLoader().then(() =>
+            Promise.all(
+                [...documents.values()].map((state) =>
+                    state.regions.preload(region),
+                ),
+            ),
+        ),
+    ])
+        .catch(() => undefined);
+}
 
-            const isHMSans = definition.family === 'HMSans';
-            const font = new FontFace(
-                definition.family,
-                `url('${toCdnUrl(fileRaw)}')`,
-                {
-                    weight: isHMSans ? '100 900' : undefined,
-                    style: 'normal',
-                    display: 'swap',
-                },
+const documents = new Map<
+    Document,
+    {
+        regions: ReturnType<typeof createFontRegions>;
+        language: MutationObserver;
+    }
+>();
+const detectLanguage = (doc: Document): FontRegion =>
+    getFontRegionForLocale(doc.documentElement.lang || navigator.language);
+
+/** Start shell requests early; locale setup controls when the UI commits. */
+export function fontLoader(
+    doc: Document = document,
+    initialRegion: FontRegion = detectLanguage(doc),
+): Promise<void> {
+    if (documents.has(doc) || !doc.fonts || typeof FontFace === 'undefined')
+        return Promise.resolve();
+    const regions = createFontRegions(doc, initialRegion);
+    regions.register(doc.body);
+    const language = new MutationObserver(() => {
+        void regions
+            .setRegion(detectLanguage(doc))
+            .catch((error: unknown) =>
+                console.warn('Font language switch failed:', error),
             );
-            await font.load();
-            return font;
-        })).then((fonts) => fonts.filter((font): font is FontFace => font !== null));
-        regionFontPromises.set(region, regionPromise);
-        regionPromise.catch(() => regionFontPromises.delete(region));
-    }
-
-    const nextFonts = await regionPromise;
-    if (generation !== loadGeneration) return;
-
-    loadedFonts.forEach((font) => document.fonts.delete(font));
-    loadedFonts.clear();
-    nextFonts.forEach((font) => {
-        document.fonts.add(font);
-        loadedFonts.add(font);
     });
-    activeRegion = region;
-}
-
-function setupLanguageObserver(): void {
-    if (languageObserver) return;
-    languageObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
-                const newRegion = detectDocumentLanguage();
-                void loadFonts(newRegion);
-            }
-        });
-    });
-    languageObserver.observe(document.documentElement, {
+    language.observe(doc.documentElement, {
         attributes: true,
         attributeFilter: ['lang'],
     });
+    documents.set(doc, { regions, language });
+    return Promise.resolve();
 }
 
-export async function fontLoader(): Promise<void> {
-    setupLanguageObserver();
-    await loadFonts(detectDocumentLanguage());
-}
-
-export const switchFontRegion = (region: FontRegion): Promise<void> => loadFonts(region);
+export const switchFontRegion = (
+    region: FontRegion,
+    isCurrent?: () => boolean,
+): Promise<void> => {
+    void fontLoader();
+    return Promise.all(
+        [...documents.values()].map((state) =>
+            state.regions.setRegion(region, isCurrent),
+        ),
+    ).then(() => undefined);
+};
 
 export function getCurrentRegion(): FontRegion {
-    return detectDocumentLanguage();
+    return detectLanguage(document);
+}
+
+export const stopFontLoader = (doc: Document): void => {
+    const state = documents.get(doc);
+    state?.language.disconnect();
+    state?.regions.stop();
+    documents.delete(doc);
+};
+
+const owners = new Set<() => void>();
+
+/** Register actual component data, including interpolation and pseudo-element text. */
+export function registerFontRegion(
+    element: HTMLElement,
+    initialRuns: import('./fontShards').TextRun[],
+    options?: FontRegionOptions,
+) {
+    let runs = initialRuns;
+    let doc = element.ownerDocument;
+    void fontLoader(doc);
+    let area = documents.get(doc)?.regions.register(element, runs, options);
+    const migrate = () => {
+        if (doc === element.ownerDocument) return;
+        area?.stop();
+        doc = element.ownerDocument;
+        void fontLoader(doc);
+        area = documents.get(doc)?.regions.register(element, runs, options);
+    };
+    owners.add(migrate);
+    return {
+        update(next: import('./fontShards').TextRun[]) {
+            runs = next;
+            migrate();
+            area?.update(runs);
+        },
+        stop() {
+            area?.stop();
+            owners.delete(migrate);
+        },
+    };
+}
+
+/** PiP explicitly adopts existing React nodes without remounting their refs. */
+export function migrateFontRegions() {
+    for (const migrate of owners) migrate();
 }

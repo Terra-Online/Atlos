@@ -21,7 +21,7 @@ pnpm build --target cn                 # CN full site
 pnpm build --target org
 pnpm build --target all                # Prepare data/fonts once for both sites
 pnpm build --target org --channel beta
-pnpm build --app user-hub --target org  # Partial build for local inspection
+pnpm build --app user-hub --target org  # Isolated standalone app build
 pnpm check                             # Data, types, lint, all existing tests
 pnpm check --build                      # Also build both targets; share preparation
 pnpm type-check --app intel
@@ -51,8 +51,11 @@ avoid CPU oversubscription; override with `SEO_OG_CONCURRENCY` or
 rasterized map mask and only submits tiles that can intersect the OG window.
 Marker SVGs are rasterized once and reused; set `SEO_MARKER_RASTER_CACHE=0`
 only when comparing the uncached path.
-Builds never publish. Partial builds invalidate the full-site build receipt;
-rebuild the complete site before publishing.
+Builds never publish. Main-only builds invalidate the full-site build receipt.
+Intel and user-hub builds use isolated `dist/apps/<target>-<channel>/`
+directories. After a full successful release establishes the baseline, use
+`deploy:org --app intel|user-hub` (or `deploy:cn`) to publish one app safely.
+See [RELEASE.md](./RELEASE.md).
 
 Lint follows existing selector naming and CSS compatibility patterns.
 Prettier runs separately. Type-aware ESLint covers all apps and both Workers;

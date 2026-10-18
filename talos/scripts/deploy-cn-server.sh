@@ -205,24 +205,8 @@ if [[ "$SERVER_ONLY" == "1" ]]; then
     exit 0
 fi
 
-echo "==> Publishing CN dist to OSS while deploying the server dist"
-DIST_DIR="$DIST_DIR" node scripts/publish-oss.js &
-PUBLISH_PID=$!
-
-SERVER_STATUS=0
-deploy_server_dist || SERVER_STATUS=$?
-
-PUBLISH_STATUS=0
-wait "$PUBLISH_PID" || PUBLISH_STATUS=$?
-
-if ((PUBLISH_STATUS != 0 || SERVER_STATUS != 0)); then
-    if ((PUBLISH_STATUS != 0)); then
-        echo "OSS publish failed with exit code $PUBLISH_STATUS" >&2
-    fi
-    if ((SERVER_STATUS != 0)); then
-        echo "Server dist deployment failed with exit code $SERVER_STATUS" >&2
-    fi
-    exit 1
-fi
+echo "==> Publishing CN resources before replacing server entrypoints"
+DIST_DIR="$DIST_DIR" node scripts/publish-oss.js
+deploy_server_dist
 
 echo "==> CN release complete: OSS publish and server dist deployment succeeded"

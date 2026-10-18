@@ -1,4 +1,6 @@
+import { readInitialLocale, persistLocale, deepGet, createRequestGuard } from '@main/lib/i18n/runtime';
 import { create } from 'zustand';
+import { startTransition } from 'react';
 import {
     getFontRegionForLocale,
     getLocaleContentCandidates,
@@ -10,7 +12,7 @@ import { switchFontRegion } from '@main/locale/fontLoader';
 
 type Catalog = Record<string, unknown>;
 type JsonModule = { default: Catalog };
-type Bundle = { ui: Catalog; fallback: Catalog };
+export type Bundle = { ui: Catalog; fallback: Catalog };
 type State = Bundle & { locale: Lang };
 
 const modules = import.meta.glob<JsonModule>('./data/ui/*.json');
@@ -24,31 +26,6 @@ const loaders = new Map(
         loader,
     ]),
 );
-const STORAGE_KEY = 'talos:locale';
-
-const readInitialLocale = (): Lang => {
-    try {
-        return normalizeLang(
-            window.localStorage.getItem(STORAGE_KEY) || navigator.language,
-        );
-    } catch {
-        return normalizeLang(
-            typeof navigator === 'undefined' ? 'en-US' : navigator.language,
-        );
-    }
-};
-
-const deepGet = (value: unknown, path: string): unknown =>
-    path
-        .split('.')
-        .reduce<unknown>(
-            (current, key) =>
-                current && typeof current === 'object' && key in current
-                    ? (current as Catalog)[key]
-                    : undefined,
-            value,
-        );
-
 const resolveLoader = (locale: Lang) => {
     for (const candidate of getLocaleContentCandidates(locale)) {
         const loader = loaders.get(candidate.toLowerCase());
@@ -83,16 +60,27 @@ const loadLocale = (locale: Lang): Promise<Bundle> => {
     return promise;
 };
 
-let revision = 0;
+const beginRequest = createRequestGuard();
 const loadAndSet = async (locale: Lang) => {
-    const current = ++revision;
-    const [data] = await Promise.all([
-        loadLocale(locale),
-        switchFontRegion(getFontRegionForLocale(locale)).catch(() => undefined),
+    const isCurrent = beginRequest();
+    const dataPromise = loadLocale(locale);
+    const fontsPromise = switchFontRegion(getFontRegionForLocale(locale), isCurrent);
+    const [dataResult, fontsResult] = await Promise.allSettled([
+        dataPromise,
+        fontsPromise,
     ]);
-    if (current !== revision) return;
+    if (dataResult.status === 'rejected') throw dataResult.reason;
+    const data = dataResult.value;
+    if (!isCurrent()) return false;
+    if (fontsResult.status === 'rejected') {
+        const error: unknown = fontsResult.reason;
+        console.warn('Font switch failed:', error);
+        if (Object.keys(useI18nStore.getState().ui).length) return false;
+    }
+    if (!isCurrent()) return false;
     useI18nStore.setState({ locale, ...data });
     document.documentElement.lang = toBCP47(locale);
+    return true;
 };
 
 const translate = (
@@ -116,13 +104,25 @@ export const translateUI = (key: string, fallback = ''): string =>
 
 export const setLocale = async (locale: string) => {
     const normalized = normalizeLang(locale);
-    await loadAndSet(normalized);
-    if (getCurrentLocale() !== normalized) return;
-    try {
-        window.localStorage.setItem(STORAGE_KEY, normalized);
-    } catch {
-        // Language switching also works when storage is unavailable.
-    }
+    if (await loadAndSet(normalized)) persistLocale(normalized);
 };
+
+/** Apply the app catalog after the shared language modal commits fonts. */
+export const setLocaleData = async (locale: string) => {
+    const normalized = normalizeLang(locale);
+    const isCurrent = beginRequest();
+    const data = await loadLocale(normalized);
+    if (!isCurrent()) return;
+    useI18nStore.setState({ locale: normalized, ...data });
+};
+
+/** Apply a preloaded catalog inside the shared language commit. */
+export const applyLocaleData = (locale: string, data: Bundle) => {
+    startTransition(() => {
+        useI18nStore.setState({ locale: normalizeLang(locale), ...data });
+    });
+};
+
+export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));
 
 export const i18nInitPromise = loadAndSet(getCurrentLocale());

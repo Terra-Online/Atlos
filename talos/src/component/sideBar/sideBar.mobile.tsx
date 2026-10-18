@@ -40,8 +40,9 @@ import { VERSION_NEW_FILTER_GROUPS, useVersionNewMarkerCounts } from '@/data/mar
 import useRegion from '@/store/region';
 import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
 import { useFilter, useMarkerStore } from '@/store/marker';
-import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex } from '@/store/uiPrefs';
+import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex, useUiPrefsHydrated } from '@/store/uiPrefs';
 import { useAppViewport } from '@/platform/device';
+import { preloadSidebarIcons } from './sidebarIconPrefetch';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -94,6 +95,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     );
   }, [currentRegion]);
   const drawerSnapIndex = useMobileDrawerSnapIndex();
+  const uiPrefsHydrated = useUiPrefsHydrated();
   const trigCluster = useTriggerCluster();
   const trigBoundary = useTriggerBoundary();
   const trigOptimal = useTriggerlabelName();
@@ -108,6 +110,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
   const [currentSnap, setCurrentSnap] = useState(0);
+  const [hasOpened, setHasOpened] = useState(() => (drawerSnapIndex ?? 0) > 0);
+  const hasOpenedRef = useRef(hasOpened);
   const [topRowWidth, setTopRowWidth] = useState(0);
   const [topRowHeight, setTopRowHeight] = useState(0);
   const [topRowBaseHeight, setTopRowBaseHeight] = useState(0);
@@ -132,6 +136,10 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
   // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
   const handleProgress = (p: number) => {
+    if (p > 0.02 && !hasOpenedRef.current) {
+      hasOpenedRef.current = true;
+      setHasOpened(true);
+    }
     if (p >= 0.999) onToggle?.(true);
     else if (p <= 0.001) onToggle?.(false);
 
@@ -154,6 +162,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       setCurrentSnap(Math.max(0, snapIndex));
     }
   };
+
+  useEffect(() => {
+    if ((drawerSnapIndex ?? 0) <= 0 || hasOpenedRef.current) return;
+    hasOpenedRef.current = true;
+    setHasOpened(true);
+  }, [drawerSnapIndex]);
+
+  useEffect(() => {
+    if (hasOpened) preloadSidebarIcons();
+  }, [hasOpened]);
 
   // Track scroll position for blur effects
   useEffect(() => {
@@ -363,7 +381,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         onProgressChange={handleProgress}
         onSnapChange={handleSnapChange}
         style={{ bottom: 0 }}
-        snapToIndex={drawerSnapIndex}
+        snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
       >
         <div
           className={`${mobileStyles.contentWrapper} ${hasSearchQuery ? mobileStyles.searchMode : ''}`}
@@ -406,7 +424,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
             <Detail inline className={mobileStyles.mobileDetail} />
 
-            <div className={mobileStyles.filters}>
+            {hasOpened && <div className={mobileStyles.filters}>
               <MarkFilterDragProvider>
                 {VERSION_NEW_FILTER_GROUPS.map((group) => (
                   <MarkFilter
@@ -486,7 +504,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                     );
                   })}
               </MarkFilterDragProvider>
-            </div>
+            </div>}
             <div className={mobileStyles.idCardContainer}>
                 <Suspense fallback={null}>
                   <IDCard />

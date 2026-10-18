@@ -14,8 +14,8 @@ From `talos/`:
 - `pnpm dev:intel`: starts the main site and Intel app. Each development command
   starts only its selected app alongside the main site.
 - `pnpm type-check --app user-hub` and `pnpm run test --app user-hub`: focused validation.
-- `pnpm build --app user-hub --target cn`: domestic build in `dist/oss/me`, using the `.cn` API.
-- `pnpm build --app user-hub`: international (default) build in `dist/r2/me`,
+- `pnpm build --app user-hub --target cn`: domestic build in `dist/apps/cn-prod/me`, using the `.cn` API.
+- `pnpm build --app user-hub`: international (default) build in `dist/apps/org-prod/me`,
   using the `.org` API. Add `--channel beta` for the beta variant.
 
 `VITE_AUTH_BASE` in the build command environment overrides the user hub's production API
@@ -27,6 +27,12 @@ workspace's environment files and defaults to the local Bayes instance on port
 packaging copies `dist/r2/me` and supplies the `/me/*` fallback. Building only
 the main site with `--app main` does not build standalone apps and invalidates
 the complete-site build receipt.
+
+After a full successful release establishes a published baseline, run
+`pnpm deploy:org --app user-hub` (or `deploy:cn`) to build and publish only the
+user hub. `pnpm run publish --app user-hub` publishes an existing standalone
+build. Standalone builds preserve the complete-site build directory. See
+[`RELEASE.md`](../../RELEASE.md#publishing-one-app) for baseline and lock recovery.
 
 The overview, login methods, and Endfield binding come from `/me/v1/overview`.
 Contributions load separately from `/me/v1/contributions`, using the backend's

@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import AuthLoader from './components/authLoader';
+import { loadAuthGate } from './components/authEntry';
 import { clearReadCache, getOverview, isUnauthorized } from './api/client';
 import type { Overview } from './types';
 import type { SessionUser } from '@main/services/auth';
 import { useAuthStore } from '@main/store/auth';
-import { Access, AccessButton } from '@main/component/login/access';
-import { notifyOemAuthModalDismissed } from '@main/component/login/authEvents';
-import { useIdCardAuthController } from '@main/component/login/useIdCardAuthController';
-import { useIdCardProfileViewModel } from '@main/component/login/useIdCardProfileViewModel';
-import ProfileModal from '@main/component/login/profile/profile';
 import Header from './components/header/header';
 import IDCard from './components/idcard/idcard';
 import Nav from './components/nav/nav';
@@ -38,6 +35,8 @@ function useAccount() {
             .catch((cause: unknown) => {
                 if (controller.signal.aborted) return;
                 if (isUnauthorized(cause)) {
+                    // Begin the conditional download before React commits the error UI.
+                    void loadAuthGate().catch(() => undefined);
                     useAuthStore.getState().clearSessionUser();
                     setOverview(null);
                     setUnauthorized(true);
@@ -78,76 +77,6 @@ function useAccount() {
     };
 }
 
-function AuthGate({ onAuthenticated, attemptedSession }: {
-    onAuthenticated: () => void;
-    attemptedSession: RefObject<string | null>;
-}) {
-    const main = useTranslateMainUI();
-    const auth = useIdCardAuthController();
-    const { authReady, sessionUser, handleAvatarClick, open, profileOpen, isSubmitting } = auth;
-    const cardProfile = useIdCardProfileViewModel({
-        sessionUser: auth.sessionUser,
-        hasLoggedInBefore: auth.hasLoggedInBefore,
-        authReady: auth.authReady,
-    });
-    const opened = useRef(false);
-
-    useEffect(() => {
-        if (!authReady || sessionUser || opened.current) return;
-        opened.current = true;
-        handleAvatarClick();
-    }, [authReady, handleAvatarClick, sessionUser]);
-
-    useEffect(() => {
-        if (sessionUser && !open && !profileOpen && !isSubmitting &&
-            attemptedSession.current !== sessionUser.uid) {
-            // The parent retains this guard when a repeated 401 remounts the gate.
-            attemptedSession.current = sessionUser.uid;
-            onAuthenticated();
-        }
-    }, [sessionUser, open, profileOpen, isSubmitting, onAuthenticated, attemptedSession]);
-
-    return (
-        <>
-            <AccessButton
-                label={main('idcard.auth.login')}
-                onClick={() => {
-                    attemptedSession.current = null;
-                    handleAvatarClick();
-                }}
-            />
-            <Access
-                open={auth.open}
-                setOpen={auth.setOpen}
-                onDismiss={notifyOemAuthModalDismissed}
-                activeTab={auth.activeTab}
-                setActiveTab={auth.setActiveTab}
-                resetToken={auth.resetToken}
-                resetEmail={auth.resetEmail}
-                isSubmitting={auth.isSubmitting}
-                authError={auth.authError}
-                handleOAuthClick={auth.handleOAuthClick}
-                onRequestVerificationCode={auth.handleRequestVerificationCode}
-                onRequestPasswordReset={auth.handleRequestPasswordReset}
-                onAutoSubmit={auth.handleAutoSubmit}
-            />
-            <ProfileModal
-                profileOpen={auth.profileOpen}
-                setProfileOpen={auth.setProfileOpen}
-                profileName={auth.profileName}
-                setProfileName={auth.setProfileName}
-                profileError={auth.profileError}
-                isSavingProfile={auth.isSavingProfile}
-                cardProfile={cardProfile}
-                profileAvatar={auth.profileAvatar}
-                handleCloseProfile={auth.handleCloseProfile}
-                handleSaveProfile={auth.handleSaveProfile}
-                handleLogout={auth.handleLogout}
-            />
-        </>
-    );
-}
-
 export default function App() {
     const t = useTranslateUI();
     const main = useTranslateMainUI();
@@ -161,6 +90,15 @@ export default function App() {
         overview, revision, loading, error, unauthorized, busy, refresh,
         updateUser,
     } = useAccount();
+
+    // The auth gate is only needed on the common signed-out path. Start its
+    // module request alongside overview so a 401 does not create a long tail
+    // of JS/CSS and font requests after the page has already rendered.
+    useEffect(() => {
+        if (!useAuthStore.getState().sessionUser) {
+            void loadAuthGate().catch(() => undefined);
+        }
+    }, []);
 
     useEffect(() => {
         if (overview) attemptedSession.current = null;
@@ -207,7 +145,7 @@ export default function App() {
                                 {t('common.loading')}
                             </p>
                         )}
-                        {unauthorized && <AuthGate onAuthenticated={refresh} attemptedSession={attemptedSession} />}
+                        {unauthorized && <AuthLoader onAuthenticated={refresh} attemptedSession={attemptedSession} />}
                         {overview &&
                             (active === 'contributions' ? (
                                 <Content

@@ -1,12 +1,11 @@
 import { pickSessionUser, updateProfileNickname } from '@main/services/auth';
 import { getAuthBase } from '@main/services/http/authRuntime';
 import { requestJson, HttpRequestError } from '@main/services/http/request';
-import type { Contribution, Overview, Provider } from '../types';
+import type { Contribution, Overview } from '../types';
 import { useAuthStore } from '@main/store/auth';
 
 const authBase = getAuthBase();
 const meBase = `${authBase}/me/v1`;
-const authApiBase = `${authBase}/auth/v1`;
 
 const resolvePreview = (item: Contribution): Contribution => ({
     ...item,
@@ -99,40 +98,6 @@ export const getContributions = (
         signal,
     );
 };
-
-export const unlinkAccount = (provider: Provider): Promise<unknown> =>
-    requestJson(authApiBase, '/unlink-account', {
-        method: 'POST',
-        body: JSON.stringify({ provider }),
-    });
-
-export const linkSocial = async (
-    provider: Exclude<Provider, 'email'>,
-): Promise<void> => {
-    const callbackURL = new URL('/me/account', window.location.origin).href;
-    const result = await requestJson<{ url?: string }>(
-        authApiBase,
-        '/link-social',
-        {
-            method: 'POST',
-            body: JSON.stringify({
-                provider,
-                disableRedirect: true,
-                callbackURL,
-                errorCallbackURL: callbackURL,
-            }),
-        },
-    );
-    if (!result.url)
-        throw new Error('The server did not return an account linking URL.');
-    window.location.assign(result.url);
-};
-
-export const unlinkEndfieldBinding = (): Promise<unknown> =>
-    requestJson(`${authBase}/binding/v1/endfield`, '/unlink', {
-        method: 'POST',
-        body: '{}',
-    });
 
 export const saveProfile = async (
     ...args: Parameters<typeof updateProfileNickname>

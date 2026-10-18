@@ -1,13 +1,15 @@
+import { encodePointIdToken } from '@main/services/routing/pointToken';
+import { getPointShareOrigin } from '@main/services/routing/runtime';
 import {
   Fragment,
   memo,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type Ref,
   type ReactNode,
   type TransitionEvent,
 } from 'react';
@@ -18,40 +20,18 @@ import { useTranslateGame as useTranslateMainGame } from '@main/locale';
 import { useLayoutVersion } from '@main/store/uiPrefs';
 import styles from './intelCard.module.scss';
 
-const BASE62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const POINT_SHARE_CN_HOSTNAME = 'opendfieldmap.cn';
 const PROD_PREFIX = '/_dev/endfield/atlos';
 const R2_PREFIX = __INTEL_DEPLOY_CHANNEL__ === 'beta' ? '/_beta/endfield/atlos' : PROD_PREFIX;
 const OSS_OG_BASE = `https://cdn.opendfieldmap.cn${PROD_PREFIX}/seo/og/oss`;
 const R2_OG_BASE = `https://cdn.opendfieldmap.org${R2_PREFIX}/seo/og/r2`;
 
-const encodePointToken = (pointId: string): string | null => {
-  if (!/^\d+$/.test(pointId)) return null;
-  const modulus = 1n << 36n;
-  const id = BigInt(pointId);
-  if (id >= modulus) return null;
-  let value = (id * 25214903917n + 11n) % modulus;
-  let encoded = '';
-  while (value > 0n) {
-    encoded = BASE62[Number(value % 62n)] + encoded;
-    value /= 62n;
-  }
-  return (encoded || '0').padStart(7, '0');
-};
-
-const pointHref = (token: string) => {
-  const isCn = window.location.hostname === POINT_SHARE_CN_HOSTNAME
-    || window.location.hostname.endsWith(`.${POINT_SHARE_CN_HOSTNAME}`);
-  return `${isCn ? 'https://opendfieldmap.cn' : 'https://oem.re'}/${token}`;
-};
-
 const PointLink = ({ pointId, label }: { pointId: string; label: string }) => {
-  const token = encodePointToken(pointId);
+  const token = encodePointIdToken(pointId);
   if (!token) return null;
   return (
     <a
       className={styles.pointLink}
-      href={pointHref(token)}
+      href={`${getPointShareOrigin()}/${token}`}
       target="_blank"
       rel="noreferrer"
       onClick={(event) => event.stopPropagation()}
@@ -63,30 +43,64 @@ const PointLink = ({ pointId, label }: { pointId: string; label: string }) => {
 };
 
 const MapPreviewLink = ({ pointId, label, locale }: { pointId: string; label: string; locale: string }) => {
-  const token = encodePointToken(pointId);
+  const token = encodePointIdToken(pointId);
   if (!token) return null;
   const ogBase = locale.toLowerCase().startsWith('zh-') ? OSS_OG_BASE : R2_OG_BASE;
+  const imageUrl = `${ogBase}/${token}.jpg`;
   return (
     <a
       className={styles.mapPreview}
-      href={pointHref(token)}
+      href={`${getPointShareOrigin()}/${token}`}
       target="_blank"
       rel="noreferrer"
       aria-label={label}
       onClick={(event) => event.stopPropagation()}
     >
-      <img
-        src={`${ogBase}/${token}.jpg`}
+      <DeferredMapPreviewImage
+        src={imageUrl}
         alt=""
-        loading="lazy"
-        draggable="false"
-        referrerPolicy="no-referrer"
       />
       <span className={styles.mapPreviewLabel}>
         <span className={styles.mapPreviewText} data-label={label}>{label}</span>
         <span className={styles.mapPreviewArrow} aria-hidden="true">↗</span>
       </span>
     </a>
+  );
+};
+
+const DeferredMapPreviewImage = ({ src, alt }: { src: string; alt: string }) => {
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image) return;
+    if (!('IntersectionObserver' in window)) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setVisible(true);
+        observer.disconnect();
+      },
+      { rootMargin: '240px' },
+    );
+    observer.observe(image);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    <img
+      ref={imageRef}
+      src={visible ? src : undefined}
+      alt={alt}
+      loading="lazy"
+      fetchPriority="low"
+      draggable="false"
+      referrerPolicy="no-referrer"
+    />
   );
 };
 
@@ -239,13 +253,15 @@ const AcquisitionDetails = ({
   }
 };
 
-interface ArchiveCardProps {
+export interface ArchiveCardProps {
   archive: IntelArchive;
   collected: boolean;
   isTypeTarget: boolean;
   stackOrder: number;
   onToggle: (archive: IntelArchive) => void;
   onTypeTargetHover: (archiveId: string) => void;
+  virtualRef?: Ref<HTMLDivElement>;
+  onHeightMeasured?: (height: number) => void;
 }
 
 interface IntelTitleStyle extends CSSProperties {
@@ -255,6 +271,7 @@ interface IntelTitleStyle extends CSSProperties {
 interface PendingCardMeasurement {
   card: HTMLElement;
   canMeasure: () => boolean;
+  onMeasured?: (height: number) => void;
 }
 
 const pendingCardMeasurements = new Map<HTMLElement, PendingCardMeasurement>();
@@ -288,10 +305,12 @@ const scheduleCardMeasurement = (
   skeleton: HTMLElement,
   card: HTMLElement,
   canMeasure: () => boolean,
+  onMeasured?: (height: number) => void,
 ) => {
   pendingCardMeasurements.set(skeleton, {
     card,
     canMeasure,
+    onMeasured,
   });
   if (cardMeasurementFrame) return;
   cardMeasurementFrame = window.requestAnimationFrame(() => {
@@ -307,16 +326,17 @@ const scheduleCardMeasurement = (
       targetSkeleton.dataset.measuring = 'true';
     });
 
-    const measurements = entries.map(([targetSkeleton, { card }]) => ({
+    const measurements = entries.map(([targetSkeleton, { card, onMeasured }]) => ({
       skeleton: targetSkeleton,
       height: Math.ceil(card.getBoundingClientRect().height) + 1,
+      onMeasured,
     }));
 
     entries.forEach(([targetSkeleton]) => {
       delete targetSkeleton.dataset.measuring;
     });
 
-    measurements.forEach(({ skeleton: targetSkeleton, height }) => {
+    measurements.forEach(({ skeleton: targetSkeleton, height, onMeasured }) => {
       if (height <= 0) return;
       const previousHeight = Number.parseFloat(
         targetSkeleton.style.getPropertyValue('--intel-card-expanded-height'),
@@ -325,6 +345,7 @@ const scheduleCardMeasurement = (
         targetSkeleton.style.setProperty('--intel-card-expanded-height', `${height}px`);
       }
       targetSkeleton.dataset.heightReady = 'true';
+      onMeasured?.(height);
     });
 
     window.requestAnimationFrame(() => {
@@ -346,6 +367,8 @@ const IntelCard = ({
   stackOrder,
   onToggle,
   onTypeTargetHover,
+  virtualRef,
+  onHeightMeasured,
 }: ArchiveCardProps) => {
   const tUI = useTranslateUI();
   const tGame = useTranslateGame();
@@ -370,8 +393,8 @@ const IntelCard = ({
     const skeleton = cardSkeletonRef.current;
     const card = cardRef.current;
     if (!skeleton || !card || !canMeasureCard()) return;
-    scheduleCardMeasurement(skeleton, card, canMeasureCard);
-  }, [canMeasureCard]);
+    scheduleCardMeasurement(skeleton, card, canMeasureCard, onHeightMeasured);
+  }, [canMeasureCard, onHeightMeasured]);
   const toggleCard = () => onToggle(archive);
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) return;
@@ -429,9 +452,11 @@ const IntelCard = ({
     };
   }, [syncCardSkeleton]);
 
-  useLayoutEffect(() => {
-    // Folding only changes presentation. The natural expanded height remains
-    // valid, so toggling the whole grid must not enqueue hundreds of reads.
+  useEffect(() => {
+    // Keep language commits paintable. Re-measuring every card synchronously
+    // here forces hundreds of layout reads before the new catalog can appear;
+    // the existing frame-based measurement above corrects the presentation
+    // after the commit.
     syncCardSkeleton();
     const skeleton = cardSkeletonRef.current;
     return () => {
@@ -448,7 +473,11 @@ const IntelCard = ({
 
   return (
     <div
-      ref={cardSkeletonRef}
+      ref={(element) => {
+        cardSkeletonRef.current = element;
+        if (typeof virtualRef === 'function') virtualRef(element);
+        else if (virtualRef) virtualRef.current = element;
+      }}
       className={styles.cardSkeleton}
       style={{ zIndex: stackOrder }}
     >
@@ -469,7 +498,14 @@ const IntelCard = ({
         <span className={`${styles.progressBar} ${styles.progressHorizontal}`} aria-hidden="true" />
         <span className={`${styles.progressBar} ${styles.progressVertical}`} aria-hidden="true" />
         <header className={styles.header}>
-          <img src={archive.iconUrl} alt="" draggable="false" />
+          <img
+            src={archive.iconUrl}
+            alt=""
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            draggable="false"
+          />
           <div className={styles.heading}>
             <div
               className={styles.titleCell}

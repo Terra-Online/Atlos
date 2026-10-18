@@ -11,61 +11,16 @@ import { getItemIconUrl } from '@/services/assets/resource';
 import { navigateToSharedPoint } from '@/services/map';
 import { useMarkerStore } from '@/store/marker.ts';
 import { formatIcuText } from '@/locale/messageFormat';
+import SearchInput, { type ExternalSearchProps } from './search.input';
 import { useAdvancedSearch } from './useAdvancedSearch';
+import { useFontRegion } from '@/locale/useFontRegion';
 
-export interface ExternalSearchProps {
-    value: string;
-    resultCount: number;
-    placeholder: string;
-    onChange: (value: string) => void;
-}
-
+export type { ExternalSearchProps } from './search.input';
 export interface SearchSharedProps {
     width?: number | string;
     mobile?: boolean;
     external?: ExternalSearchProps;
 }
-
-const ExternalSearchSurface: React.FC<ExternalSearchProps & Pick<SearchSharedProps, 'mobile' | 'width'>> = ({
-    value,
-    resultCount,
-    placeholder,
-    onChange,
-    mobile = false,
-    width = '100%',
-}) => {
-    const hasQuery = value.trim().length > 0;
-    const locale = useLocale();
-    const t = useTranslateUI();
-    const resultsText = formatIcuText({
-        template: t('search.results'),
-        locale,
-        values: { count: resultCount },
-    });
-    return (
-        <div
-            className={`${styles.searchContainer} ${mobile ? styles.mobile : ''}`}
-            style={{ width }}
-        >
-            <form className={styles.searchForm} onSubmit={(event) => event.preventDefault()}>
-                <div className={styles.searchInputWrapper}>
-                    <div className={styles.searchInputRow} data-has-count={hasQuery ? 'true' : 'false'}>
-                        <div className={styles.searchIcon}><SearchIcon className={styles.icon} /></div>
-                        <input
-                            type="text"
-                            data-search-input="true"
-                            className={styles.searchInput}
-                            placeholder={placeholder}
-                            value={value}
-                            onChange={(event) => onChange(event.target.value)}
-                        />
-                        {hasQuery && <span className={styles.searchResultCountInline}>{resultsText}</span>}
-                    </div>
-                </div>
-            </form>
-        </div>
-    );
-};
 
 const REGION_ICON_DICT: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     Valley_4: Valley4,
@@ -121,6 +76,10 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
             clickTitle: canNavigate ? (locateText) : (selectText),
         };
     }), [results, t]);
+    const fontRef = useFontRegion([
+        { faces: ['db'], text: results.map((group) => group.displayName + group.binderName + group.selectorName).join(''), localized: 'game' },
+        { faces: ['h', 'b'], text: results.map((group) => group.snippet).join('') },
+    ], { scope: 'background' });
 
     const onResultClick = useCallback((group: (typeof clickableResults)[number]) => {
         if (group.uniquePoint) {
@@ -210,6 +169,7 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
                         <div className={styles.resultDivider} data-open={panelOpen ? 'true' : 'false'} />
                         <div
                             className={styles.searchResultShell}
+                            ref={panelOpen ? fontRef : undefined}
                             data-loading={loading ? 'true' : 'false'}
                             data-open={panelOpen ? 'true' : 'false'}
                             data-mask-top={maskTopVisible ? 'true' : 'false'}
@@ -336,7 +296,7 @@ const MapSearchShared: React.FC<Omit<SearchSharedProps, 'external'>> = ({ width 
 };
 
 const SearchShared: React.FC<SearchSharedProps> = ({ external, ...props }) => (
-    external ? <ExternalSearchSurface {...external} {...props} /> : <MapSearchShared {...props} />
+    external ? <SearchInput {...external} {...props} /> : <MapSearchShared {...props} />
 );
 
 export default SearchShared;

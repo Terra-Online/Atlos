@@ -1,3 +1,6 @@
+import { useFontRegion } from '@/locale/useFontRegion';
+import type { FontScope } from '@/locale/fontLoader';
+import type { TextRun } from '@/locale/fontShards';
 import React, {
   forwardRef,
   useCallback,
@@ -285,6 +288,9 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
 ModalTabs.displayName = 'ModalTabs';
 
 export interface ModalProps {
+  fontRuns?: TextRun[];
+  /** Whether this modal blocks the atomic language switch. */
+  fontScope?: FontScope;
   open: boolean;
   title?: React.ReactNode;
   /** image slot before title */
@@ -327,6 +333,8 @@ const getModalDocument = (size: ModalProps['size']) => {
 };
 
 const Modal: React.FC<ModalProps> = ({
+  fontRuns = [],
+  fontScope = 'critical',
   open,
   title,
   icon,
@@ -363,6 +371,16 @@ const Modal: React.FC<ModalProps> = ({
   const maskRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
+  const fontRef = useFontRegion([
+    { faces: ['db'], text: typeof title === 'string' ? title : '', localized: 'ui' },
+    { faces: ['r'], text: '' },
+    { faces: ['h', 'r'], text: '' },
+    ...fontRuns,
+  ], { scope: fontScope });
+  const setDialogRef = useCallback((element: HTMLDivElement | null) => {
+    dialogRef.current = element;
+    fontRef(element);
+  }, [fontRef]);
   
   // Track scroll position for blur effects
   const [isScrolledTop, setIsScrolledTop] = useState(true);
@@ -510,6 +528,7 @@ const Modal: React.FC<ModalProps> = ({
       ref={maskRef}
     >
       <div
+        data-font-region="modal"
         className={styles.modalContainer}
         data-size={size}
         data-state={phase === 'open' ? 'open' : 'closed'}
@@ -517,7 +536,7 @@ const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        ref={dialogRef}
+        ref={setDialogRef}
         onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
       >

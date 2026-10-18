@@ -1,5 +1,6 @@
 import { flush } from './testSetup';
 import { createElement } from 'react';
+import { waitFor } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
@@ -92,7 +93,7 @@ it('opens the shared avatar auth flow in place after a 401 and reloads after log
     try {
         await flush(() => root.render(createElement(App)));
         expect(window.location.pathname).toBe('/me/content');
-        expect(auth.openAvatar).toHaveBeenCalledOnce();
+        await waitFor(() => expect(auth.openAvatar).toHaveBeenCalledOnce());
         expect(node.querySelector('[data-auth-open="true"]')).not.toBeNull();
         await flush(() =>
             node.querySelector<HTMLButtonElement>('[data-auth-reopen]')?.click(),

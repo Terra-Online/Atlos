@@ -1,3 +1,6 @@
+import { useCallback } from 'react';
+import { useFontRegion } from '@/locale/useFontRegion';
+import avatarStyles from './avatar.module.scss';
 import type { MouseEventHandler, RefObject } from 'react';
 import styles from './idcard.module.scss';
 
@@ -5,6 +8,7 @@ type KarmaLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface IdCardRenderModel {
   displayName: string;
+  nameLocalized?: boolean;
   uidLabel: 'UID' | 'GID';
   displayUid: string;
   groupText: string;
@@ -52,10 +56,19 @@ const IdCardView = ({
   const cardClassName = embedded ? `${styles.idCard} ${styles.idCardEmbedded}` : styles.idCard;
   const editableDisplayName = nameValue ?? profile.displayName;
 
+  const fontRef = useFontRegion([
+    { faces: ['db'], text: editableDisplayName, localized: !editableName && profile.nameLocalized ? 'ui' : undefined },
+    { faces: ['db'], text: nickName + profile.groupText, localized: 'ui' },
+    { faces: ['r'], text: profile.ageText, localized: 'ui' },
+  ]);
+  const setCardRef = useCallback((element: HTMLDivElement | null) => {
+    if (cardRef) cardRef.current = element;
+    fontRef(element);
+  }, [cardRef, fontRef]);
   return (
     <div
       className={cardClassName}
-      ref={cardRef}
+      ref={setCardRef}
       onMouseMove={onCardMouseMove}
       onMouseLeave={onCardMouseLeave}
       data-embedded={embedded ? 'true' : 'false'}
@@ -67,7 +80,7 @@ const IdCardView = ({
           onClick={onAvatarClick}
           aria-label={avatarAriaLabel}
         >
-          <div className={styles.avatar} data-avt={avatarIndex}></div>
+          <div className={`${styles.avatar} ${avatarStyles.avatar}`} data-avt={avatarIndex}></div>
         </button>
 
         {editableName ? (

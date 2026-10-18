@@ -33,9 +33,10 @@ const FONT_DIR = path.resolve(ROOT, 'src/assets/fonts');
 const HARMONY_FONT_DIR = path.resolve(FONT_DIR, 'Harmony');
 const LOCAL_FONT_DIR = path.resolve(os.homedir(), 'Library/Fonts');
 const HARMONY_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans.ttf');
-const HARMONY_SC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_SC.ttf');
-const HARMONY_TC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/Harmony/HMSans_TC.ttf');
-const UDSHINGO_HK_DB_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts/UD_ShinGo/UDShinGo_HK_DB.ttf');
+// OG uses local originals; web builds no longer emit source-format CJK subsets.
+const HARMONY_SC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts_original/Harmony/HMSans_SC.ttf');
+const HARMONY_TC_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts_original/Harmony/HMSans_TC.ttf');
+const UDSHINGO_HK_DB_FONT_FILE = path.resolve(ROOT, 'src/assets/fonts_original/UD_ShinGo/UDShinGo_HK_DB.ttf');
 const COINBASE_DISPLAY_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Regular-web-1.32.ttf');
 const COINBASE_DISPLAY_BOLD_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'Coinbase_Display-Bold-web-1.32.ttf');
 const ZILLA_SLAB_HIGHLIGHT_FONT_FILE = path.resolve(LOCAL_FONT_DIR, 'ZillaSlabHighlight-Bold.ttf');
@@ -261,7 +262,8 @@ async function configureSharpFonts() {
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
   <dir>${escapeXmlAttribute(HARMONY_FONT_DIR)}</dir>
-  <dir>${escapeXmlAttribute(path.resolve(FONT_DIR, 'UD_ShinGo'))}</dir>
+  <dir>${escapeXmlAttribute(path.resolve(ROOT, 'src/assets/fonts_original/UD_ShinGo'))}</dir>
+  <dir>${escapeXmlAttribute(path.resolve(ROOT, 'src/assets/fonts_original/Harmony'))}</dir>
   <dir>${escapeXmlAttribute(LOCAL_FONT_DIR)}</dir>
   <cachedir>${escapeXmlAttribute(fontconfigCacheDir)}</cachedir>
 </fontconfig>

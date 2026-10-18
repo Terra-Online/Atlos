@@ -7,13 +7,16 @@ import {
   LANG_NATIVE_LABELS,
   UI_ONLY_LANGS,
   getLangDisplayCode,
-  preloadAllLanguages,
+  getCurrentLocale,
+  getFontRegionForLocale,
+  preloadLocale,
   setLocale,
   toBCP47,
   useLocale,
   type Lang,
 } from '@/locale';
 import { useTranslateUI } from '@/locale';
+import { preloadFontManifests, preloadFontRegion } from '@/locale/fontLoader';
 import parse from 'html-react-parser';
 
 export interface LanguageProps {
@@ -21,13 +24,16 @@ export interface LanguageProps {
   onClose: () => void;
   onChange?: (open: boolean) => void;
   onSelected?: (lang: string) => void;
+  prepareLocale?: (lang: string) => Promise<unknown>;
+  commitLocale?: (lang: string, data: unknown) => void;
+  preloadFonts?: (lang: string) => void;
 }
 
 // Match the currentLang transition duration in CSS
 const FREEZE_MS = 400;
 type LanguageItem = { key: Lang; label: string };
 
-const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected }) => {
+const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSelected, prepareLocale, commitLocale, preloadFonts }) => {
   const current = useLocale();
   const t: (k: string) => string = useTranslateUI();
   
@@ -40,18 +46,55 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
   []);
   
   const groupId = useId();
+  const preloadedRegions = useRef(new Set<Exclude<ReturnType<typeof getFontRegionForLocale>, null>>());
+  const preloadedLocales = useRef(new Set<string>());
+
+  const warmLanguage = useCallback((lang: string) => {
+    const region = getFontRegionForLocale(lang);
+    if (preloadFonts) {
+      preloadFonts(lang);
+    } else if (region && !preloadedRegions.current.has(region)) {
+      preloadedRegions.current.add(region);
+      preloadFontRegion(region);
+    }
+    if (!preloadedLocales.current.has(lang)) {
+      preloadedLocales.current.add(lang);
+      preloadLocale(lang);
+      void prepareLocale?.(lang);
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
-    void preloadAllLanguages();
-  }, [open]);
-  
+    preloadFontManifests();
+    // The picker is the user's intent signal. Warm the locale catalogs for
+    // the three CJK regions here, but leave font bytes to the selected row so
+    // opening the picker does not start unrelated font downloads.
+    for (const lang of ['zh-CN', 'zh-HK', 'ja-JP'] as const) {
+      if (lang === current) continue;
+      preloadLocale(lang);
+      void Promise.resolve(prepareLocale?.(lang)).catch(() => undefined);
+    }
+    // These native labels keep their own glyphs across document languages.
+    // Warm the existing CSS face while the closed dialog is already mounted.
+    void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
+  }, [open, current, prepareLocale]);
+
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
   const freezeTimerRef = useRef<number | null>(null);
 
+  const pickRevision = useRef(0);
+  const pendingPick = useRef<string | null>(null);
   const handlePick = useCallback(async (lang: string) => {
-    if (!lang || lang === current) return;
+    if (!lang || (lang === current && pendingPick.current === null)) return;
+    const revision = ++pickRevision.current;
+    pendingPick.current = lang;
+    // A direct click does not fire the row hover handler. Start the same
+    // area-aware preparation immediately so setLocale can reuse its pending
+    // FontFace batch instead of discovering it after the locale request.
+    const targetRegion = getFontRegionForLocale(lang);
+    if (targetRegion) preloadFontRegion(targetRegion);
     // record last-actived
     const prevKey = current;
   const prevCurrentText = t('language.current');
@@ -60,13 +103,44 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       window.clearTimeout(freezeTimerRef.current);
       freezeTimerRef.current = null;
     }
-    await setLocale(lang);
+    try {
+      // Start the standalone catalog and shared font transaction together.
+      // Waiting for the catalog first leaves the font manifest behind several
+      // locale chunks on a cold cache, which makes a language switch appear
+      // much slower than the old loader.
+      const catalog = prepareLocale?.(lang);
+      const fonts = setLocale(
+        lang,
+        () => revision === pickRevision.current,
+        commitLocale && catalog
+          ? async () => {
+              const data = await catalog;
+              return () => commitLocale(lang, data);
+            }
+          : undefined,
+      );
+      await Promise.all([catalog, fonts]);
+      if (revision !== pickRevision.current) return;
+    } catch (error: unknown) {
+      if (revision === pickRevision.current) {
+        pendingPick.current = null;
+        setFreeze(null);
+      }
+      console.warn('Language preparation failed:', error);
+      return;
+    }
+    if (revision !== pickRevision.current) return;
+    pendingPick.current = null;
+    if (getCurrentLocale() !== lang) {
+      setFreeze(null);
+      return;
+    }
     onSelected?.(lang);
     freezeTimerRef.current = window.setTimeout(() => {
       setFreeze(null);
       freezeTimerRef.current = null;
     }, FREEZE_MS);
-  }, [current, t, onSelected]);
+  }, [current, t, onSelected, prepareLocale, commitLocale]);
   useEffect(() => () => {
     if (freezeTimerRef.current) window.clearTimeout(freezeTimerRef.current);
   }, []);
@@ -80,6 +154,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       role="radio"
       aria-checked={current === it.key}
       aria-label={t(`language.names.${it.key}`) || (LANG_NATIVE_LABELS[it.key] || it.key)}
+      onPointerDown={() => warmLanguage(it.key)}
+      onPointerEnter={() => warmLanguage(it.key)}
+      onMouseEnter={() => warmLanguage(it.key)}
+      onFocus={() => warmLanguage(it.key)}
     >
       <div 
         className={styles.langOrigin}
@@ -107,6 +185,10 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       onClose={onClose}
       onChange={onChange}
       title={t('language.title')}
+      // The modal inherits the shell's bold face. Registering a separate
+      // Bold run here starts a large current-locale shard while the user is
+      // opening the picker, which can compete with the next locale switch.
+      fontRuns={[{ faces: ['m'], text: '' }]}
       icon={<I18nIcon aria-hidden="true" />}
       customHeight='65dvh'
     >

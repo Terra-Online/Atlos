@@ -1,8 +1,11 @@
+import { useTheme } from '@main/platform/useTheme';
 import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
-import { useTranslateUI, setLocale } from '@hub/locale';
+import { getFontRegionForLocale } from '@main/locale';
+import { preloadFontRegion } from '@main/locale/fontLoader';
+import { useTranslateUI, applyLocaleData, preloadLocale, type Bundle } from '@hub/locale';
 import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
 import Refresh from '@main/assets/images/UI/refresh.svg?react';
@@ -18,23 +21,12 @@ type Props = {
 export default function Header({ busy, onRefresh }: Props) {
     const t = useTranslateUI();
     const main = useTranslateMainUI();
-    const [isDark, setIsDark] = useState(false);
+    const isDark = useTheme() === 'dark';
     const [languageOpen, setLanguageOpen] = useState(false);
 
     useEffect(() => {
         initTheme();
-        const root = document.documentElement;
-        const readTheme = () => setIsDark(root.dataset.theme === 'dark');
-        readTheme();
-        const observer = new MutationObserver(readTheme);
-        observer.observe(root, {
-            attributes: true,
-            attributeFilter: ['data-theme'],
-        });
-        return () => {
-            observer.disconnect();
-            cleanupTheme();
-        };
+        return cleanupTheme;
     }, []);
 
     const themeLabel = main(isDark ? 'headbar.lightmode' : 'headbar.darkmode');
@@ -71,8 +63,13 @@ export default function Header({ busy, onRefresh }: Props) {
                         open
                         onClose={() => setLanguageOpen(false)}
                         onChange={setLanguageOpen}
-                        onSelected={(locale) => {
-                            void setLocale(locale);
+                        prepareLocale={preloadLocale}
+                        commitLocale={(locale, data) => {
+                            applyLocaleData(locale, data as Bundle);
+                        }}
+                        preloadFonts={(locale) => {
+                            const region = getFontRegionForLocale(locale);
+                            if (region) preloadFontRegion(region);
                         }}
                     />
                 </Suspense>

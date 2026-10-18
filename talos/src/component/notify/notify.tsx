@@ -1,3 +1,4 @@
+import { useFontRegion } from '@/locale/useFontRegion';
 import Feed from './feed';
 import React, {
     useCallback,
@@ -52,6 +53,7 @@ import {
     type NotificationReadBatcher,
 } from './notificationRead';
 import styles from './notify.module.scss';
+import { useNearViewport } from '@/lib/dom/useNearViewport';
 
 interface NotifyProps {
     open: boolean;
@@ -276,6 +278,10 @@ const NotificationMessage = ({
     const pointLabel = pointName
         ? formatPointName(pointName, subregionName, locale)
         : '';
+    const fontRef = useFontRegion([
+        { faces: ['h', 'm'], text: translatedSubject, localized: 'ui' },
+        { faces: ['m'], text: pointLabel, localized: 'game' },
+    ], { scope: 'background' });
     const countValue = Number(item.payload.messageCount);
     const count =
         Number.isFinite(countValue) && countValue > 0
@@ -317,7 +323,7 @@ const NotificationMessage = ({
         pointLabel ? <span className={styles.pointName}>{parts}</span> : null;
 
     return (
-        <span className={styles.messageText}>
+        <span ref={fontRef} className={styles.messageText}>
             {React.Children.toArray(
                 formatNotificationMessage({
                     template,
@@ -480,6 +486,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const readBatcherRef =
         useRef<NotificationReadBatcher<NotificationCategory> | null>(null);
     const notificationListRef = useRef<HTMLDivElement | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     const publishUnread = useCallback(
         (nextUnread: NotificationUnreadCounts) => {
@@ -745,6 +752,19 @@ const NotifyModal: React.FC<NotifyProps> = ({
     );
     const activeFeed = feeds[activeCategory];
     const hasMessages = activeFeed.items.length > 0;
+    useNearViewport({
+        rootRef: notificationListRef,
+        targetRef: loadMoreRef,
+        enabled: Boolean(
+            open &&
+                sessionUser &&
+                activeFeed.nextCursor &&
+                !activeFeed.loading &&
+                !activeFeed.loadingMore &&
+                !activeFeed.error,
+        ),
+        onNear: () => void loadCategory(activeCategory, true),
+    });
     useEffect(() => {
         if (!open || !sessionUser || activeFeed.loading || markingAll)
             return undefined;
@@ -785,6 +805,8 @@ const NotifyModal: React.FC<NotifyProps> = ({
 
     return (
         <Modal
+            fontRuns={[{ faces: ['m'], text: '' }]}
+            fontScope="background"
             open={open}
             size={isMobile ? 'full' : 'l'}
             onClose={onClose}
@@ -853,19 +875,22 @@ const NotifyModal: React.FC<NotifyProps> = ({
                                 />
                             ))}
                             {activeFeed.nextCursor && (
-                                <div className={styles.loadMore}>
-                                    <AccessButton
-                                        label={t(
-                                            activeFeed.loadingMore
-                                                ? 'common.loading'
-                                                : 'notification.loadMore',
-                                        )}
-                                        disabled={activeFeed.loadingMore}
-                                        onClick={() =>
-                                            void loadCategory(activeCategory, true)
-                                        }
-                                    />
-                                </div>
+                                <>
+                                    <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
+                                    <div className={styles.loadMore}>
+                                        <AccessButton
+                                            label={t(
+                                                activeFeed.loadingMore
+                                                    ? 'common.loading'
+                                                    : 'notification.loadMore',
+                                            )}
+                                            disabled={activeFeed.loadingMore}
+                                            onClick={() =>
+                                                void loadCategory(activeCategory, true)
+                                            }
+                                        />
+                                    </div>
+                                </>
                             )}
                         </>
                     )}

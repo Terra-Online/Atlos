@@ -1,3 +1,4 @@
+import { useTheme } from '@main/platform/useTheme';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import SideBarFrame from '@main/component/sideBar/sideBar.frame';
 import Drawer from '@main/component/drawer/drawer';
@@ -22,14 +23,13 @@ import {
 } from '@intel/data/importContract';
 import { useIntelCollection } from '@intel/state/collection';
 import ArchiveProgressSyncHost from '@intel/state/ArchiveProgressSyncHost';
-import IntelCard from '@intel/components/intelCard/intelCard';
+import VirtualIntelCard from '@intel/components/intelCard/virtualIntelCard';
 import CategoryFilter from '@intel/components/categoryFilter/categoryFilter';
 import BoxSelection from '@intel/components/boxSelection/boxSelection';
 import IntelHeadBar from '@intel/components/intelHeadBar/intelHeadBar';
 import IntelSidebarBrand from '@intel/components/intelSidebarBrand/intelSidebarBrand';
 import ArchiveSummary from '@intel/components/archiveSummary/archiveSummary';
-import SearchShared from '@main/component/search/search.shared';
-import SearchMobile from '@main/component/search/search.mobile';
+import SearchInput from '@main/component/search/search.input';
 import PopoverTooltip from '@main/component/popover/popover';
 import EmptyStateIcon from '@main/assets/images/UI/observator_6.webp';
 import filterStyles from '@intel/components/categoryFilter/categoryFilter.module.scss';
@@ -222,6 +222,9 @@ function App() {
     : pageTitleTemplate;
   const sidebarWidth = useIntelSidebarWidth();
   const { isMobile } = useDevice();
+  const cardsExpanded = useIntelCardsExpanded();
+  const [virtualizationReady, setVirtualizationReady] = useState(false);
+  const previousCardsExpandedRef = useRef(cardsExpanded);
   const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
   const { collectedIds, toggle, applyCollectedState, isReady } = useIntelCollection(intelArchives);
   const [importToken] = useState<string | null>(getInitialImportToken);
@@ -230,7 +233,7 @@ function App() {
   );
   const [importCount, setImportCount] = useState<number | null>(null);
   const [selectIncompleteCategories, setSelectIncompleteCategories] = useState(false);
-  const [bannerSchema, setBannerSchema] = useState<'light' | 'dark'>('light');
+  const bannerSchema = useTheme() === 'dark' ? 'light' : 'dark';
   const didHandleImportRef = useRef(false);
   const [areUiPrefsReady, setAreUiPrefsReady] = useState(() => useUiPrefsStore.persist.hasHydrated());
   const [categories, setCategories] = useState<ArchiveCategory[]>([]);
@@ -242,6 +245,15 @@ function App() {
   const suppressContentClickRef = useRef(false);
   const didScrollToTypeTargetRef = useRef(false);
   const hadSearchQueryRef = useRef(false);
+
+  useEffect(() => {
+    previousCardsExpandedRef.current = cardsExpanded;
+    setVirtualizationReady(false);
+    const settleDelay = cardsExpanded ? 350 : 950;
+    const timer = window.setTimeout(() => setVirtualizationReady(true), settleDelay);
+    return () => window.clearTimeout(timer);
+  }, [cardsExpanded]);
+  const cardsExpansionSettling = previousCardsExpandedRef.current !== cardsExpanded;
 
   const toggleArchive = useCallback((archive: IntelArchive) => {
     toggle(archive);
@@ -255,14 +267,6 @@ function App() {
     if (isMobile) setMobileDrawerSnapIndex(0);
   }, [isMobile, setMobileDrawerSnapIndex]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const readTheme = () => setBannerSchema(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    readTheme();
-    const observer = new MutationObserver(readTheme);
-    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const hasSearchQuery = query.trim().length > 0;
@@ -396,9 +400,7 @@ function App() {
         onChange={changeCategories}
       />
       <div className="intelSearchBar">
-        {isMobile
-          ? <SearchMobile external={externalSearch} />
-          : <SearchShared external={externalSearch} />}
+        <SearchInput {...externalSearch} mobile={isMobile} />
       </div>
       <div className={filterStyles.intelCtgr}>
         {CATEGORY_GROUPS.map((group, groupIndex) => {
@@ -485,7 +487,7 @@ function App() {
               </PopoverTooltip>
               <div className={cardStyles.grid}>
                 {categoryArchives.map((archive, archiveIndex) => (
-                  <IntelCard
+                  <VirtualIntelCard
                     key={archive.id}
                     archive={archive}
                     collected={collectedIds.has(archive.id)}
@@ -493,6 +495,8 @@ function App() {
                     stackOrder={visible.length - stackOffset - categoryStackOffset - archiveIndex}
                     onToggle={toggleArchive}
                     onTypeTargetHover={dismissTypeTarget}
+                    virtualize={virtualizationReady && !cardsExpansionSettling}
+                    rootRef={contentSelectionRef}
                   />
                 ))}
               </div>

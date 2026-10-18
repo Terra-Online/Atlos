@@ -193,7 +193,13 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
             >
                 <span className={styles.markIcon}>
                     {iconUrl && (
-                        <img src={iconUrl} alt={displayName} draggable={'false'} />
+                        <img
+                            src={iconUrl}
+                            alt={displayName}
+                            loading='lazy'
+                            decoding='async'
+                            draggable={'false'}
+                        />
                     )}
                 </span>
                 <span className={styles.nameCell}>

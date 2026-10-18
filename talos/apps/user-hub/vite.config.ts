@@ -1,3 +1,4 @@
+import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -8,20 +9,6 @@ import { resourceConfig } from '../../scripts/release-artifact.mjs';
 
 const target = process.env.BUILD_TARGET === 'r2' ? 'r2' : 'oss';
 const envDir = resolve(import.meta.dirname, '../..');
-const mainFontLoader = resolve(envDir, 'src/locale/fontLoader.ts');
-const fontAssets = resolve(import.meta.dirname, 'src/locale/fontAssets.ts');
-
-const fontAssetsPlugin = (): import('vite').Plugin => ({
-    name: 'user-hub-font-assets',
-    enforce: 'pre',
-    resolveId(source, importer) {
-        if (source !== './fontAssets' || !importer) return null;
-        const normalizedImporter = importer.replace(/\\/g, '/').split('?')[0];
-        return normalizedImporter === mainFontLoader.replace(/\\/g, '/')
-            ? fontAssets
-            : null;
-    },
-});
 const htmlMetadata =
     target === 'oss'
         ? {
@@ -64,7 +51,7 @@ export default defineConfig(async ({ command }) => {
         envDir,
         plugins: [
             htmlMetadataPlugin(),
-            fontAssetsPlugin(),
+            fontShardsPlugin('user-hub'),
             react(),
             svgr(),
             ...(command === 'serve'
@@ -119,7 +106,7 @@ export default defineConfig(async ({ command }) => {
             fs: { allow: [resolve(import.meta.dirname, '../..')] },
         },
         build: {
-            outDir: resolve(import.meta.dirname, `../../dist/${target}/me`),
+            outDir: resolve(import.meta.dirname, `../../dist/apps/${target === 'r2' ? 'org' : 'cn'}-${getDeployChannel()}/me`),
             emptyOutDir: true,
             assetsDir: 'assets',
             rollupOptions: {

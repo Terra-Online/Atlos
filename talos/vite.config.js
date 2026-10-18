@@ -1,3 +1,4 @@
+import { fontShardsPlugin } from './scripts/fonts/vite-plugin.mjs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -262,6 +263,7 @@ const cleanDistSeoPointsPlugin = () => {
 export default defineConfig({
     // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
+        fontShardsPlugin(),
         react(),
         svgr(),
         createHtmlPlugin({

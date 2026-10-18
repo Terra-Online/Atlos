@@ -1,3 +1,4 @@
+@use '@main/component/notify/feed' as feed;
 @use '@main/styles/palette' as *;
 @use '@main/styles/curves' as *;
 
@@ -44,6 +45,8 @@
 }
 
 .list .comment {
+    @include feed.card;
+
     --card-accent: var(--contribution-comment-bar);
 
     &[data-status='pending_openai'],
@@ -80,6 +83,8 @@
 }
 
 .list .comment .meta {
+    @include feed.metadata;
+
     display: block;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -267,4 +272,10 @@
     &:focus-visible {
         color: var(--contribution-accent);
     }
+}
+
+// Rebind the feed family at the explicit data owner instead of inheriting an
+// already-resolved alias from the parent feed.
+.list, .images {
+    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
 }

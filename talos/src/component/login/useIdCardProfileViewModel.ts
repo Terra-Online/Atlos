@@ -15,6 +15,7 @@ interface UseIdCardProfileViewModelOptions {
 
 interface IdCardProfileViewModel {
   displayName: string;
+  nameLocalized?: boolean;
   uidLabel: 'UID' | 'GID';
   displayUid: string;
   groupText: string;
@@ -89,6 +90,7 @@ export const useIdCardProfileViewModel = ({
       const group = t('idcard.group');
       return {
         displayName: loadingText,
+        nameLocalized: true,
         uidLabel: 'UID',
         displayUid: '...',
         groupText: `${group}...`,

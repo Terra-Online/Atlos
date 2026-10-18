@@ -7,6 +7,8 @@ import { getDeployChannel, resolveDeployPrefix } from "./release-channel.js";
 import { buildClipIndex, normalizeObjectKey, toPrefixedObjectKey } from './tile-index.js';
 
 const distDir = path.resolve(process.cwd(), process.env.DIST_DIR || 'dist/oss');
+const appPath = process.env.PUBLISH_APP_PATH || '';
+if (appPath && !['intel', 'me'].includes(appPath)) throw new Error('Invalid PUBLISH_APP_PATH');
 const publishStartedAt = Date.now();
 
 const config = JSON.parse(fs.readFileSync('./config/config.json', 'utf-8'));
@@ -137,6 +139,7 @@ console.log(`[publish-oss] assetPruneRetentionDays=${assetPruneRetentionDays}`);
 
 const shouldUploadLocalFile = (relativePath) => {
   const normalizedPath = relativePath.replace(/\\/g, '/');
+  if (appPath) return normalizedPath.startsWith(`${appPath}/`);
   if (normalizedPath.startsWith('seo/points/') && !normalizedPath.startsWith(targetSeoPointPrefix)) {
     return false;
   }
@@ -365,6 +368,7 @@ const reconcileClipObjects = async (expectedClipFiles) => {
 };
 
 const reconcileAssetObjects = async (localFiles) => {
+  if (appPath) return;
   if (!(await fs.pathExists(path.resolve(distDir, 'assets')))) {
     console.log('[publish-oss] assets directory skipped: assets does not exist in dist.');
     return;
@@ -379,7 +383,7 @@ const reconcileAssetObjects = async (localFiles) => {
       .map((relativePath) => toPrefixedObjectKey(prefix, relativePath))
   );
 
-  const staleObjects = remoteAssetObjects.filter((object) => !expectedSet.has(normalizeObjectKey(object.key)));
+  const staleObjects = remoteAssetObjects.filter((object) => !/(?:^|\/)assets\/fonts\/shards\//.test(normalizeObjectKey(object.key)) && !expectedSet.has(normalizeObjectKey(object.key)));
 
   if (!staleObjects.length) {
     console.log('[publish-oss] assets directory already consistent with local dist.');
@@ -440,7 +444,9 @@ const uploadFiles = async (files, remoteObjectInfoIndex) => {
 };
 
 const run = async () => {
-  const clipIndex = await buildClipIndex({ distDir });
+  const clipIndex = appPath
+    ? { generated: false, reason: 'standalone app release preserves main-site tiles' }
+    : await buildClipIndex({ distDir });
   if (clipIndex.generated) {
     console.log(
       `[publish-oss] clip index generated: tiles=${clipIndex.tileFileCount}, coverageFiles=${clipIndex.coverageFileCount}`

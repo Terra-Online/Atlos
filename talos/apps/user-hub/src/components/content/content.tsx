@@ -8,7 +8,8 @@ import Feed from '@main/component/notify/feed';
 import { AccessButton } from '@main/component/login/access/button';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
-import { content as styles } from './styles';
+import styles from './content.module.scss';
+import { useNearViewport } from '@main/lib/dom/useNearViewport';
 
 type Props = {
     revision: number;
@@ -20,6 +21,8 @@ export default function Content({ revision, counts }: Props) {
     const locale = useLocale();
     const [kind, setKind] = useState<Kind>('image');
     const swipeTarget = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+    const loadMoreRef = useRef<HTMLDivElement>(null);
     const { items, cursor, loading, error, loadMore, retry } = useContributions(
         kind,
         revision,
@@ -29,8 +32,15 @@ export default function Content({ revision, counts }: Props) {
         comment: counts.commentCount,
     };
 
+    useNearViewport({
+        rootRef: listRef,
+        targetRef: loadMoreRef,
+        enabled: Boolean(cursor && !loading && !error),
+        onNear: loadMore,
+    });
+
     return (
-        <section className={styles.section} aria-busy={loading}>
+        <section data-font-region="content" className={styles.section} aria-busy={loading}>
             <div className={styles.feed} ref={swipeTarget}>
                 <ModalTabs
                     className={styles.filters}
@@ -47,7 +57,7 @@ export default function Content({ revision, counts }: Props) {
                         title: `${t(`userHub.kinds.${value}`)} (${totals[value].toLocaleString(locale)})`,
                     }))}
                 />
-                <Feed resetKey={kind}>
+                <Feed listRef={listRef} resetKey={kind}>
                     <div className={styles.items}>
                         {error && (
                             <div className={styles.error} role='alert'>
@@ -70,17 +80,20 @@ export default function Content({ revision, counts }: Props) {
                             </p>
                         )}
                         {cursor && !error && (
-                            <div className={styles.pagination}>
-                                <AccessButton
-                                    label={t(
-                                        loading
-                                            ? 'common.loading'
-                                            : 'userHub.loadMore',
-                                    )}
-                                    disabled={loading}
-                                    onClick={loadMore}
-                                />
-                            </div>
+                            <>
+                                <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
+                                <div className={styles.pagination}>
+                                    <AccessButton
+                                        label={t(
+                                            loading
+                                                ? 'common.loading'
+                                                : 'userHub.loadMore',
+                                        )}
+                                        disabled={loading}
+                                        onClick={loadMore}
+                                    />
+                                </div>
+                            </>
                         )}
                     </div>
                 </Feed>

@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import type { UseBoundStore, StoreApi } from 'zustand';
+import { unstable_batchedUpdates } from 'react-dom';
+import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@/lib/i18n/runtime';
 import LOGGER from '@/lib/logging/logger';
 import { switchFontRegion } from '@/locale/fontLoader';
 import {
-    SUPPORTED_LANGS,
     getFontRegionForLocale,
     getLocaleContentCandidates,
     hasFullSupport,
@@ -40,49 +41,6 @@ export interface II18nBundle {
     ui: Record<string, unknown>; // UI components text
 }
 
-const STORAGE_KEY = 'talos:locale';
-
-const getNavigatorLanguage = (): string | undefined => {
-    if (typeof navigator === 'undefined') return undefined;
-    return navigator.language;
-};
-
-const getStoredLocale = (): Lang | null => {
-    try {
-        if (typeof window === 'undefined' || !('localStorage' in window)) return null;
-        const saved = window.localStorage.getItem(STORAGE_KEY);
-        return saved ? normalizeLang(saved || getNavigatorLanguage()) : null;
-    } catch {
-        return null;
-    }
-};
-
-const getLanguage = () => getStoredLocale() || normalizeLang(getNavigatorLanguage());
-
-const deepGet = (obj: unknown, path: string): unknown =>
-    path.split('.').reduce<unknown>((acc, k) => {
-        if (acc && typeof acc === 'object' && k in (acc as Record<string, unknown>)) {
-            return (acc as Record<string, unknown>)[k];
-        }
-        return undefined;
-    }, obj);
-
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-    typeof v === 'object' && v !== null && !Array.isArray(v);
-
-const deepMergeObjects = (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> => {
-    const out: Record<string, unknown> = { ...base };
-    for (const [key, value] of Object.entries(override)) {
-        const baseValue = base[key];
-        if (isPlainObject(baseValue) && isPlainObject(value)) {
-            out[key] = deepMergeObjects(baseValue, value);
-        } else {
-            out[key] = value;
-        }
-    }
-    return out;
-};
-
 // Build-safe loaders using Vite import.meta.glob (no worker)
 type JsonModule = { default: Record<string, unknown> };
 // Combine all locale files into one glob mapping to simplify logic and potential bundling
@@ -110,7 +68,7 @@ type I18nState = {
 };
 
 const useI18nStore: UseBoundStore<StoreApi<I18nState>> = create<I18nState>(() => ({
-    locale: getLanguage(),
+    locale: readInitialLocale(),
     data: { game: {}, ui: {} },
     t: <T = string>(key: string) => {
         const { data } = useI18nStore.getState();
@@ -161,7 +119,7 @@ async function loadLocaleOnMain(locale: Lang): Promise<II18nBundle> {
     ]);
 
     const mergedUi = fallbackUiLoader
-        ? deepMergeObjects(fallbackUiMod.default, uiMod.default)
+        ? mergeCatalogs(fallbackUiMod.default, uiMod.default)
         : uiMod.default;
     return {
         ui: mergedUi,
@@ -183,48 +141,57 @@ function loadLocaleCached(locale: Lang): Promise<II18nBundle> {
     return promise;
 }
 
-const wait = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+const beginRequest = createRequestGuard();
 
-const PRELOAD_BATCH_SIZE = 3;
-
-async function preloadLocales(locales: readonly Lang[]) {
-    for (let i = 0; i < locales.length; i += PRELOAD_BATCH_SIZE) {
-        const batch = locales.slice(i, i + PRELOAD_BATCH_SIZE);
-        await Promise.allSettled(batch.map(lang => loadLocaleCached(lang)));
-        await wait(200);
-    }
-}
-
-let allPreloadingStarted = false;
-
-export async function preloadAllLanguages(current: Lang = getCurrentLocale()) {
-    if (allPreloadingStarted) return;
-    allPreloadingStarted = true;
-    await preloadLocales(SUPPORTED_LANGS.filter(lang => lang !== current));
-}
-
-async function loadAndSet(locale: Lang) {
+async function loadAndSet(
+    locale: Lang,
+    valid = () => true,
+    beforeCommit?: () =>
+        | (() => void)
+        | void
+        | Promise<(() => void) | void>,
+) {
+    const current = beginRequest();
+    const isCurrent = () => current() && valid();
     const fontRegion = getFontRegionForLocale(locale);
-    void switchFontRegion(fontRegion).catch((err: unknown) => {
-        LOGGER.warn('Font switch failed:', err);
-    });
-    const data = await loadLocaleCached(locale);
-
-    useI18nStore.setState({ locale, data });
-    
-    // Sync document language tag for :lang() or [lang] based styles/fonts switching
-    try {
-        if (typeof document !== 'undefined') {
-            const htmlLang = toBCP47(locale);
-            document.documentElement.setAttribute('lang', htmlLang);
-        }
-    } catch {
-        // ignore envs without document
+    // Start catalog and font work together. The UI commit still waits for
+    // both, but a cold locale chunk must not delay the font manifest/request.
+    const dataPromise = loadLocaleCached(locale);
+    const fontsPromise = switchFontRegion(fontRegion, isCurrent);
+    const [dataResult, fontsResult] = await Promise.allSettled([
+        dataPromise,
+        fontsPromise,
+    ]);
+    if (dataResult.status === 'rejected') throw dataResult.reason;
+    const data = dataResult.value;
+    if (!isCurrent()) return false;
+    if (fontsResult.status === 'rejected') {
+        const error: unknown = fontsResult.reason;
+        LOGGER.warn('Font switch failed:', error);
+        if (Object.keys(useI18nStore.getState().data.ui).length) return false;
     }
+    if (!isCurrent()) return false;
+    const commitBeforeMain = await beforeCommit?.();
+    if (!isCurrent()) return false;
+    unstable_batchedUpdates(() => {
+        commitBeforeMain?.();
+        useI18nStore.setState({ locale, data });
+
+        // Sync document language tag for :lang() or [lang] based styles/fonts switching
+        try {
+            if (typeof document !== 'undefined') {
+                const htmlLang = toBCP47(locale);
+                document.documentElement.setAttribute('lang', htmlLang);
+            }
+        } catch {
+            // ignore envs without document
+        }
+    });
+    return true;
 }
 
 async function init() {
-    const locale = getLanguage();
+    const locale = readInitialLocale();
     await loadAndSet(locale);
 }
 
@@ -252,16 +219,22 @@ export const useLocale = () => useI18nStore((s) => s.locale);
 
 export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
 
-export async function setLocale(lang: string) {
+export async function setLocale(
+    lang: string,
+    isCurrent?: () => boolean,
+    beforeCommit?: () =>
+        | (() => void)
+        | void
+        | Promise<(() => void) | void>,
+) {
     const normalized = normalizeLang(lang);
-    await loadAndSet(normalized);
-    try {
-        if (typeof window !== 'undefined' && 'localStorage' in window) {
-            window.localStorage.setItem(STORAGE_KEY, normalized);
-        }
-    } catch {
-        // ignore storage errors (e.g., Safari private mode)
-    }
+    if (await loadAndSet(normalized, isCurrent, beforeCommit))
+        persistLocale(normalized);
+}
+
+/** Warm one user-selected catalog without committing locale or fonts. */
+export function preloadLocale(lang: string): void {
+    void loadLocaleCached(normalizeLang(lang)).catch(() => undefined);
 }
 
 export const i18nInitPromise = init();
