@@ -4,10 +4,23 @@ import { loadManifest, type Region } from './fontShards';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
 
-/** Warm the small region indexes while the language picker is visible. */
+/** Warm region indexes and shell bytes while the language picker is visible. */
 export function preloadFontManifests(): void {
-    for (const region of fontRegions)
-        void loadManifest(region).catch(() => undefined);
+    const current = getCurrentRegion();
+    for (const region of fontRegions) {
+        void loadManifest(region)
+            .then(() => {
+                if (region === current) return;
+                return fontLoader().then(() =>
+                    Promise.all(
+                        [...documents.values()].map((state) =>
+                            state.regions.preloadShell(region),
+                        ),
+                    ),
+                );
+            })
+            .catch(() => undefined);
+    }
 }
 
 /** Warm only the selected region's current registered areas. */

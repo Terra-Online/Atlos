@@ -120,6 +120,33 @@ export const checkFonts = async (project = root) => {
     return fonts;
 };
 
+const initialFontPreloadTags = (fonts, metadata) => {
+    if (!fonts || !Object.keys(metadata.requirements).length) return [];
+    const preloadByRegion = Object.fromEntries(
+        Object.entries(metadata.requirements).map(([region, data]) => {
+            const manifest = fonts.manifests[region];
+            const manifestUrl = metadata.manifests[region];
+            const urls = new Set();
+            for (const [face, keys] of Object.entries(data.shell || {}))
+                for (const key of keys || []) {
+                    const part = manifest?.faces?.[face]?.[key];
+                    if (part && manifestUrl)
+                        urls.add(new URL(part.file, manifestUrl).href);
+                }
+            return [region, [...urls]];
+        }),
+    );
+    const payload = JSON.stringify(preloadByRegion);
+    return [
+        {
+            tag: 'script',
+            attrs: { type: 'text/javascript' },
+            children: `(()=>{const p=${payload};let l='';try{l=localStorage.getItem('talos:locale')||navigator.language||''}catch{};const v=String(l).toLowerCase().replace('_','-');const r=v.includes('ja')||v.includes('jp')?'JP':v.includes('zh-tw')||v.includes('zh-hk')||v.includes('zh-hant')?'HK':v.includes('zh-cn')||v.includes('zh-hans')?'CN':null;for(const h of p[r]||[]){const n=document.createElement('link');n.rel='preload';n.as='font';n.type='font/woff2';n.crossOrigin='anonymous';n.href=h;document.head.appendChild(n)}})()`,
+            injectTo: 'head-prepend',
+        },
+    ];
+};
+
 /** @returns {import('vite').Plugin} */
 export const fontShardsPlugin = (app = 'main') => {
     let fonts;
@@ -177,6 +204,7 @@ export const fontShardsPlugin = (app = 'main') => {
                 if (building && !chunk)
                     throw new Error('Missing font preload entry.');
                 return [
+                    ...initialFontPreloadTags(fonts, metadata),
                     {
                         tag: 'script',
                         attrs: {

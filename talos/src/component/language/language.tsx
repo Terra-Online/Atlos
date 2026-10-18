@@ -81,6 +81,11 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
     if (!lang || (lang === current && pendingPick.current === null)) return;
     const revision = ++pickRevision.current;
     pendingPick.current = lang;
+    // A direct click does not fire the row hover handler. Start the same
+    // area-aware preparation immediately so setLocale can reuse its pending
+    // FontFace batch instead of discovering it after the locale request.
+    const targetRegion = getFontRegionForLocale(lang);
+    if (targetRegion) preloadFontRegion(targetRegion);
     // record last-actived
     const prevKey = current;
   const prevCurrentText = t('language.current');

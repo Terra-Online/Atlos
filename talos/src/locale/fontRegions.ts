@@ -110,6 +110,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     type Lease = ReturnType<typeof leaseFonts>;
     let warmRegion: Region | null = null;
     let warmLeases: Lease[] = [];
+    const warmedShells = new Set<string>();
     const releaseWarm = () => {
         warmLeases.forEach((lease) => lease.release());
         warmLeases = [];
@@ -406,6 +407,21 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             warmRegion = next;
             warmLeases = leases;
         },
+        /** Warm only the static shell; content regions remain demand-driven. */
+        async preloadShell(next: Region) {
+            const { manifest, url } = await source(next);
+            const selection = select(next, { manifest, url }, null);
+            if (!selection.length) return;
+            const key = `${next}:${keyFor(selection)}`;
+            if (warmedShells.has(key)) return;
+            const lease = leaseFonts(key, selection);
+            try {
+                await lease.ready;
+                warmedShells.add(key);
+            } finally {
+                lease.release();
+            }
+        },
         async setRegion(next: FontRegion, isCurrent = () => true) {
             if (requested !== next) {
                 requested = next;
@@ -470,6 +486,7 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         stop() {
             stopped = true;
             generation++;
+            warmedShells.clear();
             releaseWarm();
             for (const area of [...areas]) area.stop();
         },
