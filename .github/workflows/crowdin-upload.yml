@@ -1,4 +1,4 @@
-name: Upload source strings to Crowdin
+name: Sync source and seeded translations to Crowdin
 
 on:
   push:
@@ -7,7 +7,23 @@ on:
     paths:
       - "crowdin.yml"
       - "talos/src/locale/data/ui/en-US.json"
+      - "talos/src/locale/data/ui/*.json"
+      - ".github/scripts/prepare-crowdin-seed.mjs"
+      - ".github/workflows/crowdin-upload.yml"
   workflow_dispatch:
+    inputs:
+      seed_base:
+        description: "Optional source revision to use when backfilling newly seeded keys"
+        required: false
+        type: string
+      seed_keys:
+        description: "Optional comma-separated source key paths to backfill"
+        required: false
+        type: string
+      seed_language:
+        description: "Optional Crowdin language code for a targeted backfill"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -23,6 +39,8 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Upload source strings
         uses: crowdin/github-action@v3
@@ -31,6 +49,30 @@ jobs:
           upload_translations: false
           download_sources: false
           download_translations: false
+          crowdin_branch_name: main
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - name: Prepare new seeded translations
+        id: seed
+        env:
+          BASE_SHA: ${{ inputs.seed_base }}
+          SEED_KEYS: ${{ inputs.seed_keys }}
+        run: node .github/scripts/prepare-crowdin-seed.mjs
+
+      - name: Upload new seeded translations
+        if: steps.seed.outputs.has_new_keys == 'true'
+        uses: crowdin/github-action@v3
+        with:
+          config: .crowdin-seed.yml
+          upload_sources: false
+          upload_translations: true
+          upload_language: ${{ inputs.seed_language }}
+          download_sources: false
+          download_translations: false
+          auto_approve_imported: false
+          import_eq_suggestions: false
           crowdin_branch_name: main
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}

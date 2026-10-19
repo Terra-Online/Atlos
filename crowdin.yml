@@ -28,6 +28,7 @@ export_languages:
 files:
   - source: /talos/src/locale/data/ui/en-US.json
     translation: /talos/src/locale/data/ui/%locale%.json
+    update_option: update_without_changes
     excluded_target_languages:
       - la-LA
     languages_mapping:
