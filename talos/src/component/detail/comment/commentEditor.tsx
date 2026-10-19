@@ -34,6 +34,9 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import type { Ref } from 'react';
 import styles from './comments.module.scss';
+import CommentEditorToolbar from './commentEditorToolbar';
+import CommentEditorOverflow from './commentEditorOverflow';
+import { getCommentLength } from './commentMarkdown';
 import { commentEmojiToken, getCommentEmojiUrl } from './emojiData';
 import { $createCommentEmojiNode, CommentEmojiNode } from './commentEditorEmojiNode';
 import {
@@ -64,6 +67,8 @@ const COMMENT_EDITOR_CONFIG: InitialConfigType = {
     },
 };
 
+const EDITOR_MAX_LENGTH = 550;
+
 export type CommentEditorHandle = {
     focus: () => void;
     focusEnd: () => void;
@@ -89,13 +94,31 @@ const getTextToInsert = (payload: string | InputEvent): string => {
     return transferred ?? payload.data ?? '';
 };
 
-const truncateToLength = (value: string, maxLength: number): string => {
+const getInsertionUnitLength = (source: string, offset: number): number => {
+    const emoji = /^:sns_(\d{3}):/.exec(source.slice(offset));
+    if (emoji && getCommentEmojiUrl(emoji[1])) return emoji[0].length;
+    return source.codePointAt(offset)! > 0xffff ? 2 : 1;
+};
+
+const clampCommentInsertion = (
+    raw: string,
+    selectionOffsets: SelectionOffsets | null,
+    incoming: string,
+    maxLength: number,
+): string => {
+    if (!incoming) return '';
+    const start = Math.min(selectionOffsets?.anchor ?? raw.length, selectionOffsets?.focus ?? raw.length);
+    const end = Math.max(selectionOffsets?.anchor ?? raw.length, selectionOffsets?.focus ?? raw.length);
+    const before = raw.slice(0, start);
+    const after = raw.slice(end);
     let result = '';
-    let length = 0;
-    for (const character of value) {
-        if (length + character.length > maxLength) break;
-        result += character;
-        length += character.length;
+    for (let offset = 0; offset < incoming.length;) {
+        const unitLength = getInsertionUnitLength(incoming, offset);
+        const next = incoming.slice(offset, offset + unitLength);
+        const candidate = `${before}${result}${next}${after}`;
+        if (getCommentLength(candidate) > maxLength) break;
+        result += next;
+        offset += unitLength;
     }
     return result;
 };
@@ -139,7 +162,7 @@ const isWrappedByMarker = (raw: string, start: number, end: number, marker: stri
     return true;
 };
 
-const formatCommentSelection = (format: TextFormatType | 'spoiler', maxLength: number): void => {
+const formatCommentSelection = (format: TextFormatType | 'spoiler'): void => {
     const marker = markerByFormat[format];
     if (!marker) return;
 
@@ -155,7 +178,6 @@ const formatCommentSelection = (format: TextFormatType | 'spoiler', maxLength: n
     const nextRaw = wrapped
         ? `${raw.slice(0, start - marker.length)}${raw.slice(start, end)}${raw.slice(end + marker.length)}`
         : `${raw.slice(0, start)}${marker}${raw.slice(start, end)}${marker}${raw.slice(end)}`;
-    if (nextRaw.length > maxLength) return;
     const delta = wrapped ? -marker.length : marker.length;
     const moveSelectionOffset = (offset: number): number => (
         offset >= start ? offset + delta : offset
@@ -165,6 +187,7 @@ const formatCommentSelection = (format: TextFormatType | 'spoiler', maxLength: n
         focus: moveSelectionOffset(offsets.focus),
     };
 
+    if (getCommentLength(nextRaw) > EDITOR_MAX_LENGTH) return;
     replaceCommentEditorContents(nextRaw, nextOffsets);
 };
 
@@ -181,7 +204,6 @@ const CommentEditorBridge = ({
     const [editor] = useLexicalComposerContext();
     const lastEmittedRawRef = useRef<string | null>(null);
     const lastParsedRawRef = useRef<string | null>(null);
-    const lastParsedShapeRef = useRef<string | null>(null);
     const parseScheduledRef = useRef(false);
     const pendingSourceRawRef = useRef<string | null>(null);
     const pendingValueRef = useRef<string | null>(null);
@@ -201,11 +223,9 @@ const CommentEditorBridge = ({
             const nextRaw = pendingSourceRawRef.current;
             pendingSourceRawRef.current = null;
             if (!nextRaw || nextRaw === lastParsedRawRef.current) return;
-            const shape = commentSourceShape(nextRaw);
-            if (!shape.includes('format:') && !shape.includes('link:') && !shape.includes('emoji:')) return;
-            if (shape === lastParsedShapeRef.current) return;
+            const sourceShape = commentSourceShape(nextRaw);
+            if (!sourceShape.includes('format:') && !sourceShape.includes('link:') && !sourceShape.includes('emoji:')) return;
             lastParsedRawRef.current = nextRaw;
-            lastParsedShapeRef.current = shape;
             editor.update(() => {
                 const selectionOffsets = getCommentSelectionOffsets($getSelection());
                 replaceCommentEditorContents(nextRaw, selectionOffsets);
@@ -219,6 +239,7 @@ const CommentEditorBridge = ({
 
     useLayoutEffect(() => {
         const currentValue = serializeCommentEditorState(editor.getEditorState());
+        const nextValue = clampCommentInsertion('', null, value, EDITOR_MAX_LENGTH);
         if (isComposingRef.current) {
             // Parent state echoes editor changes through `value`. Keep those
             // updates inside Lexical; only defer a value that differs from the
@@ -242,11 +263,10 @@ const CommentEditorBridge = ({
             if (currentValue === lastEmittedRawRef.current) return;
             compositionSyncPendingRef.current = false;
         }
-        if (currentValue === value || lastEmittedRawRef.current === value) return;
-        lastEmittedRawRef.current = value;
-        lastParsedRawRef.current = value;
-        lastParsedShapeRef.current = commentSourceShape(value);
-        editor.update(() => replaceCommentEditorContents(value, null), {
+        if (currentValue === nextValue || lastEmittedRawRef.current === nextValue) return;
+        lastEmittedRawRef.current = nextValue;
+        lastParsedRawRef.current = nextValue;
+        editor.update(() => replaceCommentEditorContents(nextValue, null), {
             tag: SKIP_SCROLL_INTO_VIEW_TAG,
         });
     }, [editor, value]);
@@ -266,12 +286,12 @@ const CommentEditorBridge = ({
             pendingValueRef.current = null;
             if (pendingValue !== null) {
                 compositionSyncPendingRef.current = false;
-                lastEmittedRawRef.current = pendingValue;
-                lastParsedRawRef.current = pendingValue;
-                lastParsedShapeRef.current = commentSourceShape(pendingValue);
+                const nextValue = clampCommentInsertion('', null, pendingValue, EDITOR_MAX_LENGTH);
+                lastEmittedRawRef.current = nextValue;
+                lastParsedRawRef.current = nextValue;
                 editor.update(() => {
                     const selectionOffsets = getCommentSelectionOffsets($getSelection());
-                    replaceCommentEditorContents(pendingValue, selectionOffsets);
+                    replaceCommentEditorContents(nextValue, selectionOffsets);
                 }, {
                     tag: SKIP_SCROLL_INTO_VIEW_TAG,
                 });
@@ -301,14 +321,13 @@ const CommentEditorBridge = ({
                         : null;
             if (!format) return false;
             event.preventDefault();
-            editor.update(() => formatCommentSelection(format, maxLength));
+            editor.update(() => formatCommentSelection(format));
             lastParsedRawRef.current = serializeCommentEditorState(editor.getEditorState());
-            lastParsedShapeRef.current = commentSourceShape(lastParsedRawRef.current);
             editor.focus();
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [disabled, editor, maxLength]);
+    ), [disabled, editor]);
 
     useEffect(() => editor.registerCommand(
         CONTROLLED_TEXT_INSERTION_COMMAND,
@@ -320,17 +339,17 @@ const CommentEditorBridge = ({
 
             if (typeof payload !== 'string') payload.preventDefault();
             $addUpdateTag(SKIP_SCROLL_INTO_VIEW_TAG);
-            const raw = getCommentRawText();
-            const offsets = getCommentSelectionOffsets(selection);
-            if (!offsets) return false;
-            const selectedLength = Math.abs(offsets.focus - offsets.anchor);
-            const availableLength = Math.max(0, maxLength - raw.length + selectedLength);
-            const text = truncateToLength(incoming, availableLength);
-            if (text) selection.insertRawText(text);
+            const limited = clampCommentInsertion(
+                getCommentRawText(),
+                getCommentSelectionOffsets(selection),
+                incoming,
+                EDITOR_MAX_LENGTH,
+            );
+            if (limited) selection.insertRawText(limited);
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [editor, maxLength]);
+    ), [editor]);
 
     useEffect(() => editor.registerCommand(
         PASTE_COMMAND,
@@ -346,27 +365,26 @@ const CommentEditorBridge = ({
             event.preventDefault();
             $addUpdateTag(SKIP_SCROLL_INTO_VIEW_TAG);
             const incoming = dataTransfer.getData('text/plain').replace(/\r\n?/g, '\n');
-            const raw = getCommentRawText();
-            const offsets = getCommentSelectionOffsets(selection);
-            if (!offsets) return false;
-            const availableLength = Math.max(
-                0,
-                maxLength - raw.length + Math.abs(offsets.focus - offsets.anchor),
-            );
-            const text = truncateToLength(incoming, availableLength);
-            if (text) {
-                if (text.includes('\n') || text.includes('\t')) selection.insertRawText(text);
-                else selection.insertText(text);
-                const nextRaw = getCommentRawText();
-                const nextSelection = getCommentSelectionOffsets($getSelection());
-                lastParsedRawRef.current = nextRaw;
-                lastParsedShapeRef.current = commentSourceShape(nextRaw);
-                replaceCommentEditorContents(nextRaw, nextSelection);
+            if (incoming) {
+                const limited = clampCommentInsertion(
+                    getCommentRawText(),
+                    getCommentSelectionOffsets(selection),
+                    incoming,
+                    EDITOR_MAX_LENGTH,
+                );
+                if (limited) {
+                    if (limited.includes('\n') || limited.includes('\t')) selection.insertRawText(limited);
+                    else selection.insertText(limited);
+                    const nextRaw = getCommentRawText();
+                    const nextSelection = getCommentSelectionOffsets($getSelection());
+                    lastParsedRawRef.current = nextRaw;
+                    replaceCommentEditorContents(nextRaw, nextSelection);
+                }
             }
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [editor, maxLength]);
+    ), [editor]);
 
     useEffect(() => editor.registerCommand(
         INSERT_LINE_BREAK_COMMAND,
@@ -374,15 +392,17 @@ const CommentEditorBridge = ({
             const selection = $getSelection();
             if (!$isRangeSelection(selection)) return false;
             $addUpdateTag(SKIP_SCROLL_INTO_VIEW_TAG);
-            const raw = getCommentRawText();
-            const offsets = getCommentSelectionOffsets(selection);
-            if (!offsets) return false;
-            const nextLength = raw.length - Math.abs(offsets.focus - offsets.anchor) + 1;
-            if (nextLength <= maxLength) selection.insertLineBreak(selectStart);
+            const limited = clampCommentInsertion(
+                getCommentRawText(),
+                getCommentSelectionOffsets(selection),
+                '\n',
+                EDITOR_MAX_LENGTH,
+            );
+            if (limited) selection.insertLineBreak(selectStart);
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [editor, maxLength]);
+    ), [editor]);
 
     useEffect(() => editor.registerCommand(
         INSERT_PARAGRAPH_COMMAND,
@@ -390,26 +410,28 @@ const CommentEditorBridge = ({
             const selection = $getSelection();
             if (!$isRangeSelection(selection)) return false;
             $addUpdateTag(SKIP_SCROLL_INTO_VIEW_TAG);
-            const raw = getCommentRawText();
-            const offsets = getCommentSelectionOffsets(selection);
-            if (!offsets) return false;
-            const nextLength = raw.length - Math.abs(offsets.focus - offsets.anchor) + 1;
-            if (nextLength <= maxLength) selection.insertLineBreak();
+            const limited = clampCommentInsertion(
+                getCommentRawText(),
+                getCommentSelectionOffsets(selection),
+                '\n',
+                EDITOR_MAX_LENGTH,
+            );
+            if (limited) selection.insertLineBreak();
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [editor, maxLength]);
+    ), [editor]);
 
     useEffect(() => editor.registerCommand(
         KEY_ENTER_COMMAND,
         (event) => {
             if (!event || event.shiftKey || event.isComposing) return false;
             event.preventDefault();
-            onSubmit();
+            if (getCommentLength(getCommentRawText()) <= maxLength) onSubmit();
             return true;
         },
         COMMAND_PRIORITY_HIGH,
-    ), [editor, onSubmit]);
+    ), [editor, maxLength, onSubmit]);
 
     useImperativeHandle(forwardedRef, () => ({
         focus: () => editor.focus(),
@@ -426,43 +448,47 @@ const CommentEditorBridge = ({
                     selection = $getSelection();
                 }
                 if (!$isRangeSelection(selection)) return;
+                const token = commentEmojiToken(id);
+                const limited = clampCommentInsertion(
+                    getCommentRawText(),
+                    getCommentSelectionOffsets(selection),
+                    token,
+                    EDITOR_MAX_LENGTH,
+                );
+                if (limited !== token) return;
 
-                const raw = getCommentRawText();
-                const offsets = getCommentSelectionOffsets(selection);
-                if (!offsets) return;
-                const nextLength = raw.length - Math.abs(offsets.focus - offsets.anchor)
-                    + commentEmojiToken(id).length;
-                if (nextLength <= maxLength) {
-                    const emojiNode = $createCommentEmojiNode(id);
-                    selection.insertNodes([emojiNode]);
-                    const parent = emojiNode.getParent();
-                    if (parent && $isElementNode(parent)) {
-                        const nextOffset = emojiNode.getIndexWithinParent() + 1;
-                        parent.select(nextOffset, nextOffset);
-                    }
+                const emojiNode = $createCommentEmojiNode(id);
+                selection.insertNodes([emojiNode]);
+                const parent = emojiNode.getParent();
+                if (parent && $isElementNode(parent)) {
+                    const nextOffset = emojiNode.getIndexWithinParent() + 1;
+                    parent.select(nextOffset, nextOffset);
                 }
             });
             editor.focus();
         },
         formatText: (format) => {
             if (disabled) return;
-            editor.update(() => formatCommentSelection(format, maxLength));
+            editor.update(() => formatCommentSelection(format));
             lastParsedRawRef.current = serializeCommentEditorState(editor.getEditorState());
-            lastParsedShapeRef.current = commentSourceShape(lastParsedRawRef.current);
             editor.focus();
         },
-    }), [disabled, editor, maxLength]);
+    }), [disabled, editor]);
 
     return (
-        <OnChangePlugin
-            ignoreHistoryMergeTagChange={false}
-            onChange={(editorState) => {
-                const raw = serializeCommentEditorState(editorState);
-                lastEmittedRawRef.current = raw;
-                onChange(raw);
-                scheduleSourceParse(raw);
-            }}
-        />
+        <>
+            <CommentEditorToolbar disabled={disabled} onFormat={formatCommentSelection} />
+            <CommentEditorOverflow maxLength={maxLength} />
+            <OnChangePlugin
+                ignoreHistoryMergeTagChange={false}
+                onChange={(editorState) => {
+                    const raw = serializeCommentEditorState(editorState);
+                    lastEmittedRawRef.current = raw;
+                    onChange(raw);
+                    scheduleSourceParse(raw);
+                }}
+            />
+        </>
     );
 };
 
@@ -481,27 +507,29 @@ const CommentEditor = forwardRef<CommentEditorHandle, Props>(({
 
     return (
         <LexicalComposer initialConfig={COMMENT_EDITOR_CONFIG}>
-            <RichTextPlugin
-                contentEditable={(
-                    <ContentEditable
-                        ref={editorElementRef}
-                        className={styles.commentInput}
-                        aria-label={placeholder}
-                        aria-placeholder={placeholder}
-                        placeholder={(
-                            <span className={styles.commentInputPlaceholder}>
-                                {placeholder}
-                            </span>
-                        )}
-                        aria-multiline="true"
-                        spellCheck
-                        autoCapitalize="sentences"
-                        autoCorrect="on"
-                        onKeyDown={onKeyDown}
-                    />
-                )}
-                ErrorBoundary={LexicalErrorBoundary}
-            />
+            <div className={styles.commentEditorShell}>
+                <RichTextPlugin
+                    contentEditable={(
+                        <ContentEditable
+                            ref={editorElementRef}
+                            className={styles.commentInput}
+                            aria-label={placeholder}
+                            aria-placeholder={placeholder}
+                            placeholder={(
+                                <span className={styles.commentInputPlaceholder}>
+                                    {placeholder}
+                                </span>
+                            )}
+                            aria-multiline="true"
+                            spellCheck
+                            autoCapitalize="sentences"
+                            autoCorrect="on"
+                            onKeyDown={onKeyDown}
+                        />
+                    )}
+                    ErrorBoundary={LexicalErrorBoundary}
+                />
+            </div>
             <HistoryPlugin />
             <CommentEditorBridge
                 value={value}

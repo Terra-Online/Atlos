@@ -24,6 +24,8 @@ type Props = {
     ariaLabel?: string;
     variant?: 'separate' | 'grouped' | 'floating';
     onFloatingDismiss?: () => void;
+    // A supplied selection rect controls visibility; null closes the floating toolbar.
+    anchorRect?: DOMRect | null;
 };
 
 type PopoverElement = HTMLDivElement & {
@@ -63,6 +65,7 @@ const ShortActions = memo(({
     ariaLabel = 'Actions',
     variant = 'separate',
     onFloatingDismiss,
+    anchorRect,
 }: Props) => {
     const [mounted, setMounted] = useState(false);
     const anchorRef = useRef<HTMLSpanElement | null>(null);
@@ -75,6 +78,7 @@ const ShortActions = memo(({
     const layerFocusRef = useRef(false);
     const touchPinnedRef = useRef(false);
     const isFloating = variant === 'floating';
+    const controlled = anchorRect !== undefined;
 
     const getRootElement = useCallback(() => (
         anchorRef.current?.closest('[data-short-actions-root="true"]') as HTMLElement | null
@@ -92,23 +96,25 @@ const ShortActions = memo(({
         const layer = layerRef.current;
         if (!anchor || !layer || !isPopoverOpen(layer)) return;
 
-        const anchorRect = anchor.getBoundingClientRect();
+        const rect = anchorRect ?? anchor.getBoundingClientRect();
         const layerWidth = layer.offsetWidth;
         const layerHeight = layer.offsetHeight;
         layer.style.position = 'fixed';
         layer.style.left = `${clamp(
-            anchorRect.right - layerWidth,
+            anchorRect ? rect.left + rect.width / 2 - layerWidth / 2 : rect.right - layerWidth,
             VIEWPORT_MARGIN,
             Math.max(VIEWPORT_MARGIN, window.innerWidth - layerWidth - VIEWPORT_MARGIN),
         )}px`;
         layer.style.top = `${clamp(
-            anchorRect.top,
+            anchorRect
+                ? (rect.top >= layerHeight + 8 ? rect.top - layerHeight - 8 : rect.bottom + 8)
+                : rect.top,
             VIEWPORT_MARGIN,
             Math.max(VIEWPORT_MARGIN, window.innerHeight - layerHeight - VIEWPORT_MARGIN),
         )}px`;
         layer.style.right = 'auto';
         layer.style.bottom = 'auto';
-    }, []);
+    }, [anchorRect]);
 
     const schedulePosition = useCallback(() => {
         if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
@@ -184,6 +190,12 @@ const ShortActions = memo(({
         schedulePosition();
     }, [clearTimers, isFloating, items.length, positionLayer, schedulePosition]);
 
+    useEffect(() => {
+        if (!isFloating || !controlled || !mounted) return;
+        if (anchorRect) showLayer();
+        else hideLayer();
+    }, [anchorRect, controlled, hideLayer, isFloating, mounted, showLayer]);
+
     const scheduleHideLayer = useCallback(() => {
         if (!shouldKeepLayerOpen()) hideLayer();
     }, [hideLayer, shouldKeepLayerOpen]);
@@ -198,7 +210,7 @@ const ShortActions = memo(({
     }, [clearTimers, hideLayer]);
 
     useEffect(() => {
-        if (!isFloating) return undefined;
+        if (!isFloating || controlled) return undefined;
 
         const root = getRootElement();
         if (!root) return undefined;
@@ -252,12 +264,13 @@ const ShortActions = memo(({
             root.removeEventListener('focusin', handleFocusIn);
             root.removeEventListener('focusout', handleFocusOut);
         };
-    }, [getRootElement, isFloating, scheduleHideLayer, showLayer]);
+    }, [controlled, getRootElement, isFloating, scheduleHideLayer, showLayer]);
 
     useEffect(() => {
         if (!isFloating) return undefined;
 
         const closeIfPointerOutside = (event: PointerEvent) => {
+            if (controlled) return;
             const layer = layerRef.current;
             if (!layer || !isPopoverOpen(layer)) return;
             if (touchPinnedRef.current && isTouchLikePointer(event)) return;
@@ -274,6 +287,7 @@ const ShortActions = memo(({
         };
         const handleScroll = () => {
             schedulePosition();
+            if (controlled) return;
             const layer = layerRef.current;
             if (!layer || !isPopoverOpen(layer)) return;
             const root = getRootElement();
@@ -306,6 +320,7 @@ const ShortActions = memo(({
             window.removeEventListener('scroll', handleScroll, true);
         };
     }, [
+        controlled,
         getRootElement,
         hideLayer,
         isFloating,
@@ -328,13 +343,13 @@ const ShortActions = memo(({
             onClick={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
             onPointerEnter={isFloating ? (event) => {
-                if (isTouchLikePointer(event)) return;
+                if (controlled || isTouchLikePointer(event)) return;
                 touchPinnedRef.current = false;
                 layerHoverRef.current = true;
                 showLayer();
             } : undefined}
             onPointerLeave={isFloating ? (event) => {
-                if (isTouchLikePointer(event)) return;
+                if (controlled || isTouchLikePointer(event)) return;
                 layerHoverRef.current = false;
                 const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
                 const nextTarget = event.relatedTarget;
@@ -355,11 +370,12 @@ const ShortActions = memo(({
                     const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
                     rootFocusRef.current = Boolean(activeElement && root?.contains(activeElement));
                     layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
-                    if (!shouldKeepLayerOpen()) scheduleHideLayer();
+                    if (!controlled && !shouldKeepLayerOpen()) scheduleHideLayer();
                 }, 0);
             } : undefined}
             role="toolbar"
             aria-label={ariaLabel}
+            aria-hidden={controlled ? !anchorRect : undefined}
         >
             {items.map((item) => (
                 <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4} visible={item.tooltipVisible}>
@@ -373,7 +389,7 @@ const ShortActions = memo(({
                         disabled={item.disabled}
                         onPointerDown={isFloating ? (event) => {
                             event.stopPropagation();
-                            if (event.pointerType !== 'touch') {
+                            if (controlled || event.pointerType !== 'touch') {
                                 event.preventDefault();
                             }
                             rootFocusRef.current = false;

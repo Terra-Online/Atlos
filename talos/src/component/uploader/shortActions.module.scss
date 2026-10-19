@@ -190,6 +190,14 @@
         fill: currentcolor;
     }
 
+    img {
+        width: 1rem;
+        height: 1rem;
+        display: block;
+        object-fit: contain;
+        filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba($black-0, 0.6));
+    }
+
     &:hover:not(:disabled),
     &:focus-visible {
         --short-action-button-bg: var(--actionbtn-hover);

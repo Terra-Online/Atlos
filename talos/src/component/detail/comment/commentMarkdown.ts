@@ -282,3 +282,14 @@ const parseSourceInline = (source: string, depth = 0): CommentSourceNode[] => {
 export const parseCommentSource = (content: string): CommentSourceNode[] => (
     parseSourceInline(content)
 );
+
+// Count the serialized source while treating a rendered custom emoji as two characters.
+export const getCommentLength = (content: string): number => {
+    const lengthOf = (node: CommentSourceNode): number => {
+        if (node.type === 'emoji') return 2;
+        if (node.type === 'text' || node.type === 'token') return node.value.length;
+        return node.opening.length + node.children.reduce((sum, child) => sum + lengthOf(child), 0)
+            + node.closing.length;
+    };
+    return parseCommentSource(content).reduce((sum, node) => sum + lengthOf(node), 0);
+};

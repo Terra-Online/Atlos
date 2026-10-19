@@ -280,8 +280,18 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         const commentsPanelMinHeight = commentsPanel
             ? parseCssPixelValue(window.getComputedStyle(commentsPanel).minHeight)
             : 0;
+        const commentsInput = commentsPanel?.querySelector<HTMLElement>('[data-comment-input="true"]');
+        const inputStyle = commentsInput ? window.getComputedStyle(commentsInput) : null;
+        const inputHeight = commentsInput && inputStyle
+            ? commentsInput.getBoundingClientRect().height
+                + parseCssPixelValue(inputStyle.marginTop) + parseCssPixelValue(inputStyle.marginBottom)
+            : 0;
         const activePanelHeight = commentsList
-            ? Math.max(getElementNaturalHeight(commentsList), commentsPanelMinHeight)
+            ? Math.max(
+                Math.max(getElementNaturalHeight(commentsList), parseCssPixelValue(window.getComputedStyle(commentsList).minHeight))
+                    + inputHeight,
+                commentsPanelMinHeight,
+            )
             : activePanel.scrollHeight;
         const naturalHeight = headerHeight + tabsHeight + activePanelHeight;
         const maxHeight = Math.max(0, Math.min(window.innerHeight * 0.8, getElementMaxHeight(container)));

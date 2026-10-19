@@ -22,12 +22,12 @@ import FlagIcon from '@/assets/images/UI/flag.svg?react';
 import RecallIcon from '@/assets/images/UI/recall.svg?react';
 import SubmitIcon from '@/assets/logos/submit.svg?react';
 import EmojiIcon from '@/assets/logos/emoji.svg?react';
-import { EyeOff } from 'lucide-react';
 import ReplyIcon from '@/assets/logos/reply.svg?react';
 import EditIcon from '@/assets/images/UI/edit.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
 import { usePointShareLink } from '@/component/share/usePointShareLink';
 import { useCommentLink } from './useCommentLink';
+import { getCommentLength } from './commentMarkdown';
 
 import {
     flatDisplay,
@@ -70,7 +70,7 @@ type Props = {
     active?: boolean;
 };
 
-const COMMENT_MAX_LENGTH = 200;
+const COMMENT_MAX_LENGTH = 500;
 const COMMENT_TOGGLE_SYNC_DELAY_MS = 300;
 const COMMENT_REPLY_QUOTE_TRANSITION_MS = 180;
 const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
@@ -107,7 +107,7 @@ export const CommentExcerpt = memo(({
     const note = transNote(comment, tUI);
     const fontRef = useFontRegion([
         { faces: ['db'], text: '' },
-        { faces: ['h', 'r'], text: `${authorName || ''}${commentText(comment)}` },
+        { faces: ['r', 'h'], text: `${authorName || ''}${commentText(comment)}` },
         { faces: ['r'], text: note || '', localized: 'ui' },
     ], { scope: 'background' });
 
@@ -444,14 +444,13 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const submittingCommentIds = useMemo(() => (
         new Set(submissionSnapshot.submittingIds)
     ), [submissionSnapshot]);
-    const { blurVisible, updateBlur, resizeInput } = useInputLayout({
+    const { blurVisible, updateBlur } = useInputLayout({
         comments: commentsWithSubmissions,
         error,
         inputValue,
         loading,
         rendered: renderedReply,
         visible: replyVisible,
-        inputRef: inputSurfaceRef,
         inputBarRef,
         listRef: commentListRef,
         panelRef: commentsPanelRef,
@@ -615,7 +614,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
 
     const handleSubmit = useCallback(async () => {
         const content = inputValue.trim();
-        if (!content) return;
+        if (!content || getCommentLength(inputValue) > COMMENT_MAX_LENGTH) return;
         if (!requireAuth()) return;
 
         setError('');
@@ -788,6 +787,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             />
             <div
                 className={styles.commentInputBar}
+                data-comment-input="true"
                 data-replying={replyQuoteShown ? 'true' : 'false'}
                 ref={inputBarRef}
             >
@@ -816,22 +816,12 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                                 maxLength={COMMENT_MAX_LENGTH}
                                 placeholder={tUI('detail.comments.placeholder')}
                                 disabled={inputDisabled}
-                                onEditorReady={resizeInput}
+                                onEditorReady={updateBlur}
                                 onChange={setInputValue}
                                 onSubmit={() => void handleSubmit()}
                                 onKeyDown={handleKeyDown}
                             />
                         </Suspense>
-                        <button
-                            type="button"
-                            className={classNames(styles.commentEmojiButton, styles.commentSpoilerButton)}
-                            disabled={inputDisabled}
-                            aria-label="Spoiler"
-                            onPointerDown={(event) => event.preventDefault()}
-                            onClick={() => inputRef.current?.formatText('spoiler')}
-                        >
-                            <EyeOff aria-hidden="true" />
-                        </button>
                         <div
                             ref={emojiPickerRef}
                             className={styles.commentEmojiPickerRoot}
@@ -887,7 +877,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                         <button
                             type="button"
                             className={styles.commentSubmit}
-                            disabled={inputDisabled || inputValue.trim().length === 0}
+                            disabled={inputDisabled || inputValue.trim().length === 0 || getCommentLength(inputValue) > COMMENT_MAX_LENGTH}
                             onClick={() => void handleSubmit()}
                             aria-label={tUI(editTarget ? 'detail.comments.submitEdit' : 'detail.comments.submit')}
                         >

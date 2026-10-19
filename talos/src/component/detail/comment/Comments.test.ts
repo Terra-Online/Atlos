@@ -5,6 +5,13 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { IMarkerData } from '@/data/marker';
 import type { UGCComment } from '@/services/ugc/client';
 
+vi.mock('@/assets/logos/hideUI.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/format/bold.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/format/italic.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/format/underline.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/format/strike.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/format/code.svg?react', () => ({ default: () => null }));
+
 const localeState = vi.hoisted(() => ({ current: 'en-US' }));
 
 vi.mock('@/assets/logos/translater.svg?react', () => ({ default: () => null }));
@@ -147,7 +154,7 @@ it('renders a selected emoji inline and keeps the comment submit enabled', async
         expect(input.querySelector('img[alt=":sns_001:"]')).toBeTruthy();
         expect(screen.getByRole('button', { name: 'detail.comments.submit' }).getAttribute('disabled')).toBeNull();
     });
-    expect(input.parentElement?.querySelector('[aria-haspopup="grid"]')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'detail.comments.emojiPicker' }).getAttribute('aria-haspopup')).toBe('grid');
 });
 
 it('keeps the emoji picker open while selecting multiple emojis', async () => {
