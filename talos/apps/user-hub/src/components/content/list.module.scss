@@ -100,6 +100,9 @@
     display: block;
     margin: 0;
     overflow-wrap: anywhere;
+    font-family:
+        'HMSans_EN', 'UD_ShinGo Regular', HMSans, 'Noto Sans SC',
+        'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     font-size: inherit;
     font-weight: 500;
     line-height: 1.45;
@@ -277,5 +280,7 @@
 // Rebind the feed family at the explicit data owner instead of inheriting an
 // already-resolved alias from the parent feed.
 .list, .images {
-    font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-family:
+        'HMSans_EN', 'UD_ShinGo Regular', HMSans, 'Noto Sans SC',
+        'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
 }

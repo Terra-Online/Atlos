@@ -165,8 +165,8 @@ export default function List({
             + (marker ? getSubregionLabel(marker.subregId, game) : '');
     }).join('');
     const fontRef = useFontRegion([
-        { faces: ['h', 'm'], text: items.map((item) => item.content || '').join('') },
-        { faces: ['m'], text: pointText, localized: 'game' },
+        { faces: ['r', 'h'], text: items.map((item) => item.content || '').join('') },
+        { faces: ['r'], text: pointText, localized: 'game' },
     ], { scope: 'background' });
     if (!items.length)
         return (

@@ -16,6 +16,17 @@ export const fontVariables = {
     HMSans: 'h',
 };
 
+const resolveFontAssetUrl = (file, manifestUrl) => {
+    if (manifestUrl.startsWith('/')) {
+        // Vite serves manifests from an origin-relative path during `dev`.
+        // `new URL()` requires an absolute base, while fetch() accepts the
+        // resulting origin-relative shard URL just fine.
+        const directory = manifestUrl.slice(0, manifestUrl.lastIndexOf('/') + 1);
+        return `${directory}${file}`;
+    }
+    return new URL(file, manifestUrl).href;
+};
+
 // Preserve each declaration's existing family order, including Latin faces.
 // Rewriting only font-family avoids changing @font-face definitions or strings.
 export const regionFontStyles = () => ({
@@ -131,7 +142,7 @@ const initialFontPreloadTags = (fonts, metadata) => {
                 for (const key of keys || []) {
                     const part = manifest?.faces?.[face]?.[key];
                     if (part && manifestUrl)
-                        urls.add(new URL(part.file, manifestUrl).href);
+                        urls.add(resolveFontAssetUrl(part.file, manifestUrl));
                 }
             return [region, [...urls]];
         }),
@@ -257,7 +268,9 @@ export const fontShardsPlugin = (app = 'main') => {
                                 )
                                 .map((key) => fonts.manifests[region]?.faces?.[face]?.[key])
                                 .filter(Boolean)
-                                .map((part) => new URL(part.file, manifests[region]).href),
+                                .map((part) =>
+                                    resolveFontAssetUrl(part.file, manifests[region]),
+                                ),
                         ]),
                     ),
                 ]),
