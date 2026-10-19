@@ -64,7 +64,6 @@ const VirtualIntelCard = memo(({ virtualize, rootRef, ...card }: Props) => {
       data-height-ready={height ? 'true' : undefined}
       style={height ? {
         zIndex: card.stackOrder,
-        minHeight: `${height}px`,
         '--intel-card-expanded-height': `${height}px`,
       } as PlaceholderStyle : { zIndex: card.stackOrder }}
       aria-hidden="true"
