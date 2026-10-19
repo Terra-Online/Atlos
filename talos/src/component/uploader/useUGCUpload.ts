@@ -36,6 +36,8 @@ type UploadTaskState = {
     progress: number;
     error: string | null;
     lastSubmission: UGCUploadSubmission | null;
+    ownerUid: string | null;
+    refreshedSubmissionKey: string | null;
 };
 
 const idleUploadTask: UploadTaskState = {
@@ -46,6 +48,8 @@ const idleUploadTask: UploadTaskState = {
     progress: 0,
     error: null,
     lastSubmission: null,
+    ownerUid: null,
+    refreshedSubmissionKey: null,
 };
 
 const uploadTasks = new Map<string, UploadTaskState>();
@@ -84,7 +88,11 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
     );
 
     const { target, loading, setImages, setMyImages, pendingOwn, active } = imageState;
-    const { uploading, uploadSent, progress, error, lastSubmission } = uploadTask;
+    const taskOwnedByUser = Boolean(user?.uid && uploadTask.ownerUid === user.uid);
+    const visibleTask = taskOwnedByUser ? uploadTask : idleUploadTask;
+    const { uploading, uploadSent, progress, error } = visibleTask;
+    const lastSubmission = visibleTask.lastSubmission;
+    const attemptedRefreshKeyRef = useRef<string | null>(null);
     const state = pendingOwn || uploadSent || lastSubmission?.status === 'pending_openai' || lastSubmission?.status === 'pending_audit'
         ? 'pending'
         : active
@@ -114,26 +122,51 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
     useEffect(() => {
         if (!lastSubmission || !user) return;
         if (lastSubmission.markerId !== point.id) return;
+        const refreshKey = `${user.uid}:${lastSubmission.id}`;
+        if (uploadTask.refreshedSubmissionKey === refreshKey || attemptedRefreshKeyRef.current === refreshKey) return;
+        attemptedRefreshKeyRef.current = refreshKey;
 
         let disposed = false;
         void listUGCPointImages(point.id, user.uid).then((result) => {
             if (disposed) return;
+            if (result.images !== undefined && result.myImages !== undefined) {
+                setUploadTask(point.id, (current) => (
+                    current.ownerUid === user.uid
+                        && current.lastSubmission?.id === lastSubmission.id
+                        ? { ...current, refreshedSubmissionKey: refreshKey }
+                        : current
+                ));
+            }
             if (result.images) setImages(result.images);
             if (result.myImages) setMyImages(result.myImages);
-        }).catch(() => undefined);
+        }).catch(() => {
+            if (disposed) return;
+            setUploadTask(point.id, (current) => (
+                current.ownerUid === user.uid
+                    && current.lastSubmission?.id === lastSubmission.id
+                    && current.refreshedSubmissionKey === refreshKey
+                    ? { ...current, refreshedSubmissionKey: null }
+                    : current
+            ));
+        });
         return () => { disposed = true; };
-    }, [lastSubmission, point.id, setImages, setMyImages, user]);
+    }, [lastSubmission, point.id, setImages, setMyImages, uploadTask.refreshedSubmissionKey, user]);
 
     const setLastSubmission = useCallback<React.Dispatch<React.SetStateAction<UGCUploadSubmission | null>>>((value) => {
         setUploadTask(point.id, (current) => {
+            if (current.ownerUid && current.ownerUid !== user?.uid) return current;
             const nextSubmission = typeof value === 'function' ? value(current.lastSubmission) : value;
             return {
                 ...current,
                 uploadSent: nextSubmission ? current.uploadSent : false,
                 lastSubmission: nextSubmission,
+                ownerUid: nextSubmission ? user?.uid ?? current.ownerUid : current.ownerUid,
+                refreshedSubmissionKey: nextSubmission?.id === current.lastSubmission?.id
+                    ? current.refreshedSubmissionKey
+                    : null,
             };
         });
-    }, [point.id]);
+    }, [point.id, user?.uid]);
 
     const uploadFileToTarget = useCallback(async (file: File, uploadTarget: UGCUploadTarget | null) => {
         if (!file || !uploadTarget) return;
@@ -155,6 +188,8 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
             progress: 0.02,
             error: null,
             lastSubmission: null,
+            ownerUid: user?.uid ?? null,
+            refreshedSubmissionKey: null,
         }));
         try {
             const submission = await uploadUGCImage(uploadTarget, file, (nextProgress) => {
@@ -186,7 +221,7 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
                 progress: 0,
             }));
         }
-    }, [errText]);
+    }, [errText, user?.uid]);
 
     const uploadFile = useCallback(async (file: File) => {
         await uploadFileToTarget(file, target);

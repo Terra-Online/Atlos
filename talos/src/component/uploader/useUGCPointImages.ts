@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useMarkerStore } from '@/store/marker';
 import type { IMarkerData } from '@/data/marker';
@@ -71,20 +71,27 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
     const [loading, setLoading] = useState(true);
     const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
     const [viewerOpen, setViewerOpen] = useState(false);
+    const loadedDetailRef = useRef<string | null>(null);
     const imageOpenRequest = useMarkerStore((state) => state.imageOpenRequest);
     const clearImageOpenRequest = useMarkerStore((state) => state.clearImageOpenRequest);
 
     const userId = user?.uid;
+    const detailKey = `${point.id}:${userId ?? 'anonymous'}`;
     useEffect(() => {
+        loadedDetailRef.current = null;
+        setImages([]);
+        setMyImages([]);
         setRequestedImage(null);
         setSelectedImageId(null);
         setViewerOpen(false);
     }, [point.id, userId]);
 
     useEffect(() => {
-        setImages([]);
-        setMyImages([]);
         if (!target || !enabled) {
+            setLoading(false);
+            return;
+        }
+        if (loadedDetailRef.current === detailKey) {
             setLoading(false);
             return;
         }
@@ -97,11 +104,14 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
             if (disposed) return;
             setImages(result.images ?? []);
             setMyImages(result.myImages ?? []);
+            if (result.images !== undefined && result.myImages !== undefined) {
+                loadedDetailRef.current = detailKey;
+            }
         }).catch(() => undefined).finally(() => {
             if (!disposed) setLoading(false);
         });
         return () => { disposed = true; };
-    }, [point.id, target, userId, enabled]);
+    }, [detailKey, point.id, target, userId, enabled]);
 
     const pointImages = useMemo(() => {
         const merged = new Map(

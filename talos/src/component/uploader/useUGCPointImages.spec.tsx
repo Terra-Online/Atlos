@@ -35,6 +35,15 @@ describe('detail image demand', () => {
         expect(result.current.myImages).toEqual([]);
         expect(state.public).toHaveBeenCalledTimes(1);
     });
+
+    it('keeps a completed detail read when the images tab is temporarily hidden', async () => {
+        const { result, rerender } = renderHook(({ enabled }) => useUGCPointImages(point, enabled), { initialProps: { enabled: true } });
+        await waitFor(() => expect(result.current.pendingOwn?.id).toBe('pending'));
+        rerender({ enabled: false });
+        rerender({ enabled: true });
+        await waitFor(() => expect(result.current.loading).toBe(false));
+        expect(state.detail).toHaveBeenCalledTimes(1);
+    });
     it('discards late results after switching points or accounts', async () => {
         let resolve!: (value: unknown) => void;
         state.detail.mockImplementationOnce(() => new Promise((done) => { resolve = done; }));
