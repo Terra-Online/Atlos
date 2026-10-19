@@ -19,6 +19,7 @@ import {
     saveEFTrackerConf,
 } from '@/services/endfield';
 import styles from './Locator.module.scss';
+import { selectLocatorRecovery } from './locatorRecovery';
 
 type TrackerConfig = {
     enabled: boolean;
@@ -207,7 +208,10 @@ export function useLocator(map: L.Map | undefined): void {
     const pollTimerRef = useRef<number | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
     const socketTicketRef = useRef<string | null>(null);
+    const socketTicketIssuedAtRef = useRef(0);
     const socketReconnectAttemptRef = useRef(0);
+    const sessionGenerationRef = useRef(0);
+    const initialConnectionBannerShownRef = useRef(false);
     const trackerLayerRef = useRef<L.LayerGroup | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
     const lastSyncedRegionRef = useRef<string | null>(null);
@@ -242,27 +246,24 @@ export function useLocator(map: L.Map | undefined): void {
         if (!map) return;
 
         let disposed = false;
+        const sessionGeneration = ++sessionGenerationRef.current;
         let pausedForPagehide = false;
-        let connectionBannerTimer: number | null = null;
+        const isCurrentSession = () => !disposed && sessionGenerationRef.current === sessionGeneration;
 
-        const clearConnectionBannerTimer = () => {
-            if (connectionBannerTimer === null) return;
-            window.clearTimeout(connectionBannerTimer);
-            connectionBannerTimer = null;
+        const showInitialConnectionBanner = () => {
+            if (initialConnectionBannerShownRef.current) return;
+            initialConnectionBannerShownRef.current = true;
+            useLocatorStore.getState().showBanner('locator.status.connecting');
         };
 
-        const showConnectionStatus = (status: 'connecting' | 'connected' | 'reconnecting') => {
-            clearConnectionBannerTimer();
+        const clearInitialConnectionBanner = () => {
             const store = useLocatorStore.getState();
-            if (status === 'connected') {
-                store.showBanner('locator.status.connected');
-                connectionBannerTimer = window.setTimeout(() => {
-                    connectionBannerTimer = null;
-                    useLocatorStore.getState().clearBanner();
-                }, 1_500);
-                return;
-            }
-            store.showBanner('locator.status.connecting');
+            if (store.bannerKey === 'locator.status.connecting') store.clearBanner();
+        };
+
+        const updateSocketTicket = (ticket: string | null | undefined) => {
+            socketTicketRef.current = ticket ?? null;
+            socketTicketIssuedAtRef.current = ticket ? Date.now() : 0;
         };
 
         const cleanupAnimation = () => {
@@ -274,23 +275,23 @@ export function useLocator(map: L.Map | undefined): void {
             state.running = false;
         };
 
-        const cleanupPolling = () => {
+        const cleanupPolling = (reason = 'locator stopped') => {
             trackerRunningRef.current = false;
             if (pollTimerRef.current !== null) {
                 window.clearTimeout(pollTimerRef.current);
                 pollTimerRef.current = null;
             }
             if (socketRef.current) {
-                socketRef.current.close(1000, 'locator stopped');
+                socketRef.current.close(1000, reason);
                 socketRef.current = null;
             }
-            socketTicketRef.current = null;
+            updateSocketTicket(null);
             socketReconnectAttemptRef.current = 0;
         };
 
         const onPageHide = () => {
             pausedForPagehide = true;
-            cleanupPolling();
+            cleanupPolling('page hidden');
         };
 
         const onPageShow = () => {
@@ -300,7 +301,6 @@ export function useLocator(map: L.Map | undefined): void {
         };
 
         const pauseForErr = (error: EFBackendError) => {
-            clearConnectionBannerTimer();
             showErr(error);
             cleanupPolling();
             useLocatorStore.getState().setViewMode('tracking');
@@ -311,9 +311,8 @@ export function useLocator(map: L.Map | undefined): void {
             useLocatorStore.getState().openAuth();
         };
 
-        const onNotInGame = (error: EFBackendError) => {
-            clearConnectionBannerTimer();
-            showErr(error);
+        const onNotInGame = (_error: EFBackendError) => {
+            clearInitialConnectionBanner();
             cleanupPolling();
             disableLocatorSync();
         };
@@ -545,6 +544,8 @@ export function useLocator(map: L.Map | undefined): void {
         const boot = () => {
             const config = parseTrackerConfig();
             if (!config) {
+                initialConnectionBannerShownRef.current = false;
+                clearInitialConnectionBanner();
                 useLocatorStore.getState().setViewMode('off');
                 return;
             }
@@ -558,10 +559,11 @@ export function useLocator(map: L.Map | undefined): void {
 
             const applyPositionUpdate = (payload: PositionResponse['data']) => {
                 if (payload.isOnline === false) {
-                    clearConnectionBannerTimer();
-                    useLocatorStore.getState().showBanner('locator.errors.19001');
+                    clearInitialConnectionBanner();
                     return;
                 }
+
+                clearInitialConnectionBanner();
 
                 const locator = convertEFPosition(payload);
                 const converted = convertGamePosition(locator);
@@ -656,17 +658,30 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             const scheduleNextPoll = (delayMs: number) => {
-                if (!trackerRunningRef.current || disposed) return;
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
                 if (pollTimerRef.current !== null) {
                     window.clearTimeout(pollTimerRef.current);
                 }
                 pollTimerRef.current = window.setTimeout(() => {
+                    pollTimerRef.current = null;
+                    if (!trackerRunningRef.current || !isCurrentSession()) return;
                     void pollOnce();
                 }, delayMs);
             };
 
+            const scheduleSocketReconnect = (delayMs: number) => {
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
+                if (pollTimerRef.current !== null) {
+                    window.clearTimeout(pollTimerRef.current);
+                }
+                pollTimerRef.current = window.setTimeout(() => {
+                    pollTimerRef.current = null;
+                    if (!trackerRunningRef.current || !isCurrentSession()) return;
+                    startPositionSocket();
+                }, delayMs);
+            };
+
             const retryExpiredCredentials = (error: EFBackendError) => {
-                clearConnectionBannerTimer();
                 showErr(error);
                 cleanupPolling();
                 if (errCode(error) === 10002) {
@@ -678,12 +693,12 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             const pollOnce = async () => {
-                if (!trackerRunningRef.current || disposed) return;
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
 
                 try {
                     const response = await getEFPosition({ includeSocketTicket: true });
-                    if (disposed || !trackerRunningRef.current) return;
-                    socketTicketRef.current = response.socketTicket ?? null;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    updateSocketTicket(response.socketTicket);
                     applyPositionUpdate(response.data);
                     if (response.data.isOnline === false) {
                         scheduleNextPoll((config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) * 3);
@@ -694,7 +709,7 @@ export function useLocator(map: L.Map | undefined): void {
                         scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
                     }
                 } catch (error) {
-                    if (disposed || !trackerRunningRef.current) return;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
                     if (!(error instanceof EFBackendError)) {
                         disableLocatorSync();
                         return;
@@ -711,25 +726,24 @@ export function useLocator(map: L.Map | undefined): void {
             };
 
             const startPositionSocket = () => {
-                if (disposed || !trackerRunningRef.current || socketRef.current) return;
+                if (!isCurrentSession() || !trackerRunningRef.current || socketRef.current) return;
                 if (typeof WebSocket === 'undefined') {
                     scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
                     return;
                 }
 
-                showConnectionStatus('connecting');
                 let sawPosition = false;
+                let ticketRejected = false;
                 const socket = openEFPositionSocket({
                     socketTicket: socketTicketRef.current,
                 });
                 socketRef.current = socket;
 
                 socket.addEventListener('message', (event) => {
-                    if (disposed) return;
+                    if (!isCurrentSession() || socketRef.current !== socket) return;
                     try {
                         const message = JSON.parse(String(event.data)) as EFPositionSocketMessage;
                         if (message.type === 'status') {
-                            showConnectionStatus(message.status === 'reconnecting' ? 'connecting' : message.status);
                             return;
                         }
                         if (message.type === 'position') {
@@ -745,6 +759,12 @@ export function useLocator(map: L.Map | undefined): void {
                                 code: message.error.code ?? 'LOCATOR_STREAM_ERROR',
                                 details: message.error.details,
                             });
+                            if (error.code === 'LOCATOR_SOCKET_TICKET_INVALID') {
+                                ticketRejected = true;
+                                updateSocketTicket(null);
+                                socket.close(1000, 'locator ticket refresh');
+                                return;
+                            }
                             if (onUpstream(error, retryExpiredCredentials)) {
                                 socket.close(1000, 'locator upstream state changed');
                             }
@@ -754,22 +774,29 @@ export function useLocator(map: L.Map | undefined): void {
                     }
                 });
 
-                socket.addEventListener('close', () => {
-                    if (socketRef.current === socket) {
-                        socketRef.current = null;
+                socket.addEventListener('close', (event) => {
+                    if (socketRef.current !== socket) return;
+                    socketRef.current = null;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    if (event.code === 1008) {
+                        ticketRejected = true;
+                        updateSocketTicket(null);
                     }
-                    if (disposed || !trackerRunningRef.current) return;
-                    if (sawPosition) {
-                        socketReconnectAttemptRef.current = 0;
-                        scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
-                        return;
-                    }
+                    if (sawPosition) socketReconnectAttemptRef.current = 0;
 
                     const attempt = socketReconnectAttemptRef.current;
                     socketReconnectAttemptRef.current += 1;
                     const delay = attempt < LOCATOR_SOCKET_RETRY_DELAYS_MS.length
                         ? LOCATOR_SOCKET_RETRY_DELAYS_MS[attempt]
                         : LOCATOR_SOCKET_STEADY_RETRY_MS;
+                    if (selectLocatorRecovery({
+                        ticket: socketTicketRef.current,
+                        ticketIssuedAt: socketTicketIssuedAtRef.current,
+                        ticketRejected,
+                    }) === 'socket') {
+                        scheduleSocketReconnect(delay);
+                        return;
+                    }
                     scheduleNextPoll(delay);
                 });
 
@@ -785,17 +812,17 @@ export function useLocator(map: L.Map | undefined): void {
             window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
 
             trackerRunningRef.current = true;
-            showConnectionStatus('connecting');
+            showInitialConnectionBanner();
             void getEFPosition({ includeBinding: true, includeSocketTicket: true })
                 .then((response) => {
-                    if (disposed || !trackerRunningRef.current) return;
-                    socketTicketRef.current = response.socketTicket ?? null;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    updateSocketTicket(response.socketTicket);
                     applyPositionUpdate(response.data);
                     useLocatorStore.getState().setViewMode('tracking');
                     startPositionSocket();
                 })
                 .catch((error: unknown) => {
-                    if (disposed || !trackerRunningRef.current) return;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
                     if (error instanceof EFBackendError) {
                         if (onUpstream(error, retryExpiredCredentials)) {
                             return;
@@ -818,15 +845,13 @@ export function useLocator(map: L.Map | undefined): void {
 
         return () => {
             disposed = true;
+            if (sessionGenerationRef.current === sessionGeneration) {
+                sessionGenerationRef.current += 1;
+            }
             window.removeEventListener('pagehide', onPageHide);
             window.removeEventListener('pageshow', onPageShow);
-            clearConnectionBannerTimer();
             cleanupAnimation();
-            cleanupPolling();
-            if (socketRef.current) {
-                socketRef.current.close(1000, 'locator disposed');
-                socketRef.current = null;
-            }
+            cleanupPolling(parseTrackerConfig() ? 'locator disposed' : 'locator stopped');
 
             map.off('talos:regionSwitched', onRegionSwitched);
             map.off('talos:subregionSwitched', onSubregionSwitched);
