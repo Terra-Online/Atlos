@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "약관 및 저장소",
+    "profile": "사용자 설정",
+    "auth": "회원가입 / 로그인",
     "hideUI": "UI 숨기기",
     "notification": "알림",
     "darkmode": "어두운 모드로 전환",
@@ -179,7 +180,7 @@
       "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> 항목에 {count, plural, one {관련 업데이트 #개가} other {관련 업데이트 #개가}} 있습니다."
     }
   },
-  "tos": {
+  "storage": {
     "title": "약관 및 저장소",
     "calculating": "저장소 사용량 계산 중…",
     "policy": "<p>자동 로그인 정보는 Cookie에, UI 설정과 마커 진행도는 LocalStorage에, 언어별 글꼴과 이미지는 CacheStorage에 저장됩니다. 덕분에 다음 방문부터 더 빠르게 페이지를 열 수 있고 오프라인에서도 사이트를 이용할 수 있습니다.</p><p>사이트의 로컬 데이터를 삭제하면 기기의 저장 공간을 확보할 수 있습니다. 다만 다음 방문 시 <span class=\"keyword\">데이터를 다시 불러오는 데 시간이 더 걸릴 수 있습니다</span>. 사이트 저장 기능을 끄면 다음 이용을 위해 <span class=\"keyword\">설정과 진행도를 자동으로 저장할 수 없습니다</span>.</p><p>이 데이터는 서버로 전송되지 않습니다.</p><p>로컬 저장 기능의 사용 여부는 직접 선택할 수 있습니다.</p>",
@@ -242,7 +243,7 @@
     "scale": "<span class=\"keyword\">줌 컨트롤</span>을 사용하여 지도 줌을 확인하고 조작합니다.<br>휠이나 트랙패드를 사용하여 줌할 수 있습니다. <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> 버튼이나 줌 바의 임의의 위치를 클릭하여 줌할 수도 있습니다.",
     "filterList": "<span class=\"keyword\">마커 유형 목록</span>에는 현재 선택한 마커 유형이 표시됩니다. 아이콘을 클릭하면 선택을 해제할 수 있습니다.",
     "headbar": "지도 설정과 관련된 스위치는 <span class=\"keyword\">상단 바</span>에 있습니다.",
-    "tos": "웹사이트의 <span class=\"keyword\">서비스 약관</span> 및 <span class=\"keyword\">데이터 관리</span>.",
+    "auth": "OEM 계정에 <span class=\"keyword\">가입</span>하거나 <span class=\"keyword\">로그인</span>하여 온라인 기능을 이용할 수 있습니다.",
     "hideUI": "스크린샷을 찍거나 가장자리 마커를 확인하기 위해 <span class=\"keyword\">웹사이트 UI 숨기기</span>.",
     "notification": "<span class=\"keyword\">알림</span>을 열어 기여한 콘텐츠와 관련된 상호작용 및 검토 결과를 확인하세요.",
     "darkMode": "현재 <span class=\"keyword\">조명 모드</span>를 전환합니다.",

@@ -1,7 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import Modal from '@/component/modal/modal';
-import ToSIcon from '../../assets/logos/tos.svg?react';
-import styles from './tos.module.scss';
+import styles from './storage.module.scss';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import TreeMap from './treeMap/treeMap';
@@ -13,13 +11,7 @@ import { useUserRecordStore } from '@/store/userRecord';
 import { replacePointProgressFromExternal } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
 
-export interface ToSProps {
-  open: boolean;
-  onClose: () => void;
-  onChange?: (open: boolean) => void;
-}
-
-const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
+export const StorageSection: React.FC = () => {
   const t = useTranslateUI();
   const { type: deviceType } = useDevice();
   const [selectedPath, setSelectedPath] = useState<string[] | null>(null);
@@ -163,17 +155,9 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
   }, []);
 
   return (
-    <Modal
-      open={open}
-      size="full"
-      onClose={onClose}
-      onChange={onChange}
-      title={t('tos.title')}
-      fontRuns={[{ faces: ['b'], text: '' }]}
-      icon={<ToSIcon aria-hidden="true" />}
-    >
+    <>
       <div className={styles.storageContainer}>
-          {parse(t('tos.policy'))}
+          {parse(t('storage.policy'))}
       </div>
       <div className={styles.storageController} data-device={deviceType}>
         <div className={styles.storageMap}>
@@ -189,7 +173,7 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
               disabled={!selectedPath}
             />
             <Button 
-              text={t('common.clear') + ' ' + t('tos.filtersAndMarkers')}
+              text={t('common.clear') + ' ' + t('storage.filtersAndMarkers')}
               onClick={(e) => handleActionClick(e, 'markers-filters')} 
               buttonStyle="square"
               schema="light"
@@ -204,21 +188,21 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
             />
             <div className={`${styles.warning} ${pendingAction ? styles.visible : ''}`}>
               <div className={styles.warningInner}>
-                {parse(t('tos.warning'))}
+                {parse(t('storage.warning'))}
               </div>
             </div>
           </div>
         </div>
         <div className={styles.dataTransfer} data-device={deviceType}>
           <Button
-            text={t('tos.export')}
+            text={t('storage.export')}
             onClick={handleExport}
             buttonStyle="square"
             schema="light"
             width="100%"
           />
           <Button
-            text={t('tos.import')}
+            text={t('storage.import')}
             onClick={handleImport}
             buttonStyle="square"
             schema="light"
@@ -232,8 +216,8 @@ const TOSModal: React.FC<ToSProps> = ({ open, onClose, onChange }) => {
             style={{ display: 'none' }}
           />
         </div>
-    </Modal>
+    </>
   );
 };
 
-export default React.memo(TOSModal);
+export default React.memo(StorageSection);

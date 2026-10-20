@@ -232,9 +232,9 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
             disableBeacon: true,
         },
         {
-            id: 'STEP-12_tos',
-            target: '[data-guide="tos"]',
-            content: parse(t('guide.tos')),
+            id: 'STEP-12_auth',
+            target: '[data-guide="auth"]',
+            content: parse(t('guide.auth')),
             placement: 'bottom',
             disableBeacon: true,
         },

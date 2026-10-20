@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Nutzungsbedingungen & Speicher",
+    "profile": "Benutzereinstellungen",
+    "auth": "Registrieren / Anmelden",
     "hideUI": "Benutzeroberfläche ausblenden",
     "notification": "Benachrichtigungen",
     "darkmode": "In den Dunkelmodus wechseln",
@@ -179,7 +180,7 @@
       "multiple": "Für <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> gibt es {count, plural, one {# zugehörige Aktualisierung} other {# zugehörige Aktualisierungen}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Bedingungen & Speicher",
     "calculating": "Speichernutzung wird berechnet...",
     "policy": "<p>Wir verwenden Cookies, um Ihre automatischen Anmeldeinformationen zu speichern; LocalStorage, um Ihre UI-Einstellungen und den Marker-Fortschritt zu speichern; und CacheStorage, um Schriftdaten und Bildressourcen für Ihre Sprache zu speichern. Diese Dateien ermöglichen Ihnen in Zukunft einen schnelleren Zugriff auf die Website und gewährleisten deren Verfügbarkeit im Offline-Modus.</p><p>Das Löschen des lokalen Speichers der Website kann Platz auf Ihrem Gerät sparen. Allerdings <span class=\"keyword\">kann das Laden dieser Dateien länger dauern</span>, wenn Sie die Website erneut besuchen; wenn Sie den Website-Speicher deaktivieren, kann die Website <span class=\"keyword\">Ihre Daten nicht automatisch für die nächste Nutzung aufzeichnen</span>.</p><p>Wir melden Ihre Daten nicht an den Server, sodass Sie sich keine Sorgen um Datenschutzprobleme machen müssen.</p><p>Sie können selbst entscheiden, ob Sie den lokalen Speicher aktivieren möchten.</p>",
@@ -242,7 +243,7 @@
     "scale": "Verwenden Sie die <span class=\"keyword\">Zoomsteuerung</span>, um den Kartenzoom anzuzeigen und zu manipulieren.<br>Mausrad oder Trackpad können zum Zoomen verwendet werden. Sie können auch zoomen, indem Sie auf die Tasten <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> oder irgendwo auf die Zoomleiste klicken.",
     "filterList": "Die <span class=\"keyword\">Markierungsliste</span> zeigt die von Ihnen ausgewählten Markierungstypen; klicken Sie auf das Symbol, um die Auswahl aufzuheben.",
     "headbar": "Schalter, die sich auf die Karteneinstellungen beziehen, befinden sich in der <span class=\"keyword\">Kopfleiste</span>.",
-    "tos": "Die <span class=\"keyword\">Nutzungsbedingungen</span> und das <span class=\"keyword\">Datenmanagement</span> der Website.",
+    "auth": "<span class=\"keyword\">Registrieren</span> Sie sich für ein OEM-Konto oder <span class=\"keyword\">melden Sie sich an</span>, um unsere Online-Funktionen zu nutzen.",
     "hideUI": "<span class=\"keyword\">Website-UI ausblenden</span>, um Screenshots zu machen oder Randmarkierungen anzuzeigen.",
     "notification": "Öffne die <span class=\"keyword\">Benachrichtigungen</span>, um Interaktionen und Prüfergebnisse zu deinen Beiträgen anzuzeigen.",
     "darkMode": "Schalten Sie den aktuellen <span class=\"keyword\">Umgebungslichtmodus</span> um.",

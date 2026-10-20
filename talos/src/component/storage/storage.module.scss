@@ -2,8 +2,8 @@
 @use '../../styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
-    --tos-text: #{$grey-1};
-    --tos-divider: #{$black-0};
+    --storage-text: #{$grey-1};
+    --storage-divider: #{$black-0};
 
     --warning-bg: #{$grey-1};
     --warning-text: #{$light-2};
@@ -13,8 +13,8 @@
 }
 
 :root[data-theme='dark'] {
-    --tos-text: #{$light-2};
-    --tos-divider: #{$white-1};
+    --storage-text: #{$light-2};
+    --storage-divider: #{$white-1};
 
     --warning-bg: #{$light-1};
     --warning-text: #{$black-1};
@@ -27,7 +27,7 @@
     display: flex;
     flex-direction: column;
     font-size: .925rem;
-    color: var(--tos-text);
+    color: var(--storage-text);
     font-family: "HMSans_EN", "HMSans", "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
     letter-spacing: -0.2px;
     font-weight: 600;
@@ -169,7 +169,7 @@
         left: 0;
         width: 100%;
         height: 2px;
-        background: linear-gradient(to right, transparent, var(--tos-divider), transparent);
+        background: linear-gradient(to right, transparent, var(--storage-divider), transparent);
         opacity: 0.3;
   }
 }

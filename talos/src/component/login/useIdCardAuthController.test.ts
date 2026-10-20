@@ -3,6 +3,7 @@ import { StrictMode, createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '@/store/auth';
 import { useIdCardAuthController } from './useIdCardAuthController';
+import { openOemAccountModal, openOemAuthModal } from './authEvents';
 
 const mocks = vi.hoisted(() => ({ register: vi.fn(), login: vi.fn(), exchange: vi.fn(), refresh: vi.fn(), pause: vi.fn(() => vi.fn()) }));
 vi.mock('@/services/auth', async (original) => ({
@@ -30,6 +31,47 @@ describe('authentication completion', () => {
         mocks.pause.mockClear();
     });
     afterEach(() => { cleanup(); vi.useRealTimers(); });
+
+    it('opens the same profile as the avatar and follows session changes', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser({ ...user, avatar: 3 }));
+        act(() => openOemAccountModal());
+        expect(result.current.profileOpen).toBe(true);
+        expect(result.current.open).toBe(false);
+        expect(result.current.profileName).toBe(user.nickname);
+        expect(result.current.profileAvatar).toBe(3);
+
+        act(() => {
+            result.current.setProfileOpen(false);
+            useAuthStore.getState().clearSessionUser();
+        });
+        act(() => openOemAccountModal());
+        expect(result.current.profileOpen).toBe(false);
+        expect(result.current.open).toBe(true);
+    });
+
+    it.each([['register', false], ['login', true]] as const)(
+        'opens %s for a signed-out account entry with previous login=%s',
+        async (mode, previousLogin) => {
+            if (previousLogin) localStorage.setItem('onceLogin', 'true');
+            const { result } = renderHook(useIdCardAuthController);
+            await act(async () => {});
+            act(() => openOemAccountModal());
+            expect(result.current.open).toBe(true);
+            expect(result.current.activeTab).toBe(mode);
+            expect(result.current.profileOpen).toBe(false);
+        },
+    );
+
+    it('keeps explicit authentication requests on their requested tab', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => openOemAuthModal('login'));
+        expect(result.current.open).toBe(true);
+        expect(result.current.activeTab).toBe('login');
+        expect(result.current.profileOpen).toBe(false);
+    });
 
     it('confirms registration before showing success or waiting for animation', async () => {
         const { result } = renderHook(useIdCardAuthController);

@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Condiciones y almacenamiento",
+    "profile": "Configuración de usuario",
+    "auth": "Registrarse / Iniciar sesión",
     "hideUI": "Ocultar la interfaz de usuario",
     "notification": "Notificaciones",
     "darkmode": "Cambiar a modo oscuro",
@@ -179,7 +180,7 @@
       "multiple": "Tu <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> tiene {count, plural, one {# actualización relacionada} other {# actualizaciones relacionadas}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Términos y Almacenamiento",
     "calculating": "Calculando uso de almacenamiento...",
     "policy": "<p>Usamos cookies para guardar su inicio de sesión automático; LocalStorage para guardar sus preferencias de interfaz de usuario y el progreso de los marcadores; y CacheStorage para almacenar datos de fuentes y recursos de imágenes para su idioma. Estos archivos le permiten acceder al sitio web más rápidamente en el futuro y garantizan su disponibilidad en modo sin conexión.</p><p>Eliminar el almacenamiento local del sitio web puede ahorrar espacio en su dispositivo. Sin embargo, <span class=\"keyword\">la carga de estos archivos puede tardar más</span> cuando vuelva a visitar el sitio web; si deshabilita el almacenamiento del sitio web, el sitio web <span class=\"keyword\">no podrá registrar sus datos automáticamente para su uso posterior</span>.</p><p>No informamos sus datos al servidor, por lo que no necesita preocuparse por problemas de privacidad.</p><p>Puede decidir si desea habilitar el almacenamiento local por usted mismo.</p>",
@@ -242,7 +243,7 @@
     "scale": "Use el <span class=\"keyword\">control de zoom</span> para ver y manipular el zoom del mapa.<br>La rueda de desplazamiento o el panel táctil se pueden usar para hacer zoom. También puede hacer zoom haciendo clic en los botones <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> o en cualquier lugar de la barra de zoom.",
     "filterList": "La <span class=\"keyword\">lista de marcadores</span> muestra los tipos de marcadores que ha seleccionado; haga clic en el icono para anular la selección.",
     "headbar": "Los interruptores relacionados con la configuración del mapa se encuentran en la <span class=\"keyword\">barra superior</span>.",
-    "tos": "Los <span class=\"keyword\">Términos de servicio</span> y la <span class=\"keyword\">Gestión de datos</span> del sitio web.",
+    "auth": "<span class=\"keyword\">Regístrese</span> o <span class=\"keyword\">inicie sesión</span> en una cuenta OEM para usar nuestras funciones en línea.",
     "hideUI": "<span class=\"keyword\">Ocultar la interfaz de usuario del sitio web</span> para tomar capturas de pantalla o ver marcadores de borde.",
     "notification": "Abre las <span class=\"keyword\">notificaciones</span> para ver interacciones y resultados de revisión relacionados con tus contribuciones.",
     "darkMode": "Alternar el <span class=\"keyword\">modo de luz ambiental</span> actual.",

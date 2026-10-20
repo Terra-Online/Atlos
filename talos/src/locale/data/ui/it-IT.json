@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Termini e Archiviazione",
+    "profile": "Impostazioni utente",
+    "auth": "Registrati / Accedi",
     "hideUI": "Nascondi Interfaccia",
     "notification": "Notifiche",
     "darkmode": "Passa alla modalità scura",
@@ -179,7 +180,7 @@
       "multiple": "L'elemento <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ha {count, plural, one {# aggiornamento correlato} other {# aggiornamenti correlati}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Termini e Archiviazione",
     "calculating": "Calcolo utilizzo memoria...",
     "policy": "<p>Utilizziamo i Cookie per memorizzare le informazioni di accesso automatico; LocalStorage per salvare le preferenze dell'interfaccia utente e i progressi dei marcadores; e CacheStorage per archiviare i dati dei font e le risorse immagine per la tua lingua. Questi file ti consentono di accedere al sito web più rapidamente in futuro e garantiscono la disponibilità del sito offline.</p><p>L'eliminazione della memoria locale del sito web può risparmiare spazio sul tuo dispositivo. Tuttavia, <span class=\"keyword\">potrebbe essere necessario più tempo per caricare questi file</span> alla tua prossima visita; se disabiliti la memoria del sito web, il sito <span class=\"keyword\">non sarà in grado di registrare automaticamente i tuoi dati</span> per il prossimo utilizzo.</p><p>Non inviamo i tuoi dati al server, quindi non devi preoccuparti di problemi di privacy.</p><p>Puoi decidere autonomamente se abilitare la memoria locale.</p>",
@@ -242,7 +243,7 @@
     "scale": "Usa il <span class=\"keyword\">controllo dello zoom</span> per visualizzare e manipolare lo zoom della mappa.<br>La rotellina o il trackpad possono essere utilizzati per zoomare. Puoi anche zoomare cliccando sui pulsanti <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> o ovunque sulla barra dello zoom.",
     "filterList": "L'<span class=\"keyword\">elenco dei marcatori</span> mostra i tipi di marcatori selezionati; clicca sull'icona per deselezionarli.",
     "headbar": "Gli interruttori relativi alle impostazioni della mappa si trovano nella <span class=\"keyword\">barra superiore</span>.",
-    "tos": "I <span class=\"keyword\">Termini di servizio</span> e la <span class=\"keyword\">Gestione dei dati</span> del sito web.",
+    "auth": "<span class=\"keyword\">Registrati</span> o <span class=\"keyword\">accedi</span> a un account OEM per usare le nostre funzioni online.",
     "hideUI": "<span class=\"keyword\">Nascondi l'interfaccia utente del sito web</span> per fare screenshot o visualizzare i marcatori ai bordi.",
     "notification": "Apri le <span class=\"keyword\">notifiche</span> per vedere interazioni e risultati della revisione relativi ai tuoi contributi.",
     "darkMode": "Attiva/disattiva la <span class=\"keyword\">modalità luce ambientale</span> corrente.",

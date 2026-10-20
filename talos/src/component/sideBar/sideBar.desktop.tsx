@@ -47,6 +47,7 @@ import {
     useDesktopDrawerSnapIndex,
     useIncrementLayoutVersion,
     useUiPrefsHydrated,
+    useSetDesktopDrawerSnapIndex,
     useSetSidebarOpen,
     useSetSidebarWidth,
     useSetTriggerBoundary,
@@ -114,6 +115,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
     const setTrigBoundary = useSetTriggerBoundary();
     const setTrigOptimal = useSetTriggerlabelName();
     const drawerSnapIndex = useDesktopDrawerSnapIndex();
+    const setDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const uiPrefsHydrated = useUiPrefsHydrated();
 
     const [supportOpen, setSupportOpen] = useState(false);
@@ -265,9 +267,10 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                         draggable={'false'}
                     />
                 </div>
-                {hasOpened && <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
-                    <SearchDesktop />
-                    <div className={styles.filters}>
+                <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
+                    {hasOpened && <>
+                        <SearchDesktop />
+                        <div className={styles.filters}>
                         <MarkFilterDragProvider>
                             {VERSION_NEW_FILTER_GROUPS.map((group) => (
                                 <MarkFilter
@@ -370,13 +373,14 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                                     );
                                 })}
                         </MarkFilterDragProvider>
-                    </div>
+                        </div>
+                    </>}
                     <div className={styles.idCardContainer}>
                         <Suspense fallback={null}>
                             <IDCard />
                         </Suspense>
                     </div>
-                </div>}
+                </div>
                 <div className={styles.copyright}>
                     <a href='https://beian.miit.gov.cn/'>
                         {t('footer.icp')}
@@ -451,6 +455,7 @@ const SideBarDesktop = ({ currentRegion, onToggle, visible = true }: SideBarProp
                     snap={['0rem', '9.375rem']}
                     snapThreshold={[50, 50]}
                     snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
+                    onSnapChange={setDrawerSnapIndex}
                     handleSize="1.75rem"
                     className={drawerStyles.triggerDrawer}
                     handleClassName={drawerStyles.triggerDrawerHandle}

@@ -17,6 +17,7 @@ import {
 } from '@/services/auth';
 import { getVerificationDigits, resolveErrorCode, type AuthMode, type AuthValues } from './access/authState';
 import { normalizeAvatarIndex } from './avatarConfig';
+import { OEM_ACCOUNT_OPEN_EVENT, OEM_AUTH_OPEN_EVENT, type OemAuthOpenDetail } from './authEvents';
 import { useAuthStore } from '@/store/auth';
 import { getCachedSession } from '@/services/cache/backend';
 import { pauseSessionRefresh, refreshSessionUser, startSessionRefresh } from '@/services/auth/sessionLifecycle';
@@ -295,6 +296,20 @@ export const useIdCardAuthController = () => {
     }
     openAuthModal(hasLoggedInBefore ? 'login' : 'register');
   }, [authReady, hasLoggedInBefore, openAuthModal, openProfileModal, sessionUser]);
+
+  useEffect(() => {
+    const handleAuthOpen = (event: Event) => {
+      const detail = (event as CustomEvent<OemAuthOpenDetail>).detail;
+      openAuthModal(detail?.mode ?? 'login');
+    };
+
+    window.addEventListener(OEM_AUTH_OPEN_EVENT, handleAuthOpen);
+    window.addEventListener(OEM_ACCOUNT_OPEN_EVENT, handleAvatarClick);
+    return () => {
+      window.removeEventListener(OEM_AUTH_OPEN_EVENT, handleAuthOpen);
+      window.removeEventListener(OEM_ACCOUNT_OPEN_EVENT, handleAvatarClick);
+    };
+  }, [handleAvatarClick, openAuthModal]);
 
   const handleOAuthClick = useCallback(async (provider: OAuthProvider) => {
     if (isSubmitting) return;

@@ -10,6 +10,7 @@ import styles from './headbar.module.scss';
 
 interface HeadItemProps {
     icon: React.FC;
+    iconScale?: number;
     onClick?: () => void;
     tooltip?: React.ReactNode;
     ariaLabel?: string;
@@ -22,6 +23,7 @@ interface HeadItemProps {
 
 const HeadItem = ({
     icon: Icon,
+    iconScale = 1,
     onClick,
     tooltip = '',
     ariaLabel,
@@ -50,7 +52,12 @@ const HeadItem = ({
             tabIndex={compactHidden ? -1 : undefined}
             data-guide={guideKey}
         >
-            <div className={styles.headbarIcon}>{Icon && <Icon />}</div>
+            <div
+                className={styles.headbarIcon}
+                style={{ '--headbar-icon-scale': iconScale } as React.CSSProperties}
+            >
+                {Icon && <Icon />}
+            </div>
             {badge && <span className={styles.badge} data-badge={guideKey} />}
         </button>
     );

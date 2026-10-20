@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Villkor & Lagring",
+    "profile": "Användarinställningar",
+    "auth": "Registrera / Logga in",
     "hideUI": "Dölj UI",
     "notification": "Aviseringar",
     "darkmode": "Växla till mörkt läge",
@@ -179,7 +180,7 @@
       "multiple": "Ditt objekt <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> har {count, plural, one {# relaterad uppdatering} other {# relaterade uppdateringar}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Villkor & Lagring",
     "calculating": "Beräknar lagringsanvändning...",
     "policy": "<p>Vi använder Cookies för att lagra din inloggningsinformation; LocalStorage för att lagra dina UI-preferenser och markörframsteg; samt CacheStorage för att lagra typsnittsdata och bildresurser för ditt språk. Dessa filer gör att du kan komma åt webbplatsen snabbare i framtiden och säkerställer webbplatsens tillgänglighet när du är offline.</p><p>Att radera webbplatsens lokala lagring kan spara utrymme på din enhet. Dock <span class=\"keyword\">kan det ta längre tid att ladda dessa filer</span> nästa gång du besöker sidan; om du inaktiverar webbplatslagring kommer webbplatsen <span class=\"keyword\">inte automatiskt att kunna spara dina data</span> för din nästa användning.</p><p>Vi rapporterar inte dina data till servern, så du behöver inte oroa dig för integritetsfrågor.</p><p>Du kan själv bestämma om du vill aktivera lokal lagring.</p>",
@@ -242,7 +243,7 @@
     "scale": "Använd <span class=\"keyword\">Zoomkontrollen</span> för att se och hantera kartzoom.<br>Scrollhjul eller pekplatta kan användas för att zooma. Du kan också zooma genom att klicka på <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> knapparna eller var som helst på zoomfältet.",
     "filterList": "<span class=\"keyword\">Markörlistan</span> visar de markörtyper du har valt; klicka på ikonen för att avmarkera.",
     "headbar": "Inställningar relaterade till kartan finns i <span class=\"keyword\">toppmenyn</span>.",
-    "tos": "Webbplatsens <span class=\"keyword\">Användarvillkor</span> och <span class=\"keyword\">Datahantering</span>.",
+    "auth": "<span class=\"keyword\">Registrera dig</span> eller <span class=\"keyword\">logga in</span> på ett OEM-konto för att använda våra onlinefunktioner.",
     "hideUI": "<span class=\"keyword\">Dölj Webbplatsens UI</span> för att ta skärmdumpar eller se kantmarkörer.",
     "notification": "Öppna <span class=\"keyword\">aviseringar</span> för att se interaktioner och granskningsresultat för dina bidrag.",
     "darkMode": "Växla det nuvarande <span class=\"keyword\">omgivande ljusläget</span>.",

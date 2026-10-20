@@ -97,9 +97,9 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             delay: 350,
         },
         {
-            id: 'MSTEP-2_tos',
-            target: '[data-guide="tos"]',
-            content: parse(t('guide.tos')),
+            id: 'MSTEP-2_auth',
+            target: '[data-guide="auth"]',
+            content: parse(t('guide.auth')),
             placement: 'bottom',
             disableBeacon: true,
         },

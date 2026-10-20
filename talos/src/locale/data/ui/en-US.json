@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Terms & Storage",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Hide UI",
     "notification": "Notifications",
     "darkmode": "Switch to dark mode",
@@ -179,7 +180,7 @@
       "multiple": "{count, plural, one {There is # status update} other {There are # status updates}} for your <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Terms & Storage",
     "calculating": "Calculating storage usage...",
     "policy": "<p>We use Cookies to store your auto-login information; LocalStorage to store your UI preferences and marker progress; and CacheStorage to store font data and image resources for your language. These files allow you to access the website more quickly in the future and ensure the website's availability when offline.</p><p>Deleting the website's local storage can save space on your device. However, <span class=\"keyword\">it may take longer to load these files</span> when you visit again; if you disable website storage, the website <span class=\"keyword\">will not be able to automatically record your data</span> for your next use.</p><p>We do not report your data to the server, so you do not need to worry about privacy issues.</p><p>You can decide whether to enable local storage.</p>",
@@ -242,7 +243,7 @@
     "scale": "Use the <span class=\"keyword\">Zoom Control</span> to view and manipulate map zoom.<br>Scroll wheel or trackpad can be used to zoom. You can also zoom by clicking the <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> buttons or anywhere on the zoom bar.",
     "filterList": "The <span class=\"keyword\">Marker List</span> lists the markers you have selected; click the icon to deselect.",
     "headbar": "Switches related to map settings are located in the <span class=\"keyword\">header bar</span>.",
-    "tos": "The website's <span class=\"keyword\">Terms of Service</span> and <span class=\"keyword\">Data Management</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Hide Website UI</span> to take screenshots or view edge markers.",
     "notification": "Open <span class=\"keyword\">notifications</span> to view interactions and review results related to your contributions.",
     "darkMode": "Toggle the current <span class=\"keyword\">ambient light mode</span>.",

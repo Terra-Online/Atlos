@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "利用規約・ストレージ",
+    "profile": "ユーザー設定",
+    "auth": "登録 / ログイン",
     "hideUI": "UIを非表示",
     "notification": "通知",
     "darkmode": "ダークモードに切り替え",
@@ -179,7 +180,7 @@
       "multiple": "<subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag>に{count, plural, one {#件の更新} other {#件の更新}}があります。"
     }
   },
-  "tos": {
+  "storage": {
     "title": "利用規約・ストレージ",
     "calculating": "ストレージ使用量を計算中…",
     "policy": "<p>自動ログイン情報は Cookie、UI の設定とマーカーの進捗は LocalStorage、言語ごとのフォントや画像は CacheStorage に保存されます。これにより、次回以降の表示が速くなり、オフラインでもサイトを利用できます。</p><p>サイトのローカルデータを削除すると、端末の空き容量を増やせます。ただし、次回アクセス時は<span class=\"keyword\">データの読み込みに時間がかかる場合があります</span>。サイトのストレージを無効にすると、次回のために<span class=\"keyword\">設定や進捗を自動保存できなくなります</span>。</p><p>これらのデータがサーバーへ送信されることはありません。</p><p>ローカルストレージを使用するかどうかは、ご自身で選択できます。</p>",
@@ -242,7 +243,7 @@
     "scale": "<span class=\"keyword\">ズームコントロール</span>では、現在の倍率を確認したり変更したりできます。<br>マウスホイールやトラックパッドのほか、<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>ボタン、ズームバーの任意の位置をクリックして拡大・縮小できます。",
     "filterList": "<span class=\"keyword\">マーカー一覧</span>には、現在選択しているマーカーが表示されます。アイコンをクリックすると選択を解除できます。",
     "headbar": "マップ全体に関する設定は<span class=\"keyword\">トップバー</span>にあります。",
-    "tos": "サイトの<span class=\"keyword\">利用規約</span>と<span class=\"keyword\">データ管理</span>を確認できます。",
+    "auth": "OEM アカウントに<span class=\"keyword\">登録</span>または<span class=\"keyword\">ログイン</span>して、オンライン機能を利用できます。",
     "hideUI": "スクリーンショットを撮るときや画面端のマーカーを確認するときは、<span class=\"keyword\">UIを非表示</span>にできます。",
     "notification": "<span class=\"keyword\">お知らせ</span>では、投稿への反応や審査結果を確認できます。",
     "darkMode": "<span class=\"keyword\">表示テーマ</span>をライトとダークで切り替えます。",

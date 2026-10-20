@@ -17,6 +17,7 @@ import {
 import { applyTheme, startSystemFollow } from '@/platform/theme';
 import { Shortcut } from '@/component/shortcut';
 import { getShortcutConfig, type ShortcutEntry } from './shortcuts';
+import StorageSection from '@/component/storage/storage';
 
 export interface SettingsProps {
     open: boolean;
@@ -30,7 +31,7 @@ const THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
 
 interface SectionProps {
     titleKey: string;
-    hintKey: string;
+    hintKey?: string;
     children: React.ReactNode;
 }
 
@@ -40,7 +41,7 @@ const SettingsSection: React.FC<SectionProps> = ({ titleKey, hintKey, children }
         <div className={styles.settingsSection}>
             <div className={styles.sectionHeader}>
                 <span className={styles.sectionTitle}>{t(titleKey)}</span>
-                <span className={styles.sectionHint}>{parse(t(hintKey))}</span>
+                {hintKey && <span className={styles.sectionHint}>{parse(t(hintKey))}</span>}
             </div>
             {children}
         </div>
@@ -172,6 +173,10 @@ const SettingsModal: React.FC<SettingsProps> = ({ open, onClose, onChange }) => 
                             <ShortcutRow key={entry.id} entry={entry} />
                         ))}
                     </div>
+                </SettingsSection>
+
+                <SettingsSection titleKey="storage.title">
+                    <StorageSection />
                 </SettingsSection>
             </div>
         </Modal>

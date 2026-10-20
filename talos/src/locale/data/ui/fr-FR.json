@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Conditions et stockage",
+    "profile": "Paramètres utilisateur",
+    "auth": "S’inscrire / Se connecter",
     "hideUI": "Masquer l’interface utilisateur",
     "notification": "Notifications",
     "darkmode": "Passer en mode sombre",
@@ -179,7 +180,7 @@
       "multiple": "Votre <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> a reçu {count, plural, one {# mise à jour associée} other {# mises à jour associées}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Conditions et Stockage",
     "calculating": "Calcul de l'utilisation du stockage...",
     "policy": "<p>Nous utilisons des Cookies pour stocker vos informations de connexion automatique ; LocalStorage pour enregistrer vos préférences d'interface et la progression des marqueurs ; et CacheStorage pour stocker les données de police et les ressources d'image pour votre langue. Ces fichiers vous permettent d'accéder au site web plus rapidement à l'avenir et garantissent sa disponibilité hors ligne.</p><p>La suppression du stockage local du site web peut libérer de l'espace sur votre appareil. Cependant, <span class=\"keyword\">le chargement de ces fichiers peut prendre plus de temps</span> lors de votre prochaine visite ; si vous désactivez le stockage du site web, celui-ci <span class=\"keyword\">ne pourra pas enregistrer automatiquement vos données</span> pour votre prochaine utilisation.</p><p>Nous ne transmettons pas vos données au serveur, vous n'avez donc pas à vous soucier des problèmes de confidentialité.</p><p>Vous pouvez décider vous-même d'activer ou non le stockage local.</p>",
@@ -242,7 +243,7 @@
     "scale": "Utilisez le <span class=\"keyword\">contrôle de zoom</span> pour afficher et manipuler le zoom de la carte.<br>La molette ou le pavé tactile peuvent être utilisés pour zoomer. Vous pouvez également zoomer en cliquant sur les boutons <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ou n'importe où sur la barre de zoom.",
     "filterList": "La <span class=\"keyword\">liste des marqueurs</span> affiche les types de marqueurs sélectionnés ; cliquez sur l’icône pour les désélectionner.",
     "headbar": "Les commutateurs liés aux paramètres de la carte sont situés dans la <span class=\"keyword\">barre supérieure</span>.",
-    "tos": "Les <span class=\"keyword\">Conditions d'utilisation</span> et la <span class=\"keyword\">Gestion des données</span> du site Web.",
+    "auth": "<span class=\"keyword\">Inscrivez-vous</span> ou <span class=\"keyword\">connectez-vous</span> à un compte OEM pour utiliser nos fonctions en ligne.",
     "hideUI": "<span class=\"keyword\">Masquer l'interface utilisateur</span> pour prendre des captures d'écran ou voir les marqueurs en bordure.",
     "notification": "Ouvrez les <span class=\"keyword\">notifications</span> pour consulter les interactions et les résultats de vérification liés à vos contributions.",
     "darkMode": "Basculer le <span class=\"keyword\">mode d'éclairage ambiant</span> actuel.",

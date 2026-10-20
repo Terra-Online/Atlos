@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Şartlar ve Depolama",
+    "profile": "Kullanıcı ayarları",
+    "auth": "Kayıt ol / Giriş yap",
     "hideUI": "Arayüzü Gizle",
     "notification": "Bildirimler",
     "darkmode": "Karanlık moda geç",
@@ -179,7 +180,7 @@
       "multiple": "Size ait <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> için {count, plural, one {# ilgili güncelleme} other {# ilgili güncelleme}} var."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Şartlar ve Depolama",
     "calculating": "Depolama kullanımı hesaplanıyor...",
     "policy": "<p>Otomatik giriş bilgilerinizi depolamak için Çerezleri; arayüz tercihlerinizi ve işaretçi ilerlemenizi depolamak için LocalStorage'ı; diliniz için yazı tipi verilerini ve görsel kaynaklarını depolamak için CacheStorage'ı kullanıyoruz. Bu dosyalar, web sitesine daha hızlı erişmenizi ve çevrimdışı olduğunuzda da kullanılabilirliğini sağlar.</p><p>Web sitesinin yerel depolamasını silmek cihazınızda yer açabilir. Ancak, tekrar ziyaret ettiğinizde <span class=\"keyword\">bu dosyaların yüklenmesi daha uzun sürebilir</span>; web sitesi depolamasını devre dışı bırakırsanız, web sitesi bir sonraki kullanımınız için <span class=\"keyword\">verilerinizi otomatik olarak kaydedemeyecektir</span>.</p><p>Verilerinizi sunucuya raporlamıyoruz, gizlilik sorunları hakkında endişelenmenize gerek yok.</p>",
@@ -242,7 +243,7 @@
     "scale": "<span class=\"keyword\">Yakınlaştırma Kontrolünü</span> kullanarak haritayı ayarlayın.",
     "filterList": "<span class=\"keyword\">İşaretçi Listesi</span>, seçtiğiniz işaretçi türlerini gösterir; seçimi kaldırmak için simgeye tıklayın.",
     "headbar": "Harita ayarları <span class=\"keyword\">üst çubukta</span> bulunur.",
-    "tos": "Web sitesinin <span class=\"keyword\">Hizmet Şartları</span> ve <span class=\"keyword\">Veri Yönetimi</span>.",
+    "auth": "Çevrimiçi özelliklerimizi kullanmak için bir OEM hesabına <span class=\"keyword\">kayıt olun</span> veya <span class=\"keyword\">giriş yapın</span>.",
     "hideUI": "Ekran görüntüsü almak için <span class=\"keyword\">Arayüzü Gizle</span>.",
     "notification": "Katkılarınızla ilgili etkileşimleri ve inceleme sonuçlarını görmek için <span class=\"keyword\">bildirimleri</span> açın.",
     "darkMode": "Mevcut <span class=\"keyword\">ortam ışığı modunu</span> değiştir.",

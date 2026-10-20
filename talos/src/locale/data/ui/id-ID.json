@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Ketentuan & Penyimpanan",
+    "profile": "Pengaturan pengguna",
+    "auth": "Daftar / Masuk",
     "hideUI": "Sembunyikan UI",
     "notification": "Notifikasi",
     "darkmode": "Beralih ke mode gelap",
@@ -179,7 +180,7 @@
       "multiple": "Ada {count, plural, one {# pembaruan terkait} other {# pembaruan terkait}} untuk <subjectTag>{subject}</subjectTag> Anda <pointTag>{point}</pointTag>."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Ketentuan & Penyimpanan",
     "calculating": "Menghitung penggunaan penyimpanan...",
     "policy": "<p>Kami menggunakan Cookie untuk menyimpan kredensial login otomatis Anda; LocalStorage untuk menyimpan preferensi UI dan progres penanda; serta CacheStorage untuk menyimpan data font dan sumber daya gambar untuk bahasa Anda. File-file ini memungkinkan Anda mengakses situs web lebih cepat di masa mendatang dan memastikan ketersediaan dalam mode offline.</p><p>Menghapus penyimpanan lokal situs web dapat menghemat ruang di perangkat Anda. Namun, <span class=\"keyword\">memuat file-file ini mungkin akan membutuhkan waktu lebih lama</span> saat Anda mengunjungi kembali situs web; jika Anda menonaktifkan penyimpanan situs web, maka situs <span class=\"keyword\">tidak dapat merekam data Anda secara otomatis untuk penggunaan berikutnya</span>.</p><p>Kami tidak mengirimkan data Anda ke server, sehingga Anda tidak perlu khawatir tentang masalah privasi.</p><p>Anda dapat memutuskan sendiri apakah ingin mengaktifkan penyimpanan lokal.</p>",
@@ -242,7 +243,7 @@
     "scale": "Gunakan <span class=\"keyword\">Kontrol Zoom</span> untuk melihat dan memanipulasi zoom peta.<br>Roda gulir atau trackpad dapat digunakan untuk memperbesar. Anda juga dapat memperbesar dengan mengklik tombol <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> atau di mana saja pada bilah zoom.",
     "filterList": "<span class=\"keyword\">Daftar Penanda</span> menampilkan jenis penanda yang telah Anda pilih; klik ikon untuk membatalkan pilihan.",
     "headbar": "Sakelar yang terkait dengan pengaturan peta terletak di <span class=\"keyword\">bilah atas</span>.",
-    "tos": "<span class=\"keyword\">Ketentuan Layanan</span> dan <span class=\"keyword\">Manajemen Data</span> situs web.",
+    "auth": "<span class=\"keyword\">Daftar</span> atau <span class=\"keyword\">masuk</span> ke akun OEM untuk menggunakan fitur online kami.",
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Situs Web</span> untuk mengambil tangkapan layar atau melihat penanda tepi.",
     "notification": "Buka <span class=\"keyword\">notifikasi</span> untuk melihat interaksi dan hasil peninjauan terkait kontribusi Anda.",
     "darkMode": "Beralih <span class=\"keyword\">mode cahaya sekitar</span> saat ini.",

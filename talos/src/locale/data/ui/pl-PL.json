@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Regulamin i przechowywanie",
+    "profile": "Ustawienia użytkownika",
+    "auth": "Zarejestruj / Zaloguj się",
     "hideUI": "Ukryj interfejs",
     "notification": "Powiadomienia",
     "darkmode": "Przełącz na tryb ciemny",
@@ -179,7 +180,7 @@
       "multiple": "Twój <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> ma {count, plural, one {# powiązaną aktualizację} few {# powiązane aktualizacje} many {# powiązanych aktualizacji} other {# powiązanej aktualizacji}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Warunki i pamięć",
     "calculating": "Obliczanie użycia pamięci...",
     "policy": "<p>Używamy Cookies do przechowywania informacji o automatycznym logowaniu; LocalStorage do przechowywania preferencji interfejsu i postępu znaczników; oraz CacheStorage do przechowywania danych czcionek i zasobów obrazów dla wybranego języka. Pliki te pozwalają szybciej korzystać ze strony w przyszłości oraz zapewniają jej dostępność w trybie offline.</p><p>Usunięcie lokalnych danych strony może zwolnić miejsce na urządzeniu. Jednak <span class=\"keyword\">przy ponownej wizycie ładowanie może potrwać dłużej</span>; jeśli wyłączysz przechowywanie danych przez stronę, <span class=\"keyword\">nie będzie ona mogła automatycznie zapisywać Twoich danych</span> na kolejne użycie.</p><p>Nie przesyłamy Twoich danych na serwer, więc nie musisz martwić się o prywatność.</p><p>Możesz zdecydować, czy chcesz włączyć lokalne przechowywanie danych.</p>",
@@ -242,7 +243,7 @@
     "scale": "Użyj <span class=\"keyword\">kontrolki przybliżenia</span>, aby zmieniać poziom powiększenia mapy.<br>Możesz użyć kółka myszy lub gładzika. Możesz także przybliżać, klikając <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> lub dowolne miejsce na pasku powiększenia.",
     "filterList": "<span class=\"keyword\">Lista znaczników</span> pokazuje wybrane typy znaczników; kliknij ikonę, aby je odznaczyć.",
     "headbar": "Przełączniki związane z ustawieniami mapy znajdują się na <span class=\"keyword\">górnym pasku</span>.",
-    "tos": "<span class=\"keyword\">Warunki korzystania</span> i <span class=\"keyword\">zarządzanie danymi</span> strony.",
+    "auth": "<span class=\"keyword\">Zarejestruj się</span> lub <span class=\"keyword\">zaloguj się</span> na konto OEM, aby korzystać z naszych funkcji online.",
     "hideUI": "<span class=\"keyword\">Ukryj interfejs strony</span>, aby robić zrzuty ekranu lub oglądać znaczniki na krawędziach.",
     "notification": "Otwórz <span class=\"keyword\">powiadomienia</span>, aby zobaczyć interakcje i wyniki weryfikacji dotyczące Twojego wkładu.",
     "darkMode": "Przełącz bieżący <span class=\"keyword\">tryb oświetlenia otoczenia</span>.",

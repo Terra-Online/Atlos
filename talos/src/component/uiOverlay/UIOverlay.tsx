@@ -4,7 +4,6 @@ import styles from './UIOverlay.module.scss';
 
 import LanguageModal from '@/component/language/language';
 import NotifyModal from '@/component/notify/notify';
-import ToSModal from '@/component/tos/tos';
 import SettingsModal from '@/component/settings/settings';
 import Scale from '@/component/scale/scale';
 import { HeadBar, HeadItem } from '@/component/headBar/headBar';
@@ -26,6 +25,7 @@ import { initTheme, cleanupTheme, toggleTheme } from '@/platform/theme';
 import { useAppPictureInPicture } from '@/component/scale/pip';
 import { Shortcut } from '@/component/shortcut';
 import { modKey } from '@/component/settings/shortcuts';
+import { openOemAccountModal } from '@/component/login/authEvents';
 import { useAuthStore } from '@/store/auth';
 import {
     subscribeNotificationLive,
@@ -33,7 +33,7 @@ import {
     type NotificationUnreadCounts,
 } from '@/services/notifications/client';
 
-import ToS from '../../assets/logos/tos.svg?react';
+import LoginIcon from '../../assets/logos/login.svg?react';
 import hideUI from '../../assets/logos/hideUI.svg?react';
 import NotificationIcon from '../../assets/logos/group.svg?react';
 import Darkmode from '../../assets/logos/darkmode.svg?react';
@@ -68,7 +68,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const locale = useLocale();
     const [langOpen, setLangOpen] = useState(false);
     const [notifyOpen, setNotifyOpen] = useState(false);
-    const [storageOpen, setStorageOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
     const [announcementMounted, setAnnouncementMounted] = useState(false);
@@ -121,10 +120,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
         setAnnouncementFlowReady(true);
     }, [visible, announcementChecked, userGuideReady, isUserGuideOpen, suppressInitialAutoOpen, hasUnreadAnnouncement, autoOpenedOnce, setAnnouncementFlowReady, setIsAnnouncementOpen]);
-
-    const handleReset = () => {
-        setStorageOpen(true);
-    };
 
     const handleHideUI = () => {
         onToggleUI?.();
@@ -206,7 +201,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         // UserGuide pauses itself while the UI is hidden and resumes at the same step.
         setLangOpen(false);
         setNotifyOpen(false);
-        setStorageOpen(false);
         setSettingsOpen(false);
         setAnnouncementOpen(false);
     }, [visible]);
@@ -221,11 +215,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 <div className={styles.headbarHost}>
                     <HeadBar compact={!visible}>
                         <HeadItem
-                            icon={ToS}
-                            onClick={handleReset}
-                            tooltip={t('headbar.tos')}
+                            icon={LoginIcon}
+                            iconScale={0.85}
+                            onClick={openOemAccountModal}
+                            tooltip={t(sessionUser ? 'headbar.profile' : 'headbar.auth')}
                             disabled={fullModalActionsDisabled}
-                            guideKey='tos'
+                            guideKey='auth'
                         />
                         <HeadItem
                             icon={hideUI}
@@ -328,13 +323,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 onUnreadChange={setNotificationUnread}
                 liveUpdate={notificationLiveUpdate}
                 syncVersion={notificationSyncVersion}
-            />
-
-            {/* Storage Modal */}
-            <ToSModal
-                open={storageOpen}
-                onClose={() => setStorageOpen(false)}
-                onChange={(o) => setStorageOpen(o)}
             />
 
             {/* Settings Modal */}

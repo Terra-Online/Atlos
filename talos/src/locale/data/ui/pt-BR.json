@@ -1,6 +1,7 @@
 {
   "headbar": {
-    "tos": "Termos e Armazenamento",
+    "profile": "Configurações do usuário",
+    "auth": "Registar / Iniciar sessão",
     "hideUI": "Ocultar Interface",
     "notification": "Notificações",
     "darkmode": "Mudar para modo escuro",
@@ -179,7 +180,7 @@
       "multiple": "O item <subjectTag>{subject}</subjectTag> <pointTag>{point}</pointTag> tem {count, plural, one {# atualização relacionada} other {# atualizações relacionadas}}."
     }
   },
-  "tos": {
+  "storage": {
     "title": "Termos e Armazenamento",
     "calculating": "Calculando uso de armazenamento...",
     "policy": "<p>Usamos Cookies para armazenar suas informações de login automático; LocalStorage para salvar suas preferências de interface e progresso dos marcadores; e CacheStorage para armazenar dados de fonte e recursos de imagem para seu idioma. Esses arquivos permitem que você acesse o site mais rapidamente no futuro e garantem a disponibilidade do site offline.</p><p>Excluir o armazenamento local do site pode economizar espaço no seu dispositivo. No entanto, <span class=\"keyword\">pode levar mais tempo para carregar esses arquivos</span> quando você visitar novamente; se você desativar o armazenamento do site, o site <span class=\"keyword\">não poderá registrar automaticamente seus dados</span> para seu próximo uso.</p><p>Não relatamos seus dados ao servidor, então você não precisa se preocupar com problemas de privacidade.</p><p>Você pode decidir por si mesmo se deseja ativar o armazenamento local.</p>",
@@ -242,7 +243,7 @@
     "scale": "Use o <span class=\"keyword\">controle de zoom</span> para visualizar e manipular o zoom do mapa.<br>A roda de rolagem ou o trackpad podem ser usados para ampliar. Você também pode ampliar clicando nos botões <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ou em qualquer lugar na barra de zoom.",
     "filterList": "A <span class=\"keyword\">lista de marcadores</span> mostra os tipos de marcadores selecionados; clique no ícone para desmarcá-los.",
     "headbar": "Os interruptores relacionados às configurações do mapa estão localizados na <span class=\"keyword\">barra superior</span>.",
-    "tos": "Os <span class=\"keyword\">Termos de Serviço</span> e o <span class=\"keyword\">Gerenciamento de Dados</span> do site.",
+    "auth": "<span class=\"keyword\">Cadastre-se</span> ou <span class=\"keyword\">entre</span> em uma conta OEM para usar nossas funções online.",
     "hideUI": "<span class=\"keyword\">Ocultar a interface do usuário do site</span> para tirar capturas de tela ou visualizar marcadores de borda.",
     "notification": "Abra as <span class=\"keyword\">notificações</span> para ver interações e resultados da análise relacionados às suas contribuições.",
     "darkMode": "Alternar o <span class=\"keyword\">modo de luz ambiente</span> atual.",
