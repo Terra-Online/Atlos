@@ -1,3 +1,6 @@
+import { createMarkerQueue, failedBatchMarkers, listByMarkerIds, runUGCBatches, type MarkerBatchPayload } from './batch';
+import { UGCClientError } from './error';
+export { UGCClientError } from './error';
 import { getAuthBase, getAuthHeaders } from '@/services/http/authRuntime';
 import { requestJson as requestHttpJson } from '@/services/http/request';
 import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
@@ -123,27 +126,9 @@ type CommentCacheEntry = {
     comments: UGCComment[];
 };
 
-type PendingImageRequest = {
-    markerId: string;
-    resolve: (images: UGCImage[]) => void;
-    reject: (error: unknown) => void;
-};
-
-type PendingCommentRequest = {
-    markerId: string;
-    resolve: (comments: UGCComment[]) => void;
-    reject: (error: unknown) => void;
-};
-
 type SubmissionCacheEntry = {
     expiresAt: number;
     images: UGCSubmissionImage[];
-};
-
-type PendingSubmissionRequest = {
-    markerId: string;
-    resolve: (images: UGCSubmissionImage[]) => void;
-    reject: (error: unknown) => void;
 };
 
 const UGC_API_BASE = `${getAuthBase()}/uploads/v1`;
@@ -172,33 +157,9 @@ const UGC_UPLOADABLE_CATEGORIES = new Set<UGCUploadableCategory>([
     'exploration',
 ]);
 const imageCache = new Map<string, ImageCacheEntry>();
-const imageInFlight = new Map<string, Promise<UGCImage[]>>();
 const publicImageCache = new Map<string, ImageCacheEntry>();
-const publicImageInFlight = new Map<string, Promise<UGCImage[]>>();
 const commentCache = new Map<string, CommentCacheEntry>();
-const commentInFlight = new Map<string, Promise<UGCComment[]>>();
 const submissionCache = new Map<string, SubmissionCacheEntry>();
-const submissionInFlight = new Map<string, Promise<UGCSubmissionImage[]>>();
-let pendingImageBatchTimer: number | null = null;
-let pendingImageBatchRequests: PendingImageRequest[] = [];
-let pendingPublicImageBatchTimer: number | null = null;
-let pendingPublicImageBatchRequests: PendingImageRequest[] = [];
-let pendingCommentBatchTimer: number | null = null;
-let pendingCommentBatchRequests: PendingCommentRequest[] = [];
-let pendingSubmissionBatchTimer: number | null = null;
-let pendingSubmissionBatchRequests: PendingSubmissionRequest[] = [];
-
-export class UGCClientError extends Error {
-    readonly code: string;
-    readonly status?: number;
-
-    constructor(message: string, code = 'UGC_ERROR', status?: number) {
-        super(message);
-        this.name = 'UGCClientError';
-        this.code = code;
-        this.status = status;
-    }
-}
 
 export const invalidateUGCImageCache = (markerId: string): void => {
     imageCache.delete(markerId);
@@ -272,93 +233,15 @@ export async function listUGCComments(markerId: string): Promise<UGCComment[]> {
 }
 
 export async function listUGCImagesByMarkerIds(markerIds: string[]): Promise<Record<string, UGCImage[]>> {
-    const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
-    const result: Record<string, UGCImage[]> = {};
-    const pendingIds: string[] = [];
-
-    normalizedIds.forEach((markerId) => {
-        const cached = imageCache.get(markerId);
-        if (cached && cached.expiresAt > Date.now()) {
-            result[markerId] = cached.images;
-            return;
-        }
-
-        pendingIds.push(markerId);
-    });
-
-    if (pendingIds.length === 0) {
-        return result;
-    }
-
-    const fetchedEntries = await Promise.all(
-        pendingIds.map(async (markerId) => [markerId, await getOrQueueUGCImages(markerId)] as const),
-    );
-
-    fetchedEntries.forEach(([markerId, images]) => {
-        result[markerId] = images;
-    });
-
-    return result;
+    return listByMarkerIds(markerIds, peekUGCImages, queueImages);
 }
 
 export async function listPublicUGCImagesByMarkerIds(markerIds: string[]): Promise<Record<string, UGCImage[]>> {
-    const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
-    const result: Record<string, UGCImage[]> = {};
-    const pendingIds: string[] = [];
-
-    normalizedIds.forEach((markerId) => {
-        const cached = publicImageCache.get(markerId);
-        if (cached && cached.expiresAt > Date.now()) {
-            result[markerId] = cached.images;
-            return;
-        }
-
-        pendingIds.push(markerId);
-    });
-
-    if (pendingIds.length === 0) {
-        return result;
-    }
-
-    const fetchedEntries = await Promise.all(
-        pendingIds.map(async (markerId) => [markerId, await getOrQueuePublicUGCImages(markerId)] as const),
-    );
-
-    fetchedEntries.forEach(([markerId, images]) => {
-        result[markerId] = images;
-    });
-
-    return result;
+    return listByMarkerIds(markerIds, peekPublicUGCImages, queuePublicImages);
 }
 
 export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCComment[]>> {
-    const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
-    const result: Record<string, UGCComment[]> = {};
-    const pendingIds: string[] = [];
-
-    normalizedIds.forEach((markerId) => {
-        const cached = commentCache.get(markerId);
-        if (cached && cached.expiresAt > Date.now()) {
-            result[markerId] = cached.comments;
-            return;
-        }
-
-        pendingIds.push(markerId);
-    });
-
-    if (pendingIds.length === 0) {
-        return result;
-    }
-
-    const fetchedEntries = await Promise.all(
-        pendingIds.map(async (markerId) => [markerId, await getOrQueueUGCComments(markerId)] as const),
-    );
-
-    fetchedEntries.forEach(([markerId, comments]) => {
-        result[markerId] = comments;
-    });
-
-    return result;
+    return listByMarkerIds(markerIds, peekUGCComments, queueComments);
 }
 
 export async function listUGCMyImages(markerId: string): Promise<UGCSubmissionImage[]> {
@@ -452,33 +335,7 @@ export async function getUGCImageById(markerId: string, imageId: string): Promis
 }
 
 export async function listUGCMyImagesByMarkerIds(markerIds: string[]): Promise<Record<string, UGCSubmissionImage[]>> {
-    const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
-    const result: Record<string, UGCSubmissionImage[]> = {};
-    const pendingIds: string[] = [];
-
-    normalizedIds.forEach((markerId) => {
-        const cached = submissionCache.get(markerId);
-        if (cached && cached.expiresAt > Date.now()) {
-            result[markerId] = cached.images;
-            return;
-        }
-
-        pendingIds.push(markerId);
-    });
-
-    if (pendingIds.length === 0) {
-        return result;
-    }
-
-    const fetchedEntries = await Promise.all(
-        pendingIds.map(async (markerId) => [markerId, await getOrQueueUGCMyImages(markerId)] as const),
-    );
-
-    fetchedEntries.forEach(([markerId, images]) => {
-        result[markerId] = images;
-    });
-
-    return result;
+    return listByMarkerIds(markerIds, peekUGCMyImages, queueSubmissions);
 }
 
 export async function uploadUGCImage(
@@ -827,417 +684,49 @@ function replaceExtension(filename: string, ext: string): string {
     return `${base || 'upload'}.${ext}`;
 }
 
-function getOrQueueUGCImages(markerId: string): Promise<UGCImage[]> {
-    const inFlight = imageInFlight.get(markerId);
-    if (inFlight) {
-        return inFlight;
-    }
-
-    const promise = new Promise<UGCImage[]>((resolve, reject) => {
-        pendingImageBatchRequests.push({ markerId, resolve, reject });
-        if (pendingImageBatchTimer !== null) {
-            return;
-        }
-
-        pendingImageBatchTimer = window.setTimeout(() => {
-            pendingImageBatchTimer = null;
-            const requests = pendingImageBatchRequests;
-            pendingImageBatchRequests = [];
-            void flushUGCImageBatch(requests);
-        }, 0);
+// Queue scheduling is shared; permissions, normalization and cache policy remain
+// local to each resource. In particular, mine does not use public partial-result rules.
+async function readMarkerBatch<T>(path: string, publicOnly = false): Promise<MarkerBatchPayload<T>> {
+    const response = await fetch(`${UGC_API_BASE}${path}`, {
+        credentials: publicOnly ? 'omit' : 'include',
+        ...(publicOnly ? {} : { headers: getAuthHeaders() }),
     });
-
-    imageInFlight.set(markerId, promise);
-    return promise.finally(() => {
-        imageInFlight.delete(markerId);
-    });
+    if (!response.ok) throw await readUGCError(response);
+    return response.json() as Promise<MarkerBatchPayload<T>>;
 }
 
-function getOrQueuePublicUGCImages(markerId: string): Promise<UGCImage[]> {
-    const inFlight = publicImageInFlight.get(markerId);
-    if (inFlight) {
-        return inFlight;
-    }
-
-    const promise = new Promise<UGCImage[]>((resolve, reject) => {
-        pendingPublicImageBatchRequests.push({ markerId, resolve, reject });
-        if (pendingPublicImageBatchTimer !== null) {
-            return;
-        }
-
-        pendingPublicImageBatchTimer = window.setTimeout(() => {
-            pendingPublicImageBatchTimer = null;
-            const requests = pendingPublicImageBatchRequests;
-            pendingPublicImageBatchRequests = [];
-            void flushPublicUGCImageBatch(requests);
-        }, 0);
-    });
-
-    publicImageInFlight.set(markerId, promise);
-    return promise.finally(() => {
-        publicImageInFlight.delete(markerId);
-    });
-}
-
-function getOrQueueUGCComments(markerId: string): Promise<UGCComment[]> {
-    const inFlight = commentInFlight.get(markerId);
-    if (inFlight) {
-        return inFlight;
-    }
-
-    const promise = new Promise<UGCComment[]>((resolve, reject) => {
-        pendingCommentBatchRequests.push({ markerId, resolve, reject });
-        if (pendingCommentBatchTimer !== null) {
-            return;
-        }
-
-        pendingCommentBatchTimer = window.setTimeout(() => {
-            pendingCommentBatchTimer = null;
-            const requests = pendingCommentBatchRequests;
-            pendingCommentBatchRequests = [];
-            void flushUGCCommentBatch(requests);
-        }, 0);
-    });
-
-    commentInFlight.set(markerId, promise);
-    return promise.finally(() => {
-        commentInFlight.delete(markerId);
-    });
-}
-
-function getOrQueueUGCMyImages(markerId: string): Promise<UGCSubmissionImage[]> {
-    const inFlight = submissionInFlight.get(markerId);
-    if (inFlight) {
-        return inFlight;
-    }
-
-    const promise = new Promise<UGCSubmissionImage[]>((resolve, reject) => {
-        pendingSubmissionBatchRequests.push({ markerId, resolve, reject });
-        if (pendingSubmissionBatchTimer !== null) {
-            return;
-        }
-
-        pendingSubmissionBatchTimer = window.setTimeout(() => {
-            pendingSubmissionBatchTimer = null;
-            const requests = pendingSubmissionBatchRequests;
-            pendingSubmissionBatchRequests = [];
-            void flushUGCSubmissionBatch(requests);
-        }, 0);
-    });
-
-    submissionInFlight.set(markerId, promise);
-    return promise.finally(() => {
-        submissionInFlight.delete(markerId);
-    });
-}
-
-// Preserve the server's 100-marker contract while bounding concurrent batches
-// across public images, personalized images, comments and private submissions.
-const UGC_BATCH_SIZE = 100;
-const UGC_BATCH_CONCURRENCY = 8;
-let activeUGCBatches = 0;
-const waitingUGCBatches: Array<() => void> = [];
-
-async function runUGCBatches<T>(requests: T[], run: (batch: T[]) => Promise<void>): Promise<void> {
-    const jobs: Promise<void>[] = [];
-    for (let index = 0; index < requests.length; index += UGC_BATCH_SIZE) {
-        const batch = requests.slice(index, index + UGC_BATCH_SIZE);
-        jobs.push((async () => {
-            if (activeUGCBatches >= UGC_BATCH_CONCURRENCY) {
-                await new Promise<void>((resolve) => waitingUGCBatches.push(resolve));
-            } else {
-                activeUGCBatches += 1;
-            }
-            try {
-                await run(batch);
-            } finally {
-                const next = waitingUGCBatches.shift();
-                if (next) next();
-                else activeUGCBatches -= 1;
-            }
-        })());
-    }
-    await Promise.all(jobs);
-}
-
-type MarkerBatchPayload<T> = { items?: T[]; partial?: boolean; failedMarkerIds?: string[] };
-
-function failedBatchMarkers<T extends { markerId: string }>(
-    payload: MarkerBatchPayload<T>, markerIds: string[],
-): Set<string> {
-    if (Array.isArray(payload.failedMarkerIds) && payload.failedMarkerIds.length > 0) {
-        return new Set(payload.failedMarkerIds.filter((id) => typeof id === 'string' && markerIds.includes(id)));
-    }
-    // Older servers cannot identify failed markers. Nonempty results can still
-    // be shown, but absent items in a partial response must not become negatives.
-    const returned = new Set((payload.items ?? []).map((item) => item.markerId));
-    return new Set(payload.partial === true ? markerIds.filter((id) => !returned.has(id)) : []);
-}
-
-async function flushUGCImageBatch(requests: PendingImageRequest[]): Promise<void> {
-    await runUGCBatches(requests, readUGCImageBatchPart);
-}
-
-async function readUGCImageBatchPart(requests: PendingImageRequest[]): Promise<void> {
-    const groupedResolvers = new Map<string, PendingImageRequest[]>();
-    requests.forEach((request) => {
-        const bucket = groupedResolvers.get(request.markerId);
-        if (bucket) {
-            bucket.push(request);
-            return;
-        }
-        groupedResolvers.set(request.markerId, [request]);
-    });
-
-    const markerIds = [...groupedResolvers.keys()];
-    const scope = import.meta.env.DEV ? 'test' : 'prod';
-
-    try {
-        const response = await fetch(
-            `${UGC_API_BASE}/images?markerIds=${encodeURIComponent(markerIds.join(','))}&limit=6&scope=${scope}`,
-            {
-                credentials: 'include',
-                headers: getAuthHeaders(),
-            },
-        );
-
-        if (!response.ok) {
-            throw await readUGCError(response);
-        }
-
-        const payload = await response.json() as MarkerBatchPayload<UGCImage>;
-        const failedMarkers = failedBatchMarkers(payload, markerIds);
-        const groupedImages = new Map<string, UGCImage[]>();
-
-        markerIds.forEach((markerId) => {
-            groupedImages.set(markerId, []);
-        });
-
-        (payload.items ?? []).map(normalizeUGCImage).forEach((image) => {
-            const images = groupedImages.get(image.markerId);
-            if (images) {
-                images.push(image);
-            }
-        });
-
-        markerIds.forEach((markerId) => {
-            if (failedMarkers.has(markerId)) {
-                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
-                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
-                return;
-            }
-            const images = groupedImages.get(markerId) ?? [];
-            imageCache.set(markerId, {
-                expiresAt: Date.now() + (images.length > 0 ? PRIVATE_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS),
-                images,
-            });
-            groupedResolvers.get(markerId)?.forEach((request) => {
-                request.resolve(images);
-            });
-        });
-    } catch (error) {
-        groupedResolvers.forEach((entries) => {
-            entries.forEach((request) => request.reject(error));
-        });
-    }
-}
-
-async function flushPublicUGCImageBatch(requests: PendingImageRequest[]): Promise<void> {
-    await runUGCBatches(requests, readPublicUGCImageBatchPart);
-}
-
-async function readPublicUGCImageBatchPart(requests: PendingImageRequest[]): Promise<void> {
-    const groupedResolvers = new Map<string, PendingImageRequest[]>();
-    requests.forEach((request) => {
-        const bucket = groupedResolvers.get(request.markerId);
-        if (bucket) {
-            bucket.push(request);
-            return;
-        }
-        groupedResolvers.set(request.markerId, [request]);
-    });
-
-    const markerIds = [...groupedResolvers.keys()];
-    const scope = import.meta.env.DEV ? 'test' : 'prod';
-
-    try {
-        const response = await fetch(
-            `${UGC_API_BASE}/images?markerIds=${encodeURIComponent(markerIds.join(','))}&limit=6&scope=${scope}&publicOnly=1`,
-            {
-                credentials: 'omit',
-            },
-        );
-
-        if (!response.ok) {
-            throw await readUGCError(response);
-        }
-
-        const payload = await response.json() as MarkerBatchPayload<UGCImage>;
-        const failedMarkers = failedBatchMarkers(payload, markerIds);
-        const groupedImages = new Map<string, UGCImage[]>();
-
-        markerIds.forEach((markerId) => {
-            groupedImages.set(markerId, []);
-        });
-
-        (payload.items ?? []).map(normalizeUGCImage).forEach((image) => {
-            const images = groupedImages.get(image.markerId);
-            if (images) {
-                images.push(image);
-            }
-        });
-
-        markerIds.forEach((markerId) => {
-            if (failedMarkers.has(markerId)) {
-                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
-                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
-                return;
-            }
-            const images = groupedImages.get(markerId) ?? [];
-            publicImageCache.set(markerId, {
-                expiresAt: Date.now() + (images.length > 0 ? PUBLIC_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS),
-                images,
-            });
-            groupedResolvers.get(markerId)?.forEach((request) => {
-                request.resolve(images);
-            });
-        });
-    } catch (error) {
-        groupedResolvers.forEach((entries) => {
-            entries.forEach((request) => request.reject(error));
-        });
-    }
-}
-
-async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<void> {
-    await runUGCBatches(requests, readUGCCommentBatchPart);
-}
-
-async function readUGCCommentBatchPart(requests: PendingCommentRequest[]): Promise<void> {
-    const groupedResolvers = new Map<string, PendingCommentRequest[]>();
-    requests.forEach((request) => {
-        const bucket = groupedResolvers.get(request.markerId);
-        if (bucket) {
-            bucket.push(request);
-            return;
-        }
-        groupedResolvers.set(request.markerId, [request]);
-    });
-
-    const markerIds = [...groupedResolvers.keys()];
-    const scope = import.meta.env.DEV ? 'test' : 'prod';
-
-    try {
-        const response = await fetch(
-            `${UGC_API_BASE}/comments?markerIds=${encodeURIComponent(markerIds.join(','))}&limit=20&replyLimit=10&scope=${scope}`,
-            {
-                credentials: 'include',
-                headers: getAuthHeaders(),
-            },
-        );
-
-        if (!response.ok) {
-            throw await readUGCError(response);
-        }
-
-        const payload = await response.json() as MarkerBatchPayload<UGCComment>;
-        const failedMarkers = failedBatchMarkers(payload, markerIds);
-        const groupedComments = new Map<string, UGCComment[]>();
-
-        markerIds.forEach((markerId) => {
-            groupedComments.set(markerId, []);
-        });
-
-        (payload.items ?? []).map(normalizeUGCComment).forEach((comment) => {
-            const comments = groupedComments.get(comment.markerId);
-            if (comments) {
-                comments.push(comment);
-            }
-        });
-
-        markerIds.forEach((markerId) => {
-            if (failedMarkers.has(markerId)) {
-                const error = new UGCClientError('Marker data could not be completely read.', 'partialResponse');
-                groupedResolvers.get(markerId)?.forEach((request) => request.reject(error));
-                return;
-            }
-            const comments = groupedComments.get(markerId) ?? [];
-            commentCache.set(markerId, {
-                expiresAt: Date.now() + (comments.length > 0 ? COMMENT_CACHE_POSITIVE_TTL_MS : COMMENT_CACHE_EMPTY_TTL_MS),
-                comments,
-            });
-            groupedResolvers.get(markerId)?.forEach((request) => {
-                request.resolve(comments);
-            });
-        });
-    } catch (error) {
-        groupedResolvers.forEach((entries) => {
-            entries.forEach((request) => request.reject(error));
-        });
-    }
-}
-
-async function flushUGCSubmissionBatch(requests: PendingSubmissionRequest[]): Promise<void> {
-    await runUGCBatches(requests, readUGCSubmissionBatchPart);
-}
-
-async function readUGCSubmissionBatchPart(requests: PendingSubmissionRequest[]): Promise<void> {
-    const groupedResolvers = new Map<string, PendingSubmissionRequest[]>();
-    requests.forEach((request) => {
-        const bucket = groupedResolvers.get(request.markerId);
-        if (bucket) {
-            bucket.push(request);
-            return;
-        }
-        groupedResolvers.set(request.markerId, [request]);
-    });
-
-    const markerIds = [...groupedResolvers.keys()];
-    const scope = import.meta.env.DEV ? 'test' : 'prod';
-
-    try {
-        const response = await fetch(
-            `${UGC_API_BASE}/images/mine?markerIds=${encodeURIComponent(markerIds.join(','))}&limit=6&scope=${scope}`,
-            {
-                credentials: 'include',
-                headers: getAuthHeaders(),
-            },
-        );
-
-        if (!response.ok) {
-            throw await readUGCError(response);
-        }
-
-        const payload = await response.json() as { items?: UGCSubmissionImage[] };
-        const groupedImages = new Map<string, UGCSubmissionImage[]>();
-
-        markerIds.forEach((markerId) => {
-            groupedImages.set(markerId, []);
-        });
-
-        (payload.items ?? []).map(normalizeUGCSubmissionImage).forEach((image) => {
-            const images = groupedImages.get(image.markerId);
-            if (images) {
-                images.push(image);
-            }
-        });
-
-        markerIds.forEach((markerId) => {
-            const images = groupedImages.get(markerId) ?? [];
-            submissionCache.set(markerId, {
-                expiresAt: Date.now() + SUBMISSION_CACHE_TTL_MS,
-                images,
-            });
-            groupedResolvers.get(markerId)?.forEach((request) => {
-                request.resolve(images);
-            });
-        });
-    } catch (error) {
-        groupedResolvers.forEach((entries) => {
-            entries.forEach((request) => request.reject(error));
-        });
-    }
-}
+const batchScope = import.meta.env.DEV ? 'test' : 'prod';
+const queueImages = createMarkerQueue<UGCImage>({
+    read: (ids) => readMarkerBatch(`/images?markerIds=${encodeURIComponent(ids.join(','))}&limit=6&scope=${batchScope}`),
+    normalize: normalizeUGCImage,
+    store: (markerId, images) => imageCache.set(markerId, {
+        expiresAt: Date.now() + (images.length ? PRIVATE_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS), images,
+    }),
+});
+const queuePublicImages = createMarkerQueue<UGCImage>({
+    read: (ids) => readMarkerBatch(`/images?markerIds=${encodeURIComponent(ids.join(','))}&limit=6&scope=${batchScope}&publicOnly=1`, true),
+    normalize: normalizeUGCImage,
+    store: (markerId, images) => publicImageCache.set(markerId, {
+        expiresAt: Date.now() + (images.length ? PUBLIC_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS), images,
+    }),
+});
+const queueComments = createMarkerQueue<UGCComment>({
+    read: (ids) => readMarkerBatch(`/comments?markerIds=${encodeURIComponent(ids.join(','))}&limit=20&replyLimit=10&scope=${batchScope}`),
+    normalize: normalizeUGCComment,
+    store: (markerId, comments) => commentCache.set(markerId, {
+        expiresAt: Date.now() + (comments.length ? COMMENT_CACHE_POSITIVE_TTL_MS : COMMENT_CACHE_EMPTY_TTL_MS), comments,
+    }),
+});
+const queueSubmissions = createMarkerQueue<UGCSubmissionImage>({
+    read: async (ids) => {
+        const { items } = await readMarkerBatch<UGCSubmissionImage>(`/images/mine?markerIds=${encodeURIComponent(ids.join(','))}&limit=6&scope=${batchScope}`);
+        return { items };
+    },
+    normalize: normalizeUGCSubmissionImage,
+    store: (markerId, images) => submissionCache.set(markerId, {
+        expiresAt: Date.now() + SUBMISSION_CACHE_TTL_MS, images,
+    }),
+});
 
 function normalizeUGCImage(image: UGCImage): UGCImage {
     if (!import.meta.env.DEV) {
