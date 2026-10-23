@@ -9,7 +9,7 @@ import { useMarkerStore } from '@/store/marker';
 let map: L.Map | undefined;
 let layer: MarkerLayer | undefined;
 let host: HTMLDivElement;
-afterEach(() => { layer?.destroy(); map?.remove(); host?.remove(); vi.restoreAllMocks(); });
+afterEach(() => { layer?.destroy(); map?.remove(); host?.remove(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('proximity reminder updates', () => {
     it('batches hits and keeps one pending reveal across position packets, discarding stale results', async () => {
@@ -44,4 +44,23 @@ describe('proximity reminder updates', () => {
             expect(pulse).toHaveBeenCalledTimes(1);
         } finally { stop(); }
     });
+});
+
+it('cancels a pending marker fade when its owner is destroyed', () => {
+    vi.useFakeTimers();
+    host = document.createElement('div'); document.body.append(host);
+    map = L.map(host, { crs: L.CRS.Simple }).setView([0, 0], 0);
+    layer = new MarkerLayer(map);
+    const region = Object.keys(REGION_DICT)[0];
+    const subregId = REGION_DICT[region].subregions[0];
+    const point = { id: 'retiring', type: 'test', subregId, pos: [0, 0] } as IMarkerData;
+    const parent = layer.layerSubregionDict[subregId].addTo(map);
+    const marker = L.marker([0, 0], { icon: L.divIcon() }).addTo(parent);
+    layer.markerDataDict[point.id] = point;
+    layer.markerDict[point.id] = marker;
+    const remove = vi.spyOn(marker, 'remove');
+    layer.filterMarker([]);
+    layer.destroy();
+    vi.advanceTimersByTime(200);
+    expect(remove).not.toHaveBeenCalled();
 });

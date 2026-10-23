@@ -151,6 +151,9 @@ export class MarkerLayer {
         this.clearBehaviorTemporaryMarkers();
         Object.values(this.pulseCleanupDict).forEach((cleanup) => cleanup());
         this.pulseCleanupDict = {};
+        this.clusterLayer.destroy();
+        Object.values(this.pendingRemovalTimers).forEach((timer) => window.clearTimeout(timer));
+        this.pendingRemovalTimers = {};
     }
 
     private getMarkerInnerElement(id: string): HTMLElement | null {
@@ -394,6 +397,7 @@ export class MarkerLayer {
         id: string,
         options?: { source?: 'proximity' | 'behavior' },
     ): Promise<boolean> {
+        const version = this.regionVersion;
         const markerData = this.markerDataDict[id];
         const layer = this.markerDict[id];
         if (!markerData || !layer) return false;
@@ -444,6 +448,7 @@ export class MarkerLayer {
             }
         }
 
+        if (version !== this.regionVersion) return false;
         if (!shown) {
             if (options?.source === 'behavior') {
                 this.behaviorTemporaryVisibleIds.delete(id);

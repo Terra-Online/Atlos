@@ -4,7 +4,7 @@ import { REGION_DICT, SUBREGION_DICT, IMapRegion } from '@/data/map';
 export class SubregionBoundaryManager {
     private map: L.Map;
     private boundariesLayer?: L.LayerGroup;
-    private frame = 0;
+    private cancelEnter?: () => void;
     private retiring = new Map<L.LayerGroup, number>();
 
     constructor(map: L.Map) {
@@ -41,9 +41,11 @@ export class SubregionBoundaryManager {
             this.boundariesLayer.addTo(this.map);
             
             this.toggleBoundaryVisibility(boundaryLayers, true);
-            this.frame = requestAnimationFrame(() => {
-                this.toggleBoundaryVisibility(boundaryLayers, false);
+            const view = this.map.getContainer().ownerDocument.defaultView ?? window;
+            let frame = view.requestAnimationFrame(() => {
+                frame = view.requestAnimationFrame(() => this.toggleBoundaryVisibility(boundaryLayers, false));
             });
+            this.cancelEnter = () => view.cancelAnimationFrame(frame);
         }
     }
 
@@ -51,17 +53,17 @@ export class SubregionBoundaryManager {
         if (!this.boundariesLayer) return;
         
         const boundariesLayerToBeRemoved = this.boundariesLayer;
+        this.boundariesLayer = undefined;
+        this.cancelEnter?.();
         
         const layers: L.Layer[] = [];
-        this.boundariesLayer.eachLayer(layer => layers.push(layer));
+        boundariesLayerToBeRemoved.eachLayer(layer => layers.push(layer));
         
         this.toggleBoundaryVisibility(layers, true);
         
         const timer = window.setTimeout(() => {
             this.retiring.delete(boundariesLayerToBeRemoved);
             this.map.removeLayer(boundariesLayerToBeRemoved);
-            if (this.boundariesLayer === boundariesLayerToBeRemoved) 
-                this.boundariesLayer = undefined;
         }, 300); // equal to the CSS transition duration
         this.retiring.set(boundariesLayerToBeRemoved, timer);
     }
@@ -118,7 +120,7 @@ export class SubregionBoundaryManager {
     }
 
     clear() {
-        cancelAnimationFrame(this.frame);
+        this.cancelEnter?.();
         this.retiring.forEach((timer, layer) => { window.clearTimeout(timer); layer.remove(); });
         this.retiring.clear();
         this.boundariesLayer?.remove();

@@ -47,6 +47,16 @@ export class ClusterLayer {
 
     constructor(private readonly deps: ClusterLayerDeps) {}
 
+    destroy() {
+        this.enabled = false;
+        for (const [key, group] of Object.entries(this.clusterGroupsByType)) {
+            this.cancelPendingFadeIn(group);
+            this.cancelPendingRemoval(key, group);
+            group.remove();
+            group.clearLayers();
+        }
+    }
+
     batch(operation: () => void) {
         this.batchDepth++;
         try { operation(); }
@@ -246,28 +256,7 @@ export class ClusterLayer {
             clusterGroup.addTo(this.deps.map);
         }
 
-        await new Promise<void>((resolve) => {
-            const zoomToShowLayer = (
-                clusterGroup as CanvasClusterGroup & {
-                    zoomToShowLayer?: (targetLayer: L.Layer, callback: () => void) => void;
-                }
-            ).zoomToShowLayer;
-
-            if (typeof zoomToShowLayer !== 'function') {
-                resolve();
-                return;
-            }
-
-            let resolved = false;
-            const finish = () => {
-                if (resolved) return;
-                resolved = true;
-                resolve();
-            };
-
-            window.setTimeout(finish, 1200);
-            zoomToShowLayer.call(clusterGroup, layer, finish);
-        });
+        await new Promise<void>((resolve) => clusterGroup.zoomToShowLayer(layer, resolve));
 
         return true;
     }

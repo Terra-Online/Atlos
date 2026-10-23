@@ -137,18 +137,20 @@ function MapPage() {
         // Temporarily remove maxBounds so the pan is not clipped.
         // Passing invalid bounds to setMaxBounds removes the constraint and
         // de-registers the internal _panInsideMaxBounds handler.
-        const savedBounds = mapInstance.options.maxBounds as L.LatLngBounds | undefined;
+        let savedBounds = mapInstance.options.maxBounds as L.LatLngBounds | undefined;
         if (savedBounds) {
             mapInstance.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
         }
 
+        const restoreBounds = () => {
+            mapInstance.off('moveend talos:regionSwitchStart', restoreBounds);
+            const bounds = savedBounds;
+            savedBounds = undefined;
+            if (bounds) mapInstance.setMaxBounds(bounds);
+        };
+        mapInstance.on('moveend talos:regionSwitchStart', restoreBounds);
         mapInstance.panBy([dx, 0], { animate: true, duration: 0.3, easeLinearity: 0.25 });
-
-        if (savedBounds) {
-            mapInstance.once('moveend', () => {
-                mapInstance.setMaxBounds(savedBounds);
-            });
-        }
+        return restoreBounds;
     }, [isSidebarOpen, sidebarWidth, mapInstance, isDesktop]);
 
     // onToggle is retained for potential side effects/analytics

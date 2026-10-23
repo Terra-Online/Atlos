@@ -1,13 +1,15 @@
+import * as markers from '@/data/marker';
+import { useMarkerStore } from '@/store/marker';
 import L from 'leaflet';
 import { waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { IMarkerData } from '@/data/marker';
 import type { MapCore } from '@/services/map/core/map';
 import { useLayerStore } from '@/store/layer';
-import { navigateToSharedPoint, registerSharedPointMapCore } from './navigation';
+import { navigateToMarkerId, navigateToSharedPoint, registerSharedPointMapCore } from './navigation';
 
 const cleanups: Array<() => void> = [];
-afterEach(() => cleanups.splice(0).forEach((fn) => fn()));
+afterEach(() => { cleanups.splice(0).forEach((fn) => fn()); vi.restoreAllMocks(); });
 
 it('selects the target floor on every navigation, including a repeated basement target', async () => {
     const host = document.createElement('div');
@@ -34,4 +36,35 @@ it('selects the target floor on every navigation, including a repeated basement 
     await waitFor(() => expect(flyTo).toHaveBeenCalledTimes(2));
     expect(switchLayer.mock.calls).toEqual([['B1'], ['B1']]);
     expect(useLayerStore.getState().currentLayer).toBe('B1');
+});
+
+it('applies the latest target without waiting for an old reveal and discards an older ID lookup', async () => {
+    const host = document.createElement('div'); document.body.append(host);
+    const map = L.map(host, { crs: L.CRS.Simple, maxZoom: 5 }).setView([0, 0], 1);
+    const flyTo = vi.spyOn(map, 'flyTo').mockImplementation((center, zoom) => {
+        map.setView(center, zoom, { animate: false }); map.fire('moveend'); return map;
+    });
+    const previous = { id: 'old', type: 'test', subregId: 'VL_1', pos: [1, 2], tier: 0 } as IMarkerData;
+    const latest = { ...previous, id: 'new', pos: [3, 4] } as IMarkerData;
+    let finishReveal!: (shown: boolean) => void;
+    const ensureMarkerVisible = vi.fn<() => Promise<boolean>>()
+        .mockImplementationOnce(() => new Promise((resolve) => { finishReveal = resolve; }))
+        .mockResolvedValue(true);
+    const unregister = registerSharedPointMapCore({
+        map, switchRegion: () => Promise.resolve(true), switchLayer: () => Promise.resolve(),
+        markerLayer: { markerDataDict: { old: previous, new: latest }, filterMarker: vi.fn(), ensureMarkerVisible, startMarkerPulse: () => true },
+    } as unknown as MapCore);
+    cleanups.push(() => { unregister(); map.remove(); host.remove(); });
+    navigateToSharedPoint({ regionKey: 'Valley_4', pointId: 'old' });
+    await waitFor(() => expect(ensureMarkerVisible).toHaveBeenCalledOnce());
+    let finishLookup!: (marker: IMarkerData) => void;
+    vi.spyOn(markers, 'findMarkerById').mockImplementation(() => new Promise((resolve) => { finishLookup = resolve; }));
+    const lookup = navigateToMarkerId('old');
+    navigateToSharedPoint({ regionKey: 'Valley_4', pointId: 'new' });
+    await waitFor(() => expect(flyTo).toHaveBeenCalledOnce());
+    expect(useMarkerStore.getState().currentActivePoint?.id).toBe('new');
+    finishReveal(true); finishLookup(previous);
+    expect(await lookup).toBe(false);
+    expect(flyTo).toHaveBeenCalledOnce();
+    expect(useMarkerStore.getState().currentActivePoint?.id).toBe('new');
 });
