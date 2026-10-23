@@ -1,3 +1,4 @@
+import { bindRegionLifecycle } from '@/services/map/regionLifecycle';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { REGION_DICT } from '@/data/map';
@@ -123,9 +124,13 @@ export function useBehaviorOverlay(map: L.Map | null) {
             if (!map.hasLayer(layer)) layer.addTo(map);
             setRegionRevision((revision) => revision + 1);
         };
-        map.on('talos:regionSwitched', resetAfterRegionSwitch);
+        const unbind = bindRegionLifecycle(map, () => {
+            requestRef.current += 1;
+            layer.setScene(emptyBehaviorScene(), false, false);
+            getSharedPointMapCore()?.markerLayer.clearBehaviorTemporaryMarkers();
+        }, resetAfterRegionSwitch);
         return () => {
-            map.off('talos:regionSwitched', resetAfterRegionSwitch);
+            unbind();
             requestRef.current += 1;
             getSharedPointMapCore()?.markerLayer.clearBehaviorTemporaryMarkers();
             layer.remove();

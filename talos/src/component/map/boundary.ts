@@ -4,6 +4,8 @@ import { REGION_DICT, SUBREGION_DICT, IMapRegion } from '@/data/map';
 export class SubregionBoundaryManager {
     private map: L.Map;
     private boundariesLayer?: L.LayerGroup;
+    private frame = 0;
+    private retiring = new Map<L.LayerGroup, number>();
 
     constructor(map: L.Map) {
         this.map = map;
@@ -39,7 +41,7 @@ export class SubregionBoundaryManager {
             this.boundariesLayer.addTo(this.map);
             
             this.toggleBoundaryVisibility(boundaryLayers, true);
-            requestAnimationFrame(() => {
+            this.frame = requestAnimationFrame(() => {
                 this.toggleBoundaryVisibility(boundaryLayers, false);
             });
         }
@@ -55,11 +57,13 @@ export class SubregionBoundaryManager {
         
         this.toggleBoundaryVisibility(layers, true);
         
-        setTimeout(() => {
+        const timer = window.setTimeout(() => {
+            this.retiring.delete(boundariesLayerToBeRemoved);
             this.map.removeLayer(boundariesLayerToBeRemoved);
             if (this.boundariesLayer === boundariesLayerToBeRemoved) 
                 this.boundariesLayer = undefined;
         }, 300); // equal to the CSS transition duration
+        this.retiring.set(boundariesLayerToBeRemoved, timer);
     }
 
     private toggleBoundaryVisibility(layers: L.Layer[], hidden: boolean) {
@@ -113,7 +117,13 @@ export class SubregionBoundaryManager {
         return [fillLayer, strokeLayer];
     }
 
-    destroy() {
-        this.hideBoundaries();
+    clear() {
+        cancelAnimationFrame(this.frame);
+        this.retiring.forEach((timer, layer) => { window.clearTimeout(timer); layer.remove(); });
+        this.retiring.clear();
+        this.boundariesLayer?.remove();
+        this.boundariesLayer = undefined;
     }
+
+    destroy() { this.clear(); }
 }

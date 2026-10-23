@@ -72,6 +72,8 @@ export class MarkerLayer {
     private checkedVisibleOverrideIds = new Set<string>();
     private proximityUpdateSeq = 0;
     private markerVersion = 0;
+    private regionVersion = 0;
+    private destroyed = false;
     private proximityIndex?: { key: string; index: ProximityIndex<IMarkerData> };
     private proximityPending = new Set<string>();
 
@@ -142,6 +144,8 @@ export class MarkerLayer {
      * Call this when the layer is being permanently torn down.
      */
     destroy() {
+        this.destroyed = true;
+        this.regionVersion++;
         this._destroyLasso?.();
         this.clearProximityReminder();
         this.clearBehaviorTemporaryMarkers();
@@ -608,6 +612,7 @@ export class MarkerLayer {
     }
 
     async changeRegion(regionId: string) {
+        const version = ++this.regionVersion;
         this.clearProximityReminder();
         this.clearBehaviorTemporaryMarkers();
         this.currentLayer = 'M';
@@ -629,6 +634,7 @@ export class MarkerLayer {
 
         this.clusterLayer.setActiveSubregions(subregions);
         const markers = await loadRegionMarkers(regionId);
+        if (this.destroyed || version !== this.regionVersion) return;
         this.importMarker(markers);
         this.updateLayerTier(this.currentLayer);
 

@@ -1,3 +1,4 @@
+import { ensureMapPane } from '@/services/map/panes';
 import L from 'leaflet';
 import {
     emptyBehaviorScene,
@@ -33,7 +34,6 @@ const FLOW_GRADIENT_SAMPLE_COUNT = 5;
 /** Canvas padding around each viewport edge as a fraction of viewport size. */
 const CANVAS_VIEW_PADDING_RATIO = 0.2;
 /** Canvas stacking level above map paths and below marker interactions. */
-const CANVAS_Z_INDEX = '470';
 /** CSS class carrying behavior palette tokens and the shared drop shadow. */
 const BEHAVIOR_OVERLAY_CLASS = 'behaviorOverlayPane';
 /** Smallest drawable projected interval in CSS pixels. */
@@ -672,11 +672,10 @@ export const createBehaviorCanvasLayer = (
         canvas.style.position = 'absolute';
         canvas.style.left = '0';
         canvas.style.top = '0';
-        canvas.style.zIndex = CANVAS_Z_INDEX;
         canvas.classList.add(BEHAVIOR_OVERLAY_CLASS);
         if (onWallHover) canvas.classList.add('mapSupplementCanvas');
         context = canvas.getContext('2d');
-        nextMap.getPanes().mapPane.appendChild(canvas);
+        nextMap.getPane(ensureMapPane(nextMap, 'behavior'))!.appendChild(canvas);
         const canvasStyle = getComputedStyle(canvas);
         palette = {
             butterfly: canvasStyle

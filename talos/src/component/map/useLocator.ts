@@ -1,3 +1,4 @@
+import { ensureMapPane } from '@/services/map/panes';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import useRegion from '@/store/region';
@@ -32,17 +33,7 @@ type TrackerConfig = {
     debug?: boolean;
 };
 
-const LOCATOR_PANE = 'talos-endfield-tracker-pane';
-const LOCATOR_LAYER_Z_INDEX = 640;
-
-const ensureTrackerPane = (map: L.Map): string => {
-    const existing = map.getPane(LOCATOR_PANE);
-    if (existing) return LOCATOR_PANE;
-    const pane = map.createPane(LOCATOR_PANE);
-    pane.style.zIndex = String(LOCATOR_LAYER_Z_INDEX);
-    pane.style.pointerEvents = 'none';
-    return LOCATOR_PANE;
-};
+const ensureTrackerPane = (map: L.Map) => ensureMapPane(map, 'locator');
 
 
 const parseTrackerConfig = (): TrackerConfig | null => {

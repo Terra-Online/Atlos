@@ -1,3 +1,5 @@
+import { ensureMapPane } from '@/services/map/panes';
+import { bindRegionLifecycle, isRegionSwitching } from '@/services/map/regionLifecycle';
 import { useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import type { AnyLabel } from '@/data/map/label/types';
@@ -15,16 +17,6 @@ const escapeHtml = (s: string): string => s
         .replace(/'/g, '&#39;');
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
-
-const ensurePane = (map: L.Map): string => {
-    const paneName = 'labels';
-    const existing = map.getPane(paneName);
-    if (existing) return paneName;
-    const pane = map.createPane(paneName);
-    pane.style.zIndex = '650';
-    pane.style.pointerEvents = 'none';
-    return paneName;
-};
 
 const ZOOM_THRESHOLD = 0.25;
 
@@ -72,6 +64,7 @@ const renderLabels = (
     regionCode: string,
     structure: RegionStructure,
     currentType: AnyLabel['type'] | null,
+    defer: (render: () => void) => void,
 ) => {
     const showType: AnyLabel['type'] = structure.kind === 'flat' ? 'site' : (zoom <= ZOOM_THRESHOLD ? 'sub' : 'site');
     
@@ -89,10 +82,10 @@ const renderLabels = (
             }
         });
         // 等待淡出动画完成后清除
-        setTimeout(() => {
+        defer(() => {
             layer.clearLayers();
             addNewLabels();
-        }, 200);
+        });
     } else {
         layer.clearLayers();
         addNewLabels();
@@ -174,7 +167,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
             return;
         }
 
-        const pane = ensurePane(map);
+        const pane = ensureMapPane(map, 'labels');
         paneRef.current = pane;
 
         if (!layerRef.current) {
@@ -186,7 +179,12 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
 
         const layer = layerRef.current;
 
+        let swapTimer: number | undefined;
+        const cancelSwap = () => { window.clearTimeout(swapTimer); swapTimer = undefined; };
+        const defer = (render: () => void) => { cancelSwap(); swapTimer = window.setTimeout(render, 200); };
+        const reset = () => { cancelSwap(); layer.clearLayers(); currentLabelTypeRef.current = null; };
         const doRender = () => {
+            if (isRegionSwitching(map)) return;
             if (isLabelToolMounted()) {
                 if (map.hasLayer(layer)) {
                     layer.remove();
@@ -201,7 +199,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
                 return;
             }
             const z = map.getZoom();
-            const newType = renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure, currentLabelTypeRef.current);
+            const newType = renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure, currentLabelTypeRef.current, defer);
             currentLabelTypeRef.current = newType;
         };
 
@@ -233,14 +231,13 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
             doRender();
         };
 
-        doRender();
+        const unbind = bindRegionLifecycle(map, reset, onRegionSwitched);
         map.on('zoomend', doRender);
-        map.on('talos:regionSwitched', onRegionSwitched);
         map.on('talos:labelToolMounted', onToolMounted);
 
         return () => {
             map.off('zoomend', doRender);
-            map.off('talos:regionSwitched', onRegionSwitched);
+            unbind();
             map.off('talos:labelToolMounted', onToolMounted);
         };
     }, [map, regionCode, maxZoom, t, labels, structure, showRegionLabels, locale]);

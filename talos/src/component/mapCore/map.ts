@@ -1,3 +1,4 @@
+import { isRegionSwitching, setRegionSwitching } from '@/services/map/regionLifecycle';
 import { REGION_DICT, type IMapRegion } from '@/data/map';
 import L from 'leaflet';
 import { MarkerLayer } from './marker/markerLayer';
@@ -6,7 +7,7 @@ import { getTileResourceUrl } from '@/services/assets/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/component/map/boundary';
-import { useLayerStore, type LayerType } from '@/store/layer';
+import { getLayerTileSuffix, useLayerStore, type LayerType } from '@/store/layer';
 import { getRegionTileCoverage } from '@/services/map/tileCoverage';
 import { enableSmoothWheelZoom } from './smoothWheelZoom';
 import { SmoothTileLayer } from './smoothTileLayer';
@@ -20,12 +21,6 @@ interface RegionSwitchWaiter {
     resolve: (applied: boolean) => void;
     reject: (error: unknown) => void;
 }
-
-// Helper to convert layer type to tile suffix
-const getLayerTileSuffix = (layer: LayerType): string => {
-    if (layer === 'M') return '';
-    return `_${layer.toLowerCase()}`;
-};
 
 const getMaxZoomOffset = (regionId: string): number => {
     if (regionId === 'Valley_4' || regionId === 'Wuling') {
@@ -53,13 +48,13 @@ export class MapCore {
     map!: L.Map;
 
     currentRegionId!: string;
-    private boundaryLayer?: L.Rectangle;
     private boundaryManager!: SubregionBoundaryManager;
     private mainTileLayer?: L.TileLayer;
     private layerTileLayer?: L.TileLayer;
     private currentLayer: LayerType = 'M';
 
-    private transforming = false;
+    private destroyed = false;
+    private wheelZoom: ReturnType<typeof enableSmoothWheelZoom>;
     private requestedRegionId: string | null = null;
     private switchRegionPromise: Promise<void> | null = null;
     private regionWaiters: RegionSwitchWaiter[] = [];
@@ -81,7 +76,7 @@ export class MapCore {
             zoomDelta: 0.25,
         });
 
-        enableSmoothWheelZoom(this.map, {
+        this.wheelZoom = enableSmoothWheelZoom(this.map, {
             enableInertia: ENABLE_ZOOM_INERTIA,
         });
 
@@ -93,23 +88,14 @@ export class MapCore {
         this.boundaryManager = new SubregionBoundaryManager(this.map);
 
         this.map.on('moveend', () => {
-            if (!this.transforming) {
-                useViewState
-                    .getState()
-                    .saveViewState(this.currentRegionId, this.map);
-            }
-        });
-
-        this.map.on('zoomend', () => {
-            if (!this.transforming) {
-                useViewState
-                    .getState()
-                    .saveViewState(this.currentRegionId, this.map);
+            if (this.currentRegionId && !isRegionSwitching(this.map)) {
+                useViewState.getState().saveViewState(this.currentRegionId, this.map);
             }
         });
     }
 
     switchRegion(regionId: string): Promise<boolean> {
+        if (this.destroyed) return Promise.resolve(false);
         if (!REGION_DICT[regionId]) {
             return Promise.reject(new Error(`Region config not found for: ${regionId}`));
         }
@@ -122,13 +108,18 @@ export class MapCore {
             this.regionWaiters.push({ regionId, resolve, reject });
         });
 
-        if (!this.switchRegionPromise) {
-            this.switchRegionPromise = this.processRegionSwitches().finally(() => {
-                this.switchRegionPromise = null;
-            });
-        }
-
+        this.startRegionSwitches();
         return result;
+    }
+
+    private startRegionSwitches() {
+        if (this.switchRegionPromise || this.destroyed || !this.requestedRegionId) return;
+        this.switchRegionPromise = this.processRegionSwitches().finally(() => {
+            this.switchRegionPromise = null;
+            // Resolving a waiter can enqueue another request before this finally
+            // runs. Drain that request instead of leaving it behind a completed job.
+            this.startRegionSwitches();
+        });
     }
 
     private settleRegionWaiters(
@@ -168,6 +159,7 @@ export class MapCore {
             try {
                 await this.performSwitchRegion(regionId);
             } catch (error) {
+                if (!this.requestedRegionId) setRegionSwitching(this.map, false);
                 this.settleRegionWaiters(regionId, false, error);
                 if (this.requestedRegionId) {
                     this.settleSupersededRegionWaiters(this.requestedRegionId);
@@ -175,6 +167,7 @@ export class MapCore {
                 continue;
             }
 
+            if (this.destroyed) break;
             const nextRegionId = this.requestedRegionId;
             if (nextRegionId && nextRegionId !== regionId) {
                 this.settleRegionWaiters(regionId, false);
@@ -186,6 +179,7 @@ export class MapCore {
                 this.requestedRegionId = null;
             }
             this.settleSupersededRegionWaiters(regionId);
+            setRegionSwitching(this.map, false);
             this.applyStoredLayer(regionId);
             this.map.fire('talos:regionSwitched', { regionId });
             this.settleRegionWaiters(regionId, true);
@@ -193,9 +187,20 @@ export class MapCore {
     }
 
     private async performSwitchRegion(regionId: string): Promise<void> {
+        // Finish the old camera before changing the coordinate space or its identity.
+        this.wheelZoom.cancel();
+        this.map.stop();
+        if (this.currentRegionId && !isRegionSwitching(this.map)) {
+            useViewState.getState().saveViewState(this.currentRegionId, this.map);
+        }
+        const view = useViewState.getState().getViewState(regionId);
+        setRegionSwitching(this.map, true);
+        this.map.fire('talos:regionSwitchStart', { regionId });
         this.currentRegionId = regionId;
-
-        this.map.eachLayer((layer) => this.map.removeLayer(layer));
+        this.map.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
+        this.mainTileLayer?.remove();
+        this.layerTileLayer?.remove();
+        this.boundaryManager.clear();
 
         const config = REGION_DICT[regionId];
 
@@ -214,7 +219,6 @@ export class MapCore {
         const maxZoom = maxNativeZoom + getMaxZoomOffset(regionId);
         this.map.setMaxZoom(maxZoom);
 
-        const view = useViewState.getState().getViewState(regionId);
         const [[minPixelX, minPixelY], [maxPixelX, maxPixelY]] =
             getRegionPixelBounds(config);
         if (
@@ -223,7 +227,7 @@ export class MapCore {
             view.lng !== undefined &&
             view.zoom !== undefined
         ) {
-            const clampedZoom = Math.min(view.zoom, maxZoom);
+            const clampedZoom = Math.max(this.map.getMinZoom(), Math.min(view.zoom, maxZoom));
             this.map.setView([view.lat, view.lng], clampedZoom, {
                 animate: false,
             });
@@ -303,32 +307,12 @@ export class MapCore {
         this.layerTileLayer = undefined;
         this.currentLayer = 'M';
 
-        if (this.boundaryLayer) {
-            this.map.removeLayer(this.boundaryLayer);
-        }
-
-        // visualize region boundary (for debugging)
-        // this.boundaryLayer = L.rectangle(mapBounds, {
-        //     color: '#000000',
-        //     weight: 5,
-        //     fillOpacity: 0,
-        //     interactive: false,
-        // }).addTo(this.map);
-
         // A region is ready when its map state and marker data are committed. Tile
         // image downloads continue independently and expose Leaflet's loading events.
         await this.markerLayer.changeRegion(regionId);
     }
     setMapView(view: IMapView) {
-        if (this.transforming) return;
-        this.transforming = true;
-        const onEnd = () => {
-            this.transforming = false;
-            this.map.off('moveend', onEnd);
-            this.map.off('zoomend', onEnd);
-        };
-        this.map.on('moveend', onEnd);
-        this.map.on('zoomend', onEnd);
+        this.map.stop();
         this.map.setView([view.lat, view.lng], view.zoom);
     }
 
@@ -430,10 +414,23 @@ export class MapCore {
         this.map.fire('talos:layerSwitched', { layer });
     }
 
+    destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
+        this.requestedRegionId = null;
+        this.layerRequestId++;
+        this.regionWaiters.splice(0).forEach((waiter) => waiter.resolve(false));
+        this.wheelZoom.dispose();
+        this.boundaryManager.destroy();
+        this.markerLayer.destroy();
+        this.map.remove();
+        setRegionSwitching(this.map, false);
+    }
+
     async switchLayer(layer: LayerType): Promise<void> {
         const requestId = ++this.layerRequestId;
-        await this.switchRegionPromise;
-        if (requestId !== this.layerRequestId) return;
+        while (this.switchRegionPromise) await this.switchRegionPromise;
+        if (this.destroyed || requestId !== this.layerRequestId) return;
         const targetLayer = this.getAvailableLayer(this.currentRegionId, layer);
         if (targetLayer !== layer) {
             useLayerStore.getState().setCurrentLayer(targetLayer);

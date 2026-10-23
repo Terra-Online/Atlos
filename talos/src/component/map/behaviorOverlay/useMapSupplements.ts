@@ -1,3 +1,4 @@
+import { bindRegionLifecycle, isRegionSwitching } from '@/services/map/regionLifecycle';
 import { useEffect, useState } from 'react';
 import type L from 'leaflet';
 import { loadMapSupplements } from '@/data/marker/supplements';
@@ -25,6 +26,7 @@ export function useMapSupplements(map: L.Map | null) {
         let disposed = false;
         let request = 0;
         const render = () => {
+            if (isRegionSwitching(map)) return;
             const generation = ++request;
             if (!map.hasLayer(layer)) layer.addTo(map);
             layer.setScene(emptyBehaviorScene(), false, false);
@@ -37,13 +39,11 @@ export function useMapSupplements(map: L.Map | null) {
                 if (!disposed && generation === request) layer.setScene(emptyBehaviorScene(), false, false);
             });
         };
-        // Region changes remove every Leaflet layer; reattach after completion.
-        map.on('talos:regionSwitched', render);
-        render();
+        const unbind = bindRegionLifecycle(map, () => { request++; setHover(null); layer.setScene(emptyBehaviorScene(), false, false); }, render);
         return () => {
             disposed = true;
             setHover(null);
-            map.off('talos:regionSwitched', render);
+            unbind();
             layer.remove();
         };
     }, [map, enabled, region, subregion, tier]);

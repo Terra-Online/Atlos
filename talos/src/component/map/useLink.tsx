@@ -1,3 +1,5 @@
+import { ensureMapPane } from '@/services/map/panes';
+import { bindRegionLifecycle, isRegionSwitching } from '@/services/map/regionLifecycle';
 import React, { useEffect, useMemo, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import type { MapLink, GlobalLinkConfig } from '@/data/map/link';
@@ -27,18 +29,6 @@ const LINK_IMAGES: Record<string, string> = {
 
 // Delay before hiding tooltip (allows user to move mouse to tooltip)
 const TOOLTIP_HIDE_DELAY = 200;
-
-const ensurePane = (map: L.Map): string => {
-    const paneName = 'links';
-    const existing = map.getPane(paneName);
-    if (existing) return paneName;
-    const pane = map.createPane(paneName);
-    // Keep links under markers so they don't visually/interaction-block POI markers.
-    // Leaflet defaults: overlayPane 400, markerPane 600, tooltipPane 650.
-    pane.style.zIndex = '450';
-    pane.style.pointerEvents = 'auto';
-    return paneName;
-};
 
 interface HoveredLinkInfo {
     linkId: string;
@@ -87,6 +77,7 @@ export const useLink = (
     const hoveredLinkRef = useRef<HoveredLinkInfo | null>(null);
     const popoverRef = useRef<HTMLDivElement | null>(null);
     const hideTimeoutRef = useRef<number | undefined>(undefined);
+    const closeTimeoutRef = useRef<number | undefined>(undefined);
 
     // Position and show the popover
     const showPopover = useCallback((bounds: L.LatLngBounds) => {
@@ -98,6 +89,8 @@ export const useLink = (
             hideTimeoutRef.current = undefined;
         }
 
+        window.clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = undefined;
         const popover = popoverRef.current as HTMLElement & { showPopover?: () => void };
         const topCenter = L.latLng(bounds.getNorth(), bounds.getCenter().lng);
         const point = map.latLngToContainerPoint(topCenter);
@@ -123,6 +116,8 @@ export const useLink = (
 
     // Hide the popover with animation (with delay to allow moving to tooltip)
     const hidePopover = useCallback(() => {
+        window.clearTimeout(hideTimeoutRef.current);
+        window.clearTimeout(closeTimeoutRef.current);
         // Use delay to allow user to move mouse to tooltip
         hideTimeoutRef.current = window.setTimeout(() => {
             if (!popoverRef.current) return;
@@ -131,7 +126,7 @@ export const useLink = (
             popover.classList.add(styles.popoverClose);
 
             // Additional timeout for fade-out animation
-            window.setTimeout(() => {
+            closeTimeoutRef.current = window.setTimeout(() => {
                 if (popover.hidePopover) {
                     try {
                         popover.hidePopover();
@@ -146,6 +141,8 @@ export const useLink = (
 
     // Cancel hide when mouse enters tooltip
     const cancelHide = useCallback(() => {
+        window.clearTimeout(closeTimeoutRef.current);
+        popoverRef.current?.classList.remove(styles.popoverClose);
         if (hideTimeoutRef.current) {
             clearTimeout(hideTimeoutRef.current);
             hideTimeoutRef.current = undefined;
@@ -154,11 +151,11 @@ export const useLink = (
 
     // Render links on the map using imageOverlay for smooth scaling
     const renderLinks = useCallback(() => {
-        if (!map || !regionCode || typeof maxZoom !== 'number') return;
+        if (!map || !regionCode || typeof maxZoom !== 'number' || isRegionSwitching(map)) return;
         
         // Ensure pane exists
         if (!paneRef.current) {
-            paneRef.current = ensurePane(map);
+            paneRef.current = ensureMapPane(map, 'links');
         }
 
         // Ensure layer exists and is added to map
@@ -246,56 +243,42 @@ export const useLink = (
             showPopover(current.bounds);
         };
 
-        // Clear state on region switch (re-render handled by dependency on regionCode/links)
-        const onRegionSwitch = () => {
-            hoveredLinkRef.current = null;
-            hidePopover();
-        };
-
         map.on('move', updatePopoverPosition);
         map.on('zoom', updatePopoverPosition);
-        map.on('talos:regionSwitched', onRegionSwitch);
 
         return () => {
             map.off('move', updatePopoverPosition);
             map.off('zoom', updatePopoverPosition);
-            map.off('talos:regionSwitched', onRegionSwitch);
         };
     }, [map, showPopover, hidePopover]);
 
     // Render links when all dependencies are ready
     useEffect(() => {
         if (!map || !regionCode || typeof maxZoom !== 'number') return;
-        renderLinks();
+        return bindRegionLifecycle(map, () => {
+            window.clearTimeout(hideTimeoutRef.current);
+            window.clearTimeout(closeTimeoutRef.current);
+            hoveredLinkRef.current = null;
+            layerRef.current?.clearLayers();
+            try { popoverRef.current?.hidePopover?.(); } catch { /* Already hidden. */ }
+        }, renderLinks);
     }, [map, regionCode, maxZoom, links, renderLinks]);
 
     // Cleanup when map is destroyed
     useEffect(() => {
         if (!map) return;
-        const layer = layerRef.current;
         const overlays = overlaysRef.current;
         const hitAreas = hitAreasRef.current;
-        const hideTimeout = hideTimeoutRef.current;
         return () => {
-            if (layer) {
-                layer.remove();
-            }
+            window.clearTimeout(hideTimeoutRef.current);
+            window.clearTimeout(closeTimeoutRef.current);
+            layerRef.current?.remove();
+            layerRef.current = null;
+            paneRef.current = null;
             overlays.clear();
             hitAreas.clear();
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-            }
         };
     }, [map]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (hideTimeoutRef.current) {
-                clearTimeout(hideTimeoutRef.current);
-            }
-        };
-    }, []);
 
     // Build the tooltip element
     // Helper to safely extract string from translation result

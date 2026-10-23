@@ -1,109 +1,33 @@
-import L, { DivOverlay } from 'leaflet';
+import L from 'leaflet';
 import { IMapRegion, IMapSubregionAreaData } from '@/data/map';
 
-let activeHighlight: L.LayerGroup | null = null;
-
-export const removeHighlight = () => {
-    if (activeHighlight) {
-        activeHighlight.eachLayer((layer) => {
-            layer.remove();
-        });
-        activeHighlight = null;
-    }
-};
+const highlights = new WeakMap<L.Map, () => void>();
 
 export const createHighlight = (map: L.Map | undefined, subregion: IMapSubregionAreaData, config: IMapRegion) => {
-    removeHighlight();
-
-    let highlight: L.LayerGroup | null = null;
-
-    if (subregion.polygon && subregion.polygon.length > 0) {
-        highlight = createPolygonHighlight(map, subregion.polygon, config);
-    } else if (subregion.bounds && subregion.bounds.length >= 2) {
-        highlight = createRectangleHighlight(map, subregion.bounds, config);
+    if (!map) return null;
+    highlights.get(map)?.();
+    let points = subregion.polygon;
+    if (!points?.length && subregion.bounds?.length === 2) {
+        const [[x1, y1], [x2, y2]] = subregion.bounds;
+        points = [[[x1, y1], [x2, y1], [x2, y2], [x1, y2]]];
     }
-    if (highlight) {
-        highlight.eachLayer((layer) => {
-            if ((layer as DivOverlay).bringToFront) {
-                (layer as DivOverlay).bringToFront();
-            }
-        });
-        activeHighlight = highlight;
-
-        // remove highlight after 1500ms
-        setTimeout(() => {
-            if (map && highlight && map.hasLayer(highlight)) {
-                map.removeLayer(highlight);
-                activeHighlight = null;
-            }
-        }, 1500);
-    }
-
-    return highlight;
-};
-
-export const createPolygonHighlight = (map: L.Map | undefined, polygonData: number[][][], config:IMapRegion) => {
-    try {
-        if (!map) {
-            throw new Error('Map is not defined.');
-        }
-        const polygonPoints = polygonData.map((polygon) => {
-            return polygon.map(([x, y]) => {
-                return map.unproject([x, y], config.maxZoom);
-            });
-        });
-
-        const fillLayer = L.polygon(polygonPoints, {
-            color: 'transparent',
-            fillOpacity: 0.3,
-            className: 'subregion-highlight-fill',
-        });
-
-        const strokeLayer = L.polygon(polygonPoints, {
-            weight: 3,
-            opacity: 0.9,
-            fill: false,
-            className: 'subregion-highlight-stroke',
-        });
-
-        fillLayer.addTo(map);
-        strokeLayer.addTo(map);
-
-        return L.layerGroup([fillLayer, strokeLayer]);
-    } catch (error) {
-        console.error('Error creating polygon highlight:', error);
-        return null;
-    }
-};
-
-export const createRectangleHighlight = (map:L.Map | undefined, bounds: number[][], config: IMapRegion) => {
-    try {
-        if (!map) {
-            throw new Error('Map is not defined.');
-        }
-        const [[x1, y1], [x2, y2]] = bounds;
-        const sw = map.unproject([x1, y2], config.maxZoom);
-        const ne = map.unproject([x2, y1], config.maxZoom);
-
-        const fillLayer = L.rectangle(L.latLngBounds(sw, ne), {
-            color: 'transparent',
-            fillOpacity: 0.3,
-            className: 'subregion-highlight-fill',
-        });
-
-        const strokeLayer = L.rectangle(L.latLngBounds(sw, ne), {
-            weight: 3,
-            opacity: 0.9,
-            fill: false,
-            className: 'subregion-highlight-stroke',
-        });
-
-        fillLayer.addTo(map);
-        strokeLayer.addTo(map);
-
-        return L.layerGroup([fillLayer, strokeLayer]);
-    } catch (_) {
-        //console.error('Failed to create rectangle highlight:', error);
-        return null;
-    }
+    if (!points?.length) return null;
+    const coordinates = points.map((ring) => ring.map(([x, y]) => map.unproject([x, y], config.maxZoom)));
+    const fill = L.polygon(coordinates, { color: 'transparent', fillOpacity: 0.3, className: 'subregion-highlight-fill' });
+    const stroke = L.polygon(coordinates, { weight: 3, opacity: 0.9, fill: false, className: 'subregion-highlight-stroke' });
+    const group = L.layerGroup([fill, stroke]).addTo(map);
+    const dispose = () => {
+        map.off('talos:regionSwitchStart unload', dispose);
+        group.remove();
+        if (highlights.get(map) === dispose) highlights.delete(map);
+    };
+    highlights.set(map, dispose);
+    map.on('talos:regionSwitchStart unload', dispose);
+    // CSS owns the complete timeline; cancellation also settles these promises.
+    const animations = [fill, stroke].flatMap((path) => {
+        path.bringToFront();
+        return path.getElement()?.getAnimations() ?? [];
+    });
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(dispose);
+    return group;
 };

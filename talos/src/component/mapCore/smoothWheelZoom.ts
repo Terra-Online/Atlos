@@ -163,6 +163,12 @@ export class SmoothWheelZoom {
         map.once('unload', this.dispose);
     }
 
+    cancel() {
+        this.clearOverdragSettlement();
+        this.finishGesture();
+        this.wheelInputRouter.reset();
+    }
+
     dispose = () => {
         if (this.disposed) return;
         this.disposed = true;

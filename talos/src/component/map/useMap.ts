@@ -35,16 +35,23 @@ export function useMap(ele: HTMLDivElement | null) {
                 useMarkerStore.getState().setCurrentActivePoint(marker);
             },
         });
-        registerSharedPointMapCore(mapRef.current);
+        const core = mapRef.current;
+        const unregister = registerSharedPointMapCore(core);
         setLMap(mapRef.current.map);
         setMapInitialized(true);
+        return () => {
+            unregister();
+            core.destroy();
+            if (mapRef.current === core) mapRef.current = null;
+            setLMap(null);
+            setMapInitialized(false);
+        };
     }, [ele]);
 
     // 初始化地图区域（只在地图初始化或区域切换时触发）
     useEffect(() => {
         if (!mapRef.current || !mapInitialized) return;
         const target = currentRegion ?? DEFAULT_REGION;
-        if (mapRef.current.currentRegionId === target) return;
         useMarkerStore.getState().setVisibleSubregionKey(null);
         void mapRef.current.switchRegion(target);
     }, [currentRegion, mapInitialized]);
@@ -59,6 +66,7 @@ export function useMap(ele: HTMLDivElement | null) {
     useEffect(() => {
         if (!subregionSwitchRequest || !mapRef.current) return;
 
+        let cancelled = false;
         const subregionId = subregionSwitchRequest;
         const subregion = SUBREGION_DICT[subregionId];
         if (!subregion) {
@@ -93,15 +101,12 @@ export function useMap(ele: HTMLDivElement | null) {
                     config.maxZoom,
                 );
 
-                mapRef.current.map.once('moveend', () => {
-                    createHighlight(mapRef.current?.map, subregion, config);
-                });
-
                 mapRef.current.setMapView({
                     lat: center.lat,
                     lng: center.lng,
                     zoom: 1,
                 });
+                createHighlight(mapRef.current.map, subregion, config);
             }
         };
 
@@ -111,15 +116,17 @@ export function useMap(ele: HTMLDivElement | null) {
             if (targetRegionKey !== currentRegion && mapCore) {
                 // 直接切换地图区域并等待底图加载完成，避免使用任意超时
                 const regionApplied = await mapCore.switchRegion(targetRegionKey);
-                if (regionApplied === false) return;
+                if (regionApplied === false || cancelled) return;
                 // 同步更新 store 状态（不会重复切换，下面的 effect 有去重）
                 setCurrentRegion(targetRegionKey);
             }
+            if (cancelled) return;
             selectSubregionInternal(targetRegionKey);
             mapCore?.map.fire('talos:subregionSwitched', { subregionId });
             clearSubregionSwitchRequest();
         };
         void run();
+        return () => { cancelled = true; };
     }, [subregionSwitchRequest, currentRegion, setCurrentRegion, setCurrentSubregion, clearSubregionSwitchRequest]);
 
     // 监听边界显示触发器状态
