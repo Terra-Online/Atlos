@@ -1,5 +1,5 @@
 import { fontLoader, stopFontLoader, migrateFontRegions } from '@/locale/fontLoader';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
@@ -802,6 +802,9 @@ export const openAppPictureInPicture = async () => {
 export const toggleAppPictureInPicture = () => (
     isAppPictureInPictureActive() ? Promise.resolve(closeAppPictureInPicture()).then(() => false) : openAppPictureInPicture()
 );
+
+const documentSnapshot = () => typeof document === 'undefined' ? null : getAppDocument();
+export const useAppDocument = () => useSyncExternalStore(subscribePictureInPictureState, documentSnapshot, () => null);
 
 export const useAppPictureInPicture = (map?: LeafletMap) => {
     const supported = useMemo(() => isDocumentPictureInPictureSupported(), []);

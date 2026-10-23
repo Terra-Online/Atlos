@@ -1,3 +1,4 @@
+import { usePresence } from '@/lib/dom/usePresence';
 import { useFontRegion } from '@/locale/useFontRegion';
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from './detail.module.scss';
@@ -61,7 +62,6 @@ const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>>
     exploration: ExplorationIcon,
 };
 
-type DetailPhase = 'hidden' | 'entering' | 'open' | 'exiting';
 type DetailTab = 'general' | 'comments';
 
 interface DetailProps {
@@ -245,7 +245,9 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     }, [fullTextContent, archiveJsonUrl]);
 
     // const noteContent = currentPoint?.status?.user?.localNote;
-    const [detailPhase, setDetailPhase] = useState<DetailPhase>('hidden');
+    const [detailOpen, setDetailOpen] = useState(false);
+    const presence = usePresence({ open: detailOpen && Boolean(currentPoint), exitDuration: DETAIL_EXIT_DURATION_MS });
+    const detailPhase = presence.phase === 'unmounted' ? 'hidden' : presence.phase;
     const ref = useRef<HTMLDivElement | null>(null);
     const fontRef = useFontRegion([
         { faces: ['db'], text: pointName, localized: 'game' },
@@ -303,7 +305,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     // 当 currentPoint 更新时，显示 detail
     useEffect(() => {
         if (currentPoint) {
-            setDetailPhase((phase) => (phase === 'hidden' || phase === 'exiting' ? 'entering' : phase));
+            setDetailOpen(true);
         }
     }, [currentPoint]);
 
@@ -336,23 +338,6 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         statItems,
         updateDetailHeight,
     ]);
-
-    useEffect(() => {
-        if (detailPhase !== 'entering') return undefined;
-        updateDetailHeight();
-        const raf = window.requestAnimationFrame(() => {
-            setDetailPhase('open');
-        });
-        return () => window.cancelAnimationFrame(raf);
-    }, [detailPhase, updateDetailHeight]);
-
-    useEffect(() => {
-        if (detailPhase !== 'exiting') return undefined;
-        const timer = window.setTimeout(() => {
-            setDetailPhase('hidden');
-        }, DETAIL_EXIT_DURATION_MS);
-        return () => window.clearTimeout(timer);
-    }, [detailPhase]);
 
     useEffect(() => {
         if (detailPhase === 'hidden' || typeof ResizeObserver === 'undefined') return undefined;
@@ -562,7 +547,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     useMarkerStore.getState().clearImageOpenRequest();
-                                    setDetailPhase('exiting');
+                                    setDetailOpen(false);
                                 }}
                             />
                         </div>

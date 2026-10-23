@@ -24,6 +24,7 @@ interface SyncConflictModalProps {
     sourceB: SyncConflictSource;
     onResolve: (choice: SyncConflictChoice) => void;
     onClose: () => void;
+    onAfterClose?: () => void;
     archiveLabel?: string;
     totalLabel?: string;
 }
@@ -137,6 +138,7 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
     sourceB,
     onResolve,
     onClose,
+    onAfterClose,
     archiveLabel,
     totalLabel,
 }) => {
@@ -184,6 +186,7 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
             icon={<ConflictIcon />}
             iconScale={0.85}
             onClose={onClose}
+            onAfterClose={onAfterClose}
             customHeight='70dvh'
         >
             <div className={styles.conflict}>

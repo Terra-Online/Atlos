@@ -25,7 +25,6 @@ import {
 
 const MAX_DIRTY_MS = 60_000;
 const COUNT_FLUSH_THRESHOLD = 10;
-const MODAL_EXIT_DURATION_MS = 325;
 const PENDING_MUTATION_STORAGE_PREFIX = 'talos-progress-pending-mutation:';
 
 type SyncReason = 'startup' | 'auto' | 'manual' | 'visibility' | 'online' | 'conflict';
@@ -109,7 +108,6 @@ const ProgressSyncHost = () => {
     const setConflict = useProgressSyncStore((state) => state.setConflict);
 
     const maxTimerRef = useRef<number | null>(null);
-    const conflictCleanupTimerRef = useRef<number | null>(null);
     const inFlightRef = useRef(false);
     const rerunRequestedRef = useRef(false);
     const syncNowRef = useRef<SyncNow>(async () => {});
@@ -134,29 +132,9 @@ const ProgressSyncHost = () => {
     }, [sessionUser?.uid]);
 
     useEffect(() => {
-        if (conflictCleanupTimerRef.current !== null) {
-            window.clearTimeout(conflictCleanupTimerRef.current);
-            conflictCleanupTimerRef.current = null;
-        }
-
-        if (conflict) {
-            setRenderedConflict(conflict);
-            setConflictOpen(true);
-            return;
-        }
-
-        setConflictOpen(false);
-        conflictCleanupTimerRef.current = window.setTimeout(() => {
-            setRenderedConflict(null);
-            conflictCleanupTimerRef.current = null;
-        }, MODAL_EXIT_DURATION_MS);
+        if (conflict) setRenderedConflict(conflict);
+        setConflictOpen(Boolean(conflict));
     }, [conflict]);
-
-    useEffect(() => () => {
-        if (conflictCleanupTimerRef.current !== null) {
-            window.clearTimeout(conflictCleanupTimerRef.current);
-        }
-    }, []);
 
     const clearTimers = useCallback(() => {
         if (maxTimerRef.current !== null) {
@@ -649,6 +627,7 @@ const ProgressSyncHost = () => {
                 pointIds: renderedConflict.remotePointIds,
             }}
             onClose={() => setConflict(null)}
+            onAfterClose={() => setRenderedConflict(null)}
             onResolve={handleConflictResolve}
         />
     ) : null;

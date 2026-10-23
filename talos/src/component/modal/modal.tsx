@@ -1,3 +1,5 @@
+import { useOverlayLayer } from '@/lib/dom/useOverlayLayer';
+import { usePresence } from '@/lib/dom/usePresence';
 import { useFontRegion } from '@/locale/useFontRegion';
 import type { FontScope } from '@/locale/fontLoader';
 import type { TextRun } from '@/locale/fontShards';
@@ -14,7 +16,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss';
 import Button from '@/component/button/button';
-import { getOpenerDocument, getPictureInPictureDocument } from '@/component/scale/pip';
+import { getOpenerDocument, useAppDocument } from '@/component/scale/pip';
 import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
 import PopoverTooltip from '@/component/popover/popover';
 
@@ -298,6 +300,7 @@ export interface ModalProps {
   iconScale?: number; // scale for the icon, use when you need visual optimization
   children?: React.ReactNode;
   onClose?: () => void; // close callback
+  onAfterClose?: () => void;
   onChange?: (open: boolean) => void; // switch state change callback
   maskClosable?: boolean;
   showClose?: boolean; // show close button on the header
@@ -317,21 +320,6 @@ export interface ModalProps {
   contentClassName?: string;
 }
 
-const FOCUS_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'textarea:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])'
-].join(',');
-
-const getModalDocument = (size: ModalProps['size']) => {
-  if (typeof document === 'undefined') return null;
-  if (size !== 'full') return getPictureInPictureDocument() ?? document;
-  return getOpenerDocument() ?? document;
-};
-
 const Modal: React.FC<ModalProps> = ({
   fontRuns = [],
   fontScope = 'critical',
@@ -341,6 +329,7 @@ const Modal: React.FC<ModalProps> = ({
   iconScale = 1,
   children,
   onClose,
+  onAfterClose,
   onChange,
   maskClosable = true,
   showClose = true,
@@ -358,15 +347,9 @@ const Modal: React.FC<ModalProps> = ({
   contentClassName,
 }) => {
   const tUI = useTranslateUI();
-  /**
-   * Lifecycle phases:
-   * 'unmounted' -> 'entering' -> 'open' -> 'exiting' -> 'unmounted'
-   * entering: first frame data-state=closed, next frame switch to open triggers transition
-   * exiting: data-state=closed, wait for CSS animation to end before unmounting
-   */
-  type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
-  const [phase, setPhase] = useState<Phase>(() => (open ? (animateOnOpen ? 'entering' : 'open') : 'unmounted'));
-  const prevActiveRef = useRef<HTMLElement | null>(null);
+  const appDocument = useAppDocument();
+  const ownerDocument = size === 'full' && appDocument ? getOpenerDocument() : appDocument;
+  const { phase } = usePresence({ open, exitDuration, animateOnOpen, retainOnExit: keepMounted, onAfterClose });
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const maskRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -385,47 +368,6 @@ const Modal: React.FC<ModalProps> = ({
   // Track scroll position for blur effects
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(true);
-
-  // When open becomes true, mount; when it becomes false, trigger exit animation
-  useEffect(() => {
-    if (open) {
-      if (phase === 'unmounted') {
-        setPhase(animateOnOpen ? 'entering' : 'open');
-      } else if (phase === 'exiting') {
-        // if reverting during exit, go to open directly
-        setPhase(animateOnOpen ? 'entering' : 'open');
-      }
-    } else {
-      if (phase === 'open') {
-        if (keepMounted) {
-          setPhase('exiting');
-        } else {
-          setPhase('unmounted');
-        }
-      } else if (phase === 'entering') {
-        // unmount directly if closing during entering
-        setPhase('unmounted');
-      }
-    }
-  }, [open, phase, animateOnOpen, keepMounted]);
-
-  // entering -> open switch on next frame
-  useEffect(() => {
-    if (phase === 'entering') {
-      const raf = requestAnimationFrame(() => setPhase('open'));
-      return () => cancelAnimationFrame(raf);
-    }
-    return undefined;
-  }, [phase]);
-
-  // exiting -> unmounted after exitDuration
-  useEffect(() => {
-    if (phase === 'exiting') {
-      const timer = window.setTimeout(() => setPhase('unmounted'), exitDuration);
-      return () => clearTimeout(timer);
-    }
-    return undefined;
-  }, [phase, exitDuration]);
 
   // Track scroll position for blur effects
   useEffect(() => {
@@ -454,71 +396,22 @@ const Modal: React.FC<ModalProps> = ({
   // Ensure all hooks have run before doing environment checks
   const isSSR = typeof document === 'undefined';
 
-  // Focus management & focus container on enter
-  useEffect(() => {
-    const ownerDocument = getModalDocument(size);
-    if (!ownerDocument) return undefined;
-    if (open) {
-      prevActiveRef.current = ownerDocument.activeElement as HTMLElement | null;
-      const raf = requestAnimationFrame(() => {
-        dialogRef.current?.focus();
-      });
-      return () => cancelAnimationFrame(raf);
-    } else if (!open && prevActiveRef.current) {
-      prevActiveRef.current.focus?.();
-    }
-    return undefined;
-  }, [open, size]);
-
-  // keyboard support
-  useEffect(() => {
-    if (!open || !closeOnEsc) return undefined;
-    const ownerWindow = getModalDocument(size)?.defaultView ?? window;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose?.();
-        onChange?.(false);
-      }
-    };
-    ownerWindow.addEventListener('keydown', onKey);
-    return () => {
-      ownerWindow.removeEventListener('keydown', onKey);
-    };
-  }, [open, closeOnEsc, onClose, onChange, size]);
-
-  // escape key focus trap
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key !== 'Tab') return;
-    const container = dialogRef.current;
-    if (!container) return;
-    const nodes = Array.from(container.querySelectorAll<HTMLElement>(FOCUS_SELECTOR))
-      .filter(el => !el.hasAttribute('disabled') && el.tabIndex !== -1);
-    if (nodes.length === 0) {
-      e.preventDefault();
-      return;
-    }
-    const first = nodes[0];
-    const last = nodes[nodes.length - 1];
-    const active = container.ownerDocument.activeElement as HTMLElement | null;
-    if (!e.shiftKey && active === last) {
-      e.preventDefault();
-      first.focus();
-    } else if (e.shiftKey && active === first) {
-      e.preventDefault();
-      last.focus();
-    }
-  }, []);
+  const { isTop } = useOverlayLayer({
+    present: phase !== 'unmounted', ownerDocument, active: open,
+    elementRef: maskRef, focusRef: dialogRef, modal: true, closeOnEscape: closeOnEsc,
+    onDismiss: () => { onClose?.(); onChange?.(false); },
+  });
 
   // Ensure all hooks have run before doing environment checks
   if (isSSR || phase === 'unmounted') return null;
 
   const handleMaskClick = () => {
-    if (!maskClosable) return;
+    if (!maskClosable || !open || !isTop()) return;
     onClose?.();
     onChange?.(false);
   };
 
-  const root = getModalDocument(size)?.body ?? document.body;
+  const root = ownerDocument?.body ?? document.body;
   const titleText = typeof title === 'string' ? title : '';
   return ReactDOM.createPortal(
     <div
@@ -526,6 +419,7 @@ const Modal: React.FC<ModalProps> = ({
   data-state={phase === 'open' ? 'open' : 'closed'}
       onClick={handleMaskClick}
       ref={maskRef}
+      inert={!open}
     >
       <div
         data-font-region="modal"
@@ -537,7 +431,6 @@ const Modal: React.FC<ModalProps> = ({
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
         ref={setDialogRef}
-        onKeyDown={handleKeyDown}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || icon || showClose) && (

@@ -1,3 +1,4 @@
+import { useOverlayLayer } from '@/lib/dom/useOverlayLayer';
 import {
     useCallback,
     useEffect,
@@ -52,6 +53,7 @@ const ContextMenu = ({
     const didFocusRef = useRef(false);
     const isPresent = useIsPresent();
     const reducedMotion = useReducedMotion();
+    useOverlayLayer({ present: true, ownerDocument, active: isPresent, elementRef: menuRef, closeOnOutside: true, onDismiss });
     const elementPrototype = ownerDocument.defaultView?.HTMLElement.prototype as (
         HTMLElement & { showPopover?: () => void; hidePopover?: () => void }
     ) | undefined;
@@ -108,16 +110,9 @@ const ContextMenu = ({
     useEffect(() => {
         if (!isPresent) return undefined;
         const view = ownerDocument.defaultView;
-        const onPointerDown = (event: PointerEvent) => {
-            if (!(event.target instanceof Node) || !menuRef.current?.contains(event.target)) {
-                onDismiss();
-            }
-        };
         const onResize = () => onDismiss();
-        ownerDocument.addEventListener('pointerdown', onPointerDown, true);
         view?.addEventListener('resize', onResize);
         return () => {
-            ownerDocument.removeEventListener('pointerdown', onPointerDown, true);
             view?.removeEventListener('resize', onResize);
         };
     }, [isPresent, onDismiss, ownerDocument]);

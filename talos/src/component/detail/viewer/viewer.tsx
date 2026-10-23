@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useOverlayLayer } from '@/lib/dom/useOverlayLayer';
+import { useAppDocument } from '@/component/scale/pip';
+import { usePresence } from '@/lib/dom/usePresence';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './viewer.module.scss';
 import PopoverTooltip from '@/component/popover/popover';
@@ -105,9 +108,11 @@ const Viewer: React.FC<ViewerProps> = ({
     uploading = false,
     onClose,
 }) => {
-    type Phase = 'unmounted' | 'entering' | 'open' | 'exiting';
-    const exitDuration = 300;
-    const [phase, setPhase] = useState<Phase>(() => (open ? 'entering' : 'unmounted'));
+    const ownerDocument = useAppDocument();
+    const { phase } = usePresence({ open, exitDuration: 300 });
+    const overlayRef = useRef<HTMLDivElement | null>(null);
+    const panelRef = useRef<HTMLDivElement | null>(null);
+
     const [imageLoaded, setImageLoaded] = useState(false);
     const [createdAtAgo, setCreatedAtAgo] = useState('');
     const [carouselHoverDirection, setCarouselHoverDirection] = useState<CarouselDirection | null>(null);
@@ -218,54 +223,9 @@ const Viewer: React.FC<ViewerProps> = ({
         setCreatedAtAgo('');
     }, [currentCreatedAt]);
 
-    useEffect(() => {
-        if (open) {
-            if (phase === 'unmounted' || phase === 'exiting') {
-                setPhase('entering');
-            }
-        } else if (phase === 'open') {
-            setPhase('exiting');
-        } else if (phase === 'entering') {
-            setPhase('unmounted');
-        }
-    }, [open, phase]);
+    const { isTop } = useOverlayLayer({ present: phase !== 'unmounted' && Boolean(currentImageUrl), ownerDocument, active: open, elementRef: overlayRef, focusRef: panelRef, modal: true, onDismiss: onClose });
 
-    useEffect(() => {
-        if (phase !== 'entering') return undefined;
-        const raf = requestAnimationFrame(() => {
-            setPhase('open');
-        });
-        return () => cancelAnimationFrame(raf);
-    }, [phase]);
-
-    useEffect(() => {
-        if (phase !== 'exiting') return undefined;
-        const timer = window.setTimeout(() => {
-            setPhase('unmounted');
-        }, exitDuration);
-        return () => window.clearTimeout(timer);
-    }, [phase]);
-
-    useEffect(() => {
-        if (phase === 'unmounted') return undefined;
-
-        const previousOverflow = document.body.style.overflow;
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && phase === 'open') {
-                onClose();
-            }
-        };
-
-        document.body.style.overflow = 'hidden';
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.body.style.overflow = previousOverflow;
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [phase, onClose]);
-
-    if (phase === 'unmounted' || !currentImageUrl || typeof document === 'undefined') {
+    if (phase === 'unmounted' || !currentImageUrl || !ownerDocument) {
         return null;
     }
 
@@ -273,12 +233,16 @@ const Viewer: React.FC<ViewerProps> = ({
 
     return createPortal(
         <div
+            ref={overlayRef}
+            inert={!open}
             className={styles.viewerOverlay}
             data-state={state}
-            onClick={onClose}
+            onClick={() => { if (open && isTop()) onClose(); }}
             role="presentation"
         >
             <div
+                ref={panelRef}
+                tabIndex={-1}
                 className={styles.viewerPanel}
                 data-state={state}
                 onClick={(event) => event.stopPropagation()}
@@ -434,7 +398,7 @@ const Viewer: React.FC<ViewerProps> = ({
                 </div>
             </div>
         </div>,
-        document.body,
+        ownerDocument.body,
     );
 };
 

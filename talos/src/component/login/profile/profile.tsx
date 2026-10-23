@@ -25,7 +25,6 @@ import IdCardView, { type IdCardRenderModel } from '../idcardView';
 import { useIdCardHoverAngle } from '../useIdCardHoverAngle';
 import styles from './profile.module.scss';
 
-const MODAL_EXIT_DURATION_MS = 325;
 const SYNC_HINT_BUSY_STATUSES = new Set(['checking', 'dirty', 'syncing']);
 const SYNC_HINT_FAILED_STATUSES = new Set(['error', 'offline', 'conflict']);
 
@@ -64,8 +63,7 @@ const ProfileModal = ({
   const [conflictSnapshot, setConflictSnapshot] = useState<OfficialMarksSnapshot | null>(null);
   const [conflictOpen, setConflictOpen] = useState(false);
   const [syncHintNow, setSyncHintNow] = useState(Date.now());
-  const conflictCleanupTimerRef = useRef<number | null>(null);
-  const conflictOpenTimerRef = useRef<number | null>(null);
+  const pendingConflictRef = useRef<OfficialMarksSnapshot | null>(null);
   const progressSync = useProgressSyncStore();
   const activePoints = useUserRecordStore((state) => state.activePoints);
   const profileErrorText = profileError ?? '';
@@ -101,15 +99,6 @@ const ProfileModal = ({
         ? t('sync.done').replace('{times}', syncedAgo)
         : '';
 
-  useEffect(() => () => {
-    if (conflictCleanupTimerRef.current !== null) {
-      window.clearTimeout(conflictCleanupTimerRef.current);
-    }
-    if (conflictOpenTimerRef.current !== null) {
-      window.clearTimeout(conflictOpenTimerRef.current);
-    }
-  }, []);
-
   useEffect(() => {
     if (!profileOpen || !progressSync.lastSyncedAt) return undefined;
     const timer = window.setInterval(() => setSyncHintNow(Date.now()), 1000);
@@ -117,37 +106,17 @@ const ProfileModal = ({
     return () => window.clearInterval(timer);
   }, [profileOpen, progressSync.lastSyncedAt]);
 
-  const clearConflictTimers = () => {
-    if (conflictCleanupTimerRef.current !== null) {
-      window.clearTimeout(conflictCleanupTimerRef.current);
-      conflictCleanupTimerRef.current = null;
-    }
-    if (conflictOpenTimerRef.current !== null) {
-      window.clearTimeout(conflictOpenTimerRef.current);
-      conflictOpenTimerRef.current = null;
-    }
-  };
-
-  const closeConflictModal = () => {
-    setConflictOpen(false);
-    if (conflictCleanupTimerRef.current !== null) {
-      window.clearTimeout(conflictCleanupTimerRef.current);
-    }
-    conflictCleanupTimerRef.current = window.setTimeout(() => {
-      setConflictSnapshot(null);
-      conflictCleanupTimerRef.current = null;
-    }, MODAL_EXIT_DURATION_MS);
-  };
-
+  const closeConflictModal = () => setConflictOpen(false);
   const openConflictModalAfterProfile = async (snapshot: OfficialMarksSnapshot) => {
-    clearConflictTimers();
+    pendingConflictRef.current = snapshot;
     await handleCloseProfile();
+  };
+  const afterProfileClose = () => {
+    const snapshot = pendingConflictRef.current;
+    if (!snapshot) return;
+    pendingConflictRef.current = null;
     setConflictSnapshot(snapshot);
-    setConflictOpen(false);
-    conflictOpenTimerRef.current = window.setTimeout(() => {
-      setConflictOpen(true);
-      conflictOpenTimerRef.current = null;
-    }, MODAL_EXIT_DURATION_MS);
+    setConflictOpen(true);
   };
 
   const requestBindingThenImport = () => {
@@ -202,6 +171,7 @@ const ProfileModal = ({
       <ProgressSyncHost />
       <Modal
         open={profileOpen}
+        onAfterClose={afterProfileClose}
         size={modalSize}
         title={t('idcard.profile.title')}
         icon={<ProfileIcon />}
@@ -316,6 +286,7 @@ const ProfileModal = ({
             pointIds: conflictSnapshot.officialPointIds,
           }}
           onClose={closeConflictModal}
+          onAfterClose={() => setConflictSnapshot(null)}
           onResolve={handleConflictResolve}
         />
       )}

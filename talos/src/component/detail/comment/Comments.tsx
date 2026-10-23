@@ -1,3 +1,4 @@
+import { usePresence } from '@/lib/dom/usePresence';
 import { useFontRegion } from '@/locale/useFontRegion';
 import React, { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
@@ -331,7 +332,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const [actionPendingIds, setActionPendingIds] = useState<Set<string>>(() => new Set());
     const [error, setError] = useState('');
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-    const [emojiPickerMounted, setEmojiPickerMounted] = useState(false);
+    const { present: emojiPickerMounted } = usePresence({ open: emojiPickerOpen, exitDuration: COMMENT_EMOJI_ANIMATION_MS, animateOnOpen: false });
     const clearRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
     const inputRef = useRef<CommentEditorHandle | null>(null);
     const inputSurfaceRef = useRef<HTMLDivElement | null>(null);
@@ -339,7 +340,6 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const emojiPickerRef = useRef<HTMLDivElement | null>(null);
     const emojiOpenTimerRef = useRef<number | null>(null);
     const emojiCloseTimerRef = useRef<number | null>(null);
-    const emojiUnmountTimerRef = useRef<number | null>(null);
     const commentsPanelRef = useRef<HTMLElement | null>(null);
     const commentListRef = useRef<HTMLDivElement | null>(null);
     const handledSubmissionErrorRef = useRef(0);
@@ -369,31 +369,21 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             window.clearTimeout(emojiCloseTimerRef.current);
             emojiCloseTimerRef.current = null;
         }
-        if (emojiUnmountTimerRef.current !== null) {
-            window.clearTimeout(emojiUnmountTimerRef.current);
-            emojiUnmountTimerRef.current = null;
-        }
     }, []);
 
     const closeEmojiPicker = useCallback(() => {
         clearEmojiTimers();
         setEmojiPickerOpen(false);
-        emojiUnmountTimerRef.current = window.setTimeout(() => {
-            emojiUnmountTimerRef.current = null;
-            setEmojiPickerMounted(false);
-        }, COMMENT_EMOJI_ANIMATION_MS);
     }, [clearEmojiTimers]);
 
     const openEmojiPicker = useCallback((immediate = false) => {
         clearEmojiTimers();
         if (immediate) {
-            setEmojiPickerMounted(true);
             setEmojiPickerOpen(true);
             return;
         }
         emojiOpenTimerRef.current = window.setTimeout(() => {
             emojiOpenTimerRef.current = null;
-            setEmojiPickerMounted(true);
             setEmojiPickerOpen(true);
         }, COMMENT_EMOJI_HOVER_DELAY_MS);
     }, [clearEmojiTimers]);

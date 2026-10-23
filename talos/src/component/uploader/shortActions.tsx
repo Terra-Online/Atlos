@@ -1,3 +1,5 @@
+import { registerOverlay } from '@/lib/dom/overlay';
+import { getAppDocument, subscribePictureInPictureState } from '@/component/scale/pip';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
@@ -55,7 +57,7 @@ const isPopoverOpen = (popover: HTMLElement): boolean => {
 };
 
 const containsNode = (container: Element | null | undefined, target: EventTarget | null | undefined): boolean => (
-    target instanceof Node && Boolean(container?.contains(target))
+    Boolean(target && 'nodeType' in target && container?.contains(target as Node))
 );
 
 const ShortActions = memo(({
@@ -68,6 +70,10 @@ const ShortActions = memo(({
     anchorRect,
 }: Props) => {
     const [mounted, setMounted] = useState(false);
+    const [ownerDocument, setOwnerDocument] = useState(getAppDocument);
+    const ownerWindow = ownerDocument.defaultView ?? window;
+    const registration = useRef<ReturnType<typeof registerOverlay> | null>(null);
+    useEffect(() => subscribePictureInPictureState(() => setOwnerDocument(getAppDocument())), []);
     const anchorRef = useRef<HTMLSpanElement | null>(null);
     const layerRef = useRef<PopoverElement | null>(null);
     const closeTimerRef = useRef<number | undefined>(undefined);
@@ -86,10 +92,10 @@ const ShortActions = memo(({
 
     const clearTimers = useCallback(() => {
         if (closeTimerRef.current) {
-            window.clearTimeout(closeTimerRef.current);
+            ownerWindow.clearTimeout(closeTimerRef.current);
             closeTimerRef.current = undefined;
         }
-    }, []);
+    }, [ownerWindow]);
 
     const positionLayer = useCallback(() => {
         const anchor = anchorRef.current;
@@ -103,26 +109,26 @@ const ShortActions = memo(({
         layer.style.left = `${clamp(
             anchorRect ? rect.left + rect.width / 2 - layerWidth / 2 : rect.right - layerWidth,
             VIEWPORT_MARGIN,
-            Math.max(VIEWPORT_MARGIN, window.innerWidth - layerWidth - VIEWPORT_MARGIN),
+            Math.max(VIEWPORT_MARGIN, ownerWindow.innerWidth - layerWidth - VIEWPORT_MARGIN),
         )}px`;
         layer.style.top = `${clamp(
             anchorRect
                 ? (rect.top >= layerHeight + 8 ? rect.top - layerHeight - 8 : rect.bottom + 8)
                 : rect.top,
             VIEWPORT_MARGIN,
-            Math.max(VIEWPORT_MARGIN, window.innerHeight - layerHeight - VIEWPORT_MARGIN),
+            Math.max(VIEWPORT_MARGIN, ownerWindow.innerHeight - layerHeight - VIEWPORT_MARGIN),
         )}px`;
         layer.style.right = 'auto';
         layer.style.bottom = 'auto';
-    }, [anchorRect]);
+    }, [anchorRect, ownerWindow]);
 
     const schedulePosition = useCallback(() => {
-        if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
-        frameRef.current = window.requestAnimationFrame(() => {
+        if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
+        frameRef.current = ownerWindow.requestAnimationFrame(() => {
             frameRef.current = undefined;
             positionLayer();
         });
-    }, [positionLayer]);
+    }, [ownerWindow, positionLayer]);
 
     const hideLayer = useCallback((immediate = false, notifyDismiss = true) => {
         clearTimers();
@@ -138,6 +144,8 @@ const ShortActions = memo(({
             } catch {
                 // Already hidden.
             }
+            registration.current?.dispose();
+            registration.current = null;
             layer.dataset.open = 'false';
             layer.classList.remove(styles.floatingLayerClosing);
             rootHoverRef.current = false;
@@ -154,8 +162,8 @@ const ShortActions = memo(({
 
         layer.dataset.open = 'false';
         layer.classList.add(styles.floatingLayerClosing);
-        closeTimerRef.current = window.setTimeout(finish, CLOSE_MS);
-    }, [clearTimers, onFloatingDismiss]);
+        closeTimerRef.current = ownerWindow.setTimeout(finish, CLOSE_MS);
+    }, [clearTimers, onFloatingDismiss, ownerWindow]);
 
     const shouldKeepLayerOpen = useCallback(() => (
         touchPinnedRef.current || rootHoverRef.current || layerHoverRef.current || rootFocusRef.current || layerFocusRef.current
@@ -164,13 +172,13 @@ const ShortActions = memo(({
     const syncHoverState = useCallback((target?: EventTarget | null, point?: { x: number; y: number }) => {
         const root = getRootElement();
         const layer = layerRef.current;
-        const pointTarget = point ? document.elementFromPoint(point.x, point.y) : null;
+        const pointTarget = point ? ownerDocument.elementFromPoint(point.x, point.y) : null;
         const rootHovered = containsNode(root, target) || containsNode(root, pointTarget);
         const layerHovered = containsNode(layer, target) || containsNode(layer, pointTarget);
         rootHoverRef.current = rootHovered;
         layerHoverRef.current = layerHovered;
         return rootHovered || layerHovered;
-    }, [getRootElement]);
+    }, [getRootElement, ownerDocument]);
 
     const showLayer = useCallback(() => {
         if (!isFloating || items.length === 0) return;
@@ -186,9 +194,12 @@ const ShortActions = memo(({
         } catch {
             // Already shown.
         }
+        if (!registration.current) registration.current = registerOverlay({
+            element: layer, trigger: getRootElement(), onDismiss: () => hideLayer(true),
+        });
         positionLayer();
         schedulePosition();
-    }, [clearTimers, isFloating, items.length, positionLayer, schedulePosition]);
+    }, [clearTimers, getRootElement, hideLayer, isFloating, items.length, positionLayer, schedulePosition]);
 
     useEffect(() => {
         if (!isFloating || !controlled || !mounted) return;
@@ -204,10 +215,10 @@ const ShortActions = memo(({
         setMounted(true);
         return () => {
             clearTimers();
-            if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
+            if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
             hideLayer(true, false);
         };
-    }, [clearTimers, hideLayer]);
+    }, [clearTimers, hideLayer, ownerWindow]);
 
     useEffect(() => {
         if (!isFloating || controlled) return undefined;
@@ -233,7 +244,7 @@ const ShortActions = memo(({
             if (isTouchLikePointer(event)) return;
             rootHoverRef.current = false;
             const nextTarget = event.relatedTarget;
-            if (nextTarget instanceof Node && layerRef.current?.contains(nextTarget)) return;
+            if (containsNode(layerRef.current, nextTarget)) return;
             scheduleHideLayer();
         };
         const handleFocusIn = () => {
@@ -241,8 +252,8 @@ const ShortActions = memo(({
             showLayer();
         };
         const handleFocusOut = () => {
-            window.setTimeout(() => {
-                const activeElement = document.activeElement;
+            ownerWindow.setTimeout(() => {
+                const activeElement = ownerDocument.activeElement;
                 rootFocusRef.current = Boolean(activeElement && root.contains(activeElement));
                 layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
                 if (!activeElement || (!root.contains(activeElement) && !layerRef.current?.contains(activeElement))) {
@@ -264,7 +275,7 @@ const ShortActions = memo(({
             root.removeEventListener('focusin', handleFocusIn);
             root.removeEventListener('focusout', handleFocusOut);
         };
-    }, [controlled, getRootElement, isFloating, scheduleHideLayer, showLayer]);
+    }, [controlled, getRootElement, isFloating, ownerDocument, ownerWindow, scheduleHideLayer, showLayer]);
 
     useEffect(() => {
         if (!isFloating) return undefined;
@@ -295,31 +306,28 @@ const ShortActions = memo(({
             layerHoverRef.current = Boolean(layer.matches(':hover'));
             if (!shouldKeepLayerOpen()) scheduleHideLayer();
         };
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') hideLayer(true);
-        };
         const handleWindowBlur = () => hideLayer(true);
         const handleVisibilityChange = () => {
-            if (document.visibilityState !== 'visible') hideLayer(true);
+            if (ownerDocument.visibilityState !== 'visible') hideLayer(true);
         };
 
-        document.addEventListener('pointermove', closeIfPointerOutside, true);
-        document.addEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('blur', handleWindowBlur);
-        window.addEventListener('resize', schedulePosition);
-        window.addEventListener('scroll', handleScroll, true);
+        ownerDocument.addEventListener('pointermove', closeIfPointerOutside, true);
+        ownerDocument.addEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
+        ownerDocument.addEventListener('visibilitychange', handleVisibilityChange);
+        ownerWindow.addEventListener('blur', handleWindowBlur);
+        ownerWindow.addEventListener('resize', schedulePosition);
+        ownerWindow.addEventListener('scroll', handleScroll, true);
         return () => {
-            document.removeEventListener('pointermove', closeIfPointerOutside, true);
-            document.removeEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
-            document.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('blur', handleWindowBlur);
-            window.removeEventListener('resize', schedulePosition);
-            window.removeEventListener('scroll', handleScroll, true);
+            ownerDocument.removeEventListener('pointermove', closeIfPointerOutside, true);
+            ownerDocument.removeEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
+            ownerDocument.removeEventListener('visibilitychange', handleVisibilityChange);
+            ownerWindow.removeEventListener('blur', handleWindowBlur);
+            ownerWindow.removeEventListener('resize', schedulePosition);
+            ownerWindow.removeEventListener('scroll', handleScroll, true);
         };
     }, [
+        ownerDocument,
+        ownerWindow,
         controlled,
         getRootElement,
         hideLayer,
@@ -353,7 +361,7 @@ const ShortActions = memo(({
                 layerHoverRef.current = false;
                 const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
                 const nextTarget = event.relatedTarget;
-                if (nextTarget instanceof Node && root?.contains(nextTarget)) return;
+                if (containsNode(root, nextTarget)) return;
                 scheduleHideLayer();
             } : undefined}
             onPointerMove={isFloating ? (event) => {
@@ -365,8 +373,8 @@ const ShortActions = memo(({
                 showLayer();
             } : undefined}
             onBlur={isFloating ? () => {
-                window.setTimeout(() => {
-                    const activeElement = document.activeElement;
+                ownerWindow.setTimeout(() => {
+                    const activeElement = ownerDocument.activeElement;
                     const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
                     rootFocusRef.current = Boolean(activeElement && root?.contains(activeElement));
                     layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
@@ -413,7 +421,7 @@ const ShortActions = memo(({
         return (
             <>
                 <span ref={anchorRef} className={classNames(styles.floatingAnchor, anchorClassName)} aria-hidden="true"></span>
-                {mounted && createPortal(actionLayer, document.body)}
+                {mounted && createPortal(actionLayer, ownerDocument.body)}
             </>
         );
     }

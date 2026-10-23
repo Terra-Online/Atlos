@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { usePresence } from '@/lib/dom/usePresence';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './banner.module.scss';
 import Button from '@/component/button/button';
 import { useTranslateUI } from '@/locale';
@@ -14,60 +15,27 @@ interface BannerProps {
 
 const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', open = true }) => {
     const t = useTranslateUI();
-    const [present, setPresent] = useState(open);
-    const [closing, setClosing] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
     const [renderedContent, setRenderedContent] = useState(content);
-    const closeRequestedRef = useRef(false);
-    const closeTimerRef = useRef<number | null>(null);
-    const presentRef = useRef(open);
-    const closingRef = useRef(false);
-    const onCloseRef = useRef(onClose);
-
+    const closeRequested = useRef(false);
+    const { present, phase, finishExit } = usePresence({
+        open: open && !dismissed,
+        animateOnOpen: false,
+        exitDuration: BANNER_EXIT_DURATION_MS + 50,
+        onAfterClose: () => {
+            if (closeRequested.current) {
+                closeRequested.current = false;
+                onClose();
+            }
+        },
+    });
+    const closing = phase === 'exiting';
     useEffect(() => {
-        onCloseRef.current = onClose;
-    }, [onClose]);
-
-    const clearCloseTimer = useCallback(() => {
-        if (closeTimerRef.current === null) return;
-        window.clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-    }, []);
-
-    const finishClose = useCallback(() => {
-        clearCloseTimer();
-        const shouldNotify = closeRequestedRef.current;
-        closeRequestedRef.current = false;
-        closingRef.current = false;
-        presentRef.current = false;
-        setClosing(false);
-        setPresent(false);
-        if (shouldNotify) onCloseRef.current();
-    }, [clearCloseTimer]);
-
-    const startClose = useCallback((notify: boolean) => {
-        if (!presentRef.current || closingRef.current) return;
-        closeRequestedRef.current = notify;
-        closingRef.current = true;
-        setClosing(true);
-        clearCloseTimer();
-        closeTimerRef.current = window.setTimeout(finishClose, BANNER_EXIT_DURATION_MS + 50);
-    }, [clearCloseTimer, finishClose]);
-
-    useEffect(() => {
-        if (open) {
-            clearCloseTimer();
-            closeRequestedRef.current = false;
-            presentRef.current = true;
-            closingRef.current = false;
-            setRenderedContent(content);
-            setPresent(true);
-            setClosing(false);
-            return;
-        }
-        startClose(false);
-    }, [clearCloseTimer, content, open, startClose]);
-
-    useEffect(() => () => clearCloseTimer(), [clearCloseTimer]);
+        if (!open) return;
+        closeRequested.current = false;
+        setRenderedContent(content);
+        setDismissed(false);
+    }, [open, content]);
 
     if (!present) return null;
 
@@ -76,8 +44,8 @@ const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', ope
             className={styles.bannerContainer}
             data-closing={closing || undefined}
             onAnimationEnd={(event) => {
-                if (event.currentTarget !== event.target || !closingRef.current) return;
-                finishClose();
+                if (event.currentTarget !== event.target || !closing) return;
+                finishExit();
             }}
         >
             <div className={styles.bannerWrap}>
@@ -91,7 +59,7 @@ const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', ope
                     buttonStyle='icon'
                     schema={schema}
                     size='1.2rem'
-                    onClick={() => startClose(true)}
+                    onClick={() => { closeRequested.current = true; setDismissed(true); }}
                 />
             </div>
         </div>

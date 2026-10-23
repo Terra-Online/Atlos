@@ -1,3 +1,4 @@
+import { registerOverlay } from '@/lib/dom/overlay';
 import { registerFontRegion } from '@/locale/fontLoader';
 import React, { useRef, useEffect, useCallback, useId, useLayoutEffect } from 'react';
 import styles from './popover.module.scss';
@@ -151,6 +152,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     const closeTimeoutRef = useRef<number | undefined>(undefined);
     const positionFrameRef = useRef<number | undefined>(undefined);
     const isOpenRef = useRef(false);
+    const layerRef = useRef<ReturnType<typeof registerOverlay> | null>(null);
     const fontOwner = useRef<ReturnType<typeof registerFontRegion>>(undefined);
     const text = fontText ?? (typeof content === 'string' || typeof content === 'number' ? String(content) : '');
     useLayoutEffect(() => {
@@ -228,6 +230,8 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             }
             popover.classList.remove(styles.popoverClose);
             isOpenRef.current = false;
+            layerRef.current?.dispose();
+            layerRef.current = null;
             fontOwner.current?.stop();
             fontOwner.current = undefined;
         };
@@ -258,10 +262,13 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             // Ignore if already shown
         }
 
+        if (!layerRef.current) layerRef.current = registerOverlay({
+            element: popover, trigger: triggerRef.current, onDismiss: () => hidePopover(true),
+        });
         isOpenRef.current = true;
         positionPopover();
         schedulePosition();
-    }, [clearCloseTimeout, disabled, hasContent, positionPopover, schedulePosition, text]);
+    }, [clearCloseTimeout, disabled, hasContent, hidePopover, positionPopover, schedulePosition, text]);
 
     // Cleanup function: ensure popover is closed
     useEffect(() => {
@@ -336,6 +343,14 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     const childWithHandlers = React.cloneElement(children, {
         ref: setTriggerRef,
         'aria-describedby': describedBy,
+        onFocus: (e: React.FocusEvent<HTMLElement>) => {
+            handleMouseEnter();
+            (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onBlur: (e: React.FocusEvent<HTMLElement>) => {
+            handleMouseLeave();
+            (childProps.onBlur as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
         onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
             handleMouseEnter();
             if (originalOnMouseEnter) {
