@@ -101,7 +101,7 @@ const ActionBar = memo(({
     const positionLayer = useCallback(() => {
         const anchor = anchorRef.current;
         const layer = layerRef.current;
-        if (!anchor || !layer || !isPopoverOpen(layer)) return;
+        if (!anchor || !layer || layer.dataset.open !== 'true' || !isPopoverOpen(layer)) return;
 
         const rect = anchorRect ?? anchor.getBoundingClientRect();
         const layerWidth = layer.offsetWidth;
@@ -133,8 +133,12 @@ const ActionBar = memo(({
 
     const hideLayer = useCallback((immediate = false, notifyDismiss = true) => {
         clearTimers();
+        if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
         const layer = layerRef.current;
         if (!layer) return;
+        layer.inert = true;
+        registration.current?.setActive(false);
         if (notifyDismiss && layer.dataset.open === 'true') {
             onFloatingDismiss?.();
         }
@@ -188,6 +192,8 @@ const ActionBar = memo(({
         const layer = layerRef.current;
         if (!layer) return;
 
+        layer.inert = false;
+        registration.current?.setActive(true);
         layer.dataset.open = 'true';
         layer.classList.remove(styles.floatingLayerClosing);
         try {
@@ -216,7 +222,6 @@ const ActionBar = memo(({
         setMounted(true);
         return () => {
             clearTimers();
-            if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
             hideLayer(true, false);
         };
     }, [clearTimers, hideLayer, ownerWindow]);

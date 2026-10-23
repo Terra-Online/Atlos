@@ -7,10 +7,11 @@ interface Options {
     animateOnOpen?: boolean;
     retainOnExit?: boolean;
     onAfterClose?: () => void;
+    ownerDocument?: Document | null;
 }
 
 /** Retain exiting DOM while keeping interrupted exits and their callbacks cancellable. */
-export function usePresence({ open, exitDuration, animateOnOpen = true, retainOnExit = true, onAfterClose }: Options) {
+export function usePresence({ open, exitDuration, animateOnOpen = true, retainOnExit = true, onAfterClose, ownerDocument }: Options) {
     const [phase, setPhase] = useState<Phase>(() => open ? (animateOnOpen ? 'entering' : 'open') : 'unmounted');
     const mounted = useRef(open);
     const requestedOpen = useRef(open);
@@ -29,9 +30,7 @@ export function usePresence({ open, exitDuration, animateOnOpen = true, retainOn
         if (open) {
             mounted.current = true;
             setPhase(animateOnOpen ? 'entering' : 'open');
-            if (!animateOnOpen) return undefined;
-            const frame = requestAnimationFrame(() => setPhase('open'));
-            return () => cancelAnimationFrame(frame);
+            return undefined;
         }
         if (!mounted.current) return undefined;
         if (!retainOnExit || exitDuration <= 0) {
@@ -39,9 +38,23 @@ export function usePresence({ open, exitDuration, animateOnOpen = true, retainOn
             return undefined;
         }
         setPhase('exiting');
-        const timer = window.setTimeout(finishExit, exitDuration);
-        return () => window.clearTimeout(timer);
+        return undefined;
     }, [open, animateOnOpen, retainOnExit, exitDuration, finishExit]);
+
+    useEffect(() => {
+        if (!open && phase === 'exiting') {
+            const timer = window.setTimeout(finishExit, exitDuration);
+            return () => window.clearTimeout(timer);
+        }
+        if (!open || phase !== 'entering') return undefined;
+        // Start only after the entering DOM commits; leave a rendered start frame
+        // so React batching cannot collapse mounting and the CSS transition target.
+        const view = ownerDocument?.defaultView ?? window;
+        let frame = view.requestAnimationFrame(() => {
+            frame = view.requestAnimationFrame(() => setPhase('open'));
+        });
+        return () => view.cancelAnimationFrame(frame);
+    }, [open, phase, ownerDocument, exitDuration, finishExit]);
 
     return { phase, present: phase !== 'unmounted', visible: phase === 'open', finishExit };
 }

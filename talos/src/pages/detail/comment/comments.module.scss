@@ -622,11 +622,14 @@
     border-radius: 0.875rem;
     box-shadow: 0 0.5rem 1rem rgba($black-0, 0.18);
     transform-origin: bottom right;
-    animation: commentEmojiPickerOut 180ms $standard-curve both;
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.96);
+    transition: opacity 180ms $standard-curve, transform 180ms $standard-curve;
     pointer-events: none;
 
     &[data-open='true'] {
-        animation-name: commentEmojiPickerIn;
+        opacity: 1;
+        transform: translateY(0) scale(1);
         pointer-events: auto;
     }
 }
@@ -692,29 +695,6 @@
     }
 }
 
-@keyframes commentEmojiPickerIn {
-    from {
-        opacity: 0;
-        transform: translateY(0.35rem) scale(0.96);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes commentEmojiPickerOut {
-    from {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-    to {
-        opacity: 0;
-        transform: translateY(0.35rem) scale(0.96);
-    }
-}
 
 
 

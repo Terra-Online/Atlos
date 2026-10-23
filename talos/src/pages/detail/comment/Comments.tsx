@@ -1,4 +1,6 @@
 import { usePresence } from '@/lib/dom/usePresence';
+import { useOverlayLayer } from '@/lib/dom/useOverlayLayer';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import { useFontRegion } from '@/locale/useFontRegion';
 import React, { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
@@ -317,6 +319,7 @@ const CommentItem = memo(({
 });
 
 const Comments = ({ point, pointName, active = true }: Props) => {
+    const ownerDocument = useAppDocument();
     const tUI = useTranslateUI();
     const locale = useLocale();
     const user = useAuthStore((state) => state.sessionUser);
@@ -332,12 +335,13 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const [actionPendingIds, setActionPendingIds] = useState<Set<string>>(() => new Set());
     const [error, setError] = useState('');
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-    const { present: emojiPickerMounted } = usePresence({ open: emojiPickerOpen, exitDuration: COMMENT_EMOJI_ANIMATION_MS, animateOnOpen: false });
+    const { present: emojiPickerMounted, visible: emojiPickerVisible } = usePresence({ open: emojiPickerOpen, exitDuration: COMMENT_EMOJI_ANIMATION_MS, ownerDocument });
     const clearRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
     const inputRef = useRef<CommentEditorHandle | null>(null);
     const inputSurfaceRef = useRef<HTMLDivElement | null>(null);
     const inputBarRef = useRef<HTMLDivElement | null>(null);
     const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+    const emojiLayerRef = useRef<HTMLDivElement | null>(null);
     const emojiOpenTimerRef = useRef<number | null>(null);
     const emojiCloseTimerRef = useRef<number | null>(null);
     const commentsPanelRef = useRef<HTMLElement | null>(null);
@@ -375,6 +379,8 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         clearEmojiTimers();
         setEmojiPickerOpen(false);
     }, [clearEmojiTimers]);
+
+    useOverlayLayer({ present: emojiPickerMounted, active: emojiPickerOpen, ownerDocument, elementRef: emojiLayerRef, triggerRef: emojiPickerRef, closeOnOutside: true, onDismiss: closeEmojiPicker });
 
     const openEmojiPicker = useCallback((immediate = false) => {
         clearEmojiTimers();
@@ -517,26 +523,6 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     }, [clearReply, closeEmojiPicker, point.id]);
 
     useEffect(() => () => clearEmojiTimers(), [clearEmojiTimers]);
-
-    useEffect(() => {
-        if (!emojiPickerOpen) return undefined;
-
-        const handlePointerDown = (event: PointerEvent) => {
-            const target = event.target;
-            if (!(target instanceof Node) || !emojiPickerRef.current?.contains(target)) {
-                closeEmojiPicker();
-            }
-        };
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') closeEmojiPicker();
-        };
-        document.addEventListener('pointerdown', handlePointerDown, true);
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('pointerdown', handlePointerDown, true);
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [closeEmojiPicker, emojiPickerOpen]);
 
     useEffect(() => {
         if (!recallConfirmation) return undefined;
@@ -836,8 +822,9 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                             </button>
                             {emojiPickerMounted && (
                                 <div
+                                    ref={emojiLayerRef}
                                     className={styles.commentEmojiPicker}
-                                    data-open={emojiPickerOpen ? 'true' : 'false'}
+                                    data-open={emojiPickerVisible ? 'true' : 'false'}
                                     aria-hidden={!emojiPickerOpen}
                                     role="grid"
                                     aria-label={tUI('detail.comments.emojiPicker')}

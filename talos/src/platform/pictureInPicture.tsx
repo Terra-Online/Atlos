@@ -1,3 +1,4 @@
+import { dismissTransientOverlays } from '@/lib/dom/overlay';
 import { fontLoader, stopFontLoader, migrateFontRegions } from '@/locale/fontLoader';
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -725,6 +726,7 @@ const unmountPlaceholder = () => {
 export const closeAppPictureInPicture = () => {
     const pipWindow = activePipWindow ?? getDocumentPictureInPicture()?.window ?? null;
     const root = movedRoot;
+    if (pipWindow) dismissTransientOverlays(pipWindow.document);
 
     rootAttributeObserver?.disconnect();
     rootAttributeObserver = null;
@@ -782,6 +784,7 @@ export const openAppPictureInPicture = async () => {
             preferInitialWindowPlacement: true,
         });
 
+        dismissTransientOverlays(root.ownerDocument);
         activePipWindow = pipWindow;
         movedRoot = root;
         preparePictureInPictureDocument(pipWindow);

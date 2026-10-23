@@ -1,4 +1,5 @@
 import { usePresence } from '@/lib/dom/usePresence';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import { useFontRegion } from '@/locale/useFontRegion';
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from '@/pages/detail/detail.module.scss';
@@ -109,6 +110,7 @@ const getTopRatedComment = (comments: UGCComment[]): UGCComment | null => {
 };
 
 export const Detail = ({ inline = false, className }: DetailProps) => {
+    const ownerDocument = useAppDocument();
     /**
      * @type {import('../mapContainer/store/marker.type').IMarkerData}
      */
@@ -246,7 +248,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
 
     // const noteContent = currentPoint?.status?.user?.localNote;
     const [detailOpen, setDetailOpen] = useState(false);
-    const presence = usePresence({ open: detailOpen && Boolean(currentPoint), exitDuration: DETAIL_EXIT_DURATION_MS });
+    const presence = usePresence({ open: detailOpen && Boolean(currentPoint), exitDuration: DETAIL_EXIT_DURATION_MS, ownerDocument });
     const detailPhase = presence.phase === 'unmounted' ? 'hidden' : presence.phase;
     const ref = useRef<HTMLDivElement | null>(null);
     const fontRef = useFontRegion([
@@ -270,8 +272,9 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         const header = headerRef.current;
         const tabs = tabsRef.current;
         const content = contentRef.current;
+        const view = ownerDocument?.defaultView;
         const activePanel = activeTab === 'comments' ? commentsPanelRef.current : generalPanelRef.current;
-        if (!container || !header || !tabs || !content || !activePanel || typeof window === 'undefined') return;
+        if (!container || !header || !tabs || !content || !activePanel || !view) return;
 
         const headerHeight = header.getBoundingClientRect().height;
         const tabsHeight = tabs.getBoundingClientRect().height;
@@ -296,11 +299,11 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
             )
             : activePanel.scrollHeight;
         const naturalHeight = headerHeight + tabsHeight + activePanelHeight;
-        const maxHeight = Math.max(0, Math.min(window.innerHeight * 0.8, getElementMaxHeight(container)));
+        const maxHeight = Math.max(0, Math.min(view.innerHeight * 0.8, getElementMaxHeight(container)));
         const nextHeight = Math.ceil(Math.min(naturalHeight, maxHeight));
         container.style.setProperty('--detail-panel-height', `${nextHeight}px`);
         container.style.setProperty('--detail-content-height', `${Math.max(0, nextHeight - headerHeight - tabsHeight)}px`);
-    }, [activeTab]);
+    }, [activeTab, ownerDocument]);
     
     // 当 currentPoint 更新时，显示 detail
     useEffect(() => {
@@ -350,11 +353,12 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     }, [detailPhase, updateDetailHeight]);
 
     useEffect(() => {
-        if (detailPhase === 'hidden' || typeof MutationObserver === 'undefined') return undefined;
+        const view = ownerDocument?.defaultView;
+        if (detailPhase === 'hidden' || !view || typeof MutationObserver === 'undefined') return undefined;
         let frameId: number | undefined;
         const scheduleUpdate = () => {
-            if (frameId) window.cancelAnimationFrame(frameId);
-            frameId = window.requestAnimationFrame(() => {
+            if (frameId) view.cancelAnimationFrame(frameId);
+            frameId = view.requestAnimationFrame(() => {
                 frameId = undefined;
                 updateDetailHeight();
             });
@@ -377,16 +381,17 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
             });
         }
         return () => {
-            if (frameId) window.cancelAnimationFrame(frameId);
+            if (frameId) view.cancelAnimationFrame(frameId);
             mutationObserver.disconnect();
         };
-    }, [detailPhase, updateDetailHeight]);
+    }, [detailPhase, updateDetailHeight, ownerDocument]);
 
     useEffect(() => {
         if (detailPhase === 'hidden') return undefined;
-        window.addEventListener('resize', updateDetailHeight);
-        return () => window.removeEventListener('resize', updateDetailHeight);
-    }, [detailPhase, updateDetailHeight]);
+        const view = ownerDocument?.defaultView;
+        view?.addEventListener('resize', updateDetailHeight);
+        return () => view?.removeEventListener('resize', updateDetailHeight);
+    }, [detailPhase, updateDetailHeight, ownerDocument]);
 
     useEffect(() => {
         contentRef.current?.scrollTo({ top: 0 });

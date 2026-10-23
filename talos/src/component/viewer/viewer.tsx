@@ -109,7 +109,6 @@ const Viewer: React.FC<ViewerProps> = ({
     onClose,
 }) => {
     const ownerDocument = useAppDocument();
-    const { phase } = usePresence({ open, exitDuration: 300 });
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const panelRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,6 +126,7 @@ const Viewer: React.FC<ViewerProps> = ({
         [carouselImages, selectedImageId],
     );
     const currentImageUrl = selectedImage?.url ?? imageUrl;
+    const { phase } = usePresence({ open: open && Boolean(currentImageUrl), exitDuration: 300, ownerDocument });
     const currentAlt = selectedImage?.content || alt;
     const currentAuthorNickname = selectedImage?.author?.nickname ?? authorNickname;
     const currentAuthorPublicUid = selectedImage?.author?.publicUid ?? authorPublicUid;
@@ -234,7 +234,6 @@ const Viewer: React.FC<ViewerProps> = ({
     return createPortal(
         <div
             ref={overlayRef}
-            inert={!open}
             className={styles.viewerOverlay}
             data-state={state}
             onClick={() => { if (open && isTop()) onClose(); }}

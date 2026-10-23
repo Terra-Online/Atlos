@@ -1,5 +1,6 @@
 import { AccountCard, SidebarFooter } from '@/component/shared/siteShell/sideBar.frame';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { animate } from 'motion';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import mobileStyles from '@/component/shared/siteShell/sideBar.mobile.module.scss';
 
@@ -275,7 +276,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       setLeftRatio(1);
       prevLeftBoundRef.current = 1;
       setRightContentWidth(0);
-      return;
+      return undefined;
     }
 
     const current = leftRatioRef.current;
@@ -294,23 +295,18 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     prevLeftBoundRef.current = leftBound;
 
     if (Math.abs(next - current) > 0.001) {
+      if (searchExpanded && !hasSearchQuery && visible) {
+        const animation = animate(current, next, {
+          duration: 0.22,
+          ease: (t) => 1 - Math.pow(1 - t, 3),
+          onUpdate: (value) => { leftRatioRef.current = value; setLeftRatio(value); },
+        });
+        return () => animation.stop();
+      }
       setLeftRatio(next);
     }
-  }, [hasFilterList, hasSearchQuery, leftBound, rightBound, searchExpanded]);
-
-  // Smooth animate helper - stable, no dependency on leftRatio state
-  const animateLeftRatio = React.useCallback((to: number, duration = 220) => {
-    const from = leftRatioRef.current; // Use ref to get current value
-    const start = performance.now();
-    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
-    const step = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const v = from + (to - from) * ease(t);
-      setLeftRatio(v);
-      if (t < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, []); // No dependencies - stable reference
+    return undefined;
+  }, [hasFilterList, hasSearchQuery, leftBound, rightBound, searchExpanded, visible]);
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!hasFilterList) return;
@@ -343,9 +339,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const handleSearchFocus = () => {
     if (!hasFilterList) return;
     setSearchExpanded(true);
-    if (leftRatioRef.current < rightBound - 0.001) {
-      animateLeftRatio(rightBound);
-    }
   };
 
   return (

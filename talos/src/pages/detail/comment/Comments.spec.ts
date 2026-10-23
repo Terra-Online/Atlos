@@ -49,6 +49,7 @@ vi.mock('@/pages/detail/comment/useTrans', () => ({ useTrans: () => vi.fn() }));
 import Comments from '@/pages/detail/comment/Comments';
 import * as client from '@/services/ugc/client';
 import { useMarkerStore } from '@/store/marker';
+import { registerOverlay } from '@/lib/dom/overlay';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
 const comment: UGCComment = { id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
@@ -181,6 +182,10 @@ it('plays the picker close animation before unmounting it', () => {
         if (!root) throw new Error('Emoji picker root missing');
 
         fireEvent.click(button);
+        expect(screen.getByRole('grid').getAttribute('data-open')).toBe('false');
+        act(() => { vi.advanceTimersToNextFrame(); });
+        expect(screen.getByRole('grid').getAttribute('data-open')).toBe('false');
+        act(() => { vi.advanceTimersToNextFrame(); });
         expect(screen.getByRole('grid').getAttribute('data-open')).toBe('true');
 
         fireEvent.pointerLeave(root);
@@ -196,6 +201,37 @@ it('plays the picker close animation before unmounting it', () => {
     } finally {
         vi.useRealTimers();
     }
+});
+
+it('closes the emoji layer before the parent modal and can cancel its exit', async () => {
+    const view = render(createElement(Comments, { point, pointName: 'Marker' }));
+    await screen.findByRole('textbox');
+    vi.useFakeTimers();
+    const dismiss = vi.fn();
+    const parent = registerOverlay({ element: view.container, modal: true, onDismiss: dismiss });
+    try {
+        const button = screen.getByRole('button', { name: 'detail.comments.emojiPicker' });
+        fireEvent.click(button);
+        const grid = screen.getByRole('grid');
+        act(() => { vi.advanceTimersToNextFrame(); });
+        act(() => { vi.advanceTimersToNextFrame(); });
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(grid.hasAttribute('inert')).toBe(true);
+        expect(dismiss).not.toHaveBeenCalled();
+        act(() => { vi.advanceTimersByTime(90); });
+        fireEvent.click(button);
+        act(() => { vi.advanceTimersToNextFrame(); });
+        act(() => { vi.advanceTimersToNextFrame(); });
+        act(() => { vi.advanceTimersByTime(200); });
+        expect(screen.getByRole('grid')).toBe(grid);
+        expect(grid.getAttribute('data-open')).toBe('true');
+        expect(grid.hasAttribute('inert')).toBe(false);
+        fireEvent.keyDown(document, { key: 'Escape' });
+        act(() => { vi.advanceTimersByTime(180); });
+        expect(screen.queryByRole('grid', { hidden: true })).toBeNull();
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(dismiss).toHaveBeenCalledOnce();
+    } finally { view.unmount(); parent.dispose(); vi.useRealTimers(); }
 });
 
 it('parses markdown and emoji in pasted comment text', async () => {

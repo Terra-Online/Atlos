@@ -53,7 +53,7 @@ const ContextMenu = ({
     const didFocusRef = useRef(false);
     const isPresent = useIsPresent();
     const reducedMotion = useReducedMotion();
-    useOverlayLayer({ present: true, ownerDocument, active: isPresent, elementRef: menuRef, closeOnOutside: true, onDismiss });
+    useOverlayLayer({ present: true, ownerDocument, active: isPresent, elementRef: menuRef, closeOnOutside: true, restoreFocus: true, onDismiss });
     const elementPrototype = ownerDocument.defaultView?.HTMLElement.prototype as (
         HTMLElement & { showPopover?: () => void; hidePopover?: () => void }
     ) | undefined;
@@ -77,6 +77,7 @@ const ContextMenu = ({
     }, [ownerDocument, position.x, position.y]);
 
     useLayoutEffect(() => {
+        didFocusRef.current = false;
         const menu = menuRef.current;
         if (!menu || popoverMode !== 'native') return undefined;
         try {
@@ -95,7 +96,7 @@ const ContextMenu = ({
                 // It may already have left the top layer during teardown.
             }
         };
-    }, [popoverMode]);
+    }, [popoverMode, ownerDocument]);
 
     useLayoutEffect(() => {
         positionMenu();
@@ -118,7 +119,7 @@ const ContextMenu = ({
     }, [isPresent, onDismiss, ownerDocument]);
 
     const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-        if (event.key === 'Escape' || event.key === 'Tab') {
+        if (event.key === 'Tab') {
             event.preventDefault();
             onDismiss();
             return;
@@ -162,7 +163,6 @@ const ContextMenu = ({
                 },
             }}
             style={{ pointerEvents: isPresent ? 'auto' : 'none' }}
-            inert={!isPresent}
             popover={popoverMode === 'native' ? 'manual' : undefined}
             data-popover-mode={popoverMode}
             className={styles.menu}

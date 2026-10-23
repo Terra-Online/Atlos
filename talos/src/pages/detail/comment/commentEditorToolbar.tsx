@@ -1,3 +1,4 @@
+import { useAppDocument } from '@/platform/pictureInPicture';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { $getSelection, $isRangeSelection, $setSelection, type RangeSelection, type TextFormatType } from 'lexical';
@@ -28,6 +29,7 @@ const CommentEditorToolbar = ({ disabled, onFormat }: {
     onFormat: (format: Format) => void;
 }) => {
     const [editor] = useLexicalComposerContext();
+    const appDocument = useAppDocument();
     const selectionRef = useRef<RangeSelection | null>(null);
     const dismissedRef = useRef(false);
     const [anchor, setAnchor] = useState<DOMRect | null>(null);
@@ -35,11 +37,12 @@ const CommentEditorToolbar = ({ disabled, onFormat }: {
 
     const update = useCallback(() => {
         const root = editor.getRootElement();
-        const selection = window.getSelection();
+        const ownerDocument = root?.ownerDocument;
+        const selection = ownerDocument?.getSelection();
         if (disabled || dismissedRef.current || editor.isComposing() || !root || !selection?.rangeCount
-            || selection.isCollapsed || (!root.contains(document.activeElement)
-                && !document.activeElement?.closest(`.${styles.commentFormatActions}`)) || !root.contains(selection.anchorNode) || !root.contains(selection.focusNode)) {
-            if (!document.activeElement?.closest(`.${styles.commentFormatActions}`)) setAnchor(null);
+            || selection.isCollapsed || (!root.contains(root.ownerDocument.activeElement)
+                && !ownerDocument?.activeElement?.closest(`.${styles.commentFormatActions}`)) || !root.contains(selection.anchorNode) || !root.contains(selection.focusNode)) {
+            if (!ownerDocument?.activeElement?.closest(`.${styles.commentFormatActions}`)) setAnchor(null);
             return;
         }
         editor.getEditorState().read(() => {
@@ -57,26 +60,29 @@ const CommentEditorToolbar = ({ disabled, onFormat }: {
     }, [disabled, editor]);
 
     useEffect(() => {
+        const ownerDocument = editor.getRootElement()?.ownerDocument ?? appDocument;
+        const ownerWindow = ownerDocument?.defaultView;
+        if (!ownerDocument || !ownerWindow) return undefined;
         let frame = 0;
         const schedule = () => {
-            cancelAnimationFrame(frame);
-            frame = requestAnimationFrame(update);
+            ownerWindow.cancelAnimationFrame(frame);
+            frame = ownerWindow.requestAnimationFrame(update);
         };
         const selectionChanged = () => { dismissedRef.current = false; schedule(); };
-        document.addEventListener('selectionchange', selectionChanged);
-        document.addEventListener('pointerup', selectionChanged);
-        window.addEventListener('resize', schedule);
-        document.addEventListener('scroll', schedule, true);
+        ownerDocument.addEventListener('selectionchange', selectionChanged);
+        ownerDocument.addEventListener('pointerup', selectionChanged);
+        ownerWindow.addEventListener('resize', schedule);
+        ownerDocument.addEventListener('scroll', schedule, true);
         const unregister = editor.registerUpdateListener(schedule);
         return () => {
-            cancelAnimationFrame(frame);
+            ownerWindow.cancelAnimationFrame(frame);
             unregister();
-            document.removeEventListener('selectionchange', selectionChanged);
-            document.removeEventListener('pointerup', selectionChanged);
-            window.removeEventListener('resize', schedule);
-            document.removeEventListener('scroll', schedule, true);
+            ownerDocument.removeEventListener('selectionchange', selectionChanged);
+            ownerDocument.removeEventListener('pointerup', selectionChanged);
+            ownerWindow.removeEventListener('resize', schedule);
+            ownerDocument.removeEventListener('scroll', schedule, true);
         };
-    }, [editor, update]);
+    }, [editor, update, appDocument]);
 
     const dismiss = useCallback(() => {
         dismissedRef.current = true;

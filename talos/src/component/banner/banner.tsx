@@ -1,4 +1,5 @@
 import { usePresence } from '@/lib/dom/usePresence';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './banner.module.scss';
 import Button from '@/component/button/button';
@@ -15,13 +16,14 @@ interface BannerProps {
 
 const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', open = true }) => {
     const t = useTranslateUI();
+    const ownerDocument = useAppDocument();
     const [dismissed, setDismissed] = useState(false);
     const [renderedContent, setRenderedContent] = useState(content);
     const closeRequested = useRef(false);
-    const { present, phase, finishExit } = usePresence({
+    const { present, phase } = usePresence({
         open: open && !dismissed,
-        animateOnOpen: false,
-        exitDuration: BANNER_EXIT_DURATION_MS + 50,
+        ownerDocument,
+        exitDuration: BANNER_EXIT_DURATION_MS,
         onAfterClose: () => {
             if (closeRequested.current) {
                 closeRequested.current = false;
@@ -42,11 +44,8 @@ const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', ope
     return (
         <div
             className={styles.bannerContainer}
+            data-state={phase === 'open' ? 'open' : 'closed'}
             data-closing={closing || undefined}
-            onAnimationEnd={(event) => {
-                if (event.currentTarget !== event.target || !closing) return;
-                finishExit();
-            }}
         >
             <div className={styles.bannerWrap}>
                 <div className={styles.bannerContent}>

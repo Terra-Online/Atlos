@@ -68,6 +68,7 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
   className,
   swipeTargetRef,
 }, forwardedRef) => {
+  const appDocument = useAppDocument();
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const touchGestureRef = useRef<TabTouchGesture | null>(null);
@@ -81,9 +82,8 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
     const tabs = tabsRef.current;
     const tab = tabRefs.current.get(key);
     if (!tabs || !tab) return null;
-    const tabsRect = tabs.getBoundingClientRect();
-    const tabRect = tab.getBoundingClientRect();
-    return tabRect.left - tabsRect.left + tabs.scrollLeft + tabRect.width / 2;
+    // The indicator uses local CSS pixels, independent of the dialog's enter scale.
+    return tab.offsetLeft + tab.offsetWidth / 2;
   }, []);
 
   const syncIndicator = useCallback(() => {
@@ -98,9 +98,9 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
     const tabs = tabsRef.current;
     if (!tabs) return undefined;
 
-    const frame = window.requestAnimationFrame(syncIndicator);
+    const view = tabs.ownerDocument.defaultView;
     const handleLayoutChange = () => syncIndicator();
-    window.addEventListener('resize', handleLayoutChange);
+    view?.addEventListener('resize', handleLayoutChange);
     tabs.addEventListener('scroll', handleLayoutChange, { passive: true });
 
     const resizeObserver = typeof ResizeObserver === 'undefined'
@@ -110,12 +110,11 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
     tabRefs.current.forEach((tab) => resizeObserver?.observe(tab));
 
     return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', handleLayoutChange);
+      view?.removeEventListener('resize', handleLayoutChange);
       tabs.removeEventListener('scroll', handleLayoutChange);
       resizeObserver?.disconnect();
     };
-  }, [items.length, syncIndicator]);
+  }, [items.length, syncIndicator, appDocument]);
 
   useEffect(() => {
     const swipeTarget = swipeTargetRef?.current;
@@ -349,7 +348,7 @@ const Modal: React.FC<ModalProps> = ({
   const tUI = useTranslateUI();
   const appDocument = useAppDocument();
   const ownerDocument = size === 'full' && appDocument ? getOpenerDocument() : appDocument;
-  const { phase } = usePresence({ open, exitDuration, animateOnOpen, retainOnExit: keepMounted, onAfterClose });
+  const { phase } = usePresence({ open, exitDuration, animateOnOpen, retainOnExit: keepMounted, onAfterClose, ownerDocument });
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const maskRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -419,7 +418,6 @@ const Modal: React.FC<ModalProps> = ({
   data-state={phase === 'open' ? 'open' : 'closed'}
       onClick={handleMaskClick}
       ref={maskRef}
-      inert={!open}
     >
       <div
         data-font-region="modal"

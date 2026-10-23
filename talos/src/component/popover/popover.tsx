@@ -150,7 +150,9 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     variant = 'text',
 }) => {
     const closeTimeoutRef = useRef<number | undefined>(undefined);
-    const positionFrameRef = useRef<number | undefined>(undefined);
+    const positionFrameRef = useRef<(() => void) | undefined>(undefined);
+    const viewportCleanupRef = useRef<(() => void) | undefined>(undefined);
+    const scheduleLatest = useRef<() => void>(() => {});
     const isOpenRef = useRef(false);
     const layerRef = useRef<ReturnType<typeof registerOverlay> | null>(null);
     const fontOwner = useRef<ReturnType<typeof registerFontRegion>>(undefined);
@@ -203,25 +205,28 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     }, [anchor, gap, placement]);
 
     const schedulePosition = useCallback(() => {
-        if (positionFrameRef.current) {
-            window.cancelAnimationFrame(positionFrameRef.current);
-        }
-        positionFrameRef.current = window.requestAnimationFrame(() => {
+        positionFrameRef.current?.();
+        const ownerWindow = triggerRef.current?.ownerDocument.defaultView ?? window;
+        const frame = ownerWindow.requestAnimationFrame(() => {
             positionFrameRef.current = undefined;
             positionPopover();
         });
+        positionFrameRef.current = () => ownerWindow.cancelAnimationFrame(frame);
     }, [positionPopover]);
+    scheduleLatest.current = schedulePosition;
 
     const hidePopover = useCallback((immediate = false) => {
         clearCloseTimeout();
-        if (positionFrameRef.current) {
-            window.cancelAnimationFrame(positionFrameRef.current);
-            positionFrameRef.current = undefined;
-        }
+        positionFrameRef.current?.();
+        positionFrameRef.current = undefined;
+        viewportCleanupRef.current?.();
+        viewportCleanupRef.current = undefined;
+        isOpenRef.current = false;
 
         const popover = popoverRef.current;
         if (!popover) return;
 
+        layerRef.current?.setActive(false);
         const finishClose = () => {
             try {
                 popover.hidePopover?.();
@@ -229,7 +234,6 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
                 // Ignore if already hidden
             }
             popover.classList.remove(styles.popoverClose);
-            isOpenRef.current = false;
             layerRef.current?.dispose();
             layerRef.current = null;
             fontOwner.current?.stop();
@@ -265,6 +269,17 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         if (!layerRef.current) layerRef.current = registerOverlay({
             element: popover, trigger: triggerRef.current, onDismiss: () => hidePopover(true),
         });
+        layerRef.current.setActive(true);
+        if (!viewportCleanupRef.current) {
+            const ownerWindow = popover.ownerDocument.defaultView ?? window;
+            const update = () => scheduleLatest.current();
+            ownerWindow.addEventListener('resize', update);
+            ownerWindow.addEventListener('scroll', update, true);
+            viewportCleanupRef.current = () => {
+                ownerWindow.removeEventListener('resize', update);
+                ownerWindow.removeEventListener('scroll', update, true);
+            };
+        }
         isOpenRef.current = true;
         positionPopover();
         schedulePosition();
@@ -274,9 +289,6 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     useEffect(() => {
         return () => {
             clearCloseTimeout();
-            if (positionFrameRef.current) {
-                window.cancelAnimationFrame(positionFrameRef.current);
-            }
             hidePopover(true);
             fontOwner.current?.stop();
             fontOwner.current = undefined;
@@ -301,18 +313,6 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     useEffect(() => {
         if (isOpenRef.current) schedulePosition();
     }, [content, schedulePosition]);
-
-    useEffect(() => {
-        const handleViewportChange = () => schedulePosition();
-        const ownerWindow = triggerRef.current?.ownerDocument.defaultView ?? window;
-        ownerWindow.addEventListener('resize', handleViewportChange);
-        ownerWindow.addEventListener('scroll', handleViewportChange, true);
-
-        return () => {
-            ownerWindow.removeEventListener('resize', handleViewportChange);
-            ownerWindow.removeEventListener('scroll', handleViewportChange, true);
-        };
-    }, [schedulePosition]);
 
     const handleMouseEnter = () => {
         if (visible !== undefined) return;
