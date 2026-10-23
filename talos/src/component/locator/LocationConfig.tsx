@@ -1,8 +1,8 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import parse from 'html-react-parser';
 import Modal from '@/component/modal/modal';
-import { AccessButton } from '@/component/login/access';
 import profileStyles from '@/component/login/profile/profile.module.scss';
 import { Trigger } from '@/component/trigger/trigger';
 import { useAuthStore } from '@/store/auth';
@@ -258,12 +258,12 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
                 </div>
 
                 <div className={classNames(profileStyles.profileActions, styles.configActions)}>
-                    <AccessButton
+                    <EntryButton
                         onClick={onChangeBinding}
                         disabled={saving}
                         label={t('locator.binding.changeBinding')}
                     />
-                    <AccessButton
+                    <EntryButton
                         onClick={() => {
                             void handleUnlink();
                         }}

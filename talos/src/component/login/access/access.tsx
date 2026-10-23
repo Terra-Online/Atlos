@@ -1,5 +1,4 @@
-import { AccessButton } from './button';
-export { AccessButton } from './button';
+import { EntryButton } from '@/component/button/EntryButton';
 import Modal from '@/component/modal/modal';
 import DiscordIcon from '@/assets/images/UI/media/discordicon.svg?react';
 import GitHubIcon from '@/assets/images/UI/media/ghicon.svg?react';
@@ -843,7 +842,7 @@ const Access = ({
             ) : (
             <div className={styles.oauthMethods}>
               {oauthMethods.map(({ platform, icon }) => (
-                <AccessButton
+                <EntryButton
                   key={platform}
                   platform={platform}
                   disabled={isOauthButtonDisabled(platform)}
@@ -853,7 +852,7 @@ const Access = ({
                   label={getOauthButtonLabel(platform)}
                 >
                   {icon}
-                </AccessButton>
+                </EntryButton>
               ))}
             </div>
             )}

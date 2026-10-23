@@ -1,3 +1,4 @@
+import IconButton from '@/component/button/IconButton';
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
 
@@ -180,22 +181,10 @@ const RegionContainer: React.FC<{
                                 styles.regItem,
                                 currentRegionKey === key && styles.selected,
                             )}
-                            onClick={() => {
-                                setCurrentRegion(key);
-                            }}
-                            role="button"
-                            tabIndex={0}
-                            aria-label={regionName}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    setCurrentRegion(key);
-                                }
-                            }}
                         >
-                            <div className={styles.icon}>
-                                <Icon />
-                            </div>
+                            <IconButton className={styles.mainAction} label={regionName} pressed={currentRegionKey === key} onClick={() => setCurrentRegion(key)}>
+                                <div className={styles.icon}><Icon /></div>
+                            </IconButton>
                             {region.subregions.length > 1 && (
                                 <SubregionSwitch
                                     selectedIndex={subRegionIndex}

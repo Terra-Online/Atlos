@@ -1,3 +1,4 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import { useFontRegion } from '@/locale/useFontRegion';
 import Feed from './feed';
 import React, {
@@ -21,7 +22,6 @@ import { formatRelativeTime, parseTimestamp } from '@/lib/format/time';
 import { navigateToMarkerId, type MarkerContentTarget } from '@/services/map';
 import { useDevice } from '@/platform/device';
 import { openOemAuthModal } from '@/component/login/authEvents';
-import { AccessButton } from '@/component/login/access';
 import {
     getNotificationUnreadCounts,
     listNotifications,
@@ -878,7 +878,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                                 <>
                                     <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
                                     <div className={styles.loadMore}>
-                                        <AccessButton
+                                        <EntryButton
                                             label={t(
                                                 activeFeed.loadingMore
                                                     ? 'common.loading'

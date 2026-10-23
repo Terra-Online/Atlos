@@ -1,7 +1,7 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import React, { useCallback, useState } from 'react';
 import classNames from 'classnames';
 import Modal from '@/component/modal/modal';
-import { AccessButton } from '@/component/login/access';
 import profileStyles from '@/component/login/profile/profile.module.scss';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useTranslateUI } from '@/locale';
@@ -89,7 +89,7 @@ const LocationAuth: React.FC = () => {
                     {errorText}
                 </div>
                 <div className={classNames(profileStyles.profileActions, styles.singleAction)}>
-                    <AccessButton
+                    <EntryButton
                         onClick={() => {
                             void authorize();
                         }}

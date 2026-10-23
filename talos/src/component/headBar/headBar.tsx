@@ -1,3 +1,4 @@
+import IconButton from '@/component/button/IconButton';
 import React from 'react';
 import { useDevice } from '@/platform/device';
 import { useForceHeadbarExpanded } from '@/store/uiPrefs';
@@ -43,11 +44,12 @@ const HeadItem = ({
     };
 
     const button = (
-        <button
+        <IconButton
+            label={ariaLabel ?? (typeof tooltip === 'string' ? tooltip : 'Actions')}
+            pressed={active}
             className={`${styles.headbarItem} ${active ? styles.active : ''} ${disabled ? styles.disabled : ''} ${compactHidden ? styles.compactHidden : ''}`}
             onClick={handleClick}
             disabled={disabled}
-            aria-label={ariaLabel ?? (typeof tooltip === 'string' ? tooltip : undefined)}
             aria-hidden={compactHidden || undefined}
             tabIndex={compactHidden ? -1 : undefined}
             data-guide={guideKey}
@@ -59,7 +61,7 @@ const HeadItem = ({
                 {Icon && <Icon />}
             </div>
             {badge && <span className={styles.badge} data-badge={guideKey} />}
-        </button>
+        </IconButton>
     );
 
     if (!tooltip) {

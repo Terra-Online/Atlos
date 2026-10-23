@@ -1,3 +1,4 @@
+import IconButton from '@/component/button/IconButton';
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { openOemAuthModal } from '@/component/login/authEvents';
@@ -306,20 +307,10 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                             styles.locatorButton,
                             viewMode !== 'off' && regSwitchStyles.selected,
                         )}
-                        data-guide="locator-button"
-                        onClick={handleClick}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={t('mapControls.locationTracking')}
-                        onKeyDown={(event) => {
-                            if (event.key !== 'Enter' && event.key !== ' ') return;
-                            event.preventDefault();
-                            handleClick();
-                        }}
                     >
-                        <div className={regSwitchStyles.icon}>
-                            <Icon />
-                        </div>
+                        <IconButton className={regSwitchStyles.mainAction} data-guide="locator-button" label={t('mapControls.locationTracking')} pressed={viewMode !== 'off'} onClick={handleClick}>
+                            <div className={regSwitchStyles.icon}><Icon /></div>
+                        </IconButton>
                         {bound && (
                             <SubregionSwitch
                                 showIndicator={false}

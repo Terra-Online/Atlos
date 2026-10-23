@@ -1,6 +1,6 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import React, { useEffect, useMemo, useState } from 'react';
 import Modal from '@/component/modal/modal';
-import { AccessButton } from '@/component/login/access';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { loadAllMarkers, type IMarkerData } from '@/data/marker';
 import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
@@ -230,16 +230,16 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                 />
 
                 <div className={styles.actions}>
-                    <AccessButton
+                    <EntryButton
                         label={(t('sync.conflict.keepA')).replace('{label}', aShortLabel)}
                         onClick={() => onResolve('a')}
                     />
-                    <AccessButton
+                    <EntryButton
                         label={(t('sync.conflict.keepB')).replace('{label}', bShortLabel)}
                         onClick={() => onResolve('b')}
                     />
                     <div className={styles.actionWide}>
-                        <AccessButton
+                        <EntryButton
                             label={(t('sync.conflict.merge'))
                                 .replace('{count}', String(mergedCount))}
                             onClick={() => onResolve('merge')}

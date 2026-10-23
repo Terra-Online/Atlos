@@ -1,3 +1,4 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import { useEffect, useRef, useState } from 'react';
 import parse from 'html-react-parser';
 import ProfileIcon from '@/assets/logos/profile.svg?react';
@@ -20,7 +21,6 @@ import { formatElapsedShort, parseTimestamp } from '@/lib/format/time';
 import ProgressSyncHost from '@/component/progressSync/ProgressSyncHost';
 import { requestProgressSyncNow } from '@/component/progressSync/progressSyncController';
 import { areLocalPointsSynced } from '@/services/progress/pointState';
-import { AccessButton } from '../access';
 import IdCardView, { type IdCardRenderModel } from '../idcardView';
 import { useIdCardHoverAngle } from '../useIdCardHoverAngle';
 import styles from './profile.module.scss';
@@ -233,7 +233,7 @@ const ProfileModal = ({
 
           <div className={styles.profileActions}>
             <div className={styles.profileActionWide}>
-              <AccessButton
+              <EntryButton
                 onClick={() => {
                   void requestProgressSyncNow();
                 }}
@@ -242,7 +242,7 @@ const ProfileModal = ({
               />
             </div>
             <div className={styles.profileActionWide}>
-              <AccessButton
+              <EntryButton
                 onClick={() => {
                   void handleImportOfficialMarks();
                 }}
@@ -252,7 +252,7 @@ const ProfileModal = ({
                   : t('idcard.profile.importOfficial')}
               />
             </div>
-            <AccessButton
+            <EntryButton
               onClick={() => {
                 void handleSaveProfile();
               }}
@@ -261,7 +261,7 @@ const ProfileModal = ({
                 ? t('idcard.profile.saving')
                 : t('idcard.profile.save')}
             />
-            <AccessButton
+            <EntryButton
               onClick={() => {
                 void handleLogout();
               }}

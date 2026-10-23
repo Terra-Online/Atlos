@@ -1,3 +1,4 @@
+import IconButton from '@/component/button/IconButton';
 import React, { useMemo } from 'react';
 import styles from '../regSwitch/regSwitch.module.scss';
 import { useCurrentLayer, useSetCurrentLayer, type LayerType } from '@/store/layer';
@@ -79,19 +80,10 @@ const LayerSwitch: React.FC<{
                         styles.regItem,
                         currentLayer !== 'M' && styles.selected,
                     )}
-                    data-guide='layer-main-toggle'
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('mapControls.layerSelect')}
-                    onClick={() => {
-                        if (currentLayer !== 'M') {
-                            setCurrentLayer('M');
-                        }
-                    }}
                 >
-                    <div className={styles.icon}>
-                        <LayerIcon />
-                    </div>
+                    <IconButton className={styles.mainAction} data-guide="layer-main-toggle" label={t('mapControls.layerSelect')} pressed={currentLayer !== 'M'} onClick={() => setCurrentLayer('M')}>
+                        <div className={styles.icon}><LayerIcon /></div>
+                    </IconButton>
                     <div
                         className={classNames(styles.subregionSwitchContainer, {
                             [styles.forceOpen]: forceLayerSubOpen,
@@ -111,6 +103,7 @@ const LayerSwitch: React.FC<{
                             {availableLayers.map((layer) => {
                                 return (
                                     <button
+                                        type="button"
                                         key={layer}
                                         className={classNames(
                                             styles.subregItem,

@@ -1,3 +1,4 @@
+import IconButton from '@/component/button/IconButton';
 import { registerOverlay } from '@/lib/dom/overlay';
 import { getAppDocument, subscribePictureInPictureState } from '@/component/scale/pip';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -387,8 +388,8 @@ const ShortActions = memo(({
         >
             {items.map((item) => (
                 <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4} visible={item.tooltipVisible}>
-                    <button
-                        type="button"
+                    <IconButton
+                        label={item.label}
                         className={styles.shortActionButton}
                         data-action={item.id}
                         data-label={item.id}
@@ -407,11 +408,10 @@ const ShortActions = memo(({
                             event.stopPropagation();
                             item.onClick?.();
                         }}
-                        aria-label={item.label}
-                        aria-pressed={item.active || undefined}
+                        pressed={item.active}
                     >
                         <span className={classNames(styles.shortActionIcon, item.iconClassName)}>{item.icon}</span>
-                    </button>
+                    </IconButton>
                 </PopoverTooltip>
             ))}
         </div>

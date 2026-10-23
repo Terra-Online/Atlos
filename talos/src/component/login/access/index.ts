@@ -1,2 +1,2 @@
 export { default as Access } from './access';
-export { AccessButton } from './button';
+export { EntryButton as AccessButton } from '@/component/button/EntryButton';

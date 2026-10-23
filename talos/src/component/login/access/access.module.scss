@@ -23,14 +23,6 @@
     --auth-sys: #{$black-1};
     --auth-sys-fg: #{$white-0};
 
-    --oauth-pill-bg: #{rgba($white-1, 0.75)};
-    --oauth-pill-hover: #{$primary-accent-4};
-    --oauth-pill-text: #{$grey-1};
-
-    --oauth-discord: #5865f2;
-    --oauth-github: #24292f;
-    --oauth-invert: 0;
-
     --ack-link: #{$primary-accent-6};
 
 }
@@ -55,14 +47,6 @@
     --auth-ban-fg: #{$white-0};
     --auth-sys: #{$black-1};
     --auth-sys-fg: #{$white-0};
-
-    --oauth-pill-bg: #{rgba($black-1, 0.9)};
-    --oauth-pill-hover: #{rgba($primary-accent-4, 0.6)};
-    --oauth-pill-text: #{$light-1};
-
-    --oauth-discord: #e0e3ff;
-    --oauth-github: #f0f6fc;
-    --oauth-invert: 1;
 
     --ack-link: #{$primary-accent-4};
 }
@@ -451,92 +435,6 @@
   gap: 0.75rem;
   width: 60%;
   margin: 0 auto 2rem;
-}
-
-.oauthMethod {
-  --oauth-icon: var(--oauth-pill-text);
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-  height: 2.6rem;
-  border-radius: 20px;
-  background: var(--oauth-pill-bg);
-  color: var(--oauth-pill-text);
-  box-shadow: 0 1px 2px rgba($black-1, 0.45);
-  padding: 0.35rem 0.85rem;
-  cursor: pointer;
-  transition: background-color .3s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
-
-  &:hover {
-    background-color: var(--oauth-pill-hover);
-    box-shadow: 0 0.5px 1px rgba($black-1, 0.45);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  &::after {
-    content: "";
-    position: absolute;
-    width: 60%;
-    height: 100%;
-    top: 0;
-    right: 0;
-    background-image: url('../../../assets/images/UI/bg.webp');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: 60% 40%;
-    z-index: 0;
-    pointer-events: none;
-    border-radius: 20px;
-    filter: invert(var(--oauth-invert));
-    transition: filter .35s $adagio-curve;
-  }
-}
-
-.oauthMethodInner {
-  width: 90%;
-  margin: auto;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem
-}
-.oauthMethodIcon {
-  width: 1.25rem;
-  height: 1.25rem;
-  filter: drop-shadow(0 1px .5px rgba($black-1, 0.25));
-  > svg {
-    width: 100%;
-    height: 100%;
-    fill: currentcolor;
-  }
-  &[data-platform='discord']>svg {
-    fill: var(--oauth-discord);
-  }
-  &[data-platform='github']>svg {
-    fill: var(--oauth-github);
-    scale: 0.95;
-  }
-  &[data-platform='google']>svg {
-    scale: 0.92
-  }
-}
-
-.oauthMethodLabel {
-  font-family: 'Fedra Sans Pro', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
-  font-size: .875rem;
-  line-height: 1;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  text-transform: capitalize;
-  transform: translateY(1px);
-  unicode-bidi: plaintext;
 }
 
 .switchModeButton {

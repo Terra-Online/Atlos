@@ -1,7 +1,7 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import Modal, { type ModalProps } from '@/component/modal/modal';
-import { AccessButton } from '@/component/login/access';
 import PopoverTooltip from '@/component/popover/popover';
 import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
@@ -332,7 +332,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                         <span>{docsText}</span>
                     </div>
                     <div className={classNames(styles.singleAction, profileStyles.profileActions)}>
-                        <AccessButton
+                        <EntryButton
                             onClick={() => {
                                 void handleBind();
                             }}
