@@ -9,9 +9,10 @@
 @use './embed' as *;
 @use './themeTransition';
 
-// The behavior overlay is a single canvas, so one CSS shadow keeps both static
-// and animated paths legible without per-feature filter surfaces.
+// Canvas overlays use one shared filter surface for their path shadows.
 .behaviorOverlayPane {
+    --behavior-wall-color: #{$primary-accent-4};
+    --behavior-wall-hover-color: #{$primary-accent-3};
     // Butterfly routes and their authored nodes.
     --behavior-butterfly-color: #{$primary-accent-4};
 
@@ -29,6 +30,10 @@
     filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
     transform-origin: 0 0;
     will-change: transform;
+
+    &.mapSupplementCanvas {
+        filter: drop-shadow(0 0.5px 1px $black-0);
+    }
 }
 
 
@@ -159,4 +164,10 @@ li {
 }
 ::-webkit-scrollbar-track {
     display: none;
+}
+
+// The marker Canvas writes an inline cursor on this same container.
+.leaflet-container.mapSupplementHover,
+.leaflet-container.mapSupplementHover .leaflet-interactive {
+    cursor: help !important;
 }

@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Mostrar informações adicionais do mapa",
+    "hideMapSupplements": "Ocultar informações adicionais do mapa",
     "onlySubregion": "Mostrar apenas {region}",
     "showAllSubregions": "Mostrar todas as sub-regiões",
     "highlightSameType": "Destacar pontos do mesmo tipo aqui ({count})",

@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Tunjukkan maklumat tambahan peta",
+    "hideMapSupplements": "Sembunyikan maklumat tambahan peta",
     "onlySubregion": "Tunjukkan {region} sahaja",
     "showAllSubregions": "Tunjukkan semua subrantau",
     "highlightSameType": "Serlah titik jenis sama di sini ({count})",

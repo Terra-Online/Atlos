@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Visa kompletterande kartinformation",
+    "hideMapSupplements": "Dölj kompletterande kartinformation",
     "onlySubregion": "Visa endast {region}",
     "showAllSubregions": "Visa alla delregioner",
     "highlightSameType": "Markera punkter av samma typ här ({count})",

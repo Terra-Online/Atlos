@@ -13,6 +13,7 @@ export type BehaviorColorRole =
     | 'butterfly'
     | 'relation'
     | 'unlock'
+    | 'wall'
     | 'aurylene';
 
 type LineSpeedProfile = {
@@ -124,6 +125,35 @@ const createLine = (
         cumulativeLengths.push(totalLength);
     }
     return { points, ...options, cumulativeLengths, totalLength };
+};
+
+/** Wall centerlines are static reference geometry, with no reveal or flow. */
+export const wallScene = (walls: ReadonlyArray<{ segment: [MapPoint, MapPoint]; opacity?: number }>): BehaviorScene => ({
+    lines: walls.map((wall) => createLine(
+        wall.segment,
+        { colorRole: 'wall', weight: 3, opacity: wall.opacity ?? 0.85, delay: 0, duration: 0 },
+    )),
+    circles: [],
+    timelineDuration: 0,
+});
+
+/** Fit two full dashes and one gap even when a wall projects to a short line. */
+export const wallStroke = (length: number, weight: number, zoom: number): { weight: number; dash: [number, number] } => {
+    const scale = Math.min(1, length / 16);
+    return {
+        weight: Math.min(weight, 1.5 + Math.max(0, zoom) * 0.375),
+        dash: [6 * scale, 4 * scale],
+    };
+};
+
+/** Keep short walls legible at overview zoom without moving their midpoint. */
+export const wallScreenSegment = (start: MapPoint, end: MapPoint): [MapPoint, MapPoint] => {
+    const length = distance(start, end);
+    if (length >= 6 || length <= MIN_LINE_LENGTH) return [start, end];
+    const extension = (6 / length - 1) / 2;
+    const dx = (end[0] - start[0]) * extension;
+    const dy = (end[1] - start[1]) * extension;
+    return [[start[0] - dx, start[1] - dy], [end[0] + dx, end[1] + dy]];
 };
 
 type LineOptions = {

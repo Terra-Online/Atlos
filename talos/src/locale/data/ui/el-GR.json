@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Εμφάνιση πρόσθετων πληροφοριών χάρτη",
+    "hideMapSupplements": "Απόκρυψη πρόσθετων πληροφοριών χάρτη",
     "onlySubregion": "Εμφάνιση μόνο: {region}",
     "showAllSubregions": "Εμφάνιση όλων των υποπεριοχών",
     "highlightSameType": "Επισήμανση σημείων ίδιου τύπου ({count})",

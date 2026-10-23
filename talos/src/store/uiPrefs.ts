@@ -47,6 +47,8 @@ interface IUiPrefsStore {
   setMarkFilterOrder: (order: string[]) => void;
 
   // Trigger states (persistent)
+  mapSupplementsEnabled: boolean;
+  setMapSupplementsEnabled: (value: boolean) => void;
   triggerCluster: boolean;
   triggerBoundary: boolean;
   triggerlabelName: boolean;
@@ -156,6 +158,8 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setMarkFilterOrder: (order) => set({ markFilterOrder: order }),
 
       // triggers (default off)
+      mapSupplementsEnabled: false,
+      setMapSupplementsEnabled: (value) => set({ mapSupplementsEnabled: value }),
       triggerCluster: true,
       triggerBoundary: false,
       // Repurposed: controls region/place name labels visibility
@@ -228,6 +232,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         markFilterExpanded: state.markFilterExpanded,
         markFilterOrder: state.markFilterOrder,
         triggerCluster: state.triggerCluster,
+        mapSupplementsEnabled: state.mapSupplementsEnabled,
         triggerBoundary: state.triggerBoundary,
         triggerlabelName: state.triggerlabelName,
         desktopDrawerSnapIndex: state.desktopDrawerSnapIndex,
@@ -258,6 +263,7 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         if (persisted.prefsHideCompletedMarkers !== undefined) merged.prefsHideCompletedMarkers = persisted.prefsHideCompletedMarkers;
         if (persisted.prefsLocatorSyncEnabled !== undefined) merged.prefsLocatorSyncEnabled = persisted.prefsLocatorSyncEnabled;
         if (persisted.prefsPerformanceModeEnabled !== undefined) merged.prefsPerformanceModeEnabled = persisted.prefsPerformanceModeEnabled;
+        if (typeof persisted.mapSupplementsEnabled === 'boolean') merged.mapSupplementsEnabled = persisted.mapSupplementsEnabled;
         if (persisted.theme !== undefined) merged.theme = persisted.theme;
         if (persisted.intelCardsExpanded !== undefined) merged.intelCardsExpanded = persisted.intelCardsExpanded;
         

@@ -678,5 +678,8 @@
       "research_tales": "Разное и умные мысли",
       "research_gm02m27": "Отчет: город науки"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Оптический туман</span>: Атакуйте его, и он развеется."
   }
 }

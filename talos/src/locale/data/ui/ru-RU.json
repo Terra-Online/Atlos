@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Показать дополнительные сведения на карте",
+    "hideMapSupplements": "Скрыть дополнительные сведения на карте",
     "onlySubregion": "Показывать только {region}",
     "showAllSubregions": "Показать все подобласти",
     "highlightSameType": "Выделить точки того же типа ({count})",

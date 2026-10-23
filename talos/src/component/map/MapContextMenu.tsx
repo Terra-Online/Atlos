@@ -22,7 +22,7 @@ import {
 import { commitMarkerSelection, useHistoryStore } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecord } from '@/store/userRecord';
-import { useHideCompletedMarkers, useSetHideCompletedMarkers } from '@/store/uiPrefs';
+import { useHideCompletedMarkers, useSetHideCompletedMarkers, useUiPrefsStore } from '@/store/uiPrefs';
 import {
     MARKER_CONTEXT_MENU_EVENT,
     type MarkerContextMenuPayload,
@@ -80,6 +80,8 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
     const activePoints = useUserRecord();
     const hideCompletedMarkers = useHideCompletedMarkers();
     const setHideCompletedMarkers = useSetHideCompletedMarkers();
+    const supplementsEnabled = useUiPrefsStore((state) => state.mapSupplementsEnabled);
+    const setSupplementsEnabled = useUiPrefsStore((state) => state.setMapSupplementsEnabled);
     const canUndo = useHistoryStore((state) => state.past.length > 0);
     const canRedo = useHistoryStore((state) => state.future.length > 0);
 
@@ -337,6 +339,15 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
             {target.subregionKey && <span>{getSubregionLabel(target.subregionKey, (key) => String(tGame(key)))}</span>}
         </div>
     ) : undefined;
+
+    groups.push({
+        id: 'map-supplements',
+        items: [{
+            id: 'toggle-map-supplements',
+            label: translate(supplementsEnabled ? 'hideMapSupplements' : 'showMapSupplements'),
+            onSelect: () => setSupplementsEnabled(!supplementsEnabled),
+        }],
+    });
 
     return (
         <AnimatePresence>

@@ -678,5 +678,8 @@
       "research_tales": "Compendios y registros ingeniosos",
       "research_gm02m27": "I.I.: Una ciudad de I+D"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Niebla óptica</span>: Ataca una para disiparla."
   }
 }

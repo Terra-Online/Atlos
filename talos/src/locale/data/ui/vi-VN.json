@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Hiện thông tin bổ sung trên bản đồ",
+    "hideMapSupplements": "Ẩn thông tin bổ sung trên bản đồ",
     "onlySubregion": "Chỉ hiển thị {region}",
     "showAllSubregions": "Hiển thị tất cả khu vực con",
     "highlightSameType": "Làm nổi bật các điểm cùng loại tại đây ({count})",

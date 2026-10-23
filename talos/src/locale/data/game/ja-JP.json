@@ -678,5 +678,8 @@
       "research_tales": "奇聞拾録",
       "research_gm02m27": "ある研究都市に関する調査報告"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">光の霧</span>：攻撃を受けると消えます。"
   }
 }

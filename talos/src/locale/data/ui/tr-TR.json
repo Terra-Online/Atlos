@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Ek harita bilgilerini göster",
+    "hideMapSupplements": "Ek harita bilgilerini gizle",
     "onlySubregion": "Yalnızca {region} göster",
     "showAllSubregions": "Tüm alt bölgeleri göster",
     "highlightSameType": "Aynı tür noktaları vurgula ({count})",

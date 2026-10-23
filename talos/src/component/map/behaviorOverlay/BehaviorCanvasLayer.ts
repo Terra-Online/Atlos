@@ -1,6 +1,8 @@
 import L from 'leaflet';
 import {
     emptyBehaviorScene,
+    wallStroke,
+    wallScreenSegment,
     UNLOCK_BUBBLE_IMAGE_URL,
     type BehaviorLine,
     type BehaviorScene,
@@ -72,9 +74,16 @@ type RgbColor = [number, number, number];
 type BehaviorPalette = Record<BehaviorColorRole, string> & {
     /** Moving highlight color for flow-enabled trajectories. */
     flow: string;
+    wallHover: string;
 };
 
-export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
+export const createBehaviorCanvasLayer = (
+    onWallHover?: (point: L.Point | null) => void,
+): BehaviorCanvasLayer => {
+    let hoveredLine = -1;
+    const hoverAmounts = new Map<number, number>();
+    let hoverFrameAt = 0;
+    let wallsVisible = false;
     let map: L.Map | null = null;
     let canvas: HTMLCanvasElement | null = null;
     let context: CanvasRenderingContext2D | null = null;
@@ -354,10 +363,14 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         context.save();
         context.globalAlpha = line.opacity;
         const flowing = line.flow && flowActive && progress > 0;
-        context.lineWidth = line.weight;
-        context.lineCap = 'round';
+        const wall = line.colorRole === 'wall'
+            ? wallStroke(projection.totalLength, line.weight, map?.getZoom() ?? 0)
+            : null;
+        context.lineWidth = wall?.weight ?? line.weight;
+        // Flat ends keep the two short dashes separated at low zoom.
+        context.lineCap = wall ? 'butt' : 'round';
         context.lineJoin = 'round';
-        context.setLineDash(line.dash ?? []);
+        context.setLineDash(wall?.dash ?? line.dash ?? []);
         if (flowing && line.smooth && projection.curves) {
             drawFlowingSmoothLine(
                 projection,
@@ -368,7 +381,10 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
             context.restore();
             return;
         }
-        context.strokeStyle = colorForRole(line.colorRole);
+        const hoverAmount = wall ? hoverAmounts.get(scene.lines.indexOf(line)) ?? 0 : 0;
+        context.strokeStyle = hoverAmount > 0
+            ? colorString(mixColor(parseColor(palette.wall), parseColor(palette.wallHover), hoverAmount))
+            : colorForRole(line.colorRole);
         context.beginPath();
         if (line.smooth && projection.curves) {
             appendSmoothRange(projection, 0, target);
@@ -407,7 +423,16 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         const projectPoint = (point: MapPoint) =>
             activeMap.latLngToLayerPoint([point[0], point[1]]).subtract(origin);
         projectedLines = scene.lines.map((line) => {
-            const points = line.points.map(projectPoint);
+            let points = line.points.map(projectPoint);
+            if (line.colorRole === 'wall' && line.points.length === 2) {
+                // Avoid Leaflet's integer rounding collapsing a short wall
+                // before applying its minimum screen length.
+                const precise = line.points.map((point) => activeMap.project(point)
+                    .subtract(activeMap.getPixelOrigin()).subtract(origin));
+                points = wallScreenSegment(
+                    [precise[0].x, precise[0].y], [precise[1].x, precise[1].y],
+                ).map((point) => L.point(point[0], point[1]));
+            }
             const curves = line.smooth
                 ? buildProjectedCurves(points, Boolean(line.closed))
                 : [];
@@ -447,6 +472,13 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         // by animateZoom. Reprojecting it at the target zoom in the same frame
         // would apply the scale twice and detach the endpoints.
         if (animatingZoom) return;
+        const step = Math.max(0, now - hoverFrameAt) / 180;
+        hoverFrameAt = now;
+        hoverAmounts.forEach((amount, index) => {
+            const next = index === hoveredLine ? Math.min(1, amount + step) : Math.max(0, amount - step);
+            if (next === 0 && index !== hoveredLine) hoverAmounts.delete(index);
+            else hoverAmounts.set(index, next);
+        });
         const activeCanvas = canvas;
         const activeContext = context;
         if (projectionDirty) resize();
@@ -521,7 +553,9 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
             animationFrame = null;
             if (token !== generation) return;
             draw(now);
-            if (animationActive && now - startedAt < animationEndAt) {
+            if ([...hoverAmounts].some(([index, amount]) => amount !== (index === hoveredLine ? 1 : 0))) {
+                schedule();
+            } else if (animationActive && now - startedAt < animationEndAt) {
                 schedule();
             } else if (animationActive || flowActive) {
                 animationActive = false;
@@ -586,9 +620,47 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         }
         draw();
     };
+    const clearHover = () => {
+        if (hoveredLine === -1) return;
+        hoveredLine = -1;
+        map?.getContainer().classList.remove('mapSupplementHover');
+        onWallHover?.(null);
+        hoverFrameAt = performance.now();
+        schedule();
+    };
+    const hoverWall = (event: L.LeafletMouseEvent) => {
+        if (!map) return;
+        if (event.originalEvent.buttons) {
+            clearHover();
+            return;
+        }
+        ensureProjection();
+        const point = event.layerPoint.subtract(origin);
+        let nearest = -1;
+        let distance = 6;
+        projectedLines.forEach((projection, index) => {
+            if (scene.lines[index].colorRole !== 'wall' || projection.points.length !== 2) return;
+            const next = L.LineUtil.pointToSegmentDistance(point, projection.points[0], projection.points[1]);
+            if (next <= distance) {
+                nearest = index;
+                distance = next;
+            }
+        });
+        if (nearest === hoveredLine) return;
+        hoveredLine = nearest;
+        map.getContainer().classList.toggle('mapSupplementHover', nearest !== -1);
+        if (nearest !== -1 && !hoverAmounts.has(nearest)) hoverAmounts.set(nearest, 0);
+        hoverFrameAt = performance.now();
+        const points = projectedLines[nearest]?.points;
+        onWallHover?.(points
+            ? map.layerPointToContainerPoint(points[0].add(points[1]).divideBy(2).add(origin))
+            : null);
+        schedule();
+    };
     const layer = new L.Layer() as BehaviorCanvasLayer;
     layer.onAdd = (nextMap: L.Map) => {
         map = nextMap;
+        wallsVisible = false;
         projectionDirty = true;
         projectedScene = null;
         projectedLines = [];
@@ -602,6 +674,7 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         canvas.style.top = '0';
         canvas.style.zIndex = CANVAS_Z_INDEX;
         canvas.classList.add(BEHAVIOR_OVERLAY_CLASS);
+        if (onWallHover) canvas.classList.add('mapSupplementCanvas');
         context = canvas.getContext('2d');
         nextMap.getPanes().mapPane.appendChild(canvas);
         const canvasStyle = getComputedStyle(canvas);
@@ -618,20 +691,28 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
             aurylene: canvasStyle
                 .getPropertyValue('--behavior-aurylene-color')
                 .trim(),
+            wall: canvasStyle.getPropertyValue('--behavior-wall-color').trim(),
+            wallHover: canvasStyle.getPropertyValue('--behavior-wall-hover-color').trim(),
             flow: canvasStyle.getPropertyValue('--behavior-flow-color').trim(),
         };
-        unlockBubbleImage = new Image();
-        unlockBubbleImage.onload = () => draw();
-        unlockBubbleImage.src = UNLOCK_BUBBLE_IMAGE_URL;
         baseCenter = nextMap.getCenter();
         baseZoom = nextMap.getZoom();
         nextMap.on('move resize viewreset', redraw);
         nextMap.on('zoomanim', animateZoom);
         nextMap.on('zoomend', finishZoom);
+        if (onWallHover) {
+            nextMap.on('mousemove', hoverWall);
+            nextMap.on('movestart zoomstart click contextmenu', clearHover);
+            nextMap.getContainer().addEventListener('mouseleave', clearHover);
+        }
         draw();
         return layer;
     };
     layer.onRemove = (nextMap: L.Map) => {
+        clearHover();
+        nextMap.off('mousemove', hoverWall);
+        nextMap.off('movestart zoomstart click contextmenu', clearHover);
+        nextMap.getContainer().removeEventListener('mouseleave', clearHover);
         generation += 1;
         if (animationFrame !== null)
             window.cancelAnimationFrame(animationFrame);
@@ -639,7 +720,13 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         nextMap.off('move resize viewreset', redraw);
         nextMap.off('zoomanim', animateZoom);
         nextMap.off('zoomend', finishZoom);
-        canvas?.remove();
+        const retiringCanvas = canvas;
+        const fade = onWallHover && retiringCanvas?.animate?.([{ opacity: 1 }, { opacity: 0 }], {
+            duration: 180, fill: 'forwards', easing: 'ease-out',
+        });
+        if (fade) void fade.finished.then(() => retiringCanvas?.remove(), () => retiringCanvas?.remove());
+        else retiringCanvas?.remove();
+        hoverAmounts.clear();
         canvas = null;
         context = null;
         unlockBubbleImage = null;
@@ -652,11 +739,22 @@ export const createBehaviorCanvasLayer = (): BehaviorCanvasLayer => {
         return layer;
     };
     layer.setScene = (nextScene, animate, showFlow) => {
+        clearHover();
         generation += 1;
         if (animationFrame !== null)
             window.cancelAnimationFrame(animationFrame);
         animationFrame = null;
         scene = nextScene;
+        hoverAmounts.clear();
+        if (onWallHover && !wallsVisible && scene.lines.length > 0) {
+            wallsVisible = true;
+            canvas?.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
+        }
+        if (!unlockBubbleImage && scene.circles.some((circle) => circle.imageUrl === UNLOCK_BUBBLE_IMAGE_URL)) {
+            unlockBubbleImage = new Image();
+            unlockBubbleImage.onload = () => draw();
+            unlockBubbleImage.src = UNLOCK_BUBBLE_IMAGE_URL;
+        }
         projectionDirty = true;
         projectedScene = null;
         animationActive = animate && nextScene.lines.length > 0;

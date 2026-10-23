@@ -678,5 +678,8 @@
       "research_tales": "Miscellany and Clever Records",
       "research_gm02m27": "IR: An R&D City"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Optical Fog</span>: Attack one to dissipate it."
   }
 }

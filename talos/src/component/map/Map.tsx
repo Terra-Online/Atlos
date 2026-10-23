@@ -10,6 +10,8 @@ import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import { isMapOverdragged, toMapBounds } from './mapOverdrag';
 import { useBehaviorOverlay } from './behaviorOverlay/useBehaviorOverlay';
 import MapContextMenu from './MapContextMenu';
+import SupplementTooltip from './behaviorOverlay/SupplementTooltip';
+import { useMapSupplements } from './behaviorOverlay/useMapSupplements';
 
 interface MapProps {
     onMapReady?: (mapInstance: L.Map) => void;
@@ -36,6 +38,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
     const { linkTooltipElement } = useLink(map, currentRegion, maxZoom);
     const { PreviewElement } = UsePreview(map);
     useBehaviorOverlay(map);
+    const supplementHover = useMapSupplements(map);
 
     useEffect(() => {
         if (!map) return;
@@ -95,6 +98,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
             ></div>
             {linkTooltipElement}
             {PreviewElement}
+            <SupplementTooltip point={supplementHover} />
             {map && <MapContextMenu map={map} />}
         </>
     );

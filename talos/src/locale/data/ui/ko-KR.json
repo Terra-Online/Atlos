@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "지도 추가 정보 표시",
+    "hideMapSupplements": "지도 추가 정보 숨기기",
     "onlySubregion": "{region}만 표시",
     "showAllSubregions": "모든 하위 지역 표시",
     "highlightSameType": "같은 유형 포인트 강조 ({count})",

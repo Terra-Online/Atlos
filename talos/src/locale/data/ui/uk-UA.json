@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Показати додаткові відомості на карті",
+    "hideMapSupplements": "Приховати додаткові відомості на карті",
     "onlySubregion": "Показувати лише {region}",
     "showAllSubregions": "Показати всі підрегіони",
     "highlightSameType": "Виділити точки того ж типу ({count})",
