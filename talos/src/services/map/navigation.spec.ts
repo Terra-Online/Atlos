@@ -2,7 +2,7 @@ import L from 'leaflet';
 import { waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { IMarkerData } from '@/data/marker';
-import type { MapCore } from '@/component/mapCore/map';
+import type { MapCore } from '@/services/map/core/map';
 import { useLayerStore } from '@/store/layer';
 import { navigateToSharedPoint, registerSharedPointMapCore } from './navigation';
 

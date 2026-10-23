@@ -1,0 +1,432 @@
+@use '@/component/feed/Feed' as feed;
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+@use '@/styles/size.scss' as *;
+
+:root,
+:root[data-theme='light'] {
+    --notify-text: #{$grey-1};
+    --notify-muted: #{$grey-2};
+    --notify-empty-text: #{$grey-2};
+    --notify-card-bg: #{$white-1};
+    --notify-card-hover-bg: #{$white-3};
+
+    --notify-keyword: #{$primary-accent-6};
+    --notify-link-hover: #{$primary-accent-7};
+    --notify-separator: #{$mid};
+}
+
+:root[data-theme='dark'] {
+    --notify-text: #{$light-1};
+    --notify-muted: #{$mid};
+    --notify-empty-text: #{$light-2};
+    --notify-card-bg: #{$grey-1};
+    --notify-card-hover-bg: #{$grey-2};
+
+    --notify-keyword: #{$primary-accent-4};
+    --notify-link-hover: #{$primary-accent-5};
+    --notify-separator: #{$grey-2};
+}
+
+.notifyContent {
+    --notify-list-min-height: 5rem;
+
+    display: flex;
+    height: calc(var(--notify-list-min-height) + 4.25rem);
+    min-height: calc(var(--notify-list-min-height) + 4.25rem);
+    max-height: calc(80dvh - 4.75rem);
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden !important;
+    transition:
+        height 0.3s $standard-curve,
+        min-height 0.3s $standard-curve;
+
+    &.withMessages {
+        --notify-list-min-height: 60dvh;
+        height: min(72dvh, 44rem);
+    }
+}
+
+.notifyRoot {
+    @include feed.root;
+    .notificationCard {
+        @include feed.card;
+        &[data-type='system.submission.approved'] {
+            --card-accent: #1A673C;
+        }
+
+        &[data-type='system.remove_request.resolved'] {
+            --card-accent: #{$dim-1};
+        }
+
+        &[data-type='community.comment.reply'] {
+            --card-accent: #{$secondary-accent-5};
+        }
+
+        &[data-type='community.comment.vote'] {
+            --card-accent: #{$secondary-accent-3};
+        }
+
+        &[data-expandable='true'][data-expanded='false'][data-collapsing='false']:is(
+                :hover,
+                :focus-within
+            )::before {
+            clip-path: polygon(0 36%, 62% 50%, 0 64%, 0 64%);
+        }
+
+        &[data-expandable='true'] {
+            cursor: pointer;
+
+            > .cardBody .keyword {
+                color: inherit;
+                font-weight: 800;
+                text-decoration: none;
+            }
+        }
+
+        &[data-expanded='true'] {
+            .cardBody {
+                min-height: 0;
+                padding-bottom: 0.15rem;
+            }
+
+            .clusterReveal {
+                grid-template-rows: 1fr;
+                visibility: visible;
+                transition:
+                    grid-template-rows 0.3s $standard-curve,
+                    visibility 0s;
+            }
+
+            .clusterMessages {
+                padding-bottom: 0.5rem;
+                opacity: 1;
+                transition:
+                    padding-bottom 0.3s $standard-curve,
+                    opacity 0.2s ease 0.08s;
+            }
+        }
+
+        .cardBody {
+            min-width: 0;
+            min-height: 4rem;
+            display: flex;
+            flex-direction: column;
+            padding: 0.625rem 0.75rem 1.75rem 1.5rem;
+            transition:
+                min-height 0.3s $standard-curve,
+                padding-bottom 0.3s $standard-curve;
+        }
+
+        .cardMessage {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: -0.25px;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+        }
+
+        .messageText {
+            font-family: 'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            unicode-bidi: plaintext;
+
+            .keyword {
+                display: inline;
+                color: var(--notify-keyword);
+                font-family:
+                    'HMSans_EN', HMSans, 'UD_ShinGo DemiBold',
+                    'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+                font-size: inherit;
+                font-weight: 700;
+                text-decoration: underline;
+                text-underline-offset: 0.1em;
+            }
+
+            button.keyword {
+                border: 0;
+                padding: 0;
+                background: transparent;
+                cursor: pointer;
+                transition: color 0.16s ease;
+
+                &:hover,
+                &:focus-visible {
+                    color: var(--notify-link-hover);
+                    outline: none;
+                }
+            }
+        }
+
+        .pointName {
+            @include feed.metadata;
+        }
+
+        .cardTime {
+            position: absolute;
+            right: 0.75rem;
+            bottom: 0.375rem;
+            color: var(--notify-muted);
+            font-family:
+                'Fedra Sans Pro', 'UD_ShinGo Regular', 'Noto Sans Arabic',
+                'Noto Sans Thai', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: -0.8px;
+            line-height: 1.5;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .clusterReveal {
+            display: grid;
+            grid-template-rows: 0fr;
+            visibility: hidden;
+            transition:
+                grid-template-rows 0.3s $standard-curve,
+                visibility 0s linear 0.3s;
+        }
+
+        .clusterMessages {
+            min-height: 0;
+            margin: 0 0.75rem 0 1.25rem;
+            padding: 0 0 0 1.1rem;
+            list-style: square;
+            list-style-position: outside;
+            opacity: 0;
+            overflow: clip;
+            transition:
+                padding-bottom 0.3s $standard-curve,
+                opacity 0.18s ease;
+        }
+
+        .clusterMessage {
+            max-width: 28rem;
+            padding: 0.2rem 0;
+            font-size: 0.9rem;
+            letter-spacing: -0.2px;
+            line-height: 1.6;
+            hyphens: auto;
+
+            .messageText {
+                font-weight: 500;
+            }
+        }
+
+        .noClusterDetails {
+            padding: 0.45rem 0;
+            color: var(--notify-empty-text);
+            font-size: 0.85rem;
+        }
+    }
+
+    /* Empty Case */
+    .emptyState {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .emptyDivider {
+        position: relative;
+        width: 95%;
+        height: 1.5px;
+        margin: 0 auto;
+        background: linear-gradient(
+            90deg,
+            var(--notify-empty-text) 0,
+            var(--notify-empty-text) calc(50% - 1rem),
+            transparent calc(50% - 1rem),
+            transparent calc(50% + 1rem),
+            var(--notify-empty-text) calc(50% + 1rem),
+            var(--notify-empty-text) 100%
+        );
+        opacity: 0.75;
+        flex-shrink: 0;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0.375rem;
+            height: 0.375rem;
+            background: var(--notify-empty-text);
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+    }
+    .emptyRule {
+        margin: 0;
+        color: var(--notify-empty-text);
+        font-family:
+            'Fedra Sans Pro', 'UD_ShinGo Regular', 'Noto Sans Arabic',
+            'Noto Sans Thai', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: center;
+    }
+    .emptyAction {
+        position: relative;
+        border: 0;
+        padding: 0;
+        color: var(--ack-link);
+        background: transparent;
+        font: inherit;
+        cursor: pointer;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 1px;
+            left: 0;
+            width: 100%;
+            height: 1.5px;
+            background: var(--ack-link);
+            transform: scaleX(0);
+            transform-origin: right center;
+            transition: transform 0.3s ease;
+        }
+
+        &:hover::after,
+        &:focus-visible::after {
+            transform: scaleX(1);
+            transform-origin: left center;
+        }
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+    .statusState {
+        margin: 0;
+        flex: 1 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--notify-empty-text);
+        font-size: 0.95rem;
+    }
+    .loadMore {
+        @include feed.pagination;
+    }
+    .loadMoreSentinel {
+        width: 100%;
+        height: 1px;
+        pointer-events: none;
+    }
+    /* Footer */
+    .supportDivider {
+        position: relative;
+        z-index: 3;
+        height: var(--support-divider-height);
+        min-height: var(--support-divider-height);
+        max-height: var(--support-divider-height);
+        width: calc(100% - 2rem);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 0 0 auto;
+        transform: translateX(1rem);
+        margin: 0 0 0.75rem;
+        background: transparent;
+
+        &::before, &::after {
+            content: '';
+            height: var(--support-divider-height);
+            flex: 1 1 0;
+        }
+
+        &::before {
+            background: linear-gradient(90deg, transparent 0%, var(--notify-text) 100%);
+        }
+
+        &::after {
+            background: linear-gradient(90deg, var(--notify-text) 0%, transparent 100%);
+        }
+        span {
+            flex: 0 0 auto;
+            color: var(--notify-text);
+            font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 700;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+    }
+    .socialLinks {
+        flex: 0 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: center;
+        gap: clamp(0.4rem, 2vw, 1.25rem);
+        padding: 0 1rem;
+
+        a {
+            --social-icon-scale: 1;
+
+            min-width: 0;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--notify-text);
+            transition:
+                opacity 0.16s ease,
+                transform 0.16s $moderato-curve;
+
+            &[data-platform='github'] {
+                --social-icon-scale: 0.8;
+            }
+            &[data-platform='skland'] {
+                --social-icon-scale: 0.95;
+            }
+            &[data-platform='skport'] {
+                --social-icon-scale: 1.06;
+            }
+            &:hover, &:focus-visible {
+                opacity: 0.72;
+                transform: translateY(-2px);
+                outline: none;
+            }
+        }
+        svg {
+            display: block;
+            width: 100%;
+            max-width: 7rem;
+            max-height: 100%;
+            fill: currentcolor;
+            color: currentcolor;
+            transform: scale(var(--social-icon-scale));
+        }
+    }
+}
+
+@media (max-width: $smallmobile-bp) {
+    .notifyContent {
+        height: calc(var(--notify-list-min-height) + 6.75rem);
+        min-height: calc(var(--notify-list-min-height) + 6.75rem);
+
+        &.withMessages {
+            --notify-list-min-height: calc(60dvh - 2.5rem);
+        }
+    }
+
+    .notifyRoot {
+        .notificationCard .cardTime {
+            white-space: normal;
+        }
+
+        .socialLinks {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 0.35rem;
+            row-gap: 0.1rem;
+            padding-inline: 0.5rem;
+        }
+    }
+}

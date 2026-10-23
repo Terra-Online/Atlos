@@ -1,0 +1,203 @@
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+
+:root,
+:root[data-theme='light'] {
+    --search-bg: #{$grey-1};
+    --search-txt: #{rgba($white-0, 0.9)};
+    --search-shadow-out: #{rgba($black-0, 0.15)};
+    --search-shadow-in: #{rgba($black-0, 0.25)};
+    --search-placeholder: #{rgba($white-0, 0.7)};
+    --search-icon: #{$white-0};
+    --search-focus: #{$primary-accent-4};
+    --search-outline: #{$primary-accent-3};
+    --search-result-bg: #{$black-1};
+    --search-result-text: #{$white-1};
+    --search-result-sub: #{$white-2};
+    --search-result-bar: #{$primary-accent-4};
+    --search-highlight-fg: #{$primary-accent-7};
+    --search-highlight-bg: #{$primary-accent-4};
+}
+:root[data-theme='dark'] {
+    --search-bg: #{$black-1};
+    --search-txt: #{rgba($white-0, 0.9)};
+    --search-shadow-out: #{rgba($black-0, 0.5)};
+    --search-shadow-in: #{rgba($black-0, 0.6)};
+    --search-placeholder: #{rgba($white-0, 0.7)};
+    --search-icon: #{$white-2};
+    --search-focus: #{$primary-accent-4};
+    --search-outline: #{$primary-accent-3};
+    --search-result-bg: #{$black-1};
+    --search-result-text: #{$white-1};
+    --search-result-sub: #{$white-2};
+    --search-result-bar: #{$primary-accent-4};
+    --search-highlight-fg: #{$primary-accent-7};
+    --search-highlight-bg: #{$primary-accent-4};
+}
+
+.searchContainer * {
+    overscroll-behavior: auto;
+}
+.searchContainer {
+    width: 100%;
+    margin-bottom: 1rem;
+    --search-input-row-h: 3rem;
+
+    .searchForm {
+        width: 100%;
+        .searchInputWrapper {
+            position: relative;
+            width: 100%;
+            min-height: var(--search-input-row-h);
+            display: flex;
+            flex-direction: column;
+            background-color: var(--search-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            isolation: isolate;
+            transition: all 0.35s $adagio-curve;
+            box-shadow: 0 2px 8px var(--search-shadow-out);
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                box-shadow: inset 0 0 0 0 transparent;
+                pointer-events: none;
+                z-index: 4;
+                transition: box-shadow 0.2s ease;
+            }
+
+            &:focus-within {
+                box-shadow: 0 2px 4px var(--search-shadow-in);
+                > .searchIcon {
+                    .icon {
+                        fill: var(--search-focus);
+                    }
+                }
+            }
+
+            &:has(.searchInput:not(:placeholder-shown)) {
+                box-shadow:
+                    0 0 0 2px var(--search-outline),
+                    0 2px 12px rgba($black-0, 0.25);
+            }
+        }
+
+        .searchInputRow {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: var(--search-input-row-h);
+            display: flex;
+            align-items: center;
+
+            &[data-has-count='true'] {
+                .searchInput {
+                    padding-right: 7.1rem;
+                }
+            }
+
+            .searchInput {
+                width: 100%;
+                height: 100%;
+                padding: 0 15px 0 45px;
+                background: transparent;
+                border: none;
+                outline: none;
+                color: var(--search-txt);
+                font-size: 1rem;
+                font-family: 'Roboto Slab', 'HMSans', sans-serif;
+                font-weight: 400;
+
+                &::placeholder {
+                    user-select: none;
+                    color: var(--search-placeholder);
+                    text-shadow: 0 3px 1.5px rgba($black-0, 0.5);
+                    transition:
+                        opacity 0.3s,
+                        filter 0.2s;
+                    font-family: 'Roboto Slab', serif;
+                    font-weight: 400;
+                    will-change: opacity, filter;
+                }
+                &:focus::placeholder {
+                    opacity: 0;
+                    filter: blur(6px);
+                }
+            }
+            .searchIcon {
+                position: absolute;
+                left: 0.8rem;
+                width: 1.2rem;
+                height: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
+
+                .icon {
+                    width: 100%;
+                    height: 100%;
+                    fill: $white-0;
+                    transition: fill 0.3s;
+                    filter: drop-shadow(0 3px 1.5px rgba($black-0, 0.5));
+                }
+            }
+
+            .searchResultCountInline {
+                position: absolute;
+                right: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                max-width: 7.1rem;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                color: var(--search-placeholder);
+                font-size: 0.9rem;
+                font-family:
+                    'Roboto Slab', 'UD_ShinGo Demibold', sans-serif;
+                font-weight: 400;
+                letter-spacing: 0;
+                pointer-events: none;
+                text-shadow: 0 2px 1px rgba($black-0, 0.35);
+            }
+        }
+    }
+}
+
+.searchContainer.mobile {
+    margin-bottom: 0;
+    --search-input-row-h: 2.6rem;
+    .searchInputRow {
+        &[data-has-count='true'] {
+            .searchInput {
+                padding-right: 5.8rem;
+            }
+        }
+
+        .searchResultCountInline {
+            right: 0.62rem;
+            max-width: 5rem;
+            font-size: 0.72rem;
+        }
+    }
+    .searchForm > .searchInputWrapper {
+        border-radius: 1.5rem;
+        transition: all 0.3s;
+
+        &:has(.searchInput:not(:placeholder-shown)) {
+            box-shadow: 0 2px 8px var(--search-shadow-out);
+
+            &::after {
+                box-shadow: inset 0 0 0 2px var(--search-outline);
+            }
+        }
+
+        .searchIcon {
+            left: 0.8rem;
+        }
+    }
+}

@@ -1,7 +1,7 @@
 import { useTheme } from '@main/platform/useTheme';
 import { useEffect, useState } from 'react';
-import LanguageModal from '@main/component/language/language';
-import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
+import LanguageModal from '@main/component/shared/language/language';
+import { HeadBar, HeadItem } from '@main/component/shared/siteShell/headBar/headBar';
 import { useTranslateUI } from '@main/locale';
 import { getFontRegionForLocale } from '@main/locale';
 import { preloadFontRegion } from '@main/locale/fontLoader';

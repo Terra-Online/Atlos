@@ -1,6 +1,6 @@
 import { useFontRegion } from '@main/locale/useFontRegion';
 import { useEffect, useState } from 'react';
-import { CommentContent } from '@main/component/detail/comment/emoji';
+import { CommentContent } from '@main/component/shared/comments/CommentContent';
 import { useTranslateGame } from '@main/locale';
 import { useLocale, useTranslateUI } from '@hub/locale';
 import PopoverTooltip from '@main/component/popover/popover';

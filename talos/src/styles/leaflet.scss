@@ -1,0 +1,20 @@
+// Leaflet cluster icons, tile transitions, and map interaction overrides.
+
+.marker-cluster-custom {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.leaflet-layer:first-of-type > .leaflet-tile-container {
+    filter: drop-shadow(0 0 0 var(--map-dropshadow)) !important;
+}
+.leaflet-layer {
+    transition: filter .3s ease-out !important
+}
+
+// The marker Canvas writes an inline cursor on this same container.
+.leaflet-container.mapSupplementHover,
+.leaflet-container.mapSupplementHover .leaflet-interactive {
+    cursor: help !important;
+}

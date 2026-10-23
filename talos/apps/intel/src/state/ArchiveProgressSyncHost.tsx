@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import SyncConflictModal, { type SyncConflictChoice } from '@main/component/sync/conflict';
-import { addProgressSyncRequestHandler } from '@main/component/progressSync/progressSyncController';
+import SyncConflictModal, { type SyncConflictChoice } from '@main/component/shared/sync/conflict';
+import { addProgressSyncRequestHandler } from '@main/component/shared/sync/progressSyncController';
 import { useAuthStore } from '@main/store/auth';
 import { useUserRecordStore } from '@main/store/userRecord';
 import {

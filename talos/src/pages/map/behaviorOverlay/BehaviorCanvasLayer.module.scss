@@ -1,0 +1,19 @@
+@use '@/styles/palette.scss' as *;
+
+// Canvas overlays share one filter surface for their path shadows.
+.canvas {
+    --behavior-wall-color: #{$primary-accent-4};
+    --behavior-wall-hover-color: #{$primary-accent-3};
+    --behavior-butterfly-color: #{$primary-accent-4};
+    --behavior-relation-color: #{$primary-accent-2};
+    --behavior-unlock-color: #{$primary-accent-1};
+    --behavior-aurylene-color: #{$primary-accent-3};
+    --behavior-flow-color: #{$primary-accent-7};
+    filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
+    transform-origin: 0 0;
+    will-change: transform;
+
+    &.supplement {
+        filter: drop-shadow(0 0.5px 1px $black-0);
+    }
+}

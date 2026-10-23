@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 //import LazyApp from '@/LazyApp.tsx';
-import App from './App.tsx';
+import './styles/global.scss';
+import MapPage from './pages/MapPage';
 
 import { fontLoader } from './locale/fontLoader.ts';
 import { i18nInitPromise } from '@/locale';
@@ -28,7 +29,7 @@ async function bootstrap(){
     await fontLoader();
 
 // @ts-expect-error root must be found otherwise it will definitely cannot show anything
-    createRoot(document.getElementById('root')).render(<App />);
+    createRoot(document.getElementById('root')).render(<MapPage />);
 
     loadDevTools();
 

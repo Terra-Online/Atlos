@@ -1,8 +1,8 @@
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { waitFor } from '@testing-library/react';
 import L from 'leaflet';
 import type { IMarkerData } from '@/data/marker';
-import type { MapCore } from '@/component/mapCore/map';
+import type { MapCore } from '@/services/map/core/map';
 
 vi.mock('@/data/marker', () => ({
     findMarkerById: vi.fn(() => Promise.resolve({ id: '1', type: 'test', subregId: 'sub', pos: [1, 2] })),
@@ -19,28 +19,32 @@ vi.mock('@/store/region', () => ({
 import { useMarkerStore } from '@/store/marker';
 import { navigateToMarkerId, navigateToSharedLocation, registerSharedPointMapCore } from './navigation';
 
+let map: L.Map;
+let unregister: (() => void) | undefined;
+
 const point = { id: '1', type: 'test', subregId: 'sub', pos: [1, 2] } as IMarkerData;
 
 beforeEach(() => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    map = L.map(host, { crs: L.CRS.Simple, minZoom: 0, maxZoom: 5 }).setView([0, 0], 1);
     useMarkerStore.getState().setCurrentActivePoint(point);
 });
 
+afterEach(() => { unregister?.(); const host = map.getContainer(); map.remove(); host.remove(); });
+
 it('navigates to a comment through the public marker navigation API', async () => {
-    let moved: () => void = () => {};
-    registerSharedPointMapCore({
-        switchRegion: () => Promise.resolve(),
+    vi.spyOn(map, 'flyTo').mockImplementation(() => { map.fire('moveend'); return map; });
+    unregister = registerSharedPointMapCore({
+        switchRegion: () => Promise.resolve(true),
+        switchLayer: () => Promise.resolve(),
         markerLayer: {
             markerDataDict: { '1': point },
             filterMarker: vi.fn(),
             ensureMarkerVisible: () => Promise.resolve(),
             startMarkerPulse: () => true,
         },
-        map: {
-            getMaxZoom: () => 5,
-            once: (_: string, callback: () => void) => { moved = callback; },
-            off: vi.fn(),
-            flyTo: () => moved(),
-        },
+        map,
     } as unknown as MapCore);
 
     expect(await navigateToMarkerId('1', {
@@ -72,21 +76,13 @@ it('keeps image and comment requests mutually exclusive', () => {
 });
 
 it('waits for the region and centers a valid shared location with clamped zoom', async () => {
-    const flyTo = vi.fn();
-    registerSharedPointMapCore({
+    const flyTo = vi.spyOn(map, 'flyTo').mockImplementation(() => map);
+    map.setMaxZoom(3);
+    map.setMaxBounds([[-100, -100], [100, 100]]);
+    unregister = registerSharedPointMapCore({
         switchRegion: () => Promise.resolve(true),
         markerLayer: {},
-        map: {
-            options: {
-                maxBounds: {
-                    contains: () => true,
-                },
-            },
-            getMinZoom: () => 0,
-            getMaxZoom: () => 3,
-            getZoom: () => 1,
-            flyTo,
-        },
+        map,
     } as unknown as MapCore);
 
     navigateToSharedLocation({

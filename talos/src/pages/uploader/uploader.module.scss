@@ -1,0 +1,300 @@
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --uploader-placeholder: #{$grey-1};
+    --uploader-pending-holder: #{$light-1};
+    --uploader-image-border: #{$light-2};
+}
+
+:root[data-theme='dark'] {
+    --uploader-placeholder: #{$grey-1};
+    --uploader-pending-holder: #{$light-1};
+    --uploader-image-border: #{$light-2};
+}
+
+.pointImage {
+    margin: 0.5rem 0;
+    width: 100%;
+    height: 14rem;
+    background: repeating-linear-gradient(-60deg, $mid, $mid 1rem, $white-3 0, $white-3 2rem);
+    background-size: 200%;
+    background-position: 100% 100%;
+    background-repeat: repeat;
+    border: 2px solid var(--uploader-image-border);
+    box-shadow:
+        0 0 4px 0.5px rgba($black-0, 0.6),
+        0 0 4px 2px rgba($light-2, 0.6) inset;
+    overflow: hidden;
+    overscroll-behavior-y: auto;
+    touch-action: pan-y;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+    transition: border-color 0.2s ease, filter 0.2s ease;
+
+    &.hasImage {
+        cursor: default;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 12px 12px;
+            border-color: transparent transparent $light-2;
+            filter: drop-shadow(-1px -1px 2px rgba($light-2, 0.6));
+            z-index: 2;
+            pointer-events: none;
+            transition: border-color 0.2s ease;
+        }
+    }
+
+    &.isClickable {
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $primary-accent-4;
+            outline: none;
+            box-shadow:
+                0 0 4px 0.5px rgba($black-0, 0.6),
+                0 0 4px 2px rgba($primary-accent-4, 0.6) inset;
+        }
+        &:hover::after {
+            border-color: transparent transparent $primary-accent-4;
+        }
+    }
+
+    &.pending {
+        animation: uploaderPending 60s linear infinite;
+        border-color: rgba($primary-accent-4, 0.7);
+        box-shadow:
+            0 0 4px 0.5px rgba($black-0, 0.6),
+            0 0 4px 2px rgba($primary-accent-4, 0.6) inset;
+
+        &::before {
+            opacity: 0.16;
+            clip-path: none;
+        }
+    }
+
+    &.isDragActive {
+        border-color: $primary-accent-4;
+        box-shadow:
+            0 0 4px 0.5px rgba($black-0, 0.6),
+            0 0 4px 2px rgba($primary-accent-4, 0.75) inset;
+        filter: brightness(1.08);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        opacity: 1;
+        background: linear-gradient(90deg, rgba($primary-accent-4, 0.75));
+        clip-path: polygon(
+            0 0,
+            var(--uploader-progress, 0%) 0,
+            calc(var(--uploader-progress, 0%) - 2rem) 100%,
+            0 100%
+        );
+        transition:
+            clip-path 0.2s $standard-curve,
+            opacity 0.2s ease;
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .carouselLayer {
+        --carousel-control-size: 1rem;
+        --carousel-control-offset: 1rem;
+        --carousel-control-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 330 524'%3E%3Cpolygon points='258 0 0 232 0 292 258 524 330 444 128 262 330 80 258 0'/%3E%3C/svg%3E");
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: minmax(3rem, 24%) 1fr minmax(3rem, 24%);
+        pointer-events: auto;
+        touch-action: pan-y;
+        overscroll-behavior-y: auto;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        filter: drop-shadow(0 0 3px rgba($black-0, 0.5));
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: var(--carousel-control-size);
+            height: calc(var(--carousel-control-size) * 1.5);
+            background-color: $white-1;
+            mask-image: var(--carousel-control-mask);
+            mask-repeat: no-repeat;
+            mask-position: center;
+            mask-size: contain;
+            transition: background-color 0.2s ease;
+        }
+
+        &::before {
+            left: var(--carousel-control-offset);
+            transform: translateY(-50%);
+        }
+
+        &::after {
+            right: var(--carousel-control-offset);
+            transform: translateY(-50%) scaleX(-1);
+        }
+
+        &[data-hover='previous']::before,
+        &[data-hover='next']::after {
+            background-color: $primary-accent-4;
+        }
+    }
+
+    .previewActionBar {
+        --short-action-content-opacity: 0;
+        --short-action-disabled-bg: #{rgba($white-0, 0)};
+        --short-action-disabled-content-opacity: 0;
+        --short-action-bg: #{rgba($white-0, 0)};
+        --short-action-blur: 0px;
+        --short-action-shadow: #{0 0 0 rgba($black-0, 0)};
+
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 4;
+        visibility: hidden;
+        pointer-events: none;
+        transition: visibility 0s linear 0.2s;
+
+        button {
+            transform: translateY(-2px);
+        }
+    }
+
+    &:hover .carouselLayer {
+        opacity: 1;
+    }
+
+    &:hover .previewActionBar,
+    &:focus-within .previewActionBar {
+        --short-action-content-opacity: 1;
+        --short-action-disabled-bg: #{rgba($white-0, 0.1)};
+        --short-action-disabled-content-opacity: 0.42;
+        --short-action-bg: var(--actionbtn-bg);
+        --short-action-blur: 4px;
+        --short-action-shadow: #{0 0 4px rgba($black-0, 0.4)};
+
+        visibility: visible;
+        pointer-events: auto;
+        transition-delay: 0s;
+
+        button {
+            transform: translateY(0);
+        }
+    }
+
+    .noImage {
+        z-index: 2;
+        color: var(--uploader-placeholder);
+        font-family: 'Novecento Demibold','Novecento Vietnamese DemiBold', 'Novecento Cyrillic DemiBold', 'Fedra Sans Pro', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-weight: 700;
+        font-size: 0.875rem;
+        max-width: 92%;
+        text-align: center;
+        line-height: 1.25;
+
+        .uploadShortcutHint {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            column-gap: 4px;
+            color: var(--uploader-placeholder);
+        }
+
+        .communityRule {
+            margin-top: 4px;
+            font-family: 'Fedra Sans Pro', HMSans, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-size: 0.8125rem;
+            letter-spacing: -0.2px;
+            font-weight: 500;
+            text-align: center;
+            unicode-bidi: plaintext;
+            overflow-wrap: break-word;
+            hyphens: auto;
+
+            a {
+                color: $primary-accent-6;
+                text-decoration: none;
+                position: relative;
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 1.5px;
+                    background-color: $primary-accent-6;
+                    transform: scaleX(0);
+                    transition: transform 0.3s ease;
+                    transform-origin: right center;
+                }
+                &:hover::after {
+                    transform-origin: left center;
+                    transform: scaleX(1);
+                }
+            }
+        }
+    }
+}
+
+.previewShortActionRecallIcon {
+    display: inline-flex;
+    transform: rotate(90deg);
+}
+
+.pointImage.pending > img + .noImage, .carouselLayer + .noImage, .previewActionBar + .noImage {
+    position: absolute;
+    color: var(--uploader-pending-holder);
+    mix-blend-mode: luminosity;
+    text-shadow: 0 0 3px $black-0;
+}
+
+.imageInput {
+    display: none;
+}
+
+.uploadHint {
+    color: var(--uploader-placeholder);
+    font-family: Raleway, 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: .875rem;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.125;
+}
+
+@keyframes uploaderPending {
+    0% {
+        background-position: 100% 100%;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}

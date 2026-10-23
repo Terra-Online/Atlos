@@ -4,38 +4,10 @@
 @use './palette' as *;
 @use './highlight';
 @use './boundary';
-@use './cluster';
+@use './leaflet';
 @use './pip.scss';
 @use './embed' as *;
 @use './themeTransition';
-
-// Canvas overlays use one shared filter surface for their path shadows.
-.behaviorOverlayPane {
-    --behavior-wall-color: #{$primary-accent-4};
-    --behavior-wall-hover-color: #{$primary-accent-3};
-    // Butterfly routes and their authored nodes.
-    --behavior-butterfly-color: #{$primary-accent-4};
-
-    // Formal marker relations and their opposite endpoint.
-    --behavior-relation-color: #{$primary-accent-2};
-
-    // Chest-to-bubble connection color.
-    --behavior-unlock-color: #{$primary-accent-1};
-
-    // Aurylene trajectory base color.
-    --behavior-aurylene-color: #{$primary-accent-3};
-
-    // Moving highlight color for Aurylene trajectories.
-    --behavior-flow-color: #{$primary-accent-7};
-    filter: drop-shadow(0 1px 3px rgba($black-0, 0.9));
-    transform-origin: 0 0;
-    will-change: transform;
-
-    &.mapSupplementCanvas {
-        filter: drop-shadow(0 0.5px 1px $black-0);
-    }
-}
-
 
 @media only screen and (min-width: $desktoper-bp) {
     html {
@@ -165,10 +137,4 @@ li {
 }
 ::-webkit-scrollbar-track {
     display: none;
-}
-
-// The marker Canvas writes an inline cursor on this same container.
-.leaflet-container.mapSupplementHover,
-.leaflet-container.mapSupplementHover .leaflet-interactive {
-    cursor: help !important;
 }

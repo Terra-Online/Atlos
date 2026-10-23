@@ -1,5 +1,5 @@
 import { getLayerByTier, useLayerStore } from '@/store/layer';
-import type { MapCore } from '@/component/mapCore/map';
+import type { MapCore } from '@/services/map/core/map';
 import L, { type Map as LeafletMap } from 'leaflet';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';

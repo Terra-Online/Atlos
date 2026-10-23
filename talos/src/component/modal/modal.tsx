@@ -16,7 +16,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss';
 import Button from '@/component/button/button';
-import { getOpenerDocument, useAppDocument } from '@/component/scale/pip';
+import { getOpenerDocument, useAppDocument } from '@/platform/pictureInPicture';
 import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
 import PopoverTooltip from '@/component/popover/popover';
 

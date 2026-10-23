@@ -5,7 +5,7 @@ import List from './list';
 import { useContributions, type Kind } from './useContributions';
 import type { Overview } from '../../types';
 import { ModalTabs } from '@main/component/modal/modal';
-import Feed from '@main/component/notify/feed';
+import Feed from '@main/component/feed/Feed';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
 import styles from './content.module.scss';

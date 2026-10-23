@@ -1,11 +1,11 @@
-import avatarStyles from '@main/component/login/avatar.module.scss';
+import avatarStyles from '@main/component/shared/account/avatar.module.scss';
 import { useEffect, useRef, useState } from 'react';
 import type { SessionUser } from '@main/services/auth';
 import { useAuthStore } from '@main/store/auth';
 import {
     AVATAR_MAX_INDEX,
     normalizeAvatarIndex,
-} from '@main/component/login/avatarConfig';
+} from '@main/component/shared/account/avatarConfig';
 import { useTranslateUI } from '@hub/locale';
 import { saveProfile } from '../../api/client';
 import styles from './profile.module.scss';
