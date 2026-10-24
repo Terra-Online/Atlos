@@ -24,6 +24,7 @@
     position: absolute;
     bottom: 1rem;
     left: 1rem;
+    translate: var(--controls-offset, 0px) 0;
     height: 56px;
     min-width: 0;
     border-radius: 6px;
@@ -35,6 +36,7 @@
     touch-action: pan-x;
     overflow: hidden;
     transition:
+        translate 0.3s $standard-curve,
         transform 0.3s ease-in-out,
         opacity 0.3s ease-out,
         width 0.3s ease-out;

@@ -5,7 +5,6 @@ import { getItemIconUrl } from '@/services/assets/resource';
 import { useTranslateGame } from '@/locale';
 import { MarkVisibilityContext } from '@/pages/markFilter/visibilityContext';
 import {
-    useFilter,
     useMarkerStore,
     useRegionMarkerCount,
     useSearchString,
@@ -69,7 +68,7 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
     }, [tGame, typeInfo]);
 
     // stores
-    const filter = useFilter();
+    const isActive = useMarkerStore((state) => state.filter.includes(typeInfo.key));
     const handleSwitchFilter = useCallback(
         () => useMarkerStore.getState().switchFilter(typeInfo.key),
         [typeInfo.key],
@@ -102,7 +101,6 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
                 binderSearchTokens.some((token) => token.includes(normalizedSearch))),
         [cnt.total, normalizedSearch, displayName, typeInfo.key, binderSearchTokens],
     );
-    const isActive = filter.includes(typeInfo.key);
 
     // Visibility reporting to parent context (stable id = key)
     const ctx = useContext(MarkVisibilityContext);

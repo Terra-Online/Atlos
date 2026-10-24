@@ -1,20 +1,18 @@
 @use '@/styles/curves.scss' as *;
 
 .uiOverlay {
+    --controls-offset: 0px;
+
     position: absolute;
     top: 0;
     left: 0; /* Default full screen */
     width: 100%; /* Default full screen */
     height: 100%;
     pointer-events: none;
-    transition:
-        left 0.3s $standard-curve,
-        width 0.3s $standard-curve;
-
-    /* Sidebar open state */
+    // Only left-anchored controls move. Animating this viewport's width forces
+    // every overlay descendant through layout during the map's camera animation.
     &.sidebarOpen {
-        left: var(--sidebar-width, 500px);
-        width: calc(100% - var(--sidebar-width, 500px));
+        --controls-offset: var(--sidebar-width, 500px);
     }
 
     /* Allow child components to receive pointer events */
@@ -68,11 +66,12 @@
     position: absolute;
     top: 26%;
     left: 1rem;
+    translate: var(--controls-offset) 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     pointer-events: auto;
-    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transition: translate 0.3s $standard-curve, transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
     z-index: 500;
     
     /* Mobile drawer snap states */
@@ -91,8 +90,7 @@
 }
 .uiOverlay.mobile {
    &.sidebarOpen {
-        left: 0;
-        width: 100%;
+        --controls-offset: 0px;
    }
 
    .switchArea {

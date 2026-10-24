@@ -20,13 +20,22 @@ const getIconUrls = (): string[] => {
 };
 
 /** Start marker icon requests as soon as the sidebar becomes usable. */
-export const preloadSidebarIcons = (): void => {
+export const preloadSidebarIcons = (): (() => void) | undefined => {
     if (typeof Image === 'undefined') return;
-    for (const url of getIconUrls()) {
-        if (requested.has(url)) continue;
-        requested.add(url);
-        const image = new Image();
-        image.decoding = 'async';
-        image.src = url;
-    }
+    const urls = getIconUrls().filter(url => !requested.has(url));
+    let index = 0;
+    let timer = 0;
+    const batch = () => {
+        for (const end = Math.min(index + 8, urls.length); index < end; index++) {
+            const url = urls[index];
+            if (requested.has(url)) continue;
+            requested.add(url);
+            const image = new Image();
+            image.decoding = 'async';
+            image.src = url;
+        }
+        if (index < urls.length) timer = window.setTimeout(batch, 32);
+    };
+    timer = window.setTimeout(batch, 0);
+    return () => window.clearTimeout(timer);
 };

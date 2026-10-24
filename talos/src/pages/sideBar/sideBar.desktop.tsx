@@ -57,6 +57,7 @@ import { SelectionLayer } from '@/pages/sideBar/selectionLayer';
 import { computeBinderColumns } from '@/pages/sideBar/binderMasonry';
 import { useDevice } from '@/platform/device';
 import { preloadSidebarIcons } from '@/pages/sideBar/sidebarIconPrefetch';
+import { useSidebarPreparation } from './useSidebarPreparation';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
 
@@ -122,7 +123,8 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
     }, [isOpen]);
 
     useEffect(() => {
-        if (hasOpened) preloadSidebarIcons();
+        if (hasOpened) return preloadSidebarIcons();
+        return undefined;
     }, [hasOpened]);
 
     const clampWidth = useCallback((startW: number, dx: number) =>
@@ -204,6 +206,8 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
             ),
         );
     }, [currentRegionKey]);
+    const { preparedCount, prepare } = useSidebarPreparation(hasOpened, VERSION_NEW_FILTER_GROUPS.length + Object.keys(MARKER_TYPE_TREE).length);
+
     const toggleSidebar = () => {
         const newState = !isOpen;
         if (newState) setHasOpened(true);
@@ -212,6 +216,169 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
             onToggle(newState);
         }
     };
+
+    const filters = useMemo(
+        () => (
+            <MarkFilterDragProvider>
+                {VERSION_NEW_FILTER_GROUPS.slice(0, preparedCount).map(
+                    (group) => (
+                        <MarkFilter
+                            idKey={group.key}
+                            title={t(group.titleKey)}
+                            dataCategory='versionNew'
+                            key={group.key}
+                            columns={filterColumns}
+                            initialEmpty={false}
+                            variant='versionNew'
+                            reorderable={false}
+                            typeKeys={group.types.map(
+                                (typeInfo) => typeInfo.key,
+                            )}
+                        >
+                            {group.types.map((typeInfo) => (
+                                <MarkSelector
+                                    key={typeInfo.key}
+                                    typeInfo={typeInfo}
+                                    countOverride={
+                                        versionNewCounts[typeInfo.key]
+                                    }
+                                />
+                            ))}
+                        </MarkFilter>
+                    ),
+                )}
+                {DEFAULT_SUBCATEGORY_ORDER_LIST.filter((k) =>
+                    Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
+                )
+                    .concat(
+                        Object.keys(MARKER_TYPE_TREE).filter(
+                            (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
+                        ),
+                    )
+                    .slice(
+                        0,
+                        Math.max(
+                            0,
+                            preparedCount - VERSION_NEW_FILTER_GROUPS.length,
+                        ),
+                    )
+                    .map((subCategory) => {
+                        const types: IMarkerType[] =
+                            MARKER_TYPE_TREE[subCategory] ?? [];
+                        const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                        const binderData = BINDER_GROUPS_BY_SUB[subCategory];
+                        const showBinder =
+                            filterColumns >= 3 && Boolean(binderData);
+                        const binderColumns = binderData
+                            ? computeBinderColumns(
+                                  binderData.groups,
+                                  binderTypeCountMap,
+                                  isTypeVisibleInSearch,
+                              )
+                            : { left: [], right: [] };
+                        return (
+                            <MarkFilter
+                                idKey={subCategory}
+                                title={String(
+                                    tGame(`markerType.category.${subCategory}`),
+                                )}
+                                titleSuffix={
+                                    subCategory === 'archives' ? (
+                                        <a
+                                            className={`${filterStyles.filterTitleLink}`}
+                                            href='https://oem.re/intel'
+                                            target='_blank'
+                                            onClick={(event) =>
+                                                event.stopPropagation()
+                                            }
+                                        >
+                                            {isCJK ? '「' : '('}
+                                            {String(t('markFilter.archiveHub'))}
+                                            {isCJK ? '」' : ')'}
+                                        </a>
+                                    ) : undefined
+                                }
+                                icon={CategoryIcon}
+                                dataCategory={subCategory}
+                                key={subCategory}
+                                columns={filterColumns}
+                                binderMode={!!showBinder}
+                                initialEmpty={emptyCategories.has(subCategory)}
+                                typeKeys={types.map((typeInfo) => typeInfo.key)}
+                            >
+                                {showBinder && binderData ? (
+                                    <>
+                                        <div className={styles.binderSection}>
+                                            <div
+                                                className={styles.binderColumn}
+                                            >
+                                                {binderColumns.left.map(
+                                                    (group) => (
+                                                        <MarkBinder
+                                                            key={group.id}
+                                                            group={group}
+                                                        />
+                                                    ),
+                                                )}
+                                            </div>
+                                            <div
+                                                className={styles.binderColumn}
+                                            >
+                                                {binderColumns.right.map(
+                                                    (group) => (
+                                                        <MarkBinder
+                                                            key={group.id}
+                                                            group={group}
+                                                        />
+                                                    ),
+                                                )}
+                                            </div>
+                                        </div>
+                                        {binderData.remaining.length > 0 && (
+                                            <div
+                                                className={
+                                                    styles.remainingSection
+                                                }
+                                                style={{
+                                                    gridTemplateColumns: `repeat(${filterColumns}, minmax(0, 1fr))`,
+                                                }}
+                                            >
+                                                {binderData.remaining.map(
+                                                    (typeInfo) => (
+                                                        <MarkSelector
+                                                            key={typeInfo.key}
+                                                            typeInfo={typeInfo}
+                                                        />
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    types.map((typeInfo) => (
+                                        <MarkSelector
+                                            key={typeInfo.key}
+                                            typeInfo={typeInfo}
+                                        />
+                                    ))
+                                )}
+                            </MarkFilter>
+                        );
+                    })}
+            </MarkFilterDragProvider>
+        ),
+        [
+            preparedCount,
+            filterColumns,
+            versionNewCounts,
+            t,
+            tGame,
+            emptyCategories,
+            isCJK,
+            binderTypeCountMap,
+            isTypeVisibleInSearch,
+        ],
+    );
 
     return (
         <div
@@ -223,6 +390,8 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
             <button
                 className={`${styles.sidebarToggle} ${isOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}
                 onClick={toggleSidebar}
+                onPointerEnter={prepare}
+                onFocus={prepare}
                 aria-label={isOpen ? t('common.collapse') : t('common.expand')}
             >
                 <SidebarIcon />
@@ -247,111 +416,10 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
                     />
                 </div>
                 <div className={styles.sidebarContent} data-sidescroll="true" data-sidebar-scroll="true">
-                    {hasOpened && <>
+                    {preparedCount > 0 && <>
                         <SearchDesktop />
                         <div className={styles.filters}>
-                        <MarkFilterDragProvider>
-                            {VERSION_NEW_FILTER_GROUPS.map((group) => (
-                                <MarkFilter
-                                    idKey={group.key}
-                                    title={t(group.titleKey)}
-                                    dataCategory="versionNew"
-                                    key={group.key}
-                                    columns={filterColumns}
-                                    initialEmpty={false}
-                                    variant="versionNew"
-                                    reorderable={false}
-                                    typeKeys={group.types.map((typeInfo) => typeInfo.key)}
-                                >
-                                    {group.types.map((typeInfo) => (
-                                        <MarkSelector
-                                            key={typeInfo.key}
-                                            typeInfo={typeInfo}
-                                            countOverride={versionNewCounts[typeInfo.key]}
-                                        />
-                                    ))}
-                                </MarkFilter>
-                            ))}
-                            {(
-                                DEFAULT_SUBCATEGORY_ORDER_LIST.filter(
-                                    (k) => Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
-                                )
-                            )
-                                .concat(
-                                    Object.keys(MARKER_TYPE_TREE).filter(
-                                        (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
-                                    ),
-                                )
-                                .map((subCategory) => {
-                                    const types: IMarkerType[] = MARKER_TYPE_TREE[subCategory] ?? [];
-                                    const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
-                                    const binderData = BINDER_GROUPS_BY_SUB[subCategory];
-                                    const showBinder = filterColumns >= 3 && Boolean(binderData);
-                                    const binderColumns = binderData
-                                        ? computeBinderColumns(
-                                            binderData.groups,
-                                            binderTypeCountMap,
-                                            isTypeVisibleInSearch,
-                                        )
-                                        : { left: [], right: [] };
-                                    return (
-                        <MarkFilter
-                            idKey={subCategory}
-                            title={String(tGame(`markerType.category.${subCategory}`))}
-                            titleSuffix={subCategory === 'archives' ? (
-                                <a
-                                    className={`${filterStyles.filterTitleLink}`}
-                                    href="https://oem.re/intel"
-                                    target="_blank"
-                                    onClick={(event) => event.stopPropagation()}
-                                >
-                                    {isCJK ? '「' : '('}
-                                    {String(t('markFilter.archiveHub'))}
-                                    {isCJK ? '」' : ')'}
-                                </a>
-                            ) : undefined}
-                            icon={CategoryIcon}
-                            dataCategory={subCategory}
-                            key={subCategory}
-                            columns={filterColumns}
-                            binderMode={!!showBinder}
-                            initialEmpty={emptyCategories.has(subCategory)}
-                            typeKeys={types.map((typeInfo) => typeInfo.key)}
-                        >
-                                            {showBinder && binderData ? (
-                                                <>
-                                                    <div className={styles.binderSection}>
-                                                        <div className={styles.binderColumn}>
-                                                            {binderColumns.left.map((group) => (
-                                                                <MarkBinder key={group.id} group={group} />
-                                                            ))}
-                                                        </div>
-                                                        <div className={styles.binderColumn}>
-                                                            {binderColumns.right.map((group) => (
-                                                                <MarkBinder key={group.id} group={group} />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    {binderData.remaining.length > 0 && (
-                                                        <div
-                                                            className={styles.remainingSection}
-                                                            style={{ gridTemplateColumns: `repeat(${filterColumns}, minmax(0, 1fr))` }}
-                                                        >
-                                                            {binderData.remaining.map((typeInfo) => (
-                                                                <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                types.map((typeInfo) => (
-                                                    <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                                                ))
-                                            )}
-                                        </MarkFilter>
-                                    );
-                                })}
-                        </MarkFilterDragProvider>
+                        {filters}
                         </div>
                     </>}
                     <AccountCard />

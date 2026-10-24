@@ -1,6 +1,7 @@
 import { AccountCard, SidebarFooter } from '@/component/shared/siteShell/sideBar.frame';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { animate } from 'motion';
+import { motion, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import mobileStyles from '@/component/shared/siteShell/sideBar.mobile.module.scss';
 
@@ -37,6 +38,8 @@ import { useFilter, useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex, useUiPrefsHydrated } from '@/store/uiPrefs';
 import { useAppViewport } from '@/platform/device';
 import { preloadSidebarIcons } from '@/pages/sideBar/sidebarIconPrefetch';
+import { useDividerDrag } from './useDividerDrag';
+import { useSidebarPreparation } from './useSidebarPreparation';
 
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -162,7 +165,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   }, [drawerSnapIndex]);
 
   useEffect(() => {
-    if (hasOpened) preloadSidebarIcons();
+    if (hasOpened) return preloadSidebarIcons();
+    return undefined;
   }, [hasOpened]);
 
   // Track scroll position for blur effects
@@ -235,6 +239,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   }, [hasSearchQuery, topRowHeight, topRowBaseHeight]);
 
   const [leftRatio, setLeftRatio] = useState(1);
+  const ratioMotion = useMotionValue(1);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const leftRatioRef = useRef(1);
   const prevLeftBoundRef = useRef(1);
@@ -254,16 +259,23 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const rightBound = 1;
   const hasFilterPaneHost = hasFilterList && !hasSearchQuery;
   const showDivider = hasFilterPaneHost;
+  const startDividerDrag = useDividerDrag(showDivider && visible);
+  const { preparedCount, prepare } = useSidebarPreparation(hasOpened, VERSION_NEW_FILTER_GROUPS.length + Object.keys(MARKER_TYPE_TREE).length);
   const showFilterPane = hasFilterPaneHost && !searchExpanded && leftRatio < 0.999;
 
   const atLeftEdge = showDivider && !searchExpanded && leftRatio <= leftBound + 0.01;
   const atRightEdge = showDivider && (searchExpanded || leftRatio >= rightBound - 0.01);
   const resolvedTopRowBaseHeight = topRowBaseHeight > 0 ? topRowBaseHeight : topRowHeight;
   const topBlurExtraHeight = Math.max(0, topRowHeight - resolvedTopRowBaseHeight);
-  // Update ref when state changes
-  useEffect(() => {
-    leftRatioRef.current = leftRatio;
-  }, [leftRatio]);
+  const leftBasis = useTransform(ratioMotion, (value) => hasFilterPaneHost ? `${value * 100}%` : '100%');
+  const rightBasis = useTransform(ratioMotion, (value) => `${(1 - value) * 100}%`);
+  useMotionValueEvent(ratioMotion, 'change', (value) => {
+    leftRatioRef.current = value;
+    // React only needs edge/visibility transitions; Motion owns intermediate geometry.
+    setLeftRatio(current => (current < 0.999) === (value < 0.999)
+      && (current <= leftBound + 0.01) === (value <= leftBound + 0.01)
+      && (current >= rightBound - 0.01) === (value >= rightBound - 0.01) ? current : value);
+  });
 
   useEffect(() => {
     if (!hasSearchQuery) return;
@@ -273,7 +285,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   useEffect(() => {
     if (!hasFilterList) {
       setSearchExpanded(false);
-      setLeftRatio(1);
+      ratioMotion.set(1);
       prevLeftBoundRef.current = 1;
       setRightContentWidth(0);
       return undefined;
@@ -296,17 +308,16 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
 
     if (Math.abs(next - current) > 0.001) {
       if (searchExpanded && !hasSearchQuery && visible) {
-        const animation = animate(current, next, {
+        const animation = animate(ratioMotion, next, {
           duration: 0.22,
           ease: (t) => 1 - Math.pow(1 - t, 3),
-          onUpdate: (value) => { leftRatioRef.current = value; setLeftRatio(value); },
         });
         return () => animation.stop();
       }
-      setLeftRatio(next);
+      ratioMotion.set(next);
     }
     return undefined;
-  }, [hasFilterList, hasSearchQuery, leftBound, rightBound, searchExpanded, visible]);
+  }, [hasFilterList, hasSearchQuery, leftBound, rightBound, searchExpanded, visible, ratioMotion]);
 
   const handleDividerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!hasFilterList) return;
@@ -324,15 +335,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       const x = ev.clientX;
       const ratio = (x - rect.left) / rect.width;
       const clamped = Math.max(dynamicLeftBound, Math.min(1, ratio));
-      setLeftRatio(clamped);
+      ratioMotion.set(clamped);
     };
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointercancel', onUp);
-    };
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointercancel', onUp, { once: true });
-    window.addEventListener('pointerup', onUp, { once: true });
+    startDividerDrag(e, onMove, () => setLeftRatio(ratioMotion.get()));
   };
 
   // Focus Search -> occupy full top row and hide filter pane
@@ -341,6 +346,146 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     setSearchExpanded(true);
   };
 
+  const filters = useMemo(
+      () => (
+          <MarkFilterDragProvider>
+              {VERSION_NEW_FILTER_GROUPS.slice(0, preparedCount).map(
+                  (group) => (
+                      <MarkFilter
+                          idKey={group.key}
+                          title={t(group.titleKey)}
+                          dataCategory='versionNew'
+                          key={group.key}
+                          initialEmpty={false}
+                          variant='versionNew'
+                          reorderable={false}
+                          typeKeys={group.types.map((typeInfo) => typeInfo.key)}
+                      >
+                          {group.types.map((typeInfo) => (
+                              <MarkSelector
+                                  key={typeInfo.key}
+                                  typeInfo={typeInfo}
+                                  countOverride={versionNewCounts[typeInfo.key]}
+                              />
+                          ))}
+                      </MarkFilter>
+                  ),
+              )}
+              {DEFAULT_SUBCATEGORY_ORDER_LIST.filter((k) =>
+                  Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
+              )
+                  .concat(
+                      Object.keys(MARKER_TYPE_TREE).filter(
+                          (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
+                      ),
+                  )
+                  .slice(
+                      0,
+                      Math.max(
+                          0,
+                          preparedCount - VERSION_NEW_FILTER_GROUPS.length,
+                      ),
+                  )
+                  .map((subCategory) => {
+                      const types: IMarkerType[] =
+                          MARKER_TYPE_TREE[subCategory] ?? [];
+                      const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
+                      const binderData =
+                          subCategory === 'mob' || subCategory === 'archives'
+                              ? BINDER_GROUPS_BY_SUB[subCategory]
+                              : undefined;
+                      return (
+                          <MarkFilter
+                              idKey={subCategory}
+                              title={String(
+                                  tGame(`markerType.category.${subCategory}`),
+                              )}
+                              titleSuffix={
+                                  subCategory === 'archives' ? (
+                                      <a
+                                          className={
+                                              filterStyles.filterTitleLink
+                                          }
+                                          href='https://oem.re/intel'
+                                          target='_blank'
+                                          rel='noopener noreferrer'
+                                          onClick={(event) =>
+                                              event.stopPropagation()
+                                          }
+                                      >
+                                          {isCjkLocale ? '「' : '('}
+                                          {String(t('markFilter.archiveHub'))}
+                                          {isCjkLocale ? '」' : ')'}
+                                      </a>
+                                  ) : undefined
+                              }
+                              icon={CategoryIcon}
+                              dataCategory={subCategory}
+                              key={subCategory}
+                              initialEmpty={emptyCategories.has(subCategory)}
+                              binderMode={Boolean(binderData)}
+                              typeKeys={types.map((typeInfo) => typeInfo.key)}
+                          >
+                              {binderData ? (
+                                  <>
+                                      <div
+                                          className={
+                                              sidebarStyles.binderSection
+                                          }
+                                      >
+                                          <div
+                                              className={
+                                                  sidebarStyles.binderColumn
+                                              }
+                                          >
+                                              {binderData.groups.map(
+                                                  (group) => (
+                                                      <MarkBinder
+                                                          key={group.id}
+                                                          group={group}
+                                                          mobile
+                                                      />
+                                                  ),
+                                              )}
+                                          </div>
+                                      </div>
+                                      {binderData.remaining.length > 0 && (
+                                          <div
+                                              className={
+                                                  sidebarStyles.remainingSection
+                                              }
+                                              style={{
+                                                  gridTemplateColumns:
+                                                      'var(--mark-filter-columns, repeat(2, minmax(0, 1fr)))',
+                                              }}
+                                          >
+                                              {binderData.remaining.map(
+                                                  (typeInfo) => (
+                                                      <MarkSelector
+                                                          key={typeInfo.key}
+                                                          typeInfo={typeInfo}
+                                                      />
+                                                  ),
+                                              )}
+                                          </div>
+                                      )}
+                                  </>
+                              ) : (
+                                  types.map((typeInfo) => (
+                                      <MarkSelector
+                                          key={typeInfo.key}
+                                          typeInfo={typeInfo}
+                                      />
+                                  ))
+                              )}
+                          </MarkFilter>
+                      );
+                  })}
+          </MarkFilterDragProvider>
+      ),
+      [preparedCount, versionNewCounts, t, tGame, isCjkLocale, emptyCategories],
+  );
+
   return (
     <div
       className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`}
@@ -348,6 +493,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
       aria-hidden={!visible}
       inert={!visible}
       ref={rootRef}
+      onPointerDownCapture={prepare}
+      onFocusCapture={prepare}
       style={{ '--top-blur-extra': `${topBlurExtraHeight}px` } as React.CSSProperties}
     >
       {/* Mobile places the whole sidebar into a bottom drawer */}
@@ -375,14 +522,14 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
           <div className={mobileStyles.sidebarContent}>
             {/* Top row: Search + FilterList with draggable divider */}
             <div className={mobileStyles.topRow} ref={topRowRef}>
-              <div
+              <motion.div
                 className={mobileStyles.topRowPane}
-                style={{ flexBasis: hasFilterPaneHost ? `${leftRatio * 100}%` : '100%' }}
+                style={{ flexBasis: leftBasis }}
                 onFocus={handleSearchFocus}
                 onClick={handleSearchFocus}
               >
                 <SearchMobile />
-              </div>
+              </motion.div>
               {showDivider && (
                 <div
                   className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
@@ -392,102 +539,24 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
                 />
               )}
               {hasFilterPaneHost && (
-                <div
+                <motion.div
                   className={mobileStyles.topRowPane}
                   style={{
-                    flexBasis: `${(1 - leftRatio) * 100}%`,
+                    flexBasis: rightBasis,
                     maxWidth: rightContentWidth,
                     visibility: showFilterPane ? 'visible' : 'hidden',
                     pointerEvents: showFilterPane ? 'auto' : 'none',
                   }}
                 >
                   <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
-                </div>
+                </motion.div>
               )}
             </div>
 
             <Detail inline className={mobileStyles.mobileDetail} />
 
-            {hasOpened && <div className={mobileStyles.filters}>
-              <MarkFilterDragProvider>
-                {VERSION_NEW_FILTER_GROUPS.map((group) => (
-                  <MarkFilter
-                    idKey={group.key}
-                    title={t(group.titleKey)}
-                    dataCategory="versionNew"
-                    key={group.key}
-                    initialEmpty={false}
-                    variant="versionNew"
-                    reorderable={false}
-                    typeKeys={group.types.map((typeInfo) => typeInfo.key)}
-                  >
-                    {group.types.map((typeInfo) => (
-                      <MarkSelector
-                        key={typeInfo.key}
-                        typeInfo={typeInfo}
-                        countOverride={versionNewCounts[typeInfo.key]}
-                      />
-                    ))}
-                  </MarkFilter>
-                ))}
-                {DEFAULT_SUBCATEGORY_ORDER_LIST.filter((k) =>
-                  Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
-                )
-                  .concat(
-                    Object.keys(MARKER_TYPE_TREE).filter(
-                      (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
-                    ),
-                  )
-                  .map((subCategory) => {
-                    const types: IMarkerType[] = MARKER_TYPE_TREE[subCategory] ?? [];
-                    const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
-                    const binderData = subCategory === 'mob' || subCategory === 'archives'
-                      ? BINDER_GROUPS_BY_SUB[subCategory]
-                      : undefined;
-                    return (
-                      <MarkFilter
-                        idKey={subCategory}
-                        title={String(tGame(`markerType.category.${subCategory}`))}
-                        titleSuffix={subCategory === 'archives' ? (
-                          <a
-                            className={filterStyles.filterTitleLink}
-                            href="https://oem.re/intel"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            {isCjkLocale ? '「' : '('}
-                            {String(t('markFilter.archiveHub'))}
-                            {isCjkLocale ? '」' : ')'}
-                          </a>
-                        ) : undefined}
-                        icon={CategoryIcon}
-                        dataCategory={subCategory}
-                        key={subCategory}
-                        initialEmpty={emptyCategories.has(subCategory)}
-                        binderMode={Boolean(binderData)}
-                        typeKeys={types.map((typeInfo) => typeInfo.key)}
-                      >
-                        {binderData ? (
-                          <>
-                            <div className={sidebarStyles.binderSection}>
-                              <div className={sidebarStyles.binderColumn}>
-                                {binderData.groups.map(group => <MarkBinder key={group.id} group={group} mobile />)}
-                              </div>
-                            </div>
-                            {binderData.remaining.length > 0 && (
-                              <div className={sidebarStyles.remainingSection} style={{ gridTemplateColumns: 'var(--mark-filter-columns, repeat(2, minmax(0, 1fr)))' }}>
-                                {binderData.remaining.map(typeInfo => <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />)}
-                              </div>
-                            )}
-                          </>
-                        ) : types.map((typeInfo) => (
-                          <MarkSelector key={typeInfo.key} typeInfo={typeInfo} />
-                        ))}
-                      </MarkFilter>
-                    );
-                  })}
-              </MarkFilterDragProvider>
+            {preparedCount > 0 && <div className={mobileStyles.filters}>
+              {filters}
             </div>}
             <AccountCard mobile />
           </div>

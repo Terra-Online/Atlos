@@ -66,7 +66,13 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                 }
             });
         }
-        return () => ro.disconnect();
+        return () => {
+            ro.disconnect();
+            imgs.forEach(img => {
+                img.removeEventListener('load', measure);
+                img.removeEventListener('error', measure);
+            });
+        };
     }, [displayList, x]);
 
     useEffect(() => {

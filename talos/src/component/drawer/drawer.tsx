@@ -203,6 +203,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Motion values
 	const size = useMotionValue(initSize);
 	const progress = useMotionValue((initSize - minSnap) / safeRange);
+	// Size drives CSS variables rather than a motion element, so own its animation teardown.
+	useEffect(() => () => size.stop(), [size]);
 	
 	// Refs
 	const containerRef = useRef<HTMLDivElement>(null);

@@ -1,4 +1,5 @@
 @use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
 
 :root, :root[data-theme='light'] {
     --scope-indicator-bg: #{rgba($grey-1, 0.8)};
@@ -20,6 +21,8 @@
     position: absolute;
     bottom: 5rem;
     left: 1rem;
+    translate: var(--controls-offset, 0px) 0;
+    transition: translate 0.3s $standard-curve;
     z-index: 510;
     display: inline-flex;
     align-items: center;

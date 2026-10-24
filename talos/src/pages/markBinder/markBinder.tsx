@@ -9,6 +9,7 @@ import { useMultiRegionMarkerCount, useFilter, useSearchString, useMarkerStore }
 import MarkSelector from '@/pages/markSelector/markSelector';
 import { MarkVisibilityContext } from '@/pages/markFilter/visibilityContext';
 import { useLayoutVersion } from '@/store/uiPrefs';
+import useRegion from '@/store/region';
 
 interface MarkBinderProps {
     group: BinderGroup;
@@ -23,6 +24,7 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
     const tGame = useTranslateGame();
     const filter = useFilter();
     const layoutVersion = useLayoutVersion();
+    const currentRegion = useRegion(state => state.currentRegionKey);
     const searchString = useSearchString();
     const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
 
@@ -178,7 +180,9 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
                         <motion.div
                             key={typeInfo.key}
                             layout={layoutAnimReady}
-                            layoutDependency={`${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
+                            // Region changes also move retained rows when other binders
+                            // disappear or change columns, even if these keys stay the same.
+                            layoutDependency={`${currentRegion}:${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
                             transition={{ type: 'spring', stiffness: 400, damping: 38 }}
                         >
                             <MarkSelector typeInfo={typeInfo} />
