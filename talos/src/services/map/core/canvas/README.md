@@ -6,9 +6,9 @@ This is Atlos's internal Canvas renderer. `canvasMarkerStyle.ts` maps the offici
 - `markerViewport`: node-free Leaflet membership, positions, icon anchors and overlay ownership.
 - `canvasMarkerSurface`: scene lifecycle, hit testing, visibility, display density and drawing coordination.
 - `canvasMarkerPaint`: official artwork, typography and cached raster sprites. Settled opaque pulses reuse frame/foreground artwork and a shared ring clock; fades and geometry changes retain the original composite path. Sprite density is independent of viewport density; small sprites use at least 2× sampling, while the viewport uses `max(2, devicePixelRatio)`. Hit testing remains in CSS pixels.
-- `canvasSpriteBatch`: instanced GPU composition into a stable scratch canvas sized to the viewport buffer. A small viewport/scissor renders each damaged rectangle at the bottom-left of that buffer; a cropped, clipped `copy` replaces the corresponding visible pixels, including transparency. Dirty rectangles never resize the drawing buffer. No CPU pixel readback is used in rendering. The surface owns the pure Canvas2D fallback.
+- `canvasSpriteBatch`: instanced GPU composition into a stable scratch canvas sized to the viewport buffer. A small viewport/scissor renders each damaged rectangle at the bottom-left of that buffer; a cropped, clipped `copy` replaces the corresponding visible pixels, including transparency. Dirty rectangles never resize the drawing buffer. No CPU pixel readback is used in rendering. A lazy 1024² staging canvas batches complete animated sprites into cropped texture uploads; pending slots stay pinned until the GPU copies finish. Static composition flushes those uploads before reading its parts. The surface owns the pure Canvas2D fallback.
 - `canvasMarkerMotion`: shared animation channels without shared mutable marker state.
-- `clusterGroup`, `spatialClusters`, `canvasMarkerCluster`: spatial grouping and expansion to authored positions.
+- `clusterGroup`, `spatialClusters`, `canvasMarkerCluster`: spatial grouping and expansion to authored positions. Each type group retains up to four ordered geometry snapshots (8192 points total), with four scale/radius layouts per snapshot. These caches contain numeric coordinates and member indexes, never retired markers or maps. A zoom ending in the same layout preserves parent links and animation timelines; membership, CRS, scale, radius and icon-factory changes still reconcile.
 
 Display changes invalidate cached poses without replacing marker identities or restarting animation channels.
 
@@ -48,13 +48,13 @@ navigation representation, not a complete screen-reader catalogue. Pointer hit t
 and ordinary interaction do not create or focus proxies per point. Further accessibility
 work must keep this bounded scene architecture.
 
-Damage bounds include shadows and decorations. All intersecting points are drawn in their existing order, including static points behind/above a pulse. Layer splitting is restricted to group opacity 1 because independently fading overlapping parts would change their appearance. Per-part atlas bindings must be released on representation changes, visibility changes and removal.
+Damage bounds include shadows and decorations. All intersecting points are drawn in their existing order, including static points behind/above a pulse. Direct layer splitting is restricted to group opacity 1 because independently fading overlapping parts would change their appearance. Other reusable parts are first composed into one atlas sprite, so group opacity is applied once. Composition uses a separate scratch texture to avoid reading the atlas while it is attached for drawing. Slot reuse clears the sampling gutter on the GPU instead of uploading zero-filled pixel arrays. Per-part atlas bindings must be released on representation changes, visibility changes and removal.
 
 
 The renderer uses shared immutable artwork and retained panning by default. A bounded
 weak index reuses sprites still owned by entries after they leave the 512-item strong
 cache; it does not share mutable animation state. The index is capped at 2048 keys and
-cleared when display density changes or the map is destroyed.
+cleared when display density changes or the map is destroyed. Region trimming preserves still-used sprites and removes those referencing retired assets. A separate 256-part LRU bounds shared atlas material. Cluster bodies and count badges reuse their native raster parts. Vector and unknown image formats retain whole-sprite rasterization. Canvas2D materializes composed pixels lazily; animated artwork keeps the authored whole-sprite painter in both backends.
 
 The pan cache requests 128 CSS pixels of padding, capped at 150% of viewport backing
 pixels. While the camera stays inside that coverage, Leaflet moves the retained image;
@@ -68,3 +68,10 @@ Changes in this stage are Atlos-only. `scripts/bench-runtime.mjs` compares froze
 builds and optionally records a long-session replay, GC snapshots and DOM/listener counts.
 Its results and heap snapshots are local ignored files; runtime code has no dependency
 on them. Renderer stats do not poll `getError()`.
+
+Map lasso input coalesces pointer movement, overlay layout, membership queries and
+scene updates in the owner window's animation frame. A versioned pair of sorted
+coordinate axes narrows each query while filters, hidden completions and subregions
+remain live. Preview membership is unordered; pointer-up recomputes exact final
+bounds and restores dictionary order for the existing selection-store contract.
+Cancellation, unload and window migration release pending previews.

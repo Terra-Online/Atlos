@@ -30,6 +30,44 @@ describe('Shared immutable artwork', () => {
     } finally { painter.dispose(); }
     expect(indexes.sprites.size).toBe(0); expect(indexes.shared.size).toBe(0);
   });
+  it('reuses cluster bodies across counts and badges across icons, including whole-group fades', () => {
+    const painter = new MarkerPainter(2, () => {}), pool = new MarkerMotionPool();
+    const appearing = pool.transition(pool.initial, 64, 0, false, true);
+    const first = { image: '/one.png', subImage: '', noFrame: false, tier: '', count: '2' };
+    try {
+      const a = painter.gpuSprite(first, appearing, 50);
+      const b = painter.gpuSprite({ ...first, count: '3' }, appearing, 50);
+      const c = painter.gpuSprite({ ...first, image: '/two.png' }, appearing, 50);
+      expect(a.parts).toHaveLength(2);
+      expect(a.parts![0]).toBe(b.parts![0]);
+      expect(a.parts![1]).toBe(c.parts![1]);
+      expect(b.parts![1]).not.toBe(a.parts![1]);
+      const settled = pool.transition(appearing, 0, 200, false, true);
+      expect(painter.gpuSprite(first, settled, 200)).toBe(a);
+      expect(painter.sprite(first, settled, 200).parts).toBeUndefined();
+      const draw = vi.fn(); a.canvas.getContext('2d')!.drawImage = draw;
+      expect(painter.raster(a)).toBe(a); painter.raster(a);
+      expect(draw).toHaveBeenCalledTimes(2);
+    } finally { painter.dispose(); }
+  });
+  it('keeps reusable material when a region retains its assets and evicts retired material', () => {
+    const painter = new MarkerPainter(2, () => {}), motion = pose();
+    const keep = { ...art(1), image: '/keep.png' }, retire = { ...art(2), image: '/retire.png' };
+    try {
+      const kept = painter.sprite(keep, motion, 1000), retired = painter.sprite(retire, motion, 1000);
+      painter.retainAssets(new Set(['/keep.png']));
+      expect(painter.sprite(keep, motion, 1000)).toBe(kept);
+      expect(painter.sprite(retire, motion, 1000)).not.toBe(retired);
+    } finally { painter.dispose(); }
+  });
+  it('keeps vector and unknown assets on the authored whole-sprite path', () => {
+    const painter = new MarkerPainter(2, () => {}), motion = pose();
+    try {
+      for (const image of ['/icon.svg?cached=.webp', 'data:image/svg+xml,<svg/>', 'blob:opaque']) {
+        expect(painter.gpuSprite({ ...art(1), image, count: '2' }, motion, 1000).parts).toBeUndefined();
+      }
+    } finally { painter.dispose(); }
+  });
   it('can still paint when weak references are unavailable', () => {
     vi.stubGlobal('WeakRef', undefined);
     const painter = new MarkerPainter(2, () => {});

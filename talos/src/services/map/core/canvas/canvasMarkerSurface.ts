@@ -350,6 +350,12 @@ export class CanvasMarkerSurface {
     this.context = this.canvas.getContext('2d')!;
     this.full = true; this.request();
   }
+  /** Move an already scheduled animation behind a newly queued input preview. */
+  deferFrame(): void {
+    if (this.frame) { cancelAnimationFrame(this.frame); this.frame = 0; this.request(); }
+  }
+  /** Finish a batched input preview in its current animation frame. */
+  flush(): void { this.draw(performance.now()); }
   getRendererStats() {
     return this.batch?.stats ?? { backend: 'canvas2d', reason: this.backendReason, instances: this.ordered.filter(entry => entry.visible).length };
   }
@@ -501,7 +507,10 @@ export class CanvasMarkerSurface {
         ctx.beginPath();
         candidates = [...found].sort(compareEntries);
       }
-      const draw = (sprite: Sprite, x: number, y: number) => ctx.drawImage(sprite.canvas, x + sprite.x, y + sprite.y, sprite.width, sprite.height);
+      const draw = (sprite: Sprite, x: number, y: number) => {
+        const raster = this.painter.raster(sprite);
+        ctx.drawImage(raster.canvas, x + raster.x, y + raster.y, raster.width, raster.height);
+      };
       for (const entry of candidates) {
         if (!entry.visible) continue;
         if (!this.painter.isArtReady(entry.art)) continue;
@@ -522,7 +531,7 @@ export class CanvasMarkerSurface {
           const x = (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x;
           const y = (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y;
           ctx.globalAlpha = ghost.alpha * (1 - progress);
-          ctx.drawImage(ghost.sprite.canvas, x + ghost.sprite.x, y + ghost.sprite.y, ghost.sprite.width, ghost.sprite.height);
+          draw(ghost.sprite, x, y);
         }
         ctx.globalAlpha = 1;
       }
@@ -582,7 +591,7 @@ export class CanvasMarkerSurface {
       } else {
         if (entry.usingPulseLayers) this.releasePulse(entry);
         const sprite = entry.sprite ?? (entry.motion.paintActive(now) ? (entry.animatedSprite ??= this.painter.animation(entry.art, entry.motion)).render(now)
-          : entry.sprite = this.painter.sprite(entry.art, entry.motion, now));
+          : entry.sprite = this.painter.gpuSprite(entry.art, entry.motion, now));
         batch.add(entry, sprite, entry.x, entry.y, alpha);
       }
     }
