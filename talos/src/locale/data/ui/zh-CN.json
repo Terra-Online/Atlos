@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "显示地图补充信息",
+    "hideMapSupplements": "隐藏地图补充信息",
     "onlySubregion": "仅显示{region}",
     "showAllSubregions": "显示全部子地区",
     "highlightSameType": "高亮此区域同类点（{count}）",

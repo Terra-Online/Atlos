@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "顯示地圖補充資訊",
+    "hideMapSupplements": "隱藏地圖補充資訊",
     "onlySubregion": "只顯示{region}",
     "showAllSubregions": "顯示所有子地區",
     "highlightSameType": "高亮此區域同類地點（{count}）",

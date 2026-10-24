@@ -1,0 +1,99 @@
+@use '@/styles/curves.scss' as *;
+
+.uiOverlay {
+    --controls-offset: 0px;
+
+    position: absolute;
+    top: 0;
+    left: 0; /* Default full screen */
+    width: 100%; /* Default full screen */
+    height: 100%;
+    pointer-events: none;
+    // Only left-anchored controls move. Animating this viewport's width forces
+    // every overlay descendant through layout during the map's camera animation.
+    &.sidebarOpen {
+        --controls-offset: var(--sidebar-width, 500px);
+    }
+
+    /* Allow child components to receive pointer events */
+    & > * {
+        pointer-events: auto;
+    }
+}
+
+.overlayContent {
+    position: absolute;
+    inset: 0;
+    opacity: 1;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out;
+
+    & > * {
+        pointer-events: auto;
+    }
+
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+
+        & > * {
+            pointer-events: none;
+        }
+    }
+}
+
+.shortcutTooltip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: calc(100vw - 2rem);
+    white-space: pre-wrap;
+}
+
+.headbarHost {
+    display: contents;
+}
+
+@media screen and (width < 180px), screen and (height < 180px) {
+    .headbarHost {
+        display: none;
+    }
+}
+
+/* Switch Area: contains both Region and Layer switches */
+.switchArea {
+    position: absolute;
+    top: 26%;
+    left: 1rem;
+    translate: var(--controls-offset) 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: auto;
+    transition: translate 0.3s $standard-curve, transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 500;
+    
+    /* Mobile drawer snap states */
+    /* Snap 0: initial position (bottom: 1rem) */
+    &[data-snap="0"] {
+        transform: translateY(0);
+    }
+    /* Snap 1: pushed up by ~55vh drawer */
+    &[data-snap="1"] {
+        transform: translateY(-65%);
+    } 
+    /* Snap 2+: stays at same position as snap 1 (max 85vh drawer) */
+    &[data-snap="2"] {
+        transform: translateY(-65%);
+    }
+}
+.uiOverlay.mobile {
+   &.sidebarOpen {
+        --controls-offset: 0px;
+   }
+
+   .switchArea {
+        top: 25%;
+   } 
+}

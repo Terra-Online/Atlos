@@ -678,5 +678,8 @@
       "research_tales": "Schriften und Schlaues",
       "research_gm02m27": "UB: Eine Stadt der F&E"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Optischer Nebel</span>: Greife ihn an, um ihn aufzulösen."
   }
 }

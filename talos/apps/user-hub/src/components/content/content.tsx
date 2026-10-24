@@ -1,11 +1,11 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import { useRef, useState } from 'react';
 import { useLocale, useTranslateUI } from '@hub/locale';
 import List from './list';
 import { useContributions, type Kind } from './useContributions';
 import type { Overview } from '../../types';
 import { ModalTabs } from '@main/component/modal/modal';
-import Feed from '@main/component/notify/feed';
-import { AccessButton } from '@main/component/login/access/button';
+import Feed from '@main/component/feed/Feed';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
 import styles from './content.module.scss';
@@ -65,7 +65,7 @@ export default function Content({ revision, counts }: Props) {
                                     {t('userHub.contributionsError')} {error}
                                 </p>
                                 <div className={styles.more}>
-                                    <AccessButton
+                                    <EntryButton
                                         onClick={retry}
                                         disabled={loading}
                                         label={t('userHub.retry')}
@@ -83,7 +83,7 @@ export default function Content({ revision, counts }: Props) {
                             <>
                                 <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
                                 <div className={styles.pagination}>
-                                    <AccessButton
+                                    <EntryButton
                                         label={t(
                                             loading
                                                 ? 'common.loading'

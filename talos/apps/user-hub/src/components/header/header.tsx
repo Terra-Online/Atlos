@@ -1,5 +1,5 @@
 import { useTheme } from '@main/platform/useTheme';
-import { HeadBar, HeadItem } from '@main/component/headBar/headBar';
+import { HeadBar, HeadItem } from '@main/component/shared/siteShell/headBar/headBar';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
@@ -11,7 +11,7 @@ import I18n from '@main/assets/logos/i18n.svg?react';
 import Refresh from '@main/assets/images/UI/refresh.svg?react';
 import styles from './header.module.scss';
 
-const Language = lazy(() => import('@main/component/language/language'));
+const Language = lazy(() => import('@main/component/shared/language/language'));
 
 type Props = {
     busy: boolean;

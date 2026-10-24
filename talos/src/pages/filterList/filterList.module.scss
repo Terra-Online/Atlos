@@ -1,0 +1,128 @@
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --filterlist-bg: #{rgba($white-2, 0.25)};
+}
+:root[data-theme='dark'] {
+    --filterlist-bg: #{rgba($black-1, 0.3)};
+}
+
+/* Animatable custom properties controlling mask fades (0 = off, 1 = on) */
+@property --leftFade {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+}
+@property --rightFade {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
+}
+
+.mainFilterList {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    translate: var(--controls-offset, 0px) 0;
+    height: 56px;
+    min-width: 0;
+    border-radius: 6px;
+    box-sizing: border-box;
+    box-shadow: 0 0 5px rgba($black-0, 0.6);
+    background-color: var(--filterlist-bg);
+    backdrop-filter: blur(8px);
+    user-select: none;
+    touch-action: pan-x;
+    overflow: hidden;
+    transition:
+        translate 0.3s $standard-curve,
+        transform 0.3s ease-in-out,
+        opacity 0.3s ease-out,
+        width 0.3s ease-out;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    cursor: grab;
+
+    &.hidden {
+        opacity: 0;
+    }
+}
+.mainFilterList.mobile {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 28px;
+    /* Use inner shadow on mobile to adapt rounded corners */
+    box-shadow: inset 0 0 8px rgba($black-0, 0.35);
+}
+
+.mainFilterContentContainer {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 8px;
+
+    --fadeWidth: 36px;
+    --leftFade: 0;
+    --rightFade: 0;
+    /* animate the registered custom properties (case-sensitive names) */
+    transition: --leftFade 200ms ease, --rightFade 200ms ease;
+    will-change: --leftFade, --rightFade;
+
+    /* Single mask gradient across the whole container.
+       Logic:
+       - When fade is OFF (0): edges alpha = 1 => fully visible; no masking.
+       - When fade is ON (1): edges alpha = 0 at extreme, reach 1 after --fadeWidth.
+    */
+    mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, calc(1 - var(--leftFade))) 0,
+        rgba(0, 0, 0, 1) var(--fadeWidth),
+        rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
+        rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
+    );
+    -webkit-mask-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, calc(1 - var(--leftFade))) 0,
+        rgba(0, 0, 0, 1) var(--fadeWidth),
+        rgba(0, 0, 0, 1) calc(100% - var(--fadeWidth)),
+        rgba(0, 0, 0, calc(1 - var(--rightFade))) 100%
+    );
+    mask-mode: alpha;
+
+    &.leftMaskOpacity { --leftFade: 1; }
+    &.rightMaskOpacity { --rightFade: 1; }
+}
+
+.innerContainer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+}
+
+.mainFilterContentItem {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+.mainFilterList.mobile .innerContainer {
+    gap: 0;
+}

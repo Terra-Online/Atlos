@@ -79,18 +79,10 @@ talos/.stylelintcache
 !talos/oem-relink/src/index.test.ts
 !talos/apps/intel/src/data/importContract.test.ts
 
-# Keep the viewport lifecycle and multi-filter regression suite.
-!talos/src/component/mapCore/markerViewport.test.ts
 
 # Performance regression coverage.
-!talos/src/component/locator/proximityIndex.test.ts
-!talos/src/component/mapCore/marker/markerLayer.proximity.test.ts
 !talos/src/store/marker.proximity.test.ts
 !talos/src/store/marker.counts.test.ts
-
-# Retained Canvas rendering regression coverage.
-!talos/src/component/mapCore/canvas/canvasEfficiency.test.ts
-!talos/src/component/mapCore/canvas/canvasArtworkCache.test.ts
 
 # Local-only Canvas performance harnesses, reports and captures.
 /talos/performance/
@@ -98,3 +90,9 @@ talos/.stylelintcache
 /talos/APP_REUSE.md
 # Shared full-coverage font shards are generated from private originals.
 /talos/scripts/fonts/__pycache__/
+
+# Local animation, interaction and bundle acceptance reports.
+/docs/code-smell-acceptance/
+
+# Local performance reports, traces, captures, builds and history backups.
+/docs/perf/

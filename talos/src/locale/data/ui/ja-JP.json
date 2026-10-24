@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "マップの補足情報を表示",
+    "hideMapSupplements": "マップの補足情報を非表示",
     "onlySubregion": "{region} のみ表示",
     "showAllSubregions": "すべてのサブエリアを表示",
     "highlightSameType": "同種ポイントをハイライト（{count}）",

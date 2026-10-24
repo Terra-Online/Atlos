@@ -52,12 +52,15 @@ Top-level folders you’ll most likely interact with:
 - `talos/` – the web app
   - `src/` – application source
     - `assets/` - icons and logos
-    - `component/` – UI components
+    - `component/` – reusable controls; `component/shared/` holds cross-app account, site shell, sync, and comment display modules
+    - `pages/` – main-site composition and business UI, without an extra page-family wrapper
     - `data/` - Game related data
     - `locale/` – i18n system, UI text resources
     - `store/` – global UI state (Zustand)
     - `styles/` – shared SCSS (palette, fonts, globals)
-    - `lib/`, `platform/`, and `services/` – shared helpers, runtime adapters, and domain APIs
+    - `lib/`, `platform/`, and `services/` – shared helpers, runtime adapters, and domain APIs; map engine ownership lives in `services/map/core/`
+
+Shared modules and standalone apps must not import main-site pages. ESLint enforces this boundary.
   - `apps/` - standalone OEM apps separate from the main SPA, each deployed as an independent route (e.g. `oem.re/intel`)
   - `public/` – public static assets
   - `config/` – build-time config (ignored by Git), see “Build & Deploy”

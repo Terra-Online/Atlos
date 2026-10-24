@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "Show map supplements",
+    "hideMapSupplements": "Hide map supplements",
     "onlySubregion": "Show only {region}",
     "showAllSubregions": "Show all subregions",
     "highlightSameType": "Highlight same-type points here ({count})",

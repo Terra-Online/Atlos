@@ -1,0 +1,453 @@
+@use '@/styles/selectionBox' as selection;
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+@use '@/styles/size.scss' as *;
+
+$desktop-headbar-height: 5.5rem;
+$toggle-btn-size: 5.5rem;
+$transition-speed: 0.3s;
+
+:root, :root[data-theme='light'] {
+    --sidebar-header: #{$white-1};
+    --sidebar-bg: #{rgba($white-0, 0.5)};
+    --sidebar-footer: #{rgba($white-0, 0.3)};
+    --sidebar-footer-txt: #{$black-1};
+
+    --sidebar-box-sel-border: #{$primary-accent-5};
+    --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
+
+    --sidebar-handle: #{$primary-accent-6};
+
+    --discord: #5865F2;
+    --github: #24292f;
+    --qq: #4397F7;
+    --bsky: #007fff;
+    --twitter: #000000;
+    --support: #{$primary-accent-6};
+}
+:root[data-theme='dark'] {
+    --sidebar-header: #{$black-1};
+    --sidebar-bg: #{rgba($black-0, 0.6)};
+    --sidebar-footer: #{rgba($black-1, 0.8)};
+    --sidebar-footer-txt: #{$light-1};
+
+    --sidebar-box-sel-border: #{$primary-accent-4};
+    --sidebar-box-sel-bg: #{rgba($primary-accent-5, 0.2)};
+
+    --sidebar-handle: #{$primary-accent-4};
+
+
+    --discord: #E0E3FF;
+    --github: #{$primary-accent-4};
+    --qq: #8ab8ec;
+    --bsky: #66b2ff;
+    --twitter: #{$light-2};
+    --support: #{$primary-accent-5};
+}
+
+.sidebarContainer {
+    container-name: sidebar;
+    container-type: inline-size;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--sidebar-width, 500px);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 1;
+    transition: 
+        transform $transition-speed $standard-curve,
+        opacity 0.2s ease-out;
+
+    transform: translateX(calc(-1 * var(--sidebar-width, 500px)));
+
+    &.open {
+        transform: translateX(0);
+        > .sidebarToggle {
+            transform: translateX(calc(-1 * var(--sidebar-width, 500px) - 0.375rem));
+        }
+    }
+
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+        
+        .sidebar,
+        .sidebarToggle {
+            pointer-events: none;
+        }
+    }
+
+    .sidebar {
+        --drawer-bottom: 3.25rem; // copyright (1.5rem) + socialBar (1.75rem)
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        background-color: var(--sidebar-bg);
+        color: $grey-1;
+        backdrop-filter: blur(35px) brightness(120%);
+
+        box-shadow: 3px 0 4px rgba($black-0, 0.15);
+        pointer-events: auto;
+        transform: none;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+
+        .headIcon {
+            z-index: 100;
+            background-color: var(--sidebar-header);
+            box-shadow: 0 4px 4px rgba($black-0, 0.25);
+            display: flex;
+            justify-content: center;
+            > img {
+                height: $desktop-headbar-height;
+                padding: 0.25rem;
+            }
+        }
+        .sidebarContent {
+            height: 100%;
+            padding: 15px;
+            padding-bottom: calc(3rem + 15px + 20vh); // bottom UI + origin padding + extra scroll space
+            flex: 1;
+            overflow-y: auto;
+            > .filters {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-around;
+                gap: 0.3rem;
+            }
+        }
+        .idCardContainer {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: var(--sidebar-id-card-padding-top, 1.5rem);
+            margin-bottom: 0.5rem;
+        }
+        .copyright, .socialBar {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            bottom: 0;
+            background-color: var(--sidebar-footer);
+            box-shadow: 0 -2px 3px rgba($black-0, 0.25);
+            height: 1.5rem;
+            max-height: 1.5rem;
+            font-size: 0.875rem;
+            font-family: 'HMSans_EN', 'HMSans', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+            font-weight: 550;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(0);
+            transition: transform 0.35s $moderato-curve, background-color 0.35s $moderato-curve, opacity 0.35s $moderato-curve, max-height 0.35s $moderato-curve;
+            a {
+                color: var(--sidebar-footer-txt);
+                text-decoration: none;
+                transition: font-weight 0.2s, color .3s $moderato-curve;
+                &:hover {
+                    font-weight: 650;
+                    transition: font-weight 0.2s;
+                }
+            }
+            &::after {
+                content: '';
+                position: absolute;
+                backdrop-filter: blur(0.5rem);
+                width: 100%;
+                height: inherit;
+                z-index: -1;
+            }
+        }
+        .socialBar {
+            bottom: 1.5rem;
+            height: 1.75rem;
+            max-height: 1.75rem;
+            z-index: 101;
+            > .divide {
+                display: flex;
+                width: 2px;
+                height: 1rem;
+                border-radius: 1px;
+                background-color: var(--sidebar-footer-txt);
+                margin-right: .5rem;
+            }
+            
+            .socialLink {
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                margin-right: .7rem;
+                transition: all .35s ease;
+                max-width: 4.2rem;
+                overflow: hidden;
+                cursor: pointer;
+                svg {
+                    fill: var(--sidebar-footer-txt);
+                    transition: fill 0.2s ease;
+                    flex-shrink: 0;
+                }
+                &::after {
+                    max-width: 0;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    color: var(--sidebar-footer-txt);
+                    transition: max-width .35s $standard-curve, color .35s $standard-curve;
+                }
+                &:hover::after {
+                    max-width: 49px;
+                    transition: max-width .45s ease, color .45s ease;
+                }
+                &[data-platform="github"] {
+                    > svg {
+                        width: 1.05rem;
+                        height: 1.05rem;
+                    }
+                    &::after {
+                        content: "GitHub";
+                    }
+                    &:hover svg {
+                        fill: var(--github);
+                    }
+                }
+                &[data-platform="discord"] {
+                    > svg {
+                        width: 1.13rem;
+                        height: 1.13rem;
+                    }
+                    &::after {
+                        content: "Discord";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--discord);
+                        }
+                        &::after {
+                            color: var(--discord)
+                        }
+                    }
+                }
+                &[data-platform="bluesky"] {
+                    > svg {
+                        width: 1.06rem;
+                        height: 1.06rem;
+                    }
+                    &::after {
+                        content: "Bluesky";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--bsky);
+                        }
+                        &::after {
+                            color: var(--bsky)
+                        }
+                    }
+                }
+                &[data-platform="X/Twitter"] {
+                    > svg {
+                        width: 0.92rem;
+                        height: 0.92rem;
+                    }
+                    &::after {
+                        content: "Twitter";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--twitter);
+                        }
+                        &::after {
+                            color: var(--twitter)
+                        }
+                    }
+                }
+                &[data-platform="qq"] {
+                    transform: translateX(-2px);
+                    margin-right: 2px;
+                    > svg {
+                        width: 1.15rem;
+                        height: 1.15rem;
+                    }
+                    &::after {
+                        content: "QQ群";
+                    }
+                    &:hover {
+                        svg {
+                            fill: var(--qq);
+                        }
+                        &::after {
+                            color: var(--qq)
+                        }
+                    }
+                }
+            }
+            .supportBtn {
+                appearance: none;
+                border: none;
+                background: transparent;
+                padding: 0;
+                cursor: pointer;
+                font-size: 0.875rem;
+                font-family: inherit;
+                font-weight: 500;
+                letter-spacing: -0.5px;
+                color: var(--sidebar-footer-txt);
+                transition: all .5s ease;
+                &:hover {
+                    color: var(--support);
+                    font-weight: 900;
+                    transition: all .25s ease;
+                }
+            }
+        }
+    }
+
+    .resizeHandle {
+        position: absolute;
+        top: 0;
+        right: -4px;
+        width: 8px;
+        height: 100%;
+        cursor: ew-resize;
+        z-index: 1002;
+        pointer-events: auto;
+        touch-action: none;
+        &::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-170%, -50%);
+            width: 6px;
+            height: 3rem;
+            border-radius: 3px;
+            background-color: var(--drawer-handle-bg);
+            opacity: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba($black-0, .4);
+            z-index: 1;
+        }
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2px;
+            width: 1px;
+            height: 100%;
+            transition: outline-color 0.2s ease, outline-width 0.2s ease;
+            outline-width: 1px;
+            outline-style: dotted;
+            outline-color: transparent;
+            z-index: 0;
+        }
+        &:hover::before {
+            opacity: 1;
+        }
+        &.dragging::after {
+            outline-color: var(--sidebar-handle);
+        }
+        &.dragging::before {
+            transform: translate(-75%, -50%);
+            background-color: var(--sidebar-handle);
+            opacity: 1;
+            height: 4rem;
+        }
+        @container (min-width: 485px) {
+            &.dragging::before {
+                background-color: $primary-accent-7;
+                height: 5rem;
+            }
+            &.dragging::after {
+                outline-color: $primary-accent-7;
+            }
+        }
+    }
+
+    .sidebarToggle {
+        position: absolute;
+        top: 0;
+        right: -5.375rem; /* Position button outside sidebar area */
+        width: $toggle-btn-size;
+        height: $toggle-btn-size;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        z-index: 1001;
+        filter: drop-shadow(0 0 2.5px rgba($black-0, 0.6));
+        pointer-events: auto;
+        transition:
+            background-color 0.3s ease,
+            transform 0.3s $standard-curve;
+        svg {
+            transition: all 0.2s ease;
+            fill: $primary-accent-4;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        &:hover svg {
+            fill: $primary-accent-3;
+        }
+    }
+}
+.binderSection {
+    display: flex;
+    gap: 0.6rem;
+    padding-top: 1px;
+    padding-bottom: 0.75rem;
+    width: 100%;
+    align-items: flex-start;
+}
+.binderColumn {
+    flex: 1;
+    min-width: 0;
+}
+.remainingSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0 0.75rem;
+    width: 100%;
+}
+
+.selectionBox {
+    @include selection.overlay;
+    border: 1px solid var(--sidebar-box-sel-border);
+    background-color: var(--sidebar-box-sel-bg);
+    backdrop-filter: contrast(1.1) brightness(1.05);
+    transform: translate3d(0, 0, 0);
+    contain: layout paint style;
+}
+html:not(:lang(zh-CN), :lang(zh-HK)) {
+    .sidebar > .copyright {
+        transform: translateY(1.5rem);
+        opacity: 0;
+        max-height: 0;
+        pointer-events: none;
+    }
+    .sidebar > .socialBar {
+        transform: translateY(1.5rem);
+        > .socialLink[data-platform="qq"] {
+            max-width: 0%;
+            margin-right: 0;
+        }
+    }
+    .sidebarContent {
+        padding-bottom: calc(1.5rem + 15px + 40vh);
+    }
+    .sidebar {
+        --drawer-bottom: 1.75rem;
+    }
+}

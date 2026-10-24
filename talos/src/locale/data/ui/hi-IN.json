@@ -473,6 +473,8 @@
     }
   },
   "contextMenu": {
+    "showMapSupplements": "मानचित्र की अतिरिक्त जानकारी दिखाएँ",
+    "hideMapSupplements": "मानचित्र की अतिरिक्त जानकारी छिपाएँ",
     "onlySubregion": "केवल {region} दिखाएँ",
     "showAllSubregions": "सभी उपक्षेत्र दिखाएँ",
     "highlightSameType": "समान प्रकार के बिंदु हाइलाइट करें ({count})",

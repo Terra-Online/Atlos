@@ -678,5 +678,8 @@
       "research_tales": "Miscelâneas e Registros Inteligentes",
       "research_gm02m27": "RI: Uma Cidade de P&D"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Névoa Óptica</span>: Ataque uma delas para dissipá-la."
   }
 }

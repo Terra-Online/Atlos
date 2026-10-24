@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "sourceRepository": "AKEData",
+  "sourceCommit": "8560ddab96da464c1375052370d611986fd56850",
+  "geometry": "projected-model-centerline",
+  "record": [
+    "id",
+    "tier",
+    "segment"
+  ],
+  "point": [
+    "mapZ",
+    "mapX"
+  ],
+  "modelAliases": {
+    "int_unrealwall": "int_unrealwall_bamboo_postmodel",
+    "int_unrealwall_rock5": "int_unrealwall_rock_5_postmodel",
+    "int_unrealwall_rock7": "int_unrealwall_rock_7_postmodel"
+  },
+  "tierSource": "MapRegionTable Tier volumes; existing tierResolver outside-volume main-map rule",
+  "files": [
+    "Wuling.json"
+  ],
+  "walls": 41
+}

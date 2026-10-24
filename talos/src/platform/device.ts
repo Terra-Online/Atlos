@@ -4,8 +4,8 @@ import {
     getAppViewport,
     subscribeAppViewport,
     subscribePictureInPictureState,
-} from '@/component/scale/pip';
-import type { AppViewport } from '@/component/scale/pipViewport';
+} from '@/platform/pictureInPicture';
+import type { AppViewport } from '@/platform/pipViewport';
 
 export const MOBILE_BREAKPOINT = 768;
 export const TABLET_BREAKPOINT = 1024;

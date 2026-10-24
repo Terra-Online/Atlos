@@ -1,6 +1,6 @@
 import { flush } from './testSetup';
 import { createElement } from 'react';
-import { waitFor } from '@testing-library/react';
+import { waitFor, within } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
@@ -22,7 +22,7 @@ vi.mock('./api/client', () => ({
     isUnauthorized: (error: unknown) =>
         error instanceof Error && error.message === 'Unauthorized',
 }));
-vi.mock('@main/component/login/useIdCardAuthController', () => ({
+vi.mock('@main/component/shared/account/useIdCardAuthController', () => ({
     useIdCardAuthController: () => ({
         authReady: true,
         sessionUser: auth.sessionUser,
@@ -33,18 +33,16 @@ vi.mock('@main/component/login/useIdCardAuthController', () => ({
         isSubmitting: false,
     }),
 }));
-vi.mock('@main/component/login/useIdCardProfileViewModel', () => ({
+vi.mock('@main/component/shared/account/useIdCardProfileViewModel', () => ({
     useIdCardProfileViewModel: ({ sessionUser }: { sessionUser: Overview['user'] | null }) => ({
         displayName: sessionUser?.nickname ?? '',
     }),
 }));
-vi.mock('@main/component/login/access', () => ({
+vi.mock('@main/component/shared/account/access', () => ({
     Access: ({ open }: { open: boolean }) =>
         createElement('div', { 'data-auth-open': open }),
-    AccessButton: ({ onClick }: { onClick: () => void }) =>
-        createElement('button', { onClick, 'data-auth-reopen': true }),
 }));
-vi.mock('@main/component/login/profile/profile', () => ({
+vi.mock('@main/component/shared/account/profile/profile', () => ({
     default: () => null,
 }));
 vi.mock('@main/locale', () => ({
@@ -96,7 +94,7 @@ it('opens the shared avatar auth flow in place after a 401 and reloads after log
         await waitFor(() => expect(auth.openAvatar).toHaveBeenCalledOnce());
         expect(node.querySelector('[data-auth-open="true"]')).not.toBeNull();
         await flush(() =>
-            node.querySelector<HTMLButtonElement>('[data-auth-reopen]')?.click(),
+            within(node).getByRole('button', { name: 'idcard.auth.login' }).click(),
         );
         expect(auth.openAvatar).toHaveBeenCalledTimes(2);
 
@@ -130,12 +128,12 @@ it('stops retrying a restored session after repeated overview 401s and permits a
     try {
         await flush(() => root.render(createElement(App)));
         expect(api.getOverview).toHaveBeenCalledTimes(2);
-        expect(node.querySelector('[data-auth-reopen]')).not.toBeNull();
+        expect(within(node).getByRole('button', { name: 'idcard.auth.login' })).not.toBeNull();
         await flush(() => root.render(createElement(App)));
         expect(api.getOverview).toHaveBeenCalledTimes(2);
 
         api.getOverview.mockResolvedValue(overview);
-        await flush(() => node.querySelector<HTMLButtonElement>('[data-auth-reopen]')?.click());
+        await flush(() => within(node).getByRole('button', { name: 'idcard.auth.login' }).click());
         await flush(() => root.render(createElement(App)));
         expect(api.getOverview).toHaveBeenCalledTimes(3);
         expect(node.textContent).toContain('Tester');

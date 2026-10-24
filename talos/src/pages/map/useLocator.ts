@@ -1,0 +1,874 @@
+import { ensureMapPane } from '@/services/map/panes';
+import { useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import useRegion from '@/store/region';
+import { useUiPrefsStore } from '@/store/uiPrefs';
+import { REGION_DICT } from '@/data/map';
+import trackerIconUrl from '@/assets/images/UI/icon_char.png';
+import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/store/locator';
+import {
+    EFBackendError,
+    getEFPosition,
+    openEFPositionSocket,
+    type EFPositionSocketMessage,
+} from '@/services/endfield';
+import type { PositionResponse } from '@/services/endfield';
+import { convertEFPosition, type EFLocatorPosition } from '@/services/endfield';
+import {
+    LOCATOR_CONFIG_UPDATED_EVENT,
+    readEFTrackerConf,
+    saveEFTrackerConf,
+} from '@/services/endfield';
+import styles from '@/pages/map/Locator.module.scss';
+import { selectLocatorRecovery } from '@/pages/map/locatorRecovery';
+
+type TrackerConfig = {
+    enabled: boolean;
+    baseUrl: string;
+    roleId: string;
+    serverId: number;
+    locatorSync: boolean;
+    centerOnPosition?: boolean;
+    intervalMs?: number;
+    debug?: boolean;
+};
+
+const ensureTrackerPane = (map: L.Map) => ensureMapPane(map, 'locator');
+
+
+const parseTrackerConfig = (): TrackerConfig | null => {
+    const parsed = readEFTrackerConf();
+    if (!parsed || !parsed.enabled) return null;
+    return parsed;
+};
+
+const convertGamePosition = (
+    locator: EFLocatorPosition,
+): { latLng: L.LatLng; mapX: number; mapZ: number; mode: string } => {
+    return {
+        latLng: L.latLng(locator.mapZ, locator.mapX),
+        mapX: locator.mapX,
+        mapZ: locator.mapZ,
+        mode: locator.mode,
+    };
+};
+
+const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
+    const icon = L.divIcon({
+        className: styles.trackerMarkerIcon,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        html: `
+            <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
+                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" />
+            </div>
+        `,
+    });
+
+    return L.marker(latLng, {
+        icon,
+        pane,
+        keyboard: false,
+        interactive: false,
+        zIndexOffset: 900,
+    });
+};
+
+const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
+    // Rotate only the image. An inherited custom property on the marker root
+    // unnecessarily invalidates descendant styles for every heading update.
+    const image = marker.getElement()?.querySelector<HTMLElement>(`.${styles.trackerMarkerImage}`);
+    if (image) image.style.transform = `rotate(${angleDeg}deg)`;
+};
+
+const stopTrackerPulse = (marker: L.Marker): void => {
+    marker.getElement()
+        ?.querySelector(`.${styles.pulsing}`)
+        ?.classList.remove(styles.pulsing);
+};
+
+const calculateTrackerBearing = (map: L.Map, from: L.LatLng, to: L.LatLng): number | null => {
+    const fromPoint = map.latLngToLayerPoint(from);
+    const toPoint = map.latLngToLayerPoint(to);
+    const dx = toPoint.x - fromPoint.x;
+    const dy = toPoint.y - fromPoint.y;
+    if ((dx * dx + dy * dy) < 0.25) return null;
+
+    return Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+};
+
+const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
+
+type AnimationState = {
+    rafId: number | null;
+    running: boolean;
+    from: L.LatLng | null;
+    to: L.LatLng | null;
+    startTime: number;
+    keepCentered: boolean;
+};
+
+const getPositionSceneKey = (payload: PositionResponse['data']): string =>
+    `${payload.mapId.trim().toLowerCase()}\n${payload.levelId.trim().toLowerCase()}`;
+
+const DEFAULT_LOCATOR_INTERVAL_MS = 1000;
+const LOCATOR_TARGET_ZOOM = 3;
+const LOCATOR_FOLLOW_CENTER_RATIO = 0.25;
+const LOCATOR_MOVE_ANIMATION_MS = 900;
+const LOCATOR_POSITION_EPSILON = 0.0001;
+const POSITION_UNAVAILABLE_RETRY_MS = 5000;
+const EXPIRED_CREDENTIAL_RETRY_MS = 1000;
+const LOCATOR_SOCKET_RETRY_DELAYS_MS = [1000, 2000, 4000] as const;
+const LOCATOR_SOCKET_STEADY_RETRY_MS = 30_000;
+
+type UpKind = 'expired' | 'notInGame' | 'policy';
+
+const UP_KIND: Partial<Record<number, UpKind>> = {
+    10000: 'expired',
+    10002: 'expired',
+    19001: 'notInGame',
+    19002: 'policy',
+};
+
+const disableLocatorSync = (): void => {
+    const current = readEFTrackerConf();
+    if (current) {
+        saveEFTrackerConf({
+            ...current,
+            enabled: false,
+            locatorSync: false,
+        });
+    }
+
+    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
+    useLocatorStore.getState().setViewMode('off');
+    useLocatorStore.getState().setLastPosition(null);
+};
+
+const errInfo = (error: EFBackendError): {
+    upstreamCode?: unknown;
+    upstreamMessage?: unknown;
+    upstreamStatus?: unknown;
+} | undefined => {
+    const details = error.details as {
+        upstreamCode?: unknown;
+        upstreamMessage?: unknown;
+        upstreamStatus?: unknown;
+    } | undefined;
+    return details;
+};
+
+const errCode = (error: EFBackendError): number | null => {
+    const details = errInfo(error);
+    const code = Number(details?.upstreamCode);
+    return Number.isFinite(code) ? code : null;
+};
+
+const errKind = (error: EFBackendError): UpKind | null => {
+    const code = errCode(error);
+    if (code !== null) return UP_KIND[code] ?? null;
+    const status = Number(errInfo(error)?.upstreamStatus);
+    return error.code === 'ENDFIELD_CREDENTIAL_REJECTED'
+        || (error.code === 'ENDFIELD_POSITION_SOCKET_UNAVAILABLE' && (status === 401 || status === 403))
+        ? 'expired'
+        : null;
+};
+
+const hasLocatorPositionChanged = (from: L.LatLng, to: L.LatLng): boolean => (
+    Math.abs(from.lat - to.lat) > LOCATOR_POSITION_EPSILON
+    || Math.abs(from.lng - to.lng) > LOCATOR_POSITION_EPSILON
+);
+
+const showErr = (error: EFBackendError): void => {
+    const code = errCode(error);
+    if (code === null) {
+        if (error.code === 'ENDFIELD_CREDENTIAL_REJECTED') {
+            useLocatorStore.getState().showBanner('locator.errors.10002');
+        }
+        return;
+    }
+
+    if (UP_KIND[code]) {
+        useLocatorStore.getState().showBanner(`locator.errors.${code}`);
+    }
+};
+
+export function useLocator(map: L.Map | undefined): void {
+    const [configVersion, setConfigVersion] = useState(0);
+    const trackerRunningRef = useRef(false);
+    const pollTimerRef = useRef<number | null>(null);
+    const socketRef = useRef<WebSocket | null>(null);
+    const socketTicketRef = useRef<string | null>(null);
+    const socketTicketIssuedAtRef = useRef(0);
+    const socketReconnectAttemptRef = useRef(0);
+    const sessionGenerationRef = useRef(0);
+    const initialConnectionBannerShownRef = useRef(false);
+    const trackerLayerRef = useRef<L.LayerGroup | null>(null);
+    const markerRef = useRef<L.Marker | null>(null);
+    const lastSyncedRegionRef = useRef<string | null>(null);
+    const lastSyncedSubregionRef = useRef<string | null>(null);
+    const lastSceneKeyRef = useRef<string | null>(null);
+    const pendingLocatorFocusRef = useRef<L.LatLng | null>(null);
+    const currentLocatorRegionRef = useRef<string | null>(null);
+    const programmaticViewChangeRef = useRef(false);
+    const programmaticViewTimeoutRef = useRef<number | null>(null);
+    const hasCenteredOnFirstUpdateRef = useRef(false);
+    const animationRef = useRef<AnimationState>({
+        rafId: null,
+        running: false,
+        from: null,
+        to: null,
+        startTime: 0,
+        keepCentered: false,
+    });
+
+    useEffect(() => {
+        const onConfigUpdated = () => {
+            setConfigVersion((v) => v + 1);
+        };
+
+        window.addEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+        return () => {
+            window.removeEventListener(LOCATOR_CONFIG_UPDATED_EVENT, onConfigUpdated as EventListener);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!map) return;
+
+        let disposed = false;
+        const sessionGeneration = ++sessionGenerationRef.current;
+        let pausedForPagehide = false;
+        const isCurrentSession = () => !disposed && sessionGenerationRef.current === sessionGeneration;
+
+        const showInitialConnectionBanner = () => {
+            if (initialConnectionBannerShownRef.current) return;
+            initialConnectionBannerShownRef.current = true;
+            useLocatorStore.getState().showBanner('locator.status.connecting');
+        };
+
+        const clearInitialConnectionBanner = () => {
+            const store = useLocatorStore.getState();
+            if (store.bannerKey === 'locator.status.connecting') store.clearBanner();
+        };
+
+        const updateSocketTicket = (ticket: string | null | undefined) => {
+            socketTicketRef.current = ticket ?? null;
+            socketTicketIssuedAtRef.current = ticket ? Date.now() : 0;
+        };
+
+        const cleanupAnimation = () => {
+            const state = animationRef.current;
+            if (state.rafId !== null) {
+                cancelAnimationFrame(state.rafId);
+                state.rafId = null;
+            }
+            state.running = false;
+        };
+
+        const cleanupPolling = (reason = 'locator stopped') => {
+            trackerRunningRef.current = false;
+            if (pollTimerRef.current !== null) {
+                window.clearTimeout(pollTimerRef.current);
+                pollTimerRef.current = null;
+            }
+            if (socketRef.current) {
+                socketRef.current.close(1000, reason);
+                socketRef.current = null;
+            }
+            updateSocketTicket(null);
+            socketReconnectAttemptRef.current = 0;
+        };
+
+        const onPageHide = () => {
+            pausedForPagehide = true;
+            cleanupPolling('page hidden');
+        };
+
+        const onPageShow = () => {
+            if (!pausedForPagehide) return;
+            pausedForPagehide = false;
+            setConfigVersion((version) => version + 1);
+        };
+
+        const pauseForErr = (error: EFBackendError) => {
+            showErr(error);
+            cleanupPolling();
+            useLocatorStore.getState().setViewMode('tracking');
+        };
+
+        const onPolicy = (error: EFBackendError) => {
+            pauseForErr(error);
+            useLocatorStore.getState().openAuth();
+        };
+
+        const onNotInGame = (_error: EFBackendError) => {
+            clearInitialConnectionBanner();
+            cleanupPolling();
+            disableLocatorSync();
+        };
+
+        const onUpstream = (error: EFBackendError, onExpired?: (error: EFBackendError) => void): boolean => {
+            const kind = errKind(error);
+            if (kind === 'expired') {
+                onExpired?.(error);
+                return true;
+            }
+            if (kind === 'policy') {
+                onPolicy(error);
+                return true;
+            }
+            if (kind === 'notInGame') {
+                onNotInGame(error);
+                return true;
+            }
+            return false;
+        };
+
+        const isLocatorRegionVisible = (regionKey = currentLocatorRegionRef.current): boolean => {
+            if (!regionKey) return true;
+            return useRegion.getState().currentRegionKey === regionKey;
+        };
+
+        const syncTrackerLayerVisibility = (regionKey = currentLocatorRegionRef.current) => {
+            const layer = trackerLayerRef.current;
+            if (!layer) return;
+            if (isLocatorRegionVisible(regionKey)) {
+                if (!map.hasLayer(layer)) {
+                    layer.addTo(map);
+                }
+                return;
+            }
+            if (map.hasLayer(layer)) {
+                layer.remove();
+            }
+        };
+
+        const releaseProgrammaticViewChange = () => {
+            programmaticViewChangeRef.current = false;
+            map.off('moveend', releaseProgrammaticViewChange);
+            if (programmaticViewTimeoutRef.current !== null) {
+                window.clearTimeout(programmaticViewTimeoutRef.current);
+                programmaticViewTimeoutRef.current = null;
+            }
+        };
+
+        const focusLocatorPosition = (target: L.LatLng) => {
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            const targetZoom = Math.min(LOCATOR_TARGET_ZOOM, map.getMaxZoom());
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1500);
+            map.flyTo(target, targetZoom, {
+                animate: true,
+                duration: 0.9,
+            });
+            useLocatorStore.getState().setViewMode('tracking');
+        };
+
+        const panLocatorIntoCenterBand = (target: L.LatLng) => {
+            if (useLocatorStore.getState().viewMode !== 'tracking') return;
+            if (!isLocatorRegionVisible()) return;
+
+            const size = map.getSize();
+            if (!size.x || !size.y) return;
+
+            const point = map.latLngToContainerPoint(target);
+            const center = size.divideBy(2);
+            const dx = point.x - center.x;
+            const dy = point.y - center.y;
+            const limitX = size.x * LOCATOR_FOLLOW_CENTER_RATIO;
+            const limitY = size.y * LOCATOR_FOLLOW_CENTER_RATIO;
+
+            if (Math.abs(dx) <= limitX && Math.abs(dy) <= limitY) return;
+
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1200);
+            map.panTo(target, {
+                animate: true,
+                duration: 0.65,
+            });
+        };
+
+        const keepLocatorAtCenter = (target: L.LatLng) => {
+            if (useLocatorStore.getState().viewMode !== 'tracking') return;
+            if (!isLocatorRegionVisible()) return;
+
+            releaseProgrammaticViewChange();
+            programmaticViewChangeRef.current = true;
+            map.once('moveend', releaseProgrammaticViewChange);
+            programmaticViewTimeoutRef.current = window.setTimeout(releaseProgrammaticViewChange, 1200);
+            map.panTo(target, {
+                animate: true,
+                duration: 0.45,
+            });
+        };
+
+        const consumePendingLocatorFocus = () => {
+            const target = pendingLocatorFocusRef.current;
+            if (!target) return;
+            pendingLocatorFocusRef.current = null;
+            focusLocatorPosition(target);
+        };
+
+        const onRegionSwitched = () => {
+            syncTrackerLayerVisibility();
+            lastSyncedRegionRef.current = null;
+            if (isLocatorRegionVisible()) {
+                consumePendingLocatorFocus();
+            }
+        };
+
+        const markDetachedByUserViewChange = () => {
+            if (programmaticViewChangeRef.current) return;
+            if (!trackerRunningRef.current) return;
+            useLocatorStore.getState().setViewMode('detached');
+        };
+
+        const returnToCurrentPosition = () => {
+            const lastPosition = useLocatorStore.getState().lastPosition;
+            if (!lastPosition) return;
+            const target = L.latLng(lastPosition.lat, lastPosition.lng);
+            const regionKey = lastPosition.regionKey;
+            const subregionKey = lastPosition.subregionKey;
+            currentLocatorRegionRef.current = regionKey ?? null;
+            pendingLocatorFocusRef.current = target;
+
+            if (subregionKey) {
+                useRegion.getState().requestSubregionSwitch(subregionKey);
+                return;
+            }
+
+            if (regionKey && REGION_DICT[regionKey] && regionKey !== useRegion.getState().currentRegionKey) {
+                useRegion.getState().setCurrentRegion(regionKey);
+                return;
+            }
+
+            pendingLocatorFocusRef.current = null;
+            syncTrackerLayerVisibility(regionKey ?? null);
+            focusLocatorPosition(target);
+        };
+
+        const onSubregionSwitched = () => {
+            consumePendingLocatorFocus();
+        };
+
+        const setTargetPosition = (target: L.LatLng, options?: { keepCentered?: boolean }) => {
+            const marker = markerRef.current;
+            if (!marker) return;
+
+            const keepCentered = Boolean(options?.keepCentered);
+            const state = animationRef.current;
+            const current = marker.getLatLng();
+            const positionChanged = hasLocatorPositionChanged(current, target);
+            if (!positionChanged) {
+                marker.setLatLng(target);
+                return;
+            }
+
+            const bearing = calculateTrackerBearing(map, current, target);
+            if (bearing !== null) {
+                setTrackerBearing(marker, bearing);
+                stopTrackerPulse(marker);
+            }
+
+            state.from = current;
+            state.to = target;
+            state.startTime = performance.now();
+            state.keepCentered = keepCentered;
+
+            if (keepCentered) {
+                releaseProgrammaticViewChange();
+                programmaticViewChangeRef.current = true;
+                programmaticViewTimeoutRef.current = window.setTimeout(
+                    releaseProgrammaticViewChange,
+                    LOCATOR_MOVE_ANIMATION_MS + 300,
+                );
+                if (isLocatorRegionVisible()) {
+                    map.once('moveend', releaseProgrammaticViewChange);
+                    map.panTo(target, {
+                        animate: true,
+                        duration: LOCATOR_MOVE_ANIMATION_MS / 1000,
+                    });
+                }
+            }
+
+            if (state.running) return;
+
+            state.running = true;
+            const animate = (now: number) => {
+                if (disposed) return;
+                const marker = markerRef.current;
+                const anim = animationRef.current;
+                if (!marker || !anim.from || !anim.to) {
+                    anim.running = false;
+                    anim.rafId = null;
+                    return;
+                }
+
+                const durationMs = LOCATOR_MOVE_ANIMATION_MS;
+                const t = Math.min(1, (now - anim.startTime) / durationMs);
+                const eased = 1 - (1 - t) ** 3;
+                const next = L.latLng(
+                    lerp(anim.from.lat, anim.to.lat, eased),
+                    lerp(anim.from.lng, anim.to.lng, eased),
+                );
+                marker.setLatLng(next);
+
+                if (t >= 1) {
+                    if (anim.keepCentered && !isLocatorRegionVisible()) {
+                        releaseProgrammaticViewChange();
+                    }
+                    anim.running = false;
+                    anim.rafId = null;
+                    return;
+                }
+
+                anim.rafId = requestAnimationFrame(animate);
+            };
+
+            state.rafId = requestAnimationFrame(animate);
+        };
+
+        const boot = () => {
+            const config = parseTrackerConfig();
+            if (!config) {
+                initialConnectionBannerShownRef.current = false;
+                clearInitialConnectionBanner();
+                useLocatorStore.getState().setViewMode('off');
+                return;
+            }
+
+            const pane = ensureTrackerPane(map);
+            const trackerLayer = L.layerGroup();
+            trackerLayer.addTo(map);
+            trackerLayerRef.current = trackerLayer;
+
+            if (disposed) return;
+
+            const applyPositionUpdate = (payload: PositionResponse['data']) => {
+                if (payload.isOnline === false) {
+                    clearInitialConnectionBanner();
+                    return;
+                }
+
+                clearInitialConnectionBanner();
+
+                const locator = convertEFPosition(payload);
+                const converted = convertGamePosition(locator);
+                currentLocatorRegionRef.current = locator.regionKey;
+                syncTrackerLayerVisibility(locator.regionKey);
+                let marker = markerRef.current;
+                let shouldDeferFocus = false;
+                const sceneKey = getPositionSceneKey(payload);
+                const isFirstScene = lastSceneKeyRef.current === null;
+                const sceneChanged = isFirstScene || sceneKey !== lastSceneKeyRef.current;
+
+                if (!marker) {
+                    marker = createTrackerMarker(pane, converted.latLng).addTo(trackerLayer);
+                    markerRef.current = marker;
+                }
+
+                const mappedRegion = locator.regionKey;
+                const shouldFocusScene = Boolean(config.locatorSync
+                    && sceneChanged
+                    && mappedRegion
+                    && REGION_DICT[mappedRegion]);
+
+                if (config.locatorSync && sceneChanged && mappedRegion && REGION_DICT[mappedRegion]) {
+                    const store = useRegion.getState();
+                    const targetRegion = mappedRegion;
+                    if (
+                        targetRegion !== store.currentRegionKey
+                        && targetRegion !== lastSyncedRegionRef.current
+                    ) {
+                        pendingLocatorFocusRef.current = converted.latLng;
+                        marker.setLatLng(converted.latLng);
+                        store.setCurrentRegion(targetRegion);
+                        lastSyncedRegionRef.current = targetRegion;
+                        shouldDeferFocus = true;
+                    }
+                }
+
+                if (
+                    config.locatorSync
+                    && sceneChanged
+                    && locator.subregionKey
+                    && locator.subregionKey !== lastSyncedSubregionRef.current
+                ) {
+                    pendingLocatorFocusRef.current = converted.latLng;
+                    useRegion.getState().requestSubregionSwitch(locator.subregionKey);
+                    lastSyncedSubregionRef.current = locator.subregionKey;
+                    shouldDeferFocus = true;
+                }
+
+                useLocatorStore.getState().setLastPosition({
+                    lat: converted.latLng.lat,
+                    lng: converted.latLng.lng,
+                    gameX: payload.pos.x,
+                    gameY: payload.pos.y,
+                    gameZ: payload.pos.z,
+                    locatorProfile: locator.mode,
+                    regionKey: locator.regionKey,
+                    subregionKey: locator.subregionKey,
+                });
+
+                lastSceneKeyRef.current = sceneKey;
+
+                if (shouldDeferFocus) {
+                    marker.setLatLng(converted.latLng);
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    return;
+                }
+
+                if (shouldFocusScene) {
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    marker.setLatLng(converted.latLng);
+                    focusLocatorPosition(converted.latLng);
+                    return;
+                }
+
+                if (!hasCenteredOnFirstUpdateRef.current) {
+                    hasCenteredOnFirstUpdateRef.current = true;
+                    marker.setLatLng(converted.latLng);
+                    if (config.centerOnPosition) {
+                        keepLocatorAtCenter(converted.latLng);
+                    }
+                    return;
+                }
+
+                if (config.centerOnPosition) {
+                    setTargetPosition(converted.latLng, { keepCentered: true });
+                    return;
+                }
+
+                setTargetPosition(converted.latLng);
+                panLocatorIntoCenterBand(converted.latLng);
+            };
+
+            const scheduleNextPoll = (delayMs: number) => {
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
+                if (pollTimerRef.current !== null) {
+                    window.clearTimeout(pollTimerRef.current);
+                }
+                pollTimerRef.current = window.setTimeout(() => {
+                    pollTimerRef.current = null;
+                    if (!trackerRunningRef.current || !isCurrentSession()) return;
+                    void pollOnce();
+                }, delayMs);
+            };
+
+            const scheduleSocketReconnect = (delayMs: number) => {
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
+                if (pollTimerRef.current !== null) {
+                    window.clearTimeout(pollTimerRef.current);
+                }
+                pollTimerRef.current = window.setTimeout(() => {
+                    pollTimerRef.current = null;
+                    if (!trackerRunningRef.current || !isCurrentSession()) return;
+                    startPositionSocket();
+                }, delayMs);
+            };
+
+            const retryExpiredCredentials = (error: EFBackendError) => {
+                showErr(error);
+                cleanupPolling();
+                if (errCode(error) === 10002) {
+                    disableLocatorSync();
+                    return;
+                }
+                trackerRunningRef.current = true;
+                scheduleNextPoll(EXPIRED_CREDENTIAL_RETRY_MS);
+            };
+
+            const pollOnce = async () => {
+                if (!trackerRunningRef.current || !isCurrentSession()) return;
+
+                try {
+                    const response = await getEFPosition({ includeSocketTicket: true });
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    updateSocketTicket(response.socketTicket);
+                    applyPositionUpdate(response.data);
+                    if (response.data.isOnline === false) {
+                        scheduleNextPoll((config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS) * 3);
+                        return;
+                    }
+                    startPositionSocket();
+                    if (!socketRef.current) {
+                        scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
+                    }
+                } catch (error) {
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    if (!(error instanceof EFBackendError)) {
+                        disableLocatorSync();
+                        return;
+                    }
+                    if (onUpstream(error, retryExpiredCredentials)) {
+                        return;
+                    }
+                    if (error.code !== 'ENDFIELD_POSITION_UNAVAILABLE') {
+                        disableLocatorSync();
+                        return;
+                    }
+                    scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
+                }
+            };
+
+            const startPositionSocket = () => {
+                if (!isCurrentSession() || !trackerRunningRef.current || socketRef.current) return;
+                if (typeof WebSocket === 'undefined') {
+                    scheduleNextPoll(config.intervalMs ?? DEFAULT_LOCATOR_INTERVAL_MS);
+                    return;
+                }
+
+                let sawPosition = false;
+                let ticketRejected = false;
+                const socket = openEFPositionSocket({
+                    socketTicket: socketTicketRef.current,
+                });
+                socketRef.current = socket;
+
+                socket.addEventListener('message', (event) => {
+                    if (!isCurrentSession() || socketRef.current !== socket) return;
+                    try {
+                        const message = JSON.parse(String(event.data)) as EFPositionSocketMessage;
+                        if (message.type === 'status') {
+                            return;
+                        }
+                        if (message.type === 'position') {
+                            sawPosition = true;
+                            socketReconnectAttemptRef.current = 0;
+                            applyPositionUpdate(message.data);
+                            return;
+                        }
+
+                        if (message.type === 'error') {
+                            const error = new EFBackendError(message.error.message || message.error.code || 'Locator stream error.', {
+                                status: message.error.status ?? 500,
+                                code: message.error.code ?? 'LOCATOR_STREAM_ERROR',
+                                details: message.error.details,
+                            });
+                            if (error.code === 'LOCATOR_SOCKET_TICKET_INVALID') {
+                                ticketRejected = true;
+                                updateSocketTicket(null);
+                                socket.close(1000, 'locator ticket refresh');
+                                return;
+                            }
+                            if (onUpstream(error, retryExpiredCredentials)) {
+                                socket.close(1000, 'locator upstream state changed');
+                            }
+                        }
+                    } catch {
+                        // Ignore malformed stream frames; the next valid frame will recover state.
+                    }
+                });
+
+                socket.addEventListener('close', (event) => {
+                    if (socketRef.current !== socket) return;
+                    socketRef.current = null;
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    if (event.code === 1008) {
+                        ticketRejected = true;
+                        updateSocketTicket(null);
+                    }
+                    if (sawPosition) socketReconnectAttemptRef.current = 0;
+
+                    const attempt = socketReconnectAttemptRef.current;
+                    socketReconnectAttemptRef.current += 1;
+                    const delay = attempt < LOCATOR_SOCKET_RETRY_DELAYS_MS.length
+                        ? LOCATOR_SOCKET_RETRY_DELAYS_MS[attempt]
+                        : LOCATOR_SOCKET_STEADY_RETRY_MS;
+                    if (selectLocatorRecovery({
+                        ticket: socketTicketRef.current,
+                        ticketIssuedAt: socketTicketIssuedAtRef.current,
+                        ticketRejected,
+                    }) === 'socket') {
+                        scheduleSocketReconnect(delay);
+                        return;
+                    }
+                    scheduleNextPoll(delay);
+                });
+
+                socket.addEventListener('error', () => {
+                    socket.close();
+                });
+            };
+
+            map.on('talos:regionSwitched', onRegionSwitched);
+            map.on('talos:subregionSwitched', onSubregionSwitched);
+            map.on('dragstart', markDetachedByUserViewChange);
+            map.on('zoomstart', markDetachedByUserViewChange);
+            window.addEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
+
+            trackerRunningRef.current = true;
+            showInitialConnectionBanner();
+            void getEFPosition({ includeBinding: true, includeSocketTicket: true })
+                .then((response) => {
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    updateSocketTicket(response.socketTicket);
+                    applyPositionUpdate(response.data);
+                    useLocatorStore.getState().setViewMode('tracking');
+                    startPositionSocket();
+                })
+                .catch((error: unknown) => {
+                    if (!isCurrentSession() || !trackerRunningRef.current) return;
+                    if (error instanceof EFBackendError) {
+                        if (onUpstream(error, retryExpiredCredentials)) {
+                            return;
+                        }
+                        if (error.code !== 'ENDFIELD_POSITION_UNAVAILABLE') {
+                            disableLocatorSync();
+                            return;
+                        }
+                        useLocatorStore.getState().setViewMode('tracking');
+                        scheduleNextPoll(POSITION_UNAVAILABLE_RETRY_MS);
+                        return;
+                    }
+                    disableLocatorSync();
+                });
+        };
+
+        window.addEventListener('pagehide', onPageHide);
+        window.addEventListener('pageshow', onPageShow);
+        boot();
+
+        return () => {
+            disposed = true;
+            if (sessionGenerationRef.current === sessionGeneration) {
+                sessionGenerationRef.current += 1;
+            }
+            window.removeEventListener('pagehide', onPageHide);
+            window.removeEventListener('pageshow', onPageShow);
+            cleanupAnimation();
+            cleanupPolling(parseTrackerConfig() ? 'locator disposed' : 'locator stopped');
+
+            map.off('talos:regionSwitched', onRegionSwitched);
+            map.off('talos:subregionSwitched', onSubregionSwitched);
+            map.off('dragstart', markDetachedByUserViewChange);
+            map.off('zoomstart', markDetachedByUserViewChange);
+            window.removeEventListener(LOCATOR_RETURN_CURRENT_EVENT, returnToCurrentPosition);
+
+            if (markerRef.current) {
+                markerRef.current.remove();
+                markerRef.current = null;
+            }
+
+            if (trackerLayerRef.current) {
+                trackerLayerRef.current.remove();
+                trackerLayerRef.current = null;
+            }
+
+            hasCenteredOnFirstUpdateRef.current = false;
+            lastSceneKeyRef.current = null;
+            pendingLocatorFocusRef.current = null;
+            currentLocatorRegionRef.current = null;
+            programmaticViewChangeRef.current = false;
+            if (programmaticViewTimeoutRef.current !== null) {
+                window.clearTimeout(programmaticViewTimeoutRef.current);
+                programmaticViewTimeoutRef.current = null;
+            }
+        };
+    }, [map, configVersion]);
+}

@@ -678,5 +678,8 @@
       "research_tales": "奇聞巧記",
       "research_gm02m27": "關於某科研城市的調查報告"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">光學霧影</span>：受到攻擊後即會消散。"
   }
 }

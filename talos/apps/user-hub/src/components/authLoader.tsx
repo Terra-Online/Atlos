@@ -1,3 +1,4 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import {
     Component,
     useEffect,
@@ -5,7 +6,6 @@ import {
     type ReactNode,
     type ComponentProps,
 } from 'react';
-import { AccessButton } from '@main/component/login/access/button';
 import { useTranslateUI } from '@hub/locale';
 import type AuthGate from './authGate';
 import { getAuthGate, loadAuthGate } from './authEntry';
@@ -45,7 +45,7 @@ export default function AuthLoader(props: ComponentProps<typeof AuthGate>) {
     const fallback = (
         <div role='alert'>
             <p>{t('userHub.loadError')}</p>
-            <AccessButton
+            <EntryButton
                 label={t('userHub.retry')}
                 onClick={() => window.location.reload()}
             />

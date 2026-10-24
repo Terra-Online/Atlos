@@ -1,5 +1,5 @@
 // states store for map view states(continuously use)
-import { IMapView } from '@/component/mapCore/type';
+import { IMapView } from '@/services/map/types';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import L from 'leaflet';

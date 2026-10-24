@@ -86,6 +86,17 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    files: ['src/{component,services,lib,platform,store}/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          { group: ['@/utils', '@/utils/**'], message: 'Import from src/lib, src/platform, or src/services instead of src/utils.' },
+          { group: ['@/pages', '@/pages/**', '@main/pages', '@main/pages/**', '**/pages/**'], message: 'Shared modules and standalone apps must not depend on main-site pages.' },
+        ],
+      }],
+    },
+  },
   ...['intel', 'user-hub'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
     languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },

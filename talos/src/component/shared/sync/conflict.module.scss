@@ -1,0 +1,179 @@
+@use '@/styles/palette.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --source-bg: #{$white-1};
+    --source-bar: #{$black-1};
+    --source-bar-hl: #{$primary-accent-5};
+    --source-text: #{$grey-1};
+    --source-hint: #{$grey-2};
+    --table-text: #{$black-1};
+}
+
+:root[data-theme='dark'] {
+    --source-bg: #{$black-1};
+    --source-bar: #{$light-1};
+    --source-bar-hl: #{$primary-accent-4};
+    --source-text: #{$light-2};
+    --source-hint: #{$grey-3};
+    --table-text: #{$white-1};
+}
+
+.conflict {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100%;
+  padding: .75rem;
+  padding-top: .5rem;
+}
+
+.sourceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.sourceCard {
+  display: flex;
+  flex-direction: column;
+  padding: .75rem;
+  gap: 0.5rem;
+  border-radius: 4px;
+  background: var(--source-bg);
+  box-shadow: 0 0 8px rgba($black-0, 0.25);
+
+  @supports (corner-shape: superellipse(1.5)) {
+    border-radius: 6px;
+    corner-shape: superellipse(1.5);
+  }
+
+  .cardBar {
+    height: 6px;
+    border-radius: 1.5px;
+    background: var(--source-bar);
+    margin-bottom: 4px;
+
+    &[data-highlighted='true'] {
+      background: var(--source-bar-hl);
+    }
+  }
+  .sourceLabel {
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese Medium', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--source-text);
+  }
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    .metricLabel {
+      color: var(--source-hint);
+      font-size: 0.8125rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .lastUpdate {
+      color: var(--source-text);
+      font-family: 'Fedra Sans Pro', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+      line-height: 1.2;
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+      font-size: .875rem;
+      font-weight: 500;
+    }
+    .totalNum {
+      font-family: 'Novecento Medium', sans-serif;
+      color: var(--source-text);
+      font-size: 1.75rem;
+      font-weight: 500;
+      line-height: 1;
+    }
+  }
+}
+
+
+
+.tableFrame {
+  border-top: 4px solid var(--table-text);
+  border-bottom: 4px solid var(--table-text);
+}
+
+.regionTable {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1.5fr) 1fr 1fr;
+  max-height: calc((2rem * 7.5) + 0.2rem);
+  overflow: auto;
+  scroll-behavior: smooth;
+  color: var(--table-text);
+  font-size: .875rem;
+
+  > div {
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 0.25rem 1rem;
+    font-family: 'Fedra Sans Pro', 'UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: .875rem;
+    font-weight: 400;
+    text-transform: capitalize;
+    white-space: nowrap;
+  }
+  .regionName {
+    justify-content: flex-start;
+
+  }
+  .regionCount {
+    font-family: 'Novecento Medium', sans-serif;
+    font-weight: 400;
+
+    &[data-strong='true'] {
+      font-family: 'Novecento Cyrillic DemiBold', sans-serif;
+      font-weight: 700;
+    }
+  }
+
+  .regionHeader {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    justify-content: center;
+    border-bottom: 2px solid var(--table-text);
+    font-family: 'Novecento Demibold', 'Fedra Sans Pro', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--modal-bg);
+  }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 5%;
+}
+
+.actionWide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .conflict {
+    padding: 1rem;
+  }
+
+  .sourceGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .regionTable {
+    grid-template-columns: minmax(9rem, 1.5fr) 1fr 1fr;
+  }
+
+  .actions {
+    gap: 0.75rem;
+    padding: 0;
+  }
+}

@@ -1,0 +1,80 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getItemIconUrl } from '@/services/assets/resource';
+import { useFilter, useSwitchFilter } from '@/store/marker.ts';
+import { MARKER_TYPE_DICT } from '@/data/marker';
+import styles from '@/pages/filterList/filterList.module.scss';
+
+interface FilterListMobileProps {
+  width?: number | string;
+  onContentWidthChange?: (w: number) => void;
+}
+
+const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onContentWidthChange }) => {
+  const filterList = useFilter();
+  // Files-type markers don't show icons in FilterList and shouldn't count toward container sizing
+  const displayList = useMemo(
+    () => filterList.filter((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files'),
+    [filterList],
+  );
+  const switchFilter = useSwitchFilter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [showLeftMask, setShowLeftMask] = useState(false);
+  const [showRightMask, setShowRightMask] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowLeftMask(scrollLeft > 1);
+      setShowRightMask(scrollLeft + clientWidth < scrollWidth - 1);
+    };
+    onScroll();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [displayList.length]);
+
+  // Report content width upwards for layout clamping
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      onContentWidthChange?.(el.scrollWidth || el.clientWidth || 0);
+    });
+    ro.observe(el);
+    // initial
+    onContentWidthChange?.(el.scrollWidth || el.clientWidth || 0);
+    return () => ro.disconnect();
+  }, [onContentWidthChange, displayList.length]);
+
+  return (
+    <div className={`${styles.mainFilterList} ${styles.mobile}`} style={{ width }}>
+      <div
+        ref={containerRef}
+        className={[
+          styles.mainFilterContentContainer,
+          showLeftMask ? styles.leftMaskOpacity : '',
+          showRightMask ? styles.rightMaskOpacity : '',
+        ].join(' ')}
+        style={{ overflowX: 'auto' }}
+      >
+        <div ref={innerRef} className={styles.innerContainer} >
+          {[...displayList]
+            .reverse()
+            .map((item) => (
+              <span
+                key={item}
+                className={styles.mainFilterContentItem}
+                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
+                onClick={() => switchFilter(item)}
+              />
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FilterListMobile;

@@ -1,4 +1,5 @@
-import type { MapCore } from '@/component/mapCore/map';
+import { getLayerByTier, useLayerStore } from '@/store/layer';
+import type { MapCore } from '@/services/map/core/map';
 import L, { type Map as LeafletMap } from 'leaflet';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
@@ -32,29 +33,27 @@ const TARGET_ZOOM = 3.0;
 
 let mapCoreRef: MapCore | null = null;
 let pendingNavigation: PendingNavigation | null = null;
-let isNavigating = false;
+let finishCameraMove: (() => void) | null = null;
+let navigationVersion = 0;
 
-const wait = (ms: number) =>
-    new Promise<void>((resolve) => {
-        window.setTimeout(resolve, ms);
-    });
+const waitForMoveEnd = (map: LeafletMap): Promise<void> => new Promise((resolve) => {
+    const finish = () => {
+        map.off('moveend unload', finish);
+        if (finishCameraMove === finish) finishCameraMove = null;
+        resolve();
+    };
+    finishCameraMove?.();
+    finishCameraMove = finish;
+    map.once('moveend unload', finish);
+});
 
-const waitForMoveEnd = (map: LeafletMap, timeoutMs = 1400): Promise<void> =>
-    new Promise((resolve) => {
-        let done = false;
-        let timeoutId = 0;
-
-        const finish = () => {
-            if (done) return;
-            done = true;
-            map.off('moveend', finish);
-            window.clearTimeout(timeoutId);
-            resolve();
-        };
-
-        timeoutId = window.setTimeout(finish, timeoutMs);
-        map.once('moveend', finish);
-    });
+const beginNavigation = () => {
+    navigationVersion++;
+    pendingNavigation = null;
+    finishCameraMove?.();
+    mapCoreRef?.map.stop();
+    return navigationVersion;
+};
 
 const normalizeTarget = (target: SharedPointTarget): SharedPointTarget => ({
     regionKey: target.regionKey,
@@ -63,7 +62,7 @@ const normalizeTarget = (target: SharedPointTarget): SharedPointTarget => ({
     content: target.content,
 });
 
-const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
+const navigateToPoint = async (target: SharedPointTarget, isCurrent: () => boolean): Promise<void> => {
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== target.regionKey) {
         regionStore.setCurrentRegion(target.regionKey);
@@ -77,18 +76,20 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     const mapCore = mapCoreRef;
 
     const regionApplied = await mapCore.switchRegion(target.regionKey);
-    if (regionApplied === false) return;
+    if (regionApplied === false || !isCurrent()) return;
 
     if (target.subregionKey) {
         useRegion.getState().setCurrentSubregion(target.subregionKey);
     }
 
-    let markerData = mapCore.markerLayer.markerDataDict[target.pointId];
-    for (let i = 0; !markerData && i < 20; i++) {
-        await wait(50);
-        markerData = mapCore.markerLayer.markerDataDict[target.pointId];
-    }
+    const markerData = mapCore.markerLayer.markerDataDict[target.pointId];
     if (!markerData) return;
+    const targetLayer = getLayerByTier(markerData.tier ?? 0);
+    if (targetLayer) {
+        useLayerStore.getState().setCurrentLayer(targetLayer);
+        await mapCore.switchLayer(targetLayer);
+        if (!isCurrent()) return;
+    }
 
     const markerStore = useMarkerStore.getState();
     const nextFilter = markerStore.filter.includes(markerData.type)
@@ -99,6 +100,7 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
     }
     mapCore.markerLayer.filterMarker(nextFilter);
     await mapCore.markerLayer.ensureMarkerVisible(target.pointId);
+    if (!isCurrent()) return;
 
     // Ensure detail panel has the focused target.
     useMarkerStore.getState().setCurrentActivePoint(markerData);
@@ -116,17 +118,13 @@ const navigateToPoint = async (target: SharedPointTarget): Promise<void> => {
         duration: 0.9,
     });
     await moving;
+    if (!isCurrent()) return;
 
-    // Marker DOM can appear slightly later after region/filter updates.
-    for (let i = 0; i < 20; i++) {
-        await mapCore.markerLayer.ensureMarkerVisible(target.pointId);
-        const started = mapCore.markerLayer.startMarkerPulse(target.pointId);
-        if (started) return;
-        await wait(80);
-    }
+    await mapCore.markerLayer.ensureMarkerVisible(target.pointId);
+    if (isCurrent()) mapCore.markerLayer.startMarkerPulse(target.pointId);
 };
 
-const navigateToLocation = async (target: SharedLocationTarget): Promise<void> => {
+const navigateToLocation = async (target: SharedLocationTarget, isCurrent: () => boolean): Promise<void> => {
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== target.regionKey) {
         regionStore.setCurrentRegion(target.regionKey);
@@ -139,7 +137,7 @@ const navigateToLocation = async (target: SharedLocationTarget): Promise<void> =
 
     const mapCore = mapCoreRef;
     const regionApplied = await mapCore.switchRegion(target.regionKey);
-    if (regionApplied === false) return;
+    if (regionApplied === false || !isCurrent()) return;
 
     const center = L.latLng(target.center[0], target.center[1]);
     const configuredBounds = mapCore.map.options.maxBounds;
@@ -159,25 +157,26 @@ const navigateToLocation = async (target: SharedLocationTarget): Promise<void> =
 };
 
 const flushPendingNavigation = async (): Promise<void> => {
-    if (isNavigating || !pendingNavigation || !mapCoreRef) return;
-
+    if (!pendingNavigation || !mapCoreRef) return;
     const navigation = pendingNavigation;
     pendingNavigation = null;
-    isNavigating = true;
-    try {
-        if (navigation.kind === 'point') await navigateToPoint(navigation.target);
-        else await navigateToLocation(navigation.target);
-    } finally {
-        isNavigating = false;
-        if (pendingNavigation) {
-            void flushPendingNavigation();
-        }
-    }
+    const version = navigationVersion;
+    const owner = mapCoreRef;
+    const isCurrent = () => version === navigationVersion && mapCoreRef === owner;
+    if (navigation.kind === 'point') await navigateToPoint(navigation.target, isCurrent);
+    else await navigateToLocation(navigation.target, isCurrent);
 };
 
-export const registerSharedPointMapCore = (mapCore: MapCore): void => {
+export const registerSharedPointMapCore = (mapCore: MapCore): (() => void) => {
+    finishCameraMove?.();
     mapCoreRef = mapCore;
     void flushPendingNavigation();
+    return () => {
+        if (mapCoreRef !== mapCore) return;
+        mapCoreRef = null;
+        navigationVersion++;
+        finishCameraMove?.();
+    };
 };
 
 /**
@@ -188,6 +187,7 @@ export const registerSharedPointMapCore = (mapCore: MapCore): void => {
 export const getSharedPointMapCore = (): MapCore | null => mapCoreRef;
 
 export const navigateToSharedPoint = (target: SharedPointTarget): void => {
+    beginNavigation();
     const normalizedTarget = normalizeTarget(target);
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== normalizedTarget.regionKey) {
@@ -206,6 +206,7 @@ export const navigateToSharedLocation = (target: SharedLocationTarget): void => 
     if (!Number.isFinite(normalizedTarget.center[0]) || !Number.isFinite(normalizedTarget.center[1])) {
         return;
     }
+    beginNavigation();
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== normalizedTarget.regionKey) {
         regionStore.setCurrentRegion(normalizedTarget.regionKey);
@@ -215,8 +216,9 @@ export const navigateToSharedLocation = (target: SharedLocationTarget): void => 
 };
 
 export const navigateToMarkerId = async (pointId: string, options: MarkerNavigationOptions = {}): Promise<boolean> => {
+    const version = beginNavigation();
     const point = await findMarkerById(String(pointId));
-    if (!point) return false;
+    if (!point || version !== navigationVersion) return false;
 
     const regionKey = Object.entries(REGION_DICT).find(([, region]) => (
         region.subregions.includes(point.subregId)

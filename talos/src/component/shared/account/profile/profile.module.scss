@@ -1,0 +1,103 @@
+@use '@/component/shared/account/prtsTextEffect.scss' as prts;
+
+.profileWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--auth-text);
+  padding-bottom: .5rem;
+}
+
+.profileDivider {
+  position: relative;
+  height: 1.5px;
+  width: 90%;
+  transform: translateX(5%);
+  margin: .75rem 0;
+  background: linear-gradient(90deg, transparent 0%, var(--auth-text) 15%, var(--auth-text) 65%, transparent 100%);
+
+  &::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 0.5rem;
+    font-family: Raleway, 'UD_ShinGo Regular', sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: var(--auth-text);
+    background-color: var(--modal-bg);
+  }
+}
+
+.profileNote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0 5%;
+  font-size: 0.925rem;
+  font-family: "HMSans_EN", HMSans, "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+  line-height: 1.25;
+  unicode-bidi: plaintext;
+  overflow-wrap: break-word;
+  hyphens: auto;
+
+  a {
+    position: relative;
+    color: var(--ack-link);
+    text-decoration: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 1.5px;
+      background-color: currentColor;
+      transform: scaleX(0);
+      transform-origin: right center;
+      transition: transform .3s ease;
+    }
+
+    &:hover::before,
+    &:focus-visible::before {
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+  }
+}
+
+.profileSyncHint {
+  padding: 0 5%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--auth-text);
+  font-family: 'Fedra Sans Pro', "UD_ShinGo Regular", "Noto Sans Arabic", "Noto Sans Thai", sans-serif;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+
+.profileError {
+  margin: auto;
+  @include prts.prts-text-effect(flex-end, left, 25%);
+}
+
+@include prts.prts-text-effect-keyframes;
+
+.profileActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 5%;
+}
+
+.profileActionWide {
+  grid-column: 1 / -1;
+}
