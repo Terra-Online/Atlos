@@ -98,10 +98,12 @@ a:focus-visible {
 }
 
 [data-app='user-hub'] {
+    --hub-top-space: calc(max(1rem, env(safe-area-inset-top, 0px)) + 4.5rem);
+
     position: relative;
     height: 100dvh;
     overflow: hidden;
-    padding: 5.5rem clamp(16px, 4vw, 64px) 24px;
+    padding: var(--hub-top-space) clamp(16px, 4vw, 64px) 24px;
     isolation: isolate;
 
     &::before {
@@ -195,7 +197,7 @@ a:focus-visible {
         }
 
         .hubContent {
-            height: calc(100dvh - 5.5rem - 24px);
+            height: calc(100dvh - var(--hub-top-space) - 24px);
         }
     }
 }

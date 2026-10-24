@@ -57,8 +57,6 @@ interface TabTouchGesture {
   intent: 'pending' | 'horizontal' | 'vertical';
 }
 
-const TAB_INDICATOR_SETTLE_MS = 400;
-
 export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
   items,
   activeKey,
@@ -72,7 +70,7 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
   const tabsRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const touchGestureRef = useRef<TabTouchGesture | null>(null);
-  const indicatorResetTimerRef = useRef<number | undefined>(undefined);
+  const touchOptionsRef = useRef({ items, activeKey, onChange });
   const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
 
@@ -91,6 +89,12 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
   }, [activeKey, getTabCenter]);
 
   useLayoutEffect(() => {
+    touchOptionsRef.current = { items, activeKey, onChange };
+  });
+
+  useLayoutEffect(() => {
+    touchGestureRef.current = null;
+    setIsSwiping(false);
     syncIndicator();
   }, [items.length, syncIndicator]);
 
@@ -118,7 +122,7 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
 
   useEffect(() => {
     const swipeTarget = swipeTargetRef?.current;
-    if (!swipeTarget || items.length < 2) return undefined;
+    if (!swipeTarget) return undefined;
 
     const findTouch = (touches: TouchList, identifier: number): Touch | null => {
       for (let index = 0; index < touches.length; index += 1) {
@@ -128,17 +132,18 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
       return null;
     };
 
-    const availableItems = () => items.filter((item) => !item.disabled);
+    // Indicator updates rerender the tabs. Keep the gesture alive even when
+    // callers recreate their items or onChange callback on each render.
+    const availableItems = () => touchOptionsRef.current.items.filter((item) => !item.disabled);
     const availableCenters = () => availableItems()
       .map((item) => ({ item, center: getTabCenter(item.key) }))
       .filter((entry): entry is { item: ModalTabItem; center: number } => entry.center !== null);
 
     const handleTouchStart = (event: TouchEvent) => {
-      if (event.touches.length !== 1) return;
+      if (event.touches.length !== 1 || availableItems().length < 2) return;
       const touch = event.touches.item(0);
-      const center = getTabCenter(activeKey);
+      const center = getTabCenter(touchOptionsRef.current.activeKey);
       if (!touch || center === null) return;
-      if (indicatorResetTimerRef.current) window.clearTimeout(indicatorResetTimerRef.current);
       touchGestureRef.current = {
         identifier: touch.identifier,
         startX: touch.clientX,
@@ -180,6 +185,7 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
       if (!gesture || findTouch(event.changedTouches, gesture.identifier) === null) return;
       touchGestureRef.current = null;
       setIsSwiping(false);
+      const { activeKey, onChange } = touchOptionsRef.current;
 
       const centers = availableCenters();
       const closest = centers.reduce<typeof centers[number] | null>((match, entry) => {
@@ -196,11 +202,6 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
       const settledKey = shouldSwitch && closest ? closest.item.key : activeKey;
       setIndicatorLeft(getTabCenter(settledKey));
       if (shouldSwitch) onChange(settledKey);
-
-      indicatorResetTimerRef.current = window.setTimeout(() => {
-        syncIndicator();
-        indicatorResetTimerRef.current = undefined;
-      }, TAB_INDICATOR_SETTLE_MS);
     };
 
     const handleTouchEnd = (event: TouchEvent) => finishTouch(event, true);
@@ -217,11 +218,7 @@ export const ModalTabs = forwardRef<HTMLDivElement, ModalTabsProps>(({
       swipeTarget.removeEventListener('touchcancel', handleTouchCancel, true);
       touchGestureRef.current = null;
     };
-  }, [activeKey, getTabCenter, items, onChange, swipeTargetRef, syncIndicator]);
-
-  useEffect(() => () => {
-    if (indicatorResetTimerRef.current) window.clearTimeout(indicatorResetTimerRef.current);
-  }, []);
+  }, [appDocument, getTabCenter, items.length, swipeTargetRef]);
 
   if (items.length === 0) return null;
 
