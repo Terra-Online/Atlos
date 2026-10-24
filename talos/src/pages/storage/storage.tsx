@@ -155,7 +155,7 @@ export const StorageSection: React.FC = () => {
   }, []);
 
   return (
-    <>
+    <div className={styles.section}>
       <div className={styles.storageContainer}>
           {parse(t('storage.policy'))}
       </div>
@@ -164,9 +164,10 @@ export const StorageSection: React.FC = () => {
           <TreeMap onSelect={handleSelect} refreshTrigger={refreshKey} />
         </div>
         <div className={styles.controls} ref={controlsRef}>
-          <Button 
-            text={`${t('common.clear')} ${selectedName || t('common.selected')}`}
-            onClick={(e) => handleActionClick(e, 'selected')}
+          <div className={styles.clearActions}>
+            <Button
+              text={`${t('common.clear')} ${selectedName || t('common.selected')}`}
+              onClick={(e) => handleActionClick(e, 'selected')}
               buttonStyle="square"
               schema="light"
               width="100%"
@@ -186,37 +187,38 @@ export const StorageSection: React.FC = () => {
               schema="light"
               width="100%"
             />
-            <div className={`${styles.warning} ${pendingAction ? styles.visible : ''}`}>
-              <div className={styles.warningInner}>
-                {parse(t('storage.warning'))}
-              </div>
+          </div>
+          <div className={`${styles.warning} ${pendingAction ? styles.visible : ''}`}>
+            <div className={styles.warningInner}>
+              {parse(t('storage.warning'))}
             </div>
           </div>
         </div>
-        <div className={styles.dataTransfer} data-device={deviceType}>
-          <Button
-            text={t('storage.export')}
-            onClick={handleExport}
-            buttonStyle="square"
-            schema="light"
-            width="100%"
-          />
-          <Button
-            text={t('storage.import')}
-            onClick={handleImport}
-            buttonStyle="square"
-            schema="light"
-            width="100%"
-          />
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
-        </div>
-    </>
+      </div>
+      <div className={styles.dataTransfer} data-device={deviceType}>
+        <Button
+          text={t('storage.export')}
+          onClick={handleExport}
+          buttonStyle="square"
+          schema="light"
+          width="100%"
+        />
+        <Button
+          text={t('storage.import')}
+          onClick={handleImport}
+          buttonStyle="square"
+          schema="light"
+          width="100%"
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+      </div>
+    </div>
   );
 };
 

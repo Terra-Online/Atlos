@@ -23,6 +23,15 @@
     --warning-highlight: #{$primary-accent-6};
 }
 
+.section {
+    // Square buttons extend past their box: 2px outline plus 2px offset.
+    --button-outset: 4px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
 .storageContainer {
     display: flex;
     flex-direction: column;
@@ -45,7 +54,6 @@
 .storageController {
     display: flex;
     gap: 0.8rem;
-    margin-top: 0.5rem;
     width: 100%;
     &[data-device='desktop'], &[data-device='desktoper'], &[data-device='desktopest'] {
         flex-direction: row;
@@ -60,9 +68,6 @@
             height: auto;
             width: 14.3rem;
             padding-right: 0.3rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.1rem;
             margin-top: 0;
             justify-content: center;
         }
@@ -80,20 +85,23 @@
             padding: 0 0.3rem;
         }
     }
-    &[data-device='tablet'] .controls {
+    &[data-device='tablet'] .clearActions {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
-        
-        .warning {
-            grid-column: 1 / -1;
-        }
     }
-    &[data-device='mobile'] .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 1.1rem;
-    }
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+}
+
+.clearActions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding-bottom: var(--button-outset);
 }
 
 .warning {
@@ -101,7 +109,7 @@
     grid-template-rows: 0fr;
     user-select: none;
     opacity: 1;
-    transition: grid-template-rows 0.3s $standard-curve, opacity 0.3s $standard-curve, padding 0.3s $standard-curve, border-top 0.3s $standard-curve, border-bottom 0.3s $standard-curve, box-shadow 0.2s $standard-curve .3s;
+    transition: grid-template-rows 0.3s $standard-curve, opacity 0.3s $standard-curve, padding 0.3s $standard-curve, margin-top 0.3s $standard-curve, border-top 0.3s $standard-curve, border-bottom 0.3s $standard-curve, box-shadow 0.2s $standard-curve .3s;
     width: 103%;
     transform: translateX(-1.5%);
     background-color: var(--warning-bg);
@@ -141,6 +149,7 @@
         }
     }
     &.visible {
+        margin-top: 0.25rem;
         border-top: 3px solid var(--warning-text);
         border-bottom: 3px solid var(--warning-text);
         padding: .4rem .3rem;
@@ -159,13 +168,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
-    margin-top: 0.8rem;
     width: 100%;
-    padding: 0 0.3rem;
+    padding: calc(0.25rem + 2px + var(--button-outset)) 0.3rem 0;
     &::before {
         content: '';
         position: absolute;
-        top: -.6rem;
+        top: 0;
         left: 0;
         width: 100%;
         height: 2px;

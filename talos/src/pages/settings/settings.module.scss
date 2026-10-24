@@ -148,7 +148,11 @@
 }
 @media (max-width: $smallmobile-bp) {
     .themeItems {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        > [data-pref='auto'] {
+            grid-column: 1 / -1;
+        }
     }
     .triggerGrid {
         grid-template-columns: 1fr;
@@ -243,6 +247,10 @@
             animation: autoTheme 6.93s infinite $moderato-curve 1.5s;
         }
     }
+
+    @media (max-width: $smallmobile-bp) {
+        grid-template-columns: minmax(0, 1fr) 2rem;
+    }
 }
 .themeIcon {
     grid-area: themeIcon;
@@ -253,6 +261,10 @@
     opacity: 1;
     transition: transform 0.45s $moderato-curve;
     filter: drop-shadow(0 0 1.5px rgba($black-0, .3));
+
+    @media (max-width: $smallmobile-bp) {
+        justify-self: end;
+    }
 }
 .themeName {
     grid-area: themeName;
@@ -267,6 +279,13 @@
     padding-left: 6px;
     transform: translateY(-2px);
     text-align: left;
+
+    @media (max-width: $smallmobile-bp) {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 .themeIndicator {
     grid-area: themeInd;
