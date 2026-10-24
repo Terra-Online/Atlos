@@ -15,6 +15,14 @@ Display changes invalidate cached poses without replacing marker identities or r
 Visual updates are compared against the current artwork, motion, opacity and stack
 before invalidating pixels. No-op state writes must not turn retained pans into repaint loops.
 Region retirement releases Leaflet render objects while the data loader retains raw data.
+During a region transaction, old pixels retire before the camera changes and drawing
+resumes when the complete new membership and stored layer are committed. Ordinary
+camera moves still paint synchronously. Discrete zooms paint after all cluster
+groups reconcile in the same event turn, using the previous rendered camera for
+transition origins; continuous wheel/pinch updates retain their synchronous paint. An art-URL index scopes decoded-image
+invalidation to its users; removal and icon replacement release those references.
+Outgoing cluster poses are indexed by marker so rapid aggregate replacement does
+not repeatedly scan every outgoing point.
 After region transitions settle, unused decoded assets are dropped and live atlas slots
 are repacked only when at least half the texture allocation can be released.
 
@@ -50,7 +58,8 @@ cleared when display density changes or the map is destroyed.
 
 The pan cache requests 128 CSS pixels of padding, capped at 150% of viewport backing
 pixels. While the camera stays inside that coverage, Leaflet moves the retained image;
-exhausted coverage triggers a synchronous repaint. Zooms temporarily remove the padding.
+exhausted coverage triggers a synchronous repaint. Zooms retain that bounded backing
+allocation to avoid driver stalls from shrinking and regrowing the drawing buffer.
 Hit tests, viewport exit events and cluster transitions use the corresponding viewport
 coordinates. There are no URL renderer switches or alternate experiment implementations.
 The Canvas2D compatibility fallback remains available for unavailable/lost WebGL contexts.

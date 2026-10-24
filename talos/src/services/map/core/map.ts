@@ -309,7 +309,8 @@ export class MapCore {
 
         // A region is ready when its map state and marker data are committed. Tile
         // image downloads continue independently and expose Leaflet's loading events.
-        await this.markerLayer.changeRegion(regionId);
+        await this.markerLayer.changeRegion(regionId, () => !this.destroyed
+            && (!this.requestedRegionId || this.requestedRegionId === regionId));
     }
     setMapView(view: IMapView) {
         this.map.stop();

@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import { isRegionSwitching } from '@/services/map/regionLifecycle';
 import { MarkerMotion, MarkerMotionPool, Motion, ease } from '@/services/map/core/canvas/canvasMarkerMotion';
 import { MarkerPainter, type MarkerArt, type Sprite, type AnimatedSprite, type PulseLayers } from '@/services/map/core/canvas/canvasMarkerPaint';
 import { markerClasses as classes } from '@/services/map/core/canvas/canvasMarkerStyle';
@@ -56,7 +57,8 @@ export class CanvasMarkerSurface {
   private changed = new Set<Entry>();
   private motionPool = new MarkerMotionPool();
   private pendingMotion = new Set<Entry>();
-  private ghosts: Ghost[] = [];
+  private ghosts = new Map<L.Marker, Ghost>();
+  private artEntries = new Map<string, Set<Entry>>();
   private clusterTransition = false;
   private sequence = 0;
   private frame = 0;
@@ -107,7 +109,9 @@ export class CanvasMarkerSurface {
     // Both the viewport and cached artwork retain at least Retina-density pixels.
     // Integer sprite density also avoids fractional texture-bound rounding.
     this.painter = new MarkerPainter(Math.ceil(this.renderRatio), url => {
-      for (const entry of this.entries.values()) {
+      const affected = url === this.painter.hoverDecoration || url === this.painter.selectedDecoration
+        ? this.entries.values() : this.artEntries.get(url)?.values();
+      if (affected) for (const entry of affected) {
         if (entry.art.image === url || entry.art.subImage === url || entry.art.subImage
           && (url === this.painter.hoverDecoration || url === this.painter.selectedDecoration)) this.invalidate(entry);
       }
@@ -133,7 +137,8 @@ export class CanvasMarkerSurface {
     map.on('zoomend', this.zoomEnd);
     map.on('unload', this.dispose);
     map.on('talos:regionSwitchStart', this.retireRegion);
-    map.on('talos:regionSwitched moveend', this.queueTrim);
+    map.on('talos:regionSwitched', this.commitRegion);
+    map.on('moveend', this.queueTrim);
     map.on('movestart', this.cancelTrim);
   }
   place(marker: CanvasMarker, point?: L.Point): void {
@@ -144,7 +149,7 @@ export class CanvasMarkerSurface {
       entry = { marker, art: icon.art, motion: this.motionPool.initial,
         x: NaN, y: NaN, base: this.map.project(marker.getLatLng(), 0), latlng: marker.getLatLng(),
         order: this.sequence++, completed: false, stack: 1, opacity: 1 };
-      this.entries.set(marker, entry);
+      this.entries.set(marker, entry); this.indexArt(entry);
       this.reorder = true; this.indexDirty = true;
       this.refreshProxy();
     }
@@ -218,10 +223,12 @@ export class CanvasMarkerSurface {
       const sprite = entry.sprite ?? (entry.motion.paintActive(now) ? this.painter.snapshot(entry.art, entry.motion, now)
         : this.painter.sprite(entry.art, entry.motion, now));
       const base = this.map.project(this.visualPosition(marker) ?? entry.latlng, 0);
-      this.ghosts.push({ marker, sprite, base, target: base, alpha: entry.opacity * entry.motion.opacity(now), start: NaN });
+      const previous = this.ghosts.get(marker);
+      if (previous) this.batch?.release(previous);
+      this.ghosts.set(marker, { marker, sprite, base, target: base, alpha: entry.opacity * entry.motion.opacity(now), start: NaN });
     }
     if (this.hovered === entry) this.setHovered(undefined);
-    this.dirty.push(bounds(entry)); this.entries.delete(marker);
+    this.dirty.push(bounds(entry)); this.unindexArt(entry); this.entries.delete(marker);
     this.active.delete(entry); this.onscreen.delete(entry); this.moving.delete(entry); this.changed.delete(entry); this.pendingMotion.delete(entry); this.reorder = true; this.full = true; this.indexDirty = true;
     // Keep the instance through an atomic cluster replacement (including an empty intermediate set).
     // unload owns final disposal; empty filter sets also reuse decoded assets on their next update.
@@ -231,6 +238,11 @@ export class CanvasMarkerSurface {
   }
   visualPosition(marker: L.Marker): L.LatLng | undefined {
     const entry = this.entries.get(marker);
+    // Discrete zooms commit all cluster groups before painting. Their transition
+    // origins still belong to the previously rendered camera coordinate space.
+    if (entry && Number.isFinite(entry.x) && !this.animation && this.cachedZoom !== this.map.getZoom()) {
+      return this.map.unproject(L.point(entry.x, entry.y).add(this.renderOrigin).divideBy(this.renderScale), 0);
+    }
     return entry && (Number.isFinite(entry.x) ? this.map.containerPointToLatLng(L.point(entry.x, entry.y).subtract(this.viewportOffset)) : entry.latlng);
   }
   beginClusterTransition(): void { this.clusterTransition = true; }
@@ -238,17 +250,19 @@ export class CanvasMarkerSurface {
   animateFrom(marker: L.Marker, origin: L.LatLng, introducing = false): void {
     const entry = this.entries.get(marker);
     if (!entry) return;
+    if (!introducing && !this.ghosts.has(marker) && origin.equals(entry.latlng)) return;
     const start = this.map.latLngToContainerPoint(origin), target = this.map.latLngToContainerPoint(entry.latlng);
     (entry.offsetX ??= new Motion(0)).jump(start.x - target.x); (entry.offsetY ??= new Motion(0)).jump(start.y - target.y);
     this.moving.add(entry);
     entry.clusterUntil = Infinity;
-    const same = this.ghosts.find(ghost => ghost.marker === marker);
-    if (same) { this.batch?.release(same); this.ghosts = this.ghosts.filter(ghost => ghost !== same); }
+    const same = this.ghosts.get(marker);
+    if (same) { this.batch?.release(same); this.ghosts.delete(marker); }
     else if (introducing) entry.reveal = new Motion(0);
     this.pendingMotion.add(entry); this.changed.add(entry); this.full = true;
   }
   animateRemovedTo(marker: L.Marker, target: L.LatLng): void {
-    for (const ghost of this.ghosts) if (ghost.marker === marker) ghost.target = this.map.project(target, 0);
+    const ghost = this.ghosts.get(marker);
+    if (ghost) ghost.target = this.map.project(target, 0);
   }
   private read(entry: Entry, now: number): void {
     const icon = entry.marker.options.icon;
@@ -256,10 +270,14 @@ export class CanvasMarkerSurface {
     const state = getMarkerState(entry.marker);
     if (entry.clusterUntil && state.appearing) setMarkerState(entry.marker, { appearing: false });
     if (entry.clusterUntil && now >= entry.clusterUntil) entry.clusterUntil = undefined;
-    const art: MarkerArt = { ...icon.art, tier: state.tier || icon.art.tier };
-    const artChanged = art.noFrame !== entry.art.noFrame || art.image !== entry.art.image || art.subImage !== entry.art.subImage
-      || art.tier !== entry.art.tier || art.count !== entry.art.count;
-    if (artChanged) entry.art = art;
+    const art = icon.art, tier = state.tier || art.tier;
+    const urlsChanged = art.image !== entry.art.image || art.subImage !== entry.art.subImage;
+    const artChanged = urlsChanged || art.noFrame !== entry.art.noFrame || tier !== entry.art.tier || art.count !== entry.art.count;
+    if (artChanged) {
+      if (urlsChanged) this.unindexArt(entry);
+      entry.art = tier === art.tier ? art : { ...art, tier };
+      if (urlsChanged) this.indexArt(entry);
+    }
     this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
     const stackChanged = entry.completed !== state.completed;
     if (stackChanged) { entry.completed = state.completed; this.reorder = true; }
@@ -273,6 +291,22 @@ export class CanvasMarkerSurface {
     if (!artChanged && !stackChanged && motion === entry.motion && opacity === entry.opacity) return;
     entry.motion = motion; entry.opacity = opacity;
     this.invalidate(entry);
+  }
+  private indexArt(entry: Entry): void {
+    for (const url of [entry.art.image, entry.art.subImage]) {
+      if (!url) continue;
+      let entries = this.artEntries.get(url);
+      if (!entries) this.artEntries.set(url, entries = new Set());
+      entries.add(entry);
+    }
+  }
+  private unindexArt(entry: Entry): void {
+    for (const url of [entry.art.image, entry.art.subImage]) {
+      const entries = this.artEntries.get(url);
+      if (!entries) continue;
+      entries.delete(entry);
+      if (!entries.size) this.artEntries.delete(url);
+    }
   }
   private invalidate(entry: Entry): void {
     entry.sprite = undefined;
@@ -354,6 +388,9 @@ export class CanvasMarkerSurface {
     if (this.disposed) return;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
+    // A region transaction changes the camera before replacing membership. Paint
+    // only its complete scene; ordinary fractional camera moves remain synchronous.
+    if (isRegionSwitching(this.map)) { this.full = true; return; }
     this.painter.beginFrame(now);
     for (const entry of this.pendingMotion) {
       entry.offsetX?.to(0, now, 320); entry.offsetY?.to(0, now, 320); entry.reveal?.to(1, now, 160); entry.clusterUntil = now + 320;
@@ -361,10 +398,12 @@ export class CanvasMarkerSurface {
     this.pendingMotion.clear();
     for (const entry of this.changed) this.read(entry, now);
     this.changed.clear();
-    for (const ghost of this.ghosts) if (!Number.isFinite(ghost.start)) ghost.start = now;
-    if (this.ghosts.length) {
+    for (const ghost of this.ghosts.values()) if (!Number.isFinite(ghost.start)) ghost.start = now;
+    if (this.ghosts.size) {
       this.full = true;
-      this.ghosts = this.ghosts.filter(ghost => { if (now < ghost.start + 320) return true; this.batch?.release(ghost); return false; });
+      for (const [marker, ghost] of this.ghosts) if (now >= ghost.start + 320) {
+        this.batch?.release(ghost); this.ghosts.delete(marker);
+      }
     }
     if (this.reorder) {
       this.ordered = [...this.entries.values()].sort(compareEntries);
@@ -372,7 +411,9 @@ export class CanvasMarkerSurface {
     }
     if (this.indexDirty) this.rebuildIndex();
     const viewportSize = this.map.getSize();
-    const padding = this.zooming || this.animation ? 0 : canvasPadding(viewportSize.x, viewportSize.y);
+    // Keep the bounded pan buffer through zooms. Shrinking and regrowing the GPU
+    // drawing buffer around each zoom can stall the driver and has the same peak allocation.
+    const padding = canvasPadding(viewportSize.x, viewportSize.y);
     const size = viewportSize.add([padding * 2, padding * 2]);
     const pixelWidth = Math.ceil(size.x * this.renderRatio), pixelHeight = Math.ceil(size.y * this.renderRatio);
     const resized = size.x !== this.width || size.y !== this.height || this.canvas.width !== pixelWidth || this.canvas.height !== pixelHeight;
@@ -405,8 +446,8 @@ export class CanvasMarkerSurface {
         if (animation) {
           const targetX = entry.base.x * targetScale - targetOrigin.x, targetY = entry.base.y * targetScale - targetOrigin.y;
           const from = animation.from.get(entry);
-          entry.x = from ? from.x + (targetX - from.x) * progress : targetX;
-          entry.y = from ? from.y + (targetY - from.y) * progress : targetY;
+          entry.x = from ? from.x + this.viewportOffset.x + (targetX - from.x - this.viewportOffset.x) * progress : targetX;
+          entry.y = from ? from.y + this.viewportOffset.y + (targetY - from.y - this.viewportOffset.y) * progress : targetY;
         } else {
           entry.x = entry.base.x * scale - origin.x + (entry.offsetX?.value(now) ?? 0);
           entry.y = entry.base.y * scale - origin.y + (entry.offsetY?.value(now) ?? 0);
@@ -474,9 +515,9 @@ export class CanvasMarkerSurface {
         } else draw(entry.sprite ?? (entry.motion.paintActive(now) ? (entry.animatedSprite ??= this.painter.animation(entry.art, entry.motion)).render(now)
           : entry.sprite = this.painter.sprite(entry.art, entry.motion, now)), entry.x, entry.y);
       }
-      if (this.ghosts.length) {
+      if (this.ghosts.size) {
         const origin = this.map.getPixelOrigin().add(offset), scale = this.map.getZoomScale(this.map.getZoom(), 0);
-        for (const ghost of this.ghosts) {
+        for (const ghost of this.ghosts.values()) {
           const progress = ease((now - ghost.start) / 320, [0.6, 0, 0, 1]);
           const x = (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x;
           const y = (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y;
@@ -498,7 +539,7 @@ export class CanvasMarkerSurface {
       }
       if (!entry.motion.active(now) && !entry.offsetX?.active(now) && !entry.offsetY?.active(now) && !entry.reveal?.active(now)) this.active.delete(entry);
     }
-    if (this.animation || this.ghosts.length || [...this.active].some(entry => intersects(bounds(entry), viewport))) this.request();
+    if (this.animation || this.ghosts.size || [...this.active].some(entry => intersects(bounds(entry), viewport))) this.request();
   };
   private paintBatch(now: number): void {
     let clip: Rect | undefined, candidates = this.ordered;
@@ -524,7 +565,7 @@ export class CanvasMarkerSurface {
       }
     }
     const batch = this.batch!;
-    batch.begin(this.canvas.width, this.canvas.height, this.renderRatio, candidates.length + 2 * this.active.size + this.ghosts.length, clip);
+    batch.begin(this.canvas.width, this.canvas.height, this.renderRatio, candidates.length + 2 * this.active.size + this.ghosts.size, clip);
     for (const entry of candidates) {
       if (!entry.visible) continue;
       if (!this.painter.isArtReady(entry.art)) continue;
@@ -546,7 +587,7 @@ export class CanvasMarkerSurface {
       }
     }
     const origin = this.map.getPixelOrigin().add(this.canvasOffset ?? L.point(0, 0)), scale = this.map.getZoomScale(this.map.getZoom(), 0);
-    for (const ghost of this.ghosts) {
+    for (const ghost of this.ghosts.values()) {
       const progress = ease((now - ghost.start) / 320, [0.6, 0, 0, 1]);
       batch.add(ghost, ghost.sprite, (ghost.base.x + (ghost.target.x - ghost.base.x) * progress) * scale - origin.x,
         (ghost.base.y + (ghost.target.y - ghost.base.y) * progress) * scale - origin.y, ghost.alpha * (1 - progress));
@@ -554,18 +595,37 @@ export class CanvasMarkerSurface {
     batch.end();
   }
 
-  private move = (): void => {
-    // Fractional wheel zoom already runs in rAF. Paint in that frame with the new tile origin.
+  private move = (event: L.LeafletEvent & { pinch?: boolean }): void => {
+    // A discrete zoom replaces cluster groups later in this event dispatch. Do
+    // not paint thousands of outgoing points or admit their offscreen ghosts.
+    if (this.zooming && !this.animation && !event.pinch) { this.full = true; this.request(); return; }
+    // Fractional wheel/pinch zoom already runs in rAF and paints in that frame.
     if (!this.animation) this.draw(performance.now());
   };
   private cancelTrim = (): void => { clearTimeout(this.trimTimer); this.trimTimer = undefined; };
-  private retireRegion = (): void => { this.trimPending = true; this.cancelTrim(); };
+  private retireRegion = (): void => {
+    this.trimPending = true; this.cancelTrim();
+    this.animation = undefined; this.zooming = false;
+    for (const ghost of this.ghosts.values()) this.batch?.release(ghost);
+    this.ghosts.clear();
+    this.pressed = undefined; this.setHovered(undefined);
+    // Retire the previous region before its coordinate space changes.
+    // GPU composition also presents into a 2D output. Clearing it directly is
+    // safe even between context loss and the queued fallback notification.
+    for (const canvas of this.pendingSwap ? [this.canvas, this.pendingSwap.canvas] : [this.canvas]) {
+      const context = canvas.getContext('2d')!;
+      context.save(); context.setTransform(1, 0, 0, 1, 0, 0);
+      context.clearRect(0, 0, canvas.width, canvas.height); context.restore();
+    }
+    this.full = true;
+  };
+  private commitRegion = (): void => { this.draw(performance.now()); this.queueTrim(); };
   private queueTrim = (): void => {
     this.cancelTrim();
     if (!this.trimPending || this.disposed) return;
     this.trimTimer = setTimeout(() => {
       this.trimTimer = undefined;
-      if (this.animation || this.zooming || this.ghosts.length || this.moving.size) { this.queueTrim(); return; }
+      if (this.animation || this.zooming || this.ghosts.size || this.moving.size) { this.queueTrim(); return; }
       this.trimPending = false;
       this.painter.retainAssets(new Set([...this.entries.values()].flatMap(entry => [entry.art.image, entry.art.subImage])));
       try { this.batch?.compact(); }
@@ -580,8 +640,9 @@ export class CanvasMarkerSurface {
     this.moving.clear();
     this.request();
   };
-  private zoomEnd = (): void => { this.zooming = false; this.animation = undefined; this.full = true; this.draw(performance.now()); };
+  private zoomEnd = (): void => { this.zooming = false; this.animation = undefined; this.full = true; this.request(); };
   private hit(event: MouseEvent): Entry | undefined {
+    if (isRegionSwitching(this.map)) return;
     const target = event.target as Element | null;
     if (target?.nodeType === 1 && target.closest('.leaflet-control,button,input,select,textarea,a,[role="button"],.leaflet-marker-icon')) return undefined;
     const point = this.map.mouseEventToContainerPoint(event).add(this.viewportOffset);
@@ -689,7 +750,8 @@ export class CanvasMarkerSurface {
     this.batch?.dispose(); this.pendingSwap?.batch.dispose();
     this.map.off('move resize viewreset', this.move); this.map.off('zoomstart', this.zoomStart); this.map.off('zoomanim', this.zoom); this.map.off('zoomend', this.zoomEnd); this.map.off('unload', this.dispose);
     this.map.off('talos:regionSwitchStart', this.retireRegion);
-    this.map.off('talos:regionSwitched moveend', this.queueTrim); this.map.off('movestart', this.cancelTrim);
+    this.map.off('talos:regionSwitched', this.commitRegion);
+    this.map.off('moveend', this.queueTrim); this.map.off('movestart', this.cancelTrim);
     const container = this.map.getContainer();
     container.removeEventListener('pointermove', this.pointerMove, true); container.removeEventListener('pointerleave', this.pointerLeave);
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);
@@ -700,7 +762,7 @@ export class CanvasMarkerSurface {
     this.resolution?.removeEventListener('change', this.displayChanged);
     window.removeEventListener('resize', this.displayChanged);
     this.canvas.remove(); this.pendingSwap?.canvas.remove(); this.semantic.remove(); container.style.cursor = '';
-    this.entries.clear(); this.onscreen.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.pendingMotion.clear(); this.animation = undefined; this.ghosts = [];
+    this.entries.clear(); this.onscreen.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.pendingMotion.clear(); this.animation = undefined; this.ghosts.clear(); this.artEntries.clear();
     this.focused = undefined; this.hovered = undefined; this.pointer = undefined; this.pressed = undefined;
     surfaces.delete(this.map);
   };

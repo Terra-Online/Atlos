@@ -535,6 +535,11 @@ export class MarkerLayer {
      * 导入marker列表
      */
     importMarker(markers: IMarkerData[]) {
+        const ids = this.registerMarkers(markers);
+        if (ids.length > 0) this.clusterLayer.notifyMarkersAdded(ids);
+    }
+
+    private registerMarkers(markers: IMarkerData[]): string[] {
         const newMarkerIds: string[] = [];
 
         deduplicateMarkersByPositionAndType(markers).forEach((marker) => {
@@ -564,13 +569,11 @@ export class MarkerLayer {
             // layer.addTo(this.layerSubregionDict[marker.region.sub]);
         });
 
-        if (newMarkerIds.length > 0) {
-            this.markerVersion++;
-            this.clusterLayer.notifyMarkersAdded(newMarkerIds);
-        }
+        if (newMarkerIds.length > 0) this.markerVersion++;
+        return newMarkerIds;
     }
 
-    async changeRegion(regionId: string) {
+    async changeRegion(regionId: string, isCurrent: () => boolean = () => true) {
         const version = ++this.regionVersion;
         this.clearProximityReminder();
         this.clearBehaviorTemporaryMarkers();
@@ -605,13 +608,11 @@ export class MarkerLayer {
 
         this.clusterLayer.setActiveSubregions(subregions);
         const markers = await loadRegionMarkers(regionId);
-        if (this.destroyed || version !== this.regionVersion) return;
-        this.importMarker(markers);
+        if (this.destroyed || version !== this.regionVersion || !isCurrent()) return;
+        // The complete region is admitted once. Incremental notification here
+        // would attach every representative before the same filter is reconciled.
+        this.registerMarkers(markers);
         this.updateLayerTier(this.currentLayer);
-
-        if (this.clusterLayer.isEnabled()) {
-            this.clusterLayer.applyFilter(this.activeFilterKeys);
-        }
         this.filterMarker(this.activeFilterKeys);
         useMarkerStore.getState().bumpMarkerDataVersion();
     }

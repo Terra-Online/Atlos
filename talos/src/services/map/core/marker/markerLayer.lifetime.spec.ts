@@ -59,3 +59,34 @@ it('keeps selection and collection state off-map and releases pulse listeners on
         expect(marker.hasEventListeners('visualchange')).toBe(false);
     } finally { load.mockRestore(); layer.destroy(); map.remove(); host.remove(); }
 });
+
+it('does not register superseded region data and commits the latest filter before resolving', async () => {
+    const host = document.createElement('div'); document.body.append(host);
+    const map = L.map(host, { crs: L.CRS.Simple }).setView([0, 0], 2);
+    const layer = new MarkerLayer(map);
+    let deliver: (points: data.IMarkerData[]) => void = () => {};
+    const rows = (region: string): data.IMarkerData[] => [0, 1].map(index => ({
+        id: `${region}-${index}`, subregId: REGION_DICT[region].subregions[0], type: 'crate_ii',
+        pos: [index, index], x: index, y: 0, z: index, tier: 0,
+    }));
+    const load = vi.spyOn(data, 'loadRegionMarkers').mockImplementation(region => region === 'Wuling'
+        ? new Promise(resolve => { deliver = resolve; }) : Promise.resolve(rows(region)));
+    try {
+        layer.enableClustering();
+        layer.filterMarker(['crate_ii']);
+        let current = true;
+        const obsolete = layer.changeRegion('Wuling', () => current);
+        current = false;
+        deliver(rows('Wuling'));
+        await obsolete;
+        expect(Object.keys(layer.markerDict)).toEqual([]);
+
+        const latest = layer.changeRegion('Valley_4');
+        layer.filterMarker([]);
+        await latest;
+        expect(Object.keys(layer.markerDict)).toEqual(['Valley_4-0', 'Valley_4-1']);
+        expect(Object.values(layer.markerDict).every(marker => !map.hasLayer(marker))).toBe(true);
+        layer.filterMarker(['crate_ii']);
+        expect(Object.values(layer.markerDict).every(marker => map.hasLayer(marker))).toBe(true);
+    } finally { load.mockRestore(); layer.destroy(); map.remove(); host.remove(); }
+});

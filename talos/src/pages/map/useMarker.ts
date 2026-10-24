@@ -67,12 +67,15 @@ export function useMarker(
         const markerLayer = mapCore?.markerLayer;
         markerLayer?.setVisibleSubregion(currentRegion, visibleSubregionKey);
         markerLayer?.filterMarker(filter);
-        const currentPoints = markerLayer
-            ?.getCurrentPoints(currentRegion)
-            .map((point) => point.id) ?? [];
+    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints, visibleSubregionKey]);
 
-        useMarkerStore.setState({ points: currentPoints });
-    }, [filter, currentRegion, mapCore, prefsHideCompletedMarkers, collectedPoints, markerDataVersion, visibleSubregionKey]);
+    // A data-ready notification publishes membership; changeRegion has already
+    // reconciled visibility. Reapplying filters here repeats a whole-region pass.
+    useEffect(() => {
+        const points = mapCore?.markerLayer.getCurrentPoints(currentRegion)
+            .map((point) => point.id) ?? [];
+        useMarkerStore.setState({ points });
+    }, [currentRegion, mapCore, markerDataVersion]);
 
     // Keep production auto-clustering unless the recording tool explicitly opts out.
     useEffect(() => {

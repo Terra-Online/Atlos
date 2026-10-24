@@ -24,6 +24,12 @@ const CLUSTER_SUBCATEGORY_WHITELIST = new Set<string>([
 const MARKER_FADE_DURATION_MS = 150;
 const MARKER_REMOVAL_DELAY_MS = MARKER_FADE_DURATION_MS + 10;
 
+const sameIds = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean => {
+    if (a.size !== b.size) return false;
+    for (const id of b) if (!a.has(id)) return false;
+    return true;
+};
+
 interface ClusterLayerDeps {
     map: L.Map;
     getMarkerDict: () => Record<string, L.Layer>;
@@ -101,7 +107,9 @@ export class ClusterLayer {
     }
 
     setActiveSubregions(subregions: string[]) {
-        this.activeSubregions = new Set(subregions);
+        const next = new Set(subregions);
+        if (sameIds(this.activeSubregions, next)) return;
+        this.activeSubregions = next;
         if (this.enabled) {
             this.requestRefresh();
         }
@@ -117,14 +125,18 @@ export class ClusterLayer {
     }
 
     setTemporaryVisibleIds(ids: Iterable<string>) {
-        this.temporaryVisibleIds = new Set(ids);
+        const next = new Set(ids);
+        if (sameIds(this.temporaryVisibleIds, next)) return;
+        this.temporaryVisibleIds = next;
         if (this.enabled) {
             this.requestRefresh();
         }
     }
 
     setCheckedVisibleOverrideIds(ids: Iterable<string>) {
-        this.checkedVisibleOverrideIds = new Set(ids);
+        const next = new Set(ids);
+        if (sameIds(this.checkedVisibleOverrideIds, next)) return;
+        this.checkedVisibleOverrideIds = next;
         if (this.enabled) {
             this.requestRefresh();
         }
@@ -154,44 +166,42 @@ export class ClusterLayer {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
 
-        // 仅对当前过滤的、受管理的类型进行增量添加，避免整组重算造成闪烁
-        const activeManagedTypes = this.filterKeys.filter((k) => this.clusterGroupsByType[k]);
+        const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
+        const idsByType = new Map<string, string[]>();
+        // Region imports contain every new point. Partition once instead of
+        // rescanning that whole batch for each active marker type.
+        for (const id of newIds) {
+            const data = markerDataDict[id];
+            if (!data || !activeManagedTypes.has(data.type)
+                || !this.activeSubregions.has(data.subregId) || completedMarkerIds.has(id)) continue;
+            let ids = idsByType.get(data.type);
+            if (!ids) idsByType.set(data.type, ids = []);
+            ids.push(id);
+        }
 
-        activeManagedTypes.forEach((typeKey) => {
+        for (const typeKey of activeManagedTypes) {
             const clusterGroup = this.clusterGroupsByType[typeKey];
-            if (!clusterGroup) return;
             const addedIds: string[] = [];
-            const retained = new Set(clusterGroup.getVisibleLayers());
+            const ids = idsByType.get(typeKey);
+            const retained = ids?.length ? new Set(clusterGroup.getVisibleLayers()) : undefined;
             const layersToAdd: L.Layer[] = [];
 
-            newIds.forEach((id) => {
+            for (const id of ids ?? []) {
                 const data = markerDataDict[id];
-                if (!data) return;
-                if (data.type !== typeKey) return; // 只处理对应类型
-                if (!this.activeSubregions.has(data.subregId)) return; // 只处理当前活跃子区域
-                if (completedMarkerIds.has(id)) return; // 排除已完成的標點
-
                 const layer = markerDict[id];
-                if (!layer) return;
+                if (!layer) continue;
                 const parentGroup = layerSubregionDict[data.subregId];
-                // 如果原来在父 LayerGroup 中，移除以避免与聚合重复显示
-                if (parentGroup?.hasLayer(layer)) {
-                    parentGroup.removeLayer(layer);
-                }
-
+                if (parentGroup?.hasLayer(layer)) parentGroup.removeLayer(layer);
                 layersToAdd.push(layer);
                 addedIds.push(id);
-            });
+            }
 
             if (layersToAdd.length > 0) clusterGroup.addLayers(layersToAdd);
-
             if (clusterGroup.getLayers().length > 0 && !this.deps.map.hasLayer(clusterGroup)) {
                 clusterGroup.addTo(this.deps.map);
             }
-            if (addedIds.length > 0) {
-                this.animateVisibleMarkers(clusterGroup, addedIds, 'appearing', retained);
-            }
-        });
+            if (addedIds.length > 0) this.animateVisibleMarkers(clusterGroup, addedIds, 'appearing', retained);
+        }
     }
 
     isEnabled() {
@@ -246,34 +256,26 @@ export class ClusterLayer {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
 
-        const activeManagedTypes = this.filterKeys.filter((key) => this.clusterGroupsByType[key]);
+        const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
 
-        // 为每个受管理类型做增量 diff
         Object.entries(this.clusterGroupsByType).forEach(([typeKey, clusterGroup]) => {
             const removalWasCancelled = this.cancelPendingRemoval(typeKey, clusterGroup);
-            const shouldBeActive = activeManagedTypes.includes(typeKey);
-
-            // 目标集合（需要在聚合中的点位）- 排除已完成的點位
-            const desiredIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
-                const d = markerDataDict[id];
+            const shouldBeActive = activeManagedTypes.has(typeKey);
+            const desiredIds: string[] = [], toAdd: string[] = [], toRemove: string[] = [];
+            // The type index is authoritative for both membership and desired
+            // visibility. Classify each point once; no second set/index is needed.
+            for (const id of markerTypeMap[typeKey] ?? []) {
+                const data = markerDataDict[id], layer = markerDict[id];
+                const current = Boolean(layer) && clusterGroup.hasLayer(layer);
                 const forceVisible = this.checkedVisibleOverrideIds.has(id);
-                return d
-                    && this.activeSubregions.has(d.subregId)
+                const desired = data && this.activeSubregions.has(data.subregId)
                     && (!completedMarkerIds.has(id) || forceVisible)
                     && (shouldBeActive || this.temporaryVisibleIds.has(id) || forceVisible);
-            });
-            const desiredSet = new Set(desiredIds);
-
-            // 当前集合（已经在聚合中的点位）
-            const currentIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
-                const layer = markerDict[id];
-                return layer && clusterGroup.hasLayer(layer);
-            });
-            const currentSet = new Set(currentIds);
-
-            // 计算增量
-            const toAdd = desiredIds.filter((id) => !currentSet.has(id));
-            const toRemove = currentIds.filter((id) => !desiredSet.has(id));
+                if (desired) {
+                    desiredIds.push(id);
+                    if (!current) toAdd.push(id);
+                } else if (current) toRemove.push(id);
+            }
             const retained = !removalWasCancelled && toAdd.length > 0
                 ? new Set(clusterGroup.getVisibleLayers()) : undefined;
 

@@ -62,3 +62,22 @@ it('settles repeated and superseded region requests and stops a destroyed map fr
     core.destroy();
     expect(await core.switchRegion('A')).toBe(false);
 });
+
+it('marks an in-flight region import obsolete before admitting a newer request', async () => {
+    const core = fixture();
+    const checks: (() => boolean)[] = [];
+    vi.spyOn(core.markerLayer, 'changeRegion').mockImplementation((_region, current) => {
+        if (current) checks.push(current);
+        return Promise.resolve();
+    });
+    const previous = core.switchRegion('A');
+    const latest = core.switchRegion('B');
+    expect(checks).toHaveLength(1);
+    expect(checks[0]()).toBe(false);
+    expect(await previous).toBe(false);
+    expect(await latest).toBe(true);
+    expect(checks).toHaveLength(2);
+    expect(checks[1]()).toBe(true);
+    core.destroy();
+    expect(checks[1]()).toBe(false);
+});
