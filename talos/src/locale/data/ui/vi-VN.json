@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "Cài đặt người dùng",
-    "auth": "Đăng ký / Đăng nhập",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Ẩn giao diện",
     "notification": "Thông báo",
     "darkmode": "Chuyển sang chế độ tối",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "Dữ liệu & Lưu trữ",
-    "calculating": "Đang tính toán dung lượng lưu trữ...",
-    "policy": "<p>Chúng tôi dùng cookie để lưu phiên đăng nhập, LocalStorage để lưu tùy chọn và tiến trình đánh dấu, cùng CacheStorage để lưu phông chữ vào bộ nhớ đệm. Các bộ nhớ này giúp tải nhanh hơn và hỗ trợ một phần chức năng ngoại tuyến. Nếu bạn xóa bộ nhớ cục bộ, <span class=\"keyword\">lần truy cập tiếp theo có thể mất nhiều thời gian hơn để tải lại tài nguyên</span>; nếu tắt bộ nhớ của trang web, trang web <span class=\"keyword\">sẽ không thể tự động lưu tùy chọn cục bộ và tiến trình đánh dấu</span>.</p><p>Các chức năng như đăng nhập, đóng góp điểm đánh dấu và đồng bộ vị trí sẽ gửi dữ liệu tương ứng đến máy chủ khi cần. Xóa bộ nhớ cục bộ không xóa tài khoản hay dữ liệu của bạn trên máy chủ.</p>",
-    "filtersAndMarkers": "Bộ lọc & Dữ liệu điểm",
-    "warning": "<p><strong>Chú ý:</strong> Xóa bộ nhớ cục bộ sẽ làm mất trạng thái đăng nhập cục bộ, tùy chọn và tiến trình cục bộ của bạn. Lần truy cập tiếp theo, bạn cần tải lại tài nguyên và đăng nhập lại.</p><p>Nếu bạn đã chắc chắn, vui lòng nhấn lại nút «Xóa».</p>",
-    "export": "Xuất dữ liệu",
-    "import": "Nhập dữ liệu"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Tùy chọn",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "Mẹo hướng dẫn",
-    "welcome": "Chào mừng bạn đến với <span class=\"keyword\">Open Endfield Map</span>.<br>Đây là lần đầu tiên bạn sử dụng bản đồ này. Nếu gặp bất kỳ vấn đề nào, vui lòng nhấp vào nút <span class=\"keyword\">Trợ giúp</span> ở góc trên bên phải; chúng tôi sẽ cung cấp hướng dẫn chi tiết về các tính năng.</p>",
+    "welcome": "Chào mừng bạn đến với <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Đây là lần đầu tiên bạn sử dụng bản đồ này. Nếu gặp bất kỳ vấn đề nào, vui lòng nhấp vào nút <span class=\"keyword\">Trợ giúp</span> ở góc trên bên phải; chúng tôi sẽ cung cấp hướng dẫn chi tiết về các tính năng.</p>",
     "sidebarToggle": "Nhấp để mở rộng <span class=\"keyword\">thanh bên</span>.<br>Thanh bên bao gồm các bộ lọc điểm bạn thường dùng nhất, cũng như các công tắc liên quan chặt chẽ đến hiển thị điểm.",
     "search": "Bạn có thể tìm kiếm các điểm cần xem bằng <span class=\"keyword\">ngôn ngữ được trò chơi hỗ trợ</span> và chọn chúng trong kết quả tìm kiếm.",
     "filterContainer": "Các điểm cùng loại được nhóm trong một <span class=\"keyword\">bộ lọc</span>.<br>Nhấp để mở rộng danh sách điểm thuộc loại đó.",
@@ -242,15 +242,15 @@
     "triggerSwitch": "Nhấp để chuyển đổi trạng thái công tắc.<br><ul><li><span class=\"keyword\">Chế độ Gộp Điểm</span> cho phép hiển thị các điểm dày đặc được gộp lại;</li><li><span class=\"keyword\">Hiển thị Ranh giới Khu vực</span> làm nổi bật từng khu vực con và ranh giới của nó trong khu vực hiện tại.</li><li><span class=\"keyword\">Hiển thị Tên Khu Vực</span> sẽ hiển thị tên khu vực trong trò chơi.</li></ul>",
     "scale": "Sử dụng <span class=\"keyword\">Điều khiển Thu phóng</span> để xem và thao tác thu phóng bản đồ.<br>Có thể sử dụng con lăn chuột hoặc bàn di chuột để thu phóng. Bạn cũng có thể thu phóng bằng cách nhấp vào nút <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> hoặc bất kỳ đâu trên thanh thu phóng.",
     "filterList": "<span class=\"keyword\">Danh sách điểm</span> hiển thị các loại điểm bạn đã chọn; nhấp vào biểu tượng để bỏ chọn.",
-    "headbar": "Các chức năng bản đồ, tài khoản và các tùy chọn khác nằm ở <span class=\"keyword\">thanh trên cùng</span>.",
-    "auth": "<span class=\"keyword\">Đăng ký</span> hoặc <span class=\"keyword\">đăng nhập</span> tài khoản OEM để sử dụng các chức năng trực tuyến của chúng tôi.",
+    "headbar": "Các công tắc liên quan đến cài đặt bản đồ nằm ở <span class=\"keyword\">thanh trên cùng</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Ẩn Giao diện Trang web</span> để chụp ảnh màn hình hoặc xem các điểm ở rìa.",
     "notification": "Mở <span class=\"keyword\">thông báo</span> để xem các tương tác và kết quả kiểm duyệt liên quan đến đóng góp của bạn.",
     "darkMode": "Chuyển đổi <span class=\"keyword\">chế độ ánh sáng môi trường</span> hiện tại.",
     "language": "Chuyển đổi <span class=\"keyword\">ngôn ngữ giao diện</span>.<br>Hiện tại, các ngôn ngữ có <span class=\"keyword\">hỗ trợ dịch thuật nội dung trò chơi đầy đủ</span> bao gồm tiếng Anh, tiếng Trung Giản thể, tiếng Trung Phồn thể, tiếng Nhật, tiếng Hàn, tiếng Pháp, tiếng Đức, tiếng Ý, tiếng Nga, tiếng Tây Ban Nha, tiếng Indonesia, tiếng Bồ Đào Nha, tiếng Thái và tiếng Việt.<br>Các ngôn ngữ có <span class=\"keyword\">chỉ hỗ trợ dịch thuật giao diện</span> bao gồm tiếng Ả Rập, tiếng Mã Lai, tiếng Ba Lan, tiếng Thụy Điển, tiếng Hy Lạp, tiếng Hindi, tiếng Ukraina và tiếng Thổ Nhĩ Kỳ.",
-    "announcement": "Xem <span class=\"keyword\">thông báo trang web</span> mới nhất và các cập nhật tính năng quan trọng.",
+    "announcement": "Xem <span class=\"keyword\">thông báo trang web</span> gần nhất. Các cập nhật về điều khoản dịch vụ và chính sách bảo mật cũng sẽ được đăng tại đây.",
     "help": "Khởi động lại <span class=\"keyword\">hướng dẫn</span> này.",
-    "settings": "Mở <span class=\"keyword\">Cài đặt</span> để quản lý giao diện, bản đồ, chủ đề, phím tắt và dữ liệu cục bộ.",
+    "settings": "Mở <span class=\"keyword\">Cài đặt</span> để kiểm soát việc lưu trữ cục bộ mà bản đồ sử dụng để ghi nhớ các hành động của bạn.",
     "locator": "Nhấn <span class=\"keyword\">Đồng bộ vị trí</span> để hiển thị vị trí hiện tại trong game của bạn trên bản đồ.<br>Sau khi liên kết tài khoản game, bạn cũng có thể mở cấu hình theo dõi để chỉnh phạm vi theo dõi điểm.",
     "regionSwitch": "Nhấp để chuyển đổi giữa <span class=\"keyword\">các bản đồ sandbox khác nhau</span> (khu vực chính) trong trò chơi.",
     "subregionSwitch": "<span class=\"keyword\">Di chuột qua biểu tượng khu vực chính</span> để hiển thị các khu vực con có sẵn; nhấp vào biểu tượng khu vực con sẽ chuyển đến chế độ xem khu vực con đó.<br>Tương tự, bạn cũng có thể chọn một lớp cho một khu vực.",

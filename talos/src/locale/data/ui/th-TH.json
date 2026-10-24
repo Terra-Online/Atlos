@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "การตั้งค่าผู้ใช้",
-    "auth": "สมัคร / เข้าสู่ระบบ",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "ซ่อน UI",
     "notification": "การแจ้งเตือน",
     "darkmode": "สลับเป็นโหมดมืด",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "ข้อมูลและพื้นที่จัดเก็บ",
-    "calculating": "กำลังคำนวณการใช้พื้นที่จัดเก็บ...",
-    "policy": "<p>เราใช้คุกกี้เพื่อเก็บเซสชันการเข้าสู่ระบบ ใช้ LocalStorage เพื่อเก็บการตั้งค่าและความคืบหน้าของมาร์กเกอร์ และใช้ CacheStorage เพื่อแคชฟอนต์ ข้อมูลเหล่านี้ช่วยให้โหลดเร็วขึ้นและใช้งานบางส่วนแบบออฟไลน์ได้ หากล้างข้อมูลในเครื่อง <span class=\"keyword\">การเข้าชมครั้งถัดไปอาจใช้เวลานานขึ้นเพื่อโหลดทรัพยากรใหม่</span> หากปิดการจัดเก็บข้อมูลของเว็บไซต์ เว็บไซต์<span class=\"keyword\">จะไม่สามารถบันทึกการตั้งค่าในเครื่องและความคืบหน้าของมาร์กเกอร์โดยอัตโนมัติได้</span></p><p>ฟังก์ชันอย่างการเข้าสู่ระบบ การร่วมเพิ่มข้อมูลมาร์กเกอร์ และการซิงก์ตำแหน่งจะส่งข้อมูลที่เกี่ยวข้องไปยังเซิร์ฟเวอร์ตามความจำเป็น การล้างข้อมูลในเครื่องจะไม่ลบบัญชีหรือข้อมูลบนเซิร์ฟเวอร์ของคุณ</p>",
-    "filtersAndMarkers": "ตัวกรอง & ข้อมูลจุด",
-    "warning": "<p><strong>คำเตือน:</strong> การล้างข้อมูลในเครื่องจะทำให้สถานะการเข้าสู่ระบบ การตั้งค่า และความคืบหน้าที่เก็บไว้ในเครื่องสูญหาย ครั้งถัดไปคุณจะต้องโหลดทรัพยากรใหม่และเข้าสู่ระบบอีกครั้ง</p><p>หากยืนยัน โปรดคลิกปุ่มลบอีกครั้ง</p>",
-    "export": "ส่งออกข้อมูล",
-    "import": "นำเข้าข้อมูล"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "เคล็ดลับคำแนะนำ",
-    "welcome": "ยินดีต้อนรับสู่ <span class=\"keyword\">Open Endfield Map</span><br>นี่เป็นครั้งแรกที่คุณใช้แผนที่นี้ หากพบปัญหา โปรดคลิกปุ่ม <span class=\"keyword\">ช่วยเหลือ</span> ที่มุมขวาบน แล้วเราจะแสดงคำแนะนำการใช้งานฟังก์ชันต่าง ๆ อย่างละเอียด</p>",
+    "welcome": "ยินดีต้อนรับสู่ <span class=\"keyword\">OPEN ENDFIELD MAP</span><br>นี่เป็นครั้งแรกที่คุณใช้แผนที่นี้ หากพบปัญหา โปรดคลิกปุ่ม <span class=\"keyword\">ช่วยเหลือ</span> ที่มุมขวาบน แล้วเราจะแสดงคำแนะนำการใช้งานฟังก์ชันต่าง ๆ อย่างละเอียด</p>",
     "sidebarToggle": "คลิกเพื่อขยาย <span class=\"keyword\">แถบด้านข้าง</span><br>แถบด้านข้างประกอบด้วยตัวกรองจุดที่คุณใช้บ่อยที่สุด และสวิตช์ที่เกี่ยวข้องกับการแสดงผลจุด",
     "search": "คุณสามารถค้นหาจุดที่ต้องการดูโดยใช้ <span class=\"keyword\">ภาษาที่เกมรองรับ</span> และเลือกจากผลการค้นหา",
     "filterContainer": "จุดประเภทเดียวกันจะถูกจัดกลุ่มใน <span class=\"keyword\">ตัวกรอง</span><br>คลิกเพื่อขยายรายการจุดประเภทนั้น",
@@ -242,15 +242,15 @@
     "triggerSwitch": "คลิกเพื่อสลับสถานะสวิตช์<br><ul><li><span class=\"keyword\">โหมดรวมกลุ่มจุด</span> จะช่วยให้แสดงจุดที่หนาแน่นรวมกันได้</li><li><span class=\"keyword\">แสดงขอบเขตพื้นที่</span> จะเน้นพื้นที่ย่อยแต่ละแห่งและขอบเขตภายในพื้นที่ปัจจุบัน</li><li><span class=\"keyword\">ชื่อภูมิภาค</span> แสดงชื่อภูมิภาคในเกม</li></ul>",
     "scale": "ใช้ <span class=\"keyword\">ตัวควบคุมการซูม</span> เพื่อดูและควบคุมการซูมแผนที่<br>สามารถใช้ล้อเลื่อนหรือแทร็กแพดเพื่อซูมได้ คุณยังสามารถซูมโดยคลิกปุ่ม <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> หรือที่ใดก็ได้บนแถบซูม",
     "filterList": "<span class=\"keyword\">รายการจุด</span> แสดงประเภทจุดที่คุณเลือก คลิกไอคอนเพื่อยกเลิกการเลือก",
-    "headbar": "ฟังก์ชันแผนที่ บัญชี และฟังก์ชันอื่น ๆ อยู่ที่ <span class=\"keyword\">แถบด้านบน</span>",
-    "auth": "<span class=\"keyword\">สมัคร</span>หรือ<span class=\"keyword\">เข้าสู่ระบบ</span>บัญชี OEM เพื่อใช้ฟังก์ชันออนไลน์ของเรา",
+    "headbar": "สวิตช์ที่เกี่ยวข้องกับการตั้งค่าแผนที่อยู่ที่ <span class=\"keyword\">แถบด้านบน</span>",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">ซ่อน UI เว็บไซต์</span> เพื่อถ่ายภาพหน้าจอหรือดูจุดที่ขอบ",
     "notification": "เปิด<span class=\"keyword\">การแจ้งเตือน</span>เพื่อดูการโต้ตอบและผลการตรวจสอบที่เกี่ยวข้องกับเนื้อหาที่คุณมีส่วนร่วม",
     "darkMode": "สลับ <span class=\"keyword\">โหมดแสงสว่าง</span> ปัจจุบัน",
     "language": "สลับ <span class=\"keyword\">ภาษาอินเทอร์เฟซ</span><br>ปัจจุบัน ภาษาที่ <span class=\"keyword\">รองรับการแปลเนื้อหาเกมเต็มรูปแบบ</span> ได้แก่ อังกฤษ จีนตัวย่อ จีนตัวเต็ม ญี่ปุ่น เกาหลี ฝรั่งเศส เยอรมัน อิตาลี รัสเซีย สเปน อินโดนีเซีย โปรตุเกส ไทย และเวียดนาม<br>ภาษาที่ <span class=\"keyword\">รองรับเฉพาะการแปลอินเทอร์เฟซ</span> ได้แก่ อาหรับ มาเลย์ โปแลนด์ สวีเดน กรีก ฮินดี ยูเครน และตุรกี",
-    "announcement": "ดู<span class=\"keyword\">ประกาศของเว็บไซต์</span>ล่าสุดและการอัปเดตฟังก์ชันที่สำคัญ",
+    "announcement": "ดู <span class=\"keyword\">ประกาศเว็บไซต์</span> ล่าสุด การอัปเดตข้อกำหนดการให้บริการและนโยบายความเป็นส่วนตัวจะถูกโพสต์ที่นี่เช่นกัน",
     "help": "เริ่ม <span class=\"keyword\">คำแนะนำ</span> นี้ใหม่",
-    "settings": "เปิด <span class=\"keyword\">การตั้งค่า</span> เพื่อจัดการอินเทอร์เฟซ แผนที่ ธีม แป้นพิมพ์ลัด และข้อมูลในเครื่อง",
+    "settings": "เปิด <span class=\"keyword\">การตั้งค่า</span> เพื่อควบคุมการจัดเก็บข้อมูลในเครื่องที่แผนที่ใช้เพื่อจดจำการกระทำของคุณ",
     "locator": "แตะ <span class=\"keyword\">ซิงก์ตำแหน่ง</span> เพื่อแสดงตำแหน่งปัจจุบันในเกมของคุณบนแผนที่<br>หลังจากผูกบัญชีเกมแล้ว คุณยังสามารถเปิดการตั้งค่าการติดตามเพื่อปรับการติดตามจุดได้",
     "regionSwitch": "คลิกเพื่อสลับระหว่าง <span class=\"keyword\">แผนที่แซนด์บ็อกซ์ต่างๆ</span> (ภูมิภาคหลัก) ในเกม",
     "subregionSwitch": "<span class=\"keyword\">วางเมาส์เหนือไอคอนภูมิภาคหลัก</span> เพื่อแสดงภูมิภาคย่อยที่มีอยู่ การคลิกไอคอนภูมิภาคย่อยจะข้ามไปยังมุมมองภูมิภาคย่อยนั้น<br>ในทำนองเดียวกัน คุณยังสามารถเลือกเลเยอร์สำหรับภูมิภาคได้",

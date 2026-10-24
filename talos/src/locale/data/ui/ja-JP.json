@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "ユーザー設定",
-    "auth": "登録 / ログイン",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "UIを非表示",
     "notification": "通知",
     "darkmode": "ダークモードに切り替え",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "データとストレージ",
-    "calculating": "ストレージ使用量を計算中…",
-    "policy": "<p>ログインセッションには Cookie、環境設定やマーカーの進捗には LocalStorage、フォントのキャッシュには CacheStorage を使用しています。これらは読み込みを高速化し、一部機能のオフライン利用を可能にします。ローカルストレージを消去すると、<span class=\"keyword\">次回のアクセス時にリソースの再読み込みで時間がかかる場合があります</span>。サイトのストレージを無効にすると、<span class=\"keyword\">端末内の設定やマーカーの進捗を自動保存できなくなります</span>。</p><p>ログイン、マーカーの投稿、位置同期などの機能は、必要に応じて関連データをサーバーに送信します。ローカルストレージを消去しても、アカウントやサーバー上のデータは削除されません。</p>",
-    "filtersAndMarkers": "フィルターとマーカーデータ",
-    "warning": "<p><strong>注意：</strong>ローカルストレージを消去すると、端末内のログイン状態、環境設定、進捗が失われます。次回のアクセス時にはリソースの再読み込みと再ログインが必要です。</p><p>よろしければ、削除ボタンをもう一度クリックしてください。</p>",
-    "export": "データをエクスポート",
-    "import": "データをインポート"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "環境設定",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "ガイドのヒント",
-    "welcome": "<span class=\"keyword\">Open Endfield Map</span>へようこそ。<br>このマップを初めてご利用になる方へ。問題が発生した場合は、右上の<span class=\"keyword\">ヘルプ</span>ボタンをクリックしてください。各機能について詳しくご案内します。</p>",
+    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span>へようこそ。<br>このマップを初めてご利用になる方へ。問題が発生した場合は、右上の<span class=\"keyword\">ヘルプ</span>ボタンをクリックしてください。各機能について詳しくご案内します。</p>",
     "sidebarToggle": "クリックすると<span class=\"keyword\">サイドバー</span>が開きます。<br>よく使うマーカーの絞り込みや、マーカー表示に関する設定がまとまっています。",
     "search": "<span class=\"keyword\">ゲームが対応している言語</span>でマーカーを検索し、検索結果から選択できます。",
     "filterContainer": "同じ種類のマーカーは、1つの<span class=\"keyword\">フィルター</span>にまとめられています。<br>クリックすると、その種類のマーカー一覧が開きます。",
@@ -242,15 +242,15 @@
     "triggerSwitch": "クリックして設定を切り替えます。<br><ul><li><span class=\"keyword\">マーカーのグループ化</span>：密集したマーカーをまとめて表示します。</li><li><span class=\"keyword\">エリア境界</span>：現在のエリアにある各サブエリアとその境界を強調します。</li><li><span class=\"keyword\">エリア名</span>：ゲーム内のエリア名を表示します。</li></ul>",
     "scale": "<span class=\"keyword\">ズームコントロール</span>では、現在の倍率を確認したり変更したりできます。<br>マウスホイールやトラックパッドのほか、<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>ボタン、ズームバーの任意の位置をクリックして拡大・縮小できます。",
     "filterList": "<span class=\"keyword\">マーカー一覧</span>には、現在選択しているマーカーが表示されます。アイコンをクリックすると選択を解除できます。",
-    "headbar": "マップやアカウントなどの機能は<span class=\"keyword\">トップバー</span>から利用できます。",
-    "auth": "OEM アカウントに<span class=\"keyword\">登録</span>または<span class=\"keyword\">ログイン</span>して、オンライン機能を利用できます。",
+    "headbar": "マップ全体に関する設定は<span class=\"keyword\">トップバー</span>にあります。",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "スクリーンショットを撮るときや画面端のマーカーを確認するときは、<span class=\"keyword\">UIを非表示</span>にできます。",
     "notification": "<span class=\"keyword\">お知らせ</span>では、投稿への反応や審査結果を確認できます。",
     "darkMode": "<span class=\"keyword\">表示テーマ</span>をライトとダークで切り替えます。",
     "language": "<span class=\"keyword\">表示言語</span>を切り替えます。<br>英語、簡体字中国語、繁体字中国語、日本語、韓国語、フランス語、ドイツ語、イタリア語、ロシア語、スペイン語、インドネシア語、ポルトガル語、タイ語、ベトナム語は、<span class=\"keyword\">UIとゲーム内コンテンツの両方</span>に対応しています。<br>アラビア語、マレー語、ポーランド語、スウェーデン語は<span class=\"keyword\">UIのみ</span>対応しています。",
-    "announcement": "最近の<span class=\"keyword\">サイトのお知らせ</span>や重要な機能更新を確認できます。",
+    "announcement": "<span class=\"keyword\">サイトからのお知らせ</span>を確認できます。利用規約やプライバシーポリシーの変更もここでお知らせします。",
     "help": "この<span class=\"keyword\">ガイド</span>をもう一度表示します。",
-    "settings": "<span class=\"keyword\">環境設定</span>では、インターフェース、マップ、テーマ、ショートカットキー、ローカルデータを管理できます。",
+    "settings": "<span class=\"keyword\">環境設定</span>では、マップが端末に保存する設定や進捗を管理できます。",
     "locator": "<span class=\"keyword\">位置同期</span>を有効にすると、ゲーム内の現在位置がマップに表示されます。<br>ゲームアカウントを連携すると、設定画面で周辺マーカーの追跡範囲も調整できます。",
     "regionSwitch": "クリックすると、ゲーム内の<span class=\"keyword\">別のサンドボックスマップ</span>（メインエリア）に切り替わります。",
     "subregionSwitch": "<span class=\"keyword\">メインエリアのアイコンにカーソルを合わせる</span>と、サブエリアの一覧が表示されます。アイコンをクリックすると、そのサブエリアへ移動します。<br>同じ操作でエリアのレイヤーも選べます。",

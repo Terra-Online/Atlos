@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "Pengaturan pengguna",
-    "auth": "Daftar / Masuk",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Sembunyikan UI",
     "notification": "Notifikasi",
     "darkmode": "Beralih ke mode gelap",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "Data & Penyimpanan",
-    "calculating": "Menghitung penggunaan penyimpanan...",
-    "policy": "<p>Kami menggunakan cookie untuk menyimpan sesi login, LocalStorage untuk preferensi dan progres penanda, serta CacheStorage untuk menyimpan font dalam cache. Penyimpanan ini mempercepat pemuatan dan mendukung sebagian penggunaan offline. Jika Anda menghapus penyimpanan lokal, <span class=\"keyword\">kunjungan berikutnya mungkin membutuhkan waktu lebih lama untuk memuat ulang sumber daya</span>; jika Anda menonaktifkan penyimpanan situs, situs <span class=\"keyword\">tidak dapat menyimpan preferensi lokal dan progres penanda secara otomatis</span>.</p><p>Fitur seperti login, kontribusi penanda, dan sinkronisasi lokasi mengirimkan data terkait ke server sesuai kebutuhan. Menghapus penyimpanan lokal tidak menghapus akun atau data Anda di server.</p>",
-    "filtersAndMarkers": "Filter & Data Titik",
-    "warning": "<p><strong>Peringatan:</strong> Menghapus penyimpanan lokal akan menghilangkan status login lokal, preferensi, dan progres lokal Anda. Pada kunjungan berikutnya, sumber daya perlu dimuat ulang dan Anda perlu login kembali.</p><p>Untuk mengonfirmasi, silakan klik tombol hapus sekali lagi.</p>",
-    "export": "Ekspor Data",
-    "import": "Impor Data"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Pengaturan",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "Tips Panduan",
-    "welcome": "Selamat datang di <span class=\"keyword\">Open Endfield Map</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Jika Anda mengalami masalah, silakan klik tombol <span class=\"keyword\">Bantuan</span> di sudut kanan atas. Kami akan memberikan panduan fitur yang terperinci.</p>",
+    "welcome": "Selamat datang di <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Ini adalah pertama kalinya Anda menggunakan peta ini. Jika Anda mengalami masalah, silakan klik tombol <span class=\"keyword\">Bantuan</span> di sudut kanan atas. Kami akan memberikan panduan fitur yang terperinci.</p>",
     "sidebarToggle": "Klik untuk memperluas <span class=\"keyword\">bilah sisi</span>.<br>Bilah sisi mencakup filter penanda yang paling sering Anda gunakan, serta sakelar yang terkait erat dengan tampilan penanda.",
     "search": "Anda dapat mencari penanda untuk dilihat menggunakan <span class=\"keyword\">bahasa yang didukung oleh game</span> dan memilihnya di hasil pencarian.",
     "filterContainer": "Penanda dengan jenis yang sama dikelompokkan dalam <span class=\"keyword\">filter</span>.<br>Klik untuk memperluas daftar penanda jenis itu.",
@@ -242,15 +242,15 @@
     "triggerSwitch": "Klik untuk beralih status sakelar.<br><ul><li><span class=\"keyword\">Mode Pengelompokan Penanda</span> memungkinkan penanda padat ditampilkan digabungkan;</li><li><span class=\"keyword\">Tampilan Batas Wilayah</span> menyoroti setiap sub-wilayah dan batasnya dalam area saat ini.</li><li><span class=\"keyword\">Nama Wilayah</span> menampilkan nama wilayah dalam game.</li></ul>",
     "scale": "Gunakan <span class=\"keyword\">Kontrol Zoom</span> untuk melihat dan memanipulasi zoom peta.<br>Roda gulir atau trackpad dapat digunakan untuk memperbesar. Anda juga dapat memperbesar dengan mengklik tombol <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> atau di mana saja pada bilah zoom.",
     "filterList": "<span class=\"keyword\">Daftar Penanda</span> menampilkan jenis penanda yang telah Anda pilih; klik ikon untuk membatalkan pilihan.",
-    "headbar": "Fitur peta, akun, dan lainnya tersedia di <span class=\"keyword\">bilah atas</span>.",
-    "auth": "<span class=\"keyword\">Daftar</span> atau <span class=\"keyword\">masuk</span> ke akun OEM untuk menggunakan fitur online kami.",
+    "headbar": "Sakelar yang terkait dengan pengaturan peta terletak di <span class=\"keyword\">bilah atas</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Sembunyikan UI Situs Web</span> untuk mengambil tangkapan layar atau melihat penanda tepi.",
     "notification": "Buka <span class=\"keyword\">notifikasi</span> untuk melihat interaksi dan hasil peninjauan terkait kontribusi Anda.",
     "darkMode": "Beralih <span class=\"keyword\">mode cahaya sekitar</span> saat ini.",
     "language": "Beralih <span class=\"keyword\">bahasa antarmuka</span>.<br>Saat ini, bahasa dengan <span class=\"keyword\">dukungan terjemahan konten game lengkap</span> meliputi Inggris, Tionghoa Sederhana, Tionghoa Tradisional, Jepang, Korea, Prancis, Jerman, Italia, Rusia, Spanyol, Indonesia, Portugis, Thailand, dan Vietnam.<br>Bahasa dengan <span class=\"keyword\">hanya dukungan terjemahan antarmuka</span> mencakup Arab, Melayu, Polandia, Swedia, Yunani, Hindi, Ukraina, dan Turki.",
-    "announcement": "Lihat <span class=\"keyword\">pengumuman situs</span> terbaru dan pembaruan fitur penting.",
+    "announcement": "Lihat <span class=\"keyword\">pengumuman situs web</span> terkini. Pembaruan kebijakan layanan dan privasi juga akan diposting di sini.",
     "help": "Mulai ulang <span class=\"keyword\">panduan</span> ini.",
-    "settings": "Buka <span class=\"keyword\">Preferensi</span> untuk mengelola antarmuka, peta, tema, pintasan keyboard, dan data lokal.",
+    "settings": "Buka <span class=\"keyword\">Preferensi</span> untuk mengontrol penyimpanan lokal yang digunakan peta untuk mengingat tindakan Anda.",
     "locator": "Klik <span class=\"keyword\">Sinkron Lokasi</span> untuk menampilkan posisi in-game kamu saat ini di peta.<br>Setelah akun game ditautkan, kamu juga bisa membuka konfigurasi tracking untuk mengatur pelacakan titik.",
     "regionSwitch": "Klik untuk beralih antara <span class=\"keyword\">peta kotak pasir yang berbeda</span> (wilayah utama) dalam game.",
     "subregionSwitch": "<span class=\"keyword\">Arahkan kursor ke ikon wilayah utama</span> untuk menampilkan sub-wilayah yang tersedia; mengklik ikon sub-wilayah akan melompat ke tampilan sub-wilayah itu.<br>Demikian pula, Anda juga dapat memilih lapisan untuk suatu wilayah.",
