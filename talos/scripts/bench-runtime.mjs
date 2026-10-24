@@ -12,7 +12,7 @@ const { values } = parseArgs({ options: {
     baseline: { type: 'string' }, candidate: { type: 'string' },
     rounds: { type: 'string', default: '10' },
     'soak-minutes': { type: 'string', default: '0' },
-    out: { type: 'string', default: '.cache/runtime-perf/results.json' },
+    out: { type: 'string', default: '../docs/perf/runtime-perf/results.json' },
     'heap-snapshots': { type: 'boolean', default: false },
     scenario: { type: 'string', default: 'camera' },
     seed: { type: 'string', default: '20261024' },

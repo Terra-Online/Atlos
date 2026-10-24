@@ -4,7 +4,7 @@ import { parseArgs } from 'node:util';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createMapBrowser } from './lib/map-browser.mjs';
-const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string' }, out: { type: 'string', default: '.cache/sidebar-audit/mask' } } });
+const { values } = parseArgs({ options: { baseline: { type: 'string' }, candidate: { type: 'string' }, out: { type: 'string', default: '../docs/perf/sidebar-audit/mask' } } });
 if (!values.baseline || !values.candidate) throw new Error('Provide --baseline and --candidate builds.');
 const out = resolve(values.out); await mkdir(out, { recursive: true });
 const types = JSON.parse(await readFile(new URL('../src/data/marker/type.json', import.meta.url), 'utf8'));

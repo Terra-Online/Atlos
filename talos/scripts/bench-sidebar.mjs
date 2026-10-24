@@ -8,7 +8,7 @@ const { values } = parseArgs({ options: {
     baseline: { type: 'string' }, candidate: { type: 'string' },
     rounds: { type: 'string', default: '5' }, cpu: { type: 'string', default: '1' },
     mobile: { type: 'boolean', default: false }, headed: { type: 'boolean', default: false },
-    out: { type: 'string', default: '.cache/sidebar-audit/acceptance.json' },
+    out: { type: 'string', default: '../docs/perf/sidebar-audit/acceptance.json' },
 } });
 if (!values.baseline || !values.candidate) throw new Error('Provide frozen --baseline and --candidate production directories.');
 const rounds = Number(values.rounds), rate = Number(values.cpu);

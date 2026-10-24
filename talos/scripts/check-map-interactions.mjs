@@ -5,7 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { createMapBrowser, exerciseMapInteractions } from './lib/map-browser.mjs';
 
-const { values } = parseArgs({ options: { build: { type: 'string' }, out: { type: 'string', default: '.cache/runtime-perf/interaction-acceptance.json' } } });
+const { values } = parseArgs({ options: { build: { type: 'string' }, out: { type: 'string', default: '../docs/perf/runtime-perf/interaction-acceptance.json' } } });
 if (!values.build) throw new Error('Provide --build with a frozen application build.');
 const result = { actions: {}, mobile: {}, errors: [] };
 const harness = await createMapBrowser({ baseline: values.build, candidate: values.build, onError: error => result.errors.push(error) });

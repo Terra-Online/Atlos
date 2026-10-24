@@ -93,3 +93,6 @@ talos/.stylelintcache
 
 # Local animation, interaction and bundle acceptance reports.
 /docs/code-smell-acceptance/
+
+# Local performance reports, traces, captures, builds and history backups.
+/docs/perf/

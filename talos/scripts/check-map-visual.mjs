@@ -7,7 +7,7 @@ import { createMapBrowser } from './lib/map-browser.mjs';
 
 const { values } = parseArgs({ options: {
     baseline: { type: 'string' }, candidate: { type: 'string' },
-    out: { type: 'string', default: '.cache/runtime-perf/visual-acceptance' },
+    out: { type: 'string', default: '../docs/perf/runtime-perf/visual-acceptance' },
     view: { type: 'string' },
 } });
 if (!values.baseline || !values.candidate) throw new Error('Provide two frozen build directories.');
