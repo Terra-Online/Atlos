@@ -10,6 +10,7 @@ import { useTranslateGame } from '@/locale';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { useForceRegionSubOpen } from '@/store/uiPrefs';
 import { useDevice } from '@/platform/device';
+import { useSwitchMenu } from './useSwitchMenu';
 
 import Valley4 from '@/assets/logos/_Valley_4.svg?react';
 import Wuling from '@/assets/logos/_Wuling.svg?react';
@@ -61,7 +62,6 @@ type SubregionSwitchItem = {
 interface SubregionSwitchProps {
     items: SubregionSwitchItem[];
     selectedIndex?: number;
-    forceOpen?: boolean;
     showIndicator?: boolean;
     isMobile?: boolean;
 }
@@ -69,15 +69,12 @@ interface SubregionSwitchProps {
 const SubregionSwitch: React.FC<SubregionSwitchProps> = ({
     items,
     selectedIndex = -1,
-    forceOpen = false,
     showIndicator = true,
     isMobile = false,
 }) => {
     return (
         <div
-            className={classNames(styles.subregionSwitchContainer, {
-                [styles.forceOpen]: forceOpen,
-            })}
+            className={styles.subregionSwitchContainer}
             onClick={(e) => {
                 e.stopPropagation();
             }}
@@ -145,12 +142,15 @@ const RegionContainer: React.FC<{
         requestSubregionSwitch,
     } = useRegion();
     const forceRegionSubOpen = useForceRegionSubOpen();
+    const menu = useSwitchMenu();
+    const openRegionKey = menu.activeKey ?? (forceRegionSubOpen ? currentRegionKey : null);
     const regionIndex = useMemo(
         () => Object.keys(REGION_DICT).indexOf(currentRegionKey),
         [currentRegionKey],
     );
     return (
         <div
+            ref={menu.ref}
             className={classNames(
                 styles.regswitch,
                 isMobile && styles.mobile,
@@ -177,18 +177,21 @@ const RegionContainer: React.FC<{
                         disabled={isMobile || !isSidebarOpen}
                     >
                         <div
+                            {...menu.getItemProps(key)}
                             className={classNames(
                                 styles.regItem,
                                 currentRegionKey === key && styles.selected,
                             )}
                         >
-                            <IconButton className={styles.mainAction} label={regionName} pressed={currentRegionKey === key} onClick={() => setCurrentRegion(key)}>
+                            <IconButton className={styles.mainAction} label={regionName} pressed={currentRegionKey === key} onClick={() => {
+                                menu.open(key);
+                                setCurrentRegion(key);
+                            }}>
                                 <div className={styles.icon}><Icon /></div>
                             </IconButton>
-                            {region.subregions.length > 1 && (
+                            {openRegionKey === key && region.subregions.length > 1 && (
                                 <SubregionSwitch
                                     selectedIndex={subRegionIndex}
-                                    forceOpen={forceRegionSubOpen && currentRegionKey === key}
                                     isMobile={isMobile}
                                     items={region.subregions.map((subregion) => {
                                         const subKey = SUBREGION_DICT[subregion]?.name;

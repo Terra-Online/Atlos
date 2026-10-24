@@ -2,6 +2,26 @@ import { act, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import ActionBar from './ActionBar';
 
+it.each(['unmount', 'empty items', 'inline mode'] as const)('releases the floating overlay on %s after its element ref is cleared', (mode) => {
+    const onFloatingDismiss = vi.fn();
+    const items = [{ id: 'bold', label: 'Bold', icon: 'B' }];
+    const anchor = new DOMRect(40, 80, 100, 20);
+    const view = render(<ActionBar variant="floating" anchorRect={anchor} items={items} onFloatingDismiss={onFloatingDismiss} />);
+    try {
+        const toolbar = screen.getByRole('toolbar');
+        expect(toolbar.style.zIndex).toBe('1000');
+        if (mode === 'unmount') view.unmount();
+        else view.rerender(<ActionBar variant={mode === 'inline mode' ? 'separate' : 'floating'} anchorRect={anchor} items={mode === 'empty items' ? [] : items} onFloatingDismiss={onFloatingDismiss} />);
+        expect(toolbar.style.zIndex).toBe('');
+        const escape = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+        document.dispatchEvent(escape);
+        expect(escape.defaultPrevented).toBe(false);
+        expect(onFloatingDismiss).not.toHaveBeenCalled();
+    } finally {
+        view.unmount();
+    }
+});
+
 it('isolates a closing toolbar and cancels that close when its selection reopens', async () => {
     vi.useFakeTimers();
     const prototype = HTMLElement.prototype;

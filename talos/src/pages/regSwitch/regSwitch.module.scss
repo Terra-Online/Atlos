@@ -153,15 +153,6 @@ $mobile-indicator-height: 0.48rem;
             height: 1.5rem;
         }
     }
-    &:hover, &:focus-within {
-        .subregionSwitchContainer {
-            pointer-events: auto;
-
-            .subregionSwitch {
-                opacity: 1;
-            }
-        }
-    }
 }
 
 .subregionSwitchContainer {
@@ -170,14 +161,7 @@ $mobile-indicator-height: 0.48rem;
     top: 50%;
     padding-left: 1rem;
     transform: translateY(-50%);
-    pointer-events: none;
-    opacity: 1;
-    &.forceOpen {
-        pointer-events: auto;
-        .subregionSwitch {
-            opacity: 1;
-        }
-    }
+    pointer-events: auto;
     .subregionSwitch {
         position: relative;
         display: flex;
@@ -189,8 +173,11 @@ $mobile-indicator-height: 0.48rem;
         box-shadow: 0 0 5px rgba($black-0, 0.6);
         overflow-y: auto;
         backdrop-filter: blur(8px);
-        opacity: 0;
+        opacity: 1;
         transition: opacity 0.2s ease-in-out;
+        @starting-style {
+            opacity: 0;
+        }
         will-change: opacity, backdrop-filter;
     }
 }

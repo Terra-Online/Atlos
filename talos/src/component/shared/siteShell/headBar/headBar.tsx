@@ -34,6 +34,7 @@ const HeadItem = ({
     guideKey,
     compactHidden = false,
 }: HeadItemProps) => {
+    const { isMobile } = useDevice();
     const handleClick = (
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     ) => {
@@ -69,7 +70,7 @@ const HeadItem = ({
     }
 
     return (
-        <PopoverTooltip content={tooltip} placement="bottom">
+        <PopoverTooltip content={tooltip} placement="bottom" disabled={isMobile || compactHidden || disabled}>
             {button}
         </PopoverTooltip>
     );
