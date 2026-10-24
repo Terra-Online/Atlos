@@ -1,5 +1,6 @@
 import { createMarkerQueue, failedBatchMarkers, listByMarkerIds, runUGCBatches, type MarkerBatchPayload } from './batch';
 import { UGCClientError } from './error';
+import { ReadCache } from './readCache';
 export { UGCClientError } from './error';
 import { getAuthBase, getAuthHeaders } from '@/services/http/authRuntime';
 import { requestJson as requestHttpJson } from '@/services/http/request';
@@ -156,10 +157,10 @@ const UGC_UPLOADABLE_CATEGORIES = new Set<UGCUploadableCategory>([
     'archives',
     'exploration',
 ]);
-const imageCache = new Map<string, ImageCacheEntry>();
-const publicImageCache = new Map<string, ImageCacheEntry>();
-const commentCache = new Map<string, CommentCacheEntry>();
-const submissionCache = new Map<string, SubmissionCacheEntry>();
+const imageCache = new ReadCache<ImageCacheEntry>();
+const publicImageCache = new ReadCache<ImageCacheEntry>();
+const commentCache = new ReadCache<CommentCacheEntry>();
+const submissionCache = new ReadCache<SubmissionCacheEntry>();
 
 export const invalidateUGCImageCache = (markerId: string): void => {
     imageCache.delete(markerId);

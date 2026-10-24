@@ -38,6 +38,7 @@ type UploadTaskState = {
     lastSubmission: UGCUploadSubmission | null;
     ownerUid: string | null;
     refreshedSubmissionKey: string | null;
+    updatedAt: number;
 };
 
 const idleUploadTask: UploadTaskState = {
@@ -50,11 +51,20 @@ const idleUploadTask: UploadTaskState = {
     lastSubmission: null,
     ownerUid: null,
     refreshedSubmissionKey: null,
+    updatedAt: 0,
 };
 
 const uploadTasks = new Map<string, UploadTaskState>();
 const uploadTaskListeners = new Set<() => void>();
+const readers = new Map<string, number>();
 let nextUploadTaskId = 1;
+
+const pruneTasks = () => {
+    for (const [id, task] of uploadTasks) {
+        if (task.uploading || readers.has(id)) continue;
+        if (Date.now() - task.updatedAt > 15 * 60_000 || uploadTasks.size > 128) uploadTasks.delete(id);
+    }
+};
 
 const getUploadTask = (markerId: string): UploadTaskState => (
     uploadTasks.get(markerId) ?? idleUploadTask
@@ -66,13 +76,23 @@ const setUploadTask = (
 ): void => {
     const current = uploadTasks.get(markerId) ?? { ...idleUploadTask, markerId };
     const next = updater(current);
-    uploadTasks.set(markerId, next);
+    if (next === current) return;
+    uploadTasks.delete(markerId);
+    uploadTasks.set(markerId, { ...next, updatedAt: Date.now() });
+    pruneTasks();
     uploadTaskListeners.forEach((listener) => listener());
 };
 
-const subscribeUploadTasks = (listener: () => void): (() => void) => {
+const subscribeUploadTasks = (markerId: string, listener: () => void): (() => void) => {
+    readers.set(markerId, (readers.get(markerId) ?? 0) + 1);
     uploadTaskListeners.add(listener);
-    return () => uploadTaskListeners.delete(listener);
+    return () => {
+        uploadTaskListeners.delete(listener);
+        const count = (readers.get(markerId) ?? 1) - 1;
+        if (count) readers.set(markerId, count);
+        else readers.delete(markerId);
+        pruneTasks();
+    };
 };
 
 const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadState => {
@@ -82,7 +102,7 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
     const inputTargetRef = useRef<UGCUploadTarget | null>(null);
     const [pendingLoginUpload, setPendingLoginUpload] = useState(false);
     const uploadTask = useSyncExternalStore(
-        subscribeUploadTasks,
+        useCallback((listener: () => void) => subscribeUploadTasks(point.id, listener), [point.id]),
         () => getUploadTask(point.id),
         () => idleUploadTask,
     );
@@ -114,9 +134,12 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
     }, [tUI]);
 
     useEffect(() => {
-        if (!pendingLoginUpload || !user) return;
-        setPendingLoginUpload(false);
-        requestAnimationFrame(() => inputRef.current?.click());
+        if (!pendingLoginUpload || !user) return undefined;
+        const frame = requestAnimationFrame(() => {
+            setPendingLoginUpload(false);
+            inputRef.current?.click();
+        });
+        return () => cancelAnimationFrame(frame);
     }, [pendingLoginUpload, user]);
 
     useEffect(() => {
@@ -190,6 +213,7 @@ const useUGCUpload = (point: IMarkerData, imageState: PointImagesState): UploadS
             lastSubmission: null,
             ownerUid: user?.uid ?? null,
             refreshedSubmissionKey: null,
+            updatedAt: Date.now(),
         }));
         try {
             const submission = await uploadUGCImage(uploadTarget, file, (nextProgress) => {
