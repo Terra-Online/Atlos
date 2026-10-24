@@ -203,7 +203,8 @@ const attachPreviewLifecycle = (layer: L.Marker, markerData: IMarkerData): void 
     });
     layer.on('viewporthide', () => {
         emitPreviewLeave(markerData.id);
-        getMarkerInnerElement(layer)?.classList.remove(styles.appearing);
+        const inner = getMarkerInnerElement(layer);
+        if (inner?.classList.contains(styles.appearing)) inner.classList.remove(styles.appearing);
     });
 };
 

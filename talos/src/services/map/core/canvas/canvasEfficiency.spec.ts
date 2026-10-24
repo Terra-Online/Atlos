@@ -22,6 +22,18 @@ function fixture() {
   return { host, map, point, surface, canvas, clear };
 }
 describe('Retained camera surface', () => {
+  it('does not repaint an unchanged semantic state, but still paints changed opacity', async () => {
+    const { point, map, clear } = fixture();
+    const node = point.getElement()!;
+    node.setAttribute('class', node.className);
+    await Promise.resolve();
+    map.fire('move');
+    expect(clear).not.toHaveBeenCalled();
+    node.style.opacity = '0.5';
+    await Promise.resolve();
+    map.fire('move');
+    expect(clear).toHaveBeenCalled();
+  });
   it('reuses small camera moves and repaints after exhausting coverage', () => {
     const { map, canvas, clear } = fixture();
     expect(canvas.width * canvas.height).toBeLessThanOrEqual(800 * 600 * 4 * 1.5);

@@ -627,9 +627,21 @@ export class MarkerLayer {
         this.checkedVisibleOverrideIds.clear();
         this.syncCheckedVisibleOverrides();
 
+        // Raw region data is already cached by the data loader. Retired Leaflet
+        // objects, nodes and animation closures must not form a second world cache.
+        Object.keys(this.pulseCleanupDict).forEach((id) => this.stopMarkerPulse(id));
+        Object.values(this.pendingRemovalTimers).forEach((timer) => window.clearTimeout(timer));
+        this.pendingRemovalTimers = {};
+        this.clusterLayer.clearMarkers();
         Object.values(this.layerSubregionDict).forEach((layer) => {
             layer.removeFrom(this.map);
+            layer.clearLayers();
         });
+        for (const id of Object.keys(this.markerDict)) delete this.markerDict[id];
+        for (const id of Object.keys(this.markerDataDict)) delete this.markerDataDict[id];
+        for (const ids of Object.values(this.markerTypeMap)) ids.length = 0;
+        this.markerVersion++;
+        this.proximityIndex = undefined;
 
         const subregions = REGION_DICT[regionId].subregions;
         this.activeSubregionIds = new Set(subregions);

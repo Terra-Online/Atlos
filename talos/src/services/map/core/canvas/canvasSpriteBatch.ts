@@ -56,6 +56,8 @@ export class CanvasSpriteBatch {
   private source: HTMLCanvasElement;
   private paintX = 0;
   private paintY = 0;
+  private paintWidth = 0;
+  private paintHeight = 0;
   private skip = false;
   private data = new Float32Array(1024 * STRIDE);
   private bufferBytes = 0;
@@ -97,8 +99,8 @@ export class CanvasSpriteBatch {
     for (const [index, size, offset] of [[0, 4, 0], [1, 4, 4], [2, 2, 8]]) {
       gl.enableVertexAttribArray(index); gl.vertexAttribPointer(index, size, gl.FLOAT, false, STRIDE * 4, offset * 4); gl.vertexAttribDivisor(index, 1);
     }
-    // Render only the damaged rectangle on the GPU. The visible 2D canvas retains
-    // the complete image, so unchanged pixels need neither drawing nor copying.
+    // A stable drawing buffer avoids GPU reallocations when dirty rectangles change.
+    // Only the damaged rectangle is rendered and copied to the retained 2D image.
     this.copyFramebuffer = gl.createFramebuffer()!;
     this.uploadTexture = gl.createTexture()!; gl.bindTexture(gl.TEXTURE_2D, this.uploadTexture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -185,6 +187,40 @@ export class CanvasSpriteBatch {
     const slot = this.bindings.get(key);
     if (slot) { slot.refs--; this.bindings.delete(key); }
   }
+  /** Repack live slots after a region retires, only if at least half the atlas can be released. */
+  compact(): void {
+    if (this.atlasDepth < 2 || this.disposed) return;
+    const live = this.slots.flatMap(slot => {
+      const source = slot.refs > 0 ? slot.source.deref() : undefined;
+      return source ? [{ slot, source }] : [];
+    });
+    const pages: Page[] = [{ x: 0, y: 0, row: 0 }];
+    const placements = live.map(({ slot, source }) => {
+      let page = pages[pages.length - 1];
+      const width = source.width, height = source.height;
+      if (page.x + width + 2 > ATLAS_SIZE) { page.x = 0; page.y += page.row; page.row = 0; }
+      if (page.y + height + 2 > ATLAS_SIZE) { page = { x: 0, y: 0, row: 0 }; pages.push(page); }
+      const placement = { slot, source, x: page.x + 1, y: page.y + 1, page: pages.length - 1, width, height };
+      page.x += width + 2; page.row = Math.max(page.row, height + 2);
+      return placement;
+    });
+    const depth = 2 ** Math.ceil(Math.log2(pages.length));
+    if (depth * 2 > this.atlasDepth) return;
+    const gl = this.gl, old = this.atlas, next = this.allocateAtlas(depth);
+    const sources = new WeakMap<HTMLCanvasElement, Slot>();
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.copyFramebuffer);
+    for (const placement of placements) {
+      const { slot, source, x, y, page, width, height } = placement;
+      gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, old, 0, slot.page);
+      gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, x, y, page, slot.x, slot.y, width, height);
+      Object.assign(slot, { x, y, page, width, height });
+      sources.set(source, slot);
+    }
+    gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, null, 0, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteTexture(old);
+    this.atlas = next; this.atlasDepth = depth; this.sources = sources;
+    this.pages = pages; this.slots = live.map(({ slot }) => slot);
+  }
   begin(width: number, height: number, ratio: number, expected: number, dirty?: PaintRect): void {
     const gl = this.gl;
     this.count = 0; this.uploads = 0; this.drawCalls = 0;
@@ -200,12 +236,13 @@ export class CanvasSpriteBatch {
     const right = partial ? Math.max(0, Math.min(width, Math.ceil((dirty.x + dirty.width) * ratio))) : width;
     const bottom = partial ? Math.max(0, Math.min(height, Math.ceil((dirty.y + dirty.height) * ratio))) : height;
     const paintWidth = right - this.paintX, paintHeight = bottom - this.paintY;
+    this.paintWidth = paintWidth; this.paintHeight = paintHeight;
     this.skip = paintWidth <= 0 || paintHeight <= 0;
     if (this.skip) return;
-    if (this.source.width !== paintWidth) this.source.width = paintWidth;
-    if (this.source.height !== paintHeight) this.source.height = paintHeight;
+    if (this.source.width !== width) this.source.width = width;
+    if (this.source.height !== height) this.source.height = height;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, paintWidth, paintHeight);
-    gl.disable(gl.SCISSOR_TEST);
+    gl.enable(gl.SCISSOR_TEST); gl.scissor(0, 0, paintWidth, paintHeight);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(this.program); gl.uniform2f(this.viewport, paintWidth / ratio, paintHeight / ratio);
     gl.uniform2f(this.origin, this.paintX / ratio, this.paintY / ratio);
@@ -239,16 +276,18 @@ export class CanvasSpriteBatch {
     // operation otherwise clears the rest of the canvas. Integer backing-pixel
     // coordinates avoid seams even on displays whose DPR is below our 2x floor.
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.beginPath();
-    ctx.rect(this.paintX, this.paintY, this.source.width, this.source.height); ctx.clip();
+    ctx.rect(this.paintX, this.paintY, this.paintWidth, this.paintHeight); ctx.clip();
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'copy'; ctx.filter = 'none';
-    ctx.drawImage(this.source, this.paintX, this.paintY); ctx.restore();
+    // WebGL's bottom-left viewport occupies the bottom of the DOM canvas image.
+    ctx.drawImage(this.source, 0, this.source.height - this.paintHeight, this.paintWidth, this.paintHeight,
+      this.paintX, this.paintY, this.paintWidth, this.paintHeight); ctx.restore();
     this.valid = true;
   }
   readPixels(x: number, y: number, width: number, height: number): Uint8ClampedArray {
     return this.output.getImageData(x, y, width, height).data;
   }
   get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads,
-    presentedPixels: this.skip ? 0 : this.source.width * this.source.height, viewportPixels: this.width * this.height,
+    presentedPixels: this.skip ? 0 : this.paintWidth * this.paintHeight, viewportPixels: this.width * this.height,
     atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4 }; }
   dispose(): void {
     if (this.disposed) return;

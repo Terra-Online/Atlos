@@ -64,6 +64,8 @@ export class CanvasMarkerSurface {
   private sequence = 0;
   private frame = 0;
   private disposed = false;
+  private trimPending = false;
+  private trimTimer?: ReturnType<typeof setTimeout>;
   private viewportOffset = L.point(0, 0);
   private onscreen = new Set<Entry>();
   private cachedZoom = NaN;
@@ -149,6 +151,9 @@ export class CanvasMarkerSurface {
     map.on('zoomanim', this.zoom);
     map.on('zoomend', this.zoomEnd);
     map.on('unload', this.dispose);
+    map.on('talos:regionSwitchStart', this.retireRegion);
+    map.on('talos:regionSwitched moveend', this.queueTrim);
+    map.on('movestart', this.cancelTrim);
   }
   place(marker: CanvasMarker, point?: L.Point): void {
     const root = marker.getElement();
@@ -277,6 +282,7 @@ export class CanvasMarkerSurface {
   }
   private read(entry: Entry, now: number): void {
     const { root } = entry;
+    let artChanged = false;
     if (entry.artDirty) entry.inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`) ?? entry.inner;
     const { inner } = entry;
     if (entry.clusterUntil && has(inner, 'appearing')) {
@@ -295,19 +301,25 @@ export class CanvasMarkerSurface {
       const image = inner.querySelector<HTMLImageElement>('img');
       const sub = inner.querySelector<HTMLElement>(`.${classes.subIcon}`);
       const background = (node?: HTMLElement | null) => node?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
-      entry.art = { noFrame: has(inner, 'noFrameInner'), image: image?.getAttribute('src') ?? background(inner.firstElementChild as HTMLElement),
+      const art: MarkerArt = { noFrame: has(inner, 'noFrameInner'), image: image?.getAttribute('src') ?? background(inner.firstElementChild as HTMLElement),
         subImage: sub instanceof HTMLImageElement ? sub.getAttribute('src') ?? '' : background(sub), tier: inner.dataset.tier ?? '',
         count: inner.querySelector(`.${classes.clusterCount}`)?.textContent ?? undefined };
+      artChanged = art.noFrame !== entry.art.noFrame || art.image !== entry.art.image || art.subImage !== entry.art.subImage
+        || art.tier !== entry.art.tier || art.count !== entry.art.count;
+      if (artChanged) entry.art = art;
       this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage); entry.artDirty = false;
     }
     const completed = has(root, 'completedMarker');
-    if (entry.completed !== completed) { entry.completed = completed; this.reorder = true; }
+    const stackChanged = entry.completed !== completed;
+    if (stackChanged) { entry.completed = completed; this.reorder = true; }
     this.updateStack(entry);
-    entry.opacity = root.style.opacity === '' ? 1 : Number(root.style.opacity);
+    const opacity = root.style.opacity === '' ? 1 : Number(root.style.opacity);
     const flags = +has(inner, 'selected') | (+has(inner, 'checked') << 1) | (+has(inner, 'offLayer') << 2)
       | (+(this.hovered === entry) << 3) | (+root.contains(document.activeElement) << 4) | (+has(inner, 'pulsing') << 5)
       | (+(has(inner, 'appearing') && !(entry.clusterUntil && now < entry.clusterUntil)) << 6) | (+has(inner, 'disappearing') << 7);
-    entry.motion = this.motionPool.transition(entry.motion, flags, now, entry.art.noFrame, !!entry.art.count);
+    const motion = this.motionPool.transition(entry.motion, flags, now, entry.art.noFrame, !!entry.art.count);
+    if (!artChanged && !stackChanged && motion === entry.motion && opacity === entry.opacity) return;
+    entry.motion = motion; entry.opacity = opacity;
     this.invalidate(entry);
   }
   private invalidate(entry: Entry): void {
@@ -595,6 +607,20 @@ export class CanvasMarkerSurface {
     // Fractional wheel zoom already runs in rAF. Paint in that frame with the new tile origin.
     if (!this.animation) this.draw(performance.now());
   };
+  private cancelTrim = (): void => { clearTimeout(this.trimTimer); this.trimTimer = undefined; };
+  private retireRegion = (): void => { this.trimPending = true; this.cancelTrim(); };
+  private queueTrim = (): void => {
+    this.cancelTrim();
+    if (!this.trimPending || this.disposed) return;
+    this.trimTimer = setTimeout(() => {
+      this.trimTimer = undefined;
+      if (this.animation || this.zooming || this.ghosts.length || this.moving.size) { this.queueTrim(); return; }
+      this.trimPending = false;
+      this.painter.retainAssets(new Set([...this.entries.values()].flatMap(entry => [entry.art.image, entry.art.subImage])));
+      try { this.batch?.compact(); }
+      catch { this.fallback2D('atlas compaction failed'); }
+    }, 500);
+  };
   private zoomStart = (): void => { this.zooming = true; };
   private zoom = (event: L.ZoomAnimEvent): void => {
     this.animation = { start: performance.now(), from: new Map(this.ordered.map(entry => [entry, Number.isFinite(entry.x) ? L.point(entry.x, entry.y).subtract(this.viewportOffset) : this.map.latLngToContainerPoint(entry.latlng)])),
@@ -688,9 +714,12 @@ export class CanvasMarkerSurface {
   private dispose = (): void => {
     if (this.disposed) return;
     this.disposed = true; cancelAnimationFrame(this.frame); this.observer.disconnect(); this.painter.dispose();
+    this.cancelTrim();
     this.batch?.dispose(); this.pendingSwap?.batch.dispose();
     this.iconTemplates.clear();
     this.map.off('move resize viewreset', this.move); this.map.off('zoomstart', this.zoomStart); this.map.off('zoomanim', this.zoom); this.map.off('zoomend', this.zoomEnd); this.map.off('unload', this.dispose);
+    this.map.off('talos:regionSwitchStart', this.retireRegion);
+    this.map.off('talos:regionSwitched moveend', this.queueTrim); this.map.off('movestart', this.cancelTrim);
     const container = this.map.getContainer();
     container.removeEventListener('pointermove', this.pointerMove, true); container.removeEventListener('pointerleave', this.pointerLeave);
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);

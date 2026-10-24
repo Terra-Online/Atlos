@@ -116,9 +116,11 @@ export class MarkerMotion {
     if (this.sampledAt === now) return;
     this.sampledAt = now;
     const state = this.state;
-    this.sampledOpacity = state?.disappearing ? (state.checked && !state.offLayer ? 0.3 : 1) * (1 - ease((now - this.fadeStart) / 150, curves.easeIn))
-      : state?.appearing && now < this.fadeStart + 150 ? (state.checked && !state.offLayer ? 0.3 : 1) * ease((now - this.fadeStart) / 150, curves.easeOut)
-      : this.alpha.value(now);
+    // Fade the current pose, including its checked opacity. No-frame artwork
+    // dims its image separately, so a second hard-coded checked alpha jumps at rest.
+    const visibility = state?.disappearing ? 1 - ease((now - this.fadeStart) / 150, curves.easeIn)
+      : state?.appearing ? ease((now - this.fadeStart) / 150, curves.easeOut) : 1;
+    this.sampledOpacity = this.alpha.value(now) * visibility;
     const changingArtwork = this.channels.some((channel, index) => index !== 0 && index !== 3 && index !== 4 && channel.active(now));
     this.sampledPulseOnly = !!state?.pulsing && !changingArtwork;
     this.sampledPaint = !!state?.pulsing || changingArtwork || this.ringAlpha.active(now) || this.ringOffset.active(now);

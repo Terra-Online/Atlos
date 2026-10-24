@@ -56,6 +56,8 @@ export type BehaviorCanvasLayer = L.Layer & {
 };
 
 type ProjectedLine = {
+    bounds: L.Bounds;
+    flowPieces?: { curve: ProjectedCubic; start: number; end: number; path: ReturnType<typeof cubicBetween> }[];
     /** Authored knots projected to Canvas-local CSS pixels. */
     points: L.Point[];
     /** Cumulative straight-segment lengths in CSS pixels. */
@@ -91,6 +93,8 @@ export const createBehaviorCanvasLayer = (
     let startedAt = 0;
     let flowStartedAt = 0;
     let animationFrame: number | null = null;
+    let frameWindow: Window | null = null;
+    let visibilityDocument: Document | null = null;
     let animationActive = false;
     let flowActive = false;
     let generation = 0;
@@ -104,11 +108,18 @@ export const createBehaviorCanvasLayer = (
     let projectedCircles: L.Point[] = [];
     let timelineScale = 1;
     let pixelRatio = 1;
+    let viewportSize = L.point(0, 0);
+    let projectedZoom = NaN;
+    let pixelOrigin = L.point(NaN, NaN);
+    let painted = false;
+    let remInPixels = 16;
 
     const resize = () => {
         if (!map || !canvas || !context) return;
         const size = map.getSize();
-        const ratio = window.devicePixelRatio || 1;
+        viewportSize = size.clone();
+        const ratio = canvas.ownerDocument.defaultView?.devicePixelRatio || 1;
+        remInPixels = Number.parseFloat(getComputedStyle(canvas.ownerDocument.documentElement).fontSize) || 16;
         pixelRatio = ratio;
         const boundsSize = size.multiplyBy(1 + CANVAS_VIEW_PADDING_RATIO * 2);
         const nextOrigin = map.containerPointToLayerPoint(
@@ -277,10 +288,6 @@ export const createBehaviorCanvasLayer = (
         const activeContext = context;
         const base = parseColor(baseColor);
         const highlight = parseColor(palette.flow);
-        const rootFontSize = Number.parseFloat(
-            window.getComputedStyle(document.documentElement).fontSize,
-        );
-        const remInPixels = rootFontSize;
         const highlightLength = Math.min(
             projection.totalLength,
             Math.max(
@@ -294,57 +301,38 @@ export const createBehaviorCanvasLayer = (
         const highlightRatio = highlightLength / projection.totalLength;
         const phase =
             ((((now - flowStartedAt) / FLOW_CYCLE_DURATION) % 1) + 1) % 1;
-        projection.curves.forEach((curve) => {
-            const visibleStart = Math.max(0, 0 - curve.startLength);
-            const visibleEnd = Math.min(
-                curve.length,
-                target - curve.startLength,
+        projection.flowPieces?.forEach(({ curve, start: localStart, end, path }) => {
+            const localEnd = Math.min(end, target - curve.startLength);
+            if (localEnd <= localStart + MIN_DRAWABLE_LENGTH) return;
+            const piece = localEnd === end ? path : cubicBetween(
+                curve,
+                cubicTAtLength(curve, localStart),
+                cubicTAtLength(curve, localEnd),
             );
-            if (visibleEnd <= visibleStart + MIN_DRAWABLE_LENGTH) return;
-            const pieces = Math.max(
-                1,
-                Math.ceil(curve.length / FLOW_PIECE_LENGTH),
+            const gradient = createFlowGradient(
+                piece.p0,
+                piece.p3,
+                curve.startLength + localStart,
+                curve.startLength + localEnd,
+                projection.totalLength,
+                phase,
+                base,
+                highlight,
+                highlightRatio,
             );
-            for (let index = 0; index < pieces; index += 1) {
-                const localStart = Math.max(
-                    visibleStart,
-                    (curve.length * index) / pieces,
-                );
-                const localEnd = Math.min(
-                    visibleEnd,
-                    (curve.length * (index + 1)) / pieces,
-                );
-                if (localEnd <= localStart + MIN_DRAWABLE_LENGTH) continue;
-                const piece = cubicBetween(
-                    curve,
-                    cubicTAtLength(curve, localStart),
-                    cubicTAtLength(curve, localEnd),
-                );
-                const gradient = createFlowGradient(
-                    piece.p0,
-                    piece.p3,
-                    curve.startLength + localStart,
-                    curve.startLength + localEnd,
-                    projection.totalLength,
-                    phase,
-                    base,
-                    highlight,
-                    highlightRatio,
-                );
-                if (!gradient) continue;
-                activeContext.beginPath();
-                activeContext.moveTo(piece.p0.x, piece.p0.y);
-                activeContext.bezierCurveTo(
-                    piece.p1.x,
-                    piece.p1.y,
-                    piece.p2.x,
-                    piece.p2.y,
-                    piece.p3.x,
-                    piece.p3.y,
-                );
-                activeContext.strokeStyle = gradient;
-                activeContext.stroke();
-            }
+            if (!gradient) return;
+            activeContext.beginPath();
+            activeContext.moveTo(piece.p0.x, piece.p0.y);
+            activeContext.bezierCurveTo(
+                piece.p1.x,
+                piece.p1.y,
+                piece.p2.x,
+                piece.p2.y,
+                piece.p3.x,
+                piece.p3.y,
+            );
+            activeContext.strokeStyle = gradient;
+            activeContext.stroke();
         });
     };
 
@@ -434,12 +422,21 @@ export const createBehaviorCanvasLayer = (
             const curves = line.smooth
                 ? buildProjectedCurves(points, Boolean(line.closed))
                 : [];
+            const bounds = L.bounds([...points, ...curves.flatMap(curve => [curve.p1, curve.p2])]);
+            const flowPieces = line.flow ? curves.flatMap(curve => {
+                const count = Math.max(1, Math.ceil(curve.length / FLOW_PIECE_LENGTH));
+                return Array.from({ length: count }, (_, index) => {
+                    const start = curve.length * index / count, end = curve.length * (index + 1) / count;
+                    return { curve, start, end, path: cubicBetween(curve, cubicTAtLength(curve, start), cubicTAtLength(curve, end)) };
+                });
+            }) : undefined;
             if (line.smooth && curves.length > 0) {
                 const totalLength = curves.reduce(
                     (total, curve) => total + curve.length,
                     0,
                 );
                 return {
+                    bounds, flowPieces,
                     points,
                     cumulativeLengths: [0, totalLength],
                     totalLength,
@@ -452,17 +449,40 @@ export const createBehaviorCanvasLayer = (
                 totalLength += points[index - 1].distanceTo(points[index]);
                 cumulativeLengths.push(totalLength);
             }
-            return { points, cumulativeLengths, totalLength };
+            return { points, cumulativeLengths, totalLength, bounds, flowPieces };
         });
         projectedCircles = scene.circles.map((circle) =>
             projectPoint(circle.point),
         );
         projectedScene = scene;
+        projectedZoom = map.getZoom(); pixelOrigin = map.getPixelOrigin().clone();
         projectionDirty = false;
+    };
+
+    const cancelFrame = () => {
+        if (animationFrame !== null) frameWindow?.cancelAnimationFrame(animationFrame);
+        animationFrame = null; frameWindow = null;
+    };
+    const syncDocument = () => {
+        const next = canvas?.ownerDocument ?? null;
+        if (next === visibilityDocument) return;
+        cancelFrame();
+        visibilityDocument?.removeEventListener('visibilitychange', visibilityChanged);
+        visibilityDocument = next;
+        visibilityDocument?.addEventListener('visibilitychange', visibilityChanged);
     };
 
     const draw = (now = performance.now()) => {
         if (!map || !canvas || !context) return;
+        syncDocument();
+        if (!scene.lines.length && !scene.circles.length) {
+            if (canvas.width !== 1 || canvas.height !== 1) {
+                canvas.width = 1; canvas.height = 1;
+                canvas.style.width = '1px'; canvas.style.height = '1px';
+            }
+            painted = false;
+            return;
+        }
         const animatingZoom = Boolean(
             (map as unknown as { _animatingZoom?: boolean })._animatingZoom,
         );
@@ -479,8 +499,21 @@ export const createBehaviorCanvasLayer = (
         });
         const activeCanvas = canvas;
         const activeContext = context;
+        const dynamicOnly = painted && !projectionDirty && !animationActive && flowActive && !hoverAmounts.size;
         if (projectionDirty) resize();
         ensureProjection();
+        // Static pixels survive a flow tick; only regions touched by animated routes change.
+        activeContext.save();
+        if (dynamicOnly) {
+            activeContext.beginPath();
+            scene.lines.forEach((line, index) => {
+                const bounds = projectedLines[index]?.bounds;
+                if (!line.flow || !bounds?.isValid()) return;
+                const min = bounds.min!, max = bounds.max!, padding = line.weight + 2;
+                activeContext.rect(min.x - padding, min.y - padding, max.x - min.x + padding * 2, max.y - min.y + padding * 2);
+            });
+            activeContext.clip();
+        }
         activeContext.clearRect(
             0,
             0,
@@ -542,20 +575,38 @@ export const createBehaviorCanvasLayer = (
             }
             activeContext.restore();
         });
+        activeContext.restore(); painted = true;
+    };
+
+    const visibleFlow = () => {
+        if (!map || !canvas || canvas.ownerDocument.hidden) return false;
+        const min = map.containerPointToLayerPoint([0, 0]).subtract(origin);
+        const view = L.bounds(min, min.add(map.getSize()));
+        return scene.lines.some((line, index) => {
+            const bounds = projectedLines[index]?.bounds;
+            if (!line.flow || !line.smooth || !bounds?.isValid()) return false;
+            const padding = L.point(line.weight + 8, line.weight + 8);
+            return L.bounds(bounds.min!.subtract(padding), bounds.max!.add(padding)).intersects(view);
+        });
     };
 
     const schedule = () => {
-        if (animationFrame !== null) return;
+        syncDocument();
+        const view = canvas?.ownerDocument.defaultView;
+        if (!view || animationFrame !== null || canvas?.ownerDocument.hidden) return;
         const token = generation;
-        animationFrame = window.requestAnimationFrame((now) => {
-            animationFrame = null;
+        frameWindow = view;
+        animationFrame = view.requestAnimationFrame(() => {
+            animationFrame = null; frameWindow = null;
             if (token !== generation) return;
+            // PiP documents have their own time origin; keep the scene's clock continuous.
+            const now = performance.now();
             draw(now);
             if ([...hoverAmounts].some(([index, amount]) => amount !== (index === hoveredLine ? 1 : 0))) {
                 schedule();
             } else if (animationActive && now - startedAt < animationEndAt) {
                 schedule();
-            } else if (animationActive || flowActive) {
+            } else if (animationActive || (flowActive && visibleFlow())) {
                 animationActive = false;
                 schedule();
             } else {
@@ -569,6 +620,18 @@ export const createBehaviorCanvasLayer = (
     };
 
     const redraw = () => {
+        syncDocument();
+        if (!map || !canvas || (!scene.lines.length && !scene.circles.length)) return;
+        const min = map.containerPointToLayerPoint([0, 0]), max = min.add(map.getSize());
+        // A pan translates the Leaflet pane itself. Reuse the projected bitmap
+        // until the viewport leaves its padding or its coordinate space changes.
+        if (!projectionDirty && viewportSize.equals(map.getSize()) && projectedZoom === map.getZoom() && pixelOrigin.equals(map.getPixelOrigin())
+            && pixelRatio === (canvas.ownerDocument.defaultView?.devicePixelRatio || 1)
+            && min.x >= origin.x && min.y >= origin.y
+            && max.x <= origin.x + canvas.width / pixelRatio && max.y <= origin.y + canvas.height / pixelRatio) {
+            if (animationActive || (flowActive && visibleFlow())) schedule();
+            return;
+        }
         projectionDirty = true;
         // Leaflet emits a final `move` immediately after it clears its private
         // `_animatingZoom` flag and before `zoomend`.  Drop the previous
@@ -588,7 +651,15 @@ export const createBehaviorCanvasLayer = (
             baseCenter = map.getCenter();
             baseZoom = map.getZoom();
         }
-        if (animationFrame === null) draw();
+        if (animationFrame === null) {
+            draw();
+            if (animationActive || (flowActive && visibleFlow())) schedule();
+        }
+    };
+    const visibilityChanged = () => {
+        if (canvas?.ownerDocument.hidden && animationFrame !== null) {
+            cancelFrame();
+        } else if (animationActive || flowActive) schedule();
     };
     const animateZoom = (event: { center: L.LatLng; zoom: number }) => {
         if (!map || !canvas || !baseCenter) return;
@@ -617,6 +688,7 @@ export const createBehaviorCanvasLayer = (
             baseZoom = map.getZoom();
         }
         draw();
+        if (animationActive || (flowActive && visibleFlow())) schedule();
     };
     const clearHover = () => {
         if (hoveredLine === -1) return;
@@ -696,6 +768,7 @@ export const createBehaviorCanvasLayer = (
         nextMap.on('move resize viewreset', redraw);
         nextMap.on('zoomanim', animateZoom);
         nextMap.on('zoomend', finishZoom);
+        syncDocument();
         if (onWallHover) {
             nextMap.on('mousemove', hoverWall);
             nextMap.on('movestart zoomstart click contextmenu', clearHover);
@@ -710,13 +783,13 @@ export const createBehaviorCanvasLayer = (
         nextMap.off('movestart zoomstart click contextmenu', clearHover);
         nextMap.getContainer().removeEventListener('mouseleave', clearHover);
         generation += 1;
-        if (animationFrame !== null)
-            window.cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+        cancelFrame();
         nextMap.off('move resize viewreset', redraw);
         nextMap.off('zoomanim', animateZoom);
         nextMap.off('zoomend', finishZoom);
         const retiringCanvas = canvas;
+        visibilityDocument?.removeEventListener('visibilitychange', visibilityChanged);
+        visibilityDocument = null;
         const fade = onWallHover && retiringCanvas?.animate?.([{ opacity: 1 }, { opacity: 0 }], {
             duration: 180, fill: 'forwards', easing: 'ease-out',
         });
@@ -725,6 +798,7 @@ export const createBehaviorCanvasLayer = (
         hoverAmounts.clear();
         canvas = null;
         context = null;
+        if (unlockBubbleImage) unlockBubbleImage.onload = null;
         unlockBubbleImage = null;
         map = null;
         animationActive = false;
@@ -732,15 +806,15 @@ export const createBehaviorCanvasLayer = (
         projectedScene = null;
         projectedLines = [];
         projectedCircles = [];
+        painted = false;
         return layer;
     };
     layer.setScene = (nextScene, animate, showFlow) => {
         clearHover();
         generation += 1;
-        if (animationFrame !== null)
-            window.cancelAnimationFrame(animationFrame);
-        animationFrame = null;
+        cancelFrame();
         scene = nextScene;
+        painted = false;
         hoverAmounts.clear();
         if (onWallHover && !wallsVisible && scene.lines.length > 0) {
             wallsVisible = true;

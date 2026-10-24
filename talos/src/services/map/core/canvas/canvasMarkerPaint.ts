@@ -56,7 +56,7 @@ export class MarkerPainter {
       asset = { image, ready: false };
       this.assets.set(url, asset);
       const markReady = () => {
-        if (this.disposed) return;
+        if (this.disposed || this.assets.get(url) !== asset) return;
         asset!.ready = true;
         this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
         this.invalidate(url);
@@ -67,13 +67,13 @@ export class MarkerPainter {
         void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(markReady);
       };
       image.onerror = () => {
-        if (this.disposed || !this.require2D) return;
+        if (this.disposed || this.assets.get(url) !== asset || !this.require2D) return;
         // Preserve existing URL support when a host image does not grant CORS texture access.
         const fallback = new Image(); asset!.image = fallback;
         fallback.onload = () => {
-          if (this.disposed) return;
+          if (this.disposed || this.assets.get(url) !== asset) return;
           void (fallback.decode?.() ?? Promise.resolve()).catch(() => {}).then(() => {
-            if (this.disposed) return;
+            if (this.disposed || this.assets.get(url) !== asset) return;
             asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
             this.require2D?.(); this.invalidate(url);
           });
@@ -270,6 +270,16 @@ export class MarkerPainter {
   }
   dynamic(art: MarkerArt, motion: MarkerMotion, now: number): Sprite { return this.animation(art, motion).render(now); }
   preload(url: string) { this.asset(url); }
+  retainAssets(urls: Set<string>): void {
+    urls.add(this.hoverDecoration); urls.add(this.selectedDecoration);
+    for (const [url, asset] of this.assets) if (!urls.has(url)) {
+      asset.image.onload = asset.image.onerror = null;
+      this.assets.delete(url);
+    }
+    // Keep version identities across eviction so a retained sprite cannot be
+    // mistaken for fresh artwork after the same URL is decoded again.
+    this.sprites.clear(); this.shared?.clear(); this.framePulses.clear();
+  }
   snapshot(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
     // A disappearing representation may be mid-hover. Never cache that transient pose as rest.
     const source = this.dynamic(art, motion, now), canvas = document.createElement('canvas');
