@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DefaultFilterIcon from '@/assets/logos/filter.svg?react';
 import styles from '@/pages/markFilter/markFilter.module.scss';
-import { MarkVisibilityContext } from '@/pages/markFilter/visibilityContext';
 import { useTranslateUI } from '@/locale';
 import { useMarkFilterExpanded, useToggleMarkFilterExpanded, useLayoutVersion } from '@/store/uiPrefs';
 import { AnimatePresence, motion, useMotionValue, useDragControls } from 'motion/react';
 import { animate } from 'motion';
 import { useMarkFilterDragContext } from '@/pages/markFilter/reorderCore';
 import { commitMarkerFilter } from '@/store/history';
+import { useSidebarWindow } from '@/pages/sideBar/windowStore';
 import ContextMenu, { type ContextMenuGroup } from '@/component/contextMenu/ContextMenu';
 
 type FilterContextMenuTarget = {
@@ -30,6 +30,7 @@ interface MarkFilterProps {
     binderMode?: boolean;
     // Pre-computed from parent so initial render has the correct empty state (prevents CLS)
     initialEmpty?: boolean;
+    itemCount: number;
     variant?: 'versionNew';
     reorderable?: boolean;
     typeKeys: string[];
@@ -46,11 +47,13 @@ const MarkFilter = ({
     columns = 2,
     binderMode = false,
     initialEmpty = false,
+    itemCount,
     variant,
     reorderable = true,
     typeKeys,
 }: MarkFilterProps) => {
     const t = useTranslateUI();
+    const windowStore = useSidebarWindow();
     const isExpanded = useMarkFilterExpanded(idKey);
     const layoutVersion = useLayoutVersion();
     const toggleExpandByKey = useToggleMarkFilterExpanded();
@@ -66,28 +69,7 @@ const MarkFilter = ({
     // prevent header click toggle when a drag occurred
     const didDragRef = useRef(false);
 
-    // visibility state reported by children
-    const [hasReceivedFirstReport, setHasReceivedFirstReport] = useState(false);
-    const visibleIds = useRef(new Set<string>());
-    const [visibleCount, setVisibleCount] = useState(0);
-    const visibilityQueued = useRef(false);
-    const visibilityAlive = useRef(true);
-    useEffect(() => { visibilityAlive.current = true; return () => { visibilityAlive.current = false; }; }, []);
-    const report = useCallback((id: string, visible: boolean) => {
-        if (visible) visibleIds.current.add(id); else visibleIds.current.delete(id);
-        if (visibilityQueued.current) return;
-        visibilityQueued.current = true;
-        queueMicrotask(() => {
-            visibilityQueued.current = false;
-            if (!visibilityAlive.current) return;
-            setHasReceivedFirstReport(true);
-            setVisibleCount(visibleIds.current.size);
-        });
-    }, []);
-
-    // Use pre-computed initialEmpty before any child has reported; switch to live data after.
-    // This ensures CSS order is correct on the very first render, preventing CLS.
-    const isEmpty = hasReceivedFirstReport ? visibleCount === 0 : initialEmpty;
+    const isEmpty = initialEmpty;
 
     // Auto-collapse only on transitions (empty→non-empty and vice versa).
     // Initialized from pre-computed value so no state change is needed on first render.
@@ -114,7 +96,6 @@ const MarkFilter = ({
         toggleExpandByKey(idKey);
     };
 
-    const contextValue = useMemo(() => ({ report }), [report]);
     const closeContextMenu = useCallback(() => {
         setContextMenuTarget((current) => {
             current?.restoreFocus?.focus({ preventScroll: true });
@@ -156,8 +137,14 @@ const MarkFilter = ({
         ],
     }], [idKey, t, typeKeys]);
 
-    // lazy render: don't render children of auto-collapsed empty filters until first explicit expand
-    const [hasEverExpanded, setHasEverExpanded] = useState(() => isExpanded && !initialEmpty);
+    // Keep the collapsing tree for the original transition, then release its subscriptions.
+    const [retained, setRetained] = useState(effectiveExpanded);
+    useEffect(() => {
+        if (effectiveExpanded) { setRetained(true); return undefined; }
+        const timer = window.setTimeout(() => setRetained(false), 500);
+        return () => window.clearTimeout(timer);
+    }, [effectiveExpanded]);
+    const shouldRenderChildren = effectiveExpanded || retained;
     const [isMounted, setIsMounted] = useState(false);
     // Suppress layout animation during initial hydration/registration phase to prevent CLS.
     // Double-rAF ensures all initial register() effects have settled before spring is enabled.
@@ -175,14 +162,6 @@ const MarkFilter = ({
         };
     }, []);
     
-    useEffect(() => {
-        if (effectiveExpanded && !hasEverExpanded) {
-            setHasEverExpanded(true);
-        }
-    }, [effectiveExpanded, hasEverExpanded]);
-
-    const shouldRenderChildren = hasEverExpanded || binderMode;
-
     // register for reorder measurements
     useEffect(() => {
         if (!reorderable) return undefined;
@@ -228,14 +207,15 @@ const MarkFilter = ({
     ].filter(Boolean).join(' ');
 
     return (
-    <MarkVisibilityContext.Provider value={contextValue}>
+    <>
     <motion.div
             ref={containerRef}
             data-category={dataCategory} // Added data-category attribute for UserGuide selection
             data-filter-variant={variant}
             className={containerClassName}
             layout
-            layoutDependency={`${effectiveExpanded}:${isEmpty}:${orderIndex}:${visibleCount}:${columns}:${binderMode}:${reorderable}:${variant}:${title}:${layoutVersion}`}
+            onLayoutAnimationComplete={() => windowStore?.measure(true)}
+            layoutDependency={`${effectiveExpanded}:${isEmpty}:${itemCount}:${orderIndex}:${columns}:${binderMode}:${reorderable}:${variant}:${title}:${layoutVersion}`}
             style={{ y, zIndex: isSelfDragging ? 1000 : 1, order: reorderable ? (isEmpty ? 1001 : 1) + orderIndex : -1, touchAction: 'pan-y' }}
             drag={isMounted && reorderable ? "y" : false}
             dragControls={isMounted && reorderable ? dragControls : undefined}
@@ -332,7 +312,7 @@ const MarkFilter = ({
                 />
             )}
         </AnimatePresence>
-        </MarkVisibilityContext.Provider>
+    </>
     );
 };
 

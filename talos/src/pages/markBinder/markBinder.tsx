@@ -1,18 +1,17 @@
-import { memo, useMemo, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useMemo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from '@/pages/markBinder/markBinder.module.scss';
-import type { BinderGroup } from '@/data/marker/binder';
+import type { BinderItem } from '@/pages/sideBar/model';
 import { getItemIconUrl } from '@/services/assets/resource';
-import { useTranslateGame } from '@/locale';
-import { useMultiRegionMarkerCount, useFilter, useSearchString, useMarkerStore } from '@/store/marker';
+import { useMarkerStore } from '@/store/marker';
 import MarkSelector from '@/pages/markSelector/markSelector';
-import { MarkVisibilityContext } from '@/pages/markFilter/visibilityContext';
+import { SelectorRows } from '@/pages/sideBar/sidebarWindow';
 import { useLayoutVersion } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
 
 interface MarkBinderProps {
-    group: BinderGroup;
+    item: BinderItem;
     mobile?: boolean;
 }
 
@@ -20,14 +19,10 @@ type StyleVars = CSSProperties & {
     '--progress-percentage'?: string;
 };
 
-const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
-    const tGame = useTranslateGame();
-    const filter = useFilter();
+const MarkBinder = ({ item, mobile = false }: MarkBinderProps) => {
+    const { group, name: displayName, count: { total: totalTotal, collected: totalCollected }, children: sortedRenderedTypes, collapseChildren: shouldCollapseChildren, visible: showFilter } = item;
     const layoutVersion = useLayoutVersion();
     const currentRegion = useRegion(state => state.currentRegionKey);
-    const searchString = useSearchString();
-    const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
-
     const iconUrl = useMemo(
         () => group.sharedKey === 'rsch'
             ? getItemIconUrl('investigate', 'webp')
@@ -35,65 +30,22 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
         [group.dropKey, group.sharedKey],
     );
 
-    const titleKey = `${group.titleKeyPrefix ?? 'markerType.drop'}.${group.dropKey}`;
-    const translatedTitle = tGame(titleKey) as string | undefined;
-    const displayName =
-        typeof translatedTitle === 'string' && translatedTitle.trim().length > 0
-            ? translatedTitle
-            : group.dropName;
-
-    const typeKeys = useMemo(() => group.types.map((t) => t.key), [group.types]);
-    const counts = useMultiRegionMarkerCount(typeKeys);
-    const totalCollected = counts.reduce((a, c) => a + c.collected, 0);
-    const totalTotal = counts.reduce((a, c) => a + c.total, 0);
-    const binderMatched = Boolean(
-        normalizedSearch &&
-        (group.dropKey.toLowerCase().includes(normalizedSearch) || displayName.toLowerCase().includes(normalizedSearch)),
-    );
-
-    const renderedTypes = useMemo(
-        () => group.types.filter((typeInfo, index) => {
-            const count = counts[index];
-            if (!count || count.total <= 0) return false;
-            if (!normalizedSearch || binderMatched) return true;
-
-            const typeDisplayName = String(tGame(`markerType.key.${typeInfo.key}`) ?? '').toLowerCase();
-            return typeInfo.key.toLowerCase().includes(normalizedSearch) || typeDisplayName.includes(normalizedSearch);
-        }),
-        [group.types, counts, normalizedSearch, binderMatched, tGame],
-    );
-
-    // Completed selectors float to the top; order is stable within each tier
-    const sortedRenderedTypes = useMemo(() => {
-        return [...renderedTypes].sort((a, b) => {
-            const aIdx = group.types.indexOf(a);
-            const bIdx = group.types.indexOf(b);
-            const aC = counts[aIdx];
-            const bC = counts[bIdx];
-            const aComplete = Boolean(aC && aC.total > 0 && aC.collected >= aC.total);
-            const bComplete = Boolean(bC && bC.total > 0 && bC.collected >= bC.total);
-            if (aComplete === bComplete) return 0;
-            return aComplete ? -1 : 1;
-        });
-    }, [renderedTypes, group.types, counts]);
-
-    // During search we still render a single matching selector instead of collapsing.
-    const shouldCollapseChildren = !mobile && searchString === '' && renderedTypes.length <= 1;
-
-    const showFilter = useMemo(() => {
-        if (!totalTotal) return false;
-        if (!normalizedSearch) return true;
-        return (
-            group.dropKey.toLowerCase().includes(normalizedSearch) ||
-            displayName.toLowerCase().includes(normalizedSearch) ||
-            renderedTypes.length > 0
-        );
-    }, [totalTotal, normalizedSearch, group.dropKey, displayName, renderedTypes.length]);
-
-    const ctx = useContext(MarkVisibilityContext);
-    const idRef = useRef<string>(group.dropKey);
+    const typeKeys = useMemo(() => group.types.map(type => type.key), [group.types]);
+    const allActive = useMarkerStore(state => typeKeys.length > 0 && typeKeys.every(key => state.filter.includes(key)));
     const [layoutAnimReady, setLayoutAnimReady] = useState(false);
     const layoutVersionRef = useRef(layoutVersion);
+    const renderedSignature = sortedRenderedTypes.map(({ typeInfo }) => typeInfo.key).join(',');
+    const layoutSignature = `${currentRegion}:${layoutVersion}:${displayName}:${renderedSignature}`;
+    const previousLayout = useRef(layoutSignature);
+    const [animating, setAnimating] = useState(false);
+    const layoutChanged = previousLayout.current !== layoutSignature;
+    useLayoutEffect(() => {
+        if (previousLayout.current === layoutSignature) return undefined;
+        previousLayout.current = layoutSignature;
+        setAnimating(true);
+        const timer = window.setTimeout(() => setAnimating(false), 1000);
+        return () => window.clearTimeout(timer);
+    }, [layoutSignature]);
 
     const armLayoutAnimation = useCallback(() => {
         let raf1 = 0;
@@ -121,14 +73,6 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
         return armLayoutAnimation();
     }, [armLayoutAnimation, layoutVersion]);
 
-    useEffect(() => {
-        const stableId = idRef.current;
-        ctx?.report(stableId, showFilter);
-        return () => ctx?.report(stableId, false);
-    }, [ctx, showFilter]);
-
-    // Direct computation — no useMemo, always reflects the latest filter in the same render pass
-    const allActive = typeKeys.length > 0 && typeKeys.every((k) => filter.includes(k));
     const isComplete = totalTotal > 0 && totalCollected >= totalTotal;
 
     // Binder selection has highest priority: can both select and deselect all types
@@ -142,7 +86,6 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
     if (!showFilter) return null;
 
     const progressPct = totalTotal > 0 ? Math.round((totalCollected / totalTotal) * 100) : 0;
-    const renderedSignature = sortedRenderedTypes.map((typeInfo) => typeInfo.key).join(',');
 
     return (
         // All visual effects + click handler on the entire wrap
@@ -162,7 +105,7 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
                     <img
                         src={iconUrl}
                         alt={displayName}
-                        loading='lazy'
+                        loading='eager'
                         decoding='async'
                         draggable="false"
                         onError={(e) => {
@@ -176,18 +119,21 @@ const MarkBinder = ({ group, mobile = false }: MarkBinderProps) => {
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
             {!shouldCollapseChildren && (
                 <div className={`${styles.binderChildren} ${mobile ? styles.mobileChildren : ''}`} onClick={(e) => e.stopPropagation()}>
-                    {sortedRenderedTypes.map((typeInfo, index) => (
+                    {<SelectorRows items={sortedRenderedTypes} columns={mobile ? 2 : 1} compact renderItem={(child, index, style) => (
                         <motion.div
-                            key={typeInfo.key}
-                            layout={layoutAnimReady}
+                            key={child.typeInfo.key}
+                            style={style}
+                            data-sidebar-row={style.gridRow ? Number(style.gridRow) - 1 : undefined}
+                            data-sidebar-index={index}
+                            layout={layoutAnimReady && (layoutChanged || animating)}
                             // Region changes also move retained rows when other binders
                             // disappear or change columns, even if these keys stay the same.
                             layoutDependency={`${currentRegion}:${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
                             transition={{ type: 'spring', stiffness: 400, damping: 38 }}
                         >
-                            <MarkSelector typeInfo={typeInfo} />
+                            <MarkSelector item={child} />
                         </motion.div>
-                    ))}
+                    )} />}
                 </div>
             )}
         </div>

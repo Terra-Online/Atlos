@@ -48,6 +48,7 @@ export const useScopedBoxSelection = ({
                 .filter(({ keys }) => keys[0].length > 0)
         ),
         syncTarget: ({ element }, active) => {
+            if (!element) return;
             if (activeAttribute) element.setAttribute(activeAttribute, active ? 'true' : 'false');
             element.setAttribute('aria-pressed', active ? 'true' : 'false');
         },

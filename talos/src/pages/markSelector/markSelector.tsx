@@ -1,27 +1,20 @@
-import { memo, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import styles from '@/pages/markSelector/markSelector.module.scss';
 import { getItemIconUrl } from '@/services/assets/resource';
-import { useTranslateGame } from '@/locale';
-import { MarkVisibilityContext } from '@/pages/markFilter/visibilityContext';
-import {
-    useMarkerStore,
-    useRegionMarkerCount,
-    useSearchString,
-} from '@/store/marker.ts';
+import type { SelectorItem } from '@/pages/sideBar/model';
+import { useMarkerStore } from '@/store/marker';
 import { useLayoutVersion } from '@/store/uiPrefs';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import { measureSelector } from '@/pages/markSelector/measureQueue';
 
 interface MarkSelectorProps {
-    typeInfo: { key: string; icon?: string; category?: { main?: string; sub?: string }; main?: string; sub?: string };
-    countOverride?: {
-        total: number;
-        collected: number;
-    };
+    item: SelectorItem;
+    style?: CSSProperties;
+    index?: number;
 }
 
-const normalizeBinderKey = (value: string): string =>
-    value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+const measuredNames = new WeakMap<Document, Map<string, { truncated: boolean; height?: number }>>();
 
 let zCounter = 80;
 const nextZ = () => {
@@ -29,13 +22,13 @@ const nextZ = () => {
     return zCounter;
 };
 
-const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
+const MarkSelector = ({ item, style, index }: MarkSelectorProps) => {
     type StyleVars = CSSProperties & {
         '--progress-percentage'?: string;
         '--expanded-height'?: string;
     };
     const ELEVATE_FALLBACK_MS = 500; // equal to the CSS transition duration
-    const tGame = useTranslateGame();
+    const { typeInfo, count: cnt, name: displayName } = item;
 
     // icon url: prefer explicit icon field (files dataset uses icon name, not type key)
     const iconUrl = useMemo<string | null>(() => {
@@ -43,41 +36,12 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
         return iconKey ? String(getItemIconUrl(iconKey, 'webp')) : null;
     }, [typeInfo?.key, typeInfo?.icon]);
 
-    // i18n display name
-    const displayName: string = String(tGame(`markerType.key.${typeInfo.key}`) ?? '');
-    const binderSearchTokens = useMemo(() => {
-        const source = typeInfo as typeof typeInfo & { ctgr?: string; rsch?: string; drop?: string };
-        const ctgrRaw = typeof source.ctgr === 'string' ? source.ctgr.trim() : '';
-        const ctgrKey = normalizeBinderKey(ctgrRaw);
-        const ctgrLabelRaw = ctgrKey ? tGame(`markerType.FileCtgr.${ctgrKey}`) : '';
-        const ctgrLabel = typeof ctgrLabelRaw === 'string' ? ctgrLabelRaw.trim() : '';
-
-        const rschRaw = typeof source.rsch === 'string' ? source.rsch.trim() : '';
-        const rschKey = normalizeBinderKey(rschRaw);
-        const rschLabelRaw = rschKey ? tGame(`markerType.researchId.${rschKey}`) : '';
-        const rschLabel = typeof rschLabelRaw === 'string' ? rschLabelRaw.trim() : '';
-
-        const dropRaw = typeof source.drop === 'string' ? source.drop.trim() : '';
-        const dropKey = normalizeBinderKey(dropRaw);
-        const dropLabelRaw = dropKey ? tGame(`markerType.drop.${dropKey}`) : '';
-        const dropLabel = typeof dropLabelRaw === 'string' ? dropLabelRaw.trim() : '';
-
-        return [ctgrRaw, ctgrKey, ctgrLabel, rschRaw, rschKey, rschLabel, dropRaw, dropKey, dropLabel]
-            .map((token) => token.toLowerCase())
-            .filter(Boolean);
-    }, [tGame, typeInfo]);
-
     // stores
     const isActive = useMarkerStore((state) => state.filter.includes(typeInfo.key));
     const handleSwitchFilter = useCallback(
         () => useMarkerStore.getState().switchFilter(typeInfo.key),
         [typeInfo.key],
     );
-    const regionCount = useRegionMarkerCount(typeInfo?.key);
-    const cnt = countOverride ?? regionCount;
-    const searchString = useSearchString();
-    const normalizedSearch = useMemo(() => searchString.toLowerCase(), [searchString]);
-    
     // Check if collection is complete (100% progress)
     const isComplete = useMemo(() => {
         return cnt.total > 0 && cnt.collected >= cnt.total;
@@ -90,43 +54,31 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
     const elevateTimer = useRef<number | null>(null);
     const [expandedHeightPx, setExpandedHeightPx] = useState<number | null>(null);
     const layoutVersion = useLayoutVersion();
+    const ownerDocument = useAppDocument();
 
-    // visibility in current search/filter
-    const showFilter = useMemo<boolean>(
-        () =>
-            Boolean(cnt.total) &&
-            (!normalizedSearch ||
-                typeInfo.key.toLowerCase().includes(normalizedSearch) ||
-                displayName.toLowerCase().includes(normalizedSearch) ||
-                binderSearchTokens.some((token) => token.includes(normalizedSearch))),
-        [cnt.total, normalizedSearch, displayName, typeInfo.key, binderSearchTokens],
-    );
-
-    // Visibility reporting to parent context (stable id = key)
-    const ctx = useContext(MarkVisibilityContext);
-    const idRef = useRef<string>(typeInfo?.key);
-    useEffect(() => {
-        const stableId = idRef.current;
-        ctx?.report(stableId, !!showFilter);
-        return () => ctx?.report(stableId, false);
-    }, [ctx, showFilter]);
-
-    // detect truncation once when displayName changes, and compute expanded height
-    // 使用双 rAF 确保布局稳定后再测量，避免强制同步布局开销
+    // Measure admitted names in bounded read/write batches; font commits invalidate the cache.
     useEffect(() => {
         const el = nameRef.current;
         const expandedEl = expandedRef.current;
         if (!el) return;
         return measureSelector(() => {
             if (!el.isConnected) return undefined;
-            const truncated = el.scrollWidth > el.clientWidth;
-            const height = expandedEl?.scrollHeight;
+            let cache = measuredNames.get(el.ownerDocument);
+            if (!cache) { cache = new Map(); measuredNames.set(el.ownerDocument, cache); }
+            const key = `${layoutVersion}:${displayName}:${el.clientWidth}`;
+            let result = cache.get(key);
+            if (!result) {
+                result = { truncated: el.scrollWidth > el.clientWidth, height: expandedEl?.scrollHeight };
+                cache.set(key, result);
+                if (cache.size > 256) cache.delete(cache.keys().next().value!);
+            }
+            const { truncated, height } = result;
             return () => {
                 setIsTruncated(truncated);
                 if (height && Number.isFinite(height)) setExpandedHeightPx(height);
             };
-        });
-    }, [displayName, layoutVersion]);
+        }, el.ownerDocument.defaultView ?? window, el);
+    }, [displayName, layoutVersion, ownerDocument]);
 
     // clean elevate fallback timer, avoid setState after unmount
     useEffect(() => () => {
@@ -136,9 +88,9 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
         }
     }, []);
 
-    if (!showFilter) return null;
+    if (!item.visible) return null;
     return (
-        <div className={styles.markSkeleton}>
+        <div className={styles.markSkeleton} style={style} data-sidebar-index={index} data-sidebar-row={style?.gridRow ? Number(style.gridRow) - 1 : undefined}>
             <div
                 className={`${styles.markItem} ${isActive ? styles.active : ''} ${isComplete ? styles.completed : ''}`}
                 data-key={typeInfo.key}
@@ -194,7 +146,7 @@ const MarkSelector = ({ typeInfo, countOverride }: MarkSelectorProps) => {
                         <img
                             src={iconUrl}
                             alt={displayName}
-                            loading='lazy'
+                            loading='eager'
                             decoding='async'
                             draggable={'false'}
                         />

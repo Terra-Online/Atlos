@@ -9,53 +9,17 @@ import SearchMobile from '@/pages/search/search.mobile';
 import FilterListMobile from '@/pages/filterList/filterList.mobile';
 import Drawer from '@/component/drawer/drawer';
 import { Trigger } from '@/component/trigger/trigger';
-import MarkFilter from '@/pages/markFilter/markFilter';
-import filterStyles from '@/pages/markFilter/markFilter.module.scss';
-import { MarkFilterDragProvider } from '@/pages/markFilter/reorderContext';
-import MarkSelector from '@/pages/markSelector/markSelector';
-import MarkBinder from '@/pages/markBinder/markBinder';
-import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
-import sidebarStyles from '@/component/shared/siteShell/sideBar.module.scss';
+import { SidebarWindow } from './sidebarWindow';
+import { SidebarFilters, categoryCount } from './sidebarFilters';
 import Detail from '@/pages/detail/detail';
 
-// Category icons
-import BossIcon from '@/assets/images/category/boss.svg?react';
-import MobIcon from '@/assets/images/category/mob.svg?react';
-import NaturalIcon from '@/assets/images/category/natural.svg?react';
-import ExplorationIcon from '@/assets/images/category/exploration.svg?react';
-import ValuableIcon from '@/assets/images/category/valuable.svg?react';
-import CollectionIcon from '@/assets/images/category/collection.svg?react';
-import CombatIcon from '@/assets/images/category/combat.svg?react';
-import NpcIcon from '@/assets/images/category/npc.svg?react';
-import FacilityIcon from '@/assets/images/category/facility.svg?react';
-import ArchivesIcon from '@/assets/images/category/archives.svg?react';
-
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_DICT, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
-import { VERSION_NEW_FILTER_GROUPS, useVersionNewMarkerCounts } from '@/data/marker/versionNew';
-import useRegion from '@/store/region';
-import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
+import { MARKER_TYPE_DICT } from '@/data/marker';
+import { useTranslateUI } from '@/locale';
 import { useFilter, useMarkerStore } from '@/store/marker';
 import { useTriggerCluster, useTriggerBoundary, useTriggerlabelName, useSetTriggerCluster, useSetTriggerBoundary, useSetTriggerlabelName, useSetMobileDrawerSnapIndex, useMobileDrawerSnapIndex, useUiPrefsHydrated } from '@/store/uiPrefs';
 import { useAppViewport } from '@/platform/device';
-import { preloadSidebarIcons } from '@/pages/sideBar/sidebarIconPrefetch';
 import { useDividerDrag } from './useDividerDrag';
 import { useSidebarPreparation } from './useSidebarPreparation';
-
-const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
-    boss: BossIcon,
-    mob: MobIcon,
-    natural: NaturalIcon,
-    valuable: ValuableIcon,
-    collection: CollectionIcon,
-    archives: ArchivesIcon,
-    combat: CombatIcon,
-    npc: NpcIcon,
-    facility: FacilityIcon,
-    exploration: ExplorationIcon,
-};
-
-const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
-const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
 
 interface SideBarProps {
   currentRegion: null;
@@ -69,26 +33,9 @@ const TOP_ROW_MIN_SEARCH_PX = 48;
 
 const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => {
   const t = useTranslateUI();
-  const tGame = useTranslateGame();
-  const locale = useLocale();
-  const isCjkLocale = /^(zh|ja|ko)(-|$)/i.test(locale);
-
-  const versionNewCounts = useVersionNewMarkerCounts();
-
   const { height: vh } = useAppViewport();
   const filterList = useFilter();
   const searchString = useMarkerStore((s) => s.searchString);
-  const currentRegion = useRegion((s) => s.currentRegionKey);
-  const emptyCategories = useMemo(() => {
-    const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegion] ?? {};
-    return new Set(
-      Object.keys(MARKER_TYPE_TREE).filter((subCat) =>
-        MARKER_TYPE_TREE[subCat].every(
-          (typeInfo) => (regionTypeCounts[typeInfo.key] ?? 0) === 0,
-        ),
-      ),
-    );
-  }, [currentRegion]);
   const drawerSnapIndex = useMobileDrawerSnapIndex();
   const uiPrefsHydrated = useUiPrefsHydrated();
   const trigCluster = useTriggerCluster();
@@ -163,11 +110,6 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     hasOpenedRef.current = true;
     setHasOpened(true);
   }, [drawerSnapIndex]);
-
-  useEffect(() => {
-    if (hasOpened) return preloadSidebarIcons();
-    return undefined;
-  }, [hasOpened]);
 
   // Track scroll position for blur effects
   useEffect(() => {
@@ -260,7 +202,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const hasFilterPaneHost = hasFilterList && !hasSearchQuery;
   const showDivider = hasFilterPaneHost;
   const startDividerDrag = useDividerDrag(showDivider && visible);
-  const { preparedCount, prepare } = useSidebarPreparation(hasOpened, VERSION_NEW_FILTER_GROUPS.length + Object.keys(MARKER_TYPE_TREE).length);
+  const { preparedCount, prepare } = useSidebarPreparation(hasOpened, categoryCount);
   const showFilterPane = hasFilterPaneHost && !searchExpanded && leftRatio < 0.999;
 
   const atLeftEdge = showDivider && !searchExpanded && leftRatio <= leftBound + 0.01;
@@ -346,147 +288,8 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     setSearchExpanded(true);
   };
 
-  const filters = useMemo(
-      () => (
-          <MarkFilterDragProvider>
-              {VERSION_NEW_FILTER_GROUPS.slice(0, preparedCount).map(
-                  (group) => (
-                      <MarkFilter
-                          idKey={group.key}
-                          title={t(group.titleKey)}
-                          dataCategory='versionNew'
-                          key={group.key}
-                          initialEmpty={false}
-                          variant='versionNew'
-                          reorderable={false}
-                          typeKeys={group.types.map((typeInfo) => typeInfo.key)}
-                      >
-                          {group.types.map((typeInfo) => (
-                              <MarkSelector
-                                  key={typeInfo.key}
-                                  typeInfo={typeInfo}
-                                  countOverride={versionNewCounts[typeInfo.key]}
-                              />
-                          ))}
-                      </MarkFilter>
-                  ),
-              )}
-              {DEFAULT_SUBCATEGORY_ORDER_LIST.filter((k) =>
-                  Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
-              )
-                  .concat(
-                      Object.keys(MARKER_TYPE_TREE).filter(
-                          (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
-                      ),
-                  )
-                  .slice(
-                      0,
-                      Math.max(
-                          0,
-                          preparedCount - VERSION_NEW_FILTER_GROUPS.length,
-                      ),
-                  )
-                  .map((subCategory) => {
-                      const types: IMarkerType[] =
-                          MARKER_TYPE_TREE[subCategory] ?? [];
-                      const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
-                      const binderData =
-                          subCategory === 'mob' || subCategory === 'archives'
-                              ? BINDER_GROUPS_BY_SUB[subCategory]
-                              : undefined;
-                      return (
-                          <MarkFilter
-                              idKey={subCategory}
-                              title={String(
-                                  tGame(`markerType.category.${subCategory}`),
-                              )}
-                              titleSuffix={
-                                  subCategory === 'archives' ? (
-                                      <a
-                                          className={
-                                              filterStyles.filterTitleLink
-                                          }
-                                          href='https://oem.re/intel'
-                                          target='_blank'
-                                          rel='noopener noreferrer'
-                                          onClick={(event) =>
-                                              event.stopPropagation()
-                                          }
-                                      >
-                                          {isCjkLocale ? '「' : '('}
-                                          {String(t('markFilter.archiveHub'))}
-                                          {isCjkLocale ? '」' : ')'}
-                                      </a>
-                                  ) : undefined
-                              }
-                              icon={CategoryIcon}
-                              dataCategory={subCategory}
-                              key={subCategory}
-                              initialEmpty={emptyCategories.has(subCategory)}
-                              binderMode={Boolean(binderData)}
-                              typeKeys={types.map((typeInfo) => typeInfo.key)}
-                          >
-                              {binderData ? (
-                                  <>
-                                      <div
-                                          className={
-                                              sidebarStyles.binderSection
-                                          }
-                                      >
-                                          <div
-                                              className={
-                                                  sidebarStyles.binderColumn
-                                              }
-                                          >
-                                              {binderData.groups.map(
-                                                  (group) => (
-                                                      <MarkBinder
-                                                          key={group.id}
-                                                          group={group}
-                                                          mobile
-                                                      />
-                                                  ),
-                                              )}
-                                          </div>
-                                      </div>
-                                      {binderData.remaining.length > 0 && (
-                                          <div
-                                              className={
-                                                  sidebarStyles.remainingSection
-                                              }
-                                              style={{
-                                                  gridTemplateColumns:
-                                                      'var(--mark-filter-columns, repeat(2, minmax(0, 1fr)))',
-                                              }}
-                                          >
-                                              {binderData.remaining.map(
-                                                  (typeInfo) => (
-                                                      <MarkSelector
-                                                          key={typeInfo.key}
-                                                          typeInfo={typeInfo}
-                                                      />
-                                                  ),
-                                              )}
-                                          </div>
-                                      )}
-                                  </>
-                              ) : (
-                                  types.map((typeInfo) => (
-                                      <MarkSelector
-                                          key={typeInfo.key}
-                                          typeInfo={typeInfo}
-                                      />
-                                  ))
-                              )}
-                          </MarkFilter>
-                      );
-                  })}
-          </MarkFilterDragProvider>
-      ),
-      [preparedCount, versionNewCounts, t, tGame, isCjkLocale, emptyCategories],
-  );
-
   return (
+    <SidebarWindow containerRef={rootRef}>
     <div
       className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`}
       data-sidebar-layout="mobile"
@@ -520,43 +323,14 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
           ref={contentRef}
         >
           <div className={mobileStyles.sidebarContent}>
-            {/* Top row: Search + FilterList with draggable divider */}
-            <div className={mobileStyles.topRow} ref={topRowRef}>
-              <motion.div
-                className={mobileStyles.topRowPane}
-                style={{ flexBasis: leftBasis }}
-                onFocus={handleSearchFocus}
-                onClick={handleSearchFocus}
-              >
-                <SearchMobile />
-              </motion.div>
-              {showDivider && (
-                <div
-                  className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
-                  role="separator"
-                  aria-orientation="vertical"
-                  onPointerDown={handleDividerPointerDown}
-                />
-              )}
-              {hasFilterPaneHost && (
-                <motion.div
-                  className={mobileStyles.topRowPane}
-                  style={{
-                    flexBasis: rightBasis,
-                    maxWidth: rightContentWidth,
-                    visibility: showFilterPane ? 'visible' : 'hidden',
-                    pointerEvents: showFilterPane ? 'auto' : 'none',
-                  }}
-                >
-                  <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
-                </motion.div>
-              )}
-            </div>
+            {/* Reserve the fixed control row inside the scrolling layout. The actual
+                controls live outside the masked viewport so alpha masking cannot fade them. */}
+            <div aria-hidden="true" style={{ height: topRowHeight || '3rem', flexShrink: 0 }} />
 
             <Detail inline className={mobileStyles.mobileDetail} />
 
             {preparedCount > 0 && <div className={mobileStyles.filters}>
-              {filters}
+              <SidebarFilters preparedCount={preparedCount} mobile />
             </div>}
             <AccountCard mobile />
           </div>
@@ -566,6 +340,39 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
             <Trigger isActive={trigOptimal} onToggle={(v) => setTrigOptimal(v)} label={t('trigger.labelName')} />
           </div>
           <SidebarFooter mobile />
+        </div>
+
+        {/* Top row: Search + FilterList with draggable divider */}
+        <div className={mobileStyles.topRow} ref={topRowRef}>
+          <motion.div
+            className={mobileStyles.topRowPane}
+            style={{ flexBasis: leftBasis }}
+            onFocus={handleSearchFocus}
+            onClick={handleSearchFocus}
+          >
+            <SearchMobile />
+          </motion.div>
+          {showDivider && (
+            <div
+              className={`${mobileStyles.divider} ${atLeftEdge ? mobileStyles.atLeft : ''} ${atRightEdge ? mobileStyles.atRight : ''}`}
+              role="separator"
+              aria-orientation="vertical"
+              onPointerDown={handleDividerPointerDown}
+            />
+          )}
+          {hasFilterPaneHost && (
+            <motion.div
+              className={mobileStyles.topRowPane}
+              style={{
+                flexBasis: rightBasis,
+                maxWidth: rightContentWidth,
+                visibility: showFilterPane ? 'visible' : 'hidden',
+                pointerEvents: showFilterPane ? 'auto' : 'none',
+              }}
+            >
+              <FilterListMobile width="100%" onContentWidthChange={setRightContentWidth} />
+            </motion.div>
+          )}
         </div>
 
         {/* Top blur: visible when not at snap-0 and not scrolled to top */}
@@ -589,6 +396,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
         />
       </Drawer>
     </div>
+    </SidebarWindow>
   );
 };
 

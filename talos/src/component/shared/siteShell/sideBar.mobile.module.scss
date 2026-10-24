@@ -319,8 +319,10 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
     display: flex;
     align-items: stretch;
     gap: .8rem;
-    position: sticky;
+    position: absolute;
     top: 0;
+    left: 1rem;
+    right: 1rem;
     z-index: 20;
 }
 
@@ -428,7 +430,7 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
 }
 
 @container mobile-filters (min-width: 25rem) {
-    .filters > [data-category] {
+    .filters > [data-sidebar-fonts] > [data-category] {
         --mark-filter-columns: repeat(3, minmax(0, 1fr));
     }
 }

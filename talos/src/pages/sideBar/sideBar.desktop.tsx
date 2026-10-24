@@ -1,37 +1,16 @@
+import { useTranslateUI } from '@/locale';
 import { AccountCard, SidebarFooter } from '@/component/shared/siteShell/sideBar.frame';
-import React, { useCallback, useEffect, useMemo, useRef as useReactRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef as useReactRef, useState } from 'react';
 import styles from '@/component/shared/siteShell/sideBar.module.scss';
 import drawerStyles from '@/component/shared/siteShell/triggerDrawer.module.scss';
 
 import Icon from '@/assets/images/UI/observator_6.webp';
 import SidebarIcon from '@/assets/logos/sideCollap.svg?react';
 
-// Category icons
-import BossIcon from '@/assets/images/category/boss.svg?react';
-import MobIcon from '@/assets/images/category/mob.svg?react';
-import NaturalIcon from '@/assets/images/category/natural.svg?react';
-import ExplorationIcon from '@/assets/images/category/exploration.svg?react';
-import ValuableIcon from '@/assets/images/category/valuable.svg?react';
-import CollectionIcon from '@/assets/images/category/collection.svg?react';
-import CombatIcon from '@/assets/images/category/combat.svg?react';
-import NpcIcon from '@/assets/images/category/npc.svg?react';
-import FacilityIcon from '@/assets/images/category/facility.svg?react';
-import ArchivesIcon from '@/assets/images/category/archives.svg?react';
-
 import SearchDesktop from '@/pages/search/search.desktop';
 import Drawer from '@/component/drawer/drawer';
 import { Trigger, TriggerBar } from '@/component/trigger/trigger';
-import MarkFilter from '@/pages/markFilter/markFilter';
-import filterStyles from '@/pages/markFilter/markFilter.module.scss';
-import { MarkFilterDragProvider } from '@/pages/markFilter/reorderContext';
-import MarkSelector from '@/pages/markSelector/markSelector';
-
-import { DEFAULT_SUBCATEGORY_ORDER, MARKER_TYPE_TREE, REGION_TYPE_COUNT_MAP, type IMarkerType } from '@/data/marker';
-import { VERSION_NEW_FILTER_GROUPS, useVersionNewMarkerCounts } from '@/data/marker/versionNew';
-import useRegion from '@/store/region';
-import { BINDER_GROUPS_BY_SUB } from '@/data/marker/binder';
-import MarkBinder from '@/pages/markBinder/markBinder';
-import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
+import { SidebarFilters, categoryCount } from './sidebarFilters';
 import {
     SIDEBAR_MIN_WIDTH,
     SIDEBAR_THREE_COLUMN_MIN_WIDTH,
@@ -52,30 +31,12 @@ import {
     useTriggerCluster,
     useTriggerlabelName,
 } from '@/store/uiPrefs';
-import { useMultiRegionMarkerCount, useSearchString } from '@/store/marker';
 import { SelectionLayer } from '@/pages/sideBar/selectionLayer';
-import { computeBinderColumns } from '@/pages/sideBar/binderMasonry';
 import { useDevice } from '@/platform/device';
-import { preloadSidebarIcons } from '@/pages/sideBar/sidebarIconPrefetch';
+import { SidebarWindow } from './sidebarWindow';
 import { useSidebarPreparation } from './useSidebarPreparation';
 
 //console.log('[MARKER]', MARKER_TYPE_TREE);
-
-const DEFAULT_SUBCATEGORY_ORDER_LIST = DEFAULT_SUBCATEGORY_ORDER as readonly string[];
-const DEFAULT_SUBCATEGORY_ORDER_SET = new Set<string>(DEFAULT_SUBCATEGORY_ORDER_LIST);
-
-const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
-    boss: BossIcon,
-    mob: MobIcon,
-    natural: NaturalIcon,
-    valuable: ValuableIcon,
-    collection: CollectionIcon,
-    archives: ArchivesIcon,
-    combat: CombatIcon,
-    npc: NpcIcon,
-    facility: FacilityIcon,
-    exploration: ExplorationIcon
-};
 
 interface SideBarProps {
     // TODO: fix this after region is nonNull
@@ -88,11 +49,6 @@ const FOUR_COLUMN_THRESHOLD = 700;
 
 const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
     const t = useTranslateUI();
-    const tGame = useTranslateGame();
-    const locale = useLocale();
-    const isCJK = /^(zh|ja|ko)(-|$)/i.test(locale);
-    const searchString = useSearchString();
-    const versionNewCounts = useVersionNewMarkerCounts();
     const isOpen = useSidebarOpen();
     const setIsOpen = useSetSidebarOpen();
     const sidebarWidth = useSidebarWidth();
@@ -121,11 +77,6 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
     useEffect(() => {
         if (isOpen) setHasOpened(true);
     }, [isOpen]);
-
-    useEffect(() => {
-        if (hasOpened) return preloadSidebarIcons();
-        return undefined;
-    }, [hasOpened]);
 
     const clampWidth = useCallback((startW: number, dx: number) =>
         clampSidebarWidth(startW + dx, maxWidth), [maxWidth]);
@@ -173,40 +124,7 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
         sidebarWidth >= SIDEBAR_THREE_COLUMN_MIN_WIDTH ? 3 :
         2;
 
-    const binderTypeKeys = useMemo(
-        () => Object.values(BINDER_GROUPS_BY_SUB)
-            .flatMap((binderData) => binderData.groups)
-            .flatMap((group) => group.types.map((typeInfo) => typeInfo.key)),
-        [],
-    );
-    const binderTypeCounts = useMultiRegionMarkerCount(binderTypeKeys);
-    const binderTypeCountMap = useMemo(() => {
-        const map = new Map<string, { collected: number; total: number }>();
-        binderTypeKeys.forEach((key, index) => {
-            const count = binderTypeCounts[index];
-            if (count) map.set(key, count);
-        });
-        return map;
-    }, [binderTypeKeys, binderTypeCounts]);
-
-    const currentRegionKey = useRegion((s) => s.currentRegionKey);
-    const lowerSearch = searchString.toLowerCase();
-    const isTypeVisibleInSearch = useCallback((typeKey: string) => {
-        if (!lowerSearch) return true;
-        const typeDisplayName = String(tGame(`markerType.key.${typeKey}`) ?? '').toLowerCase();
-        return typeKey.toLowerCase().includes(lowerSearch) || typeDisplayName.includes(lowerSearch);
-    }, [lowerSearch, tGame]);
-    const emptyCategories = useMemo(() => {
-        const regionTypeCounts = REGION_TYPE_COUNT_MAP[currentRegionKey] ?? {};
-        return new Set(
-            Object.keys(MARKER_TYPE_TREE).filter((subCat) =>
-                MARKER_TYPE_TREE[subCat].every(
-                    (typeInfo) => (regionTypeCounts[typeInfo.key] ?? 0) === 0,
-                ),
-            ),
-        );
-    }, [currentRegionKey]);
-    const { preparedCount, prepare } = useSidebarPreparation(hasOpened, VERSION_NEW_FILTER_GROUPS.length + Object.keys(MARKER_TYPE_TREE).length);
+    const { preparedCount, prepare } = useSidebarPreparation(hasOpened, categoryCount);
 
     const toggleSidebar = () => {
         const newState = !isOpen;
@@ -217,170 +135,8 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
         }
     };
 
-    const filters = useMemo(
-        () => (
-            <MarkFilterDragProvider>
-                {VERSION_NEW_FILTER_GROUPS.slice(0, preparedCount).map(
-                    (group) => (
-                        <MarkFilter
-                            idKey={group.key}
-                            title={t(group.titleKey)}
-                            dataCategory='versionNew'
-                            key={group.key}
-                            columns={filterColumns}
-                            initialEmpty={false}
-                            variant='versionNew'
-                            reorderable={false}
-                            typeKeys={group.types.map(
-                                (typeInfo) => typeInfo.key,
-                            )}
-                        >
-                            {group.types.map((typeInfo) => (
-                                <MarkSelector
-                                    key={typeInfo.key}
-                                    typeInfo={typeInfo}
-                                    countOverride={
-                                        versionNewCounts[typeInfo.key]
-                                    }
-                                />
-                            ))}
-                        </MarkFilter>
-                    ),
-                )}
-                {DEFAULT_SUBCATEGORY_ORDER_LIST.filter((k) =>
-                    Object.prototype.hasOwnProperty.call(MARKER_TYPE_TREE, k),
-                )
-                    .concat(
-                        Object.keys(MARKER_TYPE_TREE).filter(
-                            (k) => !DEFAULT_SUBCATEGORY_ORDER_SET.has(k),
-                        ),
-                    )
-                    .slice(
-                        0,
-                        Math.max(
-                            0,
-                            preparedCount - VERSION_NEW_FILTER_GROUPS.length,
-                        ),
-                    )
-                    .map((subCategory) => {
-                        const types: IMarkerType[] =
-                            MARKER_TYPE_TREE[subCategory] ?? [];
-                        const CategoryIcon = CATEGORY_ICON_MAP[subCategory];
-                        const binderData = BINDER_GROUPS_BY_SUB[subCategory];
-                        const showBinder =
-                            filterColumns >= 3 && Boolean(binderData);
-                        const binderColumns = binderData
-                            ? computeBinderColumns(
-                                  binderData.groups,
-                                  binderTypeCountMap,
-                                  isTypeVisibleInSearch,
-                              )
-                            : { left: [], right: [] };
-                        return (
-                            <MarkFilter
-                                idKey={subCategory}
-                                title={String(
-                                    tGame(`markerType.category.${subCategory}`),
-                                )}
-                                titleSuffix={
-                                    subCategory === 'archives' ? (
-                                        <a
-                                            className={`${filterStyles.filterTitleLink}`}
-                                            href='https://oem.re/intel'
-                                            target='_blank'
-                                            onClick={(event) =>
-                                                event.stopPropagation()
-                                            }
-                                        >
-                                            {isCJK ? '「' : '('}
-                                            {String(t('markFilter.archiveHub'))}
-                                            {isCJK ? '」' : ')'}
-                                        </a>
-                                    ) : undefined
-                                }
-                                icon={CategoryIcon}
-                                dataCategory={subCategory}
-                                key={subCategory}
-                                columns={filterColumns}
-                                binderMode={!!showBinder}
-                                initialEmpty={emptyCategories.has(subCategory)}
-                                typeKeys={types.map((typeInfo) => typeInfo.key)}
-                            >
-                                {showBinder && binderData ? (
-                                    <>
-                                        <div className={styles.binderSection}>
-                                            <div
-                                                className={styles.binderColumn}
-                                            >
-                                                {binderColumns.left.map(
-                                                    (group) => (
-                                                        <MarkBinder
-                                                            key={group.id}
-                                                            group={group}
-                                                        />
-                                                    ),
-                                                )}
-                                            </div>
-                                            <div
-                                                className={styles.binderColumn}
-                                            >
-                                                {binderColumns.right.map(
-                                                    (group) => (
-                                                        <MarkBinder
-                                                            key={group.id}
-                                                            group={group}
-                                                        />
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
-                                        {binderData.remaining.length > 0 && (
-                                            <div
-                                                className={
-                                                    styles.remainingSection
-                                                }
-                                                style={{
-                                                    gridTemplateColumns: `repeat(${filterColumns}, minmax(0, 1fr))`,
-                                                }}
-                                            >
-                                                {binderData.remaining.map(
-                                                    (typeInfo) => (
-                                                        <MarkSelector
-                                                            key={typeInfo.key}
-                                                            typeInfo={typeInfo}
-                                                        />
-                                                    ),
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    types.map((typeInfo) => (
-                                        <MarkSelector
-                                            key={typeInfo.key}
-                                            typeInfo={typeInfo}
-                                        />
-                                    ))
-                                )}
-                            </MarkFilter>
-                        );
-                    })}
-            </MarkFilterDragProvider>
-        ),
-        [
-            preparedCount,
-            filterColumns,
-            versionNewCounts,
-            t,
-            tGame,
-            emptyCategories,
-            isCJK,
-            binderTypeCountMap,
-            isTypeVisibleInSearch,
-        ],
-    );
-
     return (
+      <SidebarWindow containerRef={sidebarRef}>
         <div
             className={`${styles.sidebarContainer} ${isOpen ? styles.open : ''} ${!visible ? styles.hidden : ''}`}
             data-sidebar-layout="desktop"
@@ -419,7 +175,7 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
                     {preparedCount > 0 && <>
                         <SearchDesktop />
                         <div className={styles.filters}>
-                        {filters}
+                        <SidebarFilters preparedCount={preparedCount} columns={filterColumns} />
                         </div>
                     </>}
                     <AccountCard />
@@ -449,6 +205,7 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
                 </Drawer>
             </div>
         </div>
+      </SidebarWindow>
     );
 };
 

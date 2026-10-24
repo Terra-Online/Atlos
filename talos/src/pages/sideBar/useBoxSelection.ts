@@ -1,5 +1,6 @@
 import { useRef, type RefObject } from 'react';
 import { isRecordToolEnabled } from '@/devtools/loadDevTool';
+import { useSidebarWindow } from './windowStore';
 import { useFilter, useSetFilter } from '@/store/marker';
 import {
     useBoxSelectionEngine,
@@ -10,6 +11,7 @@ export const useBoxSelection = (
     containerRef: RefObject<HTMLDivElement | null>,
     selectionBoxRef: RefObject<HTMLDivElement | null>,
 ) => {
+    const windowStore = useSidebarWindow();
     const filter = useFilter();
     const setFilter = useSetFilter();
     const currentFilterRef = useRef(filter);
@@ -21,6 +23,9 @@ export const useBoxSelection = (
         getInitialKeys: () => currentFilterRef.current,
         onChange: setFilter,
         immediate: isRecordToolEnabled(),
+        // Commit once per coalesced pointer frame so newly mounted rows see the
+        // same selection as retained rows during cross-screen auto-scrolling.
+        updateBatchSize: 1,
         canStart: (target) => !(
             target.closest('button')
             || target.closest('input')
@@ -31,7 +36,7 @@ export const useBoxSelection = (
             || target.closest('div[class*="triggerDrawer"]')
         ),
         collectTargets: ({ container, scrollContainer, elementToContentRect }) => {
-            const targets: BoxSelectionTarget[] = [];
+            const targets: BoxSelectionTarget[] = windowStore?.targets() ?? [];
             container.querySelectorAll<HTMLElement>('[data-key], [data-binder-keys]').forEach((element) => {
                 if (!scrollContainer.contains(element)) return;
                 if (element.checkVisibility && !element.checkVisibility()) return;
@@ -39,7 +44,7 @@ export const useBoxSelection = (
                 if (filterContent?.getAttribute('data-expanded') === 'false') return;
 
                 const key = element.getAttribute('data-key');
-                if (key) {
+                if (key && !element.closest('[data-sidebar-rows="true"]')) {
                     targets.push({
                         keys: [key],
                         rect: elementToContentRect(element),
@@ -63,7 +68,7 @@ export const useBoxSelection = (
             return targets;
         },
         syncTarget: ({ element }, active) => {
-            element.dataset.active = active ? 'true' : 'false';
+            if (element) element.dataset.active = active ? 'true' : 'false';
         },
     });
 };

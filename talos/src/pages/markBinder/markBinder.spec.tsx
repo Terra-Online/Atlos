@@ -3,22 +3,14 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { motion } from 'motion/react';
 import MarkBinder from './markBinder';
 import useRegion from '@/store/region';
+import { binderItem, selectorItem } from '@/pages/sideBar/model';
 import type { BinderGroup } from '@/data/marker/binder';
 
-vi.mock('@/locale', () => ({ useTranslateGame: () => (key: string) => key }));
-vi.mock('@/store/marker', async () => {
-    const { default: useRegion } = await import('@/store/region');
-    return {
-        useFilter: () => [],
-        useSearchString: () => '',
-        useMultiRegionMarkerCount: (types: string[]) => {
-            const region = useRegion(state => state.currentRegionKey);
-            return types.map(() => ({ total: region === 'Dijiang' ? 0 : 1, collected: 0 }));
-        },
-    };
-});
+vi.mock('@/store/marker', () => ({
+    useMarkerStore: (select: (state: { filter: string[] }) => unknown) => select({ filter: [] }),
+}));
 vi.mock('@/pages/markSelector/markSelector', () => ({
-    default: ({ typeInfo }: { typeInfo: { key: string } }) => <div data-selector-key={typeInfo.key} />,
+    default: ({ item }: { item: { typeInfo: { key: string } } }) => <div data-selector-key={item.typeInfo.key} />,
 }));
 
 const initialRegion = useRegion.getState().currentRegionKey;
@@ -45,7 +37,8 @@ it('remeasures retained binder rows when a region reflows their parent', async (
     });
     function Category() {
         const region = useRegion(state => state.currentRegionKey);
-        return <motion.div layout layoutDependency={region}><MarkBinder group={group} /></motion.div>;
+        const items = new Map(group.types.map(type => [type.key, selectorItem(type, { total: region === 'Dijiang' ? 0 : 1, collected: 0 }, '', key => key)]));
+        return <motion.div layout layoutDependency={region}><MarkBinder item={binderItem(group, items, '', key => key, false)} /></motion.div>;
     }
     useRegion.setState({ currentRegionKey: 'Dijiang' });
     const view = render(<Category />);

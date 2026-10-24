@@ -213,12 +213,6 @@
         gap: 0 0.75rem;
         width: 100%;
 
-        // Keep the animated shell in layout so rapid scrolls never expose a
-        // skipped filter surface. Only the expensive selector tree is skipped,
-        // with a stable fallback size until the browser has measured it once.
-        content-visibility: auto;
-        contain-intrinsic-size: auto 20rem;
-        will-change: opacity, transform, filter;
         overflow: visible;
         &.visible {
             opacity: 1;

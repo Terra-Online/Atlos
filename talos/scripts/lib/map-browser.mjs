@@ -26,8 +26,8 @@ export async function createMapBrowser({ baseline, candidate, headed = false, wi
     await new Promise(done => server.listen(0, 'localhost', done));
     const origin = `http://localhost:${server.address().port}`;
     const browser = await chromium.launch({ channel: 'chrome', headless: !headed });
-    async function open(variant, { viewport = { width: 1200, height: 762 }, dpr = 2, prefs = {}, manualClock = false } = {}) {
-        const context = await browser.newContext({ viewport, deviceScaleFactor: dpr, locale: 'en-US' });
+    async function open(variant, { viewport = { width: 1200, height: 762 }, dpr = 2, prefs = {}, manualClock = false, locale = 'en-US' } = {}) {
+        const context = await browser.newContext({ viewport, deviceScaleFactor: dpr, locale });
         await context.addCookies([{ url: origin, name: 'benchVariant', value: variant }]);
         await context.route('**/*', async route => {
             const url = new URL(route.request().url());
@@ -42,8 +42,8 @@ export async function createMapBrowser({ baseline, candidate, headed = false, wi
             if (route.request().resourceType() === 'image') return route.abort();
             return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], session: null, user: null }) });
         });
-        await context.addInitScript(({ types, prefs, manualClock }) => {
-            localStorage.setItem('talos:locale', 'en-US');
+        await context.addInitScript(({ types, prefs, manualClock, locale }) => {
+            localStorage.setItem('talos:locale', locale);
             localStorage.setItem('marker-filter', JSON.stringify({ state: { filter: types, selectedPoints: [] }, version: 0 }));
             localStorage.setItem('ui-prefs', JSON.stringify({ state: { prefsSidebarEnabled: true, prefsTriggersEnabled: true,
                 sidebarOpen: false, sidebarWidthV2: 500, prefsViewStateEnabled: true,
@@ -88,7 +88,7 @@ export async function createMapBrowser({ baseline, candidate, headed = false, wi
             new PerformanceObserver(list => {
                 window.__runtimeBench.longTasks.push(...list.getEntries().map(({ startTime, duration }) => ({ startTime, duration })));
             }).observe({ type: 'longtask' });
-        }, { types, prefs, manualClock });
+        }, { types, prefs, manualClock, locale });
         const page = await context.newPage();
         if (headed && windowPosition) {
             const session = await context.newCDPSession(page);

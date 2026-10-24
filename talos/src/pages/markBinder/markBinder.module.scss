@@ -221,7 +221,8 @@
     filter: invert(.2);
 }
 
-.binderChildren > div > * {
+.binderChildren > div > *,
+.binderChildren :global([data-sidebar-rows]) > div > * {
     margin-bottom: 0;
 }
 

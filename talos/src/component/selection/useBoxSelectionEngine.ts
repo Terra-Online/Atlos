@@ -7,7 +7,7 @@ export type BoxSelectionContentRect = { left: number; right: number; top: number
 export interface BoxSelectionTarget {
     keys: string[];
     rect: BoxSelectionContentRect;
-    element: HTMLElement;
+    element?: HTMLElement;
     mode?: 'toggle' | 'activate';
 }
 
@@ -36,6 +36,7 @@ interface BoxSelectionEngineOptions<TContainer extends HTMLElement> {
     canStart: (target: HTMLElement) => boolean;
     syncTarget: (target: BoxSelectionTarget, active: boolean) => void;
     immediate?: boolean;
+    updateBatchSize?: number;
     selectionBoxCoordinates?: 'container' | 'auto';
 }
 
@@ -62,6 +63,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
     canStart,
     syncTarget,
     immediate = false,
+    updateBatchSize = UPDATE_BATCH_SIZE,
     selectionBoxCoordinates = 'container',
 }: BoxSelectionEngineOptions<TContainer>) => {
     const [isSelecting, setIsSelecting] = useState(false);
@@ -211,7 +213,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             }
             pendingKeys = new Set(nextSet);
             pendingChangeCount += 1;
-            if (pendingChangeCount >= UPDATE_BATCH_SIZE) flushPendingKeys();
+            if (pendingChangeCount >= updateBatchSize) flushPendingKeys();
         };
 
         const updateSelection = (clientPoint: Point, scrollContainer: HTMLElement) => {
@@ -459,7 +461,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             container.removeEventListener('pointerdown', onPointerDown);
             cleanupSelection();
         };
-    }, [containerRef, immediate, selectionBoxCoordinates, selectionBoxRef]);
+    }, [containerRef, immediate, selectionBoxCoordinates, selectionBoxRef, updateBatchSize]);
 
     return { isSelecting };
 };
