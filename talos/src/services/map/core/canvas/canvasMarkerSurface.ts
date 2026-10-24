@@ -4,13 +4,13 @@ import { MarkerPainter, type MarkerArt, type Sprite, type AnimatedSprite, type P
 import { markerClasses as classes } from '@/services/map/core/canvas/canvasMarkerStyle';
 import { CanvasSpriteBatch } from '@/services/map/core/canvas/canvasSpriteBatch';
 import { canvasPadding } from '@/services/map/core/canvas/canvasViewport';
+import { SceneIcon, getMarkerState, setMarkerState } from '@/services/map/core/canvas/markerModel';
 
 type CanvasMarker = L.Marker;
 interface Entry {
-  marker: CanvasMarker; root: HTMLElement; inner: HTMLElement; art: MarkerArt; motion: MarkerMotion;
+  marker: CanvasMarker; art: MarkerArt; motion: MarkerMotion;
   x: number; y: number; base: L.Point; latlng: L.LatLng; order: number; completed: boolean; opacity: number;
   offsetX?: Motion; offsetY?: Motion;
-  artDirty: boolean;
   sprite?: Sprite;
   animatedSprite?: AnimatedSprite;
   pulseLayers?: PulseLayers;
@@ -27,7 +27,6 @@ const surfaces = new WeakMap<L.Map, CanvasMarkerSurface>();
 const CELL = 32;
 // Internal output quality floor, independent of the physical display density.
 const MIN_CANVAS_RENDER_RATIO = 2;
-const has = (element: HTMLElement, name: string) => element.classList.contains(classes[name]);
 const bounds = (entry: Entry): Rect => ({ x: entry.x - 38, y: entry.y - 54, width: entry.art.subImage ? 104 : 76, height: 94 });
 const intersects = (a: Rect, b: Rect) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 const compareEntries = (a: Entry, b: Entry) => a.stack - b.stack
@@ -44,7 +43,6 @@ export const existingCanvasSurface = (map: L.Map): CanvasMarkerSurface | undefin
 /** One paint surface, spatial hit/dirty index, and independent per-point timelines. */
 export class CanvasMarkerSurface {
   private entries = new Map<CanvasMarker, Entry>();
-  private roots = new WeakMap<Node, Entry>();
   private grid = new Map<string, Entry[]>();
   private indexDirty = false;
   private renderScale = 1;
@@ -57,7 +55,6 @@ export class CanvasMarkerSurface {
   private moving = new Set<Entry>();
   private changed = new Set<Entry>();
   private motionPool = new MarkerMotionPool();
-  private iconTemplates = new Map<string, HTMLElement>();
   private pendingMotion = new Set<Entry>();
   private ghosts: Ghost[] = [];
   private clusterTransition = false;
@@ -86,9 +83,9 @@ export class CanvasMarkerSurface {
   private pendingSwap?: { canvas: HTMLCanvasElement; batch: CanvasSpriteBatch };
   private backendReason?: string;
   private semantic = document.createElement('div');
-  private style = document.createElement('style');
+  private proxy = document.createElement('button');
+  private focused?: Entry;
   private painter: MarkerPainter;
-  private observer: MutationObserver;
 
   constructor(private map: L.Map) {
     this.batch = CanvasSpriteBatch.create(this.canvas, () => this.fallback2D('graphics context lost'));
@@ -99,16 +96,14 @@ export class CanvasMarkerSurface {
     this.canvas.className = 'oem-canvas-markers';
     this.canvas.setAttribute('aria-hidden', 'true');
     this.canvas.style.cssText = 'position:absolute;pointer-events:none;z-index:1;';
-    // Connected compatibility nodes keep existing store mutations, links and keyboard events.
-    // They are clipped and never used to paint a point or as a per-frame hit target.
+    // A single keyboard proxy is independent of the number of logical points.
     this.semantic.className = 'oem-canvas-semantics';
-    this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;content-visibility:auto;pointer-events:none;';
-    // CSS animations on ::before/::after must not run alongside their Canvas copies.
-    this.style.textContent = '.oem-canvas-semantics *,.oem-canvas-semantics *::before,.oem-canvas-semantics *::after{animation:none!important;transition:none!important;will-change:auto!important;}';
+    this.semantic.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;overflow:hidden;clip-path:inset(100%);contain:strict;pointer-events:none;';
+    this.proxy.type = 'button'; this.proxy.tabIndex = -1;
+    this.proxy.setAttribute('aria-label', 'Map markers');
+    this.semantic.append(this.proxy);
     map.getPane('markerPane')!.append(this.canvas);
-    // Keep semantic nodes under the event container, outside the animated map pane.
-    // Camera following must not move or invalidate this otherwise stationary tree.
-    map.getContainer().append(this.semantic, this.style);
+    map.getContainer().append(this.semantic);
     // Both the viewport and cached artwork retain at least Retina-density pixels.
     // Integer sprite density also avoids fractional texture-bound rounding.
     this.painter = new MarkerPainter(Math.ceil(this.renderRatio), url => {
@@ -118,22 +113,6 @@ export class CanvasMarkerSurface {
       }
     }, this.batch ? () => this.fallback2D('image does not allow GPU texture access') : undefined);
     this.readOfficialStyles();
-    this.observer = new MutationObserver(records => {
-      for (const record of records) {
-        let node: Node | null = record.target;
-        while (node && node !== this.semantic) {
-          const entry = this.roots.get(node);
-          if (entry) {
-            if (record.type === 'childList' || record.attributeName === 'src' || record.attributeName === 'data-tier') entry.artDirty = true;
-            this.changed.add(entry); break;
-          }
-          node = node.parentNode;
-        }
-      }
-      if (this.changed.size) this.request();
-    });
-    this.observer.observe(this.semantic, { subtree: true, childList: true, attributes: true,
-      attributeFilter: ['class', 'data-tier', 'src', 'style', 'tabindex', 'data-oem-point'] });
     const container = map.getContainer();
     container.addEventListener('pointermove', this.pointerMove, true);
     container.addEventListener('pointerleave', this.pointerLeave);
@@ -142,6 +121,8 @@ export class CanvasMarkerSurface {
     container.addEventListener('dblclick', this.doubleClick, true);
     container.addEventListener('contextmenu', this.contextMenu, true);
     this.semantic.addEventListener('focusin', this.focus);
+    this.proxy.addEventListener('keydown', this.keyDown);
+    this.proxy.addEventListener('click', this.proxyClick);
     this.semantic.addEventListener('focusout', this.focus);
     document.fonts?.addEventListener('loadingdone', this.fontsLoaded);
     this.watchResolution();
@@ -156,27 +137,23 @@ export class CanvasMarkerSurface {
     map.on('movestart', this.cancelTrim);
   }
   place(marker: CanvasMarker, point?: L.Point): void {
-    const root = marker.getElement();
-    if (!root) return;
+    const icon = marker.options.icon;
+    if (!(icon instanceof SceneIcon)) throw new TypeError('Canvas markers require a SceneIcon artwork descriptor');
     let entry = this.entries.get(marker);
-    if (entry && entry.root !== root) { this.remove(marker, false); entry = undefined; }
     if (!entry) {
-      const inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`);
-      if (!inner) return;
-      entry = { marker, root, inner, art: { image: '', subImage: '', noFrame: has(inner, 'noFrameInner'), tier: '' },
-        motion: this.motionPool.initial, x: NaN, y: NaN, base: this.map.project(marker.getLatLng(), 0), latlng: marker.getLatLng(), artDirty: true,
+      entry = { marker, art: icon.art, motion: this.motionPool.initial,
+        x: NaN, y: NaN, base: this.map.project(marker.getLatLng(), 0), latlng: marker.getLatLng(),
         order: this.sequence++, completed: false, stack: 1, opacity: 1 };
-      this.entries.set(marker, entry); this.roots.set(root, entry);
+      this.entries.set(marker, entry);
       this.reorder = true; this.indexDirty = true;
-      this.changed.add(entry);
+      this.refreshProxy();
     }
+    this.changed.add(entry);
     if (entry.latlng !== marker.getLatLng()) {
       entry.latlng = marker.getLatLng(); entry.base = this.map.project(entry.latlng, 0);
       this.indexDirty = true;
     }
     if (point) {
-      // Keep Leaflet's logical position without creating a DOM transform or forcing layout.
-      (root as HTMLElement & { _leaflet_pos: L.Point })._leaflet_pos = point;
       (marker as unknown as { _zIndex: number })._zIndex = point.y + (marker.options.zIndexOffset ?? 0);
       this.updateStack(entry);
       if (!this.animation) {
@@ -188,24 +165,16 @@ export class CanvasMarkerSurface {
         if (entry.offsetX?.active(now) || entry.offsetY?.active(now)) { this.active.add(entry); this.moving.add(entry); }
       }
     }
-    if (root.parentNode !== this.semantic) this.semantic.appendChild(root);
-    (marker as unknown as { _shadow?: HTMLElement })._shadow?.remove();
-    // Native _setPos would create thousands of DOM transform/style invalidations here.
     this.full = true; this.request();
+    if (this.focused === entry) this.refreshProxy();
   }
-  getIconTemplate(icon: L.DivIcon, html: string): HTMLElement {
-    let template = this.iconTemplates.get(html);
-    if (!template) {
-      template = icon.createIcon();
-      if (this.iconTemplates.size >= 256) this.iconTemplates.delete(this.iconTemplates.keys().next().value!);
-      this.iconTemplates.set(html, template);
-    }
-    return template;
+  change(marker: CanvasMarker): void {
+    const entry = this.entries.get(marker);
+    if (!entry) return;
+    this.changed.add(entry); this.request();
   }
-  getSemanticPane(): HTMLElement { return this.semantic; }
   private readOfficialStyles(loadFonts = true): void {
-    // A tiny live probe reads CSS once. The semantic tree can then skip layout while offscreen,
-    // retaining keyboard/accessibility semantics through content-visibility:auto.
+    // A short-lived probe reads official typography and decoration styles once.
     const probe = document.createElement('div'), sub = document.createElement('div');
     probe.className = classes.markerInner; probe.dataset.tier = 'L1';
     probe.style.cssText = 'position:absolute;visibility:hidden;width:32px;height:32px;pointer-events:none';
@@ -252,12 +221,13 @@ export class CanvasMarkerSurface {
       this.ghosts.push({ marker, sprite, base, target: base, alpha: entry.opacity * entry.motion.opacity(now), start: NaN });
     }
     if (this.hovered === entry) this.setHovered(undefined);
-    this.dirty.push(bounds(entry)); this.entries.delete(marker); this.roots.delete(entry.root);
+    this.dirty.push(bounds(entry)); this.entries.delete(marker);
     this.active.delete(entry); this.onscreen.delete(entry); this.moving.delete(entry); this.changed.delete(entry); this.pendingMotion.delete(entry); this.reorder = true; this.full = true; this.indexDirty = true;
     // Keep the instance through an atomic cluster replacement (including an empty intermediate set).
     // unload owns final disposal; empty filter sets also reuse decoded assets on their next update.
     void disposeEmpty;
-    this.request();
+    if (this.focused === entry) this.focused = undefined;
+    this.refreshProxy(); this.request();
   }
   visualPosition(marker: L.Marker): L.LatLng | undefined {
     const entry = this.entries.get(marker);
@@ -281,42 +251,24 @@ export class CanvasMarkerSurface {
     for (const ghost of this.ghosts) if (ghost.marker === marker) ghost.target = this.map.project(target, 0);
   }
   private read(entry: Entry, now: number): void {
-    const { root } = entry;
-    let artChanged = false;
-    if (entry.artDirty) entry.inner = root.querySelector<HTMLElement>(`.${classes.markerInner},.${classes.noFrameInner}`) ?? entry.inner;
-    const { inner } = entry;
-    if (entry.clusterUntil && has(inner, 'appearing')) {
-      // A deferred plugin fade-in must not restart when the user hovers after the expansion.
-      inner.classList.remove(classes.appearing);
-    }
+    const icon = entry.marker.options.icon;
+    if (!(icon instanceof SceneIcon)) return;
+    const state = getMarkerState(entry.marker);
+    if (entry.clusterUntil && state.appearing) setMarkerState(entry.marker, { appearing: false });
     if (entry.clusterUntil && now >= entry.clusterUntil) entry.clusterUntil = undefined;
-    if (entry.artDirty) {
-      // These connected images provide labels and URLs, not painted artwork.
-      // Give them intrinsic bounds so layout/inspection never has to infer sizes
-      // for thousands of otherwise unsized images. Canvas uses its own assets.
-      for (const image of inner.querySelectorAll('img')) {
-        if (!image.hasAttribute('width')) image.width = 1;
-        if (!image.hasAttribute('height')) image.height = 1;
-      }
-      const image = inner.querySelector<HTMLImageElement>('img');
-      const sub = inner.querySelector<HTMLElement>(`.${classes.subIcon}`);
-      const background = (node?: HTMLElement | null) => node?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] ?? '';
-      const art: MarkerArt = { noFrame: has(inner, 'noFrameInner'), image: image?.getAttribute('src') ?? background(inner.firstElementChild as HTMLElement),
-        subImage: sub instanceof HTMLImageElement ? sub.getAttribute('src') ?? '' : background(sub), tier: inner.dataset.tier ?? '',
-        count: inner.querySelector(`.${classes.clusterCount}`)?.textContent ?? undefined };
-      artChanged = art.noFrame !== entry.art.noFrame || art.image !== entry.art.image || art.subImage !== entry.art.subImage
-        || art.tier !== entry.art.tier || art.count !== entry.art.count;
-      if (artChanged) entry.art = art;
-      this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage); entry.artDirty = false;
-    }
-    const completed = has(root, 'completedMarker');
-    const stackChanged = entry.completed !== completed;
-    if (stackChanged) { entry.completed = completed; this.reorder = true; }
+    const art: MarkerArt = { ...icon.art, tier: state.tier || icon.art.tier };
+    const artChanged = art.noFrame !== entry.art.noFrame || art.image !== entry.art.image || art.subImage !== entry.art.subImage
+      || art.tier !== entry.art.tier || art.count !== entry.art.count;
+    if (artChanged) entry.art = art;
+    this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
+    const stackChanged = entry.completed !== state.completed;
+    if (stackChanged) { entry.completed = state.completed; this.reorder = true; }
     this.updateStack(entry);
-    const opacity = root.style.opacity === '' ? 1 : Number(root.style.opacity);
-    const flags = +has(inner, 'selected') | (+has(inner, 'checked') << 1) | (+has(inner, 'offLayer') << 2)
-      | (+(this.hovered === entry) << 3) | (+root.contains(document.activeElement) << 4) | (+has(inner, 'pulsing') << 5)
-      | (+(has(inner, 'appearing') && !(entry.clusterUntil && now < entry.clusterUntil)) << 6) | (+has(inner, 'disappearing') << 7);
+    const opacity = state.opacity;
+    const focused = this.focused === entry && this.proxy === this.proxy.ownerDocument.activeElement;
+    const flags = +state.selected | (+state.checked << 1) | (+state.offLayer << 2)
+      | (+(this.hovered === entry || state.hover) << 3) | (+(focused || state.focus) << 4) | (+state.pulsing << 5)
+      | (+(state.appearing && !entry.clusterUntil) << 6) | (+state.disappearing << 7);
     const motion = this.motionPool.transition(entry.motion, flags, now, entry.art.noFrame, !!entry.art.count);
     if (!artChanged && !stackChanged && motion === entry.motion && opacity === entry.opacity) return;
     entry.motion = motion; entry.opacity = opacity;
@@ -542,8 +494,7 @@ export class CanvasMarkerSurface {
     const viewport = { x: this.viewportOffset.x, y: this.viewportOffset.y, width: viewportSize.x, height: viewportSize.y };
     for (const entry of this.active) {
       if (entry.motion.state?.appearing && now >= entry.motion.fadeStart + 150) {
-        // The scene owns appearance cleanup; semantic nodes do not run CSS animations.
-        entry.inner.classList.remove(classes.appearing);
+        setMarkerState(entry.marker, { appearing: false });
       }
       if (!entry.motion.active(now) && !entry.offsetX?.active(now) && !entry.offsetY?.active(now) && !entry.reveal?.active(now)) this.active.delete(entry);
     }
@@ -631,11 +582,12 @@ export class CanvasMarkerSurface {
   };
   private zoomEnd = (): void => { this.zooming = false; this.animation = undefined; this.full = true; this.draw(performance.now()); };
   private hit(event: MouseEvent): Entry | undefined {
-    if (event.target instanceof Element && event.target.closest('.leaflet-control,button,input,select,textarea,a,[role="button"],.leaflet-marker-icon')) return undefined;
+    const target = event.target as Element | null;
+    if (target?.nodeType === 1 && target.closest('.leaflet-control,button,input,select,textarea,a,[role="button"],.leaflet-marker-icon')) return undefined;
     const point = this.map.mouseEventToContainerPoint(event).add(this.viewportOffset);
     let hit: Entry | undefined;
     for (const entry of this.query({ x: point.x, y: point.y, width: 0, height: 0 })) {
-      if (!(entry.marker.options.interactive || entry.root.classList.contains('leaflet-interactive')) || entry.opacity === 0) continue;
+      if (!entry.marker.options.interactive || getMarkerState(entry.marker).opacity === 0) continue;
       const size = entry.art.noFrame ? 50 : 32;
       const y = entry.y + (entry.art.noFrame ? entry.motion.shift.value(performance.now()) : -16);
       if (Math.abs(point.x - entry.x) <= size / 2 && Math.abs(point.y - y) <= size / 2
@@ -643,11 +595,11 @@ export class CanvasMarkerSurface {
     }
     return hit;
   }
-  private dispatch(entry: Entry, type: string, event?: MouseEvent): boolean {
-    const init: MouseEventInit = { bubbles: true, cancelable: true, clientX: event?.clientX, clientY: event?.clientY,
-      screenX: event?.screenX, screenY: event?.screenY, ctrlKey: event?.ctrlKey, metaKey: event?.metaKey,
-      shiftKey: event?.shiftKey, altKey: event?.altKey, button: event?.button, detail: event?.detail ?? 1 };
-    return entry.inner.dispatchEvent(type.startsWith('pointer') ? new PointerEvent(type, init) : new MouseEvent(type, init));
+  private dispatch(entry: Entry, type: string, event: Event = new MouseEvent(type)): void {
+    // Leaflet's Canvas event adapter retains originalEvent, preclick, marker coordinates,
+    // FeatureGroup propagation and bubblingMouseEvents without a synthetic DOM target.
+    (this.map as L.Map & { _fireDOMEvent(event: Event, type: string, targets: L.Layer[]): void })
+      ._fireDOMEvent(event, type, [entry.marker]);
   }
   private setHovered(entry?: Entry, event?: MouseEvent): void {
     if (entry === this.hovered) return;
@@ -661,7 +613,7 @@ export class CanvasMarkerSurface {
     this.map.getContainer().style.cursor = entry ? 'pointer' : '';
   }
   private nativeTarget(event: Event): boolean {
-    return event.target instanceof Node && this.semantic.contains(event.target);
+    return !!event.target && this.semantic.contains(event.target as Node);
   }
   private pointerMove = (event: PointerEvent): void => {
     if (this.nativeTarget(event)) return;
@@ -676,6 +628,10 @@ export class CanvasMarkerSurface {
     if (this.nativeTarget(event)) return;
     const entry = this.hit(event);
     if (!entry) return;
+    // Canvas targets bypass Leaflet's DOM target search, including its drag guard.
+    if ((this.map as L.Map & { _draggableMoved(layer: L.Layer): boolean })._draggableMoved(entry.marker)) {
+      this.pressed = undefined; return;
+    }
     if (this.pressed && (this.pressed.entry !== entry || Math.hypot(event.clientX - this.pressed.x, event.clientY - this.pressed.y) > 3)) return;
     event.stopImmediatePropagation(); event.preventDefault();
     this.dispatch(entry, 'click', event); this.pressed = undefined;
@@ -693,17 +649,32 @@ export class CanvasMarkerSurface {
     event.stopImmediatePropagation(); event.preventDefault();
     this.dispatch(entry, 'contextmenu', event);
   };
-  private focus = (event: FocusEvent): void => {
-    let node = event.target as Node | null;
-    while (node && node !== this.semantic) {
-      const entry = this.roots.get(node);
-      if (entry) {
-        this.changed.add(entry); this.request();
-        if (event.type === 'focusin' && !this.map.getBounds().contains(entry.latlng)) this.map.panTo(entry.latlng);
-        break;
-      }
-      node = node.parentNode;
+  private refreshProxy(): void {
+    if (!this.focused) for (const entry of this.entries.values()) {
+      if (entry.marker.options.keyboard && entry.marker.options.interactive) { this.focused = entry; break; }
     }
+    const icon = this.focused?.marker.options.icon;
+    const tabIndex = this.focused ? 0 : -1, label = icon instanceof SceneIcon ? icon.label : 'Map markers';
+    if (this.proxy.tabIndex !== tabIndex) this.proxy.tabIndex = tabIndex;
+    if (this.proxy.getAttribute('aria-label') !== label) this.proxy.setAttribute('aria-label', label);
+  }
+  private focus = (): void => {
+    if (this.focused) { this.changed.add(this.focused); this.request(); }
+  };
+  private keyDown = (event: KeyboardEvent): void => {
+    const delta = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 0;
+    if (!delta) return;
+    const entries = this.ordered.filter(entry => entry.marker.options.keyboard && entry.marker.options.interactive);
+    if (!entries.length) return;
+    event.preventDefault(); event.stopPropagation();
+    if (this.focused) this.changed.add(this.focused);
+    this.focused = entries[(entries.indexOf(this.focused!) + delta + entries.length) % entries.length];
+    this.refreshProxy(); this.changed.add(this.focused); this.request();
+    if (!this.map.getBounds().contains(this.focused.latlng)) this.map.panTo(this.focused.latlng);
+  };
+  private proxyClick = (event: MouseEvent): void => {
+    event.stopPropagation();
+    if (this.focused) this.dispatch(this.focused, 'click', event);
   };
   private fontsLoaded = (): void => {
     if (this.disposed) return;
@@ -713,10 +684,9 @@ export class CanvasMarkerSurface {
   };
   private dispose = (): void => {
     if (this.disposed) return;
-    this.disposed = true; cancelAnimationFrame(this.frame); this.observer.disconnect(); this.painter.dispose();
+    this.disposed = true; cancelAnimationFrame(this.frame); this.painter.dispose();
     this.cancelTrim();
     this.batch?.dispose(); this.pendingSwap?.batch.dispose();
-    this.iconTemplates.clear();
     this.map.off('move resize viewreset', this.move); this.map.off('zoomstart', this.zoomStart); this.map.off('zoomanim', this.zoom); this.map.off('zoomend', this.zoomEnd); this.map.off('unload', this.dispose);
     this.map.off('talos:regionSwitchStart', this.retireRegion);
     this.map.off('talos:regionSwitched moveend', this.queueTrim); this.map.off('movestart', this.cancelTrim);
@@ -724,12 +694,14 @@ export class CanvasMarkerSurface {
     container.removeEventListener('pointermove', this.pointerMove, true); container.removeEventListener('pointerleave', this.pointerLeave);
     container.removeEventListener('pointerdown', this.pointerDown, true); container.removeEventListener('click', this.click, true); container.removeEventListener('dblclick', this.doubleClick, true);
     container.removeEventListener('contextmenu', this.contextMenu, true);
+    this.proxy.removeEventListener('keydown', this.keyDown); this.proxy.removeEventListener('click', this.proxyClick);
     this.semantic.removeEventListener('focusin', this.focus); this.semantic.removeEventListener('focusout', this.focus);
     document.fonts?.removeEventListener('loadingdone', this.fontsLoaded);
     this.resolution?.removeEventListener('change', this.displayChanged);
     window.removeEventListener('resize', this.displayChanged);
-    this.canvas.remove(); this.pendingSwap?.canvas.remove(); this.semantic.remove(); this.style.remove(); container.style.cursor = '';
+    this.canvas.remove(); this.pendingSwap?.canvas.remove(); this.semantic.remove(); container.style.cursor = '';
     this.entries.clear(); this.onscreen.clear(); this.grid.clear(); this.ordered = []; this.active.clear(); this.moving.clear(); this.changed.clear(); this.pendingMotion.clear(); this.animation = undefined; this.ghosts = [];
+    this.focused = undefined; this.hovered = undefined; this.pointer = undefined; this.pressed = undefined;
     surfaces.delete(this.map);
   };
 }

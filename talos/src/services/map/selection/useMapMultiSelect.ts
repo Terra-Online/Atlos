@@ -6,7 +6,7 @@
  *   talos:lassoSelect     – on pointer-up with final bounds + collected ids
  *   talos:lassoClear      – on cancel (mod key released mid-drag)
  *
- * The marker-side logic (filtering, visual CSS classes) lives in
+ * The marker-side logic (filtering and scene state) lives in
  * `registerLassoHandler`, which is called once from MarkerLayer.
  *
  * Shift + Mod + Drag enters *deselect* mode (removes markers from selection).
@@ -21,6 +21,7 @@ import type { IMarkerData } from '@/data/marker';
 import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import lassoStyles from '@/services/map/selection/lasso.module.scss';
+import { setMarkerState } from '@/services/map/core/canvas/markerModel';
 
 // ─── Lasso-selected ID tracking ──────────────────────────────
 // Module-level set that records which marker IDs were added to
@@ -38,12 +39,6 @@ export function isLassoSelected(id: string): boolean {
 export interface LassoContext {
     markerDataDict: Record<string, IMarkerData>;
     markerDict: Record<string, L.Layer>;
-    /** CSS selector to find the inner wrapper element (e.g. `.markerInner, .noFrameInner`) */
-    innerSelector: string;
-    /** Hashed CSS class name for the `selected` state (toggled on/off) */
-    selectedClassName: string;
-    /** All state CSS class names that should be cleared when resetting to normal */
-    stateClassNames: string[];
     getActiveFilterKeys: () => string[];
     getMarkerVersion?: () => number;
     isSubregionVisible: (subregionId: string) => boolean;
@@ -53,21 +48,11 @@ export interface LassoContext {
 
 /**
  * Registers map-level event listeners that resolve which markers fall inside
- * a lasso rectangle and apply / remove the `.selected` CSS class in real time.
+ * a lasso rectangle and update their scene state in real time.
  */
 export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
-    const inners = new WeakMap<L.Layer, { root: HTMLElement; inner: HTMLElement }>();
     let dataVersion = -1;
     let records: [string, IMarkerData][] = [];
-    const getInner = (layer: L.Layer): HTMLElement | null => {
-        const root = (layer as L.Marker).getElement?.();
-        if (!root) return null;
-        const cached = inners.get(layer);
-        if (cached?.root === root && cached.inner.parentNode === root) return cached.inner;
-        const inner = root.querySelector<HTMLElement>(ctx.innerSelector);
-        if (inner) inners.set(layer, { root, inner });
-        return inner;
-    };
     /** Set of marker IDs currently highlighted by the lasso */
     let currentHighlighted = new Set<string>();
 
@@ -76,19 +61,21 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     let preExistingChecked = new Set<string>();
     let lassoActive = false;
 
-    /** Helper: toggle the selected CSS class on a marker's DOM element */
     const setVisualSelected = (id: string, selected: boolean) => {
-        const layer = ctx.markerDict[id];
-        if (!layer) return;
-        const inner = getInner(layer);
-        if (inner) inner.classList.toggle(ctx.selectedClassName, selected);
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, { selected });
     };
-
-    /** Helper: strip ALL state classes from a marker, returning it to normal appearance */
     const resetToNormal = (id: string) => {
-        const layer = ctx.markerDict[id];
-        if (!layer) return;
-        getInner(layer)?.classList.remove(...ctx.stateClassNames);
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, {
+            selected: false, checked: false, appearing: false, disappearing: false,
+        });
+    };
+    const restore = (id: string, selected: ReadonlySet<string>, checked: ReadonlySet<string>) => {
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, {
+            selected: selected.has(id), checked: checked.has(id),
+        });
     };
 
     /** Determine visible markers in bounds, respecting filter + subregion + hidden state */
@@ -131,7 +118,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
         const newHighlighted = new Set(idsInBounds);
 
         if (deselect) {
-            // Deselect mode: reset ALL state classes on markers entering the lasso
+            // Deselect mode: preview the normal appearance on markers entering the lasso
             for (const id of newHighlighted) {
                 if (!currentHighlighted.has(id)) {
                     resetToNormal(id);
@@ -140,25 +127,11 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
             // Restore markers leaving the lasso to their store-truth state
             for (const id of currentHighlighted) {
                 if (!newHighlighted.has(id)) {
-                    const wasSelected = preExistingSelected.has(id);
-                    const wasChecked = preExistingChecked.has(id);
-                    if (wasSelected) setVisualSelected(id, true);
-                    if (wasChecked) {
-                        const layer = ctx.markerDict[id];
-                        if (layer) {
-                            const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
-                            const inner = el?.querySelector(ctx.innerSelector);
-                            if (inner) {
-                                inner.classList.toggle(ctx.selectedClassName, wasSelected);
-                                // Re-add checked class (stateClassNames[1] = checked)
-                                inner.classList.add(ctx.stateClassNames[1]);
-                            }
-                        }
-                    }
+                    restore(id, preExistingSelected, preExistingChecked);
                 }
             }
         } else {
-            // Select mode: add .selected only to markers in normal state
+            // Select mode: highlight only markers in normal state
             for (const id of newHighlighted) {
                 if (!currentHighlighted.has(id)) {
                     // Only affect markers that were neither selected nor checked before lasso
@@ -167,7 +140,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
                     }
                 }
             }
-            // Remove .selected from markers leaving the lasso (only if we added it)
+            // Remove highlights from markers leaving the lasso (only if we added them)
             for (const id of currentHighlighted) {
                 if (!newHighlighted.has(id)) {
                     // Only remove if the marker was NOT already selected before lasso
@@ -201,9 +174,8 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const onLassoClear = () => {
         // Revert all highlighted markers to their store-truth state
         const selectedSet = new Set(useMarkerStore.getState().selectedPoints);
-        for (const id of currentHighlighted) {
-            setVisualSelected(id, selectedSet.has(id));
-        }
+        const checkedSet = new Set(getActivePoints());
+        for (const id of currentHighlighted) restore(id, selectedSet, checkedSet);
         currentHighlighted = new Set();
         lassoActive = false;
     };

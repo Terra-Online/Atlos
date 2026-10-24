@@ -8,7 +8,7 @@ import {
     syncMarkerCollectedStacking,
     syncMarkerTierAttribute,
 } from '@/services/map/core/marker/markerRenderer';
-import styles from '@/services/map/core/marker/marker.module.scss';
+import { getMarkerState, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { ClusterLayer } from '@/services/map/core/marker/clusterLayer';
 import { deduplicateMarkersByPositionAndType } from '@/data/marker/deduplication.js';
 import { useUiPrefsStore } from '@/store/uiPrefs';
@@ -125,14 +125,6 @@ export class MarkerLayer {
         this._destroyLasso = registerLassoHandler(this.map, {
             markerDataDict: this.markerDataDict,
             markerDict: this.markerDict,
-            innerSelector: `.${styles.markerInner}, .${styles.noFrameInner}`,
-            selectedClassName: styles.selected,
-            stateClassNames: [
-                styles.selected,
-                styles.checked,
-                styles.appearing,
-                styles.disappearing,
-            ],
             getActiveFilterKeys: () => this.activeFilterKeys,
             getMarkerVersion: () => this.markerVersion,
             isSubregionVisible: (subregionId) => this.activeSubregionIds.has(subregionId),
@@ -156,14 +148,6 @@ export class MarkerLayer {
         this.pendingRemovalTimers = {};
     }
 
-    private getMarkerInnerElement(id: string): HTMLElement | null {
-        const layer = this.markerDict[id];
-        if (!(layer instanceof L.Marker)) return null;
-        const markerRoot = layer.getElement();
-        if (!markerRoot) return null;
-        return markerRoot.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
-    }
-
     updateLayerTier(layer: LayerType) {
         this.currentLayer = layer;
         Object.entries(this.markerDict).forEach(([id, markerLayer]) => {
@@ -182,38 +166,25 @@ export class MarkerLayer {
 
     startMarkerPulse(id: string): boolean {
         this.stopMarkerPulse(id);
-        const inner = this.getMarkerInnerElement(id);
-        if (!inner) return false;
+        const marker = this.markerDict[id];
+        if (!(marker instanceof L.Marker) || !this.map.hasLayer(marker)) return false;
 
-        const classSignature = () =>
-            Array.from(inner.classList)
-                .filter((cls) => cls !== styles.pulsing)
-                .sort()
-                .join(' ');
-
-        const initialSignature = classSignature();
-        inner.classList.add(styles.pulsing);
-
-        const observer = new MutationObserver(() => {
-            if (!inner.isConnected) {
-                this.stopMarkerPulse(id);
-                return;
-            }
-            if (classSignature() !== initialSignature) {
-                this.stopMarkerPulse(id);
-            }
-        });
-
-        observer.observe(inner, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-
-        this.pulseCleanupDict[id] = () => {
-            observer.disconnect();
-            inner.classList.remove(styles.pulsing);
+        // Hover and focus do not end a proximity pulse. Changes to the former
+        // inner state classes and representation removal keep their old contract.
+        const signature = () => {
+            const state = getMarkerState(marker);
+            return +state.selected | (+state.checked << 1) | (+state.offLayer << 2)
+                | (+state.appearing << 3) | (+state.disappearing << 4);
         };
-
+        const initial = signature();
+        const changed = () => { if (signature() !== initial) this.stopMarkerPulse(id); };
+        const removed = () => this.stopMarkerPulse(id);
+        setMarkerState(marker, { pulsing: true });
+        marker.on('visualchange', changed).on('remove', removed);
+        this.pulseCleanupDict[id] = () => {
+            marker.off('visualchange', changed).off('remove', removed);
+            setMarkerState(marker, { pulsing: false });
+        };
         return true;
     }
 
@@ -374,7 +345,7 @@ export class MarkerLayer {
 
         this.proximityPulseIds = nextPulseIds;
         // One visibility request per point; fresh position packets must not cancel
-        // an in-flight cluster reveal or start another 20-attempt DOM wait.
+        // an in-flight cluster reveal.
         for (const id of nextPulseIds) {
             if (this.pulseCleanupDict[id] || this.proximityPending.has(id)) continue;
             const seq = this.proximityUpdateSeq;
@@ -471,16 +442,9 @@ export class MarkerLayer {
         }
         this.syncTemporaryVisibleMarkers();
 
-        for (let i = 0; i < 20; i++) {
-            const inner = this.getMarkerInnerElement(id);
-            if (inner) {
-                inner.classList.remove(styles.disappearing);
-                return true;
-            }
-            await new Promise<void>((resolve) => window.setTimeout(resolve, 50));
-        }
-
-        return false;
+        if (!(layer instanceof L.Marker) || !this.map.hasLayer(layer)) return false;
+        setMarkerState(layer, { disappearing: false });
+        return true;
     }
 
     /**
@@ -502,10 +466,6 @@ export class MarkerLayer {
             changedIds.forEach((id) => {
                 const layer = this.markerDict[id];
                 if (!(layer instanceof L.Marker)) return;
-                const markerRoot = layer.getElement?.() as HTMLElement | null;
-                if (!markerRoot) return;
-                const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-                if (!inner) return;
 
                 const wasCollected = prevCollected.has(id);
                 const isCollected = newCollected.has(id);
@@ -522,7 +482,7 @@ export class MarkerLayer {
                             this.temporaryVisibleIds.delete(id);
                         }
                         this.syncTemporaryVisibleMarkers();
-                        inner.classList.add(styles.checked);
+                        setMarkerState(layer, { checked: true });
 
                         // 如果开启了隐藏已完成点位，执行 fadeout 动画后移除
                         if (shouldHideCompleted && !this.checkedVisibleOverrideIds.has(id)) {
@@ -538,8 +498,8 @@ export class MarkerLayer {
                             const parent = this.layerSubregionDict[markerData.subregId];
                             if (!parent?.hasLayer(layer)) return;
 
-                            // 添加淡出动画类
-                            inner.classList.add(styles.disappearing);
+                            // Publish the fade before scheduling removal.
+                            setMarkerState(layer, { disappearing: true });
 
                             // 取消之前的延迟移除定时器
                             if (this.pendingRemovalTimers[id] !== undefined) {
@@ -556,7 +516,7 @@ export class MarkerLayer {
                     } else {
                         this.checkedVisibleOverrideIds.delete(id);
                         this.syncCheckedVisibleOverrides();
-                        inner.classList.remove(styles.checked);
+                        setMarkerState(layer, { checked: false });
                     }
                 }
             });
@@ -567,13 +527,7 @@ export class MarkerLayer {
     updateSelectedMarkers(changedSelectedPoints: {id: string, selected: boolean}[]) {
         changedSelectedPoints.forEach(({id, selected}) => {
             const layer = this.markerDict[id];
-            if (!layer) return;
-            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
-            if (!markerRoot) return;
-            const inner = markerRoot.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (!inner) return;
-
-            inner.classList.toggle(styles.selected, selected);
+            if (layer instanceof L.Marker) setMarkerState(layer, { selected });
         });
     }
 
@@ -722,22 +676,18 @@ export class MarkerLayer {
             const shouldShow = this.activeSubregionIds.has(markerData.subregId)
                 && (markerIdsSet.has(id) || this.temporaryVisibleIds.has(id) || forceVisible)
                 && (!completedMarkerIds.has(id) || forceVisible);
-            const markerRoot = (layer as L.Marker).getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) as HTMLElement | null;
 
             if (shouldShow) {
                 if (this.pendingRemovalTimers[id] !== undefined) {
                     clearTimeout(this.pendingRemovalTimers[id]);
                     delete this.pendingRemovalTimers[id];
                 }
-                if (inner) inner.classList.remove(styles.disappearing);
+                if (layer instanceof L.Marker) setMarkerState(layer, { disappearing: false });
                 layer.addTo(parent);
             } else {
                 this.stopMarkerPulse(id);
                 if (!parent.hasLayer(layer)) return;
-                if (inner) {
-                    inner.classList.add(styles.disappearing);
-                }
+                if (layer instanceof L.Marker) setMarkerState(layer, { disappearing: true });
                 emitPreviewLeave(id);
                 if (this.pendingRemovalTimers[id] !== undefined) {
                     clearTimeout(this.pendingRemovalTimers[id]);

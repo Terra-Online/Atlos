@@ -5,12 +5,12 @@ import { CanvasClusterGroup, CanvasClusterMarker } from '../canvas/clusterGroup'
 import { ViewportMarker } from '../canvas/markerViewport';
 import { MarkerMotion } from '../canvas/canvasMarkerMotion';
 import type { IMarkerData, IMarkerType } from '@/data/marker';
-import styles from './marker.module.scss';
+import { SceneIcon, getMarkerState, setMarkerState } from '../canvas/markerModel';
 
 const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const run of cleanup.splice(0)) run();
-  vi.restoreAllMocks(); vi.unstubAllGlobals();
+  vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers();
 });
 
 function fixture() {
@@ -30,9 +30,9 @@ function fixture() {
   const layer = new ClusterLayer({ map, getMarkerDict: () => markers, getMarkerDataDict: () => data,
     getMarkerTypeMap: () => types, getLayerSubregionDict: () => ({}) });
   const add = (type: string, id: string, lng: number) => {
-    markers[id] = new ViewportMarker([0, lng], { icon: L.divIcon({
-      html: `<div class="${styles.markerInner}"></div>`, iconSize: [32, 32], iconAnchor: [16, 32],
-    }) });
+    markers[id] = new ViewportMarker([0, lng], { icon: new SceneIcon({
+      image: '', subImage: '', noFrame: false, tier: '',
+    }, id) });
     data[id] = { id, type, subregId: 'fixture', pos: [0, lng], x: lng, y: 0, z: 0, tier: 0 };
     (types[type] ??= []).push(id);
   };
@@ -44,8 +44,7 @@ function fixture() {
     map.eachLayer(candidate => { if (candidate instanceof CanvasClusterGroup) groups.push(candidate); });
     return groups.flatMap(group => group.getVisibleLayers());
   };
-  const inner = (marker: L.Marker) => marker.getElement()!.querySelector<HTMLElement>(`.${styles.markerInner}`)!;
-  return { layer, add, visible, inner, map, flush };
+  return { layer, add, visible, map, flush };
 }
 
 it('starts new filter clusters at zero opacity on their first canvas paint', () => {
@@ -61,18 +60,46 @@ it('starts new filter clusters at zero opacity on their first canvas paint', () 
 });
 
 it('does not restart the appearance of retained clusters when members are added', () => {
-  const { layer, add, visible, inner, flush } = fixture();
+  const { layer, add, visible, flush } = fixture();
   add('first', 'a', 0); add('first', 'b', 1);
   layer.applyFilter(['first']);
   flush();
-  const retained = visible()[0], node = retained.getElement();
-  inner(retained).classList.remove(styles.appearing);
+  const retained = visible()[0];
+  setMarkerState(retained, { appearing: false });
   add('first', 'far', 300);
   layer.applyFilter(['first']);
   flush();
   expect(visible()).toContain(retained);
-  expect(retained.getElement()).toBe(node);
-  expect(inner(retained).classList.contains(styles.appearing)).toBe(false);
+  expect(retained.getElement()).toBeUndefined();
+  expect(getMarkerState(retained).appearing).toBe(false);
   const introduced = visible().find(marker => marker !== retained)!;
-  expect(inner(introduced).classList.contains(styles.appearing)).toBe(true);
+  expect(getMarkerState(introduced).appearing).toBe(true);
+});
+
+it('clears an outgoing child fade when a filtered aggregate expands back into individual points', () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  const { layer, add, visible, map } = fixture();
+  add('first', 'a', 0); add('first', 'b', 1);
+  map.setZoom(2);
+  layer.applyFilter(['first']);
+  const children = visible();
+  expect(children).toHaveLength(2);
+  expect(children.every(marker => !(marker instanceof CanvasClusterMarker))).toBe(true);
+  setMarkerState(children[0], { selected: true, checked: true });
+
+  layer.applyFilter([]);
+  expect(children.every(marker => getMarkerState(marker).disappearing)).toBe(true);
+  vi.advanceTimersByTime(160);
+  expect(children.every(marker => !map.hasLayer(marker))).toBe(true);
+
+  map.setZoom(0);
+  layer.applyFilter(['first']);
+  expect(visible()).toHaveLength(1);
+  expect(visible()[0]).toBeInstanceOf(CanvasClusterMarker);
+  expect(children.every(marker => !map.hasLayer(marker))).toBe(true);
+
+  map.setZoom(2);
+  expect(new Set(visible())).toEqual(new Set(children));
+  expect(children.every(marker => map.hasLayer(marker) && !getMarkerState(marker).disappearing)).toBe(true);
+  expect(getMarkerState(children[0])).toMatchObject({ selected: true, checked: true });
 });

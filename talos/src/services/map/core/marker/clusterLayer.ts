@@ -3,7 +3,7 @@ import { createCanvasAwareClusterGroup } from '@/services/map/core/canvas/canvas
 import type { CanvasClusterGroup } from '@/services/map/core/canvas/clusterGroup';
 import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
-import styles from '@/services/map/core/marker/marker.module.scss';
+import { SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
 import { emitPreviewLeave } from '@/services/map/core/marker/markerRenderer';
@@ -85,7 +85,7 @@ export class ClusterLayer {
         }
         const iconUrl = getItemIconUrl(type.key);
         const hasSubIcon = Boolean(type.subIcon);
-        const subIconUrl = hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
+        const subIconUrl = !type.noFrame && hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
 
         this.clusterGroupsByType[type.key] = createCanvasAwareClusterGroup(this.deps.map, {
             expandOnClick: true,
@@ -94,42 +94,8 @@ export class ClusterLayer {
             iconCreateFunction: (cluster) => {
                 const count = cluster.getChildCount();
 
-                if (type.noFrame) {
-                    return L.divIcon({
-                        html: `<div class="${styles.noFrameInner} ${styles.clusterMarker}">
-                                  <img src="${iconUrl}" class="${styles.noFrameImage}" alt="${type.key}" />
-                                  <span class="${styles.clusterCount}">${count}</span>
-                               </div>`,
-                        className: `${styles.noFrameMarkerIcon} marker-cluster-custom`,
-                        iconSize: [50, 50],
-                        iconAnchor: [25, 25],
-                    });
-                }
-
-                if (hasSubIcon) {
-                    return L.divIcon({
-                        html: `<div class="${styles.markerInner} ${styles.clusterMarker}">
-                                  <div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div>
-                                  <div class="${styles.subIconContainer}">
-                                      <div class="${styles.subIcon}" style="background-image: url(${subIconUrl})"></div>
-                                  </div>
-                                  <span class="${styles.clusterCount}">${count}</span>
-                               </div>`,
-                        className: `${styles.FrameMarkerIcon} marker-cluster-custom`,
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                    });
-                }
-
-                return L.divIcon({
-                    html: `<div class="${styles.markerInner} ${styles.clusterMarker}">
-                              <div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div>
-                              <span class="${styles.clusterCount}">${count}</span>
-                           </div>`,
-                    className: `${styles.FrameMarkerIcon} marker-cluster-custom`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                });
+                return new SceneIcon({ image: iconUrl, subImage: subIconUrl,
+                    noFrame: Boolean(type.noFrame), tier: '', count: String(count) }, type.key);
             },
         });
     }
@@ -223,7 +189,7 @@ export class ClusterLayer {
                 clusterGroup.addTo(this.deps.map);
             }
             if (addedIds.length > 0) {
-                this.animateVisibleMarkers(clusterGroup, addedIds, styles.appearing, retained);
+                this.animateVisibleMarkers(clusterGroup, addedIds, 'appearing', retained);
             }
         });
     }
@@ -342,53 +308,38 @@ export class ClusterLayer {
             if (toRemove.length > 0) {
                 this.fadeOutAndRemove(clusterGroup, typeKey, toRemove);
             } else if (toAdd.length > 0 || removalWasCancelled) {
-                this.animateVisibleMarkers(clusterGroup, desiredIds, styles.appearing, retained);
+                this.animateVisibleMarkers(clusterGroup, desiredIds, 'appearing', retained);
             }
         });
     }
 
-    private getVisibleMarkerInners(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>, retained?: ReadonlySet<L.Marker>) {
+    private getVisibleMarkers(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>, retained?: ReadonlySet<L.Marker>) {
         const markerDict = this.deps.getMarkerDict();
-        const visibleInners = new Set<HTMLElement>();
-
+        const visible = new Set<L.Marker>();
         for (const markerId of markerIds) {
             const layer = markerDict[markerId];
             if (!(layer instanceof L.Marker) || !clusterGroup.hasLayer(layer)) continue;
-
-            // Clustered child markers do not own DOM nodes. getVisibleParent resolves either
-            // the marker itself or the cluster icon that is actually painted by Leaflet.
-            const visibleLayer = clusterGroup.getVisibleParent(layer);
-            if (visibleLayer && retained?.has(visibleLayer)) continue;
-            const markerRoot = visibleLayer?.getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (inner?.isConnected) visibleInners.add(inner);
+            const parent = clusterGroup.getVisibleParent(layer);
+            if (parent && !retained?.has(parent) && this.deps.map.hasLayer(parent)) visible.add(parent);
         }
-
-        return visibleInners;
+        return visible;
     }
 
     private clearVisibleAnimation(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>) {
-        this.getVisibleMarkerInners(clusterGroup, markerIds).forEach((inner) => {
-            inner.classList.remove(styles.appearing, styles.disappearing);
+        this.getVisibleMarkers(clusterGroup, markerIds).forEach(marker => {
+            setMarkerState(marker, { appearing: false, disappearing: false });
         });
     }
 
     private animateVisibleMarkers(
         clusterGroup: CanvasClusterGroup,
         markerIds: Iterable<string>,
-        animationClass: string,
+        animation: 'appearing' | 'disappearing',
         retained?: ReadonlySet<L.Marker>,
     ) {
-        // Canvas cluster reconciliation is synchronous. Set appearance before its
-        // first scheduled paint; a deferred rAF exposes one fully opaque frame.
-        const visibleInners = [...this.getVisibleMarkerInners(clusterGroup, markerIds, retained)];
-        if (visibleInners.length === 0) return;
-
-        visibleInners.forEach((inner) => {
-            inner.classList.remove(styles.appearing, styles.disappearing);
-        });
-        visibleInners.forEach((inner) => {
-            inner.classList.add(animationClass);
+        // Reconciliation is synchronous: publish the fade before the first paint.
+        this.getVisibleMarkers(clusterGroup, markerIds, retained).forEach(marker => {
+            setMarkerState(marker, { appearing: animation === 'appearing', disappearing: animation === 'disappearing' });
         });
     }
 
@@ -403,7 +354,7 @@ export class ClusterLayer {
     }
 
     private fadeOutAndRemove(clusterGroup: CanvasClusterGroup, typeKey: string, markerIds: string[]) {
-        this.animateVisibleMarkers(clusterGroup, markerIds, styles.disappearing);
+        this.animateVisibleMarkers(clusterGroup, markerIds, 'disappearing');
         markerIds.forEach(emitPreviewLeave);
 
         const pendingMarkerIds = new Set(markerIds);
@@ -435,7 +386,7 @@ export class ClusterLayer {
                 const layer = markerDict[id];
                 return Boolean(layer) && clusterGroup.hasLayer(layer);
             });
-            this.animateVisibleMarkers(clusterGroup, remainingIds, styles.appearing, retained);
+            this.animateVisibleMarkers(clusterGroup, remainingIds, 'appearing', retained);
         }, MARKER_REMOVAL_DELAY_MS);
 
         this.pendingRemovalBatches[typeKey] = {

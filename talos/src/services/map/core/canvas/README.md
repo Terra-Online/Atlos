@@ -2,7 +2,8 @@
 
 This is Atlos's internal Canvas renderer. `canvasMarkerStyle.ts` maps the official CSS class names. These modules are implementation details, not a public rendering or styling API.
 
-- `markerViewport`: Leaflet membership and semantic event nodes.
+- `markerModel`: explicit artwork (`SceneIcon`) and visual state, shared by both render backends.
+- `markerViewport`: node-free Leaflet membership, positions, icon anchors and overlay ownership.
 - `canvasMarkerSurface`: scene lifecycle, hit testing, visibility, display density and drawing coordination.
 - `canvasMarkerPaint`: official artwork, typography and cached raster sprites. Settled opaque pulses reuse frame/foreground artwork and a shared ring clock; fades and geometry changes retain the original composite path. Sprite density is independent of viewport density; small sprites use at least 2× sampling, while the viewport uses `max(2, devicePixelRatio)`. Hit testing remains in CSS pixels.
 - `canvasSpriteBatch`: instanced GPU composition into a stable scratch canvas sized to the viewport buffer. A small viewport/scissor renders each damaged rectangle at the bottom-left of that buffer; a cropped, clipped `copy` replaces the corresponding visible pixels, including transparency. Dirty rectangles never resize the drawing buffer. No CPU pixel readback is used in rendering. The surface owns the pure Canvas2D fallback.
@@ -11,13 +12,33 @@ This is Atlos's internal Canvas renderer. `canvasMarkerStyle.ts` maps the offici
 
 Display changes invalidate cached poses without replacing marker identities or restarting animation channels.
 
-Semantic mutations are compared against the current artwork, motion, opacity and stack
-before invalidating pixels. No-op class writes must not turn retained pans into repaint loops.
+Visual updates are compared against the current artwork, motion, opacity and stack
+before invalidating pixels. No-op state writes must not turn retained pans into repaint loops.
 Region retirement releases Leaflet render objects while the data loader retains raw data.
 After region transitions settle, unused decoded assets are dropped and live atlas slots
 are repacked only when at least half the texture allocation can be released.
 
-The connected semantic tree is clipped under the map's event container, outside the moving Leaflet pane. Both elements and their pseudo-elements have CSS animation/transition work disabled; visible animation belongs exclusively to the Canvas scene. Keep keyboard and delegated link events connected when changing this containment boundary.
+Points and aggregate representatives create no icon elements, including detached elements.
+`ViewportMarker.getElement()` returns `undefined`; membership and visibility callers use
+the map and cluster groups instead. `SceneIcon` retains Leaflet's icon anchor contract
+without calling `createIcon()`. Ordinary markers, no-frame artwork, sub-icons, tier
+labels and cluster counts all enter the painter directly. State lives with logical
+markers while filtering or aggregation removes their visible representation. There is
+no point DOM parser or MutationObserver synchronization channel.
+
+The surface hit index dispatches the original input through Leaflet's Canvas event
+adapter. Preserve its preclick, FeatureGroup propagation, coordinates and
+`bubblingMouseEvents` behavior, and explicitly check Leaflet's drag suppression before
+dispatching a click. Native map controls and separate DOM labels/locator markers retain
+their own event paths.
+
+A single clipped button under the map container provides a bounded keyboard proxy,
+independent of point count. Arrow keys change its logical target, offscreen navigation
+pans to that point, and native button activation uses the same marker event path. Its
+focus survives camera moves; removing a target releases that reference. It is an initial
+navigation representation, not a complete screen-reader catalogue. Pointer hit testing
+and ordinary interaction do not create or focus proxies per point. Further accessibility
+work must keep this bounded scene architecture.
 
 Damage bounds include shadows and decorations. All intersecting points are drawn in their existing order, including static points behind/above a pulse. Layer splitting is restricted to group opacity 1 because independently fading overlapping parts would change their appearance. Per-part atlas bindings must be released on representation changes, visibility changes and removal.
 
