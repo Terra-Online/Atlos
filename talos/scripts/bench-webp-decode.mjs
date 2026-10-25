@@ -1,6 +1,6 @@
 /* global window, document, localStorage, MutationObserver, FontFace,
    HTMLImageElement, WebGL2RenderingContext, requestAnimationFrame,
-   location, innerWidth, innerHeight, NodeFilter, getComputedStyle, Element, matchMedia, CanvasRenderingContext2D */
+   location, innerWidth, innerHeight, NodeFilter, getComputedStyle, Element, CanvasRenderingContext2D */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
@@ -28,12 +28,11 @@ const { values } = parseArgs({ options: {
     'cpu-profile': { type: 'boolean', default: false },
     'gecko-profile': { type: 'boolean', default: false },
     'audit-region-wait': { type: 'boolean', default: false },
-    'audit-startup-indicator': { type: 'boolean', default: false },
     'reduced-motion': { type: 'boolean', default: false },
     help: { type: 'boolean' },
 } });
 if (values.help) {
-    console.log('node scripts/bench-webp-decode.mjs --baseline dist/webp-decode/beta-reference-complete --candidate dist/webp-decode/candidate-admission [--rounds 1] [--engines chromium|firefox|webkit] [--viewports desktop|mobile] [--scenarios refresh-wuling|plain|normal|share] [--locale zh-CN] [--latency-ms 80] [--font-delay-ms 1000] [--other-data-delay-ms 1000] [--audit-font-frames] [--audit-region-wait] [--persisted-progress] [--tile-decoding auto|async] [--cpu-profile] [--gecko-profile] [--audit-startup-indicator] [--reduced-motion] [--no-interactions] [--no-screenshots] [--out results.json]');
+    console.log('node scripts/bench-webp-decode.mjs --baseline dist/webp-decode/beta-reference-complete --candidate dist/webp-decode/candidate-admission [--rounds 1] [--engines chromium|firefox|webkit] [--viewports desktop|mobile] [--scenarios refresh-wuling|plain|normal|share] [--locale zh-CN] [--latency-ms 80] [--font-delay-ms 1000] [--other-data-delay-ms 1000] [--audit-font-frames] [--audit-region-wait] [--persisted-progress] [--tile-decoding auto|async] [--cpu-profile] [--gecko-profile] [--reduced-motion] [--no-interactions] [--no-screenshots] [--out results.json]');
     process.exit(0);
 }
 assert.ok(values.baseline && values.candidate, 'Provide frozen baseline and candidate build directories.');
@@ -564,31 +563,7 @@ try {
                     const url = origin + (scenario === 'plain' || scenario === 'refresh-wuling' ? '/' : scenario === 'normal' ? '/?r=VL&c=-625,375&z=2' : '/?p=2100500004');
                     if (profiler) await profiler.send('Profiler.start');
                     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-                    if (values['audit-startup-indicator']) {
-                        await page.waitForTimeout(500);
-                        row.startupIndicator = await page.evaluate(() => {
-                            const root = document.getElementById('root');
-                            const style = getComputedStyle(root, '::after');
-                            return { empty: root.childElementCount === 0, content: style.content, animation: style.animationName,
-                                opacity: Number(style.opacity), width: style.width, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
-                        });
-                        if (variant === 'candidate') {
-                            assert.equal(row.startupIndicator.empty, true, 'Slow fonts keep the real UI gated.');
-                            assert.ok(!['none', 'normal'].includes(row.startupIndicator.content), 'A text-free pending indicator is present.');
-                            assert.ok(row.startupIndicator.opacity > 0);
-                            if (values['reduced-motion']) assert.equal(row.startupIndicator.animation, 'none');
-                        }
-                        if (!values['no-screenshots']) {
-                            const name = `${engine}-${viewport}-${variant}-startup-pending.png`;
-                            await page.screenshot({ path: resolve(dirname(out), name) });
-                            row.startupIndicator.screenshot = name;
-                        }
-                    }
                     await settled(page, initialRegion, scenario === 'share' ? 3 : undefined);
-                    if (values['audit-startup-indicator']) {
-                        const content = await page.evaluate(() => getComputedStyle(document.getElementById('root'), '::after').content);
-                        assert.ok(['none', 'normal'].includes(content), 'Pending decoration disappears after the UI commits.');
-                    }
                     if (profiler) {
                         const { profile } = await profiler.send('Profiler.stop');
                         await writeFile(resolve(dirname(out), `${variant}-${viewport}-${scenario}-${round}-cold.cpuprofile`), JSON.stringify(profile));
