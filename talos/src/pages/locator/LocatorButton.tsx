@@ -7,6 +7,7 @@ import { useTranslateUI } from '@/locale';
 import { getEFBindingStatus } from '@/services/endfield';
 import { getCachedBinding, setCachedBinding } from '@/services/cache/backend';
 import { SubregionSwitch } from '@/pages/regSwitch/regSwitch';
+import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
 import PopoverTooltip from '@/component/popover/popover';
 import regSwitchStyles from '@/pages/regSwitch/regSwitch.module.scss';
 import styles from '@/pages/locator/Locator.module.scss';
@@ -52,6 +53,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
     const [mobileExpanded, setMobileExpanded] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
     const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
+    const menu = useSwitchMenu(bound && variant === 'desktop');
     const mobileShellRef = useRef<HTMLDivElement | null>(null);
     const mobilePrimaryButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -295,24 +297,29 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
 
     return (
         <>
-            <div className={classNames(regSwitchStyles.regswitch, styles.locatorSwitch)}>
+            <div ref={menu.ref} className={classNames(regSwitchStyles.regswitch, styles.locatorSwitch)}>
                 <PopoverTooltip
                     content={t('mapControls.locationTracking')}
                     placement="left"
                     disabled={!isSidebarOpen}
                 >
                     <div
+                        {...menu.getItemProps('locator')}
                         className={classNames(
                             regSwitchStyles.regItem,
                             styles.locatorButton,
                             viewMode !== 'off' && regSwitchStyles.selected,
                         )}
                     >
-                        <IconButton className={regSwitchStyles.mainAction} data-guide="locator-button" label={t('mapControls.locationTracking')} pressed={viewMode !== 'off'} onClick={handleClick}>
+                        <IconButton className={regSwitchStyles.mainAction} data-guide="locator-button" label={t('mapControls.locationTracking')} pressed={viewMode !== 'off'} onClick={() => {
+                            menu.open('locator');
+                            handleClick();
+                        }}>
                             <div className={regSwitchStyles.icon}><Icon /></div>
                         </IconButton>
                         {bound && (
                             <SubregionSwitch
+                                open={menu.activeKey === 'locator'}
                                 showIndicator={false}
                                 items={[
                                     {

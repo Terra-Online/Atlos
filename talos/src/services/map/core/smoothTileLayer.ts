@@ -47,6 +47,16 @@ export class SmoothTileLayer extends L.TileLayer {
         this.suffix = suffix;
     }
 
+    override createTile(coords: L.Coords, done: L.DoneCallback): HTMLImageElement {
+        // Leaflet owns viewport admission, cancellation and tile disposal.
+        const image = super.createTile(coords, done) as HTMLImageElement;
+        image.decoding = 'async';
+        // GridLayer creates the current view here. Declare that demand before
+        // Chrome's later layout-based priority boost; speculative tiles stay low.
+        image.fetchPriority = 'high';
+        return image;
+    }
+
     _isValidTile(coords: L.Coords): boolean {
         return (
             isLeafletValidTile(this, coords) &&

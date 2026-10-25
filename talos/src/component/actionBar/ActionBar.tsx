@@ -136,23 +136,22 @@ const ActionBar = memo(({
         if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
         frameRef.current = undefined;
         const layer = layerRef.current;
-        if (!layer) return;
-        layer.inert = true;
+        if (layer) layer.inert = true;
         registration.current?.setActive(false);
-        if (notifyDismiss && layer.dataset.open === 'true') {
+        if (notifyDismiss && layer?.dataset.open === 'true') {
             onFloatingDismiss?.();
         }
 
         const finish = () => {
             try {
-                layer.hidePopover?.();
+                layer?.hidePopover?.();
             } catch {
                 // Already hidden.
             }
             registration.current?.dispose();
             registration.current = null;
-            layer.dataset.open = 'false';
-            layer.classList.remove(styles.floatingLayerClosing);
+            if (layer) layer.dataset.open = 'false';
+            layer?.classList.remove(styles.floatingLayerClosing);
             rootHoverRef.current = false;
             layerHoverRef.current = false;
             rootFocusRef.current = false;
@@ -160,7 +159,7 @@ const ActionBar = memo(({
             touchPinnedRef.current = false;
         };
 
-        if (immediate || !isPopoverOpen(layer)) {
+        if (immediate || !layer || !isPopoverOpen(layer)) {
             finish();
             return;
         }
@@ -225,6 +224,10 @@ const ActionBar = memo(({
             hideLayer(true, false);
         };
     }, [clearTimers, hideLayer, ownerWindow]);
+
+    useEffect(() => {
+        if (!isFloating || items.length === 0) hideLayer(true, false);
+    }, [hideLayer, isFloating, items.length]);
 
     useEffect(() => {
         if (!isFloating || controlled) return undefined;

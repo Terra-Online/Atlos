@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
 import { canvasSurface } from '@/services/map/core/canvas/canvasMarkerSurface';
-import { clusterPositions } from '@/services/map/core/canvas/spatialClusters';
+import { SpatialClusterCache } from '@/services/map/core/canvas/spatialClusters';
 
 export interface CanvasClusterOptions extends L.LayerOptions {
   expandOnClick?: boolean;
@@ -19,6 +19,11 @@ export class CanvasClusterMarker extends ViewportMarker {
   getChildCount(): number { return this.children.length; }
   getAllChildMarkers(): L.Marker[] { return [...this.children]; }
 }
+interface Layout {
+  scale: number; radius: number; disableAt: number; crs: L.CRS;
+  icon: CanvasClusterOptions['iconCreateFunction'];
+  markers: readonly L.Marker[];
+}
 const childrenOf = (marker: L.Marker): readonly L.Marker[] => marker instanceof CanvasClusterMarker ? marker.children : [marker];
 
 /** Logical members and visible representations are separate; no external cluster runtime is needed. */
@@ -29,7 +34,9 @@ export class CanvasClusterGroup extends L.Layer {
   private others = L.layerGroup();
   private display = L.featureGroup();
   private parents = new Map<L.Marker, L.Marker>();
-  private layouts = new Map<number, readonly L.Marker[]>();
+  private layouts = new Map<number, Layout>();
+  private geometry = new SpatialClusterCache();
+  private displayed?: Layout;
   private expanded = new Set<L.Marker>();
   private pending?: readonly L.Marker[];
   private pendingFrame = 0;
@@ -43,7 +50,7 @@ export class CanvasClusterGroup extends L.Layer {
   override onRemove(map: L.Map): this {
     map.off('zoomend', this.zoomEnd); this.cancelPending();
     this.display.remove(); this.display.clearLayers(); this.others.remove();
-    this.parents.clear(); this.expanded.clear(); this.owner = undefined;
+    this.parents.clear(); this.expanded.clear(); this.owner = undefined; this.displayed = undefined;
     for (const [timer, callback] of this.callbacks) { clearTimeout(timer); callback(); }
     this.callbacks.clear(); return this;
   }
@@ -92,22 +99,32 @@ export class CanvasClusterGroup extends L.Layer {
     this.cancelPending(); this.layouts.clear(); this.expanded.clear(); this.refresh(false);
   }
   private cancelPending(): void { cancelAnimationFrame(this.pendingFrame); this.pendingFrame = 0; this.pending = undefined; }
-  private layout(level: number): readonly L.Marker[] {
+  private layout(level: number): Layout {
+    const map = this.owner!, scale = map.getZoomScale(level, 0), radius = this.options.maxClusterRadius ?? 60;
+    const disableAt = this.options.disableClusteringAtZoom ?? 2, crs = map.options.crs!;
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- Identity only; invocation keeps the options receiver.
+    const icon = this.options.iconCreateFunction;
     const cached = this.layouts.get(level);
-    if (cached) return cached;
-    const map = this.owner!;
+    if (cached && cached.scale === scale && cached.radius === radius && cached.disableAt === disableAt
+      && cached.crs === crs && cached.icon === icon) return cached;
     let result: L.Marker[];
-    if (level >= (this.options.disableClusteringAtZoom ?? 2)) result = [...this.members.values()];
+    if (level >= disableAt) result = [...this.members.values()];
     else {
       const previous = new Map(this.getVisibleLayers().filter((marker): marker is CanvasClusterMarker => marker instanceof CanvasClusterMarker).map(marker => [marker.key, marker]));
       const positions = [...this.members.values()].map(marker => ({ item: marker, ...map.project(marker.getLatLng(), 0) }));
-      result = clusterPositions(positions, map.getZoomScale(level, 0), this.options.maxClusterRadius ?? 60).map(bucket => {
-        if (bucket.members.length === 1) return bucket.members[0];
-        const key = bucket.members.map(marker => L.stamp(marker)).join(',');
-        return previous.get(key) ?? new CanvasClusterMarker(this, bucket.members, map.unproject([bucket.x, bucket.y], 0), key);
+      result = this.geometry.get(positions, scale, radius).map(bucket => {
+        const members = bucket.members.map(index => positions[index].item);
+        if (members.length === 1) return members[0];
+        const key = members.map(marker => L.stamp(marker)).join(','), position = map.unproject([bucket.x, bucket.y], 0);
+        const retained = previous.get(key);
+        if (!retained) return new CanvasClusterMarker(this, members, position, key);
+        if (!retained.getLatLng().equals(position)) retained.setLatLng(position);
+        if (this.displayed?.icon !== icon) retained.setIcon(this.options.iconCreateFunction(retained));
+        return retained;
       });
     }
-    this.layouts.set(level, result); return result;
+    const layout = { scale, radius, disableAt, crs, icon, markers: result };
+    this.layouts.set(level, layout); return layout;
   }
   private refresh(animate: boolean): void {
     const map = this.owner;
@@ -118,8 +135,9 @@ export class CanvasClusterGroup extends L.Layer {
       const position = surface.visualPosition(marker) ?? marker.getLatLng();
       for (const child of childrenOf(marker)) origins.set(child, position);
     }
+    const layout = this.layout(Math.round(map.getZoom())); this.displayed = layout;
     const desired = new Set<L.Marker>(); this.parents.clear();
-    for (const marker of this.layout(Math.round(map.getZoom()))) {
+    for (const marker of layout.markers) {
       const members = childrenOf(marker);
       if (marker instanceof CanvasClusterMarker && members.some(child => this.expanded.has(child))) {
         for (const child of members) { desired.add(child); this.parents.set(child, child); }
@@ -152,7 +170,11 @@ export class CanvasClusterGroup extends L.Layer {
   }
   private zoomEnd = (): void => {
     const pending = this.pending;
-    this.expanded.clear(); this.refresh(true);
+    const expanded = this.expanded.size > 0;
+    this.expanded.clear();
+    // Fractional wheel gestures often finish inside the same aggregation level.
+    // Keep parent links and timelines unless the layout or expansion actually changed.
+    if (expanded || this.layout(Math.round(this.owner!.getZoom())) !== this.displayed) this.refresh(true);
     if (pending) this.pendingFrame = requestAnimationFrame(() => {
       this.cancelPending();
       const clusters = new Set<CanvasClusterMarker>();

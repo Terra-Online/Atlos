@@ -3,7 +3,6 @@ import type { Face, Region } from './fontShards';
 export type Parts = Partial<Record<Face, string[]>>;
 export interface Requirements {
     ui: Parts;
-    catalog: Parts;
     shell: Parts;
 }
 
@@ -12,4 +11,6 @@ export interface Requirements {
 export const manifests: Partial<Record<Region, string>> = {};
 export const requirements: Partial<Record<Region, Requirements>> = {};
 /** Build-time resolved shell URLs used to overlap byte fetching with manifest loading. */
-export const shellFiles: Partial<Record<Region, Partial<Record<Face, string[]>>>> = {};
+export const shellFiles: Partial<
+    Record<Region, Partial<Record<Face, string[]>>>
+> = {};

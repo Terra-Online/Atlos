@@ -5,6 +5,7 @@ import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
+import type { IMapView } from './types';
 
 // A marker link focuses one content item.
 export type MarkerContentTarget = { kind: 'image'; id: string } | { kind: 'comment'; id: string };
@@ -26,8 +27,8 @@ export interface SharedLocationTarget {
 }
 
 type PendingNavigation =
-    | { kind: 'point'; target: SharedPointTarget }
-    | { kind: 'location'; target: SharedLocationTarget };
+    ({ kind: 'point'; target: SharedPointTarget }
+    | { kind: 'location'; target: SharedLocationTarget }) & { initialView?: IMapView };
 
 const TARGET_ZOOM = 3.0;
 
@@ -62,7 +63,7 @@ const normalizeTarget = (target: SharedPointTarget): SharedPointTarget => ({
     content: target.content,
 });
 
-const navigateToPoint = async (target: SharedPointTarget, isCurrent: () => boolean): Promise<void> => {
+const navigateToPoint = async (target: SharedPointTarget, isCurrent: () => boolean, animate = true): Promise<void> => {
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== target.regionKey) {
         regionStore.setCurrentRegion(target.regionKey);
@@ -112,19 +113,20 @@ const navigateToPoint = async (target: SharedPointTarget, isCurrent: () => boole
 
     const targetZoom = Math.min(TARGET_ZOOM, mapCore.map.getMaxZoom());
     const [lat, lng] = markerData.pos;
-    const moving = waitForMoveEnd(mapCore.map);
-    mapCore.map.flyTo([lat, lng], targetZoom, {
-        animate: true,
-        duration: 0.9,
-    });
-    await moving;
+    if (animate) {
+        const moving = waitForMoveEnd(mapCore.map);
+        mapCore.map.flyTo([lat, lng], targetZoom, { animate: true, duration: 0.9 });
+        await moving;
+    } else {
+        mapCore.map.setView([lat, lng], targetZoom, { animate: false });
+    }
     if (!isCurrent()) return;
 
     await mapCore.markerLayer.ensureMarkerVisible(target.pointId);
     if (isCurrent()) mapCore.markerLayer.startMarkerPulse(target.pointId);
 };
 
-const navigateToLocation = async (target: SharedLocationTarget, isCurrent: () => boolean): Promise<void> => {
+const navigateToLocation = async (target: SharedLocationTarget, isCurrent: () => boolean, animate = true): Promise<void> => {
     const regionStore = useRegion.getState();
     if (regionStore.currentRegionKey !== target.regionKey) {
         regionStore.setCurrentRegion(target.regionKey);
@@ -153,7 +155,40 @@ const navigateToLocation = async (target: SharedLocationTarget, isCurrent: () =>
         mapCore.map.getMaxZoom(),
         Math.max(mapCore.map.getMinZoom(), requestedZoom),
     );
-    mapCore.map.flyTo(center, zoom, { animate: true, duration: 0.9 });
+    if (animate) mapCore.map.flyTo(center, zoom, { animate: true, duration: 0.9 });
+    else mapCore.map.setView(center, zoom, { animate: false });
+};
+
+// Resolve a boot URL before constructing Leaflet, so its first tile/marker view
+// is the destination rather than a saved view followed by a 0.9s flight.
+// Keep this transient: merely inspecting a URL must not overwrite saved views.
+export const prepareInitialNavigation = async (): Promise<void> => {
+    const navigation = pendingNavigation;
+    if (!navigation || mapCoreRef) return;
+    const config = REGION_DICT[navigation.target.regionKey];
+    if (!config) return;
+    let view: IMapView;
+    if (navigation.kind === 'point') {
+        const point = await findMarkerById(navigation.target.pointId);
+        if (!point || !config.subregions.includes(point.subregId)) return;
+        view = { lat: point.pos[0], lng: point.pos[1], zoom: TARGET_ZOOM };
+        if (pendingNavigation !== navigation || mapCoreRef) return;
+        const layer = getLayerByTier(point.tier ?? 0);
+        if (layer && (layer === 'M' || config.layers?.includes(layer))) {
+            useLayerStore.getState().setCurrentLayer(layer);
+        }
+    } else {
+        view = { lat: navigation.target.center[0], lng: navigation.target.center[1],
+            zoom: navigation.target.zoom ?? config.initialZoom };
+    }
+    if ([view.lat, view.lng, view.zoom].every(Number.isFinite)) navigation.initialView = view;
+};
+
+export const getInitialNavigationView = () => {
+    const navigation = pendingNavigation;
+    return navigation?.initialView && !mapCoreRef
+        ? { regionId: navigation.target.regionKey, view: navigation.initialView, kind: navigation.kind }
+        : undefined;
 };
 
 const flushPendingNavigation = async (): Promise<void> => {
@@ -163,8 +198,9 @@ const flushPendingNavigation = async (): Promise<void> => {
     const version = navigationVersion;
     const owner = mapCoreRef;
     const isCurrent = () => version === navigationVersion && mapCoreRef === owner;
-    if (navigation.kind === 'point') await navigateToPoint(navigation.target, isCurrent);
-    else await navigateToLocation(navigation.target, isCurrent);
+    const animate = !(navigation.initialView && !owner.currentRegionId);
+    if (navigation.kind === 'point') await navigateToPoint(navigation.target, isCurrent, animate);
+    else await navigateToLocation(navigation.target, isCurrent, animate);
 };
 
 export const registerSharedPointMapCore = (mapCore: MapCore): (() => void) => {

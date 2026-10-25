@@ -4,12 +4,18 @@ import { MarkerMotion, curves, ease } from '@/services/map/core/canvas/canvasMar
 export interface MarkerArt {
   image: string; subImage: string; noFrame: boolean; tier: string; count?: string;
 }
-export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width: number; height: number; version?: number }
+export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width: number; height: number; version?: number; parts?: readonly Sprite[] }
 export interface AnimatedSprite { render(now: number): Sprite }
 export interface PulseLayers { underlay?: Sprite; overlay: Sprite }
-type PaintLayer = 'all' | 'underlay' | 'overlay';
-interface Asset { image: HTMLImageElement; ready: boolean }
+type PaintLayer = 'all' | 'underlay' | 'overlay' | 'body' | 'count';
+interface Asset { image: HTMLImageElement; ready: boolean; used: number }
+const MAX_IDLE_IMAGES = 32;
+const MAX_IDLE_IMAGE_BYTES = 8 * 1024 * 1024;
 const WHITE = 'rgb(248,248,248)';
+// Shared raster parts require stable raster sampling. Vector/unknown sources keep
+// the authored whole-sprite path (SVG rasterization can depend on its draw target).
+const isRaster = (url: string) => !url || /^data:image\/(?:png|jpe?g|webp|avif)[;,]/i.test(url)
+  || /\.(?:png|jpe?g|webp|avif)$/i.test(url.split(/[?#]/, 1)[0]);
 const FRAME_ART: MarkerArt = { image: '', subImage: '', noFrame: false, tier: '' };
 const accent = (value: number) => `rgb(${248 + 7 * value},${248 - 52 * value},${248 - 208 * value})`;
 const tiers: Record<string, string> = {
@@ -19,6 +25,7 @@ const tiers: Record<string, string> = {
 /** Instance-owned assets. A state change never clears assets or another point's pixels. */
 export class MarkerPainter {
   private assets = new Map<string, Asset>();
+  private assetUse = 0;
   private sprites = new Map<string, Sprite>();
   private shared?: Map<string, WeakRef<Sprite>>;
   private sharedInsertions = 0;
@@ -28,6 +35,9 @@ export class MarkerPainter {
   private framePulses = new Map<string, AnimatedSprite>();
   private pulseFrame = NaN;
   private artKeys = new WeakMap<MarkerArt, string>();
+  private spriteUrls = new WeakMap<Sprite, readonly string[]>();
+  private clusterBodies = new WeakMap<MarkerArt, MarkerArt>();
+  private rasterized = new WeakMap<Sprite, number>();
   private disposed = false;
   hoverDecoration = '';
   selectedDecoration = '';
@@ -47,42 +57,51 @@ export class MarkerPainter {
     if (!key) { key = JSON.stringify(art); this.artKeys.set(art, key); }
     return `${key}|${this.versions.get(art.image) ?? 0}|${this.versions.get(art.subImage) ?? 0}|${this.versions.get(this.hoverDecoration) ?? 0}|${this.versions.get(this.selectedDecoration) ?? 0}|${this.fontVersion}`;
   }
-  private asset(url: string): HTMLImageElement | undefined {
+  private asset(url: string, priority: 'auto' | 'high' = 'auto'): HTMLImageElement | undefined {
     if (!url) return;
     let asset = this.assets.get(url);
     if (!asset) {
+      const load = (image: HTMLImageElement, ready: () => void) => {
+        let started = false;
+        const decode = () => {
+          if (started) return;
+          started = true;
+          void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(ready);
+        };
+        image.onload = decode;
+        image.src = url;
+        // A warm cache can already have the bytes before load is dispatched.
+        // Start its promise now, but never equate complete with decoded pixels.
+        if (image.complete && image.naturalWidth > 0) decode();
+      };
       const image = new Image();
+      image.decoding = 'async';
+      image.fetchPriority = priority;
       if (this.require2D) image.crossOrigin = 'anonymous';
-      asset = { image, ready: false };
+      asset = { image, ready: false, used: 0 };
       this.assets.set(url, asset);
       const markReady = () => {
-        if (this.disposed || this.assets.get(url) !== asset) return;
+        if (this.disposed || this.assets.get(url) !== asset || asset!.image !== image) return;
         asset!.ready = true;
         this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
         this.invalidate(url);
       };
-      image.onload = () => {
-        // Do not expose the asset to the first paint until the browser has
-        // decoded it. This avoids a synchronous decode during canvas drawing.
-        void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(markReady);
-      };
       image.onerror = () => {
         if (this.disposed || this.assets.get(url) !== asset || !this.require2D) return;
         // Preserve existing URL support when a host image does not grant CORS texture access.
-        const fallback = new Image(); asset!.image = fallback;
-        fallback.onload = () => {
+        const fallback = new Image(); fallback.decoding = 'async'; fallback.fetchPriority = image.fetchPriority; asset!.image = fallback;
+        load(fallback, () => {
           if (this.disposed || this.assets.get(url) !== asset) return;
-          void (fallback.decode?.() ?? Promise.resolve()).catch(() => {}).then(() => {
-            if (this.disposed || this.assets.get(url) !== asset) return;
-            asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
-            this.require2D?.(); this.invalidate(url);
-          });
-        };
-        fallback.src = url;
+          asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
+          this.require2D?.(); this.invalidate(url);
+        });
       };
-      image.src = url;
-      if (image.complete && image.naturalWidth) asset.ready = true;
+      load(image, markReady);
     }
+    // Canvas images have no visible DOM box to trigger the browser's normal
+    // priority promotion. Promote an existing buffered request when it enters view.
+    if (!asset.ready && priority === 'high') asset.image.fetchPriority = 'high';
+    asset.used = ++this.assetUse;
     return asset.ready ? asset.image : undefined;
   }
   isReady(url: string): boolean { return !url || this.assets.get(url)?.ready === true; }
@@ -107,6 +126,7 @@ export class MarkerPainter {
     ctx.save();
     ctx.imageSmoothingQuality = 'high';
     ctx.translate(0, art.noFrame ? motion.shift.value(now) : -16);
+    if (layer === 'count') { this.paintCount(ctx, art); ctx.restore(); return; }
     if (!art.noFrame && layer !== 'overlay') {
       // Both official shadowed discs are retained, including their separate shadows.
       // Canvas shadows use backing pixels, unlike paths transformed by the DPR matrix.
@@ -117,7 +137,7 @@ export class MarkerPainter {
       this.circle(ctx, 17, undefined, accent(motion.border.value(now)));
     }
     if (layer === 'underlay') { ctx.restore(); return; }
-    if (layer === 'all' && (!art.noFrame || state.pulsing)) {
+    if ((layer === 'all' || layer === 'body') && (!art.noFrame || state.pulsing)) {
       const pulse = ease(((now - motion.pulseStart) % 1150) / 1150, curves.easeOut);
       const alpha = state.pulsing ? 0.95 * (1 - pulse) : motion.ringAlpha.value(now);
       const radius = (art.noFrame ? 13 : 14) + 1 + (state.pulsing ? 4 + 10 * pulse : motion.ringOffset.value(now));
@@ -165,6 +185,11 @@ export class MarkerPainter {
       ctx.fillStyle = art.tier.startsWith('B') ? WHITE : '#333'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
       ctx.fillText(art.tier, x + width / 2, y + (16 + metrics.fontBoundingBoxAscent - metrics.fontBoundingBoxDescent) / 2); ctx.restore();
     }
+    if (layer !== 'body') this.paintCount(ctx, art);
+    if (state.focus) { ctx.strokeStyle = '#f8f8f8'; ctx.lineWidth = 2; ctx.strokeRect(-size / 2 - 2, -size / 2 - 2, size + 4, size + 4); }
+    ctx.restore();
+  }
+  private paintCount(ctx: CanvasRenderingContext2D, art: MarkerArt): void {
     if (art.count) {
       ctx.save(); ctx.font = this.countFont;
       const metrics = ctx.measureText(art.count);
@@ -176,8 +201,6 @@ export class MarkerPainter {
       ctx.fill(); ctx.shadowColor = 'transparent'; ctx.fillStyle = '#333'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
       ctx.fillText(art.count, x + width / 2, y + (18 + metrics.fontBoundingBoxAscent - metrics.fontBoundingBoxDescent) / 2); ctx.restore();
     }
-    if (state.focus) { ctx.strokeStyle = '#f8f8f8'; ctx.lineWidth = 2; ctx.strokeRect(-size / 2 - 2, -size / 2 - 2, size + 4, size + 4); }
-    ctx.restore();
   }
   sprite(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
     return this.cachedSprite(art, motion, now, 'all');
@@ -185,16 +208,22 @@ export class MarkerPainter {
   private cachedSprite(art: MarkerArt, motion: MarkerMotion, now: number, layer: PaintLayer): Sprite {
     const state = motion.state!;
     const key = layer === 'underlay' ? `underlay|${motion.border.target}|${motion.background.target}`
-      : `${layer}|${this.artKey(art)}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}${+state.disappearing}`;
+      : layer === 'count' ? `count|${art.count}|${+art.noFrame}|${motion.shift.target}|${this.countFont}|${this.fontVersion}`
+        : `${layer}|${this.artKey(art)}|${motion.kind}|${+state.selected}${+state.checked}${+state.offLayer}${+state.hover}${+state.focus}|${layer === 'body' ? 0 : +state.disappearing}`;
     let sprite = this.sprites.get(key) ?? this.shared?.get(key)?.deref();
     if (sprite) return sprite;
     const x = art.noFrame ? -29 : -30, y = art.noFrame ? -34 : -46;
-    const width = art.subImage ? 94 : art.noFrame ? 58 : 60, height = art.noFrame ? 64 : 66;
+    const width = art.subImage && layer !== 'count' ? 94 : art.noFrame ? 58 : 60;
+    const height = art.noFrame ? 64 : 66;
     const canvas = document.createElement('canvas');
     canvas.width = Math.ceil(width * this.ratio); canvas.height = Math.ceil(height * this.ratio);
     const ctx = canvas.getContext('2d')!; ctx.scale(this.ratio, this.ratio); ctx.translate(-x, -y);
     this.paint(ctx, art, motion, now, layer);
     sprite = { canvas, x, y, width: canvas.width / this.ratio, height: canvas.height / this.ratio };
+    this.remember(key, sprite, layer === 'count' ? FRAME_ART : art); return sprite;
+  }
+  private remember(key: string, sprite: Sprite, art: MarkerArt): void {
+    this.spriteUrls.set(sprite, [art.image, art.subImage].filter(Boolean));
     // Entries may still own artwork evicted from the strong cache. Reuse those
     // immutable pixels without retaining additional canvases or uploading copies.
     if (this.shared) {
@@ -206,7 +235,37 @@ export class MarkerPainter {
     }
     // Bounded instance cache, independent of point count. Eviction never removes rendered pixels.
     if (this.sprites.size >= 512) this.sprites.delete(this.sprites.keys().next().value!);
-    this.sprites.set(key, sprite); return sprite;
+    this.sprites.set(key, sprite);
+  }
+  /** Static cluster artwork uploads its body and number badge only once each. */
+  gpuSprite(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
+    if (!art.count || motion.state?.focus || motion.paintActive(now)
+      || !isRaster(art.image) || !isRaster(art.subImage)
+      || art.subImage && (motion.hoverDecoration.target > 0 && !isRaster(this.hoverDecoration)
+        || motion.selectedDecoration.target > 0 && !isRaster(this.selectedDecoration))) return this.sprite(art, motion, now);
+    const key = `composite|${this.artKey(art)}|${motion.flags & 31}|${motion.kind}`;
+    const cached = this.sprites.get(key) ?? this.shared?.get(key)?.deref();
+    if (cached) return cached;
+    let bodyArt = this.clusterBodies.get(art);
+    if (!bodyArt) { bodyArt = { ...art, count: undefined }; this.clusterBodies.set(art, bodyArt); }
+    const body = this.cachedSprite(bodyArt, motion, now, 'body');
+    const badge = this.cachedSprite(art, motion, now, 'count');
+    // The canvas supplies an identity and dimensions; pixels stay on the GPU.
+    // Canvas2D materializes the same two parts lazily after graphics fallback.
+    const canvas = document.createElement('canvas');
+    canvas.width = body.canvas.width; canvas.height = body.canvas.height;
+    const sprite: Sprite = { canvas, x: body.x, y: body.y, width: body.width, height: body.height, parts: [body, badge] };
+    this.remember(key, sprite, art); return sprite;
+  }
+  raster(sprite: Sprite): Sprite {
+    if (sprite.parts && this.rasterized.get(sprite) !== (sprite.version ?? 0)) {
+      const ratio = sprite.canvas.width / sprite.width, ctx = sprite.canvas.getContext('2d')!;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, sprite.canvas.width, sprite.canvas.height);
+      ctx.setTransform(ratio, 0, 0, ratio, -sprite.x * ratio, -sprite.y * ratio);
+      for (const part of sprite.parts) ctx.drawImage(part.canvas, part.x, part.y, part.width, part.height);
+      this.rasterized.set(sprite, sprite.version ?? 0);
+    }
+    return sprite;
   }
   pulseLayers(art: MarkerArt, motion: MarkerMotion, now: number): PulseLayers {
     // Keep the authored order: shadow/frame, ring, then image/arrow/badges.
@@ -252,7 +311,7 @@ export class MarkerPainter {
     let cached = palette.get(key);
     if (!cached) {
       const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(104 * this.ratio); canvas.height = Math.ceil(96 * this.ratio);
+      canvas.width = Math.ceil((art.subImage ? 104 : 76) * this.ratio); canvas.height = Math.ceil(96 * this.ratio);
       const sprite: Sprite = { canvas, x: -38, y: -54, width: canvas.width / this.ratio, height: canvas.height / this.ratio, version: 0 };
       const ctx = canvas.getContext('2d')!;
       let at = NaN;
@@ -269,16 +328,33 @@ export class MarkerPainter {
     return cached;
   }
   dynamic(art: MarkerArt, motion: MarkerMotion, now: number): Sprite { return this.animation(art, motion).render(now); }
-  preload(url: string) { this.asset(url); }
+  preload(url: string, priority: 'auto' | 'high' = 'auto') { this.asset(url, priority); }
   retainAssets(urls: Set<string>): void {
     urls.add(this.hoverDecoration); urls.add(this.selectedDecoration);
+    // A short region round trip should not decode the same small icon again.
+    // Bound idle decoded pixels as well as objects; large art must fit the
+    // spare pixel budget. Active artwork remains owned by the current scene.
+    const idle = [...this.assets].filter(([url, asset]) => !urls.has(url) && asset.ready)
+      .sort(([, a], [, b]) => b.used - a.used);
+    let count = 0, bytes = 0;
+    for (const [url, asset] of idle) {
+      const size = asset.image.naturalWidth * asset.image.naturalHeight * 4;
+      if (size <= 0 || count >= MAX_IDLE_IMAGES || bytes + size > MAX_IDLE_IMAGE_BYTES) continue;
+      urls.add(url); count++; bytes += size;
+    }
     for (const [url, asset] of this.assets) if (!urls.has(url)) {
       asset.image.onload = asset.image.onerror = null;
       this.assets.delete(url);
     }
     // Keep version identities across eviction so a retained sprite cannot be
     // mistaken for fresh artwork after the same URL is decoded again.
-    this.sprites.clear(); this.shared?.clear(); this.framePulses.clear();
+    const unused = (sprite: Sprite) => this.spriteUrls.get(sprite)?.some(url => !urls.has(url));
+    for (const [key, sprite] of this.sprites) if (unused(sprite)) this.sprites.delete(key);
+    for (const [key, ref] of this.shared ?? []) {
+      const sprite = ref.deref();
+      if (!sprite || unused(sprite)) this.shared!.delete(key);
+    }
+    this.framePulses.clear();
   }
   snapshot(art: MarkerArt, motion: MarkerMotion, now: number): Sprite {
     // A disappearing representation may be mid-hover. Never cache that transient pose as rest.
@@ -290,6 +366,6 @@ export class MarkerPainter {
   dispose(): void {
     this.disposed = true;
     for (const asset of this.assets.values()) asset.image.onload = asset.image.onerror = null;
-    this.assets.clear(); this.sprites.clear(); this.shared?.clear(); this.sharedInsertions = 0; this.versions.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear(); this.artKeys = new WeakMap();
+    this.assets.clear(); this.sprites.clear(); this.shared?.clear(); this.sharedInsertions = 0; this.versions.clear(); this.animated = new WeakMap(); this.pulses = new WeakMap(); this.framePulses.clear(); this.artKeys = new WeakMap(); this.spriteUrls = new WeakMap(); this.clusterBodies = new WeakMap(); this.rasterized = new WeakMap();
   }
 }

@@ -60,6 +60,12 @@ export class WindowStore {
     }
     onScroll = () => { this.anchor = undefined; this.pendingAnchor = undefined; this.scrolling = true; try { this.measure(false); } finally { this.scrolling = false; } };
     onLayout = () => this.measure(true);
+    private canAnchor() {
+        const scroll = this.scroll;
+        // Search owns the viewport while typing; result expansion must not pin
+        // a selector below it and scroll the input away. Keep the top pinned too.
+        return !!scroll && scroll.scrollTop > .5 && !scroll.querySelector('[data-search-input]:focus');
+    }
     register(element: HTMLDivElement, items: SelectorItem[], compact: boolean, columns: number) {
         const previous = this.blocks.get(element);
         if (previous) this.view?.clearTimeout(previous.trim);
@@ -92,7 +98,7 @@ export class WindowStore {
         if (!scroll || !view) return;
         // A scrollbar jump or wheel scroll can precede its asynchronous scroll event.
         // Never restore a stale layout anchor over a newer user scroll position.
-        if (Math.abs(scroll.scrollTop - this.lastScrollTop) > .5) { this.anchor = undefined; this.pendingAnchor = undefined; }
+        if (!this.canAnchor() || Math.abs(scroll.scrollTop - this.lastScrollTop) > .5) { this.anchor = undefined; this.pendingAnchor = undefined; }
         const viewport = layout ? scroll.getBoundingClientRect() : null, height = scroll.clientHeight;
         const pinnedRows = new Map<Element, Set<number>>();
         for (const element of scroll.querySelectorAll<HTMLElement>('[data-sidebar-row]:hover, [data-sidebar-row]:focus-within')) {
@@ -165,6 +171,7 @@ export class WindowStore {
         if (!scroll || this.pendingAnchor) return;
         let best = Infinity;
         this.anchor = undefined;
+        if (!this.canAnchor()) return;
         for (const block of this.blocks.values()) {
             if (!block.active || block.element.closest('[data-expanded="false"]')) continue;
             const index = Math.max(0, Math.ceil((scroll.scrollTop - block.top) / block.rowHeight)) * block.columns;

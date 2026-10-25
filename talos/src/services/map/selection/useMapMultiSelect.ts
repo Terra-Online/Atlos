@@ -2,11 +2,11 @@
  * useMapMultiSelect — Cmd/Ctrl + drag to lasso-select markers on the map.
  *
  * Gesture layer only — fires lightweight Leaflet events:
- *   talos:lassoHighlight  – on every pointer-move with current bounds
+ *   talos:lassoHighlight  – once per animation frame with latest pointer bounds
  *   talos:lassoSelect     – on pointer-up with final bounds + collected ids
  *   talos:lassoClear      – on cancel (mod key released mid-drag)
  *
- * The marker-side logic (filtering, visual CSS classes) lives in
+ * The marker-side logic (filtering and scene state) lives in
  * `registerLassoHandler`, which is called once from MarkerLayer.
  *
  * Shift + Mod + Drag enters *deselect* mode (removes markers from selection).
@@ -21,6 +21,8 @@ import type { IMarkerData } from '@/data/marker';
 import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import lassoStyles from '@/services/map/selection/lasso.module.scss';
+import { existingCanvasSurface } from '@/services/map/core/canvas/canvasMarkerSurface';
+import { setMarkerState } from '@/services/map/core/canvas/markerModel';
 
 // ─── Lasso-selected ID tracking ──────────────────────────────
 // Module-level set that records which marker IDs were added to
@@ -38,12 +40,6 @@ export function isLassoSelected(id: string): boolean {
 export interface LassoContext {
     markerDataDict: Record<string, IMarkerData>;
     markerDict: Record<string, L.Layer>;
-    /** CSS selector to find the inner wrapper element (e.g. `.markerInner, .noFrameInner`) */
-    innerSelector: string;
-    /** Hashed CSS class name for the `selected` state (toggled on/off) */
-    selectedClassName: string;
-    /** All state CSS class names that should be cleared when resetting to normal */
-    stateClassNames: string[];
     getActiveFilterKeys: () => string[];
     getMarkerVersion?: () => number;
     isSubregionVisible: (subregionId: string) => boolean;
@@ -53,20 +49,22 @@ export interface LassoContext {
 
 /**
  * Registers map-level event listeners that resolve which markers fall inside
- * a lasso rectangle and apply / remove the `.selected` CSS class in real time.
+ * a lasso rectangle and update their scene state in real time.
  */
 export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
-    const inners = new WeakMap<L.Layer, { root: HTMLElement; inner: HTMLElement }>();
-    let dataVersion = -1;
-    let records: [string, IMarkerData][] = [];
-    const getInner = (layer: L.Layer): HTMLElement | null => {
-        const root = (layer as L.Marker).getElement?.();
-        if (!root) return null;
-        const cached = inners.get(layer);
-        if (cached?.root === root && cached.inner.parentNode === root) return cached.inner;
-        const inner = root.querySelector<HTMLElement>(ctx.innerSelector);
-        if (inner) inners.set(layer, { root, inner });
-        return inner;
+    interface Entry { id: string; data: IMarkerData; order: number }
+    let dataVersion: number | undefined;
+    let records: Entry[] = [];
+    let latitude: Entry[] = [], longitude: Entry[] = [];
+    let indexed = false;
+    const boundary = (axis: 0 | 1, entries: Entry[], value: number, upper = false) => {
+        let low = 0, high = entries.length;
+        while (low < high) {
+            const mid = (low + high) >>> 1, coordinate = entries[mid].data.pos[axis];
+            if (coordinate < value || upper && coordinate === value) low = mid + 1;
+            else high = mid;
+        }
+        return low;
     };
     /** Set of marker IDs currently highlighted by the lasso */
     let currentHighlighted = new Set<string>();
@@ -76,40 +74,65 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     let preExistingChecked = new Set<string>();
     let lassoActive = false;
 
-    /** Helper: toggle the selected CSS class on a marker's DOM element */
     const setVisualSelected = (id: string, selected: boolean) => {
-        const layer = ctx.markerDict[id];
-        if (!layer) return;
-        const inner = getInner(layer);
-        if (inner) inner.classList.toggle(ctx.selectedClassName, selected);
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, { selected });
     };
-
-    /** Helper: strip ALL state classes from a marker, returning it to normal appearance */
     const resetToNormal = (id: string) => {
-        const layer = ctx.markerDict[id];
-        if (!layer) return;
-        getInner(layer)?.classList.remove(...ctx.stateClassNames);
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, {
+            selected: false, checked: false, appearing: false, disappearing: false,
+        });
+    };
+    const restore = (id: string, selected: ReadonlySet<string>, checked: ReadonlySet<string>) => {
+        const marker = ctx.markerDict[id];
+        if (marker instanceof L.Marker) setMarkerState(marker, {
+            selected: selected.has(id), checked: checked.has(id),
+        });
     };
 
     /** Determine visible markers in bounds, respecting filter + subregion + hidden state */
-    const getMarkersInBounds = (bounds: L.LatLngBounds): string[] => {
+    const getMarkersInBounds = (bounds: L.LatLngBounds, ordered = true): string[] => {
         const activeKeys = new Set(ctx.getActiveFilterKeys());
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set<string>();
-        const result: string[] = [];
         const version = ctx.getMarkerVersion?.();
-        if (version === undefined || version !== dataVersion) { records = Object.entries(ctx.markerDataDict); dataVersion = version ?? -1; }
+        if (!indexed || version === undefined || version !== dataVersion) {
+            records = Object.entries(ctx.markerDataDict).map(([id, data], order) => ({ id, data, order }));
+            if (version !== undefined) {
+                // Point coordinates are immutable within MarkerLayer's data version.
+                // Two sorted axes let narrow rectangles inspect their smaller span.
+                const finite = records.filter(({ data }) => data.pos.every(Number.isFinite));
+                latitude = finite.slice().sort((a, b) => a.data.pos[0] - b.data.pos[0]);
+                longitude = finite.slice().sort((a, b) => a.data.pos[1] - b.data.pos[1]);
+            }
+            dataVersion = version; indexed = true;
+        }
         const south = bounds.getSouth(), north = bounds.getNorth(), west = bounds.getWest(), east = bounds.getEast();
+        let candidates = records, start = 0, end = records.length;
+        if (version !== undefined) {
+            const southIndex = boundary(0, latitude, south), northIndex = boundary(0, latitude, north, true);
+            const westIndex = boundary(1, longitude, west), eastIndex = boundary(1, longitude, east, true);
+            if (northIndex - southIndex <= eastIndex - westIndex) {
+                candidates = latitude; start = southIndex; end = northIndex;
+            } else { candidates = longitude; start = westIndex; end = eastIndex; }
+        }
+        const result: Entry[] = [];
         const visibleRegions = new Map<string, boolean>();
-        for (const [id, data] of records) {
+        for (let index = start; index < end; index++) {
+            const entry = candidates[index], { id, data } = entry;
+            if (data.pos[0] < south || data.pos[0] > north || data.pos[1] < west || data.pos[1] > east) continue;
             if (!activeKeys.has(data.type)) continue;
             let visible = visibleRegions.get(data.subregId);
             if (visible === undefined) { visible = ctx.isSubregionVisible(data.subregId); visibleRegions.set(data.subregId, visible); }
             if (!visible) continue;
             if (completedIds.has(id)) continue;
-            if (data.pos[0] >= south && data.pos[0] <= north && data.pos[1] >= west && data.pos[1] <= east) result.push(id);
+            if (data.pos[0] >= south && data.pos[0] <= north && data.pos[1] >= west && data.pos[1] <= east) result.push(entry);
         }
-        return result;
+        // Preview membership is a set; only the final store commit needs the
+        // original dictionary order retained by existing lasso selections.
+        if (ordered && version !== undefined) result.sort((a, b) => a.order - b.order);
+        return result.map(entry => entry.id);
     };
 
     /** Capture pre-existing state on first highlight of a lasso gesture */
@@ -123,15 +146,11 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     // ── Event handlers (named so they can be removed on teardown) ──
 
     // ── talos:lassoHighlight — live visual feedback during drag ──
-    const onLassoHighlight = (evt: unknown) => {
-        const { bounds, deselect } = evt as { bounds: L.LatLngBounds; deselect: boolean };
-        ensureLassoStarted();
-
-        const idsInBounds = getMarkersInBounds(bounds);
-        const newHighlighted = new Set(idsInBounds);
+    const highlight = (ids: string[], deselect: boolean) => {
+        const newHighlighted = new Set(ids);
 
         if (deselect) {
-            // Deselect mode: reset ALL state classes on markers entering the lasso
+            // Deselect mode: preview the normal appearance on markers entering the lasso
             for (const id of newHighlighted) {
                 if (!currentHighlighted.has(id)) {
                     resetToNormal(id);
@@ -140,25 +159,11 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
             // Restore markers leaving the lasso to their store-truth state
             for (const id of currentHighlighted) {
                 if (!newHighlighted.has(id)) {
-                    const wasSelected = preExistingSelected.has(id);
-                    const wasChecked = preExistingChecked.has(id);
-                    if (wasSelected) setVisualSelected(id, true);
-                    if (wasChecked) {
-                        const layer = ctx.markerDict[id];
-                        if (layer) {
-                            const el = (layer as L.Marker).getElement?.() as HTMLElement | null;
-                            const inner = el?.querySelector(ctx.innerSelector);
-                            if (inner) {
-                                inner.classList.toggle(ctx.selectedClassName, wasSelected);
-                                // Re-add checked class (stateClassNames[1] = checked)
-                                inner.classList.add(ctx.stateClassNames[1]);
-                            }
-                        }
-                    }
+                    restore(id, preExistingSelected, preExistingChecked);
                 }
             }
         } else {
-            // Select mode: add .selected only to markers in normal state
+            // Select mode: highlight only markers in normal state
             for (const id of newHighlighted) {
                 if (!currentHighlighted.has(id)) {
                     // Only affect markers that were neither selected nor checked before lasso
@@ -167,7 +172,7 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
                     }
                 }
             }
-            // Remove .selected from markers leaving the lasso (only if we added it)
+            // Remove highlights from markers leaving the lasso (only if we added them)
             for (const id of currentHighlighted) {
                 if (!newHighlighted.has(id)) {
                     // Only remove if the marker was NOT already selected before lasso
@@ -180,6 +185,11 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
 
         currentHighlighted = newHighlighted;
     };
+    const onLassoHighlight = (evt: unknown) => {
+        const { bounds, deselect } = evt as { bounds: L.LatLngBounds; deselect: boolean };
+        ensureLassoStarted();
+        highlight(getMarkersInBounds(bounds, false), deselect);
+    };
 
     // ── talos:lassoSelect — final selection on pointer-up ──
     const onLassoSelect = (evt: unknown) => {
@@ -189,6 +199,9 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
             deselect: boolean;
         };
         const ids = getMarkersInBounds(bounds);
+        // Pointer-up may arrive before the queued preview, or at a different
+        // coordinate. Restore points outside its exact final bounds first.
+        if (lassoActive) highlight(ids, deselect);
         collected.push(...ids);
         // Clear tracking (visual state is now managed by the hook's store update)
         currentHighlighted = new Set();
@@ -201,9 +214,8 @@ export function registerLassoHandler(map: L.Map, ctx: LassoContext) {
     const onLassoClear = () => {
         // Revert all highlighted markers to their store-truth state
         const selectedSet = new Set(useMarkerStore.getState().selectedPoints);
-        for (const id of currentHighlighted) {
-            setVisualSelected(id, selectedSet.has(id));
-        }
+        const checkedSet = new Set(getActivePoints());
+        for (const id of currentHighlighted) restore(id, selectedSet, checkedSet);
         currentHighlighted = new Set();
         lassoActive = false;
     };
@@ -237,6 +249,18 @@ export function useMapMultiSelect(map: L.Map | undefined) {
 
         const container = map.getContainer();
         const keyupWindows = new Set<Window>();
+        let frame: number | undefined, frameWindow: Window | undefined;
+        let pending: { clientX: number; clientY: number } | undefined;
+        let unloaded = false, restoreDragging = false, restoreBoxZoom = false;
+        const restoreHandlers = () => {
+            if (restoreDragging) map.dragging.enable();
+            if (restoreBoxZoom) map.boxZoom?.enable();
+            restoreDragging = false; restoreBoxZoom = false;
+        };
+        const cancelPreview = () => {
+            if (frame !== undefined) frameWindow?.cancelAnimationFrame(frame);
+            frame = undefined; frameWindow = undefined; pending = undefined;
+        };
 
         // Create persistent overlay element
         const overlay = container.ownerDocument.createElement('div');
@@ -282,9 +306,11 @@ export function useMapMultiSelect(map: L.Map | undefined) {
 
         // ── pointer down ──
         const onPointerDown = (e: PointerEvent) => {
-            if (!isModKeyPressed(e)) return;
+            if (unloaded || dragging.current || !isModKeyPressed(e)) return;
             bindKeyupWindow(container.ownerDocument.defaultView ?? window);
-            // Disable map dragging & box zoom while lasso is active
+            // Restore only handlers that this gesture temporarily disabled.
+            restoreDragging = map.dragging.enabled();
+            restoreBoxZoom = map.boxZoom?.enabled() ?? false;
             map.dragging.disable();
             if (map.boxZoom) map.boxZoom.disable();
 
@@ -303,13 +329,13 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             container.style.cursor = 'crosshair';
         };
 
-        // ── pointer move ──
-        const onPointerMove = (e: PointerEvent) => {
-            if (!dragging.current || !startPx.current || !startLatLng.current) return;
-
+        const preview = () => {
+            frame = undefined; frameWindow = undefined;
+            const pointer = pending; pending = undefined;
+            if (!pointer || !dragging.current || !startPx.current || !startLatLng.current) return;
             const rect = container.getBoundingClientRect();
-            const curX = e.clientX - rect.left;
-            const curY = e.clientY - rect.top;
+            const curX = pointer.clientX - rect.left;
+            const curY = pointer.clientY - rect.top;
 
             // Update CSS overlay
             updateOverlayRect(startPx.current.x, startPx.current.y, curX, curY);
@@ -320,16 +346,29 @@ export function useMapMultiSelect(map: L.Map | undefined) {
 
             // Fire live highlight event so markers get visual feedback
             map.fire('talos:lassoHighlight', { bounds, deselect: deselectMode.current });
+            existingCanvasSurface(map)?.flush();
+        };
+
+        // Raw pointer events can outnumber display frames. Rect layout, queries
+        // and scene writes are coalesced together, rather than just the paint.
+        const onPointerMove = (e: PointerEvent) => {
+            if (!dragging.current) return;
+            pending = e;
+            if (frame === undefined) {
+                frameWindow = container.ownerDocument.defaultView ?? window;
+                frame = frameWindow.requestAnimationFrame(preview);
+                existingCanvasSurface(map)?.deferFrame();
+            }
         };
 
         // ── pointer up ──
         const onPointerUp = (e: PointerEvent) => {
             if (!dragging.current || !startPx.current || !startLatLng.current) return;
             dragging.current = false;
+            cancelPreview();
             unbindKeyupWindows();
             container.style.cursor = '';
-            map.dragging.enable();
-            if (map.boxZoom) map.boxZoom.enable();
+            restoreHandlers();
 
             const rect = container.getBoundingClientRect();
             const endX = e.clientX - rect.left;
@@ -338,7 +377,9 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             const endLatLng = map.containerPointToLatLng(L.point(endX, endY));
             const bounds = L.latLngBounds(startLatLng.current, endLatLng);
 
-            // Fadeout overlay
+            // Final feedback and membership use the pointer-up coordinate even
+            // when the last move has not reached its animation frame.
+            updateOverlayRect(startPx.current.x, startPx.current.y, endX, endY);
             fadeOutOverlay();
             startPx.current = null;
             startLatLng.current = null;
@@ -396,10 +437,10 @@ export function useMapMultiSelect(map: L.Map | undefined) {
         const onKeyUp = (e: KeyboardEvent) => {
             if (dragging.current && !isModKeyPressed(e)) {
                 dragging.current = false;
+                cancelPreview();
                 unbindKeyupWindows();
                 container.style.cursor = '';
-                map.dragging.enable();
-                if (map.boxZoom) map.boxZoom.enable();
+                restoreHandlers();
                 fadeOutOverlay();
                 startPx.current = null;
                 startLatLng.current = null;
@@ -420,14 +461,29 @@ export function useMapMultiSelect(map: L.Map | undefined) {
             keyupWindows.clear();
         };
 
+        const onUnload = () => {
+            unloaded = true; cancelPreview(); unbindKeyupWindows();
+            if (dragging.current) map.fire('talos:lassoClear');
+            dragging.current = false; startPx.current = null; startLatLng.current = null;
+            container.style.cursor = '';
+        };
+        map.on('unload', onUnload);
         container.addEventListener('pointerdown', onPointerDown);
         container.addEventListener('pointermove', onPointerMove);
         container.addEventListener('pointerup', onPointerUp);
 
         return () => {
+            map.off('unload', onUnload);
             container.removeEventListener('pointerdown', onPointerDown);
             container.removeEventListener('pointermove', onPointerMove);
             container.removeEventListener('pointerup', onPointerUp);
+            cancelPreview();
+            if (dragging.current) {
+                dragging.current = false;
+                container.style.cursor = '';
+                if (!unloaded) { restoreHandlers(); map.fire('talos:lassoClear'); }
+            }
+            startPx.current = null; startLatLng.current = null;
             unbindKeyupWindows();
             if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
             if (overlay.parentNode) overlay.parentNode.removeChild(overlay);

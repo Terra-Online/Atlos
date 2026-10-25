@@ -164,7 +164,8 @@ export async function exerciseMapInteractions(page, { random = Math.random, reco
                 for (; fiber && !core; fiber = fiber.return) for (let hook = fiber.memoizedState; hook; hook = hook.next) {
                     if (hook.memoizedState?.current?.map) { core = hook.memoizedState.current; break; }
                 }
-                return Object.values(core.map._layers).filter(layer => layer.getLatLng && layer._icon?.isConnected
+                return Object.values(core.map._layers).filter(layer => layer.getLatLng && !layer.getChildCount && core.map.hasLayer(layer)
+                    && (layer.options.icon?.art || layer._icon?.isConnected)
                     && layer.options.alt && (layer.options.opacity ?? 1) > 0)
                     .map(layer => core.map.latLngToContainerPoint(layer.getLatLng()))
                     .filter(point => point.x > 100 && point.x < 1050 && point.y > 150 && point.y < 620);

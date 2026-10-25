@@ -15,7 +15,7 @@ import {
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { applyPointProgressSilently } from '@/store/history';
 import useRegion from '@/store/region';
-import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
+import { findFirstMarkerByType, loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
 export type GuideStep = Step & {
@@ -30,7 +30,7 @@ export type GuideStep = Step & {
     disableAutoScroll?: boolean;
 };
 
-export const useDesktopGuideSteps = (map?: L.Map) => {
+export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
     const t = useTranslateUI();
     const setSidebarOpen = useSetSidebarOpen();
     const toggleMarkFilterExpanded = useToggleMarkFilterExpanded();
@@ -53,15 +53,16 @@ export const useDesktopGuideSteps = (map?: L.Map) => {
     const [targetPoint, setTargetPoint] = useState<IMarkerData | undefined>();
 
     useEffect(() => {
+        if (!prepareTarget) return;
         let cancelled = false;
-        void loadAllMarkers().then((markers) => {
+        void findFirstMarkerByType(firstType).then((marker) => {
             if (cancelled) return;
-            setTargetPoint(markers.find((m) => m.type === firstType));
-        });
+            setTargetPoint(marker ?? undefined);
+        }).catch(() => undefined);
         return () => {
             cancelled = true;
         };
-    }, [firstType]);
+    }, [firstType, prepareTarget]);
 
     const steps: GuideStep[] = useMemo(() => [
         {

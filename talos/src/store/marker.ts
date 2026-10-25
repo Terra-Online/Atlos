@@ -7,9 +7,8 @@ import { CollectedCountCache } from './collectedCountCache';
 import {
     getLoadedRegionMarkers,
     getLoadedSubregionMarkers,
-    getLoadedWorldMarkers,
+    getWorldMarkerTypes,
     IMarkerData,
-    loadAllMarkers,
     REGION_TYPE_COUNT_MAP,
     SUBREGION_TYPE_COUNT_MAP,
     WORLD_TYPE_COUNT_MAP,
@@ -227,8 +226,12 @@ export const useToggleSelected = () =>
 
 const collectedCounts = new CollectedCountCache();
 let worldCountLoad: Promise<void> | undefined;
+let worldMarkerTypes: ReadonlyMap<string, string> | undefined;
 const ensureWorldCountData = () => {
-    worldCountLoad ??= loadAllMarkers().then(() => { useMarkerStore.getState().bumpMarkerDataVersion(); }, error => { worldCountLoad = undefined; throw error; });
+    worldCountLoad ??= getWorldMarkerTypes().then((types) => {
+        worldMarkerTypes = types;
+        useMarkerStore.getState().bumpMarkerDataVersion();
+    }, (error: unknown) => { worldCountLoad = undefined; throw error; });
     return worldCountLoad;
 };
 
@@ -237,16 +240,18 @@ export const useWorldMarkerCount = (type: string | undefined) => {
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
 
     useEffect(() => {
-        if (!type) return;
-        void ensureWorldCountData();
-    }, [type]);
+        if (!type || !pointsRecord.length || worldMarkerTypes) return;
+        void ensureWorldCountData().catch(() => undefined);
+    }, [type, pointsRecord]);
 
     return useMemo(() => {
         void markerDataVersion;
         const ret = { total: 0, collected: 0 };
         if (!type) return ret;
         ret.total = WORLD_TYPE_COUNT_MAP[type] ?? 0;
-        ret.collected = collectedCounts.get(pointsRecord, markerDataVersion, 'world', getLoadedWorldMarkers).get(type) ?? 0;
+        ret.collected = worldMarkerTypes
+            ? collectedCounts.getIndexed(pointsRecord, worldMarkerTypes).get(type) ?? 0
+            : 0;
         return ret;
     }, [markerDataVersion, pointsRecord, type]);
 };

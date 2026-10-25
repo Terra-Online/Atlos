@@ -3,7 +3,7 @@ import { createCanvasAwareClusterGroup } from '@/services/map/core/canvas/canvas
 import type { CanvasClusterGroup } from '@/services/map/core/canvas/clusterGroup';
 import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
-import styles from '@/services/map/core/marker/marker.module.scss';
+import { SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { getActivePoints } from '@/store/userRecord';
 import { emitPreviewLeave } from '@/services/map/core/marker/markerRenderer';
@@ -23,6 +23,12 @@ const CLUSTER_SUBCATEGORY_WHITELIST = new Set<string>([
 
 const MARKER_FADE_DURATION_MS = 150;
 const MARKER_REMOVAL_DELAY_MS = MARKER_FADE_DURATION_MS + 10;
+
+const sameIds = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean => {
+    if (a.size !== b.size) return false;
+    for (const id of b) if (!a.has(id)) return false;
+    return true;
+};
 
 interface ClusterLayerDeps {
     map: L.Map;
@@ -85,7 +91,7 @@ export class ClusterLayer {
         }
         const iconUrl = getItemIconUrl(type.key);
         const hasSubIcon = Boolean(type.subIcon);
-        const subIconUrl = hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
+        const subIconUrl = !type.noFrame && hasSubIcon && type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '';
 
         this.clusterGroupsByType[type.key] = createCanvasAwareClusterGroup(this.deps.map, {
             expandOnClick: true,
@@ -94,48 +100,16 @@ export class ClusterLayer {
             iconCreateFunction: (cluster) => {
                 const count = cluster.getChildCount();
 
-                if (type.noFrame) {
-                    return L.divIcon({
-                        html: `<div class="${styles.noFrameInner} ${styles.clusterMarker}">
-                                  <img src="${iconUrl}" class="${styles.noFrameImage}" alt="${type.key}" />
-                                  <span class="${styles.clusterCount}">${count}</span>
-                               </div>`,
-                        className: `${styles.noFrameMarkerIcon} marker-cluster-custom`,
-                        iconSize: [50, 50],
-                        iconAnchor: [25, 25],
-                    });
-                }
-
-                if (hasSubIcon) {
-                    return L.divIcon({
-                        html: `<div class="${styles.markerInner} ${styles.clusterMarker}">
-                                  <div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div>
-                                  <div class="${styles.subIconContainer}">
-                                      <div class="${styles.subIcon}" style="background-image: url(${subIconUrl})"></div>
-                                  </div>
-                                  <span class="${styles.clusterCount}">${count}</span>
-                               </div>`,
-                        className: `${styles.FrameMarkerIcon} marker-cluster-custom`,
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 32],
-                    });
-                }
-
-                return L.divIcon({
-                    html: `<div class="${styles.markerInner} ${styles.clusterMarker}">
-                              <div class="${styles.FrameImage}" style="background-image: url(${iconUrl})"></div>
-                              <span class="${styles.clusterCount}">${count}</span>
-                           </div>`,
-                    className: `${styles.FrameMarkerIcon} marker-cluster-custom`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                });
+                return new SceneIcon({ image: iconUrl, subImage: subIconUrl,
+                    noFrame: Boolean(type.noFrame), tier: '', count: String(count) }, type.key);
             },
         });
     }
 
     setActiveSubregions(subregions: string[]) {
-        this.activeSubregions = new Set(subregions);
+        const next = new Set(subregions);
+        if (sameIds(this.activeSubregions, next)) return;
+        this.activeSubregions = next;
         if (this.enabled) {
             this.requestRefresh();
         }
@@ -151,14 +125,18 @@ export class ClusterLayer {
     }
 
     setTemporaryVisibleIds(ids: Iterable<string>) {
-        this.temporaryVisibleIds = new Set(ids);
+        const next = new Set(ids);
+        if (sameIds(this.temporaryVisibleIds, next)) return;
+        this.temporaryVisibleIds = next;
         if (this.enabled) {
             this.requestRefresh();
         }
     }
 
     setCheckedVisibleOverrideIds(ids: Iterable<string>) {
-        this.checkedVisibleOverrideIds = new Set(ids);
+        const next = new Set(ids);
+        if (sameIds(this.checkedVisibleOverrideIds, next)) return;
+        this.checkedVisibleOverrideIds = next;
         if (this.enabled) {
             this.requestRefresh();
         }
@@ -188,44 +166,42 @@ export class ClusterLayer {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
 
-        // 仅对当前过滤的、受管理的类型进行增量添加，避免整组重算造成闪烁
-        const activeManagedTypes = this.filterKeys.filter((k) => this.clusterGroupsByType[k]);
+        const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
+        const idsByType = new Map<string, string[]>();
+        // Region imports contain every new point. Partition once instead of
+        // rescanning that whole batch for each active marker type.
+        for (const id of newIds) {
+            const data = markerDataDict[id];
+            if (!data || !activeManagedTypes.has(data.type)
+                || !this.activeSubregions.has(data.subregId) || completedMarkerIds.has(id)) continue;
+            let ids = idsByType.get(data.type);
+            if (!ids) idsByType.set(data.type, ids = []);
+            ids.push(id);
+        }
 
-        activeManagedTypes.forEach((typeKey) => {
+        for (const typeKey of activeManagedTypes) {
             const clusterGroup = this.clusterGroupsByType[typeKey];
-            if (!clusterGroup) return;
             const addedIds: string[] = [];
-            const retained = new Set(clusterGroup.getVisibleLayers());
+            const ids = idsByType.get(typeKey);
+            const retained = ids?.length ? new Set(clusterGroup.getVisibleLayers()) : undefined;
             const layersToAdd: L.Layer[] = [];
 
-            newIds.forEach((id) => {
+            for (const id of ids ?? []) {
                 const data = markerDataDict[id];
-                if (!data) return;
-                if (data.type !== typeKey) return; // 只处理对应类型
-                if (!this.activeSubregions.has(data.subregId)) return; // 只处理当前活跃子区域
-                if (completedMarkerIds.has(id)) return; // 排除已完成的標點
-
                 const layer = markerDict[id];
-                if (!layer) return;
+                if (!layer) continue;
                 const parentGroup = layerSubregionDict[data.subregId];
-                // 如果原来在父 LayerGroup 中，移除以避免与聚合重复显示
-                if (parentGroup?.hasLayer(layer)) {
-                    parentGroup.removeLayer(layer);
-                }
-
+                if (parentGroup?.hasLayer(layer)) parentGroup.removeLayer(layer);
                 layersToAdd.push(layer);
                 addedIds.push(id);
-            });
+            }
 
             if (layersToAdd.length > 0) clusterGroup.addLayers(layersToAdd);
-
             if (clusterGroup.getLayers().length > 0 && !this.deps.map.hasLayer(clusterGroup)) {
                 clusterGroup.addTo(this.deps.map);
             }
-            if (addedIds.length > 0) {
-                this.animateVisibleMarkers(clusterGroup, addedIds, styles.appearing, retained);
-            }
-        });
+            if (addedIds.length > 0) this.animateVisibleMarkers(clusterGroup, addedIds, 'appearing', retained);
+        }
     }
 
     isEnabled() {
@@ -280,34 +256,26 @@ export class ClusterLayer {
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
         const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
 
-        const activeManagedTypes = this.filterKeys.filter((key) => this.clusterGroupsByType[key]);
+        const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
 
-        // 为每个受管理类型做增量 diff
         Object.entries(this.clusterGroupsByType).forEach(([typeKey, clusterGroup]) => {
             const removalWasCancelled = this.cancelPendingRemoval(typeKey, clusterGroup);
-            const shouldBeActive = activeManagedTypes.includes(typeKey);
-
-            // 目标集合（需要在聚合中的点位）- 排除已完成的點位
-            const desiredIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
-                const d = markerDataDict[id];
+            const shouldBeActive = activeManagedTypes.has(typeKey);
+            const desiredIds: string[] = [], toAdd: string[] = [], toRemove: string[] = [];
+            // The type index is authoritative for both membership and desired
+            // visibility. Classify each point once; no second set/index is needed.
+            for (const id of markerTypeMap[typeKey] ?? []) {
+                const data = markerDataDict[id], layer = markerDict[id];
+                const current = Boolean(layer) && clusterGroup.hasLayer(layer);
                 const forceVisible = this.checkedVisibleOverrideIds.has(id);
-                return d
-                    && this.activeSubregions.has(d.subregId)
+                const desired = data && this.activeSubregions.has(data.subregId)
                     && (!completedMarkerIds.has(id) || forceVisible)
                     && (shouldBeActive || this.temporaryVisibleIds.has(id) || forceVisible);
-            });
-            const desiredSet = new Set(desiredIds);
-
-            // 当前集合（已经在聚合中的点位）
-            const currentIds = (markerTypeMap[typeKey] ?? []).filter((id) => {
-                const layer = markerDict[id];
-                return layer && clusterGroup.hasLayer(layer);
-            });
-            const currentSet = new Set(currentIds);
-
-            // 计算增量
-            const toAdd = desiredIds.filter((id) => !currentSet.has(id));
-            const toRemove = currentIds.filter((id) => !desiredSet.has(id));
+                if (desired) {
+                    desiredIds.push(id);
+                    if (!current) toAdd.push(id);
+                } else if (current) toRemove.push(id);
+            }
             const retained = !removalWasCancelled && toAdd.length > 0
                 ? new Set(clusterGroup.getVisibleLayers()) : undefined;
 
@@ -342,53 +310,38 @@ export class ClusterLayer {
             if (toRemove.length > 0) {
                 this.fadeOutAndRemove(clusterGroup, typeKey, toRemove);
             } else if (toAdd.length > 0 || removalWasCancelled) {
-                this.animateVisibleMarkers(clusterGroup, desiredIds, styles.appearing, retained);
+                this.animateVisibleMarkers(clusterGroup, desiredIds, 'appearing', retained);
             }
         });
     }
 
-    private getVisibleMarkerInners(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>, retained?: ReadonlySet<L.Marker>) {
+    private getVisibleMarkers(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>, retained?: ReadonlySet<L.Marker>) {
         const markerDict = this.deps.getMarkerDict();
-        const visibleInners = new Set<HTMLElement>();
-
+        const visible = new Set<L.Marker>();
         for (const markerId of markerIds) {
             const layer = markerDict[markerId];
             if (!(layer instanceof L.Marker) || !clusterGroup.hasLayer(layer)) continue;
-
-            // Clustered child markers do not own DOM nodes. getVisibleParent resolves either
-            // the marker itself or the cluster icon that is actually painted by Leaflet.
-            const visibleLayer = clusterGroup.getVisibleParent(layer);
-            if (visibleLayer && retained?.has(visibleLayer)) continue;
-            const markerRoot = visibleLayer?.getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector<HTMLElement>(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (inner?.isConnected) visibleInners.add(inner);
+            const parent = clusterGroup.getVisibleParent(layer);
+            if (parent && !retained?.has(parent) && this.deps.map.hasLayer(parent)) visible.add(parent);
         }
-
-        return visibleInners;
+        return visible;
     }
 
     private clearVisibleAnimation(clusterGroup: CanvasClusterGroup, markerIds: Iterable<string>) {
-        this.getVisibleMarkerInners(clusterGroup, markerIds).forEach((inner) => {
-            inner.classList.remove(styles.appearing, styles.disappearing);
+        this.getVisibleMarkers(clusterGroup, markerIds).forEach(marker => {
+            setMarkerState(marker, { appearing: false, disappearing: false });
         });
     }
 
     private animateVisibleMarkers(
         clusterGroup: CanvasClusterGroup,
         markerIds: Iterable<string>,
-        animationClass: string,
+        animation: 'appearing' | 'disappearing',
         retained?: ReadonlySet<L.Marker>,
     ) {
-        // Canvas cluster reconciliation is synchronous. Set appearance before its
-        // first scheduled paint; a deferred rAF exposes one fully opaque frame.
-        const visibleInners = [...this.getVisibleMarkerInners(clusterGroup, markerIds, retained)];
-        if (visibleInners.length === 0) return;
-
-        visibleInners.forEach((inner) => {
-            inner.classList.remove(styles.appearing, styles.disappearing);
-        });
-        visibleInners.forEach((inner) => {
-            inner.classList.add(animationClass);
+        // Reconciliation is synchronous: publish the fade before the first paint.
+        this.getVisibleMarkers(clusterGroup, markerIds, retained).forEach(marker => {
+            setMarkerState(marker, { appearing: animation === 'appearing', disappearing: animation === 'disappearing' });
         });
     }
 
@@ -403,7 +356,7 @@ export class ClusterLayer {
     }
 
     private fadeOutAndRemove(clusterGroup: CanvasClusterGroup, typeKey: string, markerIds: string[]) {
-        this.animateVisibleMarkers(clusterGroup, markerIds, styles.disappearing);
+        this.animateVisibleMarkers(clusterGroup, markerIds, 'disappearing');
         markerIds.forEach(emitPreviewLeave);
 
         const pendingMarkerIds = new Set(markerIds);
@@ -435,7 +388,7 @@ export class ClusterLayer {
                 const layer = markerDict[id];
                 return Boolean(layer) && clusterGroup.hasLayer(layer);
             });
-            this.animateVisibleMarkers(clusterGroup, remainingIds, styles.appearing, retained);
+            this.animateVisibleMarkers(clusterGroup, remainingIds, 'appearing', retained);
         }, MARKER_REMOVAL_DELAY_MS);
 
         this.pendingRemovalBatches[typeKey] = {

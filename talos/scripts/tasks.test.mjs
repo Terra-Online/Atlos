@@ -3,12 +3,45 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { test } from 'node:test';
-import { ROOT } from './task-runner.mjs';
+import { createRunner, ROOT } from './task-runner.mjs';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
 import { parseTask, runTask } from './tasks.mjs';
 import { verifyArtifact, verifyOutput } from './release-artifact.mjs';
 import { hashFiles, verifyReferences } from './release-snapshot.mjs';
-import { withLocalLock, createReleaseStore } from './release-store.mjs';
+import { createReleaseStore } from './release-store.mjs';
 import { createServer } from 'node:http';
+import { buildMarkerLookup } from './build-marker-lookup.mjs';
+
+test('point lookup indexes source shards separately from moved positions and archive uniqueness', () => {
+    const markers = [
+        { id: '1', type: 'archive', subregId: 'B', x: 0, y: 0, z: 0 },
+        { id: '2', type: 'common', subregId: 'B', x: 1, y: 0, z: 0 },
+        { id: '3', type: 'common', subregId: 'A', x: 2, y: 0, z: 0 },
+    ];
+    const index = buildMarkerLookup(markers, new Map([['1', 'A'], ['2', 'B'], ['3', 'A'], ['4', 'A']]), {
+        archive: { category: { main: 'files' } }, common: { category: { main: 'files' } },
+    });
+    assert.deepEqual(index.subregions, ['A', 'B']);
+    // An untyped source row remains addressable without becoming a guide target.
+    assert.deepEqual(index.points, { 1: 0, 2: 1, 3: 0, 4: 0 });
+    assert.deepEqual(index.moved, { 1: 'B' });
+    assert.deepEqual(index.archives, { archive: '1', common: null });
+    assert.deepEqual(index.firstTypes, { archive: '1', common: '2' });
+    assert.deepEqual(index.representatives, { archive: ['1'], common: ['2', '3'] });
+});
+
+test('world lookup preserves same-shard first representatives and rejects a new cross-shard ambiguity', () => {
+    const rows = [
+        { id: '1', type: 'item', subregId: 'A', x: 0, y: 0, z: 0 },
+        { id: '2', type: 'item', subregId: 'A', x: 0, y: 0, z: 0 },
+    ];
+    const types = { item: { category: { main: 'item' } } };
+    const index = buildMarkerLookup(rows, new Map([['1', 'A'], ['2', 'A']]), types);
+    assert.deepEqual(index.representatives, { item: ['1'] });
+    assert.throws(() => buildMarkerLookup(rows, new Map([['1', 'A'], ['2', 'B']]), types), /spans source shards/);
+});
 
 const fixture = async (t, fail = () => false) => {
     await fs.mkdir(path.join(ROOT, '.cache'), { recursive: true });
@@ -16,7 +49,6 @@ const fixture = async (t, fail = () => false) => {
     t.after(() => fs.rm(root, { recursive: true, force: true }));
     const calls = [];
     const states = new Map();
-    const locks = new Set();
     const live = new Map();
     let buildNumber = 0;
     const write = async (file, text = 'fixture') => {
@@ -104,13 +136,6 @@ const fixture = async (t, fail = () => false) => {
             write: async (state) => {
                 states.set(key, state);
             },
-            acquire: async () => {
-                if (locks.has(key)) throw new Error('Remote release lock held');
-                locks.add(key);
-                return async () => {
-                    locks.delete(key);
-                };
-            },
         };
     };
     const fetch = async (url) => {
@@ -144,7 +169,6 @@ const fixture = async (t, fail = () => false) => {
         fetch,
         states,
         live,
-        locks,
         log: () => {},
     };
 };
@@ -401,32 +425,17 @@ test('dry-run performs no commands, writes, packaging, or network publication', 
     assert.deepEqual(await fs.readdir(f.root), ['config']);
 });
 
-test('OSS adapter enforces exclusive writes and refuses versioned buckets', async (t) => {
+test('OSS release state can be updated without lock or bucket-versioning requests', async (t) => {
     const f = await fixture(t);
     const objects = new Map();
-    let versioning = '';
     const server = createServer(async (request, response) => {
         const url = new URL(request.url, 'http://localhost');
+        assert.equal(url.search, '');
+        assert.ok(url.pathname.endsWith('/state.json'));
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
-        if (url.searchParams.has('versioning')) {
-            response.setHeader('Content-Type', 'application/xml');
-            response.end(
-                `<VersioningConfiguration>${versioning ? `<Status>${versioning}</Status>` : ''}</VersioningConfiguration>`,
-            );
-            return;
-        }
         if (request.method === 'PUT') {
-            if (
-                request.headers['x-oss-forbid-overwrite'] === 'true' &&
-                objects.has(url.pathname)
-            ) {
-                response.writeHead(409, { 'Content-Type': 'application/xml' });
-                response.end(
-                    '<Error><Code>FileAlreadyExists</Code><Message>Object already exists</Message></Error>',
-                );
-                return;
-            }
+            assert.equal(request.headers['x-oss-forbid-overwrite'], undefined);
             objects.set(url.pathname, Buffer.concat(chunks).toString());
             response.writeHead(200, { ETag: '"test-etag"' });
         } else if (request.method === 'GET') {
@@ -474,22 +483,16 @@ test('OSS adapter enforces exclusive writes and refuses versioned buckets', asyn
     const first = await createReleaseStore(f, { channel: 'prod' }, 'cn');
     const second = await createReleaseStore(f, { channel: 'prod' }, 'cn');
     assert.equal(await first.read(), null);
-    const unlock = await first.acquire();
-    await assert.rejects(second.acquire(), /Cannot acquire release lock/);
     await first.write({ status: 'ready', id: 'cn-release' });
     assert.deepEqual(await second.read(), {
         status: 'ready',
         id: 'cn-release',
     });
-    await unlock();
-    await (
-        await second.acquire()
-    )();
-    versioning = 'Suspended';
-    await assert.rejects(
-        createReleaseStore(f, { channel: 'prod' }, 'cn'),
-        /unversioned OSS bucket/,
-    );
+    await second.write({ status: 'publishing', id: 'cn-retry' });
+    assert.deepEqual(await first.read(), {
+        status: 'publishing',
+        id: 'cn-retry',
+    });
 });
 
 test('refuses source outputs, symlink escapes and unowned external packaging directories', async (t) => {
@@ -807,14 +810,10 @@ test('failed or transport-only publications invalidate the app baseline until a 
         ),
     );
     assert.equal(saved.id, baseline);
-    assert.equal(f.locks.size, 1);
-    // The failed publisher has stopped; simulate explicit operator lock recovery.
-    f.locks.clear();
     await assert.rejects(
         runTask(['publish', '--app', 'intel'], f),
         /full release baseline/,
     );
-    assert.equal(f.locks.size, 0);
     failPages = false;
     await runTask(['publish', '--skip-og'], f);
     assert.equal(f.states.get('org-prod').status, 'ready');
@@ -826,38 +825,40 @@ test('failed or transport-only publications invalidate the app baseline until a 
     );
 });
 
-test('local and remote locks reject concurrent work without removing another owner lock', async (t) => {
-    const f = await fixture(t);
-    await withLocalLock(f.root, async () => {
-        await assert.rejects(
-            runTask(['build', '--skip-subset'], f),
-            /Another release\/build/,
-        );
-        assert.ok(await fs.stat(path.join(f.root, '.cache/release.lock')));
-        assert.equal(f.calls.length, 0);
-    });
+test('legacy local locks cannot block builds, deployment or retry after failure', async (t) => {
+    let failPages = true;
+    const f = await fixture(
+        t,
+        ({ args }) =>
+            failPages && args.includes('pages') && args.includes('deploy'),
+    );
+    const lock = path.join(f.root, '.cache/release.lock');
+    // Include a live PID: legacy lock files have no authority anymore.
+    const owner = JSON.stringify({ pid: process.pid, host: os.hostname() });
+    await f.write(lock, owner);
     await runTask(['build', '--skip-subset'], f);
-    const store = await f.releaseStore(null, { channel: 'prod' }, 'org');
-    const unlock = await store.acquire();
-    await assert.rejects(runTask(['publish'], f), /Remote release lock held/);
-    assert.equal(f.locks.size, 1);
-    assert.equal(f.states.size, 0);
-    await unlock();
+    await assert.rejects(
+        runTask(['deploy', '--skip-subset', '--skip-og'], f),
+        AggregateError,
+    );
+    failPages = false;
+    await runTask(['publish', '--skip-og'], f);
+    assert.equal(f.states.get('org-prod').status, 'ready');
+    assert.equal(await fs.readFile(lock, 'utf8'), owner);
 });
 
-test('R2 adapter uses exclusive writes across independent clients and preserves a foreign lock', async (t) => {
+test('R2 release state ignores legacy remote locks and supports immediate retry', async (t) => {
     const f = await fixture(t);
-    const objects = new Map();
+    const objects = new Map([
+        ['/test/prod/_release/org-prod/lock.json', 'legacy-owner'],
+    ]);
     const server = createServer(async (request, response) => {
         const key = new URL(request.url, 'http://localhost').pathname;
+        assert.ok(key.endsWith('/state.json'));
+        assert.equal(request.headers['if-none-match'], undefined);
         const chunks = [];
         for await (const chunk of request) chunks.push(chunk);
         if (request.method === 'PUT') {
-            if (request.headers['if-none-match'] === '*' && objects.has(key)) {
-                response.writeHead(412, { 'Content-Type': 'application/xml' });
-                response.end('<Error><Code>PreconditionFailed</Code></Error>');
-                return;
-            }
             objects.set(key, Buffer.concat(chunks).toString());
             response.writeHead(200, { ETag: '"test-etag"' });
         } else if (request.method === 'GET') {
@@ -904,21 +905,192 @@ test('R2 adapter uses exclusive writes across independent clients and preserves 
     const first = await createReleaseStore(f, options, 'org');
     const second = await createReleaseStore(f, options, 'org');
     assert.equal(await first.read(), null);
-    const unlock = await first.acquire();
-    await assert.rejects(second.acquire(), /Cannot acquire release lock/);
     await first.write({ status: 'publishing', id: 'release-id' });
     assert.deepEqual(await second.read(), {
         status: 'publishing',
         id: 'release-id',
     });
-    const key = [...objects.keys()].find((name) => name.endsWith('/lock.json'));
-    const owner = objects.get(key);
-    objects.set(key, JSON.stringify({ owner: 'another-publisher' }));
-    await assert.rejects(unlock(), /ownership changed/);
-    assert.ok(objects.has(key));
-    objects.set(key, owner);
-    await unlock();
-    await (
-        await second.acquire()
-    )();
+    await second.write({ status: 'ready', id: 'retry-id' });
+    assert.deepEqual(await first.read(), { status: 'ready', id: 'retry-id' });
+    assert.equal(
+        objects.get('/test/prod/_release/org-prod/lock.json'),
+        'legacy-owner',
+    );
 });
+
+test('cancelled runners do not start another command or local stage', async () => {
+    const controller = new AbortController();
+    const reason = new Error('cancelled');
+    controller.abort(reason);
+    let called = false;
+    const runner = createRunner({
+        signal: controller.signal,
+        log: () => {},
+        execute: () => {
+            called = true;
+        },
+    });
+    await assert.rejects(runner.run('node'), (error) => error === reason);
+    await assert.rejects(
+        runner.local('next stage', () => {
+            called = true;
+        }),
+        (error) => error === reason,
+    );
+    assert.equal(called, false);
+});
+
+const interruptCommands = async (t, name, stubborn = false) => {
+    const f = await fixture(t);
+    const command = path.join(f.root, 'command.mjs');
+    const harness = path.join(f.root, 'harness.mjs');
+    const count = stubborn ? 1 : 2;
+    await f.write(
+        command,
+        `
+        import fs from 'node:fs';
+        import { spawn } from 'node:child_process';
+        const worker = spawn(process.execPath, ['-e', ${JSON.stringify(`
+            ${stubborn ? "process.on('SIGTERM', () => {});" : ''}
+            setInterval(() => {}, 1000);
+            process.send('ready');
+        `)}], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+        ${stubborn ? "process.on('SIGTERM', () => {});" : ''}
+        worker.once('message', () => {
+            fs.writeFileSync(process.argv[2], JSON.stringify([process.pid, worker.pid]));
+            console.log('READY');
+        });
+        setInterval(() => {}, 1000);
+    `,
+    );
+    await f.write(
+        harness,
+        `
+        import fs from 'node:fs';
+        import { createRunner, runCli } from ${JSON.stringify(new URL('./task-runner.mjs', import.meta.url).href)};
+        runCli(async (signal) => {
+            const runner = createRunner({ signal, root: ${JSON.stringify(f.root)}, log: () => {} });
+            await Promise.all(Array.from({ length: ${count} }, (_, i) => runner.run(process.execPath, [${JSON.stringify(command)}, ${JSON.stringify(f.root)} + '/pids-' + i + '.json'])));
+            await runner.local('must not run', () => fs.writeFileSync(${JSON.stringify(path.join(f.root, 'after-cancel'))}, 'bad'));
+        });
+    `,
+    );
+    const cli = spawn(process.execPath, [harness], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const closed = once(cli, 'close');
+    let output = '';
+    cli.stderr.on('data', (data) => {
+        output += data;
+    });
+    const pids = [];
+    t.after(() => {
+        cli.kill('SIGKILL');
+        for (const pid of pids) {
+            try {
+                process.kill(pid, 'SIGKILL');
+            } catch (error) {
+                if (error.code !== 'ESRCH') throw error;
+            }
+        }
+    });
+    await new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error(`Command startup timed out: ${output}`)),
+            5000,
+        );
+        let ready = '';
+        const onData = (data) => {
+            ready += data;
+            if ((ready.match(/READY/g) || []).length === count) {
+                clearTimeout(timer);
+                cli.stdout.removeListener('data', onData);
+                resolve();
+            }
+        };
+        cli.stdout.on('data', onData);
+        closed.then(() => {
+            clearTimeout(timer);
+            reject(new Error(`CLI exited before ready: ${output}`));
+        });
+    });
+    for (let i = 0; i < count; i++)
+        pids.push(
+            ...JSON.parse(
+                await fs.readFile(path.join(f.root, `pids-${i}.json`), 'utf8'),
+            ),
+        );
+    cli.kill(name);
+    const [code, exitSignal] = await closed;
+    assert.equal(exitSignal, null);
+    assert.equal(code, name === 'SIGINT' ? 130 : 143, output);
+    assert.match(output, new RegExp(`Interrupted \\(${name}\\)`));
+    await assert.rejects(fs.access(path.join(f.root, 'after-cancel')), {
+        code: 'ENOENT',
+    });
+    for (const pid of pids) {
+        for (let attempt = 0; attempt < 40; attempt++) {
+            try {
+                process.kill(pid, 0);
+            } catch (error) {
+                if (error.code === 'ESRCH') break;
+                throw error;
+            }
+            await delay(50);
+        }
+        assert.throws(
+            () => process.kill(pid, 0),
+            { code: 'ESRCH' },
+            `Process ${pid} survived cancellation`,
+        );
+    }
+};
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+    test(
+        `${signal} cancels parallel command trees without leaving workers or starting later stages`,
+        { timeout: 15000, skip: process.platform === 'win32' },
+        (t) => interruptCommands(t, signal),
+    );
+}
+
+test(
+    'cancellation kills unresponsive command trees within the shutdown deadline',
+    { timeout: 15000, skip: process.platform === 'win32' },
+    (t) => interruptCommands(t, 'SIGTERM', true),
+);
+
+test(
+    'an uncancellable network operation cannot hold the CLI after cancellation',
+    { timeout: 15000, skip: process.platform === 'win32' },
+    async (t) => {
+        const f = await fixture(t);
+        const harness = path.join(f.root, 'blocked-sdk.mjs');
+        await f.write(
+            harness,
+            `
+        import { runCli } from ${JSON.stringify(new URL('./task-runner.mjs', import.meta.url).href)};
+        runCli(async () => {
+            setInterval(() => {}, 1000);
+            console.log('READY');
+            await new Promise(() => {});
+        });
+    `,
+        );
+        const cli = spawn(process.execPath, [harness], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        const closed = once(cli, 'close');
+        t.after(() => cli.kill('SIGKILL'));
+        let output = '';
+        cli.stderr.on('data', (data) => {
+            output += data;
+        });
+        await once(cli.stdout, 'data');
+        cli.kill('SIGTERM');
+        const [code, signal] = await closed;
+        assert.equal(signal, null);
+        assert.equal(code, 143, output);
+        assert.match(output, /Interrupted \(SIGTERM\)/);
+    },
+);

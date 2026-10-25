@@ -10,6 +10,8 @@ import { REGION_DICT } from '@/data/map';
 import { useDevice } from '@/platform/device';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
+import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
+import { usePresence } from '@/lib/dom/usePresence';
 
 const PREDEFINED_LAYER_ORDER: LayerType[] = ['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
 
@@ -49,6 +51,10 @@ const LayerSwitch: React.FC<{
         // Filter and sort based on PREDEFINED_LAYER_ORDER to maintain consistent order
         return PREDEFINED_LAYER_ORDER.filter(l => l === 'M' || layers.includes(l));
     }, [currentRegionKey]);
+    const hasSubmenu = availableLayers.length > 1 || availableLayers[0] !== 'M';
+    const menu = useSwitchMenu(hasSubmenu);
+    const open = hasSubmenu && (menu.activeKey !== null || forceLayerSubOpen);
+    const submenu = usePresence({ open, exitDuration: 200 });
 
     const layerIndex = useMemo(
         () => availableLayers.indexOf(currentLayer),
@@ -56,12 +62,13 @@ const LayerSwitch: React.FC<{
     );
 
     // If only M layer is available (or no layers configured), hide the switcher
-    if (availableLayers.length <= 1 && availableLayers[0] === 'M') {
+    if (!hasSubmenu) {
         return null;
     }
 
     return (
         <div
+            ref={menu.ref}
             className={classNames(
                 styles.regswitch,
                 styles.layerswitch,
@@ -76,51 +83,58 @@ const LayerSwitch: React.FC<{
                 disabled={isMobile || !isSidebarOpen}
             >
                 <div
+                    {...menu.getItemProps('layers')}
                     className={classNames(
                         styles.regItem,
                         currentLayer !== 'M' && styles.selected,
                     )}
                 >
-                    <IconButton className={styles.mainAction} data-guide="layer-main-toggle" label={t('mapControls.layerSelect')} pressed={currentLayer !== 'M'} onClick={() => setCurrentLayer('M')}>
+                    <IconButton className={styles.mainAction} data-guide="layer-main-toggle" label={t('mapControls.layerSelect')} pressed={currentLayer !== 'M'} onClick={() => {
+                        menu.open('layers');
+                        setCurrentLayer('M');
+                    }}>
                         <div className={styles.icon}><LayerIcon /></div>
                     </IconButton>
-                    <div
-                        className={classNames(styles.subregionSwitchContainer, {
-                            [styles.forceOpen]: forceLayerSubOpen,
-                        })}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
-                    >
-                        <div className={styles.subregionSwitch}>
-                            <div
-                                className={classNames(
-                                    styles.indicator,
-                                    layerIndex < 0 && styles.hidden,
-                                )}
-                                style={getContainerStyle(layerIndex, isMobile)}
-                            ></div>
-                            {availableLayers.map((layer) => {
-                                return (
-                                    <button
-                                        type="button"
-                                        key={layer}
-                                        className={classNames(
-                                            styles.subregItem,
-                                            currentLayer === layer && styles.selected,
-                                        )}
-                                        data-guide='layer-switch-item'
-                                        onClick={() => {
-                                            setCurrentLayer(layer);
-                                        }}
-                                        aria-label={`Layer ${layer}`}
-                                    >
-                                        <div className={styles.subregName}>{layer}</div>
-                                    </button>
-                                );
-                            })}
+                    {submenu.present && (
+                        <div
+                            className={styles.subregionSwitchContainer}
+                            data-state={submenu.phase}
+                            inert={!open}
+                            aria-hidden={!open}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            <div className={styles.subregionSwitch}>
+                                <div
+                                    className={classNames(
+                                        styles.indicator,
+                                        layerIndex < 0 && styles.hidden,
+                                    )}
+                                    style={getContainerStyle(layerIndex, isMobile)}
+                                ></div>
+                                {availableLayers.map((layer) => {
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={layer}
+                                            className={classNames(
+                                                styles.subregItem,
+                                                currentLayer === layer && styles.selected,
+                                            )}
+                                            data-guide='layer-switch-item'
+                                            onClick={() => {
+                                                setCurrentLayer(layer);
+                                            }}
+                                            aria-label={`Layer ${layer}`}
+                                        >
+                                            <div className={styles.subregName}>{layer}</div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </PopoverTooltip>
         </div>

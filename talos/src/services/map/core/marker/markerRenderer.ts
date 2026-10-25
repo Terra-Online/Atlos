@@ -1,5 +1,6 @@
 import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
-import L, { divIcon } from 'leaflet';
+import L from 'leaflet';
+import { SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
@@ -9,7 +10,6 @@ import {
     MARKER_PREVIEW_LEAVE_EVENT,
 } from '@/services/map/events/PreviewEvents';
 
-import styles from '@/services/map/core/marker/marker.module.scss';
 import { useMarkerStore } from '@/store/marker';
 import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
@@ -24,32 +24,23 @@ interface MarkerStateHandlers {
     onContextMenu?: (markerData: IMarkerData, originalEvent: MouseEvent) => void;
 }
 
-export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<
-    Record<string, L.Icon | L.DivIcon>
->((acc, typeInfo: IMarkerType) => {
-    // Prefer explicit icon field (files dataset maps icon names, not type keys)
-    const iconUrl = getItemIconUrl(typeInfo.icon ?? typeInfo.key, 'webp');
-    if (typeInfo.noFrame) {
-        acc[typeInfo.key] = divIcon({
-            iconSize: [50, 50],
-            iconAnchor: [25, 25],
+export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<Record<string, SceneIcon>>(
+    (icons, type: IMarkerType) => {
+        const noFrame = !!type.noFrame && !type.subIcon;
+        icons[type.key] = new SceneIcon({
+            image: getItemIconUrl(type.subIcon ? type.key : type.icon ?? type.key, 'webp'),
+            subImage: type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '',
+            noFrame,
+            tier: '',
+        }, type.key, {
+            iconSize: noFrame ? [50, 50] : [32, 32],
+            iconAnchor: noFrame ? [25, 25] : [16, 32],
             popupAnchor: [0, 0],
             tooltipAnchor: [0, 0],
-            className: styles.noFrameMarkerIcon,
-            html: `<div class="${styles.noFrameInner}"><img src="${iconUrl}" class="${styles.noFrameImage}" alt="${typeInfo.key}" /></div>`,
         });
-    } else
-        acc[typeInfo.key] = divIcon({
-            // iconUrl,
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, 0],
-            tooltipAnchor: [0, 0],
-            className: styles.FrameMarkerIcon,
-            html: `<div class="${styles.markerInner}"><div class="${styles.FrameImage}"><img src="${iconUrl}" alt="${typeInfo.key}" /></div></div>`,
-        });
-    return acc;
-}, {});
+        return icons;
+    }, {},
+);
 
 // Store arrays are immutable snapshots. Cache membership once per snapshot,
 // avoiding an O(markers × selected/collected) scan when layers are attached.
@@ -67,11 +58,6 @@ const ensureMarkerTypeFilterSelected = (typeKey: string): void => {
     markerStore.setFilter([...markerStore.filter, typeKey]);
 };
 
-const getMarkerInnerElement = (layer: L.Marker): HTMLElement | null => {
-    const markerRoot = layer.getElement?.() as HTMLElement | null;
-    return markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`) ?? null;
-};
-
 const getMarkerTierLabel = (tier: number): string | null => {
     const normalizedTier = Math.trunc(tier);
     if (normalizedTier === 0) return null;
@@ -87,19 +73,10 @@ export const syncMarkerTierAttribute = (
     currentLayer: LayerType = useLayerStore.getState().currentLayer,
 ): void => {
     if (!(layer instanceof L.Marker)) return;
-    const inner = getMarkerInnerElement(layer);
-    if (!inner) return;
-
-    const markerTierLabel = getMarkerTierLabel(markerData.tier);
-    if (!markerTierLabel) {
-        delete inner.dataset.tier;
-    } else {
-        if (inner.dataset.tier !== markerTierLabel) inner.dataset.tier = markerTierLabel;
-    }
-
-    const isCurrentTier = markerData.tier === getLayerTier(currentLayer);
-    inner.classList.toggle(styles.currentTier, isCurrentTier);
-    inner.classList.toggle(styles.offLayer, !isCurrentTier);
+    setMarkerState(layer, {
+        tier: getMarkerTierLabel(markerData.tier) ?? '',
+        offLayer: markerData.tier !== getLayerTier(currentLayer),
+    });
 };
 
 const switchToMarkerLayer = (markerData: IMarkerData): void => {
@@ -116,22 +93,15 @@ const switchToMarkerLayer = (markerData: IMarkerData): void => {
 };
 
 export const syncMarkerCollectedStacking = (layer: L.Marker, collected: boolean): void => {
-    const markerRoot = layer.getElement?.() as HTMLElement | null;
-    if (!markerRoot) return;
-    markerRoot.classList.toggle(styles.completedMarker, collected);
-    markerRoot.classList.toggle(styles.incompleteMarker, !collected);
+    setMarkerState(layer, { completed: collected });
 };
 
-const syncMarkerStateClasses = (layer: L.Marker, markerId: string): void => {
-    const inner = getMarkerInnerElement(layer);
-    if (!inner) return;
+const syncMarkerState = (layer: L.Marker, markerId: string): void => {
     const markerStore = useMarkerStore.getState();
-    const selectedAfter = hasId(markerStore.selectedPoints, markerId)
+    const selected = hasId(markerStore.selectedPoints, markerId)
         || hasId(markerStore.temporarySelectedPoints, markerId);
-    const checkedAfter = hasId(getActivePoints(), markerId);
-    inner.classList.toggle(styles.selected, selectedAfter);
-    inner.classList.toggle(styles.checked, checkedAfter);
-    syncMarkerCollectedStacking(layer, checkedAfter);
+    const checked = hasId(getActivePoints(), markerId);
+    setMarkerState(layer, { selected, checked, completed: checked });
 };
 
 const checkSingleMarker = (id: string): void => {
@@ -143,9 +113,6 @@ const checkSingleMarker = (id: string): void => {
 const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handlers?: MarkerStateHandlers): void => {
     const filterWasActive = useMarkerStore.getState().filter.includes(markerData.type);
     ensureMarkerTypeFilterSelected(markerData.type);
-
-    const inner = getMarkerInnerElement(layer);
-    if (!inner) return;
 
     const markerStore = useMarkerStore.getState();
     const selectedNow = hasId(markerStore.selectedPoints, markerData.id)
@@ -164,11 +131,7 @@ const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handle
         }
 
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
-        if (shouldHideCompleted && !keepVisibleAfterCheck) {
-            inner.classList.add(styles.disappearing);
-        } else {
-            inner.classList.remove(styles.disappearing);
-        }
+        setMarkerState(layer, { disappearing: shouldHideCompleted && !keepVisibleAfterCheck });
     } else {
         const id = markerData.id;
         commitPointProgress(`Uncollect ${id}`, { uncollect: [id] });
@@ -176,7 +139,7 @@ const handleMarkerClickState = (markerData: IMarkerData, layer: L.Marker, handle
         useMarkerStore.getState().setTemporarySelected(id, false);
     }
 
-    syncMarkerStateClasses(layer, markerData.id);
+    syncMarkerState(layer, markerData.id);
 };
 
 const emitPreviewEnter = (markerData: IMarkerData): void => {
@@ -203,114 +166,8 @@ const attachPreviewLifecycle = (layer: L.Marker, markerData: IMarkerData): void 
     });
     layer.on('viewporthide', () => {
         emitPreviewLeave(markerData.id);
-        const inner = getMarkerInnerElement(layer);
-        if (inner?.classList.contains(styles.appearing)) inner.classList.remove(styles.appearing);
+        setMarkerState(layer, { appearing: false });
     });
-};
-
-const RENDERER_DICT: Record<
-    string,
-    (
-        markerData: IMarkerData,
-        onClick?: (markerData: IMarkerData) => void,
-        handlers?: MarkerStateHandlers,
-    ) => L.Marker
-> = {
-    __DEFAULT: (markerData, onClick, handlers) => {
-        const layer = new ViewportMarker(markerData.pos, {
-            icon: MARKER_ICON_DICT[markerData.type],
-            alt: markerData.type,
-        });
-
-        // 初次添加到地图时，按存储状态渲染 selected/checked
-        layer.on('add', () => {
-            const markerRoot = layer.getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (!inner) return;
-            syncMarkerTierAttribute(layer, markerData);
-            syncMarkerStateClasses(layer, markerData.id);
-            // Parked DOM has no entry animation or animation listener to retain.
-            if (markerRoot?.isConnected) {
-                inner.classList.add(styles.appearing);
-            }
-        });
-        
-        layer.addEventListener('click', (e) => {
-            e.originalEvent.stopPropagation();
-            switchToMarkerLayer(markerData);
-            handleMarkerClickState(markerData, layer, handlers);
-            
-            LOGGER.debug('marker clicked', markerData);
-            onClick?.(markerData);
-        });
-        layer.addEventListener('contextmenu', (e) => {
-            if (e.originalEvent.altKey) return;
-            L.DomEvent.stop(e.originalEvent);
-            handlers?.onContextMenu?.(markerData, e.originalEvent);
-        });
-
-        attachPreviewLifecycle(layer, markerData);
-        
-        return layer;
-    },
-    sub_icon: (markerData, onClick, handlers) => {
-        const sub = MARKER_TYPE_DICT[markerData.type].subIcon;
-        const iconUrl = getItemIconUrl(markerData.type);
-        const subIconUrl = getMarkerSubIconUrl(sub);
-        
-        // 将 subIcon 改为直接嵌入到 marker HTML 中，取消使用 Leaflet tooltip
-        // + DOM 联动，CSS选择器控制样式
-        // - 失去tooltip的高z轴，在点密集场景下会被覆盖
-        // - 需要pointer-events: none 使 subIcon 不接收鼠标事件
-        const markerIcon = divIcon({
-            iconSize: [32, 32],
-            iconAnchor: [16, 32],
-            popupAnchor: [0, 0],
-            tooltipAnchor: [0, 0],
-            className: styles.FrameMarkerIcon,
-            html: `<div class="${styles.markerInner}">
-                       <div class="${styles.FrameImage}"><img src="${iconUrl}" alt="${markerData.type}" /></div>
-                       <div class="${styles.subIconContainer}">
-                           <img src="${subIconUrl}" class="${styles.subIcon}" />
-                       </div>
-                   </div>`,
-        });
-        
-        const layer = new ViewportMarker(markerData.pos, {
-            icon: markerIcon,
-            alt: markerData.type,
-        });
-        // 初次添加到地图时，按存储状态渲染 selected/checked（sub_icon）
-        layer.on('add', () => {
-            const markerRoot = layer.getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (!inner) return;
-            syncMarkerTierAttribute(layer, markerData);
-            syncMarkerStateClasses(layer, markerData.id);
-            // Parked DOM has no entry animation or animation listener to retain.
-            if (markerRoot?.isConnected) {
-                inner.classList.add(styles.appearing);
-            }
-        });
-            
-        layer.addEventListener('click', (e) => {
-            e.originalEvent.stopPropagation();
-            switchToMarkerLayer(markerData);
-            handleMarkerClickState(markerData, layer, handlers);
-            
-            LOGGER.debug('marker clicked', markerData);
-            onClick?.(markerData);
-        });
-        layer.addEventListener('contextmenu', (e) => {
-            if (e.originalEvent.altKey) return;
-            L.DomEvent.stop(e.originalEvent);
-            handlers?.onContextMenu?.(markerData, e.originalEvent);
-        });
-
-        attachPreviewLifecycle(layer, markerData);
-
-        return layer;
-    },
 };
 
 export function getMarkerLayer(
@@ -318,32 +175,34 @@ export function getMarkerLayer(
     onClick?: (markerData: IMarkerData) => void,
     collectedPoints?: string[],
     handlers?: MarkerStateHandlers,
-) {
-    const type = MARKER_TYPE_DICT[markerData.type];
-    const layer = (() => {
-        if (!type) {
-            LOGGER.warn('marker type not found', markerData.type);
-            return RENDERER_DICT['__DEFAULT'](markerData, onClick, handlers);
-        }
-        if (type.subIcon) {
-            return RENDERER_DICT['sub_icon'](markerData, onClick, handlers);
-        } else {
-            return RENDERER_DICT['__DEFAULT'](markerData, onClick, handlers);
-        }
-    })();
-    
-    // add checked class (if collected)
+): ViewportMarker {
+    const icon = MARKER_ICON_DICT[markerData.type];
+    if (!icon) LOGGER.warn('marker type not found', markerData.type);
+    const layer = new ViewportMarker(markerData.pos, {
+        icon,
+        alt: markerData.type,
+    });
+
     if (collectedPoints && hasId(collectedPoints, markerData.id)) {
-        setTimeout(() => {
-            const markerRoot = layer.getElement?.() as HTMLElement | null;
-            const inner = markerRoot?.querySelector(`.${styles.markerInner}, .${styles.noFrameInner}`);
-            if (inner) {
-                syncMarkerTierAttribute(layer, markerData);
-                inner.classList.add(styles.checked);
-                syncMarkerCollectedStacking(layer, true);
-            }
-        }, 0);
+        setMarkerState(layer, { checked: true, completed: true });
     }
-    
+    layer.on('add', () => {
+        syncMarkerTierAttribute(layer, markerData);
+        syncMarkerState(layer, markerData.id);
+        setMarkerState(layer, { appearing: true });
+    });
+    layer.on('click', (event: L.LeafletMouseEvent) => {
+        event.originalEvent.stopPropagation();
+        switchToMarkerLayer(markerData);
+        handleMarkerClickState(markerData, layer, handlers);
+        LOGGER.debug('marker clicked', markerData);
+        onClick?.(markerData);
+    });
+    layer.on('contextmenu', (event: L.LeafletMouseEvent) => {
+        if (event.originalEvent.altKey) return;
+        L.DomEvent.stop(event.originalEvent);
+        handlers?.onContextMenu?.(markerData, event.originalEvent);
+    });
+    attachPreviewLifecycle(layer, markerData);
     return layer;
 }

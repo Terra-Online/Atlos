@@ -224,23 +224,22 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         isOpenRef.current = false;
 
         const popover = popoverRef.current;
-        if (!popover) return;
-
         layerRef.current?.setActive(false);
         const finishClose = () => {
+            closeTimeoutRef.current = undefined;
             try {
-                popover.hidePopover?.();
+                popover?.hidePopover?.();
             } catch {
                 // Ignore if already hidden
             }
-            popover.classList.remove(styles.popoverClose);
+            popover?.classList.remove(styles.popoverClose);
             layerRef.current?.dispose();
             layerRef.current = null;
             fontOwner.current?.stop();
             fontOwner.current = undefined;
         };
 
-        if (immediate || !isPopoverOpen(popover)) {
+        if (immediate || !popover || !isPopoverOpen(popover)) {
             finishClose();
             return;
         }
@@ -267,7 +266,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         }
 
         if (!layerRef.current) layerRef.current = registerOverlay({
-            element: popover, trigger: triggerRef.current, onDismiss: () => hidePopover(true),
+            element: popover, trigger: triggerRef.current, closeOnOutside: true, onDismiss: () => hidePopover(true),
         });
         layerRef.current.setActive(true);
         if (!viewportCleanupRef.current) {
@@ -329,39 +328,39 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         setMergedRef(childRef, node);
     }, [childRef]);
 
-    if (!hasContent) {
+    if (disabled || !hasContent) {
         return children;
     }
 
     // Clone children and add event handlers
-    const originalOnMouseEnter = childProps.onMouseEnter as ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
-    const originalOnMouseLeave = childProps.onMouseLeave as ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
-    const describedBy = disabled
-        ? childProps['aria-describedby']
-        : [childProps['aria-describedby'], popoverId].filter(Boolean).join(' ') || undefined;
+    const describedBy = [childProps['aria-describedby'], popoverId].filter(Boolean).join(' ') || undefined;
 
     const childWithHandlers = React.cloneElement(children, {
         ref: setTriggerRef,
         'aria-describedby': describedBy,
         onFocus: (e: React.FocusEvent<HTMLElement>) => {
-            handleMouseEnter();
+            if (e.target.matches(':focus-visible')) handleMouseEnter();
             (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
         },
         onBlur: (e: React.FocusEvent<HTMLElement>) => {
             handleMouseLeave();
             (childProps.onBlur as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
         },
-        onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-            handleMouseEnter();
-            if (originalOnMouseEnter) {
-                originalOnMouseEnter(e);
-            }
+        onPointerEnter: (e: React.PointerEvent<HTMLElement>) => {
+            if (e.pointerType !== 'touch') handleMouseEnter();
+            (childProps.onPointerEnter as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
         },
-        onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+        onPointerLeave: (e: React.PointerEvent<HTMLElement>) => {
             handleMouseLeave();
-            if (originalOnMouseLeave) {
-                originalOnMouseLeave(e);
-            }
+            (childProps.onPointerLeave as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+            if (visible === undefined) hidePopover(true);
+            (childProps.onPointerDown as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
+            if (visible === undefined) hidePopover(true);
+            (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(e);
         },
     } as Partial<React.HTMLAttributes<HTMLElement>> & { ref: React.Ref<HTMLElement> });
 

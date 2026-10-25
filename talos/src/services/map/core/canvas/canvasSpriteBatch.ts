@@ -6,6 +6,8 @@ interface Slot {
   refs: number; version: number; source: WeakRef<HTMLCanvasElement>;
 }
 interface Page { x: number; y: number; row: number }
+interface Upload { slot: Slot; x: number; y: number; width: number; height: number }
+interface Sheet { canvas: HTMLCanvasElement; context: CanvasRenderingContext2D; x: number; y: number; row: number }
 export interface PaintRect { x: number; y: number; width: number; height: number }
 const ATLAS_SIZE = 1024;
 const MAX_PAGES = 64;
@@ -17,6 +19,7 @@ layout(location=1) in vec4 texRect;
 layout(location=2) in vec2 meta;
 uniform vec2 viewport;
 uniform vec2 origin;
+uniform bool flip;
 out vec2 uv;
 out float opacity;
 flat out float page;
@@ -24,6 +27,7 @@ void main(){
  vec2 corner=vec2(float(gl_VertexID & 1),float((gl_VertexID >> 1) & 1));
  vec2 position=rect.xy+corner*rect.zw-origin;
  gl_Position=vec4(position/viewport*vec2(2.0,-2.0)+vec2(-1.0,1.0),0.0,1.0);
+ if(flip)gl_Position.y=-gl_Position.y;
  uv=texRect.xy+corner*texRect.zw;opacity=meta.x;page=meta.y;
 }`;
 const fragmentSource = `#version 300 es
@@ -48,11 +52,21 @@ export class CanvasSpriteBatch {
   private uploadTexture: WebGLTexture;
   private uploadWidth = 0;
   private uploadHeight = 0;
+  private sheet?: Sheet;
+  private pendingUploads: Upload[] = [];
   private program: WebGLProgram;
   private buffer: WebGLBuffer;
   private vao: WebGLVertexArrayObject;
+  private compositeBuffer: WebGLBuffer;
+  private compositeVao: WebGLVertexArrayObject;
+  private compositeBytes = 0;
   private viewport: WebGLUniformLocation | null;
   private origin: WebGLUniformLocation | null;
+  private flip: WebGLUniformLocation | null;
+  private ratio = 1;
+  private components = new Map<Sprite, Slot>();
+  private compositeData = new Float32Array(2 * STRIDE);
+  compositions = 0;
   private source: HTMLCanvasElement;
   private paintX = 0;
   private paintY = 0;
@@ -94,11 +108,13 @@ export class CanvasSpriteBatch {
     if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) throw new Error('Canvas shader link failed');
     this.viewport = gl.getUniformLocation(this.program, 'viewport');
     this.origin = gl.getUniformLocation(this.program, 'origin');
+    this.flip = gl.getUniformLocation(this.program, 'flip');
     this.buffer = gl.createBuffer()!; this.vao = gl.createVertexArray()!;
-    gl.bindVertexArray(this.vao); gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    for (const [index, size, offset] of [[0, 4, 0], [1, 4, 4], [2, 2, 8]]) {
-      gl.enableVertexAttribArray(index); gl.vertexAttribPointer(index, size, gl.FLOAT, false, STRIDE * 4, offset * 4); gl.vertexAttribDivisor(index, 1);
-    }
+    this.configure(this.vao, this.buffer);
+    this.compositeBuffer = gl.createBuffer()!; this.compositeVao = gl.createVertexArray()!;
+    this.configure(this.compositeVao, this.compositeBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this.compositeData.byteLength, gl.DYNAMIC_DRAW);
+    this.compositeBytes = this.compositeData.byteLength;
     // A stable drawing buffer avoids GPU reallocations when dirty rectangles change.
     // Only the damaged rectangle is rendered and copied to the retained 2D image.
     this.copyFramebuffer = gl.createFramebuffer()!;
@@ -109,6 +125,13 @@ export class CanvasSpriteBatch {
     gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.DITHER);
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.canvas.addEventListener('webglcontextlost', this.contextLost);
+  }
+  private configure(vao: WebGLVertexArrayObject, buffer: WebGLBuffer): void {
+    const gl = this.gl;
+    gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    for (const [index, size, offset] of [[0, 4, 0], [1, 4, 4], [2, 2, 8]]) {
+      gl.enableVertexAttribArray(index); gl.vertexAttribPointer(index, size, gl.FLOAT, false, STRIDE * 4, offset * 4); gl.vertexAttribDivisor(index, 1);
+    }
   }
   private contextLost = (event: Event): void => {
     if (this.disposed) return;
@@ -145,9 +168,15 @@ export class CanvasSpriteBatch {
       slot = this.slots.find(candidate => candidate.refs === 0 && candidate.width >= width && candidate.height >= height);
       if (slot) {
         const gl = this.gl;
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
-        gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, slot.x - 1, slot.y - 1, slot.page, slot.width + 2, slot.height + 2, 1,
-          gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array((slot.width + 2) * (slot.height + 2) * 4));
+        // Reuse needs a transparent sampling gutter. Clear on the GPU rather
+        // than uploading a new zero-filled pixel array for every pose change.
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.copyFramebuffer);
+        gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this.atlas, 0, slot.page);
+        gl.scissor(slot.x - 1, slot.y - 1, width + 2, height + 2);
+        gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, null, 0, 0);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+        gl.scissor(0, 0, this.paintWidth, this.paintHeight);
         slot.source = new WeakRef(source); slot.version = -1;
       } else {
         let pageIndex = this.pages.length - 1, page = this.pages[pageIndex];
@@ -162,14 +191,17 @@ export class CanvasSpriteBatch {
       this.sources.set(source, slot);
     }
     if (slot.version !== (sprite.version ?? 0)) {
+      if (sprite.parts) {
+        this.compose(sprite, slot); slot.version = sprite.version ?? 0; return slot;
+      }
+      if (sprite.version !== undefined) {
+        this.stage(source, slot); slot.version = sprite.version; return slot;
+      }
       const gl = this.gl;
       // DOM premultiplication is supported by 2D uploads. Copy into the array on the GPU,
       // avoiding CPU readback and preserving alpha-correct bilinear sampling at sprite edges.
       gl.bindTexture(gl.TEXTURE_2D, this.uploadTexture);
-      if (source.width > this.uploadWidth || source.height > this.uploadHeight) {
-        this.uploadWidth = Math.max(source.width, this.uploadWidth); this.uploadHeight = Math.max(source.height, this.uploadHeight);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, this.uploadWidth, this.uploadHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-      }
+      this.sizeUpload(source.width, source.height);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, source);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
@@ -183,6 +215,115 @@ export class CanvasSpriteBatch {
     }
     return slot;
   }
+  private sizeUpload(width: number, height: number): void {
+    if (width <= this.uploadWidth && height <= this.uploadHeight) return;
+    this.uploadWidth = Math.max(width, this.uploadWidth); this.uploadHeight = Math.max(height, this.uploadHeight);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA8, this.uploadWidth, this.uploadHeight, 0,
+      this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+  }
+  private stage(source: HTMLCanvasElement, slot: Slot): void {
+    if (!this.sheet) {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = ATLAS_SIZE;
+      const context = canvas.getContext('2d')!;
+      context.imageSmoothingEnabled = false;
+      this.sheet = { canvas, context, x: 0, y: 0, row: 0 };
+    }
+    const sheet = this.sheet, width = source.width, height = source.height;
+    if (sheet.x + width > ATLAS_SIZE) { sheet.x = 0; sheet.y += sheet.row; sheet.row = 0; }
+    if (sheet.y + height > ATLAS_SIZE || this.pendingUploads.length >= 256) this.flushUploads();
+    // Copies retain the whole authored sprite, including its native shadow order.
+    // One DOM texture upload serves the sheet; the atlas receives exact GPU copies.
+    sheet.context.drawImage(source, sheet.x, sheet.y);
+    slot.refs++;
+    this.pendingUploads.push({ slot, x: sheet.x, y: sheet.y, width, height });
+    sheet.x += width; sheet.row = Math.max(sheet.row, height);
+  }
+  private flushUploads(): void {
+    if (!this.pendingUploads.length) return;
+    const gl = this.gl, sheet = this.sheet!, pending = this.pendingUploads;
+    this.pendingUploads = [];
+    // Sparse hover/pulse frames upload only their occupied pixels, not a full sheet.
+    let width = 0, height = 0;
+    for (const upload of pending) {
+      width = Math.max(width, upload.x + upload.width); height = Math.max(height, upload.y + upload.height);
+    }
+    try {
+      gl.bindTexture(gl.TEXTURE_2D, this.uploadTexture); this.sizeUpload(width, height);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, sheet.canvas);
+      this.uploads++;
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.copyFramebuffer);
+      gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.uploadTexture, 0);
+      gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
+      for (const { slot, x, y, width, height } of pending) {
+        gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, slot.x, slot.y, slot.page, x, y, width, height);
+      }
+    } finally {
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.copyFramebuffer);
+      gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      // A staged slot cannot be recycled until its queued copy has completed.
+      for (const { slot } of pending) slot.refs--;
+      sheet.context.clearRect(0, 0, width, height);
+      sheet.x = sheet.y = sheet.row = 0;
+    }
+  }
+  private component(sprite: Sprite): Slot {
+    const previous = this.components.get(sprite), slot = this.slot(sprite);
+    if (previous !== slot) { if (previous) previous.refs--; slot.refs++; }
+    this.components.delete(sprite); this.components.set(sprite, slot);
+    if (this.components.size > 256) {
+      const oldest = this.components.keys().next().value!;
+      this.components.get(oldest)!.refs--; this.components.delete(oldest);
+    }
+    return slot;
+  }
+  private compose(sprite: Sprite, target: Slot): void {
+    const gl = this.gl, parts = sprite.parts!, pinned: Slot[] = [];
+    // Reserve the destination and sources while slot reuse/growth resolves the
+    // parts. Component pins are bounded independently of whole-cluster entries.
+    target.refs++;
+    try {
+      for (const part of parts) { const slot = this.component(part); slot.refs++; pinned.push(slot); }
+      this.flushUploads();
+      if (this.compositeData.length < parts.length * STRIDE) this.compositeData = new Float32Array(parts.length * STRIDE);
+      const data = this.compositeData;
+      parts.forEach((part, index) => {
+        const slot = pinned[index], offset = index * STRIDE;
+        data.set([part.x, part.y, part.width, part.height, slot.x / ATLAS_SIZE, slot.y / ATLAS_SIZE,
+          part.canvas.width / ATLAS_SIZE, part.canvas.height / ATLAS_SIZE, 1, slot.page], offset);
+      });
+      gl.bindTexture(gl.TEXTURE_2D, this.uploadTexture); this.sizeUpload(sprite.canvas.width, sprite.canvas.height);
+      // Render into the separate 2D scratch texture, never into the sampled
+      // array (which would create a WebGL feedback loop). Copy texels afterward.
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.copyFramebuffer);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.uploadTexture, 0);
+      gl.viewport(0, 0, sprite.canvas.width, sprite.canvas.height);
+      gl.scissor(0, 0, sprite.canvas.width, sprite.canvas.height);
+      gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.useProgram(this.program); gl.uniform2f(this.viewport, sprite.width, sprite.height);
+      gl.uniform2f(this.origin, sprite.x, sprite.y); gl.uniform1i(this.flip, 1);
+      gl.bindVertexArray(this.compositeVao); gl.bindBuffer(gl.ARRAY_BUFFER, this.compositeBuffer);
+      if (this.compositeBytes < data.byteLength) {
+        gl.bufferData(gl.ARRAY_BUFFER, data.byteLength, gl.DYNAMIC_DRAW); this.compositeBytes = data.byteLength;
+      }
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, data.subarray(0, parts.length * STRIDE));
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, parts.length); this.drawCalls++; this.compositions++;
+      gl.copyTexSubImage3D(gl.TEXTURE_2D_ARRAY, 0, target.x, target.y, target.page, 0, 0, sprite.canvas.width, sprite.canvas.height);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+    } finally {
+      target.refs--; for (const slot of pinned) slot.refs--;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.bindVertexArray(this.vao); gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      gl.viewport(0, 0, this.paintWidth, this.paintHeight); gl.scissor(0, 0, this.paintWidth, this.paintHeight);
+      gl.useProgram(this.program); gl.uniform2f(this.viewport, this.paintWidth / this.ratio, this.paintHeight / this.ratio);
+      gl.uniform2f(this.origin, this.paintX / this.ratio, this.paintY / this.ratio); gl.uniform1i(this.flip, 0);
+    }
+  }
   release(key: object): void {
     const slot = this.bindings.get(key);
     if (slot) { slot.refs--; this.bindings.delete(key); }
@@ -190,6 +331,7 @@ export class CanvasSpriteBatch {
   /** Repack live slots after a region retires, only if at least half the atlas can be released. */
   compact(): void {
     if (this.atlasDepth < 2 || this.disposed) return;
+    this.flushUploads();
     const live = this.slots.flatMap(slot => {
       const source = slot.refs > 0 ? slot.source.deref() : undefined;
       return source ? [{ slot, source }] : [];
@@ -223,7 +365,8 @@ export class CanvasSpriteBatch {
   }
   begin(width: number, height: number, ratio: number, expected: number, dirty?: PaintRect): void {
     const gl = this.gl;
-    this.count = 0; this.uploads = 0; this.drawCalls = 0;
+    this.flushUploads();
+    this.count = 0; this.uploads = 0; this.drawCalls = 0; this.compositions = 0; this.ratio = ratio;
     if (this.data.length < expected * STRIDE) this.data = new Float32Array(2 ** Math.ceil(Math.log2(expected * STRIDE)));
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     if (this.bufferBytes !== this.data.byteLength) { gl.bufferData(gl.ARRAY_BUFFER, this.data.byteLength, gl.DYNAMIC_DRAW); this.bufferBytes = this.data.byteLength; }
@@ -245,7 +388,7 @@ export class CanvasSpriteBatch {
     gl.enable(gl.SCISSOR_TEST); gl.scissor(0, 0, paintWidth, paintHeight);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.useProgram(this.program); gl.uniform2f(this.viewport, paintWidth / ratio, paintHeight / ratio);
-    gl.uniform2f(this.origin, this.paintX / ratio, this.paintY / ratio);
+    gl.uniform2f(this.origin, this.paintX / ratio, this.paintY / ratio); gl.uniform1i(this.flip, 0);
     gl.bindVertexArray(this.vao);
   }
   add(key: object, sprite: Sprite, x: number, y: number, alpha: number): void {
@@ -263,11 +406,12 @@ export class CanvasSpriteBatch {
   }
   end(): void {
     if (this.skip) return;
+    this.flushUploads();
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.atlas);
     if (this.count) {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer); gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.data.subarray(0, this.count * STRIDE));
-      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.count); this.drawCalls = 1;
+      gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.count); this.drawCalls++;
     }
     gl.disable(gl.SCISSOR_TEST);
     if (gl.isContextLost()) throw new Error('Canvas graphics context lost');
@@ -286,7 +430,7 @@ export class CanvasSpriteBatch {
   readPixels(x: number, y: number, width: number, height: number): Uint8ClampedArray {
     return this.output.getImageData(x, y, width, height).data;
   }
-  get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads,
+  get stats() { return { backend: 'webgl2', instances: this.count, drawCalls: this.drawCalls, uploads: this.uploads, compositions: this.compositions,
     presentedPixels: this.skip ? 0 : this.paintWidth * this.paintHeight, viewportPixels: this.width * this.height,
     atlasPages: this.atlasDepth, atlasBytes: this.atlasDepth * ATLAS_SIZE * ATLAS_SIZE * 4 }; }
   dispose(): void {
@@ -294,8 +438,11 @@ export class CanvasSpriteBatch {
     this.disposed = true;
     const gl = this.gl; gl.canvas.removeEventListener('webglcontextlost', this.contextLost);
     gl.deleteTexture(this.atlas); gl.deleteTexture(this.uploadTexture); gl.deleteBuffer(this.buffer); gl.deleteVertexArray(this.vao);
+    gl.deleteBuffer(this.compositeBuffer); gl.deleteVertexArray(this.compositeVao);
     gl.deleteProgram(this.program); gl.deleteFramebuffer(this.copyFramebuffer);
-    this.slots = []; this.pages = []; this.data = new Float32Array(); this.sources = new WeakMap(); this.bindings = new WeakMap();
+    this.pendingUploads = [];
+    if (this.sheet) { this.sheet.canvas.width = this.sheet.canvas.height = 0; this.sheet = undefined; }
+    this.slots = []; this.pages = []; this.data = new Float32Array(); this.components.clear(); this.compositeData = new Float32Array(); this.sources = new WeakMap(); this.bindings = new WeakMap();
     gl.getExtension('WEBGL_lose_context')?.loseContext();
   }
 }

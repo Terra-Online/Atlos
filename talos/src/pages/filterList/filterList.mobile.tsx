@@ -66,9 +66,10 @@ const FilterListMobile: React.FC<FilterListMobileProps> = ({ width = '100%', onC
               <span
                 key={item}
                 className={styles.mainFilterContentItem}
-                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
                 onClick={() => switchFilter(item)}
-              />
+              >
+                <img src={getItemIconUrl(item)} alt="" loading="lazy" decoding="async" draggable={false} />
+              </span>
             ))
           }
         </div>

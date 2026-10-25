@@ -60,7 +60,7 @@ const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
         iconAnchor: [14, 14],
         html: `
             <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
-                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" />
+                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" decoding="async" />
             </div>
         `,
     });

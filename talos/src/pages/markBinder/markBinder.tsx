@@ -1,4 +1,4 @@
-import { memo, useMemo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import styles from '@/pages/markBinder/markBinder.module.scss';
@@ -32,46 +32,7 @@ const MarkBinder = ({ item, mobile = false }: MarkBinderProps) => {
 
     const typeKeys = useMemo(() => group.types.map(type => type.key), [group.types]);
     const allActive = useMarkerStore(state => typeKeys.length > 0 && typeKeys.every(key => state.filter.includes(key)));
-    const [layoutAnimReady, setLayoutAnimReady] = useState(false);
-    const layoutVersionRef = useRef(layoutVersion);
     const renderedSignature = sortedRenderedTypes.map(({ typeInfo }) => typeInfo.key).join(',');
-    const layoutSignature = `${currentRegion}:${layoutVersion}:${displayName}:${renderedSignature}`;
-    const previousLayout = useRef(layoutSignature);
-    const [animating, setAnimating] = useState(false);
-    const layoutChanged = previousLayout.current !== layoutSignature;
-    useLayoutEffect(() => {
-        if (previousLayout.current === layoutSignature) return undefined;
-        previousLayout.current = layoutSignature;
-        setAnimating(true);
-        const timer = window.setTimeout(() => setAnimating(false), 1000);
-        return () => window.clearTimeout(timer);
-    }, [layoutSignature]);
-
-    const armLayoutAnimation = useCallback(() => {
-        let raf1 = 0;
-        let raf2 = 0;
-        raf1 = requestAnimationFrame(() => {
-            raf2 = requestAnimationFrame(() => setLayoutAnimReady(true));
-        });
-        return () => {
-            cancelAnimationFrame(raf1);
-            cancelAnimationFrame(raf2);
-        };
-    }, []);
-
-    useEffect(() => {
-        return armLayoutAnimation();
-    }, [armLayoutAnimation]);
-
-    // A font commit can change line wrapping after Motion has captured its
-    // previous box. Disable child projection for two frames, then measure the
-    // settled boxes again. This keeps the normal expand/reorder spring intact.
-    useLayoutEffect(() => {
-        if (layoutVersionRef.current === layoutVersion) return undefined;
-        layoutVersionRef.current = layoutVersion;
-        setLayoutAnimReady(false);
-        return armLayoutAnimation();
-    }, [armLayoutAnimation, layoutVersion]);
 
     const isComplete = totalTotal > 0 && totalCollected >= totalTotal;
 
@@ -119,21 +80,20 @@ const MarkBinder = ({ item, mobile = false }: MarkBinderProps) => {
             {/* Children: stop propagation so child selector clicks don't also trigger wrap */}
             {!shouldCollapseChildren && (
                 <div className={`${styles.binderChildren} ${mobile ? styles.mobileChildren : ''}`} onClick={(e) => e.stopPropagation()}>
-                    {<SelectorRows items={sortedRenderedTypes} columns={mobile ? 2 : 1} compact renderItem={(child, index, style) => (
-                        <motion.div
-                            key={child.typeInfo.key}
-                            style={style}
-                            data-sidebar-row={style.gridRow ? Number(style.gridRow) - 1 : undefined}
-                            data-sidebar-index={index}
-                            layout={layoutAnimReady && (layoutChanged || animating)}
-                            // Region changes also move retained rows when other binders
-                            // disappear or change columns, even if these keys stay the same.
-                            layoutDependency={`${currentRegion}:${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
-                            transition={{ type: 'spring', stiffness: 400, damping: 38 }}
-                        >
+                    <SelectorRows items={sortedRenderedTypes} columns={mobile ? 2 : 1} compact renderItem={(child, index, style) => {
+                        // Virtual rows already own an explicit grid slot. A second
+                        // layout projection captures the moving category's offset
+                        // and can retain it after a region change or scroll anchor.
+                        if (style.gridRow) return <div key={child.typeInfo.key} style={style}
+                            data-sidebar-row={Number(style.gridRow) - 1} data-sidebar-index={index}>
                             <MarkSelector item={child} />
-                        </motion.div>
-                    )} />}
+                        </div>;
+                        return <motion.div key={child.typeInfo.key} style={style} data-sidebar-index={index}
+                            layout="position" layoutDependency={`${currentRegion}:${index}:${layoutVersion}:${displayName}:${renderedSignature}`}
+                            transition={{ type: 'spring', stiffness: 400, damping: 38 }}>
+                            <MarkSelector item={child} />
+                        </motion.div>;
+                    }} />
                 </div>
             )}
         </div>

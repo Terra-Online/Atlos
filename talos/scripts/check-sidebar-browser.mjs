@@ -26,6 +26,10 @@ async function openDrawer(page) {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
     await page.mouse.move(195, 100, { steps: 10 }); await page.mouse.up(); await page.waitForTimeout(1200);
 }
+async function assertSearchPosition(input, top) {
+    const box = await input.boundingBox();
+    assert.ok(box && Math.abs(box.y - top) <= 1, 'Filtering expanded categories must keep the search input pinned');
+}
 try {
     for (const theme of ['light', 'dark']) for (const variant of ['baseline', 'candidate']) {
         const { page, context } = await harness.open(variant, { viewport: mobile ? { width: 390, height: 844 } : { width: 1200, height: 762 }, prefs: { sidebarOpen: true, sidebarWidthV2: 500, markFilterExpanded: expanded, theme, prefsMarkerProgressEnabled: true } });
@@ -149,12 +153,16 @@ try {
             if (columns === 2) assert.ok(positions[2] > positions[0]);
             const scroll = page.locator('[data-sidebar-scroll]'), height = await scroll.evaluate(element => element.scrollHeight);
             const input = page.locator('[data-sidebar-layout] input').first();
+            const searchTop = (await input.boundingBox()).y;
             await input.fill('Aurylene'); await page.waitForTimeout(650);
+            await assertSearchPosition(input, searchTop);
             const matching = await page.locator('[data-mark-selector-item]').evaluateAll(elements => elements.map(element => element.getAttribute('data-key')));
             assert.ok(matching.length > 0 && matching.every(key => key === 'aurylene'));
             await input.fill('no-matching-type-fixture'); await page.waitForTimeout(650);
+            await assertSearchPosition(input, searchTop);
             assert.equal(await page.locator('[data-mark-selector-item]').count(), 0);
             await input.fill(''); await page.waitForTimeout(650);
+            await assertSearchPosition(input, searchTop);
             assert.ok(Math.abs(await scroll.evaluate(element => element.scrollHeight) - height) <= 2);
             const collection = page.locator('[data-category="collection"]');
             await collection.locator('[data-filter-header]').click({ position: { x: 80, y: 20 } }); await page.waitForTimeout(600);
@@ -172,12 +180,16 @@ try {
             const scroll = page.locator('[data-sidebar-scroll]');
             const height = await scroll.evaluate(element => element.scrollHeight);
             const input = page.locator('[data-sidebar-layout] input').first();
+            const searchTop = (await input.boundingBox()).y;
             await input.fill('Aurylene'); await page.waitForTimeout(650);
+            await assertSearchPosition(input, searchTop);
             const matches = await page.locator('[data-mark-selector-item]').evaluateAll(elements => elements.map(element => element.getAttribute('data-key')));
             assert.ok(matches.length > 0 && matches.every(key => key === 'aurylene'));
             await input.fill('no-matching-type-fixture'); await page.waitForTimeout(650);
+            await assertSearchPosition(input, searchTop);
             assert.equal(await page.locator('[data-mark-selector-item]').count(), 0);
             await input.fill(''); await input.blur(); await page.waitForTimeout(1100);
+            await assertSearchPosition(input, searchTop);
             assert.ok(Math.abs(await scroll.evaluate(element => element.scrollHeight) - height) <= 2);
             const counts = [];
             for (let cycle = 0; cycle < 20; cycle++) {

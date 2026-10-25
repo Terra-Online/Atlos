@@ -4,8 +4,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { randomUUID } from 'node:crypto';
-import { createRunner, ROOT } from './task-runner.mjs';
-import { withLocalLock, createReleaseStore } from './release-store.mjs';
+import { createRunner, runCli } from './task-runner.mjs';
+import { createReleaseStore } from './release-store.mjs';
 import {
     appReceipt,
     recordApp,
@@ -37,7 +37,7 @@ const help = `Usage: pnpm <command> [options]
   check [--build] / lint / lint:fix / type-check / test
   type-check [--app main|intel|user-hub|relink|search]
   run test    [--app main|intel|user-hub|relink|scripts]
-  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-diff|search-index|relink-preview|sync-intel|seo
+  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|sync-intel|seo
   data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
 CI source checks/builds: --source-only (omits private Intel icons; artifact cannot be published)
@@ -516,7 +516,7 @@ const publish = async (runner, options, target) => {
     let dir = distPath(runner, options, target);
     if (runner.dryRun) {
         console.log(
-            `[release] acquire remote lock, ${options.app ? 'verify published baseline and compose app' : 'validate full artifact'}, publish and save verified snapshot`,
+            `[release] ${options.app ? 'verify published baseline and compose app' : 'validate full artifact'}, publish and save verified snapshot`,
         );
         await publishTransports(
             runner,
@@ -534,56 +534,45 @@ const publish = async (runner, options, target) => {
         );
         return;
     }
-    // Reject invalid artifacts before contacting storage or acquiring a remote lock.
+    // Reject invalid artifacts before contacting storage.
     if (!options.app) await verifyPublish(runner, options, target, dir);
     const store = await (runner.releaseStore || createReleaseStore)(
         runner,
         options,
         target,
     );
-    const release = await store.acquire();
-    let mutationStarted = false;
-    try {
-        if (options.app)
-            dir = await composeApp(
-                runner,
-                options,
-                target,
-                dir,
-                await store.read(),
-            );
-        const info = await verifyArtifact(dir, options, target);
-        const origin = await siteUrl(runner, options, target);
-        await verifyReferences(dir, info, origin);
-        const id = randomUUID();
-        // Once any remote mutation starts, a failed or partial transport must not
-        // leave the previous baseline eligible for another standalone app publish.
-        mutationStarted = true;
-        await store.write({ status: 'publishing', id });
-        await publishTransports(runner, { ...options, distDir: dir }, target);
-        if (options.only === 'all') {
-            await verifyLive(runner, dir, info, origin);
-            const state = await saveSnapshot(
-                runner,
-                options,
-                target,
-                dir,
-                id,
-                await hashFiles(dir),
-            );
-            await store.write(state);
-        } else {
-            await store.write({ status: 'partial', id });
-        }
-        mutationStarted = false;
-    } finally {
-        // A failed SSH/upload request may still be running remotely. Retain the
-        // lock until an operator confirms it has stopped before a full recovery.
-        if (mutationStarted)
-            console.error(
-                '[release] Publication did not complete. Remote lock retained; verify no publisher is running before removing it and completing a full publish.',
-            );
-        else await release();
+    if (options.app)
+        dir = await composeApp(
+            runner,
+            options,
+            target,
+            dir,
+            await store.read(),
+        );
+    const info = await verifyArtifact(dir, options, target);
+    const origin = await siteUrl(runner, options, target);
+    await verifyReferences(dir, info, origin);
+    const id = randomUUID();
+    // Once any remote mutation starts, a failed or partial transport must not
+    // leave the previous baseline eligible for another standalone app publish.
+    runner.signal?.throwIfAborted();
+    await store.write({ status: 'publishing', id });
+    await publishTransports(runner, { ...options, distDir: dir }, target);
+    if (options.only === 'all') {
+        await verifyLive(runner, dir, info, origin);
+        const state = await saveSnapshot(
+            runner,
+            options,
+            target,
+            dir,
+            id,
+            await hashFiles(dir),
+        );
+        runner.signal?.throwIfAborted();
+        await store.write(state);
+    } else {
+        runner.signal?.throwIfAborted();
+        await store.write({ status: 'partial', id });
     }
 };
 
@@ -620,7 +609,14 @@ const executeTask = async (argv, dependencies = {}) => {
         dryRun: options.dryRun,
     });
     runner.releaseStore = dependencies.releaseStore;
-    runner.fetch = dependencies.fetch || globalThis.fetch;
+    runner.fetch = (url, init = {}) =>
+        (dependencies.fetch || globalThis.fetch)(url, {
+            ...init,
+            signal:
+                runner.signal && init.signal
+                    ? AbortSignal.any([runner.signal, init.signal])
+                    : runner.signal || init.signal,
+        });
     switch (options.command) {
         case 'build':
         case 'deploy':
@@ -724,25 +720,11 @@ const executeTask = async (argv, dependencies = {}) => {
     }
 };
 
-export const runTask = async (argv, dependencies = {}) => {
-    const options = parseTask(argv, dependencies.env);
-    const locksOutput =
-        ['build', 'deploy', 'publish', 'package'].includes(options.command) ||
-        (options.command === 'check' && options.build);
-    if (!options.dryRun && locksOutput) {
-        return withLocalLock(dependencies.root || ROOT, () =>
-            executeTask(argv, dependencies),
-        );
-    }
-    return executeTask(argv, dependencies);
-};
+export const runTask = executeTask;
 
 if (
     process.argv[1] &&
     import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-    runTask(process.argv.slice(2)).catch((error) => {
-        console.error(error.message);
-        process.exitCode = 1;
-    });
+    runCli((signal) => runTask(process.argv.slice(2), { signal }));
 }

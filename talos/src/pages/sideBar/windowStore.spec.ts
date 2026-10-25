@@ -78,6 +78,32 @@ describe('sidebar window geometry', () => {
             expect(f.store.blocks.get(f.grid)?.rows).toContain(40);
         } finally { f.cleanup(); }
     });
+    it('keeps the top pinned when search results move the selector grid down', () => {
+        const f = fixture();
+        try {
+            f.grid.getBoundingClientRect = () => new DOMRect(0, 300 - f.scroll.scrollTop, 210, 2500);
+            f.store.measure(true);
+            expect(f.scroll.scrollTop).toBe(0);
+            f.grid.getBoundingClientRect = () => new DOMRect(0, -f.scroll.scrollTop, 210, 2500);
+            f.store.measure(true);
+            expect(f.scroll.scrollTop).toBe(0);
+        } finally { f.cleanup(); }
+    });
+    it('drops a selector anchor while the search input is focused', () => {
+        const f = fixture();
+        try {
+            f.scroll.scrollTop = 1000; f.scroll.dispatchEvent(new Event('scroll'));
+            expect(f.store.anchor?.key).toBe('item-40');
+            const input = document.createElement('input');
+            input.dataset.searchInput = 'true'; f.scroll.prepend(input); input.focus();
+            f.grid.style.gridTemplateColumns = '70px 70px 70px';
+            f.store.measure(true);
+            expect(f.scroll.scrollTop).toBe(1000);
+            expect(f.store.anchor).toBeUndefined();
+            input.blur(); f.store.measure(true);
+            expect(f.store.anchor?.key).toBe('item-60');
+        } finally { f.cleanup(); }
+    });
     it('keeps a visible key when responsive layout replaces its entire grid', () => {
         const f = fixture();
         try {

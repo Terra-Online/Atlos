@@ -14,6 +14,7 @@ import { SmoothTileLayer } from '@/services/map/core/smoothTileLayer';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
+    initialView?: { regionId: string; view: IMapView };
 }
 
 interface RegionSwitchWaiter {
@@ -59,8 +60,10 @@ export class MapCore {
     private switchRegionPromise: Promise<void> | null = null;
     private regionWaiters: RegionSwitchWaiter[] = [];
     private layerRequestId = 0;
+    private initialView?: IMapOptions['initialView'];
 
     constructor(ele: HTMLDivElement, options?: IMapOptions) {
+        this.initialView = options?.initialView;
         this.map = L.map(ele, {
             crs: L.CRS.Simple,
             minZoom: 0,
@@ -193,7 +196,7 @@ export class MapCore {
         if (this.currentRegionId && !isRegionSwitching(this.map)) {
             useViewState.getState().saveViewState(this.currentRegionId, this.map);
         }
-        const view = useViewState.getState().getViewState(regionId);
+        let view = useViewState.getState().getViewState(regionId);
         setRegionSwitching(this.map, true);
         this.map.fire('talos:regionSwitchStart', { regionId });
         this.currentRegionId = regionId;
@@ -221,6 +224,16 @@ export class MapCore {
 
         const [[minPixelX, minPixelY], [maxPixelX, maxPixelY]] =
             getRegionPixelBounds(config);
+        const southWest = this.map.unproject([minPixelX, maxPixelY], config.maxZoom);
+        const northEast = this.map.unproject([maxPixelX, minPixelY], config.maxZoom);
+        const mapBounds = L.latLngBounds(southWest, northEast);
+        const initial = this.initialView;
+        this.initialView = undefined;
+        if (initial?.regionId === regionId
+            && [initial.view.lat, initial.view.lng, initial.view.zoom].every(Number.isFinite)
+            && mapBounds.contains([initial.view.lat, initial.view.lng])) {
+            view = initial.view;
+        }
         if (
             view &&
             view.lat !== undefined &&
@@ -268,17 +281,6 @@ export class MapCore {
             });
         }
 
-        const southWest = this.map.unproject(
-            [minPixelX, maxPixelY],
-            config.maxZoom,
-        );
-        const northEast = this.map.unproject(
-            [maxPixelX, minPixelY],
-            config.maxZoom,
-        );
-
-        const mapBounds = L.latLngBounds(southWest, northEast);
-
         // set map bounds to restrict panning
         this.map.setMaxBounds(mapBounds);
 
@@ -309,7 +311,8 @@ export class MapCore {
 
         // A region is ready when its map state and marker data are committed. Tile
         // image downloads continue independently and expose Leaflet's loading events.
-        await this.markerLayer.changeRegion(regionId);
+        await this.markerLayer.changeRegion(regionId, () => !this.destroyed
+            && (!this.requestedRegionId || this.requestedRegionId === regionId));
     }
     setMapView(view: IMapView) {
         this.map.stop();

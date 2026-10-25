@@ -2,7 +2,9 @@
 import L from 'leaflet';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
-import styles from '@/services/map/core/marker/marker.module.scss';
+import { SceneIcon, getMarkerState, setMarkerState } from '@/services/map/core/canvas/markerModel';
+import { canvasSurface } from '@/services/map/core/canvas/canvasMarkerSurface';
+import { MarkerPainter } from '@/services/map/core/canvas/canvasMarkerPaint';
 
 let map: L.Map;
 let host: HTMLDivElement;
@@ -15,7 +17,7 @@ beforeEach(() => {
 });
 afterEach(() => { if (!removed) map.remove(); host.remove(); });
 const marker = (position: L.LatLngExpression) => new ViewportMarker(position, {
-  icon: L.divIcon({ className: styles.incompleteMarker, html: `<span class="${styles.markerInner}">point</span>`, iconSize: [32, 32], iconAnchor: [16, 32] }),
+  icon: new SceneIcon({ image: '', subImage: '', tier: '', noFrame: false }, 'point'),
 });
 describe('Canvas marker lifecycle', () => {
   it('consumes scheduled frames without cancelling them and coalesces synchronous camera draws', () => {
@@ -66,7 +68,7 @@ describe('Canvas marker lifecycle', () => {
     })));
     vi.stubGlobal('devicePixelRatio', 1.25);
     try {
-      const point = marker([0, 0]).addTo(map), node = point.getElement();
+      const point = marker([0, 0]).addTo(map);
       map.fire('move');
       const canvas = host.querySelector<HTMLCanvasElement>('.oem-canvas-markers')!;
       expect(canvas.width).toBe(1908);
@@ -74,7 +76,7 @@ describe('Canvas marker lifecycle', () => {
       vi.stubGlobal('devicePixelRatio', 3);
       changed!(); map.fire('move');
       expect(canvas.width).toBe(2862);
-      expect(point.getElement()).toBe(node);
+      expect(map.hasLayer(point)).toBe(true);
       vi.stubGlobal('devicePixelRatio', 1.5);
       map.fire('move');
       expect(canvas.width).toBe(1908);
@@ -82,28 +84,47 @@ describe('Canvas marker lifecycle', () => {
       expect(remove).toHaveBeenCalledTimes(3);
     } finally { vi.unstubAllGlobals(); }
   });
-  it('preserves logical members, semantic node identity and handlers while browsing', () => {
-    const near = marker([0, 0]), far = marker([1000, 1000]), clicked = vi.fn();
+  it('preserves logical members and click ownership while browsing without point nodes', () => {
+    const near = marker([0, 0]), far = marker([1000, 1000]), clicked = vi.fn<(event: L.LeafletEvent) => void>();
     far.on('click', clicked);
-    const group = L.layerGroup([near, far]).addTo(map), node = far.getElement()!;
+    const group = L.layerGroup([near, far]).addTo(map);
     expect(map.hasLayer(far)).toBe(true); expect(group.hasLayer(far)).toBe(true);
-    expect(node.closest('.oem-canvas-semantics')).not.toBeNull();
+    expect(far.getElement()).toBeUndefined();
     map.setView([1000, 1000], 2, { animate: false });
-    expect(far.getElement()).toBe(node);
-    node.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const point = map.latLngToContainerPoint(far.getLatLng());
+    host.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: point.x, clientY: point.y - 16 }));
     expect(clicked).toHaveBeenCalledOnce();
+    expect(clicked.mock.calls[0][0].target).toBe(far);
+    expect(group.getLayers()).toEqual([near, far]);
   });
-  it('keeps semantic events outside the moving pane while retaining the visual pane', () => {
-    const point = marker([0, 0]).addTo(map), keyPressed = vi.fn();
-    point.on('keypress', keyPressed);
-    const node = point.getElement()!, semantic = node.closest('.oem-canvas-semantics')!;
+  it('keeps the shared keyboard proxy outside the moving pane and activates its logical point', () => {
+    const point = marker([0, 0]).addTo(map), clicked = vi.fn();
+    point.on('click', clicked);
+    const semantic = host.querySelector('.oem-canvas-semantics')!;
+    const proxy = semantic.querySelector('button')!;
     expect(semantic.parentElement).toBe(host);
     expect(map.getPane('mapPane')!.contains(semantic)).toBe(false);
     expect(host.querySelector('.oem-canvas-markers')!.parentElement).toBe(map.getPane('markerPane'));
-    node.dispatchEvent(new KeyboardEvent('keypress', { bubbles: true, key: 'Enter', keyCode: 13 }));
-    expect(keyPressed).toHaveBeenCalledOnce();
-    point.remove(); point.addTo(map);
-    expect(point.getElement()!.closest('.oem-canvas-semantics')!.parentElement).toBe(host);
+    expect(proxy.tabIndex).toBe(0);
+    proxy.click();
+    expect(clicked).toHaveBeenCalledOnce();
+    point.remove(); expect(proxy.tabIndex).toBe(-1);
+    point.addTo(map);
+    expect(host.querySelector('.oem-canvas-semantics button')).toBe(proxy);
+    expect(proxy.tabIndex).toBe(0);
+  });
+  it('preserves the keyboard target when another point leaves, then selects a remaining target when it leaves', () => {
+    const first = marker([0, 0]).addTo(map), other = marker([1, 1]).addTo(map);
+    const firstClick = vi.fn(), otherClick = vi.fn();
+    first.on('click', firstClick); other.on('click', otherClick);
+    const proxy = host.querySelector<HTMLButtonElement>('.oem-canvas-semantics button')!;
+    const unrelated = marker([2, 2]).addTo(map);
+    unrelated.remove(); proxy.click();
+    expect(firstClick).toHaveBeenCalledOnce();
+    expect(otherClick).not.toHaveBeenCalled();
+    first.remove(); proxy.click();
+    expect(otherClick).toHaveBeenCalledOnce();
+    expect(proxy.tabIndex).toBe(0);
   });
   it('adds and removes filter groups without losing members or leaking surfaces', () => {
     const groups = Array.from({ length: 3 }, (_, i) => L.layerGroup([marker([i, i]), marker([1000, 1000])]));
@@ -121,22 +142,74 @@ describe('Canvas marker lifecycle', () => {
     map.setView([1000, 1000], 2, { animate: false });
     expect(point.getTooltip()?.isOpen()).toBe(true); expect(point.isPopupOpen()).toBe(true);
   });
-  it('updates positions without replacing a marker node', () => {
-    const point = marker([1000, 1000]).addTo(map), node = point.getElement();
-    point.setLatLng([0, 0]); expect(point.getElement()).toBe(node);
+  it('updates a logical position and retains state without an icon element', () => {
+    const point = marker([1000, 1000]).addTo(map);
+    setMarkerState(point, { checked: true, selected: true, tier: 'B1' });
+    point.setLatLng([0, 0]); map.fire('move');
     expect(point.getLatLng()).toEqual(L.latLng(0, 0));
+    expect(canvasSurface(map).visualPosition(point)?.equals(point.getLatLng())).toBe(true);
+    expect(getMarkerState(point)).toMatchObject({ checked: true, selected: true, tier: 'B1' });
+    expect(point.getElement()).toBeUndefined();
   });
-  it('preserves keyboard focus when the camera moves', () => {
-    const point = marker([0, 0]).addTo(map), node = point.getElement()!;
-    node.focus(); map.setView([1000, 1000], 2, { animate: false });
-    expect(document.activeElement).toBe(node); expect(node.isConnected).toBe(true);
+  it('updates painter artwork through setIcon without replacing the logical point or creating icon elements', () => {
+    const point = marker([0, 0]).addTo(map), identity = L.stamp(point);
+    setMarkerState(point, { checked: true, selected: true }); map.fire('move');
+    const state = getMarkerState(point);
+    const art = { image: '/point.webp', subImage: '/sub.webp', noFrame: true, tier: 'L2', count: '12' };
+    const icon = new SceneIcon(art, 'Updated group');
+    const createIcon = vi.spyOn(icon, 'createIcon');
+    const ready = vi.spyOn(MarkerPainter.prototype, 'isArtReady');
+    try {
+      expect(point.setIcon(icon)).toBe(point); map.fire('move');
+      expect(ready).toHaveBeenCalledWith(art);
+      expect(point.getIcon()).toBe(icon); expect(L.stamp(point)).toBe(identity);
+      expect(map.hasLayer(point)).toBe(true); expect(getMarkerState(point)).toBe(state);
+      expect(getMarkerState(point)).toMatchObject({ checked: true, selected: true });
+      expect(createIcon).not.toHaveBeenCalled(); expect(point.getElement()).toBeUndefined();
+      expect(host.querySelectorAll('.leaflet-marker-icon')).toHaveLength(0);
+      expect(host.querySelector('.oem-canvas-semantics button')?.getAttribute('aria-label')).toBe('Updated group');
+    } finally { ready.mockRestore(); createIcon.mockRestore(); }
   });
-  it('uses one scene for dense points and retains all semantic nodes', () => {
+  it('brings an initially offscreen keyboard target into view without panning on blur', () => {
+    const far = marker([1000, 1000]).addTo(map), clicked = vi.fn();
+    far.on('click', clicked); map.fire('move');
+    const proxy = host.querySelector<HTMLButtonElement>('.oem-canvas-semantics button')!;
+    expect(map.getBounds().contains(far.getLatLng())).toBe(false);
+    proxy.focus();
+    expect(map.getBounds().contains(far.getLatLng())).toBe(true);
+    proxy.click(); expect(clicked).toHaveBeenCalledOnce();
+    map.setView([0, 0], 2, { animate: false });
+    const pan = vi.spyOn(map, 'panTo');
+    try {
+      proxy.blur();
+      expect(pan).not.toHaveBeenCalled();
+      expect(map.getBounds().contains(far.getLatLng())).toBe(false);
+    } finally { pan.mockRestore(); }
+  });
+  it('preserves shared proxy focus when the camera moves and cycles to an offscreen point', () => {
+    const near = marker([0, 0]), far = marker([1000, 1000]), clicked = vi.fn<(event: L.LeafletEvent) => void>();
+    far.on('click', clicked);
+    L.layerGroup([near, far]).addTo(map); map.fire('move');
+    const proxy = host.querySelector<HTMLButtonElement>('.oem-canvas-semantics button')!;
+    proxy.focus(); map.setView([-1000, -1000], 2, { animate: false });
+    expect(document.activeElement).toBe(proxy); expect(proxy.isConnected).toBe(true);
+    proxy.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'ArrowRight' }));
+    expect(map.getBounds().contains(far.getLatLng())).toBe(true);
+    proxy.click(); expect(clicked).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(proxy);
+  });
+  it('uses one scene and one semantic proxy for 1200 points, including after reattachment', () => {
     const points = Array.from({ length: 1200 }, () => marker([0, 0]));
-    L.layerGroup(points).addTo(map);
+    const group = L.layerGroup(points).addTo(map);
+    const proxy = host.querySelector('.oem-canvas-semantics button');
     expect(host.querySelectorAll('.oem-canvas-markers')).toHaveLength(1);
-    expect(points.every(point => point.getElement()?.isConnected)).toBe(true);
-    expect(points.every(point => point.getElement()?.style.transform === '')).toBe(true);
+    expect(host.querySelectorAll('.oem-canvas-semantics *')).toHaveLength(1);
+    expect(host.querySelectorAll('.leaflet-marker-icon')).toHaveLength(0);
+    expect(points.every(point => point.getElement() === undefined && map.hasLayer(point))).toBe(true);
+    group.remove(); group.addTo(map);
+    expect(host.querySelector('.oem-canvas-semantics button')).toBe(proxy);
+    expect(host.querySelectorAll('.oem-canvas-semantics *')).toHaveLength(1);
+    expect(points.every(point => point.getElement() === undefined && map.hasLayer(point))).toBe(true);
   });
   it('releases the scene and semantic nodes on map destruction', () => {
     marker([0, 0]).addTo(map); map.remove(); removed = true;

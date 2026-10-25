@@ -55,8 +55,9 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
         }
     }, [isUserGuideOpen]);
 
-    // Load steps based on device type
-    const desktopSteps = useDesktopGuideSteps(map);
+    const [showIntro, setShowIntro] = useState(true);
+    // Welcome and closed Help never need a demonstration point from another region.
+    const desktopSteps = useDesktopGuideSteps(map, visible && isUserGuideOpen && !showIntro && !isMobile);
     const mobileSteps = useMobileGuideSteps(map);
     const steps = isMobile ? mobileSteps : desktopSteps;
     // The first entry is a lightweight first-time hint. Detailed guidance starts
@@ -106,7 +107,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
 
     // Controlled step index
     const [stepIndex, setStepIndex] = useState(0);
-    const [showIntro, setShowIntro] = useState(true);
 
     const didAutoOpenRef = useRef(false);
     const wasOpenRef = useRef(false);

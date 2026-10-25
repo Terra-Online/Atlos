@@ -1,4 +1,4 @@
-import { loadAllMarkers } from '@/data/marker';
+import { getMarkerIds } from '@/data/marker';
 
 export const PROGRESS_BITS_PER_POINT = 1;
 export const PROGRESS_FORMAT_VERSION = 1;
@@ -45,14 +45,17 @@ export const getProgressManifestPayload = async (): Promise<ProgressManifestPayl
 };
 
 export const getProgressMarkerIndex = async (): Promise<ProgressMarkerIndex> => {
-    markerIndexPromise ??= loadAllMarkers().then(async (markers) => {
-        const pointIds = [...new Set(markers.map((marker) => String(marker.id)).filter(Boolean))]
+    markerIndexPromise ??= getMarkerIds().then(async (ids) => {
+        const pointIds = [...new Set(ids.map(String).filter(Boolean))]
             .sort(comparePointIds);
         return {
             pointIds,
             indexById: new Map(pointIds.map((id, index) => [id, index])),
             markerIndexHash: await sha256Hex(buildCanonicalMarkerManifest(pointIds)),
         };
+    }).catch((error: unknown) => {
+        markerIndexPromise = null;
+        throw error;
     });
     return markerIndexPromise;
 };

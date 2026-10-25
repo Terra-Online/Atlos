@@ -214,7 +214,7 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
                     >
                         {({ item, hasMultiple, previous, next }) => item && (
                             <>
-                                <img src={item.url} alt={item.content || pointName} />
+                                <img src={item.url} alt={item.content || pointName} decoding='async' />
                                 {hasMultiple && (
                                     <div
                                         className={styles.carouselLayer}
