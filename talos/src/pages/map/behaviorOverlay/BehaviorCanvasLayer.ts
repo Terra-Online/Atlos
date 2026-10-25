@@ -89,6 +89,7 @@ export const createBehaviorCanvasLayer = (
     let context: CanvasRenderingContext2D | null = null;
     let palette: BehaviorPalette;
     let unlockBubbleImage: HTMLImageElement | null = null;
+    let unlockBubbleReady = false;
     let scene = emptyBehaviorScene();
     let startedAt = 0;
     let flowStartedAt = 0;
@@ -547,7 +548,7 @@ export const createBehaviorCanvasLayer = (
             activeContext.save();
             if (
                 circle.imageUrl === UNLOCK_BUBBLE_IMAGE_URL &&
-                unlockBubbleImage?.complete &&
+                unlockBubbleReady && unlockBubbleImage?.complete &&
                 unlockBubbleImage.naturalWidth > 0
             ) {
                 const size = circle.imageSize ?? circle.radius * 2;
@@ -800,6 +801,7 @@ export const createBehaviorCanvasLayer = (
         context = null;
         if (unlockBubbleImage) unlockBubbleImage.onload = null;
         unlockBubbleImage = null;
+        unlockBubbleReady = false;
         map = null;
         animationActive = false;
         flowActive = false;
@@ -821,9 +823,18 @@ export const createBehaviorCanvasLayer = (
             canvas?.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
         }
         if (!unlockBubbleImage && scene.circles.some((circle) => circle.imageUrl === UNLOCK_BUBBLE_IMAGE_URL)) {
-            unlockBubbleImage = new Image();
-            unlockBubbleImage.onload = () => draw();
-            unlockBubbleImage.src = UNLOCK_BUBBLE_IMAGE_URL;
+            const image = new Image();
+            image.decoding = 'async';
+            unlockBubbleImage = image;
+            image.onload = () => {
+                void image.decode().then(() => {
+                    if (unlockBubbleImage === image) {
+                        unlockBubbleReady = true;
+                        draw();
+                    }
+                }, () => undefined);
+            };
+            image.src = UNLOCK_BUBBLE_IMAGE_URL;
         }
         projectionDirty = true;
         projectedScene = null;

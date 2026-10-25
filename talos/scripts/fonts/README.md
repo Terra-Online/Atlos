@@ -59,15 +59,20 @@ requests independently of application startup. Its metadata is a generated
 module dependency in dev and production, so it does not depend on Vite's client
 installing globals first. Initial locale setup waits for the shell before
 rendering the app.
-`requirements.mjs` resolves catalog text to frozen shard IDs at build time; it
-never regenerates fonts. Shell faces are explicit per app. New catalog characters
-select existing residual packs. UI requirements include ICU literal branches.
+`requirements.mjs` resolves each app's own UI text to frozen shard IDs at build
+time; it never regenerates fonts. Shell faces are explicit per app. Map names and
+other apps' catalogs do not enlarge the startup shell. UI requirements include
+ICU literal branches. The main map preloads its target region's selector/binder
+names and both zoom label sets through `preloadMapFonts(regionKey)`.
 
 `prepareFonts(selection, alias)` loads every selected face without registering
 it. An explicit owner registers the complete set and enables its aliases in one
-task. Identical selections and subsets of already-ready collections share
-reference-counted native faces. Updating text or language invalidates pending
-work. Covered text changes keep the existing aliases. Language changes retain
+task. Each document shares one reference-counted native face per locale, face
+and immutable shard, including pending loads. Overlapping owner selections do
+not decode the same WOFF2 twice, and a small owner does not wait for unrelated
+parts of a larger selection. Up to 24 idle shards stay warm for repeat visits.
+Updating text or language invalidates pending work. Text updates keep the
+previous complete aliases until the new selection is ready. Language changes retain
 the previous complete collection while preparing every mounted owner, and only
 commit if the locale request and owner revisions are still current. Failed
 language changes retain the previous fonts and catalog. Initial or new-content
@@ -82,6 +87,10 @@ is included automatically. Modals, archive bodies, ID cards and translation
 annotations declare their data; tooltips register on opening. Fonts preserve
 existing Latin precedence and unsupported glyphs retain the original fallback.
 Body font declarations also bind at explicit owners to isolate inherited text.
+`preloadFontRuns` uses the same native shard cache for intent-driven warmup;
+`registerFontRegion(...).ready` allows non-React owners such as map labels to
+finish preparation before they insert new text. Map label panes own both site
+and subregion text, so normal pan/zoom does not discover additional glyphs.
 Mark catalog-derived runs with `localized: 'ui'` or `'game'`: target-language
 requirements come from build metadata, rather than downloading fonts for old
 translations that will be replaced. User text remains part of each target demand.

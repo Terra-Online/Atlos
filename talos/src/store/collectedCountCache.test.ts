@@ -40,4 +40,13 @@ describe('collection counts', () => {
         const markers = [point('a', '', 0), point('b', 'x', 0)];
         expect(Object.fromEntries(cache.get(['a', 'b'], 1, 'world', () => markers))).toEqual({ x: 1 });
     });
+    it('uses indexed representatives and ignores hidden duplicate IDs and repeated collection entries', () => {
+        const cache = new CollectedCountCache();
+        const index = new Map([['first', 'type'], ['second', 'type']]);
+        const ids = ['first', 'first', 'hidden-duplicate'];
+        const counts = cache.getIndexed(ids, index);
+        expect(Object.fromEntries(counts)).toEqual({ type: 1 });
+        expect(cache.getIndexed(ids, index)).toBe(counts);
+        expect(cache.getIndexed(['hidden-duplicate'], index).size).toBe(0);
+    });
 });

@@ -153,14 +153,15 @@ const FilterListDesktop = ({ isSidebarOpen }: { isSidebarOpen: boolean }) => {
                                             index === 7 && shouldShowEighthHalf,
                                     },
                                 )}
-                                style={{ backgroundImage: `url(${getItemIconUrl(item)})` }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3 }}
                                 onClick={() => {
                                     switchFilter(item);
                                 }}
-                            />
+                            >
+                                <img src={getItemIconUrl(item)} alt="" loading="lazy" decoding="async" draggable={false} />
+                            </motion.span>
                         ))}
                     </AnimatePresence>
                 </motion.div>

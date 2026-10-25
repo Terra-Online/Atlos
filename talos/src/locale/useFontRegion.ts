@@ -2,8 +2,8 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import { registerFontRegion, type FontRegionOptions } from './fontLoader';
 import type { TextRun } from './fontShards';
 
-/** Supply rendered text from component data. Updating the alias before paint
- * prevents new text from using a previously prepared, incomplete collection. */
+/** Supply rendered text before paint. The owner prepares changed demand while
+ * retaining its previous complete aliases until the replacement is ready. */
 export function useFontRegion(
     runs: TextRun[],
     options?: FontRegionOptions,

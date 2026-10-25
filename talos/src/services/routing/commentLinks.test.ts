@@ -4,8 +4,10 @@ vi.mock('@/data/marker', () => ({
     MARKER_TYPE_DICT: {},
     findMarkerById: vi.fn(() => Promise.resolve({ id: '1', type: 'test', subregId: 'sub' })),
     findUniqueArchiveMarkerByType: vi.fn(),
+    getMarkerSubregion: vi.fn(),
+    getUniqueArchivePointId: vi.fn(),
 }));
-vi.mock('@/data/map', () => ({ REGION_DICT: { Valley_4: { subregions: ['sub'], initialZoom: 1 } } }));
+vi.mock('@/data/map', () => ({ DEFAULT_REGION: 'Valley_4', REGION_DICT: { Valley_4: { subregions: ['sub'], initialZoom: 1 } } }));
 vi.mock('@/store/region', () => ({
     default: { getState: () => ({ currentRegionKey: 'Valley_4', setCurrentRegion: vi.fn() }) },
 }));

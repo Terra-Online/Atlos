@@ -38,6 +38,36 @@ body,
     touch-action: pan-x pan-y;
 }
 
+// Font preparation can outlast a fast local boot. Show a quiet, text-free
+// pending state until React commits, without presenting incomplete typography
+// or inventing a progress percentage. The delayed pulse avoids fast-boot flicker.
+#root:empty::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 3rem;
+    height: 3px;
+    translate: -50% -50%;
+    background-color: $primary-accent-4;
+    box-shadow: 0 0 0 1px rgba($grey-1, 0.45);
+    pointer-events: none;
+    opacity: 0;
+    animation: startup-pending 1.2s 250ms ease-in-out infinite;
+}
+
+@keyframes startup-pending {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #root:empty::after {
+        animation: none;
+        opacity: 0.6;
+    }
+}
+
 .app {
     position: relative;
     width: 100vw;

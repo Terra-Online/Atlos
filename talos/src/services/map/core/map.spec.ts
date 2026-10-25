@@ -2,7 +2,7 @@ import L from 'leaflet';
 import { afterEach, expect, it, vi } from 'vitest';
 import useViewState from '@/store/viewState';
 import { useLayerStore } from '@/store/layer';
-import { MapCore } from '@/services/map/core/map';
+import { MapCore, type IMapOptions } from '@/services/map/core/map';
 
 vi.mock('@/data/map', () => ({
     REGION_DICT: {
@@ -25,13 +25,13 @@ vi.mock('@/services/map/core/smoothTileLayer', async () => {
 
 const cleanups: Array<() => void> = [];
 afterEach(() => { cleanups.splice(0).forEach((fn) => fn()); });
-function fixture() {
+function fixture(options?: IMapOptions) {
     const host = document.createElement('div');
     Object.defineProperties(host, { clientWidth: { value: 800 }, clientHeight: { value: 600 } });
     document.body.appendChild(host);
     useViewState.setState({ viewStates: { A: { lat: -100, lng: 100, zoom: 6 }, B: { lat: -14000, lng: 14000, zoom: 2 } } });
     useLayerStore.setState({ currentLayer: 'B1' });
-    const core = new MapCore(host);
+    const core = new MapCore(host, options);
     cleanups.push(() => { core.destroy(); host.remove(); });
     return core;
 }
@@ -80,4 +80,26 @@ it('marks an in-flight region import obsolete before admitting a newer request',
     expect(checks[1]()).toBe(true);
     core.destroy();
     expect(checks[1]()).toBe(false);
+});
+
+it('uses the URL destination only for the first view and clamps its zoom without altering saved views early', async () => {
+    const core = fixture({ initialView: { regionId: 'A', view: { lat: -150, lng: 150, zoom: 100 } } });
+    const setView = vi.spyOn(core.map, 'setView');
+    await core.switchRegion('A');
+    expect(setView.mock.calls[0]).toEqual([[-150, 150], 7, { animate: false }]);
+    expect(useViewState.getState().getViewState('A')).toEqual({ lat: -100, lng: 100, zoom: 6 });
+    await core.switchRegion('B');
+    await core.switchRegion('A');
+    expect(core.map.getCenter().equals([-150, 150])).toBe(true);
+    expect(core.map.getZoom()).toBe(7);
+});
+
+it.each([
+    { lat: -1000, lng: 1000, zoom: 2 },
+    { lat: NaN, lng: 100, zoom: 2 },
+])('ignores an invalid initial URL view instead of requesting tiles outside the region: %j', async (view) => {
+    const core = fixture({ initialView: { regionId: 'A', view } });
+    await core.switchRegion('A');
+    expect(core.map.getCenter().equals([-100, 100])).toBe(true);
+    expect(core.map.getZoom()).toBe(6);
 });

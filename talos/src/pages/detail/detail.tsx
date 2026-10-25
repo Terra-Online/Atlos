@@ -595,6 +595,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                 >
                                     {iconUrl && (
                                         <img
+                                            decoding='async'
                                             key={currentPoint?.id ?? 'null'}
                                             src={iconUrl}
                                             alt={pointName}

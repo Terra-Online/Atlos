@@ -4,6 +4,7 @@ const scripts = {
     locale: 'validate-locale-icu.mjs',
     'tile-coverage': 'generate-tile-coverage.mjs',
     'marker-stats': 'build-marker-stats.mjs',
+    'marker-lookup': 'build-marker-lookup.mjs',
     'marker-diff': 'build-marker-version-new.mjs',
     'search-index': 'build-search-index.mjs',
     'relink-preview': 'build-relink-preview.mjs',
@@ -17,6 +18,7 @@ export const dataTask = async (runner, name = 'check') => {
             'overrides',
             'tile-coverage',
             'marker-stats',
+            'marker-lookup',
             'marker-diff',
             'search-index',
             'relink-preview',
@@ -30,6 +32,7 @@ export const dataTask = async (runner, name = 'check') => {
             './scripts/generate-tile-coverage.mjs',
             '--check',
         ]);
+        await runner.run('node', ['./scripts/build-marker-lookup.mjs', '--check']);
     } else if (scripts[name]) {
         await runner.run(
             'node',

@@ -3,7 +3,8 @@ import type { UseBoundStore, StoreApi } from 'zustand';
 import { unstable_batchedUpdates } from 'react-dom';
 import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@/lib/i18n/runtime';
 import LOGGER from '@/lib/logging/logger';
-import { switchFontRegion } from '@/locale/fontLoader';
+import { preloadFontRuns, switchFontRegion } from '@/locale/fontLoader';
+import useRegion from '@/store/region';
 import {
     getFontRegionForLocale,
     getLocaleContentCandidates,
@@ -157,7 +158,20 @@ async function loadAndSet(
     // Start catalog and font work together. The UI commit still waits for
     // both, but a cold locale chunk must not delay the font manifest/request.
     const dataPromise = loadLocaleCached(locale);
-    const fontsPromise = switchFontRegion(fontRegion, isCurrent);
+    const hasCatalog = Object.keys(useI18nStore.getState().data.ui).length > 0;
+    const fontsPromise = hasCatalog
+        ? dataPromise.then(async (data) => {
+            // Keep old aliases while preparing the replacement region names.
+            // A failed warmup must not leave target fonts with the old catalog.
+            const { mapFontRuns } = await import('./mapFonts');
+            await preloadFontRuns(
+                mapFontRuns(useRegion.getState().currentRegionKey, <T = string>(key: string) => deepGet(data, key) as T),
+                document,
+                fontRegion,
+            );
+            if (isCurrent()) await switchFontRegion(fontRegion, isCurrent);
+        })
+        : switchFontRegion(fontRegion, isCurrent);
     const [dataResult, fontsResult] = await Promise.allSettled([
         dataPromise,
         fontsPromise,
@@ -218,6 +232,14 @@ export const translateUI = (key: string, fallback = ''): string => {
 export const useLocale = () => useI18nStore((s) => s.locale);
 
 export const getCurrentLocale = (): Lang => useI18nStore.getState().locale;
+
+/** Intent-driven map warmup uses the committed locale; empty catalogs are not cached. */
+export async function preloadMapFonts(regionKey: string): Promise<void> {
+    const { locale, data, t } = useI18nStore.getState();
+    if (!Object.keys(data.ui).length) return;
+    const { mapFontRuns } = await import('./mapFonts');
+    await preloadFontRuns(mapFontRuns(regionKey, t), document, getFontRegionForLocale(locale));
+}
 
 export async function setLocale(
     lang: string,

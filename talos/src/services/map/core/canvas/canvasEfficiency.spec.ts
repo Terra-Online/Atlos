@@ -26,6 +26,55 @@ function fixture() {
   return { host, map, point, surface, canvas, clear, frame };
 }
 describe('Retained camera surface', () => {
+  it('starts later visible icons before rasterizing an earlier ready point', () => {
+    const images: HTMLImageElement[] = [], NativeImage = Image;
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+    });
+    const { map, canvas } = fixture();
+    new ViewportMarker([0, 2000], { icon: new SceneIcon({ image: '', subImage: '', tier: '', noFrame: false }, 'ready') }).addTo(map);
+    new ViewportMarker([0, 2020], { icon: new SceneIcon({
+      image: '/later.webp', subImage: '', tier: '', noFrame: false,
+    }, 'later') }).addTo(map);
+    let observed = false;
+    // Observe the output even when the ready point reuses an existing sprite.
+    canvas.getContext('2d')!.drawImage = vi.fn(() => {
+      observed = true;
+      expect(images.some(image => image.getAttribute('src') === '/later.webp' && image.fetchPriority === 'high')).toBe(true);
+    });
+    map.setView([0, 2000], 2, { animate: false });
+    expect(observed).toBe(true);
+  });
+  it('starts visible admitted artwork before waiting for the batch paint', () => {
+    const images: HTMLImageElement[] = [], NativeImage = Image;
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+    });
+    const { map } = fixture();
+    new ViewportMarker([0, 20], { icon: new SceneIcon({
+      image: '/admitted.webp', subImage: '', tier: '', noFrame: false,
+    }, 'admitted') }).addTo(map);
+    expect(images.some(image => image.getAttribute('src') === '/admitted.webp' && image.fetchPriority === 'high')).toBe(true);
+  });
+  it('starts offscreen icon requests only when their point enters the retained drawing surface', () => {
+    const images: HTMLImageElement[] = [];
+    const NativeImage = Image;
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+    });
+    const { map } = fixture();
+    new ViewportMarker([0, 2000], { icon: new SceneIcon({
+      image: '/offscreen.webp', subImage: '/offscreen-sub.webp', tier: '', noFrame: false,
+    }, 'offscreen') }).addTo(map);
+    map.fire('move');
+    const requested = () => images.map(image => image.getAttribute('src'));
+    expect(requested()).not.toContain('/offscreen.webp');
+    expect(requested()).not.toContain('/offscreen-sub.webp');
+    map.setView([0, 2000], 2, { animate: false });
+    map.fire('move');
+    expect(requested()).toContain('/offscreen.webp');
+    expect(requested()).toContain('/offscreen-sub.webp');
+  });
   it('does not repaint unchanged explicit state, but still paints changed opacity', () => {
     const { point, map, clear } = fixture();
     setMarkerState(point, { selected: false, checked: false });
@@ -163,14 +212,18 @@ describe('Retained camera surface', () => {
       image.onload?.call(image, new Event('load'));  await Promise.resolve(); await Promise.resolve();
       map.fire('move');
     };
-    await ready('/a.png'); await ready('/b.png');
     const paint = vi.spyOn(MarkerPainter.prototype, 'sprite');
     await ready('/a.png');
     expect(paint.mock.calls.map(([art]) => art.image)).toEqual(['/a.png']);
+    await ready('/b.png');
+    // A source loads once. Use genuinely pending URLs to exercise late
+    // completions, rather than dispatching load twice on an unchanged image.
+    point.setIcon(art('/late.png')); map.fire('move');
     point.setIcon(art('/b.png')); map.fire('move'); paint.mockClear();
-    await ready('/a.png'); expect(paint).not.toHaveBeenCalled();
+    await ready('/late.png'); expect(paint).not.toHaveBeenCalled();
+    other.setIcon(art('/removed.png')); map.fire('move');
     point.remove(); other.remove(); paint.mockClear();
-    await ready('/b.png'); expect(paint).not.toHaveBeenCalled();
+    await ready('/removed.png'); expect(paint).not.toHaveBeenCalled();
   });
   it('coalesces discrete zoom painting after cluster membership changes while preserving continuous pinch painting', () => {
     const { map, point, surface, clear, frame } = fixture();

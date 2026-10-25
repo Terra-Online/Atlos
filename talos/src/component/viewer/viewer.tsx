@@ -268,6 +268,7 @@ const Viewer: React.FC<ViewerProps> = ({
                                 )}
                                 <ActionBar className={styles.viewerActionBar} items={viewerActionBar} />
                                 <img
+                                    decoding='async'
                                     src={visibleImageUrl}
                                     alt={visibleAlt}
                                     className={styles.viewerImage}

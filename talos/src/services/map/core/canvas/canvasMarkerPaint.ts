@@ -8,7 +8,9 @@ export interface Sprite { canvas: HTMLCanvasElement; x: number; y: number; width
 export interface AnimatedSprite { render(now: number): Sprite }
 export interface PulseLayers { underlay?: Sprite; overlay: Sprite }
 type PaintLayer = 'all' | 'underlay' | 'overlay' | 'body' | 'count';
-interface Asset { image: HTMLImageElement; ready: boolean }
+interface Asset { image: HTMLImageElement; ready: boolean; used: number }
+const MAX_IDLE_IMAGES = 32;
+const MAX_IDLE_IMAGE_BYTES = 8 * 1024 * 1024;
 const WHITE = 'rgb(248,248,248)';
 // Shared raster parts require stable raster sampling. Vector/unknown sources keep
 // the authored whole-sprite path (SVG rasterization can depend on its draw target).
@@ -23,6 +25,7 @@ const tiers: Record<string, string> = {
 /** Instance-owned assets. A state change never clears assets or another point's pixels. */
 export class MarkerPainter {
   private assets = new Map<string, Asset>();
+  private assetUse = 0;
   private sprites = new Map<string, Sprite>();
   private shared?: Map<string, WeakRef<Sprite>>;
   private sharedInsertions = 0;
@@ -54,42 +57,51 @@ export class MarkerPainter {
     if (!key) { key = JSON.stringify(art); this.artKeys.set(art, key); }
     return `${key}|${this.versions.get(art.image) ?? 0}|${this.versions.get(art.subImage) ?? 0}|${this.versions.get(this.hoverDecoration) ?? 0}|${this.versions.get(this.selectedDecoration) ?? 0}|${this.fontVersion}`;
   }
-  private asset(url: string): HTMLImageElement | undefined {
+  private asset(url: string, priority: 'auto' | 'high' = 'auto'): HTMLImageElement | undefined {
     if (!url) return;
     let asset = this.assets.get(url);
     if (!asset) {
+      const load = (image: HTMLImageElement, ready: () => void) => {
+        let started = false;
+        const decode = () => {
+          if (started) return;
+          started = true;
+          void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(ready);
+        };
+        image.onload = decode;
+        image.src = url;
+        // A warm cache can already have the bytes before load is dispatched.
+        // Start its promise now, but never equate complete with decoded pixels.
+        if (image.complete && image.naturalWidth > 0) decode();
+      };
       const image = new Image();
+      image.decoding = 'async';
+      image.fetchPriority = priority;
       if (this.require2D) image.crossOrigin = 'anonymous';
-      asset = { image, ready: false };
+      asset = { image, ready: false, used: 0 };
       this.assets.set(url, asset);
       const markReady = () => {
-        if (this.disposed || this.assets.get(url) !== asset) return;
+        if (this.disposed || this.assets.get(url) !== asset || asset!.image !== image) return;
         asset!.ready = true;
         this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
         this.invalidate(url);
       };
-      image.onload = () => {
-        // Do not expose the asset to the first paint until the browser has
-        // decoded it. This avoids a synchronous decode during canvas drawing.
-        void (image.decode?.() ?? Promise.resolve()).catch(() => {}).then(markReady);
-      };
       image.onerror = () => {
         if (this.disposed || this.assets.get(url) !== asset || !this.require2D) return;
         // Preserve existing URL support when a host image does not grant CORS texture access.
-        const fallback = new Image(); asset!.image = fallback;
-        fallback.onload = () => {
+        const fallback = new Image(); fallback.decoding = 'async'; fallback.fetchPriority = image.fetchPriority; asset!.image = fallback;
+        load(fallback, () => {
           if (this.disposed || this.assets.get(url) !== asset) return;
-          void (fallback.decode?.() ?? Promise.resolve()).catch(() => {}).then(() => {
-            if (this.disposed || this.assets.get(url) !== asset) return;
-            asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
-            this.require2D?.(); this.invalidate(url);
-          });
-        };
-        fallback.src = url;
+          asset!.ready = true; this.versions.set(url, (this.versions.get(url) ?? 0) + 1);
+          this.require2D?.(); this.invalidate(url);
+        });
       };
-      image.src = url;
-      if (image.complete && image.naturalWidth) asset.ready = true;
+      load(image, markReady);
     }
+    // Canvas images have no visible DOM box to trigger the browser's normal
+    // priority promotion. Promote an existing buffered request when it enters view.
+    if (!asset.ready && priority === 'high') asset.image.fetchPriority = 'high';
+    asset.used = ++this.assetUse;
     return asset.ready ? asset.image : undefined;
   }
   isReady(url: string): boolean { return !url || this.assets.get(url)?.ready === true; }
@@ -316,9 +328,20 @@ export class MarkerPainter {
     return cached;
   }
   dynamic(art: MarkerArt, motion: MarkerMotion, now: number): Sprite { return this.animation(art, motion).render(now); }
-  preload(url: string) { this.asset(url); }
+  preload(url: string, priority: 'auto' | 'high' = 'auto') { this.asset(url, priority); }
   retainAssets(urls: Set<string>): void {
     urls.add(this.hoverDecoration); urls.add(this.selectedDecoration);
+    // A short region round trip should not decode the same small icon again.
+    // Bound idle decoded pixels as well as objects; large art must fit the
+    // spare pixel budget. Active artwork remains owned by the current scene.
+    const idle = [...this.assets].filter(([url, asset]) => !urls.has(url) && asset.ready)
+      .sort(([, a], [, b]) => b.used - a.used);
+    let count = 0, bytes = 0;
+    for (const [url, asset] of idle) {
+      const size = asset.image.naturalWidth * asset.image.naturalHeight * 4;
+      if (size <= 0 || count >= MAX_IDLE_IMAGES || bytes + size > MAX_IDLE_IMAGE_BYTES) continue;
+      urls.add(url); count++; bytes += size;
+    }
     for (const [url, asset] of this.assets) if (!urls.has(url)) {
       asset.image.onload = asset.image.onerror = null;
       this.assets.delete(url);

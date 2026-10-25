@@ -67,6 +67,7 @@ export class CanvasMarkerSurface {
   private trimTimer?: ReturnType<typeof setTimeout>;
   private viewportOffset = L.point(0, 0);
   private onscreen = new Set<Entry>();
+  private admissionBounds?: L.LatLngBounds;
   private cachedZoom = NaN;
   private zooming = false;
   private width = 0;
@@ -151,7 +152,12 @@ export class CanvasMarkerSurface {
         order: this.sequence++, completed: false, stack: 1, opacity: 1 };
       this.entries.set(marker, entry); this.indexArt(entry);
       this.reorder = true; this.indexDirty = true;
-      this.refreshProxy();
+      // Leaflet has already admitted the filtered representative. Start visible
+      // artwork during that batch, overlapping its remaining registration work.
+      if ((this.admissionBounds ??= this.map.getBounds()).contains(entry.latlng)) {
+        this.painter.preload(entry.art.image, 'high'); this.painter.preload(entry.art.subImage, 'high');
+      }
+      if (!this.focused) this.refreshProxy();
     }
     this.changed.add(entry);
     if (entry.latlng !== marker.getLatLng()) {
@@ -233,8 +239,8 @@ export class CanvasMarkerSurface {
     // Keep the instance through an atomic cluster replacement (including an empty intermediate set).
     // unload owns final disposal; empty filter sets also reuse decoded assets on their next update.
     void disposeEmpty;
-    if (this.focused === entry) this.focused = undefined;
-    this.refreshProxy(); this.request();
+    if (this.focused === entry) { this.focused = undefined; this.refreshProxy(); }
+    this.request();
   }
   visualPosition(marker: L.Marker): L.LatLng | undefined {
     const entry = this.entries.get(marker);
@@ -278,7 +284,6 @@ export class CanvasMarkerSurface {
       entry.art = tier === art.tier ? art : { ...art, tier };
       if (urlsChanged) this.indexArt(entry);
     }
-    this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
     const stackChanged = entry.completed !== state.completed;
     if (stackChanged) { entry.completed = state.completed; this.reorder = true; }
     this.updateStack(entry);
@@ -480,6 +485,13 @@ export class CanvasMarkerSurface {
     for (const entry of this.active) this.dirty.push(bounds(entry));
     if (!this.batch && this.dirty.length > 32) this.full = true;
     const needsPaint = this.full || this.dirty.length > 0;
+    if (needsPaint) {
+      // Admit every visible icon before rasterizing any cached sprite. Otherwise
+      // a ready group can occupy the main thread before later icons even request.
+      for (const entry of this.onscreen) {
+        this.painter.preload(entry.art.image, 'high'); this.painter.preload(entry.art.subImage, 'high');
+      }
+    }
     if (needsPaint && this.batch && this.width > 0 && this.height > 0) {
       try { this.paintBatch(now); }
       catch (error) { this.fallback2D(error instanceof Error ? error.message : 'GPU raster unavailable'); }
@@ -513,6 +525,9 @@ export class CanvasMarkerSurface {
       };
       for (const entry of candidates) {
         if (!entry.visible) continue;
+        // The retained drawing surface already includes a bounded pan buffer.
+        // Prepare its candidates, rather than every type in the whole region.
+        this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
         if (!this.painter.isArtReady(entry.art)) continue;
         const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
         ctx.globalAlpha = alpha;
@@ -577,6 +592,7 @@ export class CanvasMarkerSurface {
     batch.begin(this.canvas.width, this.canvas.height, this.renderRatio, candidates.length + 2 * this.active.size + this.ghosts.size, clip);
     for (const entry of candidates) {
       if (!entry.visible) continue;
+      this.painter.preload(entry.art.image); this.painter.preload(entry.art.subImage);
       if (!this.painter.isArtReady(entry.art)) continue;
       const alpha = entry.opacity * entry.motion.opacity(now) * (entry.reveal?.value(now) ?? 1);
       if (alpha <= 0) continue;
@@ -605,6 +621,7 @@ export class CanvasMarkerSurface {
   }
 
   private move = (event: L.LeafletEvent & { pinch?: boolean }): void => {
+    this.admissionBounds = undefined;
     // A discrete zoom replaces cluster groups later in this event dispatch. Do
     // not paint thousands of outgoing points or admit their offscreen ghosts.
     if (this.zooming && !this.animation && !event.pinch) { this.full = true; this.request(); return; }
@@ -613,6 +630,7 @@ export class CanvasMarkerSurface {
   };
   private cancelTrim = (): void => { clearTimeout(this.trimTimer); this.trimTimer = undefined; };
   private retireRegion = (): void => {
+    this.admissionBounds = undefined;
     this.trimPending = true; this.cancelTrim();
     this.animation = undefined; this.zooming = false;
     for (const ghost of this.ghosts.values()) this.batch?.release(ghost);

@@ -138,17 +138,22 @@ const UseProductionPreview = (
         }
         const previewUrl = activeImage.url;
         const preloadImage = new Image();
+        preloadImage.decoding = 'async';
         preloadImage.onload = () => {
-            if (requestTokenRef.current !== requestToken) return;
-            if (hoveredMarkerRef.current?.id !== marker.id) return;
-            if (!isPreviewVisibleRef.current) return;
-            const settledPosition = updateMarkerPosition(marker);
-            if (!settledPosition) return;
-            setHoveredMarker({
-                marker,
-                left: settledPosition.left,
-                top: settledPosition.top,
-                previewUrl,
+            void preloadImage.decode().then(() => {
+                if (requestTokenRef.current !== requestToken) return;
+                if (hoveredMarkerRef.current?.id !== marker.id) return;
+                if (!isPreviewVisibleRef.current) return;
+                const settledPosition = updateMarkerPosition(marker);
+                if (!settledPosition) return;
+                setHoveredMarker({
+                    marker,
+                    left: settledPosition.left,
+                    top: settledPosition.top,
+                    previewUrl,
+                });
+            }, () => {
+                if (requestTokenRef.current === requestToken) clearHover();
             });
         };
         preloadImage.onerror = () => {
@@ -298,6 +303,7 @@ const UseProductionPreview = (
                 hoveredMarker.previewUrl ? (
                     <div className={styles.previewContent}>
                         <img
+                            decoding='async'
                             src={hoveredMarker.previewUrl}
                             alt={previewAlt}
                             className={styles.previewImage}

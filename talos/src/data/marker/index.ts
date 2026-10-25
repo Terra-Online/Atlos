@@ -130,6 +130,9 @@ export const loadSubregionMarkers = async (subregionId: string): Promise<IMarker
             ) as IMarkerData[];
             loadedSubregionMarksMap[subregionId] = markers;
             return markers;
+        }).catch((error: unknown) => {
+            delete loadPromiseMap[subregionId];
+            throw error;
         });
     }
 
@@ -161,25 +164,70 @@ export const getLoadedSubregionMarkers = (subregionId: string): IMarkerData[] =>
 export const getLoadedWorldMarkers = (): IMarkerData[] =>
     Object.values(loadedSubregionMarksMap).flat();
 
+interface Lookup {
+    subregions: string[];
+    points: Record<string, number>;
+    firstTypes: Record<string, string>;
+    archives: Record<string, string | null>;
+    moved: Record<string, string>;
+    representatives: Record<string, string[]>;
+}
+let lookupPromise: Promise<Lookup> | undefined;
+const loadLookup = (): Promise<Lookup> => lookupPromise ??= import('./lookup.json').then((module) => module.default).catch((error: unknown) => {
+    lookupPromise = undefined;
+    throw error;
+});
+
+/** Bitmap positions use every effective raw ID, including untyped rows. */
+export const getMarkerIds = async (): Promise<string[]> => Object.keys((await loadLookup()).points);
+
+let worldTypesPromise: Promise<ReadonlyMap<string, string>> | undefined;
+/** The generated representatives preserve the renderer's exact-position rule. */
+export const getWorldMarkerTypes = (): Promise<ReadonlyMap<string, string>> => worldTypesPromise ??= loadLookup().then((lookup) =>
+    new Map(Object.entries(lookup.representatives).flatMap(([type, ids]) => ids.map((id): [string, string] => [id, type]))),
+).catch((error: unknown) => {
+    worldTypesPromise = undefined;
+    throw error;
+});
+
+/** Resolve a share's region before downloading its point data. */
+export const getMarkerSubregion = async (pointId: string): Promise<string | null> => {
+    const lookup = await loadLookup();
+    const id = String(pointId);
+    if (!Object.prototype.hasOwnProperty.call(lookup.points, id)) return null;
+    return lookup.moved[id] ?? lookup.subregions[lookup.points[id]];
+};
+
+export const getUniqueArchivePointId = async (typeKey: string): Promise<string | null> => {
+    const lookup = await loadLookup();
+    return Object.prototype.hasOwnProperty.call(lookup.archives, typeKey)
+        ? lookup.archives[typeKey]
+        : null;
+};
+
 export const findMarkerById = async (pointId: string): Promise<IMarkerData | null> => {
-    const markers = await loadAllMarkers();
-    return markers.find((marker) => marker.id === String(pointId)) ?? null;
+    const id = String(pointId);
+    const lookup = await loadLookup();
+    const shard = Object.prototype.hasOwnProperty.call(lookup.points, id)
+        ? lookup.points[id]
+        : undefined;
+    if (shard === undefined) return null;
+    const markers = await loadSubregionMarkers(lookup.subregions[shard]);
+    return markers.find((marker) => marker.id === id) ?? null;
+};
+
+/** The guide needs one real point; preparing it must not load every region. */
+export const findFirstMarkerByType = async (typeKey: string): Promise<IMarkerData | null> => {
+    const lookup = await loadLookup();
+    const id = Object.prototype.hasOwnProperty.call(lookup.firstTypes, typeKey)
+        ? lookup.firstTypes[typeKey]
+        : undefined;
+    return id ? findMarkerById(id) : null;
 };
 
 export const findUniqueArchiveMarkerByType = async (typeKey: string): Promise<IMarkerData | null> => {
-    let match: IMarkerData | null = null;
-    const markers = await loadAllMarkers();
-    for (const marker of markers) {
-        if (marker.type !== typeKey) continue;
-        const markerType = MARKER_TYPE_DICT[marker.type];
-        if (markerType?.category?.main !== 'files') continue;
-        if (!match) {
-            match = marker;
-            continue;
-        }
-        if (match.id !== marker.id) return null;
-    }
-    return match;
+    const id = await getUniqueArchivePointId(typeKey);
+    return id ? findMarkerById(id) : null;
 };
 
 export const DEFAULT_SUBCATEGORY_ORDER = [

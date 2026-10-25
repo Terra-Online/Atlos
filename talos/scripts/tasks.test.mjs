@@ -9,6 +9,36 @@ import { verifyArtifact, verifyOutput } from './release-artifact.mjs';
 import { hashFiles, verifyReferences } from './release-snapshot.mjs';
 import { withLocalLock, createReleaseStore } from './release-store.mjs';
 import { createServer } from 'node:http';
+import { buildMarkerLookup } from './build-marker-lookup.mjs';
+
+test('point lookup indexes source shards separately from moved positions and archive uniqueness', () => {
+    const markers = [
+        { id: '1', type: 'archive', subregId: 'B', x: 0, y: 0, z: 0 },
+        { id: '2', type: 'common', subregId: 'B', x: 1, y: 0, z: 0 },
+        { id: '3', type: 'common', subregId: 'A', x: 2, y: 0, z: 0 },
+    ];
+    const index = buildMarkerLookup(markers, new Map([['1', 'A'], ['2', 'B'], ['3', 'A'], ['4', 'A']]), {
+        archive: { category: { main: 'files' } }, common: { category: { main: 'files' } },
+    });
+    assert.deepEqual(index.subregions, ['A', 'B']);
+    // An untyped source row remains addressable without becoming a guide target.
+    assert.deepEqual(index.points, { 1: 0, 2: 1, 3: 0, 4: 0 });
+    assert.deepEqual(index.moved, { 1: 'B' });
+    assert.deepEqual(index.archives, { archive: '1', common: null });
+    assert.deepEqual(index.firstTypes, { archive: '1', common: '2' });
+    assert.deepEqual(index.representatives, { archive: ['1'], common: ['2', '3'] });
+});
+
+test('world lookup preserves same-shard first representatives and rejects a new cross-shard ambiguity', () => {
+    const rows = [
+        { id: '1', type: 'item', subregId: 'A', x: 0, y: 0, z: 0 },
+        { id: '2', type: 'item', subregId: 'A', x: 0, y: 0, z: 0 },
+    ];
+    const types = { item: { category: { main: 'item' } } };
+    const index = buildMarkerLookup(rows, new Map([['1', 'A'], ['2', 'A']]), types);
+    assert.deepEqual(index.representatives, { item: ['1'] });
+    assert.throws(() => buildMarkerLookup(rows, new Map([['1', 'A'], ['2', 'B']]), types), /spans source shards/);
+});
 
 const fixture = async (t, fail = () => false) => {
     await fs.mkdir(path.join(ROOT, '.cache'), { recursive: true });

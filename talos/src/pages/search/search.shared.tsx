@@ -211,7 +211,7 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%', mobile = fa
                                                 title={group.clickTitle}
                                             >
                                                 <span className={styles.resultIcon}>
-                                                    <img src={iconUrl} alt={group.displayName} draggable={false} />
+                                                    <img src={iconUrl} alt={group.displayName} draggable={false} decoding='async' />
                                                 </span>
                                                 <span className={styles.resultMain}>
                                                     <span className={styles.resultTitle}>

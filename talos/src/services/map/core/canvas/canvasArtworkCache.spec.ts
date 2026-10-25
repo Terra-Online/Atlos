@@ -5,6 +5,131 @@ const art = (i: number) => ({ image: '', subImage: '', noFrame: false, tier: `L$
 const pose = () => { const pool = new MarkerMotionPool(); return pool.transition(pool.initial, 0, 0, false, false); };
 
 describe('Shared immutable artwork', () => {
+  it('promotes buffered art entering view without restarting its request or decode', async () => {
+    const NativeImage = Image, images: HTMLImageElement[] = [];
+    let deliver: () => void = () => {};
+    const decode = vi.fn(() => new Promise<void>(resolve => { deliver = resolve; }));
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+      override decode = decode;
+    });
+    const changed = vi.fn(), painter = new MarkerPainter(2, changed);
+    try {
+      painter.preload('/buffered.webp');
+      const image = images[0];
+      painter.preload('/buffered.webp', 'high');
+      expect(images).toHaveLength(1);
+      expect(image.fetchPriority).toBe('high');
+      expect(image.getAttribute('src')).toBe('/buffered.webp');
+      image.onload?.call(image, new Event('load'));
+      painter.preload('/buffered.webp', 'high'); painter.preload('/buffered.webp');
+      expect(decode).toHaveBeenCalledOnce();
+      expect(painter.isReady('/buffered.webp')).toBe(false);
+      deliver(); await Promise.resolve(); await Promise.resolve();
+      expect(painter.isReady('/buffered.webp')).toBe(true);
+      expect(changed).toHaveBeenCalledOnce();
+    } finally { painter.dispose(); vi.unstubAllGlobals(); }
+  });
+  it('starts a warm cache decode without waiting for load, but never paints before its promise resolves', async () => {
+    const NativeImage = Image;
+    const images: HTMLImageElement[] = [];
+    let deliver: () => void = () => {};
+    const decode = vi.fn(() => new Promise<void>(resolve => { deliver = resolve; }));
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() {
+        super(); images.push(this);
+        Object.defineProperties(this, { complete: { value: true }, naturalWidth: { value: 32 } });
+      }
+      override decode = decode;
+    });
+    const changed = vi.fn(), painter = new MarkerPainter(2, changed);
+    try {
+      painter.preload('/cached.webp');
+      expect(decode).toHaveBeenCalledOnce();
+      images[0].onload?.call(images[0], new Event('load'));
+      expect(decode).toHaveBeenCalledOnce();
+      expect(painter.isReady('/cached.webp')).toBe(false);
+      expect(changed).not.toHaveBeenCalled();
+      deliver(); await Promise.resolve(); await Promise.resolve();
+      expect(painter.isReady('/cached.webp')).toBe(true);
+      expect(changed).toHaveBeenCalledOnce();
+    } finally { painter.dispose(); vi.unstubAllGlobals(); }
+  });
+  it.each([[40, 16, 32], [3, 1024, 2]])('bounds %s retired icons of side %s by object and decoded-pixel budgets', async (count, side, retained) => {
+    const images: { onload: (() => void) | null }[] = [];
+    vi.stubGlobal('Image', class {
+      onload: (() => void) | null = null;
+      onerror = null;
+      naturalWidth = side;
+      naturalHeight = side;
+      decode = () => Promise.resolve();
+      constructor() { images.push(this); }
+    });
+    const painter = new MarkerPainter(2, () => {});
+    const ready = async (url: string) => {
+      painter.preload(url); images.at(-1)!.onload?.();
+      await Promise.resolve(); await Promise.resolve();
+    };
+    try {
+      await ready('/active.webp');
+      for (let i = 0; i < count; i++) await ready(`/idle-${i}.webp`);
+      painter.retainAssets(new Set(['/active.webp']));
+      expect(painter.isReady('/active.webp')).toBe(true);
+      for (let i = 0; i < count; i++) expect(painter.isReady(`/idle-${i}.webp`)).toBe(i >= count - retained);
+      const requests = images.length;
+      painter.preload(`/idle-${count - 1}.webp`);
+      expect(images).toHaveLength(requests);
+    } finally { painter.dispose(); vi.unstubAllGlobals(); }
+  });
+  it('keeps pending and retired decoded art unavailable until its owner can use it', async () => {
+    let resolve: () => void = () => {};
+    const images: HTMLImageElement[] = [];
+    const NativeImage = Image;
+    const decode = vi.fn(() => new Promise<void>(done => { resolve = done; }));
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+      override decode = decode;
+    });
+    const changed = vi.fn(), painter = new MarkerPainter(2, changed);
+    try {
+      painter.preload('/pending.webp');
+      images[0].onload?.call(images[0], new Event('load'));
+      expect(decode).toHaveBeenCalledOnce();
+      expect(painter.isReady('/pending.webp')).toBe(false);
+      resolve(); await Promise.resolve(); await Promise.resolve();
+      expect(painter.isReady('/pending.webp')).toBe(true);
+      expect(changed).toHaveBeenCalledWith('/pending.webp');
+      painter.preload('/retired.webp');
+      images[1].onload?.call(images[1], new Event('load'));
+      painter.dispose(); changed.mockClear();
+      resolve(); await Promise.resolve(); await Promise.resolve();
+      expect(changed).not.toHaveBeenCalled();
+      expect(images).toHaveLength(2);
+    } finally { painter.dispose(); vi.unstubAllGlobals(); }
+  });
+  it('waits for the non-CORS fallback decode before changing the renderer', async () => {
+    const NativeImage = Image;
+    const images: HTMLImageElement[] = [], pending: { resolve: () => void; reject: () => void }[] = [];
+    vi.stubGlobal('Image', class extends NativeImage {
+      constructor() { super(); images.push(this); }
+      override decode = () => new Promise<void>((resolve, reject) => pending.push({ resolve, reject }));
+    });
+    const fallback = vi.fn(), painter = new MarkerPainter(2, () => {}, fallback);
+    try {
+      painter.preload('/external.webp');
+      images[0].onload?.call(images[0], new Event('load'));
+      pending[0].reject();
+      images[0].onerror?.call(images[0], new Event('error'));
+      images[1].onload?.call(images[1], new Event('load'));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(painter.isReady('/external.webp')).toBe(false);
+      expect(fallback).not.toHaveBeenCalled();
+      pending[1].resolve(); await Promise.resolve(); await Promise.resolve();
+      expect(painter.isReady('/external.webp')).toBe(true);
+      expect(fallback).toHaveBeenCalledOnce();
+    } finally { painter.dispose(); vi.unstubAllGlobals(); }
+  });
   it('reuses 700 live sprites after strong-cache eviction without repainting', () => {
     const painter = new MarkerPainter(2, () => {}), motion = pose(), paint = vi.spyOn(painter, 'paint');
     try {

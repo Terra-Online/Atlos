@@ -1,16 +1,18 @@
 import IconButton from '@/component/button/IconButton';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 
 import styles from '@/pages/regSwitch/regSwitch.module.scss';
 
 import PopoverTooltip from '@/component/popover/popover';
 import useRegion from '@/store/region';
-import { useTranslateGame } from '@/locale';
+import { preloadMapFonts, useTranslateGame } from '@/locale';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { useForceRegionSubOpen } from '@/store/uiPrefs';
 import { useDevice } from '@/platform/device';
 import { useSwitchMenu } from './useSwitchMenu';
+import { loadRegionMarkers } from '@/data/marker';
+import { preloadMapTiles } from '@/services/map/preload';
 
 import Valley4 from '@/assets/logos/_Valley_4.svg?react';
 import Wuling from '@/assets/logos/_Wuling.svg?react';
@@ -143,6 +145,50 @@ const RegionContainer: React.FC<{
     } = useRegion();
     const forceRegionSubOpen = useForceRegionSubOpen();
     const menu = useSwitchMenu();
+    const selection = useRef(0);
+    const [preparing, setPreparing] = useState<string | null>(null);
+    const tilePreload = useRef<{ key: string; cancel: () => void } | undefined>(undefined);
+    const preloadRegion = (key: string) => {
+        if (key === currentRegionKey) return;
+        if (tilePreload.current?.key !== key) {
+            tilePreload.current?.cancel();
+            tilePreload.current = { key, cancel: preloadMapTiles(key) };
+        }
+        // These loaders own deduplication and the current locale. Do not let an
+        // earlier hover suppress a retry or a newly selected language's fonts.
+        const ready = Promise.all([loadRegionMarkers(key), preloadMapFonts(key)]);
+        void ready.catch(() => undefined);
+        return ready;
+    };
+    useEffect(() => {
+        selection.current++;
+        setPreparing(null);
+    }, [currentRegionKey]);
+    useEffect(() => () => { selection.current++; tilePreload.current?.cancel(); }, []);
+    const selectRegion = (key: string, subregion?: string) => {
+        menu.open(key);
+        const request = ++selection.current;
+        if (key === currentRegionKey) {
+            setPreparing(null);
+            tilePreload.current?.cancel();
+            tilePreload.current = undefined;
+            if (subregion) requestSubregionSwitch(subregion);
+            return;
+        }
+        setPreparing(key);
+        // Keep the working map and its current controls until the destination
+        // data and text are ready. Fast repeated taps can only commit the latest.
+        void preloadRegion(key)?.then(() => {
+            if (selection.current !== request) return;
+            setPreparing(null);
+            setCurrentRegion(key);
+            if (subregion) requestSubregionSwitch(subregion);
+        }, (error: unknown) => {
+            if (selection.current !== request) return;
+            setPreparing(null);
+            console.warn('Region preparation failed:', error);
+        });
+    };
     const openRegionKey = menu.activeKey ?? (forceRegionSubOpen ? currentRegionKey : null);
     const regionIndex = useMemo(
         () => Object.keys(REGION_DICT).indexOf(currentRegionKey),
@@ -181,12 +227,19 @@ const RegionContainer: React.FC<{
                             className={classNames(
                                 styles.regItem,
                                 currentRegionKey === key && styles.selected,
+                                preparing === key && styles.preparing,
                             )}
                         >
-                            <IconButton className={styles.mainAction} label={regionName} pressed={currentRegionKey === key} onClick={() => {
-                                menu.open(key);
-                                setCurrentRegion(key);
-                            }}>
+                            <IconButton
+                                className={styles.mainAction}
+                                label={regionName}
+                                pressed={currentRegionKey === key}
+                                aria-busy={preparing === key}
+                                onPointerEnter={() => { void preloadRegion(key); }}
+                                onFocus={() => { void preloadRegion(key); }}
+                                onPointerDown={() => { void preloadRegion(key); }}
+                                onClick={() => selectRegion(key)}
+                            >
                                 <div className={styles.icon}><Icon /></div>
                             </IconButton>
                             {openRegionKey === key && region.subregions.length > 1 && (
@@ -209,7 +262,7 @@ const RegionContainer: React.FC<{
                                             tooltip: fullName,
                                             ariaLabel: fullName,
                                             onClick: () => {
-                                                requestSubregionSwitch(subregion);
+                                                selectRegion(key, subregion);
                                             },
                                         };
                                     })}

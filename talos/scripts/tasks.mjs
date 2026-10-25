@@ -37,7 +37,7 @@ const help = `Usage: pnpm <command> [options]
   check [--build] / lint / lint:fix / type-check / test
   type-check [--app main|intel|user-hub|relink|search]
   run test    [--app main|intel|user-hub|relink|scripts]
-  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-diff|search-index|relink-preview|sync-intel|seo
+  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|sync-intel|seo
   data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
 CI source checks/builds: --source-only (omits private Intel icons; artifact cannot be published)

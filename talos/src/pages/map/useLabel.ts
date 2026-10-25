@@ -8,6 +8,8 @@ import { mapRegionKeyToLocaleCode } from '@/data/map/label/placeIndex';
 import styles from '@/pages/map/Label.module.scss';
 import { selectLabelMapForRegion, useLabelStore } from '@/store/label';
 import { useTriggerlabelName } from '@/store/uiPrefs';
+import { registerFontRegion } from '@/locale/fontLoader';
+import { detectRegionStructure, resolveLabelText, labelFontRuns, type RegionStructure } from '@/locale/mapFonts';
 
 const escapeHtml = (s: string): string => s
         .replace(/&/g, '&amp;')
@@ -16,42 +18,7 @@ const escapeHtml = (s: string): string => s
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
-
 const ZOOM_THRESHOLD = 0.25;
-
-type RegionStructure =
-    | { kind: 'nested' }
-    | { kind: 'flat' };
-
-const detectRegionStructure = (t: <T = string>(key: string) => T, regionCode: string): RegionStructure => {
-    // Heuristic: flat regions use structure like game.region.DJ.sub = { name, site: {..} }
-    // nested regions use game.region.VL.sub.<subKey> = { short, name, site: {..} }
-    const subNode = t<unknown>(`game.region.${regionCode}.sub`);
-    if (isObject(subNode) && isObject(subNode.site) && typeof subNode.name === 'string') {
-        return { kind: 'flat' };
-    }
-    return { kind: 'nested' };
-};
-
-const resolveLabelText = (t: <T = string>(key: string) => T, regionCode: string, structure: RegionStructure, label: AnyLabel): string => {
-    if (structure.kind === 'flat') {
-        if (label.type === 'sub') {
-            return t<string>(`game.region.${regionCode}.sub.name`) || regionCode;
-        }
-        return t<string>(`game.region.${regionCode}.sub.site.${label.site}`) || label.site;
-    }
-
-    // `label.sub` is the stable sub-region key (e.g. PL/WL/JY), which is also the key
-    // used in all locale JSON. Do NOT use localized `short` for label lookup.
-    const subKey = label.sub;
-
-    if (label.type === 'sub') {
-        return t<string>(`game.region.${regionCode}.sub.${subKey}.name`) || label.sub;
-    }
-
-    return t<string>(`game.region.${regionCode}.sub.${subKey}.site.${label.site}`) || label.site;
-};
 
 const renderLabels = (
     map: L.Map,
@@ -178,12 +145,20 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
         }
 
         const layer = layerRef.current;
+        const fontOwner = registerFontRegion(
+            map.getPane(pane)!,
+            labelFontRuns(labels, t, regionCode, structure),
+            { scope: 'background' },
+        );
+        let fontsReady = false;
+        let cancelled = false;
 
         let swapTimer: number | undefined;
         const cancelSwap = () => { window.clearTimeout(swapTimer); swapTimer = undefined; };
         const defer = (render: () => void) => { cancelSwap(); swapTimer = window.setTimeout(render, 200); };
         const reset = () => { cancelSwap(); layer.clearLayers(); currentLabelTypeRef.current = null; };
         const doRender = () => {
+            if (!fontsReady || cancelled) return;
             if (isRegionSwitching(map)) return;
             if (isLabelToolMounted()) {
                 if (map.hasLayer(layer)) {
@@ -234,8 +209,16 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
         const unbind = bindRegionLifecycle(map, reset, onRegionSwitched);
         map.on('zoomend', doRender);
         map.on('talos:labelToolMounted', onToolMounted);
+        void fontOwner.ready.then(() => {
+            if (cancelled) return;
+            fontsReady = true;
+            doRender();
+        });
 
         return () => {
+            cancelled = true;
+            cancelSwap();
+            fontOwner.stop();
             map.off('zoomend', doRender);
             unbind();
             map.off('talos:labelToolMounted', onToolMounted);

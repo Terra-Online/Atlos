@@ -7,7 +7,7 @@ import { useMarkerStore } from '@/store/marker';
 import { useMarker } from '@/pages/map/useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
 import { useCurrentLayer } from '@/store/layer';
-import { registerSharedPointMapCore } from '@/services/map';
+import { getInitialNavigationView, registerSharedPointMapCore } from '@/services/map';
 import L from 'leaflet';
 
 // Hook for map initialization and region management
@@ -31,6 +31,7 @@ export function useMap(ele: HTMLDivElement | null) {
         if (!ele || mapRef.current) return;
 
         mapRef.current = new MapCore(ele, {
+            initialView: getInitialNavigationView(),
             onSwitchCurrentMarker: (marker) => {
                 useMarkerStore.getState().setCurrentActivePoint(marker);
             },

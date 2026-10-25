@@ -113,6 +113,19 @@ describe('Canvas marker lifecycle', () => {
     expect(host.querySelector('.oem-canvas-semantics button')).toBe(proxy);
     expect(proxy.tabIndex).toBe(0);
   });
+  it('preserves the keyboard target when another point leaves, then selects a remaining target when it leaves', () => {
+    const first = marker([0, 0]).addTo(map), other = marker([1, 1]).addTo(map);
+    const firstClick = vi.fn(), otherClick = vi.fn();
+    first.on('click', firstClick); other.on('click', otherClick);
+    const proxy = host.querySelector<HTMLButtonElement>('.oem-canvas-semantics button')!;
+    const unrelated = marker([2, 2]).addTo(map);
+    unrelated.remove(); proxy.click();
+    expect(firstClick).toHaveBeenCalledOnce();
+    expect(otherClick).not.toHaveBeenCalled();
+    first.remove(); proxy.click();
+    expect(otherClick).toHaveBeenCalledOnce();
+    expect(proxy.tabIndex).toBe(0);
+  });
   it('adds and removes filter groups without losing members or leaking surfaces', () => {
     const groups = Array.from({ length: 3 }, (_, i) => L.layerGroup([marker([i, i]), marker([1000, 1000])]));
     for (let cycle = 0; cycle < 3; cycle++) {

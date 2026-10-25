@@ -608,6 +608,9 @@ export class MarkerLayer {
 
         this.clusterLayer.setActiveSubregions(subregions);
         const markers = await loadRegionMarkers(regionId);
+        // Cached imports must not join map setup and marker admission into one
+        // long task. Give base-layer image callbacks a task before the batch.
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
         if (this.destroyed || version !== this.regionVersion || !isCurrent()) return;
         // The complete region is admitted once. Incremental notification here
         // would attach every representative before the same filter is reconciled.

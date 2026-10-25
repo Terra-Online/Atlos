@@ -123,6 +123,11 @@ $mobile-indicator-height: 0.48rem;
     transition: all 0.3s ease;
     position: relative;
 
+    &.preparing {
+        outline: 2px solid var(--regswitch-selected);
+        outline-offset: 2px;
+    }
+
     &:hover {
     background-color: var(--regswitch-item-hover);
     box-shadow: 0 0 2px rgba($black-0, 0.75);
