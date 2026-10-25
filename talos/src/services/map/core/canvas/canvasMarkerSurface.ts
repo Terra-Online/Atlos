@@ -747,7 +747,11 @@ export class CanvasMarkerSurface {
     if (this.proxy.getAttribute('aria-label') !== label) this.proxy.setAttribute('aria-label', label);
   }
   private focus = (): void => {
-    if (this.focused) { this.changed.add(this.focused); this.request(); }
+    if (this.focused) {
+      this.changed.add(this.focused); this.request();
+      if (this.proxy === this.proxy.ownerDocument.activeElement && !this.map.getBounds().contains(this.focused.latlng))
+        this.map.panTo(this.focused.latlng);
+    }
   };
   private keyDown = (event: KeyboardEvent): void => {
     const delta = ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 0;

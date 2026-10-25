@@ -170,6 +170,22 @@ describe('Canvas marker lifecycle', () => {
       expect(host.querySelector('.oem-canvas-semantics button')?.getAttribute('aria-label')).toBe('Updated group');
     } finally { ready.mockRestore(); createIcon.mockRestore(); }
   });
+  it('brings an initially offscreen keyboard target into view without panning on blur', () => {
+    const far = marker([1000, 1000]).addTo(map), clicked = vi.fn();
+    far.on('click', clicked); map.fire('move');
+    const proxy = host.querySelector<HTMLButtonElement>('.oem-canvas-semantics button')!;
+    expect(map.getBounds().contains(far.getLatLng())).toBe(false);
+    proxy.focus();
+    expect(map.getBounds().contains(far.getLatLng())).toBe(true);
+    proxy.click(); expect(clicked).toHaveBeenCalledOnce();
+    map.setView([0, 0], 2, { animate: false });
+    const pan = vi.spyOn(map, 'panTo');
+    try {
+      proxy.blur();
+      expect(pan).not.toHaveBeenCalled();
+      expect(map.getBounds().contains(far.getLatLng())).toBe(false);
+    } finally { pan.mockRestore(); }
+  });
   it('preserves shared proxy focus when the camera moves and cycles to an offscreen point', () => {
     const near = marker([0, 0]), far = marker([1000, 1000]), clicked = vi.fn<(event: L.LeafletEvent) => void>();
     far.on('click', clicked);
