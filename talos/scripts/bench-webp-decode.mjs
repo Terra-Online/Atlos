@@ -332,7 +332,11 @@ const inspect = page => page.evaluate(() => {
     const aliasValues = [...document.querySelectorAll('[data-font-owner]')].map(el => ({
         tag: el.tagName, fonts: ['b','db','m','r','h'].map(face => el.style.getPropertyValue('--font-' + face)),
     }));
+    const semantic = document.querySelector('.oem-canvas-semantics');
     return { now: performance.now(), root: stats.root, map: stats.map, firstGPU: stats.firstGPU, firstMarkers: stats.firstMarkers,
+        dom: { connectedElements: document.querySelectorAll('*').length,
+            semanticElements: semantic ? semantic.querySelectorAll('*').length + 1 : 0,
+            pointIconElements: semantic?.querySelectorAll('.leaflet-marker-icon').length ?? 0 },
         fontFrameAudit: window.__fontFrameAudit,
         region: core?.currentRegionId, layer: core?.currentLayer, logicalMarkers: core ? Object.keys(core.markerLayer.markerDict).length : 0,
         switching: !!core?.switchRegionPromise, selectedRegion: JSON.parse(localStorage.getItem('region-storage') || 'null')?.state?.currentRegionKey,
