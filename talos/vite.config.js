@@ -65,6 +65,9 @@ const metaInfo = buildTarget === 'r2'
       };
 
 const isProd = process.env.NODE_ENV === 'production';
+// vite-plugin-inspect writes an inspection report on every build; opt in with
+// INSPECT=1 when analysing a build instead of paying that cost in production.
+const IS_INSPECT_ENABLED = process.env.INSPECT === '1';
 const getGitAssetVersion = () => {
     try {
         return execSync('git rev-parse --short=12 HEAD', {
@@ -303,7 +306,9 @@ export default defineConfig({
         }),
         cleanDistClipsPlugin(),
         cleanDistSeoPointsPlugin(),
-        Inspect(),
+        // Only useful while inspecting a dev or analysis build; it slows down
+        // and adds noise to production output.
+        ...(IS_INSPECT_ENABLED ? [Inspect()] : []),
     ],
     base: assetsHost,
     define: {
