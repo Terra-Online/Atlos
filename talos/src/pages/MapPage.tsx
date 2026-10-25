@@ -1,4 +1,6 @@
-import { lazy, Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import { Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
+import { lazyWithRetry } from '@/lib/dom/lazyWithRetry';
 import L from 'leaflet';
 
 
@@ -22,7 +24,7 @@ import { useIsUserGuideOpen } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import { useUIVisibility } from '@/pages/uiOverlay/useUIVisibility';
 
-const UserGuide = lazy(() => import('@/pages/userGuide/UserGuide'));
+const UserGuide = lazyWithRetry(() => import('@/pages/userGuide/UserGuide'));
 
 declare global {
     interface Window {
@@ -183,6 +185,7 @@ function MapPage() {
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
                 {shouldLoadUserGuide && (
+                    <ErrorBoundary>
                     <Suspense fallback={null}>
                         <UserGuide
                             map={mapInstance}
@@ -190,9 +193,12 @@ function MapPage() {
                             onReady={() => setUserGuideReady(true)}
                         />
                     </Suspense>
+                    </ErrorBoundary>
                 )}
                 {/* Map layer - always fill the entire window */}
-                <Map onMapReady={handleMapReady} />
+                <ErrorBoundary>
+                    <Map onMapReady={handleMapReady} />
+                </ErrorBoundary>
                 {/* UI layer - floats over the map */}
                 <UIOverlay
                     map={mapInstance}

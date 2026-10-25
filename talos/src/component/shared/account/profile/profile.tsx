@@ -8,6 +8,7 @@ import SyncConflictModal, { type SyncConflictChoice } from '@/component/shared/s
 import { useLocale, useTranslateUI } from '@/locale';
 import { formatIcuText } from '@/locale/messageFormat';
 import { useProgressSyncStore } from '@/store/progressSync';
+import { useShallow } from 'zustand/shallow';
 import { useUserRecordStore } from '@/store/userRecord';
 import { useDevice } from '@/platform/device';
 import { EFBackendError, getEFBindingStatus } from '@/services/endfield';
@@ -64,7 +65,15 @@ const ProfileModal = ({
   const [conflictOpen, setConflictOpen] = useState(false);
   const [syncHintNow, setSyncHintNow] = useState(Date.now());
   const pendingConflictRef = useRef<OfficialMarksSnapshot | null>(null);
-  const progressSync = useProgressSyncStore();
+  const progressSync = useProgressSyncStore(useShallow((s) => ({
+    status: s.status,
+    baseline: s.baseline,
+    lastSyncedAt: s.lastSyncedAt,
+    error: s.error,
+    localPointCount: s.localPointCount,
+    remotePointCount: s.remotePointCount,
+    conflict: s.conflict,
+  })));
   const activePoints = useUserRecordStore((state) => state.activePoints);
   const profileErrorText = profileError ?? '';
   const shouldShowProfileError = profileOpen && Boolean(profileErrorText);

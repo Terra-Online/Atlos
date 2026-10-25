@@ -47,7 +47,8 @@ const HighlightText = ({ text, keyword }: { text: string; keyword: string }) => 
 };
 
 const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%', mobile = false }) => {
-    const { searchString, setSearchString } = useMarkerStore();
+    const searchString = useMarkerStore((s) => s.searchString);
+    const setSearchString = useMarkerStore((s) => s.setSearchString);
     const activeFilters = useMarkerStore((s) => s.filter);
     const locale = useLocale();
     const t = useTranslateUI();
