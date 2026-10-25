@@ -3,8 +3,8 @@ import { defineConfig } from 'vitest/config';
 import { projectFiles } from './scripts/project-files.mjs';
 
 // Local ignored diagnostic tests can outlive the source they were written for.
-// Run repository tests and new non-ignored tests, matching a fresh CI checkout.
-const tests = projectFiles().filter((file) => /^(?:src|oem-relink\/src)\/.*\.(?:test|spec)\.tsx?$/.test(file));
+// Run tracked and new non-ignored .spec files, matching a fresh CI checkout.
+const tests = projectFiles().filter((file) => /^(?:src|oem-relink\/src)\/.*\.spec\.tsx?$/.test(file));
 
 export default defineConfig({
     resolve: {

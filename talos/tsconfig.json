@@ -76,7 +76,6 @@
     "scripts",
     "src/data/marker/data/20260110",
     "src/data/marker/data/20260204",
-    "**/*.test.js",
     "**/*.spec.js"
   ]
 }

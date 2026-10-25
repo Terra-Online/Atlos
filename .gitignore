@@ -74,15 +74,7 @@ talos/.stylelintcache
 /talos/src/asset
 
 *.glyphs
-*.test.ts
 *.generated.ts
-!talos/oem-relink/src/index.test.ts
-!talos/apps/intel/src/data/importContract.test.ts
-
-
-# Performance regression coverage.
-!talos/src/store/marker.proximity.test.ts
-!talos/src/store/marker.counts.test.ts
 
 # Local-only Canvas performance harnesses, reports and captures.
 /talos/performance/
@@ -96,3 +88,6 @@ talos/.stylelintcache
 
 # Local performance reports, traces, captures, builds and history backups.
 /docs/perf/
+
+# Local-only refactor roadmap; keep it out of commits.
+/docs/roadmap.md

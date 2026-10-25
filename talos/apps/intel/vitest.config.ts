@@ -13,6 +13,6 @@ export default defineConfig({
         // The import contract uses real Web Streams/Blob gzip APIs. jsdom's Blob
         // lacks stream(), while Node provides the same APIs without DOM mocks.
         environment: 'node',
-        include: ['apps/intel/src/**/*.{test,spec}.ts'],
+        include: ['apps/intel/src/**/*.spec.ts'],
     },
 });

@@ -109,7 +109,7 @@ existing overflow measurements.
 
 ```sh
 pnpm exec vitest run src/locale/fontShards.spec.ts
-node --test scripts/fonts/fonts.test.mjs scripts/tasks.test.mjs
+node --test scripts/fonts/fonts.spec.mjs scripts/tasks.spec.mjs
 python3 -m unittest discover -s scripts/fonts -p '*_test.py'
 node scripts/fonts/browser.mjs
 node scripts/fonts/ui-browser.mjs
