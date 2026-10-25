@@ -167,6 +167,9 @@ $mobile-indicator-height: 0.48rem;
     padding-left: 1rem;
     transform: translateY(-50%);
     pointer-events: auto;
+    &[inert] { pointer-events: none; }
+    &[data-state='entering'] .subregionSwitch,
+    &[data-state='exiting'] .subregionSwitch { opacity: 0; }
     .subregionSwitch {
         position: relative;
         display: flex;
@@ -180,9 +183,6 @@ $mobile-indicator-height: 0.48rem;
         backdrop-filter: blur(8px);
         opacity: 1;
         transition: opacity 0.2s ease-in-out;
-        @starting-style {
-            opacity: 0;
-        }
         will-change: opacity, backdrop-filter;
     }
 }

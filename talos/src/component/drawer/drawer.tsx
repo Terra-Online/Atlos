@@ -303,10 +303,12 @@ export const Drawer: React.FC<DrawerProps> = ({
 	
 	// Container positioning
 	const containerStyle = useMemo<React.CSSProperties>(() => {
+		// Search/zoom can change the snap geometry after the drawer has opened.
+		// A React style update must preserve the live pose owned by Motion.
 		const common = {
 			'--handle-size': `${resolvedHandleSize}px`,
-			'--drawer-size': `${initSize}px`,
-			'--drawer-progress': `${(initSize - minSnap) / safeRange}`,
+			'--drawer-size': `${size.get()}px`,
+			'--drawer-progress': `${progress.get()}`,
 		} as React.CSSProperties;
 		
 		const posMap = {
@@ -317,7 +319,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		};
 		
 		return { ...common, ...posMap[side] };
-	}, [resolvedHandleSize, initSize, minSnap, safeRange, side, fullWidth]);
+	}, [resolvedHandleSize, side, fullWidth, size, progress]);
 	
 	// Gesture handler
 	const axis: 'x' | 'y' = side === 'left' || side === 'right' ? 'x' : 'y';

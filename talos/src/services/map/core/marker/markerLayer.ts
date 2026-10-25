@@ -169,12 +169,12 @@ export class MarkerLayer {
         const marker = this.markerDict[id];
         if (!(marker instanceof L.Marker) || !this.map.hasLayer(marker)) return false;
 
-        // Hover and focus do not end a proximity pulse. Changes to the former
-        // inner state classes and representation removal keep their old contract.
+        // Finishing the entry fade must not cancel a navigation/proximity pulse.
+        // Selection, collection, tier changes and removal still end it.
         const signature = () => {
             const state = getMarkerState(marker);
             return +state.selected | (+state.checked << 1) | (+state.offLayer << 2)
-                | (+state.appearing << 3) | (+state.disappearing << 4);
+                | (+state.disappearing << 3);
         };
         const initial = signature();
         const changed = () => { if (signature() !== initial) this.stopMarkerPulse(id); };

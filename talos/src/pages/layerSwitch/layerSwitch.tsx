@@ -11,6 +11,7 @@ import { useDevice } from '@/platform/device';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
 import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
+import { usePresence } from '@/lib/dom/usePresence';
 
 const PREDEFINED_LAYER_ORDER: LayerType[] = ['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
 
@@ -52,6 +53,8 @@ const LayerSwitch: React.FC<{
     }, [currentRegionKey]);
     const hasSubmenu = availableLayers.length > 1 || availableLayers[0] !== 'M';
     const menu = useSwitchMenu(hasSubmenu);
+    const open = hasSubmenu && (menu.activeKey !== null || forceLayerSubOpen);
+    const submenu = usePresence({ open, exitDuration: 200 });
 
     const layerIndex = useMemo(
         () => availableLayers.indexOf(currentLayer),
@@ -92,9 +95,12 @@ const LayerSwitch: React.FC<{
                     }}>
                         <div className={styles.icon}><LayerIcon /></div>
                     </IconButton>
-                    {(menu.activeKey !== null || forceLayerSubOpen) && (
+                    {submenu.present && (
                         <div
                             className={styles.subregionSwitchContainer}
+                            data-state={submenu.phase}
+                            inert={!open}
+                            aria-hidden={!open}
                             onClick={(e) => {
                                 e.stopPropagation();
                             }}

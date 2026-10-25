@@ -13,6 +13,7 @@ import { useDevice } from '@/platform/device';
 import { useSwitchMenu } from './useSwitchMenu';
 import { loadRegionMarkers } from '@/data/marker';
 import { preloadMapTiles } from '@/services/map/preload';
+import { usePresence } from '@/lib/dom/usePresence';
 
 import Valley4 from '@/assets/logos/_Valley_4.svg?react';
 import Wuling from '@/assets/logos/_Wuling.svg?react';
@@ -62,6 +63,7 @@ type SubregionSwitchItem = {
 };
 
 interface SubregionSwitchProps {
+    open: boolean;
     items: SubregionSwitchItem[];
     selectedIndex?: number;
     showIndicator?: boolean;
@@ -69,14 +71,20 @@ interface SubregionSwitchProps {
 }
 
 const SubregionSwitch: React.FC<SubregionSwitchProps> = ({
+    open,
     items,
     selectedIndex = -1,
     showIndicator = true,
     isMobile = false,
 }) => {
+    const { present, phase } = usePresence({ open, exitDuration: 200 });
+    if (!present) return null;
     return (
         <div
             className={styles.subregionSwitchContainer}
+            data-state={phase}
+            inert={!open}
+            aria-hidden={!open}
             onClick={(e) => {
                 e.stopPropagation();
             }}
@@ -242,8 +250,9 @@ const RegionContainer: React.FC<{
                             >
                                 <div className={styles.icon}><Icon /></div>
                             </IconButton>
-                            {openRegionKey === key && region.subregions.length > 1 && (
+                            {region.subregions.length > 1 && (
                                 <SubregionSwitch
+                                    open={openRegionKey === key}
                                     selectedIndex={subRegionIndex}
                                     isMobile={isMobile}
                                     items={region.subregions.map((subregion) => {

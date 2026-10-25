@@ -1,0 +1,42 @@
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
+import LocatorButton from './LocatorButton';
+
+vi.mock('@/locale', () => ({ useTranslateUI: () => (key: string) => key }));
+vi.mock('@/store/auth', () => ({ useAuthStore: (select: (state: unknown) => unknown) => select({ sessionUser: { uid: 'test' } }) }));
+vi.mock('@/component/shared/account/authEvents', () => ({ openOemAuthModal: vi.fn() }));
+vi.mock('@/services/cache/backend', () => ({ getCachedBinding: () => ({ hit: true, value: { bound: true } }), setCachedBinding: vi.fn() }));
+vi.mock('@/services/endfield', () => ({ getEFBindingStatus: () => Promise.resolve({ binding: { bound: true } }) }));
+vi.mock('@/pages/locator/session', () => ({ disableSession: vi.fn(), enableSession: vi.fn(() => Promise.resolve(true)) }));
+vi.mock('@/assets/images/UI/config.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/locateclose.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/locateopen.svg?react', () => ({ default: () => null }));
+vi.mock('@/assets/images/UI/locatecurrent.svg?react', () => ({ default: () => null }));
+
+afterEach(() => { cleanup(); vi.useRealTimers(); });
+it('opens bound locator settings only on intent and retains inert content for the exit fade', async () => {
+    vi.useFakeTimers();
+    render(<LocatorButton />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole('button', { name: 'locator.config.title' })).toBeNull();
+    const main = screen.getByRole('button', { name: 'mapControls.locationTracking' });
+    fireEvent.pointerOver(main, { pointerType: 'mouse' });
+    const config = screen.getByRole('button', { name: 'locator.config.title' });
+    const panel = config.closest('[data-state]')!;
+    act(() => { vi.advanceTimersByTime(50); });
+    expect(panel.getAttribute('data-state')).toBe('open');
+    fireEvent.pointerOut(main, { pointerType: 'mouse' });
+    expect(panel.getAttribute('data-state')).toBe('exiting');
+    expect(panel.hasAttribute('inert')).toBe(true);
+    expect(panel.isConnected).toBe(true);
+    fireEvent.pointerOver(main, { pointerType: 'mouse' });
+    act(() => { vi.advanceTimersByTime(100); });
+    expect(screen.getByRole('button', { name: 'locator.config.title' })).toBe(config);
+    fireEvent.pointerOut(main, { pointerType: 'mouse' });
+    act(() => { vi.advanceTimersByTime(200); });
+    expect(panel.isConnected).toBe(false);
+    await act(async () => { fireEvent.click(main); await Promise.resolve(); });
+    expect(screen.queryByRole('button', { name: 'locator.config.title' })).not.toBeNull();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('button', { name: 'locator.config.title' })).toBeNull();
+});

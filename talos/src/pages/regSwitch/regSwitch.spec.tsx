@@ -24,7 +24,7 @@ beforeEach(() => {
     useRegion.setState({ currentRegionKey: 'Valley_4', currentSubregionKey: null, subregionSwitchRequest: null });
     useUiPrefsStore.setState({ forceRegionSubOpen: false });
 });
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.useRealTimers(); });
 
 function pointer(element: HTMLElement, type: string, pointerType = 'mouse', relatedTarget: EventTarget | null = null) {
     const event = new MouseEvent(type, { bubbles: true, relatedTarget });
@@ -51,7 +51,8 @@ it('warms only the intended region and reuses pointer, focus and click preparati
     expect(preloadMapTiles).toHaveBeenCalledExactlyOnceWith('Wuling');
 });
 
-it('unmounts the previously clicked region as soon as the pointer enters another region', () => {
+it('deactivates the old region immediately but retains it through its exit fade', () => {
+    vi.useFakeTimers();
     render(<RegionContainer isSidebarOpen={false} />);
     const wuling = screen.getByRole('button', { name: 'region.WL.main' });
     const valley = screen.getByRole('button', { name: 'region.VL.main' });
@@ -65,11 +66,15 @@ it('unmounts the previously clicked region as soon as the pointer enters another
     pointer(wuling, 'pointerout', 'mouse', valley);
     pointer(valley, 'pointerover', 'mouse', wuling);
     expect(document.activeElement).toBe(wuling);
-    expect(oldSubregion.isConnected).toBe(false);
+    expect(oldSubregion.isConnected).toBe(true);
+    expect(oldSubregion.closest('[data-state]')?.getAttribute('data-state')).toBe('exiting');
+    expect(oldSubregion.closest('[inert]')).not.toBeNull();
     expect(subButton('Wuling')).toBeNull();
     expect(subButton('Valley_4')).not.toBeNull();
     pointer(valley, 'pointerout');
     expect(subButton('Valley_4')).toBeNull();
+    act(() => { vi.advanceTimersByTime(200); });
+    expect(oldSubregion.isConnected).toBe(false);
 });
 
 it('keeps the submenu available across its padding and keyboard focus, then removes it on blur', () => {
