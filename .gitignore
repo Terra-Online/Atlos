@@ -91,3 +91,6 @@ talos/.stylelintcache
 
 # Local-only refactor roadmap; keep it out of commits.
 /docs/roadmap.md
+
+# Local test coverage reports.
+/talos/coverage/

@@ -16,5 +16,13 @@ export default defineConfig({
         environment: 'jsdom',
         include: tests,
         setupFiles: ['./vitest.setup.ts'],
+        // Opt-in via `vitest run --coverage`; the default test task stays fast.
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.{ts,tsx}'],
+            exclude: ['src/**/*.spec.{ts,tsx}', 'src/**/*.d.ts'],
+            reporter: ['text-summary', 'json-summary'],
+            reportsDirectory: './coverage',
+        },
     },
 });
