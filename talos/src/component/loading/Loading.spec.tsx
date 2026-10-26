@@ -77,3 +77,26 @@ it('stops ticking after unmount', () => {
     expect(clear).toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
 });
+
+it('reports completion exactly once even if the owner keeps the finished loader mounted', () => {
+    const complete = vi.fn();
+    render(<Loading maxProgress={100} completeController={complete} />);
+    advance(3000);
+    advance(30);
+    advance(300);
+    advance(450);
+    expect(complete).toHaveBeenCalledOnce();
+    advance(1500);
+    expect(complete).toHaveBeenCalledOnce();
+});
+
+it.each([100, 500])('cancels pending completion when unmounted %i ms after reaching 100%%', (delay) => {
+    const complete = vi.fn();
+    const view = render(<Loading maxProgress={100} completeController={complete} />);
+    advance(3000);
+    advance(delay);
+    view.unmount();
+    advance(1500);
+    expect(complete).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+});

@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ContextMenu from './ContextMenu';
 
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 const props = {
     ownerDocument: document, position: { x: -100, y: -100 },
@@ -16,6 +16,67 @@ const props = {
 };
 
 describe('ContextMenu', () => {
+    it('runs enabled actions, keeps opted-in actions open and dismisses ordinary selections', () => {
+        const select = vi.fn();
+        const onDismiss = vi.fn();
+        render(createElement(ContextMenu, { ...props, onDismiss, groups: [{ id: 'actions', items: [
+            { id: 'keep', label: 'Keep open', closeOnSelect: false, onSelect: select },
+            { id: 'disabled', label: 'Disabled', disabled: true, onSelect: select },
+            { id: 'close', label: 'Close after', onSelect: select },
+        ] }] }));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Disabled' }));
+        expect(select).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Keep open' }));
+        expect(select).toHaveBeenCalledOnce();
+        expect(onDismiss).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Close after' }));
+        expect(select).toHaveBeenCalledTimes(2);
+        expect(onDismiss).toHaveBeenCalledOnce();
+    });
+
+    it('wraps keyboard navigation, supports Home/End and dismisses on Tab or resize', () => {
+        const onDismiss = vi.fn();
+        const view = render(createElement(ContextMenu, { ...props, onDismiss }));
+        const undo = screen.getByText('Undo'), redo = screen.getByText('Redo');
+        fireEvent.keyDown(undo, { key: 'ArrowUp' });
+        expect(document.activeElement).toBe(redo);
+        fireEvent.keyDown(redo, { key: 'ArrowDown' });
+        expect(document.activeElement).toBe(undo);
+        fireEvent.keyDown(undo, { key: 'End' });
+        expect(document.activeElement).toBe(redo);
+        fireEvent.keyDown(redo, { key: 'Home' });
+        expect(document.activeElement).toBe(undo);
+        fireEvent.keyDown(undo, { key: 'Tab' });
+        expect(onDismiss).toHaveBeenCalledOnce();
+        fireEvent(window, new Event('resize'));
+        expect(onDismiss).toHaveBeenCalledTimes(2);
+        view.unmount();
+        fireEvent(window, new Event('resize'));
+        expect(onDismiss).toHaveBeenCalledTimes(2);
+    });
+
+    it('falls back when native top-layer entry throws and tolerates an empty action list', () => {
+        const show = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'showPopover');
+        const hide = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidePopover');
+        Object.defineProperties(HTMLElement.prototype, {
+            showPopover: { configurable: true, value: () => { throw new Error('Inactive document'); } },
+            hidePopover: { configurable: true, value: () => {} },
+        });
+        try {
+            render(createElement(ContextMenu, { ...props, groups: [], onDismiss: vi.fn() }));
+            const menu = screen.getByRole('menu');
+            expect(menu.dataset.popoverMode).toBe('fallback');
+            expect(menu.hasAttribute('popover')).toBe(false);
+            expect(() => fireEvent.keyDown(menu, { key: 'ArrowDown' })).not.toThrow();
+        } finally {
+            cleanup();
+            if (show) Object.defineProperty(HTMLElement.prototype, 'showPopover', show);
+            else Reflect.deleteProperty(HTMLElement.prototype, 'showPopover');
+            if (hide) Object.defineProperty(HTMLElement.prototype, 'hidePopover', hide);
+            else Reflect.deleteProperty(HTMLElement.prototype, 'hidePopover');
+        }
+    });
+
     it('clamps to the viewport and navigates the compact row, skipping disabled actions', () => {
         const onDismiss = vi.fn();
         render(createElement(ContextMenu, { ...props, onDismiss }));

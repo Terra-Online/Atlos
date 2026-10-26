@@ -55,6 +55,20 @@ it('shows only the active tab description and honors fill and class name', () =>
     expect(screen.getByText('Only unread notices')).toBeTruthy();
 });
 
+it('blocks a disabled tab until the owner enables it without changing the active selection', () => {
+    const onChange = vi.fn();
+    const view = render(<TabView items={[items[0], { ...items[1], disabled: true }]} activeKey="all" onChange={onChange} />);
+    const tab = screen.getByRole<HTMLButtonElement>('tab', { name: 'Unread' });
+    expect(tab.disabled).toBe(true);
+    fireEvent.click(tab);
+    expect(onChange).not.toHaveBeenCalled();
+    view.rerender(<TabView items={items} activeKey="all" onChange={onChange} />);
+    fireEvent.click(tab);
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(onChange).toHaveBeenCalledWith('unread');
+    expect(screen.getByRole('tab', { name: 'All' }).getAttribute('aria-selected')).toBe('true');
+});
+
 it('centers the indicator under the active tab after layout, scroll and resize', () => {
     const { container, rerender } = render(<TabView items={items} activeKey="unread" onChange={vi.fn()} />);
     const bar = screen.getByRole('tablist');

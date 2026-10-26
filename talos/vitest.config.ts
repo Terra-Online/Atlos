@@ -1,5 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import { projectFiles } from './scripts/project-files.mjs';
 
 // Local ignored diagnostic tests can outlive the source they were written for.
@@ -7,6 +9,7 @@ import { projectFiles } from './scripts/project-files.mjs';
 const tests = projectFiles().filter((file) => /^(?:src|oem-relink\/src)\/.*\.spec\.tsx?$/.test(file));
 
 export default defineConfig({
+    plugins: [react(), svgr()],
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),
