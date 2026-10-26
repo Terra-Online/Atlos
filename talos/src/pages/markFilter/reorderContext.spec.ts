@@ -12,7 +12,7 @@ const layouts: Record<string, LayoutRect> = {
 describe('getReorderTargetIndex', () => {
   it('allows the last category to cross several neighbours in one drag', () => {
     const origin = layouts.d;
-    let order = ['a', 'b', 'c', 'd'];
+    const order = ['a', 'b', 'c', 'd'];
 
     for (const dragY of [-110, -210, -310]) {
       const from = order.indexOf('d');
@@ -38,7 +38,7 @@ describe('getReorderTargetIndex', () => {
   });
 
   it('reverses direction before returning across the original drag position', () => {
-    let order = ['a', 'b', 'c', 'd'];
+    const order = ['a', 'b', 'c', 'd'];
     const origin = layouts.a;
 
     for (const dragY of [110, 210, 310]) {

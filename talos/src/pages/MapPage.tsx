@@ -1,6 +1,6 @@
-import { Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
 import ErrorBoundary from '@/component/shared/ErrorBoundary';
-import { lazyWithRetry } from '@/lib/dom/lazyWithRetry';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
 import L from 'leaflet';
 
 
@@ -24,7 +24,7 @@ import { useIsUserGuideOpen } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import { useUIVisibility } from '@/pages/uiOverlay/useUIVisibility';
 
-const UserGuide = lazyWithRetry(() => import('@/pages/userGuide/UserGuide'));
+const loadUserGuide = () => import('@/pages/userGuide/UserGuide');
 
 declare global {
     interface Window {
@@ -51,6 +51,7 @@ function MapPage() {
         toggleUI,
     } = useUIVisibility();
     const [shouldLoadUserGuide, setShouldLoadUserGuide] = useState(false);
+    const UserGuide = useRetryImport(loadUserGuide, shouldLoadUserGuide)?.default;
     const [userGuideReady, setUserGuideReady] = useState(false);
     const isUserGuideOpen = useIsUserGuideOpen();
     const locatorAuthOpen = useLocatorStore((state) => state.authOpen);
@@ -184,15 +185,13 @@ function MapPage() {
             )}
             {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
-                {shouldLoadUserGuide && (
+                {UserGuide && (
                     <ErrorBoundary>
-                    <Suspense fallback={null}>
                         <UserGuide
                             map={mapInstance}
                             visible={uiVisible}
                             onReady={() => setUserGuideReady(true)}
                         />
-                    </Suspense>
                     </ErrorBoundary>
                 )}
                 {/* Map layer - always fill the entire window */}

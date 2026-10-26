@@ -1,5 +1,8 @@
 import IconButton from '@/component/button/IconButton';
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
+import Modal from '@/component/modal/modal';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
 import { useAuthStore } from '@/store/auth';
@@ -36,8 +39,8 @@ interface LocatorButtonProps {
     isSidebarOpen?: boolean;
 }
 
-const LocationBinding = lazy(() => import('@/pages/locator/LocationBinding'));
-const LocationConfig = lazy(() => import('@/pages/locator/LocationConfig'));
+const loadBinding = () => import('@/pages/locator/LocationBinding');
+const loadConfig = () => import('@/pages/locator/LocationConfig');
 
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSidebarOpen = false }) => {
     const t = useTranslateUI();
@@ -50,6 +53,8 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
     const [bindingMounted, setBindingMounted] = useState(false);
     const [configOpen, setConfigOpen] = useState(false);
     const [configMounted, setConfigMounted] = useState(false);
+    const LocationBinding = useRetryImport(loadBinding, bindingOpen)?.default;
+    const LocationConfig = useRetryImport(loadConfig, configOpen)?.default;
     const [mobileExpanded, setMobileExpanded] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
     const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
@@ -221,6 +226,14 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
 
     const Icon = resolveIcon(viewMode);
 
+    const pendingModal = (bindingOpen && !LocationBinding) || (configOpen && !LocationConfig) ? (
+        <Modal open size={variant === 'mobile' ? 'full' : 'l'} onChange={(next) => {
+            if (!next) { setBindingOpen(false); setConfigOpen(false); }
+        }}>
+            <p role="status">{t('common.loading')}</p>
+        </Modal>
+    ) : null;
+
     if (variant === 'mobile') {
         return (
             <>
@@ -254,8 +267,9 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                         <ConfigIcon />
                     </button>
                 </div>
-                {bindingMounted && (
-                    <Suspense fallback={null}>
+                {pendingModal}
+                {bindingMounted && LocationBinding && (
+                    <ErrorBoundary resetKeys={[bindingOpen, configOpen]}>
                         <LocationBinding
                             open={bindingOpen}
                             modalSize="full"
@@ -269,10 +283,10 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                                 refreshBindingStatus();
                             }}
                         />
-                    </Suspense>
+                    </ErrorBoundary>
                 )}
-                {configMounted && (
-                    <Suspense fallback={null}>
+                {configMounted && LocationConfig && (
+                    <ErrorBoundary resetKeys={[bindingOpen, configOpen]}>
                         <LocationConfig
                             open={configOpen}
                             onClose={() => {
@@ -289,7 +303,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                                 collapseMobileShell();
                             }}
                         />
-                    </Suspense>
+                    </ErrorBoundary>
                 )}
             </>
         );
@@ -335,8 +349,9 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                     </div>
                 </PopoverTooltip>
             </div>
-            {bindingMounted && (
-                <Suspense fallback={null}>
+            {pendingModal}
+            {bindingMounted && LocationBinding && (
+                <ErrorBoundary resetKeys={[bindingOpen, configOpen]}>
                     <LocationBinding
                         open={bindingOpen}
                         onClose={() => {
@@ -348,10 +363,10 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                             refreshBindingStatus();
                         }}
                     />
-                </Suspense>
+                </ErrorBoundary>
             )}
-            {configMounted && (
-                <Suspense fallback={null}>
+            {configMounted && LocationConfig && (
+                <ErrorBoundary resetKeys={[bindingOpen, configOpen]}>
                     <LocationConfig
                         open={configOpen}
                         onClose={() => {
@@ -367,7 +382,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                             setMobileExpanded(false);
                         }}
                     />
-                </Suspense>
+                </ErrorBoundary>
             )}
         </>
     );

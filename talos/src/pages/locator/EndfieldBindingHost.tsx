@@ -1,16 +1,22 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
+import Modal from '@/component/modal/modal';
+import { useTranslateUI } from '@/locale';
 import { useDevice } from '@/platform/device';
 import {
     ENDFIELD_BINDING_REQUEST_EVENT,
     type EndfieldBindingRequestDetail,
 } from '@/store/locator';
 
-const LocationBinding = lazy(() => import('@/pages/locator/LocationBinding'));
+const loadBinding = () => import('@/pages/locator/LocationBinding');
 
 const EndfieldBindingHost: React.FC = () => {
     const { isMobile } = useDevice();
+    const t = useTranslateUI();
     const [open, setOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const LocationBinding = useRetryImport(loadBinding, open)?.default;
     const requestRef = useRef<EndfieldBindingRequestDetail>({});
 
     useEffect(() => {
@@ -27,9 +33,14 @@ const EndfieldBindingHost: React.FC = () => {
     }, []);
 
     if (!mounted) return null;
+    if (!LocationBinding) return open ? (
+        <Modal open size={isMobile ? 'full' : 'l'} onChange={setOpen}>
+            <p role="status">{t('common.loading')}</p>
+        </Modal>
+    ) : null;
 
     return (
-        <Suspense fallback={null}>
+        <ErrorBoundary resetKeys={[open]}>
             <LocationBinding
                 open={open}
                 modalSize={isMobile ? 'full' : 'l'}
@@ -40,7 +51,7 @@ const EndfieldBindingHost: React.FC = () => {
                     void requestRef.current.onBound?.();
                 }}
             />
-        </Suspense>
+        </ErrorBoundary>
     );
 };
 

@@ -144,7 +144,7 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%', mobile = fa
             className={`${styles.searchContainer} ${mobile ? styles.mobile : ''}`}
             style={{ width }}
         >
-            <form className={styles.searchForm}>
+            <form className={styles.searchForm} onSubmit={(event) => event.preventDefault()}>
                 <div className={styles.searchInputWrapper} data-expanded={panelOpen ? 'true' : 'false'}>
                     <div className={styles.searchInputRow} data-has-count={hasQuery ? 'true' : 'false'}>
                         <div className={styles.searchIcon}>

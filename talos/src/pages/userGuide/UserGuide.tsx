@@ -9,6 +9,7 @@ import {
     useSetForceDetailOpen,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
+    useSetForceHeadbarExpanded,
     useSetDesktopDrawerSnapIndex,
     useSetMobileDrawerSnapIndex,
 } from '@/store/uiPrefs';
@@ -40,6 +41,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const setForceDetailOpen = useSetForceDetailOpen();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
+    const setForceHeadbarExpanded = useSetForceHeadbarExpanded();
     const setDesktopDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const setMobileDrawerSnapIndex = useSetMobileDrawerSnapIndex();
     const stepCompleted = useUserGuideStepCompleted();
@@ -304,6 +306,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                 setForceDetailOpen(false);
                 setForceRegionSubOpen(false);
                 setForceLayerSubOpen(false);
+                setForceHeadbarExpanded(null);
                 setDesktopDrawerSnapIndex(null);
                 setMobileDrawerSnapIndex(null);
                 setIsUserGuideOpen(false);
@@ -427,6 +430,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             setForceDetailOpen,
             setForceRegionSubOpen,
             setForceLayerSubOpen,
+            setForceHeadbarExpanded,
             setDesktopDrawerSnapIndex,
             setMobileDrawerSnapIndex,
             setIsUserGuideOpen,

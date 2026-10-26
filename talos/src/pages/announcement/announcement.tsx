@@ -52,7 +52,6 @@ const AnnModal: React.FC<AnnModalProps> = ({ open, onClose, onChange, onHasUnrea
 
     const handleClose = () => {
         onClose?.();
-        onChange?.(false);
     };
 
     return (

@@ -68,6 +68,7 @@ const COMMENT_EDITOR_CONFIG: InitialConfigType = {
 };
 
 const EDITOR_MAX_LENGTH = 550;
+const CONTROLLED_VALUE_TAG = 'comment-controlled-value';
 
 export type CommentEditorHandle = {
     focus: () => void;
@@ -267,7 +268,11 @@ const CommentEditorBridge = ({
         lastEmittedRawRef.current = nextValue;
         lastParsedRawRef.current = nextValue;
         editor.update(() => replaceCommentEditorContents(nextValue, null), {
-            tag: SKIP_SCROLL_INTO_VIEW_TAG,
+            // Commit external clears/restores before a later value can arrive.
+            // Echoing this update to the owner can otherwise overwrite a draft
+            // restored after an immediately rejected submission.
+            tag: [SKIP_SCROLL_INTO_VIEW_TAG, CONTROLLED_VALUE_TAG],
+            discrete: true,
         });
     }, [editor, value]);
 
@@ -481,7 +486,8 @@ const CommentEditorBridge = ({
             <CommentEditorOverflow maxLength={maxLength} />
             <OnChangePlugin
                 ignoreHistoryMergeTagChange={false}
-                onChange={(editorState) => {
+                onChange={(editorState, _editor, tags) => {
+                    if (tags.has(CONTROLLED_VALUE_TAG)) return;
                     const raw = serializeCommentEditorState(editorState);
                     lastEmittedRawRef.current = raw;
                     onChange(raw);

@@ -8,6 +8,8 @@ import {
     WORLD_TYPE_COUNT_MAP,
 } from '@/data/marker';
 import { SUBREGION_DICT } from '@/data/map';
+import { SUBREGION_TO_REGION_MAP } from '@/services/routing/protocol';
+import { retryLoad } from '@/lib/async/retryLoad';
 import { hasFullSupport, isUIOnly, resolveFileContentLocale, useTranslateGame } from '@/locale';
 import useRegion from '@/store/region';
 
@@ -76,7 +78,7 @@ const loadOrama = () => {
             createDb: mod.create as unknown as CreateFn,
             insertDocs: mod.insertMultiple as unknown as InsertMultipleFn<SearchDoc>,
             searchDocs: mod.search as unknown as SearchFn<SearchDoc>,
-        }));
+        })).catch((error: unknown) => { oramaPromise = null; throw error; });
     }
     return oramaPromise;
 };
@@ -395,6 +397,8 @@ const buildFallbackDocs = async (): Promise<SearchDoc[]> => {
     markers.forEach((marker) => {
         if (typeof marker.type !== 'string' || !marker.type.trim()) return;
         const typeKey = marker.type.trim();
+        const regionKey = SUBREGION_TO_REGION_MAP[marker.subregId];
+        if (!regionKey) return;
         const markerType = MARKER_TYPE_DICT[typeKey];
         docs.push({
             docId: `${String(marker.id)}@@${String(marker.subregId)}`,
@@ -405,7 +409,7 @@ const buildFallbackDocs = async (): Promise<SearchDoc[]> => {
             aliases: typeKey,
             binderTokens: '',
             binderDisplay: '',
-            regionKey: 'Valley_4',
+            regionKey,
             subregionId: String(marker.subregId),
             body: '',
             cjk: '',
@@ -476,7 +480,10 @@ const getPrebuiltDb = (docsLocale: string): Promise<SearchDb> => {
         }
 
         return createSearchDb(await buildFallbackDocs());
-    })();
+    })().catch((error: unknown) => {
+        prebuiltDbPromiseByLocale.delete(docsLocale);
+        throw error;
+    });
 
     prebuiltDbPromiseByLocale.set(docsLocale, promise);
     return promise;
@@ -751,6 +758,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
 
     useEffect(() => {
         let timeoutId = 0;
+        const controller = new AbortController();
         const run = async () => {
             if (!normalizedSearchQuery) {
                 setResults((current) => current.length === 0 ? current : []);
@@ -886,11 +894,17 @@ export const useAdvancedSearch = (query: string, locale: string) => {
         };
 
         timeoutId = window.setTimeout(() => {
-            void run();
+            void retryLoad(run, { signal: controller.signal }).catch(() => {
+                // Closing/changing this query cancels its retry sequence.
+            });
         }, SEARCH_DEBOUNCE_MS);
 
         return () => {
             window.clearTimeout(timeoutId);
+            controller.abort();
+            // Invalidate work as soon as the query/region changes, including
+            // the next debounce window and an empty query or unmount.
+            activeTokenRef.current += 1;
         };
     }, [normalizedSearchQuery, locale, currentRegionKey, currentSubregionKey]);
 

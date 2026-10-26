@@ -1,9 +1,10 @@
 import { createElement, createRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import CommentEditor, { type CommentEditorHandle } from '@/pages/detail/comment/commentEditor';
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+beforeEach(() => { vi.spyOn(window, 'scrollBy').mockImplementation(() => {}); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
     configurable: true, value: () => new DOMRect(50, 150, 80, 20),
 });
@@ -22,6 +23,21 @@ const setup = (initial = '') => {
     render(createElement(Harness));
     return { ref, onSubmit };
 };
+
+it('commits external clear and restore values without echoing them as stale user edits', async () => {
+    const onChange = vi.fn();
+    const props = { value: 'Restored draft', maxLength: 500, placeholder: 'Comment', disabled: false,
+        onChange, onSubmit: () => {}, onKeyDown: () => {}, editorElementRef: createRef<HTMLDivElement>(), onEditorReady: () => {} };
+    const view = render(createElement(CommentEditor, props));
+    await waitFor(() => expect(screen.getByRole('textbox').textContent).toBe('Restored draft'));
+    onChange.mockClear();
+    view.rerender(createElement(CommentEditor, { ...props, value: '' }));
+    expect(screen.getByRole('textbox').textContent).toBe('');
+    view.rerender(createElement(CommentEditor, props));
+    expect(screen.getByRole('textbox').textContent).toBe('Restored draft');
+    await act(async () => { await Promise.resolve(); });
+    expect(onChange).not.toHaveBeenCalled();
+});
 
 it('preserves an over-limit paste, shows the count, and allows submission after correction', async () => {
     const { ref, onSubmit } = setup();
