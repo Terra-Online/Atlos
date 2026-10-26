@@ -1,5 +1,6 @@
 import { EntryButton } from '@/component/button/EntryButton';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
 import Modal from '@/component/modal/modal';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { loadAllMarkers, type IMarkerData } from '@/data/marker';
@@ -145,20 +146,15 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
     const t = useTranslateUI();
     const tGame = useTranslateGame();
     const locale = useLocale();
-    const [markers, setMarkers] = useState<IMarkerData[]>([]);
     const hasMapPoints = sourceA.pointIds.length > 0 || sourceB.pointIds.length > 0;
-
-    useEffect(() => {
-        if (!open || !hasMapPoints) return;
-        void loadAllMarkers().then(setMarkers);
-    }, [hasMapPoints, open]);
+    const loadedMarkers = useRetryImport(loadAllMarkers, open && hasMapPoints);
 
     const aLabel = sourceLabel(sourceA, t);
     const bLabel = sourceLabel(sourceB, t);
     const aShortLabel = sourceShortLabel(sourceA, t);
     const bShortLabel = sourceShortLabel(sourceB, t);
-    const aCounts = useMemo(() => countBySubregion(sourceA.pointIds, markers), [markers, sourceA.pointIds]);
-    const bCounts = useMemo(() => countBySubregion(sourceB.pointIds, markers), [markers, sourceB.pointIds]);
+    const aCounts = useMemo(() => countBySubregion(sourceA.pointIds, loadedMarkers ?? []), [loadedMarkers, sourceA.pointIds]);
+    const bCounts = useMemo(() => countBySubregion(sourceB.pointIds, loadedMarkers ?? []), [loadedMarkers, sourceB.pointIds]);
     const aArchiveIds = sourceA.archiveIds ?? [];
     const bArchiveIds = sourceB.archiveIds ?? [];
     const aTotal = sourceA.pointIds.length + aArchiveIds.length;
@@ -214,7 +210,9 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                     ))}
                 </div>
 
-                <RegionCountTable
+                {hasMapPoints && loadedMarkers === null ? (
+                    <div role="status">{t('common.loading')}</div>
+                ) : <RegionCountTable
                     subregions={subregions}
                     aCounts={aCounts}
                     bCounts={bCounts}
@@ -227,7 +225,7 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                         aCount: aArchiveIds.length,
                         bCount: bArchiveIds.length,
                     } : undefined}
-                />
+                />}
 
                 <div className={styles.actions}>
                     <EntryButton

@@ -1,4 +1,6 @@
-import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type Ref } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type Ref } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
 import { useDevice, useAppViewport } from '@/platform/device';
 import { useTranslateUI } from '@/locale';
 import {
@@ -25,7 +27,7 @@ import XIcon from '@/assets/images/UI/media/x.svg?react';
 import styles from '@/component/shared/siteShell/sideBar.module.scss';
 import mobileStyles from '@/component/shared/siteShell/sideBar.mobile.module.scss';
 
-const IDCard = lazy(() => import('@/component/shared/account/idcard'));
+const loadIDCard = () => import('@/component/shared/account/idcard');
 
 interface SideBarFrameProps {
   children: ReactNode;
@@ -63,9 +65,10 @@ export const SidebarFooter = ({ mobile = false }: { mobile?: boolean }) => {
 
 export const AccountCard = ({ mobile = false }: { mobile?: boolean }) => {
   const frameStyles = mobile ? mobileStyles : styles;
+  const IDCard = useRetryImport(loadIDCard, true)?.default;
   return (
     <div className={frameStyles.idCardContainer}>
-      <Suspense fallback={null}><IDCard /></Suspense>
+      {IDCard && <ErrorBoundary><IDCard /></ErrorBoundary>}
     </div>
   );
 };
@@ -82,7 +85,28 @@ const DesktopFrame = ({ children, contentRef, bottomTools, headIcon, onToggle, v
   const [isResizing, setIsResizing] = useState(false);
   const startX = useRef(0);
   const startWidth = useRef(SIDEBAR_MIN_WIDTH);
+  const drag = useRef<{ id: number; handle: HTMLElement; app: HTMLElement | null; width: string } | null>(null);
   const effectiveOpen = lockedOpen || isOpen;
+
+  const finishResize = useCallback((cancelled: boolean) => {
+    const current = drag.current;
+    if (!current) return;
+    // Release ownership before capture can emit lostpointercapture, so a
+    // completed drag is not subsequently treated as a cancellation.
+    drag.current = null;
+    if (cancelled && current.app) {
+      if (current.width) current.app.style.setProperty('--sidebar-width', current.width);
+      else current.app.style.removeProperty('--sidebar-width');
+    }
+    if (current.handle.hasPointerCapture(current.id)) current.handle.releasePointerCapture(current.id);
+  }, []);
+
+  useEffect(() => () => finishResize(true), [finishResize]);
+  useEffect(() => {
+    if (effectiveOpen && visible) return;
+    finishResize(true);
+    setIsResizing(false);
+  }, [effectiveOpen, finishResize, visible]);
 
   const toggle = () => {
     const next = !isOpen;
@@ -91,7 +115,7 @@ const DesktopFrame = ({ children, contentRef, bottomTools, headIcon, onToggle, v
   };
   const resize = useCallback((event: PointerEvent) => {
     const next = clampSidebarWidth(startWidth.current + event.clientX - startX.current, maxWidth);
-    document.querySelector<HTMLElement>('.app')?.style.setProperty('--sidebar-width', `${next}px`);
+    drag.current?.app?.style.setProperty('--sidebar-width', `${next}px`);
     return next;
   }, [maxWidth]);
 
@@ -109,19 +133,33 @@ const DesktopFrame = ({ children, contentRef, bottomTools, headIcon, onToggle, v
         {effectiveOpen && !lockedOpen && <div
           className={`${styles.resizeHandle} ${isResizing ? styles.dragging : ''}`}
           onPointerDown={(event) => {
+            if (drag.current || !event.isPrimary || event.button !== 0) return;
             event.preventDefault();
+            const app = document.querySelector<HTMLElement>('.app');
+            drag.current = { id: event.pointerId, handle: event.currentTarget, app, width: app?.style.getPropertyValue('--sidebar-width') ?? '' };
             setIsResizing(true);
             startX.current = event.clientX;
             startWidth.current = sidebarWidth;
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
-          onPointerMove={(event) => { if (isResizing) resize(event); }}
+          onPointerMove={(event) => { if (drag.current?.id === event.pointerId) resize(event); }}
           onPointerUp={(event) => {
-            if (!isResizing) return;
+            if (drag.current?.id !== event.pointerId) return;
+            const nextWidth = resize(event);
+            finishResize(false);
             setIsResizing(false);
-            event.currentTarget.releasePointerCapture(event.pointerId);
-            setSidebarWidth(resize(event), maxWidth);
+            setSidebarWidth(nextWidth, maxWidth);
             requestAnimationFrame(incrementLayoutVersion);
+          }}
+          onPointerCancel={(event) => {
+            if (drag.current?.id !== event.pointerId) return;
+            finishResize(true);
+            setIsResizing(false);
+          }}
+          onLostPointerCapture={(event) => {
+            if (drag.current?.id !== event.pointerId) return;
+            finishResize(true);
+            setIsResizing(false);
           }}
         />}
         <div className={styles.headIcon}>

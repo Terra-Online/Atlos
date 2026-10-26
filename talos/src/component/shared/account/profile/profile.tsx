@@ -61,6 +61,7 @@ const ProfileModal = ({
   const { isMobile } = useDevice();
   const { cardRef, handleCardMouseMove, handleCardMouseLeave } = useIdCardHoverAngle();
   const [isImportingOfficialMarks, setIsImportingOfficialMarks] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
   const [conflictSnapshot, setConflictSnapshot] = useState<OfficialMarksSnapshot | null>(null);
   const [conflictOpen, setConflictOpen] = useState(false);
   const [syncHintNow, setSyncHintNow] = useState(Date.now());
@@ -75,7 +76,7 @@ const ProfileModal = ({
     conflict: s.conflict,
   })));
   const activePoints = useUserRecordStore((state) => state.activePoints);
-  const profileErrorText = profileError ?? '';
+  const profileErrorText = profileError ?? importError ?? '';
   const shouldShowProfileError = profileOpen && Boolean(profileErrorText);
   const isProfileErrorRemoved = !shouldShowProfileError;
   const modalSize = isMobile ? 'full' : 'm';
@@ -109,6 +110,10 @@ const ProfileModal = ({
         : '';
 
   useEffect(() => {
+    if (!profileOpen) setImportError(null);
+  }, [profileOpen]);
+
+  useEffect(() => {
     if (!profileOpen || !progressSync.lastSyncedAt) return undefined;
     const timer = window.setInterval(() => setSyncHintNow(Date.now()), 1000);
     setSyncHintNow(Date.now());
@@ -139,6 +144,7 @@ const ProfileModal = ({
   const handleImportOfficialMarks = async () => {
     if (isImportingOfficialMarks) return;
     setIsImportingOfficialMarks(true);
+    setImportError(null);
     try {
       const status = await getEFBindingStatus();
       if (!status.binding.bound || !status.binding.enabled) {
@@ -158,6 +164,7 @@ const ProfileModal = ({
         requestBindingThenImport();
         return;
       }
+      setImportError(t('sync.failed').replace('{reason}', error instanceof Error ? error.message : t('sync.unknown')));
       console.warn('[sync][official] import failed', error);
     } finally {
       setIsImportingOfficialMarks(false);

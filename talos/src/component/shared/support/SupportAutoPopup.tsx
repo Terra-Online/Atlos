@@ -13,7 +13,10 @@ const getStoredPrefs = (): SupportPopupPrefs => {
     try {
         const stored = localStorage.getItem(SUPPORT_CONFIG.storageKey);
         if (!stored) return { viewedVersions: [] };
-        return JSON.parse(stored) as SupportPopupPrefs;
+        const prefs: unknown = JSON.parse(stored);
+        if (!prefs || typeof prefs !== 'object' || !('viewedVersions' in prefs)
+            || !Array.isArray(prefs.viewedVersions)) return { viewedVersions: [] };
+        return { viewedVersions: prefs.viewedVersions.filter((version): version is string => typeof version === 'string') };
     } catch (err) {
         LOGGER.warn('Failed to parse support popup prefs:', err instanceof Error ? err.message : String(err));
         return { viewedVersions: [] };

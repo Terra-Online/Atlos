@@ -9,6 +9,7 @@ type State = {
     cursor: string | null;
     loading: boolean;
     error: string | null;
+    unauthorized: boolean;
 };
 
 const initialState: State = {
@@ -16,13 +17,17 @@ const initialState: State = {
     cursor: null,
     loading: true,
     error: null,
+    unauthorized: false,
 };
 
-export function useContributions(kind: Kind, revision: number) {
+export function useContributions(kind: Kind, revision: number, onUnauthorized?: () => void, authRevision = 0) {
     const [state, setState] = useState(initialState);
     const [retry, setRetry] = useState(0);
     const request = useRef<AbortController | null>(null);
     const pending = useRef(false);
+    const authHandler = useRef(onUnauthorized);
+    authHandler.current = onUnauthorized;
+    const interrupted = useRef<{ cursor?: string; kind: Kind; revision: number } | null>(null);
 
     const load = useCallback(
         async (cursor?: string) => {
@@ -49,11 +54,14 @@ export function useContributions(kind: Kind, revision: number) {
                     cursor: page.nextCursor,
                     loading: false,
                     error: null,
+                    unauthorized: false,
                 }));
             } catch (cause) {
                 if (controller.signal.aborted) return;
                 if (isUnauthorized(cause)) {
-                    window.location.assign('/');
+                    interrupted.current = { cursor, kind, revision };
+                    setState((previous) => ({ ...previous, loading: false, unauthorized: true }));
+                    authHandler.current?.();
                     return;
                 }
                 setState((previous) => ({
@@ -68,16 +76,26 @@ export function useContributions(kind: Kind, revision: number) {
                 if (!controller.signal.aborted) pending.current = false;
             }
         },
-        [kind],
+        [kind, revision],
     );
 
     useEffect(() => {
+        interrupted.current = null;
         void load();
         return () => request.current?.abort();
     }, [load, revision, retry]);
 
+    const previousAuthRevision = useRef(authRevision);
+    useEffect(() => {
+        if (previousAuthRevision.current === authRevision) return;
+        previousAuthRevision.current = authRevision;
+        const saved = interrupted.current;
+        interrupted.current = null;
+        if (saved?.kind === kind && saved.revision === revision) void load(saved.cursor);
+    }, [authRevision, kind, load, revision]);
+
     const loadMore = () => {
-        if (!pending.current && state.cursor) void load(state.cursor);
+        if (!pending.current && !state.unauthorized && state.cursor) void load(state.cursor);
     };
 
     return {

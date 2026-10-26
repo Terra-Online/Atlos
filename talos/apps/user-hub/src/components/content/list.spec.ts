@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { flush } from '../../testSetup';
 import type { Contribution } from '../../types';
 import List from './list';
+import { formatDate } from '../../config';
 
 vi.mock('@main/data/marker', () => ({
     loadAllMarkers: () =>
@@ -14,9 +15,10 @@ vi.mock('@main/services/map/subregionLabel', () => ({
     getSubregionLabel: () => '应龙关',
 }));
 vi.mock('@main/locale', () => ({ useTranslateGame: () => () => '醚质' }));
+const locale = vi.hoisted(() => ({ value: 'zh-CN' }));
 vi.mock('@hub/locale', () => ({
-    getCurrentLocale: () => 'zh-CN',
-    useLocale: () => 'zh-CN',
+    getCurrentLocale: () => locale.value,
+    useLocale: () => locale.value,
     useTranslateUI: () => (key: string) =>
         ({
             'userHub.pointSeparator': '・',
@@ -37,6 +39,7 @@ const item: Contribution = {
 let node: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 beforeEach(() => {
+    locale.value = 'zh-CN';
     node = document.createElement('div');
     document.body.append(node);
     root = createRoot(node);
@@ -217,4 +220,25 @@ it('links directly to the comment or image on its point', async () => {
         'https://cdn.example/photo.webp',
     );
     expect(node.querySelector('a ol')).toBeNull();
+});
+
+it('formats comment dates using the current app locale and recomputes them after a language change', async () => {
+    locale.value = 'en-US';
+    await render();
+    const time = node.querySelector('time')!;
+    expect(time.textContent).toBe(formatDate(item.createdAt, 'en-US'));
+    locale.value = 'de-DE';
+    await render();
+    expect(time.textContent).toBe(formatDate(item.createdAt, 'de-DE'));
+    expect(time.textContent).not.toBe(formatDate(item.createdAt, 'en-US'));
+});
+
+it('falls back for failed image previews and resets that failure when the preview URL changes', async () => {
+    const renderImage = (previewUrl: string) => flush(() => root.render(createElement(List, { kind: 'image', items: [{ ...item, kind: 'image', previewUrl }] })));
+    await renderImage('/first.webp');
+    await flush(() => node.querySelector('img')?.dispatchEvent(new Event('error')));
+    expect(node.querySelector('img')).toBeNull();
+    expect(node.textContent).toContain('userHub.previewUnavailable');
+    await renderImage('/second.webp');
+    expect(node.querySelector('img')?.getAttribute('src')).toBe('/second.webp');
 });

@@ -46,6 +46,10 @@ type SyncNow = (
   },
 ) => Promise<void>;
 
+const assertCurrent = (current: () => boolean): void => {
+  if (!current()) throw new DOMException('Archive synchronization cancelled', 'AbortError');
+};
+
 const pendingMutationStorageKey = (uid: string): string => (
   `${PENDING_MUTATION_STORAGE_PREFIX}${uid}`
 );
@@ -82,10 +86,6 @@ const buildMutationId = (): string => (
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
 );
 
-const isRemoteEmpty = (progress: CloudArchiveProgress): boolean => (
-  !progress.revision && progress.archiveIds.length === 0
-);
-
 const currentArchiveProgressFromError = (error: ProgressSyncError): CloudArchiveProgress | null => {
   if (!error.details || typeof error.details !== 'object' || !('current' in error.details)) return null;
   const current = (error.details as { current?: unknown }).current;
@@ -107,12 +107,15 @@ const currentArchiveProgressFromError = (error: ProgressSyncError): CloudArchive
 const ArchiveProgressSyncHost = () => {
   const tUI = useTranslateUI();
   const sessionUser = useAuthStore((state) => state.sessionUser);
+  const sessionVersion = useAuthStore((state) => state.sessionVersion);
   const sessionUidRef = useRef<string | null>(sessionUser?.uid ?? null);
   const baselineRef = useRef<ArchiveProgressBase | null>(null);
   const manifestRef = useRef<ArchiveProgressManifestPayload | null>(null);
   const knownArchiveIdsRef = useRef<Set<string>>(new Set());
   const pendingMutationRef = useRef<PendingArchiveMutation | null>(null);
-  const inFlightRef = useRef(false);
+  const inFlightRef = useRef<object | null>(null);
+  const mountedRef = useRef(false);
+  const lifetimeRef = useRef(0);
   const rerunRequestedRef = useRef(false);
   const syncNowRef = useRef<SyncNow>(async () => {});
   const suppressLocalChangeRef = useRef(false);
@@ -125,8 +128,37 @@ const ArchiveProgressSyncHost = () => {
     autoSyncTimerRef.current = null;
   }, []);
 
-  const ensureManifest = useCallback(async (): Promise<ArchiveProgressManifestPayload> => {
+  useEffect(() => {
+    mountedRef.current = true;
+    lifetimeRef.current += 1;
+    return () => {
+      mountedRef.current = false;
+      lifetimeRef.current += 1;
+      inFlightRef.current = null;
+      rerunRequestedRef.current = false;
+      clearAutoSyncTimer();
+    };
+  }, [clearAutoSyncTimer]);
+
+  const captureScope = useCallback(() => {
+    const state = useAuthStore.getState();
+    const uid = state.sessionUser?.uid ?? null;
+    const version = state.sessionVersion;
+    const lifetime = lifetimeRef.current;
+    return {
+      uid,
+      current: () => {
+        const now = useAuthStore.getState();
+        return mountedRef.current && lifetimeRef.current === lifetime
+          && now.sessionVersion === version && (now.sessionUser?.uid ?? null) === uid;
+      },
+    };
+  }, []);
+
+  const ensureManifest = useCallback(async (current: () => boolean): Promise<ArchiveProgressManifestPayload> => {
+    assertCurrent(current);
     const index = await getArchiveProgressIndex();
+    assertCurrent(current);
     knownArchiveIdsRef.current = new Set(index.archiveIds);
     const manifest = {
       archiveIndexHash: index.archiveIndexHash,
@@ -134,6 +166,7 @@ const ArchiveProgressSyncHost = () => {
     };
     if (manifestRef.current?.archiveIndexHash !== manifest.archiveIndexHash) {
       await registerArchiveProgressManifest(manifest);
+      assertCurrent(current);
       manifestRef.current = manifest;
     }
     return manifest;
@@ -142,14 +175,18 @@ const ArchiveProgressSyncHost = () => {
   const withManifestRetry = useCallback(async <T,>(
     manifest: ArchiveProgressManifestPayload,
     operation: () => Promise<T>,
+    current: () => boolean,
   ): Promise<T> => {
+    assertCurrent(current);
     try {
       return await operation();
     } catch (error) {
+      assertCurrent(current);
       if (!(error instanceof ProgressSyncError) || error.code !== 'ARCHIVE_PROGRESS_MANIFEST_NOT_REGISTERED') {
         throw error;
       }
       await registerArchiveProgressManifest(manifest);
+      assertCurrent(current);
       manifestRef.current = manifest;
       return operation();
     }
@@ -183,19 +220,20 @@ const ArchiveProgressSyncHost = () => {
     reason: SyncReason,
     options = {},
   ) => {
-    const uid = sessionUidRef.current;
-    if (!uid) return;
+    const { uid, current } = captureScope();
+    if (!uid || !current()) return;
     if (inFlightRef.current) {
       rerunRequestedRef.current = true;
       return;
     }
     if (navigator.onLine === false && !options.keepalive) return;
 
-    inFlightRef.current = true;
+    const owner = {};
+    inFlightRef.current = owner;
     clearAutoSyncTimer();
     try {
-      const manifest = await ensureManifest();
-      if (sessionUidRef.current !== uid) return;
+      const manifest = await ensureManifest(current);
+      if (!current()) return;
       const localState = useUserRecordStore.getState();
       const localArchiveIds = normalizeArchiveIds(options.archiveIds ?? localState.activeArchives);
       const { known: activeArchiveIds, unknown: retainedLocalArchiveIds } = splitArchiveIds(
@@ -211,8 +249,9 @@ const ArchiveProgressSyncHost = () => {
           const pendingResponse = await withManifestRetry(
             manifest,
             () => syncCloudArchiveProgress(pendingMutation.payload),
+            current,
           );
-          if (sessionUidRef.current !== uid) return;
+          if (!current()) return;
           base = {
             ...pendingResponse.progress,
             archiveIds: pendingMutation.archiveIds,
@@ -229,13 +268,14 @@ const ArchiveProgressSyncHost = () => {
         const { progress } = await withManifestRetry(
           manifest,
           () => fetchCloudArchiveProgress(manifest.archiveIndexHash),
+          current,
         );
-        if (sessionUidRef.current !== uid) return;
+        if (!current()) return;
         const remote = {
           ...progress,
           archiveIds: splitArchiveIds(progress.archiveIds, knownArchiveIdsRef.current).known,
         };
-        if (!isRemoteEmpty(remote) && !areArchiveSetsEqual(remote.archiveIds, activeArchiveIds)) {
+        if (!areArchiveSetsEqual(remote.archiveIds, activeArchiveIds)) {
           rerunRequestedRef.current = false;
           openConflict(activeArchiveIds, remote);
           return;
@@ -270,8 +310,9 @@ const ArchiveProgressSyncHost = () => {
       const response = await withManifestRetry(
         manifest,
         () => syncCloudArchiveProgress(payload, { keepalive: options.keepalive }),
+        current,
       );
-      if (sessionUidRef.current !== uid) return;
+      if (!current()) return;
       pendingMutationRef.current = null;
       persistPendingMutation(uid, null);
       baselineRef.current = {
@@ -280,7 +321,7 @@ const ArchiveProgressSyncHost = () => {
       };
       void reason;
     } catch (error) {
-      if (sessionUidRef.current !== uid) return;
+      if (!current()) return;
       if (error instanceof ProgressSyncError) {
         const current = currentArchiveProgressFromError(error);
         if (error.status === 409 && current) {
@@ -294,7 +335,7 @@ const ArchiveProgressSyncHost = () => {
           };
           const pendingAtConflict = pendingMutationRef.current;
           pendingMutationRef.current = null;
-          if (sessionUidRef.current) persistPendingMutation(sessionUidRef.current, null);
+          persistPendingMutation(uid, null);
           const remoteMatchesLocal = areArchiveSetsEqual(local.known, remote.archiveIds);
           const remoteAcknowledgesPending = pendingAtConflict?.uid === uid
             && areArchiveSetsEqual(pendingAtConflict.archiveIds, remote.archiveIds);
@@ -309,33 +350,41 @@ const ArchiveProgressSyncHost = () => {
         }
         if (error.code === 'IDEMPOTENCY_KEY_REUSED') {
           pendingMutationRef.current = null;
-          if (sessionUidRef.current) persistPendingMutation(sessionUidRef.current, null);
+          persistPendingMutation(uid, null);
         }
       }
       console.warn('[intel][archive-sync] failed', error);
     } finally {
-      inFlightRef.current = false;
-      if (rerunRequestedRef.current) {
-        rerunRequestedRef.current = false;
-        queueMicrotask(() => { void syncNowRef.current('auto'); });
+      // Only the request that acquired this lock can release it. A previous
+      // session's finally must not unlock or schedule work for its replacement.
+      if (inFlightRef.current === owner) {
+        inFlightRef.current = null;
+        if (current() && rerunRequestedRef.current) {
+          rerunRequestedRef.current = false;
+          queueMicrotask(() => { if (current()) void syncNowRef.current('auto'); });
+        }
       }
     }
-  }, [clearAutoSyncTimer, ensureManifest, openConflict, withManifestRetry]);
+  }, [captureScope, clearAutoSyncTimer, ensureManifest, openConflict, withManifestRetry]);
   syncNowRef.current = syncNow;
 
   useEffect(() => {
     const uid = sessionUser?.uid ?? null;
+    if (sessionUidRef.current !== uid) {
+      baselineRef.current = null;
+      setConflict(null);
+    }
     sessionUidRef.current = uid;
-    baselineRef.current = null;
+    inFlightRef.current = null;
     rerunRequestedRef.current = false;
     pendingMutationRef.current = uid ? readPendingMutation(uid) : null;
     clearAutoSyncTimer();
-    setConflict(null);
     if (!uid) return;
+    const { current } = captureScope();
     void Promise.resolve(useUserRecordStore.persist.rehydrate()).then(() => {
-      if (sessionUidRef.current === uid) void syncNow('startup');
+      if (current()) void syncNow('startup');
     });
-  }, [clearAutoSyncTimer, sessionUser?.uid, syncNow]);
+  }, [captureScope, clearAutoSyncTimer, sessionUser?.uid, sessionVersion, syncNow]);
 
   useEffect(() => useUserRecordStore.subscribe((state, previousState) => {
     if (suppressLocalChangeRef.current) return;

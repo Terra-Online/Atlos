@@ -554,7 +554,8 @@ const Access = ({
   };
 
   const handleFormKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
-    if (!isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
+    // Inputs handle their own enter-key hints before the event bubbles here.
+    if (event.defaultPrevented || !isEnterAction(event) || event.nativeEvent.isComposing || isSubmitting) {
       return;
     }
 

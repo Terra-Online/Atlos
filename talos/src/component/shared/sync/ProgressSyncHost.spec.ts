@@ -22,7 +22,7 @@ vi.mock('@/services/progress', async () => ({
 vi.mock('@/component/shared/sync/conflict', () => ({ default: () => null }));
 vi.mock('@/store/auth', async () => {
     const { create } = await import('zustand');
-    return { useAuthStore: create(() => ({ sessionUser: null as SessionUser | null })) };
+    return { useAuthStore: create(() => ({ sessionUser: null as SessionUser | null, sessionVersion: 0 })) };
 });
 vi.mock('@/store/userRecord', async () => {
     const { create } = await import('zustand');
@@ -52,10 +52,10 @@ beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
-    useAuthStore.setState({ sessionUser: { uid: 'viewer', nickname: 'Viewer' } });
+    useAuthStore.setState({ sessionUser: { uid: 'viewer', nickname: 'Viewer' }, sessionVersion: 1 });
     useUserRecordStore.setState({ activePoints: ['p1', 'legacy'], updatedAt: 1 });
     useProgressSyncStore.setState({
-        status: 'idle', baseline: null, lastSyncedAt: null, error: null,
+        status: 'idle', baseline: null, baselineUid: null, lastSyncedAt: null, error: null,
         localPointCount: 0, remotePointCount: 0, conflict: null,
     });
     api.manifest.mockResolvedValue({ markerIndexHash, pointIds: ['p1', 'p2'] });
@@ -245,5 +245,180 @@ describe('progress synchronization acknowledgement', () => {
         });
         expect(api.sync).not.toHaveBeenCalled();
         expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+    });
+
+    it('does no cloud work for a signed-out user, including manual and lifecycle requests', async () => {
+        useAuthStore.setState({ sessionUser: null });
+        render(createElement(ProgressSyncHost));
+        await act(async () => {
+            await requestProgressSyncNow();
+            window.dispatchEvent(new Event('online'));
+            window.dispatchEvent(new Event('pagehide'));
+        });
+        expect(api.manifest).not.toHaveBeenCalled();
+        expect(api.fetch).not.toHaveBeenCalled();
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it('does not apply a startup response belonging to an account that has signed out', async () => {
+        let finish!: (value: { progress: CloudProgress }) => void;
+        api.fetch.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledOnce());
+        act(() => useAuthStore.setState({ sessionUser: null }));
+        await act(async () => { finish({ progress: { ...remote, pointIds: ['p2'] } }); await Promise.resolve(); });
+        expect(useProgressSyncStore.getState().conflict).toBeNull();
+        expect(useProgressSyncStore.getState().baseline).toBeNull();
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+    });
+
+    it('does not apply a startup response after its host unmounts', async () => {
+        let finish!: (value: { progress: CloudProgress }) => void;
+        api.fetch.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        const view = render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledOnce());
+        view.unmount();
+        await act(async () => { finish({ progress: { ...remote, pointIds: ['p2'] } }); await Promise.resolve(); });
+        expect(useProgressSyncStore.getState().conflict).toBeNull();
+        expect(useProgressSyncStore.getState().baseline).toBeNull();
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it.each(['same account signs in again', 'A to B to A'] as const)('rejects a stale response when %s while starting the new session immediately', async (transition) => {
+        let finish!: (value: { progress: CloudProgress }) => void;
+        api.fetch.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledOnce());
+        if (transition === 'A to B to A') {
+            act(() => useAuthStore.setState({ sessionUser: { uid: 'another', nickname: 'Another' }, sessionVersion: 2 }));
+            await waitFor(() => expect(api.fetch).toHaveBeenCalledTimes(2));
+        }
+        act(() => useAuthStore.setState({ sessionUser: { uid: 'viewer', nickname: 'Viewer again' }, sessionVersion: 3 }));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledTimes(transition === 'A to B to A' ? 3 : 2));
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        await act(async () => { finish({ progress: { ...remote, revision: 'stale', pointIds: ['p2'] } }); await Promise.resolve(); });
+        expect(useProgressSyncStore.getState().conflict).toBeNull();
+        expect(useProgressSyncStore.getState().baseline?.revision).toBe(remote.revision);
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it('does not register or replay an obsolete manifest after a late missing-manifest response', async () => {
+        let fail!: (reason: unknown) => void;
+        api.fetch.mockReturnValueOnce(new Promise((_resolve, reject) => { fail = reject; }));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledOnce());
+        expect(api.register).toHaveBeenCalledOnce();
+        act(() => useAuthStore.setState({ sessionUser: null, sessionVersion: 2 }));
+        await act(async () => { fail(new ProgressSyncError('missing', { code: 'PROGRESS_MANIFEST_NOT_REGISTERED', status: 409 })); await Promise.resolve(); });
+        expect(api.register).toHaveBeenCalledOnce();
+        expect(api.fetch).toHaveBeenCalledOnce();
+        expect(useProgressSyncStore.getState().baseline).toBeNull();
+    });
+
+    it('does not replay a request after its manifest re-registration finishes in a later session', async () => {
+        let finish!: (value: { ok: true }) => void;
+        api.register.mockResolvedValueOnce({ ok: true }).mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        api.fetch.mockRejectedValueOnce(new ProgressSyncError('missing', { code: 'PROGRESS_MANIFEST_NOT_REGISTERED', status: 409 }));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.register).toHaveBeenCalledTimes(2));
+        act(() => useAuthStore.setState({ sessionUser: null, sessionVersion: 2 }));
+        await act(async () => { finish({ ok: true }); await Promise.resolve(); });
+        expect(api.fetch).toHaveBeenCalledOnce();
+        expect(useProgressSyncStore.getState().baseline).toBeNull();
+    });
+
+    it('does not release the new session request lock when the old response finally arrives', async () => {
+        let finishOld!: (value: { progress: CloudProgress }) => void;
+        let finishNew!: (value: { progress: CloudProgress }) => void;
+        api.fetch.mockReturnValueOnce(new Promise((resolve) => { finishOld = resolve; }))
+            .mockReturnValueOnce(new Promise((resolve) => { finishNew = resolve; }));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledOnce());
+        act(() => useAuthStore.setState({ sessionUser: { uid: 'viewer', nickname: 'Again' }, sessionVersion: 2 }));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledTimes(2));
+        await act(async () => { finishOld({ progress: { ...remote, pointIds: ['p2'] } }); await Promise.resolve(); });
+        await act(() => requestProgressSyncNow());
+        expect(api.fetch).toHaveBeenCalledTimes(2);
+        await act(async () => { finishNew({ progress: remote }); await Promise.resolve(); });
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        expect(api.fetch).toHaveBeenCalledTimes(2);
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it('preserves the pending mutation for replay instead of acknowledging a write after unmount', async () => {
+        const view = render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        let finish!: (value: { ok: true; progress: CloudProgress }) => void;
+        api.sync.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        act(() => useUserRecordStore.setState({ activePoints: ['p1', 'p2', 'legacy'], updatedAt: 2 }));
+        let pending!: Promise<void>;
+        await act(async () => { pending = requestProgressSyncNow(); await Promise.resolve(); });
+        await waitFor(() => expect(api.sync).toHaveBeenCalledOnce());
+        view.unmount();
+        await act(async () => { finish({ ok: true, progress: { ...remote, revision: 'late', pointIds: ['p1', 'p2'] } }); await pending; });
+        expect(useProgressSyncStore.getState().baseline?.revision).toBe(remote.revision);
+        expect(localStorage.getItem('talos-progress-pending-mutation:viewer')).not.toBeNull();
+        expect(api.sync).toHaveBeenCalledOnce();
+    });
+
+    it('cleans up a pending automatic upload and lifecycle listeners on unmount', async () => {
+        const view = render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        vi.useFakeTimers();
+        act(() => useUserRecordStore.setState({ activePoints: ['p1', 'p2', 'legacy'], updatedAt: 2 }));
+        expect(useProgressSyncStore.getState().status).toBe('dirty');
+        view.unmount();
+        expect(vi.getTimerCount()).toBe(0);
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(65_000);
+            await requestProgressSyncNow();
+            window.dispatchEvent(new Event('online'));
+            window.dispatchEvent(new Event('pagehide'));
+        });
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it('keeps local progress after an offline failure and retries on the online event', async () => {
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+        api.fetch.mockRejectedValueOnce(new Error('offline'));
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(useProgressSyncStore.getState().status).toBe('offline'));
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
+        act(() => { window.dispatchEvent(new Event('online')); });
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+    });
+
+    it('asks for a choice when a newly signed-in account differs from local progress instead of using the previous account baseline', async () => {
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        api.fetch.mockResolvedValue({ progress: { ...remote, pointIds: ['p2'] } });
+        act(() => useAuthStore.setState({ sessionUser: { uid: 'second-user', nickname: 'Another' } }));
+        await waitFor(() => expect(api.fetch).toHaveBeenCalledTimes(2));
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+        expect(useProgressSyncStore.getState().conflict).toMatchObject({ localPointIds: ['p1'], remotePointIds: ['p2'] });
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it.each([{ pointIds: [] }, { pointIds: ['p2'] }])('requires a choice for an unowned legacy baseline when remote progress is $pointIds', async ({ pointIds }) => {
+        useProgressSyncStore.setState({ baseline: remote, baselineUid: null });
+        api.fetch.mockResolvedValue({ progress: { ...remote, revision: pointIds.length ? remote.revision : '', pointIds } });
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(useProgressSyncStore.getState().status).toBe('conflict'));
+        expect(useProgressSyncStore.getState().conflict).toMatchObject({ localPointIds: ['p1'], remotePointIds: pointIds });
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p1', 'legacy']);
+        expect(api.sync).not.toHaveBeenCalled();
+    });
+
+    it('can adopt newer remote progress on the same account when its owned baseline still matches local progress', async () => {
+        useProgressSyncStore.setState({ baseline: remote, baselineUid: 'viewer' });
+        api.fetch.mockResolvedValue({ progress: { ...remote, pointIds: ['p2'] } });
+        render(createElement(ProgressSyncHost));
+        await waitFor(() => expect(isAlreadySynced()).toBe(true));
+        expect(useProgressSyncStore.getState().conflict).toBeNull();
+        expect(useUserRecordStore.getState().activePoints).toEqual(['p2', 'legacy']);
+        expect(api.sync).not.toHaveBeenCalled();
     });
 });

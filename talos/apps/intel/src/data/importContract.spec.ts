@@ -1,5 +1,7 @@
+// @vitest-environment node
+// gzip/Blob contract tests must use real Web Streams, not jsdom's partial Blob.
 import { gzipSync } from 'node:zlib';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   decodeIntelImportToken,
   getIntelImportToken,
@@ -8,6 +10,7 @@ import {
 } from './importContract';
 
 const knownArchiveIds = new Set(['nar_325', 'nar_326', 'nar_327']);
+afterEach(() => vi.unstubAllGlobals());
 
 const encodePayload = (payload: unknown): string => {
   const compressed = gzipSync(Buffer.from(JSON.stringify(payload), 'utf8'));
@@ -85,5 +88,28 @@ describe('Intel import contract', () => {
       .rejects.toBeInstanceOf(IntelImportError);
     await expect(decodeIntelImportToken(`${INTEL_IMPORT_PREFIXES[0]}not*base64`, knownArchiveIds))
       .rejects.toMatchObject({ code: 'invalid-token' });
+  });
+
+  it('normalizes duplicate/whitespace IDs before checking set conflicts', async () => {
+    const payload = validPayload();
+    payload.data.prtsAllItems.collected = [' nar_325 ', 'nar_325'];
+    await expect(decodeIntelImportToken(encodePayload(payload), knownArchiveIds)).resolves.toMatchObject({ payload: { collected: ['nar_325'] } });
+    payload.data.prtsAllItems.notCollected = [' nar_325 '];
+    await expect(decodeIntelImportToken(encodePayload(payload), knownArchiveIds)).rejects.toMatchObject({ code: 'invalid-payload' });
+  });
+
+  it.each([null, [], { majorVersion: -1 }, { majorVersion: 0, minorVersion: 0, data: {} }])('rejects malformed payloads: %j', async (payload) => {
+    await expect(decodeIntelImportToken(encodePayload(payload), knownArchiveIds)).rejects.toMatchObject({ code: 'invalid-payload' });
+  });
+
+  it('bounds both token size and decompressed data before applying progress', async () => {
+    await expect(decodeIntelImportToken(`OEA-0-${'a'.repeat(64 * 1024)}`, knownArchiveIds)).rejects.toMatchObject({ code: 'invalid-token' });
+    await expect(decodeIntelImportToken(encodePayload('x'.repeat(1024 * 1024)), knownArchiveIds)).rejects.toMatchObject({ code: 'invalid-payload' });
+    await expect(decodeIntelImportToken('OEA-0-YWJj', knownArchiveIds)).rejects.toMatchObject({ code: 'invalid-token' });
+  });
+
+  it('reports unavailable gzip support explicitly', async () => {
+    vi.stubGlobal('DecompressionStream', undefined);
+    await expect(decodeIntelImportToken(encodePayload(validPayload()), knownArchiveIds)).rejects.toMatchObject({ code: 'unsupported-browser' });
   });
 });

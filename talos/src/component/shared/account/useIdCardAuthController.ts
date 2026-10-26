@@ -465,9 +465,13 @@ export const useIdCardAuthController = () => {
     if (isSavingProfile) return;
     setIsSavingProfile(true);
     setProfileError(null);
+    const sessionVersion = useAuthStore.getState().sessionVersion;
 
     try {
       const user = await updateProfileNickname(trimmed, profileAvatar);
+      // A save started by an earlier session must not restore a logged-out
+      // account or overwrite a newer sign-in when its response arrives late.
+      if (useAuthStore.getState().sessionVersion !== sessionVersion) return;
       setSessionUser({
         ...sessionUser,
         ...user,
@@ -477,6 +481,7 @@ export const useIdCardAuthController = () => {
       setProfileOpen(false);
       setOpen(false);
     } catch (error) {
+      if (useAuthStore.getState().sessionVersion !== sessionVersion) return;
       setProfileError(error instanceof Error ? error.message : 'Network error while saving profile.');
     } finally {
       setIsSavingProfile(false);

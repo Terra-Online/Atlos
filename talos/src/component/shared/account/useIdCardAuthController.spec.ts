@@ -5,10 +5,11 @@ import { useAuthStore } from '@/store/auth';
 import { useIdCardAuthController } from '@/component/shared/account/useIdCardAuthController';
 import { openOemAccountModal, openOemAuthModal } from '@/component/shared/account/authEvents';
 
-const mocks = vi.hoisted(() => ({ register: vi.fn(), login: vi.fn(), exchange: vi.fn(), refresh: vi.fn(), pause: vi.fn(() => vi.fn()) }));
+const mocks = vi.hoisted(() => ({ register: vi.fn(), login: vi.fn(), exchange: vi.fn(), refresh: vi.fn(), save: vi.fn(), logout: vi.fn(), pause: vi.fn(() => vi.fn()) }));
 vi.mock('@/services/auth', async (original) => ({
     ...await original<typeof import('@/services/auth')>(),
     registerWithEmail: mocks.register, loginWithEmail: mocks.login, exchangeAuthCode: mocks.exchange,
+    updateProfileNickname: mocks.save, logoutUser: mocks.logout,
 }));
 vi.mock('@/locale', () => ({ getCurrentLocale: () => 'en' }));
 vi.mock('@/services/auth/sessionLifecycle', () => ({
@@ -29,6 +30,8 @@ describe('authentication completion', () => {
         mocks.exchange.mockReset();
         mocks.refresh.mockReset().mockResolvedValue(null);
         mocks.pause.mockClear();
+        mocks.save.mockReset().mockResolvedValue({ ...user, nickname: 'Changed' });
+        mocks.logout.mockReset().mockResolvedValue(undefined);
     });
     afterEach(() => { cleanup(); vi.useRealTimers(); });
 
@@ -120,5 +123,58 @@ describe('authentication completion', () => {
         expect(result.current.open).toBe(true);
         expect(result.current.authError).toBe('603');
         expect(window.location.search).toBe('');
+    });
+
+    it('saves changed names on close, retains the profile on failure, and does not write unchanged profiles', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser({ ...user, avatar: 3 }));
+        act(() => result.current.handleAvatarClick());
+        await act(() => result.current.handleCloseProfile());
+        expect(mocks.save).not.toHaveBeenCalled();
+        expect(result.current.profileOpen).toBe(false);
+        act(() => result.current.handleAvatarClick());
+        act(() => result.current.setProfileName('Changed'));
+        mocks.save.mockRejectedValueOnce(new Error('save unavailable'));
+        await act(() => result.current.handleCloseProfile());
+        expect(result.current.profileOpen).toBe(true);
+        expect(result.current.profileError).toBe('save unavailable');
+        expect(useAuthStore.getState().sessionUser?.nickname).toBe(user.nickname);
+        await act(() => result.current.handleCloseProfile());
+        expect(result.current.profileOpen).toBe(false);
+        expect(useAuthStore.getState().sessionUser?.nickname).toBe('Changed');
+        expect(mocks.save).toHaveBeenLastCalledWith('Changed', 3);
+    });
+
+    it.each(['logout', 'another account'] as const)('does not apply a stale profile save after %s', async (change) => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser(user));
+        act(() => result.current.handleAvatarClick());
+        act(() => result.current.setProfileName('Changed'));
+        let finish!: (value: typeof user) => void;
+        mocks.save.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+        let pending!: Promise<void>;
+        act(() => { pending = result.current.handleSaveProfile(); });
+        const nextUser = change === 'logout' ? null : { ...user, uid: 'second-user', nickname: 'Another' };
+        act(() => useAuthStore.getState().setSessionUser(nextUser));
+        await act(async () => { finish({ ...user, nickname: 'Changed' }); await pending; });
+        expect(useAuthStore.getState().sessionUser).toEqual(nextUser);
+    });
+
+    it('preserves the current user after failed logout and clears it only after confirmation', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser(user));
+        act(() => result.current.handleAvatarClick());
+        mocks.logout.mockRejectedValueOnce(new Error('logout unavailable'));
+        await act(() => result.current.handleLogout());
+        expect(result.current.profileOpen).toBe(true);
+        expect(result.current.profileError).toBe('logout unavailable');
+        expect(useAuthStore.getState().sessionUser).toEqual(user);
+        await act(() => result.current.handleLogout());
+        expect(useAuthStore.getState().sessionUser).toBeNull();
+        expect(result.current.profileOpen).toBe(false);
+        expect(result.current.profileError).toBeNull();
     });
 });

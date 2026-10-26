@@ -20,24 +20,58 @@ function useAccount() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [unauthorized, setUnauthorized] = useState(false);
+    const [ownerEpoch, setOwnerEpoch] = useState(0);
+    const epoch = useRef(0);
+    const request = useRef<AbortController | null>(null);
+    const currentOverview = useRef<Overview | null>(null);
+    const adopting = useRef(false);
+    const awaitingAuth = useRef(false);
+    const recoveringContent = useRef(false);
+
+    useEffect(() => useAuthStore.subscribe((state, previous) => {
+        const uid = state.sessionUser?.uid ?? null;
+        if (uid === (previous.sessionUser?.uid ?? null) || adopting.current || awaitingAuth.current) return;
+        if (recoveringContent.current && (!uid || uid === currentOverview.current?.user.uid)) return;
+        // The subscription observes every boundary, including batched A-B-A
+        // transitions whose final uid is indistinguishable to a uid selector.
+        epoch.current += 1;
+        request.current?.abort();
+        currentOverview.current = null;
+        setOverview(null);
+        if (!recoveringContent.current) setOwnerEpoch(epoch.current);
+    }), []);
 
     useEffect(() => {
         const controller = new AbortController();
+        request.current = controller;
+        const requestEpoch = epoch.current;
+        const isCurrent = () => !controller.signal.aborted && requestEpoch === epoch.current;
         setLoading(true);
         setError(null);
         void getOverview(controller.signal)
             .then((result) => {
-                if (!controller.signal.aborted) {
+                if (isCurrent()) {
+                    // The overview response is authoritative when a valid
+                    // cookie exists but no session identity was cached locally.
+                    if (useAuthStore.getState().sessionUser?.uid !== result.user.uid) {
+                        adopting.current = true;
+                        useAuthStore.getState().setSessionUser(result.user);
+                        adopting.current = false;
+                    }
+                    currentOverview.current = result;
                     setOverview(result);
+                    awaitingAuth.current = false;
                     setUnauthorized(false);
                 }
             })
             .catch((cause: unknown) => {
-                if (controller.signal.aborted) return;
+                if (!isCurrent()) return;
                 if (isUnauthorized(cause)) {
                     // Begin the conditional download before React commits the error UI.
                     void loadAuthGate().catch(() => undefined);
+                    awaitingAuth.current = true;
                     useAuthStore.getState().clearSessionUser();
+                    currentOverview.current = null;
                     setOverview(null);
                     setUnauthorized(true);
                     return;
@@ -49,20 +83,33 @@ function useAccount() {
                 );
             })
             .finally(() => {
-                if (!controller.signal.aborted) setLoading(false);
+                if (isCurrent()) setLoading(false);
             });
         return () => controller.abort();
-    }, [revision]);
+    }, [ownerEpoch, revision]);
 
     const refresh = () => {
         clearReadCache();
+        awaitingAuth.current = false;
+        recoveringContent.current = false;
         setUnauthorized(false);
         setRevision((value) => value + 1);
     };
     const updateUser = (user: SessionUser) => {
         setOverview((previous) =>
-            previous ? { ...previous, user } : previous,
+            previous?.user.uid === user.uid ? { ...previous, user } : previous,
         );
+    };
+    const beginContentAuth = () => {
+        recoveringContent.current = true;
+        request.current?.abort();
+        setLoading(false);
+        useAuthStore.getState().clearSessionUser();
+    };
+    const finishContentAuth = () => {
+        recoveringContent.current = false;
+        return Boolean(currentOverview.current
+            && currentOverview.current.user.uid === useAuthStore.getState().sessionUser?.uid);
     };
 
     return {
@@ -74,6 +121,8 @@ function useAccount() {
         busy: loading,
         refresh,
         updateUser,
+        beginContentAuth,
+        finishContentAuth,
     };
 }
 
@@ -86,9 +135,13 @@ export default function App() {
     );
     const [active, setActive] = useState<Tab>(tabFromPath);
     const attemptedSession = useRef<string | null>(null);
+    const [contentAuthRequired, setContentAuthRequired] = useState(false);
+    const [contentAuthRevision, setContentAuthRevision] = useState(0);
     const {
         overview, revision, loading, error, unauthorized, busy, refresh,
         updateUser,
+        beginContentAuth,
+        finishContentAuth,
     } = useAccount();
 
     // The auth gate is only needed on the common signed-out path. Start its
@@ -131,7 +184,7 @@ export default function App() {
                 <Header busy={busy} onRefresh={refresh} />
                 <div className='hubLayout'>
                     <aside className='hubSidebar'>
-                        {overview && <IDCard overview={overview} />}
+                        {overview && !contentAuthRequired && <IDCard overview={overview} />}
                         <Nav active={active} />
                     </aside>
                     <main className='hubContent' aria-busy={busy}>
@@ -145,19 +198,31 @@ export default function App() {
                                 {t('common.loading')}
                             </p>
                         )}
-                        {unauthorized && <AuthLoader onAuthenticated={refresh} attemptedSession={attemptedSession} />}
-                        {overview &&
-                            (active === 'contributions' ? (
+                        {(unauthorized || contentAuthRequired) && <AuthLoader onAuthenticated={() => {
+                            setContentAuthRequired(false);
+                            if (contentAuthRequired && finishContentAuth()) {
+                                setContentAuthRevision((value) => value + 1);
+                            } else refresh();
+                        }} attemptedSession={attemptedSession} />}
+                        {overview && <div hidden={contentAuthRequired}>
+                            {active === 'contributions' ? (
                                 <Content
                                     revision={revision}
                                     counts={overview.contributions}
+                                    authRevision={contentAuthRevision}
+                                    onUnauthorized={() => {
+                                        attemptedSession.current = null;
+                                        setContentAuthRequired(true);
+                                        beginContentAuth();
+                                    }}
                                 />
                             ) : (
                                 <Profile
                                     user={overview.user}
                                     onSaved={updateUser}
                                 />
-                            ))}
+                            )}
+                        </div>}
                     </main>
                 </div>
             </div>
