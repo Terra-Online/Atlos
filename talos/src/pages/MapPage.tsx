@@ -23,6 +23,8 @@ import { useLocator } from '@/pages/map/useLocator';
 import { useIsUserGuideOpen } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import { useUIVisibility } from '@/pages/uiOverlay/useUIVisibility';
+import { observeProgressStorage } from '@/store/userRecord';
+import { useHistoryStore } from '@/store/history';
 
 const loadUserGuide = () => import('@/pages/userGuide/UserGuide');
 
@@ -36,6 +38,7 @@ declare global {
 }
 
 function MapPage() {
+    useEffect(() => observeProgressStorage(() => useHistoryStore.getState().clear()), []);
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
     const sidebarWidth = useSidebarWidth();

@@ -64,3 +64,25 @@ it('rehydrates other tabs, ignores unrelated or malformed storage, and releases 
     act(() => { window.dispatchEvent(new StorageEvent('storage', { key: 'points-storage' })); });
     expect(useUserRecordStore.getState().activePoints).toEqual(['42']);
 });
+
+it('preserves the other collection when a storage update contains only one valid legacy field', async () => {
+    const { result } = renderHook(() => useIntelCollection(archives));
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    localStorage.setItem('points-storage', JSON.stringify({ state: { activePoints: [42], updatedAt: 10 } }));
+    act(() => { window.dispatchEvent(new StorageEvent('storage', { key: 'points-storage' })); });
+    expect(useUserRecordStore.getState().activePoints).toEqual(['42']);
+    expect(useUserRecordStore.getState().activeArchives).toEqual(['legacy-archive']);
+    localStorage.setItem('points-storage', JSON.stringify({ state: { activeArchives: ['nar_auto'], updatedAt: 11 } }));
+    act(() => channels[0].onmessage?.());
+    expect(useUserRecordStore.getState().activePoints).toEqual(['42']);
+    expect(useUserRecordStore.getState().activeArchives).toEqual(['nar_auto']);
+});
+
+it('ignores valid JSON with an invalid progress shape instead of clearing the current collection', async () => {
+    const { result } = renderHook(() => useIntelCollection(archives));
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    const saved = useUserRecordStore.getState();
+    localStorage.setItem('points-storage', JSON.stringify({ state: { activePoints: 'invalid', activeArchives: null, updatedAt: 10 } }));
+    act(() => { window.dispatchEvent(new StorageEvent('storage', { key: 'points-storage' })); });
+    expect(useUserRecordStore.getState()).toBe(saved);
+});

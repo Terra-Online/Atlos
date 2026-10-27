@@ -218,3 +218,7 @@ export const replacePointProgressFromExternal = (ids: Iterable<string>): void =>
 
 export const useCanUndo = () => useHistoryStore((state) => state.past.length > 0);
 export const useCanRedo = () => useHistoryStore((state) => state.future.length > 0);
+
+// Restoring a persisted snapshot is an undo barrier. Clear at that boundary,
+// before commands created after hydration, rather than after a lazy import.
+useUserRecordStore.persist.onFinishHydration(() => useHistoryStore.getState().clear());

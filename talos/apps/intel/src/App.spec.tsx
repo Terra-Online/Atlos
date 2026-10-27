@@ -1,4 +1,5 @@
 import type { ReactNode, Ref } from 'react';
+import { StrictMode } from 'react';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { installResizeObserver } from '../../../test-support/browser';
@@ -118,4 +119,47 @@ it('falls back to hydrated progress after a rejected import and leaves debug imp
     await mount();
     expect(runtime.decode).not.toHaveBeenCalled();
     expect(window.location.pathname).toBe('/intel/i/OEA-0-fixture/_debug');
+});
+
+it.each(['resolve', 'reject'] as const)('ignores an import %s after the Intel page unmounts', async (result) => {
+    const imported = deferred<{ payload: { collected: string[]; notCollected: string[] } }>();
+    runtime.decode.mockReturnValue(imported.promise);
+    window.history.replaceState(null, '', '/intel/?import=OEA-0-fixture');
+    const view = await mount();
+    const saved = useUserRecordStore.getState();
+    view.unmount();
+    window.history.replaceState(null, '', '/me/?import=keep#current');
+    await flush(() => {
+        if (result === 'resolve') imported.resolve({ payload: { collected: ['nar_mission'], notCollected: ['nar_auto'] } });
+        else imported.reject(new Error('late import failure'));
+    });
+    expect(useUserRecordStore.getState()).toBe(saved);
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/me/?import=keep#current');
+});
+
+it('builds import buckets from the latest progress when another tab edits unrelated archives during decoding', async () => {
+    const imported = deferred<{ payload: { collected: string[]; notCollected: string[] } }>();
+    runtime.decode.mockReturnValue(imported.promise);
+    window.history.replaceState(null, '', '/intel/?import=OEA-0-fixture');
+    await mount();
+    act(() => { useUserRecordStore.setState({ activeArchives: ['nar_auto', 'nar_research'] }); });
+    await flush(() => imported.resolve({ payload: { collected: ['nar_mission'], notCollected: ['nar_auto'] } }));
+    expect(new Set(useUserRecordStore.getState().activeArchives)).toEqual(new Set(['nar_mission', 'nar_research']));
+    // Import deliberately selects only incomplete categories. Re-admit the
+    // externally completed report category before checking its bucket.
+    fireEvent.click(screen.getByRole('button', { name: /category\.report/ }));
+    const collected = screen.getByRole('region', { name: /intel\.collected/ });
+    expect(within(collected).getByRole('button', { name: /Research notes/ }).getAttribute('aria-pressed')).toBe('true');
+});
+
+it('applies a pending import once under the real StrictMode entry lifecycle', async () => {
+    const imported = deferred<{ payload: { collected: string[]; notCollected: string[] } }>();
+    runtime.decode.mockReturnValue(imported.promise);
+    window.history.replaceState(null, '', '/intel/?import=OEA-0-fixture');
+    await flush(() => { render(<StrictMode><App /></StrictMode>); });
+    await flush(() => imported.resolve({ payload: { collected: ['nar_mission'], notCollected: ['nar_auto'] } }));
+    expect(runtime.decode).toHaveBeenCalledOnce();
+    expect(useUserRecordStore.getState().activeArchives).toEqual(['nar_mission']);
+    expect(window.location.search).toBe('');
+    expect(screen.queryByText('intel.importPending')).toBeNull();
 });

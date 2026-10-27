@@ -384,7 +384,8 @@ const IntelCard = ({
   const titleTransitionRef = useRef(false);
   const [isTitleTruncated, setIsTitleTruncated] = useState(false);
   const [expandedTitleHeight, setExpandedTitleHeight] = useState<number | null>(null);
-  const isUncollecting = previousCollectedRef.current && !collected;
+  const [uncollecting, setUncollecting] = useState(false);
+  const isUncollecting = !collected && (previousCollectedRef.current || uncollecting);
   const canMeasureCard = useCallback(
     () => !titleTransitionRef.current,
     [],
@@ -426,7 +427,29 @@ const IntelCard = ({
   }, [layoutVersion, locale, title]);
 
   useEffect(() => {
+    if (previousCollectedRef.current && !collected) setUncollecting(true);
+    else if (collected) setUncollecting(false);
     previousCollectedRef.current = collected;
+  }, [collected]);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const finish = (event: AnimationEvent) => {
+      if (event.animationName !== styles.intelProgressHorizontalReverse
+        && event.animationName !== styles.intelProgressVerticalReverse) return;
+      const target = event.target;
+      if (!collected && target instanceof HTMLElement
+        && (target.classList.contains(styles.progressHorizontal) || target.classList.contains(styles.progressVertical))) {
+        setUncollecting(false);
+      }
+    };
+    card.addEventListener('animationend', finish);
+    card.addEventListener('animationcancel', finish);
+    return () => {
+      card.removeEventListener('animationend', finish);
+      card.removeEventListener('animationcancel', finish);
+    };
   }, [collected]);
 
   useEffect(() => {

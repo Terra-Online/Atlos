@@ -6,7 +6,7 @@ import { projectFiles } from './scripts/project-files.mjs';
 
 // Local ignored diagnostic tests can outlive the source they were written for.
 // Run tracked and new non-ignored .spec files, matching a fresh CI checkout.
-const tests = projectFiles().filter((file) => /^(?:src|oem-relink\/src)\/.*\.spec\.tsx?$/.test(file));
+const tests = projectFiles().filter((file) => /^(?:src|oem-relink\/src|oem-search\/src)\/.*\.spec\.tsx?$/.test(file));
 
 export default defineConfig({
     plugins: [react(), svgr()],

@@ -5,6 +5,7 @@ import { installResizeObserver, setRect } from '../../../../../test-support/brow
 import { archives, installIntersectionObserver } from '../../fixtures';
 import IntelCard from './intelCard';
 import VirtualIntelCard from './virtualIntelCard';
+import styles from './intelCard.module.scss';
 
 vi.mock('@intel/locale', async () => {
     const { translate } = await import('../../fixtures');
@@ -43,6 +44,34 @@ it('keeps collection controlled and activates from the card, not from nested lin
     expect(card.dataset.typeTarget).toBeUndefined();
     view.rerender(<IntelCard {...options} collected={false} />);
     expect(card.dataset.collectionTransition).toBe('uncollect');
+});
+
+it('keeps the reverse collection animation alive across unrelated renders until the progress bar finishes', () => {
+    const animation = (target: Element, type: string, name: string) => {
+        const event = new Event(type, { bubbles: true });
+        Object.defineProperty(event, 'animationName', { value: name });
+        fireEvent(target, event);
+    };
+    const options = props();
+    const view = render(<IntelCard {...options} collected />);
+    view.rerender(<IntelCard {...options} collected={false} />);
+    const card = screen.getByRole('button');
+    expect(card.dataset.collectionTransition).toBe('uncollect');
+    view.rerender(<IntelCard {...options} collected={false} stackOrder={8} />);
+    expect(card.dataset.collectionTransition).toBe('uncollect');
+    fireEvent.animationEnd(card);
+    expect(card.dataset.collectionTransition).toBe('uncollect');
+    const horizontal = card.querySelector(`.${styles.progressHorizontal}`)!;
+    // A quick reversal cancels the old forward animation on the same element.
+    animation(horizontal, 'animationcancel', styles.intelProgressHorizontal);
+    expect(card.dataset.collectionTransition).toBe('uncollect');
+    animation(horizontal, 'animationend', styles.intelProgressHorizontalReverse);
+    expect(card.dataset.collectionTransition).toBeUndefined();
+    view.rerender(<IntelCard {...options} collected />);
+    expect(card.dataset.collectionTransition).toBeUndefined();
+    view.rerender(<IntelCard {...options} collected={false} />);
+    animation(card.querySelector(`.${styles.progressVertical}`)!, 'animationcancel', styles.intelProgressVerticalReverse);
+    expect(card.dataset.collectionTransition).toBeUndefined();
 });
 
 it('defers map previews until near the viewport and cleans up visibility ownership', () => {

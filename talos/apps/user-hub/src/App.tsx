@@ -30,14 +30,22 @@ function useAccount() {
 
     useEffect(() => useAuthStore.subscribe((state, previous) => {
         const uid = state.sessionUser?.uid ?? null;
-        if (uid === (previous.sessionUser?.uid ?? null) || adopting.current || awaitingAuth.current) return;
+        const sameUid = uid === (previous.sessionUser?.uid ?? null);
+        if (adopting.current || awaitingAuth.current) return;
+        // A settled page keeps same-account avatar updates local. A pending
+        // overview, however, predates the newly committed identity and may
+        // contain an obsolete profile or 401; it must be replaced, not reused.
+        if (sameUid && (!request.current || state.sessionUser === previous.sessionUser)) return;
         if (recoveringContent.current && (!uid || uid === currentOverview.current?.user.uid)) return;
         // The subscription observes every boundary, including batched A-B-A
         // transitions whose final uid is indistinguishable to a uid selector.
         epoch.current += 1;
         request.current?.abort();
-        currentOverview.current = null;
-        setOverview(null);
+        if (sameUid) clearReadCache();
+        else {
+            currentOverview.current = null;
+            setOverview(null);
+        }
         if (!recoveringContent.current) setOwnerEpoch(epoch.current);
     }), []);
 
@@ -84,6 +92,7 @@ function useAccount() {
             })
             .finally(() => {
                 if (isCurrent()) setLoading(false);
+                if (request.current === controller) request.current = null;
             });
         return () => controller.abort();
     }, [ownerEpoch, revision]);

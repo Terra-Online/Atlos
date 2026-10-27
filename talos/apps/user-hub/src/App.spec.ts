@@ -406,6 +406,28 @@ it('adopts a cookie-authenticated overview as the session owner when no cached i
     } finally { await flush(() => root.unmount()); node.remove(); }
 });
 
+it.each(['resolve', 'reject'] as const)('ignores a pending same-account overview %s after a newer session user is committed', async (completion) => {
+    let resolve!: (result: Overview) => void;
+    let reject!: (reason: Error) => void;
+    const old = new Promise<Overview>((yes, no) => { resolve = yes; reject = no; });
+    const fresh: Overview = { ...overview, user: { ...overview.user, nickname: 'Fresh session', avatar: 3 } };
+    api.getOverview.mockReturnValueOnce(old).mockResolvedValueOnce(fresh);
+    useAuthStore.getState().setSessionUser(overview.user);
+    const node = document.createElement('div'); document.body.append(node);
+    const root = createRoot(node);
+    try {
+        await flush(() => root.render(createElement(App)));
+        await flush(() => useAuthStore.getState().setSessionUser(fresh.user));
+        await flush(() => completion === 'resolve' ? resolve(overview) : reject(new Error('Unauthorized')));
+        expect(useAuthStore.getState().sessionUser).toEqual(fresh.user);
+        expect(node.textContent).toContain('Fresh session');
+        expect(node.textContent).not.toContain('Tester');
+        expect(within(node).queryByRole('button', { name: 'idcard.auth.login' })).toBeNull();
+        expect(api.getOverview).toHaveBeenCalledTimes(2);
+        expect(api.clearReadCache).toHaveBeenCalledOnce();
+    } finally { await flush(() => root.unmount()); node.remove(); }
+});
+
 it.each(['resolve', 'reject'] as const)('ignores a deferred previous-account overview %s after a newer account becomes current', async (completion) => {
     let resolve!: (result: Overview) => void;
     let reject!: (reason: Error) => void;
