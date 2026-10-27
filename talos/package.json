@@ -23,7 +23,8 @@
     "lint": "node ./scripts/tasks.mjs lint",
     "lint:fix": "node ./scripts/tasks.mjs lint:fix",
     "preview": "vite preview --outDir dist/r2",
-    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'"
+    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'",
+    "test:behavior": "playwright test --config playwright.config.mjs"
   },
   "browserslist": [
     "defaults"
@@ -87,6 +88,7 @@
     "fs-extra": "^11.3.0",
     "globals": "^16.0.0",
     "jsdom": "^26.1.0",
+    "playwright": "1.62.1",
     "postcss": "^8.5.6",
     "prettier": "3.6.2",
     "sass": "^1.85.1",

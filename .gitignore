@@ -94,3 +94,4 @@ talos/.stylelintcache
 
 # Local test coverage reports.
 /talos/coverage/
+/talos/test-results/

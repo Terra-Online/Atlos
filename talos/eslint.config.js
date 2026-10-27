@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 const tsFiles = ['**/*.{ts,tsx,mts,cts}'];
-const browserFiles = ['src/**/*.{js,jsx,mjs,ts,tsx}', 'apps/*/src/**/*.{js,jsx,mjs,ts,tsx}'];
+const browserFiles = ['src/**/*.{js,jsx,mjs,ts,tsx}', 'apps/*/src/**/*.{js,jsx,mjs,ts,tsx}', 'test-support/browser/**/*.{js,jsx,mjs,ts,tsx}'];
 
 export default [
   {
@@ -109,7 +109,7 @@ export default [
     },
   })),
   {
-    files: ['**/*.{test,spec}.{js,mjs,cjs,ts,tsx}', '**/*{setup,Setup}.ts', 'test-support/**/*.ts'],
+    files: ['**/*.{test,spec}.{js,mjs,cjs,ts,tsx}', '**/*{setup,Setup}.ts', 'test-support/**/*.ts', 'test-support/browser/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
   eslintConfigPrettier,

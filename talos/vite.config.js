@@ -328,10 +328,12 @@ export default defineConfig({
     },
     esbuild: {
         loader: 'tsx',
-        include: /src\/.*\.(jsx?|tsx?)$/,
+        include: /(?:src|test-support)\/.*\.(jsx?|tsx?)$/,
         exclude: [],
     },
     optimizeDeps: {
+        // Archived SEO builds under dist/ are outputs, never dependency entries.
+        entries: ['index.html'],
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',
