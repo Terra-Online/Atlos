@@ -66,3 +66,24 @@ it('opens on root hover or touch and cancels closing when the pointer returns', 
     fireEvent(window, new Event('blur'));
     expect(popover.isOpen(toolbar)).toBe(false);
 });
+
+it('does not let an old root blur close a toolbar that acquired a controlled selection', async () => {
+    const items = [{ id: 'bold', label: 'Bold', icon: 'B' }];
+    const page = (controlled: boolean) => <><div data-short-actions-root="true"><input aria-label="Editor" /><ActionBar variant="floating" items={items} anchorRect={controlled ? new DOMRect(40, 80, 100, 20) : undefined} /></div><button>Outside</button></>;
+    const view = render(page(false));
+    act(() => screen.getByRole('textbox').focus());
+    act(() => screen.getByRole('button', { name: 'Outside' }).focus());
+    view.rerender(page(true));
+    await act(() => vi.advanceTimersByTime(200));
+    expect(popover.isOpen(screen.getByRole('toolbar'))).toBe(true);
+});
+
+it('cancels deferred focus checks when the floating toolbar unmounts', () => {
+    // This teardown case owns focus events; native focus/selectionchange is
+    // exercised by the controlled-selection regression above.
+    const view = render(<><div data-short-actions-root="true"><button>Anchor</button><ActionBar variant="floating" items={[{ id: 'bold', label: 'Bold', icon: 'B' }]} /></div><button>Outside</button></>);
+    fireEvent.focusIn(screen.getByRole('button', { name: 'Anchor' }));
+    fireEvent.focusOut(screen.getByRole('button', { name: 'Anchor' }), { relatedTarget: screen.getByRole('button', { name: 'Outside' }) });
+    view.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+});

@@ -1,6 +1,7 @@
 import { getAuthBase } from '@/services/http/authRuntime';
 import { requestJson as requestHttpJson } from '@/services/http/request';
 import type { PositionResponse } from './types';
+import { useAuthStore } from '@/store/auth';
 
 export type EFProvider = 'skland' | 'skport';
 
@@ -88,12 +89,26 @@ const SYNC_API_BASE = `${getAuthBase()}/sync/v1`;
 const BINDING_STATUS_MEMORY_TTL_MS = 3_000;
 
 type EFBindingStatusResponse = { binding: EFBindingSummary };
+type Scope = { uid: string | null; version: number; revision: number };
+type Pending = { scope: Scope; promise: Promise<EFBindingStatusResponse> };
 
-let bindingStatusInFlight: Promise<EFBindingStatusResponse> | null = null;
+let bindingStatusInFlight: Pending | null = null;
 let bindingStatusMemoryCache: {
+    scope: Scope;
     expiresAt: number;
     value: EFBindingStatusResponse;
 } | null = null;
+let bindingRevision = 0;
+
+// Cookie-authenticated reads are reusable only within this identity, session
+// and binding revision. UID alone misses logout/login and A → B → A changes.
+const currentScope = (): Scope => {
+    const state = useAuthStore.getState();
+    return { uid: state.sessionUser?.uid ?? null, version: state.sessionVersion, revision: bindingRevision };
+};
+const sameScope = (left: Scope, right: Scope): boolean =>
+    left.uid === right.uid && left.version === right.version && left.revision === right.revision;
+const isCurrent = (scope: Scope): boolean => sameScope(scope, currentScope());
 
 export class EFBackendError extends Error {
     readonly status: number;
@@ -139,34 +154,37 @@ async function requestJson<T>(baseUrl: string, path: string, init?: RequestInit)
 export const getEFBindingStatus = (): Promise<{ binding: EFBindingSummary }> =>
     getEFBindingStatusCached();
 
-const clearBindingStatusMemoryCache = (): void => {
+const clearBindingStatusMemoryCache = (): Scope => {
+    bindingRevision += 1;
     bindingStatusMemoryCache = null;
     bindingStatusInFlight = null;
+    return currentScope();
 };
 
 function getEFBindingStatusCached(): Promise<EFBindingStatusResponse> {
     const now = Date.now();
-    if (bindingStatusMemoryCache && bindingStatusMemoryCache.expiresAt > now) {
+    const scope = currentScope();
+    if (bindingStatusMemoryCache && sameScope(bindingStatusMemoryCache.scope, scope) && bindingStatusMemoryCache.expiresAt > now) {
         return Promise.resolve(bindingStatusMemoryCache.value);
     }
 
-    if (bindingStatusInFlight) {
-        return bindingStatusInFlight;
+    if (bindingStatusInFlight && sameScope(bindingStatusInFlight.scope, scope)) {
+        return bindingStatusInFlight.promise;
     }
 
-    bindingStatusInFlight = requestJson<EFBindingStatusResponse>(BINDING_API_BASE, '/status')
+    const pending: Pending = { scope, promise: requestJson<EFBindingStatusResponse>(BINDING_API_BASE, '/status')
         .then((value) => {
-            bindingStatusMemoryCache = {
-                expiresAt: Date.now() + BINDING_STATUS_MEMORY_TTL_MS,
-                value,
-            };
+            if (isCurrent(scope) && bindingStatusInFlight === pending) {
+                bindingStatusMemoryCache = { scope, expiresAt: Date.now() + BINDING_STATUS_MEMORY_TTL_MS, value };
+            }
             return value;
         })
         .finally(() => {
-            bindingStatusInFlight = null;
-        });
+            if (bindingStatusInFlight === pending) bindingStatusInFlight = null;
+        }) };
+    bindingStatusInFlight = pending;
 
-    return bindingStatusInFlight;
+    return pending.promise;
 }
 
 export const exchangeEFToken = (provider: EFProvider, token: string): Promise<{ flowId: string; roles: EFRoleOption[] }> =>
@@ -176,7 +194,7 @@ export const exchangeEFToken = (provider: EFProvider, token: string): Promise<{ 
     });
 
 export const bindEFRole = async (flowId: string, role: { serverId: number; roleId: string }): Promise<{ ok: true; binding: EFBindingSummary }> => {
-    clearBindingStatusMemoryCache();
+    const scope = clearBindingStatusMemoryCache();
     const result = await requestJson<{ ok: true; binding: EFBindingSummary }>(BINDING_API_BASE, '/bind-role', {
         method: 'POST',
         body: JSON.stringify({
@@ -185,27 +203,27 @@ export const bindEFRole = async (flowId: string, role: { serverId: number; roleI
             roleId: role.roleId,
         }),
     });
-    clearBindingStatusMemoryCache();
+    if (isCurrent(scope)) clearBindingStatusMemoryCache();
     return result;
 };
 
 export const disableEFBinding = async (): Promise<{ ok: true; binding: EFBindingSummary }> => {
-    clearBindingStatusMemoryCache();
+    const scope = clearBindingStatusMemoryCache();
     const result = await requestJson<{ ok: true; binding: EFBindingSummary }>(BINDING_API_BASE, '/disable', {
         method: 'POST',
         body: '{}',
     });
-    clearBindingStatusMemoryCache();
+    if (isCurrent(scope)) clearBindingStatusMemoryCache();
     return result;
 };
 
 export const unlinkEFBinding = async (): Promise<{ ok: true; binding: EFBindingSummary }> => {
-    clearBindingStatusMemoryCache();
+    const scope = clearBindingStatusMemoryCache();
     const result = await requestJson<{ ok: true; binding: EFBindingSummary }>(BINDING_API_BASE, '/unlink', {
         method: 'POST',
         body: '{}',
     });
-    clearBindingStatusMemoryCache();
+    if (isCurrent(scope)) clearBindingStatusMemoryCache();
     return result;
 };
 

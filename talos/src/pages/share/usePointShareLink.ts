@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { IMarkerData } from '@/data/marker';
 import { generatePointShareUrl } from '@/services/routing';
 import { copyTextToClipboard } from '@/platform/clipboard';
@@ -12,6 +12,9 @@ export const usePointShareLink = (
 ) => {
     const [copiedPopupVisible, setCopiedPopupVisible] = useState(false);
     const copyPopupTimerRef = useRef<number | null>(null);
+    const frameRef = useRef<number | null>(null);
+    const mountedRef = useRef(false);
+    const requestRef = useRef(0);
 
     const pointShareUrl = useMemo(
         () => {
@@ -21,22 +24,36 @@ export const usePointShareLink = (
         [options.content, point],
     );
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        mountedRef.current = true;
+        requestRef.current += 1;
+        setCopiedPopupVisible(false);
         return () => {
+            mountedRef.current = false;
+            requestRef.current += 1;
+            if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+            frameRef.current = null;
             if (copyPopupTimerRef.current !== null) {
                 window.clearTimeout(copyPopupTimerRef.current);
             }
+            copyPopupTimerRef.current = null;
         };
-    }, []);
+    }, [pointShareUrl]);
 
     const copyPointShareUrl = useCallback(async () => {
         if (!pointShareUrl || typeof window === 'undefined') return false;
 
+        const request = ++requestRef.current;
         const copied = await copyTextToClipboard(pointShareUrl);
         if (!copied) return false;
+        // The clipboard operation may still succeed after navigation. Its toast
+        // belongs only to the point/content that initiated this request.
+        if (!mountedRef.current || requestRef.current !== request) return true;
 
         setCopiedPopupVisible(false);
-        requestAnimationFrame(() => {
+        if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(() => {
+            frameRef.current = null;
             setCopiedPopupVisible(true);
         });
         if (copyPopupTimerRef.current !== null) {

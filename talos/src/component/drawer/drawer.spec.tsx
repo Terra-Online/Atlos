@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import Drawer from './drawer';
 
@@ -85,4 +85,74 @@ it('handles a real touch drag and gives scrollable content and controls priority
     expect(drawer.style.getPropertyValue('--drawer-size')).toBe('300px');
     expect(screen.getByRole('separator').hasAttribute('data-dragging')).toBe(false);
     expect(drawer.style.overscrollBehavior).toBe('');
+});
+
+it('releases an active gesture when dragging becomes disabled and allows the next gesture', async () => {
+    const content = <div data-testid="surface">Content</div>;
+    const style = { touchAction: 'pan-y', overscrollBehavior: 'auto' } as const;
+    const view = render(<Drawer initialSize={100} snap={[0, 100, 300]} style={style}>{content}</Drawer>);
+    const drawer = view.container.firstElementChild as HTMLElement;
+    const surface = screen.getByTestId('surface'), handle = screen.getByRole('separator');
+    touch(surface, 'touchstart', 400);
+    touch(surface, 'touchmove', 300);
+    expect(handle.hasAttribute('data-dragging')).toBe(true);
+    view.rerender(<Drawer initialSize={100} snap={[0, 100, 300]} style={style} dragDisabled>{content}</Drawer>);
+    touch(surface, 'touchend', 300);
+    expect(handle.hasAttribute('data-dragging')).toBe(false);
+    expect(drawer.style.overscrollBehavior).toBe('auto');
+    expect(drawer.style.touchAction).toBe('pan-y');
+    view.rerender(<Drawer initialSize={100} snap={[0, 100, 300]} style={style}>{content}</Drawer>);
+    touch(surface, 'touchstart', 300);
+    touch(surface, 'touchmove', 200);
+    touch(surface, 'touchend', 200);
+    await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('300px'));
+});
+
+it('releases an accepted drag when reversing direction gives the scrollable content priority', async () => {
+    const style = { touchAction: 'pan-y', overscrollBehavior: 'auto' } as const;
+    const view = render(<Drawer initialSize={100} snap={[0, 100, 300]} style={style}><div data-testid="scroll" style={{ overflowY: 'auto' }}>Scroll</div><div data-testid="surface">Content</div></Drawer>);
+    const drawer = view.container.firstElementChild as HTMLElement;
+    const scroll = screen.getByTestId('scroll'), handle = screen.getByRole('separator');
+    Object.defineProperties(scroll, { clientHeight: { configurable: true, value: 100 }, scrollHeight: { configurable: true, value: 500 } });
+    scroll.scrollTop = 0;
+    touch(scroll, 'touchstart', 200);
+    touch(scroll, 'touchmove', 300);
+    expect(handle.hasAttribute('data-dragging')).toBe(true);
+    const releasedSize = drawer.style.getPropertyValue('--drawer-size');
+    // At the top, down belongs to the drawer; reversing past the start lets
+    // the content scroll down. Cancellation must release the accepted owner.
+    touch(scroll, 'touchmove', 100);
+    expect(handle.hasAttribute('data-dragging')).toBe(false);
+    expect(drawer.style.touchAction).toBe('pan-y');
+    expect(drawer.style.overscrollBehavior).toBe('auto');
+    touch(scroll, 'touchend', 100);
+    expect(drawer.style.getPropertyValue('--drawer-size')).toBe(releasedSize);
+    const surface = screen.getByTestId('surface');
+    touch(surface, 'touchstart', 400);
+    touch(surface, 'touchmove', 80);
+    touch(surface, 'touchend', 80);
+    await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('300px'));
+    expect(drawer.style.touchAction).toBe('pan-y');
+    expect(drawer.style.overscrollBehavior).toBe('auto');
+});
+
+it('lets a touch drag take ownership from an unfinished snap animation', async () => {
+    const view = render(<Drawer snap={[0, 100, 300]}><div data-testid="surface">Content</div></Drawer>);
+    const drawer = view.container.firstElementChild as HTMLElement;
+    fireEvent.click(screen.getByRole('separator'));
+    await waitFor(() => {
+        const size = parseFloat(drawer.style.getPropertyValue('--drawer-size'));
+        expect(size).toBeGreaterThan(0);
+        expect(size).toBeLessThan(100);
+    });
+    const surface = screen.getByTestId('surface');
+    touch(surface, 'touchstart', 400);
+    touch(surface, 'touchmove', 120);
+    const held = drawer.style.getPropertyValue('--drawer-size');
+    expect(parseFloat(held)).toBeGreaterThan(200);
+    // The pending 250ms snap must not continue moving beneath the held pointer.
+    await act(() => new Promise<void>((resolve) => window.setTimeout(resolve, 300)));
+    expect(drawer.style.getPropertyValue('--drawer-size')).toBe(held);
+    touch(surface, 'touchend', 120);
+    await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('300px'));
 });

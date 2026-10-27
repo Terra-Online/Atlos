@@ -9,17 +9,25 @@ import { useUserGuideStore } from '@/store/userGuide';
 import { useUserRecordStore } from '@/store/userRecord';
 import { MARKER_TYPE_TREE, type IMarkerData } from '@/data/marker';
 import { getDisplayedPointProgress } from '@/store/guideProgress';
-import type { GuideStep } from './procedure/steps.desktop';
+import { GuideTasks, type GuideStep } from './tasks';
 import { setRect } from '../../../test-support/browser';
 
-const driver = vi.hoisted(() => ({ props: null as JoyrideProps | null, mobile: false, target: vi.fn(), markers: vi.fn(), t: (key: string) => key }));
-vi.mock('react-joyride', async (original) => ({ ...await original<typeof import('react-joyride')>(), default: (props: JoyrideProps) => { driver.props = props; return <div data-testid="tour" data-run={String(props.run)} />; } }));
+const driver = vi.hoisted(() => ({ props: null as JoyrideProps | null, mounts: 0, mobile: false, target: vi.fn(), markers: vi.fn(), t: (key: string) => key }));
+vi.mock('react-joyride', async (original) => {
+    const { useEffect } = await import('react');
+    return { ...await original<typeof import('react-joyride')>(), default: function SpyJoyride(props: JoyrideProps) {
+        useEffect(() => { ++driver.mounts; }, []);
+        driver.props = props;
+        return <div data-testid="tour" data-run={String(props.run)} />;
+    } };
+});
 vi.mock('@/locale', () => ({ useTranslateUI: () => driver.t, i18nInitPromise: Promise.resolve() }));
 vi.mock('@/platform/device', () => ({ useDevice: () => ({ isMobile: driver.mobile }), useAppViewport: () => ({ width: 800, height: 600 }) }));
 vi.mock('@/data/marker', async (original) => ({ ...await original<typeof import('@/data/marker')>(), findFirstMarkerByType: driver.target, loadAllMarkers: driver.markers }));
 const prefs = useUiPrefsStore.getState(), guide = useUserGuideStore.getState(), records = useUserRecordStore.getState();
-beforeEach(() => { vi.useFakeTimers(); driver.mobile = false; driver.props = null; driver.target.mockReset(); driver.target.mockResolvedValue(null); driver.markers.mockReset(); driver.markers.mockResolvedValue([]); useUiPrefsStore.setState({ isUserGuideOpen: false, forceHeadbarExpanded: null }); useUserGuideStore.setState({ stepCompleted: {} }); });
+beforeEach(() => { vi.useFakeTimers(); driver.mobile = false; driver.props = null; driver.mounts = 0; driver.target.mockReset(); driver.target.mockResolvedValue(null); driver.markers.mockReset(); driver.markers.mockResolvedValue([]); useUiPrefsStore.setState({ isUserGuideOpen: false, forceHeadbarExpanded: null }); useUserGuideStore.setState({ stepCompleted: {} }); });
 afterEach(() => { cleanup(); useUiPrefsStore.setState(prefs, true); useUserGuideStore.setState(guide, true); useUserRecordStore.setState(records, true); document.body.style.overflow = ''; document.documentElement.removeAttribute('data-theme'); vi.useRealTimers(); vi.restoreAllMocks(); });
+const directTasks = new GuideTasks();
 const emit = (status: CallBackProps['status'], type: CallBackProps['type'] = 'tour:end', index = 0) => act(() => {
     const props = driver.props!;
     props.callback?.({ action: 'next', controlled: true, index, lifecycle: 'complete', origin: null, size: props.steps.length, status, step: props.steps[index], type });
@@ -68,7 +76,7 @@ it('releases all temporary guide controls, including mobile headbar expansion, w
 it.each([false, true])('preserves real progress while demonstrating completion and clearing on mobile=%s', async (mobile) => {
     driver.mobile = mobile;
     const type = MARKER_TYPE_TREE.boss[0].key;
-    const point = (id: string): IMarkerData => ({ id, type, subregId: 'V1A', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
+    const point = (id: string): IMarkerData => ({ id, type, subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
     driver.markers.mockResolvedValue([point('guide-existing'), point('guide-new')]);
     useUserRecordStore.setState({ activePoints: ['guide-existing', 'other-type'], activeArchives: ['saved-archive'], updatedAt: 7 });
     const original = useUserRecordStore.getState();
@@ -78,10 +86,10 @@ it.each([false, true])('preserves real progress while demonstrating completion a
     const steps = driver.props!.steps as GuideStep[];
     const complete = steps.find((step) => step.id.endsWith('_selector-complete'))!;
     const clear = steps.find((step) => step.id === (mobile ? 'MSTEP-22_trigger-switch' : 'STEP-7_trigger-handle'))!;
-    await act(async () => { await complete.onNext?.(); });
+    await act(async () => { await complete.onNext?.(directTasks); });
     expect(useUserRecordStore.getState()).toBe(original);
     expect(getDisplayedPointProgress()).toEqual(['guide-existing', 'other-type', 'guide-new']);
-    await act(async () => { await clear.onNext?.(); });
+    await act(async () => { await clear.onNext?.(directTasks); });
     expect(useUserRecordStore.getState()).toBe(original);
     expect(getDisplayedPointProgress()).toEqual(['other-type']);
     emit('skipped');
@@ -97,11 +105,11 @@ it.each(['finished', 'skipped', 'closed', 'unmounted'] as const)('discards both 
     const view = render(<UserGuide />); await act(async () => { await Promise.resolve(); });
     act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
     const complete = (driver.props!.steps as GuideStep[]).find((step) => step.id.endsWith('_selector-complete'))!;
-    await act(async () => { await complete.onNext?.(); });
+    await act(async () => { await complete.onNext?.(directTasks); });
     expect(getDisplayedPointProgress()).toEqual(['real', 'pending-demo']);
     let resolve!: (points: IMarkerData[]) => void;
     driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
-    const pending = complete.onNext?.();
+    const pending = complete.onNext?.(directTasks);
     if (boundary === 'unmounted') view.unmount();
     else if (boundary === 'closed') act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); });
     else emit(boundary);
@@ -121,12 +129,12 @@ it('starts a fresh demo owner when Help closes and reopens in the same React bat
     let resolve!: (points: IMarkerData[]) => void;
     driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
     const complete = (driver.props!.steps as GuideStep[]).find((step) => step.id.endsWith('_selector-complete'))!;
-    const pending = complete.onNext?.();
+    const pending = complete.onNext?.(directTasks);
     act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); useUiPrefsStore.getState().setIsUserGuideOpen(true); });
     await act(async () => { resolve([point]); await pending; });
     expect(getDisplayedPointProgress()).toEqual(['real']);
     driver.markers.mockResolvedValue([point]);
-    await act(async () => { await complete.onNext?.(); });
+    await act(async () => { await complete.onNext?.(directTasks); });
     expect(getDisplayedPointProgress()).toEqual(['real', 'pending-demo']);
 });
 
@@ -160,6 +168,93 @@ it('does not advance a reopened walkthrough when the earlier transition delay ex
     act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
     act(() => { vi.advanceTimersByTime(300); });
     expect(driver.props!.stepIndex).toBe(0);
+});
+
+it('cancels missing-target retries instead of remounting a newer walkthrough', async () => {
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    emit('running', 'error:target_not_found', 0);
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    await act(() => vi.advanceTimersToNextFrame());
+    await act(() => vi.advanceTimersToNextFrame());
+    const mounts = driver.mounts;
+    await act(() => vi.advanceTimersByTime(500));
+    expect(driver.mounts).toBe(mounts);
+    expect(driver.props!.run).toBe(true);
+});
+
+it('cancels a mobile step waiting for a target before it can scroll a later page', async () => {
+    driver.mobile = true;
+    useUserGuideStore.setState({ stepCompleted: { 'MSTEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    const steps = driver.props!.steps as GuideStep[];
+    const index = steps.findIndex((step) => step.id === 'MSTEP-20_selector-select');
+    act(() => {
+        useUserGuideStore.getState().setStepCompletedBulk(Object.fromEntries(steps.slice(0, index).map((step) => [step.id, true])));
+        useUiPrefsStore.getState().setIsUserGuideOpen(true);
+    });
+    expect(driver.props!.stepIndex).toBe(index);
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); });
+    const target = document.createElement('div');
+    target.dataset.key = MARKER_TYPE_TREE.boss[0].key;
+    const scroll = vi.fn(); target.scrollIntoView = scroll;
+    document.body.append(target);
+    try {
+        await act(() => vi.advanceTimersByTime(1500));
+        expect(scroll).not.toHaveBeenCalled();
+        expect(driver.props!.run).toBe(false);
+    } finally { target.remove(); }
+});
+
+it('does not apply an abandoned async action after moving back within the same walkthrough', async () => {
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    useUserRecordStore.setState({ activePoints: ['saved'], updatedAt: 7 });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    const steps = driver.props!.steps as GuideStep[];
+    const index = steps.findIndex((step) => step.id.endsWith('_selector-complete'));
+    act(() => {
+        useUserGuideStore.getState().setStepCompletedBulk(Object.fromEntries(steps.slice(0, index).map((step) => [step.id, true])));
+        useUiPrefsStore.getState().setIsUserGuideOpen(true);
+    });
+    let resolve!: (points: IMarkerData[]) => void;
+    driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
+    emit('running', 'step:after', index);
+    act(() => {
+        const props = driver.props!;
+        props.callback?.({ action: 'prev', controlled: true, index, lifecycle: 'complete', origin: null, size: props.steps.length, status: 'running', step: props.steps[index], type: 'step:after' });
+    });
+    const type = MARKER_TYPE_TREE.boss[0].key;
+    await act(async () => { resolve([{ id: 'late', type, subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 }]); await Promise.resolve(); });
+    expect(driver.props!.stepIndex).toBe(index - 1);
+    expect(getDisplayedPointProgress()).toEqual(['saved']);
+});
+
+it('finishes detailed Help after acknowledging the intro through its step callback', async () => {
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    emit('running', 'step:after', 0);
+    expect(useUiPrefsStore.getState().isUserGuideOpen).toBe(false);
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    expect(driver.props!.steps.length).toBeGreaterThan(1);
+    emit('finished');
+    expect(Object.values(useUserGuideStore.getState().stepCompleted).every(Boolean)).toBe(true);
+    expect(useUiPrefsStore.getState().isUserGuideOpen).toBe(false);
+});
+
+it('handles a rejected target preparation without an unhandled retry promise', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    (driver.props!.steps as GuideStep[])[0].onBefore = () => Promise.reject(new Error('target preparation failed'));
+    emit('running', 'error:target_not_found', 0);
+    await act(async () => { await Promise.resolve(); });
+    expect(error).toHaveBeenCalledWith('Step retry failed', expect.objectContaining({ message: 'target preparation failed' }));
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); });
+    const mounts = driver.mounts;
+    await act(() => vi.advanceTimersByTime(500));
+    expect(driver.mounts).toBe(mounts);
 });
 
 const tooltipStep = (intro: boolean): StepMerged & { hideProgress: boolean } => ({ target: 'body', content: 'Guide content', hideProgress: intro, disableBeacon: true, disableCloseOnEsc: false, disableOverlay: true, disableOverlayClose: true, disableScrollParentFix: false, disableScrolling: true,

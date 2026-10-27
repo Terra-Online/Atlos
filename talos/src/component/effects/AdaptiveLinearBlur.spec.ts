@@ -69,6 +69,22 @@ function View({
     );
 }
 
+const installAnimations = () => {
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
+    const animations: { cancel: ReturnType<typeof vi.fn>; onfinish: (() => void) | null }[] = [];
+    const animate = vi.fn(() => {
+        const animation = { cancel: vi.fn(), onfinish: null as (() => void) | null };
+        animations.push(animation);
+        return animation;
+    });
+    Object.defineProperty(HTMLElement.prototype, 'animate', { configurable: true, value: animate });
+    const restore = () => {
+        if (original) Object.defineProperty(HTMLElement.prototype, 'animate', original);
+        else Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+    };
+    return { animations, animate, restore };
+};
+
 it('combines both viewport edges, resizes them, and removes the mask when neither edge is visible', () => {
     const { getByTestId, rerender } = render(createElement(View));
     const target = getByTestId('scroll');
@@ -97,26 +113,7 @@ it('cleans up the viewport mask when returning to the normal blur', () => {
 });
 
 it('keeps the content masked until a closing animation finishes', () => {
-    const original = Object.getOwnPropertyDescriptor(
-        HTMLElement.prototype,
-        'animate',
-    );
-    const animations: {
-        cancel: ReturnType<typeof vi.fn>;
-        onfinish: (() => void) | null;
-    }[] = [];
-    const animate = vi.fn(() => {
-        const animation = {
-            cancel: vi.fn(),
-            onfinish: null as (() => void) | null,
-        };
-        animations.push(animation);
-        return animation;
-    });
-    Object.defineProperty(HTMLElement.prototype, 'animate', {
-        configurable: true,
-        value: animate,
-    });
+    const { animations, animate, restore } = installAnimations();
     try {
         const { getByTestId, rerender, unmount } = render(createElement(View));
         const target = getByTestId('scroll');
@@ -133,8 +130,21 @@ it('keeps the content masked until a closing animation finishes', () => {
         expect(target.classList.contains(styles.maskTarget)).toBe(false);
         unmount();
     } finally {
-        if (original)
-            Object.defineProperty(HTMLElement.prototype, 'animate', original);
-        else Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+        restore();
     }
+});
+
+it('keeps ownership of replacement animations when a cancelled completion notification arrives late', () => {
+    const { animations, restore } = installAnimations();
+    const view = render(createElement(View));
+    try {
+        const queuedCompletions = animations.map((animation) => animation.onfinish!);
+        view.rerender(createElement(View, { top: false, bottom: false }));
+        const replacements = animations.slice(-2);
+        queuedCompletions.forEach((finish) => finish());
+        view.unmount();
+        // Already queued notifications may outlive cancellation. They must not
+        // lose the reference needed to stop the new animation during teardown.
+        for (const animation of replacements) expect(animation.cancel).toHaveBeenCalledOnce();
+    } finally { view.unmount(); restore(); }
 });

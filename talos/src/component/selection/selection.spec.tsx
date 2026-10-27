@@ -4,9 +4,13 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { installPointerCapture, setRect, setScrollMetrics } from '../../../test-support/browser';
 import { useScopedBoxSelection } from './useScopedBoxSelection';
 import { useSelectionVisibility } from './useSelectionVisibility';
+import { useBoxSelectionEngine } from './useBoxSelectionEngine';
+
+const platform = vi.hoisted(() => ({ document: null as Document | null }));
+vi.mock('@/platform/pictureInPicture', () => ({ useAppDocument: () => platform.document ?? document }));
 
 let restoreCapture: () => void;
-beforeEach(() => { vi.useFakeTimers(); restoreCapture = installPointerCapture(); });
+beforeEach(() => { platform.document = null; vi.useFakeTimers(); restoreCapture = installPointerCapture(); });
 afterEach(() => { cleanup(); restoreCapture(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 function Selection({ initial = ['a'], onChange = () => {} }: { initial?: string[]; onChange?: (keys: string[]) => void }) {
@@ -23,6 +27,30 @@ function Selection({ initial = ['a'], onChange = () => {} }: { initial?: string[
         {['a', 'b', 'hidden'].map((key) => <div key={key} data-item={key} hidden={key === 'hidden'} aria-pressed={keys.includes(key)}>{key}</div>)}
         <div ref={selectionBoxRef} data-testid="box" data-visible={visible} data-fading={fading} />
         <output>{keys.join(',')}</output>
+    </div>;
+}
+
+function MixedSelection({ onChange }: { onChange: (keys: string[]) => void }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const selectionBoxRef = useRef<HTMLDivElement>(null);
+    const [keys, setKeys] = useState(['a', 'unrelated']);
+    useBoxSelectionEngine({
+        containerRef, selectionBoxRef, getInitialKeys: () => keys,
+        onChange: (next) => { setKeys(next); onChange(next); },
+        canStart: (target) => target.hasAttribute('data-blank'),
+        // Toggle comes first in DOM order; activation still owns overlapping keys.
+        collectTargets: ({ container, elementToContentRect }) => [...container.querySelectorAll<HTMLElement>('[data-mode]')].map((element) => ({
+            element, keys: element.dataset.keys!.split(','), rect: elementToContentRect(element),
+            mode: element.dataset.mode === 'activate' ? 'activate' : 'toggle',
+        })),
+        syncTarget: ({ element }, active) => { element?.setAttribute('aria-pressed', String(active)); },
+    });
+    return <div ref={containerRef} data-testid="mixed">
+        <div data-blank>Mixed blank</div>
+        <div data-mode="toggle" data-keys="a,b,c">Toggle targets</div>
+        <div data-mode="activate" data-keys="a,b">Activate targets</div>
+        <div ref={selectionBoxRef} />
+        <output data-testid="mixed-keys">{keys.join(',')}</output>
     </div>;
 }
 
@@ -107,4 +135,110 @@ it('ignores a different pointer and restores scroll/text policies after cancella
     expect(container.hasPointerCapture(1)).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
     document.body.style.userSelect = '';
+});
+
+it('lets activation win overlapping toggles while retaining the existing selection outside the box', () => {
+    const onChange = vi.fn<(keys: string[]) => void>();
+    render(<MixedSelection onChange={onChange} />);
+    const container = screen.getByTestId('mixed');
+    setRect(container, 0, 0, 300, 300); setScrollMetrics(container, 300, 300);
+    for (const target of container.querySelectorAll<HTMLElement>('[data-mode]')) setRect(target, 30, 30, 30, 30);
+    const blank = screen.getByText('Mixed blank');
+    const select = () => {
+        pointer(blank, 'pointerdown', 0, 0);
+        pointer(window, 'pointermove', 100, 100);
+        act(() => { vi.advanceTimersToNextFrame(); });
+        expect(screen.getByText('Activate targets').getAttribute('aria-pressed')).toBe('true');
+        pointer(window, 'pointerup', 100, 100);
+    };
+    select();
+    expect(onChange).toHaveBeenCalledExactlyOnceWith(['a', 'unrelated', 'b', 'c']);
+    expect(screen.getByTestId('mixed-keys').textContent).toBe('a,unrelated,b,c');
+    select();
+    // Already selected a/b stay active; only ordinary c toggles back off.
+    expect(onChange).toHaveBeenLastCalledWith(['a', 'unrelated', 'b']);
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('mixed-keys').textContent).toBe('a,unrelated,b');
+});
+
+it('auto-scrolls in both directions within browser bounds, selects offscreen content and stops on cancellation', () => {
+    const { container, blank, onChange } = fixture([]);
+    let scrollTop = 0;
+    // jsdom does not clamp scrolling. Model the browser's legal range, without
+    // encoding the engine's velocity or acceleration into the fixture.
+    Object.defineProperty(container, 'scrollTop', {
+        configurable: true, get: () => scrollTop,
+        set: (value: number) => { scrollTop = Math.max(0, Math.min(300, value)); },
+    });
+    const offscreen = container.querySelector<HTMLElement>('[data-item="a"]')!;
+    vi.spyOn(offscreen, 'getBoundingClientRect').mockImplementation(() => new DOMRect(30, 350 - scrollTop, 15, 15));
+    const visible = container.querySelector<HTMLElement>('[data-item="b"]')!;
+    vi.spyOn(visible, 'getBoundingClientRect').mockImplementation(() => new DOMRect(50, 70 - scrollTop, 15, 15));
+    pointer(blank, 'pointerdown', 10, 50);
+    pointer(window, 'pointermove', 100, 295);
+    act(() => { vi.advanceTimersToNextFrame(); });
+    expect(offscreen.getAttribute('aria-pressed')).toBe('false');
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(container.scrollTop).toBe(300);
+    expect(offscreen.getAttribute('aria-pressed')).toBe('true');
+    expect(container.hasPointerCapture(1)).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+    pointer(window, 'pointermove', 100, 5);
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(container.scrollTop).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+    pointer(window, 'pointermove', 100, 295);
+    act(() => { vi.advanceTimersByTime(80); });
+    expect(container.scrollTop).toBeGreaterThan(0);
+    expect(container.scrollTop).toBeLessThan(300);
+    pointer(window, 'pointercancel', 100, 295);
+    const cancelledAt = container.scrollTop;
+    const callbacks = onChange.mock.calls.length;
+    expect(container.hasPointerCapture(1)).toBe(false);
+    expect(container.style.scrollBehavior).toBe('smooth');
+    expect(document.body.style.userSelect).not.toBe('none');
+    act(() => { vi.advanceTimersByTime(500); });
+    expect(container.scrollTop).toBe(cancelledAt);
+    expect(onChange).toHaveBeenCalledTimes(callbacks);
+    expect(vi.getTimerCount()).toBe(0);
+});
+
+it('moves pointer, frame and text-selection ownership with the app document', () => {
+    const view = fixture([]);
+    const frame = document.createElement('iframe');
+    document.body.append(frame);
+    const otherDocument = frame.contentDocument!;
+    const otherWindow = frame.contentWindow!;
+    otherWindow.requestAnimationFrame = window.requestAnimationFrame.bind(window);
+    otherWindow.cancelAnimationFrame = window.cancelAnimationFrame.bind(window);
+    const requestFrame = vi.spyOn(otherWindow, 'requestAnimationFrame');
+    document.body.style.userSelect = 'text';
+    otherDocument.body.style.userSelect = 'auto';
+    try {
+        pointer(view.blank, 'pointerdown', 10, 50);
+        pointer(window, 'pointermove', 100);
+        expect(view.container.hasPointerCapture(1)).toBe(true);
+        // PiP adopts the existing application root rather than remounting it.
+        otherDocument.body.append(view.baseElement.querySelector('[data-testid="selection"]')!.parentElement!);
+        platform.document = otherDocument;
+        view.rerender(<Selection initial={[]} onChange={view.onChange} />);
+        expect(view.container.dataset.selecting).toBe('false');
+        expect(view.container.hasPointerCapture(1)).toBe(false);
+        expect(document.body.style.userSelect).toBe('text');
+        expect(view.onChange).not.toHaveBeenCalled();
+        pointer(view.blank, 'pointerdown', 10, 50);
+        pointer(otherWindow, 'pointermove', 100);
+        expect(view.container.dataset.selecting).toBe('true');
+        expect(otherDocument.body.style.userSelect).toBe('none');
+        expect(document.body.style.userSelect).toBe('text');
+        expect(requestFrame).toHaveBeenCalled();
+        pointer(otherWindow, 'pointerup', 100);
+        expect(view.onChange).toHaveBeenCalledExactlyOnceWith(['a', 'b']);
+        expect(view.container.hasPointerCapture(1)).toBe(false);
+        expect(otherDocument.body.style.userSelect).toBe('auto');
+    } finally {
+        view.unmount();
+        frame.remove();
+        document.body.style.userSelect = '';
+    }
 });

@@ -69,3 +69,24 @@ it('shows real overflow tooltips only beyond the one-pixel tolerance and closes 
     expect(screen.queryByRole('tooltip')).toBeNull();
     expect(popover.isOpen(tooltip)).toBe(false);
 });
+
+it('reclamps an open tooltip when its font or content size changes, and stops observing after close', async () => {
+    const view = render(<PopoverTooltip content="Late font"><button>Action</button></PopoverTooltip>);
+    const button = screen.getByRole('button'), tooltip = screen.getByRole('tooltip');
+    setRect(button, window.innerWidth - 40, 100, 30, 20);
+    setRect(tooltip, 0, 0, 80, 40);
+    fireEvent.pointerEnter(button);
+    await act(() => vi.advanceTimersToNextFrame());
+    setRect(tooltip, 0, 0, 160, 40);
+    act(() => observer.notify(tooltip));
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(parseFloat(tooltip.style.left) + 160).toBeLessThanOrEqual(window.innerWidth - 4);
+    setRect(button, 100, 200, 30, 20);
+    fireEvent(button, new Event('fontregionchange', { bubbles: true }));
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(parseFloat(tooltip.style.left)).toBe(142);
+    fireEvent.click(button);
+    expect(observer.observers.every((entry) => entry.targets.size === 0)).toBe(true);
+    view.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+});

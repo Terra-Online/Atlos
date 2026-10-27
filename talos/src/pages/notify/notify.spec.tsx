@@ -128,3 +128,32 @@ it.each(['relogin', 'account-roundtrip'])('reloads and ignores old mark-all resu
     expect(api.unread).not.toHaveBeenCalled(); expect(unread).toHaveBeenLastCalledWith(counts());
     expect(document.querySelector('[data-notification-id="new-session"]')?.getAttribute('data-unread')).toBe('true');
 });
+
+it('recovers a notification marker label after a rejected lookup instead of caching the rejection', async () => {
+    vi.useFakeTimers();
+    const target = { markerId: 'retry-marker', poiType: null, poiHash: null, parentSubmissionId: null, submissionId: null };
+    api.list.mockResolvedValue(result([item('retry', { target })]));
+    api.marker.mockRejectedValueOnce(new Error('temporary shard load')).mockResolvedValueOnce({ id: 'retry-marker', type: 'crate_ii', subregId: 'VL_1', x: 0, y: 0, z: 0, tier: 0, pos: [0, 0] });
+    render(<NotifyModal open onClose={vi.fn()} />); await flush();
+    expect(api.marker).toHaveBeenCalledTimes(1);
+    await act(async () => { vi.advanceTimersByTime(800); await Promise.resolve(); });
+    expect(api.marker).toHaveBeenCalledTimes(2);
+    expect(screen.getByText('(crate_ii)')).toBeTruthy();
+});
+
+it('stops notification marker retries after closing and treats a missing marker as a resolved mismatch', async () => {
+    vi.useFakeTimers();
+    const target = { markerId: 'cancel-retry-marker', poiType: null, poiHash: null, parentSubmissionId: null, submissionId: null };
+    api.list.mockResolvedValue(result([item('cancel-retry', { target })]));
+    api.marker.mockRejectedValueOnce(new Error('temporary shard load'));
+    const close = vi.fn(); const view = render(<NotifyModal open onClose={close} />); await flush();
+    expect(api.marker).toHaveBeenCalledTimes(1);
+    view.rerender(<NotifyModal open={false} onClose={close} />);
+    await act(async () => { vi.advanceTimersByTime(1000); await Promise.resolve(); });
+    expect(api.marker).toHaveBeenCalledTimes(1);
+    api.marker.mockResolvedValue(null);
+    view.rerender(<NotifyModal open onClose={close} />); await flush();
+    expect(api.marker).toHaveBeenCalledTimes(2);
+    await act(async () => { vi.advanceTimersByTime(5000); await Promise.resolve(); });
+    expect(api.marker).toHaveBeenCalledTimes(2);
+});

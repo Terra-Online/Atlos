@@ -271,12 +271,25 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         layerRef.current.setActive(true);
         if (!viewportCleanupRef.current) {
             const ownerWindow = popover.ownerDocument.defaultView ?? window;
-            const update = () => scheduleLatest.current();
+            const update = () => { if (isOpenRef.current) scheduleLatest.current(); };
+            const trigger = triggerRef.current;
+            // Regional fonts and loaded imagery can change either geometry
+            // without producing a window resize or scroll event.
+            const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+            observer?.observe(popover);
+            if (trigger) observer?.observe(trigger);
+            const onFontChange = (event: Event) => {
+                const region = event.target as Element | null;
+                if (region?.contains(trigger) || region?.contains(popover)) update();
+            };
             ownerWindow.addEventListener('resize', update);
             ownerWindow.addEventListener('scroll', update, true);
+            popover.ownerDocument.addEventListener('fontregionchange', onFontChange);
             viewportCleanupRef.current = () => {
+                observer?.disconnect();
                 ownerWindow.removeEventListener('resize', update);
                 ownerWindow.removeEventListener('scroll', update, true);
+                popover.ownerDocument.removeEventListener('fontregionchange', onFontChange);
             };
         }
         isOpenRef.current = true;

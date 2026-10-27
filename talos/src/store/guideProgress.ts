@@ -24,12 +24,12 @@ export function endGuideProgress(owner: symbol): void {
 }
 
 /** Demo writes belong to the current walkthrough; later actions supersede earlier loads. */
-export async function previewGuideProgress(type: string, collected: boolean): Promise<void> {
+export async function previewGuideProgress(type: string, collected: boolean, signal?: AbortSignal): Promise<void> {
     const { owner } = usePreview.getState();
-    if (!owner) return;
+    if (!owner || signal?.aborted) return;
     const currentRequest = ++request;
     const markers = await loadAllMarkers();
-    if (usePreview.getState().owner !== owner || request !== currentRequest) return;
+    if (signal?.aborted || usePreview.getState().owner !== owner || request !== currentRequest) return;
     const overrides = new Map(usePreview.getState().overrides);
     for (const marker of markers) {
         if (marker.type === type) overrides.set(marker.id, collected);

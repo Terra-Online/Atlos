@@ -4,10 +4,9 @@ import ErrorBoundary from '@/component/shared/ErrorBoundary';
 import Modal from '@/component/modal/modal';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { openOemAuthModal } from '@/component/shared/account/authEvents';
+import { OEM_AUTH_DISMISS_EVENT, openOemAuthModal } from '@/component/shared/account/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useTranslateUI } from '@/locale';
-import { getEFBindingStatus } from '@/services/endfield';
 import { getCachedBinding, setCachedBinding } from '@/services/cache/backend';
 import { SubregionSwitch } from '@/pages/regSwitch/regSwitch';
 import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
@@ -19,6 +18,8 @@ import LocateOpenIcon from '@/assets/images/UI/locateopen.svg?react';
 import LocateCurrentIcon from '@/assets/images/UI/locatecurrent.svg?react';
 import ConfigIcon from '@/assets/images/UI/config.svg?react';
 import { disableSession, enableSession } from '@/pages/locator/session';
+import { useRequestOwner } from './useRequestOwner';
+import { isBindingUnauthorized, loadBindingStatus } from './bindingStatus';
 import {
     requestLocatorReturnCurrent,
     useLocatorStore,
@@ -45,6 +46,13 @@ const loadConfig = () => import('@/pages/locator/LocationConfig');
 const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSidebarOpen = false }) => {
     const t = useTranslateUI();
     const sessionUser = useAuthStore((state) => state.sessionUser);
+    const captureOwner = useRequestOwner();
+    const statusRequest = useRef(0);
+    const activationRequest = useRef(0);
+    const statusController = useRef<AbortController | null>(null);
+    const mobileController = useRef<AbortController | null>(null);
+    const activationController = useRef<AbortController | null>(null);
+    const loginRequested = useRef<number | null>(null);
     const uid = sessionUser?.uid;
     const viewMode = useLocatorStore((state) => state.viewMode);
     const bindReq = useLocatorStore((state) => state.bindReq);
@@ -57,6 +65,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
     const LocationConfig = useRetryImport(loadConfig, configOpen)?.default;
     const [mobileExpanded, setMobileExpanded] = useState(false);
     const [pendingAfterLogin, setPendingAfterLogin] = useState(false);
+    const [actionPending, setActionPending] = useState(false);
     const [bound, setBound] = useState(Boolean(cachedBinding.value?.bound));
     const menu = useSwitchMenu(bound && variant === 'desktop');
     const mobileShellRef = useRef<HTMLDivElement | null>(null);
@@ -79,31 +88,65 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
         });
     }, [resetMobileShellScroll]);
 
+    useEffect(() => {
+        const dismissed = () => { loginRequested.current = null; };
+        window.addEventListener(OEM_AUTH_DISMISS_EVENT, dismissed);
+        return () => { window.removeEventListener(OEM_AUTH_DISMISS_EVENT, dismissed); };
+    }, []);
+
+    const requestLogin = useCallback((resume: boolean) => {
+        if (resume) setPendingAfterLogin(true);
+        const version = useAuthStore.getState().sessionVersion;
+        if (loginRequested.current === version) return;
+        loginRequested.current = version;
+        openOemAuthModal('login');
+    }, []);
+
+    useEffect(() => {
+        setActionPending(false);
+        return () => {
+            statusController.current?.abort();
+            mobileController.current?.abort();
+            activationController.current?.abort();
+            mobileController.current = null;
+            activationController.current = null;
+        };
+    }, [captureOwner]);
+
     const refreshBindingStatus = useCallback(() => {
         if (!sessionUser) {
             setBound(false);
             return;
         }
-        void getEFBindingStatus()
+        statusController.current?.abort();
+        const controller = new AbortController();
+        statusController.current = controller;
+        const ownerCurrent = captureOwner();
+        const request = ++statusRequest.current;
+        const isCurrent = () => !controller.signal.aborted && ownerCurrent() && statusRequest.current === request;
+        if (!isCurrent()) return;
+        void loadBindingStatus(controller.signal)
             .then((status) => {
+                if (!isCurrent()) return;
                 setCachedBinding(sessionUser.uid, status.binding);
                 setBound(Boolean(status.binding.bound));
             })
-            .catch(() => setBound(false));
-    }, [sessionUser]);
+            .catch((error: unknown) => {
+                if (isCurrent() && isBindingUnauthorized(error)) requestLogin(false);
+            });
+        return () => { controller.abort(); };
+    }, [captureOwner, requestLogin, sessionUser]);
 
     useEffect(() => {
         if (!sessionUser) {
             setBound(false);
             return;
         }
-        if (cachedBinding.hit) {
-            setBound(Boolean(cachedBinding.value?.bound));
-        }
-    }, [cachedBinding.hit, cachedBinding.value?.bound, sessionUser]);
+        setBound(Boolean(cachedBinding.value?.bound));
+    }, [cachedBinding.value?.bound, captureOwner, sessionUser]);
 
     useEffect(() => {
-        refreshBindingStatus();
+        return refreshBindingStatus();
     }, [refreshBindingStatus]);
 
     useEffect(() => {
@@ -148,46 +191,58 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
         }
     }, [configOpen]);
 
-    useEffect(() => {
-        if (!pendingAfterLogin || !sessionUser) return;
-        setPendingAfterLogin(false);
-        void enableSession().then((enabled) => {
+    const startSession = useCallback(() => {
+        if (activationController.current) return;
+        const controller = new AbortController();
+        activationController.current = controller;
+        const ownerCurrent = captureOwner();
+        const request = ++activationRequest.current;
+        const isCurrent = () => !controller.signal.aborted && ownerCurrent() && activationRequest.current === request;
+        if (!isCurrent()) return;
+        setActionPending(true);
+        void enableSession(isCurrent, controller.signal).then((enabled) => {
+            if (!isCurrent() || enabled === undefined) return;
             setBound((current) => enabled || current);
             if (!enabled) {
                 setBindingOpen(true);
             }
-        }).catch(() => {
-            setBindingOpen(true);
+        }).catch((error: unknown) => {
+            if (isCurrent() && isBindingUnauthorized(error)) requestLogin(true);
+        }).finally(() => {
+            if (activationController.current === controller) {
+                activationController.current = null;
+                if (ownerCurrent()) setActionPending(false);
+            }
         });
-    }, [pendingAfterLogin, sessionUser]);
+    }, [captureOwner, requestLogin]);
+
+    useEffect(() => {
+        if (!pendingAfterLogin || !sessionUser || loginRequested.current === useAuthStore.getState().sessionVersion) return;
+        setPendingAfterLogin(false);
+        startSession();
+    }, [pendingAfterLogin, sessionUser, startSession]);
 
     const handleClick = useCallback(() => {
         if (viewMode === 'detached') {
+            ++activationRequest.current;
             requestLocatorReturnCurrent();
             useLocatorStore.getState().setViewMode('tracking');
             return;
         }
 
         if (viewMode === 'tracking') {
+            ++activationRequest.current;
             disableSession();
             return;
         }
 
         if (!sessionUser) {
-            setPendingAfterLogin(true);
-            openOemAuthModal('login');
+            requestLogin(true);
             return;
         }
 
-        void enableSession().then((enabled) => {
-            setBound((current) => enabled || current);
-            if (!enabled) {
-                setBindingOpen(true);
-            }
-        }).catch(() => {
-            setBindingOpen(true);
-        });
-    }, [sessionUser, viewMode]);
+        startSession();
+    }, [requestLogin, sessionUser, startSession, viewMode]);
 
     const handleMobileClick = useCallback(() => {
         if (mobileExpanded) {
@@ -197,8 +252,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
         }
 
         if (!sessionUser) {
-            setPendingAfterLogin(true);
-            openOemAuthModal('login');
+            requestLogin(true);
             return;
         }
 
@@ -207,8 +261,16 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
             return;
         }
 
-        void getEFBindingStatus()
+        if (mobileController.current) return;
+        const controller = new AbortController();
+        mobileController.current = controller;
+        const ownerCurrent = captureOwner();
+        const isCurrent = () => !controller.signal.aborted && ownerCurrent();
+        if (!isCurrent()) return;
+        setActionPending(true);
+        void loadBindingStatus(controller.signal)
             .then((status) => {
+                if (!isCurrent()) return;
                 setCachedBinding(sessionUser.uid, status.binding);
                 const isBound = Boolean(status.binding.bound);
                 setBound(isBound);
@@ -218,11 +280,15 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                 }
                 setBindingOpen(true);
             })
-            .catch(() => {
-                setBound(false);
-                setBindingOpen(true);
+            .catch((error: unknown) => {
+                if (isCurrent() && isBindingUnauthorized(error)) requestLogin(true);
+            }).finally(() => {
+                if (mobileController.current === controller) {
+                    mobileController.current = null;
+                    if (ownerCurrent()) setActionPending(false);
+                }
             });
-    }, [bound, collapseMobileShell, handleClick, mobileExpanded, sessionUser]);
+    }, [bound, captureOwner, collapseMobileShell, handleClick, mobileExpanded, requestLogin, sessionUser]);
 
     const Icon = resolveIcon(viewMode);
 
@@ -250,6 +316,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                         data-active={viewMode !== 'off'}
                         onClick={handleMobileClick}
                         aria-label={t('locator.title')}
+                        aria-busy={actionPending}
                     >
                         <Icon />
                     </button>
@@ -325,7 +392,7 @@ const LocatorButton: React.FC<LocatorButtonProps> = ({ variant = 'desktop', isSi
                             viewMode !== 'off' && regSwitchStyles.selected,
                         )}
                     >
-                        <IconButton className={regSwitchStyles.mainAction} data-guide="locator-button" label={t('mapControls.locationTracking')} pressed={viewMode !== 'off'} onClick={() => {
+                        <IconButton className={regSwitchStyles.mainAction} data-guide="locator-button" label={t('mapControls.locationTracking')} pressed={viewMode !== 'off'} aria-busy={actionPending} onClick={() => {
                             menu.open('locator');
                             handleClick();
                         }}>

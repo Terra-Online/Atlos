@@ -54,6 +54,7 @@ import {
 } from '@/pages/notify/notificationRead';
 import styles from '@/pages/notify/notify.module.scss';
 import { useNearViewport } from '@/lib/dom/useNearViewport';
+import { retryLoad } from '@/lib/async/retryLoad';
 
 interface NotifyProps {
     open: boolean;
@@ -203,7 +204,10 @@ const getNotificationMarker = (
 ): Promise<IMarkerData | null> => {
     const cached = markerPromiseCache.get(markerId);
     if (cached) return cached;
-    const pending = findMarkerById(markerId);
+    const pending = findMarkerById(markerId).catch((error: unknown) => {
+        markerPromiseCache.delete(markerId);
+        throw error;
+    });
     markerPromiseCache.set(markerId, pending);
     return pending;
 };
@@ -221,11 +225,13 @@ const formatPointName = (
 
 interface NotificationMessageProps {
     item: NotificationItem;
+    active: boolean;
     onNavigate: (item: NotificationItem) => void;
 }
 
 const NotificationMessage = ({
     item,
+    active,
     onNavigate,
 }: NotificationMessageProps) => {
     const t = useTranslateUI();
@@ -288,20 +294,20 @@ const NotificationMessage = ({
             ? Math.trunc(countValue)
             : Math.max(1, item.messages.length);
 
+    useEffect(() => { setMarker(null); }, [markerId]);
     useEffect(() => {
-        let active = true;
-        setMarker(null);
-        if (!markerId)
-            return () => {
-                active = false;
-            };
-        void getNotificationMarker(markerId).then((nextMarker) => {
-            if (active) setMarker(nextMarker);
+        if (!active || !markerId) return undefined;
+        const controller = new AbortController();
+        void retryLoad(() => getNotificationMarker(markerId), {
+            signal: controller.signal,
+            onRetry: (error) => console.warn('Notification marker unavailable:', error),
+        }).then((nextMarker) => {
+            if (!controller.signal.aborted) setMarker(nextMarker);
+        }).catch((error: unknown) => {
+            if (!controller.signal.aborted) console.error('Notification marker loading stopped:', error);
         });
-        return () => {
-            active = false;
-        };
-    }, [markerId]);
+        return () => { controller.abort(); };
+    }, [active, markerId]);
 
     const canNavigate = Boolean(markerId) && !item.isMultiMsg;
     const renderSubject = (parts: React.ReactNode[]) =>
@@ -342,6 +348,7 @@ const NotificationMessage = ({
 
 interface NotificationCardProps {
     item: NotificationItem;
+    active: boolean;
     expanded: boolean;
     onToggle: (item: NotificationItem) => void;
     onRead: (item: NotificationItem) => void;
@@ -350,6 +357,7 @@ interface NotificationCardProps {
 
 const NotificationCard = ({
     item,
+    active,
     expanded,
     onToggle,
     onRead,
@@ -415,7 +423,7 @@ const NotificationCard = ({
         >
             <div className={styles.cardBody}>
                 <div className={styles.cardMessage}>
-                    <NotificationMessage item={item} onNavigate={onNavigate} />
+                    <NotificationMessage item={item} active={active} onNavigate={onNavigate} />
                 </div>
             </div>
             {item.isMultiMsg && (
@@ -432,6 +440,7 @@ const NotificationCard = ({
                                 >
                                     <NotificationMessage
                                         item={message}
+                                        active={active}
                                         onNavigate={(targetItem) =>
                                             onNavigate(targetItem, item)
                                         }
@@ -892,6 +901,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                                 <NotificationCard
                                     key={item.id}
                                     item={item}
+                                    active={open}
                                     expanded={expandedIds.has(item.id)}
                                     onToggle={handleToggle}
                                     onRead={handleRead}

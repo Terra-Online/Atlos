@@ -25,9 +25,16 @@ import { pauseSessionRefresh, refreshSessionUser, startSessionRefresh } from '@/
 const ONCELOGIN = 'onceLogin';
 const WIPE_MS = 3333;
 
-const waitForPrtsWipeCycle = async () => {
+const waitForPrtsWipeCycle = async (signal: AbortSignal) => {
+  if (signal.aborted) return;
   await new Promise<void>((resolve) => {
-    window.setTimeout(() => resolve(), WIPE_MS);
+    const finish = () => {
+      window.clearTimeout(timer);
+      signal.removeEventListener('abort', finish);
+      resolve();
+    };
+    const timer = window.setTimeout(finish, WIPE_MS);
+    signal.addEventListener('abort', finish, { once: true });
   });
 };
 
@@ -102,6 +109,8 @@ const cachedSession = getCachedSession();
 export const useIdCardAuthController = () => {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTabInner] = useState<AuthMode>('login');
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [resetToken, setResetToken] = useState<string | null>(null);
@@ -118,6 +127,25 @@ export const useIdCardAuthController = () => {
   const [hasLoggedInBefore, setHasLoggedInBefore] = useState<boolean>(() => hasOnceLogin());
   const [authReady, setAuthReady] = useState(cachedSession.hit);
   const passwordResetRequestInFlightRef = useRef(false);
+  const uiOwner = useRef(new AbortController());
+  const openRef = useRef(open);
+  openRef.current = open;
+  const renewUiOwner = useCallback(() => {
+    uiOwner.current.abort();
+    uiOwner.current = new AbortController();
+    passwordResetRequestInFlightRef.current = false;
+    setIsSubmitting(false);
+  }, []);
+  const changeOpen = useCallback((value: boolean) => {
+    if (value !== openRef.current) renewUiOwner();
+    openRef.current = value;
+    setOpen(value);
+  }, [renewUiOwner]);
+  useEffect(() => {
+    if (uiOwner.current.signal.aborted) uiOwner.current = new AbortController();
+    const stop = () => uiOwner.current.abort();
+    return stop;
+  }, []);
   const oauthExchangeRef = useRef<{ code: string; promise: ReturnType<typeof exchangeAuthCode>; version: number } | null>(null);
 
   const normalizeProfileNameInput = useCallback((value: string): string => {
@@ -125,12 +153,19 @@ export const useIdCardAuthController = () => {
   }, []);
 
   const setActiveTab = useCallback((mode: AuthMode) => {
+    activeTabRef.current = mode;
     setActiveTabInner(mode);
     if (mode !== 'passwordReset') {
       setResetToken(null);
       setResetEmail('');
     }
   }, []);
+  const changeActiveTab = useCallback((mode: AuthMode) => {
+    if (mode === activeTabRef.current) return;
+    renewUiOwner();
+    setAuthError(null);
+    setActiveTab(mode);
+  }, [renewUiOwner, setActiveTab]);
 
   const authBase = useMemo(() => getAuthBase(), []);
 
@@ -143,6 +178,7 @@ export const useIdCardAuthController = () => {
   }, []);
 
   const syncSession = useCallback(async (options?: { silent?: boolean; expectedEmail?: string; deferProfileSetup?: boolean }) => {
+    const signal = uiOwner.current.signal;
     try {
       const user = await refreshSessionUser(options?.expectedEmail);
       if (!user) {
@@ -155,7 +191,7 @@ export const useIdCardAuthController = () => {
 
       markOnceLogin();
       setHasLoggedInBefore(true);
-      if (!options?.deferProfileSetup) showProfileSetup(user);
+      if (!signal.aborted && !options?.deferProfileSetup) showProfileSetup(user);
 
       return user;
     } catch (error) {
@@ -211,6 +247,7 @@ export const useIdCardAuthController = () => {
     }
     let active = true;
     const exchange = oauthExchangeRef.current;
+    const signal = uiOwner.current.signal;
     void exchange.promise
       .then((user) => {
         if (!active || useAuthStore.getState().sessionVersion !== exchange.version) return;
@@ -218,12 +255,14 @@ export const useIdCardAuthController = () => {
         setHasLoggedInBefore(true);
         setSessionUser(user);
         setAuthReady(true);
+        if (signal.aborted) return;
         setOpen(false);
         showProfileSetup(user);
       })
       .catch((error) => {
         if (!active || useAuthStore.getState().sessionVersion !== exchange.version) return;
         setAuthReady(true);
+        if (signal.aborted) return;
         setAuthError(mapAuthErrorToHint(error));
         setOpen(true);
       });
@@ -251,11 +290,14 @@ export const useIdCardAuthController = () => {
     url.searchParams.delete('email');
     window.history.replaceState({}, '', url.toString());
     if (!emailFromQuery) {
+      const signal = uiOwner.current.signal;
       void getResetPasswordPreview(token)
         .then((preview) => {
+          if (signal.aborted) return;
           setResetEmail(preview.email);
         })
         .catch((error) => {
+          if (signal.aborted) return;
           setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
         });
     }
@@ -263,11 +305,13 @@ export const useIdCardAuthController = () => {
 
   const openAuthModal = useCallback(
     (tab: AuthMode) => {
+      renewUiOwner();
       setActiveTab(tab);
       setAuthError(null);
+      openRef.current = true;
       setOpen(true);
     },
-    [setActiveTab]
+    [renewUiOwner, setActiveTab]
   );
 
   const openProfileModal = useCallback(() => {
@@ -275,12 +319,13 @@ export const useIdCardAuthController = () => {
       openAuthModal('login');
       return;
     }
+    renewUiOwner();
 
     setProfileName(sessionUser.needsProfileSetup ? '' : sessionUser.nickname);
     setProfileAvatar(normalizeAvatarIndex(sessionUser.avatar));
     setProfileError(null);
     setProfileOpen(true);
-  }, [openAuthModal, sessionUser]);
+  }, [openAuthModal, renewUiOwner, sessionUser]);
 
   const handleProfileNameChange = useCallback((value: string) => {
     setProfileName(normalizeProfileNameInput(value));
@@ -313,6 +358,7 @@ export const useIdCardAuthController = () => {
 
   const handleOAuthClick = useCallback(async (provider: OAuthProvider) => {
     if (isSubmitting) return;
+    const signal = uiOwner.current.signal;
 
     setAuthError(null);
     setIsSubmitting(true);
@@ -320,11 +366,13 @@ export const useIdCardAuthController = () => {
     try {
       const callbackURL = buildOAuthCallbackUrl();
       const { redirectUrl } = await startOAuth(provider, callbackURL);
+      if (signal.aborted) return;
       window.location.assign(redirectUrl);
     } catch (error) {
+      if (signal.aborted) return;
       setAuthError(mapAuthErrorToHint(error));
     } finally {
-      setIsSubmitting(false);
+      if (!signal.aborted) setIsSubmitting(false);
     }
   }, [isSubmitting]);
 
@@ -338,6 +386,7 @@ export const useIdCardAuthController = () => {
     if (isSubmitting) {
       return false;
     }
+    const signal = uiOwner.current.signal;
 
     setAuthError(null);
     setIsSubmitting(true);
@@ -345,12 +394,13 @@ export const useIdCardAuthController = () => {
     try {
       await sendEmailVerificationOtp(email, mode === 'register' ? 'register' : 'login');
 
-      return true;
+      return !signal.aborted;
     } catch (error) {
+      if (signal.aborted) return false;
       setAuthError(mapAuthErrorToHint(error, { mode }));
       return false;
     } finally {
-      setIsSubmitting(false);
+      if (!signal.aborted) setIsSubmitting(false);
     }
   }, [isSubmitting]);
 
@@ -364,6 +414,7 @@ export const useIdCardAuthController = () => {
     if (isSubmitting) {
       return;
     }
+    const signal = uiOwner.current.signal;
 
     setAuthError(null);
     setIsSubmitting(true);
@@ -390,8 +441,10 @@ export const useIdCardAuthController = () => {
 
       const confirmedUser = mode !== 'passwordReset'
         ? await syncSession({ expectedEmail: values.email, deferProfileSetup: true }) : null;
+      if (signal.aborted) return;
       setAuthError(successHintCode);
-      await waitForPrtsWipeCycle();
+      await waitForPrtsWipeCycle(signal);
+      if (signal.aborted) return;
       setOpen(false);
       if (confirmedUser) showProfileSetup(confirmedUser);
       if (mode === 'passwordReset') {
@@ -400,16 +453,18 @@ export const useIdCardAuthController = () => {
         setActiveTab('login');
       }
     } catch (error) {
+      if (signal.aborted) return;
       const mappedHint = mapAuthErrorToHint(error, { mode });
       setAuthError(mappedHint);
 
       if (mode === 'login' && mappedHint === '104') {
-        await waitForPrtsWipeCycle();
+        await waitForPrtsWipeCycle(signal);
+        if (signal.aborted) return;
         setAuthError(null);
         setActiveTab('register');
       }
     } finally {
-      setIsSubmitting(false);
+      if (!signal.aborted) setIsSubmitting(false);
     }
   }, [isSubmitting, resetToken, setActiveTab, syncSession, showProfileSetup]);
 
@@ -421,6 +476,7 @@ export const useIdCardAuthController = () => {
     if (isSubmitting || passwordResetRequestInFlightRef.current) {
       return false;
     }
+    const signal = uiOwner.current.signal;
 
     setAuthError(null);
     passwordResetRequestInFlightRef.current = true;
@@ -435,13 +491,16 @@ export const useIdCardAuthController = () => {
       callbackUrl.search = '';
       callbackUrl.hash = '';
       await requestPasswordReset(normalizedEmail, callbackUrl.toString());
-      return true;
+      return !signal.aborted;
     } catch (error) {
+      if (signal.aborted) return false;
       setAuthError(mapAuthErrorToHint(error, { mode: 'passwordReset' }));
       return false;
     } finally {
-      passwordResetRequestInFlightRef.current = false;
-      setIsSubmitting(false);
+      if (!signal.aborted) {
+        passwordResetRequestInFlightRef.current = false;
+        setIsSubmitting(false);
+      }
     }
   }, [isSubmitting]);
 
@@ -466,6 +525,7 @@ export const useIdCardAuthController = () => {
     setIsSavingProfile(true);
     setProfileError(null);
     const sessionVersion = useAuthStore.getState().sessionVersion;
+    const signal = uiOwner.current.signal;
 
     try {
       const user = await updateProfileNickname(trimmed, profileAvatar);
@@ -478,10 +538,11 @@ export const useIdCardAuthController = () => {
         avatar: user.avatar ?? profileAvatar,
         registeredAt: user.registeredAt ?? sessionUser?.registeredAt,
       });
+      if (signal.aborted) return;
       setProfileOpen(false);
       setOpen(false);
     } catch (error) {
-      if (useAuthStore.getState().sessionVersion !== sessionVersion) return;
+      if (signal.aborted || useAuthStore.getState().sessionVersion !== sessionVersion) return;
       setProfileError(error instanceof Error ? error.message : 'Network error while saving profile.');
     } finally {
       setIsSavingProfile(false);
@@ -509,9 +570,13 @@ export const useIdCardAuthController = () => {
   }, [handleSaveProfile, isSavingProfile, profileAvatar, profileName, sessionUser]);
 
   const handleLogout = useCallback(async () => {
+    const version = useAuthStore.getState().sessionVersion;
+    const signal = uiOwner.current.signal;
     try {
       await logoutUser();
+      if (useAuthStore.getState().sessionVersion !== version) return;
       clearSessionUser();
+      if (signal.aborted) return;
       setProfileOpen(false);
       setOpen(false);
       setProfileName('');
@@ -519,6 +584,7 @@ export const useIdCardAuthController = () => {
       setProfileError(null);
       setAuthError(null);
     } catch (error) {
+      if (signal.aborted || useAuthStore.getState().sessionVersion !== version) return;
       setProfileError(error instanceof Error ? error.message : 'Network error while logging out.');
     }
   }, [clearSessionUser]);
@@ -526,9 +592,9 @@ export const useIdCardAuthController = () => {
   return {
     authBase,
     open,
-    setOpen,
+    setOpen: changeOpen,
     activeTab,
-    setActiveTab,
+    setActiveTab: changeActiveTab,
     isSubmitting,
     authError,
     resetToken,

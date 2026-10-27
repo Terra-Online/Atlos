@@ -8,6 +8,8 @@ import { installResizeObserver } from '../../../test-support/browser';
 import TreeMap from '@/pages/storage/treeMap/treeMap';
 import * as d3 from 'd3';
 import { useHistoryStore } from '@/store/history';
+import { deferred } from '../../../test-support/pages';
+import type { TreeMapNode } from '@/services/storageInspector';
 
 const api = vi.hoisted(() => ({ t: (key: string) => key, clear: vi.fn(), clearAll: vi.fn(), export: vi.fn(), import: vi.fn(), applyTheme: vi.fn(), followSystem: vi.fn(), tree: vi.fn() }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => api.t }));
@@ -120,4 +122,16 @@ it('reads import files and wires parsed data to the real progress and filter sto
     fireEvent.change(input, { target: { files: [new File(['{"source":"fixture"}'], 'markers.json', { type: 'application/json' })] } });
     await waitFor(() => { expect(api.import).toHaveBeenCalledOnce(); }); expect(input.value).toBe('');
     expect(useMarkerStore.getState().selectedPoints).toContain('selected');
+});
+
+it('keeps the latest storage inventory when an earlier refresh finishes late', async () => {
+    const older = deferred<TreeMapNode[]>(), newer = deferred<TreeMapNode[]>();
+    api.tree.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+    const view = render(<TreeMap refreshTrigger={0} />);
+    view.rerender(<TreeMap refreshTrigger={1} />);
+    await act(async () => { newer.resolve([{ name: 'current-object', id: 'current', value: 1 }]); await newer.promise; });
+    expect(screen.getByText('CurrentObject')).toBeTruthy();
+    await act(async () => { older.resolve([{ name: 'deleted-object', id: 'deleted', value: 1 }]); await older.promise; });
+    expect(screen.getByText('CurrentObject')).toBeTruthy();
+    expect(screen.queryByText('DeletedObject')).toBeNull();
 });

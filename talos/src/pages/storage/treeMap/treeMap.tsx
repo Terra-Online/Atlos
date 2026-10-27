@@ -41,12 +41,15 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
   const [treeData, setTreeData] = useState<TreeMapNode | null>(null);
 
   useEffect(() => {
+    let active = true;
     getStorageTreeMapData().then(children => {
+      if (!active) return;
       setTreeData({
         name: "Storage",
         children: children // No longer processing nodes to preserve raw names/ids
       });
-    }).catch(console.error);
+    }).catch((error: unknown) => { if (active) console.error(error); });
+    return () => { active = false; };
   }, [refreshTrigger]);
 
   const handleNodeClick = useCallback((d: CustomHierarchyRectangularNode) => {
@@ -240,6 +243,10 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
             .call(position, parent));
     }
 
+    return () => {
+      svg.interrupt();
+      svg.selectAll('*').interrupt();
+    };
   }, [treeData, handleNodeClick]);
 
   return (

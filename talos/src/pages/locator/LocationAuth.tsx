@@ -1,5 +1,5 @@
 import { EntryButton } from '@/component/button/EntryButton';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import Modal from '@/component/modal/modal';
 import profileStyles from '@/component/shared/account/profile/profile.module.scss';
@@ -12,6 +12,7 @@ import SkportIcon from '@/assets/images/UI/media/skporticon.svg?react';
 import { currentMode, disableSession } from '@/pages/locator/session';
 import { useLocatorStore } from '@/store/locator';
 import styles from '@/pages/locator/Locator.module.scss';
+import { useRequestOwner } from './useRequestOwner';
 
 const LocationAuth: React.FC = () => {
     const t = useTranslateUI();
@@ -20,6 +21,15 @@ const LocationAuth: React.FC = () => {
     const clearBanner = useLocatorStore((state) => state.clearBanner);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const captureOwner = useRequestOwner();
+    const episode = useRef(0);
+    useEffect(() => { setLoading(false); setError(''); }, [captureOwner]);
+    useEffect(() => useLocatorStore.subscribe((state, previous) => {
+        if (state.authOpen === previous.authOpen) return;
+        episode.current += 1;
+        setLoading(false);
+        setError('');
+    }), []);
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
@@ -36,6 +46,10 @@ const LocationAuth: React.FC = () => {
 
     const authorize = useCallback(async () => {
         if (loading) return;
+        const ownerCurrent = captureOwner();
+        const request = episode.current;
+        const isCurrent = () => ownerCurrent() && episode.current === request && useLocatorStore.getState().authOpen;
+        if (!isCurrent()) return;
         const current = readEFTrackerConf();
         setError('');
         setLoading(true);
@@ -47,6 +61,7 @@ const LocationAuth: React.FC = () => {
                     serverId: current.serverId,
                 }
                 : undefined);
+            if (!isCurrent()) return;
 
             if (current) {
                 saveEFTrackerConf({
@@ -61,11 +76,12 @@ const LocationAuth: React.FC = () => {
             clearBanner();
             closeAuth();
         } catch (err) {
+            if (!isCurrent()) return;
             setError(err instanceof Error ? err.message : (t('locator.errors.authorizationFailed')));
         } finally {
-            setLoading(false);
+            if (isCurrent()) setLoading(false);
         }
-    }, [clearBanner, closeAuth, loading, t]);
+    }, [captureOwner, clearBanner, closeAuth, loading, t]);
 
     return (
         <Modal

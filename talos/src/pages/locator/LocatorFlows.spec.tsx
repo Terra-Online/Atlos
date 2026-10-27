@@ -11,9 +11,10 @@ import { type EFBindingSummary, type EFRoleOption, type EFTrackerConf } from '@/
 import { installResizeObserver } from '../../../test-support/browser';
 import { deferred } from '../../../test-support/pages';
 import { useAuthStore } from '@/store/auth';
+import { openOemAuthModal } from '@/component/shared/account/authEvents';
 
 const api = vi.hoisted(() => ({ exchange: vi.fn(), bind: vi.fn(), status: vi.fn(), agree: vi.fn(), unlink: vi.fn(), cache: vi.fn(), apply: vi.fn(), disable: vi.fn(), mobile: false,
-    t: (key: string) => key, config: null as EFTrackerConf | null }));
+    cacheHit: false, cachedBinding: null as EFBindingSummary | null, t: (key: string) => key, config: null as EFTrackerConf | null }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => api.t, useLocale: () => 'en-US' }));
 vi.mock('@/locale/useFontRegion', () => ({ useFontRegion: () => () => {} }));
 vi.mock('@/platform/device', () => ({ useDevice: () => ({ isMobile: api.mobile }) }));
@@ -23,7 +24,8 @@ vi.mock('@/store/auth', async () => {
     const { create } = await import('zustand');
     return { useAuthStore: create<{ sessionUser: { uid: string; nickname: string } | null; sessionVersion: number }>(() => ({ sessionUser: { uid: 'fixture-user', nickname: 'Fixture' }, sessionVersion: 0 })) };
 });
-vi.mock('@/services/cache/backend', () => ({ getCachedBinding: () => ({ hit: false, value: null }), setCachedBinding: api.cache }));
+vi.mock('@/component/shared/account/authEvents', () => ({ openOemAuthModal: vi.fn() }));
+vi.mock('@/services/cache/backend', () => ({ getCachedBinding: () => ({ hit: api.cacheHit, value: api.cachedBinding }), setCachedBinding: api.cache }));
 vi.mock('@/services/endfield', () => ({ exchangeEFToken: api.exchange, bindEFRole: api.bind, getEFBindingStatus: api.status, agreePolicy: api.agree, unlinkEFBinding: api.unlink,
     readEFTrackerConf: () => api.config, saveEFTrackerConf: (config: EFTrackerConf) => { api.config = config; } }));
 vi.mock('./session', async (original) => ({ ...await original<typeof import('./session')>(), applyRole: api.apply, disableSession: api.disable, currentMode: () => 'skport' }));
@@ -31,7 +33,7 @@ const role = (id: string, isDefault = false): EFRoleOption => ({ roleId: id, ser
 const binding: EFBindingSummary = { bound: true, enabled: true, provider: 'skport', roleId: 'role-b', serverId: 2, nickname: 'Bound role', serverName: 'Europe' };
 const initialLocator = useLocatorStore.getState(), initialPrefs = useUiPrefsStore.getState();
 beforeEach(() => {
-    vi.clearAllMocks(); vi.useFakeTimers(); installResizeObserver(); api.mobile = false;
+    vi.clearAllMocks(); vi.useFakeTimers(); installResizeObserver(); api.mobile = false; api.cacheHit = false; api.cachedBinding = null;
     useAuthStore.setState({ sessionUser: { uid: 'fixture-user', nickname: 'Fixture' }, sessionVersion: 0 });
     api.config = { enabled: false, locatorSync: false, baseUrl: 'skport', roleId: 'old', serverId: 2, scope: ['balanced'], trackPoints: true, centerOnPosition: false };
     api.status.mockResolvedValue({ binding }); api.agree.mockResolvedValue({ ok: true }); api.unlink.mockResolvedValue({ binding: { bound: false, enabled: false } });
@@ -186,4 +188,87 @@ it.each(['unmount', 'relogin', 'account-roundtrip'])('ignores a pending bind com
     });
     await act(async () => { pending.resolve({ binding }); await pending.promise; });
     expect(api.apply).not.toHaveBeenCalled(); expect(api.cache).not.toHaveBeenCalled(); expect(bound).not.toHaveBeenCalled(); expect(close).not.toHaveBeenCalled();
+});
+
+it('does not apply a previous session status after configuration changes account', async () => {
+    const oldStatus = deferred<{ binding: EFBindingSummary }>();
+    api.status.mockReturnValueOnce(oldStatus.promise);
+    render(<LocationConfig open onClose={vi.fn()} onChangeBinding={vi.fn()} />);
+    await act(async () => { await Promise.resolve(); });
+    expect(api.status).toHaveBeenCalledOnce();
+    await act(async () => { useAuthStore.setState({ sessionUser: { uid: 'b', nickname: 'B' }, sessionVersion: 1 }); await Promise.resolve(); });
+    expect(screen.getByText('Bound role')).toBeTruthy();
+    api.cache.mockClear();
+    await act(async () => { oldStatus.resolve({ binding: { ...binding, nickname: 'Obsolete role' } }); await oldStatus.promise; });
+    expect(screen.queryByText('Obsolete role')).toBeNull();
+    expect(api.cache).not.toHaveBeenCalled();
+});
+
+it.each(['unlink', 'policy'] as const)('ignores a pending %s mutation after relogin', async (operation) => {
+    const pending = deferred<{ binding: EFBindingSummary }>();
+    const close = vi.fn();
+    if (operation === 'unlink') {
+        render(<LocationConfig open onClose={close} onChangeBinding={vi.fn()} />);
+        await act(async () => { await Promise.resolve(); });
+        api.unlink.mockReturnValueOnce(pending.promise);
+        fireEvent.click(screen.getByRole('button', { name: 'locator.binding.unlink' }));
+    } else {
+        useLocatorStore.setState({ authOpen: true });
+        api.agree.mockReturnValueOnce(pending.promise);
+        render(<LocationAuth />);
+        fireEvent.click(screen.getByRole('button', { name: 'locator.binding.authAndSync' }));
+    }
+    await act(async () => { useAuthStore.setState({ sessionVersion: 1 }); await Promise.resolve(); });
+    api.cache.mockClear();
+    await act(async () => { pending.resolve({ binding }); await pending.promise; });
+    expect(api.cache).not.toHaveBeenCalled();
+    expect(api.disable).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+    expect(api.config?.enabled).toBe(false);
+    if (operation === 'policy') expect(useLocatorStore.getState().authOpen).toBe(true);
+});
+
+it('does not authorize a new policy episode from a response to the closed episode', async () => {
+    const pending = deferred<{ binding: EFBindingSummary }>(); api.agree.mockReturnValueOnce(pending.promise);
+    useLocatorStore.setState({ authOpen: true });
+    render(<LocationAuth />);
+    fireEvent.click(screen.getByRole('button', { name: 'locator.binding.authAndSync' }));
+    act(() => { useLocatorStore.getState().closeAuth(); useLocatorStore.getState().openAuth(); });
+    await act(async () => { pending.resolve({ binding }); await pending.promise; });
+    expect(api.config?.enabled).toBe(false);
+    expect(useLocatorStore.getState().authOpen).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'locator.binding.authAndSync' }).disabled).toBe(false);
+});
+
+
+it('retains a known role while status fails and retries until a current status succeeds', async () => {
+    api.cacheHit = true; api.cachedBinding = binding;
+    api.status.mockRejectedValueOnce(new Error('offline'));
+    render(<LocationConfig open onClose={vi.fn()} onChangeBinding={vi.fn()} />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByText('Bound role')).toBeTruthy();
+    expect(api.cache).not.toHaveBeenCalled();
+    await act(async () => { await vi.advanceTimersByTimeAsync(800); });
+    expect(api.status).toHaveBeenCalledTimes(2);
+    expect(api.cache).toHaveBeenCalledWith('fixture-user', binding);
+});
+
+it('keeps unknown status loading and cancels its retry when configuration closes', async () => {
+    api.status.mockRejectedValue(new Error('offline'));
+    const view = render(<LocationConfig open onClose={vi.fn()} onChangeBinding={vi.fn()} />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByText('common.loading')).toBeTruthy();
+    view.rerender(<LocationConfig open={false} onClose={vi.fn()} onChangeBinding={vi.fn()} />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(2400); });
+    expect(api.status).toHaveBeenCalledOnce();
+    expect(api.cache).not.toHaveBeenCalled();
+});
+
+it('opens login instead of retrying an unauthorized configuration status', async () => {
+    api.status.mockRejectedValue(Object.assign(new Error('session expired'), { status: 401 }));
+    render(<LocationConfig open onClose={vi.fn()} onChangeBinding={vi.fn()} />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(2400); });
+    expect(openOemAuthModal).toHaveBeenCalledExactlyOnceWith('login');
+    expect(api.status).toHaveBeenCalledOnce();
+    expect(api.cache).not.toHaveBeenCalled();
 });

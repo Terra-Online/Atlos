@@ -177,4 +177,96 @@ describe('authentication completion', () => {
         expect(result.current.profileOpen).toBe(false);
         expect(result.current.profileError).toBeNull();
     });
+
+    it('completes background authentication without replacing a panel reopened in the same batch', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        let resolve!: () => void;
+        mocks.login.mockReturnValueOnce(new Promise<void>((done) => { resolve = done; }));
+        const authenticated = { ...user, needsProfileSetup: true };
+        mocks.refresh.mockImplementation(() => {
+            useAuthStore.getState().setSessionUser(authenticated);
+            return Promise.resolve(authenticated);
+        });
+        act(() => result.current.openAuthModal('login'));
+        let pending!: Promise<void>;
+        act(() => { pending = result.current.handleAutoSubmit({ mode: 'login', values }); });
+        act(() => { result.current.setOpen(false); result.current.openAuthModal('register'); });
+        await act(async () => { resolve(); await Promise.resolve(); await Promise.resolve(); });
+        await act(async () => { vi.advanceTimersByTime(4000); await pending; });
+        expect(useAuthStore.getState().sessionUser).toEqual(authenticated);
+        expect(result.current.open).toBe(true);
+        expect(result.current.activeTab).toBe('register');
+        expect(result.current.authError).toBeNull();
+        expect(result.current.profileOpen).toBe(false);
+    });
+
+    it.each(['reopen', 'change mode', 'unmount'] as const)('invalidates pending success transitions on %s', async (boundary) => {
+        const hook = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        mocks.refresh.mockResolvedValue({ ...user, needsProfileSetup: true });
+        act(() => hook.result.current.openAuthModal('login'));
+        let pending!: Promise<void>;
+        await act(async () => { pending = hook.result.current.handleAutoSubmit({ mode: 'login', values }); await Promise.resolve(); });
+        expect(hook.result.current.authError).toBe('200');
+        if (boundary === 'unmount') { hook.unmount(); expect(vi.getTimerCount()).toBe(0); }
+        else if (boundary === 'reopen') act(() => { hook.result.current.setOpen(false); hook.result.current.openAuthModal('register'); });
+        else act(() => hook.result.current.setActiveTab('register'));
+        await act(async () => { vi.advanceTimersByTime(4000); await pending; });
+        if (boundary === 'unmount') expect(vi.getTimerCount()).toBe(0);
+        else {
+            expect(hook.result.current.open).toBe(true);
+            expect(hook.result.current.activeTab).toBe('register');
+            expect(hook.result.current.profileOpen).toBe(false);
+            expect(hook.result.current.isSubmitting).toBe(false);
+        }
+    });
+
+    it('does not copy an old request failure into a newly opened authentication panel', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        let reject!: (error: Error) => void;
+        mocks.login.mockReturnValueOnce(new Promise<void>((_resolve, fail) => { reject = fail; }));
+        act(() => result.current.openAuthModal('login'));
+        let pending!: Promise<void>;
+        act(() => { pending = result.current.handleAutoSubmit({ mode: 'login', values }); });
+        act(() => { result.current.setOpen(false); result.current.openAuthModal('register'); });
+        await act(async () => { reject(new Error('old network failure')); await pending; });
+        expect(result.current.authError).toBeNull();
+        expect(result.current.open).toBe(true);
+        expect(result.current.activeTab).toBe('register');
+    });
+
+    it('does not clear a newer session or close its authentication panel when an older logout finishes', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser(user));
+        let resolve!: () => void;
+        mocks.logout.mockReturnValueOnce(new Promise<void>((done) => { resolve = done; }));
+        let pending!: Promise<void>;
+        act(() => { pending = result.current.handleLogout(); });
+        const current = { ...user, uid: 'new-session-owner' };
+        act(() => {
+            useAuthStore.getState().setSessionUser(current);
+            result.current.openAuthModal('register');
+        });
+        await act(async () => { resolve(); await pending; });
+        expect(useAuthStore.getState().sessionUser).toEqual(current);
+        expect(result.current.open).toBe(true);
+        expect(result.current.activeTab).toBe('register');
+    });
+
+    it('keeps the current successful transition when the active tab is selected again', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        mocks.refresh.mockResolvedValue(user);
+        act(() => result.current.openAuthModal('login'));
+        let pending!: Promise<void>;
+        await act(async () => { pending = result.current.handleAutoSubmit({ mode: 'login', values }); await Promise.resolve(); });
+        expect(result.current.authError).toBe('200');
+        act(() => result.current.setActiveTab('login'));
+        await act(async () => { vi.advanceTimersByTime(3333); await pending; });
+        expect(result.current.open).toBe(false);
+        expect(result.current.isSubmitting).toBe(false);
+    });
 });

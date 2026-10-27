@@ -9,7 +9,6 @@ import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
 import { docsLink, linksTpl } from '@/lib/i18n/docsLink';
 import {
-    getEFBindingStatus,
     unlinkEFBinding,
     type EFBindingSummary,
 } from '@/services/endfield';
@@ -24,6 +23,9 @@ import ConfigIcon from '@/assets/images/UI/config.svg?react';
 import { LOCATOR_REMINDER_SCOPE_OPTIONS } from '@/pages/locator/proximityConfig';
 import { disableSession } from '@/pages/locator/session';
 import styles from '@/pages/locator/Locator.module.scss';
+import { useRequestOwner } from './useRequestOwner';
+import { isBindingUnauthorized, loadBindingStatus } from './bindingStatus';
+import { openOemAuthModal } from '@/component/shared/account/authEvents';
 
 const SCOPES: EFTrackerScope[] = LOCATOR_REMINDER_SCOPE_OPTIONS;
 
@@ -142,6 +144,7 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
     const t = useTranslateUI();
     const locale = useLocale();
     const sessionUser = useAuthStore((state) => state.sessionUser);
+    const captureOwner = useRequestOwner();
     const uid = sessionUser?.uid;
     const cachedBinding = useMemo(() => getCachedBinding(uid), [uid]);
     const [binding, setBinding] = useState<EFBindingSummary | null>(cachedBinding.value);
@@ -155,29 +158,37 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
 
-    const refresh = useCallback(() => {
-        if (!open) return;
-        if (cachedBinding.hit) {
-            setBinding(cachedBinding.value);
+    useEffect(() => {
+        if (!open) return undefined;
+        if (!sessionUser?.uid) {
+            setBinding(null);
+            setLoading(true);
+            return undefined;
         }
+        const isOwnerCurrent = captureOwner();
+        const controller = new AbortController();
+        const isCurrent = () => !controller.signal.aborted && isOwnerCurrent();
+        setBinding(cachedBinding.value);
+        setSaving(false);
+        setError('');
         setLoading(!cachedBinding.hit);
         setScope(readScope());
         setTrackPoints(readTrackPoints());
         setCenterOnPosition(readCenterOnPosition());
-        void getEFBindingStatus()
+        void loadBindingStatus(controller.signal)
             .then((status) => {
+                if (!isCurrent()) return;
                 if (sessionUser?.uid) {
                     setCachedBinding(sessionUser.uid, status.binding);
                 }
                 setBinding(status.binding);
             })
-            .catch(() => setBinding(null))
-            .finally(() => setLoading(false));
-    }, [cachedBinding.hit, cachedBinding.value, open, sessionUser?.uid]);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
+            .then(() => { if (isCurrent()) setLoading(false); })
+            .catch((error: unknown) => {
+                if (isCurrent() && isBindingUnauthorized(error)) openOemAuthModal('login');
+            });
+        return () => { controller.abort(); };
+    }, [cachedBinding.hit, cachedBinding.value, captureOwner, open, sessionUser?.uid]);
 
     const toggleScope = useCallback((item: EFTrackerScope) => {
         setScope((current) => {
@@ -201,10 +212,13 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
 
     const handleUnlink = useCallback(async () => {
         if (saving) return;
+        const isCurrent = captureOwner();
+        if (!isCurrent()) return;
         setError('');
         setSaving(true);
         try {
             const result = await unlinkEFBinding();
+            if (!isCurrent()) return;
             if (sessionUser?.uid) {
                 setCachedBinding(sessionUser.uid, result.binding);
             }
@@ -212,11 +226,12 @@ const LocationConfig: React.FC<LocationConfigProps> = ({
             onBindingRemoved?.();
             onClose();
         } catch (err) {
+            if (!isCurrent()) return;
             setError(err instanceof Error ? err.message : (t('locator.errors.unlinkFailed')));
         } finally {
-            setSaving(false);
+            if (isCurrent()) setSaving(false);
         }
-    }, [onBindingRemoved, onClose, saving, sessionUser?.uid, t]);
+    }, [captureOwner, onBindingRemoved, onClose, saving, sessionUser?.uid, t]);
 
     const tag = tagFor(binding?.serverName);
     const server = binding?.serverName

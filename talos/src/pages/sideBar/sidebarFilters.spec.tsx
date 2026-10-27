@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { SidebarFilters, categoryCount } from './sidebarFilters';
 import { SelectorRows, SidebarWindow } from './sidebarWindow';
 import { SelectionLayer } from './selectionLayer';
+import MarkSelector from '@/pages/markSelector/markSelector';
 import type { SelectorItem } from './model';
 import { useMarkerStore } from '@/store/marker';
 import { useUserRecordStore } from '@/store/userRecord';
@@ -57,10 +58,12 @@ it('filters the same real model on query and region changes without silently cle
 });
 
 const rows: SelectorItem[] = Array.from({ length: 20 }, (_, index) => ({ typeInfo: { key: `row-${index}`, category: { main: 'normal', sub: 'natural' } }, name: `Row ${index}`, count: { total: 1, collected: 0 }, visible: true }));
-function WindowedSelection() {
+function WindowedSelection({ realRows = false }: { realRows?: boolean }) {
     const ref = useRef<HTMLDivElement>(null);
     return <SidebarWindow containerRef={ref}><div ref={ref} data-testid="root"><SelectionLayer containerRef={ref} /><div data-sidebar-scroll="true" data-sidescroll="true">
-        <SelectorRows items={rows} renderItem={(item, index, style) => <div key={item.typeInfo.key} style={style} data-sidebar-index={index} data-key={item.typeInfo.key} data-mark-selector-item="true">{item.name}</div>} />
+        <SelectorRows items={rows} renderItem={(item, index, style) => realRows
+            ? <MarkSelector key={item.typeInfo.key} item={item} index={index} style={style} />
+            : <div key={item.typeInfo.key} style={style} data-sidebar-index={index} data-key={item.typeInfo.key} data-mark-selector-item="true">{item.name}</div>} />
     </div></div></SidebarWindow>;
 }
 
@@ -79,4 +82,34 @@ it('keeps virtual rows, pointer selection and selected state consistent and remo
     scroll.scrollTop = 300; fireEvent.scroll(scroll); expect(screen.getByText('Row 19')).toBeTruthy();
     view.unmount(); expect(resize.observers.every((observer) => observer.targets.size === 0)).toBe(true);
     expect(document.body.style.userSelect).toBe('');
+});
+
+it('keeps the pointer held across a virtual scroll and commits newly revealed offscreen targets on release', () => {
+    vi.useFakeTimers(); const view = render(<WindowedSelection realRows />);
+    const root = screen.getByTestId('root'), scroll = root.querySelector<HTMLElement>('[data-sidebar-scroll]')!, grid = root.querySelector<HTMLElement>('[data-sidebar-rows]')!;
+    setRect(root, 0, 0, 200, 100); setRect(scroll, 0, 0, 200, 100); setScrollMetrics(scroll, 100, 420);
+    grid.style.gridAutoRows = '40px'; grid.style.gridTemplateColumns = '100px 100px'; grid.style.columnGap = '0px';
+    vi.spyOn(grid, 'getBoundingClientRect').mockImplementation(() => new DOMRect(0, 20 - scroll.scrollTop, 200, 400));
+    act(() => { resize.notify(); });
+    expect(screen.queryByAltText('Row 18')).toBeNull();
+    fireEvent.pointerDown(scroll, { pointerId: 1, clientX: 0, clientY: 0 });
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 50, clientY: 60 });
+    act(() => { vi.advanceTimersToNextFrame(); });
+    expect(root.hasPointerCapture(1)).toBe(true);
+    expect(useMarkerStore.getState().filter).toEqual(['row-0', 'row-2']);
+    scroll.scrollTop = 300;
+    fireEvent.scroll(scroll);
+    expect(screen.getByAltText('Row 18')).toBeTruthy();
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 50, clientY: 90 });
+    act(() => { vi.advanceTimersToNextFrame(); });
+    expect(root.hasPointerCapture(1)).toBe(true);
+    expect(useMarkerStore.getState().filter).toContain('row-18');
+    expect(useMarkerStore.getState().filter).not.toContain('row-19');
+    expect(screen.getByAltText('Row 18').closest('[data-mark-selector-item]')?.getAttribute('data-active')).toBe('true');
+    fireEvent.pointerUp(window, { pointerId: 1, clientX: 50, clientY: 90 });
+    expect(useMarkerStore.getState().filter).toContain('row-18');
+    expect(root.hasPointerCapture(1)).toBe(false);
+    view.unmount();
+    expect(document.body.style.userSelect).toBe('');
+    expect(vi.getTimerCount()).toBe(0);
 });

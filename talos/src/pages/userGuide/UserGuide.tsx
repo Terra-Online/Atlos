@@ -27,6 +27,7 @@ import { useMobileGuideSteps } from '@/pages/userGuide/procedure/steps.mobile';
 import { DEFAULT_REGION } from '@/data/map';
 import { useAppViewport, useDevice } from '@/platform/device';
 import useRegion from '@/store/region';
+import { GuideTasks } from './tasks';
 
 interface UserGuideProps {
     map?: L.Map;
@@ -62,6 +63,9 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const [showIntro, setShowIntro] = useState(true);
     const guideEpoch = useRef(0);
     const isTransitioningRef = useRef(false);
+    const runTasksRef = useRef<GuideTasks | null>(null);
+    const actionTasksRef = useRef<GuideTasks | null>(null);
+    const retryTasksRef = useRef<GuideTasks | null>(null);
     useLayoutEffect(() => {
         let owner: symbol | null = null;
         const invalidate = () => {
@@ -91,6 +95,28 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             if (owner) endGuideProgress(owner);
         };
     }, [isMobile, showIntro]);
+    useLayoutEffect(() => {
+        let tasks: GuideTasks | null = null;
+        const update = () => {
+            if (visible && useUiPrefsStore.getState().isUserGuideOpen) {
+                tasks ??= new GuideTasks();
+                runTasksRef.current = tasks;
+            } else {
+                tasks?.cancel();
+                tasks = null;
+                runTasksRef.current = null;
+                isTransitioningRef.current = false;
+            }
+        };
+        update();
+        const unsubscribe = useUiPrefsStore.subscribe((state, previous) => {
+            if (state.isUserGuideOpen !== previous.isUserGuideOpen) update();
+        });
+        return () => {
+            tasks?.cancel();
+            unsubscribe();
+        };
+    }, [isMobile, showIntro, visible]);
     // Welcome and closed Help never need a demonstration point from another region.
     const desktopSteps = useDesktopGuideSteps(map, visible && isUserGuideOpen && !showIntro && !isMobile);
     const mobileSteps = useMobileGuideSteps(map);
@@ -98,7 +124,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     // The first entry is a lightweight first-time hint. Detailed guidance starts
     // at the second entry after the user opens the help control.
     const introStep = steps[0];
-    const detailSteps = steps.slice(1);
+    const detailSteps = useMemo(() => steps.slice(1), [steps]);
     const helpersRef = useRef<StoreHelpers | null>(null);
     const readyNotifiedRef = useRef(false);
 
@@ -125,9 +151,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
 
     // Track i18n loading status
     const [i18nReady, setI18nReady] = useState(false);
-
-    // Track transition state to prevent rapid clicks/race conditions
-    const introClosingRef = useRef(false);
 
     // Wait for i18n to be ready before starting guide
     useEffect(() => {
@@ -233,8 +256,9 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             // event. Remount once layout has settled so Popper measures the
             // first detailed target instead of the stale intro target.
             const refreshAfterLayout = () => {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => setJoyrideKey((key) => key + 1));
+                const tasks = runTasksRef.current;
+                tasks?.frame(() => {
+                    tasks.frame(() => setJoyrideKey((key) => key + 1));
                 });
             };
             if (showIntro !== nextShowIntro) {
@@ -257,9 +281,11 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             return;
         }
 
-        let cancelled = false;
+        const runTasks = runTasksRef.current;
+        if (!runTasks) return;
+        const tasks = new GuideTasks(runTasks.signal);
         const updateTarget = () => {
-            if (cancelled) return;
+            if (tasks.signal.aborted) return;
             const targetSel = step.target;
             let el: Element | null = null;
             if (typeof targetSel === 'string') {
@@ -276,7 +302,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                 const view = isElementInViewport(el);
                 // Only scroll if element is not fully in viewport
                 if (!view.inView) {
-                    requestAnimationFrame(() => {
+                    tasks.frame(() => {
                         try {
                             el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
                         } catch {
@@ -289,19 +315,17 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
 
         const runBefore = async () => {
             try {
-                const anyStep = step as unknown as { onBefore?: () => void | Promise<void> };
-                const r = anyStep.onBefore?.();
+                const r = step.onBefore?.(tasks);
                 if (r instanceof Promise) await r;
             } catch (err) {
+                if (tasks.signal.aborted) return;
                 console.error('Step onBefore failed', err);
             }
             updateTarget();
         };
 
         void runBefore();
-        return () => {
-            cancelled = true;
-        };
+        return () => tasks.cancel();
     }, [visible, isUserGuideOpen, stepIndex, showIntro, introStep, detailSteps, stepCompleted, firstIncompleteIndex, isElementInViewport]);
 
     const activeSteps = useMemo(
@@ -312,16 +336,18 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const handleJoyrideCallback = useCallback(
         (data: CallBackProps) => {
             const { action, index, type, status } = data;
+            const runTasks = runTasksRef.current;
+            if (!runTasks || runTasks.signal.aborted) return;
+            if ((type === EVENTS.STEP_AFTER || type === EVENTS.TARGET_NOT_FOUND) && index !== stepIndex) return;
             const epoch = guideEpoch.current;
             const isCurrent = () => guideEpoch.current === epoch && useUiPrefsStore.getState().isUserGuideOpen;
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
                 // A one-step intro finishes independently of the detailed guide.
                 // Acknowledging it must not mark the full guide as completed.
-                if ((showIntro || introClosingRef.current) && status === STATUS.FINISHED) {
+                if (showIntro && status === STATUS.FINISHED) {
                     if (introStep?.id) setUserGuideStepCompleted(introStep.id, true);
-                    void introStep?.onNext?.();
-                    introClosingRef.current = false;
+                    void introStep?.onNext?.(runTasks);
                     setShowIntro(false);
                     setIsUserGuideOpen(false);
                     setStepIndex(0);
@@ -330,7 +356,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     return;
                 }
                 if (showIntro && status === STATUS.SKIPPED) {
-                    void introStep?.onNext?.();
+                    void introStep?.onNext?.(runTasks);
                 }
                 // FINISHED / SKIPPED: treat as fully completed so it won't auto-run again.
                 // Reset transition state
@@ -353,18 +379,22 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             }
 
             if (type === EVENTS.STEP_AFTER) {
+                retryTasksRef.current?.cancel();
                 if (action === 'next') {
+                    if (isTransitioningRef.current) return;
+                    actionTasksRef.current?.cancel();
+                    const tasks = new GuideTasks(runTasks.signal);
+                    actionTasksRef.current = tasks;
                     // Mark starts of transition
                     isTransitioningRef.current = true;
 
                     // Mark current step as completed
                     const currentStep = activeSteps[index];
-                    if (!currentStep) return;
+                    if (!currentStep) { isTransitioningRef.current = false; tasks.cancel(); return; }
                     setUserGuideStepCompleted(currentStep.id, true);
 
                     if (currentStep.intro) {
-                        introClosingRef.current = true;
-                        void currentStep.onNext?.();
+                        void currentStep.onNext?.(tasks);
                         setShowIntro(false);
                         setIsUserGuideOpen(false);
                         setStepIndex(0);
@@ -373,9 +403,9 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     }
                     
                     const proceed = () => {
-                         if (!isCurrent()) return;
+                         if (!isCurrent() || tasks.signal.aborted) return;
                          if (currentStep.delay) {
-                            setTimeout(() => {
+                            tasks.after(() => {
                                 if (!isCurrent()) return;
                                 targetNotFoundRetriesRef.current = {};
                                 setStepIndex(index + 1);
@@ -389,10 +419,10 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     };
 
                     if (currentStep && currentStep.onNext) {
-                        const result = currentStep.onNext();
+                        const result = currentStep.onNext(tasks);
                         if (result instanceof Promise) {
                             void result.then(proceed).catch((err) => {
-                                if (!isCurrent()) return;
+                                if (!isCurrent() || tasks.signal.aborted) return;
                                 console.error('Step action failed', err);
                                 proceed();
                             });
@@ -403,11 +433,17 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                         proceed();
                     }
                 } else if (action === 'prev') {
+                    actionTasksRef.current?.cancel();
+                    isTransitioningRef.current = false;
                     targetNotFoundRetriesRef.current = {};
                     setStepIndex(index - 1);
                 }
             } else if (type === EVENTS.TARGET_NOT_FOUND) {
-                const step = activeSteps[index] as unknown as { id?: string; onBefore?: () => void | Promise<void>; target?: unknown } | undefined;
+                if (isTransitioningRef.current) return;
+                retryTasksRef.current?.cancel();
+                const tasks = new GuideTasks(runTasks.signal);
+                retryTasksRef.current = tasks;
+                const step = activeSteps[index];
                 const stepId = step?.id ?? String(index);
                 const prev = targetNotFoundRetriesRef.current[stepId] ?? 0;
                 const next = prev + 1;
@@ -424,16 +460,20 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     if (next <= MAX_RETRIES) {
                         const waitMs = 120 + next * 120;
                         try {
-                            const r = step?.onBefore?.();
+                            const r = step?.onBefore?.(tasks);
                             if (r instanceof Promise) {
-                                void r.finally(() => {
-                                    setTimeout(() => setJoyrideKey((k) => k + 1), waitMs);
+                                void r.then(() => {
+                                    tasks.after(() => setJoyrideKey((k) => k + 1), waitMs);
+                                }, (error: unknown) => {
+                                    if (tasks.signal.aborted) return;
+                                    console.error('Step retry failed', error);
+                                    tasks.after(() => setJoyrideKey((k) => k + 1), waitMs);
                                 });
                             } else {
-                                setTimeout(() => setJoyrideKey((k) => k + 1), waitMs);
+                                tasks.after(() => setJoyrideKey((k) => k + 1), waitMs);
                             }
                         } catch {
-                            setTimeout(() => setJoyrideKey((k) => k + 1), waitMs);
+                            tasks.after(() => setJoyrideKey((k) => k + 1), waitMs);
                         }
                         return;
                     }
@@ -451,16 +491,17 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                         // ignore scroll errors
                     }
                     // 等待元素進入視窗再觸發 Joyride update，不 remount，不跳步
-                    setTimeout(() => setJoyrideKey((k) => k + 1), 250);
+                    tasks.after(() => setJoyrideKey((k) => k + 1), 250);
                     return;
                 }
 
                 // Case 3: selector有元素且已在視窗，直接觸發 Joyride update（不 remount，不跳步）
-                setTimeout(() => setJoyrideKey((k) => k + 1), 0);
+                tasks.after(() => setJoyrideKey((k) => k + 1));
             }
         },
         [
             activeSteps,
+            stepIndex,
             showIntro,
             introStep,
             isElementInViewport,

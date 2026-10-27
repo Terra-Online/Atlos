@@ -78,6 +78,7 @@ const ActionBar = memo(({
     const anchorRef = useRef<HTMLSpanElement | null>(null);
     const layerRef = useRef<PopoverElement | null>(null);
     const closeTimerRef = useRef<number | undefined>(undefined);
+    const focusTimerRef = useRef<number | undefined>(undefined);
     const frameRef = useRef<number | undefined>(undefined);
     const rootHoverRef = useRef(false);
     const layerHoverRef = useRef(false);
@@ -96,6 +97,18 @@ const ActionBar = memo(({
             ownerWindow.clearTimeout(closeTimerRef.current);
             closeTimerRef.current = undefined;
         }
+        if (focusTimerRef.current) {
+            ownerWindow.clearTimeout(focusTimerRef.current);
+            focusTimerRef.current = undefined;
+        }
+    }, [ownerWindow]);
+
+    const deferFocusCheck = useCallback((check: () => void) => {
+        if (focusTimerRef.current) ownerWindow.clearTimeout(focusTimerRef.current);
+        focusTimerRef.current = ownerWindow.setTimeout(() => {
+            focusTimerRef.current = undefined;
+            check();
+        }, 0);
     }, [ownerWindow]);
 
     const positionLayer = useCallback(() => {
@@ -261,14 +274,14 @@ const ActionBar = memo(({
             showLayer();
         };
         const handleFocusOut = () => {
-            ownerWindow.setTimeout(() => {
+            deferFocusCheck(() => {
                 const activeElement = ownerDocument.activeElement;
                 rootFocusRef.current = Boolean(activeElement && root.contains(activeElement));
                 layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
                 if (!activeElement || (!root.contains(activeElement) && !layerRef.current?.contains(activeElement))) {
                     scheduleHideLayer();
                 }
-            }, 0);
+            });
         };
 
         root.addEventListener('pointerdown', handleRootPointerDown);
@@ -284,7 +297,7 @@ const ActionBar = memo(({
             root.removeEventListener('focusin', handleFocusIn);
             root.removeEventListener('focusout', handleFocusOut);
         };
-    }, [controlled, getRootElement, isFloating, ownerDocument, ownerWindow, scheduleHideLayer, showLayer]);
+    }, [controlled, deferFocusCheck, getRootElement, isFloating, ownerDocument, ownerWindow, scheduleHideLayer, showLayer]);
 
     useEffect(() => {
         if (!isFloating) return undefined;
@@ -382,13 +395,13 @@ const ActionBar = memo(({
                 showLayer();
             } : undefined}
             onBlur={isFloating ? () => {
-                ownerWindow.setTimeout(() => {
+                deferFocusCheck(() => {
                     const activeElement = ownerDocument.activeElement;
                     const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
                     rootFocusRef.current = Boolean(activeElement && root?.contains(activeElement));
                     layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
                     if (!controlled && !shouldKeepLayerOpen()) scheduleHideLayer();
-                }, 0);
+                });
             } : undefined}
             role="toolbar"
             aria-label={ariaLabel}

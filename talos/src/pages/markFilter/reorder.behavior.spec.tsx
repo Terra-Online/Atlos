@@ -29,3 +29,24 @@ it('ignores another category drag and unregistered targets without corrupting th
     act(() => { hook.result.current.updateDrag('b', 999); hook.result.current.unregister('a'); hook.result.current.updateDrag('a', 999); hook.result.current.endDrag(); });
     expect(useUiPrefsStore.getState().markFilterOrder).toEqual(['a', 'b', 'c']);
 });
+
+it('cannot replay registration order over a drag completed before the next timer turn', () => {
+    const hook = renderHook(() => useMarkFilterDragContext(), { wrapper: MarkFilterDragProvider });
+    act(() => { ['a', 'b', 'c', 'd'].forEach((id, index) => hook.result.current.register(id, () => ({ top: index * 100, bottom: (index + 1) * 100, height: 100, center: index * 100 + 50 }))); });
+    act(() => { hook.result.current.startDrag('d'); });
+    act(() => { hook.result.current.updateDrag('d', -220); });
+    act(() => { hook.result.current.endDrag(); });
+    const completed = useUiPrefsStore.getState().markFilterOrder;
+    expect(completed).toEqual(['a', 'b', 'd', 'c']);
+    act(() => { vi.runOnlyPendingTimers(); });
+    expect(useUiPrefsStore.getState().markFilterOrder).toEqual(completed);
+});
+
+it('does not overwrite a new owner after structural registration unmounts', () => {
+    const hook = renderHook(() => useMarkFilterDragContext(), { wrapper: MarkFilterDragProvider });
+    act(() => { hook.result.current.register('new', () => ({ top: 0, bottom: 100, height: 100, center: 50 })); });
+    hook.unmount();
+    useUiPrefsStore.setState({ markFilterOrder: ['new-owner'] });
+    act(() => { vi.runOnlyPendingTimers(); });
+    expect(useUiPrefsStore.getState().markFilterOrder).toEqual(['new-owner']);
+});
