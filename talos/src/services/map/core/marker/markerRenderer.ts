@@ -11,6 +11,7 @@ import {
 } from '@/services/map/events/PreviewEvents';
 
 import { useMarkerStore } from '@/store/marker';
+import { getDisplayedPointProgress } from '@/store/guideProgress';
 import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { commitPointProgress } from '@/store/history';
@@ -100,7 +101,7 @@ const syncMarkerState = (layer: L.Marker, markerId: string): void => {
     const markerStore = useMarkerStore.getState();
     const selected = hasId(markerStore.selectedPoints, markerId)
         || hasId(markerStore.temporarySelectedPoints, markerId);
-    const checked = hasId(getActivePoints(), markerId);
+    const checked = hasId(getDisplayedPointProgress(), markerId);
     setMarkerState(layer, { selected, checked, completed: checked });
 };
 

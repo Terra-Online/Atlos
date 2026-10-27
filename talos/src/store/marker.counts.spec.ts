@@ -20,6 +20,7 @@ import {
 } from './marker';
 import useRegion from './region';
 import { useUserRecordStore } from './userRecord';
+import { beginGuideProgress, endGuideProgress, previewGuideProgress } from './guideProgress';
 
 beforeAll(async () => {
     await loadAllMarkers();
@@ -27,6 +28,36 @@ beforeAll(async () => {
 });
 
 describe('marker progress matches rendered points', () => {
+    it('shows demo progress in real regional and subregion counts without changing saved points', async () => {
+        const point = getLoadedRegionMarkers('Valley_4')[0];
+        const previousRegion = useRegion.getState().currentRegionKey;
+        const previousRecord = useUserRecordStore.getState();
+        useRegion.setState({ currentRegionKey: 'Valley_4' });
+        useUserRecordStore.setState({ activePoints: [point.id] });
+        const saved = useUserRecordStore.getState();
+        const owner = beginGuideProgress();
+        const view = renderHook(() => ({
+            region: useRegionMarkerCount(point.type),
+            grouped: useMultiRegionMarkerCount([point.type])[0],
+            subregion: useSubregionMarkerCount(point.type, point.subregId),
+        }));
+        try {
+            await act(() => previewGuideProgress(point.type, true));
+            for (const count of Object.values(view.result.current)) {
+                expect(count.total).toBeGreaterThan(0);
+                expect(count.collected).toBe(count.total);
+            }
+            await act(() => previewGuideProgress(point.type, false));
+            for (const count of Object.values(view.result.current)) expect(count.collected).toBe(0);
+            expect(useUserRecordStore.getState()).toBe(saved);
+            act(() => endGuideProgress(owner));
+            for (const count of Object.values(view.result.current)) expect(count.collected).toBe(1);
+        } finally {
+            endGuideProgress(owner); view.unmount();
+            useRegion.setState({ currentRegionKey: previousRegion }); useUserRecordStore.setState(previousRecord, true);
+        }
+    });
+
     it('matches generated totals in every scope when all raw IDs are collected', () => {
         const cache = new CollectedCountCache();
         const ids = getLoadedWorldMarkers().map((point) => point.id);

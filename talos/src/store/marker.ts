@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { useUserRecord } from './userRecord';
+import { useDisplayedPointProgress } from './guideProgress';
 import useRegion from './region';
 import { useEffect, useMemo } from 'react';
 import { CollectedCountCache } from './collectedCountCache';
@@ -236,7 +236,7 @@ const ensureWorldCountData = () => {
 };
 
 export const useWorldMarkerCount = (type: string | undefined) => {
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
 
     useEffect(() => {
@@ -257,7 +257,7 @@ export const useWorldMarkerCount = (type: string | undefined) => {
 };
 
 export const useRegionMarkerCount = (type: string | undefined) => {
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const currentRegion = useRegion((state) => state.currentRegionKey);
     const collected = useMarkerStore((state) => type && currentRegion
         ? collectedCounts.get(pointsRecord, state.markerDataVersion, `region:${currentRegion}`, () => getLoadedRegionMarkers(currentRegion)).get(type) ?? 0
@@ -275,7 +275,7 @@ export const useRegionMarkerCount = (type: string | undefined) => {
 };
 
 export const useMultiRegionMarkerCount = (types: string[]) => {
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const currentRegion = useRegion((state) => state.currentRegionKey);
     const counts = useMarkerStore((state) => currentRegion ? collectedCounts.get(pointsRecord, state.markerDataVersion, `region:${currentRegion}`, () => getLoadedRegionMarkers(currentRegion)) : undefined);
     return useMemo(() => {
@@ -292,7 +292,7 @@ export const useMultiRegionMarkerCount = (types: string[]) => {
 
 // Get the marker count for a specific subregion (based on current active point)
 export const useSubregionMarkerCount = (type?: string, subregionId?: string) => {
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
     return useMemo(() => {
         void markerDataVersion;

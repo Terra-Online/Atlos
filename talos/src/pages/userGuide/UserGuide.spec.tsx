@@ -6,16 +6,20 @@ import { GuideTooltip } from './tooltip/tooltip';
 import { GuideSpotlight } from './spotlight/spotlight';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useUserGuideStore } from '@/store/userGuide';
+import { useUserRecordStore } from '@/store/userRecord';
+import { MARKER_TYPE_TREE, type IMarkerData } from '@/data/marker';
+import { getDisplayedPointProgress } from '@/store/guideProgress';
+import type { GuideStep } from './procedure/steps.desktop';
 import { setRect } from '../../../test-support/browser';
 
-const driver = vi.hoisted(() => ({ props: null as JoyrideProps | null, mobile: false, target: vi.fn(), t: (key: string) => key }));
+const driver = vi.hoisted(() => ({ props: null as JoyrideProps | null, mobile: false, target: vi.fn(), markers: vi.fn(), t: (key: string) => key }));
 vi.mock('react-joyride', async (original) => ({ ...await original<typeof import('react-joyride')>(), default: (props: JoyrideProps) => { driver.props = props; return <div data-testid="tour" data-run={String(props.run)} />; } }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => driver.t, i18nInitPromise: Promise.resolve() }));
 vi.mock('@/platform/device', () => ({ useDevice: () => ({ isMobile: driver.mobile }), useAppViewport: () => ({ width: 800, height: 600 }) }));
-vi.mock('@/data/marker', async (original) => ({ ...await original<typeof import('@/data/marker')>(), findFirstMarkerByType: driver.target }));
-const prefs = useUiPrefsStore.getState(), guide = useUserGuideStore.getState();
-beforeEach(() => { vi.useFakeTimers(); driver.mobile = false; driver.props = null; driver.target.mockReset(); driver.target.mockResolvedValue(null); useUiPrefsStore.setState({ isUserGuideOpen: false, forceHeadbarExpanded: null }); useUserGuideStore.setState({ stepCompleted: {} }); });
-afterEach(() => { cleanup(); useUiPrefsStore.setState(prefs, true); useUserGuideStore.setState(guide, true); document.body.style.overflow = ''; document.documentElement.removeAttribute('data-theme'); vi.useRealTimers(); vi.restoreAllMocks(); });
+vi.mock('@/data/marker', async (original) => ({ ...await original<typeof import('@/data/marker')>(), findFirstMarkerByType: driver.target, loadAllMarkers: driver.markers }));
+const prefs = useUiPrefsStore.getState(), guide = useUserGuideStore.getState(), records = useUserRecordStore.getState();
+beforeEach(() => { vi.useFakeTimers(); driver.mobile = false; driver.props = null; driver.target.mockReset(); driver.target.mockResolvedValue(null); driver.markers.mockReset(); driver.markers.mockResolvedValue([]); useUiPrefsStore.setState({ isUserGuideOpen: false, forceHeadbarExpanded: null }); useUserGuideStore.setState({ stepCompleted: {} }); });
+afterEach(() => { cleanup(); useUiPrefsStore.setState(prefs, true); useUserGuideStore.setState(guide, true); useUserRecordStore.setState(records, true); document.body.style.overflow = ''; document.documentElement.removeAttribute('data-theme'); vi.useRealTimers(); vi.restoreAllMocks(); });
 const emit = (status: CallBackProps['status'], type: CallBackProps['type'] = 'tour:end', index = 0) => act(() => {
     const props = driver.props!;
     props.callback?.({ action: 'next', controlled: true, index, lifecycle: 'complete', origin: null, size: props.steps.length, status, step: props.steps[index], type });
@@ -59,6 +63,103 @@ it('releases all temporary guide controls, including mobile headbar expansion, w
     act(() => { useUiPrefsStore.setState({ isUserGuideOpen: true, forceHeadbarExpanded: true, forceRegionSubOpen: true, forceLayerSubOpen: true, forceDetailOpen: true, mobileDrawerSnapIndex: 2 }); });
     emit('skipped');
     expect(useUiPrefsStore.getState()).toMatchObject({ isUserGuideOpen: false, forceHeadbarExpanded: null, forceRegionSubOpen: false, forceLayerSubOpen: false, forceDetailOpen: false, mobileDrawerSnapIndex: null, desktopDrawerSnapIndex: null });
+});
+
+it.each([false, true])('preserves real progress while demonstrating completion and clearing on mobile=%s', async (mobile) => {
+    driver.mobile = mobile;
+    const type = MARKER_TYPE_TREE.boss[0].key;
+    const point = (id: string): IMarkerData => ({ id, type, subregId: 'V1A', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
+    driver.markers.mockResolvedValue([point('guide-existing'), point('guide-new')]);
+    useUserRecordStore.setState({ activePoints: ['guide-existing', 'other-type'], activeArchives: ['saved-archive'], updatedAt: 7 });
+    const original = useUserRecordStore.getState();
+    useUserGuideStore.setState({ stepCompleted: { [mobile ? 'MSTEP-0_welcome' : 'STEP-0_welcome']: true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    const steps = driver.props!.steps as GuideStep[];
+    const complete = steps.find((step) => step.id.endsWith('_selector-complete'))!;
+    const clear = steps.find((step) => step.id === (mobile ? 'MSTEP-22_trigger-switch' : 'STEP-7_trigger-handle'))!;
+    await act(async () => { await complete.onNext?.(); });
+    expect(useUserRecordStore.getState()).toBe(original);
+    expect(getDisplayedPointProgress()).toEqual(['guide-existing', 'other-type', 'guide-new']);
+    await act(async () => { await clear.onNext?.(); });
+    expect(useUserRecordStore.getState()).toBe(original);
+    expect(getDisplayedPointProgress()).toEqual(['other-type']);
+    emit('skipped');
+    expect(getDisplayedPointProgress()).toBe(original.activePoints);
+});
+
+it.each(['finished', 'skipped', 'closed', 'unmounted'] as const)('discards both the displayed demo and an in-flight action when Help is %s', async (boundary) => {
+    const type = MARKER_TYPE_TREE.boss[0].key;
+    const point: IMarkerData = { id: 'pending-demo', type, subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 };
+    driver.markers.mockResolvedValue([point]);
+    useUserRecordStore.setState({ activePoints: ['real'], updatedAt: 7 });
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    const view = render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    const complete = (driver.props!.steps as GuideStep[]).find((step) => step.id.endsWith('_selector-complete'))!;
+    await act(async () => { await complete.onNext?.(); });
+    expect(getDisplayedPointProgress()).toEqual(['real', 'pending-demo']);
+    let resolve!: (points: IMarkerData[]) => void;
+    driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
+    const pending = complete.onNext?.();
+    if (boundary === 'unmounted') view.unmount();
+    else if (boundary === 'closed') act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); });
+    else emit(boundary);
+    expect(getDisplayedPointProgress()).toEqual(['real']);
+    await act(async () => { resolve([point]); await pending; });
+    expect(getDisplayedPointProgress()).toEqual(['real']);
+    expect(useUserRecordStore.getState().updatedAt).toBe(7);
+});
+
+it('starts a fresh demo owner when Help closes and reopens in the same React batch', async () => {
+    const type = MARKER_TYPE_TREE.boss[0].key;
+    const point: IMarkerData = { id: 'pending-demo', type, subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 };
+    useUserRecordStore.setState({ activePoints: ['real'], updatedAt: 7 });
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    let resolve!: (points: IMarkerData[]) => void;
+    driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
+    const complete = (driver.props!.steps as GuideStep[]).find((step) => step.id.endsWith('_selector-complete'))!;
+    const pending = complete.onNext?.();
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(false); useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    await act(async () => { resolve([point]); await pending; });
+    expect(getDisplayedPointProgress()).toEqual(['real']);
+    driver.markers.mockResolvedValue([point]);
+    await act(async () => { await complete.onNext?.(); });
+    expect(getDisplayedPointProgress()).toEqual(['real', 'pending-demo']);
+});
+
+it('does not advance a reopened walkthrough when an earlier step action finishes late', async () => {
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    const steps = driver.props!.steps as GuideStep[];
+    const index = steps.findIndex((step) => step.id.endsWith('_selector-complete'));
+    act(() => {
+        useUserGuideStore.getState().setStepCompletedBulk(Object.fromEntries(steps.slice(0, index).map((step) => [step.id, true])));
+        useUiPrefsStore.getState().setIsUserGuideOpen(true);
+    });
+    expect(driver.props!.stepIndex).toBe(index);
+    let resolve!: (points: IMarkerData[]) => void;
+    driver.markers.mockReturnValueOnce(new Promise<IMarkerData[]>((done) => { resolve = done; }));
+    emit('running', 'step:after', index);
+    emit('skipped');
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    expect(driver.props!.stepIndex).toBe(0);
+    await act(async () => { resolve([]); await Promise.resolve(); });
+    expect(driver.props!.stepIndex).toBe(0);
+});
+
+it('does not advance a reopened walkthrough when the earlier transition delay expires', async () => {
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    render(<UserGuide />); await act(async () => { await Promise.resolve(); });
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    expect(driver.props!.stepIndex).toBe(0);
+    emit('running', 'step:after', 0);
+    emit('skipped');
+    act(() => { useUiPrefsStore.getState().setIsUserGuideOpen(true); });
+    act(() => { vi.advanceTimersByTime(300); });
+    expect(driver.props!.stepIndex).toBe(0);
 });
 
 const tooltipStep = (intro: boolean): StepMerged & { hideProgress: boolean } => ({ target: 'body', content: 'Guide content', hideProgress: intro, disableBeacon: true, disableCloseOnEsc: false, disableOverlay: true, disableOverlayClose: true, disableScrollParentFix: false, disableScrolling: true,

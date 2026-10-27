@@ -12,9 +12,9 @@ import {
     useSetForceHeadbarExpanded,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
-import { applyPointProgressSilently } from '@/store/history';
+import { previewGuideProgress } from '@/store/guideProgress';
 import useRegion from '@/store/region';
-import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
 export type GuideStep = Step & {
@@ -69,7 +69,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         }
     }, [firstType, waitForElement]);
 
-    const steps: GuideStep[] = useMemo(() => [
+    const steps = useMemo<GuideStep[]>(() => [
         {
             id: 'MSTEP-0_welcome',
             target: '[data-guide="help"]',
@@ -314,13 +314,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 }
                 await scrollTypeIntoView();
             },
-            onNext: () => {
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ collect: [p.id] }));
-                });
-            },
+            onNext: () => previewGuideProgress(firstType, true),
         },
         {
             id: 'MSTEP-15_divider',
@@ -352,11 +346,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             onNext: () => {
                 // Pull down drawer to snap index 0
                 setDrawerSnapIndex(0);
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ uncollect: [p.id] }));
-                });
+                return previewGuideProgress(firstType, false);
             },
             delay: 300,
         },

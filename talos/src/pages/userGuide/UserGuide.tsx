@@ -1,6 +1,6 @@
 import { GuideTooltip } from '@/pages/userGuide/tooltip/tooltip';
 import Joyride, { StoreHelpers, CallBackProps, EVENTS, STATUS } from 'react-joyride';
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import { i18nInitPromise } from '@/locale';
 import {
@@ -12,7 +12,9 @@ import {
     useSetForceHeadbarExpanded,
     useSetDesktopDrawerSnapIndex,
     useSetMobileDrawerSnapIndex,
+    useUiPrefsStore,
 } from '@/store/uiPrefs';
+import { beginGuideProgress, endGuideProgress } from '@/store/guideProgress';
 import {
     useUserGuideStepCompleted,
     useSetUserGuideStepCompleted,
@@ -58,6 +60,37 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     }, [isUserGuideOpen]);
 
     const [showIntro, setShowIntro] = useState(true);
+    const guideEpoch = useRef(0);
+    const isTransitioningRef = useRef(false);
+    useLayoutEffect(() => {
+        let owner: symbol | null = null;
+        const invalidate = () => {
+            ++guideEpoch.current;
+            isTransitioningRef.current = false;
+        };
+        const update = () => {
+            if (!showIntro && useUiPrefsStore.getState().isUserGuideOpen) {
+                if (!owner) {
+                    invalidate();
+                    owner = beginGuideProgress();
+                }
+            } else if (owner) {
+                invalidate();
+                endGuideProgress(owner);
+                owner = null;
+            }
+        };
+        update();
+        // Observe the actual close/reopen boundaries, including both in one batch.
+        const unsubscribe = useUiPrefsStore.subscribe((state, previous) => {
+            if (state.isUserGuideOpen !== previous.isUserGuideOpen) update();
+        });
+        return () => {
+            invalidate();
+            unsubscribe();
+            if (owner) endGuideProgress(owner);
+        };
+    }, [isMobile, showIntro]);
     // Welcome and closed Help never need a demonstration point from another region.
     const desktopSteps = useDesktopGuideSteps(map, visible && isUserGuideOpen && !showIntro && !isMobile);
     const mobileSteps = useMobileGuideSteps(map);
@@ -94,7 +127,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const [i18nReady, setI18nReady] = useState(false);
 
     // Track transition state to prevent rapid clicks/race conditions
-    const isTransitioningRef = useRef(false);
     const introClosingRef = useRef(false);
 
     // Wait for i18n to be ready before starting guide
@@ -280,6 +312,8 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const handleJoyrideCallback = useCallback(
         (data: CallBackProps) => {
             const { action, index, type, status } = data;
+            const epoch = guideEpoch.current;
+            const isCurrent = () => guideEpoch.current === epoch && useUiPrefsStore.getState().isUserGuideOpen;
 
             if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
                 // A one-step intro finishes independently of the detailed guide.
@@ -339,8 +373,10 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                     }
                     
                     const proceed = () => {
+                         if (!isCurrent()) return;
                          if (currentStep.delay) {
                             setTimeout(() => {
+                                if (!isCurrent()) return;
                                 targetNotFoundRetriesRef.current = {};
                                 setStepIndex(index + 1);
                                 isTransitioningRef.current = false;
@@ -356,6 +392,7 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                         const result = currentStep.onNext();
                         if (result instanceof Promise) {
                             void result.then(proceed).catch((err) => {
+                                if (!isCurrent()) return;
                                 console.error('Step action failed', err);
                                 proceed();
                             });

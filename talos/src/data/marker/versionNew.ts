@@ -3,7 +3,7 @@ import { MARKER_TYPE_DICT, type IMarkerType } from './index';
 import { getLoadedRegionMarkers } from './index';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
-import { useUserRecord } from '@/store/userRecord';
+import { useDisplayedPointProgress } from '@/store/guideProgress';
 import { useMemo } from 'react';
 
 export type VersionNewRule = string;
@@ -49,7 +49,7 @@ export const getVersionNewType = (typeKey: string): VersionNewDiffType | undefin
 
 export const useVersionNewMarkerCounts = (): Record<string, { total: number; collected: number }> => {
     const currentRegion = useRegion((state) => state.currentRegionKey);
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
 
     return useMemo(() => {

@@ -216,9 +216,5 @@ export const replacePointProgressFromExternal = (ids: Iterable<string>): void =>
     useHistoryStore.getState().clear();
 };
 
-export const applyPointProgressSilently = (delta: PointProgressDelta): boolean => (
-    applyPointProgressDelta(delta) !== null
-);
-
 export const useCanUndo = () => useHistoryStore((state) => state.past.length > 0);
 export const useCanRedo = () => useHistoryStore((state) => state.future.length > 0);

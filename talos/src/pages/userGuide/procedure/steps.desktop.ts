@@ -13,9 +13,9 @@ import {
     useSetForceDetailOpen,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
-import { applyPointProgressSilently } from '@/store/history';
+import { previewGuideProgress } from '@/store/guideProgress';
 import useRegion from '@/store/region';
-import { findFirstMarkerByType, loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
+import { findFirstMarkerByType, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
 export type GuideStep = Step & {
@@ -64,7 +64,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
         };
     }, [firstType, prepareTarget]);
 
-    const steps: GuideStep[] = useMemo(() => [
+    const steps = useMemo<GuideStep[]>(() => [
         {
             id: 'STEP-0_welcome',
             target: '[data-guide="help"]',
@@ -178,13 +178,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             placement: 'right',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => {
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ collect: [p.id] }));
-                });
-            },
+            onNext: () => previewGuideProgress(firstType, true),
         },
         {
             id: 'STEP-7_trigger-handle',
@@ -195,11 +189,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             disableAutoScroll: true,
             onNext: () => {
                 setDrawerSnapIndex(1);
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ uncollect: [p.id] }));
-                });
+                return previewGuideProgress(firstType, false);
             },
             delay: 300,
         },

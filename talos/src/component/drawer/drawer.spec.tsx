@@ -30,8 +30,12 @@ it('cycles normalized snaps through the handle, reports progress and ignores dis
     expect(onProgressChange).toHaveBeenLastCalledWith(1 / 3);
     fireEvent.click(handle);
     await waitFor(() => expect(drawer.dataset.snap).toBe('2'));
+    await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('300px'));
     fireEvent.click(handle);
     await waitFor(() => expect(drawer.dataset.snap).toBe('0'));
+    // data-snap reports proximity before Motion reaches its exact target.
+    // Disabled-input assertions start from a settled pose, not a fractional frame.
+    await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('0px'));
     view.rerender(<Drawer snap={[300, 0, 100]} dragDisabled />);
     expect(handle.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(handle);

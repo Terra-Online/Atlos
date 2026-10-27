@@ -67,7 +67,7 @@
 | `storage/treeMap/treeMap.tsx` | D3 层级浏览，显示实际字节，删除必须用原id而非格式化显示名 | 同 suite 执行真 D3：flat leaf 选择传 StorageSection；nested group→URL leaf 原路径、MiB/B 真实量而非面积clamp后的值 | jsdom缺SVG transform interpolation；只中断视觉transition后清fixture，不声称缩放动画/真实浏览器存储读取已验证 |
 | `uiOverlay/UIOverlay.tsx` | 统一页内浮层、引导/公告顺序、UI隐藏和账户通道生命周期 | 新增 `UIOverlay.spec.tsx`：真实 HeadBar/controller/prefs/auth，intent面板、隐藏清空、compact显示UI、guide ready后未读仅auto一次、share link抑制但手动仍开、PiP/移动限制、账号监听清理/旧回调忽略 | 下游面板/geo/announcement/live API模拟；各真实面板由自身suite覆盖；retry用正式hook |
 | `uploader/uploader.tsx` | 图片列表/Viewer/Carousel共享选中状态，写操作仅属于当前点和账号 | 既有 pointImages/upload hook 验证按需、同点tab复用、会话/点位旧返回与上传生命周期；新增 `uploader.spec.tsx` 真Viewer/Carousel/ActionBar：游客/paste入口、轮播分享、vote debounce/rollback/quickoff、recall延迟确认/回滚、账号切换取消队列/旧返回忽略、点位ABA/同uid重登旧recall隔离 | transport/clipboard/paste文件识别边界模拟；浏览器文件选择和远端图片不下载；root加强scope身份/sessionVersion |
-| `userGuide/UserGuide.tsx` | 自动仅intro；详细Help从未完成处继续；force UI状态生命周期明确 | 新增 `UserGuide.spec.tsx`：桌面/移动intro、intro不误完成详细steps、Help resume、UI隐藏暂停、详细skip清强制侧栏/HeadBar、ready通知 | 仅Joyride第三方driver模拟，实际step控制/store运行；真实tour定位在浏览器验证 |
+| `userGuide/UserGuide.tsx` | 自动仅intro；详细Help从未完成处继续；演示进度独立于真实数据；force UI状态生命周期明确 | `UserGuide.spec.tsx`：桌面/移动intro、Help resume/暂停、详细skip清强制控件、ready；复核补充两端实际演示动作、结束/跳过/关闭/卸载、同批重开、旧Promise/推进延迟不能跳动新引导；`guideProgress.spec.tsx` 保护数据/历史/存储和反序结果，真实统计/标记另有组合 | Joyride driver模拟；其它onBefore、滚动/重试调度及真实tour定位/动画仍待后续审查，不能按本行推导完整验收 |
 | `userGuide/spotlight/spotlight.tsx` | spotlight绑定当前target，目标消失移除box，点击遮罩推进，inactive不得误推进 | 同 suite 直接挂真实 GuideSpotlight：显式目标rect、目标删除、active点击推进/inactive点击不推进 | 几何fixture；视觉光圈与自动滚动不由DOM测试证明 |
 | `userGuide/tooltip/tooltip.tsx` | intro和详细引导工具按钮与进度对应，委托Joyride回调 | 同 suite 直接挂真实 GuideTooltip，验证intro/详细按钮、步骤进度与callback | driver callback为fixture；不模拟用户点击不存在的第三方DOM |
 
@@ -94,7 +94,7 @@
 | TEST-COMMENT-RESTORE-001 | 编辑API立即拒绝，父组件恢复的draft被延迟的Lexical clear OnChange覆盖；真实Comments集成稳定失败 | controlled同步使用专用update tag及discrete更新，不回声外部值；编辑器专项clear→restore和真实编辑失败回滚同时保护，保留正常user/IME更新 |
 | TEST-LOCATOR-EPOCH-001 | host卸载后旧exchange仍发bind；bind已发后卸载、同uid重登、ABA仍会cache/applyRole/onBound，4例修前失败 | 请求持有mounted lifetime+request id+正式sessionVersion；每个await边界检查，旧exchange不继续写、旧bind结果不影响当前定位或回调；session/open变化重置本地表单 |
 
-根任务负责的搜索Enter、搜索旧响应/回退、动态加载持续重试等变更与用户确认记录在 [TESTS](TESTS.md)。上表没有将故障注入误写为线上事件。当前没有尚待用户决定的页面产品取舍；真实浏览器边界作为验证限制保留，不能写成已测通过。
+根任务负责的搜索Enter、搜索旧响应/回退、动态加载持续重试等变更与用户确认记录在 [TESTS](TESTS.md)。上表没有将故障注入误写为线上事件。2026-10-27 复核发现引导 procedure 的批量完成/清除直接写真实进度，原引导 suite 未覆盖这条链路；用户确认隔离演示后，已用独立显示覆盖修复，并补充实际步骤、生命周期、异步反序、真实统计/Leaflet 标记回归。这也是仅完成 TSX 文件核对不足以证明所有功能的实例。关键异步交错和真实浏览器动画/布局仍待验证，整体验收状态与缺口统一见 TESTS 的开头，不能写成已测通过。
 
 ## 验证记录
 

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    applyPointProgressSilently,
     commitPointProgress,
     replacePointProgressFromExternal,
     useHistoryStore,
@@ -76,16 +75,6 @@ describe('point progress history', () => {
         expect(activePoints()).toEqual(['remote']);
         expect(useHistoryStore.getState().past).toHaveLength(0);
         expect(useHistoryStore.getState().future).toHaveLength(0);
-    });
-
-    it('applies silent changes without modifying either history stack', () => {
-        commitPointProgress('first', { collect: ['point-a'] });
-        useHistoryStore.getState().undo();
-
-        expect(applyPointProgressSilently({ collect: ['guide-point'] })).toBe(true);
-        expect(activePoints()).toEqual(['guide-point']);
-        expect(useHistoryStore.getState().past).toHaveLength(0);
-        expect(useHistoryStore.getState().future).toHaveLength(1);
     });
 
     it('keeps only the latest 25 manual commands', () => {

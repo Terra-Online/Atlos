@@ -5,7 +5,7 @@ import { IMarkerData, IMarkerType } from '@/data/marker';
 import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
 import { SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { useUiPrefsStore } from '@/store/uiPrefs';
-import { getActivePoints } from '@/store/userRecord';
+import { getDisplayedPointProgress } from '@/store/guideProgress';
 import { emitPreviewLeave } from '@/services/map/core/marker/markerRenderer';
 
 // NOTE: whitelist is based on 2nd-level category (`category.sub`).
@@ -164,7 +164,7 @@ export class ClusterLayer {
 
         // Get hide completed markers preference
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
-        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+        const completedMarkerIds = shouldHideCompleted ? new Set(getDisplayedPointProgress()) : new Set();
 
         const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
         const idsByType = new Map<string, string[]>();
@@ -254,7 +254,7 @@ export class ClusterLayer {
 
         // Get hide completed markers preference
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
-        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+        const completedMarkerIds = shouldHideCompleted ? new Set(getDisplayedPointProgress()) : new Set();
 
         const activeManagedTypes = new Set(this.filterKeys.filter((key) => this.clusterGroupsByType[key]));
 

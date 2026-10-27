@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MapCore } from '@/services/map/core/map';
 import { useMarkerStore } from '@/store/marker';
-import { useUserRecord } from '@/store/userRecord';
+import { useDisplayedPointProgress } from '@/store/guideProgress';
 import { useUiPrefsStore, useHideCompletedMarkers } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import { LOCATOR_CONFIG_UPDATED_EVENT, readEFTrackerConf, type EFTrackerScope } from '@/services/endfield';
@@ -21,7 +21,7 @@ export function useMarker(
     mapInitialized: boolean,
 ) {
     const filter = useMarkerStore((state) => state.filter);
-    const collectedPoints = useUserRecord();
+    const collectedPoints = useDisplayedPointProgress();
     const selectedPoints = useMarkerStore((state) => state.selectedPoints);
     const temporarySelectedPoints = useMarkerStore((state) => state.temporarySelectedPoints);
     const markerDataVersion = useMarkerStore((state) => state.markerDataVersion);
