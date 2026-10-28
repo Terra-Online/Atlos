@@ -12,6 +12,7 @@
     "showDetails": "Ayrıntıları göster",
     "source": "Kaynak",
     "investUnlock": "{mission} sonrasında açılır",
+    "centralUnlock": "Ana hikâyede açılır",
     "collectionSummary": "Toplandı: {items}",
     "archiveTotal": "Sürüm toplamı: {num}",
     "importPending": "Arşiv ilerlemesi içe aktarılıyor...",

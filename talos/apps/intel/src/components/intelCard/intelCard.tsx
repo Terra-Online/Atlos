@@ -114,8 +114,13 @@ const DetailLine = ({ label, children }: { label: string; children: ReactNode })
 const gameLabel = (tGame: (key: string) => string, id: string) => (tGame(id) || id).replace(/<[^>]*>/g, '');
 const gameRichLabel = (tGame: (key: string) => string, id: string) => parse(tGame(id) || id);
 
+// Central archives default to story guidance when no specific route is known.
+// Retain the unresolved contract source for later acquisition audits.
+const usesStoryFallback = (archive: IntelArchive) => archive.categoryId === 'document'
+  && (archive.acquisition.method === 'auto' || archive.acquisition.method === 'unknown');
+
 const methodLabel = (archive: IntelArchive, tUI: (key: string) => string) => (
-  tUI(`intel.method.${archive.acquisition.method}`)
+  tUI(`intel.method.${usesStoryFallback(archive) ? 'auto' : archive.acquisition.method}`)
 );
 
 const InterpolatedTemplate = ({
@@ -563,6 +568,8 @@ const IntelCard = ({
                         template={tUI('intel.investUnlock')}
                         values={{ mission: gameLabel(tGame, archive.acquisition.researchId) }}
                       />
+                    ) : usesStoryFallback(archive) ? (
+                      tUI('intel.centralUnlock')
                     ) : methodLabel(archive, tUI)}
                   </DetailLine>
                 )}

@@ -12,6 +12,7 @@
     "showDetails": "Show Details",
     "source": "Source",
     "investUnlock": "Unlocks after {mission}",
+    "centralUnlock": "Unlocks through the main story",
     "collectionSummary": "Collected: {items}",
     "archiveTotal": "Current total: {num}",
     "importPending": "Importing Intel progress...",

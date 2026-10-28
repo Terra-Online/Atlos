@@ -12,6 +12,7 @@
     "showDetails": "Pokaż szczegóły",
     "source": "Źródło",
     "investUnlock": "Odblokowuje się po {mission}",
+    "centralUnlock": "Odblokowuje się w głównej fabule",
     "collectionSummary": "Zebrane: {items}",
     "archiveTotal": "Suma w wersji: {num}",
     "importPending": "Importowanie postępu archiwum...",

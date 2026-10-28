@@ -12,6 +12,7 @@
     "showDetails": "Mostrar detalles",
     "source": "Fuente",
     "investUnlock": "Se desbloquea tras {mission}",
+    "centralUnlock": "Se desbloquea en la historia principal",
     "collectionSummary": "Recopilado: {items}",
     "archiveTotal": "Total actual: {num}",
     "importPending": "Importando el progreso del archivo...",

@@ -12,6 +12,7 @@
     "showDetails": "Показати подробиці",
     "source": "Джерело",
     "investUnlock": "Відкривається після {mission}",
+    "centralUnlock": "Відкривається за основним сюжетом",
     "collectionSummary": "Зібрано: {items}",
     "archiveTotal": "Усього у версії: {num}",
     "importPending": "Імпортування прогресу архіву...",

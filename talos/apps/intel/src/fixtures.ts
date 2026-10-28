@@ -21,6 +21,7 @@ const labels: Record<string, string> = {
     'region:Valley_4': 'Valley', 'region:Valley_4:VL_1': 'Hub',
     'intel.shopNpcPurchase': 'Buy from {npc} at {shop}',
     'intel.shopSystemPurchase': 'Buy at {shop} in {region}',
+    'intel.centralUnlock': 'Unlocks through the main story',
     'intel.method.auto': 'Automatically unlocked',
     'intel.method.unknown': 'Unlock condition unconfirmed',
     'intel.investUnlock': 'Unlock {mission}',

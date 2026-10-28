@@ -12,6 +12,7 @@
     "showDetails": "Visa detaljer",
     "source": "Källa",
     "investUnlock": "Låses upp efter {mission}",
+    "centralUnlock": "Låses upp via huvudberättelsen",
     "collectionSummary": "Insamlat: {items}",
     "archiveTotal": "Totalt nu: {num}",
     "importPending": "Importerar arkivförlopp...",

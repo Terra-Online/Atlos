@@ -12,6 +12,7 @@
     "showDetails": "แสดงรายละเอียด",
     "source": "แหล่งที่มา",
     "investUnlock": "ปลดล็อกหลัง {mission}",
+    "centralUnlock": "ปลดล็อกผ่านเนื้อเรื่องหลัก",
     "collectionSummary": "สะสมแล้ว: {items}",
     "archiveTotal": "รวมเวอร์ชันนี้: {num} แฟ้ม",
     "importPending": "กำลังนำเข้าความคืบหน้าของคลังข้อมูล...",

@@ -12,6 +12,7 @@
     "showDetails": "显示获取详情",
     "source": "获取方式",
     "investUnlock": "完成调查任务 {mission} 后自动解锁",
+    "centralUnlock": "推进主线以解锁",
     "collectionSummary": "本次共收集：{items}",
     "archiveTotal": "当前版本档案总数为 {num}",
     "importPending": "正在导入档案收集进度……",

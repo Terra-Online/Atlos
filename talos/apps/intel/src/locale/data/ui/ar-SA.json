@@ -12,6 +12,7 @@
     "showDetails": "عرض التفاصيل",
     "source": "المصدر",
     "investUnlock": "يُفتح بعد {mission}",
+    "centralUnlock": "يُفتح عبر القصة الرئيسية",
     "collectionSummary": "تم جمعه: {items}",
     "archiveTotal": "إجمالي الإصدار: {num}",
     "importPending": "جارٍ استيراد تقدم السجلات...",

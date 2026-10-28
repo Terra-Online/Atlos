@@ -91,7 +91,7 @@ it('defers map previews until near the viewport and cleans up visibility ownersh
 
 it.each([
     { archive: archives[1], text: ['First mission', 'Final stage'] },
-    { archive: archives[2], text: ['Automatically unlocked'] },
+    { archive: archives[2], text: ['Automatically unlocked', 'Unlocks through the main story'] },
     { archive: archives[5], text: ['Unlock condition unconfirmed'] },
     { archive: archives[3], text: ['Valley - Hub', 'Trader', 'Trading post'] },
     { archive: archives[4], text: ['Investigate ore'] },
@@ -101,6 +101,17 @@ it.each([
     expect(screen.getByRole('button').textContent).not.toMatch(/<\/?(?:b|em)>/);
     expect(screen.getByRole('button').textContent).not.toContain('intel.centralUnlock');
     if (archive.acquisition.method === 'shop') expect(screen.getAllByRole('link')).toHaveLength(2);
+});
+
+it('keeps main-story guidance for an unresolved central archive and preserves known mission routes', () => {
+    const archive = { ...archives[2], acquisition: { method: 'unknown' as const } };
+    const view = render(<IntelCard {...props()} archive={archive} />);
+    expect(screen.getByRole('button').textContent).toContain('Automatically unlocked');
+    expect(screen.getByRole('button').textContent).toContain('Unlocks through the main story');
+    expect(screen.getByRole('button').textContent).not.toContain('Unlock condition unconfirmed');
+    view.rerender(<IntelCard {...props()} archive={{ ...archive, acquisition: archives[1].acquisition }} />);
+    expect(screen.getByRole('button').textContent).toContain('First mission');
+    expect(screen.getByRole('button').textContent).not.toContain('Unlocks through the main story');
 });
 
 it('renders optional map interactions and special NPC instructions without discarding the mission sequence', () => {
