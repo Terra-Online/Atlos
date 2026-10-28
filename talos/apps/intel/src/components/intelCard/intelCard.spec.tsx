@@ -125,6 +125,23 @@ it('renders optional map interactions and special NPC instructions without disca
     expect(screen.getByRole('button').textContent).toContain('First mission');
 });
 
+it.each(['detached', 'zero-size'])('does not publish a %s card measurement into the surviving virtual owner', async (state) => {
+    const onHeightMeasured = vi.fn();
+    const view = render(<IntelCard {...props()} onHeightMeasured={onHeightMeasured} />);
+    const card = screen.getByRole('button');
+    const shell = card.parentElement!;
+    if (state === 'detached') {
+        setRect(card, 0, 0, 300, 178.2);
+        // DOM removal can precede the passive cleanup which dequeues measurement.
+        view.container.remove();
+    }
+    await frames();
+    expect(onHeightMeasured).not.toHaveBeenCalled();
+    expect(shell.style.getPropertyValue('--intel-card-expanded-height')).toBe('');
+    expect(shell.dataset.heightReady).toBeUndefined();
+    expect(shell.dataset.layoutSync).toBeUndefined();
+});
+
 describe('virtualized cards', () => {
     it('retains measured geometry offscreen, restores content on return, and disables virtualization during expansion', async () => {
         const observers = installIntersectionObserver();
@@ -148,6 +165,10 @@ describe('virtualized cards', () => {
         act(() => rebound.notify(placeholder, true));
         expect(screen.getByRole('button').getAttribute('aria-pressed')).toBe('false');
         const nextShell = screen.getByRole('button').parentElement!;
+        // Restoring expensive content must retain the placeholder's geometry
+        // before the next measurement frame, not briefly shrink the scroll range.
+        expect(nextShell.style.getPropertyValue('--intel-card-expanded-height')).toBe('180px');
+        expect(nextShell.dataset.heightReady).toBe('true');
         act(() => [...observers].reverse().find((item) => item.root === rootRef.current && item.targets.has(nextShell))!.notify(nextShell, false));
         view.rerender(<div ref={rootRef}><VirtualIntelCard {...options} virtualize={false} /></div>);
         expect(screen.getByRole('button')).toBeTruthy();

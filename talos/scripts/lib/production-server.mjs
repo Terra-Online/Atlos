@@ -24,13 +24,14 @@ export async function readProductionArtifact(dist) {
     } };
 }
 
-export async function createProductionServer({ dist, port = 0 }) {
+export async function createProductionServer({ dist, port = 0, handleRequest }) {
     const artifact = await readProductionArtifact(dist);
     const { root } = artifact;
     const missing = [];
     const server = createServer(async (request, response) => {
         const url = new URL(request.url, 'http://localhost');
         try {
+            if (handleRequest && await handleRequest(request, response, artifact)) return;
             if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405); response.end(); return; }
             let relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
             if (!path.posix.extname(relative)) relative = relative.startsWith('me/') || relative === 'me' ? 'me/index.html'

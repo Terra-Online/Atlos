@@ -266,10 +266,12 @@ export interface ArchiveCardProps {
   onToggle: (archive: IntelArchive) => void;
   onTypeTargetHover: (archiveId: string) => void;
   virtualRef?: Ref<HTMLDivElement>;
+  measuredHeight?: number;
   onHeightMeasured?: (height: number) => void;
 }
 
-interface IntelTitleStyle extends CSSProperties {
+interface CardStyle extends CSSProperties {
+  '--intel-card-expanded-height'?: string;
   '--expanded-title-height'?: string;
 }
 
@@ -321,7 +323,9 @@ const scheduleCardMeasurement = (
   cardMeasurementFrame = window.requestAnimationFrame(() => {
     cardMeasurementFrame = 0;
     const entries = Array.from(pendingCardMeasurements.entries())
-      .filter(([, measurement]) => measurement.canMeasure());
+      // Virtualization may detach a card before its passive cleanup removes
+      // this queued entry. Never publish geometry into that surviving owner.
+      .filter(([skeleton, measurement]) => skeleton.isConnected && measurement.card.isConnected && measurement.canMeasure());
     pendingCardMeasurements.clear();
 
     // Keep writes and reads in separate passes. Interleaving them forces the
@@ -331,18 +335,19 @@ const scheduleCardMeasurement = (
       targetSkeleton.dataset.measuring = 'true';
     });
 
+    // Reject zero-size geometry before the one-pixel rounding margin is added.
     const measurements = entries.map(([targetSkeleton, { card, onMeasured }]) => ({
       skeleton: targetSkeleton,
-      height: Math.ceil(card.getBoundingClientRect().height) + 1,
+      height: card.getBoundingClientRect().height,
       onMeasured,
-    }));
+    })).filter(({ height }) => Number.isFinite(height) && height > 0)
+      .map((measurement) => ({ ...measurement, height: Math.ceil(measurement.height) + 1 }));
 
     entries.forEach(([targetSkeleton]) => {
       delete targetSkeleton.dataset.measuring;
     });
 
     measurements.forEach(({ skeleton: targetSkeleton, height, onMeasured }) => {
-      if (height <= 0) return;
       const previousHeight = Number.parseFloat(
         targetSkeleton.style.getPropertyValue('--intel-card-expanded-height'),
       );
@@ -354,10 +359,10 @@ const scheduleCardMeasurement = (
     });
 
     window.requestAnimationFrame(() => {
-      measurements.forEach(({ skeleton: targetSkeleton }) => {
+      entries.forEach(([targetSkeleton]) => {
         if (!targetSkeleton.isConnected) return;
         delete targetSkeleton.dataset.layoutSync;
-        if (targetSkeleton.dataset.motionReady !== 'true') {
+        if (targetSkeleton.dataset.heightReady === 'true' && targetSkeleton.dataset.motionReady !== 'true') {
           targetSkeleton.dataset.motionReady = 'true';
         }
       });
@@ -373,6 +378,7 @@ const IntelCard = ({
   onToggle,
   onTypeTargetHover,
   virtualRef,
+  measuredHeight,
   onHeightMeasured,
 }: ArchiveCardProps) => {
   const tUI = useTranslateUI();
@@ -507,7 +513,11 @@ const IntelCard = ({
         else if (virtualRef) virtualRef.current = element;
       }}
       className={styles.cardSkeleton}
-      style={{ zIndex: stackOrder }}
+      data-height-ready={measuredHeight ? 'true' : undefined}
+      style={measuredHeight ? {
+        zIndex: stackOrder,
+        '--intel-card-expanded-height': `${measuredHeight}px`,
+      } as CardStyle : { zIndex: stackOrder }}
     >
       <article
         ref={cardRef}
@@ -544,7 +554,7 @@ const IntelCard = ({
               onTransitionEnd={handleTitleTransitionEnd}
               onTransitionCancel={handleTitleTransitionEnd}
               style={expandedTitleHeight
-                ? { '--expanded-title-height': `${expandedTitleHeight}px` } as IntelTitleStyle
+                ? { '--expanded-title-height': `${expandedTitleHeight}px` } as CardStyle
                 : undefined}
             >
               <div ref={titleRef} className={styles.titleSingle}>{title}</div>

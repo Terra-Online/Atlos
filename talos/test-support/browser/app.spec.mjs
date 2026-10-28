@@ -229,6 +229,14 @@ test('TEST-BROWSER-INTEL-LAYOUT-001 details animate measured cards and virtualiz
         }), { id });
         await testInfo.attach('intel-restored-stability-frames', { body: JSON.stringify({ expanded, frames: stableFrames }, null, 2), contentType: 'application/json' });
         expect(stableFrames.every((frame) => frame.mounted && Math.abs(frame.height - expanded) < 2 && Math.abs(frame.top) < 1)).toBe(true);
+        // A temporarily shorter scroll range can clamp a native smooth scroll
+        // before its true endpoint. Virtualization must preserve the full grid,
+        // including the first frame of each remounted card.
+        const heightRange = await page.evaluate(() => {
+            const heights = window.__intelScrollTimeline.frames.map((frame) => frame.height);
+            return Math.max(...heights) - Math.min(...heights);
+        });
+        expect(heightRange, 'Virtualization preserves the scroll range throughout the roundtrip').toBeLessThan(2);
     } finally {
         const scrollFrames = await page.evaluate(() => { window.__intelScrollTimeline.active = false; return window.__intelScrollTimeline.frames; });
         await testInfo.attach('intel-native-scroll-frames', { body: JSON.stringify(scrollFrames, null, 2), contentType: 'application/json' });

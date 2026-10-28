@@ -1,4 +1,5 @@
 import { bundleReport } from './scripts/lib/bundle-report.mjs';
+import { startupProbe } from './scripts/lib/startup-probe.mjs';
 import { fontShardsPlugin } from './scripts/fonts/vite-plugin.mjs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -268,6 +269,7 @@ export default defineConfig({
     // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
         bundleReport('main'),
+        startupProbe(),
         fontShardsPlugin(),
         react(),
         svgr(),

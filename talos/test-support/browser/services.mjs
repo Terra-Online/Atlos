@@ -1,4 +1,4 @@
-const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZCEAAAAASUVORK5CYII=', 'base64');
+export const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZCEAAAAASUVORK5CYII=', 'base64');
 const unread = { system: 0, community: 0, total: 0 };
 const localFrontend = (url) => ['localhost', '127.0.0.1'].includes(url.hostname) && ['5173', '5174', '5175'].includes(url.port);
 
@@ -94,7 +94,8 @@ export async function serviceResponse(services, request, url) {
     return { status: 404, body: { code: 'UNMOCKED_BROWSER_SERVICE', message: `${method} ${url.pathname}` } };
 }
 
-export async function installBrowserServices(context, services, { origin = 'http://localhost:5173', production } = {}) {
+/** routeHTTP=false preserves browser HTTP caching for the independent transport baseline. */
+export async function installBrowserServices(context, services, { origin = 'http://localhost:5173', production, routeHTTP = true } = {}) {
         await context.addInitScript(() => {
             // Playwright also evaluates init scripts in its initial about:blank page.
             if (location.origin === 'null') return;
@@ -117,7 +118,7 @@ export async function installBrowserServices(context, services, { origin = 'http
         };
         context.on('page', watchPage);
         for (const page of context.pages()) watchPage(page);
-        await context.route('**/*', async (route) => {
+        if (routeHTTP) await context.route('**/*', async (route) => {
             const request = route.request();
             const url = new URL(request.url());
             if (url.origin === origin || (!production && localFrontend(url))) {
