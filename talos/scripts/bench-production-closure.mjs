@@ -154,7 +154,7 @@ try {
     const builds = [['production', values.dist], ...(values.probe ? [['probe-diagnostic', values.probe]] : [])];
     for (const [kind, dist] of builds) {
         const artifact = await readProductionArtifact(dist), files = await hashFiles(artifact.root);
-        report.artifacts.push(describeArtifact(kind, artifact, files));
+        report.artifacts.push(await describeArtifact(kind, artifact, files));
     }
     // Refuse a stale/dirty probe before spending time collecting any page samples.
     acceptArtifacts(report);

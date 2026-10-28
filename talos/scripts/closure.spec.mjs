@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { startupProbe } from './lib/startup-probe.mjs';
 import { describeArtifact, acceptArtifacts, acceptClosure, summarizeClosure, startupStages } from './lib/closure-summary.mjs';
 
@@ -17,18 +20,33 @@ const withProbe = () => {
     return report;
 };
 
-test('artifact input identity permits diagnostic code changes but retains resources and private configuration in its digest', () => {
+test('artifact input identity permits diagnostic code changes but retains resources and private configuration in its digest', async (t) => {
     const build = { root: '/frozen', info: { source: 'a'.repeat(40), sourceDirty: false, target: 'org', channel: 'prod', resources: { prefix: '/assets', bucket: 'private-bucket' } } };
     const files = { '.atlos-build.json': 'receipt', 'index.html': 'html', 'assets/main.js': 'js', 'assets/main.css': 'css', 'fonts/font.woff2': 'font', 'data/index.json': 'data' };
-    const production = describeArtifact('production', build, files);
-    const diagnostic = describeArtifact('probe-diagnostic', build, { ...files, '.atlos-build.json': 'new-receipt', 'index.html': 'new-html', 'assets/main.js': 'instrumented-js', 'assets/main.css': 'new-css' });
+    const production = await describeArtifact('production', build, files);
+    const diagnostic = await describeArtifact('probe-diagnostic', build, { ...files, '.atlos-build.json': 'new-receipt', 'index.html': 'new-html', 'assets/main.js': 'instrumented-js', 'assets/main.css': 'new-css' });
     assert.notEqual(production.sha256, diagnostic.sha256);
     assert.deepEqual(production.inputs, diagnostic.inputs);
     assert.equal(production.inputs.files, 2);
-    assert.notEqual(describeArtifact('probe-diagnostic', build, { ...files, 'fonts/font.woff2': 'changed-font' }).inputs.sha256, production.inputs.sha256);
+    assert.notEqual((await describeArtifact('probe-diagnostic', build, { ...files, 'fonts/font.woff2': 'changed-font' })).inputs.sha256, production.inputs.sha256);
     const changed = structuredClone(build); changed.info.resources.bucket = 'another-bucket';
-    assert.notEqual(describeArtifact('probe-diagnostic', changed, files).resources.sha256, production.resources.sha256);
+    assert.notEqual((await describeArtifact('probe-diagnostic', changed, files)).resources.sha256, production.resources.sha256);
     assert.equal(JSON.stringify(production).includes('private-bucket'), false);
+    const root = await mkdtemp(join(tmpdir(), 'atlos-search-identity-'));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    await mkdir(join(root, 'search/docs'), { recursive: true });
+    const sample = async (builtAt, revision = 'same-docs') => {
+        const bytes = JSON.stringify({ builtAt, locales: [{ locale: 'en-US', revision }] });
+        await writeFile(join(root, 'search/docs/index.json'), bytes);
+        return describeArtifact('production', { ...build, root }, { ...files, 'search/docs/index.json': createHash('sha256').update(bytes).digest('hex') });
+    };
+    const first = await sample('2026-10-28T12:00:00Z');
+    const later = await sample('2026-10-28T12:01:00Z');
+    assert.notEqual(first.sha256, later.sha256);
+    assert.deepEqual(first.inputs, later.inputs);
+    assert.notEqual(first.metadata.searchIndexBuiltAt, later.metadata.searchIndexBuiltAt);
+    assert.notEqual((await sample('2026-10-28T12:01:00Z', 'changed-docs')).inputs.sha256, first.inputs.sha256);
+    await assert.rejects(sample('invalid-date'), /Invalid search index/);
 });
 
 test('artifact provenance refuses dirty, stale or differently configured probe inputs', () => {

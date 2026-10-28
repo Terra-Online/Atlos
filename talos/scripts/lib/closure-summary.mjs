@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { distribution } from '../report-production.mjs';
 
 export const startupStages = ['i18n', 'region', 'i18n-wait', 'url-state', 'navigation', 'font-registration', 'region-wait', 'map-fonts'];
@@ -6,13 +8,25 @@ const finite = (value) => Number.isFinite(value) && value >= 0;
 const validSample = (row) => finite(row.ready) && finite(row.sampledAt) && row.sampledAt >= 2000 && row.ready <= row.sampledAt;
 const transfer = (row) => row.resources.reduce((n, entry) => n + entry.transfer, 0);
 
-export function describeArtifact(kind, artifact, files) {
+export async function describeArtifact(kind, artifact, files) {
     const inputs = Object.fromEntries(Object.entries(files).filter(([file]) => file !== '.atlos-build.json' && !/\.(?:m?js|cjs|css|html?)$/i.test(file)));
     const digest = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+    const metadata = {};
+    // The search generator timestamps otherwise identical manifests on each
+    // build. Retain the raw artifact digest and compare every data field.
+    const searchIndex = 'search/docs/index.json';
+    if (inputs[searchIndex]) {
+        const bytes = await readFile(resolve(artifact.root, searchIndex));
+        if (createHash('sha256').update(bytes).digest('hex') !== inputs[searchIndex]) throw new Error('Search index changed after artifact hashing.');
+        const { builtAt, ...manifest } = JSON.parse(bytes);
+        if (typeof builtAt !== 'string' || !Number.isFinite(Date.parse(builtAt))) throw new Error('Invalid search index build timestamp.');
+        metadata.searchIndexBuiltAt = builtAt;
+        inputs[searchIndex] = digest(manifest);
+    }
     const resources = Object.fromEntries(Object.entries(artifact.info.resources).sort(([a], [b]) => a.localeCompare(b)));
     return { kind, source: artifact.info.source, sourceDirty: artifact.info.sourceDirty, target: artifact.info.target, channel: artifact.info.channel,
-        root: artifact.root, sha256: digest(files), resources: { sha256: digest(resources), method: 'SHA256 of key-sorted full build-receipt resources object; private values omitted' },
-        inputs: { files: Object.keys(inputs).length, sha256: digest(inputs), method: 'SHA256 of JSON.stringify(hashFiles), excluding .atlos-build.json and JS/CSS/HTML files' } };
+        root: artifact.root, sha256: digest(files), metadata, resources: { sha256: digest(resources), method: 'SHA256 of key-sorted full build-receipt resources object; private values omitted' },
+        inputs: { files: Object.keys(inputs).length, sha256: digest(inputs), method: 'SHA256 of JSON.stringify(hashFiles), excluding .atlos-build.json and JS/CSS/HTML files; search/docs/index.json compares all JSON fields except root builtAt, while the full artifact SHA256 retains original bytes' } };
 }
 
 /** Probe code may differ, but source/configuration and every other frozen input must match. */

@@ -1,5 +1,7 @@
 # 行为基线与测试入口
 
+> 最新收口（2026-10-28）：Stage 0本地可复现验收完成，完整check 1103例、开发浏览器65/65、冻结生产20/20通过。当前证据与边界见 [Stage 0验收](baselines/2026-10-28-closure/README.md)，逐组件职责/行为补全/LOC/模块输出与源码差值见 [变更清单](behavior-change-ledger.md)。下面保留各轮历史结果，不将旧失败追改为通过。
+
 对应本地 `docs/roadmap.md` 阶段 2，范围包含主站 `component/`、`pages/` 全部生产 TSX、主站启动以及两个独立 app。地图渲染内核沿用既有专项测试。2026-10-27记录为行为收口；2026-10-28补充冻结生产产物验证和首份性能记录，见 [PERFORMANCE](PERFORMANCE.md)。
 
 ## 当前状态：本轮自动化行为基线已收口
@@ -108,3 +110,12 @@ WebKit展开在本次自然帧中仍有221ms空档；此前诊断为208–277ms�
 `TEST-BROWSER-INTEL-LAYOUT-001` 的剩余Firefox波动已定位为两个真实几何缺陷：从占位恢复卡片时未沿用缓存高度，且已脱离DOM/零尺寸卡片仍可被旧测量队列读成0再加1px并写回存活owner。修复保留恢复首帧几何，并在舍入前拒绝无效测量；组件回归先在旧实现确定失败。
 
 完整开发浏览器矩阵 **65/65退出0**，零skip/flaky/retry；三桌面引擎的全列表原生平滑滚动往返高度range均为0px，原到底/回顶、动画中间帧及2秒恢复稳定合同保留，新增全程高度不跳变断言。逐项状态见 [dev-behavior.json](baselines/2026-10-28-closure/dev-behavior.json)，修前/中间失败/修后原始帧见 [scroll-stability.json](baselines/2026-10-28-closure/scroll-stability.json)。这修正此前保留的未定位风险，不追改旧运行结果。
+
+
+## Stage 0 最终验收（2026-10-28）
+
+运行源码冻结 `3b616330`，完整标准check退出0：Node37、主站/两worker935、Intel73、hub58，共1103例；类型5项目、数据、ESLint641文件0error/1既有warning、Stylelint92通过。该入口已接入closure专项合同。之后采集器仅对搜索manifest根builtAt做语义身份比较，保留完整字节摘要；5条相关合同和相关ESLint再次通过，运行产物未改。
+
+完整开发65/65与最终生产20/20均零skip/flaky/retry；原Firefox滚动波动已修复，三桌面引擎原一次smooth到底/恢复场景全程高度range均0px，原几何/动画/持久化/认证合同未放宽。普通性能、暖HTTP、独立启动阶段、预热后堆趋势与四源码快照体积都已归档；[validation](baselines/2026-10-28-closure/validation.json)列出命令、身份、实际结果和文件校验。
+
+自动化和本地性能范围已收口，不把20轮堆趋势当长期无泄漏证明，不把CPU4模拟当真机或本地资源当线上CDN。后续进入优化/重构时使用[逐组件变更与成本](behavior-change-ledger.md)定位原合同，并以这份冻结产物/输入和对应指标做同条件比较。
