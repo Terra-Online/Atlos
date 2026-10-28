@@ -24,7 +24,8 @@
     "lint:fix": "node ./scripts/tasks.mjs lint:fix",
     "preview": "vite preview --outDir dist/r2",
     "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'",
-    "test:behavior": "playwright test --config playwright.config.mjs"
+    "test:behavior": "playwright test --config playwright.config.mjs",
+    "bench:production": "node scripts/bench-production.mjs"
   },
   "browserslist": [
     "defaults"

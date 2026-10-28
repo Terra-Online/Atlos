@@ -26,6 +26,7 @@
 | `pnpm check` | 数据校验、类型准备、主站/Intel/user-hub/两worker类型检查、ESLint/Stylelint、Node与全部Vitest suites |
 | `pnpm test` / `pnpm type-check` / `pnpm lint` | 上述各独立入口，无生产服务写入 |
 | `pnpm exec vitest run <路径>` | 主站/两worker精确suite；独立app需相应 `--config apps/<app>/vitest.config.ts` |
+| `BEHAVIOR_DIST=dist/<冻结产物> pnpm test:behavior` | 生产构建模式17例，三种桌面引擎及两种移动模拟；资源/服务边界见[性能入口](PERFORMANCE.md) |
 | `pnpm test:behavior` | 完整真实浏览器矩阵，独立于默认check，需已安装Playwright三个引擎；本机三站可自动启动 |
 | `pnpm exec vitest run --coverage` | 可选V8覆盖报告，本轮不以百分比作为完成判据 |
 

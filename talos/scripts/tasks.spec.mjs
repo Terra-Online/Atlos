@@ -12,6 +12,8 @@ import { verifyArtifact, verifyOutput } from './release-artifact.mjs';
 import { hashFiles, verifyReferences } from './release-snapshot.mjs';
 import { createReleaseStore } from './release-store.mjs';
 import { createServer } from 'node:http';
+import { distribution } from './report-production.mjs';
+import { createProductionServer, readProductionArtifact } from './lib/production-server.mjs';
 import { buildMarkerLookup } from './build-marker-lookup.mjs';
 
 test('point lookup indexes source shards separately from moved positions and archive uniqueness', () => {
@@ -1094,3 +1096,42 @@ test(
         assert.match(output, /Interrupted \(SIGTERM\)/);
     },
 );
+
+
+test('frozen production preview preserves app routes, rejects missing assets and confines resource paths', async (t) => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlos-preview-'));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    for (const [name, value] of Object.entries({ 'index.html': 'main', 'intel/index.html': 'intel', 'me/index.html': 'hub',
+        'assets/runtime.js': 'export const ready = true;', '.atlos-build.json': JSON.stringify({ sourceOnly: false,
+            apps: ['main', 'intel', 'user-hub'], resources: { assetsHost: 'https://cdn.example.test/version' } }) })) {
+        await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
+        await fs.writeFile(path.join(root, name), value);
+    }
+    const server = await createProductionServer({ dist: root });
+    t.after(() => server.close());
+    assert.equal(await (await fetch(server.origin + '/me/profile')).text(), 'hub');
+    assert.equal(await (await fetch(server.origin + '/intel/')).text(), 'intel');
+    const asset = await fetch(server.origin + '/assets/runtime.js');
+    assert.equal(asset.headers.get('content-type'), 'text/javascript');
+    assert.match(asset.headers.get('cache-control'), /max-age/);
+    assert.equal((await fetch(server.origin + '/assets/missing.js')).status, 404);
+    assert.equal((await fetch(server.origin + '/unknown')).status, 404);
+    const outside = path.join(root, '..', path.basename(root) + '-outside.txt');
+    await fs.writeFile(outside, 'not public'); t.after(() => fs.rm(outside, { force: true }));
+    await fs.symlink(outside, path.join(root, 'escape.txt'));
+    assert.equal((await fetch(server.origin + '/escape.txt')).status, 404);
+    assert.equal(server.resourceUrl(new URL('https://cdn.example.test/version/assets/runtime.js?q=1'), server.origin), server.origin + '/assets/runtime.js?q=1');
+    assert.equal(server.resourceUrl(new URL('https://other.example.test/version/assets/runtime.js'), server.origin), null);
+    assert.equal(server.resourceUrl(new URL('https://cdn.example.test/version-other/runtime.js'), server.origin), null);
+    const receipt = JSON.parse(await fs.readFile(path.join(root, '.atlos-build.json'), 'utf8'));
+    receipt.sourceOnly = true; await fs.writeFile(path.join(root, '.atlos-build.json'), JSON.stringify(receipt));
+    await assert.rejects(readProductionArtifact(root), /complete local-asset/);
+});
+
+
+test('performance summaries retain real zero measurements and do not turn unsupported metrics into zero', () => {
+    assert.equal(distribution([null, undefined, NaN]), null);
+    const original = [50, 0, 20, 10, 40];
+    assert.deepEqual(distribution(original), { n: 5, min: 0, p50: 20, p95: 50, max: 50 });
+    assert.deepEqual(original, [50, 0, 20, 10, 40]);
+});

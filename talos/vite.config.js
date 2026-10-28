@@ -1,3 +1,4 @@
+import { bundleReport } from './scripts/lib/bundle-report.mjs';
 import { fontShardsPlugin } from './scripts/fonts/vite-plugin.mjs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -266,6 +267,7 @@ const cleanDistSeoPointsPlugin = () => {
 export default defineConfig({
     // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
+        bundleReport('main'),
         fontShardsPlugin(),
         react(),
         svgr(),

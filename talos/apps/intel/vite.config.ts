@@ -1,3 +1,4 @@
+import { bundleReport } from '../../scripts/lib/bundle-report.mjs';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -82,7 +83,7 @@ const intelImportDebugPlugin = (): import('vite').Plugin => ({
 
 export default defineConfig(() => ({
   base: '/intel/',
-  plugins: [intelHtmlMetadataPlugin(), fontShardsPlugin('intel'), intelImportDebugPlugin(), react(), svgr()],
+  plugins: [bundleReport('intel'), intelHtmlMetadataPlugin(), fontShardsPlugin('intel'), intelImportDebugPlugin(), react(), svgr()],
   resolve: {
     alias: [
       { find: '@intel', replacement: resolve(import.meta.dirname, 'src') },
