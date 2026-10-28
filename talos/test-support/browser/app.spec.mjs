@@ -1,3 +1,4 @@
+import { contributionRoute } from './hub.mjs';
 import { test, expect, browserUser, deferred } from './fixtures.mjs';
 
 async function mainReady(page) {
@@ -356,3 +357,6 @@ test('TEST-BROWSER-HUB-AUTH-001 a paginated 401 logs in in place and resumes the
     expect(services.requests.filter((entry) => entry.path === '/me/v1/contributions' && entry.query.includes('cursor=second-page'))).toHaveLength(2);
     await shot(page, testInfo, 'hub-restored-pagination');
 });
+
+
+test('TEST-BROWSER-HUB-CONTENT-001 contribution cards occupy a reachable scrolling viewport across routes', contributionRoute);

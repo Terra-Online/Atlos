@@ -1,6 +1,6 @@
 # 行为基线与测试入口
 
-对应本地 `docs/roadmap.md` 阶段 2，范围包含主站 `component/`、`pages/` 全部生产 TSX、主站启动以及两个独立 app。地图渲染内核沿用既有专项测试。本轮没有执行性能基线。
+对应本地 `docs/roadmap.md` 阶段 2，范围包含主站 `component/`、`pages/` 全部生产 TSX、主站启动以及两个独立 app。地图渲染内核沿用既有专项测试。2026-10-27记录为行为收口；2026-10-28补充冻结生产产物验证和首份性能记录，见 [PERFORMANCE](PERFORMANCE.md)。
 
 ## 当前状态：本轮自动化行为基线已收口
 
@@ -26,11 +26,11 @@
 | `pnpm check` | 数据校验、类型准备、主站/Intel/user-hub/两worker类型检查、ESLint/Stylelint、Node与全部Vitest suites |
 | `pnpm test` / `pnpm type-check` / `pnpm lint` | 上述各独立入口，无生产服务写入 |
 | `pnpm exec vitest run <路径>` | 主站/两worker精确suite；独立app需相应 `--config apps/<app>/vitest.config.ts` |
-| `BEHAVIOR_DIST=dist/<冻结产物> pnpm test:behavior` | 生产构建模式17例，三种桌面引擎及两种移动模拟；资源/服务边界见[性能入口](PERFORMANCE.md) |
+| `BEHAVIOR_DIST=dist/<冻结产物> pnpm test:behavior` | 生产构建模式20例，三种桌面引擎及两种移动模拟；资源/服务边界见[性能入口](PERFORMANCE.md) |
 | `pnpm test:behavior` | 完整真实浏览器矩阵，独立于默认check，需已安装Playwright三个引擎；本机三站可自动启动 |
 | `pnpm exec vitest run --coverage` | 可选V8覆盖报告，本轮不以百分比作为完成判据 |
 
-新增测试一律 `.spec.*`。UI默认jsdom，Intel importContract显式Node环境保留真实Web Streams/gzip。`test-support/browser.ts`、`pages.ts`、`search.ts`是组件测试替身；`test-support/browser/`是实际浏览器fixture，二者不能混作证据。CI现有 `build.yml` 调用完整check后源码构建；本轮未运行生产构建、未推送、未触发远端CI或部署。
+新增测试一律 `.spec.*`。UI默认jsdom，Intel importContract显式Node环境保留真实Web Streams/gzip。`test-support/browser.ts`、`pages.ts`、`search.ts`是组件测试替身；`test-support/browser/`是实际浏览器fixture，二者不能混作证据。CI现有 `build.yml` 调用完整check后源码构建；2026-10-28已另行构建完整本地产物并验证；未推送、未触发远端CI或部署。
 
 ## 用户确认的产品契约
 
@@ -87,6 +87,6 @@ WebKit展开在本次自然帧中仍有221ms空档；此前诊断为208–277ms�
 - 组件/集成测试用显式几何、observer、pointer capture、FontFace及服务故障注入；真实浏览器组另保留CSS、Motion/WAAPI、Popover/inert、存储广播、布局和表单，不据jsdom属性推导原生表现。
 - 原生浏览器范围为Playwright Chromium/Firefox/WebKit桌面与Chromium/WebKit移动模拟。物理设备、系统输入法/自动填充、原生Document PiP、真实定位/GPS/剪贴板权限以及完整视觉像素没有被这组有限路径全部验收。
 - HTTP/WS/会话/云数据明确为fixture，未知请求及未处理页面异常会失败。本地验证不代表线上cookie、OAuth/邮件、服务端权限/幂等或CDN已通过；两个真实tab的传播测试也不等于并发跨tab事务合并。
-- 性能基线未执行：包体、首屏、Profiler、掉帧、资源占用和真机耗时不能从本轮行为结果推导。
+- 性能证据独立见 [PERFORMANCE](PERFORMANCE.md)；行为通过不能替代包体、首屏、帧间隔和内存结果，实验室模拟也不能代表真机或线上服务。
 
 每次扩展/重构先定位矩阵中的契约与owner，运行受影响suite和对应浏览器路径；更新必要fixture/证据，解释真实行为差异。不得为追求通过而批量改快照、降低断言或用一个smoke代表整组件。

@@ -1,4 +1,5 @@
 import { test, expect, browserUser } from './fixtures.mjs';
+import { contributionRoute } from './hub.mjs';
 
 const detail = (page) => page.locator('[data-font-region="detail"][data-state="open"]');
 const storage = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('points-storage')).state.activePoints);
@@ -76,3 +77,6 @@ test('TEST-PRODUCTION-HUB-001 built hub deep routes, auth chunk, locale and prof
     await expect(page.locator('html')).toHaveAttribute('lang', 'ja-JP');
     await info.attach('production-hub-profile', { body: await page.screenshot(), contentType: 'image/png' });
 });
+
+
+test('TEST-PRODUCTION-HUB-CONTENT-001 contribution cards occupy a reachable scrolling viewport across routes', contributionRoute);

@@ -4,6 +4,15 @@ const localFrontend = (url) => ['localhost', '127.0.0.1'].includes(url.hostname)
 
 export const browserUser = { uid: 'browser-user', nickname: 'Browser reader', avatar: 1, email: 'reader@example.test', role: 'n', registeredAt: '2026-01-01T00:00:00Z' };
 
+// Missing previews exercise the supported placeholder path without remote images.
+export function seedContributions(services, count = 20) {
+    services.overviewCounts.imageCount = count;
+    services.contributions.set('image:', { items: Array.from({ length: count }, (_, index) => ({
+        id: `image-${index}`, kind: 'image', markerId: '9800000003', poiType: 'control_nexus',
+        content: null, previewUrl: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z',
+    })), nextCursor: null });
+}
+
 export function deferred() {
     let resolve;
     const promise = new Promise((done) => { resolve = done; });

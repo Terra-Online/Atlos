@@ -23,6 +23,13 @@ export async function writeProductionReport(directory) {
     const expected = report.method.rounds * report.method.workloads * 2;
     if (report.startup.length !== expected || report.memory.length !== report.method.rounds * report.method.workloads)
         throw new Error('Incomplete startup/memory workload.');
+    const groups = group(report.startup, (row) => `${row.app}/${row.profile}`);
+    const perCycle = { main: 2, intel: 2, hub: 1 };
+    const expectedInteractions = [...groups.values()].reduce((n, rows) => n + perCycle[rows[0].app] * report.method.rounds * 3, 0) + report.method.webkitRounds * 2;
+    if (report.interactions.filter((row) => !row.diagnostic).length !== expectedInteractions)
+        throw new Error('Incomplete interaction/WebKit workload.');
+    if (report.startup.some((row) => Object.values(row.cpu).some((value) => !Number.isFinite(value) || value < 0)))
+        throw new Error('Invalid CPU counters; raw metrics must be checked instead of clamped.');
     const summary = { source: report.source, environment: report.environment, method: report.method,
         startup: [], interactions: [], memory: [], bundles: [] };
     const lines = ['# 生产构建性能基线', '', `采集：${report.startedAt}；构建源码：\`${report.source}\`。`, '',

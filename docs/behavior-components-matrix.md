@@ -96,3 +96,6 @@
 收口浏览器补充：移动tooltip在真实390px视口右缘达到394.48px，窗口未变而晚到字体改变宽度；补tooltip/anchor尺寸与所属字体区域监听，关闭断开。`popover/behavior.spec.tsx`修前1100>1020、修后位置和清理均通过；真实Chromium移动原例转绿。共享store外部进度与MapPage owner见浏览器基线，最终全范围检查以TESTS为准。
 
 完整check补充：上述43文件在集中入口中共256例通过（此前focused252例后补Drawer交还滚动1例、selection两例、tooltip字体重排1例）；真实虚拟行持续拖选也有正式MarkSelector/筛选store结果断言。五project浮层/指示器/滚动遮罩及三条可信touch的结果见浏览器基线。
+
+
+2026-10-28 补充：Feed 本身的组件合同不保证调用者的百分比高度链完整。生产截图复核发现 user-hub 的认证恢复 wrapper 使贡献滚动视口塌缩；修复与跨层真实布局/首末卡可达合同见 [apps补充](behavior-apps-matrix.md)。此项不靠放宽visible或滚动断言解决。

@@ -12,7 +12,7 @@ import { verifyArtifact, verifyOutput } from './release-artifact.mjs';
 import { hashFiles, verifyReferences } from './release-snapshot.mjs';
 import { createReleaseStore } from './release-store.mjs';
 import { createServer } from 'node:http';
-import { distribution } from './report-production.mjs';
+import { distribution, writeProductionReport } from './report-production.mjs';
 import { createProductionServer, readProductionArtifact } from './lib/production-server.mjs';
 import { buildMarkerLookup } from './build-marker-lookup.mjs';
 
@@ -1134,4 +1134,21 @@ test('performance summaries retain real zero measurements and do not turn unsupp
     const original = [50, 0, 20, 10, 40];
     assert.deepEqual(distribution(original), { n: 5, min: 0, p50: 20, p95: 50, max: 50 });
     assert.deepEqual(original, [50, 0, 20, 10, 40]);
+});
+
+
+test('performance acceptance rejects interrupted WebKit collection and invalid CPU counters', async (t) => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlos-perf-acceptance-'));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    const report = { errors: [], method: { rounds: 1, workloads: 1, webkitRounds: 1 },
+        startup: Array.from({ length: 2 }, () => ({ app: 'main', profile: 'desktop', cpu: { ScriptDuration: 10 } })),
+        memory: [{}], interactions: Array.from({ length: 6 }, () => ({ app: 'main' })) };
+    const save = () => fs.writeFile(path.join(root, 'runtime.json'), JSON.stringify(report));
+    await save();
+    await assert.rejects(writeProductionReport(root), /Incomplete interaction\/WebKit/);
+    report.interactions.push({ app: 'intel' }, { app: 'intel' });
+    report.startup[1].cpu.ScriptDuration = -5;
+    await save();
+    await assert.rejects(writeProductionReport(root), /Invalid CPU counters/);
+    await assert.rejects(fs.access(path.join(root, 'summary.json')), { code: 'ENOENT' });
 });

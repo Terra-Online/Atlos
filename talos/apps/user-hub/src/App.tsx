@@ -213,7 +213,7 @@ export default function App() {
                                 setContentAuthRevision((value) => value + 1);
                             } else refresh();
                         }} attemptedSession={attemptedSession} />}
-                        {overview && <div hidden={contentAuthRequired}>
+                        {overview && <div className='hubBody' hidden={contentAuthRequired}>
                             {active === 'contributions' ? (
                                 <Content
                                     revision={revision}

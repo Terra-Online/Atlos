@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 import { hashFiles } from './release-snapshot.mjs';
 import { createProductionServer } from './lib/production-server.mjs';
 import { writeProductionReport } from './report-production.mjs';
-import { createServices, installBrowserServices, browserUser } from '../test-support/browser/services.mjs';
+import { createServices, installBrowserServices, browserUser, seedContributions } from '../test-support/browser/services.mjs';
 
 const { values } = parseArgs({ options: { dist: { type: 'string' }, out: { type: 'string', default: '../docs/perf/production/latest' },
     rounds: { type: 'string', default: '5' }, trace: { type: 'boolean', default: false }, app: { type: 'string' }, profile: { type: 'string' }, 'bundle-reports': { type: 'string' }, 'webkit-rounds': { type: 'string', default: '5' } } });
@@ -22,7 +22,10 @@ if (!values.dist || !Number.isInteger(rounds) || rounds < 1 || !Number.isInteger
 const out = resolve(values.out); await mkdir(out, { recursive: true });
 const server = await createProductionServer({ dist: values.dist });
 const artifactFiles = await hashFiles(server.root);
-const report = { artifact: { sha256: createHash('sha256').update(JSON.stringify(artifactFiles)).digest('hex'), files: Object.keys(artifactFiles).length, method: 'SHA256 of JSON.stringify(release-snapshot.hashFiles), including complete frozen resources and receipt' }, startedAt: new Date().toISOString(), source: server.info.source, sourceDirty: server.info.sourceDirty,
+const collector = {};
+for (const file of ['scripts/bench-production.mjs', 'scripts/report-production.mjs', 'scripts/lib/production-server.mjs', 'test-support/browser/services.mjs'])
+    collector[file] = createHash('sha256').update(await readFile(file)).digest('hex');
+const report = { collector, artifact: { sha256: createHash('sha256').update(JSON.stringify(artifactFiles)).digest('hex'), files: Object.keys(artifactFiles).length, method: 'SHA256 of JSON.stringify(release-snapshot.hashFiles), including complete frozen resources and receipt' }, startedAt: new Date().toISOString(), source: server.info.source, sourceDirty: server.info.sourceDirty,
     build: { target: server.info.target, channel: server.info.channel, builtAt: server.info.builtAt, resourcesPrefix: server.info.resources.prefix },
     environment: { os: `${os.platform()} ${os.release()}`, arch: os.arch(), cpu: os.cpus()[0].model, cores: os.cpus().length,
         memoryBytes: os.totalmem(), node: process.version, playwright: '1.62.1' },
@@ -33,6 +36,8 @@ const report = { artifact: { sha256: createHash('sha256').update(JSON.stringify(
         readiness: 'Visible usable app element followed by two rAF callbacks; FCP/LCP/CLS sampled after readiness and at least 2s from navigation; sampledAt records the actual boundary. LCP is a lab snapshot, not finalized field LCP. Interaction timing is driver-inclusive; no field INP claim.',
         mobile: '390x844 touch emulation and 4x Chromium CPU slowdown, not a physical mobile device.',
         intelInput: 'Show Details uses pointer click on desktop and tap on mobile after layout stabilization. Content scroll workload is a bounded 1200 CSS-pixel smooth roundtrip, not the changing end of a virtualized list.',
+        cpu: 'CDP Performance counters for the current document, seconds converted to milliseconds; enable reset before each navigation, no subtraction across documents. Raw nativeMetrics retained.',
+        contributions: '20 fixed image records with null previewUrl: supported placeholder path, not thumbnail decoding or a live media feed.',
         heap: 'Chromium CDP usedJSHeapSize/DOM counts; explicit GC before/after repeated interactions. Not total process/GPU memory.' },
     startup: [], interactions: [], memory: [], errors: [] };
 const save = () => writeFile(resolve(out, 'runtime.json'), JSON.stringify(report, null, 2) + '\n');
@@ -43,15 +48,12 @@ const apps = [{ name: 'main', path: '/', selector: '[data-search-input="true"]' 
     { name: 'hub', path: '/me/content', selector: '[role="tabpanel"] li' }].filter((app) => !values.app || values.app === app.name);
 if (!profiles.length || !apps.length) throw new Error('Unknown --app or --profile.');
 report.method.workloads = profiles.length * apps.length;
-const contribution = (index) => ({ id: `image-${index}`, kind: 'image', markerId: '9800000003', poiType: 'control_nexus',
-    content: null, previewUrl: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z' });
 
 async function setup(browser, profile) {
     const context = await browser.newContext({ viewport: profile.viewport, locale: 'en-US', deviceScaleFactor: 1,
         isMobile: profile.isMobile, hasTouch: profile.isMobile, reducedMotion: 'no-preference' });
     const services = createServices(); services.user = { ...browserUser };
-    services.overviewCounts.imageCount = 20;
-    services.contributions.set('image:', { items: Array.from({ length: 20 }, (_, index) => contribution(index)), nextCursor: null });
+    seedContributions(services);
     await installBrowserServices(context, services, { origin: server.origin, production: server });
     const page = await context.newPage();
     page.setDefaultTimeout(30_000); page.setDefaultNavigationTimeout(45_000);
@@ -77,6 +79,8 @@ function observeStartup(selector) {
         if (sample.readyFrame !== null || scheduled) return;
         const target = document.querySelector(selector);
         if (!target || !target.getClientRects().length || getComputedStyle(target).visibility === 'hidden') return;
+        const panel = target.closest('[role="tabpanel"]');
+        if (panel && panel.clientHeight < target.getBoundingClientRect().height) return;
         sample.readyDOM ??= performance.now(); scheduled = true;
         requestAnimationFrame(() => requestAnimationFrame(() => {
             const current = document.querySelector(selector);
@@ -199,7 +203,10 @@ try {
             const cdp = await context.newCDPSession(page); await cdp.send('Performance.enable');
             await cdp.send('Emulation.setCPUThrottlingRate', { rate: profile.cpu });
             for (const visit of ['cold-context', 'repeat-fixture']) {
-                const previousCPU = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((metric) => [metric.name, metric.value]));
+                // Chromium resets document counters on navigation. Subtracting
+                // the previous document can make repeat visits falsely negative.
+                await cdp.send('Performance.disable');
+                await cdp.send('Performance.enable');
                 await page.goto(server.origin + app.path, { waitUntil: 'domcontentloaded' });
                 await page.locator(app.selector).first().waitFor();
                 await page.waitForFunction(() => window.__productionBench.readyFrame !== null && performance.now() >= 2000);
@@ -211,8 +218,8 @@ try {
                     cards: document.querySelectorAll('article[data-intel-archive]').length,
                     visibility: document.visibilityState, focus: document.hasFocus() }));
                 const metrics = (await cdp.send('Performance.getMetrics')).metrics;
-                report.startup.push({ app: app.name, profile: profile.name, round, visit, ...sample,
-                    cpu: Object.fromEntries(metrics.filter((m) => ['ScriptDuration', 'LayoutDuration', 'RecalcStyleDuration', 'TaskDuration'].includes(m.name)).map((m) => [m.name, (m.value - (previousCPU[m.name] || 0)) * 1000])) });
+                report.startup.push({ app: app.name, profile: profile.name, round, visit, ...sample, nativeMetrics: metrics,
+                    cpu: Object.fromEntries(metrics.filter((m) => ['ScriptDuration', 'LayoutDuration', 'RecalcStyleDuration', 'TaskDuration'].includes(m.name)).map((m) => [m.name, m.value * 1000])) });
             }
             const before = await snapshot(cdp);
             for (let cycle = 0; cycle < 3; cycle++) await exercise(page, app, profile, cdp, { app: app.name, profile: profile.name, round, cycle });

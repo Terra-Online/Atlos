@@ -1,4 +1,6 @@
 import { test, expect, browserUser } from './fixtures.mjs';
+import { seedContributions } from './services.mjs';
+import { expectContributionViewport } from './hub.mjs';
 
 async function attachment(page, testInfo, name) {
     await testInfo.attach(name, { body: await page.screenshot(), contentType: 'image/png' });
@@ -73,15 +75,21 @@ test('TEST-BROWSER-MOBILE-INTEL-001 responsive archive cards collect through tou
 
 test('TEST-BROWSER-MOBILE-HUB-001 content and profile navigation stays usable in a narrow viewport', async ({ page, services }, testInfo) => {
     services.user = { ...browserUser };
-    services.contributions.set('image:', { items: [], nextCursor: null });
+    seedContributions(services);
     await page.goto('/me/');
     await expect(page.getByText('Browser reader', { exact: true })).toBeVisible();
+    await expectContributionViewport(page);
     await page.locator('nav[aria-label] a[href="/me/profile"]').tap();
     await expect(page).toHaveURL(/\/me\/profile$/);
     await page.getByRole('radio', { name: 'Avatar 2', exact: true }).check();
     await expect.poll(() => services.user.avatar).toBe(2);
     await attachment(page, testInfo, 'mobile-hub-profile');
     await page.locator('nav[aria-label] a[href="/me/content"]').tap();
+    await expectContributionViewport(page);
+    await attachment(page, testInfo, 'mobile-hub-contributions');
+    services.overviewCounts.imageCount = 0;
+    services.contributions.set('image:', { items: [], nextCursor: null });
+    await page.reload();
     await expect(page.getByText('No contributions yet.', { exact: true })).toBeVisible();
     const width = await page.evaluate(() => ({ layout: document.documentElement.scrollWidth, viewport: innerWidth }));
     expect(width.layout).toBeLessThanOrEqual(width.viewport + 1);
