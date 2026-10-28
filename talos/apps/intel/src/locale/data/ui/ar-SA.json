@@ -12,7 +12,6 @@
     "showDetails": "عرض التفاصيل",
     "source": "المصدر",
     "investUnlock": "يُفتح بعد {mission}",
-    "centralUnlock": "يُفتح عبر القصة الرئيسية",
     "collectionSummary": "تم جمعه: {items}",
     "archiveTotal": "إجمالي الإصدار: {num}",
     "importPending": "جارٍ استيراد تقدم السجلات...",
@@ -31,7 +30,8 @@
       "mission": "مهمة",
       "auto": "التقدم",
       "shop": "متجر",
-      "invstgt": "تحقيق"
+      "invstgt": "تحقيق",
+      "unknown": "شروط الفتح غير مؤكدة"
     },
     "label": {
       "missionSequence": "المهمة",

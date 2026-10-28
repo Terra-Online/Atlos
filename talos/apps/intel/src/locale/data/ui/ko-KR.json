@@ -12,7 +12,6 @@
     "showDetails": "획득 상세 보기",
     "source": "획득 방법",
     "investUnlock": "조사 임무 {mission} 완료 후 자동 해금",
-    "centralUnlock": "메인 스토리를 진행하면 해금",
     "collectionSummary": "이번 수집: {items}",
     "archiveTotal": "현재 버전: 총 {num}개",
     "importPending": "기록 수집 진행도를 가져오는 중...",
@@ -31,7 +30,8 @@
       "mission": "임무",
       "auto": "자동 해금",
       "shop": "상점",
-      "invstgt": "조사"
+      "invstgt": "조사",
+      "unknown": "해금 조건 미확인"
     },
     "label": {
       "missionSequence": "임무 순서",

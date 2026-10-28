@@ -12,7 +12,6 @@
     "showDetails": "Paparkan butiran",
     "source": "Sumber",
     "investUnlock": "Dibuka selepas {mission}",
-    "centralUnlock": "Dibuka melalui jalan cerita utama",
     "collectionSummary": "Dikumpulkan: {items}",
     "archiveTotal": "Jumlah versi ini: {num}",
     "importPending": "Mengimport kemajuan arkib...",
@@ -31,7 +30,8 @@
       "mission": "Misi",
       "auto": "Kemajuan",
       "shop": "Kedai",
-      "invstgt": "Siasatan"
+      "invstgt": "Siasatan",
+      "unknown": "Syarat buka kunci belum disahkan"
     },
     "label": {
       "missionSequence": "Misi",

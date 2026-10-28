@@ -10,7 +10,7 @@ export const archives: IntelArchive[] = [
     { id: 'nar_auto', categoryId: 'document', iconUrl: '/auto.webp', acquisition: { method: 'auto' } },
     { id: 'nar_shop', categoryId: 'collection', iconUrl: '/shop.webp', acquisition: { method: 'shop', shopId: 'shop:1', shopGroupId: 'shop-group:1', npcId: 'npc:1', pointId: 43, location: { regionId: 'Valley_4', subregionId: 'VL_1' } } },
     { id: 'nar_research', categoryId: 'report', iconUrl: '/research.webp', acquisition: { method: 'invstgt', researchId: 'research:1' } },
-    { id: 'nar_media', categoryId: 'media', iconUrl: '/media.webp', acquisition: { method: 'auto' } },
+    { id: 'nar_media', categoryId: 'media', iconUrl: '/media.webp', acquisition: { method: 'unknown' } },
 ];
 
 const labels: Record<string, string> = {
@@ -21,6 +21,8 @@ const labels: Record<string, string> = {
     'region:Valley_4': 'Valley', 'region:Valley_4:VL_1': 'Hub',
     'intel.shopNpcPurchase': 'Buy from {npc} at {shop}',
     'intel.shopSystemPurchase': 'Buy at {shop} in {region}',
+    'intel.method.auto': 'Automatically unlocked',
+    'intel.method.unknown': 'Unlock condition unconfirmed',
     'intel.investUnlock': 'Unlock {mission}',
     'intel.missionMapInteraction': 'Find {point}',
     'intel.pointPuzzle': '{point} puzzle',

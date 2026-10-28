@@ -12,7 +12,6 @@
     "showDetails": "Details anzeigen",
     "source": "Quelle",
     "investUnlock": "Wird nach {mission} freigeschaltet",
-    "centralUnlock": "Wird über die Hauptgeschichte freigeschaltet",
     "collectionSummary": "Gesammelt: {items}",
     "archiveTotal": "Aktuell gesamt: {num}",
     "importPending": "Intel-Fortschritt wird importiert...",
@@ -31,7 +30,8 @@
       "mission": "Mission",
       "auto": "Fortschritt",
       "shop": "Shop",
-      "invstgt": "Untersuchung"
+      "invstgt": "Untersuchung",
+      "unknown": "Freischaltbedingung unbestätigt"
     },
     "label": {
       "missionSequence": "Mission",

@@ -12,7 +12,6 @@
     "showDetails": "顯示獲取詳情",
     "source": "取得方式",
     "investUnlock": "完成調查任務 {mission} 後自動解鎖",
-    "centralUnlock": "推進主線以解鎖",
     "collectionSummary": "本次共收集：{items}",
     "archiveTotal": "目前版本檔案總數為 {num}",
     "importPending": "正在匯入檔案收集進度……",
@@ -31,7 +30,8 @@
       "mission": "跟隨任務",
       "auto": "自動解鎖",
       "shop": "商店購買",
-      "invstgt": "報告摘要"
+      "invstgt": "報告摘要",
+      "unknown": "解鎖條件待確認"
     },
     "label": {
       "missionSequence": "任務序列",

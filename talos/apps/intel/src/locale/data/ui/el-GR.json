@@ -12,7 +12,6 @@
     "showDetails": "Προβολή λεπτομερειών",
     "source": "Πηγή",
     "investUnlock": "Ξεκλειδώνει μετά το {mission}",
-    "centralUnlock": "Ξεκλειδώνει μέσω της κύριας ιστορίας",
     "collectionSummary": "Συλλέχθηκε: {items}",
     "archiveTotal": "Σύνολο έκδοσης: {num}",
     "importPending": "Γίνεται εισαγωγή της προόδου των αρχείων...",
@@ -31,7 +30,8 @@
       "mission": "Αποστολή",
       "auto": "Πρόοδος",
       "shop": "Κατάστημα",
-      "invstgt": "Έρευνα"
+      "invstgt": "Έρευνα",
+      "unknown": "Μη επιβεβαιωμένη συνθήκη ξεκλειδώματος"
     },
     "label": {
       "missionSequence": "Αποστολή",

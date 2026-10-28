@@ -12,7 +12,6 @@
     "showDetails": "Pokaż szczegóły",
     "source": "Źródło",
     "investUnlock": "Odblokowuje się po {mission}",
-    "centralUnlock": "Odblokowuje się w głównej fabule",
     "collectionSummary": "Zebrane: {items}",
     "archiveTotal": "Suma w wersji: {num}",
     "importPending": "Importowanie postępu archiwum...",
@@ -31,7 +30,8 @@
       "mission": "Misja",
       "auto": "Postęp",
       "shop": "Sklep",
-      "invstgt": "Dochodzenie"
+      "invstgt": "Dochodzenie",
+      "unknown": "Warunek odblokowania niepotwierdzony"
     },
     "label": {
       "missionSequence": "Misja",

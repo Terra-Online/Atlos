@@ -42,6 +42,8 @@
   "gm02m18": "Lame ignote II",
   "gm02m19": "Lame ignote III",
   "gm02m24": "Volumi fuori controllo",
+  "gm02m27d5": "Campana del ricordo: Epilogo",
+  "gm02m27d5_q#4": "Raccogli tutti gli indizi su <span class=\"highlight\">Suiming</span> per gli <span class=\"highlight\">Archivi</span>",
   "group": {
     "intel": "Ritrovamenti",
     "central": "Dossier Nexus",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Minaccia interna",
   "sm2l1m5": "Sempre di corsa",
   "sm2l2m3": "Il vecchio e la marea I",
+  "sm2l3m3": "Patrono della fonte III",
   "sm2l3m6": "Caccia al tesoro perduto III",
   "sm2l6m1": "Acciaio sepolto",
   "sns_chat_nfm_0_1": "Gruppo di comunicazione dell'accampamento",

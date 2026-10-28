@@ -12,7 +12,6 @@
     "showDetails": "แสดงรายละเอียด",
     "source": "แหล่งที่มา",
     "investUnlock": "ปลดล็อกหลัง {mission}",
-    "centralUnlock": "ปลดล็อกผ่านเนื้อเรื่องหลัก",
     "collectionSummary": "สะสมแล้ว: {items}",
     "archiveTotal": "รวมเวอร์ชันนี้: {num} แฟ้ม",
     "importPending": "กำลังนำเข้าความคืบหน้าของคลังข้อมูล...",
@@ -31,7 +30,8 @@
       "mission": "ภารกิจ",
       "auto": "ความคืบหน้า",
       "shop": "ร้านค้า",
-      "invstgt": "การสืบสวน"
+      "invstgt": "การสืบสวน",
+      "unknown": "ยังไม่ยืนยันเงื่อนไขการปลดล็อก"
     },
     "label": {
       "missionSequence": "ภารกิจ",

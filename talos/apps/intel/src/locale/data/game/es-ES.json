@@ -42,6 +42,8 @@
   "gm02m18": "Espadas sin nombre II",
   "gm02m19": "Espadas sin nombre III",
   "gm02m24": "Compendios alborotados",
+  "gm02m27d5": "Campana de los recuerdos: Notas posteriores",
+  "gm02m27d5_q#4": "Reúne todas las <span class=\"highlight\">pistas</span> de Suiming para los <span class=\"highlight\">Archivos</span>",
   "group": {
     "intel": "Hallazgos",
     "central": "Archivos del Nexus",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Amenaza interna",
   "sm2l1m5": "Siempre corriendo",
   "sm2l2m3": "El viejo y la marea I",
+  "sm2l3m3": "Patrón del manantial III",
   "sm2l3m6": "Buscadores del tesoro perdido III",
   "sm2l6m1": "Acero de bóveda profunda",
   "sns_chat_nfm_0_1": "Grupo de comunicación del campamento",

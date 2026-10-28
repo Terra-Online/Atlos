@@ -42,6 +42,8 @@
   "gm02m18": "Lâminas Sem Nome II",
   "gm02m19": "Lâminas Sem Nome III",
   "gm02m24": "Tumulto das Miscelâneas",
+  "gm02m27d5": "Sino da Recordação: Notas Finais",
+  "gm02m27d5_q#4": "Colete todas as <span class=\"highlight\">pistas</span> de Suiming sobre os <span class=\"highlight\">Arquivos</span>",
   "group": {
     "intel": "Descobertas",
     "central": "Arquivos do Nexus",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Ameaça Interna",
   "sm2l1m5": "Sempre Correndo",
   "sm2l2m3": "O Velho Homem e a Maré I",
+  "sm2l3m3": "Padroeiro da Fonte III",
   "sm2l3m6": "Caçadores do Tesouro Perdido III",
   "sm2l6m1": "Aço Trancado no Cofre",
   "sns_chat_nfm_0_1": "Grupo de Comunicação do Acampamento",

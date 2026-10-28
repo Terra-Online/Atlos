@@ -12,7 +12,6 @@
     "showDetails": "Hiện chi tiết",
     "source": "Nguồn",
     "investUnlock": "Mở khóa sau {mission}",
-    "centralUnlock": "Mở khóa qua cốt truyện chính",
     "collectionSummary": "Đã thu thập: {items}",
     "archiveTotal": "Tổng hiện tại: {num}",
     "importPending": "Đang nhập tiến độ hồ sơ...",
@@ -31,7 +30,8 @@
       "mission": "Nhiệm vụ",
       "auto": "Tiến trình",
       "shop": "Cửa hàng",
-      "invstgt": "Điều tra"
+      "invstgt": "Điều tra",
+      "unknown": "Chưa xác nhận điều kiện mở khóa"
     },
     "label": {
       "missionSequence": "Nhiệm vụ",

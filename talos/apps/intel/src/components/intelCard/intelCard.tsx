@@ -563,8 +563,6 @@ const IntelCard = ({
                         template={tUI('intel.investUnlock')}
                         values={{ mission: gameLabel(tGame, archive.acquisition.researchId) }}
                       />
-                    ) : archive.categoryId === 'document' && archive.acquisition.method === 'auto' ? (
-                      tUI('intel.centralUnlock')
                     ) : methodLabel(archive, tUI)}
                   </DetailLine>
                 )}

@@ -12,7 +12,6 @@
     "showDetails": "Visa detaljer",
     "source": "Källa",
     "investUnlock": "Låses upp efter {mission}",
-    "centralUnlock": "Låses upp via huvudberättelsen",
     "collectionSummary": "Insamlat: {items}",
     "archiveTotal": "Totalt nu: {num}",
     "importPending": "Importerar arkivförlopp...",
@@ -31,7 +30,8 @@
       "mission": "Uppdrag",
       "auto": "Framsteg",
       "shop": "Butik",
-      "invstgt": "Undersökning"
+      "invstgt": "Undersökning",
+      "unknown": "Upplåsningsvillkor obekräftat"
     },
     "label": {
       "missionSequence": "Uppdrag",

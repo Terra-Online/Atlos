@@ -12,7 +12,6 @@
     "showDetails": "入手詳細を表示",
     "source": "入手方法",
     "investUnlock": "調査任務 {mission} を完了すると解放",
-    "centralUnlock": "メインストーリーを進めると解放",
     "collectionSummary": "今回収集したもの：{items}",
     "archiveTotal": "現バージョン：{num}件",
     "importPending": "アーカイブの収集進捗をインポートしています…",
@@ -31,7 +30,8 @@
       "mission": "任務報酬",
       "auto": "システム解放",
       "shop": "ショップ購入",
-      "invstgt": "報告概要"
+      "invstgt": "報告概要",
+      "unknown": "解放条件未確認"
     },
     "label": {
       "missionSequence": "任務シーケンス",

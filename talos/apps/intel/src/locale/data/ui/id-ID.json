@@ -12,7 +12,6 @@
     "showDetails": "Tampilkan detail",
     "source": "Sumber",
     "investUnlock": "Terbuka setelah {mission}",
-    "centralUnlock": "Terbuka melalui cerita utama",
     "collectionSummary": "Terkumpul: {items}",
     "archiveTotal": "Total versi ini: {num}",
     "importPending": "Mengimpor progres arsip...",
@@ -31,7 +30,8 @@
       "mission": "Misi",
       "auto": "Progres",
       "shop": "Toko",
-      "invstgt": "Investigasi"
+      "invstgt": "Investigasi",
+      "unknown": "Syarat pembukaan belum dikonfirmasi"
     },
     "label": {
       "missionSequence": "Misi",

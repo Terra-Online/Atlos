@@ -12,7 +12,6 @@
     "showDetails": "Mostrar detalles",
     "source": "Fuente",
     "investUnlock": "Se desbloquea tras {mission}",
-    "centralUnlock": "Se desbloquea en la historia principal",
     "collectionSummary": "Recopilado: {items}",
     "archiveTotal": "Total actual: {num}",
     "importPending": "Importando el progreso del archivo...",
@@ -31,7 +30,8 @@
       "mission": "Misión",
       "auto": "Progreso",
       "shop": "Tienda",
-      "invstgt": "Investigación"
+      "invstgt": "Investigación",
+      "unknown": "Condición de desbloqueo sin confirmar"
     },
     "label": {
       "missionSequence": "Misión",
