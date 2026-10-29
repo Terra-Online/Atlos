@@ -91,7 +91,9 @@
       "ruleOnly": "發布內容請遵循<a href=\"{link}\">社羣守則</a>。",
       "loadFailed": "留言載入失敗。",
       "submitFailed": "留言發布失敗。",
-      "editFailed": "留言編輯失敗。"
+      "editFailed": "留言編輯失敗。",
+      "editConflict": "留言已變更或無法繼續編輯。請查看目前內容，重新開啟編輯器後再試。",
+      "editConflictRefreshFailed": "留言已變更。請重新載入留言後再編輯。"
     },
     "errors": {
       "unsupportedType": "僅接收 JPEG/PNG/WebP/AVIF/HEIC 檔案",

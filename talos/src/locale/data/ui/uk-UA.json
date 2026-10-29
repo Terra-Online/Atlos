@@ -91,7 +91,9 @@
       "ruleOnly": "Під час публікації дотримуйтеся <a href=\"{link}\">правил спільноти</a>.",
       "loadFailed": "Не вдалося завантажити коментарі.",
       "submitFailed": "Не вдалося надіслати коментар.",
-      "editFailed": "Не вдалося оновити коментар."
+      "editFailed": "Не вдалося оновити коментар.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Підтримуються лише зображення JPEG/PNG/WebP/AVIF/HEIC.",

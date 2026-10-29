@@ -91,7 +91,9 @@
       "ruleOnly": "يرجى الالتزام بـ<a href=\"{link}\">إرشادات المجتمع</a> عند النشر.",
       "loadFailed": "فشل تحميل التعليقات.",
       "submitFailed": "فشل إرسال التعليق.",
-      "editFailed": "تعذر تحديث التعليق."
+      "editFailed": "تعذر تحديث التعليق.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "تُدعم فقط صور JPEG/PNG/WebP/AVIF/HEIC.",

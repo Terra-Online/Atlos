@@ -91,7 +91,9 @@
       "ruleOnly": "При публикации соблюдайте <a href=\"{link}\">правила сообщества</a>.",
       "loadFailed": "Не удалось загрузить комментарии.",
       "submitFailed": "Не удалось отправить комментарий.",
-      "editFailed": "Не удалось обновить комментарий."
+      "editFailed": "Не удалось обновить комментарий.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Поддерживаются только изображения JPEG/PNG/WebP/AVIF/HEIC.",

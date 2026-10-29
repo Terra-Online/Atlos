@@ -91,7 +91,9 @@
       "ruleOnly": "Κατά τη δημοσίευση, ακολουθήστε τις <a href=\"{link}\">οδηγίες κοινότητας</a>.",
       "loadFailed": "Η φόρτωση των σχολίων απέτυχε.",
       "submitFailed": "Η υποβολή του σχολίου απέτυχε.",
-      "editFailed": "Δεν ήταν δυνατή η ενημέρωση του σχολίου."
+      "editFailed": "Δεν ήταν δυνατή η ενημέρωση του σχολίου.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Υποστηρίζονται μόνο εικόνες JPEG/PNG/WebP/AVIF/HEIC.",

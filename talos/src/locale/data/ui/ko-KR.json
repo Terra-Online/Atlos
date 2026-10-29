@@ -91,7 +91,9 @@
       "ruleOnly": "게시 시 <a href=\"{link}\">커뮤니티 가이드라인</a>을 따라 주세요.",
       "loadFailed": "댓글을 불러오지 못했습니다.",
       "submitFailed": "댓글을 게시하지 못했습니다.",
-      "editFailed": "댓글을 수정하지 못했습니다."
+      "editFailed": "댓글을 수정하지 못했습니다.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF/HEIC 이미지만 지원됩니다.",

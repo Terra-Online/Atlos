@@ -91,7 +91,9 @@
       "ruleOnly": "投稿の際は<a href=\"{link}\">コミュニティガイドライン</a>をお守りください。",
       "loadFailed": "コメントの読み込みに失敗しました。",
       "submitFailed": "コメントの投稿に失敗しました。",
-      "editFailed": "コメントの更新に失敗しました。"
+      "editFailed": "コメントの更新に失敗しました。",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF/HEIC 画像のみ対応しています。",

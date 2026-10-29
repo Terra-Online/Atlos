@@ -91,7 +91,9 @@
       "ruleOnly": "โปรดปฏิบัติตาม<a href=\"{link}\">แนวทางชุมชน</a>เมื่อโพสต์",
       "loadFailed": "โหลดความคิดเห็นไม่สำเร็จ",
       "submitFailed": "ส่งความคิดเห็นไม่สำเร็จ",
-      "editFailed": "แก้ไขความคิดเห็นไม่สำเร็จ"
+      "editFailed": "แก้ไขความคิดเห็นไม่สำเร็จ",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "รองรับเฉพาะรูปภาพ JPEG/PNG/WebP/AVIF/HEIC",

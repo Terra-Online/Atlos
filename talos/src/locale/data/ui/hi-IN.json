@@ -91,7 +91,9 @@
       "ruleOnly": "पोस्ट करते समय कृपया <a href=\"{link}\">समुदाय दिशानिर्देशों</a> का पालन करें।",
       "loadFailed": "टिप्पणियाँ लोड नहीं हो सकीं।",
       "submitFailed": "टिप्पणी पोस्ट नहीं हो सकी।",
-      "editFailed": "टिप्पणी अपडेट नहीं हो सकी।"
+      "editFailed": "टिप्पणी अपडेट नहीं हो सकी।",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "केवल JPEG/PNG/WebP/AVIF/HEIC छवियाँ समर्थित हैं।",

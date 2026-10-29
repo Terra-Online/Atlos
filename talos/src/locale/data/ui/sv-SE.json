@@ -91,7 +91,9 @@
       "ruleOnly": "Följ <a href=\"{link}\">communityriktlinjerna</a> när du publicerar.",
       "loadFailed": "Kommentarer kunde inte läsas in.",
       "submitFailed": "Kommentaren kunde inte skickas.",
-      "editFailed": "Kommentaren kunde inte uppdateras."
+      "editFailed": "Kommentaren kunde inte uppdateras.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Endast JPEG/PNG/WebP/AVIF/HEIC-bilder stöds.",

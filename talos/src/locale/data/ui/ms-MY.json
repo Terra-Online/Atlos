@@ -91,7 +91,9 @@
       "ruleOnly": "Sila ikut <a href=\"{link}\">garis panduan komuniti</a> semasa menyiarkan.",
       "loadFailed": "Komen gagal dimuatkan.",
       "submitFailed": "Komen gagal dihantar.",
-      "editFailed": "Komen gagal dikemas kini."
+      "editFailed": "Komen gagal dikemas kini.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Hanya imej JPEG/PNG/WebP/AVIF/HEIC disokong.",

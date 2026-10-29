@@ -91,7 +91,9 @@
       "ruleOnly": "Bitte beachte beim Posten die <a href=\"{link}\">Community-Richtlinien</a>.",
       "loadFailed": "Kommentare konnten nicht geladen werden.",
       "submitFailed": "Kommentar konnte nicht gesendet werden.",
-      "editFailed": "Kommentar konnte nicht aktualisiert werden."
+      "editFailed": "Kommentar konnte nicht aktualisiert werden.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Nur JPEG-/PNG-/WebP-/AVIF-/HEIC-Bilder werden unterstützt.",

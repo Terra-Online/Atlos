@@ -560,13 +560,20 @@ export async function submitUGCComment(
 export async function editUGCComment(
     commentId: string,
     content: string,
+    parentSnapshotId: string,
 ): Promise<UGCCommentSubmission> {
     const payload = await postJson<{
         submission?: UGCCommentSubmission;
-    }>(`${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/edit`, { content });
+    }>(`${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/edit`, {
+        content,
+        parentSnapshotId,
+    });
 
     if (!payload.submission) {
-        throw new UGCClientError('Comment edit response missing submission.', 'commentInvalidResponse');
+        throw new UGCClientError(
+            'Comment edit response missing submission.',
+            'commentInvalidResponse',
+        );
     }
 
     invalidateUGCCommentCache(payload.submission.markerId);

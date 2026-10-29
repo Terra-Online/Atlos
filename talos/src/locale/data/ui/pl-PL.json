@@ -91,7 +91,9 @@
       "ruleOnly": "Podczas publikowania przestrzegaj <a href=\"{link}\">zasad społeczności</a>.",
       "loadFailed": "Nie udało się wczytać komentarzy.",
       "submitFailed": "Nie udało się wysłać komentarza.",
-      "editFailed": "Nie udało się zaktualizować komentarza."
+      "editFailed": "Nie udało się zaktualizować komentarza.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Obsługiwane są tylko obrazy JPEG/PNG/WebP/AVIF/HEIC.",

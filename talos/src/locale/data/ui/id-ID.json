@@ -91,7 +91,9 @@
       "ruleOnly": "Harap ikuti <a href=\"{link}\">pedoman komunitas</a> saat memposting.",
       "loadFailed": "Komentar gagal dimuat.",
       "submitFailed": "Komentar gagal dikirim.",
-      "editFailed": "Komentar gagal diperbarui."
+      "editFailed": "Komentar gagal diperbarui.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Hanya gambar JPEG/PNG/WebP/AVIF/HEIC yang didukung.",

@@ -91,7 +91,9 @@
       "ruleOnly": "Al publicar, sigue las <a href=\"{link}\">normas de la comunidad</a>.",
       "loadFailed": "No se pudieron cargar los comentarios.",
       "submitFailed": "No se pudo publicar el comentario.",
-      "editFailed": "No se pudo actualizar el comentario."
+      "editFailed": "No se pudo actualizar el comentario.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Solo se admiten imágenes JPEG/PNG/WebP/AVIF/HEIC.",

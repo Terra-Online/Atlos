@@ -91,7 +91,9 @@
       "ruleOnly": "发布内容请遵循<a href=\"{link}\">社区守则</a>。",
       "loadFailed": "留言加载失败。",
       "submitFailed": "留言发布失败。",
-      "editFailed": "留言修改失败。"
+      "editFailed": "留言修改失败。",
+      "editConflict": "留言已变更或无法继续编辑。请查看当前内容，重新打开编辑器后再试。",
+      "editConflictRefreshFailed": "留言已变更。请重新加载留言后再编辑。"
     },
     "errors": {
       "unsupportedType": "仅支持 JPEG/PNG/WebP/AVIF/HEIC 图片",

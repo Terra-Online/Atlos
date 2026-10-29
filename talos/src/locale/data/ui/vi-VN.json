@@ -91,7 +91,9 @@
       "ruleOnly": "Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "loadFailed": "Không tải được bình luận.",
       "submitFailed": "Không gửi được bình luận.",
-      "editFailed": "Không thể cập nhật bình luận."
+      "editFailed": "Không thể cập nhật bình luận.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF/HEIC.",

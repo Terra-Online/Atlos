@@ -91,7 +91,9 @@
       "ruleOnly": "Veuillez respecter les <a href=\"{link}\">règles de la communauté</a> lors de la publication.",
       "loadFailed": "Échec du chargement des commentaires.",
       "submitFailed": "Échec de l’envoi du commentaire.",
-      "editFailed": "Échec de la mise à jour du commentaire."
+      "editFailed": "Échec de la mise à jour du commentaire.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Seules les images JPEG/PNG/WebP/AVIF/HEIC sont prises en charge.",

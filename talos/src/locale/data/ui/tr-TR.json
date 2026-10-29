@@ -91,7 +91,9 @@
       "ruleOnly": "Gönderi paylaşırken lütfen <a href=\"{link}\">topluluk kurallarına</a> uyun.",
       "loadFailed": "Yorumlar yüklenemedi.",
       "submitFailed": "Yorum gönderilemedi.",
-      "editFailed": "Yorum güncellenemedi."
+      "editFailed": "Yorum güncellenemedi.",
+      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
+      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
     },
     "errors": {
       "unsupportedType": "Yalnızca JPEG/PNG/WebP/AVIF/HEIC görselleri desteklenir.",

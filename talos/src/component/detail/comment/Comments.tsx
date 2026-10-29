@@ -11,6 +11,8 @@ import { docsLink, linkTpl } from '@/lib/i18n/docsLink';
 import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
+    invalidateUGCCommentCache,
+    UGCClientError,
     listUGCComments,
     type UGCComment,
     type UGCCommentVoteValue,
@@ -186,7 +188,7 @@ const CommentItem = memo(({
 }: CommentItemProps) => {
     const tUI = useTranslateUI();
     const canModerate = isVisible(comment.status);
-    const canEdit = canModerate || isReviewing(comment.status);
+    const canEdit = Boolean(comment.snapshotId) && (comment.status === 'active' || comment.status === 'flagged');
     const translationVisible = isTransShown(comment);
     const { copyPointShareUrl, copiedPopupVisible } = usePointShareLink(point, { content: { kind: 'comment', id: comment.id } });
     const actions = useMemo<ShortActionItem[]>(() => {
@@ -576,8 +578,10 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     }, [setReplyTarget]);
 
     const handleEdit = useCallback((comment: UGCComment) => {
+        if (!comment.snapshotId || (comment.status !== 'active' && comment.status !== 'flagged')) return;
         clearReply();
-        setEditTarget(comment);
+        // Keep the displayed immutable version as the baseline for this editor session.
+        setEditTarget({ ...comment });
         setInputValue(comment.content);
         window.requestAnimationFrame(() => {
             inputRef.current?.focusEnd();
@@ -619,11 +623,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
 
         setError('');
         if (editTarget) {
-            if (content === editTarget.content) {
-                setEditTarget(null);
-                setInputValue('');
-                return;
-            }
+            if (!editTarget.snapshotId) return;
 
             const previousComments = comments;
             const pendingComment: UGCComment = {
@@ -634,33 +634,73 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                 translationTargetLanguage: undefined,
                 translationHidden: undefined,
                 translationStatus: undefined,
-                flagged: false,
-                recallRequested: false,
+                // A local draft has no server version until the append commits.
+                snapshotId: undefined,
                 status: 'pending_openai',
-                editUndoAvailable: true,
+                editUndoAvailable: false,
             };
-            const previousSubmission = removeCommentSubmission(point.id, editTarget.id);
+            const previousSubmission = removeCommentSubmission(
+                point.id,
+                editTarget.id,
+            );
             restoreCommentSubmission(point.id, pendingComment);
-            patchComment(editTarget.id, () => pendingComment);
+            patchComment(editTarget.id, (current) => ({
+                ...pendingComment,
+                replies: current.replies,
+                replyCount: current.replyCount,
+                score: current.score,
+                viewerVote: current.viewerVote,
+            }));
             setCommentActionPending(editTarget.id, true);
             setEditTarget(null);
             setInputValue('');
             try {
-                const submission = await editUGCComment(editTarget.id, content);
+                const submission = await editUGCComment(
+                    editTarget.id,
+                    content,
+                    editTarget.snapshotId,
+                );
                 removeCommentSubmission(point.id, editTarget.id);
-                restoreCommentSubmission(point.id, {
+                const committed = {
                     ...pendingComment,
+                    snapshotId: submission.snapshotId,
                     status: submission.status,
-                });
-            } catch {
+                };
+                restoreCommentSubmission(point.id, committed);
+                patchComment(editTarget.id, (current) => ({
+                    ...current,
+                    ...committed,
+                    replies: current.replies,
+                    replyCount: current.replyCount,
+                    score: current.score,
+                    viewerVote: current.viewerVote,
+                }));
+            } catch (error) {
                 removeCommentSubmission(point.id, editTarget.id);
                 if (previousSubmission) {
                     restoreCommentSubmission(point.id, previousSubmission);
                 }
                 setComments(previousComments);
-                setEditTarget(editTarget);
-                setInputValue(content);
-                setError(tUI('detail.comments.editFailed'));
+                if (error instanceof UGCClientError && error.status === 409) {
+                    // A conflict ends this edit session. Reopening captures a new baseline;
+                    // never replay this draft over a version the author has not seen.
+                    setEditTarget(null);
+                    setInputValue('');
+                    removeCommentSubmission(point.id, editTarget.id);
+                    invalidateUGCCommentCache(point.id);
+                    setError(tUI('detail.comments.editConflict'));
+                    try {
+                        const refreshed = await listUGCComments(point.id);
+                        syncCommentSubmissions(point.id, refreshed);
+                        setComments(refreshed);
+                    } catch {
+                        setError(tUI('detail.comments.editConflictRefreshFailed'));
+                    }
+                } else {
+                    setEditTarget(editTarget);
+                    setInputValue(content);
+                    setError(tUI('detail.comments.editFailed'));
+                }
             } finally {
                 setCommentActionPending(editTarget.id, false);
             }
@@ -670,7 +710,19 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         submitCommentOptimistic(point, content, replyTarget, user);
         setInputValue('');
         clearReply();
-    }, [clearReply, comments, editTarget, inputValue, patchComment, point, replyTarget, requireAuth, setCommentActionPending, tUI, user]);
+    }, [
+        clearReply,
+        comments,
+        editTarget,
+        inputValue,
+        patchComment,
+        point,
+        replyTarget,
+        requireAuth,
+        setCommentActionPending,
+        tUI,
+        user,
+    ]);
 
     const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         if (

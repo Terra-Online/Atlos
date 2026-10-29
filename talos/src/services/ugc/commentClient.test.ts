@@ -75,3 +75,30 @@ it('splits 201 missing markers without dropping any marker', async () => {
     expect(new Set(sent)).toEqual(new Set(ids));
     expect(fetch.mock.calls.every(([input]) => new URL(input instanceof Request ? input.url : input).searchParams.get('markerIds')!.split(',').length <= 100)).toBe(true);
 });
+
+
+it('sends the editor baseline and preserves the committed snapshot identity', async () => {
+    const { editUGCComment } = await import('./client');
+    const fetch = vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValue(
+            Response.json({
+                submission: {
+                    id: 'comment',
+                    markerId: 'marker',
+                    snapshotId: 'B',
+                    status: 'pending_openai',
+                },
+            }),
+        );
+    vi.stubGlobal('fetch', fetch);
+    expect(await editUGCComment('comment', 'New body', 'A')).toMatchObject({
+        snapshotId: 'B',
+    });
+    const body = fetch.mock.calls[0][1]?.body;
+    if (typeof body !== 'string') throw new Error('Expected JSON request body');
+    expect(JSON.parse(body)).toEqual({
+        content: 'New body',
+        parentSnapshotId: 'A',
+    });
+});
