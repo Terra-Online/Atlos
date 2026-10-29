@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { UGCComment, UGCCommentActionPatch, UGCCommentVoteValue } from '@/services/ugc/client';
-import { toggleUGCCommentFlag, voteUGCComment } from '@/services/ugc/client';
+import { voteUGCComment } from '@/services/ugc/client';
 import { applyPatch, voteDelta } from './commentsTree';
 
 type Task<T> = {
@@ -131,28 +131,6 @@ export const useVoteSync = (
             score: comment.score + voteDelta(currentVote, lastSynced),
         };
     }, []);
-
-    return useSync({
-        delay,
-        patch,
-        send,
-        rollback,
-    });
-};
-
-export const useFlagSync = (
-    delay: number,
-    patch: (commentId: string, patch: (comment: UGCComment) => UGCComment) => void,
-) => {
-    const send = useCallback((commentId: string, desired: boolean) => (
-        toggleUGCCommentFlag(commentId, desired)
-    ), []);
-
-    const rollback = useCallback((comment: UGCComment, lastSynced: boolean): UGCComment => ({
-        ...comment,
-        flagged: lastSynced,
-        status: lastSynced ? 'flagged' : comment.status === 'flagged' ? 'active' : comment.status,
-    }), []);
 
     return useSync({
         delay,

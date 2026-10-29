@@ -5,6 +5,10 @@ import type { IMarkerData } from '@/data/marker';
 import { parseTimestamp } from '@/lib/format/time';
 import {
     getUGCImageById,
+    UGCClientError,
+    invalidateUGCImageCache,
+    invalidateUGCPublicImageCache,
+    invalidateUGCSubmissionCache,
     listPublicUGCImages,
     listUGCPointImages,
     resolveUGCUploadTarget,
@@ -58,6 +62,7 @@ export type PointImagesState = {
     setRequestedImage: React.Dispatch<React.SetStateAction<UGCImage | null>>;
     patchImageById: (imageId: string, patch: (image: UGCImage) => UGCImage) => void;
     applyServerImage: (serverImage: UGCImageActionPatch) => void;
+    refreshPublicImage: (imageId: string) => Promise<void>;
     viewerOpen: boolean;
     setViewerOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -72,6 +77,8 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
     const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
     const [viewerOpen, setViewerOpen] = useState(false);
     const loadedDetailRef = useRef<string | null>(null);
+    const reportScopeRef = useRef(point.id);
+    reportScopeRef.current = point.id;
     const imageOpenRequest = useMarkerStore((state) => state.imageOpenRequest);
     const clearImageOpenRequest = useMarkerStore((state) => state.clearImageOpenRequest);
 
@@ -241,6 +248,23 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
             : current));
     }, []);
 
+    const refreshPublicImage = useCallback(async (imageId: string) => {
+        const accountVersion = useAuthStore.getState().sessionVersion;
+        invalidateUGCImageCache(point.id);
+        invalidateUGCPublicImageCache(point.id);
+        invalidateUGCSubmissionCache(point.id);
+        let fresh: UGCImage | null;
+        try { fresh = await getUGCImageById(point.id, imageId); }
+        catch (error) {
+            if (!(error instanceof UGCClientError) || error.status !== 404) throw error;
+            fresh = null;
+        }
+        if (reportScopeRef.current !== point.id || useAuthStore.getState().sessionVersion !== accountVersion) return;
+        setImages((items) => items.flatMap((image) => image.id === imageId ? fresh ? [fresh] : [] : [image]));
+        // Requested detail takes precedence over the list and must refresh too.
+        setRequestedImage((current) => current?.id === imageId ? fresh : current);
+    }, [point.id]);
+
     return {
         images,
         myImages,
@@ -264,6 +288,7 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
         applyServerImage,
         viewerOpen,
         setViewerOpen,
+        refreshPublicImage,
     };
 };
 

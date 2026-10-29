@@ -104,6 +104,7 @@
       "uploadAborted": "Upload was cancelled.",
       "rateLimited": "Upload rate limit reached, retry later.",
       "uploadFailed": "Upload failed, please try again.",
+      "reportVersionChanged": "This content changed. Check the latest version before reporting again.",
       "backendUnknown": "Upload service returned an error."
     }
   },

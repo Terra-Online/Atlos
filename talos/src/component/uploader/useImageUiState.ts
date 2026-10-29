@@ -61,7 +61,7 @@ const useImageUiState = (imageState: PointImagesState, uploadState: UploadState)
         upvoted: Boolean(active?.upvoted),
         flagged: Boolean(active?.flagged),
         isOwnActive,
-        canFlag: !isOwnActive && !isActivePending,
+        canFlag: Boolean(active?.snapshotId) && !isOwnActive && !isActivePending,
         canDelete: isOwnActive,
         ownerActionsOnly: isActivePending,
     };

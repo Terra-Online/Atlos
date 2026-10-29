@@ -11,6 +11,8 @@ import { docsLink, linkTpl } from '@/lib/i18n/docsLink';
 import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
+    toggleUGCCommentFlag,
+    getUGCCommentById,
     invalidateUGCCommentCache,
     UGCClientError,
     listUGCComments,
@@ -36,6 +38,8 @@ import {
     isReviewing,
     isVisible,
     patchTree,
+    removeTree,
+    clearTrans,
     voteDelta,
 } from './commentsTree';
 import {
@@ -54,7 +58,8 @@ import {
     statusLabel,
     transNote,
 } from './commentsUtils';
-import { useFlagSync, useVoteSync } from './useActionSync';
+import { useVoteSync } from './useActionSync';
+import { useReportSync } from '@/component/ugc/useReportSync';
 import { useInputLayout } from './useInputLayout';
 import { useDeleteComment } from './useDeleteComment';
 import { useReplyQuote } from './useReplyQuote';
@@ -223,7 +228,7 @@ const CommentItem = memo(({
                 label: comment.flagged ? tUI('detail.viewer.unflag') : tUI('detail.viewer.flag'),
                 icon: <FlagIcon />,
                 active: Boolean(comment.flagged),
-                disabled: !canInteract || !canModerate || actionPending,
+                disabled: !comment.snapshotId || !canInteract || !canModerate || actionPending,
                 tooltipKey: `flag:${comment.flagged ? 'on' : 'off'}:${comment.id}`,
                 onClick: () => onFlag(comment),
             });
@@ -315,6 +320,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const tUI = useTranslateUI();
     const locale = useLocale();
     const user = useAuthStore((state) => state.sessionUser);
+    const accountVersion = useAuthStore((state) => state.sessionVersion);
     const isAuthenticated = Boolean(user);
     const [comments, setComments] = useState<UGCComment[]>([]);
     const [loading, setLoading] = useState(true);
@@ -428,8 +434,35 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         return false;
     }, [isAuthenticated]);
 
+    const reportScopeRef = useRef(point.id);
+    reportScopeRef.current = point.id;
     const { start: syncVote, clear: clearVote } = useVoteSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
-    const { start: syncFlag, clear: clearFlag } = useFlagSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
+    const { start: syncFlag, clear: clearFlag } = useReportSync({
+        scope: `${point.id}:${accountVersion}`,
+        delay: COMMENT_TOGGLE_SYNC_DELAY_MS,
+        send: (target, desired) => toggleUGCCommentFlag(target.id, desired, target.snapshotId),
+        apply: (target, patch) => patchComment(target.id, (item) => item.snapshotId === target.snapshotId ? { ...item, ...patch } : item),
+        rollback: (target, original) => patchComment(target.id, (item) => item.snapshotId === target.snapshotId ? {
+            ...item, flagged: original.flagged, status: original.status,
+        } : item),
+        conflict: async (target) => {
+            setError(tUI('detail.errors.reportVersionChanged'));
+            const accountVersion = useAuthStore.getState().sessionVersion;
+            const current = () => reportScopeRef.current === point.id && useAuthStore.getState().sessionVersion === accountVersion;
+            invalidateUGCCommentCache(point.id);
+            try {
+                // The direct read bypasses list caches and any older list request in flight.
+                const context = await getUGCCommentById(point.id, target.id);
+                if (!current()) return;
+                const fresh = context.path.find((item) => item.id === target.id);
+                if (fresh) patchComment(target.id, (item) => ({ ...clearTrans(item), ...fresh, replies: item.replies }));
+            } catch (error) {
+                if (current() && error instanceof UGCClientError && error.status === 404) {
+                    setComments((items) => removeTree(items, target.id).comments);
+                }
+            }
+        },
+    });
     const clearSync = useCallback((commentIds: Set<string>) => {
         clearVote(commentIds);
         clearFlag(commentIds);
@@ -744,14 +777,14 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     }, [patchComment, requireAuth, syncVote]);
 
     const handleFlag = useCallback((comment: UGCComment) => {
-        if (!requireAuth()) return;
+        if (!comment.snapshotId || !requireAuth()) return;
         const nextFlagged = !comment.flagged;
         patchComment(comment.id, (item) => ({
             ...item,
             flagged: nextFlagged,
             status: nextFlagged ? 'flagged' : item.status === 'flagged' ? 'active' : item.status,
         }));
-        syncFlag(comment.id, Boolean(comment.flagged), nextFlagged);
+        syncFlag({ id: comment.id, snapshotId: comment.snapshotId }, { flagged: Boolean(comment.flagged), status: comment.status }, nextFlagged);
     }, [patchComment, requireAuth, syncFlag]);
 
     const ruleUrl = useMemo(() => docsLink(locale, 'communityGuidelines'), [locale]);

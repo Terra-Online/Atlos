@@ -445,7 +445,6 @@ it('validates an unchanged edit on the server and keeps the committed body and i
             content: comment.content,
             flagged: true,
             status: 'flagged',
-            editUndoAvailable: false,
             score: 7,
             viewerVote: 1,
             replyCount: 1,
@@ -525,7 +524,6 @@ it('pairs an appended body with the returned snapshot and preserves its replies 
         viewerVote: 1,
         replyCount: 1,
         replies: [{ id: 'child' }],
-        editUndoAvailable: false,
     });
     expect(
         getCommentSubmissionSnapshot(point.id).comments[0].content,
@@ -539,4 +537,20 @@ it('pairs an appended body with the returned snapshot and preserves its replies 
             .getByRole('button', { name: 'detail.comments.edit' })
             .hasAttribute('disabled'),
     ).toBe(true);
+});
+
+it.each([true, false])('keeps desired report=%s bound to the clicked comment, then shows the conflict and actually replaces stale content', async (desired) => {
+    useAuthStore.setState({ sessionUser: { uid: 'reader', nickname: 'Reader' }, sessionVersion: 10 });
+    const published = { ...comment, snapshotId: 'report-A', content: 'Report public A', flagged: !desired, author: { publicUid: 'owner', nickname: 'Owner' } };
+    vi.mocked(client.listUGCComments).mockReset().mockResolvedValueOnce([published]);
+    const refresh = vi.spyOn(client, 'getUGCCommentById').mockResolvedValue({ targetId: comment.id,
+        path: [{ ...published, snapshotId: 'report-B', content: 'Report public B', flagged: false }], replies: [], repliesTruncated: false });
+    const report = vi.spyOn(client, 'toggleUGCCommentFlag').mockRejectedValue(new client.UGCClientError('Changed', 'PUBLIC_SNAPSHOT_CONFLICT', 409));
+    render(createElement(Comments, { point, pointName: 'Point', active: true }));
+    fireEvent.click(await screen.findByRole('button', { name: desired ? 'detail.viewer.flag' : 'detail.viewer.unflag' }));
+    await screen.findByText('Report public B');
+    expect(screen.queryByText('Report public A')).toBeNull();
+    expect(screen.getByText('detail.errors.reportVersionChanged')).toBeTruthy();
+    expect(report).toHaveBeenCalledExactlyOnceWith(comment.id, desired, 'report-A');
+    expect(refresh).toHaveBeenCalledExactlyOnceWith(point.id, comment.id);
 });

@@ -104,6 +104,7 @@
       "uploadAborted": "上載已取消",
       "rateLimited": "上傳過於頻繁，請稍後再試",
       "uploadFailed": "上載失敗，請稍後再試",
+      "reportVersionChanged": "內容版本已變更，請查看最新內容後再舉報。",
       "backendUnknown": "上載服務返回錯誤"
     }
   },

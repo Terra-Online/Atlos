@@ -104,6 +104,7 @@
       "uploadAborted": "上传已取消",
       "rateLimited": "上传过于频繁，请稍后再试",
       "uploadFailed": "上传失败，请稍后再试",
+      "reportVersionChanged": "内容版本已变更，请查看最新内容后再举报。",
       "backendUnknown": "上传服务返回错误"
     }
   },
