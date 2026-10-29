@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth';
 import type { IMarkerData } from '@/data/marker';
 import type { SessionUser } from '@/services/auth';
 import {
@@ -47,6 +48,16 @@ const submissionTasks = new Map<string, CommentSubmissionTask[]>();
 const submissionSnapshots = new Map<string, CommentSubmissionSnapshot>();
 const submissionErrors = new Map<string, CommentSubmissionError>();
 const submissionListeners = new Set<() => void>();
+// This cache survives point navigation, but its private overlay belongs to the
+// current account. Completed network reads are isolated separately in client.ts.
+useAuthStore.subscribe((state, previous) => {
+    if (state.sessionUser?.uid === previous.sessionUser?.uid) return;
+    submissionTasks.clear();
+    submissionSnapshots.clear();
+    submissionErrors.clear();
+    submissionListeners.forEach(listener => listener());
+});
+
 let nextLocalCommentId = 1;
 let nextSubmissionErrorId = 1;
 

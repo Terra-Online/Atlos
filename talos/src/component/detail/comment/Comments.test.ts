@@ -55,6 +55,7 @@ import Comments from './Comments';
 import * as client from '@/services/ugc/client';
 import { useMarkerStore } from '@/store/marker';
 import { useAuthStore } from '@/store/auth';
+import { restoreCommentSubmission } from './commentSubmissionStore';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
 const comment: UGCComment = { id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
@@ -248,4 +249,24 @@ it('replaces a mounted owner overlay with the public read after sign-out', async
     act(() => useAuthStore.setState({ sessionUser: null }));
     await screen.findByText('Published A');
     expect(screen.queryByText('Private owner B')).toBeNull();
+});
+
+it('clears a locally retained private submission when its account signs out', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    vi.mocked(client.listUGCComments).mockResolvedValue([]);
+    restoreCommentSubmission(point.id, {
+        ...comment,
+        id: 'private-local',
+        snapshotId: 'B',
+        content: 'Private retained B',
+        status: 'pending_audit',
+    });
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    await screen.findByText('Private retained B');
+    act(() => useAuthStore.setState({ sessionUser: null }));
+    await waitFor(() =>
+        expect(screen.queryByText('Private retained B')).toBeNull(),
+    );
 });
