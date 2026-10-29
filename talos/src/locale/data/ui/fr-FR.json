@@ -63,8 +63,7 @@
       "unflag": "Retirer le signalement",
       "uploadAno": "Téléverser autre",
       "share": "Partager",
-      "recall": "Demander le retrait",
-      "unrecall": "Annuler le retrait"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Copier le lien du commentaire",
@@ -84,8 +83,7 @@
       "reply": "Répondre",
       "edit": "Modifier",
       "submitEdit": "Enregistrer les modifications",
-      "undoEdit": "Annuler les modifications",
-      "recall": "Masquer immédiatement",
+      "delete": "Delete",
       "reviewing": "En examen",
       "emptyWithRule": "Aucun commentaire pour le moment. Veuillez respecter les <a href=\"{link}\">règles de la communauté</a> lors de la publication.",
       "ruleOnly": "Veuillez respecter les <a href=\"{link}\">règles de la communauté</a> lors de la publication.",

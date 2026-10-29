@@ -69,7 +69,6 @@ export const makePending = (
     score: 0,
     viewerVote: 0,
     flagged: false,
-    recallRequested: false,
     status: submission.status,
     replyCount: 0,
     replies: [],
@@ -99,7 +98,6 @@ export const makeLocalPending = (
     score: 0,
     viewerVote: 0,
     flagged: false,
-    recallRequested: false,
     status: 'pending_audit',
     replyCount: 0,
     replies: [],
@@ -222,7 +220,6 @@ export const clearAllTrans = (comments: UGCComment[]): UGCComment[] => (
 export const applyPatch = (comment: UGCComment, patch: UGCCommentActionPatch): UGCComment => ({
     ...comment,
     ...patch,
-    recallRequested: patch.recallRequested ?? comment.recallRequested,
     replies: comment.replies,
 });
 

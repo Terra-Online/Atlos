@@ -63,8 +63,7 @@
       "unflag": "Quitar marca",
       "uploadAno": "Subir otra",
       "share": "Compartir",
-      "recall": "Solicitar retirada",
-      "unrecall": "Cancelar retirada"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Copiar enlace del comentario",
@@ -84,8 +83,7 @@
       "reply": "Responder",
       "edit": "Editar",
       "submitEdit": "Guardar cambios",
-      "undoEdit": "Deshacer cambios",
-      "recall": "Ocultar ahora",
+      "delete": "Delete",
       "reviewing": "En revisión",
       "emptyWithRule": "Aún no hay comentarios. Al publicar, sigue las <a href=\"{link}\">normas de la comunidad</a>.",
       "ruleOnly": "Al publicar, sigue las <a href=\"{link}\">normas de la comunidad</a>.",

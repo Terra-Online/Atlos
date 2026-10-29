@@ -63,8 +63,7 @@
       "unflag": "إلغاء الإبلاغ",
       "uploadAno": "رفع صورة أخرى",
       "share": "مشاركة",
-      "recall": "تراجع",
-      "unrecall": "إلغاء التراجع"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "نسخ رابط التعليق",
@@ -84,8 +83,7 @@
       "reply": "رد",
       "edit": "تعديل",
       "submitEdit": "حفظ التعديل",
-      "undoEdit": "التراجع عن التعديل",
-      "recall": "إخفاء فورًا",
+      "delete": "Delete",
       "reviewing": "قيد المراجعة",
       "emptyWithRule": "لا توجد تعليقات بعد. يرجى الالتزام بـ<a href=\"{link}\">إرشادات المجتمع</a> عند النشر.",
       "ruleOnly": "يرجى الالتزام بـ<a href=\"{link}\">إرشادات المجتمع</a> عند النشر.",

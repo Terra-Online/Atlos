@@ -33,7 +33,6 @@ export type UGCImage = {
     upvoteCount?: number;
     upvoted?: boolean;
     flagged?: boolean;
-    recallRequested?: boolean;
     status?: UGCSubmissionStatus;
 };
 
@@ -60,13 +59,11 @@ export type UGCComment = {
     translationTargetLanguage?: string;
     translationHidden?: boolean;
     translationStatus?: 'translating' | 'failed';
-    editUndoAvailable?: boolean;
     author?: UGCCommentAuthor | null;
     createdAt: string;
     score: number;
     viewerVote?: UGCCommentVoteValue;
     flagged?: boolean;
-    recallRequested?: boolean;
     status?: UGCSubmissionStatus;
     replyCount: number;
     replies: UGCComment[];
@@ -580,13 +577,12 @@ export async function editUGCComment(
     return payload.submission;
 }
 
-export type UGCImageActionPatch = Partial<Pick<UGCImage, 'upvoteCount' | 'upvotes' | 'upvoted' | 'flagged' | 'recallRequested' | 'status'>> & {
+export type UGCImageActionPatch = Partial<Pick<UGCImage, 'upvoteCount' | 'upvotes' | 'upvoted' | 'flagged' | 'status'>> & {
     id: string;
 };
 
-export type UGCCommentActionPatch = Partial<Pick<UGCComment, 'content' | 'score' | 'viewerVote' | 'flagged' | 'recallRequested' | 'status' | 'editUndoAvailable'>> & {
+export type UGCCommentActionPatch = Partial<Pick<UGCComment, 'content' | 'score' | 'viewerVote' | 'flagged' | 'status'>> & {
     id: string;
-    editReverted?: boolean;
 };
 
 type UGCImageActionResponse = {
@@ -605,7 +601,6 @@ type UGCCommentActionResponse = {
     flagCount?: number;
     status?: UGCSubmissionStatus;
     content?: string;
-    editReverted?: boolean;
 };
 
 export type UGCCommentTrans = {
@@ -633,12 +628,10 @@ export async function toggleUGCImageFlag(imageId: string, flagged: boolean): Pro
     return updateUGCImageAction(imageId, flagged ? 'flag' : 'unflag');
 }
 
-export async function toggleUGCImageRecall(imageId: string, recallRequested: boolean): Promise<UGCImageActionPatch> {
-    return updateUGCImageAction(imageId, recallRequested ? 'remove-request' : 'unrecall');
-}
-
-export async function recallUGCImage(imageId: string): Promise<UGCImageActionPatch> {
-    return updateUGCImageAction(imageId, 'recall');
+export async function deleteUGCImage(
+    imageId: string,
+): Promise<{ authorDeletedAt: string }> {
+    return deleteUGCSubmission('images', imageId);
 }
 
 export async function voteUGCComment(commentId: string, value: 1 | -1): Promise<UGCCommentActionPatch> {
@@ -649,12 +642,36 @@ export async function toggleUGCCommentFlag(commentId: string, flagged: boolean):
     return updateUGCCommentAction(commentId, flagged ? 'flag' : 'unflag');
 }
 
-export async function requestUGCCommentRemoval(commentId: string): Promise<UGCCommentActionPatch> {
-    return updateUGCCommentAction(commentId, 'remove-request');
+export async function deleteUGCComment(
+    commentId: string,
+): Promise<{ authorDeletedAt: string }> {
+    return deleteUGCSubmission('comments', commentId);
 }
 
-export async function recallUGCComment(commentId: string): Promise<UGCCommentActionPatch> {
-    return updateUGCCommentAction(commentId, 'recall');
+async function deleteUGCSubmission(
+    kind: 'comments' | 'images',
+    id: string,
+): Promise<{ authorDeletedAt: string }> {
+    const response = await fetch(
+        `${UGC_API_BASE}/${kind}/${encodeURIComponent(id)}`,
+        {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: getAuthHeaders(),
+        },
+    );
+    if (!response.ok) throw await readUGCError(response);
+    const payload = (await response.json()) as {
+        ok?: boolean;
+        authorDeletedAt?: string;
+    };
+    if (payload.ok !== true || !payload.authorDeletedAt) {
+        throw new UGCClientError(
+            'Deletion response is invalid.',
+            'deleteInvalidResponse',
+        );
+    }
+    return { authorDeletedAt: payload.authorDeletedAt };
 }
 
 export async function transUGCComments(
@@ -717,11 +734,10 @@ async function updateUGCImageAction(imageId: string, action: string): Promise<UG
     }
     if (payload.status) {
         patch.status = payload.status;
-        patch.recallRequested = payload.status === 'remove_request';
         if (payload.status === 'flagged') {
             patch.flagged = true;
         }
-        if (payload.status === 'active' && (action === 'unflag' || action === 'unrecall')) {
+        if (payload.status === 'active' && action === 'unflag') {
             patch.flagged = false;
         }
     }
@@ -756,18 +772,12 @@ async function updateUGCCommentAction(commentId: string, action: string): Promis
     }
     if (payload.status) {
         patch.status = payload.status;
-        patch.recallRequested = payload.status === 'remove_request';
         if (payload.status === 'flagged') {
             patch.flagged = true;
         }
         if (payload.status === 'active' && action === 'unflag') {
             patch.flagged = false;
         }
-    }
-    if (payload.editReverted && typeof payload.content === 'string') {
-        patch.content = payload.content;
-        patch.editReverted = true;
-        patch.editUndoAvailable = false;
     }
     return patch;
 }
@@ -1309,7 +1319,6 @@ function normalizeUGCImage(image: UGCImage): UGCImage {
 }
 
 function normalizeUGCComment(comment: UGCComment): UGCComment {
-    const status = comment.status;
     const rawAvatar = comment.author?.avatar;
     const avatar = Number.isFinite(rawAvatar) ? Math.floor(rawAvatar as number) : undefined;
     const author = comment.author
@@ -1327,7 +1336,6 @@ function normalizeUGCComment(comment: UGCComment): UGCComment {
         score: Number.isFinite(comment.score) ? Math.trunc(comment.score) : 0,
         viewerVote: comment.viewerVote === -1 || comment.viewerVote === 1 ? comment.viewerVote : comment.viewerVote === 0 ? 0 : undefined,
         flagged: comment.flagged,
-        recallRequested: Boolean(comment.recallRequested || status === 'remove_request'),
         replyCount: Number.isFinite(comment.replyCount) ? Math.max(0, Math.trunc(comment.replyCount)) : comment.replies?.length ?? 0,
         replies: (comment.replies ?? []).map(normalizeUGCComment),
     };

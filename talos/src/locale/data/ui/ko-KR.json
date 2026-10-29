@@ -63,8 +63,7 @@
       "unflag": "신고 취소",
       "uploadAno": "다른 이미지 업로드",
       "share": "공유",
-      "recall": "철회 요청",
-      "unrecall": "철회 요청 취소"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "댓글 링크 복사",
@@ -84,8 +83,7 @@
       "reply": "답글",
       "edit": "수정",
       "submitEdit": "수정 내용 저장",
-      "undoEdit": "수정 취소",
-      "recall": "댓글 철회 요청",
+      "delete": "Delete",
       "reviewing": "검토 중",
       "emptyWithRule": "아직 댓글이 없습니다. 게시 시 <a href=\"{link}\">커뮤니티 가이드라인</a>을 따라 주세요.",
       "ruleOnly": "게시 시 <a href=\"{link}\">커뮤니티 가이드라인</a>을 따라 주세요.",

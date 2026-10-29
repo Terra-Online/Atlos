@@ -63,8 +63,7 @@
       "unflag": "Unflag",
       "uploadAno": "Upload Another",
       "share": "Share",
-      "recall": "Recall",
-      "unrecall": "Cancel Recall"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Copy comment link",
@@ -84,8 +83,7 @@
       "reply": "Reply",
       "edit": "Edit",
       "submitEdit": "Submit Edit",
-      "undoEdit": "Undo Edit",
-      "recall": "Recall",
+      "delete": "Delete",
       "reviewing": "Reviewing",
       "emptyWithRule": "No comments yet. Please follow <a href=\"{link}\">community guidelines</a> when posting.",
       "ruleOnly": "Please follow <a href=\"{link}\">community guidelines</a> when posting.",

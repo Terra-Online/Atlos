@@ -63,8 +63,7 @@
       "unflag": "報告を取り消す",
       "uploadAno": "別の画像を投稿",
       "share": "共有",
-      "recall": "取り下げを申請",
-      "unrecall": "取り下げ申請を取り消す"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "コメントのリンクをコピー",
@@ -84,8 +83,7 @@
       "reply": "返信",
       "edit": "編集",
       "submitEdit": "変更を保存",
-      "undoEdit": "変更を破棄",
-      "recall": "削除を申請",
+      "delete": "Delete",
       "reviewing": "審査中",
       "emptyWithRule": "まだコメントはありません。投稿の際は<a href=\"{link}\">コミュニティガイドライン</a>をお守りください。",
       "ruleOnly": "投稿の際は<a href=\"{link}\">コミュニティガイドライン</a>をお守りください。",

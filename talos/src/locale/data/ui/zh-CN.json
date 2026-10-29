@@ -63,8 +63,7 @@
       "unflag": "取消标记",
       "uploadAno": "上传另一张图片",
       "share": "分享",
-      "recall": "撤回此图片",
-      "unrecall": "取消撤回"
+      "delete": "删除"
     },
     "comments": {
       "copyLink": "复制评论链接",
@@ -84,8 +83,7 @@
       "reply": "回复帖文",
       "edit": "修改留言",
       "submitEdit": "提交修改",
-      "undoEdit": "撤销修改",
-      "recall": "撤回此留言",
+      "delete": "删除",
       "reviewing": "审核中",
       "emptyWithRule": "暂无留言。发布内容请遵循<a href=\"{link}\">社区守则</a>。",
       "ruleOnly": "发布内容请遵循<a href=\"{link}\">社区守则</a>。",

@@ -55,17 +55,17 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
     } = uploadState;
     const {
         actionPending,
-        recallConfirming,
-        cancelRecallConfirmation,
+        deleteConfirming,
+        cancelDeleteConfirmation,
         handleToggleUpvote,
         handleToggleFlag,
-        handleToggleRecall,
+        handleDelete,
     } = actionsState;
     const {
         state, canPreview, interactive, showRules, rulesUrl,
         authorNickname, authorPublicUid, createdAt,
-        upvoteCount, upvoted, flagged, recallRequested,
-        isOwnActive, canFlag, canRecall, recallOnly,
+        upvoteCount, upvoted, flagged,
+        isOwnActive, canFlag, canDelete, ownerActionsOnly,
     } = uiState;
     const { dragActive, handleDragEnter, handleDragOver, handleDragLeave, handleDrop } = interaction;
     const {
@@ -123,7 +123,7 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
                 label: shortActionLabels.upvote,
                 icon: <LikeIcon />,
                 active: upvoted,
-                disabled: recallOnly,
+                disabled: ownerActionsOnly,
                 onClick: () => void handleToggleUpvote(),
             },
         ];
@@ -145,7 +145,7 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
                 id: 'upload',
                 label: shortActionLabels.upload,
                 icon: <RecallIcon />,
-                iconClassName: styles.previewShortActionRecallIcon,
+                iconClassName: styles.previewShortActionDeleteIcon,
                 disabled: !canAppendUpload,
                 onClick: requestAppendUpload,
             },
@@ -160,7 +160,7 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
         handleToggleFlag,
         handleToggleUpvote,
         isOwnActive,
-        recallOnly,
+        ownerActionsOnly,
         requestAppendUpload,
         shortActionLabels,
         tUI,
@@ -284,18 +284,17 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
                 upvoteCount={upvoteCount}
                 upvoted={upvoted}
                 flagged={flagged}
-                recallRequested={recallRequested}
                 canFlag={canFlag}
-                canRecall={canRecall}
-                recallOnly={recallOnly}
+                canDelete={canDelete}
+                ownerActionsOnly={ownerActionsOnly}
                 actionPending={actionPending}
-                recallConfirming={recallConfirming}
-                onRecallBlur={cancelRecallConfirmation}
+                deleteConfirming={deleteConfirming}
+                onDeleteBlur={cancelDeleteConfirmation}
                 shareCopied={copiedPopupVisible}
                 onToggleUpvote={() => void handleToggleUpvote()}
                 onToggleFlag={() => void handleToggleFlag()}
                 onShare={() => void copyPointShareUrl()}
-                onToggleRecall={() => void handleToggleRecall()}
+                onDelete={() => void handleDelete()}
                 canAppendUpload={canAppendUpload}
                 onRequestUpload={requestAppendUpload}
                 uploading={uploading}

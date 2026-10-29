@@ -22,7 +22,6 @@ export function mergeCommentContext(comments: UGCComment[], context: UGCCommentC
                 snapshotId: comment.snapshotId,
                 content: comment.content,
                 status: comment.status,
-                editUndoAvailable: comment.editUndoAvailable,
             });
         }
     }

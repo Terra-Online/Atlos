@@ -63,8 +63,7 @@
       "unflag": "İşareti Kaldır",
       "uploadAno": "Başka Yükle",
       "share": "Paylaş",
-      "recall": "Geri Çek",
-      "unrecall": "Geri Çekmeyi İptal Et"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Yorum bağlantısını kopyala",
@@ -84,8 +83,7 @@
       "reply": "Yanıtla",
       "edit": "Düzenle",
       "submitEdit": "Düzenlemeyi Kaydet",
-      "undoEdit": "Düzenlemeyi Geri Al",
-      "recall": "Hemen gizle",
+      "delete": "Delete",
       "reviewing": "İnceleniyor",
       "emptyWithRule": "Henüz yorum yok. Gönderi paylaşırken lütfen <a href=\"{link}\">topluluk kurallarına</a> uyun.",
       "ruleOnly": "Gönderi paylaşırken lütfen <a href=\"{link}\">topluluk kurallarına</a> uyun.",

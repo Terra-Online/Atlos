@@ -63,8 +63,7 @@
       "unflag": "Batalkan tanda",
       "uploadAno": "Unggah lainnya",
       "share": "Bagikan",
-      "recall": "Minta penghapusan",
-      "unrecall": "Batalkan penghapusan"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Salin tautan komentar",
@@ -84,8 +83,7 @@
       "reply": "Balas",
       "edit": "Edit",
       "submitEdit": "Simpan perubahan",
-      "undoEdit": "Batalkan perubahan",
-      "recall": "Sembunyikan sekarang",
+      "delete": "Delete",
       "reviewing": "Ditinjau",
       "emptyWithRule": "Belum ada komentar. Harap ikuti <a href=\"{link}\">pedoman komunitas</a> saat memposting.",
       "ruleOnly": "Harap ikuti <a href=\"{link}\">pedoman komunitas</a> saat memposting.",

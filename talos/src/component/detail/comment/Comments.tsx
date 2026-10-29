@@ -56,7 +56,7 @@ import {
 } from './commentsUtils';
 import { useFlagSync, useVoteSync } from './useActionSync';
 import { useInputLayout } from './useInputLayout';
-import { useRecall } from './useRecall';
+import { useDeleteComment } from './useDeleteComment';
 import { useReplyQuote } from './useReplyQuote';
 import { useTrans } from './useTrans';
 import { useAutoTrans } from './useAutoTrans';
@@ -75,8 +75,8 @@ type Props = {
 const COMMENT_MAX_LENGTH = 500;
 const COMMENT_TOGGLE_SYNC_DELAY_MS = 300;
 const COMMENT_REPLY_QUOTE_TRANSITION_MS = 180;
-const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
-const RECALL_CONFIRM_EXPIRE_MS = 5_000;
+const DELETE_CONFIRM_MIN_DELAY_MS = 1_000;
+const DELETE_CONFIRM_EXPIRE_MS = 5_000;
 const COMMENT_EMOJI_HOVER_DELAY_MS = 200;
 const COMMENT_EMOJI_CLOSE_DELAY_MS = 120;
 const COMMENT_EMOJI_ANIMATION_MS = 180;
@@ -156,12 +156,11 @@ type CommentItemProps = {
     canEditOthers: boolean;
     canInteract: boolean;
     actionPending: boolean;
-    isEditing: boolean;
-    recallConfirming: boolean;
+    deleteConfirming: boolean;
     onVote: (comment: UGCComment, value: 1 | -1) => void;
     onFlag: (comment: UGCComment) => void;
     onEdit: (comment: UGCComment) => void;
-    onRecall: (comment: UGCComment) => void;
+    onDelete: (comment: UGCComment) => void;
     onTranslate: (comment: UGCComment) => void;
     onReply: (comment: UGCComment) => void;
     onToolbarDismiss: () => void;
@@ -176,12 +175,11 @@ const CommentItem = memo(({
     canEditOthers,
     canInteract,
     actionPending,
-    isEditing,
-    recallConfirming,
+    deleteConfirming,
     onVote,
     onFlag,
     onEdit,
-    onRecall,
+    onDelete,
     onTranslate,
     onReply,
     onToolbarDismiss,
@@ -243,18 +241,15 @@ const CommentItem = memo(({
 
         if (isOwn) {
             items.push({
-                id: 'recall',
-                label: tUI(recallConfirming
+                id: 'delete',
+                label: tUI(deleteConfirming
                     ? 'common.confirmAgain'
-                    : (isEditing || comment.editUndoAvailable
-                        ? 'detail.comments.undoEdit'
-                        : 'detail.comments.recall')),
+                    : 'detail.comments.delete'),
                 icon: <RecallIcon />,
-                active: Boolean(comment.recallRequested || comment.status === 'remove_request'),
-                confirming: recallConfirming,
-                tooltipKey: `recall:${recallConfirming ? 'confirm' : 'idle'}:${comment.id}`,
-                disabled: !canInteract || actionPending || comment.status === 'stale',
-                onClick: () => onRecall(comment),
+                confirming: deleteConfirming,
+                tooltipKey: `delete:${deleteConfirming ? 'confirm' : 'idle'}:${comment.id}`,
+                disabled: !canInteract || actionPending,
+                onClick: () => onDelete(comment),
             });
         }
 
@@ -285,12 +280,11 @@ const CommentItem = memo(({
         canModerate,
         canEditOthers,
         comment,
-        isEditing,
         isOwn,
-        recallConfirming,
+        deleteConfirming,
         onFlag,
         onEdit,
-        onRecall,
+        onDelete,
         onReply,
         onTranslate,
         onVote,
@@ -326,7 +320,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const [loading, setLoading] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const [editTarget, setEditTarget] = useState<UGCComment | null>(null);
-    const [recallConfirmation, setRecallConfirmation] = useState<{
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
         key: string;
         armedAt: number;
     } | null>(null);
@@ -334,7 +328,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     const [error, setError] = useState('');
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const [emojiPickerMounted, setEmojiPickerMounted] = useState(false);
-    const clearRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
+    const clearDeleteConfirmation = useCallback(() => setDeleteConfirmation(null), []);
     const inputRef = useRef<CommentEditorHandle | null>(null);
     const inputSurfaceRef = useRef<HTMLDivElement | null>(null);
     const inputBarRef = useRef<HTMLDivElement | null>(null);
@@ -469,7 +463,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         setReply: setReplyTarget,
         setRendered: setRenderedReply,
     });
-    const recallComment = useRecall({
+    const deleteComment = useDeleteComment({
         markerId: point.id,
         comments,
         busyIds: actionPendingIds,
@@ -524,7 +518,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         clearReply();
         setEditTarget(null);
         setInputValue('');
-        setRecallConfirmation(null);
+        setDeleteConfirmation(null);
         closeEmojiPicker();
     }, [clearReply, closeEmojiPicker, point.id]);
 
@@ -551,14 +545,14 @@ const Comments = ({ point, pointName, active = true }: Props) => {
     }, [closeEmojiPicker, emojiPickerOpen]);
 
     useEffect(() => {
-        if (!recallConfirmation) return undefined;
-        const remaining = RECALL_CONFIRM_EXPIRE_MS - (Date.now() - recallConfirmation.armedAt);
+        if (!deleteConfirmation) return undefined;
+        const remaining = DELETE_CONFIRM_EXPIRE_MS - (Date.now() - deleteConfirmation.armedAt);
         const timer = window.setTimeout(
-            () => setRecallConfirmation(null),
+            () => setDeleteConfirmation(null),
             Math.max(0, remaining),
         );
         return () => window.clearTimeout(timer);
-    }, [recallConfirmation]);
+    }, [deleteConfirmation]);
 
     useEffect(() => {
         const lastError = submissionSnapshot.lastError;
@@ -593,28 +587,26 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         inputRef.current?.insertEmoji(id);
     }, [inputDisabled]);
 
-    const executeRecall = useCallback((comment: UGCComment) => {
+    const executeDelete = useCallback((comment: UGCComment) => {
         if (editTarget?.id === comment.id) {
             setEditTarget(null);
             setInputValue('');
-            return;
         }
-        recallComment(comment);
-    }, [editTarget, recallComment]);
+        deleteComment(comment);
+    }, [editTarget, deleteComment]);
 
-    const handleRecall = useCallback((comment: UGCComment) => {
-        const mode = editTarget?.id === comment.id || comment.editUndoAvailable ? 'undo' : 'recall';
-        const key = `${comment.id}:${mode}`;
+    const handleDelete = useCallback((comment: UGCComment) => {
+        const key = comment.id;
         const now = Date.now();
-        if (recallConfirmation?.key !== key) {
-            setRecallConfirmation({ key, armedAt: now });
+        if (deleteConfirmation?.key !== key) {
+            setDeleteConfirmation({ key, armedAt: now });
             return;
         }
-        if (now - recallConfirmation.armedAt < RECALL_CONFIRM_MIN_DELAY_MS) return;
+        if (now - deleteConfirmation.armedAt < DELETE_CONFIRM_MIN_DELAY_MS) return;
 
-        setRecallConfirmation(null);
-        executeRecall(comment);
-    }, [editTarget, executeRecall, recallConfirmation]);
+        setDeleteConfirmation(null);
+        executeDelete(comment);
+    }, [executeDelete, deleteConfirmation]);
 
     const handleSubmit = useCallback(async () => {
         const content = inputValue.trim();
@@ -637,7 +629,6 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                 // A local draft has no server version until the append commits.
                 snapshotId: undefined,
                 status: 'pending_openai',
-                editUndoAvailable: false,
             };
             const previousSubmission = removeCommentSubmission(
                 point.id,
@@ -801,17 +792,14 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                         canEditOthers={canEditOthers}
                         canInteract={active}
                         actionPending={actionPendingIds.has(comment.id) || submittingCommentIds.has(comment.id)}
-                        isEditing={editTarget?.id === comment.id}
-                        recallConfirming={recallConfirmation?.key === `${comment.id}:${
-                            editTarget?.id === comment.id || comment.editUndoAvailable ? 'undo' : 'recall'
-                        }`}
+                        deleteConfirming={deleteConfirmation?.key === comment.id}
                         onVote={handleVote}
                         onFlag={handleFlag}
                         onEdit={handleEdit}
-                        onRecall={handleRecall}
+                        onDelete={handleDelete}
                         onTranslate={handleTranslate}
                         onReply={handleReply}
-                        onToolbarDismiss={clearRecallConfirmation}
+                        onToolbarDismiss={clearDeleteConfirmation}
                     />
                 ))}
                 {loading && comments.length === 0 && (

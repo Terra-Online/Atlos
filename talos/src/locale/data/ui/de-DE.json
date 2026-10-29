@@ -63,8 +63,7 @@
       "unflag": "Markierung entfernen",
       "uploadAno": "Weiteres hochladen",
       "share": "Teilen",
-      "recall": "Bildrücknahme beantragen",
-      "unrecall": "Rücknahme abbrechen"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Kommentarlink kopieren",
@@ -84,8 +83,7 @@
       "reply": "Antworten",
       "edit": "Bearbeiten",
       "submitEdit": "Bearbeitung speichern",
-      "undoEdit": "Bearbeitung verwerfen",
-      "recall": "Sofort ausblenden",
+      "delete": "Delete",
       "reviewing": "In Prüfung",
       "emptyWithRule": "Noch keine Kommentare. Bitte beachte beim Posten die <a href=\"{link}\">Community-Richtlinien</a>.",
       "ruleOnly": "Bitte beachte beim Posten die <a href=\"{link}\">Community-Richtlinien</a>.",

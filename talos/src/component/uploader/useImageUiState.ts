@@ -19,11 +19,10 @@ export type ImageUiState = {
     upvoteCount: number;
     upvoted: boolean;
     flagged: boolean;
-    recallRequested: boolean;
     isOwnActive: boolean;
     canFlag: boolean;
-    canRecall: boolean;
-    recallOnly: boolean;
+    canDelete: boolean;
+    ownerActionsOnly: boolean;
 };
 
 const useImageUiState = (imageState: PointImagesState, uploadState: UploadState): ImageUiState => {
@@ -61,11 +60,10 @@ const useImageUiState = (imageState: PointImagesState, uploadState: UploadState)
         upvoteCount: active ? getUpvoteCount(active) : 0,
         upvoted: Boolean(active?.upvoted),
         flagged: Boolean(active?.flagged),
-        recallRequested: Boolean(active?.recallRequested || active?.status === 'remove_request'),
         isOwnActive,
         canFlag: !isOwnActive && !isActivePending,
-        canRecall: isOwnActive,
-        recallOnly: isActivePending,
+        canDelete: isOwnActive,
+        ownerActionsOnly: isActivePending,
     };
 };
 

@@ -63,8 +63,7 @@
       "unflag": "Ta bort markering",
       "uploadAno": "Ladda upp",
       "share": "Dela",
-      "recall": "Begär borttagning",
-      "unrecall": "Avbryt borttagning"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Kopiera kommentarlänk",
@@ -84,8 +83,7 @@
       "reply": "Svara",
       "edit": "Redigera",
       "submitEdit": "Spara ändringar",
-      "undoEdit": "Ångra ändringar",
-      "recall": "Dölj direkt",
+      "delete": "Delete",
       "reviewing": "Granskas",
       "emptyWithRule": "Inga kommentarer ännu. Följ <a href=\"{link}\">communityriktlinjerna</a> när du publicerar.",
       "ruleOnly": "Följ <a href=\"{link}\">communityriktlinjerna</a> när du publicerar.",

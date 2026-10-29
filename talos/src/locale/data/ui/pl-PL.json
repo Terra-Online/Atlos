@@ -63,8 +63,7 @@
       "unflag": "Usuń oznaczenie",
       "uploadAno": "Prześlij kolejne",
       "share": "Udostępnij",
-      "recall": "Poproś o usunięcie",
-      "unrecall": "Anuluj usunięcie"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Kopiuj link do komentarza",
@@ -84,8 +83,7 @@
       "reply": "Odpowiedz",
       "edit": "Edytuj",
       "submitEdit": "Zapisz zmiany",
-      "undoEdit": "Anuluj zmiany",
-      "recall": "Ukryj natychmiast",
+      "delete": "Delete",
       "reviewing": "W weryfikacji",
       "emptyWithRule": "Nie ma jeszcze komentarzy. Podczas publikowania przestrzegaj <a href=\"{link}\">zasad społeczności</a>.",
       "ruleOnly": "Podczas publikowania przestrzegaj <a href=\"{link}\">zasad społeczności</a>.",

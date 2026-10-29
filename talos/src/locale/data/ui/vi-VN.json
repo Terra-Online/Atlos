@@ -63,8 +63,7 @@
       "unflag": "Bỏ đánh dấu",
       "uploadAno": "Tải lên khác",
       "share": "Chia sẻ",
-      "recall": "Yêu cầu gỡ",
-      "unrecall": "Hủy yêu cầu gỡ"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Sao chép liên kết bình luận",
@@ -84,8 +83,7 @@
       "reply": "Trả lời",
       "edit": "Chỉnh sửa",
       "submitEdit": "Lưu chỉnh sửa",
-      "undoEdit": "Hoàn tác chỉnh sửa",
-      "recall": "Ẩn ngay",
+      "delete": "Delete",
       "reviewing": "Đang duyệt",
       "emptyWithRule": "Chưa có bình luận nào. Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "ruleOnly": "Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",

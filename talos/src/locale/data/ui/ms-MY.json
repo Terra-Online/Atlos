@@ -63,8 +63,7 @@
       "unflag": "Buang tanda",
       "uploadAno": "Muat naik lain",
       "share": "Kongsi",
-      "recall": "Minta pemadaman",
-      "unrecall": "Batalkan pemadaman"
+      "delete": "Delete"
     },
     "comments": {
       "copyLink": "Salin pautan komen",
@@ -84,8 +83,7 @@
       "reply": "Balas",
       "edit": "Edit",
       "submitEdit": "Simpan perubahan",
-      "undoEdit": "Batalkan perubahan",
-      "recall": "Sembunyikan sekarang",
+      "delete": "Delete",
       "reviewing": "Disemak",
       "emptyWithRule": "Belum ada komen. Sila ikut <a href=\"{link}\">garis panduan komuniti</a> semasa menyiarkan.",
       "ruleOnly": "Sila ikut <a href=\"{link}\">garis panduan komuniti</a> semasa menyiarkan.",

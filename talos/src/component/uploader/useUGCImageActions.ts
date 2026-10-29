@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { openOemAuthModal } from '@/component/login/authEvents';
 import {
-    recallUGCImage,
+    deleteUGCImage,
+    invalidateUGCImageCache,
+    invalidateUGCPublicImageCache,
+    invalidateUGCSubmissionCache,
     toggleUGCImageFlag,
     toggleUGCImageUpvote,
     type UGCImageActionPatch,
@@ -11,8 +14,8 @@ import { getUpvoteCount, type PointImagesState } from './useUGCPointImages';
 import type { UploadState } from './useUGCUpload';
 
 const TOGGLE_SYNC_DELAY_MS = 300;
-const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
-const RECALL_CONFIRM_EXPIRE_MS = 5_000;
+const DELETE_CONFIRM_MIN_DELAY_MS = 1_000;
+const DELETE_CONFIRM_EXPIRE_MS = 5_000;
 
 type ToggleTask = {
     desired: boolean;
@@ -39,22 +42,22 @@ const getToggleTask = (
 
 export type ImageActionsState = {
     actionPending: boolean;
-    recallConfirming: boolean;
-    cancelRecallConfirmation: () => void;
+    deleteConfirming: boolean;
+    cancelDeleteConfirmation: () => void;
     handleToggleUpvote: () => void;
     handleToggleFlag: () => void;
-    handleToggleRecall: () => Promise<void>;
+    handleDelete: () => Promise<void>;
 };
 
 const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadState): ImageActionsState => {
     const user = useAuthStore((state) => state.sessionUser);
     const isAuthenticated = Boolean(user);
     const [actionPending, setActionPending] = useState(false);
-    const [recallConfirmation, setRecallConfirmation] = useState<{
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
         imageId: string;
         armedAt: number;
     } | null>(null);
-    const cancelRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
+    const cancelDeleteConfirmation = useCallback(() => setDeleteConfirmation(null), []);
     const upvoteTasksRef = useRef(new Map<string, ToggleTask>());
     const flagTasksRef = useRef(new Map<string, ToggleTask>());
 
@@ -169,22 +172,22 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     }, []);
 
     useEffect(() => {
-        cancelRecallConfirmation();
-    }, [active?.id, cancelRecallConfirmation]);
+        cancelDeleteConfirmation();
+    }, [active?.id, cancelDeleteConfirmation]);
 
     useEffect(() => {
-        if (!viewerOpen) cancelRecallConfirmation();
-    }, [cancelRecallConfirmation, viewerOpen]);
+        if (!viewerOpen) cancelDeleteConfirmation();
+    }, [cancelDeleteConfirmation, viewerOpen]);
 
     useEffect(() => {
-        if (!recallConfirmation) return undefined;
-        const remaining = RECALL_CONFIRM_EXPIRE_MS - (Date.now() - recallConfirmation.armedAt);
+        if (!deleteConfirmation) return undefined;
+        const remaining = DELETE_CONFIRM_EXPIRE_MS - (Date.now() - deleteConfirmation.armedAt);
         const timer = window.setTimeout(
-            () => setRecallConfirmation(null),
+            () => setDeleteConfirmation(null),
             Math.max(0, remaining),
         );
         return () => window.clearTimeout(timer);
-    }, [recallConfirmation]);
+    }, [deleteConfirmation]);
 
     const handleToggleUpvote = useCallback(() => {
         if (!active) return;
@@ -224,20 +227,21 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         scheduleFlagSync(imageId);
     }, [active, isAuthenticated, isOwnActive, patchImageById, scheduleFlagSync]);
 
-    const handleToggleRecall = useCallback(async () => {
+    const handleDelete = useCallback(async () => {
         if (!active || actionPending || !isOwnActive) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
         }
         const now = Date.now();
-        if (recallConfirmation?.imageId !== active.id) {
-            setRecallConfirmation({ imageId: active.id, armedAt: now });
+        if (deleteConfirmation?.imageId !== active.id) {
+            setDeleteConfirmation({ imageId: active.id, armedAt: now });
             return;
         }
-        if (now - recallConfirmation.armedAt < RECALL_CONFIRM_MIN_DELAY_MS) return;
-        setRecallConfirmation(null);
+        if (now - deleteConfirmation.armedAt < DELETE_CONFIRM_MIN_DELAY_MS) return;
+        setDeleteConfirmation(null);
 
+        const accountVersion = useAuthStore.getState().sessionVersion;
         const previousSubmission = lastSubmission;
         const previousImages = images;
         const previousMyImages = myImages;
@@ -252,8 +256,12 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         setViewerOpen(false);
         setActionPending(true);
         try {
-            await recallUGCImage(active.id);
+            await deleteUGCImage(active.id);
+            invalidateUGCImageCache(active.markerId);
+            invalidateUGCPublicImageCache(active.markerId);
+            invalidateUGCSubmissionCache(active.markerId);
         } catch {
+            if (useAuthStore.getState().sessionVersion !== accountVersion) return;
             setLastSubmission(previousSubmission);
             setImages(previousImages);
             setMyImages(previousMyImages);
@@ -263,15 +271,15 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         } finally {
             setActionPending(false);
         }
-    }, [actionPending, active, images, isAuthenticated, isOwnActive, lastSubmission, myImages, recallConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
+    }, [actionPending, active, images, isAuthenticated, isOwnActive, lastSubmission, myImages, deleteConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
 
     return {
         actionPending,
-        recallConfirming: Boolean(active && recallConfirmation?.imageId === active.id),
-        cancelRecallConfirmation,
+        deleteConfirming: Boolean(active && deleteConfirmation?.imageId === active.id),
+        cancelDeleteConfirmation,
         handleToggleUpvote,
         handleToggleFlag,
-        handleToggleRecall,
+        handleDelete,
     };
 };
 
