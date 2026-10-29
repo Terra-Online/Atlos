@@ -434,6 +434,13 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         return false;
     }, [isAuthenticated]);
 
+    // Each mounted point/session lifetime has its own token, including A → B → A.
+    const editScopeRef = useRef<object | null>(null);
+    useEffect(() => {
+        editScopeRef.current = {};
+        return () => { editScopeRef.current = null; };
+    }, [point.id, accountVersion]);
+
     const reportScopeRef = useRef(point.id);
     reportScopeRef.current = point.id;
     const { start: syncVote, clear: clearVote } = useVoteSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
@@ -545,15 +552,18 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         return () => {
             disposed = true;
         };
-    }, [point.id, userUid]);
+    }, [point.id, accountVersion]);
 
     useEffect(() => {
         clearReply();
+        setRenderedReply(null);
         setEditTarget(null);
         setInputValue('');
+        setError('');
+        setActionPendingIds(new Set());
         setDeleteConfirmation(null);
         closeEmojiPicker();
-    }, [clearReply, closeEmojiPicker, point.id]);
+    }, [accountVersion, clearReply, closeEmojiPicker, point.id, setRenderedReply]);
 
     useEffect(() => () => clearEmojiTimers(), [clearEmojiTimers]);
 
@@ -650,6 +660,11 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         if (editTarget) {
             if (!editTarget.snapshotId) return;
 
+            const scope = editScopeRef.current;
+            const sessionVersion = useAuthStore.getState().sessionVersion;
+            const current = () => scope !== null
+                && editScopeRef.current === scope
+                && useAuthStore.getState().sessionVersion === sessionVersion;
             const previousComments = comments;
             const pendingComment: UGCComment = {
                 ...editTarget,
@@ -684,6 +699,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                     content,
                     editTarget.snapshotId,
                 );
+                if (!current()) return;
                 removeCommentSubmission(point.id, editTarget.id);
                 const committed = {
                     ...pendingComment,
@@ -700,6 +716,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                     viewerVote: current.viewerVote,
                 }));
             } catch (error) {
+                if (!current()) return;
                 removeCommentSubmission(point.id, editTarget.id);
                 if (previousSubmission) {
                     restoreCommentSubmission(point.id, previousSubmission);
@@ -715,9 +732,11 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                     setError(tUI('detail.comments.editConflict'));
                     try {
                         const refreshed = await listUGCComments(point.id);
+                        if (!current()) return;
                         syncCommentSubmissions(point.id, refreshed);
                         setComments(refreshed);
                     } catch {
+                        if (!current()) return;
                         setError(tUI('detail.comments.editConflictRefreshFailed'));
                     }
                 } else {
@@ -726,7 +745,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                     setError(tUI('detail.comments.editFailed'));
                 }
             } finally {
-                setCommentActionPending(editTarget.id, false);
+                if (current()) setCommentActionPending(editTarget.id, false);
             }
             return;
         }
