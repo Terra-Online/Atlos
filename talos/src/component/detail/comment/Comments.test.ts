@@ -25,7 +25,12 @@ vi.mock('@/assets/images/UI/edit.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/share.svg?react', () => ({ default: () => null }));
 vi.mock('progressive-blur', () => ({ LinearBlur: () => null }));
 vi.mock('@/services/http/authRuntime', () => ({ getAuthBase: () => '', getAuthHeaders: () => ({}) }));
-vi.mock('@/store/auth', () => ({ useAuthStore: () => null }));
+vi.mock('@/store/auth', async () => {
+    const { create } = await import('zustand');
+    return {
+        useAuthStore: create(() => ({ sessionUser: null, sessionVersion: 0 })),
+    };
+});
 vi.mock('@/data/marker', () => ({ MARKER_TYPE_DICT: {} }));
 vi.mock('@/services/routing', () => ({ generatePointShareUrl: (_: unknown, options: { content: { id: string } }) => `https://oem.re/marker?commentId=${options.content.id}` }));
 vi.mock('@/locale', () => {
@@ -49,6 +54,7 @@ vi.mock('./useTrans', () => ({ useTrans: () => vi.fn() }));
 import Comments from './Comments';
 import * as client from '@/services/ugc/client';
 import { useMarkerStore } from '@/store/marker';
+import { useAuthStore } from '@/store/auth';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
 const comment: UGCComment = { id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
@@ -231,4 +237,15 @@ it('renders emoji tokens in loaded comments', async () => {
     expect(screen.getByText(/Hello/)).toBeTruthy();
     expect(screen.getByText(/:unknown:/)).toBeTruthy();
     expect(screen.getByText('bold italic').closest('strong')?.querySelector('em')).toBeTruthy();
+});
+
+it('replaces a mounted owner overlay with the public read after sign-out', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([{ ...comment, snapshotId: 'B', content: 'Private owner B', status: 'pending_audit' }]);
+    render(createElement(Comments, { point, pointName: 'Point', active: true }));
+    await screen.findByText('Private owner B');
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([{ ...comment, snapshotId: 'A', content: 'Published A' }]);
+    act(() => useAuthStore.setState({ sessionUser: null }));
+    await screen.findByText('Published A');
+    expect(screen.queryByText('Private owner B')).toBeNull();
 });

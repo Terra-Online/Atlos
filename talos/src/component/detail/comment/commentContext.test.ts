@@ -28,3 +28,52 @@ describe('mergeCommentContext', () => {
         expect(result.map(item => item.id)).toEqual(['target']);
     });
 });
+
+it('refreshes a changed version as one body/identity pair and drops the old translation', () => {
+    const local = {
+        ...comment('target'),
+        snapshotId: 'A',
+        content: 'Published A',
+        replyCount: 2,
+        score: 10,
+        viewerVote: 1 as const,
+        translatedContent: 'Translation of A',
+    };
+    const result = mergeCommentContext([local], {
+        targetId: 'target',
+        path: [
+            { ...comment('target'), snapshotId: 'C', content: 'Published C' },
+        ],
+        replies: [],
+        repliesTruncated: false,
+    });
+    expect(result[0]).toMatchObject({
+        snapshotId: 'C',
+        content: 'Published C',
+        replyCount: 2,
+        score: 10,
+        viewerVote: 1,
+    });
+    expect(result[0].translatedContent).toBeUndefined();
+});
+it('keeps an author pending overlay when merging public context for the same content ID', () => {
+    const local = {
+        ...comment('target'),
+        snapshotId: 'B',
+        content: 'Private B',
+        status: 'pending_audit' as const,
+    };
+    const result = mergeCommentContext([local], {
+        targetId: 'target',
+        path: [
+            { ...comment('target'), snapshotId: 'A', content: 'Published A' },
+        ],
+        replies: [comment('reply', 'target')],
+        repliesTruncated: false,
+    });
+    expect(result[0]).toMatchObject({
+        snapshotId: 'B',
+        content: 'Private B',
+        replies: [{ id: 'reply' }],
+    });
+});

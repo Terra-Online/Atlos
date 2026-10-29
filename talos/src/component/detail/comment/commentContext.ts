@@ -1,15 +1,36 @@
 import type { UGCComment, UGCCommentContext } from '@/services/ugc/client';
-import { flatList } from './commentsTree';
+import { clearTrans, flatList, isReviewing } from './commentsTree';
 
 export function mergeCommentContext(comments: UGCComment[], context: UGCCommentContext): UGCComment[] {
-    // Existing nodes win so a public response cannot reset local votes or translations.
+    // Submission ID owns tree identity. A changed version replaces body and ID
+    // together; local reactions survive and old translations cannot follow it.
     const nodes = new Map<string, UGCComment>();
-    for (const comment of [...flatList(comments), ...context.path, ...context.replies]) {
-        if (!nodes.has(comment.id)) nodes.set(comment.id, { ...comment, replies: [] });
+    for (const comment of [
+        ...flatList(comments),
+        ...context.path,
+        ...context.replies,
+    ]) {
+        const existing = nodes.get(comment.id);
+        if (!existing) {
+            nodes.set(comment.id, { ...comment, replies: [] });
+        } else if (
+            existing.snapshotId !== comment.snapshotId &&
+            !(isReviewing(existing.status) && !isReviewing(comment.status))
+        ) {
+            nodes.set(comment.id, {
+                ...clearTrans(existing),
+                snapshotId: comment.snapshotId,
+                content: comment.content,
+                status: comment.status,
+                editUndoAvailable: comment.editUndoAvailable,
+            });
+        }
     }
     const roots: UGCComment[] = [];
     for (const comment of nodes.values()) {
-        const parent = comment.parentId ? nodes.get(comment.parentId) : undefined;
+        const parent = comment.parentId
+            ? nodes.get(comment.parentId)
+            : undefined;
         if (parent) parent.replies.push(comment);
         else roots.push(comment);
     }

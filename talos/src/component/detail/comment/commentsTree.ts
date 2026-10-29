@@ -52,6 +52,7 @@ export const makePending = (
     user: SessionUser | null,
 ): UGCComment => ({
     id: submission.id,
+    snapshotId: submission.snapshotId,
     markerId: submission.markerId,
     poiType: point.type,
     parentId: submission.parentId,
@@ -59,10 +60,10 @@ export const makePending = (
     content,
     author: user
         ? {
-            nickname: user.nickname,
-            publicUid: user.uid,
-            avatar: user.avatar,
-        }
+              nickname: user.nickname,
+              publicUid: user.uid,
+              avatar: user.avatar,
+          }
         : null,
     createdAt: new Date().toISOString(),
     score: 0,

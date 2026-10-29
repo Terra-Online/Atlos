@@ -133,28 +133,34 @@ const useUGCPointImages = (point: IMarkerData, enabled: boolean): PointImagesSta
         const merged = new Map<string, UGCImage>();
         pointImages.forEach((image) => {
             const ownMatch = pointMyImages.find((myImage) => myImage.id === image.id);
-            merged.set(image.id, ownMatch
-                ? {
-                    ...image,
-                    ...ownMatch,
-                    author: image.author ?? ownMatch.author,
-                    url: image.url || ownMatch.url,
-                }
-                : image);
+            merged.set(
+                image.id,
+                ownMatch
+                    ? {
+                          ...image,
+                          ...ownMatch,
+                          author: image.author ?? ownMatch.author,
+                          url: ownMatch.url,
+                      }
+                    : image,
+            );
         });
 
         pointMyImages
             .filter((image) => isPending(image) || isPublic(image))
             .forEach((image) => {
                 const current = merged.get(image.id);
-                merged.set(image.id, current
-                    ? {
-                        ...current,
-                        ...image,
-                        author: current.author ?? image.author,
-                        url: current.url || image.url,
-                    }
-                    : image);
+                merged.set(
+                    image.id,
+                    current
+                        ? {
+                              ...current,
+                              ...image,
+                              author: current.author ?? image.author,
+                              url: image.url,
+                          }
+                        : image,
+                );
             });
 
         return [...merged.values()].sort((a, b) => {

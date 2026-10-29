@@ -516,7 +516,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         return () => {
             disposed = true;
         };
-    }, [point.id]);
+    }, [point.id, userUid]);
 
     useEffect(() => {
         clearReply();

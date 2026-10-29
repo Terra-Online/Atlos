@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth';
 import { getAuthBase, getAuthHeaders } from '@/services/http/authRuntime';
 import { requestJson as requestHttpJson } from '@/services/http/request';
 import { MARKER_TYPE_DICT, type IMarkerData } from '@/data/marker';
@@ -19,6 +20,7 @@ export type UGCSubmissionStatus =
 
 export type UGCImage = {
     id: string;
+    snapshotId?: string;
     markerId: string;
     url: string;
     content: string | null;
@@ -45,6 +47,8 @@ export type UGCCommentAuthor = {
 
 export type UGCComment = {
     id: string;
+    // Unsaved optimistic content has no server snapshot yet.
+    snapshotId?: string;
     markerId: string;
     poiHash?: string;
     poiType?: string;
@@ -76,6 +80,7 @@ export type UGCCommentContext = {
 };
 
 export async function getUGCCommentById(markerId: string, commentId: string): Promise<UGCCommentContext> {
+    const accountVersion = useAuthStore.getState().sessionVersion;
     const search = new URLSearchParams({ markerId });
     const response = await fetch(
         `${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}?${search.toString()}`,
@@ -83,6 +88,9 @@ export async function getUGCCommentById(markerId: string, commentId: string): Pr
     );
     if (!response.ok) throw await readUGCError(response);
     const payload = await response.json() as { item?: UGCCommentContext };
+    if (useAuthStore.getState().sessionVersion !== accountVersion) {
+        throw new UGCClientError('Session changed during comment read.', 'SESSION_CHANGED');
+    }
     if (!payload.item) throw new UGCClientError('Comment response is missing.', 'UGC_ERROR');
     return { ...payload.item, path: payload.item.path.map(normalizeUGCComment), replies: payload.item.replies.map(normalizeUGCComment) };
 }
@@ -131,6 +139,7 @@ type PendingImageRequest = {
 
 type PendingCommentRequest = {
     markerId: string;
+    accountVersion: number;
     resolve: (comments: UGCComment[]) => void;
     reject: (error: unknown) => void;
 };
@@ -177,6 +186,16 @@ const publicImageCache = new Map<string, ImageCacheEntry>();
 const publicImageInFlight = new Map<string, Promise<UGCImage[]>>();
 const commentCache = new Map<string, CommentCacheEntry>();
 const commentInFlight = new Map<string, Promise<UGCComment[]>>();
+let commentAccountVersion = useAuthStore.getState().sessionVersion;
+function syncCommentAccount(): number {
+    const version = useAuthStore.getState().sessionVersion;
+    if (version !== commentAccountVersion) {
+        commentCache.clear();
+        commentInFlight.clear();
+        commentAccountVersion = version;
+    }
+    return version;
+}
 const submissionCache = new Map<string, SubmissionCacheEntry>();
 const submissionInFlight = new Map<string, Promise<UGCSubmissionImage[]>>();
 let pendingImageBatchTimer: number | null = null;
@@ -233,6 +252,7 @@ export const peekPublicUGCImages = (markerId: string): UGCImage[] | null => {
 };
 
 export const peekUGCComments = (markerId: string): UGCComment[] | null => {
+    syncCommentAccount();
     const cached = commentCache.get(markerId);
     if (!cached || cached.expiresAt <= Date.now()) {
         return null;
@@ -332,6 +352,7 @@ export async function listPublicUGCImagesByMarkerIds(markerIds: string[]): Promi
 }
 
 export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCComment[]>> {
+    syncCommentAccount();
     const normalizedIds = [...new Set(markerIds.map((item) => item.trim()).filter(Boolean))];
     const result: Record<string, UGCComment[]> = {};
     const pendingIds: string[] = [];
@@ -581,6 +602,7 @@ type UGCCommentActionResponse = {
 };
 
 export type UGCCommentTrans = {
+    snapshotId?: string;
     commentId: string;
     translatedContent?: string;
     sourceLanguage?: string;
@@ -886,7 +908,12 @@ function getOrQueueUGCComments(markerId: string): Promise<UGCComment[]> {
     }
 
     const promise = new Promise<UGCComment[]>((resolve, reject) => {
-        pendingCommentBatchRequests.push({ markerId, resolve, reject });
+        pendingCommentBatchRequests.push({
+            markerId,
+            resolve,
+            reject,
+            accountVersion: syncCommentAccount(),
+        });
         if (pendingCommentBatchTimer !== null) {
             return;
         }
@@ -901,7 +928,8 @@ function getOrQueueUGCComments(markerId: string): Promise<UGCComment[]> {
 
     commentInFlight.set(markerId, promise);
     return promise.finally(() => {
-        commentInFlight.delete(markerId);
+        if (commentInFlight.get(markerId) === promise)
+            commentInFlight.delete(markerId);
     });
 }
 
@@ -1114,6 +1142,18 @@ async function flushUGCCommentBatch(requests: PendingCommentRequest[]): Promise<
 }
 
 async function readUGCCommentBatchPart(requests: PendingCommentRequest[]): Promise<void> {
+    const accountVersion = syncCommentAccount();
+    requests = requests.filter((request) => {
+        if (request.accountVersion === accountVersion) return true;
+        request.reject(
+            new UGCClientError(
+                'Session changed during comment read.',
+                'SESSION_CHANGED',
+            ),
+        );
+        return false;
+    });
+    if (!requests.length) return;
     const groupedResolvers = new Map<string, PendingCommentRequest[]>();
     requests.forEach((request) => {
         const bucket = groupedResolvers.get(request.markerId);
@@ -1141,6 +1181,12 @@ async function readUGCCommentBatchPart(requests: PendingCommentRequest[]): Promi
         }
 
         const payload = await response.json() as MarkerBatchPayload<UGCComment>;
+        if (syncCommentAccount() !== accountVersion) {
+            throw new UGCClientError(
+                'Session changed during comment read.',
+                'SESSION_CHANGED',
+            );
+        }
         const failedMarkers = failedBatchMarkers(payload, markerIds);
         const groupedComments = new Map<string, UGCComment[]>();
 
@@ -1293,12 +1339,12 @@ function normalizeUGCSubmissionImage(image: UGCSubmissionImage): UGCSubmissionIm
     return {
         ...image,
         filePath,
-        url: `${UGC_API_BASE}/${isPendingUGCStatus(image.status) ? 'file' : 'public-file'}/${encodeObjectPath(filePath)}`,
+        url: `${UGC_API_BASE}/${usesPrivateImageFile(image.status) ? 'file' : 'public-file'}/${encodeObjectPath(filePath)}`,
     };
 }
 
-function isPendingUGCStatus(status: UGCSubmissionStatus | undefined): boolean {
-    return status === 'pending_openai' || status === 'pending_audit';
+function usesPrivateImageFile(status: UGCSubmissionStatus | undefined): boolean {
+    return status === 'pending_openai' || status === 'pending_audit' || status === 'stale';
 }
 
 function extractObjectPathFromUrl(rawUrl: string): string | null {
