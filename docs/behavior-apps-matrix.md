@@ -84,9 +84,9 @@
 
 `App.tsx` 的认证恢复容器在保留 Content 挂载时新增了一层无高度 div，切断了 Feed 的百分比高度链。贡献数据和 li 虽已存在，实际 tabpanel 只有约10px，浏览器 `toBeVisible()` 仍可能对被祖先裁剪的卡片返回 true。新增 `TEST-{BROWSER,PRODUCTION}-HUB-CONTENT-001` 在原冻结产物上真实失败：视口减首卡高度为 −125.92px，而要求至少容纳一整张卡片。
 
-修复仅给现有恢复容器分配剩余高度与min-height，不改变401恢复/身份owner。共享浏览器合同使用20条无预览图贡献，验证首卡和末卡在实际滚动视口及屏幕中完整可达，跳转Profile再返回、刷新失败保留旧列表并显示错误时仍成立；同一合同覆盖开发/生产入口，移动两引擎也复用。这个发现补足 App→恢复wrapper→Content→Feed 的真实CSS组合边界；单独Feed几何和文字可见断言都没有证明此前整个高度链可用。最终运行与产物身份以 [生产基线](PERFORMANCE.md) 为准。
+修复仅给现有恢复容器分配剩余高度与min-height，不改变401恢复/身份owner。共享浏览器合同使用20条无预览图贡献，验证首卡和末卡在实际滚动视口及屏幕中完整可达，跳转Profile再返回、刷新失败保留旧列表并显示错误时仍成立；同一合同覆盖开发/生产入口，移动两引擎也复用。这个发现补足 App→恢复wrapper→Content→Feed 的真实CSS组合边界；单独Feed几何和文字可见断言都没有证明此前整个高度链可用。最终运行与产物身份以生产基线（本地 `docs/PERFORMANCE.md`）为准。
 
 
 ## 2026-10-28 Stage 0滚动几何补全
 
-IntelCard/VirtualIntelCard新增“虚拟化恢复首帧沿用已有高度”和“已脱离DOM/零尺寸/非有限测量不得写回owner”的回归。旧恢复高度及detached/zero-size形状均有修前失败；修后聚焦14例、完整Intel73例及完整开发65例通过。三引擎原全列表原生smooth滚动往返保留全部底部/回顶/恢复/动画断言，新增全程scrollHeight range<2px，实际均0px。对应39个owner与109个组件的成本不重复归属，见 [逐组件对照](behavior-change-ledger.md)；原始帧见 [scroll-stability](baselines/2026-10-28-closure/scroll-stability.json)。
+IntelCard/VirtualIntelCard新增“虚拟化恢复首帧沿用已有高度”和“已脱离DOM/零尺寸/非有限测量不得写回owner”的回归。旧恢复高度及detached/zero-size形状均有修前失败；修后聚焦14例、完整Intel73例及完整开发65例通过。三引擎原全列表原生smooth滚动往返保留全部底部/回顶/恢复/动画断言，新增全程scrollHeight range<2px，实际均0px。对应39个owner与109个组件的成本不重复归属，见逐组件对照（本地 `docs/behavior-change-ledger.md`）；原始帧见 scroll-stability（本地 `docs/baselines/2026-10-28-closure/scroll-stability.json`）。

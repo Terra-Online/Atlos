@@ -1,8 +1,10 @@
 # 行为基线与测试入口
 
-> 最新收口（2026-10-28）：Stage 0本地可复现验收完成，完整check 1103例、开发浏览器65/65、冻结生产20/20通过。当前证据与边界见 [Stage 0验收](baselines/2026-10-28-closure/README.md)，逐组件职责/行为补全/LOC/模块输出与源码差值见 [变更清单](behavior-change-ledger.md)。下面保留各轮历史结果，不将旧失败追改为通过。
+> 最新收口（2026-10-28）：Stage 0本地可复现验收完成，完整check 1103例、开发浏览器65/65、冻结生产20/20通过。当前证据与边界见 Stage 0验收（本地 `docs/baselines/2026-10-28-closure/README.md`），逐组件职责/行为补全/LOC/模块输出与源码差值见变更清单（本地 `docs/behavior-change-ledger.md`）。下面保留各轮历史结果，不将旧失败追改为通过。
 
-对应本地 `docs/roadmap.md` 阶段 2，范围包含主站 `component/`、`pages/` 全部生产 TSX、主站启动以及两个独立 app。地图渲染内核沿用既有专项测试。2026-10-27记录为行为收口；2026-10-28补充冻结生产产物验证和首份性能记录，见 [PERFORMANCE](PERFORMANCE.md)。
+对应本地 `docs/roadmap.md` 阶段 2，范围包含主站 `component/`、`pages/` 全部生产 TSX、主站启动以及两个独立 app。地图渲染内核沿用既有专项测试。2026-10-27记录为行为收口；2026-10-28补充冻结生产产物验证和首份性能记录，见 PERFORMANCE（本地 `docs/PERFORMANCE.md`）。
+
+存储约定：行为合同、矩阵、测试、fixture与采集工具纳入版本控制；`docs/PERFORMANCE.md`、`docs/behavior-change-ledger.md`、`docs/baselines/` 和 `docs/perf/` 仅保留本地并由Git忽略。文中原始证据路径用于本机查阅，不是远端仓库链接。2026-10-29整理未推送历史时保留测量当时的提交号和原始收据，新旧身份映射保存在本地 `docs/perf/local-report-history/`；产品源码和测试内容未变。
 
 ## 当前状态：本轮自动化行为基线已收口
 
@@ -28,7 +30,7 @@
 | `pnpm check` | 数据校验、类型准备、主站/Intel/user-hub/两worker类型检查、ESLint/Stylelint、Node与全部Vitest suites |
 | `pnpm test` / `pnpm type-check` / `pnpm lint` | 上述各独立入口，无生产服务写入 |
 | `pnpm exec vitest run <路径>` | 主站/两worker精确suite；独立app需相应 `--config apps/<app>/vitest.config.ts` |
-| `BEHAVIOR_DIST=dist/<冻结产物> pnpm test:behavior` | 生产构建模式20例，三种桌面引擎及两种移动模拟；资源/服务边界见[性能入口](PERFORMANCE.md) |
+| `BEHAVIOR_DIST=dist/<冻结产物> pnpm test:behavior` | 生产构建模式20例，三种桌面引擎及两种移动模拟；资源/服务边界见性能入口（本地 `docs/PERFORMANCE.md`） |
 | `pnpm test:behavior` | 完整真实浏览器矩阵，独立于默认check，需已安装Playwright三个引擎；本机三站可自动启动 |
 | `pnpm exec vitest run --coverage` | 可选V8覆盖报告，本轮不以百分比作为完成判据 |
 
@@ -80,7 +82,7 @@
 | Chromium mobile | 13例（含3条可信touch拖动） |
 | WebKit mobile | 10例 |
 
-日志 `/tmp/atlos-browser-baseline-complete.log`；机器可读清单和11份原始截图/轨迹在 [已确认对照](baselines/2026-10-27-behavior/result.json)。[浏览器说明](behavior-browser-baseline.md)列出20条不同路径的输入/结果及环境边界；完整HTML/trace保留在本地ignored测试目录，可复跑。截图已人工查看主站详情、嵌套Viewer、Intel展开、移动引导与hub窄屏布局。
+日志 `/tmp/atlos-browser-baseline-complete.log`；机器可读清单和11份原始截图/轨迹在已确认对照（本地 `docs/baselines/2026-10-27-behavior/result.json`）。[浏览器说明](behavior-browser-baseline.md)列出20条不同路径的输入/结果及环境边界；完整HTML/trace保留在本地ignored测试目录，可复跑。截图已人工查看主站详情、嵌套Viewer、Intel展开、移动引导与hub窄屏布局。
 
 WebKit展开在本次自然帧中仍有221ms空档；此前诊断为208–277ms。行为过渡/最终几何通过，流畅性须进入性能基线，不将当前通过解释为性能合格。保存偏好恢复的迟到清栈修复也已纳入此check；新增真实store回归与history/同步3文件44例先通过，再运行完整入口。首轮979例与隔离引导后993例属于历史通过记录，本表1087为本轮当前完整入口结果。
 
@@ -89,16 +91,16 @@ WebKit展开在本次自然帧中仍有221ms空档；此前诊断为208–277ms�
 - 组件/集成测试用显式几何、observer、pointer capture、FontFace及服务故障注入；真实浏览器组另保留CSS、Motion/WAAPI、Popover/inert、存储广播、布局和表单，不据jsdom属性推导原生表现。
 - 原生浏览器范围为Playwright Chromium/Firefox/WebKit桌面与Chromium/WebKit移动模拟。物理设备、系统输入法/自动填充、原生Document PiP、真实定位/GPS/剪贴板权限以及完整视觉像素没有被这组有限路径全部验收。
 - HTTP/WS/会话/云数据明确为fixture，未知请求及未处理页面异常会失败。本地验证不代表线上cookie、OAuth/邮件、服务端权限/幂等或CDN已通过；两个真实tab的传播测试也不等于并发跨tab事务合并。
-- 性能证据独立见 [PERFORMANCE](PERFORMANCE.md)；行为通过不能替代包体、首屏、帧间隔和内存结果，实验室模拟也不能代表真机或线上服务。
+- 性能证据独立见 PERFORMANCE（本地 `docs/PERFORMANCE.md`）；行为通过不能替代包体、首屏、帧间隔和内存结果，实验室模拟也不能代表真机或线上服务。
 
 每次扩展/重构先定位矩阵中的契约与owner，运行受影响suite和对应浏览器路径；更新必要fixture/证据，解释真实行为差异。不得为追求通过而批量改快照、降低断言或用一个smoke代表整组件。
 
 
 ## 2026-10-28 生产产物补证与遗漏修复
 
-在已收口的开发行为基础上增加完整生产构建入口及 [性能首轮记录](baselines/2026-10-28-production/README.md)。标准check退出0、1090例（新增3例脚本合同），其后截图复核发现个人中心非空贡献的滚动区域被恢复wrapper压缩，不能把旧17例生产smoke或visible断言当作此路径已可用。旧产物上新增真实布局合同确定失败后，修复高度链并更新apps/共享矩阵；hub58例、相关类型/lint和五project5例布局聚焦验证通过。
+在已收口的开发行为基础上增加完整生产构建入口及性能首轮记录（本地 `docs/baselines/2026-10-28-production/README.md`）。标准check退出0、1090例（新增3例脚本合同），其后截图复核发现个人中心非空贡献的滚动区域被恢复wrapper压缩，不能把旧17例生产smoke或visible断言当作此路径已可用。旧产物上新增真实布局合同确定失败后，修复高度链并更新apps/共享矩阵；hub58例、相关类型/lint和五project5例布局聚焦验证通过。
 
-最终完整产物源码 `3703de8f`，收据sourceDirty=false；`BEHAVIOR_DIST=dist/baseline-20261028-verified pnpm test:behavior` **退出0，20/20**，零skip/flaky/retry、未知服务和未处理页面异常均为0。包括主站生产搜索/动态详情/进度持久化、双tab主站与Intel同步、hub登录/语言/Profile、非空贡献首末卡实际可达/Profile往返/刷新错误保留，以及移动抽屉/头栏/Intel/贡献列表（保留原空列表）。逐条结果在 [validation](baselines/2026-10-28-production/validation.json)。
+最终完整产物源码 `3703de8f`，收据sourceDirty=false；`BEHAVIOR_DIST=dist/baseline-20261028-verified pnpm test:behavior` **退出0，20/20**，零skip/flaky/retry、未知服务和未处理页面异常均为0。包括主站生产搜索/动态详情/进度持久化、双tab主站与Intel同步、hub登录/语言/Profile、非空贡献首末卡实际可达/Profile往返/刷新错误保留，以及移动抽屉/头栏/Intel/贡献列表（保留原空列表）。逐条结果在 validation（本地 `docs/baselines/2026-10-28-production/validation.json`）。
 
 开发矩阵因新增桌面合同从62增至65；本轮完整旧开发组为61/62，Firefox的Intel全列表终点距当前底部56px，独立复跑原断言通过。尚未定位稳定性原因，也未声称新65例一次全通过。2026-10-27的62/62仅代表当时版本和那组路径；本次发现说明清单完整和通过数量不能代替真实裁剪/可达性检查。
 
@@ -109,13 +111,13 @@ WebKit展开在本次自然帧中仍有221ms空档；此前诊断为208–277ms�
 
 `TEST-BROWSER-INTEL-LAYOUT-001` 的剩余Firefox波动已定位为两个真实几何缺陷：从占位恢复卡片时未沿用缓存高度，且已脱离DOM/零尺寸卡片仍可被旧测量队列读成0再加1px并写回存活owner。修复保留恢复首帧几何，并在舍入前拒绝无效测量；组件回归先在旧实现确定失败。
 
-完整开发浏览器矩阵 **65/65退出0**，零skip/flaky/retry；三桌面引擎的全列表原生平滑滚动往返高度range均为0px，原到底/回顶、动画中间帧及2秒恢复稳定合同保留，新增全程高度不跳变断言。逐项状态见 [dev-behavior.json](baselines/2026-10-28-closure/dev-behavior.json)，修前/中间失败/修后原始帧见 [scroll-stability.json](baselines/2026-10-28-closure/scroll-stability.json)。这修正此前保留的未定位风险，不追改旧运行结果。
+完整开发浏览器矩阵 **65/65退出0**，零skip/flaky/retry；三桌面引擎的全列表原生平滑滚动往返高度range均为0px，原到底/回顶、动画中间帧及2秒恢复稳定合同保留，新增全程高度不跳变断言。逐项状态见 dev-behavior.json（本地 `docs/baselines/2026-10-28-closure/dev-behavior.json`），修前/中间失败/修后原始帧见 scroll-stability.json（本地 `docs/baselines/2026-10-28-closure/scroll-stability.json`）。这修正此前保留的未定位风险，不追改旧运行结果。
 
 
 ## Stage 0 最终验收（2026-10-28）
 
 运行源码冻结 `3b616330`，完整标准check退出0：Node37、主站/两worker935、Intel73、hub58，共1103例；类型5项目、数据、ESLint641文件0error/1既有warning、Stylelint92通过。该入口已接入closure专项合同。之后采集器仅对搜索manifest根builtAt做语义身份比较，保留完整字节摘要；5条相关合同和相关ESLint再次通过，运行产物未改。
 
-完整开发65/65与最终生产20/20均零skip/flaky/retry；原Firefox滚动波动已修复，三桌面引擎原一次smooth到底/恢复场景全程高度range均0px，原几何/动画/持久化/认证合同未放宽。普通性能、暖HTTP、独立启动阶段、预热后堆趋势与四源码快照体积都已归档；[validation](baselines/2026-10-28-closure/validation.json)列出命令、身份、实际结果和文件校验。
+完整开发65/65与最终生产20/20均零skip/flaky/retry；原Firefox滚动波动已修复，三桌面引擎原一次smooth到底/恢复场景全程高度range均0px，原几何/动画/持久化/认证合同未放宽。普通性能、暖HTTP、独立启动阶段、预热后堆趋势与四源码快照体积都已归档；validation（本地 `docs/baselines/2026-10-28-closure/validation.json`）列出命令、身份、实际结果和文件校验。
 
-自动化和本地性能范围已收口，不把20轮堆趋势当长期无泄漏证明，不把CPU4模拟当真机或本地资源当线上CDN。后续进入优化/重构时使用[逐组件变更与成本](behavior-change-ledger.md)定位原合同，并以这份冻结产物/输入和对应指标做同条件比较。
+自动化和本地性能范围已收口，不把20轮堆趋势当长期无泄漏证明，不把CPU4模拟当真机或本地资源当线上CDN。后续进入优化/重构时使用逐组件变更与成本（本地 `docs/behavior-change-ledger.md`）定位原合同，并以这份冻结产物/输入和对应指标做同条件比较。

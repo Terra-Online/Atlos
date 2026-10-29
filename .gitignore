@@ -92,6 +92,11 @@ talos/.stylelintcache
 # Local-only refactor roadmap; keep it out of commits.
 /docs/roadmap.md
 
+# Local-only baseline reports and captured evidence.
+/docs/PERFORMANCE.md
+/docs/behavior-change-ledger.md
+/docs/baselines/
+
 # Local test coverage reports.
 /talos/coverage/
 /talos/test-results/

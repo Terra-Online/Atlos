@@ -43,7 +43,7 @@ Playwright 固定为 1.62.1；本次安装的引擎为 Chromium 151.0.7922.34（
 
 ## 产物与复跑
 
-每条用例保留 trace，关键路径 attach 截图、原生事件/动画帧与服务边界 JSON。本次运行报告在 `talos/test-results/behavior-report/html/index.html`，JSON 在同目录 `report.json`，trace 在 `talos/test-results/behavior/`；这些目录由 git 忽略，下一次运行会重建。可用 `pnpm exec playwright show-report test-results/behavior-report/html`，或 `pnpm exec playwright show-trace <trace.zip>` 检查。提交中保留 fixture、断言和此证据说明；冻结验收为62/62，零skip/flaky/retry；[永久结果清单](baselines/2026-10-27-behavior/result.json)关联生产commit、源码摘要、全部scenario以及11份原始对照（5PNG、6JSON，带sha256）。这些选取的画面/轨迹已提交；完整HTML/trace仍为本地ignored产物。
+每条用例保留 trace，关键路径 attach 截图、原生事件/动画帧与服务边界 JSON。本次运行报告在 `talos/test-results/behavior-report/html/index.html`，JSON 在同目录 `report.json`，trace 在 `talos/test-results/behavior/`；这些目录由 git 忽略，下一次运行会重建。可用 `pnpm exec playwright show-report test-results/behavior-report/html`，或 `pnpm exec playwright show-trace <trace.zip>` 检查。提交中保留 fixture、断言和此证据说明；冻结验收为62/62，零skip/flaky/retry；永久结果清单（本地 `docs/baselines/2026-10-27-behavior/result.json`）关联生产commit、源码摘要、全部scenario以及11份原始对照（5PNG、6JSON，带sha256）。选取的画面/轨迹、JSON清单及完整HTML/trace均仅保留本地，原始证据不进入提交。
 
 复跑时保持相同数据版本、语言/初始存储、viewport 与引擎，再比较状态关系和关键帧。截图是可审查对照，不使用批量更新像素快照来消除行为差异。
 
@@ -54,11 +54,11 @@ Playwright 固定为 1.62.1；本次安装的引擎为 Chromium 151.0.7922.34（
 
 ## 2026-10-28 追加的真实布局合同
 
-新增桌面 `TEST-BROWSER-HUB-CONTENT-001`（生产入口为 `TEST-PRODUCTION-HUB-CONTENT-001`），移动 `TEST-BROWSER-MOBILE-HUB-001` 从空列表扩充为20条图片占位卡。要求滚动视口容纳完整卡片，首/末卡可滚入视口和屏幕，Profile往返后仍可达；`toBeVisible()`不能替代祖先裁剪检查。原生产产物确定失败后修复了恢复wrapper高度链。当前开发矩阵因此由62增加到65个project实例，生产矩阵为20个；本段只说明发现范围，实际运行结果及仍保留的Firefox全列表滚动波动见 [PERFORMANCE](PERFORMANCE.md)。2026-10-27的62例结果仍是当时版本的历史证据。
+新增桌面 `TEST-BROWSER-HUB-CONTENT-001`（生产入口为 `TEST-PRODUCTION-HUB-CONTENT-001`），移动 `TEST-BROWSER-MOBILE-HUB-001` 从空列表扩充为20条图片占位卡。要求滚动视口容纳完整卡片，首/末卡可滚入视口和屏幕，Profile往返后仍可达；`toBeVisible()`不能替代祖先裁剪检查。原生产产物确定失败后修复了恢复wrapper高度链。当前开发矩阵因此由62增加到65个project实例，生产矩阵为20个；本段只说明发现范围，实际运行结果及仍保留的Firefox全列表滚动波动见 PERFORMANCE（本地 `docs/PERFORMANCE.md`）。2026-10-27的62例结果仍是当时版本的历史证据。
 
 
 ## Stage 0最终运行（2026-10-28）
 
-源码3b616330在完整开发组一次65/65退出0，最终冻结生产组一次20/20退出0；均零skip/flaky/retry，未知请求和未处理页面异常为0。[逐项开发状态](baselines/2026-10-28-closure/dev-behavior.json)、[生产状态](baselines/2026-10-28-closure/production-behavior.json)保留实际范围。此前Firefox56px终点差已定位到虚拟化恢复/脱离DOM测量竞态并修复，三桌面引擎全程scrollHeight range均0px，没有改成反复补滚、放宽终点或跳过。
+源码3b616330在完整开发组一次65/65退出0，最终冻结生产组一次20/20退出0；均零skip/flaky/retry，未知请求和未处理页面异常为0。逐项开发状态（本地 `docs/baselines/2026-10-28-closure/dev-behavior.json`）、生产状态（本地 `docs/baselines/2026-10-28-closure/production-behavior.json`）保留实际范围。此前Firefox56px终点差已定位到虚拟化恢复/脱离DOM测量竞态并修复，三桌面引擎全程scrollHeight range均0px，没有改成反复补滚、放宽终点或跳过。
 
-普通性能及真正HTTP冷/暖/独立启动阶段/预热后堆趋势已经另组采集。[Stage 0记录](baselines/2026-10-28-closure/README.md)保留长帧和增长，没有从行为通过推导流畅或无泄漏。前文2026-10-27的62例与221ms均为当时版本的历史证据。
+普通性能及真正HTTP冷/暖/独立启动阶段/预热后堆趋势已经另组采集。Stage 0记录（本地 `docs/baselines/2026-10-28-closure/README.md`）保留长帧和增长，没有从行为通过推导流畅或无泄漏。前文2026-10-27的62例与221ms均为当时版本的历史证据。
