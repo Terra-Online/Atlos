@@ -43,7 +43,6 @@
       "pending_audit": "Aguardando análise manual",
       "active": "Público",
       "flagged": "Sinalizado",
-      "remove_request": "Remoção solicitada",
       "stale": "Indisponível"
     },
     "contentHint": "Veja suas contribuições e o status da análise.",

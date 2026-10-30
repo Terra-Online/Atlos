@@ -43,27 +43,8 @@ function Progress({ item }: { item: Contribution }) {
     const t = useTranslateUI();
     const locale = useLocale();
     const archived = item.status === 'stale';
-    const manual = item.review?.manual ?? item.status === 'pending_audit';
-    const published =
-        item.review?.published ??
-        ['active', 'flagged', 'remove_request'].includes(item.status);
-    const terminal = archived || published;
-    const times = item.review?.times;
-    const path = item.review?.path ?? [
-        { key: 'uploaded' as const, at: item.createdAt },
-        ...(!archived || times?.ai || published
-            ? [{ key: 'ai' as const, at: times?.ai ?? null }]
-            : []),
-        ...(manual
-            ? [{ key: 'manual' as const, at: times?.manual ?? null }]
-            : []),
-        ...(published
-            ? [{ key: 'public' as const, at: times?.public ?? null }]
-            : []),
-        ...(archived
-            ? [{ key: 'archived' as const, at: times?.archived ?? null }]
-            : []),
-    ];
+    const terminal = archived || item.review.published;
+    const path = item.review.path;
     const currentIndex = path.length - 1;
     const stages = path.map((step, index) => ({
         ...step,

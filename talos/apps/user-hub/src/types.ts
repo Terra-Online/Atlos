@@ -1,4 +1,13 @@
 import type { SessionUser } from '@main/services/auth';
+import type { UGCSubmissionStatus } from '@main/services/ugc/client';
+
+type ReviewStatus =
+    | 'pending_openai'
+    | 'pending_audit'
+    | 'approved'
+    | 'rejected'
+    | 'unknown';
+type ReviewKey = 'uploaded' | 'ai' | 'manual' | 'public' | 'archived';
 
 export type Contribution = {
     id: string;
@@ -6,22 +15,29 @@ export type Contribution = {
     markerId: string;
     poiType: string;
     content: string | null;
-    previewUrl?: string | null;
-    status: string;
-    visibility: string;
-    review?: {
+    previewUrl: string | null;
+    snapshotId: string;
+    revision: number;
+    reviewStatus: ReviewStatus;
+    authorDeletedAt: string | null;
+    adminDeletedAt: string | null;
+    status: UGCSubmissionStatus;
+    visibility: 'public' | 'private' | 'unavailable';
+    review: {
+        events: {
+            id: string;
+            snapshotId: string;
+            from: ReviewStatus;
+            to: ReviewStatus;
+            source: 'ai' | 'admin';
+            adminUserId: string | null;
+            note: string | null;
+            at: string;
+        }[];
         manual: boolean;
         published: boolean;
-        path?: {
-            key: 'uploaded' | 'ai' | 'manual' | 'public' | 'archived';
-            at: string | null;
-        }[];
-        times?: Partial<
-            Record<
-                'uploaded' | 'ai' | 'manual' | 'public' | 'archived',
-                string | null
-            >
-        >;
+        path: { key: ReviewKey; at: string | null }[];
+        times: Record<ReviewKey, string | null>;
     };
     createdAt: string;
 };

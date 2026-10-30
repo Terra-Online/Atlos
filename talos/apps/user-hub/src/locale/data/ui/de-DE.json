@@ -43,7 +43,6 @@
       "pending_audit": "Warten auf manuelle Prüfung",
       "active": "Öffentlich",
       "flagged": "Gemeldet",
-      "remove_request": "Entfernung beantragt",
       "stale": "Nicht verfügbar"
     },
     "contentHint": "Sehen Sie Ihre Beiträge und deren Prüfstatus ein.",

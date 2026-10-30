@@ -43,7 +43,6 @@
       "pending_audit": "En attente de vérification manuelle",
       "active": "Public",
       "flagged": "Signalé",
-      "remove_request": "Suppression demandée",
       "stale": "Indisponible"
     },
     "contentHint": "Consultez vos contributions et leur état de vérification.",

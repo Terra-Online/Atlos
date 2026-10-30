@@ -43,7 +43,6 @@
       "pending_audit": "Menunggu tinjauan manual",
       "active": "Publik",
       "flagged": "Dilaporkan",
-      "remove_request": "Penghapusan diminta",
       "stale": "Tidak tersedia"
     },
     "contentHint": "Lihat kiriman dan status peninjauan.",

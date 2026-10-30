@@ -43,7 +43,6 @@
       "pending_audit": "Manuel inceleme bekliyor",
       "active": "Herkese açık",
       "flagged": "Bildirildi",
-      "remove_request": "Kaldırılması istendi",
       "stale": "Kullanılamıyor"
     },
     "contentHint": "Gönderilerinizi ve inceleme durumlarını görüntüleyin.",

@@ -43,7 +43,6 @@
       "pending_audit": "Väntar på manuell granskning",
       "active": "Offentligt",
       "flagged": "Flaggat",
-      "remove_request": "Borttagning begärd",
       "stale": "Inte tillgängligt"
     },
     "contentHint": "Se dina bidrag och deras granskningsstatus.",

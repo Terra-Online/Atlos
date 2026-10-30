@@ -30,6 +30,28 @@ const item: Contribution = {
     markerId: '42',
     poiType: 'sample',
     content: '愿我们在天上的父垂怜。',
+    previewUrl: null,
+    snapshotId: 'snapshot-comment',
+    revision: 1,
+    reviewStatus: 'pending_openai',
+    authorDeletedAt: null,
+    adminDeletedAt: null,
+    review: {
+        events: [],
+        manual: false,
+        published: false,
+        path: [
+            { key: 'uploaded', at: '2026-05-21T03:28:31Z' },
+            { key: 'ai', at: null },
+        ],
+        times: {
+            uploaded: '2026-05-21T03:28:31Z',
+            ai: null,
+            manual: null,
+            public: null,
+            archived: null,
+        },
+    },
     status: 'pending_openai',
     visibility: 'private',
     createdAt: '2026-05-21T03:28:31Z',
@@ -78,7 +100,15 @@ it('shows the comment before its dated point label and the default three stages'
 it('retains the manual stage after publication and highlights the public node', async () => {
     await render({
         status: 'active',
-        review: { manual: true, published: true },
+        review: {
+            ...item.review,
+            manual: true,
+            published: true,
+            path: ['uploaded', 'ai', 'manual', 'public'].map((key) => ({
+                key: key as Key,
+                at: null,
+            })),
+        },
     });
     expect(stages()).toHaveLength(4);
     expect(stages().map((el) => el.getAttribute('data-state'))).toEqual([
@@ -92,10 +122,19 @@ it('retains the manual stage after publication and highlights the public node', 
     ).toContain('userHub.steps.public.complete');
 });
 
-it('does not mark publication as completed when a submission was recalled before approval', async () => {
+it('does not mark publication as completed when an author deletes before approval', async () => {
     await render({
         status: 'stale',
-        review: { manual: true, published: false },
+        authorDeletedAt: '2026-05-21T03:29:31Z',
+        review: {
+            ...item.review,
+            manual: true,
+            published: false,
+            path: ['uploaded', 'manual', 'archived'].map((key) => ({
+                key: key as Key,
+                at: null,
+            })),
+        },
     });
     expect(stages()).toHaveLength(3);
     expect(stages().map((el) => el.getAttribute('data-state'))).toEqual([
@@ -113,9 +152,17 @@ it('shows the exact and relative node time without inventing missing timestamps'
     await render({
         status: 'active',
         review: {
+            ...item.review,
             manual: true,
             published: true,
+            path: [
+                { key: 'uploaded', at: item.createdAt },
+                { key: 'ai', at: '2026-05-21T03:28:31Z' },
+                { key: 'manual', at: '2026-05-21T03:29:31Z' },
+                { key: 'public', at: '2026-05-21T03:29:31Z' },
+            ],
             times: {
+                archived: null,
                 uploaded: item.createdAt,
                 ai: '2026-05-21T03:28:31Z',
                 manual: '2026-05-21T03:29:31Z',
@@ -142,7 +189,14 @@ it('shows the exact and relative node time without inventing missing timestamps'
     expect(stages()[1].hasAttribute('title')).toBe(false);
     await render({
         status: 'active',
-        review: { manual: false, published: true },
+        review: {
+            ...item.review,
+            published: true,
+            path: ['uploaded', 'ai', 'public'].map((key) => ({
+                key: key as Key,
+                at: null,
+            })),
+        },
     });
     expect(stages()[2].querySelector('[role="tooltip"]')?.textContent).toBe(
         'userHub.steps.public.complete',
@@ -165,6 +219,7 @@ it.each(paths.map((keys) => ({ keys })))(
         await render({
             status: keys.at(-1) === 'public' ? 'active' : 'stale',
             review: {
+                ...item.review,
                 manual: keys.some((key) => key === 'manual'),
                 published: keys.some((key) => key === 'public'),
                 path: keys.map((key) => ({ key, at: null })),

@@ -43,7 +43,6 @@
       "pending_audit": "Pendiente de revisión manual",
       "active": "Público",
       "flagged": "Marcado",
-      "remove_request": "Retirada solicitada",
       "stale": "No disponible"
     },
     "contentHint": "Consulta tus contribuciones y su estado de revisión.",
