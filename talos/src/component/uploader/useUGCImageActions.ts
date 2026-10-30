@@ -116,7 +116,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
                         return {
                             ...image,
                             upvoted: task.lastSynced,
-                            upvotes: nextCount,
                             upvoteCount: nextCount,
                         };
                     });
@@ -180,7 +179,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         patchImageById(imageId, (image) => ({
             ...image,
             upvoted: nextUpvoted,
-            upvotes: Math.max(0, getUpvoteCount(image) + delta),
             upvoteCount: Math.max(0, getUpvoteCount(image) + delta),
         }));
         const task = getToggleTask(upvoteTasksRef.current, imageId, Boolean(active.upvoted));

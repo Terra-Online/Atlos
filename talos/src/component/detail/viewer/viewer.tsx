@@ -15,11 +15,7 @@ import ShortActions, { type ShortActionItem } from '@/component/uploader/shortAc
 type CarouselDirection = 'previous' | 'next';
 
 const getViewerUpvoteCount = (image: UGCImage): number => (
-    Number.isFinite(image.upvotes)
-        ? Math.max(0, image.upvotes as number)
-        : Number.isFinite(image.upvoteCount)
-            ? Math.max(0, image.upvoteCount as number)
-            : 0
+    Number.isFinite(image.upvoteCount) ? Math.max(0, image.upvoteCount as number) : 0
 );
 
 const getCarouselDirection = (

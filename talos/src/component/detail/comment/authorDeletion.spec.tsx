@@ -115,7 +115,7 @@ it('deletes the existing submission even when legacy data advertises an undo, an
         ]),
     );
     act(() =>
-        result.current.remove({ ...parent, ...{ editUndoAvailable: true } }),
+        result.current.remove(parent),
     );
     await waitFor(() => expect(result.current.busyIds.size).toBe(0));
     expect(result.current.comments.map((c) => c.id)).toEqual(['unrelated']);

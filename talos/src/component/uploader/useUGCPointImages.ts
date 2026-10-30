@@ -26,15 +26,11 @@ export const isPending = (image: Pick<UGCSubmissionImage, 'status'> | Pick<UGCIm
 );
 
 export const isPublic = (image: Pick<UGCSubmissionImage, 'status'> | Pick<UGCImage, 'status'>): boolean => (
-    image.status === 'active' || image.status === 'flagged' || image.status === 'remove_request'
+    image.status === 'active' || image.status === 'flagged'
 );
 
 export const getUpvoteCount = (image: UGCImage): number => (
-    Number.isFinite(image.upvotes)
-        ? Math.max(0, image.upvotes as number)
-        : Number.isFinite(image.upvoteCount)
-            ? Math.max(0, image.upvoteCount as number)
-            : 0
+    Number.isFinite(image.upvoteCount) ? Math.max(0, image.upvoteCount as number) : 0
 );
 
 const getImageCreatedAtTime = (image: UGCImage): number => {

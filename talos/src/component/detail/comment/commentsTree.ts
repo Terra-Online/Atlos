@@ -17,7 +17,7 @@ export type DisplayItem = {
 };
 
 export const isVisible = (status: UGCSubmissionStatus | undefined): boolean => (
-    status === 'active' || status === 'flagged' || status === 'remove_request'
+    status === 'active' || status === 'flagged'
 );
 
 export const isReviewing = (status: UGCSubmissionStatus | undefined): boolean => (
