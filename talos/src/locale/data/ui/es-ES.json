@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "Configuración de usuario",
-    "auth": "Registrarse / Iniciar sesión",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Ocultar la interfaz de usuario",
     "notification": "Notificaciones",
     "darkmode": "Cambiar a modo oscuro",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "Datos y almacenamiento",
-    "calculating": "Calculando uso de almacenamiento...",
-    "policy": "<p>Usamos cookies para guardar su sesión, LocalStorage para sus preferencias y el progreso de los marcadores, y CacheStorage para almacenar fuentes en caché. Esto acelera la carga y permite algunas funciones sin conexión. Si borra el almacenamiento local, <span class=\"keyword\">su próxima visita puede tardar más mientras se vuelven a cargar los recursos</span>; si desactiva el almacenamiento del sitio, este <span class=\"keyword\">no podrá guardar automáticamente sus preferencias locales ni el progreso de los marcadores</span>.</p><p>Funciones como el inicio de sesión, las contribuciones de marcadores y la sincronización de ubicación envían los datos correspondientes al servidor cuando es necesario. Borrar el almacenamiento local no elimina su cuenta ni sus datos del servidor.</p>",
-    "filtersAndMarkers": "Filtros y datos de marcadores",
-    "warning": "<p><strong>Advertencia:</strong> Borrar el almacenamiento local elimina su estado de sesión local, sus preferencias y su progreso local. En su próxima visita deberá volver a cargar los recursos e iniciar sesión de nuevo.</p><p>Para confirmar, haga clic de nuevo en el botón de eliminar.</p>",
-    "export": "Exportar datos",
-    "import": "Importar datos"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Ajustes",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "Consejo de la guía",
-    "welcome": "Te damos la bienvenida a <span class=\"keyword\">Open Endfield Map</span>.<br>Es la primera vez que utilizas este mapa. Si encuentras algún problema, haz clic en el botón <span class=\"keyword\">Ayuda</span> de la esquina superior derecha y te ofreceremos una guía detallada de sus funciones.</p>",
+    "welcome": "Te damos la bienvenida a <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Es la primera vez que utilizas este mapa. Si encuentras algún problema, haz clic en el botón <span class=\"keyword\">Ayuda</span> de la esquina superior derecha y te ofreceremos una guía detallada de sus funciones.</p>",
     "sidebarToggle": "Haga clic para expandir la <span class=\"keyword\">barra lateral</span>.<br>La barra lateral incluye sus filtros de marcadores más utilizados, así como interruptores estrechamente relacionados con la visualización de marcadores.",
     "search": "Puede buscar marcadores para ver utilizando <span class=\"keyword\">idiomas admitidos por el juego</span> y seleccionarlos en los resultados de búsqueda.",
     "filterContainer": "Los marcadores del mismo tipo se agrupan en un <span class=\"keyword\">filtro</span>.<br>Haga clic para expandir la lista de marcadores de ese tipo.",
@@ -242,15 +242,15 @@
     "triggerSwitch": "Haga clic para alternar el estado del interruptor.<br><ul><li><span class=\"keyword\">El modo de agrupación de marcadores</span> permite mostrar marcadores densos fusionados;</li><li><span class=\"keyword\">La visualización de límites de región</span> resalta cada subregión y sus límites dentro del área actual.</li><li><span class=\"keyword\">Nombres de región</span> muestra los nombres de las regiones en el juego.</li></ul>",
     "scale": "Use el <span class=\"keyword\">control de zoom</span> para ver y manipular el zoom del mapa.<br>La rueda de desplazamiento o el panel táctil se pueden usar para hacer zoom. También puede hacer zoom haciendo clic en los botones <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> o en cualquier lugar de la barra de zoom.",
     "filterList": "La <span class=\"keyword\">lista de marcadores</span> muestra los tipos de marcadores que ha seleccionado; haga clic en el icono para anular la selección.",
-    "headbar": "Las funciones del mapa, de la cuenta y otras opciones se encuentran en la <span class=\"keyword\">barra superior</span>.",
-    "auth": "<span class=\"keyword\">Regístrese</span> o <span class=\"keyword\">inicie sesión</span> en una cuenta OEM para usar nuestras funciones en línea.",
+    "headbar": "Los interruptores relacionados con la configuración del mapa se encuentran en la <span class=\"keyword\">barra superior</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Ocultar la interfaz de usuario del sitio web</span> para tomar capturas de pantalla o ver marcadores de borde.",
     "notification": "Abre las <span class=\"keyword\">notificaciones</span> para ver interacciones y resultados de revisión relacionados con tus contribuciones.",
     "darkMode": "Alternar el <span class=\"keyword\">modo de luz ambiental</span> actual.",
     "language": "Cambiar el <span class=\"keyword\">idioma de la interfaz</span>.<br>Actualmente, los idiomas con <span class=\"keyword\">soporte completo de traducción de contenido del juego</span> incluyen inglés, chino simplificado, chino tradicional, japonés, coreano, francés, alemán, italiano, ruso, español, indonesio, portugués, tailandés y vietnamita.<br>Los idiomas con <span class=\"keyword\">solo soporte de traducción de interfaz</span> incluyen árabe, malayo, polaco, sueco, griego, hindi, ucraniano y turco.",
-    "announcement": "Consulte los últimos <span class=\"keyword\">anuncios del sitio</span> y las actualizaciones importantes de funciones.",
+    "announcement": "Ver <span class=\"keyword\">anuncios del sitio web</span>. Las actualizaciones a las condiciones de servicio y política de privacidad también se publicarán aquí.",
     "help": "Reiniciar esta <span class=\"keyword\">guía</span>.",
-    "settings": "Abra <span class=\"keyword\">Ajustes</span> para gestionar la interfaz, el mapa, el tema, los atajos de teclado y los datos locales.",
+    "settings": "Abra <span class=\"keyword\">Ajustes</span> para controlar el almacenamiento local que usa el mapa para recordar sus acciones.",
     "locator": "Haz clic en <span class=\"keyword\">Sincronización de ubicación</span> para mostrar tu posición actual del juego en el mapa.<br>Tras vincular tu cuenta del juego, también puedes abrir la configuración de rastreo y ajustar el seguimiento de puntos.",
     "regionSwitch": "Haga clic para cambiar entre <span class=\"keyword\">diferentes mapas de sandbox</span> (regiones principales) en el juego.",
     "subregionSwitch": "<span class=\"keyword\">Pase el mouse sobre el icono de la región principal</span> para mostrar las subregiones disponibles; al hacer clic en un icono de subregión, saltará a esa vista de subregión.<br>Del mismo modo, también puede seleccionar una capa para una región.",

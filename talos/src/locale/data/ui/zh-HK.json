@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "個人設定",
-    "auth": "註冊 / 登入",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "隱藏介面",
     "notification": "通知",
     "darkmode": "切換至深色模式",
@@ -70,7 +70,7 @@
     "comments": {
       "copyLink": "複製留言連結",
       "emojiPicker": "選擇表情符號",
-      "spoilerHidden": "點擊以查看劇透內容",
+      "spoilerHidden": "點擊詳閱劇透內容",
       "spoilerRevealed": "你知道的太多了",
       "placeholder": "傾兩句？",
       "submit": "發布留言",
@@ -123,8 +123,8 @@
     "current": "現時",
     "fullSupport": "完整支援的語言",
     "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
-    "uiOnly": "只支援介面翻譯的語言",
-    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
+    "uiOnly": "僅支援介面翻譯的語言",
+    "uiOnlyHint": "僅提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
     "fyi": "阁下可前往 <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> 參與我們的翻譯項目，或為你的語言申請翻譯；亦可透過電郵 <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 聯絡本站管理員。",
     "names": {
       "en-US": "英語",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "資料與儲存",
-    "calculating": "正在計算儲存占用…",
-    "policy": "<p>我們使用 Cookie 儲存登入工作階段、使用 LocalStorage 儲存偏好設定與標記進度，並使用 CacheStorage 快取字型資源；這些儲存可加快載入並支援部分離線使用。若清除本機儲存，<span class=\"keyword\">下次存取可能需要較長時間重新載入資源</span>；停用網站儲存後，網站<span class=\"keyword\">將無法自動儲存本機偏好設定與標記進度</span>。</p><p>登入、標記貢獻和位置同步等功能會按需要向伺服器傳送相關資料；清除本機儲存不會刪除閣下的帳號或伺服器資料。</p>",
-    "filtersAndMarkers": "篩選器與標記資料",
-    "warning": "<p><strong>警告：</strong>清除本機儲存會遺失閣下的本機登入狀態、偏好設定與本機進度；下次存取時需重新載入資源及再次登入。</p><p>若確認，請再次點擊刪除按鈕。</p>",
-    "export": "匯出資料",
-    "import": "匯入資料"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "偏好設定",
@@ -233,24 +233,24 @@
     "tip": "導引說明",
     "welcome": "歡迎使用 <span class=\"keyword\">Open Endfield Map</span>。<br>這是阁下首次使用本地圖，若有任何問題，請點擊右上角的<span class=\"keyword\">幫助</span>按鈕，我們將提供詳細的功能引導。</p>",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
-    "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並在搜索結果中選中它們。",
+    "search": "您可以用<span class=\"keyword\">遊戲自身支持的語言</span>搜索需檢視之點位，並在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位於同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
-    "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可以根據自己的需要排序對您重要的篩選器。",
+    "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可根據自己的需要排序對您重要的篩選器。",
     "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。<br><br>您也可以在側邊欄的<span class=\"keyword\">空白區域按住並拖動</span>，對多個點位選擇器進行<span class=\"keyword\">框選</span>，從而快速批量切換它們的選擇狀態。",
     "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
     "triggerHandle": "與地圖顯示有關的開關位於側邊欄底部。<br>您可以按住鼠標將其<span class=\"keyword\">拖起並操作。</span>",
     "triggerSwitch": "單擊切換開關狀態。<br><ul><li><span class=\"keyword\">點位聚合模式</span>將允許將密集點位合併顯示；</li><li><span class=\"keyword\">地區邊界顯示</span>會高亮當前區域內每一個子區域以及其邊界。</li><li><span class=\"keyword\">地區名稱顯示</span>會顯示遊戲內的地區名稱。</li></ul>",
     "scale": "使用<span class=\"keyword\">縮放器</span>查看與操縱地圖縮放。<br>滾輪或者觸控板可用於縮放。您也可以通過點擊<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>按鈕或者縮放條的任意位置縮放。",
     "filterList": "<span class=\"keyword\">點位列表</span>列出了您已經選擇的點位，單擊圖標即可取消選擇。",
-    "headbar": "地圖、帳號及其他功能入口位於<span class=\"keyword\">頂欄</span>。",
-    "auth": "<span class=\"keyword\">註冊</span>或<span class=\"keyword\">登入</span> OEM 帳號，使用我們的線上功能。",
+    "headbar": "與地圖設置有關的開關位於<span class=\"keyword\">頂欄</span>。",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">隱藏網站UI</span>以截圖或查看邊緣點位。",
     "notification": "開啟<span class=\"keyword\">推播通知</span>，查看與你的貢獻有關之互動通知及覆核結果。",
     "darkMode": "切換當前的<span class=\"keyword\">環境光模式</span>。",
     "language": "切換<span class=\"keyword\">介面語言</span>。<br><span class=\"keyword\">完全支持遊戲內容翻譯</span>的語言有英語，簡體中文，繁體中文，日語，韓語，法語，德語，意大利語，俄語，西班牙語，印尼語，葡萄牙語，泰語和越南語。<br><span class=\"keyword\">僅支持介面翻譯</span>的語言包括阿拉伯語，馬來語，波蘭語和瑞典語。",
-    "announcement": "查看近期的<span class=\"keyword\">網站公告</span>及重要功能更新。",
+    "announcement": "查看近期的<span class=\"keyword\">網站公告</span>，用戶協議等更新也會在此發布。",
     "help": "再次啟動此<span class=\"keyword\">引導程序</span>。",
-    "settings": "開啟<span class=\"keyword\">偏好設定</span>，管理介面、地圖、主題、快捷鍵及本機資料。",
+    "settings": "開啟<span class=\"keyword\">偏好設定</span>，您可以控制地圖使用哪些本地儲存來記憶您的操作。",
     "locator": "點擊<span class=\"keyword\">位置同步</span>按鈕，可以根據你的遊戲內位置在地圖上顯示當前位置。<br>綁定遊戲帳戶後，你亦可以進入設定面板調整點位追蹤範圍。",
     "regionSwitch": "點擊切換遊戲內<span class=\"keyword\">不同的箱庭地圖</span>（主區域）。",
     "subregionSwitch": "鼠標<span class=\"keyword\">懸浮於主區域圖標</span>可顯示可用的子區域，單擊子區域圖標會跳轉到該子區域視圖。<br>同理，您也可選擇某區域的圖層。",
@@ -306,7 +306,7 @@
       "ghRegis": "使用 GitHub 註冊",
       "connecting": "連線中...",
       "resetLink": "請輸入需要重設密碼的電郵，我們将向阁下已註冊的信箱寄送一封包含密碼重設連結的郵件。<br><br>確認發送後，請檢查收件匣與垃圾郵件夾。",
-      "resetRequire": "請輸入您的新密碼並正確重複一次。<br><br>我們即將為閣下進行密碼重設。",
+      "resetRequire": "請輸入新密碼並正確重複一次。<br><br>我們即將為你重設密碼。",
       "backTo": "返回",
       "signIn": "登入",
       "switchToRegisterPrefix": "尚無帳戶？",
@@ -314,7 +314,7 @@
       "switchToLoginPrefix": "若已有帳戶，",
       "switchToLoginAction": "請點此登入。",
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
-      "ackLink": "<a href=\"{privacy}\">私隱政策</a>與<a href=\"{tos}\">使用條款</a>。",
+      "ackLink": "<a href=\"{privacy}\">私隱政策</a>及<a href=\"{tos}\">使用條款</a>。",
       "hints": {
         "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
@@ -365,7 +365,7 @@
       "returnHint": "點擊 Logo 以返回目前分頁",
       "enterMode": "開啟畫中畫模式",
       "exitMode": "退出畫中畫模式",
-      "unsupported": "目前瀏覽器不支援文件畫中畫"
+      "unsupported": "此瀏覽器不支援畫中畫模式"
     }
   },
   "locator": {
@@ -375,7 +375,7 @@
     },
     "binding": {
       "title": "綁定帳户",
-      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款與聲明：",
+      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款及聲明：",
       "docsLinks": "<a href=\"{tos}\">使用條款</a> · <a href=\"{privacy}\">私隱政策</a> · <a href=\"{data}\">資料收集清單</a> · <a href=\"{disclaimer}\">免責聲明</a>",
       "chinaTab": "國服 (Hypergryph)",
       "globalTab": "國際服 (Gryphline)",
@@ -424,11 +424,11 @@
       "trackPoints": "追蹤點位",
       "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
-      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 與其他條款。"
+      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 及其他條款。"
     },
     "errors": {
       "10000": "位置同步工作階段已過期，請重新綁定。",
-      "10002": "遊戲登入已過期，請解除終末地綁定後重新綁定。",
+      "10002": "遊戲登入已過期，請解除綁定後重新綁定。",
       "19001": "無法取得位置，請確認已登入遊戲。",
       "19002": "位置同步需要授權後才能開始。",
       "noRole": "此帳戶下未找到終末地角色。",
@@ -486,7 +486,7 @@
     "shareLocation": "分享此位置",
     "clearAllHighlights": "清除所有高亮",
     "selectAllCategoryFilters": "選取全部",
-    "deselectAllCategoryFilters": "取消全部",
+    "deselectAllCategoryFilters": "全不選",
     "hideCompletedMarkers": "隱藏已完成點位",
     "showCompletedMarkers": "顯示已完成點位",
     "undo": "復原",
@@ -522,7 +522,7 @@
     "org": "<span class=\"keyword\">海外用戶</span>推薦使用全球鏡像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，訪問更快捷穩定。"
   },
   "support": {
-    "title": "支持我們",
+    "title": "贊助我們",
     "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上載）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
     "patreon": "買一份日誌（Patreon）",
     "kofi": "買一杯咖啡（Ko-fi）",
